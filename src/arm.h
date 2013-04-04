@@ -24,6 +24,11 @@ enum PrivilegeMode {
 	MODE_SYSTEM = 0x1F
 };
 
+enum WordSize {
+	WORD_SIZE_ARM = 4,
+	WORD_SIZE_THUMB = 2
+};
+
 enum ExecutionVector {
 	BASE_RESET = 0x00000000,
 	BASE_UNDEF = 0x00000004,
@@ -33,6 +38,9 @@ enum ExecutionVector {
 	BASE_IRQ = 0x00000018,
 	BASE_FIQ = 0x0000001C
 };
+
+struct ARMCore;
+typedef void (*ARMInstruction)(struct ARMCore*);
 
 union PSR {
 	struct {
@@ -51,7 +59,14 @@ union PSR {
 	int32_t packed;
 };
 
-struct ARMMemory;
+struct ARMMemory {
+	int32_t (*load32)(struct ARMMemory*, uint32_t address);
+	int16_t (*load16)(struct ARMMemory*, uint32_t address);
+	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address);
+	int8_t (*load8)(struct ARMMemory*, uint32_t address);
+	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address);
+};
+
 struct ARMBoard;
 
 struct ARMCore {
@@ -64,11 +79,18 @@ struct ARMCore {
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
+	int instructionWidth;
+
+	ARMInstruction (*loadInstruction)(struct ARMMemory*, uint32_t address);
+	enum ExecutionMode executionMode;
+
 	struct ARMMemory* memory;
 	struct ARMBoard* board;
 };
 
 void ARMInit(struct ARMCore* cpu);
+void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
+
 void ARMCycle(struct ARMCore* cpu);
 
 #endif
