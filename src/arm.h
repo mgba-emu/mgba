@@ -40,15 +40,14 @@ enum ExecutionVector {
 };
 
 struct ARMCore;
-typedef void (*ARMInstruction)(struct ARMCore*);
+typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
 
 union PSR {
 	struct {
-		int exec : 4;
+		enum PrivilegeMode priv : 5;
 		int t : 1;
 		int f : 1;
 		int i : 1;
-		int a : 1;
 		int : 20;
 		int v : 1;
 		int c : 1;
@@ -81,7 +80,7 @@ struct ARMCore {
 
 	int instructionWidth;
 
-	ARMInstruction (*loadInstruction)(struct ARMMemory*, uint32_t address);
+	ARMInstruction (*loadInstruction)(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 	enum ExecutionMode executionMode;
 
 	struct ARMMemory* memory;
@@ -91,6 +90,6 @@ struct ARMCore {
 void ARMInit(struct ARMCore* cpu);
 void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
 
-void ARMCycle(struct ARMCore* cpu);
+inline void ARMCycle(struct ARMCore* cpu);
 
 #endif
