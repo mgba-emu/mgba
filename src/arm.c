@@ -184,6 +184,9 @@ DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(cpu->gprs[rn], shifterOperand, cp
 DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
 	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;, )
 
+DEFINE_ALU_INSTRUCTION_ARM(BIC, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+	cpu->gprs[rd] = cpu->gprs[rn] & ~cpu->shifterOperand;, )
+
 DEFINE_ALU_INSTRUCTION_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
 	int32_t aluOut = cpu->gprs[rn] + cpu->shifterOperand;, )
 
@@ -192,6 +195,15 @@ DEFINE_ALU_INSTRUCTION_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOpe
 
 DEFINE_ALU_INSTRUCTION_ARM(EOR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
 	cpu->gprs[rd] = cpu->gprs[rn] ^ cpu->shifterOperand;, )
+
+DEFINE_ALU_INSTRUCTION_ARM(MOV, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+	cpu->gprs[rd] = cpu->shifterOperand;, )
+
+DEFINE_ALU_INSTRUCTION_ARM(MVN, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+	cpu->gprs[rd] = ~cpu->shifterOperand;, )
+
+DEFINE_ALU_INSTRUCTION_ARM(ORR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+	cpu->gprs[rd] = cpu->gprs[rn] | cpu->shifterOperand;, )
 
 DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, cpu->gprs[rn], d), \
 	int32_t d = cpu->shifterOperand - cpu->gprs[rn];, cpu->gprs[rd] = d)
@@ -304,7 +316,15 @@ DEFINE_INSTRUCTION_ARM(MRS,)
 	DECLARE_ARM_ALU_BLOCK(COND, MRS, SWPB, STRH, ILL, ILL), \
 	DECLARE_ARM_ALU_BLOCK(COND, CMP, ILL, LDRH, LDRSB, LDRSH), \
 	DECLARE_ARM_ALU_BLOCK(COND, MSR, ILL, STRH, ILL, ILL), \
-	DECLARE_ARM_ALU_BLOCK(COND, CMN, ILL, LDRH, LDRSB, LDRSH)
+	DECLARE_ARM_ALU_BLOCK(COND, CMN, ILL, LDRH, LDRSB, LDRSH), \
+	DECLARE_ARM_ALU_BLOCK(COND, ORR, SMLAL, STRH, ILL, ILL), \
+	DECLARE_ARM_ALU_BLOCK(COND, ORRS, SMLALS, LDRH, LDRSB, LDRSH), \
+	DECLARE_ARM_ALU_BLOCK(COND, MOV, SMLAL, STRH, ILL, ILL), \
+	DECLARE_ARM_ALU_BLOCK(COND, MOVS, SMLALS, LDRH, LDRSB, LDRSH), \
+	DECLARE_ARM_ALU_BLOCK(COND, BIC, SMLAL, STRH, ILL, ILL), \
+	DECLARE_ARM_ALU_BLOCK(COND, BICS, SMLALS, LDRH, LDRSB, LDRSH), \
+	DECLARE_ARM_ALU_BLOCK(COND, MVN, SMLAL, STRH, ILL, ILL), \
+	DECLARE_ARM_ALU_BLOCK(COND, MVNS, SMLALS, LDRH, LDRSB, LDRSH)
 
 static const ARMInstruction armTable[0xF000] = {
 	DECLARE_COND_BLOCK(EQ),
