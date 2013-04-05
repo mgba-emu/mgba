@@ -1,8 +1,9 @@
-#include "arm.h"
+#include "gba.h"
 
 int main(int argc, char** argv) {
-	struct ARMCore cpu;
-	ARMInit(&cpu);
+	struct GBA gba;
+	GBAInit(&gba);
+	GBADeinit(&gba);
 
 	return 0;
 }

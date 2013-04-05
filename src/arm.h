@@ -66,7 +66,9 @@ struct ARMMemory {
 	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address);
 };
 
-struct ARMBoard;
+struct ARMBoard {
+	// TODO
+};
 
 struct ARMCore {
 	int32_t gprs[16];
