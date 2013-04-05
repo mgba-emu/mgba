@@ -1,5 +1,8 @@
 #include "arm.h"
 
+#define ARM_SIGN(I) ((I) >> 31)
+#define ARM_ROR(I, ROTATE) (((I) >> ROTATE) | (I << (32 - ROTATE)))
+
 static inline void _ARMSetMode(struct ARMCore*, enum ExecutionMode);
 static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 static ARMInstruction _ARMLoadInstructionThumb(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
@@ -17,7 +20,15 @@ static inline void _barrelShift(struct ARMCore* cpu, uint32_t opcode) {
 }
 
 static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
-	// TODO
+	int rotate = (opcode & 0x00000F00) >> 7;
+	int immediate = opcode & 0x000000FF;
+	if (!rotate) {
+		cpu->shifterOperand = immediate;
+		cpu->shifterCarryOut = cpu->cpsr.c;
+	} else {
+		cpu->shifterOperand = ARM_ROR(immediate, rotate);
+		cpu->shifterCarryOut = ARM_SIGN(cpu->shifterOperand);
+	}
 }
 
 static const ARMInstruction armTable[0xF000];
@@ -89,10 +100,10 @@ inline void ARMCycle(struct ARMCore* cpu) {
 // Instruction definitions
 // Beware pre-processor antics
 
-#define ARM_CARRY_FROM(M, N, D) ((((M) | (N)) >> 31) && !((D) >> 31))
+#define ARM_CARRY_FROM(M, N, D) ((ARM_SIGN((M) | (N))) && !(ARM_SIGN(D)))
 #define ARM_BORROW_FROM(M, N, D) (((uint32_t) (M)) >= ((uint32_t) (N)))
-#define ARM_V_ADDITION(M, N, D) (!(((M) ^ (N)) >> 31) && (((M) ^ (D)) >> 31) && (((N) ^ (D)) >> 31))
-#define ARM_V_SUBTRACTION(M, N, D) ((((M) ^ (N)) >> 31) && (((M) ^ (D)) >> 31))
+#define ARM_V_ADDITION(M, N, D) (!(ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))) && (ARM_SIGN((N) ^ (D))))
+#define ARM_V_SUBTRACTION(M, N, D) ((ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))))
 
 #define ARM_COND_EQ (cpu->cpsr.z)
 #define ARM_COND_NE (!cpu->cpsr.z)
@@ -115,7 +126,7 @@ inline void ARMCycle(struct ARMCore* cpu) {
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = (D) >> 31; \
+		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
 		cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
 		cpu->cpsr.v = ARM_V_ADDITION(M, N, D); \
@@ -126,7 +137,7 @@ inline void ARMCycle(struct ARMCore* cpu) {
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = (D) >> 31; \
+		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
 		cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
 		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
@@ -137,7 +148,7 @@ inline void ARMCycle(struct ARMCore* cpu) {
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = (D) >> 31; \
+		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
 		cpu->cpsr.c = cpu->shifterCarryOut; \
 	}
