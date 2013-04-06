@@ -43,6 +43,7 @@ enum {
 
 struct GBAMemory {
 	struct ARMMemory d;
+	struct GBA* p;
 
 	int32_t* bios;
 	int32_t* wram;
@@ -71,5 +72,9 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
 uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address);
 int8_t GBALoad8(struct ARMMemory* memory, uint32_t address);
 uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address);
+
+void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value);
+void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
+void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
 
 #endif

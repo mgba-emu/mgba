@@ -4,6 +4,7 @@
 
 void GBAInit(struct GBA* gba) {
 	ARMInit(&gba->cpu);
+	gba->memory.p = gba;
 	GBAMemoryInit(&gba->memory);
 }
 
@@ -17,6 +18,9 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.loadU16 = GBALoadU16;
 	memory->d.load8 = GBALoad8;
 	memory->d.loadU8 = GBALoadU8;
+	memory->d.store32 = GBAStore32;
+	memory->d.store16 = GBAStore16;
+	memory->d.store8 = GBAStore8;
 
 	memory->bios = 0;
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
@@ -197,4 +201,85 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	}
 
 	return 0;
+}
+
+void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
+	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+
+	switch (address & OFFSET_MASK) {
+	case REGION_WORKING_RAM:
+		break;
+	case REGION_WORKING_IRAM:
+		break;
+	case REGION_IO:
+		break;
+	case REGION_PALETTE_RAM:
+		break;
+	case REGION_VRAM:
+		break;
+	case REGION_OAM:
+		break;
+	case REGION_CART0:
+		break;
+	case REGION_CART2_EX:
+		break;
+	case REGION_CART_SRAM:
+		break;
+	default:
+		break;
+	}
+}
+
+void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
+	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+
+	switch (address & OFFSET_MASK) {
+	case REGION_WORKING_RAM:
+		break;
+	case REGION_WORKING_IRAM:
+		break;
+	case REGION_IO:
+		break;
+	case REGION_PALETTE_RAM:
+		break;
+	case REGION_VRAM:
+		break;
+	case REGION_OAM:
+		break;
+	case REGION_CART0:
+		break;
+	case REGION_CART2_EX:
+		break;
+	case REGION_CART_SRAM:
+		break;
+	default:
+		break;
+	}
+}
+
+void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
+	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+
+	switch (address & OFFSET_MASK) {
+	case REGION_WORKING_RAM:
+		break;
+	case REGION_WORKING_IRAM:
+		break;
+	case REGION_IO:
+		break;
+	case REGION_PALETTE_RAM:
+		break;
+	case REGION_VRAM:
+		break;
+	case REGION_OAM:
+		break;
+	case REGION_CART0:
+		break;
+	case REGION_CART2_EX:
+		break;
+	case REGION_CART_SRAM:
+		break;
+	default:
+		break;
+	}
 }
