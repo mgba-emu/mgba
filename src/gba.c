@@ -2,8 +2,14 @@
 
 #include <sys/mman.h>
 
+static const char* GBA_CANNOT_MMAP = "Could not map memory";
+
 void GBAInit(struct GBA* gba) {
+	gba->errno = GBA_NO_ERROR;
+	gba->errstr = 0;
+
 	ARMInit(&gba->cpu);
+
 	gba->memory.p = gba;
 	GBAMemoryInit(&gba->memory);
 }
@@ -26,6 +32,12 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
+
+	if (!memory->wram || !memory->iwram) {
+		GBAMemoryDeinit(memory);
+		memory->p->errno = GBA_OUT_OF_MEMORY;
+		memory->p->errstr = GBA_CANNOT_MMAP;
+	}
 }
 
 void GBAMemoryDeinit(struct GBAMemory* memory) {

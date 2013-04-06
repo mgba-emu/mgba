@@ -3,6 +3,11 @@
 
 #include "arm.h"
 
+enum GBAError {
+	GBA_NO_ERROR = 0,
+	GBA_OUT_OF_MEMORY = -1
+};
+
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
 	REGION_WORKING_RAM = 0x2,
@@ -59,6 +64,9 @@ struct GBA {
 	struct ARMCore cpu;
 	struct GBABoard board;
 	struct GBAMemory memory;
+
+	enum GBAError errno;
+	const char* errstr;
 };
 
 void GBAInit(struct GBA* gba);
