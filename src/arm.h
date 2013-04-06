@@ -64,6 +64,10 @@ struct ARMMemory {
 	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address);
 	int8_t (*load8)(struct ARMMemory*, uint32_t address);
 	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address);
+
+	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value);
+	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value);
+	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value);
 };
 
 struct ARMBoard {
