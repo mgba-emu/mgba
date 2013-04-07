@@ -14,6 +14,11 @@ void GBAInit(struct GBA* gba) {
 	gba->memory.p = gba;
 	GBAMemoryInit(&gba->memory);
 	ARMAssociateMemory(&gba->cpu, &gba->memory.d);
+
+	GBABoardInit(&gba->board);
+	ARMAssociateBoard(&gba->cpu, &gba->board.d);
+
+	ARMReset(&gba->cpu);
 }
 
 void GBADeinit(struct GBA* gba) {
@@ -45,6 +50,20 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 void GBAMemoryDeinit(struct GBAMemory* memory) {
 	munmap(memory->wram, SIZE_WORKING_RAM);
 	munmap(memory->iwram, SIZE_WORKING_IRAM);
+}
+
+void GBABoardInit(struct GBABoard* board) {
+	board->d.reset = GBABoardReset;
+}
+
+void GBABoardReset(struct ARMBoard* board) {
+	struct ARMCore* cpu = board->cpu;
+	ARMSetPrivilegeMode(cpu, MODE_IRQ);
+	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
+	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
+	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
+	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
+	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 }
 
 void GBALoadROM(struct GBA* gba, int fd) {

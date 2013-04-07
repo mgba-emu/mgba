@@ -4,17 +4,16 @@
 #define ARM_ROR(I, ROTATE) (((I) >> ROTATE) | (I << (32 - ROTATE)))
 
 static inline void _ARMSetMode(struct ARMCore*, enum ExecutionMode);
-static void _ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
 static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 static ARMInstruction _ARMLoadInstructionThumb(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, cpu->cpsr.t);
-	_ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
+	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
 }
 
-static void _ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
+void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 	if (mode == cpu->privilegeMode) {
 		// Not switching modes after all
 		return;
@@ -127,6 +126,20 @@ static ARMInstruction _ARMLoadInstructionThumb(struct ARMMemory* memory, uint32_
 }
 
 void ARMInit(struct ARMCore* cpu) {
+	cpu->memory = 0;
+	cpu->board = 0;
+}
+
+void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory) {
+	cpu->memory = memory;
+}
+
+void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board) {
+	cpu->board = board;
+	board->cpu = cpu;
+}
+
+void ARMReset(struct ARMCore* cpu) {
 	int i;
 	for (i = 0; i < 16; ++i) {
 		cpu->gprs[i] = 0;
@@ -150,15 +163,10 @@ void ARMInit(struct ARMCore* cpu) {
 	cpu->shifterOperand = 0;
 	cpu->shifterCarryOut = 0;
 
-	cpu->memory = 0;
-	cpu->board = 0;
-
 	cpu->executionMode = MODE_THUMB;
 	_ARMSetMode(cpu, MODE_ARM);
-}
 
-void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory) {
-	cpu->memory = memory;
+	cpu->board->reset(cpu->board);
 }
 
 void ARMStep(struct ARMCore* cpu) {

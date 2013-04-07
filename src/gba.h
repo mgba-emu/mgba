@@ -41,6 +41,7 @@ enum GBAMemoryBase {
 	BASE_CART2_EX = 0x0D000000,
 	BASE_CART_SRAM = 0x0E000000
 };
+
 enum {
 	SIZE_BIOS = 0x00004000,
 	SIZE_WORKING_RAM = 0x00040000,
@@ -59,6 +60,12 @@ enum {
 };
 
 enum {
+	SP_BASE_SYSTEM = 0x03FFFF00,
+	SP_BASE_IRQ = 0x03FFFFA0,
+	SP_BASE_SUPERVISOR = 0x03FFFFE0
+};
+
+enum {
 	OFFSET_MASK = 0x00FFFFFF
 };
 
@@ -73,7 +80,7 @@ struct GBAMemory {
 };
 
 struct GBABoard {
-	struct ARMBoard board;
+	struct ARMBoard d;
 };
 
 struct GBA {
@@ -90,6 +97,9 @@ void GBADeinit(struct GBA* gba);
 
 void GBAMemoryInit(struct GBAMemory* memory);
 void GBAMemoryDeinit(struct GBAMemory* memory);
+
+void GBABoardInit(struct GBABoard* board);
+void GBABoardReset(struct ARMBoard* board);
 
 void GBALoadROM(struct GBA* gba, int fd);
 

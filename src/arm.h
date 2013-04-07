@@ -80,7 +80,8 @@ struct ARMMemory {
 };
 
 struct ARMBoard {
-	// TODO
+	struct ARMCore* cpu;
+	void (*reset)(struct ARMBoard* board);
 };
 
 struct ARMCore {
@@ -108,7 +109,10 @@ struct ARMCore {
 
 void ARMInit(struct ARMCore* cpu);
 void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
+void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board);
 
+void ARMReset(struct ARMCore* cpu);
 void ARMStep(struct ARMCore* cpu);
+void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
 
 #endif
