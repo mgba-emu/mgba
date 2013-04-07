@@ -1,6 +1,7 @@
 #include "gba.h"
 
 #include <sys/mman.h>
+#include <unistd.h>
 
 static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
@@ -12,6 +13,7 @@ void GBAInit(struct GBA* gba) {
 
 	gba->memory.p = gba;
 	GBAMemoryInit(&gba->memory);
+	ARMAssociateMemory(&gba->cpu, &gba->memory.d);
 }
 
 void GBADeinit(struct GBA* gba) {
@@ -45,32 +47,37 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 	munmap(memory->iwram, SIZE_WORKING_IRAM);
 }
 
+void GBALoadROM(struct GBA* gba, int fd) {
+	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
+	// TODO: error check
+}
+
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_BIOS:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
 		break;
-	case REGION_WORKING_RAM:
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
-		break;
-	case REGION_CART_SRAM:
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
+		return gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -82,29 +89,29 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_BIOS:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
 		break;
-	case REGION_WORKING_RAM:
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -116,29 +123,29 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_BIOS:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
 		break;
-	case REGION_WORKING_RAM:
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -150,29 +157,29 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_BIOS:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
 		break;
-	case REGION_WORKING_RAM:
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -184,29 +191,29 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_BIOS:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
 		break;
-	case REGION_WORKING_RAM:
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -218,24 +225,24 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_WORKING_RAM:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
+	case BASE_CART0:
 		break;
-	case REGION_CART2_EX:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -245,24 +252,24 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_WORKING_RAM:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
+	case BASE_CART0:
 		break;
-	case REGION_CART2_EX:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
@@ -272,24 +279,24 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	switch (address & OFFSET_MASK) {
-	case REGION_WORKING_RAM:
+	switch (address & ~OFFSET_MASK) {
+	case BASE_WORKING_RAM:
 		break;
-	case REGION_WORKING_IRAM:
+	case BASE_WORKING_IRAM:
 		break;
-	case REGION_IO:
+	case BASE_IO:
 		break;
-	case REGION_PALETTE_RAM:
+	case BASE_PALETTE_RAM:
 		break;
-	case REGION_VRAM:
+	case BASE_VRAM:
 		break;
-	case REGION_OAM:
+	case BASE_OAM:
 		break;
-	case REGION_CART0:
+	case BASE_CART0:
 		break;
-	case REGION_CART2_EX:
+	case BASE_CART2_EX:
 		break;
-	case REGION_CART_SRAM:
+	case BASE_CART_SRAM:
 		break;
 	default:
 		break;

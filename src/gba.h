@@ -25,6 +25,22 @@ enum GBAMemoryRegion {
 	REGION_CART_SRAM = 0xE
 };
 
+enum GBAMemoryBase {
+	BASE_BIOS = 0x00000000,
+	BASE_WORKING_RAM = 0x02000000,
+	BASE_WORKING_IRAM = 0x03000000,
+	BASE_IO = 0x04000000,
+	BASE_PALETTE_RAM = 0x05000000,
+	BASE_VRAM = 0x06000000,
+	BASE_OAM = 0x07000000,
+	BASE_CART0 = 0x08000000,
+	BASE_CART0_EX = 0x09000000,
+	BASE_CART1 = 0x0A000000,
+	BASE_CART1_EX = 0x0B000000,
+	BASE_CART2 = 0x0C000000,
+	BASE_CART2_EX = 0x0D000000,
+	BASE_CART_SRAM = 0x0E000000
+};
 enum {
 	SIZE_BIOS = 0x00004000,
 	SIZE_WORKING_RAM = 0x00040000,
@@ -74,6 +90,8 @@ void GBADeinit(struct GBA* gba);
 
 void GBAMemoryInit(struct GBAMemory* memory);
 void GBAMemoryDeinit(struct GBAMemory* memory);
+
+void GBALoadROM(struct GBA* gba, int fd);
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
