@@ -377,7 +377,11 @@ DEFINE_INSTRUCTION_ARM(SWPB,)
 
 // Begin branch definitions
 
-DEFINE_INSTRUCTION_ARM(B,)
+DEFINE_INSTRUCTION_ARM(B, \
+	int32_t offset = opcode << 8; \
+	offset >>= 8; \
+	cpu->gprs[ARM_PC] += offset)
+
 DEFINE_INSTRUCTION_ARM(BL,)
 DEFINE_INSTRUCTION_ARM(BX,)
 
