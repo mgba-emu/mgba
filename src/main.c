@@ -11,6 +11,7 @@ int main(int argc, char** argv) {
 	GBALoadROM(&gba, fd);
 	gba.cpu.gprs[ARM_PC] = 0x08000004;
 	ARMStep(&gba.cpu);
+	ARMStep(&gba.cpu);
 	GBADeinit(&gba);
 
 	return 0;

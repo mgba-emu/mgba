@@ -122,6 +122,9 @@ void ARMStep(struct ARMCore* cpu) {
 #define ARM_COND_LE (cpu->cpsr.z || !cpu->cpsr.n != !cpu->cpsr.v)
 #define ARM_COND_AL 1
 
+#define ARM_WRITE_PC \
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -cpu->instructionWidth) + cpu->instructionWidth
+
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
@@ -380,7 +383,8 @@ DEFINE_INSTRUCTION_ARM(SWPB,)
 DEFINE_INSTRUCTION_ARM(B, \
 	int32_t offset = opcode << 8; \
 	offset >>= 6; \
-	cpu->gprs[ARM_PC] += offset)
+	cpu->gprs[ARM_PC] += offset; \
+	ARM_WRITE_PC;)
 
 DEFINE_INSTRUCTION_ARM(BL,)
 DEFINE_INSTRUCTION_ARM(BX,)
