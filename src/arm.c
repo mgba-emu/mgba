@@ -207,7 +207,10 @@ void ARMStep(struct ARMCore* cpu) {
 		SHIFTER(cpu, opcode); \
 		BODY; \
 		S_BODY; \
-		POST_BODY;)
+		POST_BODY; \
+		if (rd == ARM_PC) { \
+			ARM_WRITE_PC; \
+		})
 
 #define DEFINE_ALU_INSTRUCTION_ARM(NAME, S_BODY, BODY, POST_BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, , _barrelShift, BODY, POST_BODY) \
