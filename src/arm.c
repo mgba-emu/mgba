@@ -32,7 +32,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	}
 }
 
-static const ARMInstruction armTable[0x10000];
+static const ARMInstruction _armTable[0x10000];
 
 static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode executionMode) {
 	if (executionMode == cpu->executionMode) {
@@ -56,7 +56,7 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
 	uint32_t opcode = memory->load32(memory, address);
 	*opcodeOut = opcode;
-	return 0;
+	return _armTable[((opcode >> 16) & 0xFFF0) | ((opcode >> 4) & 0x000F)];
 }
 
 static ARMInstruction _ARMLoadInstructionThumb(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
@@ -687,7 +687,7 @@ DEFINE_INSTRUCTION_ARM(SWI,)
 	DO_8(DO_256(0)), \
 	DO_8(DO_256(0))
 
-static const ARMInstruction armTable[0x10000] = {
+static const ARMInstruction _armTable[0x10000] = {
 	DECLARE_COND_BLOCK(EQ),
 	DECLARE_COND_BLOCK(NE),
 	DECLARE_COND_BLOCK(CS),
