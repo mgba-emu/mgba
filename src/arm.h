@@ -96,6 +96,6 @@ struct ARMCore {
 void ARMInit(struct ARMCore* cpu);
 void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
 
-inline void ARMCycle(struct ARMCore* cpu);
+void ARMStep(struct ARMCore* cpu);
 
 #endif

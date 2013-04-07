@@ -90,7 +90,7 @@ void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory) {
 	cpu->memory = memory;
 }
 
-inline void ARMCycle(struct ARMCore* cpu) {
+void ARMStep(struct ARMCore* cpu) {
 	// TODO
 	uint32_t opcode;
 	ARMInstruction instruction = cpu->loadInstruction(cpu->memory, cpu->gprs[ARM_PC] - cpu->instructionWidth, &opcode);
