@@ -39,6 +39,15 @@ enum ExecutionVector {
 	BASE_FIQ = 0x0000001C
 };
 
+enum RegisterBank {
+	BANK_NONE = 0,
+	BANK_FIQ = 1,
+	BANK_IRQ = 2,
+	BANK_SUPERVISOR = 3,
+	BANK_ABORT = 4,
+	BANK_UNDEFINED = 5
+};
+
 struct ARMCore;
 typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
 
@@ -81,6 +90,9 @@ struct ARMCore {
 
 	int32_t cyclesToEvent;
 
+	int32_t bankedRegisters[6][7];
+	int32_t bankedSPSRs[6];
+
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
@@ -88,6 +100,7 @@ struct ARMCore {
 
 	ARMInstruction (*loadInstruction)(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 	enum ExecutionMode executionMode;
+	enum PrivilegeMode privilegeMode;
 
 	struct ARMMemory* memory;
 	struct ARMBoard* board;
