@@ -379,7 +379,7 @@ DEFINE_INSTRUCTION_ARM(SWPB,)
 
 DEFINE_INSTRUCTION_ARM(B, \
 	int32_t offset = opcode << 8; \
-	offset >>= 8; \
+	offset >>= 6; \
 	cpu->gprs[ARM_PC] += offset)
 
 DEFINE_INSTRUCTION_ARM(BL,)
