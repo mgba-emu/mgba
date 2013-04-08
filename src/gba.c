@@ -78,9 +78,9 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
-		break;
+		return gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
 	case BASE_WORKING_IRAM:
-		break;
+		return gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
 	case BASE_IO:
 		break;
 	case BASE_PALETTE_RAM:
@@ -112,9 +112,9 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
-		break;
+		return ((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1];
 	case BASE_WORKING_IRAM:
-		break;
+		return ((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1];
 	case BASE_IO:
 		break;
 	case BASE_PALETTE_RAM:
@@ -130,7 +130,6 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART2:
 	case BASE_CART2_EX:
 		return ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
-		break;
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -147,9 +146,9 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
-		break;
+		return ((uint16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1];
 	case BASE_WORKING_IRAM:
-		break;
+		return ((uint16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1];
 	case BASE_IO:
 		break;
 	case BASE_PALETTE_RAM:
@@ -165,7 +164,6 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART2:
 	case BASE_CART2_EX:
 		return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
-		break;
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -182,9 +180,9 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
-		break;
+		return ((int8_t*) gbaMemory->wram)[address & (SIZE_WORKING_RAM - 1)];
 	case BASE_WORKING_IRAM:
-		break;
+		return ((int8_t*) gbaMemory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
 	case BASE_IO:
 		break;
 	case BASE_PALETTE_RAM:
@@ -199,8 +197,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return ((int8_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1))];
-		break;
+		return ((int8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -217,8 +214,10 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
+		return ((uint8_t*) gbaMemory->wram)[address & (SIZE_WORKING_RAM - 1)];
 		break;
 	case BASE_WORKING_IRAM:
+		return ((uint8_t*) gbaMemory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
 		break;
 	case BASE_IO:
 		break;
@@ -234,8 +233,7 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return ((uint8_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1))];
-		break;
+		return ((uint8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -250,8 +248,10 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_WORKING_RAM:
+		gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2] = value;
 		break;
 	case BASE_WORKING_IRAM:
+		gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2] = value;
 		break;
 	case BASE_IO:
 		break;
@@ -277,8 +277,10 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_WORKING_RAM:
+		((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1] = value;
 		break;
 	case BASE_WORKING_IRAM:
+		((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1] = value;
 		break;
 	case BASE_IO:
 		break;
@@ -304,8 +306,10 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_WORKING_RAM:
+		((int8_t*) gbaMemory->wram)[address & (SIZE_WORKING_RAM - 1)] = value;
 		break;
 	case BASE_WORKING_IRAM:
+		((int8_t*) gbaMemory->iwram)[address & (SIZE_WORKING_IRAM - 1)] = value;
 		break;
 	case BASE_IO:
 		break;
