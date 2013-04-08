@@ -404,6 +404,7 @@ DEFINE_INSTRUCTION_ARM(MSR, \
 		} \
 		if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) { \
 			ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010)); \
+			cpu->cpsr.priv = cpu->privilegeMode; \
 			cpu->cpsr.i = operand & 0x00000080; \
 			cpu->cpsr.f = operand & 0x00000040; \
 		} \
