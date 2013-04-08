@@ -97,9 +97,6 @@ struct ARMCore {
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
-	int instructionWidth;
-
-	ARMInstruction (*loadInstruction)(struct ARMMemory*, uint32_t address, uint32_t* opcodeOut);
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
