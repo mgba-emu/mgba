@@ -3,6 +3,12 @@
 #include "arm.h"
 #include "isa-inlines.h"
 
+enum {
+	PSR_USER_MASK = 0xF0000000,
+	PSR_PRIV_MASK = 0x000000CF,
+	PSR_STATE_MASK = 0x00000020
+};
+
 // Addressing mode 1
 static inline void _barrelShift(struct ARMCore* cpu, uint32_t opcode) {
 	// TODO
@@ -373,7 +379,35 @@ DEFINE_INSTRUCTION_ARM(BX,)
 
 // TODO
 DEFINE_INSTRUCTION_ARM(ILL,) // Illegal opcode
-DEFINE_INSTRUCTION_ARM(MSR,)
+
+DEFINE_INSTRUCTION_ARM(MSR, \
+	int c = opcode & 0x00010000; \
+	int f = opcode & 0x00080000; \
+	int32_t operand; \
+	if (opcode & 0x02000000) { \
+		int rotate = (opcode & 0x00000F00) >> 8; \
+		operand = ARM_ROR(opcode & 0x000000FF, rotate); \
+	} else { \
+		operand = cpu->gprs[opcode & 0x0000000F]; \
+	} \
+	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0); \
+	if (opcode & 0x00400000) { \
+		mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK; \
+		cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask); \
+	} else { \
+		if (mask & PSR_USER_MASK) { \
+			cpu->cpsr.n = operand & 0x80000000; \
+			cpu->cpsr.z = operand & 0x40000000; \
+			cpu->cpsr.c = operand & 0x20000000; \
+			cpu->cpsr.v = operand & 0x10000000; \
+		} \
+		if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) { \
+			ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010)); \
+			cpu->cpsr.i = operand & 0x00000080; \
+			cpu->cpsr.f = operand & 0x00000040; \
+		} \
+	})
+
 DEFINE_INSTRUCTION_ARM(MRS,)
 DEFINE_INSTRUCTION_ARM(MSRI,)
 DEFINE_INSTRUCTION_ARM(MRSI,)
