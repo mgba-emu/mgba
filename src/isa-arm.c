@@ -43,6 +43,7 @@ void ARMStep(struct ARMCore* cpu) {
 	int condition = opcode >> 28;
 	if (condition == 0xE) {
 		instruction(cpu, opcode);
+		return;
 	} else {
 		switch (condition) {
 		case 0x0:
