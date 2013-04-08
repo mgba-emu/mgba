@@ -129,6 +129,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
+		return ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
 		break;
 	case BASE_CART_SRAM:
 		break;
@@ -163,6 +164,7 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
+		return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
 		break;
 	case BASE_CART_SRAM:
 		break;
@@ -197,6 +199,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
+		return ((int8_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1))];
 		break;
 	case BASE_CART_SRAM:
 		break;
@@ -231,6 +234,7 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
+		return ((uint8_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1))];
 		break;
 	case BASE_CART_SRAM:
 		break;
