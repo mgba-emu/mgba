@@ -1,5 +1,6 @@
 #include "arm.h"
 #include "gba.h"
+#include "isa-arm.h"
 
 #include <sys/stat.h>
 #include <fcntl.h>
