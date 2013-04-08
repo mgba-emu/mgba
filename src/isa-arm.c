@@ -126,6 +126,8 @@ void ARMStep(struct ARMCore* cpu) {
 // Instruction definitions
 // Beware pre-processor antics
 
+#define UNUSED(V) (void)(V)
+
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM
 
@@ -188,6 +190,7 @@ void ARMStep(struct ARMCore* cpu) {
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rd = (opcode >> 12) & 0xF; \
 		int rn = (opcode >> 16) & 0xF; \
+		UNUSED(rn); \
 		SHIFTER(cpu, opcode); \
 		BODY; \
 		S_BODY; \
@@ -202,12 +205,17 @@ void ARMStep(struct ARMCore* cpu) {
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, , _immediate, BODY, POST_BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## SI, S_BODY, _immediate, BODY, POST_BODY)
 
+#define DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(NAME, S_BODY, BODY, POST_BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, _barrelShift, BODY, POST_BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, S_BODY, _immediate, BODY, POST_BODY) \
+
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		uint32_t address; \
 		int rn = (opcode >> 16) & 0xF; \
 		int rd = (opcode >> 12) & 0xF; \
 		int rm = opcode & 0xF; \
+		UNUSED(rm); \
 		address = ADDRESS; \
 		BODY; \
 		WRITEBACK;)
@@ -219,7 +227,6 @@ void ARMStep(struct ARMCore* cpu) {
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## PW, ADDR_MODE_2_INDEX(-, SHIFTER(ADDR_MODE_2_RM)), ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_ADDRESS), BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## PU, ADDR_MODE_2_INDEX(+, SHIFTER(ADDR_MODE_2_RM)), , BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## PUW, ADDR_MODE_2_INDEX(+, SHIFTER(ADDR_MODE_2_RM)), ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_ADDRESS), BODY)
-
 
 #define DEFINE_LOAD_STORE_INSTRUCTION_ARM(NAME, BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_SHIFTER_ARM(NAME ## _LSL_, ADDR_MODE_2_LSL, BODY) \
@@ -246,6 +253,18 @@ void ARMStep(struct ARMCore* cpu) {
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## IPW, ADDR_MODE_3_INDEX(-, ADDR_MODE_3_IMMEDIATE), ADDR_MODE_3_WRITEBACK(ADDR_MODE_3_ADDRESS), BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## IPU, ADDR_MODE_3_INDEX(+, ADDR_MODE_3_IMMEDIATE), , BODY) \
 	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## IPUW, ADDR_MODE_3_INDEX(+, ADDR_MODE_3_IMMEDIATE), ADDR_MODE_3_WRITEBACK(ADDR_MODE_3_ADDRESS), BODY) \
+
+#define DEFINE_LOAD_STORE_T_INSTRUCTION_SHIFTER_ARM(NAME, SHIFTER, BODY) \
+	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, SHIFTER(ADDR_MODE_2_RN), ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(-, ADDR_MODE_2_RM)), BODY) \
+	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## U, SHIFTER(ADDR_MODE_2_RN), ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(+, ADDR_MODE_2_RM)), BODY) \
+
+#define DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(NAME, BODY) \
+	DEFINE_LOAD_STORE_T_INSTRUCTION_SHIFTER_ARM(NAME ## _LSL_, ADDR_MODE_2_LSL, BODY) \
+	DEFINE_LOAD_STORE_T_INSTRUCTION_SHIFTER_ARM(NAME ## _LSR_, ADDR_MODE_2_LSR, BODY) \
+	DEFINE_LOAD_STORE_T_INSTRUCTION_SHIFTER_ARM(NAME ## _ASR_, ADDR_MODE_2_ASR, BODY) \
+	DEFINE_LOAD_STORE_T_INSTRUCTION_SHIFTER_ARM(NAME ## _ROR_, ADDR_MODE_2_ROR, BODY) \
+	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## I, ADDR_MODE_2_RN, ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(-, ADDR_MODE_2_IMMEDIATE)), BODY) \
+	DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME ## IU, ADDR_MODE_2_RN, ADDR_MODE_2_WRITEBACK(ADDR_MODE_2_INDEX(+, ADDR_MODE_2_IMMEDIATE)), BODY) \
 
 // TODO
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, ADDRESS, S_PRE, S_POST, BODY) \
@@ -285,10 +304,10 @@ DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand
 DEFINE_ALU_INSTRUCTION_ARM(BIC, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
 	cpu->gprs[rd] = cpu->gprs[rn] & ~cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
 	int32_t aluOut = cpu->gprs[rn] + cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
 	int32_t aluOut = cpu->gprs[rn] - cpu->shifterOperand;, )
 
 DEFINE_ALU_INSTRUCTION_ARM(EOR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
@@ -317,10 +336,10 @@ DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(cpu->gprs[rn], shifterOperand,
 DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, d), \
 	int32_t d = cpu->gprs[rn] - cpu->shifterOperand;, cpu->gprs[rd] = d)
 
-DEFINE_ALU_INSTRUCTION_ARM(TEQ, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TEQ, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
 	int32_t aluOut = cpu->gprs[rn] ^ cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
 	int32_t aluOut = cpu->gprs[rn] & cpu->shifterOperand;, )
 
 // End ALU definitions
@@ -346,16 +365,36 @@ DEFINE_INSTRUCTION_ARM(UMULLS,)
 
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address))
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRBT,)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address))
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address))
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRT,)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]))
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRBT,)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd]))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRT,)
+
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT, \
+	enum PrivilegeMode priv = cpu->privilegeMode; \
+	ARMSetPrivilegeMode(cpu, MODE_USER); \
+	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address); \
+	ARMSetPrivilegeMode(cpu, priv);)
+
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT, \
+	enum PrivilegeMode priv = cpu->privilegeMode; \
+	ARMSetPrivilegeMode(cpu, MODE_USER); \
+	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address); \
+	ARMSetPrivilegeMode(cpu, priv);)
+
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT, \
+	enum PrivilegeMode priv = cpu->privilegeMode; \
+	ARMSetPrivilegeMode(cpu, MODE_USER); \
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]); \
+	ARMSetPrivilegeMode(cpu, priv);)
+
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT, \
+	enum PrivilegeMode priv = cpu->privilegeMode; \
+	ARMSetPrivilegeMode(cpu, MODE_USER); \
+	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]); \
+	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,)
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,)
