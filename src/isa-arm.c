@@ -29,7 +29,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 static const ARMInstruction _armTable[0x1000];
 
 static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
-	uint32_t opcode = memory->load32(memory, address);
+	uint32_t opcode = memory->activeRegion[(address & memory->activeMask) >> 2];
 	*opcodeOut = opcode;
 	return _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 }
@@ -127,7 +127,8 @@ void ARMStep(struct ARMCore* cpu) {
 // Beware pre-processor antics
 
 #define ARM_WRITE_PC \
-	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
+	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
 
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \

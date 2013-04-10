@@ -2,8 +2,9 @@
 #include "gba.h"
 #include "isa-arm.h"
 
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int main(int argc, char** argv) {
 	struct GBA gba;
@@ -11,9 +12,13 @@ int main(int argc, char** argv) {
 	int fd = open("test.rom", O_RDONLY);
 	GBALoadROM(&gba, fd);
 	gba.cpu.gprs[ARM_PC] = 0x08000004;
-	ARMStep(&gba.cpu);
-	ARMStep(&gba.cpu);
+	gba.memory.d.setActiveRegion(&gba.memory.d, gba.cpu.gprs[ARM_PC]);
+	int i;
+	for (i = 0; i < 1024 * 1024 * 16; ++i) {
+		ARMStep(&gba.cpu);
+	}
 	GBADeinit(&gba);
+	close(fd);
 
 	return 0;
 }

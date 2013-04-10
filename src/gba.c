@@ -5,6 +5,8 @@
 
 static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
+static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
+
 void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
 	gba->errstr = 0;
@@ -45,6 +47,10 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 		memory->p->errno = GBA_OUT_OF_MEMORY;
 		memory->p->errstr = GBA_CANNOT_MMAP;
 	}
+
+	memory->d.activeRegion = 0;
+	memory->d.activeMask = 0;
+	memory->d.setActiveRegion = GBASetActiveRegion;
 }
 
 void GBAMemoryDeinit(struct GBAMemory* memory) {
@@ -69,6 +75,38 @@ void GBABoardReset(struct ARMBoard* board) {
 void GBALoadROM(struct GBA* gba, int fd) {
 	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
 	// TODO: error check
+}
+
+static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
+	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+
+	switch (address & ~OFFSET_MASK) {
+	case BASE_BIOS:
+		memory->activeRegion = gbaMemory->bios;
+		memory->activeMask = 0;
+		break;
+	case BASE_WORKING_RAM:
+		memory->activeRegion = gbaMemory->wram;
+		memory->activeMask = SIZE_WORKING_RAM - 1;
+		break;
+	case BASE_WORKING_IRAM:
+		memory->activeRegion = gbaMemory->iwram;
+		memory->activeMask = SIZE_WORKING_IRAM - 1;
+		break;
+	case BASE_CART0:
+	case BASE_CART0_EX:
+	case BASE_CART1:
+	case BASE_CART1_EX:
+	case BASE_CART2:
+	case BASE_CART2_EX:
+		memory->activeRegion = gbaMemory->rom;
+		memory->activeMask = SIZE_CART0 - 1;
+		break;
+	default:
+		memory->activeRegion = 0;
+		memory->activeMask = 0;
+		break;
+	}
 }
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {

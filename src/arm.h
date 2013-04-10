@@ -76,6 +76,10 @@ struct ARMMemory {
 	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value);
 	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value);
 	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value);
+
+	uint32_t* activeRegion;
+	uint32_t activeMask;
+	void (*setActiveRegion)(struct ARMMemory*, uint32_t address);
 };
 
 struct ARMBoard {
