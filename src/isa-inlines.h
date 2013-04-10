@@ -1,7 +1,15 @@
 #ifndef ISA_INLINES_H
 #define ISA_INLINES_H
 
+#include "arm.h"
+
 #define UNUSED(V) (void)(V)
+
+#define DO_4(DIRECTIVE) \
+	DIRECTIVE, \
+	DIRECTIVE, \
+	DIRECTIVE, \
+	DIRECTIVE
 
 #define DO_8(DIRECTIVE) \
 	DIRECTIVE, \
@@ -14,10 +22,7 @@
 	DIRECTIVE
 
 #define DO_256(DIRECTIVE) \
-	DO_8(DO_8(DIRECTIVE)), \
-	DO_8(DO_8(DIRECTIVE)), \
-	DO_8(DO_8(DIRECTIVE)), \
-	DO_8(DO_8(DIRECTIVE))
+	DO_4(DO_8(DO_8(DIRECTIVE)))
 
 #define DO_INTERLACE(LEFT, RIGHT) \
 	LEFT, \
