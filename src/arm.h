@@ -85,6 +85,8 @@ struct ARMMemory {
 struct ARMBoard {
 	struct ARMCore* cpu;
 	void (*reset)(struct ARMBoard* board);
+
+	void (*hitStub)(struct ARMBoard* board, uint32_t opcode);
 };
 
 struct ARMCore {

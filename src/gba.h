@@ -8,6 +8,10 @@ enum GBAError {
 	GBA_OUT_OF_MEMORY = -1
 };
 
+enum GBALogLevel {
+	GBA_LOG_STUB
+};
+
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
 	REGION_WORKING_RAM = 0x2,

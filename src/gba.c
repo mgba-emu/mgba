@@ -1,11 +1,14 @@
 #include "gba.h"
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
 static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
+static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 
 void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
@@ -60,6 +63,7 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 
 void GBABoardInit(struct GBABoard* board) {
 	board->d.reset = GBABoardReset;
+	board->d.hitStub = GBAHitStub;
 }
 
 void GBABoardReset(struct ARMBoard* board) {
@@ -366,4 +370,16 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	default:
 		break;
 	}
+}
+
+void GBALog(int level, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+	printf("\n");
+}
+
+void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
+	GBALog(GBA_LOG_STUB, "Stub opcode: %08x", opcode);
 }
