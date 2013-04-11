@@ -106,3 +106,10 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->board->reset(cpu->board);
 }
 
+void ARMRun(struct ARMCore* cpu) {
+	if (cpu->executionMode) {
+		ThumbStep(cpu);
+	} else {
+		ARMStep(cpu);
+	}
+}

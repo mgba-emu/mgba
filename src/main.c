@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 	gba.memory.d.setActiveRegion(&gba.memory.d, gba.cpu.gprs[ARM_PC]);
 	int i;
 	for (i = 0; i < 1024 * 1024 * 16; ++i) {
-		ARMStep(&gba.cpu);
+		ARMRun(&gba.cpu);
 	}
 	GBADeinit(&gba);
 	close(fd);
