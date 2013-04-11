@@ -24,6 +24,7 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftLSLR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
+	ARM_STUB;
 }
 
 static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
@@ -40,6 +41,7 @@ static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftLSRR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
+	ARM_STUB;
 }
 
 static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
@@ -56,15 +58,18 @@ static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftASRR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
+	ARM_STUB;
 }
 
 static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
 	int immediate = (opcode & 0x00000F80) >> 7;
+	ARM_STUB;
 }
 
 static inline void _shiftRORR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
+	ARM_STUB;
 }
 
 static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
