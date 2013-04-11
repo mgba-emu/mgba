@@ -54,6 +54,14 @@
 
 #define ARM_STUB cpu->board->hitStub(cpu->board, opcode)
 
+#define ARM_WRITE_PC \
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
+	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
+
+#define THUMB_WRITE_PC \
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB) + WORD_SIZE_THUMB; \
+	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
+
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {
 	return mode != MODE_SYSTEM && mode != MODE_USER;
 }

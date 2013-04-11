@@ -126,10 +126,6 @@ void ARMStep(struct ARMCore* cpu) {
 // Instruction definitions
 // Beware pre-processor antics
 
-#define ARM_WRITE_PC \
-	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
-	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
-
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
@@ -412,7 +408,15 @@ DEFINE_INSTRUCTION_ARM(B, \
 	ARM_WRITE_PC;)
 
 DEFINE_INSTRUCTION_ARM(BL, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(BX, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(BX, \
+	int rm = opcode & 0x0000000F; \
+	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001); \
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE; \
+	if (cpu->executionMode == MODE_THUMB) { \
+		THUMB_WRITE_PC;
+	} else { \
+		ARM_WRITE_PC; \
+	})
 
 // End branch definitions
 

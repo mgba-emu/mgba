@@ -1,6 +1,8 @@
 #include "arm.h"
 
+#include "isa-arm.h"
 #include "isa-inlines.h"
+#include "isa-thumb.h"
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
@@ -107,7 +109,7 @@ void ARMReset(struct ARMCore* cpu) {
 }
 
 void ARMRun(struct ARMCore* cpu) {
-	if (cpu->executionMode) {
+	if (cpu->executionMode == MODE_THUMB) {
 		ThumbStep(cpu);
 	} else {
 		ARMStep(cpu);
