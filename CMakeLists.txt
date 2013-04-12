@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 project(GBAc)
-file(GLOB SOURCES *.c)
+set(CMAKE_C_FLAGS_DEBUG "-g -Wall -Wextra")
+file(GLOB SOURCES src/*.c)
 add_executable(gbac ${SOURCES})
