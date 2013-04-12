@@ -3,17 +3,30 @@
 #include "arm.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <strings.h>
 #include "linenoise.h"
 
-enum {
-	CMD_QUIT,
-	CMD_NEXT
+typedef void (DebuggerComamnd)(struct ARMDebugger*);
+
+static void _printStatus(struct ARMDebugger*);
+static void _quit(struct ARMDebugger*);
+
+struct {
+	const char* name;
+	DebuggerComamnd* command;
+} debuggerCommands[] = {
+	{ "i", _printStatus },
+	{ "info", _printStatus },
+	{ "q", _quit },
+	{ "quit", _quit },
+	{ "status", _printStatus },
+	{ 0, 0 }
 };
 
 static inline void _printPSR(union PSR psr) {
-	printf("%08x [%c%c%c%c%c%c%c]\n", psr.packed,
+	printf("%08X [%c%c%c%c%c%c%c]\n", psr.packed,
 		psr.n ? 'N' : '-',
 		psr.z ? 'Z' : '-',
 		psr.c ? 'C' : '-',
@@ -26,7 +39,7 @@ static inline void _printPSR(union PSR psr) {
 static void _printStatus(struct ARMDebugger* debugger) {
 	int r;
 	for (r = 0; r < 4; ++r) {
-		printf("%08x %08x %08x %08x\n",
+		printf("%08X %08X %08X %08X\n",
 			debugger->cpu->gprs[r << 2],
 			debugger->cpu->gprs[(r << 2) + 1],
 			debugger->cpu->gprs[(r << 2) + 1],
@@ -35,13 +48,32 @@ static void _printStatus(struct ARMDebugger* debugger) {
 	_printPSR(debugger->cpu->cpsr);
 }
 
-static int _parse(struct ARMDebugger* debugger, const char* line) {
-	if (strcasecmp(line, "q") == 0 || strcasecmp(line, "quit") == 0) {
-		return CMD_QUIT;
+static void _quit(struct ARMDebugger* debugger) {
+	debugger->state = DEBUGGER_EXITING;
+}
+
+static void _parse(struct ARMDebugger* debugger, const char* line) {
+	char* firstSpace = strchr(line, ' ');
+	size_t cmdLength;
+	if (firstSpace) {
+		cmdLength = line - firstSpace;
+	} else {
+		cmdLength = strlen(line);
+	}
+
+	int i;
+	const char* name;
+	for (i = 0; (name = debuggerCommands[i].name); ++i) {
+		if (strlen(name) != cmdLength) {
+			continue;
+		}
+		if (strncasecmp(name, line, cmdLength) == 0) {
+			debuggerCommands[i].command(debugger);
+			return;
+		}
 	}
 	ARMRun(debugger->cpu);
 	_printStatus(debugger);
-	return CMD_NEXT;
 }
 
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
@@ -52,9 +84,13 @@ void ARMDebuggerEnter(struct ARMDebugger* debugger) {
 	char* line;
 	_printStatus(debugger);
 	while ((line = linenoise("> "))) {
-		if (_parse(debugger, line) == CMD_QUIT) {
+		_parse(debugger, line);
+		free(line);
+		switch (debugger->state) {
+		case DEBUGGER_EXITING:
+			return;
+		default:
 			break;
 		}
-		free(line);
 	}
 }
