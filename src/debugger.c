@@ -42,7 +42,7 @@ static void _printStatus(struct ARMDebugger* debugger) {
 		printf("%08X %08X %08X %08X\n",
 			debugger->cpu->gprs[r << 2],
 			debugger->cpu->gprs[(r << 2) + 1],
-			debugger->cpu->gprs[(r << 2) + 1],
+			debugger->cpu->gprs[(r << 2) + 2],
 			debugger->cpu->gprs[(r << 2) + 3]);
 	}
 	_printPSR(debugger->cpu->cpsr);
