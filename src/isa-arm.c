@@ -520,16 +520,11 @@ DEFINE_INSTRUCTION_ARM(MSR, \
 		cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask); \
 	} else { \
 		if (mask & PSR_USER_MASK) { \
-			cpu->cpsr.n = operand & 0x80000000; \
-			cpu->cpsr.z = operand & 0x40000000; \
-			cpu->cpsr.c = operand & 0x20000000; \
-			cpu->cpsr.v = operand & 0x10000000; \
+			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK); \
 		} \
 		if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) { \
 			ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010)); \
-			cpu->cpsr.priv = cpu->privilegeMode; \
-			cpu->cpsr.i = operand & 0x00000080; \
-			cpu->cpsr.f = operand & 0x00000040; \
+			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK); \
 		} \
 	})
 
