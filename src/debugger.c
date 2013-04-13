@@ -29,6 +29,7 @@ typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakInto(struct ARMDebugger*, struct DebugVector*);
 static void _continue(struct ARMDebugger*, struct DebugVector*);
+static void _next(struct ARMDebugger*, struct DebugVector*);
 static void _print(struct ARMDebugger*, struct DebugVector*);
 static void _printHex(struct ARMDebugger*, struct DebugVector*);
 static void _printStatus(struct ARMDebugger*, struct DebugVector*);
@@ -45,6 +46,7 @@ struct {
 	{ "continue", _continue },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
+	{ "n", _next },
 	{ "p", _print },
 	{ "print", _print },
 	{ "p/x", _printHex },
@@ -86,6 +88,12 @@ static void _breakInto(struct ARMDebugger* debugger, struct DebugVector* dv) {
 static void _continue(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	(void)(dv);
 	debugger->state = DEBUGGER_RUNNING;
+}
+
+static void _next(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	(void)(dv);
+	ARMRun(debugger->cpu);
+	_printStatus(debugger, 0);
 }
 
 static void _print(struct ARMDebugger* debugger, struct DebugVector* dv) {
@@ -413,7 +421,7 @@ static void _DVFree(struct DebugVector* dv) {
 	}
 }
 
-static void _parse(struct ARMDebugger* debugger, const char* line) {
+static int _parse(struct ARMDebugger* debugger, const char* line) {
 	char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	struct DebugVector* dv = 0;
@@ -423,7 +431,7 @@ static void _parse(struct ARMDebugger* debugger, const char* line) {
 		if (dv->type == ERROR_TYPE) {
 			printf("Parse error\n");
 			_DVFree(dv);
-			return;
+			return 0;
 		}
 	} else {
 		cmdLength = strlen(line);
@@ -438,13 +446,12 @@ static void _parse(struct ARMDebugger* debugger, const char* line) {
 		if (strncasecmp(name, line, cmdLength) == 0) {
 			debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
-			linenoiseHistoryAdd(line);
-			return;
+			return 1;
 		}
 	}
 	_DVFree(dv);
-	ARMRun(debugger->cpu);
-	_printStatus(debugger, 0);
+	printf("Command not found\n");
+	return 0;
 }
 
 static void _commandLine(struct ARMDebugger* debugger) {
@@ -456,8 +463,20 @@ static void _commandLine(struct ARMDebugger* debugger) {
 			debugger->state = DEBUGGER_EXITING;
 			return;
 		}
-		_parse(debugger, line);
-		free(line);
+		if (!line[0]) {
+			if (debugger->lastCommand) {
+				_parse(debugger, debugger->lastCommand);
+			}
+		} else {
+			linenoiseHistoryAdd(line);
+			if (_parse(debugger, line)) {
+				char* oldLine = debugger->lastCommand;
+				debugger->lastCommand = line;
+				free(oldLine);
+			} else {
+				free(line);
+			}
+		}
 	}
 }
 

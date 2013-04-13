@@ -10,6 +10,8 @@ enum DebuggerState {
 struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
+
+	char* lastCommand;
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
