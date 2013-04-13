@@ -277,7 +277,9 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA, \
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_INSTRUCTION_THUMB(B ## COND, \
 		if (ARM_COND_ ## COND) { \
-			ARM_STUB; \
+			int8_t immediate = opcode; \
+			cpu->gprs[ARM_PC] += immediate << 1; \
+			THUMB_WRITE_PC; \
 		})
 
 DEFINE_CONDITIONAL_BRANCH_THUMB(EQ)
