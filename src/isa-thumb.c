@@ -90,15 +90,24 @@ void ThumbStep(struct ARMCore* cpu) {
 	COUNT_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1, \
-		if (!immediate) { \
-			cpu->gprs[rd] = cpu->gprs[rm]; \
-		} else { \
-			cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate)); \
-			cpu->gprs[rd] = cpu->gprs[rm] << immediate; \
-		} \
-		THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
+	if (!immediate) { \
+		cpu->gprs[rd] = cpu->gprs[rm]; \
+	} else { \
+		cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate)); \
+		cpu->gprs[rd] = cpu->gprs[rm] << immediate; \
+	} \
+	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1, ARM_STUB)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
+	if (!immediate) { \
+		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]); \
+		cpu->gprs[rd] = 0; \
+	} else { \
+		cpu->cpsr.c = cpu->gprs[rm] & (1 << (immediate - 1)); \
+		cpu->gprs[rd] = ((uint32_t) cpu->gprs[rm]) >> immediate; \
+	} \
+	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
+
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, ARM_STUB)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[rm] + immediate * 4))
