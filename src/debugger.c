@@ -27,6 +27,7 @@ typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakInto(struct ARMDebugger*, struct DebugVector*);
 static void _print(struct ARMDebugger*, struct DebugVector*);
+static void _printHex(struct ARMDebugger*, struct DebugVector*);
 static void _printStatus(struct ARMDebugger*, struct DebugVector*);
 static void _quit(struct ARMDebugger*, struct DebugVector*);
 
@@ -36,6 +37,8 @@ struct {
 } debuggerCommands[] = {
 	{ "p", _print },
 	{ "print", _print },
+	{ "p/x", _printHex },
+	{ "print/x", _printHex },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "q", _quit },
@@ -73,6 +76,14 @@ static void _print(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	(void)(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" %u", dv->intValue);
+	}
+	printf("\n");
+}
+
+static void _printHex(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	(void)(debugger);
+	for ( ; dv; dv = dv->next) {
+		printf(" 0x%08X", dv->intValue);
 	}
 	printf("\n");
 }
