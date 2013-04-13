@@ -319,7 +319,7 @@ DEFINE_INSTRUCTION_THUMB(BKPT, ARM_STUB)
 DEFINE_INSTRUCTION_THUMB(B, ARM_STUB)
 DEFINE_INSTRUCTION_THUMB(BL1, \
 	int16_t immediate = (opcode & 0x07FF) << 7; \
-	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] + (((int32_t) immediate) << 4);)
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] + (((int32_t) immediate) << 5);)
 
 DEFINE_INSTRUCTION_THUMB(BL2, \
 	uint16_t immediate = (opcode & 0x07FF) << 1; \
