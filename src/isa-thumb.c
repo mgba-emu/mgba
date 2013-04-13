@@ -22,6 +22,12 @@ void ThumbStep(struct ARMCore* cpu) {
 	cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
 	cpu->cpsr.v = ARM_V_ADDITION(M, N, D);
 
+#define THUMB_SUBTRACTION_S(M, N, D) \
+	cpu->cpsr.n = ARM_SIGN(D); \
+	cpu->cpsr.z = !(D); \
+	cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
+	cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D);
+
 #define THUMB_NEUTRAL_S(M, N, D) \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D);
@@ -162,7 +168,7 @@ DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, ARM_STUB)
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rd], immediate))
 
 
-DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, ARM_STUB)
+DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, int aluOut = cpu->gprs[rd] - immediate; THUMB_SUBTRACTION_S(cpu->gprs[rd], immediate, aluOut))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(MOV1, cpu->gprs[rd] = immediate; THUMB_NEUTRAL_S(, , cpu->gprs[rd]))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, ARM_STUB)
 
