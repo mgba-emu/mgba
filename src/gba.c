@@ -23,6 +23,7 @@ void GBAInit(struct GBA* gba) {
 	GBAMemoryInit(&gba->memory);
 	ARMAssociateMemory(&gba->cpu, &gba->memory.d);
 
+	gba->board.p = gba;
 	GBABoardInit(&gba->board);
 	ARMAssociateBoard(&gba->cpu, &gba->board.d);
 
@@ -390,5 +391,10 @@ void GBALog(int level, const char* format, ...) {
 
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 	GBALog(GBA_LOG_STUB, "Stub opcode: %08x", opcode);
-	abort();
+	struct GBABoard* gbaBoard = (struct GBABoard*) board;
+	if (!gbaBoard->p->debugger) {
+		abort();
+	} else {
+		ARMDebuggerEnter(gbaBoard->p->debugger);
+	}
 }

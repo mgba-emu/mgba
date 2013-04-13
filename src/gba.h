@@ -85,6 +85,7 @@ struct GBAMemory {
 
 struct GBABoard {
 	struct ARMBoard d;
+	struct GBA* p;
 };
 
 struct GBA {

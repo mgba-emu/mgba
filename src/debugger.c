@@ -447,6 +447,20 @@ static void _parse(struct ARMDebugger* debugger, const char* line) {
 	_printStatus(debugger, 0);
 }
 
+static void _commandLine(struct ARMDebugger* debugger) {
+	char* line;
+	_printStatus(debugger, 0);
+	while (debugger->state == DEBUGGER_PAUSED) {
+		line = linenoise("> ");
+		if (!line) {
+			debugger->state = DEBUGGER_EXITING;
+			return;
+		}
+		_parse(debugger, line);
+		free(line);
+	}
+}
+
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_PAUSED;
@@ -459,7 +473,7 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		}
 		switch (debugger->state) {
 		case DEBUGGER_PAUSED:
-			ARMDebuggerEnter(debugger);
+			_commandLine(debugger);
 			break;
 		case DEBUGGER_EXITING:
 			return;
@@ -471,15 +485,5 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 }
 
 void ARMDebuggerEnter(struct ARMDebugger* debugger) {
-	char* line;
-	_printStatus(debugger, 0);
-	while (debugger->state == DEBUGGER_PAUSED) {
-		line = linenoise("> ");
-		if (!line) {
-			debugger->state = DEBUGGER_EXITING;
-			return;
-		}
-		_parse(debugger, line);
-		free(line);
-	}
+	debugger->state = DEBUGGER_PAUSED;
 }
