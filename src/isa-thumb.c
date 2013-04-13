@@ -76,12 +76,22 @@ void ThumbStep(struct ARMCore* cpu) {
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB(NAME, IMMEDIATE, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		int immediate = IMMEDIATE; \
+		int rd = opcode & 0x0007; \
+		int rm = (opcode >> 3) & 0x0007; \
 		BODY;)
 
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1, ARM_STUB)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1, \
+		if (!immediate) { \
+			cpu->gprs[rd] = cpu->gprs[rm]; \
+		} else { \
+			cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate)); \
+			cpu->gprs[rd] = cpu->gprs[rm] << immediate; \
+		} \
+		THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
+
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1, ARM_STUB)
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, ARM_STUB)
 
