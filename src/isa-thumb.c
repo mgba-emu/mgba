@@ -16,6 +16,12 @@ void ThumbStep(struct ARMCore* cpu) {
 // Instruction definitions
 // Beware pre-processor insanity
 
+#define THUMB_ADDITION_S(M, N, D) \
+	cpu->cpsr.n = ARM_SIGN(D); \
+	cpu->cpsr.z = !(D); \
+	cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
+	cpu->cpsr.v = ARM_V_ADDITION(M, N, D); \
+
 #define THUMB_NEUTRAL_S(M, N, D) \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D);
@@ -133,7 +139,11 @@ DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, ARM_STUB)
 #define DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
 
-DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, ARM_STUB)
+DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, \
+	int d = cpu->gprs[rd]; \
+	cpu->gprs[rd] = d + immediate; \
+	THUMB_ADDITION_S(d, immediate, cpu->gprs[rd]))
+
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, ARM_STUB)
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(MOV1, cpu->gprs[rd] = immediate; THUMB_NEUTRAL_S(, , cpu->gprs[rd]))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, ARM_STUB)
