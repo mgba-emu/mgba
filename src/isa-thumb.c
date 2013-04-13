@@ -182,7 +182,22 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(EOR, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2, ARM_STUB)
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2, ARM_STUB)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2, \
+		int rs = cpu->gprs[rn] & 0xFF; \
+		if (rs) { \
+			if (rs < 32) { \
+				cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1)); \
+				cpu->gprs[rd] >>= rs; \
+			} else { \
+				cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]); \
+				if (cpu->cpsr.c) { \
+					cpu->gprs[rd] = 0xFFFFFFFF; \
+				} else { \
+					cpu->gprs[rd] = 0; \
+				} \
+			} \
+		})
+
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR, ARM_STUB)
