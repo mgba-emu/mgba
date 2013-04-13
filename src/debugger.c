@@ -23,26 +23,34 @@ struct DebugVector {
 	};
 };
 
+static const char* ERROR_MISSING_ARGS = "Arguments missing";
+
 typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakInto(struct ARMDebugger*, struct DebugVector*);
 static void _print(struct ARMDebugger*, struct DebugVector*);
 static void _printHex(struct ARMDebugger*, struct DebugVector*);
 static void _printStatus(struct ARMDebugger*, struct DebugVector*);
+static void _readByte(struct ARMDebugger*, struct DebugVector*);
+static void _readHalfword(struct ARMDebugger*, struct DebugVector*);
+static void _readWord(struct ARMDebugger*, struct DebugVector*);
 static void _quit(struct ARMDebugger*, struct DebugVector*);
 
 struct {
 	const char* name;
 	DebuggerComamnd* command;
 } debuggerCommands[] = {
+	{ "i", _printStatus },
+	{ "info", _printStatus },
 	{ "p", _print },
 	{ "print", _print },
 	{ "p/x", _printHex },
 	{ "print/x", _printHex },
-	{ "i", _printStatus },
-	{ "info", _printStatus },
 	{ "q", _quit },
 	{ "quit", _quit },
+	{ "rb", _readByte },
+	{ "rh", _readHalfword },
+	{ "rw", _readWord },
 	{ "status", _printStatus },
 	{ "x", _breakInto },
 	{ 0, 0 }
@@ -123,6 +131,36 @@ static void _printStatus(struct ARMDebugger* debugger, struct DebugVector* dv) {
 static void _quit(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	(void)(dv);
 	debugger->state = DEBUGGER_EXITING;
+}
+
+static void _readByte(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint8_t value = debugger->cpu->memory->loadU8(debugger->cpu->memory, address);
+	printf(" 0x%02X\n", value);
+}
+
+static void _readHalfword(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint16_t value = debugger->cpu->memory->loadU16(debugger->cpu->memory, address);
+	printf(" 0x%04X\n", value);
+}
+
+static void _readWord(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = debugger->cpu->memory->load32(debugger->cpu->memory, address);
+	printf(" 0x%08X\n", value);
 }
 
 enum _DVParseState {
