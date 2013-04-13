@@ -203,7 +203,7 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3, cpu->gprs[rd] = cpu->gprs[rm])
 	COUNT_3(DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
 
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[ARM_PC] + immediate))
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, ARM_STUB)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[ARM_SP] + immediate))
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory->store32(cpu->memory, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd]))
 
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, ARM_STUB)
