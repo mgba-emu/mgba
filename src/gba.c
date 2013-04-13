@@ -1,7 +1,10 @@
 #include "gba.h"
 
+#include "debugger.h"
+
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -74,6 +77,11 @@ void GBABoardReset(struct ARMBoard* board) {
 	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+}
+
+void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
+	ARMDebuggerInit(debugger, &gba->cpu);
+	gba->debugger = debugger;
 }
 
 void GBALoadROM(struct GBA* gba, int fd) {
@@ -382,4 +390,5 @@ void GBALog(int level, const char* format, ...) {
 
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 	GBALog(GBA_LOG_STUB, "Stub opcode: %08x", opcode);
+	abort();
 }

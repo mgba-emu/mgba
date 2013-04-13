@@ -28,6 +28,7 @@ static const char* ERROR_MISSING_ARGS = "Arguments missing";
 typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakInto(struct ARMDebugger*, struct DebugVector*);
+static void _continue(struct ARMDebugger*, struct DebugVector*);
 static void _print(struct ARMDebugger*, struct DebugVector*);
 static void _printHex(struct ARMDebugger*, struct DebugVector*);
 static void _printStatus(struct ARMDebugger*, struct DebugVector*);
@@ -40,6 +41,8 @@ struct {
 	const char* name;
 	DebuggerComamnd* command;
 } debuggerCommands[] = {
+	{ "c", _continue },
+	{ "continue", _continue },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "p", _print },
@@ -78,6 +81,11 @@ static void _breakInto(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	sig_t oldSignal = signal(SIGTRAP, _handleDeath);
 	kill(getpid(), SIGTRAP);
 	signal(SIGTRAP, oldSignal);
+}
+
+static void _continue(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	(void)(dv);
+	debugger->state = DEBUGGER_RUNNING;
 }
 
 static void _print(struct ARMDebugger* debugger, struct DebugVector* dv) {
@@ -441,19 +449,37 @@ static void _parse(struct ARMDebugger* debugger, const char* line) {
 
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
+	debugger->state = DEBUGGER_PAUSED;
+}
+
+void ARMDebuggerRun(struct ARMDebugger* debugger) {
+	while (debugger->state != DEBUGGER_EXITING) {
+		while (debugger->state == DEBUGGER_RUNNING) {
+			ARMRun(debugger->cpu);
+		}
+		switch (debugger->state) {
+		case DEBUGGER_PAUSED:
+			ARMDebuggerEnter(debugger);
+			break;
+		case DEBUGGER_EXITING:
+			return;
+		default:
+			// Should never be reached
+			break;
+		}
+	}
 }
 
 void ARMDebuggerEnter(struct ARMDebugger* debugger) {
 	char* line;
 	_printStatus(debugger, 0);
-	while ((line = linenoise("> "))) {
+	while (debugger->state == DEBUGGER_PAUSED) {
+		line = linenoise("> ");
+		if (!line) {
+			debugger->state = DEBUGGER_EXITING;
+			return;
+		}
 		_parse(debugger, line);
 		free(line);
-		switch (debugger->state) {
-		case DEBUGGER_EXITING:
-			return;
-		default:
-			break;
-		}
 	}
 }

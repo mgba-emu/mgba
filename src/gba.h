@@ -92,6 +92,8 @@ struct GBA {
 	struct GBABoard board;
 	struct GBAMemory memory;
 
+	struct ARMDebugger* debugger;
+
 	enum GBAError errno;
 	const char* errstr;
 };
@@ -104,6 +106,8 @@ void GBAMemoryDeinit(struct GBAMemory* memory);
 
 void GBABoardInit(struct GBABoard* board);
 void GBABoardReset(struct ARMBoard* board);
+
+void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
 void GBALoadROM(struct GBA* gba, int fd);
 

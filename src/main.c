@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
 	GBALoadROM(&gba, fd);
 	gba.cpu.gprs[ARM_PC] = 0x08000004;
 	gba.memory.d.setActiveRegion(&gba.memory.d, gba.cpu.gprs[ARM_PC]);
-	ARMDebuggerInit(&debugger, &gba.cpu);
-	ARMDebuggerEnter(&debugger);
+	GBAAttachDebugger(&gba, &debugger);
+	ARMDebuggerRun(&debugger);
 	GBADeinit(&gba);
 	close(fd);
 

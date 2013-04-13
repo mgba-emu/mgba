@@ -13,6 +13,7 @@ struct ARMDebugger {
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
+void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*);
 
 #endif
