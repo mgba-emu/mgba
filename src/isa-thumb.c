@@ -20,11 +20,17 @@ void ThumbStep(struct ARMCore* cpu) {
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D); \
 	cpu->cpsr.c = ARM_CARRY_FROM(M, N, D); \
-	cpu->cpsr.v = ARM_V_ADDITION(M, N, D); \
+	cpu->cpsr.v = ARM_V_ADDITION(M, N, D);
 
 #define THUMB_NEUTRAL_S(M, N, D) \
 	cpu->cpsr.n = ARM_SIGN(D); \
 	cpu->cpsr.z = !(D);
+
+#define THUMB_ADDITION(D, M, N) \
+	int n = N; \
+	int m = M; \
+	D = M + N; \
+	THUMB_ADDITION_S(m, n, D)
 
 #define APPLY(F, ...) F(__VA_ARGS__)
 
@@ -120,12 +126,14 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory->store16(cpu->memory, cp
 #define DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB(NAME, RM, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		int rm = RM; \
+		int rd = opcode & 0x0007; \
+		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
 
 #define DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_3(DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB, NAME ## 3_R, BODY)
 
-DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD, ARM_STUB)
+DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
 DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB, ARM_STUB)
 
 #define DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB(NAME, IMMEDIATE, BODY) \
@@ -138,10 +146,7 @@ DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB, ARM_STUB)
 #define DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_3(DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB, NAME ## 1_, BODY)
 
-DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(ADD, \
-	int n = cpu->gprs[rn]; \
-	cpu->gprs[rd] = n + immediate; \
-	THUMB_ADDITION_S(n, immediate, cpu->gprs[rd]))
+DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], immediate))
 
 DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, ARM_STUB)
 
@@ -154,10 +159,8 @@ DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, ARM_STUB)
 #define DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
 
-DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, \
-	int d = cpu->gprs[rd]; \
-	cpu->gprs[rd] = d + immediate; \
-	THUMB_ADDITION_S(d, immediate, cpu->gprs[rd]))
+DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rd], immediate))
+
 
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, ARM_STUB)
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(MOV1, cpu->gprs[rd] = immediate; THUMB_NEUTRAL_S(, , cpu->gprs[rd]))
