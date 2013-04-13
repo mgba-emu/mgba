@@ -2,14 +2,17 @@
 
 #include "arm.h"
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <unistd.h>
 #include "linenoise.h"
 
 typedef void (DebuggerComamnd)(struct ARMDebugger*);
 
+static void _breakInto(struct ARMDebugger*);
 static void _printStatus(struct ARMDebugger*);
 static void _quit(struct ARMDebugger*);
 
@@ -22,6 +25,7 @@ struct {
 	{ "q", _quit },
 	{ "quit", _quit },
 	{ "status", _printStatus },
+	{ "x", _breakInto },
 	{ 0, 0 }
 };
 
@@ -34,6 +38,18 @@ static inline void _printPSR(union PSR psr) {
 		psr.i ? 'I' : '-',
 		psr.f ? 'F' : '-',
 		psr.t ? 'T' : '-');
+}
+
+static void _handleDeath(int sig) {
+	(void)(sig);
+	printf("No debugger attached!\n");
+}
+
+static void _breakInto(struct ARMDebugger* debugger) {
+	(void)(debugger);
+	sig_t oldSignal = signal(SIGTRAP, _handleDeath);
+	kill(getpid(), SIGTRAP);
+	signal(SIGTRAP, oldSignal);
 }
 
 static void _printStatus(struct ARMDebugger* debugger) {
