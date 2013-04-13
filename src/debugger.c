@@ -52,6 +52,17 @@ static void _breakInto(struct ARMDebugger* debugger) {
 	signal(SIGTRAP, oldSignal);
 }
 
+static inline void _printLine(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+	// TODO: write a disassembler
+	if (mode == MODE_ARM) {
+		uint32_t instruction = debugger->cpu->memory->load32(debugger->cpu->memory, address);
+		printf("%08X\n", instruction);
+	} else {
+		uint16_t instruction = debugger->cpu->memory->loadU16(debugger->cpu->memory, address);
+		printf("%04X\n", instruction);
+	}
+}
+
 static void _printStatus(struct ARMDebugger* debugger) {
 	int r;
 	for (r = 0; r < 4; ++r) {
@@ -62,6 +73,14 @@ static void _printStatus(struct ARMDebugger* debugger) {
 			debugger->cpu->gprs[(r << 2) + 3]);
 	}
 	_printPSR(debugger->cpu->cpsr);
+	int instructionLength;
+	enum ExecutionMode mode = debugger->cpu->cpsr.t;
+	if (mode == MODE_ARM) {
+		instructionLength = WORD_SIZE_ARM;
+	} else {
+		instructionLength = WORD_SIZE_THUMB;
+	}
+	_printLine(debugger, debugger->cpu->gprs[ARM_PC] - instructionLength, mode);
 }
 
 static void _quit(struct ARMDebugger* debugger) {
