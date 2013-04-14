@@ -12,6 +12,7 @@ struct ARMDebugger {
 	struct ARMCore* cpu;
 
 	char* lastCommand;
+	struct DebugBreakpoint* breakpoints;
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
