@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -22,6 +23,8 @@ static void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
+
+static void _GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
 
 void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
@@ -58,6 +61,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
+	memset(memory->io, 0, sizeof(memory->io));
 
 	if (!memory->wram || !memory->iwram) {
 		GBAMemoryDeinit(memory);
@@ -344,6 +348,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 		((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1] = value;
 		break;
 	case BASE_IO:
+		_GBAIOWrite(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
 		break;
@@ -406,5 +411,13 @@ void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 		abort();
 	} else {
 		ARMDebuggerEnter(gbaBoard->p->debugger);
+	}
+}
+
+static void _GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
+	switch (address) {
+	default:
+		GBALog(GBA_LOG_STUB, "Stub I/O register: %03x", address);
+		break;
 	}
 }
