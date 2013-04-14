@@ -38,6 +38,12 @@ void ThumbStep(struct ARMCore* cpu) {
 	D = M + N; \
 	THUMB_ADDITION_S(m, n, D)
 
+#define THUMB_SUBTRACTION(D, M, N) \
+	int n = N; \
+	int m = M; \
+	D = M - N; \
+	THUMB_SUBTRACTION_S(m, n, D)
+
 #define APPLY(F, ...) F(__VA_ARGS__)
 
 #define COUNT_1(EMITTER, PREFIX, ...) \
@@ -166,11 +172,9 @@ DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, ARM_STUB)
 	COUNT_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
 
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rd], immediate))
-
-
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, int aluOut = cpu->gprs[rd] - immediate; THUMB_SUBTRACTION_S(cpu->gprs[rd], immediate, aluOut))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(MOV1, cpu->gprs[rd] = immediate; THUMB_NEUTRAL_S(, , cpu->gprs[rd]))
-DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, ARM_STUB)
+DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rd], immediate))
 
 #define DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(NAME, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
