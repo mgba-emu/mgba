@@ -215,10 +215,10 @@ struct GBAMemory {
 	struct ARMMemory d;
 	struct GBA* p;
 
-	int32_t* bios;
-	int32_t* wram;
-	int32_t* iwram;
-	int32_t* rom;
+	uint32_t* bios;
+	uint32_t* wram;
+	uint32_t* iwram;
+	uint32_t* rom;
 	uint16_t io[SIZE_IO >> 1];
 };
 
