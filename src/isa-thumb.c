@@ -353,7 +353,8 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, \
 	, \
 	cpu->gprs[ARM_PC] = cpu->memory->load32(cpu->memory, address) & 0xFFFFFFFE; \
 	address += 4;, \
-	cpu->gprs[ARM_SP] = address)
+	cpu->gprs[ARM_SP] = address; \
+	THUMB_WRITE_PC;)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, \
 	opcode & 0x00FF, \
