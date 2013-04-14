@@ -7,16 +7,6 @@
 
 static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
-static int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
-static int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
-static uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address);
-static int8_t GBALoad8(struct ARMMemory* memory, uint32_t address);
-static uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address);
-
-static void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value);
-static void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
-static void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
-
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 
 void GBAMemoryInit(struct GBAMemory* memory) {
