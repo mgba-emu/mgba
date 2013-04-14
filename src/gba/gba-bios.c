@@ -58,5 +58,5 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 }
 
 void GBASwi32(struct ARMBoard* board, int immediate) {
-	GBASwi32(board, immediate >> 8);
+	GBASwi32(board, immediate >> 16);
 }
