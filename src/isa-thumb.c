@@ -181,7 +181,23 @@ DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND, cpu->gprs[rd] = cpu->gprs[rd] & cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(EOR, cpu->gprs[rd] = cpu->gprs[rd] ^ cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2, ARM_STUB)
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2, ARM_STUB)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2, \
+		int rs = cpu->gprs[rn] & 0xFF; \
+		if (rs) { \
+			if (rs < 32) { \
+				cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1)); \
+				cpu->gprs[rd] = (uint32_t) cpu->gprs[rd] >> rs; \
+			} else { \
+				if (rs > 32) { \
+					cpu->cpsr.c = 0; \
+				} else { \
+					cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]); \
+				} \
+				cpu->gprs[rd] = 0; \
+			} \
+		} \
+		THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
+
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2, \
 		int rs = cpu->gprs[rn] & 0xFF; \
 		if (rs) { \
