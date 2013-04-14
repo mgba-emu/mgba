@@ -21,6 +21,9 @@ static void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value
 static void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
 static void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
 
+static void GBASwi16(struct ARMBoard* board, int immediate);
+static void GBASwi32(struct ARMBoard* board, int immediate);
+
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 
@@ -81,6 +84,8 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 
 void GBABoardInit(struct GBABoard* board) {
 	board->d.reset = GBABoardReset;
+	board->d.swi16 = GBASwi16;
+	board->d.swi32 = GBASwi32;
 	board->d.hitStub = GBAHitStub;
 }
 
@@ -394,6 +399,17 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	default:
 		break;
 	}
+}
+
+static void GBASwi16(struct ARMBoard* board, int immediate) {
+	switch (immediate) {
+	default:
+		GBALog(GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
+	}
+}
+
+static void GBASwi32(struct ARMBoard* board, int immediate) {
+	GBASwi32(board, immediate >> 8);
 }
 
 void GBALog(int level, const char* format, ...) {

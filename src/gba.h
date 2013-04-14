@@ -251,4 +251,6 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
 void GBALoadROM(struct GBA* gba, int fd);
 
+void GBALog(int level, const char* format, ...);
+
 #endif
