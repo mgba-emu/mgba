@@ -129,7 +129,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, ARM_STUB)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[rm] + immediate * 4))
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, ARM_STUB)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, cpu->gprs[rm] + immediate))
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, cpu->gprs[rm] + immediate * 2))
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory->store32(cpu->memory, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd]))
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory->store8(cpu->memory, cpu->gprs[rm] + immediate, cpu->gprs[rd]))
