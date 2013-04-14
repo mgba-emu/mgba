@@ -390,7 +390,20 @@ DEFINE_INSTRUCTION_THUMB(BL2, \
 	cpu->gprs[ARM_LR] = pc - 1; \
 	THUMB_WRITE_PC;)
 
-DEFINE_INSTRUCTION_THUMB(BX, ARM_STUB)
+DEFINE_INSTRUCTION_THUMB(BX, \
+	int rm = opcode & 0x0000000F; \
+	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
+	int misalign = 0;
+	if (rm == ARM_PC) {
+		misalign = cpu->gprs[rm] & 0x00000002;
+	}
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE - misalign; \
+	if (cpu->executionMode == MODE_THUMB) { \
+		THUMB_WRITE_PC; \
+	} else { \
+		ARM_WRITE_PC; \
+	})
+
 DEFINE_INSTRUCTION_THUMB(SWI, ARM_STUB)
 
 #define DECLARE_INSTRUCTION_THUMB(EMITTER, NAME) \
