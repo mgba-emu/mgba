@@ -112,14 +112,4 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
 void GBALoadROM(struct GBA* gba, int fd);
 
-int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
-int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
-uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address);
-int8_t GBALoad8(struct ARMMemory* memory, uint32_t address);
-uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address);
-
-void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value);
-void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
-void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
-
 #endif
