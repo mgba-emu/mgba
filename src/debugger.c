@@ -23,6 +23,11 @@ struct DebugVector {
 	};
 };
 
+struct DebugBreakpoint {
+	struct DebugBreakpoint* next;
+	int32_t address;
+};
+
 static const char* ERROR_MISSING_ARGS = "Arguments missing";
 
 typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
@@ -33,15 +38,18 @@ static void _next(struct ARMDebugger*, struct DebugVector*);
 static void _print(struct ARMDebugger*, struct DebugVector*);
 static void _printHex(struct ARMDebugger*, struct DebugVector*);
 static void _printStatus(struct ARMDebugger*, struct DebugVector*);
+static void _quit(struct ARMDebugger*, struct DebugVector*);
 static void _readByte(struct ARMDebugger*, struct DebugVector*);
 static void _readHalfword(struct ARMDebugger*, struct DebugVector*);
 static void _readWord(struct ARMDebugger*, struct DebugVector*);
-static void _quit(struct ARMDebugger*, struct DebugVector*);
+static void _setBreakpoint(struct ARMDebugger*, struct DebugVector*);
 
 struct {
 	const char* name;
 	DebuggerComamnd* command;
 } debuggerCommands[] = {
+	{ "b", _setBreakpoint },
+	{ "break", _setBreakpoint },
 	{ "c", _continue },
 	{ "continue", _continue },
 	{ "i", _printStatus },
@@ -177,6 +185,36 @@ static void _readWord(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	uint32_t address = dv->intValue;
 	uint32_t value = debugger->cpu->memory->load32(debugger->cpu->memory, address);
 	printf(" 0x%08X\n", value);
+}
+
+static void _setBreakpoint(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	struct DebugBreakpoint* breakpoint = malloc(sizeof(struct DebugBreakpoint));
+	breakpoint->address = address;
+	breakpoint->next = debugger->breakpoints;
+	debugger->breakpoints = breakpoint;
+}
+
+static void _checkBreakpoints(struct ARMDebugger* debugger) {
+	struct DebugBreakpoint* breakpoint;
+	int instructionLength;
+	enum ExecutionMode mode = debugger->cpu->cpsr.t;
+	if (mode == MODE_ARM) {
+		instructionLength = WORD_SIZE_ARM;
+	} else {
+		instructionLength = WORD_SIZE_THUMB;
+	}
+	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
+		if (breakpoint->address + instructionLength == debugger->cpu->gprs[ARM_PC]) {
+			debugger->state = DEBUGGER_PAUSED;
+			printf("Hit breakpoint\n");
+			break;
+		}
+	}
 }
 
 enum _DVParseState {
@@ -487,8 +525,15 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	while (debugger->state != DEBUGGER_EXITING) {
-		while (debugger->state == DEBUGGER_RUNNING) {
-			ARMRun(debugger->cpu);
+		if (!debugger->breakpoints) {
+			while (debugger->state == DEBUGGER_RUNNING) {
+				ARMRun(debugger->cpu);
+			}
+		} else {
+			while (debugger->state == DEBUGGER_RUNNING) {
+				ARMRun(debugger->cpu);
+				_checkBreakpoints(debugger);
+			}
 		}
 		switch (debugger->state) {
 		case DEBUGGER_PAUSED:
