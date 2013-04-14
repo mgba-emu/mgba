@@ -521,6 +521,7 @@ static void _commandLine(struct ARMDebugger* debugger) {
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_PAUSED;
+	debugger->lastCommand = 0;
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
