@@ -126,7 +126,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory->load32(c
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, ARM_STUB)
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, ARM_STUB)
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory->store32(cpu->memory, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd]))
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, ARM_STUB)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory->store8(cpu->memory, cpu->gprs[rm] + immediate, cpu->gprs[rd]))
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory->store16(cpu->memory, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd]))
 
 #define DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB(NAME, RM, BODY) \
