@@ -17,8 +17,6 @@ enum {
 
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 
-static void _GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
-
 void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
 	gba->errstr = 0;

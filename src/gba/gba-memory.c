@@ -11,6 +11,8 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
 static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
+static const char GBA_ROM_WAITSTATES[] = { 4, 3, 2, 8 };
+static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
 
 void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.load32 = GBALoad32;
@@ -48,9 +50,12 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 		memory->waitstatesSeq32[i] = 0;
 	}
 
+	memory->activeRegion = 0;
 	memory->d.activeRegion = 0;
 	memory->d.activeMask = 0;
 	memory->d.setActiveRegion = GBASetActiveRegion;
+	memory->d.activePrefetchCycles32 = 0;
+	memory->d.activePrefetchCycles16 = 0;
 }
 
 void GBAMemoryDeinit(struct GBAMemory* memory) {
@@ -63,6 +68,7 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 
 	memory->activePrefetchCycles32 = gbaMemory->waitstates32[address >> BASE_OFFSET];
 	memory->activePrefetchCycles16 = gbaMemory->waitstates16[address >> BASE_OFFSET];
+	gbaMemory->activeRegion = address >> BASE_OFFSET;
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		memory->activeRegion = gbaMemory->bios;
@@ -350,4 +356,39 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	default:
 		break;
 	}
+}
+
+void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {
+	int sram = parameters & 0x0003;
+	int ws0 = (parameters & 0x000C) >> 2;
+	int ws0seq = (parameters & 0x0010) >> 4;
+	int ws1 = (parameters & 0x0060) >> 5;
+	int ws1seq = (parameters & 0x0080) >> 7;
+	int ws2 = (parameters & 0x0300) >> 8;
+	int ws2seq = (parameters & 0x0400) >> 10;
+	int prefetch = parameters & 0x4000;
+
+	memory->waitstates16[REGION_CART_SRAM] =  GBA_ROM_WAITSTATES[sram];
+	memory->waitstatesSeq16[REGION_CART_SRAM] = GBA_ROM_WAITSTATES[sram];
+	memory->waitstates32[REGION_CART_SRAM] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
+	memory->waitstatesSeq32[REGION_CART_SRAM] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
+
+	memory->waitstates16[REGION_CART0] = memory->waitstates16[REGION_CART0_EX] = GBA_ROM_WAITSTATES[ws0];
+	memory->waitstates16[REGION_CART1] = memory->waitstates16[REGION_CART1_EX] = GBA_ROM_WAITSTATES[ws1];
+	memory->waitstates16[REGION_CART2] = memory->waitstates16[REGION_CART2_EX] = GBA_ROM_WAITSTATES[ws2];
+
+	memory->waitstatesSeq16[REGION_CART0] = memory->waitstatesSeq16[REGION_CART0_EX] = GBA_ROM_WAITSTATES_SEQ[ws0seq];
+	memory->waitstatesSeq16[REGION_CART1] = memory->waitstatesSeq16[REGION_CART1_EX] = GBA_ROM_WAITSTATES_SEQ[ws1seq + 2];
+	memory->waitstatesSeq16[REGION_CART2] = memory->waitstatesSeq16[REGION_CART2_EX] = GBA_ROM_WAITSTATES_SEQ[ws2seq + 4];
+
+	memory->waitstates32[REGION_CART0] = memory->waitstates32[REGION_CART0_EX] = memory->waitstates16[REGION_CART0] + 1 + memory->waitstatesSeq16[REGION_CART0];
+	memory->waitstates32[REGION_CART1] = memory->waitstates32[REGION_CART1_EX] = memory->waitstates16[REGION_CART1] + 1 + memory->waitstatesSeq16[REGION_CART1];
+	memory->waitstates32[REGION_CART2] = memory->waitstates32[REGION_CART2_EX] = memory->waitstates16[REGION_CART2] + 1 + memory->waitstatesSeq16[REGION_CART2];
+
+	memory->waitstatesSeq32[REGION_CART0] = memory->waitstatesSeq32[REGION_CART0 + 1] = 2 * memory->waitstatesSeq16[REGION_CART0] + 1;
+	memory->waitstatesSeq32[REGION_CART1] = memory->waitstatesSeq32[REGION_CART1 + 1] = 2 * memory->waitstatesSeq16[REGION_CART1] + 1;
+	memory->waitstatesSeq32[REGION_CART2] = memory->waitstatesSeq32[REGION_CART2 + 1] = 2 * memory->waitstatesSeq16[REGION_CART2] + 1;
+
+	memory->d.activePrefetchCycles32 = memory->waitstates32[memory->activeRegion];
+	memory->d.activePrefetchCycles16 = memory->waitstates16[memory->activeRegion];
 }

@@ -73,6 +73,7 @@ struct GBAMemory {
 	char waitstates16[256];
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
+	int activeRegion;
 };
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
@@ -84,5 +85,7 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address);
 void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value);
 void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
 void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
+
+void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters);
 
 #endif
