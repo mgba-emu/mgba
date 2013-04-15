@@ -137,7 +137,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_WORKING_IRAM:
 		return ((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1];
 	case BASE_IO:
-		break;
+		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1));
 	case BASE_PALETTE_RAM:
 		break;
 	case BASE_VRAM:
@@ -171,7 +171,7 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_WORKING_IRAM:
 		return ((uint16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1];
 	case BASE_IO:
-		break;
+		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1));
 	case BASE_PALETTE_RAM:
 		break;
 	case BASE_VRAM:
