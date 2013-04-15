@@ -106,71 +106,85 @@ void ARMStep(struct ARMCore* cpu) {
 		switch (condition) {
 		case 0x0:
 			if (!ARM_COND_EQ) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x1:
 			if (!ARM_COND_NE) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x2:
 			if (!ARM_COND_CS) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x3:
 			if (!ARM_COND_CC) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x4:
 			if (!ARM_COND_MI) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x5:
 			if (!ARM_COND_PL) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x6:
 			if (!ARM_COND_VS) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x7:
 			if (!ARM_COND_VC) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x8:
 			if (!ARM_COND_HI) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0x9:
 			if (!ARM_COND_LS) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0xA:
 			if (!ARM_COND_GE) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0xB:
 			if (!ARM_COND_LT) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0xC:
 			if (!ARM_COND_GT) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
 		case 0xD:
 			if (!ARM_COND_GE) {
+				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
 			break;
@@ -237,6 +251,7 @@ void ARMStep(struct ARMCore* cpu) {
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
 		BODY; \
+		cpu->cycles += 1 + cpu->memory->activePrefetchCycles32; \
 	}
 
 #define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY, POST_BODY) \

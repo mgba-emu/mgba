@@ -4,6 +4,8 @@
 #include "isa-inlines.h"
 #include "isa-thumb.h"
 
+#include <limits.h>
+
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
 void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
@@ -97,7 +99,8 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->cpsr.packed = MODE_SYSTEM;
 	cpu->spsr.packed = 0;
 
-	cpu->cyclesToEvent = 0;
+	cpu->cycles = 0;
+	cpu->nextEvent = INT_MAX;
 
 	cpu->shifterOperand = 0;
 	cpu->shifterCarryOut = 0;

@@ -9,6 +9,9 @@ static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 
+static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
+static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
+
 void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.load32 = GBALoad32;
 	memory->d.load16 = GBALoad16;
@@ -31,6 +34,20 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 		memory->p->errstr = GBA_CANNOT_MMAP;
 	}
 
+	int i;
+	for (i = 0; i < 16; ++i) {
+		memory->waitstates16[i] = GBA_BASE_WAITSTATES[i];
+		memory->waitstatesSeq16[i] = GBA_BASE_WAITSTATES_SEQ[i];
+		memory->waitstates32[i] = GBA_BASE_WAITSTATES[i] + GBA_BASE_WAITSTATES_SEQ[i] + 1;
+		memory->waitstatesSeq32[i] = GBA_BASE_WAITSTATES_SEQ[i] + GBA_BASE_WAITSTATES_SEQ[i] + 1;
+	}
+	for (; i < 256; ++i) {
+		memory->waitstates16[i] = 0;
+		memory->waitstatesSeq16[i] = 0;
+		memory->waitstates32[i] = 0;
+		memory->waitstatesSeq32[i] = 0;
+	}
+
 	memory->d.activeRegion = 0;
 	memory->d.activeMask = 0;
 	memory->d.setActiveRegion = GBASetActiveRegion;
@@ -44,6 +61,8 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
+	memory->activePrefetchCycles32 = gbaMemory->waitstates32[address >> BASE_OFFSET];
+	memory->activePrefetchCycles16 = gbaMemory->waitstates16[address >> BASE_OFFSET];
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		memory->activeRegion = gbaMemory->bios;

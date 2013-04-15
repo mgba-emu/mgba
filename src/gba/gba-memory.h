@@ -55,7 +55,8 @@ enum {
 };
 
 enum {
-	OFFSET_MASK = 0x00FFFFFF
+	OFFSET_MASK = 0x00FFFFFF,
+	BASE_OFFSET = 24
 };
 
 struct GBAMemory {
@@ -67,6 +68,11 @@ struct GBAMemory {
 	uint32_t* iwram;
 	uint32_t* rom;
 	uint16_t io[SIZE_IO >> 1];
+
+	char waitstates32[256];
+	char waitstates16[256];
+	char waitstatesSeq32[256];
+	char waitstatesSeq16[256];
 };
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);

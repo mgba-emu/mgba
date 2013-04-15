@@ -95,6 +95,7 @@ void ThumbStep(struct ARMCore* cpu) {
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
 	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \
 		BODY; \
+		cpu->cycles += 1 + cpu->memory->activePrefetchCycles16; \
 	}
 
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB(NAME, IMMEDIATE, BODY) \
