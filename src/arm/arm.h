@@ -121,6 +121,7 @@ void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
+void ARMRaiseIRQ(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
 

@@ -111,6 +111,25 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->board->reset(cpu->board);
 }
 
+void ARMRaiseIRQ(struct ARMCore* cpu) {
+	if (cpu->cpsr.i) {
+		return;
+	}
+	union PSR cpsr = cpu->cpsr;
+	int instructionWidth;
+	if (cpu->executionMode == MODE_THUMB) {
+		instructionWidth = WORD_SIZE_THUMB;
+	} else {
+		instructionWidth = WORD_SIZE_ARM;
+	}
+	ARMSetPrivilegeMode(cpu, MODE_IRQ);
+	cpu->spsr = cpsr;
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
+	cpu->gprs[ARM_PC] = BASE_IRQ + WORD_SIZE_ARM;
+	_ARMSetMode(cpu, MODE_ARM);
+	cpu->cpsr.i = 1;
+}
+
 void ARMRun(struct ARMCore* cpu) {
 	if (cpu->executionMode == MODE_THUMB) {
 		ThumbStep(cpu);

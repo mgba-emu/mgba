@@ -109,13 +109,13 @@ void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
-		//ARMRaiseIRQ(&gba.cpu);
+		ARMRaiseIRQ(&gba->cpu);
 	}
 }
 
 void GBAWriteIME(struct GBA* gba, uint16_t value) {
 	if (value && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
-		//ARMRaiseIRQ(&gba.cpu);
+		ARMRaiseIRQ(&gba->cpu);
 	}
 }
 
@@ -123,7 +123,7 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	gba->memory.io[REG_IF >> 1] |= 1 << irq;
 
 	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
-		//ARMRaiseIRQ();
+		ARMRaiseIRQ(&gba->cpu);
 	}
 }
 
