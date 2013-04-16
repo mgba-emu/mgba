@@ -4,6 +4,7 @@
 #include "arm.h"
 
 #include "gba-memory.h"
+#include "gba-video.h"
 
 enum GBAError {
 	GBA_NO_ERROR = 0,
@@ -23,6 +24,7 @@ struct GBA {
 	struct ARMCore cpu;
 	struct GBABoard board;
 	struct GBAMemory memory;
+	struct GBAVideo video;
 
 	struct ARMDebugger* debugger;
 

@@ -117,4 +117,7 @@ void ARMRun(struct ARMCore* cpu) {
 	} else {
 		ARMStep(cpu);
 	}
+	if (cpu->cycles >= cpu->nextEvent) {
+		cpu->board->processEvents(cpu->board);
+	}
 }

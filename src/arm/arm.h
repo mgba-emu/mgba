@@ -87,7 +87,7 @@ struct ARMMemory {
 struct ARMBoard {
 	struct ARMCore* cpu;
 	void (*reset)(struct ARMBoard* board);
-	void (*nextEvent)(struct ARMBoard* board);
+	void (*processEvents)(struct ARMBoard* board);
 	void (*swi16)(struct ARMBoard* board, int immediate);
 	void (*swi32)(struct ARMBoard* board, int immediate);
 
@@ -99,8 +99,8 @@ struct ARMCore {
 	union PSR cpsr;
 	union PSR spsr;
 
-	uint32_t cycles;
-	uint32_t nextEvent;
+	int32_t cycles;
+	int32_t nextEvent;
 
 	int32_t bankedRegisters[6][7];
 	int32_t bankedSPSRs[6];

@@ -4,6 +4,7 @@
 
 #include "debugger.h"
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,7 @@ enum {
 	SP_BASE_SUPERVISOR = 0x03FFFFE0
 };
 
+static void GBAProcessEvents(struct ARMBoard* board);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 
 void GBAInit(struct GBA* gba) {
@@ -40,6 +42,7 @@ void GBADeinit(struct GBA* gba) {
 
 void GBABoardInit(struct GBABoard* board) {
 	board->d.reset = GBABoardReset;
+	board->d.processEvents = GBAProcessEvents;
 	board->d.swi16 = GBASwi16;
 	board->d.swi32 = GBASwi32;
 	board->d.hitStub = GBAHitStub;
@@ -53,6 +56,21 @@ void GBABoardReset(struct ARMBoard* board) {
 	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+}
+
+static void GBAProcessEvents(struct ARMBoard* board) {
+	struct GBABoard* gbaBoard = (struct GBABoard*) board;
+	int32_t cycles = board->cpu->cycles;
+	int32_t nextEvent = INT_MAX;
+	int32_t testEvent;
+
+	testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
+	board->cpu->cycles = 0;
+	board->cpu->nextEvent = nextEvent;
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
