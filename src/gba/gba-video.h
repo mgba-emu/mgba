@@ -38,7 +38,6 @@ struct GBAVideo {
 	int inHblank;
 	int inVblank;
 	int vcounter;
-	int blankIRQ;
 	int vblankIRQ;
 	int hblankIRQ;
 	int vcounterIRQ;
