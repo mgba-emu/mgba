@@ -33,6 +33,9 @@ void GBAInit(struct GBA* gba) {
 	GBABoardInit(&gba->board);
 	ARMAssociateBoard(&gba->cpu, &gba->board.d);
 
+	gba->video.p = gba;
+	GBAVideoInit(&gba->video);
+
 	ARMReset(&gba->cpu);
 }
 

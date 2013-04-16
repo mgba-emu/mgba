@@ -100,7 +100,7 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->spsr.packed = 0;
 
 	cpu->cycles = 0;
-	cpu->nextEvent = INT_MAX;
+	cpu->nextEvent = 0;
 
 	cpu->shifterOperand = 0;
 	cpu->shifterCarryOut = 0;

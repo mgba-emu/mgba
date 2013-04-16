@@ -26,12 +26,13 @@ struct GBAVideoRenderer {
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
-	void (*drawScanline)(struct GBAVideoRenderer* video, int y);
-	void (*finishFrame)(struct GBAVideoRenderer* video);
+	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
+	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 };
 
 struct GBAVideo {
-	struct GBAVideoRenderer renderer;
+	struct GBA* p;
+	struct GBAVideoRenderer* renderer;
 
 	// DISPSTAT
 	int inHblank;
@@ -49,6 +50,7 @@ struct GBAVideo {
 	int32_t lastHblank;
 	int32_t nextHblank;
 	int32_t nextEvent;
+	int32_t eventDiff;
 
 	int32_t nextHblankIRQ;
 	int32_t nextVblankIRQ;
