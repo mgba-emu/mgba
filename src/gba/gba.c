@@ -86,6 +86,10 @@ void GBALoadROM(struct GBA* gba, int fd) {
 	// TODO: error check
 }
 
+void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
+	GBALog(GBA_LOG_STUB, "Attempting to raise IRQ");
+}
+
 void GBALog(int level, const char* format, ...) {
 	va_list args;
 	va_start(args, format);

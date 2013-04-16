@@ -1,5 +1,7 @@
 #include "gba-video.h"
 
+#include "gba.h"
+
 #include <limits.h>
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
@@ -61,7 +63,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
 				//video->cpu.mmu.runVblankDmas();
 				if (video->vblankIRQ) {
-					//video->cpu.irq.raiseIRQ(video->cpu.irq.IRQ_VBLANK);
+					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
 				//video->vblankCallback();
 				break;
@@ -76,7 +78,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 
 			video->vcounter = video->vcount == video->vcountSetting;
 			if (video->vcounter && video->vcounterIRQ) {
-				//video->cpu.irq.raiseIRQ(video->cpu.irq.IRQ_VCOUNTER);
+				GBARaiseIRQ(video->p, IRQ_VCOUNTER);
 				video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 			}
 
@@ -95,7 +97,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				//video->cpu.mmu.runHblankDmas();
 			}
 			if (video->hblankIRQ) {
-				//video->cpu.irq.raiseIRQ(video->cpu.irq.IRQ_HBLANK);
+				GBARaiseIRQ(video->p, IRQ_HBLANK);
 			}
 		}
 

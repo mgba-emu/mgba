@@ -6,6 +6,23 @@
 #include "gba-memory.h"
 #include "gba-video.h"
 
+enum GBAIRQ {
+	IRQ_VBLANK = 0x0,
+	IRQ_HBLANK = 0x1,
+	IRQ_VCOUNTER = 0x2,
+	IRQ_TIMER0 = 0x3,
+	IRQ_TIMER1 = 0x4,
+	IRQ_TIMER2 = 0x5,
+	IRQ_TIMER3 = 0x6,
+	IRQ_SIO = 0x7,
+	IRQ_DMA0 = 0x8,
+	IRQ_DMA1 = 0x9,
+	IRQ_DMA2 = 0xA,
+	IRQ_DMA3 = 0xB,
+	IRQ_KEYPAD = 0xC,
+	IRQ_GAMEPAK = 0xD
+};
+
 enum GBAError {
 	GBA_NO_ERROR = 0,
 	GBA_OUT_OF_MEMORY = -1
@@ -40,6 +57,8 @@ void GBAMemoryDeinit(struct GBAMemory* memory);
 
 void GBABoardInit(struct GBABoard* board);
 void GBABoardReset(struct ARMBoard* board);
+
+void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
