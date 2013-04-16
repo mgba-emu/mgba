@@ -1,6 +1,7 @@
 #include "gba.h"
 
 #include "gba-bios.h"
+#include "gba-io.h"
 
 #include "debugger.h"
 
@@ -86,8 +87,44 @@ void GBALoadROM(struct GBA* gba, int fd) {
 	// TODO: error check
 }
 
+void GBAWriteIE(struct GBA* gba, uint16_t value) {
+	if (value & ((1 << IRQ_TIMER0) | (1 << IRQ_TIMER1) | (1 << IRQ_TIMER2) | (1 << IRQ_TIMER3))) {
+		GBALog(GBA_LOG_STUB, "Timer interrupts not implemented");
+	}
+
+	if (value & (1 << IRQ_SIO)) {
+		GBALog(GBA_LOG_STUB, "SIO interrupts not implemented");
+	}
+
+	if (value & ((1 << IRQ_DMA0) | (1 << IRQ_DMA1) | (1 << IRQ_DMA2) | (1 << IRQ_DMA3))) {
+		GBALog(GBA_LOG_STUB, "DMA interrupts not implemented");
+	}
+
+	if (value & (1 << IRQ_KEYPAD)) {
+		GBALog(GBA_LOG_STUB, "Keypad interrupts not implemented");
+	}
+
+	if (value & (1 << IRQ_GAMEPAK)) {
+		GBALog(GBA_LOG_STUB, "Gamepak interrupts not implemented");
+	}
+
+	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
+		//ARMRaiseIRQ(&gba.cpu);
+	}
+}
+
+void GBAWriteIME(struct GBA* gba, uint16_t value) {
+	if (value && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
+		//ARMRaiseIRQ(&gba.cpu);
+	}
+}
+
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
-	GBALog(GBA_LOG_STUB, "Attempting to raise IRQ");
+	gba->memory.io[REG_IF >> 1] |= 1 << irq;
+
+	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
+		//ARMRaiseIRQ();
+	}
 }
 
 void GBALog(int level, const char* format, ...) {

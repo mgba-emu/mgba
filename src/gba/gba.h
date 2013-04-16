@@ -58,6 +58,8 @@ void GBAMemoryDeinit(struct GBAMemory* memory);
 void GBABoardInit(struct GBABoard* board);
 void GBABoardReset(struct ARMBoard* board);
 
+void GBAWriteIE(struct GBA* gba, uint16_t value);
+void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);

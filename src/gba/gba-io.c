@@ -10,6 +10,12 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case REG_WAITCNT:
 		GBAAdjustWaitstates(&gba->memory, value);
 		break;
+	case REG_IE:
+		GBAWriteIE(gba, value);
+		break;
+	case REG_IME:
+		GBAWriteIME(gba, value);
+		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
 		break;
@@ -22,7 +28,9 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DISPSTAT:
 		return GBAVideoReadDISPSTAT(&gba->video);
 		break;
+	case REG_IE:
 	case REG_WAITCNT:
+	case REG_IME:
 		// Handled transparently by registers
 		break;
 	default:
