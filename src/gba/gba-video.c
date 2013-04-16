@@ -104,6 +104,24 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 	return video->nextEvent;
 }
 
+void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
+	video->vblankIRQ = value & 0x0008;
+	video->hblankIRQ = value & 0x0010;
+	video->vcounterIRQ = value & 0x0020;
+	video->vcountSetting = (value & 0xFF00) >> 8;
+
+	if (video->vcounterIRQ) {
+		// FIXME: this can be too late if we're in the middle of an Hblank
+		video->nextVcounterIRQ = video->nextHblank + VIDEO_HBLANK_LENGTH + (video->vcountSetting - video->vcount) * VIDEO_HORIZONTAL_LENGTH;
+		if (video->nextVcounterIRQ < video->nextEvent) {
+			video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
+		}
+	}
+}
+
+uint16_t GBAVideoReadDISPSTAT(struct GBAVideo* video) {
+	return (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
+}
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
 	(void)(renderer);
