@@ -255,9 +255,18 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN, cpu->gprs[rd] = ~cpu->gprs[rn]; THUMB_
 	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 10, 8, 0, BODY) \
 	DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME ## 11, 8, 8, BODY)
 
-DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4, cpu->gprs[rd] += cpu->gprs[rm])
+DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4,
+	cpu->gprs[rd] += cpu->gprs[rm];
+	if (rd == ARM_PC) {
+		THUMB_WRITE_PC;
+	})
+
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(CMP3, int32_t aluOut = cpu->gprs[rd] - cpu->gprs[rm]; THUMB_SUBTRACTION_S(cpu->gprs[rd], cpu->gprs[rm], aluOut))
-DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3, cpu->gprs[rd] = cpu->gprs[rm])
+DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
+	cpu->gprs[rd] = cpu->gprs[rm];
+	if (rd == ARM_PC) {
+		THUMB_WRITE_PC;
+	})
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB(NAME, RD, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
