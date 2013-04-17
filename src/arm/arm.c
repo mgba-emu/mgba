@@ -126,6 +126,7 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->spsr = cpsr;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ + WORD_SIZE_ARM;
+	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->cpsr.i = 1;
 }
