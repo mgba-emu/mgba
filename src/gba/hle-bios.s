@@ -1,0 +1,67 @@
+#define nop andeq r0, r0
+
+.text
+
+b resetBase
+b undefBase
+b swiBase
+b pabtBase
+b dabtBase
+nop
+b irqBase
+b fiqBase
+
+resetBase:
+mov pc, #0x8000000
+
+swiBase:
+cmp    sp, #0
+moveq  sp, #0x04000000
+subeq  sp, #0x20
+stmfd  sp!, {lr}
+ldrb   r0, [lr, #-2]
+cmp    r0, #4
+bleq   IntrWait
+cmp    r0, #5
+bleq   IntrWait
+ldmfd  sp!, {lr}
+movs   pc, lr
+
+irqBase:
+stmfd  sp!, {r0-r3, r12, lr}
+mov    r0, #0x04000000
+add    lr, pc, #0
+ldr    pc, [r0, #-4]
+ldmfd  sp!, {r0-r3, r12, lr}
+subs   pc, lr, #4
+
+IntrWait:
+stmfd  sp!, {r2,lr}
+add    sp, #-4
+strh   r1, [sp, #0]
+IntrWaitLoop:
+mov    r2, #0x04000000
+add    r2, #0x200
+ldrh   r0, [r2, #0]
+strh   r0, [sp, #2]
+ldrh   r1, [sp, #0]
+orr    r1, r0, r1
+strh   r1, [r2, #0]
+mov    r0, #0x1F
+msr    cpsr, r0
+swi    #0x020000
+mov    r0, #0xD3
+msr    cpsr, r0
+mov    r0, #0x04000000
+ldrh   r2, [r0, #-8]
+ldrh   r1, [sp, #0]
+ands   r1, r2
+eorne  r1, r2
+strneh r1, [r0, #-8]
+ldrh   r0, [sp, #2]
+mov    r1, #0x04000000
+add    r1, #0x200
+strh   r0, [r1, #0]
+beq    IntrWaitLoop
+add    sp, #4
+ldmfd  sp!, {r2,pc}
