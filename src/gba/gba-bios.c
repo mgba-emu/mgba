@@ -46,6 +46,26 @@ static void _CpuSet(struct GBA* gba) {
 	}
 }
 
+static void _FastCpuSet(struct GBA* gba) {
+	uint32_t source = gba->cpu.gprs[0] & 0xFFFFFFFC;
+	uint32_t dest = gba->cpu.gprs[1] & 0xFFFFFFFC;
+	uint32_t mode = gba->cpu.gprs[2];
+	int count = mode & 0x000FFFFF;
+	count = ((count + 7) >> 3) << 3;
+	int i;
+	if (mode & 0x01000000) {
+		int32_t word = GBALoad32(&gba->memory.d, source);
+		for (i = 0; i < count; ++i) {
+			GBAStore32(&gba->memory.d, dest + (i << 2), word);
+		}
+	} else {
+		for (i = 0; i < count; ++i) {
+			int32_t word = GBALoad32(&gba->memory.d, source + (i << 2));
+			GBAStore32(&gba->memory.d, dest + (i << 2), word);
+		}
+	}
+}
+
 void GBASwi16(struct ARMBoard* board, int immediate) {
 	struct GBA* gba = ((struct GBABoard*) board)->p;
 	switch (immediate) {
@@ -54,6 +74,9 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		break;
 	case 0xB:
 		_CpuSet(gba);
+		break;
+	case 0xC:
+		_FastCpuSet(gba);
 		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
