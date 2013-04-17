@@ -142,6 +142,7 @@ enum GBAIORegisters {
 };
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
+void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value);
 uint16_t GBAIORead(struct GBA* gba, uint32_t address);
 
 #endif

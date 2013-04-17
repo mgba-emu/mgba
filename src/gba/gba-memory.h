@@ -59,6 +59,45 @@ enum {
 	BASE_OFFSET = 24
 };
 
+enum DMAControl {
+	DMA_INCREMENT = 0,
+	DMA_DECREMENT = 1,
+	DMA_FIXED = 2,
+	DMA_INCREMENT_RELOAD = 3
+};
+
+enum DMATiming {
+	DMA_TIMING_NOW = 0,
+	DMA_TIMING_VBLANK = 1,
+	DMA_TIMING_HBLANK = 2,
+	DMA_TIMING_CUSTOM = 3
+};
+
+struct GBADMA {
+	union {
+		struct {
+			int : 5;
+			enum DMAControl dstControl : 2;
+			enum DMAControl srcControl : 2;
+			unsigned repeat : 1;
+			unsigned width : 1;
+			unsigned drq : 1;
+			enum DMATiming timing : 2;
+			unsigned doIrq : 1;
+			unsigned enable : 1;
+		};
+		uint16_t packed;
+	};
+
+	uint32_t source;
+	uint32_t dest;
+	int32_t count;
+	uint32_t nextSource;
+	uint32_t nextDest;
+	int32_t nextCount;
+	int32_t nextIRQ;
+};
+
 struct GBAMemory {
 	struct ARMMemory d;
 	struct GBA* p;
@@ -74,7 +113,11 @@ struct GBAMemory {
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
 	int activeRegion;
+
+	struct GBADMA dma[4];
 };
+
+int32_t GBAMemoryProcessEvents(struct GBAMemory* memory, int32_t cycles);
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
@@ -87,5 +130,15 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
 void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
 
 void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters);
+
+void GBAMemoryWriteDMASAD(struct GBAMemory* memory, int dma, uint32_t address);
+void GBAMemoryWriteDMADAD(struct GBAMemory* memory, int dma, uint32_t address);
+void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count);
+void GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control);
+
+void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
+void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
+void GBAMemoryRunHblankDMAs(struct GBAMemory* memory);
+void GBAMemoryRunVblankDMAs(struct GBAMemory* memory);
 
 #endif

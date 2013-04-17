@@ -75,6 +75,11 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 		nextEvent = testEvent;
 	}
 
+	testEvent = GBAMemoryProcessEvents(&gbaBoard->p->memory, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
 	board->cpu->cycles = 0;
 	board->cpu->nextEvent = nextEvent;
 }
@@ -96,10 +101,6 @@ void GBAWriteIE(struct GBA* gba, uint16_t value) {
 
 	if (value & (1 << IRQ_SIO)) {
 		GBALog(GBA_LOG_STUB, "SIO interrupts not implemented");
-	}
-
-	if (value & ((1 << IRQ_DMA0) | (1 << IRQ_DMA1) | (1 << IRQ_DMA2) | (1 << IRQ_DMA3))) {
-		GBALog(GBA_LOG_STUB, "DMA interrupts not implemented");
 	}
 
 	if (value & (1 << IRQ_KEYPAD)) {

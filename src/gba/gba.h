@@ -29,7 +29,8 @@ enum GBAError {
 };
 
 enum GBALogLevel {
-	GBA_LOG_STUB
+	GBA_LOG_STUB,
+	GBA_LOG_WARN
 };
 
 struct GBABoard {

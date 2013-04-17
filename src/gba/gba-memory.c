@@ -2,6 +2,7 @@
 
 #include "gba-io.h"
 
+#include <limits.h>
 #include <string.h>
 #include <sys/mman.h>
 
@@ -13,6 +14,7 @@ static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4
 static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
 static const char GBA_ROM_WAITSTATES[] = { 4, 3, 2, 8 };
 static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
+static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
 
 void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.load32 = GBALoad32;
@@ -29,6 +31,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
 	memset(memory->io, 0, sizeof(memory->io));
+	memset(memory->dma, 0, sizeof(memory->dma));
 
 	if (!memory->wram || !memory->iwram) {
 		GBAMemoryDeinit(memory);
@@ -281,6 +284,7 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 		gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2] = value;
 		break;
 	case BASE_IO:
+		GBAIOWrite32(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
 		break;
@@ -391,4 +395,195 @@ void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {
 
 	memory->d.activePrefetchCycles32 = memory->waitstates32[memory->activeRegion];
 	memory->d.activePrefetchCycles16 = memory->waitstates16[memory->activeRegion];
+}
+
+int32_t GBAMemoryProcessEvents(struct GBAMemory* memory, int32_t cycles) {
+	struct GBADMA* dma;
+	int32_t test = INT_MAX;
+
+	dma = &memory->dma[0];
+	dma->nextIRQ -= cycles;
+	if (dma->enable && dma->doIrq && dma->nextIRQ) {
+		if (dma->nextIRQ <= 0) {
+			dma->nextIRQ = INT_MAX;
+			GBARaiseIRQ(memory->p, IRQ_DMA0);
+		} else if (dma->nextIRQ < test) {
+			test = dma->nextIRQ;
+		}
+	}
+
+	dma = &memory->dma[1];
+	dma->nextIRQ -= cycles;
+	if (dma->enable && dma->doIrq && dma->nextIRQ) {
+		if (dma->nextIRQ <= 0) {
+			dma->nextIRQ = INT_MAX;
+			GBARaiseIRQ(memory->p, IRQ_DMA1);
+		} else if (dma->nextIRQ < test) {
+			test = dma->nextIRQ;
+		}
+	}
+
+	dma = &memory->dma[2];
+	dma->nextIRQ -= cycles;
+	if (dma->enable && dma->doIrq && dma->nextIRQ) {
+		if (dma->nextIRQ <= 0) {
+			dma->nextIRQ = INT_MAX;
+			GBARaiseIRQ(memory->p, IRQ_DMA2);
+		} else if (dma->nextIRQ < test) {
+			test = dma->nextIRQ;
+		}
+	}
+
+	dma = &memory->dma[3];
+	dma->nextIRQ -= cycles;
+	if (dma->enable && dma->doIrq && dma->nextIRQ) {
+		if (dma->nextIRQ <= 0) {
+			dma->nextIRQ = INT_MAX;
+			GBARaiseIRQ(memory->p, IRQ_DMA3);
+		} else if (dma->nextIRQ < test) {
+			test = dma->nextIRQ;
+		}
+	}
+
+	return test;
+}
+
+void GBAMemoryWriteDMASAD(struct GBAMemory* memory, int dma, uint32_t address) {
+	memory->dma[dma].source = address & 0xFFFFFFFE;
+}
+
+void GBAMemoryWriteDMADAD(struct GBAMemory* memory, int dma, uint32_t address) {
+	memory->dma[dma].dest = address & 0xFFFFFFFE;
+}
+
+void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count) {
+	memory->dma[dma].count = count ? count : (dma == 3 ? 0x10000 : 0x4000);
+}
+
+void GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control) {
+	struct GBADMA* currentDma = &memory->dma[dma];
+	int wasEnabled = currentDma->enable;
+	currentDma->packed = control;
+	currentDma->nextIRQ = 0;
+
+	if (currentDma->drq) {
+		GBALog(GBA_LOG_STUB, "DRQ not implemented");
+	}
+
+	if (!wasEnabled && currentDma->enable) {
+		currentDma->nextSource = currentDma->source;
+		currentDma->nextDest = currentDma->dest;
+		currentDma->nextCount = currentDma->count;
+		GBAMemoryScheduleDMA(memory, dma, currentDma);
+	}
+};
+
+void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info) {
+	switch (info->timing) {
+	case DMA_TIMING_NOW:
+		GBAMemoryServiceDMA(memory, number, info);
+		break;
+	case DMA_TIMING_HBLANK:
+		// Handled implicitly
+		break;
+	case DMA_TIMING_VBLANK:
+		// Handled implicitly
+		break;
+	case DMA_TIMING_CUSTOM:
+		switch (number) {
+		case 0:
+			GBALog(GBA_LOG_WARN, "Discarding invalid DMA0 scheduling");
+			break;
+		case 1:
+		case 2:
+			//this.cpu.irq.audio.scheduleFIFODma(number, info);
+			break;
+		case 3:
+			//this.cpu.irq.video.scheduleVCaptureDma(dma, info);
+			break;
+		}
+	}
+}
+
+void GBAMemoryRunHblankDMAs(struct GBAMemory* memory) {
+	struct GBADMA* dma;
+	int i;
+	for (i = 0; i < 4; ++i) {
+		dma = &memory->dma[i];
+		if (dma->enable && dma->timing == DMA_TIMING_HBLANK) {
+			GBAMemoryServiceDMA(memory, i, dma);
+		}
+	}
+}
+
+void GBAMemoryRunVblankDMAs(struct GBAMemory* memory) {
+	struct GBADMA* dma;
+	int i;
+	for (i = 0; i < 4; ++i) {
+		dma = &memory->dma[i];
+		if (dma->enable && dma->timing == DMA_TIMING_VBLANK) {
+			GBAMemoryServiceDMA(memory, i, dma);
+		}
+	}
+}
+
+void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* info) {
+	if (!info->enable) {
+		// There was a DMA scheduled that got canceled
+		return;
+	}
+
+	uint32_t width = info->width ? 4 : 2;
+	int sourceOffset = DMA_OFFSET[info->srcControl] * width;
+	int destOffset = DMA_OFFSET[info->dstControl] * width;
+	int32_t wordsRemaining = info->nextCount;
+	uint32_t source = info->nextSource;
+	uint32_t dest = info->nextDest;
+	uint32_t sourceRegion = source >> BASE_OFFSET;
+	uint32_t destRegion = dest >> BASE_OFFSET;
+
+	if (width == 4) {
+		int32_t word;
+		source &= 0xFFFFFFFC;
+		dest &= 0xFFFFFFFC;
+		while (wordsRemaining--) {
+			word = GBALoad32(&memory->d, source);
+			GBAStore32(&memory->d, dest, word);
+			source += sourceOffset;
+			dest += destOffset;
+		}
+	} else {
+		uint16_t word;
+		while (wordsRemaining--) {
+			word = GBALoadU16(&memory->d, source);
+			GBAStore16(&memory->d, dest, word);
+			source += sourceOffset;
+			dest += destOffset;
+		}
+	}
+
+	if (info->doIrq) {
+		info->nextIRQ = memory->p->cpu.cycles + 2;
+		info->nextIRQ += (width == 4 ? memory->waitstates32[sourceRegion] + memory->waitstates32[destRegion]
+		                            : memory->waitstates16[sourceRegion] + memory->waitstates16[destRegion]);
+		info->nextIRQ += (info->count - 1) * (width == 4 ? memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion]
+		                                               : memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion]);
+	}
+
+	info->nextSource = source;
+	info->nextDest = dest;
+	info->nextCount = wordsRemaining;
+
+	if (!info->repeat) {
+		info->enable = 0;
+
+		// Clear the enable bit in memory
+		memory->io[(REG_DMA0CNT_HI + number * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
+	} else {
+		info->nextCount = info->count;
+		if (info->dstControl == DMA_INCREMENT_RELOAD) {
+			info->nextDest = info->dest;
+		}
+		GBAMemoryScheduleDMA(memory, number, info);
+	}
 }
