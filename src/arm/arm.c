@@ -122,8 +122,9 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	} else {
 		instructionWidth = WORD_SIZE_ARM;
 	}
-	ARMSetPrivilegeMode(cpu, MODE_IRQ);
 	cpu->spsr = cpsr;
+	ARMSetPrivilegeMode(cpu, MODE_IRQ);
+	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ + WORD_SIZE_ARM;
 	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
