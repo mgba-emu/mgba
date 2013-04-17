@@ -37,6 +37,8 @@ void GBAInit(struct GBA* gba) {
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
 
+	gba->springIRQ = 0;
+
 	ARMReset(&gba->cpu);
 }
 
@@ -124,6 +126,52 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 
 	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
 		ARMRaiseIRQ(&gba->cpu);
+	}
+}
+
+void GBAPollNextEvent(struct GBA* gba) {
+	int32_t nextEvent = gba->video.nextEvent;
+
+	gba->cpu.nextEvent = nextEvent;
+}
+
+int GBATestIRQ(struct GBA* gba) {
+	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
+		gba->springIRQ = 1;
+		gba->cpu.nextEvent = gba->cpu.cycles;
+		return 1;
+	}
+	return 0;
+}
+
+int GBAWaitForIRQ(struct GBA* gba) {
+	int irqPending = GBATestIRQ(gba) || gba->video.hblankIRQ || gba->video.vblankIRQ || gba->video.vcounterIRQ;
+	/*if (this.timersEnabled) {
+		timer = this.timers[0];
+		irqPending = irqPending || timer.doIrq;
+		timer = this.timers[1];
+		irqPending = irqPending || timer.doIrq;
+		timer = this.timers[2];
+		irqPending = irqPending || timer.doIrq;
+		timer = this.timers[3];
+		irqPending = irqPending || timer.doIrq;
+	}*/
+	if (!irqPending) {
+		return 0;
+	}
+
+	while (1) {
+		GBAPollNextEvent(gba);
+
+		if (gba->cpu.nextEvent == INT_MAX) {
+			return 0;
+		} else {
+			gba->cpu.cycles = gba->cpu.nextEvent;
+			GBAProcessEvents(&gba->board.d);
+			if (gba->memory.io[REG_IF >> 1]) {
+				return 1;
+			}
+		}
 	}
 }
 
