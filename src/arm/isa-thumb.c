@@ -108,23 +108,23 @@ void ThumbStep(struct ARMCore* cpu) {
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
 	COUNT_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1, \
-	if (!immediate) { \
-		cpu->gprs[rd] = cpu->gprs[rm]; \
-	} else { \
-		cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate)); \
-		cpu->gprs[rd] = cpu->gprs[rm] << immediate; \
-	} \
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
+	if (!immediate) {
+		cpu->gprs[rd] = cpu->gprs[rm];
+	} else {
+		cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate));
+		cpu->gprs[rd] = cpu->gprs[rm] << immediate;
+	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
-	if (!immediate) { \
-		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]); \
-		cpu->gprs[rd] = 0; \
-	} else { \
-		cpu->cpsr.c = cpu->gprs[rm] & (1 << (immediate - 1)); \
-		cpu->gprs[rd] = ((uint32_t) cpu->gprs[rm]) >> immediate; \
-	} \
+	if (!immediate) {
+		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
+		cpu->gprs[rd] = 0;
+	} else {
+		cpu->cpsr.c = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->gprs[rd] = ((uint32_t) cpu->gprs[rm]) >> immediate;
+	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, ARM_STUB)
@@ -185,38 +185,38 @@ DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2, THUMB_SUBTRACTION(cpu->gprs[rd], cpu-
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND, cpu->gprs[rd] = cpu->gprs[rd] & cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(EOR, cpu->gprs[rd] = cpu->gprs[rd] ^ cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2, ARM_STUB)
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2, \
-	int rs = cpu->gprs[rn] & 0xFF; \
-	if (rs) { \
-		if (rs < 32) { \
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1)); \
-			cpu->gprs[rd] = (uint32_t) cpu->gprs[rd] >> rs; \
-		} else { \
-			if (rs > 32) { \
-				cpu->cpsr.c = 0; \
-			} else { \
-				cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]); \
-			} \
-			cpu->gprs[rd] = 0; \
-		} \
-	} \
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
+	int rs = cpu->gprs[rn] & 0xFF;
+	if (rs) {
+		if (rs < 32) {
+			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1));
+			cpu->gprs[rd] = (uint32_t) cpu->gprs[rd] >> rs;
+		} else {
+			if (rs > 32) {
+				cpu->cpsr.c = 0;
+			} else {
+				cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
+			}
+			cpu->gprs[rd] = 0;
+		}
+	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2, \
-	int rs = cpu->gprs[rn] & 0xFF; \
-	if (rs) { \
-		if (rs < 32) { \
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1)); \
-			cpu->gprs[rd] >>= rs; \
-		} else { \
-			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]); \
-			if (cpu->cpsr.c) { \
-				cpu->gprs[rd] = 0xFFFFFFFF; \
-			} else { \
-				cpu->gprs[rd] = 0; \
-			} \
-		} \
-	} \
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
+	int rs = cpu->gprs[rn] & 0xFF;
+	if (rs) {
+		if (rs < 32) {
+			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1));
+			cpu->gprs[rd] >>= rs;
+		} else {
+			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
+			if (cpu->cpsr.c) {
+				cpu->gprs[rd] = 0xFFFFFFFF;
+			} else {
+				cpu->gprs[rd] = 0;
+			}
+		}
+	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC, ARM_STUB)
@@ -302,14 +302,14 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, ARM_STUB)
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, BODY, WRITEBACK) \
 	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, cpu->gprs[rn], (m = 0x01, i = 0; i < 8; m <<= 1, ++i), BODY, +=, , , WRITEBACK)
 
-DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,\
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address), \
-	if (!((1 << rn) & rs)) { \
-		cpu->gprs[rn] = address; \
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
+	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address),
+	if (!((1 << rn) & rs)) {
+		cpu->gprs[rn] = address;
 	})
 
-DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA, \
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]), \
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]),
 	cpu->gprs[rn] = address)
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
@@ -338,77 +338,77 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_INSTRUCTION_THUMB(ADD7, cpu->gprs[ARM_SP] += (opcode & 0x7F) << 2)
 DEFINE_INSTRUCTION_THUMB(SUB4, cpu->gprs[ARM_SP] -= (opcode & 0x7F) << 2)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, \
-	opcode & 0x00FF, \
-	cpu->gprs[ARM_SP], \
-	(m = 0x01, i = 0; i < 8; m <<= 1, ++i), \
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address), \
-	+=, \
-	, , \
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP,
+	opcode & 0x00FF,
+	cpu->gprs[ARM_SP],
+	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
+	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address),
+	+=,
+	, ,
 	cpu->gprs[ARM_SP] = address)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, \
-	opcode & 0x00FF, \
-	cpu->gprs[ARM_SP], \
-	(m = 0x01, i = 0; i < 8; m <<= 1, ++i), \
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address), \
-	+=, \
-	, \
-	cpu->gprs[ARM_PC] = cpu->memory->load32(cpu->memory, address) & 0xFFFFFFFE; \
-	address += 4;, \
-	cpu->gprs[ARM_SP] = address; \
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR,
+	opcode & 0x00FF,
+	cpu->gprs[ARM_SP],
+	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
+	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address),
+	+=,
+	,
+	cpu->gprs[ARM_PC] = cpu->memory->load32(cpu->memory, address) & 0xFFFFFFFE;
+	address += 4;,
+	cpu->gprs[ARM_SP] = address;
 	THUMB_WRITE_PC;)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, \
-	opcode & 0x00FF, \
-	cpu->gprs[ARM_SP] - 4, \
-	(m = 0x80, i = 7; m; m >>= 1, --i), \
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]), \
-	-=, \
-	, , \
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
+	opcode & 0x00FF,
+	cpu->gprs[ARM_SP] - 4,
+	(m = 0x80, i = 7; m; m >>= 1, --i),
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]),
+	-=,
+	, ,
 	cpu->gprs[ARM_SP] = address + 4)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR, \
-	opcode & 0x00FF, \
-	cpu->gprs[ARM_SP] - 4, \
-	(m = 0x80, i = 7; m; m >>= 1, --i), \
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]), \
-	-=, \
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[ARM_LR]); \
-	address -= 4;, \
-	, \
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
+	opcode & 0x00FF,
+	cpu->gprs[ARM_SP] - 4,
+	(m = 0x80, i = 7; m; m >>= 1, --i),
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[i]),
+	-=,
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[ARM_LR]);
+	address -= 4;,
+	,
 	cpu->gprs[ARM_SP] = address + 4)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_STUB)
 DEFINE_INSTRUCTION_THUMB(BKPT, ARM_STUB)
-DEFINE_INSTRUCTION_THUMB(B, \
-	int16_t immediate = (opcode & 0x07FF) << 5; \
-	cpu->gprs[ARM_PC] += (((int32_t) immediate) >> 4); \
+DEFINE_INSTRUCTION_THUMB(B,
+	int16_t immediate = (opcode & 0x07FF) << 5;
+	cpu->gprs[ARM_PC] += (((int32_t) immediate) >> 4);
 	THUMB_WRITE_PC;)
 
-DEFINE_INSTRUCTION_THUMB(BL1, \
-	int16_t immediate = (opcode & 0x07FF) << 5; \
+DEFINE_INSTRUCTION_THUMB(BL1,
+	int16_t immediate = (opcode & 0x07FF) << 5;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] + (((int32_t) immediate) << 7);)
 
-DEFINE_INSTRUCTION_THUMB(BL2, \
-	uint16_t immediate = (opcode & 0x07FF) << 1; \
-	uint32_t pc = cpu->gprs[ARM_PC]; \
-	cpu->gprs[ARM_PC] = cpu->gprs[ARM_LR] + immediate; \
-	cpu->gprs[ARM_LR] = pc - 1; \
+DEFINE_INSTRUCTION_THUMB(BL2,
+	uint16_t immediate = (opcode & 0x07FF) << 1;
+	uint32_t pc = cpu->gprs[ARM_PC];
+	cpu->gprs[ARM_PC] = cpu->gprs[ARM_LR] + immediate;
+	cpu->gprs[ARM_LR] = pc - 1;
 	THUMB_WRITE_PC;)
 
-DEFINE_INSTRUCTION_THUMB(BX, \
-	int rm = (opcode >> 3) & 0xF; \
+DEFINE_INSTRUCTION_THUMB(BX,
+	int rm = (opcode >> 3) & 0xF;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
 	int misalign = 0;
 	if (rm == ARM_PC) {
 		misalign = cpu->gprs[rm] & 0x00000002;
 	}
-	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE - misalign; \
-	if (cpu->executionMode == MODE_THUMB) { \
-		THUMB_WRITE_PC; \
-	} else { \
-		ARM_WRITE_PC; \
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE - misalign;
+	if (cpu->executionMode == MODE_THUMB) {
+		THUMB_WRITE_PC;
+	} else {
+		ARM_WRITE_PC;
 	})
 
 DEFINE_INSTRUCTION_THUMB(SWI, cpu->board->swi16(cpu->board, opcode & 0xFF))

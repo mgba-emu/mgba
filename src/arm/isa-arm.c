@@ -357,8 +357,7 @@ void ARMStep(struct ARMCore* cpu) {
 
 // TODO
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME, ADDRESS, S_PRE, S_POST, BODY) \
-	DEFINE_INSTRUCTION_ARM(NAME, \
-		BODY;)
+	DEFINE_INSTRUCTION_ARM(NAME, BODY;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, BODY) \
 	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA, ADDR_MODE_4_DA, , , BODY) \
@@ -380,55 +379,55 @@ void ARMStep(struct ARMCore* cpu) {
 
 // Begin ALU definitions
 
-DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] + cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(cpu->gprs[rn], shifterOperand, cpu->gprs[rd]), \
-	int32_t shifterOperand = cpu->shifterOperand + cpu->cpsr.c; \
+DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(cpu->gprs[rn], shifterOperand, cpu->gprs[rd]),
+	int32_t shifterOperand = cpu->shifterOperand + cpu->cpsr.c;
 	cpu->gprs[rd] = cpu->gprs[rn] + shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(BIC, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(BIC, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] & ~cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
 	int32_t aluOut = cpu->gprs[rn] + cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
 	int32_t aluOut = cpu->gprs[rn] - cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(EOR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(EOR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] ^ cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(MOV, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(MOV, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(MVN, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(MVN, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = ~cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(ORR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]), \
+DEFINE_ALU_INSTRUCTION_ARM(ORR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] | cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, cpu->gprs[rn], d), \
+DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, cpu->gprs[rn], d),
 	int32_t d = cpu->shifterOperand - cpu->gprs[rn];, cpu->gprs[rd] = d)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, d), \
-	int32_t n = cpu->gprs[rn] + !cpu->cpsr.c; \
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, d),
+	int32_t n = cpu->gprs[rn] + !cpu->cpsr.c;
 	int32_t d = cpu->shifterOperand - n;, cpu->gprs[rd] = d)
 
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(cpu->gprs[rn], shifterOperand, d), \
-	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.c; \
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(cpu->gprs[rn], shifterOperand, d),
+	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.c;
 	int32_t d = cpu->gprs[rn] - shifterOperand;, cpu->gprs[rd] = d)
 
-DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, d), \
+DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, d),
 	int32_t d = cpu->gprs[rn] - cpu->shifterOperand;, cpu->gprs[rd] = d)
 
-DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TEQ, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TEQ, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
 	int32_t aluOut = cpu->gprs[rn] ^ cpu->shifterOperand;, )
 
-DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut), \
+DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
 	int32_t aluOut = cpu->gprs[rn] & cpu->shifterOperand;, )
 
 // End ALU definitions
@@ -461,28 +460,28 @@ DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]))
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd]))
 
-DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT, \
-	enum PrivilegeMode priv = cpu->privilegeMode; \
-	ARMSetPrivilegeMode(cpu, MODE_USER); \
-	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address); \
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
+	enum PrivilegeMode priv = cpu->privilegeMode;
+	ARMSetPrivilegeMode(cpu, MODE_USER);
+	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address);
 	ARMSetPrivilegeMode(cpu, priv);)
 
-DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT, \
-	enum PrivilegeMode priv = cpu->privilegeMode; \
-	ARMSetPrivilegeMode(cpu, MODE_USER); \
-	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address); \
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
+	enum PrivilegeMode priv = cpu->privilegeMode;
+	ARMSetPrivilegeMode(cpu, MODE_USER);
+	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address);
 	ARMSetPrivilegeMode(cpu, priv);)
 
-DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT, \
-	enum PrivilegeMode priv = cpu->privilegeMode; \
-	ARMSetPrivilegeMode(cpu, MODE_USER); \
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]); \
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
+	enum PrivilegeMode priv = cpu->privilegeMode;
+	ARMSetPrivilegeMode(cpu, MODE_USER);
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]);
 	ARMSetPrivilegeMode(cpu, priv);)
 
-DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT, \
-	enum PrivilegeMode priv = cpu->privilegeMode; \
-	ARMSetPrivilegeMode(cpu, MODE_USER); \
-	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]); \
+DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
+	enum PrivilegeMode priv = cpu->privilegeMode;
+	ARMSetPrivilegeMode(cpu, MODE_USER);
+	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]);
 	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM, ARM_STUB)
@@ -495,21 +494,21 @@ DEFINE_INSTRUCTION_ARM(SWPB, ARM_STUB)
 
 // Begin branch definitions
 
-DEFINE_INSTRUCTION_ARM(B, \
-	int32_t offset = opcode << 8; \
-	offset >>= 6; \
-	cpu->gprs[ARM_PC] += offset; \
+DEFINE_INSTRUCTION_ARM(B,
+	int32_t offset = opcode << 8;
+	offset >>= 6;
+	cpu->gprs[ARM_PC] += offset;
 	ARM_WRITE_PC;)
 
 DEFINE_INSTRUCTION_ARM(BL, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(BX, \
-	int rm = opcode & 0x0000000F; \
-	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001); \
-	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE; \
-	if (cpu->executionMode == MODE_THUMB) { \
+DEFINE_INSTRUCTION_ARM(BX,
+	int rm = opcode & 0x0000000F;
+	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
+	if (cpu->executionMode == MODE_THUMB) {
 		THUMB_WRITE_PC;
-	} else { \
-		ARM_WRITE_PC; \
+	} else {
+		ARM_WRITE_PC;
 	})
 
 // End branch definitions
@@ -519,28 +518,28 @@ DEFINE_INSTRUCTION_ARM(BX, \
 DEFINE_INSTRUCTION_ARM(BKPT, ARM_STUB) // Not strictly in ARMv4T, but here for convenience
 DEFINE_INSTRUCTION_ARM(ILL, ARM_STUB) // Illegal opcode
 
-DEFINE_INSTRUCTION_ARM(MSR, \
-	int c = opcode & 0x00010000; \
-	int f = opcode & 0x00080000; \
-	int32_t operand; \
-	if (opcode & 0x02000000) { \
-		int rotate = (opcode & 0x00000F00) >> 8; \
-		operand = ARM_ROR(opcode & 0x000000FF, rotate); \
-	} else { \
-		operand = cpu->gprs[opcode & 0x0000000F]; \
-	} \
-	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0); \
-	if (opcode & 0x00400000) { \
-		mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK; \
-		cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask); \
-	} else { \
-		if (mask & PSR_USER_MASK) { \
-			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK); \
-		} \
-		if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) { \
-			ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010)); \
-			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK); \
-		} \
+DEFINE_INSTRUCTION_ARM(MSR,
+	int c = opcode & 0x00010000;
+	int f = opcode & 0x00080000;
+	int32_t operand;
+	if (opcode & 0x02000000) {
+		int rotate = (opcode & 0x00000F00) >> 8;
+		operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	} else {
+		operand = cpu->gprs[opcode & 0x0000000F];
+	}
+	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
+	if (opcode & 0x00400000) {
+		mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
+		cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);
+	} else {
+		if (mask & PSR_USER_MASK) {
+			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
+		}
+		if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
+			ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
+			cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
+		}
 	})
 
 DEFINE_INSTRUCTION_ARM(MRS, ARM_STUB)
