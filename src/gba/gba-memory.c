@@ -1,6 +1,7 @@
 #include "gba-memory.h"
 
 #include "gba-io.h"
+#include "hle-bios.h"
 
 #include <limits.h>
 #include <string.h>
@@ -26,7 +27,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.store16 = GBAStore16;
 	memory->d.store8 = GBAStore8;
 
-	memory->bios = 0;
+	memory->bios = hleBios;
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
@@ -75,7 +76,7 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		memory->activeRegion = gbaMemory->bios;
-		memory->activeMask = 0;
+		memory->activeMask = SIZE_BIOS - 1;
 		break;
 	case BASE_WORKING_RAM:
 		memory->activeRegion = gbaMemory->wram;
