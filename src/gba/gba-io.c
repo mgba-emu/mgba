@@ -41,6 +41,14 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case REG_IME:
 		GBAWriteIME(gba, value);
 		break;
+	case REG_HALTCNT:
+		value &= 0x80;
+		if (!value) {
+			GBAHalt(gba);
+		} else {
+			GBALog(GBA_LOG_STUB, "Stop unimplemented");
+		}
+		return;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
 		break;

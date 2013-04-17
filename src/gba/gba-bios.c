@@ -49,6 +49,9 @@ static void _CpuSet(struct GBA* gba) {
 void GBASwi16(struct ARMBoard* board, int immediate) {
 	struct GBA* gba = ((struct GBABoard*) board)->p;
 	switch (immediate) {
+	case 0x2:
+		GBAHalt(gba);
+		break;
 	case 0xB:
 		_CpuSet(gba);
 		break;

@@ -130,12 +130,6 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	}
 }
 
-void GBAPollNextEvent(struct GBA* gba) {
-	int32_t nextEvent = gba->video.nextEvent;
-
-	gba->cpu.nextEvent = nextEvent;
-}
-
 int GBATestIRQ(struct GBA* gba) {
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = 1;
@@ -146,24 +140,7 @@ int GBATestIRQ(struct GBA* gba) {
 }
 
 int GBAWaitForIRQ(struct GBA* gba) {
-	int irqPending = GBATestIRQ(gba) || gba->video.hblankIRQ || gba->video.vblankIRQ || gba->video.vcounterIRQ;
-	/*if (this.timersEnabled) {
-		timer = this.timers[0];
-		irqPending = irqPending || timer.doIrq;
-		timer = this.timers[1];
-		irqPending = irqPending || timer.doIrq;
-		timer = this.timers[2];
-		irqPending = irqPending || timer.doIrq;
-		timer = this.timers[3];
-		irqPending = irqPending || timer.doIrq;
-	}*/
-	if (!irqPending) {
-		return 0;
-	}
-
 	while (1) {
-		GBAPollNextEvent(gba);
-
 		if (gba->cpu.nextEvent == INT_MAX) {
 			return 0;
 		} else {
@@ -174,6 +151,10 @@ int GBAWaitForIRQ(struct GBA* gba) {
 			}
 		}
 	}
+}
+
+int GBAHalt(struct GBA* gba) {
+	return GBAWaitForIRQ(gba);
 }
 
 void GBALog(int level, const char* format, ...) {
