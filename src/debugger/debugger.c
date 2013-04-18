@@ -30,6 +30,8 @@ struct DebugBreakpoint {
 
 static const char* ERROR_MISSING_ARGS = "Arguments missing";
 
+static struct ARMDebugger* _activeDebugger;
+
 typedef void (DebuggerComamnd)(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakInto(struct ARMDebugger*, struct DebugVector*);
@@ -43,6 +45,8 @@ static void _readByte(struct ARMDebugger*, struct DebugVector*);
 static void _readHalfword(struct ARMDebugger*, struct DebugVector*);
 static void _readWord(struct ARMDebugger*, struct DebugVector*);
 static void _setBreakpoint(struct ARMDebugger*, struct DebugVector*);
+
+static void _breakIntoDefault(int signal);
 
 struct {
 	const char* name;
@@ -215,6 +219,11 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 			break;
 		}
 	}
+}
+
+static void _breakIntoDefault(int signal) {
+	(void)(signal);
+	_activeDebugger->state = DEBUGGER_PAUSED;
 }
 
 enum _DVParseState {
@@ -523,6 +532,8 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->state = DEBUGGER_PAUSED;
 	debugger->lastCommand = 0;
 	debugger->breakpoints = 0;
+	_activeDebugger = debugger;
+	signal(SIGINT, _breakIntoDefault);
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
