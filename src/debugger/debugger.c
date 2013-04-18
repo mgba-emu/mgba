@@ -466,7 +466,7 @@ static int _parse(struct ARMDebugger* debugger, const char* line) {
 	if (firstSpace) {
 		cmdLength = firstSpace - line;
 		dv = _DVParse(debugger, firstSpace + 1);
-		if (dv->type == ERROR_TYPE) {
+		if (dv && dv->type == ERROR_TYPE) {
 			printf("Parse error\n");
 			_DVFree(dv);
 			return 0;
