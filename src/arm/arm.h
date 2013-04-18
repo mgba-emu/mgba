@@ -53,7 +53,7 @@ struct ARMCore;
 union PSR {
 	struct {
 		enum PrivilegeMode priv : 5;
-		int t : 1;
+		enum ExecutionMode t : 1;
 		int f : 1;
 		int i : 1;
 		int : 20;
