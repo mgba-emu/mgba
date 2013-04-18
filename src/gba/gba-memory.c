@@ -113,7 +113,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	case BASE_WORKING_IRAM:
 		return gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
 	case BASE_IO:
-		break;
+		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1)) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
 	case BASE_PALETTE_RAM:
 		break;
 	case BASE_VRAM:
