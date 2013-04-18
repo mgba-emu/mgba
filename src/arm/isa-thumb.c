@@ -281,7 +281,7 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory->load32(c
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[ARM_SP] + immediate))
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory->store32(cpu->memory, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd]))
 
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, ARM_STUB)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, cpu->gprs[rd] = (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + immediate)
 
 #define DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB(NAME, RM, BODY) \
