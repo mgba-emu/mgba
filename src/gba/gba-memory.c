@@ -251,7 +251,7 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 		return ((uint8_t*) gbaMemory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
 		break;
 	case BASE_IO:
-		break;
+		return (GBAIORead(gbaMemory->p, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
 	case BASE_PALETTE_RAM:
 		break;
 	case BASE_VRAM:
