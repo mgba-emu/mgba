@@ -604,8 +604,14 @@ DEFINE_INSTRUCTION_ARM(MSRR,
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
 
-DEFINE_INSTRUCTION_ARM(MRS, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(MRSR, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(MRS, \
+	int rd = (opcode >> 12) & 0xF; \
+	cpu->gprs[rd] = cpu->cpsr.packed;)
+
+DEFINE_INSTRUCTION_ARM(MRSR, \
+	int rd = (opcode >> 12) & 0xF; \
+	cpu->gprs[rd] = cpu->spsr.packed;)
+
 DEFINE_INSTRUCTION_ARM(MSRI, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(SWI, ARM_STUB)
 
