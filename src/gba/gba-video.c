@@ -1,6 +1,7 @@
 #include "gba-video.h"
 
 #include "gba.h"
+#include "gba-io.h"
 
 #include <limits.h>
 
@@ -55,6 +56,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextEvent = video->nextHblank;
 
 			++video->vcount;
+			video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
 			switch (video->vcount) {
 			case VIDEO_VERTICAL_PIXELS:

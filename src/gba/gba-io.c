@@ -100,6 +100,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA3CNT_LO:
 		// Write-only register
 		return 0;
+	case REG_VCOUNT:
 	case REG_DMA0CNT_HI:
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
