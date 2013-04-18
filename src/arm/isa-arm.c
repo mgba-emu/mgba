@@ -574,13 +574,7 @@ DEFINE_INSTRUCTION_ARM(ILL, ARM_STUB) // Illegal opcode
 DEFINE_INSTRUCTION_ARM(MSR,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
-	int32_t operand;
-	if (opcode & 0x02000000) {
-		int rotate = (opcode & 0x00000F00) >> 8;
-		operand = ARM_ROR(opcode & 0x000000FF, rotate);
-	} else {
-		operand = cpu->gprs[opcode & 0x0000000F];
-	}
+	int32_t operand = cpu->gprs[opcode & 0x0000000F];
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
@@ -593,13 +587,7 @@ DEFINE_INSTRUCTION_ARM(MSR,
 DEFINE_INSTRUCTION_ARM(MSRR,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
-	int32_t operand;
-	if (opcode & 0x02000000) {
-		int rotate = (opcode & 0x00000F00) >> 8;
-		operand = ARM_ROR(opcode & 0x000000FF, rotate);
-	} else {
-		operand = cpu->gprs[opcode & 0x0000000F];
-	}
+	int32_t operand = cpu->gprs[opcode & 0x0000000F];
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
@@ -612,7 +600,29 @@ DEFINE_INSTRUCTION_ARM(MRSR, \
 	int rd = (opcode >> 12) & 0xF; \
 	cpu->gprs[rd] = cpu->spsr.packed;)
 
-DEFINE_INSTRUCTION_ARM(MSRI, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(MSRI,
+	int c = opcode & 0x00010000;
+	int f = opcode & 0x00080000;
+	int rotate = (opcode & 0x00000F00) >> 8;
+	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
+	if (mask & PSR_USER_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
+	}
+	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
+		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
+	})
+
+DEFINE_INSTRUCTION_ARM(MSRRI,
+	int c = opcode & 0x00010000;
+	int f = opcode & 0x00080000;
+	int rotate = (opcode & 0x00000F00) >> 8;
+	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
+	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
+	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
+
 DEFINE_INSTRUCTION_ARM(SWI, ARM_STUB)
 
 #define DECLARE_INSTRUCTION_ARM(EMITTER, NAME) \
@@ -796,7 +806,7 @@ DEFINE_INSTRUCTION_ARM(SWI, ARM_STUB)
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, TEQ), \
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, CMP), \
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, CMP), \
-	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, MSR), \
+	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, MSRR), \
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, CMN), \
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, ORR), \
 	DECLARE_ARM_ALU_IMMEDIATE_BLOCK(EMITTER, ORRS), \
