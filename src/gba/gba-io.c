@@ -11,25 +11,25 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
 		break;
 	case REG_DMA0CNT_HI:
-		GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
+		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
 		break;
 	case REG_DMA1CNT_LO:
 		GBAMemoryWriteDMACNT_LO(&gba->memory, 1, value);
 		break;
 	case REG_DMA1CNT_HI:
-		GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
+		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
 		break;
 	case REG_DMA2CNT_LO:
 		GBAMemoryWriteDMACNT_LO(&gba->memory, 2, value);
 		break;
 	case REG_DMA2CNT_HI:
-		GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
+		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
 		break;
 	case REG_DMA3CNT_LO:
 		GBAMemoryWriteDMACNT_LO(&gba->memory, 3, value);
 		break;
 	case REG_DMA3CNT_HI:
-		GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
+		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
 		break;
 
 	case REG_WAITCNT:
@@ -94,6 +94,16 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DISPSTAT:
 		return GBAVideoReadDISPSTAT(&gba->video);
 		break;
+	case REG_DMA0CNT_LO:
+	case REG_DMA1CNT_LO:
+	case REG_DMA2CNT_LO:
+	case REG_DMA3CNT_LO:
+		// Write-only register
+		return 0;
+	case REG_DMA0CNT_HI:
+	case REG_DMA1CNT_HI:
+	case REG_DMA2CNT_HI:
+	case REG_DMA3CNT_HI:
 	case REG_IE:
 	case REG_WAITCNT:
 	case REG_IME:

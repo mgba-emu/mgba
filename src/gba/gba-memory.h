@@ -134,7 +134,7 @@ void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters);
 void GBAMemoryWriteDMASAD(struct GBAMemory* memory, int dma, uint32_t address);
 void GBAMemoryWriteDMADAD(struct GBAMemory* memory, int dma, uint32_t address);
 void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count);
-void GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control);
+uint16_t GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control);
 
 void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
 void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* info);

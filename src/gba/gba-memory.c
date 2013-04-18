@@ -461,7 +461,7 @@ void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count) 
 	memory->dma[dma].count = count ? count : (dma == 3 ? 0x10000 : 0x4000);
 }
 
-void GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control) {
+uint16_t GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control) {
 	struct GBADMA* currentDma = &memory->dma[dma];
 	int wasEnabled = currentDma->enable;
 	currentDma->packed = control;
@@ -477,6 +477,8 @@ void GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control
 		currentDma->nextCount = currentDma->count;
 		GBAMemoryScheduleDMA(memory, dma, currentDma);
 	}
+	// If the DMA has already occurred, this value might have changed since the function started
+	return currentDma->packed;
 };
 
 void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info) {
