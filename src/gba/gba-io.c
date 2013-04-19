@@ -2,6 +2,10 @@
 
 #include "gba-video.h"
 
+void GBAIOInit(struct GBA* gba) {
+	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
+}
+
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	switch (address) {
 	case REG_DISPSTAT:

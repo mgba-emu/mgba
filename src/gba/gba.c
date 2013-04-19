@@ -37,6 +37,8 @@ void GBAInit(struct GBA* gba) {
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
 
+	GBAIOInit(gba);
+
 	gba->springIRQ = 0;
 
 	ARMReset(&gba->cpu);
