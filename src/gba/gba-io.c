@@ -42,6 +42,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case REG_IE:
 		GBAWriteIE(gba, value);
 		break;
+	case REG_IF:
+		value = gba->memory.io[REG_IF >> 1] & ~value;
+		break;
 	case REG_IME:
 		GBAWriteIME(gba, value);
 		break;
@@ -110,6 +113,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA2CNT_HI:
 	case REG_DMA3CNT_HI:
 	case REG_IE:
+	case REG_IF:
 	case REG_WAITCNT:
 	case REG_IME:
 		// Handled transparently by registers
