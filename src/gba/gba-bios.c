@@ -3,6 +3,8 @@
 #include "gba.h"
 #include "gba-memory.h"
 
+#include <math.h>
+
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 
 static void _CpuSet(struct GBA* gba) {
@@ -68,6 +70,11 @@ static void _FastCpuSet(struct GBA* gba) {
 	}
 }
 
+static void _MidiKey2Freq(struct GBA* gba) {
+	uint32_t key = GBALoad32(&gba->memory.d, gba->cpu.gprs[0] + 4);
+	gba->cpu.gprs[0] = key / pow(2, (180 - gba->cpu.gprs[1] - gba->cpu.gprs[2] / 256) / 12);
+}
+
 void GBASwi16(struct ARMBoard* board, int immediate) {
 	struct GBA* gba = ((struct GBABoard*) board)->p;
 	switch (immediate) {
@@ -85,6 +92,9 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		break;
 	case 0x12:
 		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & (SIZE_VRAM - 1))]);
+		break;
+	case 0x1F:
+		_MidiKey2Freq(gba);
 		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
