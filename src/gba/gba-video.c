@@ -4,15 +4,16 @@
 #include "gba-io.h"
 
 #include <limits.h>
+#include <string.h>
 
-static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
+static void GBAVideoRendererInit(struct GBAVideoRenderer* renderer);
+
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
 static struct GBAVideoRenderer dummyRenderer = {
-	.init = GBAVideoDummyRendererInit,
 	.deinit = GBAVideoDummyRendererDeinit,
 	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
@@ -127,9 +128,10 @@ uint16_t GBAVideoReadDISPSTAT(struct GBAVideo* video) {
 	return (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
 }
 
-static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
-	// Nothing to do
+static void GBAVideoRendererInit(struct GBAVideoRenderer* renderer) {
+	memset(renderer->palette, 0, sizeof(renderer->palette));
+	memset(renderer->vram, 0, sizeof(renderer->vram));
+	memset(&renderer->oam, 0, sizeof(renderer->oam));
 }
 
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {

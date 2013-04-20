@@ -89,7 +89,6 @@ union GBAOAM {
 };
 
 struct GBAVideoRenderer {
-	void (*init)(struct GBAVideoRenderer* renderer);
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
