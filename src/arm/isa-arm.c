@@ -230,6 +230,10 @@ void ARMStep(struct ARMCore* cpu) {
 		cpu->cpsr.c = cpu->shifterCarryOut; \
 	}
 
+#define ARM_NEUTRAL_HI_S(DLO, DHI) \
+	cpu->cpsr.n = ARM_SIGN(DHI); \
+	cpu->cpsr.z = !((DHI) | (DLO));
+
 #define ADDR_MODE_2_ADDRESS (address)
 #define ADDR_MODE_2_RN (cpu->gprs[rn])
 #define ADDR_MODE_2_RM (cpu->gprs[rm])
@@ -510,8 +514,11 @@ DEFINE_INSTRUCTION_ARM(SMULL, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(SMULLS, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(UMLAL, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(UMLALS, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(UMULL, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(UMULLS, ARM_STUB)
+DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
+	uint64_t d = ((uint64_t) cpu->gprs[rm]) * ((uint64_t) cpu->gprs[rs]);
+	cpu->gprs[rd] = d;
+	cpu->gprs[rdHi] = d >> 32;,
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 // End multiply definitions
 
