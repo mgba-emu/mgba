@@ -72,7 +72,7 @@ static void _FastCpuSet(struct GBA* gba) {
 
 static void _MidiKey2Freq(struct GBA* gba) {
 	uint32_t key = GBALoad32(&gba->memory.d, gba->cpu.gprs[0] + 4);
-	gba->cpu.gprs[0] = key / pow(2, (180 - gba->cpu.gprs[1] - gba->cpu.gprs[2] / 256) / 12);
+	gba->cpu.gprs[0] = key / powf(2, (180.f - gba->cpu.gprs[1] - gba->cpu.gprs[2] / 256.f) / 12.f);
 }
 
 void GBASwi16(struct ARMBoard* board, int immediate) {
