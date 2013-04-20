@@ -91,7 +91,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
 		break;
 	case 0x12:
-		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & (SIZE_VRAM - 1))]);
+		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.vram)[(gba->cpu.gprs[1] & (SIZE_VRAM - 1))]);
 		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);

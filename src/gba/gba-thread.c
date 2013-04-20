@@ -16,6 +16,10 @@ static void* _GBAThreadRun(void* context) {
 	pthread_sigmask(SIG_UNBLOCK, &signals, 0);
 
 	GBAInit(&gba);
+	if (threadContext->renderer) {
+		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
+	}
+
 	threadContext->gba = &gba;
 	threadContext->debugger = &debugger;
 	if (threadContext->fd >= 0) {

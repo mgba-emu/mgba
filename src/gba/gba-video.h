@@ -89,15 +89,16 @@ union GBAOAM {
 };
 
 struct GBAVideoRenderer {
+	void (*init)(struct GBAVideoRenderer* renderer);
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 
-	uint16_t palette[SIZE_PALETTE_RAM >> 1];
-	uint16_t vram[SIZE_VRAM >> 1];
-	union GBAOAM oam;
+	uint16_t* palette;
+	uint16_t* vram;
+	union GBAOAM* oam;
 };
 
 struct GBAVideo {
@@ -124,9 +125,14 @@ struct GBAVideo {
 	int32_t nextHblankIRQ;
 	int32_t nextVblankIRQ;
 	int32_t nextVcounterIRQ;
+
+	uint16_t palette[SIZE_PALETTE_RAM >> 1];
+	uint16_t vram[SIZE_VRAM >> 1];
+	union GBAOAM oam;
 };
 
 void GBAVideoInit(struct GBAVideo* video);
+void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);

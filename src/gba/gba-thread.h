@@ -4,8 +4,12 @@
 #include <pthread.h>
 
 struct GBAThread {
+	// Output
 	struct GBA* gba;
 	struct ARMDebugger* debugger;
+
+	// Input
+	struct GBAVideoRenderer* renderer;
 	int fd;
 };
 
