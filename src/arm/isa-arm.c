@@ -269,7 +269,11 @@ void ARMStep(struct ARMCore* cpu) {
 		S_BODY; \
 		POST_BODY; \
 		if (rd == ARM_PC) { \
-			ARM_WRITE_PC; \
+			if (cpu->executionMode == MODE_ARM) { \
+				ARM_WRITE_PC; \
+			} else { \
+				THUMB_WRITE_PC; \
+			} \
 		})
 
 #define DEFINE_ALU_INSTRUCTION_ARM(NAME, S_BODY, BODY, POST_BODY) \
