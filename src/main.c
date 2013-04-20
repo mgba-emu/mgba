@@ -1,22 +1,25 @@
-#include "arm.h"
-#include "debugger.h"
-#include "gba.h"
+#include "gba-thread.h"
+
 
 #include <fcntl.h>
-#include <sys/stat.h>
+#include <errno.h>
+#include <signal.h>
 #include <unistd.h>
 
 int main(int argc, char** argv) {
-	struct ARMDebugger debugger;
-	struct GBA gba;
-	GBAInit(&gba);
 	int fd = open("test.rom", O_RDONLY);
-	GBALoadROM(&gba, fd);
-	gba.cpu.gprs[ARM_PC] = 0x08000004;
-	gba.memory.d.setActiveRegion(&gba.memory.d, gba.cpu.gprs[ARM_PC]);
-	GBAAttachDebugger(&gba, &debugger);
-	ARMDebuggerRun(&debugger);
-	GBADeinit(&gba);
+
+	sigset_t signals;
+	sigaddset(&signals, SIGINT);
+	sigaddset(&signals, SIGTRAP);
+	pthread_sigmask(SIG_BLOCK, &signals, 0);
+
+	struct GBAThread context;
+	context.fd = fd;
+	pthread_t thread;
+	GBAThreadStart(&context, &thread);
+
+	pthread_join(thread, 0);
 	close(fd);
 
 	return 0;
