@@ -36,6 +36,36 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
 		break;
 
+	case REG_TM0CNT_LO:
+		GBATimerWriteTMCNT_LO(gba, 0, value);
+		return;
+	case REG_TM1CNT_LO:
+		GBATimerWriteTMCNT_LO(gba, 1, value);
+		return;
+	case REG_TM2CNT_LO:
+		GBATimerWriteTMCNT_LO(gba, 2, value);
+		return;
+	case REG_TM3CNT_LO:
+		GBATimerWriteTMCNT_LO(gba, 3, value);
+		return;
+
+	case REG_TM0CNT_HI:
+		value &= 0x00C7;
+		GBATimerWriteTMCNT_HI(gba, 0, value);
+		break;
+	case REG_TM1CNT_HI:
+		value &= 0x00C7;
+		GBATimerWriteTMCNT_HI(gba, 1, value);
+		break;
+	case REG_TM2CNT_HI:
+		value &= 0x00C7;
+		GBATimerWriteTMCNT_HI(gba, 2, value);
+		break;
+	case REG_TM3CNT_HI:
+		value &= 0x00C7;
+		GBATimerWriteTMCNT_HI(gba, 3, value);
+		break;
+
 	case REG_WAITCNT:
 		GBAAdjustWaitstates(&gba->memory, value);
 		break;
@@ -101,6 +131,20 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DISPSTAT:
 		return gba->memory.io[REG_DISPSTAT >> 1] | GBAVideoReadDISPSTAT(&gba->video);
 		break;
+
+	case REG_TM0CNT_LO:
+		GBATimerUpdateRegister(gba, 0);
+		break;
+	case REG_TM1CNT_LO:
+		GBATimerUpdateRegister(gba, 1);
+		break;
+	case REG_TM2CNT_LO:
+		GBATimerUpdateRegister(gba, 2);
+		break;
+	case REG_TM3CNT_LO:
+		GBATimerUpdateRegister(gba, 3);
+		break;
+
 	case REG_DMA0CNT_LO:
 	case REG_DMA1CNT_LO:
 	case REG_DMA2CNT_LO:

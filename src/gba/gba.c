@@ -104,7 +104,9 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		timer = &gba->timers[0];
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
+			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
+				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
@@ -127,7 +129,9 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		timer = &gba->timers[1];
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
+			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
+				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM1CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
@@ -156,8 +160,10 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		timer = &gba->timers[2];
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
+			timer->lastEvent -= cycles;
 			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
+				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM2CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
@@ -186,8 +192,10 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		timer = &gba->timers[3];
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
+			timer->lastEvent -= cycles;
 			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
+				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM3CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
@@ -217,6 +225,65 @@ void GBALoadROM(struct GBA* gba, int fd) {
 	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
 	// TODO: error check
 }
+
+void GBATimerUpdateRegister(struct GBA* gba, int timer) {
+	struct GBATimer* currentTimer = &gba->timers[timer];
+	if (currentTimer->enable && !currentTimer->countUp) {
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu.cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
+	}
+}
+
+void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
+	gba->timers[timer].reload = reload;
+}
+
+void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
+	struct GBATimer* currentTimer = &gba->timers[timer];
+	GBATimerUpdateRegister(gba, timer);
+
+	int oldPrescale = currentTimer->prescaleBits;
+	switch (control & 0x0003) {
+	case 0x0000:
+		currentTimer->prescaleBits = 0;
+		break;
+	case 0x0001:
+		currentTimer->prescaleBits = 6;
+		break;
+	case 0x0002:
+		currentTimer->prescaleBits = 8;
+		break;
+	case 0x0003:
+		currentTimer->prescaleBits = 10;
+		break;
+	}
+	currentTimer->countUp = !!(control & 0x0004);
+	currentTimer->doIrq = !!(control & 0x0040);
+	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << currentTimer->prescaleBits;
+	int wasEnabled = currentTimer->enable;
+	currentTimer->enable = !!(control & 0x0080);
+	if (!wasEnabled && currentTimer->enable) {
+		if (!currentTimer->countUp) {
+			currentTimer->nextEvent = gba->cpu.cycles + currentTimer->overflowInterval;
+		} else {
+			currentTimer->nextEvent = INT_MAX;
+		}
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->reload;
+		currentTimer->oldReload = currentTimer->reload;
+		gba->timersEnabled |= 1 << timer;
+	} else if (wasEnabled && !currentTimer->enable) {
+		if (!currentTimer->countUp) {
+			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu.cycles - currentTimer->lastEvent) >> oldPrescale);
+		}
+		gba->timersEnabled &= ~(1 << timer);
+	} else if (currentTimer->prescaleBits != oldPrescale && !currentTimer->countUp) {
+		// FIXME: this might be before present
+		currentTimer->nextEvent = currentTimer->lastEvent + currentTimer->overflowInterval;
+	}
+
+	if (currentTimer->nextEvent < gba->cpu.nextEvent) {
+		gba->cpu.nextEvent = currentTimer->nextEvent;
+	}
+};
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_SIO)) {

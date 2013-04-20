@@ -50,6 +50,7 @@ struct GBA {
 	struct GBATimer {
 		uint16_t reload;
 		uint16_t oldReload;
+		int32_t lastEvent;
 		int32_t nextEvent;
 		int32_t overflowInterval;
 		unsigned prescaleBits : 4;
@@ -72,6 +73,10 @@ void GBAMemoryDeinit(struct GBAMemory* memory);
 
 void GBABoardInit(struct GBABoard* board);
 void GBABoardReset(struct ARMBoard* board);
+
+void GBATimerUpdateRegister(struct GBA* gba, int timer);
+void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
+void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 
 void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
