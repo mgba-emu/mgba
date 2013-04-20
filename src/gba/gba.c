@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 
 enum {
@@ -18,6 +19,7 @@ enum {
 };
 
 static void GBAProcessEvents(struct ARMBoard* board);
+static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 
 void GBAInit(struct GBA* gba) {
@@ -38,6 +40,8 @@ void GBAInit(struct GBA* gba) {
 	GBAVideoInit(&gba->video);
 
 	GBAIOInit(gba);
+
+	memset(gba->timers, 0, sizeof(gba->timers));
 
 	gba->springIRQ = 0;
 
@@ -82,8 +86,126 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 		nextEvent = testEvent;
 	}
 
+	testEvent = GBATimersProcessEvents(gbaBoard->p, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
 	board->cpu->cycles = 0;
 	board->cpu->nextEvent = nextEvent;
+}
+
+static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
+	int32_t nextEvent = INT_MAX;
+	if (gba->timersEnabled) {
+		struct GBATimer* timer;
+		struct GBATimer* nextTimer;
+
+		timer = &gba->timers[0];
+		if (timer->enable) {
+			timer->nextEvent -= cycles;
+			if (timer->nextEvent <= 0) {
+				timer->nextEvent += timer->overflowInterval;
+				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
+				timer->oldReload = timer->reload;
+
+				if (timer->doIrq) {
+					GBARaiseIRQ(gba, IRQ_TIMER0);
+				}
+
+				nextTimer = &gba->timers[1];
+				if (nextTimer->countUp) {
+					++gba->memory.io[REG_TM1CNT_LO >> 1];
+					if (!gba->memory.io[REG_TM1CNT_LO >> 1]) {
+						nextTimer->nextEvent = 0;
+					}
+				}
+			}
+			nextEvent = timer->nextEvent;
+		}
+
+		timer = &gba->timers[1];
+		if (timer->enable) {
+			timer->nextEvent -= cycles;
+			if (timer->nextEvent <= 0) {
+				timer->nextEvent += timer->overflowInterval;
+				gba->memory.io[REG_TM1CNT_LO >> 1] = timer->reload;
+				timer->oldReload = timer->reload;
+
+				if (timer->doIrq) {
+					GBARaiseIRQ(gba, IRQ_TIMER1);
+				}
+
+				if (timer->countUp) {
+					timer->nextEvent = INT_MAX;
+				}
+
+				nextTimer = &gba->timers[2];
+				if (nextTimer->countUp) {
+					++gba->memory.io[REG_TM2CNT_LO >> 1];
+					if (!gba->memory.io[REG_TM2CNT_LO >> 1]) {
+						nextTimer->nextEvent = 0;
+					}
+				}
+			}
+			if (timer->nextEvent < nextEvent) {
+				nextEvent = timer->nextEvent;
+			}
+		}
+
+		timer = &gba->timers[2];
+		if (timer->enable) {
+			timer->nextEvent -= cycles;
+			nextEvent = timer->nextEvent;
+			if (timer->nextEvent <= 0) {
+				timer->nextEvent += timer->overflowInterval;
+				gba->memory.io[REG_TM2CNT_LO >> 1] = timer->reload;
+				timer->oldReload = timer->reload;
+
+				if (timer->doIrq) {
+					GBARaiseIRQ(gba, IRQ_TIMER2);
+				}
+
+				if (timer->countUp) {
+					timer->nextEvent = INT_MAX;
+				}
+
+				nextTimer = &gba->timers[3];
+				if (nextTimer->countUp) {
+					++gba->memory.io[REG_TM3CNT_LO >> 1];
+					if (!gba->memory.io[REG_TM3CNT_LO >> 1]) {
+						nextTimer->nextEvent = 0;
+					}
+				}
+			}
+			if (timer->nextEvent < nextEvent) {
+				nextEvent = timer->nextEvent;
+			}
+		}
+
+		timer = &gba->timers[3];
+		if (timer->enable) {
+			timer->nextEvent -= cycles;
+			nextEvent = timer->nextEvent;
+			if (timer->nextEvent <= 0) {
+				timer->nextEvent += timer->overflowInterval;
+				gba->memory.io[REG_TM3CNT_LO >> 1] = timer->reload;
+				timer->oldReload = timer->reload;
+
+				if (timer->doIrq) {
+					GBARaiseIRQ(gba, IRQ_TIMER3);
+				}
+
+				if (timer->countUp) {
+					timer->nextEvent = INT_MAX;
+				}
+			}
+			if (timer->nextEvent < nextEvent) {
+				nextEvent = timer->nextEvent;
+			}
+		}
+	}
+	return nextEvent;
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
@@ -97,10 +219,6 @@ void GBALoadROM(struct GBA* gba, int fd) {
 }
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
-	if (value & ((1 << IRQ_TIMER0) | (1 << IRQ_TIMER1) | (1 << IRQ_TIMER2) | (1 << IRQ_TIMER3))) {
-		GBALog(GBA_LOG_STUB, "Timer interrupts not implemented");
-	}
-
 	if (value & (1 << IRQ_SIO)) {
 		GBALog(GBA_LOG_STUB, "SIO interrupts not implemented");
 	}
