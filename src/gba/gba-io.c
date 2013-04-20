@@ -8,9 +8,12 @@ void GBAIOInit(struct GBA* gba) {
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	switch (address) {
+	// Video
 	case REG_DISPSTAT:
 		GBAVideoWriteDISPSTAT(&gba->video, value);
 		break;
+
+	// DMA
 	case REG_DMA0CNT_LO:
 		GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
 		break;
@@ -36,6 +39,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
 		break;
 
+	// Timers
 	case REG_TM0CNT_LO:
 		GBATimerWriteTMCNT_LO(gba, 0, value);
 		return;
@@ -66,6 +70,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		GBATimerWriteTMCNT_HI(gba, 3, value);
 		break;
 
+	// Interrupts and misc
 	case REG_WAITCNT:
 		GBAAdjustWaitstates(&gba->memory, value);
 		break;
