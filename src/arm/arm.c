@@ -96,6 +96,7 @@ void ARMReset(struct ARMCore* cpu) {
 		cpu->bankedSPSRs[i] = 0;
 	}
 
+	cpu->privilegeMode = MODE_SYSTEM;
 	cpu->cpsr.packed = MODE_SYSTEM;
 	cpu->spsr.packed = 0;
 
