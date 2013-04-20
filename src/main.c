@@ -1,5 +1,5 @@
 #include "gba-thread.h"
-
+#include "renderers/video-software.h"
 
 #include <fcntl.h>
 #include <errno.h>
@@ -15,8 +15,11 @@ int main(int argc, char** argv) {
 	pthread_sigmask(SIG_BLOCK, &signals, 0);
 
 	struct GBAThread context;
+	struct GBAVideoSoftwareRenderer renderer;
 	context.fd = fd;
+	context.renderer = 0;
 	pthread_t thread;
+
 	GBAThreadStart(&context, &thread);
 
 	pthread_join(thread, 0);

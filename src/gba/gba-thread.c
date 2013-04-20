@@ -26,6 +26,12 @@ static void* _GBAThreadRun(void* context) {
 		GBALoadROM(&gba, threadContext->fd);
 	}
 	GBAAttachDebugger(&gba, &debugger);
+
+	threadContext->started = 1;
+	pthread_mutex_lock(&threadContext->mutex);
+	pthread_cond_broadcast(&threadContext->cond);
+	pthread_mutex_unlock(&threadContext->mutex);
+
 	ARMDebuggerRun(&debugger);
 	GBADeinit(&gba);
 
@@ -33,5 +39,21 @@ static void* _GBAThreadRun(void* context) {
 }
 
 int GBAThreadStart(struct GBAThread* threadContext, pthread_t* thread) {
-	return pthread_create(thread, 0, _GBAThreadRun, threadContext);
+	// TODO: error check
+	{
+		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+		threadContext->mutex = mutex;
+		pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+		threadContext->cond = cond;
+	}
+	pthread_mutex_init(&threadContext->mutex, 0);
+	pthread_cond_init(&threadContext->cond, 0);
+
+	pthread_mutex_lock(&threadContext->mutex);
+	threadContext->started = 0;
+	pthread_create(thread, 0, _GBAThreadRun, threadContext);
+	pthread_cond_wait(&threadContext->cond, &threadContext->mutex);
+	pthread_mutex_unlock(&threadContext->mutex);
+
+	return 0;
 }
