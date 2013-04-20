@@ -44,10 +44,12 @@ void GBAVideoInit(struct GBAVideo* video) {
 }
 
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
+	video->renderer->deinit(video->renderer);
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	renderer->vram = video->vram;
 	renderer->oam = &video->oam;
+	video->renderer->init(video->renderer);
 }
 
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
