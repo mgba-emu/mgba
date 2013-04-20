@@ -27,7 +27,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.store16 = GBAStore16;
 	memory->d.store8 = GBAStore8;
 
-	memory->bios = hleBios;
+	memory->bios = (uint32_t*) hleBios;
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
