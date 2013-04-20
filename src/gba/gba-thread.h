@@ -16,8 +16,10 @@ struct GBAThread {
 	// Threading state
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
+	pthread_t thread;
 };
 
-int GBAThreadStart(struct GBAThread* threadContext, pthread_t* thread);
+int GBAThreadStart(struct GBAThread* threadContext);
+void GBAThreadJoin(struct GBAThread* threadContext);
 
 #endif

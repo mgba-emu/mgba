@@ -38,7 +38,7 @@ static void* _GBAThreadRun(void* context) {
 	return 0;
 }
 
-int GBAThreadStart(struct GBAThread* threadContext, pthread_t* thread) {
+int GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
 	{
 		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -51,9 +51,13 @@ int GBAThreadStart(struct GBAThread* threadContext, pthread_t* thread) {
 
 	pthread_mutex_lock(&threadContext->mutex);
 	threadContext->started = 0;
-	pthread_create(thread, 0, _GBAThreadRun, threadContext);
+	pthread_create(&threadContext->thread, 0, _GBAThreadRun, threadContext);
 	pthread_cond_wait(&threadContext->cond, &threadContext->mutex);
 	pthread_mutex_unlock(&threadContext->mutex);
 
 	return 0;
+}
+
+void GBAThreadJoin(struct GBAThread* threadContext) {
+	pthread_join(threadContext->thread, 0);
 }

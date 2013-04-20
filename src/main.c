@@ -18,11 +18,8 @@ int main(int argc, char** argv) {
 	struct GBAVideoSoftwareRenderer renderer;
 	context.fd = fd;
 	context.renderer = 0;
-	pthread_t thread;
-
-	GBAThreadStart(&context, &thread);
-
-	pthread_join(thread, 0);
+	GBAThreadStart(&context);
+	GBAThreadJoin(&context);
 	close(fd);
 
 	return 0;
