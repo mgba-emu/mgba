@@ -12,7 +12,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/debugger)
 include_directories(${CMAKE_SOURCE_DIR}/third-party/linenoise)
 
 find_package(SDL 1.2 REQUIRED)
-include_directories(${SDL_INCLUDE_DIR})
+find_package(OpenGL REQUIRED)
+include_directories(${SDL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 
 add_executable(gbac ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${THIRD_PARTY} ${CMAKE_SOURCE_DIR}/src/main.c)
-target_link_libraries(gbac m pthread ${SDL_LIBRARY})
+target_link_libraries(gbac m pthread ${SDL_LIBRARY} ${OPENGL_LIBRARY})
