@@ -33,6 +33,7 @@ static void* _GBAThreadRun(void* context) {
 	pthread_mutex_unlock(&threadContext->mutex);
 
 	ARMDebuggerRun(&debugger);
+	threadContext->started = 0;
 	GBADeinit(&gba);
 
 	return 0;

@@ -14,10 +14,20 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
+
+	{
+		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+		renderer->mutex = mutex;
+		pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+		renderer->cond = cond;
+	}
 }
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+
+	pthread_mutex_init(&softwareRenderer->mutex, 0);
+	pthread_cond_init(&softwareRenderer->cond, 0);
 }
 
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
@@ -35,4 +45,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+
+	pthread_mutex_lock(&softwareRenderer->mutex);
+	pthread_cond_wait(&softwareRenderer->cond, &softwareRenderer->mutex);
+	pthread_mutex_unlock(&softwareRenderer->mutex);
 }

@@ -10,5 +10,9 @@ include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src/debugger)
 include_directories(${CMAKE_SOURCE_DIR}/third-party/linenoise)
+
+find_package(SDL 1.2 REQUIRED)
+include_directories(${SDL_INCLUDE_DIR})
+
 add_executable(gbac ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${THIRD_PARTY} ${CMAKE_SOURCE_DIR}/src/main.c)
-target_link_libraries(gbac m pthread)
+target_link_libraries(gbac m pthread ${SDL_LIBRARY})
