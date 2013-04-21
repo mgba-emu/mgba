@@ -63,4 +63,7 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 
 void GBAThreadJoin(struct GBAThread* threadContext) {
 	pthread_join(threadContext->thread, 0);
+
+	pthread_mutex_destroy(&threadContext->mutex);
+	pthread_cond_destroy(&threadContext->cond);
 }
