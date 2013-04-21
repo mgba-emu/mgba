@@ -88,6 +88,38 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0xFFCF;
 		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[3], value);
 		break;
+	case REG_BG0HOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[0].x = value;
+		break;
+	case REG_BG0VOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[0].y = value;
+		break;
+	case REG_BG1HOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[1].x = value;
+		break;
+	case REG_BG1VOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[1].y = value;
+		break;
+	case REG_BG2HOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[2].x = value;
+		break;
+	case REG_BG2VOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[2].y = value;
+		break;
+	case REG_BG3HOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[3].x = value;
+		break;
+	case REG_BG3VOFS:
+		value &= 0x01FF;
+		softwareRenderer->bg[3].y = value;
+		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
 	}
