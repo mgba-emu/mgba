@@ -88,6 +88,50 @@ union GBAOAM {
 	uint16_t raw[512];
 };
 
+union GBATextMapData {
+	struct {
+		unsigned tile : 9;
+		unsigned hflip : 1;
+		unsigned vflip : 1;
+		unsigned palette : 5;
+	};
+	uint16_t packed;
+};
+
+union GBARegisterDISPCNT {
+	struct {
+		unsigned mode : 3;
+		unsigned cgb : 1;
+		unsigned frameSelect : 1;
+		unsigned hblankIntervalFree : 1;
+		unsigned objCharacterMapping : 1;
+		unsigned forcedBlank : 1;
+		unsigned bg0Enable : 1;
+		unsigned bg1Enable : 1;
+		unsigned bg2Enable : 1;
+		unsigned bg3Enable : 1;
+		unsigned objEnable : 1;
+		unsigned win0Enable : 1;
+		unsigned win1Enable : 1;
+		unsigned objwinEnable : 1;
+	};
+	uint16_t packed;
+};
+
+union GBARegisterBGCNT {
+	struct {
+		unsigned priority : 2;
+		unsigned charBase : 2;
+		unsigned : 2;
+		unsigned mosaic : 1;
+		unsigned multipalette : 1;
+		unsigned screenBase : 5;
+		unsigned overflow : 1;
+		unsigned size : 2;
+	};
+	uint16_t packed;
+};
+
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
 	void (*deinit)(struct GBAVideoRenderer* renderer);
