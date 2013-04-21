@@ -44,6 +44,7 @@ void GBAInit(struct GBA* gba) {
 	memset(gba->timers, 0, sizeof(gba->timers));
 
 	gba->springIRQ = 0;
+	gba->keySource = 0;
 
 	ARMReset(&gba->cpu);
 }

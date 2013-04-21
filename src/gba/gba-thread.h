@@ -12,6 +12,7 @@ struct GBAThread {
 	// Input
 	struct GBAVideoRenderer* renderer;
 	int fd;
+	int activeKeys;
 
 	// Threading state
 	pthread_mutex_t mutex;

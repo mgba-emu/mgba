@@ -150,6 +150,12 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		GBATimerUpdateRegister(gba, 3);
 		break;
 
+	case REG_KEYINPUT:
+		if (gba->keySource) {
+			return 0x3FF ^ *gba->keySource;
+		}
+		break;
+
 	case REG_DMA0CNT_LO:
 	case REG_DMA1CNT_LO:
 	case REG_DMA2CNT_LO:

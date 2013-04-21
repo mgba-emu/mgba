@@ -26,6 +26,7 @@ static void* _GBAThreadRun(void* context) {
 		GBALoadROM(&gba, threadContext->fd);
 	}
 	GBAAttachDebugger(&gba, &debugger);
+	gba.keySource = &threadContext->activeKeys;
 
 	threadContext->started = 1;
 	pthread_mutex_lock(&threadContext->mutex);
@@ -51,6 +52,7 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	pthread_cond_init(&threadContext->cond, 0);
 
 	pthread_mutex_lock(&threadContext->mutex);
+	threadContext->activeKeys = 0;
 	threadContext->started = 0;
 	pthread_create(&threadContext->thread, 0, _GBAThreadRun, threadContext);
 	pthread_cond_wait(&threadContext->cond, &threadContext->mutex);
