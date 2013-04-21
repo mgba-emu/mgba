@@ -10,6 +10,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
+static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareBackground* bg, uint16_t value);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -28,8 +29,32 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	int i;
 
 	softwareRenderer->dispcnt.packed = 0x0080;
+
+	for (i = 0; i < 4; ++i) {
+		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
+		bg->index = i;
+		bg->enabled = 0;
+		bg->priority = 0;
+		bg->charBase = 0;
+		bg->mosaic = 0;
+		bg->multipalette = 0;
+		bg->screenBase = 0;
+		bg->overflow = 0;
+		bg->size = 0;
+		bg->x = 0;
+		bg->y = 0;
+		bg->refx = 0;
+		bg->refy = 0;
+		bg->dx = 256;
+		bg->dmx = 0;
+		bg->dy = 0;
+		bg->dmy = 256;
+		bg->sx = 0;
+		bg->sy = 0;
+	}
 
 	pthread_mutex_init(&softwareRenderer->mutex, 0);
 	pthread_cond_init(&softwareRenderer->cond, 0);
@@ -46,6 +71,22 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0xFFFB;
 		softwareRenderer->dispcnt.packed = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+		break;
+	case REG_BG0CNT:
+		value &= 0xFFCF;
+		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[0], value);
+		break;
+	case REG_BG1CNT:
+		value &= 0xFFCF;
+		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[1], value);
+		break;
+	case REG_BG2CNT:
+		value &= 0xFFCF;
+		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[2], value);
+		break;
+	case REG_BG3CNT:
+		value &= 0xFFCF;
+		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[3], value);
 		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
@@ -91,5 +132,19 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 }
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer) {
-	// TODO
+	renderer->bg[0].enabled = renderer->dispcnt.bg0Enable;
+	renderer->bg[1].enabled = renderer->dispcnt.bg1Enable;
+	renderer->bg[2].enabled = renderer->dispcnt.bg2Enable;
+	renderer->bg[3].enabled = renderer->dispcnt.bg3Enable;
+}
+
+static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
+	union GBARegisterBGCNT reg = { .packed = value };
+	bg->priority = reg.priority;
+	bg->charBase = reg.charBase << 13;
+	bg->mosaic = reg.mosaic;
+	bg->multipalette = reg.multipalette;
+	bg->screenBase = reg.screenBase << 10;
+	bg->overflow = reg.overflow;
+	bg->size = reg.size;
 }
