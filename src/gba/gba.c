@@ -77,6 +77,11 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 	int32_t nextEvent = INT_MAX;
 	int32_t testEvent;
 
+	if (gbaBoard->p->springIRQ) {
+		ARMRaiseIRQ(&gbaBoard->p->cpu);
+		gbaBoard->p->springIRQ = 0;
+	}
+
 	testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
 	if (testEvent < nextEvent) {
 		nextEvent = testEvent;
