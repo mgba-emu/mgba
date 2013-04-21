@@ -7,93 +7,97 @@ void GBAIOInit(struct GBA* gba) {
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
-	switch (address) {
-	// Video
-	case REG_DISPSTAT:
-		GBAVideoWriteDISPSTAT(&gba->video, value);
-		break;
+	if (address < REG_SOUND1CNT_LO && address != REG_DISPSTAT) {
+		gba->video.renderer->writeVideoRegister(gba->video.renderer, address, value);
+	} else {
+		switch (address) {
+		// Video
+		case REG_DISPSTAT:
+			GBAVideoWriteDISPSTAT(&gba->video, value);
+			break;
 
-	// DMA
-	case REG_DMA0CNT_LO:
-		GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
-		break;
-	case REG_DMA0CNT_HI:
-		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
-		break;
-	case REG_DMA1CNT_LO:
-		GBAMemoryWriteDMACNT_LO(&gba->memory, 1, value);
-		break;
-	case REG_DMA1CNT_HI:
-		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
-		break;
-	case REG_DMA2CNT_LO:
-		GBAMemoryWriteDMACNT_LO(&gba->memory, 2, value);
-		break;
-	case REG_DMA2CNT_HI:
-		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
-		break;
-	case REG_DMA3CNT_LO:
-		GBAMemoryWriteDMACNT_LO(&gba->memory, 3, value);
-		break;
-	case REG_DMA3CNT_HI:
-		value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
-		break;
+		// DMA
+		case REG_DMA0CNT_LO:
+			GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
+			break;
+		case REG_DMA0CNT_HI:
+			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
+			break;
+		case REG_DMA1CNT_LO:
+			GBAMemoryWriteDMACNT_LO(&gba->memory, 1, value);
+			break;
+		case REG_DMA1CNT_HI:
+			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
+			break;
+		case REG_DMA2CNT_LO:
+			GBAMemoryWriteDMACNT_LO(&gba->memory, 2, value);
+			break;
+		case REG_DMA2CNT_HI:
+			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
+			break;
+		case REG_DMA3CNT_LO:
+			GBAMemoryWriteDMACNT_LO(&gba->memory, 3, value);
+			break;
+		case REG_DMA3CNT_HI:
+			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
+			break;
 
-	// Timers
-	case REG_TM0CNT_LO:
-		GBATimerWriteTMCNT_LO(gba, 0, value);
-		return;
-	case REG_TM1CNT_LO:
-		GBATimerWriteTMCNT_LO(gba, 1, value);
-		return;
-	case REG_TM2CNT_LO:
-		GBATimerWriteTMCNT_LO(gba, 2, value);
-		return;
-	case REG_TM3CNT_LO:
-		GBATimerWriteTMCNT_LO(gba, 3, value);
-		return;
+		// Timers
+		case REG_TM0CNT_LO:
+			GBATimerWriteTMCNT_LO(gba, 0, value);
+			return;
+		case REG_TM1CNT_LO:
+			GBATimerWriteTMCNT_LO(gba, 1, value);
+			return;
+		case REG_TM2CNT_LO:
+			GBATimerWriteTMCNT_LO(gba, 2, value);
+			return;
+		case REG_TM3CNT_LO:
+			GBATimerWriteTMCNT_LO(gba, 3, value);
+			return;
 
-	case REG_TM0CNT_HI:
-		value &= 0x00C7;
-		GBATimerWriteTMCNT_HI(gba, 0, value);
-		break;
-	case REG_TM1CNT_HI:
-		value &= 0x00C7;
-		GBATimerWriteTMCNT_HI(gba, 1, value);
-		break;
-	case REG_TM2CNT_HI:
-		value &= 0x00C7;
-		GBATimerWriteTMCNT_HI(gba, 2, value);
-		break;
-	case REG_TM3CNT_HI:
-		value &= 0x00C7;
-		GBATimerWriteTMCNT_HI(gba, 3, value);
-		break;
+		case REG_TM0CNT_HI:
+			value &= 0x00C7;
+			GBATimerWriteTMCNT_HI(gba, 0, value);
+			break;
+		case REG_TM1CNT_HI:
+			value &= 0x00C7;
+			GBATimerWriteTMCNT_HI(gba, 1, value);
+			break;
+		case REG_TM2CNT_HI:
+			value &= 0x00C7;
+			GBATimerWriteTMCNT_HI(gba, 2, value);
+			break;
+		case REG_TM3CNT_HI:
+			value &= 0x00C7;
+			GBATimerWriteTMCNT_HI(gba, 3, value);
+			break;
 
-	// Interrupts and misc
-	case REG_WAITCNT:
-		GBAAdjustWaitstates(&gba->memory, value);
-		break;
-	case REG_IE:
-		GBAWriteIE(gba, value);
-		break;
-	case REG_IF:
-		value = gba->memory.io[REG_IF >> 1] & ~value;
-		break;
-	case REG_IME:
-		GBAWriteIME(gba, value);
-		break;
-	case REG_HALTCNT:
-		value &= 0x80;
-		if (!value) {
-			GBAHalt(gba);
-		} else {
-			GBALog(GBA_LOG_STUB, "Stop unimplemented");
+		// Interrupts and misc
+		case REG_WAITCNT:
+			GBAAdjustWaitstates(&gba->memory, value);
+			break;
+		case REG_IE:
+			GBAWriteIE(gba, value);
+			break;
+		case REG_IF:
+			value = gba->memory.io[REG_IF >> 1] & ~value;
+			break;
+		case REG_IME:
+			GBAWriteIME(gba, value);
+			break;
+		case REG_HALTCNT:
+			value &= 0x80;
+			if (!value) {
+				GBAHalt(gba);
+			} else {
+				GBALog(GBA_LOG_STUB, "Stop unimplemented");
+			}
+			return;
+		default:
+			GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
+			break;
 		}
-		return;
-	default:
-		GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
-		break;
 	}
 	gba->memory.io[address >> 1] = value;
 }

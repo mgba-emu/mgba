@@ -36,6 +36,10 @@ static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	switch (address) {
+	default:
+			GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
+	}
 	return value;
 }
 
