@@ -11,6 +11,8 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t* outputBuffer;
 	unsigned outputBufferStride;
 
+	union GBARegisterDISPCNT dispcnt;
+
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 };

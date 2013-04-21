@@ -1,12 +1,15 @@
 #include "video-software.h"
 
 #include "gba.h"
+#include "gba-io.h"
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
+
+static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -26,6 +29,8 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
+	softwareRenderer->dispcnt.packed = 0x0080;
+
 	pthread_mutex_init(&softwareRenderer->mutex, 0);
 	pthread_cond_init(&softwareRenderer->cond, 0);
 }
@@ -37,8 +42,13 @@ static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	switch (address) {
+	case REG_DISPCNT:
+		value &= 0xFFFB;
+		softwareRenderer->dispcnt.packed = value;
+		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+		break;
 	default:
-			GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
+		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
 	}
 	return value;
 }
@@ -47,6 +57,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	int x;
 	uint16_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	if (softwareRenderer->dispcnt.forcedBlank) {
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = 0x7FFF;
+		}
+		return;
+	}
 	for (x = 0; x < 16; ++x) {
 		row[(x * 15) + 0] = renderer->palette[x + (y / 5) * 16];
 		row[(x * 15) + 1] = renderer->palette[x + (y / 5) * 16];
@@ -72,4 +88,8 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	pthread_mutex_lock(&softwareRenderer->mutex);
 	pthread_cond_wait(&softwareRenderer->cond, &softwareRenderer->mutex);
 	pthread_mutex_unlock(&softwareRenderer->mutex);
+}
+
+static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer) {
+	// TODO
 }
