@@ -288,6 +288,8 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 		GBAIOWrite32(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
+		gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1] = value;
+		gbaMemory->p->video.palette[((address & (SIZE_PALETTE_RAM - 1)) >> 1) + 1] = value >> 16;
 		break;
 	case BASE_VRAM:
 		break;
@@ -318,6 +320,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 		GBAIOWrite(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
+		gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1] = value;
 		break;
 	case BASE_VRAM:
 		break;

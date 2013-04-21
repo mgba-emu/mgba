@@ -41,6 +41,25 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	int x;
+	uint16_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	for (x = 0; x < 16; ++x) {
+		row[(x * 15) + 0] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 1] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 2] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 3] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 4] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 5] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 6] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 7] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 8] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 9] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 10] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 11] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 12] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 13] = renderer->palette[x + (y / 5) * 16];
+		row[(x * 15) + 14] = renderer->palette[x + (y / 5) * 16];
+	}
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
