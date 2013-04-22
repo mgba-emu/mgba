@@ -158,7 +158,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 	for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 		for (int i = 0; i < 4; ++i) {
-			if (softwareRenderer->sortedBg[i]->enabled) {
+			if (softwareRenderer->sortedBg[i]->enabled && softwareRenderer->sortedBg[i]->internalBuffer[x] != 0x8000) {
 				row[x] = softwareRenderer->sortedBg[i]->internalBuffer[x];
 				break;
 			}
@@ -223,7 +223,11 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		charBase = ((background->charBase + mapData.tile << 5) >> 1) + ((inY & 0x7) << 1) + (((outX + inX) >> 2) & 1);
 		uint16_t tileData = renderer->d.vram[charBase];
 		tileData >>= ((outX + inX) & 0x3) << 2;
-		background->internalBuffer[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+		if (tileData & 0xF) {
+			background->internalBuffer[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+		} else {
+			background->internalBuffer[outX] = 0x8000;
+		}
 	}
 }
 
@@ -235,8 +239,8 @@ static int _backgroundComparator(const void* a, const void* b) {
 	const struct GBAVideoSoftwareBackground* bgA = *(const struct GBAVideoSoftwareBackground**) a;
 	const struct GBAVideoSoftwareBackground* bgB = *(const struct GBAVideoSoftwareBackground**) b;
 	if (bgA->priority != bgB->priority) {
-		return bgB->priority - bgA->priority;
+		return bgA->priority - bgB->priority;
 	} else {
-		return bgB->index - bgA->index;
+		return bgA->index - bgB->index;
 	}
 }
