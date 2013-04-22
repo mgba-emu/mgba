@@ -3,6 +3,8 @@
 #include "gba.h"
 #include "gba-io.h"
 
+#include <stdlib.h>
+
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -10,7 +12,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
-static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareBackground* bg, uint16_t value);
+static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
+
+static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
+static int _backgroundComparator(const void* a, const void* b);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -18,6 +23,11 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
+
+	renderer->sortedBg[0] = &renderer->bg[0];
+	renderer->sortedBg[1] = &renderer->bg[1];
+	renderer->sortedBg[2] = &renderer->bg[2];
+	renderer->sortedBg[3] = &renderer->bg[3];
 
 	{
 		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -77,19 +87,19 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_BG0CNT:
 		value &= 0xFFCF;
-		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[0], value);
+		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[0], value);
 		break;
 	case REG_BG1CNT:
 		value &= 0xFFCF;
-		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[1], value);
+		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[1], value);
 		break;
 	case REG_BG2CNT:
 		value &= 0xFFCF;
-		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[2], value);
+		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[2], value);
 		break;
 	case REG_BG3CNT:
 		value &= 0xFFCF;
-		GBAVideoSoftwareRendererWriteBGCNT(&softwareRenderer->bg[3], value);
+		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[3], value);
 		break;
 	case REG_BG0HOFS:
 		value &= 0x01FF;
@@ -173,7 +183,7 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 	renderer->bg[3].enabled = renderer->dispcnt.bg3Enable;
 }
 
-static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
+static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
 	union GBARegisterBGCNT reg = { .packed = value };
 	bg->priority = reg.priority;
 	bg->charBase = reg.charBase << 13;
@@ -182,4 +192,20 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareBackground
 	bg->screenBase = reg.screenBase << 10;
 	bg->overflow = reg.overflow;
 	bg->size = reg.size;
+
+	_sortBackgrounds(renderer);
+}
+
+static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {
+	qsort(renderer->sortedBg, 4, sizeof(struct GBAVideoSoftwareBackground*), _backgroundComparator);
+}
+
+static int _backgroundComparator(const void* a, const void* b) {
+	const struct GBAVideoSoftwareBackground* bgA = *(const struct GBAVideoSoftwareBackground**) a;
+	const struct GBAVideoSoftwareBackground* bgB = *(const struct GBAVideoSoftwareBackground**) b;
+	if (bgA->priority != bgB->priority) {
+		return bgB->priority - bgA->priority;
+	} else {
+		return bgB->index - bgA->index;
+	}
 }

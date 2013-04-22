@@ -36,6 +36,7 @@ struct GBAVideoSoftwareRenderer {
 	union GBARegisterDISPCNT dispcnt;
 
 	struct GBAVideoSoftwareBackground bg[4];
+	struct GBAVideoSoftwareBackground* sortedBg[4];
 
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
