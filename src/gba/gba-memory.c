@@ -292,6 +292,10 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 		gbaMemory->p->video.palette[((address & (SIZE_PALETTE_RAM - 1)) >> 1) + 1] = value >> 16;
 		break;
 	case BASE_VRAM:
+		if ((address & OFFSET_MASK) < SIZE_VRAM - 2) {
+			gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1] = value;
+			gbaMemory->p->video.vram[((address & 0x0001FFFF) >> 1) + 1] = value >> 16;
+		}
 		break;
 	case BASE_OAM:
 		break;
@@ -323,6 +327,9 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 		gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1] = value;
 		break;
 	case BASE_VRAM:
+		if ((address & OFFSET_MASK) < SIZE_VRAM) {
+			gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1] = value;
+		}
 		break;
 	case BASE_OAM:
 		break;
