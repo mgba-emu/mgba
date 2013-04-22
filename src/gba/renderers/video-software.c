@@ -220,7 +220,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		}
 		screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2);
 		mapData.packed = renderer->d.vram[screenBase];
-		charBase = ((background->charBase + mapData.tile << 5) >> 1) + ((inY & 0x7) << 1) + (((outX + inX) >> 2) & 1);
+		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + ((inY & 0x7) << 1) + (((outX + inX) >> 2) & 1);
 		uint16_t tileData = renderer->d.vram[charBase];
 		tileData >>= ((outX + inX) & 0x3) << 2;
 		if (tileData & 0xF) {
