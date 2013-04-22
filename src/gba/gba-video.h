@@ -90,10 +90,10 @@ union GBAOAM {
 
 union GBATextMapData {
 	struct {
-		unsigned tile : 9;
+		unsigned tile : 10;
 		unsigned hflip : 1;
 		unsigned vflip : 1;
-		unsigned palette : 5;
+		unsigned palette : 4;
 	};
 	uint16_t packed;
 };

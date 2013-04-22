@@ -25,6 +25,7 @@ struct GBAVideoSoftwareBackground {
 	uint16_t dmy;
 	uint32_t sx;
 	uint32_t sy;
+	uint16_t internalBuffer[VIDEO_HORIZONTAL_PIXELS];
 };
 
 struct GBAVideoSoftwareRenderer {

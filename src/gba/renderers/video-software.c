@@ -14,6 +14,8 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
 
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
 static int _backgroundComparator(const void* a, const void* b);
 
@@ -141,30 +143,26 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-	int x;
 	uint16_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (softwareRenderer->dispcnt.forcedBlank) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = 0x7FFF;
 		}
 		return;
 	}
-	for (x = 0; x < 16; ++x) {
-		row[(x * 15) + 0] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 1] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 2] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 3] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 4] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 5] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 6] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 7] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 8] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 9] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 10] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 11] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 12] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 13] = renderer->palette[x + (y / 5) * 16];
-		row[(x * 15) + 14] = renderer->palette[x + (y / 5) * 16];
+
+	for (int i = 0; i < 4; ++i) {
+		if (softwareRenderer->sortedBg[i]->enabled) {
+			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], y);
+		}
+	}
+	for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+		for (int i = 0; i < 4; ++i) {
+			if (softwareRenderer->sortedBg[i]->enabled) {
+				row[x] = softwareRenderer->sortedBg[i]->internalBuffer[x];
+				break;
+			}
+		}
 	}
 }
 
@@ -186,14 +184,47 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
 	union GBARegisterBGCNT reg = { .packed = value };
 	bg->priority = reg.priority;
-	bg->charBase = reg.charBase << 13;
+	bg->charBase = reg.charBase << 14;
 	bg->mosaic = reg.mosaic;
 	bg->multipalette = reg.multipalette;
-	bg->screenBase = reg.screenBase << 10;
+	bg->screenBase = reg.screenBase << 11;
 	bg->overflow = reg.overflow;
 	bg->size = reg.size;
 
 	_sortBackgrounds(renderer);
+}
+
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
+	int start = 0;
+	int end = VIDEO_HORIZONTAL_PIXELS;
+	int inX = start + background->x;
+	int inY = y + background->y;
+	union GBATextMapData mapData;
+
+	unsigned yBase = inY & 0xF8;
+	if (background->size & 2) {
+		yBase += inY & 0x100;
+	} else if (background->size == 3) {
+		yBase += (inY & 0x100) << 1;
+	}
+
+	unsigned xBase;
+
+	uint32_t screenBase;
+	uint32_t charBase;
+
+	for (int outX = start; outX < end; ++outX) {
+		xBase = (outX + inX) & 0xF8;
+		if (background->size & 1) {
+			xBase += ((outX + inX) & 0x100) << 3;
+		}
+		screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2);
+		mapData.packed = renderer->d.vram[screenBase];
+		charBase = ((background->charBase + mapData.tile << 5) >> 1) + ((inY & 0x7) << 1) + (((outX + inX) >> 2) & 1);
+		uint16_t tileData = renderer->d.vram[charBase];
+		tileData >>= ((outX + inX) & 0x3) << 2;
+		background->internalBuffer[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+	}
 }
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {
