@@ -216,7 +216,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (int outX = start; outX < end; ++outX) {
 		xBase = (outX + inX) & 0xF8;
 		if (background->size & 1) {
-			xBase += ((outX + inX) & 0x100) << 3;
+			xBase += ((outX + inX) & 0x100) << 5;
 		}
 		screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2);
 		mapData.packed = renderer->d.vram[screenBase];
