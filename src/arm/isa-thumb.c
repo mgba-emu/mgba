@@ -316,7 +316,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, cpu->gprs[rd] = cpu->memory->loadU1
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm]))
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm]))
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, ARM_STUB)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, ARM_STUB)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory->store8(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd]))
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, ARM_STUB)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, ADDRESS, LOOP, BODY, OP, PRE_BODY, POST_BODY, WRITEBACK) \
