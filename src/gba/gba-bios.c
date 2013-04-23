@@ -88,10 +88,18 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		_FastCpuSet(gba);
 		break;
 	case 0x11:
-		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
-		break;
 	case 0x12:
-		_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
+			case REGION_WORKING_RAM:
+				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
+				break;
+			case REGION_VRAM:
+				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+				break;
+			default:
+				GBALog(GBA_LOG_WARN, "Bad LZ77 destination");
+				break;
+		}
 		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);
