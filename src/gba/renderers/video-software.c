@@ -46,7 +46,8 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 		renderer->mutex = mutex;
 		pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-		renderer->cond = cond;
+		renderer->upCond = cond;
+		renderer->downCond = cond;
 	}
 }
 
@@ -93,14 +94,16 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	}
 
 	pthread_mutex_init(&softwareRenderer->mutex, 0);
-	pthread_cond_init(&softwareRenderer->cond, 0);
+	pthread_cond_init(&softwareRenderer->upCond, 0);
+	pthread_cond_init(&softwareRenderer->downCond, 0);
 }
 
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	pthread_mutex_destroy(&softwareRenderer->mutex);
-	pthread_cond_destroy(&softwareRenderer->cond);
+	pthread_cond_destroy(&softwareRenderer->upCond);
+	pthread_cond_destroy(&softwareRenderer->downCond);
 }
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -210,8 +213,9 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 
 	pthread_mutex_lock(&softwareRenderer->mutex);
 	renderer->framesPending++;
+	pthread_cond_broadcast(&softwareRenderer->upCond);
 	if (!renderer->turbo) {
-		pthread_cond_wait(&softwareRenderer->cond, &softwareRenderer->mutex);
+		pthread_cond_wait(&softwareRenderer->downCond, &softwareRenderer->mutex);
 	}
 	pthread_mutex_unlock(&softwareRenderer->mutex);
 }

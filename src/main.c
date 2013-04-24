@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 struct GLSoftwareRenderer {
@@ -118,12 +119,21 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 
 			SDL_GL_SwapBuffers();
 			pthread_mutex_lock(&renderer->d.mutex);
-			pthread_cond_broadcast(&renderer->d.cond);
+			pthread_cond_broadcast(&renderer->d.downCond);
 			pthread_mutex_unlock(&renderer->d.mutex);
 		} else {
+			while (!renderer->d.d.framesPending) {
+				struct timeval tv;
+				struct timespec ts;
+				gettimeofday(&tv, 0);
+				ts.tv_sec = tv.tv_sec;
+				ts.tv_nsec = tv.tv_usec * 1000 + 800000;
+				int err = pthread_cond_timedwait(&renderer->d.upCond, &renderer->d.mutex, &ts);
+				if (err == ETIMEDOUT) {
+					break;
+				}
+			}
 			pthread_mutex_unlock(&renderer->d.mutex);
-			// We have no frame, let's just wait a sec to see if we get one.
-			usleep(500);
 		}
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
