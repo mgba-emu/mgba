@@ -15,6 +15,8 @@ struct GBAVideoSoftwareBackground {
 	uint32_t screenBase;
 	int overflow;
 	int size;
+	int target1;
+	int target2;
 	uint16_t x;
 	uint16_t y;
 	uint32_t refx;
@@ -25,6 +27,13 @@ struct GBAVideoSoftwareBackground {
 	uint16_t dmy;
 	uint32_t sx;
 	uint32_t sy;
+};
+
+enum BlendEffect {
+	BLEND_NONE = 0,
+	BLEND_ALPHA = 1,
+	BLEND_BRIGHTEN = 2,
+	BLEND_DARKEN = 3
 };
 
 struct PixelFlags {
@@ -40,6 +49,16 @@ struct GBAVideoSoftwareRenderer {
 	union GBARegisterDISPCNT dispcnt;
 
 	struct PixelFlags flags[VIDEO_HORIZONTAL_PIXELS];
+
+	// BLDCNT
+	unsigned target1Obj;
+	unsigned target1Bd;
+	unsigned target2Obj;
+	unsigned target2Bd;
+	enum BlendEffect blendEffect;
+	uint16_t variantPalette[512];
+
+	uint16_t bldy;
 
 	struct GBAVideoSoftwareBackground bg[4];
 	struct GBAVideoSoftwareBackground* sortedBg[4];

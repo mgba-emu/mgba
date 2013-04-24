@@ -14,8 +14,13 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
+static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y);
+
+static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
+static inline uint16_t _brighten(uint16_t color, int y);
+static inline uint16_t _darken(uint16_t color, int y);
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
 static int _backgroundComparator(const void* a, const void* b);
@@ -49,6 +54,15 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 
 	softwareRenderer->dispcnt.packed = 0x0080;
 
+	softwareRenderer->target1Obj = 0;
+	softwareRenderer->target1Bd = 0;
+	softwareRenderer->target2Obj = 0;
+	softwareRenderer->target2Bd = 0;
+	softwareRenderer->blendEffect = BLEND_NONE;
+	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
+
+	softwareRenderer->bldy = 0;
+
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
 		bg->index = i;
@@ -60,6 +74,8 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 		bg->screenBase = 0;
 		bg->overflow = 0;
 		bg->size = 0;
+		bg->target1 = 0;
+		bg->target2 = 0;
 		bg->x = 0;
 		bg->y = 0;
 		bg->refx = 0;
@@ -139,6 +155,16 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		value &= 0x01FF;
 		softwareRenderer->bg[3].y = value;
 		break;
+	case REG_BLDCNT:
+		GBAVideoSoftwareRendererWriteBLDCNT(softwareRenderer, value);
+		break;
+	case REG_BLDY:
+		softwareRenderer->bldy = value & 0x1F;
+		if (softwareRenderer->bldy > 0x10) {
+			softwareRenderer->bldy = 0x10;
+		}
+		_updatePalettes(softwareRenderer);
+		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
 	}
@@ -195,6 +221,49 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	_sortBackgrounds(renderer);
 }
 
+static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value) {
+	union {
+		struct {
+			unsigned target1Bg0 : 1;
+			unsigned target1Bg1 : 1;
+			unsigned target1Bg2 : 1;
+			unsigned target1Bg3 : 1;
+			unsigned target1Obj : 1;
+			unsigned target1Bd : 1;
+			enum BlendEffect effect : 2;
+			unsigned target2Bg0 : 1;
+			unsigned target2Bg1 : 1;
+			unsigned target2Bg2 : 1;
+			unsigned target2Bg3 : 1;
+			unsigned target2Obj : 1;
+			unsigned target2Bd : 1;
+		};
+		uint16_t packed;
+	} bldcnt = { .packed = value };
+
+	enum BlendEffect oldEffect = renderer->blendEffect;
+
+	renderer->bg[0].target1 = bldcnt.target1Bg0;
+	renderer->bg[1].target1 = bldcnt.target1Bg1;
+	renderer->bg[2].target1 = bldcnt.target1Bg2;
+	renderer->bg[3].target1 = bldcnt.target1Bg3;
+	renderer->bg[0].target2 = bldcnt.target2Bg0;
+	renderer->bg[1].target2 = bldcnt.target2Bg1;
+	renderer->bg[2].target2 = bldcnt.target2Bg2;
+	renderer->bg[3].target2 = bldcnt.target2Bg3;
+
+	renderer->blendEffect = bldcnt.effect;
+	renderer->target1Obj = bldcnt.target1Obj;
+	renderer->target1Bd = bldcnt.target1Bd;
+	renderer->target2Obj = bldcnt.target2Obj;
+	renderer->target2Bd = bldcnt.target2Bd;
+
+	if (oldEffect != renderer->blendEffect) {
+		_updatePalettes(renderer);
+	}
+}
+
+
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y) {
 	int start = 0;
 	int end = VIDEO_HORIZONTAL_PIXELS;
@@ -228,10 +297,42 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		uint16_t tileData = renderer->d.vram[charBase];
 		tileData >>= ((outX + inX) & 0x3) << 2;
 		if (tileData & 0xF) {
-			output[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+			if (renderer->blendEffect == BLEND_NONE || !background->target1) {
+				output[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+			} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
+				output[outX] = renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)];
+			}
 			renderer->flags[outX].finalized = 1;
 		}
 	}
+}
+
+static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
+	if (renderer->blendEffect == BLEND_BRIGHTEN) {
+		for (int i = 0; i < 512; ++i) {
+			renderer->variantPalette[i] = _brighten(renderer->d.palette[i], renderer->bldy);
+		}
+	} else if (renderer->blendEffect == BLEND_DARKEN) {
+		for (int i = 0; i < 512; ++i) {
+			renderer->variantPalette[i] = _darken(renderer->d.palette[i], renderer->bldy);
+		}
+	}
+}
+
+static inline uint16_t _brighten(uint16_t c, int y) {
+	union GBAColor color = { .packed = c };
+	color.r = color.r + ((31 - color.r) * y) / 16;
+	color.g = color.g + ((31 - color.g) * y) / 16;
+	color.b = color.b + ((31 - color.b) * y) / 16;
+	return color.packed;
+}
+
+static inline uint16_t _darken(uint16_t c, int y) {
+	union GBAColor color = { .packed = c };
+	color.r = color.r - (color.r * y) / 16;
+	color.g = color.g - (color.g * y) / 16;
+	color.b = color.b - (color.b * y) / 16;
+	return color.packed;
 }
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {

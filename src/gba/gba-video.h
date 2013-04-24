@@ -35,6 +35,15 @@ enum ObjShape {
 	OBJ_SHAPE_VERTICAL = 2
 };
 
+union GBAColor {
+	struct {
+		unsigned r : 5;
+		unsigned g : 5;
+		unsigned b : 5;
+	};
+	uint16_t packed;
+};
+
 union GBAOAM {
 	struct {
 		int y : 8;
