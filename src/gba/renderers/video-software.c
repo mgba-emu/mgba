@@ -4,6 +4,7 @@
 #include "gba-io.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -14,7 +15,7 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
 
-static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y);
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
 static int _backgroundComparator(const void* a, const void* b);
@@ -154,17 +155,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		return;
 	}
 
+	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
+
 	for (int i = 0; i < 4; ++i) {
 		if (softwareRenderer->sortedBg[i]->enabled) {
-			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], y);
-		}
-	}
-	for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-		for (int i = 0; i < 4; ++i) {
-			if (softwareRenderer->sortedBg[i]->enabled && softwareRenderer->sortedBg[i]->internalBuffer[x] != 0x8000) {
-				row[x] = softwareRenderer->sortedBg[i]->internalBuffer[x];
-				break;
-			}
+			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], row, y);
 		}
 	}
 }
@@ -200,7 +195,7 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	_sortBackgrounds(renderer);
 }
 
-static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y) {
 	int start = 0;
 	int end = VIDEO_HORIZONTAL_PIXELS;
 	int inX = start + background->x;
@@ -220,6 +215,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t charBase;
 
 	for (int outX = start; outX < end; ++outX) {
+		if (renderer->flags[outX].finalized) {
+			continue;
+		}
 		xBase = (outX + inX) & 0xF8;
 		if (background->size & 1) {
 			xBase += ((outX + inX) & 0x100) << 5;
@@ -230,9 +228,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		uint16_t tileData = renderer->d.vram[charBase];
 		tileData >>= ((outX + inX) & 0x3) << 2;
 		if (tileData & 0xF) {
-			background->internalBuffer[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
-		} else {
-			background->internalBuffer[outX] = 0x8000;
+			output[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
+			renderer->flags[outX].finalized = 1;
 		}
 	}
 }

@@ -25,7 +25,10 @@ struct GBAVideoSoftwareBackground {
 	uint16_t dmy;
 	uint32_t sx;
 	uint32_t sy;
-	uint16_t internalBuffer[VIDEO_HORIZONTAL_PIXELS];
+};
+
+struct PixelFlags {
+	unsigned finalized : 1;
 };
 
 struct GBAVideoSoftwareRenderer {
@@ -35,6 +38,8 @@ struct GBAVideoSoftwareRenderer {
 	unsigned outputBufferStride;
 
 	union GBARegisterDISPCNT dispcnt;
+
+	struct PixelFlags flags[VIDEO_HORIZONTAL_PIXELS];
 
 	struct GBAVideoSoftwareBackground bg[4];
 	struct GBAVideoSoftwareBackground* sortedBg[4];
