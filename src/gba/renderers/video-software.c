@@ -16,7 +16,8 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
-static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y);
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags);
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 static inline uint16_t _brighten(uint16_t color, int y);
@@ -182,10 +183,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
+	softwareRenderer->row = row;
 
 	for (int i = 0; i < 4; ++i) {
 		if (softwareRenderer->sortedBg[i]->enabled) {
-			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], row, y);
+			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], y);
 		}
 	}
 }
@@ -263,8 +265,16 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	}
 }
 
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags) {
+	if (renderer->blendEffect == BLEND_NONE || !flags.target1) {
+		renderer->row[offset] = renderer->d.palette[entry];
+	} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
+		renderer->row[offset] = renderer->variantPalette[entry];
+	}
+	renderer->flags[offset].finalized = 1;
+}
 
-static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, uint16_t* output, int y) {
+static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
 	int start = 0;
 	int end = VIDEO_HORIZONTAL_PIXELS;
 	int inX = start + background->x;
@@ -297,12 +307,12 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		uint16_t tileData = renderer->d.vram[charBase];
 		tileData >>= ((outX + inX) & 0x3) << 2;
 		if (tileData & 0xF) {
-			if (renderer->blendEffect == BLEND_NONE || !background->target1) {
-				output[outX] = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
-			} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
-				output[outX] = renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)];
-			}
-			renderer->flags[outX].finalized = 1;
+			struct PixelFlags flags = {
+				.finalized = 1,
+				.target1 = background->target1,
+				.target2 = background->target2
+			};
+			_composite(renderer, outX, (tileData & 0xF) | (mapData.palette << 4), flags);
 		}
 	}
 }
