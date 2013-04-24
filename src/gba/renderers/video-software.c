@@ -22,6 +22,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 static inline uint16_t _brighten(uint16_t color, int y);
 static inline uint16_t _darken(uint16_t color, int y);
+static uint16_t _mix(int weightA, uint16_t colorA, int weightB, uint16_t colorB);
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
 static int _backgroundComparator(const void* a, const void* b);
@@ -62,6 +63,8 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->blendEffect = BLEND_NONE;
 	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
 
+	softwareRenderer->blda = 0;
+	softwareRenderer->bldb = 0;
 	softwareRenderer->bldy = 0;
 
 	for (i = 0; i < 4; ++i) {
@@ -158,6 +161,16 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_BLDCNT:
 		GBAVideoSoftwareRendererWriteBLDCNT(softwareRenderer, value);
+		break;
+	case REG_BLDALPHA:
+		softwareRenderer->blda = value & 0x1F;
+		if (softwareRenderer->blda > 0x10) {
+			softwareRenderer->blda = 0x10;
+		}
+		softwareRenderer->bldb = (value >> 8) & 0x1F;
+		if (softwareRenderer->bldb > 0x10) {
+			softwareRenderer->bldb = 0x10;
+		}
 		break;
 	case REG_BLDY:
 		softwareRenderer->bldy = value & 0x1F;
@@ -266,12 +279,26 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags) {
-	if (renderer->blendEffect == BLEND_NONE || !flags.target1) {
+	if (renderer->blendEffect == BLEND_NONE || (!flags.target1 && !flags.target2)) {
 		renderer->row[offset] = renderer->d.palette[entry];
+		renderer->flags[offset].finalized = 1;
 	} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
 		renderer->row[offset] = renderer->variantPalette[entry];
+		renderer->flags[offset].finalized = 1;
+	} else if (renderer->blendEffect == BLEND_ALPHA) {
+		if (renderer->flags[offset].written) {
+			if (renderer->flags[offset].target1 && flags.target2) {
+				renderer->row[offset] = _mix(renderer->bldb, renderer->d.palette[entry], renderer->blda, renderer->row[offset]);
+				renderer->flags[offset].finalized = 1;
+			} else {
+				renderer->flags[offset].finalized = 1;
+			}
+		} else {
+			renderer->row[offset] = renderer->d.palette[entry];
+			renderer->flags[offset].target1 = flags.target1;
+		}
 	}
-	renderer->flags[offset].finalized = 1;
+	renderer->flags[offset].written = 1;
 }
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
@@ -343,6 +370,22 @@ static inline uint16_t _darken(uint16_t c, int y) {
 	color.g = color.g - (color.g * y) / 16;
 	color.b = color.b - (color.b * y) / 16;
 	return color.packed;
+}
+
+static uint16_t _mix(int weightA, uint16_t colorA, int weightB, uint16_t colorB) {
+	union GBAColor ca = { .packed = colorA };
+	union GBAColor cb = { .packed = colorB };
+
+	int r = (ca.r * weightA + cb.r * weightB) / 16;
+	ca.r = r > 0x1F ? 0x1F : r;
+
+	int g = (ca.g * weightA + cb.g * weightB) / 16;
+	ca.g = g > 0x1F ? 0x1F : g;
+
+	int b = (ca.b * weightA + cb.b * weightB) / 16;
+	ca.b = b > 0x1F ? 0x1F : b;
+
+	return ca.packed;
 }
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {

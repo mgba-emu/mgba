@@ -37,6 +37,7 @@ enum BlendEffect {
 };
 
 struct PixelFlags {
+	unsigned written : 1;
 	unsigned finalized : 1;
 	unsigned target1 : 1;
 	unsigned target2 : 1;
@@ -60,6 +61,8 @@ struct GBAVideoSoftwareRenderer {
 	enum BlendEffect blendEffect;
 	uint16_t variantPalette[512];
 
+	uint16_t blda;
+	uint16_t bldb;
 	uint16_t bldy;
 
 	struct GBAVideoSoftwareBackground bg[4];
