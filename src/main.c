@@ -106,19 +106,23 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 	glLoadIdentity();
 	glOrtho(0, 240, 160, 0, 0, 1);
 	while (context->started) {
-		glBindTexture(GL_TEXTURE_2D, renderer->tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 		pthread_mutex_lock(&renderer->d.mutex);
 		if (renderer->d.d.framesPending) {
-			--renderer->d.d.framesPending;
+			renderer->d.d.framesPending = 0;
 			pthread_mutex_unlock(&renderer->d.mutex);
+			glBindTexture(GL_TEXTURE_2D, renderer->tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
 			SDL_GL_SwapBuffers();
 			pthread_mutex_lock(&renderer->d.mutex);
+			pthread_cond_broadcast(&renderer->d.cond);
+			pthread_mutex_unlock(&renderer->d.mutex);
+		} else {
+			pthread_mutex_unlock(&renderer->d.mutex);
+			// We have no frame, let's just wait a sec to see if we get one.
+			usleep(500);
 		}
-		pthread_cond_broadcast(&renderer->d.cond);
-		pthread_mutex_unlock(&renderer->d.mutex);
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
