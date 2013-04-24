@@ -37,6 +37,8 @@ static const GLint _glTexCoords[] = {
 };
 
 int main(int argc, char** argv) {
+	(void)(argc);
+	(void)(argv);
 	int fd = open("test.rom", O_RDONLY);
 
 	sigset_t signals;

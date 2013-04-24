@@ -351,6 +351,7 @@ int GBAHalt(struct GBA* gba) {
 }
 
 void GBALog(int level, const char* format, ...) {
+	(void)(level);
 	va_list args;
 	va_start(args, format);
 	vprintf(format, args);

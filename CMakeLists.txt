@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(GBAc)
-set(CMAKE_C_FLAGS_DEBUG "-g -Wall -Wextra")
+set(CMAKE_C_FLAGS_DEBUG "-g -Wall -Wextra -Wno-unused -Werror")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -Wextra -Wno-unused -Werror")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
