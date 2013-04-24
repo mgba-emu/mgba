@@ -26,6 +26,9 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
 
+	renderer->d.turbo = 0;
+	renderer->d.framesPending = 0;
+
 	renderer->sortedBg[0] = &renderer->bg[0];
 	renderer->sortedBg[1] = &renderer->bg[1];
 	renderer->sortedBg[2] = &renderer->bg[2];
@@ -170,7 +173,10 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	pthread_mutex_lock(&softwareRenderer->mutex);
-	pthread_cond_wait(&softwareRenderer->cond, &softwareRenderer->mutex);
+	renderer->framesPending++;
+	if (!renderer->turbo) {
+		pthread_cond_wait(&softwareRenderer->cond, &softwareRenderer->mutex);
+	}
 	pthread_mutex_unlock(&softwareRenderer->mutex);
 }
 

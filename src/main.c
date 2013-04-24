@@ -110,8 +110,13 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-		SDL_GL_SwapBuffers();
 		pthread_mutex_lock(&renderer->d.mutex);
+		if (renderer->d.d.framesPending) {
+			--renderer->d.d.framesPending;
+			pthread_mutex_unlock(&renderer->d.mutex);
+			SDL_GL_SwapBuffers();
+			pthread_mutex_lock(&renderer->d.mutex);
+		}
 		pthread_cond_broadcast(&renderer->d.cond);
 		pthread_mutex_unlock(&renderer->d.mutex);
 		while (SDL_PollEvent(&event)) {
@@ -168,6 +173,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 	case SDLK_RIGHT:
 		key = GBA_KEY_RIGHT;
 		break;
+	case SDLK_TAB:
+		context->renderer->turbo = !context->renderer->turbo;
+		return;
 	default:
 		return;
 	}
