@@ -298,6 +298,13 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags) {
 	if (renderer->flags[offset].isSprite && flags.priority >= renderer->flags[offset].priority) {
+		if (renderer->flags[offset].target1) {
+			if (flags.target2) {
+				renderer->row[offset] = _mix(renderer->bldb, renderer->d.palette[entry], renderer->blda, renderer->row[offset]);
+			}
+		}
+		renderer->flags[offset].finalized = 1;
+		renderer->flags[offset].written = 1;
 		return;
 	}
 	if (renderer->blendEffect == BLEND_NONE || (!flags.target1 && !flags.target2)) {
@@ -310,10 +317,8 @@ static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int 
 		if (renderer->flags[offset].written) {
 			if (renderer->flags[offset].target1 && flags.target2) {
 				renderer->row[offset] = _mix(renderer->bldb, renderer->d.palette[entry], renderer->blda, renderer->row[offset]);
-				renderer->flags[offset].finalized = 1;
-			} else {
-				renderer->flags[offset].finalized = 1;
 			}
+			renderer->flags[offset].finalized = 1;
 		} else {
 			renderer->row[offset] = renderer->d.palette[entry];
 			renderer->flags[offset].target1 = flags.target1;
@@ -394,8 +399,8 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	struct PixelFlags flags = {
 		.priority = sprite->priority,
 		.isSprite = 1,
-		.target1 = renderer->target1Obj,
-		.target2 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT
+		.target1 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
+		.target2 = renderer->target2Obj
 	};
 	int inX = sprite->x;
 	int inY = y - sprite->y;
