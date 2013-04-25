@@ -208,9 +208,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			if (sprite->transformed) {
 				// TODO
 			} else if (!sprite->disable) {
-				if (sprite->y <= y) {
-					_drawSprite(softwareRenderer, sprite, y);
-				}
+				_drawSprite(softwareRenderer, sprite, y);
 			}
 		}
 	}
@@ -392,7 +390,7 @@ static const int _objSizes[32] = {
 static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
-	if (y >= sprite->y + height) {
+	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
 	(void)(renderer);
@@ -404,6 +402,9 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	};
 	int inX = sprite->x;
 	int inY = y - sprite->y;
+	if (sprite->y + height - 256 >= 0) {
+		inY += 256;
+	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	unsigned yBase = (inY & ~0x7) * 0x80 + (inY & 0x7) * 4;
 	for (int outX = inX >= 0 ? inX : 0; outX < inX + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {

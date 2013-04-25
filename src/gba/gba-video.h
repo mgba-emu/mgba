@@ -48,7 +48,7 @@ union GBAColor {
 
 union GBAOAM {
 	struct GBAObj {
-		int y : 8;
+		unsigned y : 8;
 		unsigned transformed : 1;
 		unsigned disable : 1;
 		enum ObjMode mode : 2;
@@ -70,7 +70,7 @@ union GBAOAM {
 	} obj[128];
 
 	struct GBATransformedObj {
-		int y : 8;
+		unsigned y : 8;
 		unsigned transformed : 1;
 		unsigned doublesize : 1;
 		enum ObjMode mode : 2;
