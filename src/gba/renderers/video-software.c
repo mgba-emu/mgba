@@ -16,8 +16,9 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags);
+static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* spritem, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 static inline uint16_t _brighten(uint16_t color, int y);
@@ -201,6 +202,19 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
 	softwareRenderer->row = row;
 
+	if (softwareRenderer->dispcnt.objEnable) {
+		for (int i = 0; i < 128; ++i) {
+			struct GBAObj* sprite = &renderer->oam->obj[i];
+			if (sprite->transformed) {
+				// TODO
+			} else if (!sprite->disable) {
+				if (sprite->y <= y) {
+					_drawSprite(softwareRenderer, sprite, y);
+				}
+			}
+		}
+	}
+
 	for (int i = 0; i < 4; ++i) {
 		if (softwareRenderer->sortedBg[i]->enabled) {
 			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], y);
@@ -282,7 +296,10 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	}
 }
 
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags) {
+static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags) {
+	if (renderer->flags[offset].isSprite && flags.priority >= renderer->flags[offset].priority) {
+		return;
+	}
 	if (renderer->blendEffect == BLEND_NONE || (!flags.target1 && !flags.target2)) {
 		renderer->row[offset] = renderer->d.palette[entry];
 		renderer->flags[offset].finalized = 1;
@@ -339,11 +356,62 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		tileData >>= ((outX + inX) & 0x3) << 2;
 		if (tileData & 0xF) {
 			struct PixelFlags flags = {
-				.finalized = 1,
 				.target1 = background->target1,
-				.target2 = background->target2
+				.target2 = background->target2,
+				.priority = background->priority
 			};
-			_composite(renderer, outX, (tileData & 0xF) | (mapData.palette << 4), flags);
+			_compositeBackground(renderer, outX, (tileData & 0xF) | (mapData.palette << 4), flags);
+		}
+	}
+}
+
+static const int _objSizes[32] = {
+	8, 8,
+	16, 16,
+	32, 32,
+	64, 64,
+	16, 8,
+	32, 8,
+	32, 16,
+	64, 32,
+	8, 16,
+	8, 32,
+	16, 32,
+	32, 64,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0
+};
+
+static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
+	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
+	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
+	if (y >= sprite->y + height) {
+		return;
+	}
+	(void)(renderer);
+	struct PixelFlags flags = {
+		.priority = sprite->priority,
+		.isSprite = 1,
+		.target1 = renderer->target1Obj,
+		.target2 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT
+	};
+	int inX = sprite->x;
+	int inY = y - sprite->y;
+	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	unsigned yBase = (inY & ~0x7) * 0x80 + (inY & 0x7) * 4;
+	for (int outX = inX >= 0 ? inX : 0; outX < inX + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+		int x = outX - inX;
+		if (renderer->flags[outX].isSprite) {
+			continue;
+		}
+		unsigned xBase = (x & ~0x7) * 4 + ((x >> 1) & 2);
+		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
+		tileData = (tileData >> ((x & 3) << 2)) & 0xF;
+		if (tileData) {
+			renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+			renderer->flags[outX] = flags;
 		}
 	}
 }

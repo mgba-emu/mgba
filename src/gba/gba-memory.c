@@ -296,6 +296,7 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 		}
 		break;
 	case BASE_OAM:
+		((int32_t*) gbaMemory->p->video.oam.raw)[(address & (SIZE_OAM - 1)) >> 2] = value;
 		break;
 	case BASE_CART0:
 		break;
@@ -330,6 +331,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 		}
 		break;
 	case BASE_OAM:
+		gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1] = value;
 		break;
 	case BASE_CART0:
 		break;

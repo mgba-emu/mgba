@@ -37,6 +37,8 @@ enum BlendEffect {
 };
 
 struct PixelFlags {
+	unsigned priority : 2;
+	unsigned isSprite : 1;
 	unsigned written : 1;
 	unsigned finalized : 1;
 	unsigned target1 : 1;

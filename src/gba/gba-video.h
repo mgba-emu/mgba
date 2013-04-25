@@ -20,7 +20,9 @@ enum {
 
 	VIDEO_TOTAL_LENGTH = 280896,
 
-	REG_DISPSTAT_MASK = 0xFF38
+	REG_DISPSTAT_MASK = 0xFF38,
+
+	BASE_TILE = 0x00010000
 };
 
 enum ObjMode {
@@ -45,27 +47,19 @@ union GBAColor {
 };
 
 union GBAOAM {
-	struct {
+	struct GBAObj {
 		int y : 8;
 		unsigned transformed : 1;
-		union {
-			unsigned doublesize : 1;
-			unsigned disable : 1;
-		};
+		unsigned disable : 1;
 		enum ObjMode mode : 2;
 		unsigned mosaic : 1;
 		unsigned multipalette : 1;
 		enum ObjShape shape : 2;
 
 		int x : 9;
-		union {
-			unsigned matIndex : 5;
-			struct {
-				int : 3;
-				unsigned hflip : 1;
-				unsigned vflip : 1;
-			};
-		};
+		int : 3;
+		unsigned hflip : 1;
+		unsigned vflip : 1;
 		unsigned size : 2;
 
 		unsigned tile : 10;
@@ -74,6 +68,26 @@ union GBAOAM {
 
 		int : 16;
 	} obj[128];
+
+	struct GBATransformedObj {
+		int y : 8;
+		unsigned transformed : 1;
+		unsigned doublesize : 1;
+		enum ObjMode mode : 2;
+		unsigned mosaic : 1;
+		unsigned multipalette : 1;
+		enum ObjShape shape : 2;
+
+		int x : 9;
+		unsigned matIndex : 5;
+		unsigned size : 2;
+
+		unsigned tile : 10;
+		unsigned priority : 2;
+		unsigned palette : 4;
+
+		int : 16;
+	} tobj[128];
 
 	struct {
 		int : 16;
