@@ -317,6 +317,9 @@ static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int 
 				renderer->row[offset] = _mix(renderer->bldb, renderer->d.palette[entry], renderer->blda, renderer->row[offset]);
 			}
 			renderer->flags[offset].finalized = 1;
+		} else if (renderer->flags[offset].isSprite && renderer->flags[offset].target2 && flags.target1) {
+			renderer->row[offset] = _mix(renderer->blda, renderer->d.palette[entry], renderer->bldb, renderer->row[offset]);
+			renderer->flags[offset].finalized = 1;
 		} else {
 			renderer->row[offset] = renderer->d.palette[entry];
 			renderer->flags[offset].target1 = flags.target1;
