@@ -400,21 +400,27 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		.target1 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
 		.target2 = renderer->target2Obj
 	};
-	int inX = sprite->x;
+	int x = sprite->x;
 	int inY = y - sprite->y;
+	if (sprite->vflip) {
+		inY = height - inY - 1;
+	}
 	if (sprite->y + height - 256 >= 0) {
 		inY += 256;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	unsigned yBase = (inY & ~0x7) * 0x80 + (inY & 0x7) * 4;
-	for (int outX = inX >= 0 ? inX : 0; outX < inX + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
-		int x = outX - inX;
+	for (int outX = x >= 0 ? x : 0; outX < x + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+		int inX = outX - x;
+		if (sprite->hflip) {
+			inX = width - inX - 1;
+		}
 		if (renderer->flags[outX].isSprite) {
 			continue;
 		}
-		unsigned xBase = (x & ~0x7) * 4 + ((x >> 1) & 2);
+		unsigned xBase = (inX & ~0x7) * 4 + ((inX >> 1) & 2);
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
-		tileData = (tileData >> ((x & 3) << 2)) & 0xF;
+		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
 		if (tileData) {
 			renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
 			renderer->flags[outX] = flags;
