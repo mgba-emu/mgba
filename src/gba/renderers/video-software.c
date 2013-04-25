@@ -422,7 +422,11 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
 		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
 		if (tileData) {
-			renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+			if (!renderer->target1Obj) {
+				renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+			} else {
+				renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
+			}
 			renderer->flags[outX] = flags;
 		}
 	}
@@ -436,6 +440,10 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	} else if (renderer->blendEffect == BLEND_DARKEN) {
 		for (int i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = _darken(renderer->d.palette[i], renderer->bldy);
+		}
+	} else {
+		for (int i = 0; i < 512; ++i) {
+			renderer->variantPalette[i] = renderer->d.palette[i];
 		}
 	}
 }
