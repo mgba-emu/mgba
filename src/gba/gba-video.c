@@ -73,7 +73,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				video->inVblank = 1;
 				video->renderer->finishFrame(video->renderer);
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
-				//video->cpu.mmu.runVblankDmas();
+				GBAMemoryRunVblankDMAs(&video->p->memory);
 				if (video->vblankIRQ) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
@@ -106,7 +106,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextHblankIRQ = video->nextHblank;
 
 			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
-				//video->cpu.mmu.runHblankDmas();
+				GBAMemoryRunHblankDMAs(&video->p->memory);
 			}
 			if (video->hblankIRQ) {
 				GBARaiseIRQ(video->p, IRQ_HBLANK);
