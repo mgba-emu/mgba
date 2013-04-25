@@ -402,11 +402,11 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	};
 	int x = sprite->x;
 	int inY = y - sprite->y;
-	if (sprite->vflip) {
-		inY = height - inY - 1;
-	}
 	if (sprite->y + height - 256 >= 0) {
 		inY += 256;
+	}
+	if (sprite->vflip) {
+		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	unsigned yBase = (inY & ~0x7) * 0x80 + (inY & 0x7) * 4;
