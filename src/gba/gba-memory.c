@@ -115,7 +115,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	case BASE_IO:
 		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1)) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
 	case BASE_PALETTE_RAM:
-		break;
+		return ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
 	case BASE_VRAM:
 		return ((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2];
 	case BASE_OAM:
@@ -149,7 +149,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_IO:
 		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1));
 	case BASE_PALETTE_RAM:
-		break;
+		return gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1];
 	case BASE_VRAM:
 		return gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1];
 	case BASE_OAM:
@@ -183,7 +183,7 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_IO:
 		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1));
 	case BASE_PALETTE_RAM:
-		break;
+		return gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1];
 	case BASE_VRAM:
 		return gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1];
 	case BASE_OAM:
