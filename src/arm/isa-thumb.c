@@ -249,7 +249,18 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC, ARM_STUB)
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR, ARM_STUB)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR,
+	int rs = cpu->gprs[rn] & 0xFF;
+	if (rs) {
+		int r4 = rs & 0x1F;
+		if (r4 > 0) {
+			cpu->cpsr.c = cpu->gprs[rd] & (1 << (r4 - 1));
+			cpu->gprs[rd] = ARM_ROR(cpu->gprs[rd], r4);
+		} else {
+			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
+		}
+	}
+	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(TST, ARM_STUB)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(NEG, THUMB_SUBTRACTION(cpu->gprs[rd], 0, cpu->gprs[rn]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(CMP2, int32_t aluOut = cpu->gprs[rd] - cpu->gprs[rn]; THUMB_SUBTRACTION_S(cpu->gprs[rd], cpu->gprs[rn], aluOut))
