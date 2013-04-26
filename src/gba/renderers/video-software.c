@@ -18,7 +18,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 static void _compositeBackground(struct GBAVideoSoftwareRenderer* renderer, int offset, int entry, struct PixelFlags flags);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
-static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* spritem, int y);
+static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
+static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 static inline uint16_t _brighten(uint16_t color, int y);

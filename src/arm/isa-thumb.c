@@ -281,8 +281,8 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN, cpu->gprs[rd] = ~cpu->gprs[rn]; THUMB_
 
 #define DEFINE_INSTRUCTION_WITH_HIGH_EX_THUMB(NAME, H1, H2, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rd = opcode & 0x0007 | H1; \
-		int rm = (opcode >> 3) & 0x0007 | H2; \
+		int rd = (opcode & 0x0007) | H1; \
+		int rm = ((opcode >> 3) & 0x0007) | H2; \
 		BODY;)
 
 #define DEFINE_INSTRUCTION_WITH_HIGH_THUMB(NAME, BODY) \
@@ -461,7 +461,7 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	if (rm == ARM_PC) {
 		misalign = cpu->gprs[rm] & 0x00000002;
 	}
-	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE - misalign;
+	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
 	if (cpu->executionMode == MODE_THUMB) {
 		THUMB_WRITE_PC;
 	} else {

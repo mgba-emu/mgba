@@ -5,6 +5,7 @@
 #include "gba-memory.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 

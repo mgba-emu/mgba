@@ -228,7 +228,7 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 }
 
 void GBALoadROM(struct GBA* gba, int fd) {
-	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
+	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
 	// TODO: error check
 }
 

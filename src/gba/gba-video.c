@@ -161,6 +161,5 @@ static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer,
 
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	(void)(renderer);
-	printf("Drawing a frame\n");
 	// Nothing to do
 }

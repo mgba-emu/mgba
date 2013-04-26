@@ -3,8 +3,12 @@
 #include "gba.h"
 #include "renderers/video-software.h"
 
-#include <sdl.h>
+#include <SDL.h>
+#ifdef __APPLE__
 #include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 #include <fcntl.h>
 #include <errno.h>
