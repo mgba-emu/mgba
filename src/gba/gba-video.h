@@ -89,7 +89,7 @@ union GBAOAM {
 		int : 16;
 	} tobj[128];
 
-	struct {
+	struct GBAOAMMatrix {
 		int : 16;
 		int : 16;
 		int : 16;

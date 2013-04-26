@@ -206,7 +206,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		for (int i = 0; i < 128; ++i) {
 			struct GBAObj* sprite = &renderer->oam->obj[i];
 			if (sprite->transformed) {
-				// TODO
+				_drawTransformedSprite(softwareRenderer, &renderer->oam->tobj[i], y);
 			} else if (!sprite->disable) {
 				_drawSprite(softwareRenderer, sprite, y);
 			}
@@ -438,6 +438,52 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		unsigned xBase = (inX & ~0x7) * 4 + ((inX >> 1) & 2);
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
 		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
+		if (tileData) {
+			if (!renderer->target1Obj) {
+				renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+			} else {
+				renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
+			}
+			renderer->flags[outX] = flags;
+		}
+	}
+}
+
+static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y) {
+	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
+	int totalWidth = width << sprite->doublesize;
+	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
+	int totalHeight = height << sprite->doublesize;
+	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
+		return;
+	}
+	(void)(renderer);
+	struct PixelFlags flags = {
+		.priority = sprite->priority,
+		.isSprite = 1,
+		.target1 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
+		.target2 = renderer->target2Obj
+	};
+	int x = sprite->x;
+	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
+	for (int outX = x >= 0 ? x : 0; outX < x + totalWidth && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+		if (renderer->flags[outX].isSprite) {
+			continue;
+		}
+		int inY = y - sprite->y;
+		int inX = outX - x;
+		int localX = ((mat->a * (inX - (totalWidth >> 1)) + mat->b * (inY - (totalHeight >> 1))) >> 8) + (width >> 1);
+		int localY = ((mat->c * (inX - (totalWidth >> 1)) + mat->d * (inY - (totalHeight >> 1))) >> 8) + (height >> 1);
+
+		if (localX < 0 || localX >= width || localY < 0 || localY >= height) {
+			continue;
+		}
+
+		unsigned yBase = (localY & ~0x7) * 0x80 + (localY & 0x7) * 4;
+		unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
+		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
+		tileData = (tileData >> ((localX & 3) << 2)) & 0xF;
 		if (tileData) {
 			if (!renderer->target1Obj) {
 				renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
