@@ -54,13 +54,13 @@ union PSR {
 	struct {
 		enum PrivilegeMode priv : 5;
 		enum ExecutionMode t : 1;
-		int f : 1;
-		int i : 1;
-		int : 20;
-		int v : 1;
-		int c : 1;
-		int z : 1;
-		int n : 1;
+		unsigned f : 1;
+		unsigned i : 1;
+		unsigned : 20;
+		unsigned v : 1;
+		unsigned c : 1;
+		unsigned z : 1;
+		unsigned n : 1;
 	};
 
 	int32_t packed;

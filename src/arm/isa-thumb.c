@@ -247,8 +247,17 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC, ARM_STUB)
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC, ARM_STUB)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC,
+	int n = cpu->gprs[rn] + cpu->cpsr.c;
+	int d = cpu->gprs[rd];
+	cpu->gprs[rd] = d + n;
+	THUMB_ADDITION_S(d, n, cpu->gprs[rd]);)
+
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC,
+	int n = cpu->gprs[rn] + !cpu->cpsr.c;
+	int d = cpu->gprs[rd];
+	cpu->gprs[rd] = d - n;
+	THUMB_SUBTRACTION_S(d, n, cpu->gprs[rd]);)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
