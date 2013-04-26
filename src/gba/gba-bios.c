@@ -1,6 +1,7 @@
 #include "gba-bios.h"
 
 #include "gba.h"
+#include "gba-io.h"
 #include "gba-memory.h"
 
 #include <math.h>
@@ -80,6 +81,20 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 	switch (immediate) {
 	case 0x2:
 		GBAHalt(gba);
+		break;
+	case 0x05:
+		// VBlankIntrWait
+		gba->cpu.gprs[0] = 1;
+		gba->cpu.gprs[1] = 1;
+		// Fall through:
+	case 0x04:
+		// IntrWait
+		gba->memory.io[REG_IME >> 1] = 1;
+		if (!gba->cpu.gprs[0] && gba->memory.io[REG_IF >> 1] & gba->cpu.gprs[1]) {
+			break;
+		}
+		gba->memory.io[REG_IF >> 1] = 0;
+		ARMRaiseSWI(&gba->cpu);
 		break;
 	case 0xB:
 		_CpuSet(gba);
