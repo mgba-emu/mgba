@@ -96,6 +96,14 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		gba->memory.io[REG_IF >> 1] = 0;
 		ARMRaiseSWI(&gba->cpu);
 		break;
+	case 0x6:
+		{
+			div_t result = div(gba->cpu.gprs[0], gba->cpu.gprs[1]);
+			gba->cpu.gprs[0] = result.quot;
+			gba->cpu.gprs[1] = result.rem;
+			gba->cpu.gprs[2] = abs(result.quot);
+		}
+		break;
 	case 0xB:
 		_CpuSet(gba);
 		break;
