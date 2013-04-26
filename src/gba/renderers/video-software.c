@@ -342,6 +342,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		yBase += (inY & 0x100) << 1;
 	}
 
+	int localX;
+	int localY;
+
 	unsigned xBase;
 
 	uint32_t screenBase;
@@ -351,15 +354,26 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		if (renderer->flags[outX].finalized) {
 			continue;
 		}
-		xBase = (outX + inX) & 0xF8;
+		localX = outX + inX;
+		xBase = localX & 0xF8;
 		if (background->size & 1) {
-			xBase += ((outX + inX) & 0x100) << 5;
+			xBase += (localX & 0x100) << 5;
 		}
 		screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2);
 		mapData.packed = renderer->d.vram[screenBase];
-		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + ((inY & 0x7) << 1) + (((outX + inX) >> 2) & 1);
+		if (!mapData.vflip) {
+			localY = inY & 0x7;
+		} else {
+			localY = 7 - (inY & 0x7);
+		}
+		if (!mapData.hflip) {
+			localX = localX & 0x7;
+		} else {
+			localX = 7 - (localX & 0x7);
+		}
+		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + (localY << 1) + ((localX >> 2) & 1);
 		uint16_t tileData = renderer->d.vram[charBase];
-		tileData >>= ((outX + inX) & 0x3) << 2;
+		tileData >>= (localX & 0x3) << 2;
 		if (tileData & 0xF) {
 			struct PixelFlags flags = {
 				.target1 = background->target1,
