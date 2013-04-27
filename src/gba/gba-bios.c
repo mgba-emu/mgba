@@ -134,7 +134,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 }
 
 void GBASwi32(struct ARMBoard* board, int immediate) {
-	GBASwi32(board, immediate >> 16);
+	GBASwi16(board, immediate >> 16);
 }
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {

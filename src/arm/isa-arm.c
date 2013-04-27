@@ -663,7 +663,7 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
 
-DEFINE_INSTRUCTION_ARM(SWI, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(SWI, cpu->board->swi32(cpu->board, opcode & 0xFFFFFF))
 
 #define DECLARE_INSTRUCTION_ARM(EMITTER, NAME) \
 	EMITTER ## NAME
