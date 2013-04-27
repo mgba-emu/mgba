@@ -310,7 +310,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		renderer->flags[offset].finalized = 1;
 		return;
 	}
-	if (renderer->blendEffect != BLEND_ALPHA || (!flags.target1 && !flags.target2)) {
+	if (renderer->blendEffect != BLEND_ALPHA) {
 		renderer->row[offset] = color;
 		renderer->flags[offset].finalized = 1;
 	} else if (renderer->blendEffect == BLEND_ALPHA) {
