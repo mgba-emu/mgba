@@ -53,6 +53,7 @@ struct GBAVideoSoftwareRenderer {
 
 	union GBARegisterDISPCNT dispcnt;
 
+	uint16_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
 	struct PixelFlags flags[VIDEO_HORIZONTAL_PIXELS];
 
 	// BLDCNT

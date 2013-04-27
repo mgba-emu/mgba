@@ -296,30 +296,28 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint16_t color, struct PixelFlags flags) {
-	if (renderer->flags[offset].isSprite && flags.priority >= renderer->flags[offset].priority) {
-		if (renderer->flags[offset].target1) {
-			if (flags.target2) {
-				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->row[offset]);
+	struct PixelFlags currentFlags = renderer->flags[offset];
+	if (currentFlags.isSprite && flags.priority >= currentFlags.priority) {
+		if (currentFlags.target1) {
+			if (currentFlags.written && currentFlags.target2) {
+				renderer->row[offset] = _mix(renderer->blda, renderer->row[offset], renderer->bldb, renderer->spriteLayer[offset]);
+			} else if (flags.target2) {
+				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->spriteLayer[offset]);
 			}
+		} else if (!currentFlags.written) {
+			renderer->row[offset] = renderer->spriteLayer[offset];
 		}
 		renderer->flags[offset].finalized = 1;
-		renderer->flags[offset].written = 1;
 		return;
 	}
-	if (renderer->blendEffect == BLEND_NONE || (!flags.target1 && !flags.target2)) {
-		renderer->row[offset] = color;
-		renderer->flags[offset].finalized = 1;
-	} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
+	if (renderer->blendEffect != BLEND_ALPHA || (!flags.target1 && !flags.target2)) {
 		renderer->row[offset] = color;
 		renderer->flags[offset].finalized = 1;
 	} else if (renderer->blendEffect == BLEND_ALPHA) {
-		if (renderer->flags[offset].written) {
-			if (renderer->flags[offset].target1 && flags.target2) {
+		if (currentFlags.written) {
+			if (currentFlags.target1 && flags.target2) {
 				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->row[offset]);
 			}
-			renderer->flags[offset].finalized = 1;
-		} else if (renderer->flags[offset].isSprite && renderer->flags[offset].target2 && flags.target1) {
-			renderer->row[offset] = _mix(renderer->blda, color, renderer->bldb, renderer->row[offset]);
 			renderer->flags[offset].finalized = 1;
 		} else {
 			renderer->row[offset] = color;
@@ -412,7 +410,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t screenBase;
 	uint32_t charBase;
 	struct PixelFlags flags = {
-		.target1 = background->target1,
+		.target1 = background->target1 && renderer->blendEffect == BLEND_ALPHA,
 		.target2 = background->target2,
 		.priority = background->priority
 	};
@@ -457,11 +455,10 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
-	(void)(renderer);
 	struct PixelFlags flags = {
 		.priority = sprite->priority,
 		.isSprite = 1,
-		.target1 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
+		.target1 = (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
 		.target2 = renderer->target2Obj
 	};
 	int x = sprite->x;
@@ -487,9 +484,9 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
 		if (tileData) {
 			if (!renderer->target1Obj) {
-				renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
-				renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
 			}
 			renderer->flags[outX] = flags;
 		}
@@ -504,11 +501,10 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
 		return;
 	}
-	(void)(renderer);
 	struct PixelFlags flags = {
 		.priority = sprite->priority,
 		.isSprite = 1,
-		.target1 = renderer->target1Obj || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
+		.target1 = (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
 		.target2 = renderer->target2Obj
 	};
 	int x = sprite->x;
@@ -533,9 +529,9 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 		tileData = (tileData >> ((localX & 3) << 2)) & 0xF;
 		if (tileData) {
 			if (!renderer->target1Obj) {
-				renderer->row[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
-				renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
 			}
 			renderer->flags[outX] = flags;
 		}
