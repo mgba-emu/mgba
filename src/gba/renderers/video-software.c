@@ -309,11 +309,8 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	if (renderer->blendEffect == BLEND_NONE || (!flags.target1 && !flags.target2)) {
 		renderer->row[offset] = color;
 		renderer->flags[offset].finalized = 1;
-	} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-		renderer->row[offset] = _brighten(color, renderer->bldy);
-		renderer->flags[offset].finalized = 1;
-	} else if (renderer->blendEffect == BLEND_DARKEN) {
-		renderer->row[offset] = _darken(color, renderer->bldy);
+	} else if (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) {
+		renderer->row[offset] = color;
 		renderer->flags[offset].finalized = 1;
 	} else if (renderer->blendEffect == BLEND_ALPHA) {
 		if (renderer->flags[offset].written) {
@@ -331,6 +328,67 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	}
 	renderer->flags[offset].written = 1;
 }
+
+#define BACKGROUND_DRAW_PIXEL_16 \
+	{ \
+		uint16_t color; \
+		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + (localY << 1) + ((localX >> 2) & 1); \
+		uint16_t tileData = renderer->d.vram[charBase]; \
+		tileData >>= (localX & 0x3) << 2; \
+		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
+			color = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)]; \
+		} else { \
+			color = renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)]; \
+		} \
+		if (tileData & 0xF) { \
+			_composite(renderer, outX, color, flags); \
+		} \
+	}
+
+#define BACKGROUND_DRAW_PIXEL_256 \
+	{ \
+		uint16_t color; \
+		charBase = ((background->charBase + (mapData.tile << 6)) >> 1) + (localY << 2) + ((localX >> 1) & 3); \
+		uint16_t tileData = renderer->d.vram[charBase]; \
+		tileData >>= (localX & 0x1) << 3; \
+		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
+			color = renderer->d.palette[tileData & 0xFF]; \
+		} else if (renderer->blendEffect == BLEND_DARKEN) { \
+			color = _darken(renderer->d.palette[tileData & 0xFF], renderer->bldy); \
+		} else if (renderer->blendEffect == BLEND_BRIGHTEN) { \
+			color = _brighten(renderer->d.palette[tileData & 0xFF], renderer->bldy); \
+		} \
+		if (tileData & 0xFF) { \
+			_composite(renderer, outX, color, flags); \
+		} \
+	}
+
+#define BACKGROUND_TEXT_SELECT_CHARACTER \
+	{ \
+		if (renderer->flags[outX].finalized) { \
+			continue; \
+		} \
+		localX = outX + inX; \
+		xBase = localX & 0xF8; \
+		if (background->size & 1) { \
+			xBase += (localX & 0x100) << 5; \
+		} \
+		if (oldXBase != xBase) { \
+			oldXBase = xBase; \
+			screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2); \
+			mapData.packed = renderer->d.vram[screenBase]; \
+			if (!mapData.vflip) { \
+				localY = inY & 0x7; \
+			} else { \
+				localY = 7 - (inY & 0x7); \
+			} \
+		} \
+		if (!mapData.hflip) { \
+			localX = localX & 0x7; \
+		} else { \
+			localX = 7 - (localX & 0x7); \
+		} \
+	}
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
 	int start = 0;
@@ -353,7 +411,6 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	uint16_t tileData;
 	struct PixelFlags flags = {
 		.target1 = background->target1,
 		.target2 = background->target2,
@@ -362,46 +419,15 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	unsigned int oldXBase = 1;
 
-	for (int outX = start; outX < end; ++outX) {
-		if (renderer->flags[outX].finalized) {
-			continue;
+	if (!background->multipalette) {
+		for (int outX = start; outX < end; ++outX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			BACKGROUND_DRAW_PIXEL_16;
 		}
-		localX = outX + inX;
-		xBase = localX & 0xF8;
-		if (background->size & 1) {
-			xBase += (localX & 0x100) << 5;
-		}
-		if (oldXBase != xBase) {
-			oldXBase = xBase;
-			screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2);
-			mapData.packed = renderer->d.vram[screenBase];
-			if (!mapData.vflip) {
-				localY = inY & 0x7;
-			} else {
-				localY = 7 - (inY & 0x7);
-			}
-		}
-		if (!mapData.hflip) {
-			localX = localX & 0x7;
-		} else {
-			localX = 7 - (localX & 0x7);
-		}
-		if (!background->multipalette) {
-			charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + (localY << 1) + ((localX >> 2) & 1);
-			tileData = renderer->d.vram[charBase];
-			tileData >>= (localX & 0x3) << 2;
-			uint16_t color = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)];
-			if (tileData & 0xF) {
-				_composite(renderer, outX, color, flags);
-			}
-		} else {
-			charBase = ((background->charBase + (mapData.tile << 6)) >> 1) + (localY << 2) + ((localX >> 1) & 3);
-			tileData = renderer->d.vram[charBase];
-			tileData >>= (localX & 0x1) << 3;
-			uint16_t color = renderer->d.palette[tileData & 0xFF];
-			if (tileData & 0xFF) {
-				_composite(renderer, outX, color, flags);
-			}
+	} else {
+		for (int outX = start; outX < end; ++outX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			BACKGROUND_DRAW_PIXEL_256;
 		}
 	}
 }
