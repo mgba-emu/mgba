@@ -64,7 +64,14 @@ static inline void _shiftASRR(struct ARMCore* cpu, uint32_t opcode) {
 static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
 	int immediate = (opcode & 0x00000F80) >> 7;
-	ARM_STUB;
+	if (immediate) {
+		cpu->shifterOperand = ARM_ROR(cpu->gprs[rm], immediate);
+		cpu->shifterCarryOut = cpu->gprs[rm] & (1 << (immediate - 1));
+	} else {
+		// RRX
+		cpu->shifterOperand = (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
+		cpu->shifterCarryOut = cpu->gprs[rm] & 0x00000001;
+	}
 }
 
 static inline void _shiftRORR(struct ARMCore* cpu, uint32_t opcode) {
