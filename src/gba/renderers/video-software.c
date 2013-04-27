@@ -335,7 +335,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + (localY << 1) + ((localX >> 2) & 1); \
 		uint16_t tileData = renderer->d.vram[charBase]; \
 		tileData >>= (localX & 0x3) << 2; \
-		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
+		if (!background->target1 || renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
 			color = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)]; \
 		} else { \
 			color = renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)]; \
@@ -351,7 +351,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		charBase = ((background->charBase + (mapData.tile << 6)) >> 1) + (localY << 2) + ((localX >> 1) & 3); \
 		uint16_t tileData = renderer->d.vram[charBase]; \
 		tileData >>= (localX & 0x1) << 3; \
-		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
+		if (!background->target1 || renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
 			color = renderer->d.palette[tileData & 0xFF]; \
 		} else if (renderer->blendEffect == BLEND_DARKEN) { \
 			color = _darken(renderer->d.palette[tileData & 0xFF], renderer->bldy); \
