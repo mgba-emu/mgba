@@ -588,7 +588,12 @@ DEFINE_INSTRUCTION_ARM(B,
 	cpu->gprs[ARM_PC] += offset;
 	ARM_WRITE_PC;)
 
-DEFINE_INSTRUCTION_ARM(BL, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(BL,
+	int32_t immediate = (opcode & 0x00FFFFFF) << 8;
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
+	cpu->gprs[ARM_PC] += immediate >> 6;
+	ARM_WRITE_PC;)
+
 DEFINE_INSTRUCTION_ARM(BX,
 	int rm = opcode & 0x0000000F;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
