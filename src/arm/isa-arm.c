@@ -272,7 +272,7 @@ void ARMStep(struct ARMCore* cpu) {
 		cpu->cycles += 1 + cpu->memory->activePrefetchCycles32; \
 	}
 
-#define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY, POST_BODY) \
+#define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rd = (opcode >> 12) & 0xF; \
 		int rn = (opcode >> 16) & 0xF; \
@@ -280,7 +280,6 @@ void ARMStep(struct ARMCore* cpu) {
 		SHIFTER(cpu, opcode); \
 		BODY; \
 		S_BODY; \
-		POST_BODY; \
 		if (rd == ARM_PC) { \
 			if (cpu->executionMode == MODE_ARM) { \
 				ARM_WRITE_PC; \
@@ -289,36 +288,36 @@ void ARMStep(struct ARMCore* cpu) {
 			} \
 		})
 
-#define DEFINE_ALU_INSTRUCTION_ARM(NAME, S_BODY, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, , _shiftLSL, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSL, S_BODY, _shiftLSL, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, , _shiftLSLR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSLR, S_BODY, _shiftLSLR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, , _shiftLSR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSR, S_BODY, _shiftLSR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, , _shiftLSRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSRR, S_BODY, _shiftLSRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, , _shiftASR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASR, S_BODY, _shiftASR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, , _shiftASRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASRR, S_BODY, _shiftASRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, , _shiftROR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ROR, S_BODY, _shiftROR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, , _shiftRORR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_RORR, S_BODY, _shiftRORR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, , _immediate, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## SI, S_BODY, _immediate, BODY, POST_BODY)
+#define DEFINE_ALU_INSTRUCTION_ARM(NAME, S_BODY, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, , _shiftLSL, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSL, S_BODY, _shiftLSL, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, , _shiftLSLR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSLR, S_BODY, _shiftLSLR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, , _shiftLSR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSR, S_BODY, _shiftLSR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, , _shiftLSRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSRR, S_BODY, _shiftLSRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, , _shiftASR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASR, S_BODY, _shiftASR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, , _shiftASRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASRR, S_BODY, _shiftASRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, , _shiftROR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ROR, S_BODY, _shiftROR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, , _shiftRORR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_RORR, S_BODY, _shiftRORR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, , _immediate, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## SI, S_BODY, _immediate, BODY)
 
-#define DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(NAME, S_BODY, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, S_BODY, _shiftLSL, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, S_BODY, _shiftLSLR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, S_BODY, _shiftLSR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, S_BODY, _shiftLSRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, S_BODY, _shiftASR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, S_BODY, _shiftASRR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, S_BODY, _shiftROR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, S_BODY, _shiftRORR, BODY, POST_BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, S_BODY, _immediate, BODY, POST_BODY)
+#define DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(NAME, S_BODY, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, S_BODY, _shiftLSL, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, S_BODY, _shiftLSLR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, S_BODY, _shiftLSR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, S_BODY, _shiftLSRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, S_BODY, _shiftASR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, S_BODY, _shiftASRR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, S_BODY, _shiftROR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, S_BODY, _shiftRORR, BODY) \
+	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, S_BODY, _immediate, BODY)
 
 #define DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, S_BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
@@ -459,56 +458,61 @@ void ARMStep(struct ARMCore* cpu) {
 
 // Begin ALU definitions
 
-DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->gprs[rn] + cpu->shifterOperand;, )
+DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
+	int32_t n = cpu->gprs[rn];
+	cpu->gprs[rd] = n + cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(cpu->gprs[rn], shifterOperand, cpu->gprs[rd]),
+	int32_t n = cpu->gprs[rn];
 	int32_t shifterOperand = cpu->shifterOperand + cpu->cpsr.c;
-	cpu->gprs[rd] = cpu->gprs[rn] + shifterOperand;, )
+	cpu->gprs[rd] = n + shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;, )
+	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(BIC, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->gprs[rn] & ~cpu->shifterOperand;, )
+	cpu->gprs[rd] = cpu->gprs[rn] & ~cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMN, ARM_ADDITION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
-	int32_t aluOut = cpu->gprs[rn] + cpu->shifterOperand;, )
+	int32_t aluOut = cpu->gprs[rn] + cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(CMP, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
-	int32_t aluOut = cpu->gprs[rn] - cpu->shifterOperand;, )
+	int32_t aluOut = cpu->gprs[rn] - cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(EOR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->gprs[rn] ^ cpu->shifterOperand;, )
+	cpu->gprs[rd] = cpu->gprs[rn] ^ cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(MOV, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->shifterOperand;, )
+	cpu->gprs[rd] = cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(MVN, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = ~cpu->shifterOperand;, )
+	cpu->gprs[rd] = ~cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_ARM(ORR, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
-	cpu->gprs[rd] = cpu->gprs[rn] | cpu->shifterOperand;, )
+	cpu->gprs[rd] = cpu->gprs[rn] | cpu->shifterOperand;)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, cpu->gprs[rn], d),
-	int32_t d = cpu->shifterOperand - cpu->gprs[rn];, cpu->gprs[rd] = d)
+DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->gprs[rd]),
+	int32_t n = cpu->gprs[rn];
+	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, d),
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn] + !cpu->cpsr.c;
-	int32_t d = cpu->shifterOperand - n;, cpu->gprs[rd] = d)
+	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(cpu->gprs[rn], shifterOperand, d),
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(n, shifterOperand, cpu->gprs[rd]),
+	int32_t n = cpu->gprs[rn];
 	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.c;
-	int32_t d = cpu->gprs[rn] - shifterOperand;, cpu->gprs[rd] = d)
+	cpu->gprs[rd] = n - shifterOperand;)
 
-DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(cpu->gprs[rn], cpu->shifterOperand, d),
-	int32_t d = cpu->gprs[rn] - cpu->shifterOperand;, cpu->gprs[rd] = d)
+DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
+	int32_t n = cpu->gprs[rn];
+	cpu->gprs[rd] = n - cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TEQ, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
-	int32_t aluOut = cpu->gprs[rn] ^ cpu->shifterOperand;, )
+	int32_t aluOut = cpu->gprs[rn] ^ cpu->shifterOperand;)
 
 DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, aluOut),
-	int32_t aluOut = cpu->gprs[rn] & cpu->shifterOperand;, )
+	int32_t aluOut = cpu->gprs[rn] & cpu->shifterOperand;)
 
 // End ALU definitions
 
