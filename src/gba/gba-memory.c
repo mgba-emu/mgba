@@ -40,6 +40,8 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 		memory->p->errstr = GBA_CANNOT_MMAP;
 	}
 
+	GBASavedataInit(&memory->savedata, "test.sav");
+
 	int i;
 	for (i = 0; i < 16; ++i) {
 		memory->waitstates16[i] = GBA_BASE_WAITSTATES[i];
@@ -65,6 +67,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 void GBAMemoryDeinit(struct GBAMemory* memory) {
 	munmap(memory->wram, SIZE_WORKING_RAM);
 	munmap(memory->iwram, SIZE_WORKING_IRAM);
+	GBASavedataDeinit(&memory->savedata);
 }
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
@@ -230,7 +233,10 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART2_EX:
 		return ((int8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
 	case BASE_CART_SRAM:
-		break;
+		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
+			GBASavedataInitSRAM(&gbaMemory->savedata);
+		}
+		return gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 	default:
 		break;
 	}
@@ -266,7 +272,10 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART2_EX:
 		return ((uint8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
 	case BASE_CART_SRAM:
-		break;
+		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
+			GBASavedataInitSRAM(&gbaMemory->savedata);
+		}
+		return gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 	default:
 		break;
 	}
@@ -367,6 +376,18 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	case BASE_CART2_EX:
 		break;
 	case BASE_CART_SRAM:
+		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
+			if (address == SAVEDATA_FLASH_BASE) {
+				GBASavedataInitFlash(&gbaMemory->savedata);
+			} else {
+				GBASavedataInitSRAM(&gbaMemory->savedata);
+			}
+		}
+		if (gbaMemory->savedata.type == SAVEDATA_FLASH512 || gbaMemory->savedata.type == SAVEDATA_FLASH1M) {
+			GBASavedataWriteFlash(&gbaMemory->savedata, value);
+		} else if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
+			gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+		}
 		break;
 	default:
 		break;
