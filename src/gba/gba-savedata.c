@@ -43,12 +43,28 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		return;
 	}
 	// mmap enough so that we can expand the file if we need to
-	savedata->data = mmap(0, SIZE_CART_FLASH1M, PROT_READ | PROT_WRITE, 0, savedata->fd, 0);
+	savedata->data = mmap(0, SIZE_CART_FLASH1M, PROT_READ | PROT_WRITE, MAP_SHARED, savedata->fd, 0);
 
 	off_t end = lseek(savedata->fd, 0, SEEK_END);
 	if (end < SIZE_CART_FLASH512) {
 		ftruncate(savedata->fd, SIZE_CART_SRAM);
 		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM - end);
+	}
+}
+
+void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
+	savedata->type = SAVEDATA_EEPROM;
+	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
+	if (savedata->fd < 0) {
+		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s", savedata->filename);
+		return;
+	}
+	savedata->data = mmap(0, SIZE_CART_EEPROM, PROT_READ | PROT_WRITE, MAP_SHARED, savedata->fd, 0);
+
+	off_t end = lseek(savedata->fd, 0, SEEK_END);
+	if (end < SIZE_CART_EEPROM) {
+		ftruncate(savedata->fd, SIZE_CART_EEPROM);
+		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
 	}
 }
 
@@ -73,8 +89,21 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	}
 }
 
+
 void GBASavedataWriteFlash(struct GBASavedata* savedata, uint8_t value) {
 	(void)(savedata);
 	(void)(value);
 	GBALog(GBA_LOG_STUB, "Flash memory unimplemented");
+}
+
+void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value) {
+	(void)(savedata);
+	(void)(value);
+	GBALog(GBA_LOG_STUB, "EEPROM unimplemented");
+}
+
+uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
+	(void)(savedata);
+	GBALog(GBA_LOG_STUB, "EEPROM unimplemented");
+	return 0;
 }

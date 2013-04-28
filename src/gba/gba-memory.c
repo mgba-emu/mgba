@@ -196,8 +196,13 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1:
 	case BASE_CART1_EX:
 	case BASE_CART2:
-	case BASE_CART2_EX:
 		return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+	case BASE_CART2_EX:
+		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+		} else {
+			return GBASavedataReadEEPROM(&gbaMemory->savedata);
+		}
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -309,8 +314,6 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value) {
 		break;
 	case BASE_CART0:
 		break;
-	case BASE_CART2_EX:
-		break;
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -345,6 +348,10 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 	case BASE_CART0:
 		break;
 	case BASE_CART2_EX:
+		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
+			GBASavedataInitEEPROM(&gbaMemory->savedata);
+		}
+		GBASavedataWriteEEPROM(&gbaMemory->savedata, value);
 		break;
 	case BASE_CART_SRAM:
 		break;
@@ -372,8 +379,6 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value) {
 	case BASE_OAM:
 		break;
 	case BASE_CART0:
-		break;
-	case BASE_CART2_EX:
 		break;
 	case BASE_CART_SRAM:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {

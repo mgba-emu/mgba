@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
@@ -228,7 +229,10 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 }
 
 void GBALoadROM(struct GBA* gba, int fd) {
+	struct stat info;
 	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	fstat(fd, &info);
+	gba->memory.romSize = info.st_size;
 	// TODO: error check
 }
 

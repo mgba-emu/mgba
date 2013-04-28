@@ -26,8 +26,12 @@ void GBASavedataInit(struct GBASavedata* savedata, const char* filename);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
+void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
 void GBASavedataWriteFlash(struct GBASavedata* savedata, uint8_t value);
+
+uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata);
+void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value);
 
 #endif

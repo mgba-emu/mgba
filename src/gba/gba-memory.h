@@ -5,6 +5,8 @@
 
 #include "gba-savedata.h"
 
+#include <string.h>
+
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
 	REGION_WORKING_RAM = 0x2,
@@ -111,6 +113,7 @@ struct GBAMemory {
 	uint16_t io[SIZE_IO >> 1];
 
 	struct GBASavedata savedata;
+	size_t romSize;
 
 	char waitstates32[256];
 	char waitstates16[256];
