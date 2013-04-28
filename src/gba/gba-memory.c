@@ -164,9 +164,14 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1:
 	case BASE_CART1_EX:
 	case BASE_CART2:
-	case BASE_CART2_EX:
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
 			return ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+		}
+	case BASE_CART2_EX:
+		if (gbaMemory->savedata.type == SAVEDATA_EEPROM) {
+			return GBASavedataReadEEPROM(&gbaMemory->savedata);
+		} else if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
 		}
 	case BASE_CART_SRAM:
 		break;
@@ -200,8 +205,13 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1:
 	case BASE_CART1_EX:
 	case BASE_CART2:
-	case BASE_CART2_EX:
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+		}
+	case BASE_CART2_EX:
+		if (gbaMemory->savedata.type == SAVEDATA_EEPROM) {
+			return GBASavedataReadEEPROM(&gbaMemory->savedata);
+		} else if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
 			return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
 		}
 	case BASE_CART_SRAM:
@@ -356,7 +366,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value) {
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInitEEPROM(&gbaMemory->savedata);
 		}
-		GBASavedataWriteEEPROM(&gbaMemory->savedata, value);
+		GBASavedataWriteEEPROM(&gbaMemory->savedata, value, 1);
 		break;
 	case BASE_CART_SRAM:
 		break;
@@ -598,19 +608,23 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 		}
 	} else {
 		uint16_t word;
-		if (source >> BASE_OFFSET == BASE_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
+		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			while (wordsRemaining--) {
 				word = GBASavedataReadEEPROM(&memory->savedata);
 				GBAStore16(&memory->d, dest, word);
 				source += sourceOffset;
 				dest += destOffset;
 			}
-		} else if (dest >> BASE_OFFSET == BASE_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
-			while (wordsRemaining--) {
+		} else if (destRegion == REGION_CART2_EX) {
+			if (memory->savedata.type != SAVEDATA_EEPROM) {
+				GBASavedataInitEEPROM(&memory->savedata);
+			}
+			while (wordsRemaining) {
 				word = GBALoadU16(&memory->d, source);
-				GBASavedataWriteEEPROM(&memory->savedata, word);
+				GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
 				source += sourceOffset;
 				dest += destOffset;
+				--wordsRemaining;
 			}
 		} else {
 			while (wordsRemaining--) {
