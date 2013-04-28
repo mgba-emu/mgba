@@ -107,20 +107,26 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+	uint32_t value = 0;
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		break;
 	case BASE_WORKING_RAM:
-		return gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
+		value = gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
+		break;
 	case BASE_WORKING_IRAM:
-		return gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
+		value = gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
+		break;
 	case BASE_IO:
-		return GBAIORead(gbaMemory->p, address & (SIZE_IO - 1)) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
+		value = GBAIORead(gbaMemory->p, address & (SIZE_IO - 1)) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
+		break;
 	case BASE_PALETTE_RAM:
-		return ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
+		value = ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
+		break;
 	case BASE_VRAM:
-		return ((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2];
+		value = ((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2];
+		break;
 	case BASE_OAM:
 		break;
 	case BASE_CART0:
@@ -130,15 +136,21 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART2:
 	case BASE_CART2_EX:
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
-			return gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
+			value = gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
 		}
+		break;
 	case BASE_CART_SRAM:
 		break;
 	default:
 		break;
 	}
 
-	return 0;
+	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
+	int rotate = (address & 3) << 3;
+	if (!rotate) {
+		return value;
+	}
+	return (value >> rotate) | (value << (32 - rotate));
 }
 
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
