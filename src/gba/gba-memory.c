@@ -129,7 +129,9 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
+		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
+		}
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -163,7 +165,9 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+		}
 	case BASE_CART_SRAM:
 		break;
 	default:
@@ -196,12 +200,9 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1:
 	case BASE_CART1_EX:
 	case BASE_CART2:
-		return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
 	case BASE_CART2_EX:
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
 			return ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
-		} else {
-			return GBASavedataReadEEPROM(&gbaMemory->savedata);
 		}
 	case BASE_CART_SRAM:
 		break;
@@ -236,7 +237,9 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return ((int8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
+		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((int8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
+		}
 	case BASE_CART_SRAM:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInitSRAM(&gbaMemory->savedata);
@@ -275,7 +278,9 @@ uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address) {
 	case BASE_CART1_EX:
 	case BASE_CART2:
 	case BASE_CART2_EX:
-		return ((uint8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
+		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
+			return ((uint8_t*) gbaMemory->rom)[address & (SIZE_CART0 - 1)];
+		}
 	case BASE_CART_SRAM:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInitSRAM(&gbaMemory->savedata);
@@ -593,11 +598,27 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 		}
 	} else {
 		uint16_t word;
-		while (wordsRemaining--) {
-			word = GBALoadU16(&memory->d, source);
-			GBAStore16(&memory->d, dest, word);
-			source += sourceOffset;
-			dest += destOffset;
+		if (source >> BASE_OFFSET == BASE_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
+			while (wordsRemaining--) {
+				word = GBASavedataReadEEPROM(&memory->savedata);
+				GBAStore16(&memory->d, dest, word);
+				source += sourceOffset;
+				dest += destOffset;
+			}
+		} else if (dest >> BASE_OFFSET == BASE_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
+			while (wordsRemaining--) {
+				word = GBALoadU16(&memory->d, source);
+				GBASavedataWriteEEPROM(&memory->savedata, word);
+				source += sourceOffset;
+				dest += destOffset;
+			}
+		} else {
+			while (wordsRemaining--) {
+				word = GBALoadU16(&memory->d, source);
+				GBAStore16(&memory->d, dest, word);
+				source += sourceOffset;
+				dest += destOffset;
+			}
 		}
 	}
 
