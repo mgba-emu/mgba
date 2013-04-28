@@ -16,6 +16,7 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
+static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
 static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint16_t color, struct PixelFlags flags);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
@@ -203,22 +204,9 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
 	softwareRenderer->row = row;
 
-	if (softwareRenderer->dispcnt.objEnable) {
-		for (int i = 0; i < 128; ++i) {
-			struct GBAObj* sprite = &renderer->oam->obj[i];
-			if (sprite->transformed) {
-				_drawTransformedSprite(softwareRenderer, &renderer->oam->tobj[i], y);
-			} else if (!sprite->disable) {
-				_drawSprite(softwareRenderer, sprite, y);
-			}
-		}
-	}
-
-	for (int i = 0; i < 4; ++i) {
-		if (softwareRenderer->sortedBg[i]->enabled) {
-			_drawBackgroundMode0(softwareRenderer, softwareRenderer->sortedBg[i], y);
-		}
-	}
+	softwareRenderer->start = 0;
+	softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
+	_drawScanline(softwareRenderer, y);
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -292,6 +280,26 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
+	}
+}
+
+static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
+	int i;
+	if (renderer->dispcnt.objEnable) {
+		for (i = 0; i < 128; ++i) {
+			struct GBAObj* sprite = &renderer->d.oam->obj[i];
+			if (sprite->transformed) {
+				_drawTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
+			} else if (!sprite->disable) {
+				_drawSprite(renderer, sprite, y);
+			}
+		}
+	}
+
+	for (i = 0; i < 4; ++i) {
+		if (renderer->sortedBg[i]->enabled) {
+			_drawBackgroundMode0(renderer, renderer->sortedBg[i], y);
+		}
 	}
 }
 
@@ -389,8 +397,8 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	}
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
-	int start = 0;
-	int end = VIDEO_HORIZONTAL_PIXELS;
+	int start = renderer->start;
+	int end = renderer->end;
 	int inX = start + background->x;
 	int inY = y + background->y;
 	union GBATextMapData mapData;
@@ -452,6 +460,8 @@ static const int _objSizes[32] = {
 static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
+	int start = renderer->start;
+	int end = renderer->end;
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
@@ -471,7 +481,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	unsigned yBase = (inY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (inY & 0x7) * 4;
-	for (int outX = x >= 0 ? x : 0; outX < x + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (int outX = x >= start ? x : start; outX < x + width && outX < end; ++outX) {
 		int inX = outX - x;
 		if (sprite->hflip) {
 			inX = width - inX - 1;
@@ -498,6 +508,8 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	int totalWidth = width << sprite->doublesize;
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
 	int totalHeight = height << sprite->doublesize;
+	int start = renderer->start;
+	int end = renderer->end;
 	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
 		return;
 	}
@@ -510,7 +522,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	for (int outX = x >= 0 ? x : 0; outX < x + totalWidth && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (int outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) {
 		if (renderer->flags[outX].isSprite) {
 			continue;
 		}

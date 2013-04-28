@@ -72,6 +72,8 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoSoftwareBackground* sortedBg[4];
 
 	uint16_t* row;
+	int start;
+	int end;
 
 	pthread_mutex_t mutex;
 	pthread_cond_t upCond;
