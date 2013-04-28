@@ -470,7 +470,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
-	unsigned yBase = (inY & ~0x7) * 0x80 + (inY & 0x7) * 4;
+	unsigned yBase = (inY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (inY & 0x7) * 4;
 	for (int outX = x >= 0 ? x : 0; outX < x + width && outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
 		int inX = outX - x;
 		if (sprite->hflip) {
@@ -523,7 +523,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 			continue;
 		}
 
-		unsigned yBase = (localY & ~0x7) * 0x80 + (localY & 0x7) * 4;
+		unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 		unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
 		tileData = (tileData >> ((localX & 3) << 2)) & 0xF;
