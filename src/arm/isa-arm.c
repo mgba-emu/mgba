@@ -234,7 +234,7 @@ void ARMStep(struct ARMCore* cpu) {
 	} else { \
 		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = cpu->shifterCarryOut; \
+		cpu->cpsr.c = !!cpu->shifterCarryOut; \
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \

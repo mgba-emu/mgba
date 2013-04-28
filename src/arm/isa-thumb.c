@@ -112,7 +112,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
 	if (!immediate) {
 		cpu->gprs[rd] = cpu->gprs[rm];
 	} else {
-		cpu->cpsr.c = cpu->gprs[rm] & (1 << (32 - immediate));
+		cpu->cpsr.c = (cpu->gprs[rm] >> (32 - immediate)) & 1;
 		cpu->gprs[rd] = cpu->gprs[rm] << immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
@@ -122,7 +122,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
 		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
 		cpu->gprs[rd] = 0;
 	} else {
-		cpu->cpsr.c = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->cpsr.c = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 		cpu->gprs[rd] = ((uint32_t) cpu->gprs[rm]) >> immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
@@ -136,7 +136,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 			cpu->gprs[rd] = 0;
 		}
 	} else {
-		cpu->cpsr.c = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->cpsr.c = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 		cpu->gprs[rd] = cpu->gprs[rm] >> immediate;
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
@@ -200,7 +200,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (32 - rs));
+			cpu->cpsr.c = (cpu->gprs[rd] >> (32 - rs)) & 1;
 			cpu->gprs[rd] <<= rs;
 		} else {
 			if (rs > 32) {
@@ -217,7 +217,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1));
+			cpu->cpsr.c = (cpu->gprs[rd] >> (rs - 1)) & 1;
 			cpu->gprs[rd] = (uint32_t) cpu->gprs[rd] >> rs;
 		} else {
 			if (rs > 32) {
@@ -234,7 +234,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 	int rs = cpu->gprs[rn] & 0xFF;
 	if (rs) {
 		if (rs < 32) {
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (rs - 1));
+			cpu->cpsr.c = (cpu->gprs[rd] >> (rs - 1)) & 1;
 			cpu->gprs[rd] >>= rs;
 		} else {
 			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
@@ -263,7 +263,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ROR,
 	if (rs) {
 		int r4 = rs & 0x1F;
 		if (r4 > 0) {
-			cpu->cpsr.c = cpu->gprs[rd] & (1 << (r4 - 1));
+			cpu->cpsr.c = (cpu->gprs[rd] >> (r4 - 1)) & 1;
 			cpu->gprs[rd] = ARM_ROR(cpu->gprs[rd], r4);
 		} else {
 			cpu->cpsr.c = ARM_SIGN(cpu->gprs[rd]);
