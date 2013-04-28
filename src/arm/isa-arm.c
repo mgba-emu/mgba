@@ -190,7 +190,7 @@ void ARMStep(struct ARMCore* cpu) {
 			}
 			break;
 		case 0xD:
-			if (!ARM_COND_GE) {
+			if (!ARM_COND_LE) {
 				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
 				return;
 			}
