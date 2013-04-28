@@ -147,9 +147,6 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 
 	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
 	int rotate = (address & 3) << 3;
-	if (!rotate) {
-		return value;
-	}
 	return (value >> rotate) | (value << (32 - rotate));
 }
 
