@@ -9,6 +9,12 @@
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 
+static void _RegisterRamReset(struct GBA* gba) {
+	uint32_t registers = gba->cpu.gprs[0];
+	(void)(registers);
+	GBALog(GBA_LOG_STUB, "RegisterRamReset unimplemented");
+}
+
 static void _CpuSet(struct GBA* gba) {
 	uint32_t source = gba->cpu.gprs[0];
 	uint32_t dest = gba->cpu.gprs[1];
@@ -80,6 +86,9 @@ static void _MidiKey2Freq(struct GBA* gba) {
 void GBASwi16(struct ARMBoard* board, int immediate) {
 	struct GBA* gba = ((struct GBABoard*) board)->p;
 	switch (immediate) {
+	case 0x1:
+		_RegisterRamReset(gba);
+		break;
 	case 0x2:
 		GBAHalt(gba);
 		break;
