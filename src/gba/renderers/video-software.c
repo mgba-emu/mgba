@@ -8,6 +8,7 @@
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
+static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
@@ -17,15 +18,15 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint16_t color, struct PixelFlags flags);
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, struct PixelFlags flags);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
 static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
-static inline uint16_t _brighten(uint16_t color, int y);
-static inline uint16_t _darken(uint16_t color, int y);
-static uint16_t _mix(int weightA, uint16_t colorA, int weightB, uint16_t colorB);
+static inline uint32_t _brighten(uint32_t color, int y);
+static inline uint32_t _darken(uint32_t color, int y);
+static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB);
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
 static int _backgroundComparator(const void* a, const void* b);
@@ -34,6 +35,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
+	renderer->d.writePalette = GBAVideoSoftwareRendererWritePalette;
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
 
@@ -65,6 +67,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->target2Obj = 0;
 	softwareRenderer->target2Bd = 0;
 	softwareRenderer->blendEffect = BLEND_NONE;
+	memset(softwareRenderer->normalPalette, 0, sizeof(softwareRenderer->normalPalette));
 	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
 
 	softwareRenderer->blda = 0;
@@ -191,12 +194,21 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	return value;
 }
 
+static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	uint32_t color32 = 0;
+	color32 |= (value << 3) & 0xF8;
+	color32 |= (value << 6) & 0xF800;
+	color32 |= (value << 9) & 0xF80000;
+	softwareRenderer->normalPalette[address >> 1] = color32;
+}
+
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-	uint16_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	uint32_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (softwareRenderer->dispcnt.forcedBlank) {
 		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = 0x7FFF;
+			row[x] = GBA_COLOR_WHITE;
 		}
 		return;
 	}
@@ -303,7 +315,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	}
 }
 
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint16_t color, struct PixelFlags flags) {
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, struct PixelFlags flags) {
 	struct PixelFlags currentFlags = renderer->flags[offset];
 	if (currentFlags.isSprite && flags.priority >= currentFlags.priority) {
 		if (currentFlags.target1) {
@@ -337,12 +349,12 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 
 #define BACKGROUND_DRAW_PIXEL_16 \
 	{ \
-		uint16_t color; \
+		uint32_t color; \
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 1) + (localY << 1) + ((localX >> 2) & 1); \
 		uint16_t tileData = renderer->d.vram[charBase]; \
 		tileData >>= (localX & 0x3) << 2; \
 		if (!background->target1 || renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
-			color = renderer->d.palette[(tileData & 0xF) | (mapData.palette << 4)]; \
+			color = renderer->normalPalette[(tileData & 0xF) | (mapData.palette << 4)]; \
 		} else { \
 			color = renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)]; \
 		} \
@@ -353,16 +365,16 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 
 #define BACKGROUND_DRAW_PIXEL_256 \
 	{ \
-		uint16_t color; \
+		uint32_t color; \
 		charBase = ((background->charBase + (mapData.tile << 6)) >> 1) + (localY << 2) + ((localX >> 1) & 3); \
 		uint16_t tileData = renderer->d.vram[charBase]; \
 		tileData >>= (localX & 0x1) << 3; \
 		if (!background->target1 || renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA) { \
-			color = renderer->d.palette[tileData & 0xFF]; \
+			color = renderer->normalPalette[tileData & 0xFF]; \
 		} else if (renderer->blendEffect == BLEND_DARKEN) { \
-			color = _darken(renderer->d.palette[tileData & 0xFF], renderer->bldy); \
+			color = _darken(renderer->normalPalette[tileData & 0xFF], renderer->bldy); \
 		} else if (renderer->blendEffect == BLEND_BRIGHTEN) { \
-			color = _brighten(renderer->d.palette[tileData & 0xFF], renderer->bldy); \
+			color = _brighten(renderer->normalPalette[tileData & 0xFF], renderer->bldy); \
 		} \
 		if (tileData & 0xFF) { \
 			_composite(renderer, outX, color, flags); \
@@ -494,7 +506,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
 		if (tileData) {
 			if (!renderer->target1Obj) {
-				renderer->spriteLayer[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
 				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
 			}
@@ -541,7 +553,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 		tileData = (tileData >> ((localX & 3) << 2)) & 0xF;
 		if (tileData) {
 			if (!renderer->target1Obj) {
-				renderer->spriteLayer[outX] = renderer->d.palette[0x100 | tileData | (sprite->palette << 4)];
+				renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
 				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
 			}
@@ -553,49 +565,71 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	if (renderer->blendEffect == BLEND_BRIGHTEN) {
 		for (int i = 0; i < 512; ++i) {
-			renderer->variantPalette[i] = _brighten(renderer->d.palette[i], renderer->bldy);
+			renderer->variantPalette[i] = _brighten(renderer->normalPalette[i], renderer->bldy);
 		}
 	} else if (renderer->blendEffect == BLEND_DARKEN) {
 		for (int i = 0; i < 512; ++i) {
-			renderer->variantPalette[i] = _darken(renderer->d.palette[i], renderer->bldy);
+			renderer->variantPalette[i] = _darken(renderer->normalPalette[i], renderer->bldy);
 		}
 	} else {
 		for (int i = 0; i < 512; ++i) {
-			renderer->variantPalette[i] = renderer->d.palette[i];
+			renderer->variantPalette[i] = renderer->normalPalette[i];
 		}
 	}
 }
 
-static inline uint16_t _brighten(uint16_t c, int y) {
-	union GBAColor color = { .packed = c };
-	color.r = color.r + ((31 - color.r) * y) / 16;
-	color.g = color.g + ((31 - color.g) * y) / 16;
-	color.b = color.b + ((31 - color.b) * y) / 16;
-	return color.packed;
+static inline uint32_t _brighten(uint32_t color, int y) {
+	uint32_t c = 0;
+	uint32_t a;
+	a = color & 0xF8;
+	c |= (a + ((0xF8 - a) * y) / 16) & 0xF8;
+
+	a = color & 0xF800;
+	c |= (a + ((0xF800 - a) * y) / 16) & 0xF800;
+
+	a = color & 0xF80000;
+	c |= (a + ((0xF80000 - a) * y) / 16) & 0xF80000;
+	return c;
 }
 
-static inline uint16_t _darken(uint16_t c, int y) {
-	union GBAColor color = { .packed = c };
-	color.r = color.r - (color.r * y) / 16;
-	color.g = color.g - (color.g * y) / 16;
-	color.b = color.b - (color.b * y) / 16;
-	return color.packed;
+static inline uint32_t _darken(uint32_t color, int y) {
+	uint32_t c = 0;
+	uint32_t a;
+	a = color & 0xF8;
+	c |= (a - (a * y) / 16) & 0xF8;
+
+	a = color & 0xF800;
+	c |= (a - (a * y) / 16) & 0xF800;
+
+	a = color & 0xF80000;
+	c |= (a - (a * y) / 16) & 0xF80000;
+	return c;
 }
 
-static uint16_t _mix(int weightA, uint16_t colorA, int weightB, uint16_t colorB) {
-	union GBAColor ca = { .packed = colorA };
-	union GBAColor cb = { .packed = colorB };
+static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB) {
+	uint32_t c = 0;
+	uint32_t a, b;
+	a = colorA & 0xF8;
+	b = colorB & 0xF8;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1F8;
+	if (c & 0x00000100) {
+		c = 0x000000F8;
+	}
 
-	int r = (ca.r * weightA + cb.r * weightB) / 16;
-	ca.r = r > 0x1F ? 0x1F : r;
+	a = colorA & 0xF800;
+	b = colorB & 0xF800;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1F800;
+	if (c & 0x00010000) {
+		c = (c & 0x000000F8) | 0x0000F800;
+	}
 
-	int g = (ca.g * weightA + cb.g * weightB) / 16;
-	ca.g = g > 0x1F ? 0x1F : g;
-
-	int b = (ca.b * weightA + cb.b * weightB) / 16;
-	ca.b = b > 0x1F ? 0x1F : b;
-
-	return ca.packed;
+	a = colorA & 0xF80000;
+	b = colorB & 0xF80000;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1F80000;
+	if (c & 0x01000000) {
+		c = (c & 0x0000F8F8) | 0x00F80000;
+	}
+	return c;
 }
 
 static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {

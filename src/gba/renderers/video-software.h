@@ -36,6 +36,10 @@ enum BlendEffect {
 	BLEND_DARKEN = 3
 };
 
+enum {
+	GBA_COLOR_WHITE = 0x00F8F8F8
+};
+
 struct PixelFlags {
 	unsigned priority : 2;
 	unsigned isSprite : 1;
@@ -48,12 +52,12 @@ struct PixelFlags {
 struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
-	uint16_t* outputBuffer;
+	uint32_t* outputBuffer;
 	unsigned outputBufferStride;
 
 	union GBARegisterDISPCNT dispcnt;
 
-	uint16_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
 	struct PixelFlags flags[VIDEO_HORIZONTAL_PIXELS];
 
 	// BLDCNT
@@ -62,7 +66,8 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target2Obj;
 	unsigned target2Bd;
 	enum BlendEffect blendEffect;
-	uint16_t variantPalette[512];
+	uint32_t normalPalette[512];
+	uint32_t variantPalette[512];
 
 	uint16_t blda;
 	uint16_t bldb;
@@ -71,7 +76,7 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoSoftwareBackground bg[4];
 	struct GBAVideoSoftwareBackground* sortedBg[4];
 
-	uint16_t* row;
+	uint32_t* row;
 	int start;
 	int end;
 
