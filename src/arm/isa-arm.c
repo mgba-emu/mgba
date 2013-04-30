@@ -76,7 +76,28 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftRORR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	ARM_STUB;
+	int rs = (opcode >> 8) & 0x0000000F;
+	++cpu->cycles;
+	int shift = cpu->gprs[rs];
+	if (rs == ARM_PC) {
+		shift += 4;
+	}
+	shift &= 0xFF;
+	int shiftVal =  cpu->gprs[rm];
+	if (rm == ARM_PC) {
+		shiftVal += 4;
+	}
+	int rotate = shift & 0x1F;
+	if (!shift) {
+		cpu->shifterOperand = shiftVal;
+		cpu->shifterCarryOut = cpu->cpsr.c;
+	} else if (rotate) {
+		cpu->shifterOperand = ARM_ROR(shiftVal, rotate);
+		cpu->shifterCarryOut = (shiftVal >> (rotate - 1)) & 1;
+	} else {
+		cpu->shifterOperand = shiftVal;
+		cpu->shifterCarryOut = ARM_SIGN(shiftVal);
+	}
 }
 
 static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
