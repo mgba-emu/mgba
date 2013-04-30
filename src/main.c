@@ -123,7 +123,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			renderer->d.d.framesPending = 0;
 			pthread_mutex_unlock(&renderer->d.mutex);
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, renderer->d.outputBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			SDL_GL_SwapBuffers();
