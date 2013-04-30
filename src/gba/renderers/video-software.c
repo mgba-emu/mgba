@@ -424,22 +424,42 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
 		uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase];
 		if (tileData) {
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
-			BACKGROUND_DRAW_PIXEL_16;
-			++outX;
+			if (!mapData.hflip) {
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				++outX;
+			} else {
+				outX += 7;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				--outX;
+				BACKGROUND_DRAW_PIXEL_16;
+				outX += 8;
+			}
 		} else {
 			outX += 8;
 		}
