@@ -74,7 +74,6 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldy;
 
 	struct GBAVideoSoftwareBackground bg[4];
-	struct GBAVideoSoftwareBackground* sortedBg[4];
 
 	uint32_t* row;
 	int start;

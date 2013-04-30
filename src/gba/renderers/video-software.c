@@ -3,7 +3,6 @@
 #include "gba.h"
 #include "gba-io.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
@@ -27,9 +26,6 @@ static inline uint32_t _brighten(uint32_t color, int y);
 static inline uint32_t _darken(uint32_t color, int y);
 static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB);
 
-static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer);
-static int _backgroundComparator(const void* a, const void* b);
-
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
@@ -40,11 +36,6 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 
 	renderer->d.turbo = 0;
 	renderer->d.framesPending = 0;
-
-	renderer->sortedBg[0] = &renderer->bg[0];
-	renderer->sortedBg[1] = &renderer->bg[1];
-	renderer->sortedBg[2] = &renderer->bg[2];
-	renderer->sortedBg[3] = &renderer->bg[3];
 
 	{
 		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -196,6 +187,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	uint32_t color32 = 0;
+	if (address & 0x1F) {
+		color32 = 0xFF000000;
+	}
 	color32 |= (value << 3) & 0xF8;
 	color32 |= (value << 6) & 0xF800;
 	color32 |= (value << 9) & 0xF80000;
@@ -213,6 +207,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
+	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
+	memset(row, 0, sizeof(*row) * VIDEO_HORIZONTAL_PIXELS);
 	softwareRenderer->row = row;
 
 	softwareRenderer->start = 0;
@@ -240,6 +236,7 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 }
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
+	(void)(renderer);
 	union GBARegisterBGCNT reg = { .packed = value };
 	bg->priority = reg.priority;
 	bg->charBase = reg.charBase << 14;
@@ -248,8 +245,6 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	bg->screenBase = reg.screenBase << 11;
 	bg->overflow = reg.overflow;
 	bg->size = reg.size;
-
-	_sortBackgrounds(renderer);
 }
 
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value) {
@@ -295,6 +290,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
+	uint32_t* row = renderer->row;
+
 	int i;
 	if (renderer->dispcnt.objEnable) {
 		for (i = 0; i < 128; ++i) {
@@ -307,16 +304,51 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		}
 	}
 
-	for (i = 0; i < 4; ++i) {
-		if (renderer->sortedBg[i]->enabled) {
-			_drawBackgroundMode0(renderer, renderer->sortedBg[i], y);
+	int priority;
+	for (priority = 0; priority < 4; ++priority) {
+		for (i = 0; i < 4; ++i) {
+			if (renderer->bg[i].enabled && renderer->bg[i].priority == priority) {
+				_drawBackgroundMode0(renderer, &renderer->bg[i], y);
+			}
 		}
 	}
 }
 
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, struct PixelFlags flags) {
+	struct PixelFlags currentFlags = renderer->flags[offset];
+	if (currentFlags.isSprite && flags.priority >= currentFlags.priority) {
+		if (currentFlags.target1) {
+			if (currentFlags.written && currentFlags.target2) {
+				renderer->row[offset] = _mix(renderer->blda, renderer->row[offset], renderer->bldb, renderer->spriteLayer[offset]);
+			} else if (flags.target2) {
+				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->spriteLayer[offset]);
+			}
+		} else if (!currentFlags.written) {
+			renderer->row[offset] = renderer->spriteLayer[offset];
+		}
+		renderer->flags[offset].finalized = 1;
+		return;
+	}
+	if (renderer->blendEffect != BLEND_ALPHA) {
+		renderer->row[offset] = color;
+		renderer->flags[offset].finalized = 1;
+	} else if (renderer->blendEffect == BLEND_ALPHA) {
+		if (currentFlags.written) {
+			if (currentFlags.target1 && flags.target2) {
+				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->row[offset]);
+			}
+			renderer->flags[offset].finalized = 1;
+		} else {
+			renderer->row[offset] = color;
+			renderer->flags[offset].target1 = flags.target1;
+		}
+	}
+	renderer->flags[offset].written = 1;
+}
+
 #define BACKGROUND_DRAW_PIXEL_16 \
-	if (tileData & 0xF) { \
-		renderer->row[outX] = renderer->normalPalette[(tileData & 0xF) | (mapData.palette << 4)]; \
+	if (tileData & 0xF && !renderer->flags[outX].finalized) { \
+		_composite(renderer, outX, renderer->normalPalette[tileData & 0xF | (mapData.palette << 4)], flags); \
 	} \
 	tileData >>= 4;
 
@@ -352,6 +384,12 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int localY;
 
 	unsigned xBase;
+
+	struct PixelFlags flags = {
+		.target1 = background->target1 && renderer->blendEffect == BLEND_ALPHA,
+		.target2 = background->target2,
+		.priority = background->priority
+	};
 
 	uint32_t screenBase;
 	uint32_t charBase;
@@ -588,18 +626,4 @@ static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB)
 		c = (c & 0x0000F8F8) | 0x00F80000;
 	}
 	return c;
-}
-
-static void _sortBackgrounds(struct GBAVideoSoftwareRenderer* renderer) {
-	qsort(renderer->sortedBg, 4, sizeof(struct GBAVideoSoftwareBackground*), _backgroundComparator);
-}
-
-static int _backgroundComparator(const void* a, const void* b) {
-	const struct GBAVideoSoftwareBackground* bgA = *(const struct GBAVideoSoftwareBackground**) a;
-	const struct GBAVideoSoftwareBackground* bgB = *(const struct GBAVideoSoftwareBackground**) b;
-	if (bgA->priority != bgB->priority) {
-		return bgA->priority - bgB->priority;
-	} else {
-		return bgA->index - bgB->index;
-	}
 }
