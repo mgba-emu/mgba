@@ -501,7 +501,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
 		tileData = (tileData >> ((inX & 3) << 2)) & 0xF;
 		if (tileData) {
-			if (!renderer->target1Obj) {
+			if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj) {
 				renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
 				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
@@ -548,7 +548,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 		uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1];
 		tileData = (tileData >> ((localX & 3) << 2)) & 0xF;
 		if (tileData) {
-			if (!renderer->target1Obj) {
+			if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj) {
 				renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)];
 			} else {
 				renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)];
