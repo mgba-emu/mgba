@@ -352,6 +352,12 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	} \
 	tileData >>= 4;
 
+#define BACKGROUND_DRAW_PIXEL_256 \
+	if (tileData & 0xFF && !renderer->flags[outX].finalized) { \
+		_composite(renderer, outX, renderer->normalPalette[tileData & 0xFF], flags); \
+	} \
+	tileData >>= 8;
+
 #define BACKGROUND_TEXT_SELECT_CHARACTER \
 	localX = tileX * 8 + inX; \
 	xBase = localX & 0xF8; \
@@ -419,49 +425,113 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		outX = end;
 	}
 
-	for (tileX; tileX < 30; ++tileX) {
-		BACKGROUND_TEXT_SELECT_CHARACTER;
-		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
-		uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase];
-		if (tileData) {
-			if (!mapData.hflip) {
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				++outX;
+	if (!background->multipalette) {
+		for (tileX; tileX < 30; ++tileX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+			uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase];
+			if (tileData) {
+				if (!mapData.hflip) {
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+				} else {
+					outX += 7;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					outX += 8;
+				}
 			} else {
-				outX += 7;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
-				--outX;
-				BACKGROUND_DRAW_PIXEL_16;
 				outX += 8;
 			}
-		} else {
-			outX += 8;
+		}
+	} else {
+		for (tileX; tileX < 30; ++tileX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
+			if (!mapData.hflip) {
+				uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase];
+				if (tileData) {
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+				} else {
+					outX += 4;
+				}
+				tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
+				if (tileData) {
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+				} else {
+					outX += 4;
+				}
+			} else {
+				uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
+				if (tileData) {
+					outX += 3;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					outX += 4;
+				} else {
+					outX += 4;
+				}
+				tileData = ((uint32_t*)renderer->d.vram)[charBase];
+				if (tileData) {
+					outX += 3;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					outX += 4;
+				} else {
+					outX += 4;
+				}
+			}
 		}
 	}
 }
