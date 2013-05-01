@@ -204,11 +204,20 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			row[x] = GBA_COLOR_WHITE;
 		}
 		return;
+	} else {
+		uint32_t backdrop;
+		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA) {
+			backdrop = softwareRenderer->normalPalette[0];
+		} else {
+			backdrop = softwareRenderer->variantPalette[0];
+		}
+		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = backdrop;
+		}
 	}
 
 	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
 	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
-	memset(row, 0, sizeof(*row) * VIDEO_HORIZONTAL_PIXELS);
 	softwareRenderer->row = row;
 
 	softwareRenderer->start = 0;
