@@ -194,6 +194,11 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	color32 |= (value << 6) & 0xF800;
 	color32 |= (value << 9) & 0xF80000;
 	softwareRenderer->normalPalette[address >> 1] = color32;
+	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
+		softwareRenderer->variantPalette[address >> 1] = _brighten(color32, softwareRenderer->bldy);
+	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
+		softwareRenderer->variantPalette[address >> 1] = _darken(color32, softwareRenderer->bldy);
+	}
 }
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
