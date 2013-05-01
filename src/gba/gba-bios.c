@@ -111,7 +111,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 			div_t result = div(gba->cpu.gprs[0], gba->cpu.gprs[1]);
 			gba->cpu.gprs[0] = result.quot;
 			gba->cpu.gprs[1] = result.rem;
-			gba->cpu.gprs[2] = abs(result.quot);
+			gba->cpu.gprs[3] = abs(result.quot);
 		}
 		break;
 	case 0x7:
@@ -119,7 +119,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 			div_t result = div(gba->cpu.gprs[1], gba->cpu.gprs[0]);
 			gba->cpu.gprs[0] = result.quot;
 			gba->cpu.gprs[1] = result.rem;
-			gba->cpu.gprs[2] = abs(result.quot);
+			gba->cpu.gprs[3] = abs(result.quot);
 		}
 		break;
 	case 0xB:
