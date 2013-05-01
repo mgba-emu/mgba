@@ -134,6 +134,9 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 			case REGION_WORKING_RAM:
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
 				break;
+			case REGION_WORKING_IRAM:
+				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
+				break;
 			case REGION_VRAM:
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
