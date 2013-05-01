@@ -18,6 +18,28 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		// DMA
+		case REG_DMA0SAD_LO:
+		case REG_DMA0DAD_LO:
+		case REG_DMA1SAD_LO:
+		case REG_DMA1DAD_LO:
+		case REG_DMA2SAD_LO:
+		case REG_DMA2DAD_LO:
+		case REG_DMA3SAD_LO:
+		case REG_DMA3DAD_LO:
+			GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
+			break;
+
+		case REG_DMA0SAD_HI:
+		case REG_DMA0DAD_HI:
+		case REG_DMA1SAD_HI:
+		case REG_DMA1DAD_HI:
+		case REG_DMA2SAD_HI:
+		case REG_DMA2DAD_HI:
+		case REG_DMA3SAD_HI:
+		case REG_DMA3DAD_HI:
+			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
+			break;
+
 		case REG_DMA0CNT_LO:
 			GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
 			break;
@@ -132,8 +154,10 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	default:
 		GBAIOWrite(gba, address, value & 0xFFFF);
 		GBAIOWrite(gba, address | 2, value >> 16);
-		break;
+		return;
 	}
+	gba->memory.io[address >> 1] = value;
+	gba->memory.io[(address >> 1) + 1] = value >> 16;
 }
 
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
