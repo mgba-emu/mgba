@@ -18,7 +18,7 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->shifterCarryOut = cpu->cpsr.c;
 	} else {
 		cpu->shifterOperand = cpu->gprs[rm] << immediate;
-		cpu->shifterCarryOut = cpu->gprs[rm] & (1 << (32 - immediate));
+		cpu->shifterCarryOut = (cpu->gprs[rm] >> (32 - immediate)) & 1;
 	}
 }
 
@@ -32,10 +32,10 @@ static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 	int immediate = (opcode & 0x00000F80) >> 7;
 	if (immediate) {
 		cpu->shifterOperand = ((uint32_t) cpu->gprs[rm]) >> immediate;
-		cpu->shifterCarryOut = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 	} else {
 		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = cpu->gprs[rm] & 0x80000000;
+		cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
 	}
 }
 
@@ -49,10 +49,10 @@ static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
 	int immediate = (opcode & 0x00000F80) >> 7;
 	if (immediate) {
 		cpu->shifterOperand = cpu->gprs[rm] >> immediate;
-		cpu->shifterCarryOut = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 	} else {
-		cpu->shifterCarryOut = cpu->gprs[rm] & 0x80000000;
-		cpu->shifterOperand = cpu->shifterCarryOut >> 31; // Ensure sign extension
+		cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
+		cpu->shifterOperand = cpu->shifterCarryOut;
 	}
 }
 
@@ -66,7 +66,7 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	int immediate = (opcode & 0x00000F80) >> 7;
 	if (immediate) {
 		cpu->shifterOperand = ARM_ROR(cpu->gprs[rm], immediate);
-		cpu->shifterCarryOut = cpu->gprs[rm] & (1 << (immediate - 1));
+		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 	} else {
 		// RRX
 		cpu->shifterOperand = (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
@@ -255,7 +255,7 @@ void ARMStep(struct ARMCore* cpu) {
 	} else { \
 		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = !!cpu->shifterCarryOut; \
+		cpu->cpsr.c = cpu->shifterCarryOut; \
 	}
 
 #define ARM_NEUTRAL_HI_S(DLO, DHI) \
