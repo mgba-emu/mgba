@@ -622,6 +622,25 @@ static const int _objSizes[32] = {
 			SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
 		}
 
+#define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
+	for (int outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
+		if (renderer->flags[outX].isSprite) { \
+			continue; \
+		} \
+		int inY = y - sprite->y; \
+		int inX = outX - x; \
+		int localX = ((mat->a * (inX - (totalWidth >> 1)) + mat->b * (inY - (totalHeight >> 1))) >> 8) + (width >> 1); \
+		int localY = ((mat->c * (inX - (totalWidth >> 1)) + mat->d * (inY - (totalHeight >> 1))) >> 8) + (height >> 1); \
+		\
+		if (localX < 0 || localX >= width || localY < 0 || localY >= height) { \
+			continue; \
+		} \
+		\
+		SPRITE_YBASE_ ## DEPTH(localY); \
+		SPRITE_XBASE_ ## DEPTH(localX); \
+		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
+	}
+
 #define SPRITE_XBASE_16(localX) unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
@@ -718,22 +737,19 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	for (int outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) {
-		if (renderer->flags[outX].isSprite) {
-			continue;
+	int variant = renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj;
+	if (!sprite->multipalette) {
+		if (!variant) {
+			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
+		} else {
+			SPRITE_TRANSFORMED_LOOP(16, VARIANT);
 		}
-		int inY = y - sprite->y;
-		int inX = outX - x;
-		int localX = ((mat->a * (inX - (totalWidth >> 1)) + mat->b * (inY - (totalHeight >> 1))) >> 8) + (width >> 1);
-		int localY = ((mat->c * (inX - (totalWidth >> 1)) + mat->d * (inY - (totalHeight >> 1))) >> 8) + (height >> 1);
-
-		if (localX < 0 || localX >= width || localY < 0 || localY >= height) {
-			continue;
+	} else {
+		if (!variant) {
+			SPRITE_TRANSFORMED_LOOP(256, NORMAL);
+		} else {
+			SPRITE_TRANSFORMED_LOOP(256, VARIANT);
 		}
-
-		SPRITE_YBASE_16(localY);
-		SPRITE_XBASE_16(localX);
-		SPRITE_DRAW_PIXEL_16_NORMAL(localX);
 	}
 }
 
