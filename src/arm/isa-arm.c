@@ -24,7 +24,30 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftLSLR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	ARM_STUB;
+	int rs = (opcode >> 8) & 0x0000000F;
+	++cpu->cycles;
+	int shift = cpu->gprs[rs];
+	if (rs == ARM_PC) {
+		shift += 4;
+	}
+	shift &= 0xFF;
+	int32_t shiftVal = cpu->gprs[rm];
+	if (rm == ARM_PC) {
+		shiftVal += 4;
+	}
+	if (!shift) {
+		cpu->shifterOperand = shiftVal;
+		cpu->shifterCarryOut = cpu->cpsr.c;
+	} else if (shift < 32) {
+		cpu->shifterOperand = shiftVal << shift;
+		cpu->shifterCarryOut = (shiftVal >> (32 - shift)) & 1;
+	} else if (shift == 32) {
+		cpu->shifterOperand = 0;
+		cpu->shifterCarryOut = shiftVal & 1;
+	} else {
+		cpu->shifterOperand = 0;
+		cpu->shifterCarryOut = 0;
+	}
 }
 
 static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
@@ -41,7 +64,30 @@ static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 
 static inline void _shiftLSRR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	ARM_STUB;
+	int rs = (opcode >> 8) & 0x0000000F;
+	++cpu->cycles;
+	int shift = cpu->gprs[rs];
+	if (rs == ARM_PC) {
+		shift += 4;
+	}
+	shift &= 0xFF;
+	uint32_t shiftVal = cpu->gprs[rm];
+	if (rm == ARM_PC) {
+		shiftVal += 4;
+	}
+	if (!shift) {
+		cpu->shifterOperand = shiftVal;
+		cpu->shifterCarryOut = cpu->cpsr.c;
+	} else if (shift < 32) {
+		cpu->shifterOperand = shiftVal >> shift;
+		cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
+	} else if (shift == 32) {
+		cpu->shifterOperand = 0;
+		cpu->shifterCarryOut = shiftVal >> 31;
+	} else {
+		cpu->shifterOperand = 0;
+		cpu->shifterCarryOut = 0;
+	}
 }
 
 static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
