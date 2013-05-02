@@ -608,33 +608,55 @@ static const int _objSizes[32] = {
 	0, 0
 };
 
+#define SPRITE_NORMAL_LOOP(DEPTH, TYPE) \
+		SPRITE_YBASE_ ## DEPTH(inY); \
+		for (int outX = x >= start ? x : start; outX < x + width && outX < end; ++outX) { \
+			int inX = outX - x; \
+			if (sprite->hflip) { \
+				inX = width - inX - 1; \
+			} \
+			if (renderer->flags[outX].isSprite) { \
+				continue; \
+			} \
+			SPRITE_XBASE_ ## DEPTH(inX); \
+			SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
+		}
+
 #define SPRITE_XBASE_16(localX) unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
-#define SPRITE_DRAW_PIXEL_16(localX) \
+#define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
-		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj) { \
-			renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)]; \
-		} else { \
-			renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)]; \
-		} \
+		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)]; \
+		renderer->flags[outX] = flags; \
+	}
+
+#define SPRITE_DRAW_PIXEL_16_VARIANT(localX) \
+	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
+	if (tileData) { \
+		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)]; \
 		renderer->flags[outX] = flags; \
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width : 0x100) + (localY & 0x7) * 8;
 
-#define SPRITE_DRAW_PIXEL_256(localX) \
+#define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
-		if (renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj) { \
-			renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData]; \
-		} else { \
-			renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData]; \
-		} \
+		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData]; \
+		renderer->flags[outX] = flags; \
+	}
+
+#define SPRITE_DRAW_PIXEL_256_VARIANT(localX) \
+	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
+	if (tileData) { \
+		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData]; \
 		renderer->flags[outX] = flags; \
 	}
 
@@ -661,33 +683,19 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	int variant = renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj;
 	if (!sprite->multipalette) {
-		SPRITE_YBASE_16(inY);
-		for (int outX = x >= start ? x : start; outX < x + width && outX < end; ++outX) {
-			int inX = outX - x;
-			if (sprite->hflip) {
-				inX = width - inX - 1;
-			}
-			if (renderer->flags[outX].isSprite) {
-				continue;
-			}
-			SPRITE_XBASE_16(inX);
-			SPRITE_DRAW_PIXEL_16(inX);
+		if (!variant) {
+			SPRITE_NORMAL_LOOP(16, NORMAL);
+		} else {
+			SPRITE_NORMAL_LOOP(16, VARIANT);
 		}
 	} else {
-		SPRITE_YBASE_256(inY);
-		for (int outX = x >= start ? x : start; outX < x + width && outX < end; ++outX) {
-			int inX = outX - x;
-			if (sprite->hflip) {
-				inX = width - inX - 1;
-			}
-			if (renderer->flags[outX].isSprite) {
-				continue;
-			}
-			SPRITE_XBASE_256(inX);
-			SPRITE_DRAW_PIXEL_256(inX);
+		if (!variant) {
+			SPRITE_NORMAL_LOOP(256, NORMAL);
+		} else {
+			SPRITE_NORMAL_LOOP(256, VARIANT);
 		}
-
 	}
 }
 
@@ -725,7 +733,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 
 		SPRITE_YBASE_16(localY);
 		SPRITE_XBASE_16(localX);
-		SPRITE_DRAW_PIXEL_16(localX);
+		SPRITE_DRAW_PIXEL_16_NORMAL(localX);
 	}
 }
 
