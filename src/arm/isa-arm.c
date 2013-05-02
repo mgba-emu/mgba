@@ -587,8 +587,15 @@ DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifter
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]))
 DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]))
-DEFINE_INSTRUCTION_ARM(SMLAL, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(SMLALS, ARM_STUB)
+
+DEFINE_MULTIPLY_INSTRUCTION_ARM(SMLAL,
+	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
+	int32_t dm = cpu->gprs[rd];
+	int32_t dn = d;
+	cpu->gprs[rd] = dm + dn;
+	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+
 DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
