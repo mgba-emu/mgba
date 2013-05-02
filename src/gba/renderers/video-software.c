@@ -304,8 +304,6 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
-	uint32_t* row = renderer->row;
-
 	int i;
 	if (renderer->dispcnt.objEnable) {
 		for (i = 0; i < 128; ++i) {
@@ -399,7 +397,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	}
 
 #define BACKGROUND_MODE_0_TILE_16_LOOP(TYPE) \
-	for (tileX; tileX < 30; ++tileX) { \
+	for (; tileX < 30; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY; \
 		uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
@@ -446,7 +444,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	}
 
 #define BACKGROUND_MODE_0_TILE_256_LOOP(TYPE) \
-		for (tileX; tileX < 30; ++tileX) { \
+		for (; tileX < 30; ++tileX) { \
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
 			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1); \
 			if (!mapData.hflip) { \
@@ -509,9 +507,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		}
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
-	int start = renderer->start;
-	int end = renderer->end;
-	int inX = start + background->x;
+	int inX = background->x;
 	int inY = y + background->y;
 	union GBATextMapData mapData;
 

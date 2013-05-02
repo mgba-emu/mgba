@@ -137,7 +137,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 				gettimeofday(&tv, 0);
 				ts.tv_sec = tv.tv_sec;
 				ts.tv_nsec = tv.tv_usec * 1000 + 800000;
-				int err = pthread_cond_timedwait(&renderer->d.upCond, &renderer->d.mutex, &ts);
+				err = pthread_cond_timedwait(&renderer->d.upCond, &renderer->d.mutex, &ts);
 				if (err == ETIMEDOUT) {
 					break;
 				}

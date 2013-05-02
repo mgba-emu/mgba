@@ -435,6 +435,7 @@ void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {
 	int ws2 = (parameters & 0x0300) >> 8;
 	int ws2seq = (parameters & 0x0400) >> 10;
 	int prefetch = parameters & 0x4000;
+	(void)(prefetch);
 
 	memory->waitstates16[REGION_CART_SRAM] =  GBA_ROM_WAITSTATES[sram];
 	memory->waitstatesSeq16[REGION_CART_SRAM] = GBA_ROM_WAITSTATES[sram];

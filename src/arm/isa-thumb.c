@@ -342,6 +342,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory->store16(cpu->memory, c
 #define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, ADDRESS, LOOP, BODY, OP, PRE_BODY, POST_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		int rn = RN; \
+		UNUSED(rn); \
 		int rs = opcode & 0xFF; \
 		int32_t address = ADDRESS; \
 		int m; \
