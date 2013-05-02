@@ -360,13 +360,13 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 
 #define BACKGROUND_DRAW_PIXEL_16_NORMAL \
 	if (tileData & 0xF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->normalPalette[tileData & 0xF | (mapData.palette << 4)], flags); \
+		_composite(renderer, outX, renderer->normalPalette[(tileData & 0xF) | (mapData.palette << 4)], flags); \
 	} \
 	tileData >>= 4;
 
 #define BACKGROUND_DRAW_PIXEL_16_VARIANT \
 	if (tileData & 0xF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->variantPalette[tileData & 0xF | (mapData.palette << 4)], flags); \
+		_composite(renderer, outX, renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)], flags); \
 	} \
 	tileData >>= 4;
 
