@@ -594,8 +594,15 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
-DEFINE_INSTRUCTION_ARM(UMLAL, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(UMLALS, ARM_STUB)
+
+DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
+	uint64_t d = ((uint64_t) cpu->gprs[rm]) * ((uint64_t) cpu->gprs[rs]);
+	int32_t dm = cpu->gprs[rd];
+	int32_t dn = d;
+	cpu->gprs[rd] = dm + dn;
+	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
+
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
 	uint64_t d = ((uint64_t) cpu->gprs[rm]) * ((uint64_t) cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
