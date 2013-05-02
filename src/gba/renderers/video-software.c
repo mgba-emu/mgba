@@ -702,7 +702,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
-	int variant = renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj;
+	int variant = renderer->target1Obj && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (!sprite->multipalette) {
 		if (!variant) {
 			SPRITE_NORMAL_LOOP(16, NORMAL);
@@ -737,7 +737,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	int variant = renderer->blendEffect == BLEND_NONE || renderer->blendEffect == BLEND_ALPHA || !renderer->target1Obj;
+	int variant = renderer->target1Obj && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (!sprite->multipalette) {
 		if (!variant) {
 			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
