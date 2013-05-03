@@ -78,6 +78,37 @@ static void _FastCpuSet(struct GBA* gba) {
 	}
 }
 
+static void _ObjAffineSet(struct GBA* gba) {
+	int i = gba->cpu.gprs[2];
+	float sx, sy;
+	float theta;
+	int offset = gba->cpu.gprs[0];
+	int destination = gba->cpu.gprs[1];
+	int diff = gba->cpu.gprs[3];
+	float a, b, c, d;
+	while (i--) {
+		// [ sx   0 ]   [ cos(theta)  -sin(theta) ]   [ A B ]
+		// [  0  sy ] * [ sin(theta)   cos(theta) ] = [ C D ]
+		sx = GBALoad16(&gba->memory.d, offset) / 256.f;
+		sy = GBALoad16(&gba->memory.d, offset + 2) / 256.f;
+		theta = (GBALoadU16(&gba->memory.d, offset + 4) >> 8) / 128.f * M_PI;
+		offset += 6;
+		// Rotation
+		a = d = cosf(theta);
+		b = c = sinf(theta);
+		// Scale
+		a *= sx;
+		b *= -sx;
+		c *= sy;
+		d *= sy;
+		GBAStore16(&gba->memory.d, destination, a * 256);
+		GBAStore16(&gba->memory.d, destination + diff, b * 256);
+		GBAStore16(&gba->memory.d, destination + diff * 2, c * 256);
+		GBAStore16(&gba->memory.d, destination + diff * 3, d * 256);
+		destination += diff * 4;
+	}
+}
+
 static void _MidiKey2Freq(struct GBA* gba) {
 	uint32_t key = GBALoad32(&gba->memory.d, gba->cpu.gprs[0] + 4);
 	gba->cpu.gprs[0] = key / powf(2, (180.f - gba->cpu.gprs[1] - gba->cpu.gprs[2] / 256.f) / 12.f);
@@ -130,6 +161,9 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		break;
 	case 0xC:
 		_FastCpuSet(gba);
+		break;
+	case 0xF:
+		_ObjAffineSet(gba);
 		break;
 	case 0x11:
 	case 0x12:
