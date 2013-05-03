@@ -187,9 +187,6 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	uint32_t color32 = 0;
-	if (address & 0x1F) {
-		color32 = 0xFF000000;
-	}
 	color32 |= (value << 3) & 0xF8;
 	color32 |= (value << 6) & 0xF800;
 	color32 |= (value << 9) & 0xF80000;
@@ -210,19 +207,17 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		}
 		return;
 	} else {
-		uint32_t backdrop;
+		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
 		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA) {
-			backdrop = softwareRenderer->normalPalette[0];
+			backdrop |= softwareRenderer->normalPalette[0];
 		} else {
-			backdrop = softwareRenderer->variantPalette[0];
+			backdrop |= softwareRenderer->variantPalette[0];
 		}
 		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = backdrop;
 		}
 	}
 
-	memset(softwareRenderer->flags, 0, sizeof(softwareRenderer->flags));
-	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
 	softwareRenderer->row = row;
 
 	softwareRenderer->start = 0;
@@ -326,59 +321,49 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	}
 }
 
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, struct PixelFlags flags) {
-	struct PixelFlags currentFlags = renderer->flags[offset];
-	if (currentFlags.isSprite && flags.priority >= currentFlags.priority) {
-		if (currentFlags.target1) {
-			if (currentFlags.written && currentFlags.target2) {
-				renderer->row[offset] = _mix(renderer->blda, renderer->row[offset], renderer->bldb, renderer->spriteLayer[offset]);
-			} else if (flags.target2) {
-				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->spriteLayer[offset]);
-			}
-		} else if (!currentFlags.written) {
-			renderer->row[offset] = renderer->spriteLayer[offset];
-		}
-		renderer->flags[offset].finalized = 1;
-		return;
-	}
-	if (renderer->blendEffect != BLEND_ALPHA) {
-		renderer->row[offset] = color;
-		renderer->flags[offset].finalized = 1;
-	} else if (renderer->blendEffect == BLEND_ALPHA) {
-		if (currentFlags.written) {
-			if (currentFlags.target1 && flags.target2) {
-				renderer->row[offset] = _mix(renderer->bldb, color, renderer->blda, renderer->row[offset]);
-			}
-			renderer->flags[offset].finalized = 1;
-		} else {
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color) {
+	uint32_t current = renderer->row[offset];
+	// We stash the priority on the top bits so we cn do a one-operator comparison
+	// The lower the number, the higher the priority, and sprites take precendence over backgrounds
+	// We want to do special processing if the color pixel is target 1, however
+	if (color < current) {
+		if (current & FLAG_UNWRITTEN) {
 			renderer->row[offset] = color;
-			renderer->flags[offset].target1 = flags.target1;
+		} else if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
+			renderer->row[offset] = color | FLAG_FINALIZED;
+		} else {
+			renderer->row[offset] = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
+		}
+	} else {
+		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
+			renderer->row[offset] = _mix(renderer->blda, current, renderer->bldb, color) | FLAG_FINALIZED;
+		} else {
+			renderer->row[offset] = current | FLAG_FINALIZED;
 		}
 	}
-	renderer->flags[offset].written = 1;
 }
 
 #define BACKGROUND_DRAW_PIXEL_16_NORMAL \
-	if (tileData & 0xF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->normalPalette[(tileData & 0xF) | (mapData.palette << 4)], flags); \
+	if (tileData & 0xF && !(renderer->row[outX] & FLAG_FINALIZED)) { \
+		_composite(renderer, outX, renderer->normalPalette[(tileData & 0xF) | (mapData.palette << 4)] | flags); \
 	} \
 	tileData >>= 4;
 
 #define BACKGROUND_DRAW_PIXEL_16_VARIANT \
-	if (tileData & 0xF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)], flags); \
+	if (tileData & 0xF && !(renderer->row[outX] & FLAG_FINALIZED)) { \
+		_composite(renderer, outX, renderer->variantPalette[(tileData & 0xF) | (mapData.palette << 4)] | flags); \
 	} \
 	tileData >>= 4;
 
 #define BACKGROUND_DRAW_PIXEL_256_NORMAL \
-	if (tileData & 0xFF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->normalPalette[tileData & 0xFF], flags); \
+	if (tileData & 0xFF && !(renderer->row[outX] & FLAG_FINALIZED)) { \
+		_composite(renderer, outX, renderer->normalPalette[tileData & 0xFF] | flags); \
 	} \
 	tileData >>= 8;
 
 #define BACKGROUND_DRAW_PIXEL_256_VARIANT \
-	if (tileData & 0xFF && !renderer->flags[outX].finalized) { \
-		_composite(renderer, outX, renderer->variantPalette[tileData & 0xFF], flags); \
+	if (tileData & 0xFF && !(renderer->row[outX] & FLAG_FINALIZED)) { \
+		_composite(renderer, outX, renderer->variantPalette[tileData & 0xFF] | flags); \
 	} \
 	tileData >>= 8;
 
@@ -523,11 +508,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	unsigned xBase;
 
-	struct PixelFlags flags = {
-		.target1 = background->target1 && renderer->blendEffect == BLEND_ALPHA,
-		.target2 = background->target2,
-		.priority = background->priority
-	};
+	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
+	flags |= FLAG_TARGET_2 * background->target2;
 
 	uint32_t screenBase;
 	uint32_t charBase;
@@ -702,7 +685,7 @@ static const int _objSizes[32] = {
 			if (sprite->hflip) { \
 				inX = width - inX - 1; \
 			} \
-			if (renderer->flags[outX].isSprite) { \
+			if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 				continue; \
 			} \
 			SPRITE_XBASE_ ## DEPTH(inX); \
@@ -711,7 +694,7 @@ static const int _objSizes[32] = {
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	for (int outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
-		if (renderer->flags[outX].isSprite) { \
+		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
 		} \
 		int inY = y - sprite->y; \
@@ -735,16 +718,14 @@ static const int _objSizes[32] = {
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
-		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)]; \
-		renderer->flags[outX] = flags; \
+		renderer->row[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
-		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)]; \
-		renderer->flags[outX] = flags; \
+		renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
@@ -754,16 +735,14 @@ static const int _objSizes[32] = {
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
-		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData]; \
-		renderer->flags[outX] = flags; \
+		renderer->row[outX] = renderer->normalPalette[0x100 | tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
-		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData]; \
-		renderer->flags[outX] = flags; \
+		renderer->row[outX] = renderer->variantPalette[0x100 | tileData] | flags; \
 	}
 
 static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
@@ -774,12 +753,9 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
-	struct PixelFlags flags = {
-		.priority = sprite->priority,
-		.isSprite = 1,
-		.target1 = (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
-		.target2 = renderer->target2Obj
-	};
+	int flags = sprite->priority << OFFSET_PRIORITY;
+	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
+	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	int x = sprite->x;
 	int inY = y - sprite->y;
 	if (sprite->y + height - 256 >= 0) {
@@ -815,12 +791,9 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
 		return;
 	}
-	struct PixelFlags flags = {
-		.priority = sprite->priority,
-		.isSprite = 1,
-		.target1 = (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT,
-		.target2 = renderer->target2Obj
-	};
+	int flags = sprite->priority << OFFSET_PRIORITY;
+	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
+	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];

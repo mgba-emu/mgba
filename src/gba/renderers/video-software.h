@@ -37,16 +37,17 @@ enum BlendEffect {
 };
 
 enum {
-	GBA_COLOR_WHITE = 0x00F8F8F8
+	GBA_COLOR_WHITE = 0x00F8F8F8,
+	OFFSET_PRIORITY = 29
 };
 
-struct PixelFlags {
-	unsigned priority : 2;
-	unsigned isSprite : 1;
-	unsigned written : 1;
-	unsigned finalized : 1;
-	unsigned target1 : 1;
-	unsigned target2 : 1;
+enum PixelFlags {
+	FLAG_FINALIZED = 0x80000000,
+	FLAG_PRIORITY = 0x60000000,
+	FLAG_IS_BACKGROUND = 0x10000000,
+	FLAG_UNWRITTEN = 0x08000000,
+	FLAG_TARGET_1 = 0x04000000,
+	FLAG_TARGET_2 = 0x02000000
 };
 
 struct GBAVideoSoftwareRenderer {
@@ -56,9 +57,6 @@ struct GBAVideoSoftwareRenderer {
 	unsigned outputBufferStride;
 
 	union GBARegisterDISPCNT dispcnt;
-
-	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
-	struct PixelFlags flags[VIDEO_HORIZONTAL_PIXELS];
 
 	// BLDCNT
 	unsigned target1Obj;
