@@ -540,15 +540,28 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		uint32_t tileData;
 		BACKGROUND_TEXT_SELECT_CHARACTER;
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+
 		tileData = ((uint32_t*)renderer->d.vram)[charBase];
-		tileData >>= 4 * (inX & 0x7);
-		if (!variant) {
-			for (outX = 0; outX < end; ++outX) {
-				BACKGROUND_DRAW_PIXEL_16_NORMAL;
+		if (!mapData.hflip) {
+			tileData >>= 4 * (inX & 0x7);
+			if (!variant) {
+				for (outX = 0; outX < end; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16_NORMAL;
+				}
+			} else {
+				for (outX = 0; outX < end; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16_VARIANT;
+				}
 			}
 		} else {
-			for (outX = 0; outX < end; ++outX) {
-				BACKGROUND_DRAW_PIXEL_16_VARIANT;
+			if (!variant) {
+				for (outX = end; outX--;) {
+					BACKGROUND_DRAW_PIXEL_16_NORMAL;
+				}
+			} else {
+				for (outX = end; outX--;) {
+					BACKGROUND_DRAW_PIXEL_16_VARIANT;
+				}
 			}
 		}
 
@@ -556,13 +569,26 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		BACKGROUND_TEXT_SELECT_CHARACTER;
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
 		tileData = ((uint32_t*)renderer->d.vram)[charBase];
-		if (!variant) {
-			for (outX = VIDEO_HORIZONTAL_PIXELS - 8 + end; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
-				BACKGROUND_DRAW_PIXEL_16_NORMAL;
+		if (!mapData.hflip) {
+			if (!variant) {
+				for (outX = VIDEO_HORIZONTAL_PIXELS - 8 + end; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16_NORMAL;
+				}
+			} else {
+				for (outX = VIDEO_HORIZONTAL_PIXELS - 8 + end; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16_VARIANT;
+				}
 			}
 		} else {
-			for (outX = VIDEO_HORIZONTAL_PIXELS - 8 + end; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
-				BACKGROUND_DRAW_PIXEL_16_VARIANT;
+			tileData >>= 4 * end;
+			if (!variant) {
+				for (outX = VIDEO_HORIZONTAL_PIXELS - 1; outX > VIDEO_HORIZONTAL_PIXELS - 8; --outX) {
+					BACKGROUND_DRAW_PIXEL_16_NORMAL;
+				}
+			} else {
+				for (outX = VIDEO_HORIZONTAL_PIXELS - 1; outX > VIDEO_HORIZONTAL_PIXELS - 8; --outX) {
+					BACKGROUND_DRAW_PIXEL_16_VARIANT;
+				}
 			}
 		}
 
