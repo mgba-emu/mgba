@@ -128,6 +128,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address) {
 		value = ((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2];
 		break;
 	case BASE_OAM:
+		value = ((int32_t*) gbaMemory->p->video.oam.raw)[(address & (SIZE_OAM - 1)) >> 2];
 		break;
 	case BASE_CART0:
 	case BASE_CART0_EX:
@@ -167,7 +168,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_VRAM:
 		return gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1];
 	case BASE_OAM:
-		break;
+		return gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1];
 	case BASE_CART0:
 	case BASE_CART0_EX:
 	case BASE_CART1:
@@ -208,7 +209,7 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address) {
 	case BASE_VRAM:
 		return gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1];
 	case BASE_OAM:
-		break;
+		return gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1];
 	case BASE_CART0:
 	case BASE_CART0_EX:
 	case BASE_CART1:
