@@ -169,6 +169,7 @@ struct GBAVideoRenderer {
 	union GBAOAM* oam;
 
 	int framesPending;
+	int frameskip;
 	int turbo;
 };
 

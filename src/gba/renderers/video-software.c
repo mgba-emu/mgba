@@ -36,6 +36,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 
 	renderer->d.turbo = 0;
 	renderer->d.framesPending = 0;
+	renderer->d.frameskip = 0;
 
 	{
 		pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -200,6 +201,9 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	if (renderer->frameskip > 0) {
+		return;
+	}
 	uint32_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (softwareRenderer->dispcnt.forcedBlank) {
 		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -229,10 +233,14 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	pthread_mutex_lock(&softwareRenderer->mutex);
-	renderer->framesPending++;
-	pthread_cond_broadcast(&softwareRenderer->upCond);
-	if (!renderer->turbo) {
-		pthread_cond_wait(&softwareRenderer->downCond, &softwareRenderer->mutex);
+	if (renderer->frameskip > 0) {
+		--renderer->frameskip;
+	} else {
+		renderer->framesPending++;
+		pthread_cond_broadcast(&softwareRenderer->upCond);
+		if (!renderer->turbo) {
+			pthread_cond_wait(&softwareRenderer->downCond, &softwareRenderer->mutex);
+		}
 	}
 	pthread_mutex_unlock(&softwareRenderer->mutex);
 }
