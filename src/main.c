@@ -127,6 +127,19 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			SDL_GL_SwapBuffers();
+
+			while (SDL_PollEvent(&event)) {
+				switch (event.type) {
+				case SDL_QUIT:
+					// FIXME: this isn't thread-safe
+					context->debugger->state = DEBUGGER_EXITING;
+					break;
+				case SDL_KEYDOWN:
+				case SDL_KEYUP:
+					_GBASDLHandleKeypress(context, &event.key);
+					break;
+				}
+			}
 			pthread_mutex_lock(&renderer->d.mutex);
 			pthread_cond_broadcast(&renderer->d.downCond);
 			pthread_mutex_unlock(&renderer->d.mutex);
@@ -143,18 +156,6 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 				}
 			}
 			pthread_mutex_unlock(&renderer->d.mutex);
-		}
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_QUIT:
-				// FIXME: this isn't thread-safe
-				context->debugger->state = DEBUGGER_EXITING;
-				break;
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				_GBASDLHandleKeypress(context, &event.key);
-				break;
-			}
 		}
 	}
 }
