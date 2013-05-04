@@ -18,8 +18,9 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
-static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
-static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
+static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
+static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
+static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
 static inline uint32_t _brighten(uint32_t color, int y);
@@ -308,19 +309,21 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int i;
+	memset(renderer->spriteLayer, 0, sizeof(renderer->spriteLayer));
 	if (renderer->dispcnt.objEnable) {
 		for (i = 0; i < 128; ++i) {
 			struct GBAObj* sprite = &renderer->d.oam->obj[i];
 			if (sprite->transformed) {
-				_drawTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
+				_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
 			} else if (!sprite->disable) {
-				_drawSprite(renderer, sprite, y);
+				_preprocessSprite(renderer, sprite, y);
 			}
 		}
 	}
 
 	int priority;
 	for (priority = 0; priority < 4; ++priority) {
+		_postprocessSprite(renderer, priority);
 		for (i = 0; i < 4; ++i) {
 			if (renderer->bg[i].enabled && renderer->bg[i].priority == priority) {
 				_drawBackgroundMode0(renderer, &renderer->bg[i], y);
@@ -725,15 +728,15 @@ static const int _objSizes[32] = {
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData) { \
-		renderer->row[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
+	if (tileData && !(renderer->spriteLayer[outX])) { \
+		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData) { \
-		renderer->row[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
+	if (tileData && !(renderer->spriteLayer[outX])) { \
+		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
@@ -742,18 +745,18 @@ static const int _objSizes[32] = {
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData) { \
-		renderer->row[outX] = renderer->normalPalette[0x100 | tileData] | flags; \
+	if (tileData && !(renderer->spriteLayer[outX])) { \
+		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData) { \
-		renderer->row[outX] = renderer->variantPalette[0x100 | tileData] | flags; \
+	if (tileData && !(renderer->spriteLayer[outX])) { \
+		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData] | flags; \
 	}
 
-static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
+static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
 	int start = renderer->start;
@@ -761,7 +764,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
-	int flags = sprite->priority << OFFSET_PRIORITY;
+	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	int x = sprite->x;
@@ -789,7 +792,7 @@ static void _drawSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj
 	}
 }
 
-static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y) {
+static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y) {
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
 	int totalWidth = width << sprite->doublesize;
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
@@ -799,7 +802,7 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
 		return;
 	}
-	int flags = sprite->priority << OFFSET_PRIORITY;
+	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	int x = sprite->x;
@@ -817,6 +820,16 @@ static void _drawTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, st
 			SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 		} else {
 			SPRITE_TRANSFORMED_LOOP(256, VARIANT);
+		}
+	}
+}
+
+static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority) {
+	int x;
+	for (x = 0; x < 240; ++x) {
+		uint32_t color = renderer->spriteLayer[x];
+		if ((color & FLAG_FINALIZED) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority && !(renderer->row[x] & FLAG_FINALIZED)) {
+			_composite(renderer, x, color & ~FLAG_FINALIZED);
 		}
 	}
 }

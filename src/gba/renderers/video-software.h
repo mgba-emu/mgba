@@ -58,6 +58,8 @@ struct GBAVideoSoftwareRenderer {
 
 	union GBARegisterDISPCNT dispcnt;
 
+	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+
 	// BLDCNT
 	unsigned target1Obj;
 	unsigned target1Bd;
