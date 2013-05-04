@@ -19,14 +19,14 @@ struct GBAVideoSoftwareBackground {
 	int target2;
 	uint16_t x;
 	uint16_t y;
-	uint32_t refx;
-	uint32_t refy;
-	uint16_t dx;
-	uint16_t dmx;
-	uint16_t dy;
-	uint16_t dmy;
-	uint32_t sx;
-	uint32_t sy;
+	int32_t refx;
+	int32_t refy;
+	int16_t dx;
+	int16_t dmx;
+	int16_t dy;
+	int16_t dmy;
+	int32_t sx;
+	int32_t sy;
 };
 
 enum BlendEffect {
