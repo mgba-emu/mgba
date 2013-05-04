@@ -78,6 +78,51 @@ static void _FastCpuSet(struct GBA* gba) {
 	}
 }
 
+static void _BgAffineSet(struct GBA* gba) {
+	int i = gba->cpu.gprs[2];
+	float ox, oy;
+	float cx, cy;
+	float sx, sy;
+	float theta;
+	int offset = gba->cpu.gprs[0];
+	int destination = gba->cpu.gprs[1];
+	int diff = gba->cpu.gprs[3];
+	(void)(diff); // Are we supposed to use this?
+	float a, b, c, d;
+	float rx, ry;
+	while (i--) {
+		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
+		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
+		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
+		ox = GBALoad32(&gba->memory.d, offset) / 256.f;
+		oy = GBALoad32(&gba->memory.d, offset + 4) / 256.f;
+		cx = GBALoad16(&gba->memory.d, offset + 8);
+		cy = GBALoad16(&gba->memory.d, offset + 10);
+		sx = GBALoad16(&gba->memory.d, offset + 12) / 256.f;
+		sy = GBALoad16(&gba->memory.d, offset + 14) / 256.f;
+		theta = (GBALoadU16(&gba->memory.d, offset + 16) >> 8) / 128.f * M_PI;
+		offset += 20;
+		// Rotation
+		a = d = cosf(theta);
+		b = c = sinf(theta);
+		// Scale
+		a *= sx;
+		b *= -sx;
+		c *= sy;
+		d *= sy;
+		// Translate
+		rx = ox - (a * cx + b * cy);
+		ry = oy - (c * cx + d * cy);
+		GBAStore16(&gba->memory.d, destination, a * 256);
+		GBAStore16(&gba->memory.d, destination + 2, b * 256);
+		GBAStore16(&gba->memory.d, destination + 4, c * 256);
+		GBAStore16(&gba->memory.d, destination + 6, d * 256);
+		GBAStore32(&gba->memory.d, destination + 8, rx * 256);
+		GBAStore32(&gba->memory.d, destination + 12, ry * 256);
+		destination += 16;
+	}
+}
+
 static void _ObjAffineSet(struct GBA* gba) {
 	int i = gba->cpu.gprs[2];
 	float sx, sy;
@@ -161,6 +206,9 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		break;
 	case 0xC:
 		_FastCpuSet(gba);
+		break;
+	case 0xE:
+		_BgAffineSet(gba);
 		break;
 	case 0xF:
 		_ObjAffineSet(gba);
