@@ -358,8 +358,8 @@ void ARMStep(struct ARMCore* cpu) {
 
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
-		BODY; \
 		cpu->cycles += 1 + cpu->memory->activePrefetchCycles32; \
+		BODY; \
 	}
 
 #define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY) \
@@ -643,48 +643,48 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
 
 // Begin load/store definitions
 
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]))
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd]))
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address);
+	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &cpu->cycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address);
+	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &cpu->cycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd]);
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &cpu->cycles);
 	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd]);
+	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &cpu->cycles);
 	ARMSetPrivilegeMode(cpu, priv);)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr);,
+	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr, 0);,
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})
 
-DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM, cpu->memory->store32(cpu->memory, addr, cpu->gprs[i]);, )
+DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM, cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);, )
 
 DEFINE_INSTRUCTION_ARM(SWP, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(SWPB, ARM_STUB)

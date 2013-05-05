@@ -100,9 +100,6 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->cpsr.packed = MODE_SYSTEM;
 	cpu->spsr.packed = 0;
 
-	cpu->cycles = 0;
-	cpu->nextEvent = 0;
-
 	cpu->shifterOperand = 0;
 	cpu->shifterCarryOut = 0;
 
@@ -110,6 +107,9 @@ void ARMReset(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, MODE_ARM);
 
 	ARM_WRITE_PC;
+
+	cpu->cycles = 0;
+	cpu->nextEvent = 0;
 
 	cpu->board->reset(cpu->board);
 }

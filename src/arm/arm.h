@@ -67,15 +67,15 @@ union PSR {
 };
 
 struct ARMMemory {
-	int32_t (*load32)(struct ARMMemory*, uint32_t address);
-	int16_t (*load16)(struct ARMMemory*, uint32_t address);
-	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address);
-	int8_t (*load8)(struct ARMMemory*, uint32_t address);
-	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address);
+	int32_t (*load32)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	int16_t (*load16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	int8_t (*load8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
 
-	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value);
-	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value);
-	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value);
+	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value, int* cycleCounter);
+	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value, int* cycleCounter);
+	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value, int* cycleCounter);
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;

@@ -119,6 +119,8 @@ struct GBAMemory {
 	char waitstates16[256];
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
+	char waitstatesPrefetch32[256];
+	char waitstatesPrefetch16[256];
 	int activeRegion;
 
 	struct GBADMA dma[4];
@@ -126,15 +128,15 @@ struct GBAMemory {
 
 int32_t GBAMemoryProcessEvents(struct GBAMemory* memory, int32_t cycles);
 
-int32_t GBALoad32(struct ARMMemory* memory, uint32_t address);
-int16_t GBALoad16(struct ARMMemory* memory, uint32_t address);
-uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address);
-int8_t GBALoad8(struct ARMMemory* memory, uint32_t address);
-uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address);
+int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
+int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
+uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
+int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
+uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
 
-void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value);
-void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value);
-void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value);
+void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* cycleCounter);
+void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* cycleCounter);
+void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cycleCounter);
 
 void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters);
 

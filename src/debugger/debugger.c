@@ -127,10 +127,10 @@ static void _printHex(struct ARMDebugger* debugger, struct DebugVector* dv) {
 static inline void _printLine(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	// TODO: write a disassembler
 	if (mode == MODE_ARM) {
-		uint32_t instruction = debugger->cpu->memory->load32(debugger->cpu->memory, address);
+		uint32_t instruction = debugger->cpu->memory->load32(debugger->cpu->memory, address, 0);
 		printf("%08X\n", instruction);
 	} else {
-		uint16_t instruction = debugger->cpu->memory->loadU16(debugger->cpu->memory, address);
+		uint16_t instruction = debugger->cpu->memory->loadU16(debugger->cpu->memory, address, 0);
 		printf("%04X\n", instruction);
 	}
 }
@@ -167,7 +167,7 @@ static void _readByte(struct ARMDebugger* debugger, struct DebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->cpu->memory->loadU8(debugger->cpu->memory, address);
+	uint8_t value = debugger->cpu->memory->loadU8(debugger->cpu->memory, address, 0);
 	printf(" 0x%02X\n", value);
 }
 
@@ -177,7 +177,7 @@ static void _readHalfword(struct ARMDebugger* debugger, struct DebugVector* dv) 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->cpu->memory->loadU16(debugger->cpu->memory, address);
+	uint16_t value = debugger->cpu->memory->loadU16(debugger->cpu->memory, address, 0);
 	printf(" 0x%04X\n", value);
 }
 
@@ -187,7 +187,7 @@ static void _readWord(struct ARMDebugger* debugger, struct DebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->cpu->memory->load32(debugger->cpu->memory, address);
+	uint32_t value = debugger->cpu->memory->load32(debugger->cpu->memory, address, 0);
 	printf(" 0x%08X\n", value);
 }
 
