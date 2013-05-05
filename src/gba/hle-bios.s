@@ -47,6 +47,8 @@ strh   r0, [sp, #2]
 ldrh   r1, [sp, #0]
 orr    r1, r0, r1
 strh   r1, [r2, #0]
+mov    r0, #0xFFFFFFFF
+strh   r0, [r2, #2]
 mov    r0, #0x1F
 msr    cpsr, r0
 swi    #0x020000
