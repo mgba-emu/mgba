@@ -636,7 +636,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	union GBATextMapData mapData;
 
 	unsigned yBase = inY & 0xF8;
-	if (background->size & 2) {
+	if (background->size == 2) {
 		yBase += inY & 0x100;
 	} else if (background->size == 3) {
 		yBase += (inY & 0x100) << 1;
