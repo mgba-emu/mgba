@@ -179,6 +179,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		if (!gba->cpu.gprs[0] && gba->memory.io[REG_IF >> 1] & gba->cpu.gprs[1]) {
 			break;
 		}
+		gba->memory.io[REG_IF >> 1] = 0;
 		ARMRaiseSWI(&gba->cpu);
 		break;
 	case 0x6:

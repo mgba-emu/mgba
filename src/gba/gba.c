@@ -337,17 +337,23 @@ int GBATestIRQ(struct GBA* gba) {
 }
 
 int GBAWaitForIRQ(struct GBA* gba) {
+	int irqs = gba->memory.io[REG_IF >> 1];
+	int newIRQs = 0;
+	gba->memory.io[REG_IF >> 1] = 0;
 	while (1) {
 		if (gba->cpu.nextEvent == INT_MAX) {
-			return 0;
+			break;
 		} else {
 			gba->cpu.cycles = gba->cpu.nextEvent;
 			GBAProcessEvents(&gba->board.d);
 			if (gba->memory.io[REG_IF >> 1]) {
-				return 1;
+				newIRQs = gba->memory.io[REG_IF >> 1];
+				break;
 			}
 		}
 	}
+	gba->memory.io[REG_IF >> 1] = newIRQs | irqs;
+	return newIRQs;
 }
 
 int GBAHalt(struct GBA* gba) {
