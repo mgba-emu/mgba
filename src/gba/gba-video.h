@@ -199,7 +199,7 @@ struct GBAVideo {
 	int32_t nextVcounterIRQ;
 
 	uint16_t palette[SIZE_PALETTE_RAM >> 1];
-	uint16_t vram[SIZE_VRAM >> 1];
+	uint16_t* vram;
 	union GBAOAM oam;
 };
 

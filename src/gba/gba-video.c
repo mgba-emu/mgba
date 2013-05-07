@@ -5,6 +5,7 @@
 
 #include <limits.h>
 #include <string.h>
+#include <sys/mman.h>
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
@@ -41,10 +42,13 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->nextHblankIRQ = 0;
 	video->nextVblankIRQ = 0;
 	video->nextVcounterIRQ = 0;
+
+	video->vram = mmap(0, SIZE_VRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 }
 
 void GBAVideoDeinit(struct GBAVideo* video) {
 	GBAVideoAssociateRenderer(video, &dummyRenderer);
+	munmap(video->vram, SIZE_VRAM);
 }
 
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {

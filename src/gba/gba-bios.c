@@ -226,7 +226,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
 				break;
 			case REGION_VRAM:
-				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
 				GBALog(GBA_LOG_WARN, "Bad LZ77 destination");

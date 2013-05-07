@@ -133,7 +133,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		value = ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
 		break;
 	case BASE_VRAM:
-		value = ((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2];
+		value = ((int32_t*) gbaMemory->p->video.renderer->vram)[(address & 0x0001FFFF) >> 2];
 		break;
 	case BASE_OAM:
 		value = ((int32_t*) gbaMemory->p->video.oam.raw)[(address & (SIZE_OAM - 1)) >> 2];
@@ -190,7 +190,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		value = gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1];
 		break;
 	case BASE_VRAM:
-		value = gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1];
+		value = gbaMemory->p->video.renderer->vram[(address & 0x0001FFFF) >> 1];
 		break;
 	case BASE_OAM:
 		value = gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1];
@@ -302,7 +302,7 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* 
 		break;
 	case BASE_VRAM:
 		if ((address & OFFSET_MASK) < SIZE_VRAM - 2) {
-			((int32_t*) gbaMemory->p->video.vram)[(address & 0x0001FFFF) >> 2] = value;
+			((int32_t*) gbaMemory->p->video.renderer->vram)[(address & 0x0001FFFF) >> 2] = value;
 		}
 		break;
 	case BASE_OAM:
@@ -342,7 +342,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		break;
 	case BASE_VRAM:
 		if ((address & OFFSET_MASK) < SIZE_VRAM) {
-			gbaMemory->p->video.vram[(address & 0x0001FFFF) >> 1] = value;
+			gbaMemory->p->video.renderer->vram[(address & 0x0001FFFF) >> 1] = value;
 		}
 		break;
 	case BASE_OAM:
