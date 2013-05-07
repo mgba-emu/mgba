@@ -204,6 +204,7 @@ struct GBAVideo {
 };
 
 void GBAVideoInit(struct GBAVideo* video);
+void GBAVideoDeinit(struct GBAVideo* video);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
 

@@ -43,6 +43,10 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->nextVcounterIRQ = 0;
 }
 
+void GBAVideoDeinit(struct GBAVideo* video) {
+	GBAVideoAssociateRenderer(video, &dummyRenderer);
+}
+
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
 	video->renderer->deinit(video->renderer);
 	video->renderer = renderer;

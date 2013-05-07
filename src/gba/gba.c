@@ -52,6 +52,7 @@ void GBAInit(struct GBA* gba) {
 
 void GBADeinit(struct GBA* gba) {
 	GBAMemoryDeinit(&gba->memory);
+	GBAVideoDeinit(&gba->video);
 }
 
 void GBABoardInit(struct GBABoard* board) {
