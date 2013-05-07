@@ -11,29 +11,80 @@ static const GLfloat _vertices[4] = {
 	1, 0
 };
 
-static const GLchar* _fragmentShader[] = {
-	"#extension GL_EXT_gpu_shader4 : enable\n",
-	"varying float x;\n",
-	"uniform float y;\n",
-	"uniform sampler2D vram;\n",
-	"uniform int bg3cnt;\n",
-	"#define VRAM_INDEX(i) (vec2(mod(float(i), 512.0) / 511.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n",
-	"#define DESERIALIZE(vec) int(dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec))\n",
+static const GLchar* _fragmentShader =
+	"#extension GL_EXT_gpu_shader4 : enable\n"
+	"varying float x;\n"
+	"uniform float y;\n"
+	"uniform sampler2D vram;\n"
+	"uniform int dispcnt;\n"
+	"uniform int bg0cnt;\n"
+	"uniform int bg1cnt;\n"
+	"uniform int bg2cnt;\n"
+	"uniform int bg3cnt;\n"
+	"uniform int bg0hofs;\n"
+	"uniform int bg0vofs;\n"
+	"uniform int bg1hofs;\n"
+	"uniform int bg1vofs;\n"
+	"uniform int bg2hofs;\n"
+	"uniform int bg2vofs;\n"
+	"uniform int bg3hofs;\n"
+	"uniform int bg3vofs;\n"
+	"#define VRAM_INDEX(i) (vec2(mod(float(i), 512.0) / 511.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n"
+	"#define DESERIALIZE(vec) int(dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec))\n"
 
-	"void main() {\n",
-	"	int charBase = ((bg3cnt / 4) & 3) * 8192;\n",
-	"	int screenBase = ((bg3cnt / 256) & 0x1F) * 1024;\n",
-	"	int xBase = int(x) & 0xF8;\n",
-	"	int yBase = int(y) & 0xF8;\n",
-	"	screenBase = screenBase + (xBase / 8) + (yBase * 4);\n",
-	"	int mapData = DESERIALIZE(texture2D(vram, VRAM_INDEX(screenBase)));\n",
-	"	charBase = charBase + ((mapData & 0x3FF) * 16) + (int(x) & 0x4) / 4 + (int(y) & 0x7) * 2;\n",
-	"	int tileData = DESERIALIZE(texture2D(vram, VRAM_INDEX(charBase)));\n",
-	"	tileData = ((tileData >> ((int(x) & 3) * 4)) & 0xF) + (mapData / 4096) * 16;\n",
-	"	gl_FragColor = texture2D(vram, vec2(float(tileData) / 512.0, y / 256.0));\n",
-
+	"vec4 backgroundMode0(int bgcnt, int hofs, int vofs) {\n"
+	"	int charBase = ((bgcnt / 4) & 3) * 8192;\n"
+	"	int screenBase = ((bgcnt / 256) & 0x1F) * 1024;\n"
+	"	int localX = hofs + int(x);\n"
+	"	int localY = vofs + int(y);\n"
+	"	int xBase = localX & 0xF8;\n"
+	"	int yBase = localY & 0xF8;\n"
+	"	screenBase = screenBase + (xBase / 8) + (yBase * 4);\n"
+	"	int mapData = DESERIALIZE(texture2D(vram, VRAM_INDEX(screenBase)));\n"
+	"	charBase = charBase + ((mapData & 0x3FF) * 16) + (localX & 0x4) / 4 + (localY & 0x7) * 2;\n"
+	"	int tileData = DESERIALIZE(texture2D(vram, VRAM_INDEX(charBase)));\n"
+	"	tileData = ((tileData >> ((localX & 3) * 4)) & 0xF);\n"
+	"	if (tileData == 0) {\n"
+	"		return vec4(0, 0, 0, 0);\n"
+	"   }\n"
+	"	return texture2D(vram, vec2(float(tileData + (mapData / 4096) * 16) / 512.0, y / 256.0));\n"
 	"}\n"
-};
+
+	"void runPriority(int priority, inout vec4 color) {\n"
+	"	if (color.a > 0.0) {\n"
+	"		return;\n"
+	"	}\n"
+	"	if ((dispcnt & 0x100) != 0 && (bg0cnt & 0x3) == priority) {\n"
+	"		color = backgroundMode0(bg0cnt, bg0hofs, bg0vofs);\n"
+	"	}\n"
+	"	if (color.a > 0.0) {\n"
+	"		return;\n"
+	"	}\n"
+	"	if ((dispcnt & 0x200) != 0 && (bg1cnt & 0x3) == priority) {\n"
+	"		color = backgroundMode0(bg1cnt, bg1hofs, bg1vofs);\n"
+	"	}\n"
+	"	if (color.a > 0.0) {\n"
+	"		return;\n"
+	"	}\n"
+	"	if ((dispcnt & 0x400) != 0 && (bg2cnt & 0x3) == priority) {\n"
+	"		color = backgroundMode0(bg2cnt, bg2hofs, bg2vofs);\n"
+	"	}\n"
+	"	if (color.a > 0.0) {\n"
+	"		return;\n"
+	"	}\n"
+	"	if ((dispcnt & 0x800) != 0 && (bg3cnt & 0x3) == priority) {\n"
+	"		color = backgroundMode0(bg3cnt, bg3hofs, bg3vofs);\n"
+	"	}\n"
+	"}\n"
+
+	"void main() {\n"
+	"	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);\n"
+	"	runPriority(0, color);\n"
+	"	runPriority(1, color);\n"
+	"	runPriority(2, color);\n"
+	"	runPriority(3, color);\n"
+	"	gl_FragColor = color;\n"
+	"}\n";
 
 static const GLchar* _vertexShader[] = {
 	"varying float x;",
@@ -69,7 +120,7 @@ void GBAVideoGLSLRendererCreate(struct GBAVideoGLSLRenderer* glslRenderer) {
 	glslRenderer->vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glslRenderer->program = glCreateProgram();
 
-	glShaderSource(glslRenderer->fragmentShader, 19, _fragmentShader, 0);
+	glShaderSource(glslRenderer->fragmentShader, 1, (const GLchar**) &_fragmentShader, 0);
 	glShaderSource(glslRenderer->vertexShader, 7, _vertexShader, 0);
 
 	glAttachShader(glslRenderer->program, glslRenderer->vertexShader);
@@ -102,7 +153,19 @@ void GBAVideoGLSLRendererCreate(struct GBAVideoGLSLRenderer* glslRenderer) {
 void GBAVideoGLSLRendererProcessEvents(struct GBAVideoGLSLRenderer* glslRenderer) {
 	glUseProgram(glslRenderer->program);
 	glUniform1i(UNIFORM_LOCATION("vram"), 0);
+	glUniform1i(UNIFORM_LOCATION("dispcnt"), glslRenderer->io[0][REG_DISPCNT >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg0cnt"), glslRenderer->io[0][REG_BG0CNT >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg1cnt"), glslRenderer->io[0][REG_BG1CNT >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg2cnt"), glslRenderer->io[0][REG_BG2CNT >> 1]);
 	glUniform1i(UNIFORM_LOCATION("bg3cnt"), glslRenderer->io[0][REG_BG3CNT >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg0hofs"), glslRenderer->io[0][REG_BG0HOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg0vofs"), glslRenderer->io[0][REG_BG0VOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg1hofs"), glslRenderer->io[0][REG_BG1HOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg1vofs"), glslRenderer->io[0][REG_BG1VOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg2hofs"), glslRenderer->io[0][REG_BG2HOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg2vofs"), glslRenderer->io[0][REG_BG2VOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg3hofs"), glslRenderer->io[0][REG_BG3HOFS >> 1]);
+	glUniform1i(UNIFORM_LOCATION("bg3vofs"), glslRenderer->io[0][REG_BG3VOFS >> 1]);
 
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
@@ -157,7 +220,7 @@ static void GBAVideoGLSLRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static void GBAVideoGLSLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoGLSLRenderer* glslRenderer = (struct GBAVideoGLSLRenderer*) renderer;
-	GLshort color = 0;
+	GLshort color = 1;
 	color |= (value & 0x001F) << 11;
 	color |= (value & 0x03E0) << 1;
 	color |= (value & 0x7C00) >> 9;
