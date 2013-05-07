@@ -83,6 +83,9 @@ static const GLchar* _fragmentShader =
 	"	runPriority(1, color);\n"
 	"	runPriority(2, color);\n"
 	"	runPriority(3, color);\n"
+	"	if (color.a == 0.0) {\n"
+	"		color = texture2D(vram, vec2(0.0, y / 256.0));\n"
+	"	}\n"
 	"	gl_FragColor = color;\n"
 	"}\n";
 
