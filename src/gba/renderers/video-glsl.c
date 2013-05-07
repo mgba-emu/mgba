@@ -100,24 +100,25 @@ void GBAVideoGLSLRendererCreate(struct GBAVideoGLSLRenderer* glslRenderer) {
 }
 
 void GBAVideoGLSLRendererProcessEvents(struct GBAVideoGLSLRenderer* glslRenderer) {
-		glUseProgram(glslRenderer->program);
-		glUniform1i(UNIFORM_LOCATION("palette"), 0);
+	glUseProgram(glslRenderer->program);
+	glUniform1i(UNIFORM_LOCATION("vram"), 0);
+	glUniform1i(UNIFORM_LOCATION("bg3cnt"), glslRenderer->io[0][REG_BG3CNT >> 1]);
 
-		glEnable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, glslRenderer->vramTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, glslRenderer->vram);
+	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, glslRenderer->vramTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 512, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, glslRenderer->vram);
 
-		GLuint location = glGetAttribLocation(glslRenderer->program, "vert");
-		glEnableVertexAttribArray(location);
-		glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
-		int y;
-		for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-			glUniform1f(UNIFORM_LOCATION("y"), y);
-			glDrawArrays(GL_LINES, 0, 2);
-		}
-		glDisableVertexAttribArray(location);
-		glFlush();
+	GLuint location = glGetAttribLocation(glslRenderer->program, "vert");
+	glEnableVertexAttribArray(location);
+	glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
+	int y;
+	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+		glUniform1f(UNIFORM_LOCATION("y"), y);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+	glDisableVertexAttribArray(location);
+	glFlush();
 }
 
 static void GBAVideoGLSLRendererInit(struct GBAVideoRenderer* renderer) {
