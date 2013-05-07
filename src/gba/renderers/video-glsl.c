@@ -1,5 +1,7 @@
 #include "video-glsl.h"
 
+#include "gba-io.h"
+
 #include <string.h>
 
 #define UNIFORM_LOCATION(UNIFORM) (glGetUniformLocation(glslRenderer->program, UNIFORM))
@@ -10,19 +12,36 @@ static const GLfloat _vertices[4] = {
 };
 
 static const GLchar* _fragmentShader[] = {
-	"uniform float y;",
-	"uniform sampler2D palette;",
+	"#extension GL_EXT_gpu_shader4 : enable\n",
+	"varying float x;\n",
+	"uniform float y;\n",
+	"uniform sampler2D vram;\n",
+	"uniform int bg3cnt;\n",
+	"#define VRAM_INDEX(i) (vec2(mod(float(i), 512.0) / 511.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n",
+	"#define DESERIALIZE(vec) int(dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec))\n",
 
-	"void main() {",
-	"	gl_FragColor = texture2D(palette, vec2(0, y / 256.0));",
-	"}"
+	"void main() {\n",
+	"	int charBase = ((bg3cnt / 4) & 3) * 8192;\n",
+	"	int screenBase = ((bg3cnt / 256) & 0x1F) * 1024;\n",
+	"	int xBase = int(x) & 0xF8;\n",
+	"	int yBase = int(y) & 0xF8;\n",
+	"	screenBase = screenBase + (xBase / 8) + (yBase * 4);\n",
+	"	int mapData = DESERIALIZE(texture2D(vram, VRAM_INDEX(screenBase)));\n",
+	"	charBase = charBase + ((mapData & 0x3FF) * 16) + (int(x) & 0x4) / 4 + (int(y) & 0x7) * 2;\n",
+	"	int tileData = DESERIALIZE(texture2D(vram, VRAM_INDEX(charBase)));\n",
+	"	tileData = ((tileData >> ((int(x) & 3) * 4)) & 0xF) + (mapData / 4096) * 16;\n",
+	"	gl_FragColor = texture2D(vram, vec2(float(tileData) / 512.0, y / 256.0));\n",
+
+	"}\n"
 };
 
 static const GLchar* _vertexShader[] = {
+	"varying float x;",
 	"attribute vec2 vert;",
 	"uniform float y;",
 
 	"void main() {",
+	"	x = vert.x * 120.0 + 120.0;",
 	"	gl_Position = vec4(vert.x, 1.0 - y / 80.0, 0, 1.0);",
 	"}"
 };
@@ -50,8 +69,8 @@ void GBAVideoGLSLRendererCreate(struct GBAVideoGLSLRenderer* glslRenderer) {
 	glslRenderer->vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glslRenderer->program = glCreateProgram();
 
-	glShaderSource(glslRenderer->fragmentShader, 5, _fragmentShader, 0);
-	glShaderSource(glslRenderer->vertexShader, 5, _vertexShader, 0);
+	glShaderSource(glslRenderer->fragmentShader, 19, _fragmentShader, 0);
+	glShaderSource(glslRenderer->vertexShader, 7, _vertexShader, 0);
 
 	glAttachShader(glslRenderer->program, glslRenderer->vertexShader);
 	glAttachShader(glslRenderer->program, glslRenderer->fragmentShader);
@@ -107,6 +126,9 @@ static void GBAVideoGLSLRendererInit(struct GBAVideoRenderer* renderer) {
 	glslRenderer->state = GLSL_NONE;
 	glslRenderer->y = 0;
 
+	glslRenderer->oldVram = renderer->vram;
+	renderer->vram = &glslRenderer->vram[512 * 160];
+
 	pthread_mutex_init(&glslRenderer->mutex, 0);
 	pthread_cond_init(&glslRenderer->upCond, 0);
 	pthread_cond_init(&glslRenderer->downCond, 0);
@@ -120,6 +142,8 @@ static void GBAVideoGLSLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteProgram(glslRenderer->program);
 
 	glDeleteTextures(1, &glslRenderer->paletteTexture);*/
+
+	renderer->vram = glslRenderer->oldVram;
 
 	pthread_mutex_lock(&glslRenderer->mutex);
 	pthread_cond_broadcast(&glslRenderer->upCond);
@@ -141,8 +165,7 @@ static void GBAVideoGLSLRendererWritePalette(struct GBAVideoRenderer* renderer, 
 
 static uint16_t GBAVideoGLSLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoGLSLRenderer* glslRenderer = (struct GBAVideoGLSLRenderer*) renderer;
-	(void)(glslRenderer);
-	(void)(address);
+	glslRenderer->io[glslRenderer->y][address >> 1] = value;
 
 	return value;
 }
@@ -153,9 +176,11 @@ static void GBAVideoGLSLRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 	glslRenderer->y = y + 1;
 	if (y + 1 < VIDEO_VERTICAL_PIXELS) {
 		memcpy(&glslRenderer->vram[(y + 1) * 512], &glslRenderer->vram[y * 512], 1024);
+		memcpy(glslRenderer->io[y + 1], glslRenderer->io[y], sizeof(*glslRenderer->io));
 	} else {
 		glslRenderer->y = 0;
 		memcpy(&glslRenderer->vram[0], &glslRenderer->vram[y * 512], 1024);
+		memcpy(glslRenderer->io[0], glslRenderer->io[y], sizeof(*glslRenderer->io));
 	}
 }
 

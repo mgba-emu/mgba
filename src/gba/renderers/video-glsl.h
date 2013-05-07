@@ -27,6 +27,9 @@ struct GBAVideoGLSLRenderer {
 
 	GLuint vramTexture;
 	GLushort vram[512 * 256];
+	GLushort io[160][0x30];
+
+	uint16_t* oldVram;
 
 	pthread_mutex_t mutex;
 	pthread_cond_t upCond;
