@@ -105,7 +105,7 @@ static const GLchar* _vertexShader[] = {
 
 	"void main() {",
 	"	x = vert.x * 120.0 + 120.0;",
-	"	gl_Position = vec4(vert.x, 1.0 - y / 80.0, 0, 1.0);",
+	"	gl_Position = vec4(vert.x, 1.0 - (y + 1.0) / 80.0, 0, 1.0);",
 	"}"
 };
 
