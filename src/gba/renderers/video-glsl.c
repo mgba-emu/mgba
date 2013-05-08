@@ -29,7 +29,7 @@ static const GLchar* _fragmentShader =
 	"uniform int bg2vofs;\n"
 	"uniform int bg3hofs;\n"
 	"uniform int bg3vofs;\n"
-	"#define VRAM_INDEX(i) (vec2(mod(float(i), 512.0) / 511.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n"
+	"#define VRAM_INDEX(i) (vec2(mod(float(i + 1), 512.0) / 512.0 - 1.0 / 1024.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n"
 	"#define DESERIALIZE(vec) int(dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec))\n"
 
 	"vec4 backgroundMode0(int bgcnt, int hofs, int vofs) {\n"
