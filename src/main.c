@@ -2,6 +2,7 @@
 #include "gba-thread.h"
 #include "gba.h"
 #include "renderers/video-glsl.h"
+#include "sdl-events.h"
 
 #include <SDL.h>
 #ifdef __APPLE__
@@ -19,8 +20,6 @@
 static int _GBASDLInit(void);
 static void _GBASDLDeinit(void);
 static void _GBASDLRunloop(struct GBAThread* context, struct GBAVideoGLSLRenderer* renderer);
-static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event);
-
 
 int main(int argc, char** argv) {
 	const char* fname = "test.rom";
@@ -59,6 +58,8 @@ static int _GBASDLInit() {
 		return 0;
 	}
 
+	GBASDLInitEvents();
+
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -85,16 +86,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GBAVideoGLSLRendere
 			SDL_GL_SwapBuffers();
 
 			while (SDL_PollEvent(&event)) {
-				switch (event.type) {
-				case SDL_QUIT:
-					// FIXME: this isn't thread-safe
-					context->debugger->state = DEBUGGER_EXITING;
-					break;
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
-					_GBASDLHandleKeypress(context, &event.key);
-					break;
-				}
+				GBASDLHandleEvent(context, &event);
 			}
 			pthread_mutex_lock(&renderer->mutex);
 			pthread_cond_broadcast(&renderer->downCond);
@@ -107,52 +99,6 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GBAVideoGLSLRendere
 }
 
 static void _GBASDLDeinit() {
+	GBASDLDeinitEvents();
 	SDL_Quit();
-}
-
-static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event) {
-	enum GBAKey key = 0;
-	switch (event->keysym.sym) {
-	case SDLK_z:
-		key = GBA_KEY_A;
-		break;
-	case SDLK_x:
-		key = GBA_KEY_B;
-		break;
-	case SDLK_a:
-		key = GBA_KEY_L;
-		break;
-	case SDLK_s:
-		key = GBA_KEY_R;
-		break;
-	case SDLK_RETURN:
-		key = GBA_KEY_START;
-		break;
-	case SDLK_BACKSPACE:
-		key = GBA_KEY_SELECT;
-		break;
-	case SDLK_UP:
-		key = GBA_KEY_UP;
-		break;
-	case SDLK_DOWN:
-		key = GBA_KEY_DOWN;
-		break;
-	case SDLK_LEFT:
-		key = GBA_KEY_LEFT;
-		break;
-	case SDLK_RIGHT:
-		key = GBA_KEY_RIGHT;
-		break;
-	case SDLK_TAB:
-		context->renderer->turbo = !context->renderer->turbo;
-		return;
-	default:
-		return;
-	}
-
-	if (event->type == SDL_KEYDOWN) {
-		context->activeKeys |= 1 << key;
-	} else {
-		context->activeKeys &= ~(1 << key);
-	}
 }
