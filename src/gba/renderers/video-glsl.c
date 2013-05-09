@@ -15,87 +15,85 @@ static const GLchar* _fragmentShader =
 	"varying float x;\n"
 	"uniform float y;\n"
 	"uniform sampler2D vram;\n"
-	"uniform int dispcnt;\n"
-	"uniform int bg0cnt;\n"
-	"uniform int bg1cnt;\n"
-	"uniform int bg2cnt;\n"
-	"uniform int bg3cnt;\n"
-	"uniform int bg0hofs;\n"
-	"uniform int bg0vofs;\n"
-	"uniform int bg1hofs;\n"
-	"uniform int bg1vofs;\n"
-	"uniform int bg2hofs;\n"
-	"uniform int bg2vofs;\n"
-	"uniform int bg3hofs;\n"
-	"uniform int bg3vofs;\n"
-	"#define VRAM_INDEX(i) (vec2(mod(float(i + 1), 512.0) / 512.0 - 1.0 / 1024.0, (160.0 + floor(float(i) / 512.0)) / 255.0))\n"
-	"#define DESERIALIZE(vec) int(dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec))\n"
-	"#define IMOD(a, b) int(mod(float(a), float(b)))\n"
-	"#define BIT_CHECK(a, b) (IMOD(a / b, 2) == 1)\n"
+	"uniform float dispcnt;\n"
+	"uniform float bg0cnt;\n"
+	"uniform float bg1cnt;\n"
+	"uniform float bg2cnt;\n"
+	"uniform float bg3cnt;\n"
+	"uniform float bg0hofs;\n"
+	"uniform float bg0vofs;\n"
+	"uniform float bg1hofs;\n"
+	"uniform float bg1vofs;\n"
+	"uniform float bg2hofs;\n"
+	"uniform float bg2vofs;\n"
+	"uniform float bg3hofs;\n"
+	"uniform float bg3vofs;\n"
+	"#define PALETTE_INDEX(i) texture2D(vram, (vec2(mod(i + 1.0, 512.0) / 512.0 - 1.0 / 1024.0, (floor(i / 512.0) + 1.0) / 256.0 - 1.0 / 1024.0)))\n"
+	"#define VRAM_INDEX(i) texture2D(vram, (vec2(mod(i + 1.0, 512.0) / 512.0 - 1.0 / 1024.0, (floor(i / 512.0) + 161.0) / 256.0 - 1.0 / 1024.0)))\n"
+	"#define DESERIALIZE(vec) dot(vec4(63488.0, 1984.0, 62.0, 1.0), vec)\n"
+	"#define IMOD(a, b) mod(floor(a), b)\n"
+	"#define BIT_CHECK(a, b) (IMOD(a / b, 2.0) > 0.0)\n"
+	"#define DEBUG(fl) return vec4(fract(fl / 256.0), fract(floor(fl / 256.0) / 256.0), fract(floor(fl / 65536.0) / 256.0), 1.0)\n"
 
-	"vec4 backgroundMode0(int bgcnt, int hofs, int vofs) {\n"
-	"   int charBase = IMOD(bgcnt / 4, 4) * 8192;\n"
-	"   int screenBase = IMOD(bgcnt / 256, 32) * 1024;\n"
-	"   int size = IMOD(bgcnt/ 0x4000, 4);\n"
-	"   int localX = hofs + int(x);\n"
-	"   int localY = vofs + int(y);\n"
-	"   int xBase = IMOD(localX, 256);\n"
-	"   int yBase = IMOD(localY, 256);\n"
-	"   xBase -= IMOD(localX, 8);\n"
-	"   yBase -= IMOD(localY, 8);\n"
-	"   if (size == 1) {\n"
-	"       xBase += IMOD(localX / 0x100, 2) * 0x2000;\n"
-	"   } else if (size == 2) {\n"
-	"       yBase += IMOD(localY / 0x100, 2) * 0x100;\n"
-	"   } else if (size == 3) {\n"
-	"       xBase += IMOD(localX / 0x100, 2) * 0x2000;\n"
-	"       yBase += IMOD(localY / 0x100, 2) * 0x200;\n"
+	"vec4 backgroundMode0(float bgcnt, float hofs, float vofs) {\n"
+	"   float charBase = IMOD(bgcnt / 4.0, 4.0) * 8192.0;\n"
+	"   float screenBase = IMOD(bgcnt / 256.0, 32.0) * 1024.0;\n"
+	"   float size = IMOD(bgcnt / 16384.0, 4.0);\n"
+	"   vec2 local = vec2(hofs + x, vofs + y);\n"
+	"   vec2 base = IMOD(local, 256.0);\n"
+	"	base -= IMOD(local, 8.0);\n"
+	"   if (size == 1.0) {\n"
+	"       base.x += IMOD(local.x / 256.0, 2.0) * 8192.0;\n"
+	"   } else if (size == 2.0) {\n"
+	"      	base.y += IMOD(local.y / 256.0, 2.0) * 256.0;\n"
+	"   } else if (size == 3.0) {\n"
+	"       base += IMOD(local / 256.0, 2.0) * vec2(8192.0, 512.0);\n"
 	"   }\n"
-	"   screenBase = screenBase + (xBase / 8) + (yBase * 4);\n"
-	"   int mapData = DESERIALIZE(texture2D(vram, VRAM_INDEX(screenBase)));\n"
-	"   charBase = charBase + (IMOD(mapData, 0x400) * 16) + IMOD(localX, 8) / 4 + IMOD(localY, 8) * 2;\n"
-	"   int tileData = DESERIALIZE(texture2D(vram, VRAM_INDEX(charBase)));\n"
-	"   tileData /= int(pow(2.0, mod(float(localX), 4.0) * 4.0));\n"
-	"   tileData = IMOD(tileData, 0x10);\n"
-	"   if (tileData == 0) {\n"
+	"   screenBase += dot(base, vec2(1.0 / 8.0, 4.0));\n"
+	"   float mapData = DESERIALIZE(VRAM_INDEX(screenBase));\n"
+	"   charBase += IMOD(mapData, 1024.0) * 16.0 + dot(IMOD(local * vec2(1.0 / 4.0, 1.0), vec2(2.0, 8.0)), vec2(1.0, 2.0));\n"
+	"   float tileData = DESERIALIZE(VRAM_INDEX(charBase));\n"
+	"   tileData *= pow(0.5, IMOD(local.x, 4.0) * 4.0);\n"
+	"   tileData = IMOD(tileData, 16.0);\n"
+	"   if (tileData == 0.0) {\n"
 	"       return vec4(0, 0, 0, 0);\n"
 	"   }\n"
-	"   return texture2D(vram, vec2(float(tileData + (mapData / 4096) * 16) / 512.0, y / 256.0));\n"
+	"   return PALETTE_INDEX(tileData + floor(mapData / 4096.0) * 16.0);\n"
 	"}\n"
 
-	"void runPriority(int priority, inout vec4 color) {\n"
+	"void runPriority(float priority, inout vec4 color) {\n"
 	"   if (color.a > 0.0) {\n"
 	"       return;\n"
 	"   }\n"
-	"   if (BIT_CHECK(dispcnt, 0x100) && IMOD(bg0cnt, 4) == priority) {\n"
+	"   if (BIT_CHECK(dispcnt, 256.0) && IMOD(bg0cnt, 4.0) == priority) {\n"
 	"       color = backgroundMode0(bg0cnt, bg0hofs, bg0vofs);\n"
 	"   }\n"
 	"   if (color.a > 0.0) {\n"
 	"       return;\n"
 	"   }\n"
-	"   if (BIT_CHECK(dispcnt, 0x200) && IMOD(bg1cnt, 4) == priority) {\n"
+	"   if (BIT_CHECK(dispcnt, 512.0) && IMOD(bg1cnt, 4.0) == priority) {\n"
 	"       color = backgroundMode0(bg1cnt, bg1hofs, bg1vofs);\n"
 	"   }\n"
 	"   if (color.a > 0.0) {\n"
 	"       return;\n"
 	"   }\n"
-	"   if (BIT_CHECK(dispcnt, 0x400) && IMOD(bg2cnt, 4) == priority) {\n"
+	"   if (BIT_CHECK(dispcnt, 1024.0) && IMOD(bg2cnt, 4.0) == priority) {\n"
 	"       color = backgroundMode0(bg2cnt, bg2hofs, bg2vofs);\n"
 	"   }\n"
 	"   if (color.a > 0.0) {\n"
 	"		return;\n"
 	"	}\n"
-	"   if (BIT_CHECK(dispcnt, 0x800) && IMOD(bg3cnt, 4) == priority) {\n"
+	"   if (BIT_CHECK(dispcnt, 2048.0) && IMOD(bg3cnt, 4.0) == priority) {\n"
 	"		color = backgroundMode0(bg3cnt, bg3hofs, bg3vofs);\n"
 	"	}\n"
 	"}\n"
 
 	"void main() {\n"
 	"	vec4 color = vec4(0.0, 0.0, 0.0, 0.0);\n"
-	"	runPriority(0, color);\n"
-	"	runPriority(1, color);\n"
-	"	runPriority(2, color);\n"
-	"	runPriority(3, color);\n"
+	"	runPriority(0.0, color);\n"
+	"	runPriority(1.0, color);\n"
+	"	runPriority(2.0, color);\n"
+	"	runPriority(3.0, color);\n"
 	"	if (color.a == 0.0) {\n"
 	"		color = texture2D(vram, vec2(0.0, y / 256.0));\n"
 	"	}\n"
@@ -169,19 +167,19 @@ void GBAVideoGLSLRendererCreate(struct GBAVideoGLSLRenderer* glslRenderer) {
 void GBAVideoGLSLRendererProcessEvents(struct GBAVideoGLSLRenderer* glslRenderer) {
 	glUseProgram(glslRenderer->program);
 	glUniform1i(UNIFORM_LOCATION("vram"), 0);
-	glUniform1i(UNIFORM_LOCATION("dispcnt"), glslRenderer->io[0][REG_DISPCNT >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg0cnt"), glslRenderer->io[0][REG_BG0CNT >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg1cnt"), glslRenderer->io[0][REG_BG1CNT >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg2cnt"), glslRenderer->io[0][REG_BG2CNT >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg3cnt"), glslRenderer->io[0][REG_BG3CNT >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg0hofs"), glslRenderer->io[0][REG_BG0HOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg0vofs"), glslRenderer->io[0][REG_BG0VOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg1hofs"), glslRenderer->io[0][REG_BG1HOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg1vofs"), glslRenderer->io[0][REG_BG1VOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg2hofs"), glslRenderer->io[0][REG_BG2HOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg2vofs"), glslRenderer->io[0][REG_BG2VOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg3hofs"), glslRenderer->io[0][REG_BG3HOFS >> 1]);
-	glUniform1i(UNIFORM_LOCATION("bg3vofs"), glslRenderer->io[0][REG_BG3VOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("dispcnt"), glslRenderer->io[0][REG_DISPCNT >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg0cnt"), glslRenderer->io[0][REG_BG0CNT >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg1cnt"), glslRenderer->io[0][REG_BG1CNT >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg2cnt"), glslRenderer->io[0][REG_BG2CNT >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg3cnt"), glslRenderer->io[0][REG_BG3CNT >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg0hofs"), glslRenderer->io[0][REG_BG0HOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg0vofs"), glslRenderer->io[0][REG_BG0VOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg1hofs"), glslRenderer->io[0][REG_BG1HOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg1vofs"), glslRenderer->io[0][REG_BG1VOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg2hofs"), glslRenderer->io[0][REG_BG2HOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg2vofs"), glslRenderer->io[0][REG_BG2VOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg3hofs"), glslRenderer->io[0][REG_BG3HOFS >> 1]);
+	glUniform1f(UNIFORM_LOCATION("bg3vofs"), glslRenderer->io[0][REG_BG3VOFS >> 1]);
 
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0);
