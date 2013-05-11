@@ -158,7 +158,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 2 + wait;
 	}
 	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
 	int rotate = (address & 3) << 3;
@@ -221,7 +221,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 2 + wait;
 	}
 	return value;
 }
@@ -276,7 +276,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 2 + wait;
 	}
 	return value;
 }
@@ -318,7 +318,7 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* 
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 1 + wait;
 	}
 }
 
@@ -364,7 +364,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 1 + wait;
 	}
 }
 
@@ -410,7 +410,7 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += wait;
+		*cycleCounter += 1 + wait;
 	}
 }
 
