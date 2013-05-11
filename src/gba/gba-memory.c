@@ -109,6 +109,7 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 		memory->activeMask = 0;
 		break;
 	}
+	gbaMemory->p->cpu.cycles += 1 + (gbaMemory->p->cpu.executionMode == MODE_ARM ? gbaMemory->waitstates32[address >> BASE_OFFSET] : gbaMemory->waitstates16[address >> BASE_OFFSET]);
 }
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
