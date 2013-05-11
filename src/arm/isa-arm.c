@@ -416,6 +416,7 @@ void ARMStep(struct ARMCore* cpu) {
 		int rs = (opcode >> 8) & 0xF; \
 		int rm = opcode & 0xF; \
 		UNUSED(rdHi); \
+		ARM_WAIT_MUL(cpu->gprs[rs]); \
 		BODY; \
 		S_BODY; \
 		if (rd == ARM_PC) { \

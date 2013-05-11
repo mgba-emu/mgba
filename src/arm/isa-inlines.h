@@ -52,6 +52,17 @@
 #define ARM_V_ADDITION(M, N, D) (!(ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))) && (ARM_SIGN((N) ^ (D))))
 #define ARM_V_SUBTRACTION(M, N, D) ((ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))))
 
+#define ARM_WAIT_MUL(R) \
+	if ((R & 0xFFFFFF00) == 0xFFFFFF00 || !(R & 0xFFFFFF00)) { \
+		cpu->cycles += 1; \
+	} else if ((R & 0xFFFF0000) == 0xFFFF0000 || !(R & 0xFFFF0000)) { \
+		cpu->cycles += 2; \
+	} else if ((R & 0xFF000000) == 0xFF000000 || !(R & 0xFF000000)) { \
+		cpu->cycles += 3; \
+	} else { \
+		cpu->cycles += 4; \
+	}
+
 #define ARM_STUB cpu->board->hitStub(cpu->board, opcode)
 
 #define ARM_WRITE_PC \
