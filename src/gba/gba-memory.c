@@ -10,6 +10,7 @@
 static const char* GBA_CANNOT_MMAP = "Could not map memory";
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
+static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
 static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 4, 0, 0, 0, 0, 0, 7, 7, 9, 9, 13, 13, 9 };
@@ -68,6 +69,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.setActiveRegion = GBASetActiveRegion;
 	memory->d.activePrefetchCycles32 = 0;
 	memory->d.activePrefetchCycles16 = 0;
+	memory->d.waitMultiple = GBAWaitMultiple;
 }
 
 void GBAMemoryDeinit(struct GBAMemory* memory) {
@@ -412,6 +414,13 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 	if (cycleCounter) {
 		*cycleCounter += 1 + wait;
 	}
+}
+
+static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count) {
+	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
+	int wait = 1 + gbaMemory->waitstates32[startAddress >> BASE_OFFSET];
+	wait += (1 + gbaMemory->waitstatesSeq32[startAddress >> BASE_OFFSET]) * (count - 1);
+	return wait;
 }
 
 void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {

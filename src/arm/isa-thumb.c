@@ -347,14 +347,17 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory->store16(cpu->memory, c
 		int32_t address = ADDRESS; \
 		int m; \
 		int i; \
+		int total = 0; \
 		PRE_BODY; \
 		for LOOP { \
 			if (rs & m) { \
 				BODY; \
 				address OP 4; \
+				++total; \
 			} \
 		} \
 		POST_BODY; \
+		cpu->cycles += cpu->memory->waitMultiple(cpu->memory, address, total); \
 		WRITEBACK;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, BODY, WRITEBACK) \

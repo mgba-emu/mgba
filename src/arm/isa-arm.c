@@ -504,6 +504,7 @@ void ARMStep(struct ARMCore* cpu) {
 		if (m & 1) { \
 			BODY; \
 			addr += 4; \
+			total += 1; \
 		} \
 	}
 
@@ -512,6 +513,7 @@ void ARMStep(struct ARMCore* cpu) {
 		if (rs & m) { \
 			BODY; \
 			addr -= 4; \
+			total += 1; \
 		} \
 	}
 
@@ -521,11 +523,13 @@ void ARMStep(struct ARMCore* cpu) {
 		int rs = opcode & 0x0000FFFF; \
 		int m; \
 		int i; \
+		int total = 0; \
 		ADDRESS; \
 		S_PRE; \
 		LOOP(BODY); \
 		S_POST; \
 		WRITEBACK; \
+		cpu->cycles += cpu->memory->waitMultiple(cpu->memory, addr, total); \
 		POST_BODY;)
 
 
@@ -681,6 +685,7 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr, 0);,
+	++cpu->cycles;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})

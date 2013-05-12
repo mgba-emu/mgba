@@ -82,6 +82,7 @@ struct ARMMemory {
 	uint32_t activePrefetchCycles32;
 	uint32_t activePrefetchCycles16;
 	void (*setActiveRegion)(struct ARMMemory*, uint32_t address);
+	int (*waitMultiple)(struct ARMMemory*, uint32_t startAddress, int count);
 };
 
 struct ARMBoard {
@@ -113,6 +114,9 @@ struct ARMCore {
 
 	struct ARMMemory* memory;
 	struct ARMBoard* board;
+
+	int64_t absoluteCycles;
+	int32_t lastCycles;
 };
 
 void ARMInit(struct ARMCore* cpu);
