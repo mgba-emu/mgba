@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
+static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu.gprs[0];
@@ -233,6 +234,23 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				break;
 		}
 		break;
+	case 0x14:
+	case 0x15:
+		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
+			case REGION_WORKING_RAM:
+				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
+				break;
+			case REGION_WORKING_IRAM:
+				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
+				break;
+			case REGION_VRAM:
+				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+				break;
+			default:
+				GBALog(GBA_LOG_WARN, "Bad RL destination");
+				break;
+		}
+		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);
 		break;
@@ -281,5 +299,42 @@ static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 			blockheader = GBALoadU8(&memory->d, sPointer++, 0);
 			blocksRemaining = 8;
 		}
+	}
+}
+
+static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
+	source = source & 0xFFFFFFFC;
+	int remaining = (GBALoad32(&memory->d, source, 0) & 0xFFFFFF00) >> 8;
+	int padding = (4 - remaining) & 0x3;
+	// We assume the signature byte (0x30) is correct
+	int blockheader;
+	int block;
+	uint32_t sPointer = source + 4;
+	uint8_t* dPointer = dest;
+	while (remaining > 0) {
+		blockheader = GBALoadU8(&memory->d, sPointer++, 0);
+		if (blockheader & 0x80) {
+			// Compressed
+			blockheader &= 0x7F;
+			blockheader += 3;
+			block = GBALoadU8(&memory->d, sPointer++, 0);
+			while (blockheader-- && remaining) {
+				--remaining;
+				*dPointer = block;
+				++dPointer;
+			}
+		} else {
+			// Uncompressed
+			blockheader++;
+			while (blockheader-- && remaining) {
+				--remaining;
+				*dPointer = GBALoadU8(&memory->d, sPointer++, 0);
+				++dPointer;
+			}
+		}
+	}
+	while (padding--) {
+		*dPointer = 0;
+		++dPointer;
 	}
 }
