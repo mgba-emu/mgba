@@ -81,6 +81,8 @@ struct ARMMemory {
 	uint32_t activeMask;
 	uint32_t activePrefetchCycles32;
 	uint32_t activePrefetchCycles16;
+	uint32_t activeNonseqCycles32;
+	uint32_t activeNonseqCycles16;
 	void (*setActiveRegion)(struct ARMMemory*, uint32_t address);
 	int (*waitMultiple)(struct ARMMemory*, uint32_t startAddress, int count);
 };

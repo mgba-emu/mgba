@@ -81,9 +81,11 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
-	memory->activePrefetchCycles32 = gbaMemory->waitstatesPrefetch32[address >> BASE_OFFSET];
-	memory->activePrefetchCycles16 = gbaMemory->waitstatesPrefetch16[address >> BASE_OFFSET];
 	gbaMemory->activeRegion = address >> BASE_OFFSET;
+	memory->activePrefetchCycles32 = gbaMemory->waitstatesPrefetch32[gbaMemory->activeRegion];
+	memory->activePrefetchCycles16 = gbaMemory->waitstatesPrefetch16[gbaMemory->activeRegion];
+	memory->activeNonseqCycles32 = gbaMemory->waitstates32[gbaMemory->activeRegion];
+	memory->activeNonseqCycles16 = gbaMemory->waitstates16[gbaMemory->activeRegion];
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		memory->activeRegion = gbaMemory->bios;
@@ -472,8 +474,10 @@ void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {
 		memory->waitstatesPrefetch32[REGION_CART2] = memory->waitstatesPrefetch32[REGION_CART2_EX] = 0;
 	}
 
-	memory->d.activePrefetchCycles32 = memory->waitstates32[memory->activeRegion];
-	memory->d.activePrefetchCycles16 = memory->waitstates16[memory->activeRegion];
+	memory->d.activePrefetchCycles32 = memory->waitstatesPrefetch32[memory->activeRegion];
+	memory->d.activePrefetchCycles16 = memory->waitstatesPrefetch16[memory->activeRegion];
+	memory->d.activeNonseqCycles32 = memory->waitstates32[memory->activeRegion];
+	memory->d.activeNonseqCycles16 = memory->waitstates16[memory->activeRegion];
 }
 
 int32_t GBAMemoryProcessEvents(struct GBAMemory* memory, int32_t cycles) {

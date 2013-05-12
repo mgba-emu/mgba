@@ -9,6 +9,8 @@ enum {
 	PSR_STATE_MASK = 0x00000020
 };
 
+#define ARM_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles32)
+
 // Addressing mode 1
 static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
@@ -203,85 +205,85 @@ void ARMStep(struct ARMCore* cpu) {
 		switch (condition) {
 		case 0x0:
 			if (!ARM_COND_EQ) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x1:
 			if (!ARM_COND_NE) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x2:
 			if (!ARM_COND_CS) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x3:
 			if (!ARM_COND_CC) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x4:
 			if (!ARM_COND_MI) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x5:
 			if (!ARM_COND_PL) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x6:
 			if (!ARM_COND_VS) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x7:
 			if (!ARM_COND_VC) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x8:
 			if (!ARM_COND_HI) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0x9:
 			if (!ARM_COND_LS) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0xA:
 			if (!ARM_COND_GE) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0xB:
 			if (!ARM_COND_LT) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0xC:
 			if (!ARM_COND_GT) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
 		case 0xD:
 			if (!ARM_COND_LE) {
-				cpu->cycles += 1 + cpu->memory->activePrefetchCycles32;
+				cpu->cycles += ARM_PREFETCH_CYCLES;
 				return;
 			}
 			break;
@@ -356,10 +358,15 @@ void ARMStep(struct ARMCore* cpu) {
 		ARM_WRITE_PC; \
 	}
 
+#define ARM_STORE_POST_BODY \
+	currentCycles -= ARM_PREFETCH_CYCLES; \
+	currentCycles += 1 + cpu->memory->activeNonseqCycles32;
+
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
-		cpu->cycles += 1 + cpu->memory->activePrefetchCycles32; \
+		int currentCycles = ARM_PREFETCH_CYCLES; \
 		BODY; \
+		cpu->cycles += currentCycles; \
 	}
 
 #define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY) \
@@ -529,7 +536,7 @@ void ARMStep(struct ARMCore* cpu) {
 		LOOP(BODY); \
 		S_POST; \
 		WRITEBACK; \
-		cpu->cycles += cpu->memory->waitMultiple(cpu->memory, addr, total); \
+		currentCycles += cpu->memory->waitMultiple(cpu->memory, addr, total); \
 		POST_BODY;)
 
 
@@ -648,49 +655,53 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
 
 // Begin load/store definitions
 
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address, &cpu->cycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd], &cpu->cycles))
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &cpu->cycles);
+	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &cpu->cycles);
+	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &cpu->cycles);
-	ARMSetPrivilegeMode(cpu, priv);)
+	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &currentCycles);
+	ARMSetPrivilegeMode(cpu, priv);
+	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &cpu->cycles);
-	ARMSetPrivilegeMode(cpu, priv);)
+	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &currentCycles);
+	ARMSetPrivilegeMode(cpu, priv);
+	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr, 0);,
-	++cpu->cycles;
+	++currentCycles;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})
 
-DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM, cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);, )
+DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
+	cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);,
+	currentCycles -= ARM_PREFETCH_CYCLES)
 
 DEFINE_INSTRUCTION_ARM(SWP, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(SWPB, ARM_STUB)
