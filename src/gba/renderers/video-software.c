@@ -882,7 +882,6 @@ static const int _objSizes[32] = {
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
 		} \
-		int inY = y - sprite->y; \
 		int inX = outX - x; \
 		int localX = ((mat->a * (inX - (totalWidth >> 1)) + mat->b * (inY - (totalHeight >> 1))) >> 8) + (width >> 1); \
 		int localY = ((mat->c * (inX - (totalWidth >> 1)) + mat->d * (inY - (totalHeight >> 1))) >> 8) + (height >> 1); \
@@ -983,6 +982,10 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
 	int variant = renderer->target1Obj && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int inY = y - sprite->y;
+	if (inY < 0) {
+		inY += 256;
+	}
 	if (!sprite->multipalette) {
 		if (!variant) {
 			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
