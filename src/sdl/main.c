@@ -110,7 +110,6 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer* renderer) {
 	SDL_Event event;
 
-	int err;
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -119,7 +118,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, 240, 160, 0, 0, 1);
-	while (context->started) {
+	while (context->started && context->debugger->state != DEBUGGER_EXITING) {
 		pthread_mutex_lock(&renderer->d.mutex);
 		if (renderer->d.d.framesPending) {
 			renderer->d.d.framesPending = 0;
@@ -135,21 +134,11 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			}
 			pthread_mutex_lock(&renderer->d.mutex);
 			pthread_cond_broadcast(&renderer->d.downCond);
-			pthread_mutex_unlock(&renderer->d.mutex);
 		} else {
-			while (!renderer->d.d.framesPending) {
-				struct timeval tv;
-				struct timespec ts;
-				gettimeofday(&tv, 0);
-				ts.tv_sec = tv.tv_sec;
-				ts.tv_nsec = tv.tv_usec * 1000 + 800000;
-				err = pthread_cond_timedwait(&renderer->d.upCond, &renderer->d.mutex, &ts);
-				if (err == ETIMEDOUT) {
-					break;
-				}
-			}
-			pthread_mutex_unlock(&renderer->d.mutex);
+			pthread_cond_broadcast(&renderer->d.downCond);
+			pthread_cond_wait(&renderer->d.upCond, &renderer->d.mutex);
 		}
+		pthread_mutex_unlock(&renderer->d.mutex);
 	}
 }
 

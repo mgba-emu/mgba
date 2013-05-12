@@ -108,6 +108,10 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
+	pthread_mutex_lock(&softwareRenderer->mutex);
+	pthread_cond_broadcast(&softwareRenderer->upCond);
+	pthread_mutex_unlock(&softwareRenderer->mutex);
+
 	pthread_mutex_destroy(&softwareRenderer->mutex);
 	pthread_cond_destroy(&softwareRenderer->upCond);
 	pthread_cond_destroy(&softwareRenderer->downCond);
