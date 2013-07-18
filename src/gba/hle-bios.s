@@ -36,32 +36,33 @@ ldmfd  sp!, {r0-r3, r12, lr}
 subs   pc, lr, #4
 
 IntrWait:
-stmfd  sp!, {r2,lr}
+stmfd  sp!, {r4, lr}
 add    sp, #-4
 strh   r1, [sp, #0]
-IntrWaitLoop:
-mov    r2, #0x04000000
-add    r2, #0x200
-ldrh   r0, [r2, #0]
+mov    r4, #0x04000000
+add    r4, #0x200
+ldrh   r0, [r4, #0]
 strh   r0, [sp, #2]
 ldrh   r1, [sp, #0]
-orr    r1, r0, r1
-strh   r1, [r2, #0]
+orr    r0, r1
+strh   r0, [r4, #0x0]
+mov    r4, #0x04000000
+IntrWaitLoop:
 mov    r0, #0x1F
 msr    cpsr, r0
-swi    #0x020000
+mov    r0, #0
+strb   r0, [r4, #0x301]
 mov    r0, #0xD3
 msr    cpsr, r0
-mov    r0, #0x04000000
-ldrh   r2, [r0, #-8]
+ldrh   r0, [r4, #-8]
 ldrh   r1, [sp, #0]
-ands   r1, r2
-eorne  r1, r2
-strneh r1, [r0, #-8]
-ldrh   r0, [sp, #2]
-mov    r1, #0x04000000
-add    r1, #0x200
-strh   r0, [r1, #0]
+ands   r1, r0
+eorne  r1, r0
+strneh r1, [r4, #-8]
 beq    IntrWaitLoop
+mov    r4, #0x04000000
+add    r4, #0x200
+ldrh   r0, [sp, #2]
+strh   r0, [r4, #0]
 add    sp, #4
-ldmfd  sp!, {r2,pc}
+ldmfd  sp!, {r4, pc}
