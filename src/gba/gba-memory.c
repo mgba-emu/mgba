@@ -385,6 +385,7 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		((int8_t*) gbaMemory->iwram)[address & (SIZE_WORKING_IRAM - 1)] = value;
 		break;
 	case BASE_IO:
+		GBAIOWrite8(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
 		break;

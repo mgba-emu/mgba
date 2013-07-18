@@ -109,20 +109,27 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_IME:
 			GBAWriteIME(gba, value);
 			break;
-		case REG_HALTCNT:
-			value &= 0x80;
-			if (!value) {
-				GBAHalt(gba);
-			} else {
-				GBALog(GBA_LOG_STUB, "Stop unimplemented");
-			}
-			return;
 		default:
 			GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
 			break;
 		}
 	}
 	gba->memory.io[address >> 1] = value;
+}
+
+void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
+	if (address == REG_HALTCNT) {
+		value &= 0x80;
+		if (!value) {
+			GBAHalt(gba);
+		} else {
+			GBALog(GBA_LOG_STUB, "Stop unimplemented");
+		}
+		return;
+	}
+	value <<= 8 * (address & 1);
+	value |= (gba->memory.io[(address & (SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
+	GBAIOWrite(gba, address, value);
 }
 
 void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
