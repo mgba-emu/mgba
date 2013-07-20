@@ -109,6 +109,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_IME:
 			GBAWriteIME(gba, value);
 			break;
+		case 0x20A:
+			// Some bad interrupt libraries will write to this
+			break;
 		default:
 			GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
 			break;
@@ -208,6 +211,9 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_WAITCNT:
 	case REG_IME:
 		// Handled transparently by registers
+		break;
+	case 0x20A:
+		// Some bad interrupt libraries will read from this
 		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub I/O register read: %03x", address);
