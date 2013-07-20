@@ -27,6 +27,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y);
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
 static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority);
@@ -445,6 +447,12 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			case 2:
 				_drawBackgroundMode2(renderer, &renderer->bg[2], y);
 				break;
+			case 3:
+				_drawBackgroundMode3(renderer, &renderer->bg[2], y);
+				break;
+			case 4:
+				_drawBackgroundMode4(renderer, &renderer->bg[2], y);
+				break;
 			}
 			renderer->bg[2].sx += renderer->bg[2].dmx;
 			renderer->bg[2].sy += renderer->bg[2].dmy;
@@ -843,6 +851,95 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 				_composite(renderer, outX, renderer->normalPalette[tileData] | flags);
 			} else {
 				_composite(renderer, outX, renderer->variantPalette[tileData] | flags);
+			}
+		}
+	}
+}
+
+static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+	(void)(unused);
+
+	int32_t x = background->sx - background->dx;
+	int32_t y = background->sy - background->dy;
+	int32_t localX;
+	int32_t localY;
+
+	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
+	flags |= FLAG_TARGET_2 * background->target2;
+
+	uint16_t color;
+	uint32_t color32;
+	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+
+	int outX;
+	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+		x += background->dx;
+		y += background->dy;
+
+		if (x < 0 || y < 0 || (x >> 8) >= VIDEO_HORIZONTAL_PIXELS || (y >> 8) >= VIDEO_VERTICAL_PIXELS) {
+			continue;
+		} else {
+			localX = x;
+			localY = y;
+		}
+
+		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+		color32 = 0;
+		color32 |= (color << 3) & 0xF8;
+		color32 |= (color << 6) & 0xF800;
+		color32 |= (color << 9) & 0xF80000;
+
+		if (!(renderer->row[outX] & FLAG_FINALIZED)) {
+			if (!variant) {
+				_composite(renderer, outX, color32 | flags);
+			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
+				_composite(renderer, outX, _brighten(color32, renderer->bldy) | flags);
+			} else if (renderer->blendEffect == BLEND_DARKEN) {
+				_composite(renderer, outX, _darken(color32, renderer->bldy) | flags);
+			}
+		}
+	}
+}
+
+static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+	(void)(unused);
+
+	int32_t x = background->sx - background->dx;
+	int32_t y = background->sy - background->dy;
+	int32_t localX;
+	int32_t localY;
+
+	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
+	flags |= FLAG_TARGET_2 * background->target2;
+
+	uint16_t color;
+	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	uint32_t offset = 0;
+	if (renderer->dispcnt.frameSelect) {
+		offset = 0xA000;
+	}
+
+	int outX;
+	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+		x += background->dx;
+		y += background->dy;
+
+		if (x < 0 || y < 0 || (x >> 8) >= VIDEO_HORIZONTAL_PIXELS || (y >> 8) >= VIDEO_VERTICAL_PIXELS) {
+			continue;
+		} else {
+			localX = x;
+			localY = y;
+		}
+
+		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+
+		if (color && !(renderer->row[outX] & FLAG_FINALIZED)) {
+			if (!variant) {
+				_composite(renderer, outX, renderer->normalPalette[color] | flags);
+			} else {
+				_composite(renderer, outX, renderer->variantPalette[color] | flags);
 			}
 		}
 	}
