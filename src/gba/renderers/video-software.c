@@ -810,24 +810,38 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 }
 
+#define BACKGROUND_BITMAP_INIT \
+	int32_t x = background->sx - background->dx; \
+	int32_t y = background->sy - background->dy; \
+	int32_t localX; \
+	int32_t localY; \
+	\
+	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND; \
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
+	flags |= FLAG_TARGET_2 * background->target2; \
+	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+
+#define BACKGROUND_BITMAP_ITERATE \
+	x += background->dx; \
+	y += background->dy; \
+	\
+	if (x < 0 || y < 0 || (x >> 8) >= VIDEO_HORIZONTAL_PIXELS || (y >> 8) >= VIDEO_VERTICAL_PIXELS) { \
+		continue; \
+	} else { \
+		localX = x; \
+		localY = y; \
+	}
+
 static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	(void)(unused);
 	int sizeAdjusted = 0x8000 << background->size;
 
-	int32_t x = background->sx - background->dx;
-	int32_t y = background->sy - background->dy;
-	int32_t localX;
-	int32_t localY;
-
-	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
-	flags |= FLAG_TARGET_2 * background->target2;
+	BACKGROUND_BITMAP_INIT;
 
 	uint32_t screenBase = background->screenBase;
 	uint32_t charBase = background->charBase;
 	uint8_t mapData;
 	uint8_t tileData;
-	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 
 	int outX;
 	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
@@ -859,30 +873,14 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	(void)(unused);
 
-	int32_t x = background->sx - background->dx;
-	int32_t y = background->sy - background->dy;
-	int32_t localX;
-	int32_t localY;
-
-	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
-	flags |= FLAG_TARGET_2 * background->target2;
+	BACKGROUND_BITMAP_INIT;
 
 	uint16_t color;
 	uint32_t color32;
-	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 
 	int outX;
 	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
-		x += background->dx;
-		y += background->dy;
-
-		if (x < 0 || y < 0 || (x >> 8) >= VIDEO_HORIZONTAL_PIXELS || (y >> 8) >= VIDEO_VERTICAL_PIXELS) {
-			continue;
-		} else {
-			localX = x;
-			localY = y;
-		}
+		BACKGROUND_BITMAP_ITERATE;
 
 		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 		color32 = 0;
@@ -905,17 +903,9 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	(void)(unused);
 
-	int32_t x = background->sx - background->dx;
-	int32_t y = background->sy - background->dy;
-	int32_t localX;
-	int32_t localY;
-
-	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
-	flags |= FLAG_TARGET_2 * background->target2;
+	BACKGROUND_BITMAP_INIT;
 
 	uint16_t color;
-	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	uint32_t offset = 0;
 	if (renderer->dispcnt.frameSelect) {
 		offset = 0xA000;
@@ -923,15 +913,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	int outX;
 	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
-		x += background->dx;
-		y += background->dy;
-
-		if (x < 0 || y < 0 || (x >> 8) >= VIDEO_HORIZONTAL_PIXELS || (y >> 8) >= VIDEO_VERTICAL_PIXELS) {
-			continue;
-		} else {
-			localX = x;
-			localY = y;
-		}
+		BACKGROUND_BITMAP_ITERATE;
 
 		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 
