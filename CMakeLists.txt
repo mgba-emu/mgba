@@ -18,7 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/sdl)
 
 if(BUILD_RASPI AND BUILD_EGL)
 	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/egl-main.c)
-	set(OPENGL_LIBRARY "-lEGL -lGLESv2 -lvcos -lvchiq_arm -lvchostif -lbcm_host")
+	set(OPENGL_LIBRARY "-lEGL -lGLESv2 -lbcm_host")
 	set(OPENGL_INCLUDE_DIR "")
 	add_definitions(-DBUILD_RASPI)
 elseif(BUILD_BBB OR BUILD_RASPI)
