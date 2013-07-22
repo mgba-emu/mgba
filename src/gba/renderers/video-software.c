@@ -440,7 +440,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			if (!bitmap) {
 				continue;
 			}
-			for (i = j * 16; i < (j + 1) * 16; ++i) {
+			for (i = j * 32; i < (j + 1) * 32; ++i) {
 				if (bitmap & 1) {
 					struct GBAObj* sprite = &renderer->d.oam->obj[i];
 					if (sprite->transformed) {
