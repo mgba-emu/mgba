@@ -259,7 +259,7 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 		oam >>= 2;
 		struct GBAObj* sprite = &renderer->oam->obj[oam];
 		int enabled = sprite->transformed || !sprite->disable;
-		enabled << (oam & 0x1F);
+		enabled <<= (oam & 0x1F);
 		softwareRenderer->enabledBitmap[oam >> 5] = (softwareRenderer->enabledBitmap[oam >> 5] & ~(1 << (oam & 0x1F))) | enabled;
 	}
 }
