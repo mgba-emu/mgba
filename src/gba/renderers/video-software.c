@@ -7,6 +7,7 @@
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
+static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
@@ -43,6 +44,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
+	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;
 	renderer->d.writePalette = GBAVideoSoftwareRendererWritePalette;
 	renderer->d.drawScanline = GBAVideoSoftwareRendererDrawScanline;
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
@@ -73,6 +75,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->blendEffect = BLEND_NONE;
 	memset(softwareRenderer->normalPalette, 0, sizeof(softwareRenderer->normalPalette));
 	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
+	memset(softwareRenderer->enabledBitmap, 0, sizeof(softwareRenderer->enabledBitmap));
 
 	softwareRenderer->blda = 0;
 	softwareRenderer->bldb = 0;
@@ -250,6 +253,17 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	return value;
 }
 
+static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
+	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	if ((oam & 0x3) != 0x3) {
+		oam >>= 2;
+		struct GBAObj* sprite = &renderer->oam->obj[oam];
+		int enabled = sprite->transformed || !sprite->disable;
+		enabled << (oam & 0x1F);
+		softwareRenderer->enabledBitmap[oam >> 5] = (softwareRenderer->enabledBitmap[oam >> 5] & ~(1 << (oam & 0x1F))) | enabled;
+	}
+}
+
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	uint32_t color32 = 0;
@@ -420,12 +434,22 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int i;
 	memset(renderer->spriteLayer, 0, sizeof(renderer->spriteLayer));
 	if (renderer->dispcnt.objEnable) {
-		for (i = 0; i < 128; ++i) {
-			struct GBAObj* sprite = &renderer->d.oam->obj[i];
-			if (sprite->transformed) {
-				_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
-			} else if (!sprite->disable) {
-				_preprocessSprite(renderer, sprite, y);
+		int j;
+		for (j = 0; j < 4; ++j) {
+			uint32_t bitmap = renderer->enabledBitmap[j];
+			if (!bitmap) {
+				continue;
+			}
+			for (i = j * 16; i < (j + 1) * 16; ++i) {
+				if (bitmap & 1) {
+					struct GBAObj* sprite = &renderer->d.oam->obj[i];
+					if (sprite->transformed) {
+						_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
+					} else {
+						_preprocessSprite(renderer, sprite, y);
+					}
+				}
+				bitmap >>= 1;
 			}
 		}
 	}
