@@ -127,7 +127,6 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	switch (address) {
 	case REG_DISPCNT:
-		value &= 0xFFFB;
 		softwareRenderer->dispcnt.packed = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
@@ -977,7 +976,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
-		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * 160];
+		color = ((uint16_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * 160];
 		color32 = 0;
 		color32 |= (color << 3) & 0xF8;
 		color32 |= (color << 6) & 0xF800;
