@@ -297,6 +297,8 @@ void ARMStep(struct ARMCore* cpu) {
 // Instruction definitions
 // Beware pre-processor antics
 
+#define NO_EXTEND64(V) (uint64_t)(uint32_t) (V)
+
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
@@ -621,7 +623,7 @@ DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifter
 // Begin multiply definitions
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]))
-DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]))
+DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(SMLAL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
@@ -638,7 +640,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
-	uint64_t d = ((uint64_t) cpu->gprs[rm]) * ((uint64_t) cpu->gprs[rs]);
+	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
 	int32_t dm = cpu->gprs[rd];
 	int32_t dn = d;
 	cpu->gprs[rd] = dm + dn;
@@ -646,7 +648,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
-	uint64_t d = ((uint64_t) cpu->gprs[rm]) * ((uint64_t) cpu->gprs[rs]);
+	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
