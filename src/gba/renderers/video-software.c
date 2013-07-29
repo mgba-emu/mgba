@@ -259,10 +259,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->win1V.packed = value;
 		break;
 	case REG_WININ:
-		softwareRenderer->winin.packed = value;
+		softwareRenderer->win0.packed = value;
+		softwareRenderer->win1.packed = value >> 8;
 		break;
 	case REG_WINOUT:
 		softwareRenderer->winout.packed = value;
+		softwareRenderer->objwin.packed = value >> 8;
 		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
@@ -319,10 +321,31 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	softwareRenderer->row = row;
+	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
 
-	softwareRenderer->start = 0;
-	softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
-	_drawScanline(softwareRenderer, y);
+	if (softwareRenderer->dispcnt.win0Enable || softwareRenderer->dispcnt.win1Enable) {
+		if (softwareRenderer->dispcnt.win0Enable) {
+			softwareRenderer->currentWindow = softwareRenderer->win0;
+			softwareRenderer->start = softwareRenderer->win0H.start;
+			softwareRenderer->end = softwareRenderer->win0H.end;
+			_drawScanline(softwareRenderer, y);
+		}
+		if (softwareRenderer->dispcnt.win1Enable) {
+			softwareRenderer->currentWindow = softwareRenderer->win1;
+			softwareRenderer->start = softwareRenderer->win1H.start;
+			softwareRenderer->end = softwareRenderer->win1H.end;
+			_drawScanline(softwareRenderer, y);
+		}
+		softwareRenderer->currentWindow = softwareRenderer->winout;
+		softwareRenderer->start = 0;
+		softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
+		_drawScanline(softwareRenderer, y);
+	} else {
+		softwareRenderer->currentWindow.packed = 0xFF;
+		softwareRenderer->start = 0;
+		softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
+		_drawScanline(softwareRenderer, y);
+	}
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -448,10 +471,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
-	int i;
-	memset(renderer->spriteLayer, 0, sizeof(renderer->spriteLayer));
-	if (renderer->dispcnt.objEnable) {
-		int j;
+	if (renderer->dispcnt.objEnable && renderer->currentWindow.objEnable) {
+		int i, j;
 		for (j = 0; j < 4; ++j) {
 			uint32_t bitmap = renderer->enabledBitmap[j];
 			if (!bitmap) {
@@ -471,16 +492,18 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		}
 	}
 
+	renderer->start = 0;
+	renderer->end = VIDEO_HORIZONTAL_PIXELS;
 	int priority;
 	for (priority = 0; priority < 4; ++priority) {
 		_postprocessSprite(renderer, priority);
-		if (renderer->bg[0].enabled && renderer->bg[0].priority == priority && renderer->dispcnt.mode < 2) {
+		if (renderer->bg[0].enabled && renderer->currentWindow.bg0Enable && renderer->bg[0].priority == priority && renderer->dispcnt.mode < 2) {
 			_drawBackgroundMode0(renderer, &renderer->bg[0], y);
 		}
-		if (renderer->bg[1].enabled && renderer->bg[1].priority == priority && renderer->dispcnt.mode < 2) {
+		if (renderer->bg[1].enabled && renderer->currentWindow.bg1Enable && renderer->bg[1].priority == priority && renderer->dispcnt.mode < 2) {
 			_drawBackgroundMode0(renderer, &renderer->bg[1], y);
 		}
-		if (renderer->bg[2].enabled && renderer->bg[2].priority == priority) {
+		if (renderer->bg[2].enabled && renderer->currentWindow.bg2Enable && renderer->bg[2].priority == priority) {
 			switch (renderer->dispcnt.mode) {
 			case 0:
 				_drawBackgroundMode0(renderer, &renderer->bg[2], y);
@@ -502,7 +525,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			renderer->bg[2].sx += renderer->bg[2].dmx;
 			renderer->bg[2].sy += renderer->bg[2].dmy;
 		}
-		if (renderer->bg[3].enabled && renderer->bg[3].priority == priority) {
+		if (renderer->bg[3].enabled && renderer->currentWindow.bg3Enable && renderer->bg[3].priority == priority) {
 			switch (renderer->dispcnt.mode) {
 			case 0:
 				_drawBackgroundMode0(renderer, &renderer->bg[3], y);
@@ -719,10 +742,10 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 
 	int outX = 0;
-	int tileX = 0;
+	int tileX = renderer->start >> 3;
 	if (inX & 0x7) {
 		uint32_t tileData;
 		int pixelData, paletteData;
@@ -877,7 +900,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
 	flags |= FLAG_TARGET_2 * background->target2; \
-	int variant = background->target1 && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 
 #define BACKGROUND_BITMAP_ITERATE(W, H) \
 	x += background->dx; \
@@ -1122,7 +1145,7 @@ static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct 
 		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
-	int variant = renderer->target1Obj && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (!sprite->multipalette) {
 		if (!variant) {
 			SPRITE_NORMAL_LOOP(16, NORMAL);
@@ -1154,7 +1177,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	int variant = renderer->target1Obj && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	int inY = y - sprite->y;
 	if (inY < 0) {
 		inY += 256;
@@ -1176,7 +1199,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority) {
 	int x;
-	for (x = 0; x < 240; ++x) {
+	for (x = renderer->start; x < renderer->end; ++x) {
 		uint32_t color = renderer->spriteLayer[x];
 		if ((color & FLAG_FINALIZED) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority && !(renderer->row[x] & FLAG_FINALIZED)) {
 			_composite(renderer, x, color & ~FLAG_FINALIZED);

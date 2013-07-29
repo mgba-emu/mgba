@@ -60,22 +60,15 @@ union Window {
 
 union WindowControl {
 	struct {
-		unsigned bg0EnableLo : 1;
-		unsigned bg1EnableLo : 1;
-		unsigned bg2EnableLo : 1;
-		unsigned bg3EnableLo : 1;
-		unsigned objEnableLo : 1;
-		unsigned blendEnableLo : 1;
-		unsigned : 2;
-		unsigned bg0EnableHi : 1;
-		unsigned bg1EnableHi : 1;
-		unsigned bg2EnableHi : 1;
-		unsigned bg3EnableHi : 1;
-		unsigned objEnableHi : 1;
-		unsigned blendEnableHi : 1;
+		unsigned bg0Enable : 1;
+		unsigned bg1Enable : 1;
+		unsigned bg2Enable : 1;
+		unsigned bg3Enable : 1;
+		unsigned objEnable : 1;
+		unsigned blendEnable : 1;
 		unsigned : 2;
 	};
-	uint16_t packed;
+	uint8_t packed;
 };
 
 struct GBAVideoSoftwareRenderer {
@@ -106,8 +99,12 @@ struct GBAVideoSoftwareRenderer {
 	union Window win1H;
 	union Window win1V;
 
-	union WindowControl winin;
+	union WindowControl win0;
+	union WindowControl win1;
 	union WindowControl winout;
+	union WindowControl objwin;
+
+	union WindowControl currentWindow;
 
 	struct GBAVideoSoftwareBackground bg[4];
 
