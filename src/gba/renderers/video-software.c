@@ -246,6 +246,24 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		_updatePalettes(softwareRenderer);
 		break;
+	case REG_WIN0H:
+		softwareRenderer->win0H.packed = value;
+		break;
+	case REG_WIN1H:
+		softwareRenderer->win1H.packed = value;
+		break;
+	case REG_WIN0V:
+		softwareRenderer->win0V.packed = value;
+		break;
+	case REG_WIN1V:
+		softwareRenderer->win1V.packed = value;
+		break;
+	case REG_WININ:
+		softwareRenderer->winin.packed = value;
+		break;
+	case REG_WINOUT:
+		softwareRenderer->winout.packed = value;
+		break;
 	default:
 		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
 	}

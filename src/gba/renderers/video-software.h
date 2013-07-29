@@ -50,6 +50,34 @@ enum PixelFlags {
 	FLAG_TARGET_2 = 0x02000000
 };
 
+union Window {
+	struct {
+		uint8_t end;
+		uint8_t start;
+	};
+	uint16_t packed;
+};
+
+union WindowControl {
+	struct {
+		unsigned bg0EnableLo : 1;
+		unsigned bg1EnableLo : 1;
+		unsigned bg2EnableLo : 1;
+		unsigned bg3EnableLo : 1;
+		unsigned objEnableLo : 1;
+		unsigned blendEnableLo : 1;
+		unsigned : 2;
+		unsigned bg0EnableHi : 1;
+		unsigned bg1EnableHi : 1;
+		unsigned bg2EnableHi : 1;
+		unsigned bg3EnableHi : 1;
+		unsigned objEnableHi : 1;
+		unsigned blendEnableHi : 1;
+		unsigned : 2;
+	};
+	uint16_t packed;
+};
+
 struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
@@ -72,6 +100,14 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t blda;
 	uint16_t bldb;
 	uint16_t bldy;
+
+	union Window win0H;
+	union Window win0V;
+	union Window win1H;
+	union Window win1V;
+
+	union WindowControl winin;
+	union WindowControl winout;
 
 	struct GBAVideoSoftwareBackground bg[4];
 
