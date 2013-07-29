@@ -1015,7 +1015,12 @@ static const int _objSizes[32] = {
 
 #define SPRITE_NORMAL_LOOP(DEPTH, TYPE) \
 		SPRITE_YBASE_ ## DEPTH(inY); \
-		for (int outX = x >= start ? x : start; outX < x + width && outX < end; ++outX) { \
+		int outX = x >= start ? x : start; \
+		int condition = x + width; \
+		if (end < condition) { \
+			condition = end; \
+		} \
+		for (; outX < condition; ++outX) { \
 			int inX = outX - x; \
 			if (sprite->hflip) { \
 				inX = width - inX - 1; \
