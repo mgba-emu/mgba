@@ -323,29 +323,76 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	softwareRenderer->row = row;
 	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
 
+	softwareRenderer->windows[0].endX = VIDEO_HORIZONTAL_PIXELS;
+	softwareRenderer->nWindows = 1;
 	if (softwareRenderer->dispcnt.win0Enable || softwareRenderer->dispcnt.win1Enable) {
-		if (softwareRenderer->dispcnt.win0Enable) {
-			softwareRenderer->currentWindow = softwareRenderer->win0;
-			softwareRenderer->start = softwareRenderer->win0H.start;
-			softwareRenderer->end = softwareRenderer->win0H.end;
-			_drawScanline(softwareRenderer, y);
-		}
+		softwareRenderer->windows[0].control = softwareRenderer->winout;
 		if (softwareRenderer->dispcnt.win1Enable) {
-			softwareRenderer->currentWindow = softwareRenderer->win1;
-			softwareRenderer->start = softwareRenderer->win1H.start;
-			softwareRenderer->end = softwareRenderer->win1H.end;
-			_drawScanline(softwareRenderer, y);
+			if (softwareRenderer->win1H.start > 0) {
+				softwareRenderer->windows[softwareRenderer->nWindows].control = softwareRenderer->win1;
+				softwareRenderer->windows[softwareRenderer->nWindows].endX = softwareRenderer->win1H.start;
+				++softwareRenderer->nWindows;
+				softwareRenderer->windows[softwareRenderer->nWindows].endX = VIDEO_HORIZONTAL_PIXELS;
+			} else {
+				softwareRenderer->windows[softwareRenderer->nWindows - 1].control = softwareRenderer->win1;
+			}
+			if (softwareRenderer->win1H.end < VIDEO_HORIZONTAL_PIXELS) {
+				softwareRenderer->windows[softwareRenderer->nWindows].control = softwareRenderer->winout;
+				softwareRenderer->windows[softwareRenderer->nWindows].endX = softwareRenderer->win1H.end;
+				++softwareRenderer->nWindows;
+				softwareRenderer->windows[softwareRenderer->nWindows].endX = VIDEO_HORIZONTAL_PIXELS;
+			} else {
+				softwareRenderer->windows[softwareRenderer->nWindows - 1].endX = softwareRenderer->win1H.end;				
+			}
 		}
-		softwareRenderer->currentWindow = softwareRenderer->winout;
-		softwareRenderer->start = 0;
-		softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
-		_drawScanline(softwareRenderer, y);
+		if (softwareRenderer->dispcnt.win0Enable) {
+			int activeWindow;
+			int startX = 0;
+			for (activeWindow = 0; activeWindow < softwareRenderer->nWindows; ++activeWindow) {
+				if (softwareRenderer->win0H.start < softwareRenderer->windows[activeWindow].endX) {
+					// We start in this region
+					struct Window oldWindow = softwareRenderer->windows[activeWindow];
+					if (softwareRenderer->win0H.start > startX) {
+						// We need to split the region
+						int nextWindow = softwareRenderer->nWindows;
+						++softwareRenderer->nWindows;
+						for (; nextWindow > activeWindow; --nextWindow) {
+							softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1];
+						}
+						softwareRenderer->windows[activeWindow].endX = softwareRenderer->win0H.start;
+						++activeWindow;
+					}
+					softwareRenderer->windows[activeWindow].control = softwareRenderer->win0;
+					softwareRenderer->windows[activeWindow].endX = softwareRenderer->win0H.end;
+					if (softwareRenderer->win0H.end >= oldWindow.endX) {
+						// Consume subsequent regions
+						for (++activeWindow; softwareRenderer->win0H.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
+							softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
+							--softwareRenderer->nWindows;
+							if (softwareRenderer->nWindows <= 1) {
+								break;
+							}
+						}
+					} else {
+						// ...and the other end
+						++activeWindow;
+						int nextWindow = softwareRenderer->nWindows;
+						++softwareRenderer->nWindows;
+						for (; nextWindow > activeWindow; --nextWindow) {
+							softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1];
+						}
+						softwareRenderer->windows[activeWindow] = oldWindow;
+					}
+					break;
+				}
+				startX = softwareRenderer->windows[activeWindow].endX;
+			}
+		}
 	} else {
-		softwareRenderer->currentWindow.packed = 0xFF;
-		softwareRenderer->start = 0;
-		softwareRenderer->end = VIDEO_HORIZONTAL_PIXELS;
-		_drawScanline(softwareRenderer, y);
+		softwareRenderer->windows[0].control.packed = 0xFF;
 	}
+
+	_drawScanline(softwareRenderer, y);
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -471,71 +518,85 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 }
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
-	if (renderer->dispcnt.objEnable && renderer->currentWindow.objEnable) {
-		int i, j;
-		for (j = 0; j < 4; ++j) {
-			uint32_t bitmap = renderer->enabledBitmap[j];
-			if (!bitmap) {
+	int w;
+	renderer->end = 0;
+	if (renderer->dispcnt.objEnable) {
+		for (w = 0; w < renderer->nWindows; ++w) {
+			renderer->start = renderer->end;
+			renderer->end = renderer->windows[w].endX;
+			renderer->currentWindow = renderer->windows[w].control;
+			if (!renderer->currentWindow.objEnable) {
 				continue;
 			}
-			for (i = j * 32; i < (j + 1) * 32; ++i) {
-				if (bitmap & 1) {
-					struct GBAObj* sprite = &renderer->d.oam->obj[i];
-					if (sprite->transformed) {
-						_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
-					} else {
-						_preprocessSprite(renderer, sprite, y);
-					}
+			int i, j;
+			for (j = 0; j < 4; ++j) {
+				uint32_t bitmap = renderer->enabledBitmap[j];
+				if (!bitmap) {
+					continue;
 				}
-				bitmap >>= 1;
+				for (i = j * 32; i < (j + 1) * 32; ++i) {
+					if (bitmap & 1) {
+						struct GBAObj* sprite = &renderer->d.oam->obj[i];
+						if (sprite->transformed) {
+							_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
+						} else {
+							_preprocessSprite(renderer, sprite, y);
+						}
+					}
+					bitmap >>= 1;
+				}
 			}
 		}
 	}
 
-	renderer->start = 0;
-	renderer->end = VIDEO_HORIZONTAL_PIXELS;
 	int priority;
 	for (priority = 0; priority < 4; ++priority) {
 		_postprocessSprite(renderer, priority);
-		if (renderer->bg[0].enabled && renderer->currentWindow.bg0Enable && renderer->bg[0].priority == priority && renderer->dispcnt.mode < 2) {
-			_drawBackgroundMode0(renderer, &renderer->bg[0], y);
-		}
-		if (renderer->bg[1].enabled && renderer->currentWindow.bg1Enable && renderer->bg[1].priority == priority && renderer->dispcnt.mode < 2) {
-			_drawBackgroundMode0(renderer, &renderer->bg[1], y);
-		}
-		if (renderer->bg[2].enabled && renderer->currentWindow.bg2Enable && renderer->bg[2].priority == priority) {
-			switch (renderer->dispcnt.mode) {
-			case 0:
-				_drawBackgroundMode0(renderer, &renderer->bg[2], y);
-				break;
-			case 1:
-			case 2:
-				_drawBackgroundMode2(renderer, &renderer->bg[2], y);
-				break;
-			case 3:
-				_drawBackgroundMode3(renderer, &renderer->bg[2], y);
-				break;
-			case 4:
-				_drawBackgroundMode4(renderer, &renderer->bg[2], y);
-				break;
-			case 5:
-				_drawBackgroundMode5(renderer, &renderer->bg[2], y);
-				break;
+		renderer->end = 0;
+		for (w = 0; w < renderer->nWindows; ++w) {
+			renderer->start = renderer->end;
+			renderer->end = renderer->windows[w].endX;
+			renderer->currentWindow = renderer->windows[w].control;
+			if (renderer->bg[0].enabled && renderer->currentWindow.bg0Enable && renderer->bg[0].priority == priority && renderer->dispcnt.mode < 2) {
+				_drawBackgroundMode0(renderer, &renderer->bg[0], y);
 			}
-			renderer->bg[2].sx += renderer->bg[2].dmx;
-			renderer->bg[2].sy += renderer->bg[2].dmy;
-		}
-		if (renderer->bg[3].enabled && renderer->currentWindow.bg3Enable && renderer->bg[3].priority == priority) {
-			switch (renderer->dispcnt.mode) {
-			case 0:
-				_drawBackgroundMode0(renderer, &renderer->bg[3], y);
-				break;
-			case 2:
-				_drawBackgroundMode2(renderer, &renderer->bg[3], y);
-				break;
+			if (renderer->bg[1].enabled && renderer->currentWindow.bg1Enable && renderer->bg[1].priority == priority && renderer->dispcnt.mode < 2) {
+				_drawBackgroundMode0(renderer, &renderer->bg[1], y);
 			}
-			renderer->bg[3].sx += renderer->bg[3].dmx;
-			renderer->bg[3].sy += renderer->bg[3].dmy;
+			if (renderer->bg[2].enabled && renderer->currentWindow.bg2Enable && renderer->bg[2].priority == priority) {
+				switch (renderer->dispcnt.mode) {
+				case 0:
+					_drawBackgroundMode0(renderer, &renderer->bg[2], y);
+					break;
+				case 1:
+				case 2:
+					_drawBackgroundMode2(renderer, &renderer->bg[2], y);
+					break;
+				case 3:
+					_drawBackgroundMode3(renderer, &renderer->bg[2], y);
+					break;
+				case 4:
+					_drawBackgroundMode4(renderer, &renderer->bg[2], y);
+					break;
+				case 5:
+					_drawBackgroundMode5(renderer, &renderer->bg[2], y);
+					break;
+				}
+				renderer->bg[2].sx += renderer->bg[2].dmx;
+				renderer->bg[2].sy += renderer->bg[2].dmy;
+			}
+			if (renderer->bg[3].enabled && renderer->currentWindow.bg3Enable && renderer->bg[3].priority == priority) {
+				switch (renderer->dispcnt.mode) {
+				case 0:
+					_drawBackgroundMode0(renderer, &renderer->bg[3], y);
+					break;
+				case 2:
+					_drawBackgroundMode2(renderer, &renderer->bg[3], y);
+					break;
+				}
+				renderer->bg[3].sx += renderer->bg[3].dmx;
+				renderer->bg[3].sy += renderer->bg[3].dmy;
+			}
 		}
 	}
 }
@@ -607,7 +668,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 #define BACKGROUND_MODE_0_TILE_16_LOOP(TYPE) \
 	uint32_t tileData; \
 	int paletteData, pixelData; \
-	for (; tileX < 30; ++tileX) { \
+	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		paletteData = mapData.palette << 4; \
 		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY; \
@@ -657,7 +718,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 #define BACKGROUND_MODE_0_TILE_256_LOOP(TYPE) \
 	uint32_t tileData; \
 	int pixelData; \
-	for (; tileX < 30; ++tileX) { \
+	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1); \
 		if (!mapData.hflip) { \
@@ -744,8 +805,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t charBase;
 	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 
-	int outX = 0;
-	int tileX = renderer->start >> 3;
+	int outX = renderer->start;
+	int tileX = outX >> 3;
+	int tileEnd = renderer->end >> 3;
 	if (inX & 0x7) {
 		uint32_t tileData;
 		int pixelData, paletteData;
@@ -759,11 +821,11 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			if (!mapData.hflip) {
 				tileData >>= 4 * (inX & 0x7);
 				if (!variant) {
-					for (outX = 0; outX < end; ++outX) {
+					for (; outX < end; ++outX) {
 						BACKGROUND_DRAW_PIXEL_16_NORMAL;
 					}
 				} else {
-					for (outX = 0; outX < end; ++outX) {
+					for (; outX < end; ++outX) {
 						BACKGROUND_DRAW_PIXEL_16_VARIANT;
 					}
 				}
@@ -781,7 +843,6 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		} else {
 			// TODO: hflip
 			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
-			outX = 0;
 			int end2 = end - 4;
 			int shift = inX & 0x3;
 			if (end2 > 0) {
@@ -812,7 +873,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			}
 		}
 
-		tileX = 30;
+		tileX = tileEnd;
 		BACKGROUND_TEXT_SELECT_CHARACTER;
 		if (!background->multipalette) {
 			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
@@ -924,7 +985,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint8_t tileData;
 
 	int outX;
-	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (outX = renderer->start; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
 		x += background->dx;
 		y += background->dy;
 
@@ -1199,7 +1260,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority) {
 	int x;
-	for (x = renderer->start; x < renderer->end; ++x) {
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 		uint32_t color = renderer->spriteLayer[x];
 		if ((color & FLAG_FINALIZED) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority && !(renderer->row[x] & FLAG_FINALIZED)) {
 			_composite(renderer, x, color & ~FLAG_FINALIZED);
