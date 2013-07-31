@@ -327,7 +327,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	softwareRenderer->nWindows = 1;
 	if (softwareRenderer->dispcnt.win0Enable || softwareRenderer->dispcnt.win1Enable) {
 		softwareRenderer->windows[0].control = softwareRenderer->winout;
-		if (softwareRenderer->dispcnt.win1Enable) {
+		if (softwareRenderer->dispcnt.win1Enable && y < softwareRenderer->win1V.end && y >= softwareRenderer->win1V.start) {
 			if (softwareRenderer->win1H.start > 0) {
 				softwareRenderer->windows[softwareRenderer->nWindows].control = softwareRenderer->win1;
 				softwareRenderer->windows[softwareRenderer->nWindows].endX = softwareRenderer->win1H.start;
@@ -345,7 +345,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 				softwareRenderer->windows[softwareRenderer->nWindows - 1].endX = softwareRenderer->win1H.end;				
 			}
 		}
-		if (softwareRenderer->dispcnt.win0Enable) {
+		if (softwareRenderer->dispcnt.win0Enable && y < softwareRenderer->win0V.end && y >= softwareRenderer->win0V.start) {
 			int activeWindow;
 			int startX = 0;
 			for (activeWindow = 0; activeWindow < softwareRenderer->nWindows; ++activeWindow) {
