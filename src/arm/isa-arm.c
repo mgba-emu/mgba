@@ -698,7 +698,7 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr, 0);,
+	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr & 0xFFFFFFFC, 0);,
 	++currentCycles;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
