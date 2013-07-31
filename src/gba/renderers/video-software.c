@@ -321,6 +321,44 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	}
 }
 
+#define BREAK_WINDOW(WIN) \
+	int activeWindow; \
+	int startX = 0; \
+	if (softwareRenderer->WIN ## H.end > 0) { \
+		for (activeWindow = 0; activeWindow < softwareRenderer->nWindows; ++activeWindow) { \
+			if (softwareRenderer->WIN ## H.start < softwareRenderer->windows[activeWindow].endX) { \
+				struct Window oldWindow = softwareRenderer->windows[activeWindow]; \
+				if (softwareRenderer->WIN ## H.start > startX) { \
+					int nextWindow = softwareRenderer->nWindows; \
+					++softwareRenderer->nWindows; \
+					for (; nextWindow > activeWindow; --nextWindow) { \
+						softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1]; \
+					} \
+					softwareRenderer->windows[activeWindow].endX = softwareRenderer->WIN ## H.start; \
+					++activeWindow; \
+				} \
+				softwareRenderer->windows[activeWindow].control = softwareRenderer->WIN; \
+				softwareRenderer->windows[activeWindow].endX = softwareRenderer->WIN ## H.end; \
+				if (softwareRenderer->WIN ## H.end >= oldWindow.endX) { \
+					for (++activeWindow; softwareRenderer->WIN ## H.end >= softwareRenderer->windows[activeWindow].endX && softwareRenderer->nWindows > 1; ++activeWindow) { \
+						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1]; \
+						--softwareRenderer->nWindows; \
+					} \
+				} else { \
+					++activeWindow; \
+					int nextWindow = softwareRenderer->nWindows; \
+					++softwareRenderer->nWindows; \
+					for (; nextWindow > activeWindow; --nextWindow) { \
+						softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1]; \
+					} \
+					softwareRenderer->windows[activeWindow] = oldWindow; \
+				} \
+				break; \
+			} \
+			startX = softwareRenderer->windows[activeWindow].endX; \
+		} \
+	}
+
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	if (renderer->frameskip > 0) {
@@ -352,65 +390,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (softwareRenderer->dispcnt.win0Enable || softwareRenderer->dispcnt.win1Enable) {
 		softwareRenderer->windows[0].control = softwareRenderer->winout;
 		if (softwareRenderer->dispcnt.win1Enable && y < softwareRenderer->win1V.end && y >= softwareRenderer->win1V.start) {
-			if (softwareRenderer->win1H.start > 0) {
-				softwareRenderer->windows[softwareRenderer->nWindows].control = softwareRenderer->win1;
-				softwareRenderer->windows[softwareRenderer->nWindows].endX = softwareRenderer->win1H.start;
-				++softwareRenderer->nWindows;
-				softwareRenderer->windows[softwareRenderer->nWindows].endX = VIDEO_HORIZONTAL_PIXELS;
-			} else {
-				softwareRenderer->windows[softwareRenderer->nWindows - 1].control = softwareRenderer->win1;
-			}
-			if (softwareRenderer->win1H.end < VIDEO_HORIZONTAL_PIXELS) {
-				softwareRenderer->windows[softwareRenderer->nWindows].control = softwareRenderer->winout;
-				softwareRenderer->windows[softwareRenderer->nWindows].endX = softwareRenderer->win1H.end;
-				++softwareRenderer->nWindows;
-				softwareRenderer->windows[softwareRenderer->nWindows].endX = VIDEO_HORIZONTAL_PIXELS;
-			} else {
-				softwareRenderer->windows[softwareRenderer->nWindows - 1].endX = softwareRenderer->win1H.end;				
-			}
+			BREAK_WINDOW(win1);
 		}
 		if (softwareRenderer->dispcnt.win0Enable && y < softwareRenderer->win0V.end && y >= softwareRenderer->win0V.start) {
-			int activeWindow;
-			int startX = 0;
-			for (activeWindow = 0; activeWindow < softwareRenderer->nWindows; ++activeWindow) {
-				if (softwareRenderer->win0H.start < softwareRenderer->windows[activeWindow].endX) {
-					// We start in this region
-					struct Window oldWindow = softwareRenderer->windows[activeWindow];
-					if (softwareRenderer->win0H.start > startX) {
-						// We need to split the region
-						int nextWindow = softwareRenderer->nWindows;
-						++softwareRenderer->nWindows;
-						for (; nextWindow > activeWindow; --nextWindow) {
-							softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1];
-						}
-						softwareRenderer->windows[activeWindow].endX = softwareRenderer->win0H.start;
-						++activeWindow;
-					}
-					softwareRenderer->windows[activeWindow].control = softwareRenderer->win0;
-					softwareRenderer->windows[activeWindow].endX = softwareRenderer->win0H.end;
-					if (softwareRenderer->win0H.end >= oldWindow.endX) {
-						// Consume subsequent regions
-						for (++activeWindow; softwareRenderer->win0H.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
-							softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
-							--softwareRenderer->nWindows;
-							if (softwareRenderer->nWindows <= 1) {
-								break;
-							}
-						}
-					} else {
-						// ...and the other end
-						++activeWindow;
-						int nextWindow = softwareRenderer->nWindows;
-						++softwareRenderer->nWindows;
-						for (; nextWindow > activeWindow; --nextWindow) {
-							softwareRenderer->windows[nextWindow] = softwareRenderer->windows[nextWindow - 1];
-						}
-						softwareRenderer->windows[activeWindow] = oldWindow;
-					}
-					break;
-				}
-				startX = softwareRenderer->windows[activeWindow].endX;
-			}
+			BREAK_WINDOW(win0);
 		}
 	} else {
 		softwareRenderer->windows[0].control.packed = 0xFF;
