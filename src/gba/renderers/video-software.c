@@ -378,11 +378,10 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
 		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = backdrop;
+			softwareRenderer->row[x] = backdrop;
 		}
 	}
 
-	softwareRenderer->row = row;
 	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
 
 	softwareRenderer->windows[0].endX = VIDEO_HORIZONTAL_PIXELS;
@@ -400,6 +399,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	_drawScanline(softwareRenderer, y);
+	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {

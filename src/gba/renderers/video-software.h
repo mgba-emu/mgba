@@ -86,6 +86,7 @@ struct GBAVideoSoftwareRenderer {
 
 	union GBARegisterDISPCNT dispcnt;
 
+	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
 
 	// BLDCNT
@@ -118,7 +119,6 @@ struct GBAVideoSoftwareRenderer {
 
 	struct GBAVideoSoftwareBackground bg[4];
 
-	uint32_t* row;
 	int start;
 	int end;
 
