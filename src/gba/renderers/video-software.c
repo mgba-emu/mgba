@@ -366,7 +366,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 	uint32_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (softwareRenderer->dispcnt.forcedBlank) {
-		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+		int x;
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = GBA_COLOR_WHITE;
 		}
 		return;
@@ -377,7 +378,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		} else {
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
-		for (int x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+		int x;
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
 	}
@@ -1149,7 +1151,8 @@ static const int _objSizes[32] = {
 		}
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
-	for (int outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
+	int outX; \
+	for (outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
 		} \
@@ -1283,16 +1286,17 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int pr
 }
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
+	int i;
 	if (renderer->blendEffect == BLEND_BRIGHTEN) {
-		for (int i = 0; i < 512; ++i) {
+		for (i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = _brighten(renderer->normalPalette[i], renderer->bldy);
 		}
 	} else if (renderer->blendEffect == BLEND_DARKEN) {
-		for (int i = 0; i < 512; ++i) {
+		for (i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = _darken(renderer->normalPalette[i], renderer->bldy);
 		}
 	} else {
-		for (int i = 0; i < 512; ++i) {
+		for (i = 0; i < 512; ++i) {
 			renderer->variantPalette[i] = renderer->normalPalette[i];
 		}
 	}
