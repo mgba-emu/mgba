@@ -251,17 +251,11 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->win0H.start > softwareRenderer->win0H.end || softwareRenderer->win0H.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->win0H.end = VIDEO_HORIZONTAL_PIXELS;
 		}
-		if (softwareRenderer->win0H.start >= VIDEO_HORIZONTAL_PIXELS) {
-			softwareRenderer->win0H.start = 0;
-		}
 		break;
 	case REG_WIN1H:
 		softwareRenderer->win1H.packed = value;
 		if (softwareRenderer->win1H.start > softwareRenderer->win1H.end || softwareRenderer->win1H.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->win1H.end = VIDEO_HORIZONTAL_PIXELS;
-		}
-		if (softwareRenderer->win1H.start >= VIDEO_HORIZONTAL_PIXELS) {
-			softwareRenderer->win1H.start = 0;
 		}
 		break;
 	case REG_WIN0V:
@@ -269,17 +263,11 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->win0V.start > softwareRenderer->win0V.end || softwareRenderer->win0V.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->win0V.end = VIDEO_VERTICAL_PIXELS;
 		}
-		if (softwareRenderer->win0V.start >= VIDEO_VERTICAL_PIXELS) {
-			softwareRenderer->win0V.start = 0;
-		}
 		break;
 	case REG_WIN1V:
 		softwareRenderer->win1V.packed = value;
 		if (softwareRenderer->win1V.start > softwareRenderer->win1V.end || softwareRenderer->win1V.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->win1V.end = VIDEO_VERTICAL_PIXELS;
-		}
-		if (softwareRenderer->win1V.start >= VIDEO_VERTICAL_PIXELS) {
-			softwareRenderer->win1V.start = 0;
 		}
 		break;
 	case REG_WININ:
