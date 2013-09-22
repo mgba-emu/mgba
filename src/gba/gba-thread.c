@@ -4,12 +4,14 @@
 #include "debugger.h"
 #include "gba.h"
 
+#include <stdlib.h>
 #include <signal.h>
 
 static void* _GBAThreadRun(void* context) {
 	struct ARMDebugger debugger;
 	struct GBA gba;
 	struct GBAThread* threadContext = context;
+	char* savedata = 0;
 
 	sigset_t signals;
 	sigfillset(&signals);
@@ -22,7 +24,27 @@ static void* _GBAThreadRun(void* context) {
 
 	threadContext->gba = &gba;
 	if (threadContext->fd >= 0) {
-		GBALoadROM(&gba, threadContext->fd);
+		if (threadContext->fname) {
+			char* dotPoint = strrchr(threadContext->fname, '.');
+			if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
+				savedata = strdup(threadContext->fname);
+				dotPoint = strrchr(savedata, '.');
+				dotPoint[1] = 's';
+				dotPoint[2] = 'a';
+				dotPoint[3] = 'v';
+				dotPoint[4] = '\0';
+			} else if (dotPoint) {
+				savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
+				strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
+				strcat(savedata, "sav");
+			} else {
+				savedata = malloc(strlen(threadContext->fname + 5));
+				strcpy(savedata, threadContext->fname);
+				strcat(savedata, "sav");
+			}
+		}
+		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
+		gba.savefile = savedata;
 	}
 	if (threadContext->useDebugger) {
 		threadContext->debugger = &debugger;
@@ -46,6 +68,7 @@ static void* _GBAThreadRun(void* context) {
 		}
 	}
 	GBADeinit(&gba);
+	free(savedata);
 
 	return 0;
 }

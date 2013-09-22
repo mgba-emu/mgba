@@ -78,6 +78,8 @@ struct GBA {
 	int springIRQ;
 	int* keySource;
 
+	const char* activeFile;
+	const char* savefile;
 	enum GBAError errno;
 	const char* errstr;
 	enum GBALogLevel logLevel;
@@ -105,7 +107,7 @@ int GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
-void GBALoadROM(struct GBA* gba, int fd);
+void GBALoadROM(struct GBA* gba, int fd, const char* fname);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);

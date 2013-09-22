@@ -65,7 +65,8 @@ int main(int argc, char** argv) {
 	}
 
 	context.fd = fd;
-	context.useDebugger = 0;
+	context.fname = fname;
+	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
 	GBAThreadStart(&context);
 

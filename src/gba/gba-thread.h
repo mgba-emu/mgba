@@ -13,6 +13,7 @@ struct GBAThread {
 	// Input
 	struct GBAVideoRenderer* renderer;
 	int fd;
+	const char* fname;
 	int activeKeys;
 
 	// Threading state
