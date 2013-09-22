@@ -2,6 +2,7 @@
 
 #include "gba.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -38,32 +39,42 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	savedata->type = SAVEDATA_FLASH512;
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
+	off_t end;
+	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s", savedata->filename);
-		return;
+		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+		end = 0;
+		flags |= MAP_ANON;
+	} else {
+		end = lseek(savedata->fd, 0, SEEK_END);
+		if (end < SIZE_CART_FLASH512) {
+			ftruncate(savedata->fd, SIZE_CART_FLASH1M);
+		}
 	}
 	// mmap enough so that we can expand the file if we need to
-	savedata->data = mmap(0, SIZE_CART_FLASH1M, PROT_READ | PROT_WRITE, MAP_SHARED, savedata->fd, 0);
-
-	off_t end = lseek(savedata->fd, 0, SEEK_END);
+	savedata->data = mmap(0, SIZE_CART_FLASH1M, PROT_READ | PROT_WRITE, flags, savedata->fd, 0);
 	if (end < SIZE_CART_FLASH512) {
-		ftruncate(savedata->fd, SIZE_CART_SRAM);
-		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM - end);
+		memset(&savedata->data[end], 0xFF, SIZE_CART_FLASH512 - end);
 	}
 }
 
 void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	savedata->type = SAVEDATA_EEPROM;
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
+	off_t end;
+	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s", savedata->filename);
-		return;
+		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+		end = 0;
+		flags |= MAP_ANON;
+	} else {
+		end = lseek(savedata->fd, 0, SEEK_END);
+		if (end < SIZE_CART_EEPROM) {
+			ftruncate(savedata->fd, SIZE_CART_EEPROM);
+		}
 	}
-	savedata->data = mmap(0, SIZE_CART_EEPROM, PROT_READ | PROT_WRITE, MAP_SHARED, savedata->fd, 0);
-
-	off_t end = lseek(savedata->fd, 0, SEEK_END);
+	savedata->data = mmap(0, SIZE_CART_EEPROM, PROT_READ | PROT_WRITE, flags, savedata->fd, 0);
 	if (end < SIZE_CART_EEPROM) {
-		ftruncate(savedata->fd, SIZE_CART_EEPROM);
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
 	}
 }
@@ -74,7 +85,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	off_t end;
 	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s", savedata->filename);
+		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		flags |= MAP_ANON;
 	} else {
