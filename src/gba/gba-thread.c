@@ -21,11 +21,15 @@ static void* _GBAThreadRun(void* context) {
 	}
 
 	threadContext->gba = &gba;
-	threadContext->debugger = &debugger;
 	if (threadContext->fd >= 0) {
 		GBALoadROM(&gba, threadContext->fd);
 	}
-	GBAAttachDebugger(&gba, &debugger);
+	if (threadContext->useDebugger) {
+		threadContext->debugger = &debugger;
+		GBAAttachDebugger(&gba, &debugger);
+	} else {
+		threadContext->debugger = 0;
+	}
 	gba.keySource = &threadContext->activeKeys;
 
 	threadContext->started = 1;
@@ -33,8 +37,14 @@ static void* _GBAThreadRun(void* context) {
 	pthread_cond_broadcast(&threadContext->cond);
 	pthread_mutex_unlock(&threadContext->mutex);
 
-	ARMDebuggerRun(&debugger);
-	threadContext->started = 0;
+	if (threadContext->useDebugger) {
+		ARMDebuggerRun(&debugger);
+		threadContext->started = 0;
+	} else {
+		while (threadContext->started) {
+			ARMRun(&gba.cpu);
+		}
+	}
 	GBADeinit(&gba);
 
 	return 0;

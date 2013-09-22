@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
 	}
 
 	context.fd = fd;
+	context.useDebugger = 0;
 	context.renderer = &renderer.d.d;
 	GBAThreadStart(&context);
 
@@ -118,7 +119,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, 240, 160, 0, 0, 1);
-	while (context->started && context->debugger->state != DEBUGGER_EXITING) {
+	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
 		pthread_mutex_lock(&renderer->d.mutex);
 		if (renderer->d.d.framesPending) {
 			renderer->d.d.framesPending = 0;

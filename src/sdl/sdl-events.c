@@ -121,7 +121,11 @@ void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) 
 	switch (event->type) {
 	case SDL_QUIT:
 		// FIXME: this isn't thread-safe
-		context->debugger->state = DEBUGGER_EXITING;
+		if (context->debugger) {
+			context->debugger->state = DEBUGGER_EXITING;
+		} else {
+			context->started = 0;
+		}
 		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:

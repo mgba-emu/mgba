@@ -6,6 +6,7 @@
 struct GBAThread {
 	// Output
 	int started;
+	int useDebugger;
 	struct GBA* gba;
 	struct ARMDebugger* debugger;
 
