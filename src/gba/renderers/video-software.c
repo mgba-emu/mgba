@@ -248,7 +248,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_WIN0H:
 		softwareRenderer->win0H.packed = value;
-		if (softwareRenderer->win0H.start >= softwareRenderer->win0H.end || softwareRenderer->win0H.end > VIDEO_HORIZONTAL_PIXELS) {
+		if (softwareRenderer->win0H.start > softwareRenderer->win0H.end || softwareRenderer->win0H.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->win0H.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		if (softwareRenderer->win0H.start >= VIDEO_HORIZONTAL_PIXELS) {
