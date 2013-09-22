@@ -30,7 +30,10 @@ enum GBAError {
 
 enum GBALogLevel {
 	GBA_LOG_STUB,
-	GBA_LOG_WARN
+	GBA_LOG_DEBUG,
+	GBA_LOG_INFO,
+	GBA_LOG_WARN,
+	GBA_LOG_ERROR
 };
 
 enum GBAKey {
@@ -77,6 +80,7 @@ struct GBA {
 
 	enum GBAError errno;
 	const char* errstr;
+	enum GBALogLevel logLevel;
 };
 
 void GBAInit(struct GBA* gba);
@@ -103,6 +107,7 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
 void GBALoadROM(struct GBA* gba, int fd);
 
-void GBALog(int level, const char* format, ...);
+__attribute__((format (printf, 3, 4)))
+void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
 #endif

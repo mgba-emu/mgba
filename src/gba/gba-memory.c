@@ -554,7 +554,7 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t con
 	currentDma->nextIRQ = 0;
 
 	if (currentDma->drq) {
-		GBALog(GBA_LOG_STUB, "DRQ not implemented");
+		GBALog(memory->p, GBA_LOG_STUB, "DRQ not implemented");
 	}
 
 	if (!wasEnabled && currentDma->enable) {
@@ -581,7 +581,7 @@ void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* i
 	case DMA_TIMING_CUSTOM:
 		switch (number) {
 		case 0:
-			GBALog(GBA_LOG_WARN, "Discarding invalid DMA0 scheduling");
+			GBALog(memory->p, GBA_LOG_WARN, "Discarding invalid DMA0 scheduling");
 			break;
 		case 1:
 		case 2:

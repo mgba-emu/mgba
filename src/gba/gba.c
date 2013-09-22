@@ -47,6 +47,8 @@ void GBAInit(struct GBA* gba) {
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 
+	gba->logLevel = GBA_LOG_INFO;
+
 	ARMReset(&gba->cpu);
 }
 
@@ -298,15 +300,15 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_SIO)) {
-		GBALog(GBA_LOG_STUB, "SIO interrupts not implemented");
+		GBALog(gba, GBA_LOG_STUB, "SIO interrupts not implemented");
 	}
 
 	if (value & (1 << IRQ_KEYPAD)) {
-		GBALog(GBA_LOG_STUB, "Keypad interrupts not implemented");
+		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
 	}
 
 	if (value & (1 << IRQ_GAMEPAK)) {
-		GBALog(GBA_LOG_STUB, "Gamepak interrupts not implemented");
+		GBALog(gba, GBA_LOG_STUB, "Gamepak interrupts not implemented");
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
@@ -361,8 +363,10 @@ int GBAHalt(struct GBA* gba) {
 	return GBAWaitForIRQ(gba);
 }
 
-void GBALog(int level, const char* format, ...) {
-	(void)(level);
+void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
+	if (gba && level < gba->logLevel) {
+		return;
+	}
 	va_list args;
 	va_start(args, format);
 	vprintf(format, args);
@@ -371,8 +375,8 @@ void GBALog(int level, const char* format, ...) {
 }
 
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
-	GBALog(GBA_LOG_STUB, "Stub opcode: %08x", opcode);
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;
+	GBALog(gbaBoard->p, GBA_LOG_STUB, "Stub opcode: %08x", opcode);
 	if (!gbaBoard->p->debugger) {
 		abort();
 	} else {

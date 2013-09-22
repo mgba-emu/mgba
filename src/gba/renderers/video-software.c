@@ -291,7 +291,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->objwin.packed = value >> 8;
 		break;
 	default:
-		GBALog(GBA_LOG_STUB, "Stub video register write: %03x", address);
+		GBALog(0, GBA_LOG_STUB, "Stub video register write: %03x", address);
 	}
 	return value;
 }

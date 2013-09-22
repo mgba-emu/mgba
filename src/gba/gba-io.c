@@ -113,7 +113,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			// Some bad interrupt libraries will write to this
 			break;
 		default:
-			GBALog(GBA_LOG_STUB, "Stub I/O register write: %03x", address);
+			GBALog(gba, GBA_LOG_STUB, "Stub I/O register write: %03x", address);
 			break;
 		}
 	}
@@ -126,7 +126,7 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		if (!value) {
 			GBAHalt(gba);
 		} else {
-			GBALog(GBA_LOG_STUB, "Stop unimplemented");
+			GBALog(gba, GBA_LOG_STUB, "Stop unimplemented");
 		}
 		return;
 	}
@@ -216,7 +216,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Some bad interrupt libraries will read from this
 		break;
 	default:
-		GBALog(GBA_LOG_STUB, "Stub I/O register read: %03x", address);
+		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
 		break;
 	}
 	return gba->memory.io[address >> 1];

@@ -13,7 +13,7 @@ static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu.gprs[0];
 	(void)(registers);
-	GBALog(GBA_LOG_STUB, "RegisterRamReset unimplemented");
+	GBALog(gba, GBA_LOG_STUB, "RegisterRamReset unimplemented");
 }
 
 static void _CpuSet(struct GBA* gba) {
@@ -230,7 +230,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
-				GBALog(GBA_LOG_WARN, "Bad LZ77 destination");
+				GBALog(gba, GBA_LOG_WARN, "Bad LZ77 destination");
 				break;
 		}
 		break;
@@ -247,7 +247,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
-				GBALog(GBA_LOG_WARN, "Bad RL destination");
+				GBALog(gba, GBA_LOG_WARN, "Bad RL destination");
 				break;
 		}
 		break;
@@ -255,7 +255,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		_MidiKey2Freq(gba);
 		break;
 	default:
-		GBALog(GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
+		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
 	}
 }
 

@@ -42,7 +42,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	off_t end;
 	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		flags |= MAP_ANON;
 	} else {
@@ -64,7 +64,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	off_t end;
 	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		flags |= MAP_ANON;
 	} else {
@@ -85,7 +85,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	off_t end;
 	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
-		GBALog(GBA_LOG_WARN, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		flags |= MAP_ANON;
 	} else {
@@ -104,7 +104,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 void GBASavedataWriteFlash(struct GBASavedata* savedata, uint8_t value) {
 	(void)(savedata);
 	(void)(value);
-	GBALog(GBA_LOG_STUB, "Flash memory unimplemented");
+	GBALog(0, GBA_LOG_STUB, "Flash memory unimplemented");
 }
 
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize) {
