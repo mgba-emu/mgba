@@ -251,6 +251,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		value = (GBAIORead(gbaMemory->p, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
 		break;
 	case BASE_PALETTE_RAM:
+		value = ((int8_t*) gbaMemory->p->video.renderer->palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case BASE_VRAM:
 		break;
