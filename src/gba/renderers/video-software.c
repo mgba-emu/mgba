@@ -898,6 +898,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			if (!mapData.hflip) {
 				outX = renderer->end - mod8;
 				if (outX < 0) {
+					tileData >>= 4 * -outX;
 					outX = 0;
 				}
 				if (!variant) {
