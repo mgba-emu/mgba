@@ -896,23 +896,31 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
 			paletteData = mapData.palette << 4;
 			if (!mapData.hflip) {
+				outX = renderer->end - mod8;
+				if (outX < 0) {
+					outX = 0;
+				}
 				if (!variant) {
-					for (outX = renderer->end - mod8; outX < renderer->end; ++outX) {
+					for (; outX < renderer->end; ++outX) {
 						BACKGROUND_DRAW_PIXEL_16_NORMAL;
 					}
 				} else {
-					for (outX = renderer->end - mod8; outX < renderer->end; ++outX) {
+					for (; outX < renderer->end; ++outX) {
 						BACKGROUND_DRAW_PIXEL_16_VARIANT;
 					}
 				}
 			} else {
 				tileData >>= 4 * (0x8 - mod8);
+				int end2 = renderer->end - 8;
+				if (end2 < -1) {
+					end2 = -1;
+				}
 				if (!variant) {
-					for (outX = renderer->end - 1; outX > renderer->end - 8; --outX) {
+					for (outX = renderer->end - 1; outX > end2; --outX) {
 						BACKGROUND_DRAW_PIXEL_16_NORMAL;
 					}
 				} else {
-					for (outX = renderer->end - 1; outX > renderer->end - 8; --outX) {
+					for (outX = renderer->end - 1; outX > end2; --outX) {
 						BACKGROUND_DRAW_PIXEL_16_VARIANT;
 					}
 				}
