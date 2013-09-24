@@ -273,8 +273,11 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInit(&gbaMemory->savedata, gbaMemory->p->savefile);
 			GBASavedataInitSRAM(&gbaMemory->savedata);
+		} else if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
+			value = gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
+		} else if (gbaMemory->savedata.type == SAVEDATA_FLASH512 || gbaMemory->savedata.type == SAVEDATA_FLASH1M) {
+			value = GBASavedataReadFlash(&gbaMemory->savedata, address);
 		}
-		value = gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 	default:
 		break;
 	}
@@ -409,7 +412,7 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 			}
 		}
 		if (gbaMemory->savedata.type == SAVEDATA_FLASH512 || gbaMemory->savedata.type == SAVEDATA_FLASH1M) {
-			GBASavedataWriteFlash(&gbaMemory->savedata, value);
+			GBASavedataWriteFlash(&gbaMemory->savedata, address, value);
 		} else if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
 			gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
 		}
