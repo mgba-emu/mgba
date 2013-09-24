@@ -359,17 +359,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			row[x] = GBA_COLOR_WHITE;
 		}
 		return;
-	} else {
-		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
-		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA) {
-			backdrop |= softwareRenderer->normalPalette[0];
-		} else {
-			backdrop |= softwareRenderer->variantPalette[0];
-		}
-		int x;
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			softwareRenderer->row[x] = backdrop;
-		}
 	}
 
 	memset(softwareRenderer->spriteLayer, 0, sizeof(softwareRenderer->spriteLayer));
@@ -388,7 +377,39 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->windows[0].control.packed = 0xFF;
 	}
 
+	int w;
+	int x = 0;
+	for (w = 0; w < softwareRenderer->nWindows; ++w) {
+		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
+		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !softwareRenderer->windows[w].control.blendEnable) {
+			backdrop |= softwareRenderer->normalPalette[0];
+		} else {
+			backdrop |= softwareRenderer->variantPalette[0];
+		}
+		for (; x < softwareRenderer->windows[w].endX; ++x) {
+			softwareRenderer->row[x] = backdrop;
+		}
+	}
+
 	_drawScanline(softwareRenderer, y);
+
+	if (softwareRenderer->target2Bd) {
+		x = 0;
+		for (w = 0; w < softwareRenderer->nWindows; ++w) {
+			uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
+			if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !softwareRenderer->windows[w].control.blendEnable) {
+				backdrop |= softwareRenderer->normalPalette[0];
+			} else {
+				backdrop |= softwareRenderer->variantPalette[0];
+			}
+			for (; x < softwareRenderer->windows[w].endX; ++x) {
+				uint32_t color = softwareRenderer->row[x];
+				if (color & FLAG_TARGET_1) {
+					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
+				}
+			}
+		}
+	}
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
 }
 
