@@ -137,6 +137,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 				GBALog(0, GBA_LOG_GAME_ERROR, "Bad flash bank switch");
 				savedata->command = FLASH_COMMAND_NONE;
 			}
+			savedata->command = FLASH_COMMAND_NONE;
 			break;
 		default:
 			if (address == FLASH_BASE_HI && value == FLASH_COMMAND_START) {
@@ -275,6 +276,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0) {
 		savedata->type = SAVEDATA_FLASH1M;
+		ftruncate(savedata->fd, SIZE_CART_FLASH1M);
 	}
 }
 
