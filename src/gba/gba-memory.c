@@ -121,6 +121,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
 		break;
 	case BASE_WORKING_RAM:
 		value = gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
@@ -153,8 +154,10 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_CART_SRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
 		break;
 	}
 
@@ -178,6 +181,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load16: 0x%08X", address);
 		break;
 	case BASE_WORKING_RAM:
 		value = ((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1];
@@ -217,8 +221,10 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_CART_SRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load16: 0x%08X", address);
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 		break;
 	}
 
@@ -239,6 +245,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
 		break;
 	case BASE_WORKING_RAM:
 		value = ((int8_t*) gbaMemory->wram)[address & (SIZE_WORKING_RAM - 1)];
@@ -254,8 +261,10 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		value = ((int8_t*) gbaMemory->p->video.renderer->palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case BASE_VRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
 		break;
 	case BASE_OAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
 		break;
 	case BASE_CART0:
 	case BASE_CART0_EX:
@@ -278,7 +287,9 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		} else if (gbaMemory->savedata.type == SAVEDATA_FLASH512 || gbaMemory->savedata.type == SAVEDATA_FLASH1M) {
 			value = GBASavedataReadFlash(&gbaMemory->savedata, address);
 		}
+		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 		break;
 	}
 
@@ -319,10 +330,13 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* 
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
 		break;
 	case BASE_CART0:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 		break;
 	case BASE_CART_SRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
 		break;
 	}
 
@@ -360,6 +374,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
 		break;
 	case BASE_CART0:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store16: 0x%08X", address);
 		break;
 	case BASE_CART2_EX:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
@@ -369,8 +384,10 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		GBASavedataWriteEEPROM(&gbaMemory->savedata, value, 1);
 		break;
 	case BASE_CART_SRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store16: 0x%08X", address);
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Store16: 0x%08X", address);
 		break;
 	}
 
@@ -395,12 +412,16 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		GBAIOWrite8(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_VRAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_OAM:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_CART0:
+		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_CART_SRAM:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
@@ -419,6 +440,7 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		wait = gbaMemory->waitstates16[REGION_CART_SRAM];
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Store8: 0x%08X", address);
 		break;
 	}
 
