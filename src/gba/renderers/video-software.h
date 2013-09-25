@@ -47,7 +47,8 @@ enum PixelFlags {
 	FLAG_IS_BACKGROUND = 0x10000000,
 	FLAG_UNWRITTEN = 0x08000000,
 	FLAG_TARGET_1 = 0x04000000,
-	FLAG_TARGET_2 = 0x02000000
+	FLAG_TARGET_2 = 0x02000000,
+	FLAG_OBJWIN = 0x01000000
 };
 
 union WindowRegion {
@@ -69,6 +70,7 @@ union WindowControl {
 		unsigned : 2;
 	};
 	uint8_t packed;
+	int8_t priority;
 };
 
 #define MAX_WINDOW 5
