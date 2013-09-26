@@ -663,8 +663,8 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 		source &= 0xFFFFFFFC;
 		dest &= 0xFFFFFFFC;
 		while (wordsRemaining--) {
-			word = GBALoad32(&memory->d, source, 0);
-			GBAStore32(&memory->d, dest, word, 0);
+			word = memory->d.load32(&memory->d, source, 0);
+			memory->d.store32(&memory->d, dest, word, 0);
 			source += sourceOffset;
 			dest += destOffset;
 		}
@@ -673,7 +673,7 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			while (wordsRemaining--) {
 				word = GBASavedataReadEEPROM(&memory->savedata);
-				GBAStore16(&memory->d, dest, word, 0);
+				memory->d.store16(&memory->d, dest, word, 0);
 				source += sourceOffset;
 				dest += destOffset;
 			}
@@ -682,7 +682,7 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			while (wordsRemaining) {
-				word = GBALoadU16(&memory->d, source, 0);
+				word = memory->d.load16(&memory->d, source, 0);
 				GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
 				source += sourceOffset;
 				dest += destOffset;
@@ -690,8 +690,8 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 			}
 		} else {
 			while (wordsRemaining--) {
-				word = GBALoadU16(&memory->d, source, 0);
-				GBAStore16(&memory->d, dest, word, 0);
+				word = memory->d.load16(&memory->d, source, 0);
+				memory->d.store16(&memory->d, dest, word, 0);
 				source += sourceOffset;
 				dest += destOffset;
 			}
