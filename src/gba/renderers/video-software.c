@@ -33,12 +33,12 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
 static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
-static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority);
+static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
-static inline uint32_t _brighten(uint32_t color, int y);
-static inline uint32_t _darken(uint32_t color, int y);
-static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB);
+static inline color_t _brighten(color_t color, int y);
+static inline color_t _darken(color_t color, int y);
+static color_t _mix(int weightA, color_t colorA, int weightB, color_t colorB);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -302,15 +302,19 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-	uint32_t color32 = 0;
-	color32 |= (value << 3) & 0xF8;
-	color32 |= (value << 6) & 0xF800;
-	color32 |= (value << 9) & 0xF80000;
-	softwareRenderer->normalPalette[address >> 1] = color32;
+#ifdef COLOR_16_BIT
+	color_t color = value;
+#else
+	color_t color = 0;
+	color |= (value << 3) & 0xF8;
+	color |= (value << 6) & 0xF800;
+	color |= (value << 9) & 0xF80000;
+#endif
+	softwareRenderer->normalPalette[address >> 1] = color;
 	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
-		softwareRenderer->variantPalette[address >> 1] = _brighten(color32, softwareRenderer->bldy);
+		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
-		softwareRenderer->variantPalette[address >> 1] = _darken(color32, softwareRenderer->bldy);
+		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
 }
 
@@ -357,7 +361,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (renderer->frameskip > 0) {
 		return;
 	}
-	uint32_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (softwareRenderer->dispcnt.forcedBlank) {
 		int x;
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -402,7 +406,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (softwareRenderer->target2Bd) {
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
-			uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
+		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
 			if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !softwareRenderer->windows[w].control.blendEnable) {
 				backdrop |= softwareRenderer->normalPalette[0];
 			} else {
@@ -416,7 +420,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 	}
+
+#ifdef COLOR_16_BIT
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+		row[x] = softwareRenderer->row[x];
+	}
+#else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
+#endif
 }
 
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer) {
@@ -1156,8 +1167,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint16_t color;
-	uint32_t color32;
+	uint32_t color;
 	uint32_t offset = 0;
 	if (renderer->dispcnt.frameSelect) {
 		offset = 0xA000;
@@ -1168,19 +1178,22 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		color = ((uint16_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * 160];
-		color32 = 0;
+#ifndef COLOR_16_BIT
+		color_t color32 = 0;
+		color32 |= (color << 9) & 0xF80000;
 		color32 |= (color << 3) & 0xF8;
 		color32 |= (color << 6) & 0xF800;
-		color32 |= (color << 9) & 0xF80000;
+		color = color32;
+#endif
 
 		uint32_t current = renderer->row[outX];
 		if (!(current & FLAG_FINALIZED)) {
 			if (!variant) {
-				_composite(renderer, outX, color32 | flags, current);
+				_composite(renderer, outX, color | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_composite(renderer, outX, _brighten(color32, renderer->bldy) | flags, current);
+				_composite(renderer, outX, _brighten(color, renderer->bldy) | flags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_composite(renderer, outX, _darken(color32, renderer->bldy) | flags, current);
+				_composite(renderer, outX, _darken(color, renderer->bldy) | flags, current);
 			}
 		}
 	}
@@ -1373,7 +1386,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	}
 }
 
-static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, int priority) {
+static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority) {
 	int x;
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 		uint32_t color = renderer->spriteLayer[x];
@@ -1401,9 +1414,19 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	}
 }
 
-static inline uint32_t _brighten(uint32_t color, int y) {
-	uint32_t c = 0;
-	uint32_t a;
+static inline color_t _brighten(color_t color, int y) {
+	color_t c = 0;
+	color_t a;
+#ifdef COLOR_16_BIT
+	a = color & 0x1F;
+	c |= (a + ((0x1F - a) * y) / 16) & 0x1F;
+
+	a = color & 0x3E0;
+	c |= (a + ((0x3E0 - a) * y) / 16) & 0x3E0;
+
+	a = color & 0x7C00;
+	c |= (a + ((0x7C00 - a) * y) / 16) & 0x7C00;
+#else
 	a = color & 0xF8;
 	c |= (a + ((0xF8 - a) * y) / 16) & 0xF8;
 
@@ -1412,12 +1435,23 @@ static inline uint32_t _brighten(uint32_t color, int y) {
 
 	a = color & 0xF80000;
 	c |= (a + ((0xF80000 - a) * y) / 16) & 0xF80000;
+#endif
 	return c;
 }
 
-static inline uint32_t _darken(uint32_t color, int y) {
-	uint32_t c = 0;
-	uint32_t a;
+static inline color_t _darken(color_t color, int y) {
+	color_t c = 0;
+	color_t a;
+#ifdef COLOR_16_BIT
+	a = color & 0x1F;
+	c |= (a - (a * y) / 16) & 0x1F;
+
+	a = color & 0x3E0;
+	c |= (a - (a * y) / 16) & 0x3E0;
+
+	a = color & 0x7C00;
+	c |= (a - (a * y) / 16) & 0x7C00;
+#else
 	a = color & 0xF8;
 	c |= (a - (a * y) / 16) & 0xF8;
 
@@ -1426,12 +1460,35 @@ static inline uint32_t _darken(uint32_t color, int y) {
 
 	a = color & 0xF80000;
 	c |= (a - (a * y) / 16) & 0xF80000;
+#endif
 	return c;
 }
 
-static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB) {
-	uint32_t c = 0;
-	uint32_t a, b;
+static color_t _mix(int weightA, color_t colorA, int weightB, color_t colorB) {
+	color_t c = 0;
+	color_t a, b;
+#ifdef COLOR_16_BIT
+	a = colorA & 0x1F;
+	b = colorB & 0x1F;
+	c |= ((a * weightA + b * weightB) / 16) & 0x3F;
+	if (c & 0x0020) {
+		c = 0x001F;
+	}
+
+	a = colorA & 0x3E0;
+	b = colorB & 0x3E0;
+	c |= ((a * weightA + b * weightB) / 16) & 0x7E0;
+	if (c & 0x0400) {
+		c |= 0x03E0;
+	}
+
+	a = colorA & 0x7C00;
+	b = colorB & 0x7C00;
+	c |= ((a * weightA + b * weightB) / 16) & 0xFC00;
+	if (c & 0x8000) {
+		c |= 0x7C00;
+	}
+#else
 	a = colorA & 0xF8;
 	b = colorB & 0xF8;
 	c |= ((a * weightA + b * weightB) / 16) & 0x1F8;
@@ -1452,5 +1509,6 @@ static uint32_t _mix(int weightA, uint32_t colorA, int weightB, uint32_t colorB)
 	if (c & 0x01000000) {
 		c = (c & 0x0000F8F8) | 0x00F80000;
 	}
+#endif
 	return c;
 }

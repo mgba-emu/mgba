@@ -5,6 +5,12 @@
 
 #include <pthread.h>
 
+#ifdef COLOR_16_BIT
+typedef uint16_t color_t;
+#else
+typedef uint32_t color_t;
+#endif
+
 struct GBAVideoSoftwareBackground {
 	int index;
 	int enabled;
@@ -37,7 +43,11 @@ enum BlendEffect {
 };
 
 enum {
+#ifdef COLOR_16_BIT
+	GBA_COLOR_WHITE = 0x7FFF,
+#else
 	GBA_COLOR_WHITE = 0x00F8F8F8,
+#endif
 	OFFSET_PRIORITY = 29
 };
 
@@ -83,7 +93,7 @@ struct Window {
 struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
-	uint32_t* outputBuffer;
+	color_t* outputBuffer;
 	unsigned outputBufferStride;
 
 	union GBARegisterDISPCNT dispcnt;
@@ -97,8 +107,8 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target2Obj;
 	unsigned target2Bd;
 	enum BlendEffect blendEffect;
-	uint32_t normalPalette[512];
-	uint32_t variantPalette[512];
+	color_t normalPalette[512];
+	color_t variantPalette[512];
 
 	uint16_t blda;
 	uint16_t bldb;

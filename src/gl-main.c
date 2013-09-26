@@ -92,7 +92,11 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+#ifdef COLOR_16_BIT
+	SDL_SetVideoMode(240, 160, 16, SDL_OPENGL);
+#else
 	SDL_SetVideoMode(240, 160, 32, SDL_OPENGL);
+#endif
 
 	renderer->d.outputBuffer = malloc(256 * 256 * 4);
 	renderer->d.outputBufferStride = 256;
@@ -126,7 +130,11 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			renderer->d.d.framesPending = 0;
 			pthread_mutex_unlock(&renderer->d.mutex);
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
+#ifdef COLOR_16_BIT
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+#else
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+#endif
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			SDL_GL_SwapBuffers();
