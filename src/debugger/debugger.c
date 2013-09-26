@@ -1,5 +1,7 @@
 #include "debugger.h"
 
+#include "memory-debugger.h"
+
 #include "arm.h"
 
 #include <signal.h>
@@ -23,11 +25,6 @@ struct DebugVector {
 	};
 };
 
-struct DebugBreakpoint {
-	struct DebugBreakpoint* next;
-	int32_t address;
-};
-
 static const char* ERROR_MISSING_ARGS = "Arguments missing";
 
 static struct ARMDebugger* _activeDebugger;
@@ -45,6 +42,7 @@ static void _readByte(struct ARMDebugger*, struct DebugVector*);
 static void _readHalfword(struct ARMDebugger*, struct DebugVector*);
 static void _readWord(struct ARMDebugger*, struct DebugVector*);
 static void _setBreakpoint(struct ARMDebugger*, struct DebugVector*);
+static void _setWatchpoint(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
 
@@ -70,6 +68,8 @@ struct {
 	{ "rw", _readWord },
 	{ "status", _printStatus },
 	{ "x", _breakInto },
+	{ "w", _setWatchpoint },
+	{ "watch", _setWatchpoint },
 	{ 0, 0 }
 };
 
@@ -201,6 +201,21 @@ static void _setBreakpoint(struct ARMDebugger* debugger, struct DebugVector* dv)
 	breakpoint->address = address;
 	breakpoint->next = debugger->breakpoints;
 	debugger->breakpoints = breakpoint;
+}
+
+static void _setWatchpoint(struct ARMDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	if (debugger->cpu->memory != &debugger->memoryShim.d) {
+		ARMDebuggerInstallMemoryShim(debugger);
+	}
+	struct DebugBreakpoint* watchpoint = malloc(sizeof(struct DebugBreakpoint));
+	watchpoint->address = address;
+	watchpoint->next = debugger->memoryShim.watchpoints;
+	debugger->memoryShim.watchpoints = watchpoint;
 }
 
 static void _checkBreakpoints(struct ARMDebugger* debugger) {
@@ -532,6 +547,8 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->state = DEBUGGER_PAUSED;
 	debugger->lastCommand = 0;
 	debugger->breakpoints = 0;
+	debugger->memoryShim.p = debugger;
+	debugger->memoryShim.watchpoints = 0;
 	_activeDebugger = debugger;
 	signal(SIGINT, _breakIntoDefault);
 }
