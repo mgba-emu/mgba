@@ -255,9 +255,9 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ADC,
-	int n = cpu->gprs[rn] + cpu->cpsr.c;
+	int n = cpu->gprs[rn];
 	int d = cpu->gprs[rd];
-	cpu->gprs[rd] = d + n;
+	cpu->gprs[rd] = d + n + cpu->cpsr.c;
 	THUMB_ADDITION_S(d, n, cpu->gprs[rd]);)
 
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(SBC,

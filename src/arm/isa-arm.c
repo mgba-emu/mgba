@@ -569,10 +569,9 @@ DEFINE_ALU_INSTRUCTION_ARM(ADD, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = n + cpu->shifterOperand;)
 
-DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(n, shifterOperand, cpu->gprs[rd]),
+DEFINE_ALU_INSTRUCTION_ARM(ADC, ARM_ADDITION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];
-	int32_t shifterOperand = cpu->shifterOperand + cpu->cpsr.c;
-	cpu->gprs[rd] = n + shifterOperand;)
+	cpu->gprs[rd] = n + cpu->shifterOperand + cpu->cpsr.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(AND, ARM_NEUTRAL_S(cpu->gprs[rn], cpu->shifterOperand, cpu->gprs[rd]),
 	cpu->gprs[rd] = cpu->gprs[rn] & cpu->shifterOperand;)
