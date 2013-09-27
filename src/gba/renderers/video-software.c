@@ -414,7 +414,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 			for (; x < softwareRenderer->windows[w].endX; ++x) {
 				uint32_t color = softwareRenderer->row[x];
-				if (color & FLAG_TARGET_1) {
+				if (color & FLAG_TARGET_1 && !(color & FLAG_FINALIZED)) {
 					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
 				}
 			}
@@ -648,7 +648,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	// We want to do special processing if the color pixel is target 1, however
 	if ((color & 0xF8000000) < (current & 0xF8000000)) {
 		if (current & FLAG_UNWRITTEN) {
-			renderer->row[offset] = color;
+			renderer->row[offset] = color | (current & FLAG_OBJWIN);
 		} else if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
 			renderer->row[offset] = color | FLAG_FINALIZED;
 		} else {
@@ -1075,6 +1075,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	int sizeAdjusted = 0x8000 << background->size;
 
 	BACKGROUND_BITMAP_INIT;
+	PREPARE_OBJWIN;
 
 	uint32_t screenBase = background->screenBase;
 	uint32_t charBase = background->charBase;
@@ -1099,7 +1100,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 		tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
 		uint32_t current = renderer->row[outX];
-		if (tileData && !(current & FLAG_FINALIZED)) {
+		if (tileData && !(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
 				_composite(renderer, outX, renderer->normalPalette[tileData] | flags, current);
 			} else {
@@ -1111,6 +1112,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
+	PREPARE_OBJWIN;
 
 	uint16_t color;
 	uint32_t color32;
@@ -1126,7 +1128,7 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 		color32 |= (color << 9) & 0xF80000;
 
 		uint32_t current = renderer->row[outX];
-		if (!(current & FLAG_FINALIZED)) {
+		if (!(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
 				_composite(renderer, outX, color32 | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
@@ -1140,6 +1142,7 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
+	PREPARE_OBJWIN;
 
 	uint16_t color;
 	uint32_t offset = 0;
@@ -1154,7 +1157,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 
 		uint32_t current = renderer->row[outX];
-		if (color && !(current & FLAG_FINALIZED)) {
+		if (color && !(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
 				_composite(renderer, outX, renderer->normalPalette[color] | flags, current);
 			} else {
@@ -1166,6 +1169,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
+	PREPARE_OBJWIN;
 
 	uint32_t color;
 	uint32_t offset = 0;
@@ -1187,7 +1191,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #endif
 
 		uint32_t current = renderer->row[outX];
-		if (!(current & FLAG_FINALIZED)) {
+		if (!(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
 				_composite(renderer, outX, color | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
@@ -1315,7 +1319,7 @@ static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct 
 	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
-	flags |= FLAG_OBJWIN * sprite->mode == OBJ_MODE_OBJWIN;
+	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
 	int inY = y - sprite->y;
 	if (sprite->y + height - 256 >= 0) {
@@ -1358,7 +1362,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 * renderer->target2Obj;
-	flags |= FLAG_OBJWIN * sprite->mode == OBJ_MODE_OBJWIN;
+	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
