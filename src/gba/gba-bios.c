@@ -203,7 +203,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		gba->cpu.gprs[0] = sqrt(gba->cpu.gprs[0]);
 		break;
 	case 0xA:
-		gba->cpu.gprs[0] = (atan2f(gba->cpu.gprs[0] / 16384.f, gba->cpu.gprs[1] / 16384.f) / 2 * M_PI) * 0x10000;
+		gba->cpu.gprs[0] = atan2f(gba->cpu.gprs[1] / 16384.f, gba->cpu.gprs[0] / 16384.f) / (2 * M_PI) * 0x10000;
 		break;
 	case 0xB:
 		_CpuSet(gba);
