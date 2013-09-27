@@ -231,7 +231,9 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	if (cycleCounter) {
 		*cycleCounter += 2 + wait;
 	}
-	return value;
+	// Unaligned 16-bit loads are "unpredictable", but the GBA rotates them, so we have to, too.
+	int rotate = (address & 1) << 3;
+	return (value >> rotate) | ((value << rotate) & 0xFF00);
 }
 
 uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
