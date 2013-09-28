@@ -67,6 +67,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.setActiveRegion = GBASetActiveRegion;
 	memory->d.activePrefetchCycles32 = 0;
 	memory->d.activePrefetchCycles16 = 0;
+	memory->biosPrefetch = 0;
 	memory->d.waitMultiple = GBAWaitMultiple;
 }
 
@@ -79,6 +80,9 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
+	if (gbaMemory->activeRegion == REGION_BIOS) {
+		gbaMemory->biosPrefetch = memory->load32(memory, gbaMemory->p->cpu.currentPC + WORD_SIZE_ARM * 2, 0);
+	}
 	gbaMemory->activeRegion = address >> BASE_OFFSET;
 	memory->activePrefetchCycles32 = gbaMemory->waitstatesPrefetch32[gbaMemory->activeRegion];
 	memory->activePrefetchCycles16 = gbaMemory->waitstatesPrefetch16[gbaMemory->activeRegion];
@@ -121,7 +125,15 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
+		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
+			if (address < hleBiosLength) {
+				value = gbaMemory->bios[address >> 2];
+			} else {
+				value = 0;
+			}
+		} else {
+			value = gbaMemory->biosPrefetch;
+		}
 		break;
 	case BASE_WORKING_RAM:
 		value = gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
@@ -158,6 +170,12 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		break;
 	default:
 		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
+		if (gbaMemory->p->cpu.executionMode == MODE_ARM) {
+			value = memory->load32(memory, gbaMemory->p->cpu.currentPC + WORD_SIZE_ARM * 2, 0);
+		} else {
+			value = memory->load16(memory, gbaMemory->p->cpu.currentPC + WORD_SIZE_THUMB * 2, 0);
+			value |= value << 16;
+		}
 		break;
 	}
 
@@ -225,6 +243,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		break;
 	default:
 		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
+		value = memory->load16(memory, gbaMemory->p->cpu.currentPC + (gbaMemory->p->cpu.executionMode == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB) * 2, 0);
 		break;
 	}
 
@@ -292,6 +311,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
+		value = memory->load16(memory, gbaMemory->p->cpu.currentPC + (gbaMemory->p->cpu.executionMode == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB) * 2, 0) >> ((address & 1) << 3);
 		break;
 	}
 

@@ -5,10 +5,9 @@
 static const ThumbInstruction _thumbTable[0x400];
 
 void ThumbStep(struct ARMCore* cpu) {
-	uint32_t address = cpu->gprs[ARM_PC];
-	cpu->gprs[ARM_PC] = address + WORD_SIZE_THUMB;
-	address -= WORD_SIZE_THUMB;
-	uint16_t opcode = ((uint16_t*) cpu->memory->activeRegion)[(address & cpu->memory->activeMask) >> 1];
+	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
+	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+	uint16_t opcode = ((uint16_t*) cpu->memory->activeRegion)[(cpu->currentPC & cpu->memory->activeMask) >> 1];
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }

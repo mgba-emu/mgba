@@ -122,6 +122,7 @@ struct GBAMemory {
 	char waitstatesPrefetch32[256];
 	char waitstatesPrefetch16[256];
 	int activeRegion;
+	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
 };

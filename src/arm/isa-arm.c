@@ -194,7 +194,8 @@ static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t 
 void ARMStep(struct ARMCore* cpu) {
 	// TODO
 	uint32_t opcode;
-	ARMInstruction instruction = _ARMLoadInstructionARM(cpu->memory, cpu->gprs[ARM_PC] - WORD_SIZE_ARM, &opcode);
+	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
+	ARMInstruction instruction = _ARMLoadInstructionARM(cpu->memory, cpu->currentPC, &opcode);
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
 
 	int condition = opcode >> 28;
