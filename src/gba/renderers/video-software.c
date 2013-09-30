@@ -283,8 +283,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->winout.packed = value;
 		softwareRenderer->objwin.packed = value >> 8;
 		break;
+	case REG_MOSAIC:
+	case REG_GREENSWP:
+		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
+		break;
 	default:
-		GBALog(0, GBA_LOG_STUB, "Stub video register write: %03x", address);
+		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid video register: 0x%03X", address);
 	}
 	return value;
 }
