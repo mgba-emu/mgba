@@ -30,12 +30,13 @@ enum GBAError {
 };
 
 enum GBALogLevel {
-	GBA_LOG_STUB,
-	GBA_LOG_DEBUG,
-	GBA_LOG_GAME_ERROR,
-	GBA_LOG_INFO,
-	GBA_LOG_WARN,
-	GBA_LOG_ERROR,
+	GBA_LOG_STUB = 0x01,
+	GBA_LOG_DEBUG = 0x02,
+	GBA_LOG_INFO = 0x04,
+	GBA_LOG_WARN = 0x08,
+	GBA_LOG_ERROR = 0x10,
+
+	GBA_LOG_GAME_ERROR = 0x100
 };
 
 enum GBAKey {
@@ -85,7 +86,7 @@ struct GBA {
 	const char* savefile;
 	enum GBAError errno;
 	const char* errstr;
-	enum GBALogLevel logLevel;
+	int logLevel;
 };
 
 void GBAInit(struct GBA* gba);

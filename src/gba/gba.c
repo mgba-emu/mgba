@@ -51,7 +51,7 @@ void GBAInit(struct GBA* gba) {
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 
-	gba->logLevel = GBA_LOG_INFO;
+	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR;
 
 	ARMReset(&gba->cpu);
 }
@@ -375,7 +375,7 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 			gba = threadContext->gba;
 		}
 	}
-	if (gba && level < gba->logLevel) {
+	if (gba && !(level & gba->logLevel)) {
 		return;
 	}
 	va_list args;
