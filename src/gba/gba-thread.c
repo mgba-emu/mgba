@@ -9,13 +9,13 @@
 
 static pthread_key_t contextKey;
 
-static void createTLS(void) {
+static void _createTLS(void) {
 	pthread_key_create(&contextKey, 0);
 }
 
 static void* _GBAThreadRun(void* context) {
 	static pthread_once_t once = PTHREAD_ONCE_INIT;
-	pthread_once(&once, createTLS);
+	pthread_once(&once, _createTLS);
 
 	struct ARMDebugger debugger;
 	struct GBA gba;
