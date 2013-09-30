@@ -2,6 +2,7 @@
 
 #include "gba-bios.h"
 #include "gba-io.h"
+#include "gba-thread.h"
 
 #include "debugger.h"
 
@@ -368,6 +369,12 @@ int GBAHalt(struct GBA* gba) {
 }
 
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
+	if (!gba) {
+		struct GBAThread* threadContext = GBAThreadGetContext();
+		if (threadContext) {
+			gba = threadContext->gba;
+		}
+	}
 	if (gba && level < gba->logLevel) {
 		return;
 	}

@@ -7,7 +7,16 @@
 #include <stdlib.h>
 #include <signal.h>
 
+static pthread_key_t contextKey;
+
+static void createTLS(void) {
+	pthread_key_create(&contextKey, 0);
+}
+
 static void* _GBAThreadRun(void* context) {
+	static pthread_once_t once = PTHREAD_ONCE_INIT;
+	pthread_once(&once, createTLS);
+
 	struct ARMDebugger debugger;
 	struct GBA gba;
 	struct GBAThread* threadContext = context;
@@ -18,11 +27,12 @@ static void* _GBAThreadRun(void* context) {
 	pthread_sigmask(SIG_UNBLOCK, &signals, 0);
 
 	GBAInit(&gba);
+	threadContext->gba = &gba;
+	pthread_setspecific(contextKey, threadContext);
 	if (threadContext->renderer) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
 
-	threadContext->gba = &gba;
 	if (threadContext->fd >= 0) {
 		if (threadContext->fname) {
 			char* dotPoint = strrchr(threadContext->fname, '.');
@@ -99,4 +109,8 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 
 	pthread_mutex_destroy(&threadContext->mutex);
 	pthread_cond_destroy(&threadContext->cond);
+}
+
+struct GBAThread* GBAThreadGetContext(void) {
+	return pthread_getspecific(contextKey);
 }

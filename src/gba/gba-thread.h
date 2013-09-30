@@ -24,5 +24,6 @@ struct GBAThread {
 
 int GBAThreadStart(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
+struct GBAThread* GBAThreadGetContext(void);
 
 #endif
