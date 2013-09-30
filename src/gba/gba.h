@@ -5,6 +5,7 @@
 
 #include "gba-memory.h"
 #include "gba-video.h"
+#include "gba-audio.h"
 
 enum GBAIRQ {
 	IRQ_VBLANK = 0x0,
@@ -61,6 +62,7 @@ struct GBA {
 	struct GBABoard board;
 	struct GBAMemory memory;
 	struct GBAVideo video;
+	struct GBAAudio audio;
 
 	struct ARMDebugger* debugger;
 

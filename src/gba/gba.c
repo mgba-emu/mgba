@@ -40,6 +40,9 @@ void GBAInit(struct GBA* gba) {
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
 
+	gba->audio.p = gba;
+	GBAAudioInit(&gba->audio);
+
 	GBAIOInit(gba);
 
 	memset(gba->timers, 0, sizeof(gba->timers));

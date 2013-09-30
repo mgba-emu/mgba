@@ -17,6 +17,65 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBAVideoWriteDISPSTAT(&gba->video, value);
 			break;
 
+		// Audio
+		case REG_SOUND1CNT_LO:
+			GBAAudioWriteSOUND1CNT_LO(&gba->audio, value);
+			break;
+		case REG_SOUND1CNT_HI:
+			GBAAudioWriteSOUND1CNT_HI(&gba->audio, value);
+			break;
+		case REG_SOUND1CNT_X:
+			GBAAudioWriteSOUND1CNT_X(&gba->audio, value);
+			break;
+		case REG_SOUND2CNT_LO:
+			GBAAudioWriteSOUND2CNT_LO(&gba->audio, value);
+			break;
+		case REG_SOUND2CNT_HI:
+			GBAAudioWriteSOUND2CNT_HI(&gba->audio, value);
+			break;
+		case REG_SOUND3CNT_LO:
+			GBAAudioWriteSOUND3CNT_LO(&gba->audio, value);
+			break;
+		case REG_SOUND3CNT_HI:
+			GBAAudioWriteSOUND3CNT_HI(&gba->audio, value);
+			break;
+		case REG_SOUND3CNT_X:
+			GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
+			break;
+		case REG_SOUND4CNT_LO:
+			GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
+			break;
+		case REG_SOUND4CNT_HI:
+			GBAAudioWriteSOUND4CNT_HI(&gba->audio, value);
+			break;
+		case REG_SOUNDCNT_LO:
+			GBAAudioWriteSOUNDCNT_LO(&gba->audio, value);
+			break;
+		case REG_SOUNDCNT_HI:
+			GBAAudioWriteSOUNDCNT_HI(&gba->audio, value);
+			break;
+		case REG_SOUNDCNT_X:
+			GBAAudioWriteSOUNDCNT_X(&gba->audio, value);
+			break;
+
+		case REG_WAVE_RAM0_LO:
+		case REG_WAVE_RAM1_LO:
+		case REG_WAVE_RAM2_LO:
+		case REG_WAVE_RAM3_LO:
+		case REG_FIFO_A_LO:
+		case REG_FIFO_B_LO:
+			GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
+			break;
+
+		case REG_WAVE_RAM0_HI:
+		case REG_WAVE_RAM1_HI:
+		case REG_WAVE_RAM2_HI:
+		case REG_WAVE_RAM3_HI:
+		case REG_FIFO_A_HI:
+		case REG_FIFO_B_HI:
+			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
+			break;
+
 		// DMA
 		case REG_DMA0SAD_LO:
 		case REG_DMA0DAD_LO:
@@ -137,6 +196,24 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 
 void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	switch (address) {
+	case REG_WAVE_RAM0_LO:
+		GBAAudioWriteWaveRAM(&gba->audio, 0, value);
+		break;
+	case REG_WAVE_RAM1_LO:
+		GBAAudioWriteWaveRAM(&gba->audio, 1, value);
+		break;
+	case REG_WAVE_RAM2_LO:
+		GBAAudioWriteWaveRAM(&gba->audio, 2, value);
+		break;
+	case REG_WAVE_RAM3_LO:
+		GBAAudioWriteWaveRAM(&gba->audio, 3, value);
+		break;
+	case REG_FIFO_A_LO:
+		GBAAudioWriteFIFO(&gba->audio, 0, value);
+		break;
+	case REG_FIFO_B_LO:
+		GBAAudioWriteFIFO(&gba->audio, 1, value);
+		break;
 	case REG_DMA0SAD_LO:
 		GBAMemoryWriteDMASAD(&gba->memory, 0, value);
 		break;
