@@ -7,7 +7,7 @@ void CircleBufferInit(struct CircleBuffer* buffer, unsigned capacity) {
 	buffer->data = malloc(capacity);
 	buffer->capacity = capacity;
 	buffer->readPtr = buffer->data;
-	buffer->writePtr = (int8_t*) buffer->data + capacity;
+	buffer->writePtr = buffer->data;
 }
 
 void CircleBufferDeinit(struct CircleBuffer* buffer) {
@@ -16,7 +16,7 @@ void CircleBufferDeinit(struct CircleBuffer* buffer) {
 }
 
 unsigned CircleBufferSize(const struct CircleBuffer* buffer) {
-	ptrdiff_t size = (int8_t*) buffer->readPtr - (int8_t*) buffer->writePtr;
+	ptrdiff_t size = (int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr;
 	if (size < 0) {
 		return buffer->capacity - size;
 	}
