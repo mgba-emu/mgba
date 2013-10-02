@@ -7,6 +7,8 @@
 
 struct GBADMA;
 
+const unsigned GBA_AUDIO_SAMPLES;
+
 union GBAAudioWave {
 	struct {
 		unsigned length : 6;
@@ -100,7 +102,7 @@ struct GBAAudioChannel4 {
 struct GBAAudioFIFO {
 	struct CircleBuffer fifo;
 	int dmaSource;
-	int32_t sample;
+	int8_t sample;
 };
 
 struct GBAAudio {

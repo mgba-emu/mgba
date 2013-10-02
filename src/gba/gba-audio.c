@@ -3,7 +3,7 @@
 #include "gba.h"
 #include "gba-io.h"
 
-const unsigned GBA_AUDIO_SAMPLES = 4096 * sizeof(int32_t);
+const unsigned GBA_AUDIO_SAMPLES = 1024;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 
 static void _sample(struct GBAAudio* audio);
@@ -15,8 +15,8 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->sampleRate = 0x8000;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
-	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES);
-	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES);
+	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
 }
@@ -148,12 +148,28 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 		dma->nextCount = 4;
 		GBAMemoryServiceDMA(&audio->p->memory, channel->dmaSource, dma);
 	}
-	CircleBufferRead32(&channel->fifo, &channel->sample);
+	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
 
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
+
+	if (audio->chALeft) {
+		sampleLeft += audio->chA.sample;
+	}
+
+	if (audio->chARight) {
+		sampleRight += audio->chA.sample;
+	}
+
+	if (audio->chBLeft) {
+		sampleLeft += audio->chB.sample;
+	}
+
+	if (audio->chBRight) {
+		sampleRight += audio->chB.sample;
+	}
 
 	CircleBufferWrite32(&audio->left, sampleLeft);
 	CircleBufferWrite32(&audio->right, sampleRight);

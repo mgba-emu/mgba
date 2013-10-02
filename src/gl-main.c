@@ -1,6 +1,7 @@
 #include "debugger.h"
 #include "gba-thread.h"
 #include "gba.h"
+#include "sdl-audio.h"
 #include "sdl-events.h"
 #include "renderers/video-software.h"
 
@@ -19,6 +20,8 @@
 
 struct GLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
+	struct GBASDLAudio audio;
+	struct GBASDLEvents events;
 
 	GLuint tex;
 };
@@ -69,6 +72,7 @@ int main(int argc, char** argv) {
 	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
 	GBAThreadStart(&context);
+	renderer.audio.audio = &context.gba->audio;
 
 	_GBASDLRunloop(&context, &renderer);
 
@@ -85,7 +89,8 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 		return 0;
 	}
 
-	GBASDLInitEvents();
+	GBASDLInitEvents(&renderer->events);
+	GBASDLInitAudio(&renderer->audio);
 
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -155,6 +160,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer) {
 	free(renderer->d.outputBuffer);
 
-	GBASDLDeinitEvents();
+	GBASDLDeinitEvents(&renderer->events);
+	GBASDLDeinitAudio(&renderer->audio);
 	SDL_Quit();
 }
