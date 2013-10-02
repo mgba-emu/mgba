@@ -4,16 +4,17 @@
 #include "gba-io.h"
 #include "gba-video.h"
 
-int GBASDLInitEvents() {
+int GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return 0;
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
-	SDL_JoystickOpen(0);
+	context->joystick = SDL_JoystickOpen(0);
 	return 1;
 }
 
-void GBASDLDeinitEvents() {
+void GBASDLDeinitEvents(struct GBASDLEvents* context) {
+	SDL_JoystickClose(context->joystick);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 

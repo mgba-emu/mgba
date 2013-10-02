@@ -5,8 +5,12 @@
 
 #include <SDL.h>
 
-int GBASDLInitEvents(void);
-void GBASDLDeinitEvents(void);
+struct GBASDLEvents {
+	SDL_Joystick* joystick;
+};
+
+int GBASDLInitEvents(struct GBASDLEvents*);
+void GBASDLDeinitEvents(struct GBASDLEvents*);
 
 void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event);
 
