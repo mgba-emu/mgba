@@ -138,17 +138,17 @@ struct GBAAudio {
 	union {
 		struct {
 			unsigned volume : 2;
-			unsigned volumeDmaA : 1;
-			unsigned volumeDmaB : 1;
+			unsigned volumeChA : 1;
+			unsigned volumeChB : 1;
 			unsigned : 4;
-			unsigned dmaARight : 1;
-			unsigned dmaALeft : 1;
-			unsigned dmaATimer : 1;
-			unsigned dmaAReset : 1;
-			unsigned dmaBRight : 1;
-			unsigned dmaBLeft : 1;
-			unsigned dmaBTimer : 1;
-			unsigned dmaBReset : 1;
+			unsigned chARight : 1;
+			unsigned chALeft : 1;
+			unsigned chATimer : 1;
+			unsigned chAReset : 1;
+			unsigned chBRight : 1;
+			unsigned chBLeft : 1;
+			unsigned chBTimer : 1;
+			unsigned chBReset : 1;
 		};
 		uint16_t soundcntHi;
 	};

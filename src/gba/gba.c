@@ -136,6 +136,16 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 					GBARaiseIRQ(gba, IRQ_TIMER0);
 				}
 
+				if (gba->audio.enable) {
+					if ((gba->audio.chALeft || gba->audio.chARight) && gba->audio.chATimer == 0) {
+						GBAAudioSampleFIFO(&gba->audio, 0);
+					}
+
+					if ((gba->audio.chBLeft || gba->audio.chBRight) && gba->audio.chBTimer == 0) {
+						GBAAudioSampleFIFO(&gba->audio, 1);
+					}
+				}
+
 				nextTimer = &gba->timers[1];
 				if (nextTimer->countUp) {
 					++gba->memory.io[REG_TM1CNT_LO >> 1];
@@ -159,6 +169,16 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 
 				if (timer->doIrq) {
 					GBARaiseIRQ(gba, IRQ_TIMER1);
+				}
+
+				if (gba->audio.enable) {
+					if ((gba->audio.chALeft || gba->audio.chARight) && gba->audio.chATimer == 1) {
+						GBAAudioSampleFIFO(&gba->audio, 0);
+					}
+
+					if ((gba->audio.chBLeft || gba->audio.chBRight) && gba->audio.chBTimer == 1) {
+						GBAAudioSampleFIFO(&gba->audio, 1);
+					}
 				}
 
 				if (timer->countUp) {

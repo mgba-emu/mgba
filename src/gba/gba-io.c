@@ -209,10 +209,8 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		GBAAudioWriteWaveRAM(&gba->audio, 3, value);
 		break;
 	case REG_FIFO_A_LO:
-		GBAAudioWriteFIFO(&gba->audio, 0, value);
-		break;
 	case REG_FIFO_B_LO:
-		GBAAudioWriteFIFO(&gba->audio, 1, value);
+		GBAAudioWriteFIFO(&gba->audio, address, value);
 		break;
 	case REG_DMA0SAD_LO:
 		GBAMemoryWriteDMASAD(&gba->memory, 0, value);
