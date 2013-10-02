@@ -634,7 +634,7 @@ void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* i
 			break;
 		case 1:
 		case 2:
-			//this.cpu.irq.audio.scheduleFIFODma(number, info);
+			GBAAudioScheduleFifoDma(&memory->p->audio, number, info);
 			break;
 		case 3:
 			//this.cpu.irq.video.scheduleVCaptureDma(dma, info);

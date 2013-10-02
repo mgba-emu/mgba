@@ -14,6 +14,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
+
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
 	SP_BASE_IRQ = 0x03FFFFA0,
@@ -91,6 +93,11 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 	}
 
 	testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
+	testEvent = GBAAudioProcessEvents(&gbaBoard->p->audio, cycles);
 	if (testEvent < nextEvent) {
 		nextEvent = testEvent;
 	}

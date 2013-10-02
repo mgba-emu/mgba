@@ -7,6 +7,8 @@
 #include "gba-video.h"
 #include "gba-audio.h"
 
+const uint32_t GBA_ARM7TDMI_FREQUENCY;
+
 enum GBAIRQ {
 	IRQ_VBLANK = 0x0,
 	IRQ_HBLANK = 0x1,

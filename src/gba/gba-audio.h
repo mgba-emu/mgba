@@ -1,7 +1,11 @@
 #ifndef GBA_AUDIO_H
 #define GBA_AUDIO_H
 
+#include "circle-buffer.h"
+
 #include <stdint.h>
+
+struct GBADMA;
 
 union GBAAudioWave {
 	struct {
@@ -94,7 +98,9 @@ struct GBAAudioChannel4 {
 };
 
 struct GBAAudioFIFO {
-
+	struct CircleBuffer fifo;
+	int dmaSource;
+	int32_t sample;
 };
 
 struct GBAAudio {
@@ -107,10 +113,73 @@ struct GBAAudio {
 
 	struct GBAAudioFIFO chA;
 	struct GBAAudioFIFO chB;
+
+	struct CircleBuffer left;
+	struct CircleBuffer right;
+
+	union {
+		struct {
+			unsigned volumeRight : 3;
+			unsigned : 1;
+			unsigned volumeLeft : 3;
+			unsigned : 1;
+			unsigned ch1Right : 1;
+			unsigned ch2Right : 1;
+			unsigned ch3Right : 1;
+			unsigned ch4Right : 1;
+			unsigned ch1Left : 1;
+			unsigned ch2Left : 1;
+			unsigned ch3Left : 1;
+			unsigned ch4Left : 1;
+		};
+		uint16_t soundcntLo;
+	};
+
+	union {
+		struct {
+			unsigned volume : 2;
+			unsigned volumeDmaA : 1;
+			unsigned volumeDmaB : 1;
+			unsigned : 4;
+			unsigned dmaARight : 1;
+			unsigned dmaALeft : 1;
+			unsigned dmaATimer : 1;
+			unsigned dmaAReset : 1;
+			unsigned dmaBRight : 1;
+			unsigned dmaBLeft : 1;
+			unsigned dmaBTimer : 1;
+			unsigned dmaBReset : 1;
+		};
+		uint16_t soundcntHi;
+	};
+
+	union {
+		struct {
+			unsigned playingCh1 : 1;
+			unsigned playingCh2 : 1;
+			unsigned playingCh3 : 1;
+			unsigned playingCh4 : 1;
+			unsigned : 3;
+			unsigned enable : 1;
+			unsigned : 8;
+		};
+		uint16_t soundcntX;
+	};
+
+	unsigned sampleRate;
+
+	int32_t nextEvent;
+	int32_t eventDiff;
+	int32_t nextSample;
+
+	int32_t sampleInterval;
 };
 
 void GBAAudioInit(struct GBAAudio* audio);
 void GBAAudioDeinit(struct GBAAudio* audio);
+
+int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles);
+void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info);
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value);
@@ -128,5 +197,6 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value);
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
+void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId);
 
 #endif
