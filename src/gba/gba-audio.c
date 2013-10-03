@@ -143,7 +143,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", fifoId);
 		return;
 	}
-	if (CircleBufferSize(&channel->fifo) < 4 * sizeof(int32_t)) {
+	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t)) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		dma->nextCount = 4;
 		GBAMemoryServiceDMA(&audio->p->memory, channel->dmaSource, dma);
