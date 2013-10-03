@@ -3,6 +3,7 @@
 
 #include "circle-buffer.h"
 
+#include <pthread.h>
 #include <stdint.h>
 
 struct GBADMA;
@@ -175,6 +176,8 @@ struct GBAAudio {
 	int32_t nextSample;
 
 	int32_t sampleInterval;
+
+	pthread_mutex_t bufferMutex;
 };
 
 void GBAAudioInit(struct GBAAudio* audio);

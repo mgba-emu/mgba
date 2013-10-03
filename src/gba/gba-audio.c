@@ -19,6 +19,8 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+
+	pthread_mutex_init(&audio->bufferMutex, 0);
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {
@@ -26,6 +28,8 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 	CircleBufferDeinit(&audio->right);
 	CircleBufferDeinit(&audio->chA.fifo);
 	CircleBufferDeinit(&audio->chB.fifo);
+
+	pthread_mutex_destroy(&audio->bufferMutex);
 }
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
@@ -171,6 +175,8 @@ static void _sample(struct GBAAudio* audio) {
 		sampleRight += audio->chB.sample;
 	}
 
+	pthread_mutex_lock(&audio->bufferMutex);
 	CircleBufferWrite32(&audio->left, sampleLeft);
 	CircleBufferWrite32(&audio->right, sampleRight);
+	pthread_mutex_unlock(&audio->bufferMutex);
 }

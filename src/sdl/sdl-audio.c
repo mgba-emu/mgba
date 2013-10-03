@@ -13,7 +13,7 @@ int GBASDLInitAudio(struct GBASDLAudio* context) {
 	context->desiredSpec.freq = 44100;
 	context->desiredSpec.format = AUDIO_S16SYS;
 	context->desiredSpec.channels = 2;
-	context->desiredSpec.samples = GBA_AUDIO_SAMPLES >> 1;
+	context->desiredSpec.samples = GBA_AUDIO_SAMPLES >> 2;
 	context->desiredSpec.callback = _GBASDLAudioCallback;
 	context->desiredSpec.userdata = context;
 	context->audio = 0;
@@ -58,6 +58,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct StereoSample* ssamples = (struct StereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {
+		pthread_mutex_lock(&audioContext->audio->bufferMutex);
 		for (i = 0; i < len; ++i) {
 			audioContext->drift += audioContext->audio->sampleRate / (float) audioContext->obtainedSpec.freq;
 			while (audioContext->drift >= 0) {
@@ -66,5 +67,6 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 			}
 			ssamples[i] = audioContext->currentSample;
 		}
+		pthread_mutex_unlock(&audioContext->audio->bufferMutex);
 	}
 }
