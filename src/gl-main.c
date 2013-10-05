@@ -72,6 +72,8 @@ int main(int argc, char** argv) {
 	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
 	context.frameskip = 0;
+	context.sync.videoFrameWait = 0;
+	context.sync.audioWait = 1;
 	GBAThreadStart(&context);
 	renderer.audio.audio = &context.gba->audio;
 

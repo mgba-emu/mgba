@@ -2,8 +2,9 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-thread.h"
 
-const unsigned GBA_AUDIO_SAMPLES = 1024;
+const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 
 static void _sample(struct GBAAudio* audio);
@@ -176,6 +177,9 @@ static void _sample(struct GBAAudio* audio) {
 	}
 
 	pthread_mutex_lock(&audio->bufferMutex);
+	while (CircleBufferSize(&audio->left) + (GBA_AUDIO_SAMPLES * 2 / 5) >= audio->left.capacity) {
+		GBASyncProduceAudio(audio->p->sync, &audio->bufferMutex);
+	}
 	CircleBufferWrite32(&audio->left, sampleLeft);
 	CircleBufferWrite32(&audio->right, sampleRight);
 	pthread_mutex_unlock(&audio->bufferMutex);

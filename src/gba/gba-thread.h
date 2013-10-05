@@ -30,6 +30,10 @@ struct GBAThread {
 		pthread_mutex_t videoFrameMutex;
 		pthread_cond_t videoFrameAvailableCond;
 		pthread_cond_t videoFrameRequiredCond;
+
+		int audioWait;
+		pthread_cond_t audioAvailableCond;
+		pthread_cond_t audioRequiredCond;
 	} sync;
 };
 
@@ -41,5 +45,8 @@ void GBASyncPostFrame(struct GBASync* sync);
 void GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
 int GBASyncDrawingFrame(struct GBASync* sync);
+
+void GBASyncProduceAudio(struct GBASync* sync, pthread_mutex_t* mutex);
+void GBASyncConsumeAudio(struct GBASync* sync);
 
 #endif

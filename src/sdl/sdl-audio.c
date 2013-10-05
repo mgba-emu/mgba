@@ -1,6 +1,7 @@
 #include "sdl-audio.h"
 
 #include "gba.h"
+#include "gba-thread.h"
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
@@ -67,6 +68,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 			}
 			ssamples[i] = audioContext->currentSample;
 		}
+		GBASyncConsumeAudio(audioContext->audio->p->sync);
 		pthread_mutex_unlock(&audioContext->audio->bufferMutex);
 	}
 }

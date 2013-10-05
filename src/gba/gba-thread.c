@@ -92,6 +92,8 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	pthread_mutex_init(&threadContext->sync.videoFrameMutex, 0);
 	pthread_cond_init(&threadContext->sync.videoFrameAvailableCond, 0);
 	pthread_cond_init(&threadContext->sync.videoFrameRequiredCond, 0);
+	pthread_cond_init(&threadContext->sync.audioAvailableCond, 0);
+	pthread_cond_init(&threadContext->sync.audioRequiredCond, 0);
 
 	pthread_mutex_lock(&threadContext->startMutex);
 	threadContext->activeKeys = 0;
@@ -119,6 +121,11 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	pthread_cond_destroy(&threadContext->sync.videoFrameAvailableCond);
 	pthread_cond_broadcast(&threadContext->sync.videoFrameRequiredCond);
 	pthread_cond_destroy(&threadContext->sync.videoFrameRequiredCond);
+
+	pthread_cond_broadcast(&threadContext->sync.audioAvailableCond);
+	pthread_cond_destroy(&threadContext->sync.audioAvailableCond);
+	pthread_cond_broadcast(&threadContext->sync.audioRequiredCond);
+	pthread_cond_destroy(&threadContext->sync.audioRequiredCond);
 }
 
 struct GBAThread* GBAThreadGetContext(void) {
@@ -162,4 +169,15 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 
 int GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
+}
+
+void GBASyncProduceAudio(struct GBASync* sync, pthread_mutex_t* mutex) {
+	pthread_cond_broadcast(&sync->audioAvailableCond);
+	if (&sync->audioWait) {
+		pthread_cond_wait(&sync->audioRequiredCond, mutex);
+	}
+}
+
+void GBASyncConsumeAudio(struct GBASync* sync) {
+	pthread_cond_broadcast(&sync->audioRequiredCond);
 }
