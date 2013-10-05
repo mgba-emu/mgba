@@ -52,7 +52,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		key = GBA_KEY_RIGHT;
 		break;
 	case SDLK_TAB:
-		context->renderer->turbo = !context->renderer->turbo;
+		context->sync.videoFrameWait = !context->sync.videoFrameWait;
 		return;
 	default:
 		return;

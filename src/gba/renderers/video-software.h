@@ -135,10 +135,6 @@ struct GBAVideoSoftwareRenderer {
 	int end;
 
 	uint32_t enabledBitmap[4];
-
-	pthread_mutex_t mutex;
-	pthread_cond_t upCond;
-	pthread_cond_t downCond;
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);

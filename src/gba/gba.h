@@ -66,6 +66,8 @@ struct GBA {
 	struct GBAVideo video;
 	struct GBAAudio audio;
 
+	struct GBASync* sync;
+
 	struct ARMDebugger* debugger;
 
 	int timersEnabled;

@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
 	context.fname = fname;
 	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
+	context.frameskip = 0;
 	GBAThreadStart(&context);
 	renderer.audio.audio = &context.gba->audio;
 
@@ -130,30 +131,21 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 	glLoadIdentity();
 	glOrtho(0, 240, 160, 0, 0, 1);
 	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
-		pthread_mutex_lock(&renderer->d.mutex);
-		if (renderer->d.d.framesPending) {
-			renderer->d.d.framesPending = 0;
-			pthread_mutex_unlock(&renderer->d.mutex);
-			glBindTexture(GL_TEXTURE_2D, renderer->tex);
+		GBASyncWaitFrameStart(&context->sync, context->frameskip);
+		glBindTexture(GL_TEXTURE_2D, renderer->tex);
 #ifdef COLOR_16_BIT
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
 #else
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-			SDL_GL_SwapBuffers();
+		SDL_GL_SwapBuffers();
 
-			while (SDL_PollEvent(&event)) {
-				GBASDLHandleEvent(context, &event);
-			}
-			pthread_mutex_lock(&renderer->d.mutex);
-			pthread_cond_broadcast(&renderer->d.downCond);
-		} else {
-			pthread_cond_broadcast(&renderer->d.downCond);
-			pthread_cond_wait(&renderer->d.upCond, &renderer->d.mutex);
+		while (SDL_PollEvent(&event)) {
+			GBASDLHandleEvent(context, &event);
 		}
-		pthread_mutex_unlock(&renderer->d.mutex);
+		GBASyncWaitFrameEnd(&context->sync);
 	}
 }
 

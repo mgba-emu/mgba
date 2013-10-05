@@ -168,10 +168,6 @@ struct GBAVideoRenderer {
 	uint16_t* palette;
 	uint16_t* vram;
 	union GBAOAM* oam;
-
-	int framesPending;
-	int frameskip;
-	int turbo;
 };
 
 struct GBAVideo {

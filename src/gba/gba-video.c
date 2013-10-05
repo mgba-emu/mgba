@@ -2,6 +2,7 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-thread.h"
 
 #include <limits.h>
 #include <string.h>
@@ -79,13 +80,15 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			switch (video->vcount) {
 			case VIDEO_VERTICAL_PIXELS:
 				video->inVblank = 1;
-				video->renderer->finishFrame(video->renderer);
+				if (GBASyncDrawingFrame(video->p->sync)) {
+					video->renderer->finishFrame(video->renderer);
+				}
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
 				GBAMemoryRunVblankDMAs(&video->p->memory);
 				if (video->vblankIRQ) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
-				//video->vblankCallback();
+				GBASyncPostFrame(video->p->sync);
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
 				video->inVblank = 0;
@@ -102,7 +105,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 			}
 
-			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
+			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
 				video->renderer->drawScanline(video->renderer, video->vcount);
 			}
 		} else {
