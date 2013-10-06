@@ -143,7 +143,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		value = gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
 		break;
 	case BASE_IO:
-		value = GBAIORead(gbaMemory->p, address & (SIZE_IO - 1)) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
+		value = GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
 		break;
 	case BASE_PALETTE_RAM:
 		value = ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
