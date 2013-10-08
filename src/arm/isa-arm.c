@@ -710,7 +710,7 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
 	cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);,
-	currentCycles -= ARM_PREFETCH_CYCLES)
+	currentCycles += cpu->memory->activeNonseqCycles32 - cpu->memory->activePrefetchCycles32)
 
 DEFINE_INSTRUCTION_ARM(SWP, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(SWPB, ARM_STUB)

@@ -13,9 +13,9 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
-static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 4, 0, 0, 0, 0, 0, 7, 7, 9, 9, 13, 13, 9 };
+static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 7, 7, 9, 9, 13, 13, 9 };
 static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
-static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 4, 0, 0, 0, 0, 0, 5, 5, 9, 9, 17, 17, 9 };
+static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 9, 9, 17, 17, 9 };
 static const char GBA_ROM_WAITSTATES[] = { 4, 3, 2, 8 };
 static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
@@ -115,7 +115,6 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 		memory->activeMask = 0;
 		break;
 	}
-	gbaMemory->p->cpu.cycles += 1 + (gbaMemory->p->cpu.executionMode == MODE_ARM ? gbaMemory->waitstates32[address >> BASE_OFFSET] : gbaMemory->waitstates16[address >> BASE_OFFSET]);
 }
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {

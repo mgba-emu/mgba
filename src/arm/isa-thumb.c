@@ -46,8 +46,7 @@ void ThumbStep(struct ARMCore* cpu) {
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles16)
 
 #define THUMB_STORE_POST_BODY \
-	currentCycles -= THUMB_PREFETCH_CYCLES; \
-	currentCycles += 1 + cpu->memory->activeNonseqCycles16;
+	currentCycles += cpu->memory->activeNonseqCycles16 - cpu->memory->activePrefetchCycles16;
 
 #define APPLY(F, ...) F(__VA_ARGS__)
 
@@ -377,7 +376,8 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 	cpu->memory->store32(cpu->memory, address, cpu->gprs[i], 0),
-	cpu->gprs[rn] = address)
+	THUMB_STORE_POST_BODY;
+	cpu->gprs[rn] = address;)
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_INSTRUCTION_THUMB(B ## COND, \
@@ -432,7 +432,8 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
 	(m = 0x80, i = 7; m; m >>= 1, --i),
 	cpu->memory->store32(cpu->memory, address, cpu->gprs[i], 0),
 	-=,
-	, ,
+	,
+	THUMB_STORE_POST_BODY,
 	cpu->gprs[ARM_SP] = address + 4)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
@@ -443,7 +444,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
 	-=,
 	cpu->memory->store32(cpu->memory, address, cpu->gprs[ARM_LR], 0);
 	address -= 4;,
-	,
+	THUMB_STORE_POST_BODY,
 	cpu->gprs[ARM_SP] = address + 4)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_STUB)
