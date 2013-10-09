@@ -95,7 +95,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS:
 				video->vcount = 0;
-				//video->renderPath.startDraw();
+				video->p->memory.io[REG_VCOUNT >> 1] = 0;
 				break;
 			}
 
