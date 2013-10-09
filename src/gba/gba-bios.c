@@ -28,16 +28,18 @@ static void _CpuSet(struct GBA* gba) {
 		if (wordsize == 4) {
 			source &= 0xFFFFFFFC;
 			dest &= 0xFFFFFFFC;
-			int32_t word = gba->memory.d.load32(&gba->memory.d, source, 0);
+			int32_t word = gba->memory.d.load32(&gba->memory.d, source, &gba->cpu.cycles);
 			for (i = 0; i < count; ++i) {
-				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, 0);
+				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, &gba->cpu.cycles);
+				gba->board.d.processEvents(&gba->board.d);
 			}
 		} else {
 			source &= 0xFFFFFFFE;
 			dest &= 0xFFFFFFFE;
-			uint16_t word = gba->memory.d.load16(&gba->memory.d, source, 0);
+			uint16_t word = gba->memory.d.load16(&gba->memory.d, source, &gba->cpu.cycles);
 			for (i = 0; i < count; ++i) {
-				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, 0);
+				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, &gba->cpu.cycles);
+				gba->board.d.processEvents(&gba->board.d);
 			}
 		}
 	} else {
@@ -45,15 +47,17 @@ static void _CpuSet(struct GBA* gba) {
 			source &= 0xFFFFFFFC;
 			dest &= 0xFFFFFFFC;
 			for (i = 0; i < count; ++i) {
-				int32_t word = gba->memory.d.load32(&gba->memory.d, source + (i << 2), 0);
-				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, 0);
+				int32_t word = gba->memory.d.load32(&gba->memory.d, source + (i << 2), &gba->cpu.cycles);
+				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, &gba->cpu.cycles);
+				gba->board.d.processEvents(&gba->board.d);
 			}
 		} else {
 			source &= 0xFFFFFFFE;
 			dest &= 0xFFFFFFFE;
 			for (i = 0; i < count; ++i) {
-				uint16_t word = gba->memory.d.load16(&gba->memory.d, source + (i << 1), 0);
-				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, 0);
+				uint16_t word = gba->memory.d.load16(&gba->memory.d, source + (i << 1), &gba->cpu.cycles);
+				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, &gba->cpu.cycles);
+				gba->board.d.processEvents(&gba->board.d);
 			}
 		}
 	}
@@ -64,17 +68,34 @@ static void _FastCpuSet(struct GBA* gba) {
 	uint32_t dest = gba->cpu.gprs[1] & 0xFFFFFFFC;
 	uint32_t mode = gba->cpu.gprs[2];
 	int count = mode & 0x000FFFFF;
+	int storeCycles = gba->memory.d.waitMultiple(&gba->memory.d, dest, 4);
 	count = ((count + 7) >> 3) << 3;
 	int i;
 	if (mode & 0x01000000) {
-		int32_t word = gba->memory.d.load32(&gba->memory.d, source, 0);
-		for (i = 0; i < count; ++i) {
-			gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, 0);
+		int32_t word = gba->memory.d.load32(&gba->memory.d, source, &gba->cpu.cycles);
+		for (i = 0; i < count; i += 4) {
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 0) << 2), word, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 1) << 2), word, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 2) << 2), word, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 3) << 2), word, 0);
+			gba->cpu.cycles += storeCycles;
+			gba->board.d.processEvents(&gba->board.d);
 		}
 	} else {
-		for (i = 0; i < count; ++i) {
-			int32_t word = gba->memory.d.load32(&gba->memory.d, source + (i << 2), 0);
-			gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, 0);
+		int loadCycles = gba->memory.d.waitMultiple(&gba->memory.d, source, 4);
+		for (i = 0; i < count; i += 4) {
+			int32_t word0 = gba->memory.d.load32(&gba->memory.d, source + ((i + 0) << 2), 0);
+			int32_t word1 = gba->memory.d.load32(&gba->memory.d, source + ((i + 1) << 2), 0);
+			int32_t word2 = gba->memory.d.load32(&gba->memory.d, source + ((i + 2) << 2), 0);
+			int32_t word3 = gba->memory.d.load32(&gba->memory.d, source + ((i + 3) << 2), 0);
+			gba->cpu.cycles += loadCycles;
+			gba->board.d.processEvents(&gba->board.d);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 0) << 2), word0, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 1) << 2), word1, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 2) << 2), word2, 0);
+			gba->memory.d.store32(&gba->memory.d, dest + ((i + 3) << 2), word3, 0);
+			gba->cpu.cycles += storeCycles;
+			gba->board.d.processEvents(&gba->board.d);
 		}
 	}
 }
