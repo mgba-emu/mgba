@@ -32,7 +32,6 @@ struct GBAThread {
 		pthread_cond_t videoFrameRequiredCond;
 
 		int audioWait;
-		pthread_cond_t audioAvailableCond;
 		pthread_cond_t audioRequiredCond;
 	} sync;
 };

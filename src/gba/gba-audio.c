@@ -178,6 +178,9 @@ static void _sample(struct GBAAudio* audio) {
 
 	pthread_mutex_lock(&audio->bufferMutex);
 	while (CircleBufferSize(&audio->left) + (GBA_AUDIO_SAMPLES * 2 / 5) >= audio->left.capacity) {
+		if (!audio->p->sync->audioWait) {
+			break;
+		}
 		GBASyncProduceAudio(audio->p->sync, &audio->bufferMutex);
 	}
 	CircleBufferWrite32(&audio->left, sampleLeft);
