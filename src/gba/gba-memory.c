@@ -281,7 +281,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		value = ((int8_t*) gbaMemory->p->video.renderer->palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case BASE_VRAM:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
+		value = ((int8_t*) gbaMemory->p->video.renderer->vram)[address & 0x0001FFFF];
 		break;
 	case BASE_OAM:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
@@ -436,10 +436,15 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_VRAM:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
+		if (address >= 0x06018000) {
+			// TODO: check BG mode
+			GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
+			break;
+		}
+		gbaMemory->p->video.renderer->vram[(address >> 1) & 0xFFFF] = (value) | (value << 8);
 		break;
 	case BASE_OAM:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
+		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
 		break;
 	case BASE_CART0:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
