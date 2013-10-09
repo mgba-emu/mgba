@@ -109,7 +109,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
-int GBATestIRQ(struct GBA* gba);
+void GBATestIRQ(struct ARMBoard* board);
 int GBAWaitForIRQ(struct GBA* gba);
 int GBAHalt(struct GBA* gba);
 

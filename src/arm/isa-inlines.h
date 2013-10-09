@@ -97,6 +97,7 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, cpu->cpsr.t);
 	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
+	cpu->board->readCPSR(cpu->board);
 }
 
 #endif

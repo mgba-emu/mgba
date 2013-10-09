@@ -93,6 +93,7 @@ struct ARMBoard {
 	void (*processEvents)(struct ARMBoard* board);
 	void (*swi16)(struct ARMBoard* board, int immediate);
 	void (*swi32)(struct ARMBoard* board, int immediate);
+	void (*readCPSR)(struct ARMBoard* board);
 
 	void (*hitStub)(struct ARMBoard* board, uint32_t opcode);
 };

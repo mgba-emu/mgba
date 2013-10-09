@@ -69,6 +69,7 @@ void GBABoardInit(struct GBABoard* board) {
 	board->d.processEvents = GBAProcessEvents;
 	board->d.swi16 = GBASwi16;
 	board->d.swi32 = GBASwi32;
+	board->d.readCPSR = GBATestIRQ;
 	board->d.hitStub = GBAHitStub;
 }
 
@@ -372,13 +373,13 @@ void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	}
 }
 
-int GBATestIRQ(struct GBA* gba) {
+void GBATestIRQ(struct ARMBoard* board) {
+	struct GBABoard* gbaBoard = (struct GBABoard*) board;
+	struct GBA* gba = gbaBoard->p;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = 1;
-		gba->cpu.nextEvent = gba->cpu.cycles;
-		return 1;
+		gba->cpu.nextEvent = 0;
 	}
-	return 0;
 }
 
 int GBAWaitForIRQ(struct GBA* gba) {
