@@ -162,6 +162,10 @@ static void _MidiKey2Freq(struct GBA* gba) {
 
 void GBASwi16(struct ARMBoard* board, int immediate) {
 	struct GBA* gba = ((struct GBABoard*) board)->p;
+	if (gba->memory.fullBios) {
+		ARMRaiseSWI(&gba->cpu);
+		return;
+	}
 	switch (immediate) {
 	case 0x1:
 		_RegisterRamReset(gba);

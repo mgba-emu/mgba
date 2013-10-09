@@ -31,6 +31,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memory->d.store8 = GBAStore8;
 
 	memory->bios = (uint32_t*) hleBios;
+	memory->fullBios = 0;
 	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 	memory->rom = 0;
@@ -125,7 +126,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
 		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
-			if (address < hleBiosLength) {
+			if (address < SIZE_BIOS) {
 				value = gbaMemory->bios[address >> 2];
 			} else {
 				value = 0;
@@ -198,7 +199,15 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load16: 0x%08X", address);
+		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
+			if (address < SIZE_BIOS) {
+				value = ((int16_t*) gbaMemory->bios)[address >> 1];
+			} else {
+				value = 0;
+			}
+		} else {
+			value = gbaMemory->biosPrefetch;
+		}
 		break;
 	case BASE_WORKING_RAM:
 		value = ((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1];
@@ -265,7 +274,15 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
+		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
+			if (address < SIZE_BIOS) {
+				value = ((int8_t*) gbaMemory->bios)[address];
+			} else {
+				value = 0;
+			}
+		} else {
+			value = gbaMemory->biosPrefetch;
+		}
 		break;
 	case BASE_WORKING_RAM:
 		value = ((int8_t*) gbaMemory->wram)[address & (SIZE_WORKING_RAM - 1)];

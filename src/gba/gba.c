@@ -271,6 +271,15 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	// TODO: error check
 }
 
+void GBALoadBIOS(struct GBA* gba, int fd) {
+	gba->memory.bios = mmap(0, SIZE_BIOS, PROT_READ, MAP_SHARED, fd, 0);
+	gba->memory.fullBios = 1;
+	if ((gba->cpu.gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
+		gba->memory.d.setActiveRegion(&gba->memory.d, gba->cpu.gprs[ARM_PC]);
+	}
+	// TODO: error check
+}
+
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {

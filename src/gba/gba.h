@@ -116,6 +116,7 @@ int GBAHalt(struct GBA* gba);
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname);
+void GBALoadBIOS(struct GBA* gba, int fd);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
