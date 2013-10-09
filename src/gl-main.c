@@ -29,6 +29,8 @@ struct GLSoftwareRenderer {
 static int _GBASDLInit(struct GLSoftwareRenderer* renderer);
 static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer);
 static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer* renderer);
+static void _GBASDLStart(struct GBAThread* context);
+static void _GBASDLClean(struct GBAThread* context);
 
 static const GLint _glVertices[] = {
 	0, 0,
@@ -74,8 +76,10 @@ int main(int argc, char** argv) {
 	context.frameskip = 0;
 	context.sync.videoFrameWait = 0;
 	context.sync.audioWait = 1;
+	context.startCallback = _GBASDLStart;
+	context.cleanCallback = _GBASDLClean;
+	context.userData = &renderer;
 	GBAThreadStart(&context);
-	renderer.audio.audio = &context.gba->audio;
 
 	_GBASDLRunloop(&context, &renderer);
 
@@ -157,4 +161,14 @@ static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer) {
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 	SDL_Quit();
+}
+
+static void _GBASDLStart(struct GBAThread* threadContext) {
+	struct GLSoftwareRenderer* renderer = threadContext->userData;
+	renderer->audio.audio = &threadContext->gba->audio;
+}
+
+static void _GBASDLClean(struct GBAThread* threadContext) {
+	struct GLSoftwareRenderer* renderer = threadContext->userData;
+	renderer->audio.audio = 0;
 }

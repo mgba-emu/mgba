@@ -61,6 +61,7 @@ void GBAInit(struct GBA* gba) {
 void GBADeinit(struct GBA* gba) {
 	GBAMemoryDeinit(&gba->memory);
 	GBAVideoDeinit(&gba->video);
+	GBAAudioDeinit(&gba->audio);
 }
 
 void GBABoardInit(struct GBABoard* board) {

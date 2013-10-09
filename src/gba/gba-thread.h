@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 
+struct GBAThread;
+typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+
 struct GBAThread {
 	// Output
 	int started;
@@ -22,6 +25,10 @@ struct GBAThread {
 
 	pthread_mutex_t startMutex;
 	pthread_cond_t startCond;
+
+	ThreadCallback startCallback;
+	ThreadCallback cleanCallback;
+	void* userData;
 
 	struct GBASync {
 		int videoFramePending;

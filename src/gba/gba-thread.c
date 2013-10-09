@@ -65,6 +65,10 @@ static void* _GBAThreadRun(void* context) {
 	}
 	gba.keySource = &threadContext->activeKeys;
 
+	if (threadContext->startCallback) {
+		threadContext->startCallback(threadContext);
+	}
+
 	threadContext->started = 1;
 	pthread_mutex_lock(&threadContext->startMutex);
 	pthread_cond_broadcast(&threadContext->startCond);
@@ -78,7 +82,15 @@ static void* _GBAThreadRun(void* context) {
 			ARMRun(&gba.cpu);
 		}
 	}
+
+	if (threadContext->cleanCallback) {
+		threadContext->cleanCallback(threadContext);
+	}
+
 	GBADeinit(&gba);
+
+	pthread_cond_broadcast(&threadContext->sync.videoFrameAvailableCond);
+	pthread_cond_broadcast(&threadContext->sync.audioRequiredCond);
 	free(savedata);
 
 	return 0;
