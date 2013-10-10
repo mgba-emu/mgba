@@ -114,13 +114,12 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldb;
 	uint16_t bldy;
 
-	union WindowRegion win0H;
-	union WindowRegion win0V;
-	union WindowRegion win1H;
-	union WindowRegion win1V;
+	struct WindowN {
+		union WindowRegion h;
+		union WindowRegion v;
+		union WindowControl control;
+	} winN[2];
 
-	union WindowControl win0;
-	union WindowControl win1;
 	union WindowControl winout;
 	union WindowControl objwin;
 
