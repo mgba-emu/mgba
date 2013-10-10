@@ -45,10 +45,10 @@ static void _setWatchpoint(struct ARMDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
 
-struct {
+static struct {
 	const char* name;
 	DebuggerComamnd* command;
-} debuggerCommands[] = {
+} _debuggerCommands[] = {
 	{ "b", _setBreakpoint },
 	{ "break", _setBreakpoint },
 	{ "c", _continue },
@@ -56,9 +56,10 @@ struct {
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "n", _next },
+	{ "next", _next },
 	{ "p", _print },
-	{ "print", _print },
 	{ "p/x", _printHex },
+	{ "print", _print },
 	{ "print/x", _printHex },
 	{ "q", _quit },
 	{ "quit", _quit },
@@ -66,9 +67,9 @@ struct {
 	{ "rh", _readHalfword },
 	{ "rw", _readWord },
 	{ "status", _printStatus },
-	{ "x", _breakInto },
 	{ "w", _setWatchpoint },
 	{ "watch", _setWatchpoint },
+	{ "x", _breakInto },
 	{ 0, 0 }
 };
 
@@ -254,8 +255,8 @@ enum _DVParseState {
 	PARSE_EXPECT_SUFFIX,
 };
 
-static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* string) {
-	if (!string || !string[0] || string[0] == '\n') {
+static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* string, size_t length) {
+	if (!string || length < 1) {
 		return 0;
 	}
 
@@ -263,9 +264,10 @@ static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* st
 	struct DebugVector dvTemp = { .type = INT_TYPE };
 	uint32_t current = 0;
 
-	while (string[0] && string[0] != ' ' && string[0] != '\n' && state != PARSE_ERROR) {
+	while (length > 0 && string[0] && string[0] != ' ' && state != PARSE_ERROR) {
 		char token = string[0];
 		++string;
+		--length;
 		switch (state) {
 		case PARSE_ROOT:
 			switch (token) {
@@ -467,7 +469,7 @@ static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* st
 		dvTemp.intValue = current;
 		*dv = dvTemp;
 		if (string[0] == ' ') {
-			dv->next = _DVParse(debugger, string + 1);
+			dv->next = _DVParse(debugger, string + 1, length - 1);
 		}
 	}
 	return dv;
@@ -483,12 +485,12 @@ static void _DVFree(struct DebugVector* dv) {
 }
 
 static int _parse(struct ARMDebugger* debugger, const char* line, size_t count) {
-	char* firstSpace = strchr(line, ' ');
+	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	struct DebugVector* dv = 0;
 	if (firstSpace) {
 		cmdLength = firstSpace - line;
-		dv = _DVParse(debugger, firstSpace + 1);
+		dv = _DVParse(debugger, firstSpace + 1, count - cmdLength - 1);
 		if (dv && dv->type == ERROR_TYPE) {
 			printf("Parse error\n");
 			_DVFree(dv);
@@ -500,12 +502,12 @@ static int _parse(struct ARMDebugger* debugger, const char* line, size_t count) 
 
 	int i;
 	const char* name;
-	for (i = 0; (name = debuggerCommands[i].name); ++i) {
+	for (i = 0; (name = _debuggerCommands[i].name); ++i) {
 		if (strlen(name) != cmdLength) {
 			continue;
 		}
 		if (strncasecmp(name, line, cmdLength) == 0) {
-			debuggerCommands[i].command(debugger, dv);
+			_debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
 			return 1;
 		}
@@ -543,6 +545,32 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
+static unsigned char _tabComplete(EditLine* elstate, int ch) {
+	(void)(ch);
+	const LineInfo* li = el_line(elstate);
+	const char* commandPtr;
+	int cmd = 0, len = 0;
+	const char* name = 0;
+	for (commandPtr = li->buffer; commandPtr <= li->cursor; ++commandPtr, ++len) {
+		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
+			int cmp = strncasecmp(name, li->buffer, len);
+			if (cmp > 0) {
+				return CC_ERROR;
+			}
+			if (cmp == 0) {
+				break;
+			}
+		}
+	}
+	if (_debuggerCommands[cmd + 1].name && strncasecmp(_debuggerCommands[cmd + 1].name, li->buffer, len - 1) == 0) {
+		return CC_ERROR;
+	}
+	name += len - 1;
+	el_insertstr(elstate, name);
+	el_insertstr(elstate, " ");
+	return CC_REDISPLAY;
+}
+
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_PAUSED;
@@ -551,6 +579,10 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->elstate = el_init("gbac", stdin, stdout, stderr);
 	el_set(debugger->elstate, EL_PROMPT, _prompt);
 	el_set(debugger->elstate, EL_EDITOR, "emacs");
+
+	el_set(debugger->elstate, EL_CLIENTDATA, debugger);
+	el_set(debugger->elstate, EL_ADDFN, "tab-complete", "Tab completion", _tabComplete);
+	el_set(debugger->elstate, EL_BIND, "\t", "tab-complete", 0);
 	debugger->histate = history_init();
 	HistEvent ev;
 	history(debugger->histate, &ev, H_SETSIZE, 200);
