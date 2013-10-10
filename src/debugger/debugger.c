@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "linenoise.h"
 
 struct DebugVector {
 	struct DebugVector* next;
@@ -256,7 +255,7 @@ enum _DVParseState {
 };
 
 static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* string) {
-	if (!string || !string[0]) {
+	if (!string || !string[0] || string[0] == '\n') {
 		return 0;
 	}
 
@@ -264,7 +263,7 @@ static struct DebugVector* _DVParse(struct ARMDebugger* debugger, const char* st
 	struct DebugVector dvTemp = { .type = INT_TYPE };
 	uint32_t current = 0;
 
-	while (string[0] && string[0] != ' ' && state != PARSE_ERROR) {
+	while (string[0] && string[0] != ' ' && string[0] != '\n' && state != PARSE_ERROR) {
 		char token = string[0];
 		++string;
 		switch (state) {
@@ -483,7 +482,7 @@ static void _DVFree(struct DebugVector* dv) {
 	}
 }
 
-static int _parse(struct ARMDebugger* debugger, const char* line) {
+static int _parse(struct ARMDebugger* debugger, const char* line, size_t count) {
 	char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	struct DebugVector* dv = 0;
@@ -496,7 +495,7 @@ static int _parse(struct ARMDebugger* debugger, const char* line) {
 			return 0;
 		}
 	} else {
-		cmdLength = strlen(line);
+		cmdLength = count;
 	}
 
 	int i;
@@ -516,27 +515,29 @@ static int _parse(struct ARMDebugger* debugger, const char* line) {
 	return 0;
 }
 
+static char* _prompt(EditLine* el) {
+	(void)(el);
+	return "> ";
+}
+
 static void _commandLine(struct ARMDebugger* debugger) {
-	char* line;
+	const char* line;
 	_printStatus(debugger, 0);
+	int count = 0;
+	HistEvent ev;
 	while (debugger->state == DEBUGGER_PAUSED) {
-		line = linenoise("> ");
+		line = el_gets(debugger->elstate, &count);
 		if (!line) {
 			debugger->state = DEBUGGER_EXITING;
 			return;
 		}
-		if (!line[0]) {
-			if (debugger->lastCommand) {
-				_parse(debugger, debugger->lastCommand);
+		if (line[0] == '\n') {
+			if (history(debugger->histate, &ev, H_FIRST) >= 0) {
+				_parse(debugger, ev.str, strlen(ev.str) - 1);
 			}
 		} else {
-			linenoiseHistoryAdd(line);
-			if (_parse(debugger, line)) {
-				char* oldLine = debugger->lastCommand;
-				debugger->lastCommand = line;
-				free(oldLine);
-			} else {
-				free(line);
+			if (_parse(debugger, line, count - 1)) {
+				history(debugger->histate, &ev, H_ENTER, line);
 			}
 		}
 	}
@@ -545,12 +546,25 @@ static void _commandLine(struct ARMDebugger* debugger) {
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_PAUSED;
-	debugger->lastCommand = 0;
 	debugger->breakpoints = 0;
+	// TODO: get argv[0]
+	debugger->elstate = el_init("gbac", stdin, stdout, stderr);
+	el_set(debugger->elstate, EL_PROMPT, _prompt);
+	el_set(debugger->elstate, EL_EDITOR, "emacs");
+	debugger->histate = history_init();
+	HistEvent ev;
+	history(debugger->histate, &ev, H_SETSIZE, 200);
+	el_set(debugger->elstate, EL_HIST, history, debugger->histate);
 	debugger->memoryShim.p = debugger;
 	debugger->memoryShim.watchpoints = 0;
 	_activeDebugger = debugger;
 	signal(SIGINT, _breakIntoDefault);
+}
+
+void ARMDebuggerDeinit(struct ARMDebugger* debugger) {
+	// TODO: actually call this
+	history_end(debugger->histate);
+	el_end(debugger->elstate);
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {

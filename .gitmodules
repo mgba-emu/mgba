@@ -1,3 +1,0 @@
-[submodule "third-party/linenoise"]
-	path = third-party/linenoise
-	url = git://github.com/antirez/linenoise.git

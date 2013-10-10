@@ -1,6 +1,8 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
+#include <histedit.h>
+
 #include "arm.h"
 
 enum DebuggerState {
@@ -26,12 +28,15 @@ struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
-	char* lastCommand;
+	EditLine* elstate;
+	History* histate;
+
 	struct DebugBreakpoint* breakpoints;
 	struct DebugMemoryShim memoryShim;
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
+void ARMDebuggerDeinit(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*);
 
