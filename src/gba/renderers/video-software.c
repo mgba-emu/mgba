@@ -636,9 +636,12 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 #define BACKGROUND_DRAW_PIXEL_16 \
 	pixelData = tileData & 0xF; \
 	current = renderer->row[outX]; \
-	if (tileData & 0xF && !(current & FLAG_FINALIZED)) { \
-		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
+	if (pixelData && !(current & FLAG_FINALIZED)) { \
+		if (!objwinSlowPath) { \
 			_composite(renderer, outX, palette[pixelData | paletteData] | flags, current); \
+		} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
+			color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette; \
+			_composite(renderer, outX, currentPalette[pixelData | paletteData] | flags, current); \
 		} \
 	} \
 	tileData >>= 4;
@@ -647,8 +650,11 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	pixelData = tileData & 0xFF; \
 	current = renderer->row[outX]; \
 	if (pixelData && !(current & FLAG_FINALIZED)) { \
-		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
+		if (!objwinSlowPath) { \
 			_composite(renderer, outX, palette[pixelData] | flags, current); \
+		} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
+			color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette; \
+			_composite(renderer, outX, currentPalette[pixelData] | flags, current); \
 		} \
 	} \
 	tileData >>= 8;
@@ -787,23 +793,30 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 #define PREPARE_OBJWIN \
 	int objwinSlowPath = renderer->dispcnt.objwinEnable; \
 	int objwinOnly = 0; \
+	int objwinForceEnable = 0; \
+	color_t* objwinPalette; \
 	if (objwinSlowPath) { \
+		if (background->target1 && renderer->objwin.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN)) { \
+			objwinPalette = renderer->variantPalette; \
+		} else { \
+			objwinPalette = renderer->normalPalette; \
+		} \
 		switch (background->index) { \
 		case 0: \
-			objwinSlowPath = renderer->objwin.bg0Enable != renderer->currentWindow.bg0Enable; \
-			objwinOnly = renderer->objwin.bg0Enable; \
+			objwinForceEnable = renderer->objwin.bg0Enable && renderer->currentWindow.bg0Enable; \
+			objwinOnly = !renderer->objwin.bg0Enable; \
 			break; \
 		case 1: \
-			objwinSlowPath = renderer->objwin.bg1Enable != renderer->currentWindow.bg1Enable; \
-			objwinOnly = renderer->objwin.bg1Enable; \
+			objwinForceEnable = renderer->objwin.bg1Enable && renderer->currentWindow.bg1Enable; \
+			objwinOnly = !renderer->objwin.bg1Enable; \
 			break; \
 		case 2: \
-			objwinSlowPath = renderer->objwin.bg2Enable != renderer->currentWindow.bg2Enable; \
-			objwinOnly = renderer->objwin.bg2Enable; \
+			objwinForceEnable = renderer->objwin.bg2Enable && renderer->currentWindow.bg2Enable; \
+			objwinOnly = !renderer->objwin.bg2Enable; \
 			break; \
 		case 3: \
-			objwinSlowPath = renderer->objwin.bg3Enable != renderer->currentWindow.bg3Enable; \
-			objwinOnly = renderer->objwin.bg3Enable; \
+			objwinForceEnable = renderer->objwin.bg3Enable && renderer->currentWindow.bg3Enable; \
+			objwinOnly = !renderer->objwin.bg3Enable; \
 			break; \
 		} \
 	}
@@ -812,7 +825,6 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int inX = renderer->start + background->x;
 	int inY = y + background->y;
 	union GBATextMapData mapData;
-	PREPARE_OBJWIN;
 
 	unsigned yBase = inY & 0xF8;
 	if (background->size == 2) {
@@ -837,6 +849,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	if (variant) {
 		palette = renderer->variantPalette;
 	}
+	PREPARE_OBJWIN;
 
 	int outX = renderer->start;
 	int tileX = 0;
@@ -956,7 +969,12 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
 	flags |= FLAG_TARGET_2 * background->target2; \
-	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
+	color_t* palette = renderer->normalPalette; \
+	if (variant) { \
+		palette = renderer->variantPalette; \
+	} \
+	PREPARE_OBJWIN;
 
 #define BACKGROUND_BITMAP_ITERATE(W, H) \
 	x += background->dx; \
@@ -973,7 +991,6 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	int sizeAdjusted = 0x8000 << background->size;
 
 	BACKGROUND_BITMAP_INIT;
-	PREPARE_OBJWIN;
 
 	uint32_t screenBase = background->screenBase;
 	uint32_t charBase = background->charBase;
@@ -998,11 +1015,12 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 		tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
 		uint32_t current = renderer->row[outX];
-		if (tileData && !(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
-			if (!variant) {
-				_composite(renderer, outX, renderer->normalPalette[tileData] | flags, current);
-			} else {
-				_composite(renderer, outX, renderer->variantPalette[tileData] | flags, current);
+		if (tileData && !(current & FLAG_FINALIZED)) {
+			if (!objwinSlowPath) {
+				_composite(renderer, outX, palette[tileData] | flags, current);
+			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
+				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
+				_composite(renderer, outX, currentPalette[tileData] | flags, current);
 			}
 		}
 	}
@@ -1010,7 +1028,6 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
-	PREPARE_OBJWIN;
 
 	uint16_t color;
 	uint32_t color32;
@@ -1040,7 +1057,6 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
-	PREPARE_OBJWIN;
 
 	uint16_t color;
 	uint32_t offset = 0;
@@ -1067,7 +1083,6 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
-	PREPARE_OBJWIN;
 
 	uint32_t color;
 	uint32_t offset = 0;
