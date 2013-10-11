@@ -633,42 +633,22 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	}
 }
 
-#define BACKGROUND_DRAW_PIXEL_16_NORMAL \
-	pixelData = tileData & 0xF; \
-	current = renderer->row[outX]; \
-	if (pixelData && !(current & FLAG_FINALIZED)) { \
-		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
-			_composite(renderer, outX, renderer->normalPalette[pixelData | paletteData] | flags, current); \
-		} \
-	} \
-	tileData >>= 4;
-
-#define BACKGROUND_DRAW_PIXEL_16_VARIANT \
+#define BACKGROUND_DRAW_PIXEL_16 \
 	pixelData = tileData & 0xF; \
 	current = renderer->row[outX]; \
 	if (tileData & 0xF && !(current & FLAG_FINALIZED)) { \
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
-			_composite(renderer, outX, renderer->variantPalette[pixelData | paletteData] | flags, current); \
+			_composite(renderer, outX, palette[pixelData | paletteData] | flags, current); \
 		} \
 	} \
 	tileData >>= 4;
 
-#define BACKGROUND_DRAW_PIXEL_256_NORMAL \
+#define BACKGROUND_DRAW_PIXEL_256 \
 	pixelData = tileData & 0xFF; \
 	current = renderer->row[outX]; \
 	if (pixelData && !(current & FLAG_FINALIZED)) { \
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
-			_composite(renderer, outX, renderer->normalPalette[pixelData] | flags, current); \
-		} \
-	} \
-	tileData >>= 8;
-
-#define BACKGROUND_DRAW_PIXEL_256_VARIANT \
-	pixelData = tileData & 0xFF; \
-	current = renderer->row[outX]; \
-	if (pixelData && !(renderer->row[outX] & FLAG_FINALIZED)) { \
-		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) { \
-			_composite(renderer, outX, renderer->variantPalette[pixelData] | flags, current); \
+			_composite(renderer, outX, palette[pixelData] | flags, current); \
 		} \
 	} \
 	tileData >>= 8;
@@ -687,7 +667,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		localY = 7 - (inY & 0x7); \
 	}
 
-#define BACKGROUND_MODE_0_TILE_16_LOOP(TYPE) \
+#define BACKGROUND_MODE_0_TILE_16_LOOP \
 	uint32_t tileData; \
 	uint32_t current; \
 	int paletteData, pixelData; \
@@ -698,39 +678,39 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
 		if (tileData) { \
 			if (!mapData.hflip) { \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				++outX; \
 			} else { \
 				outX += 7; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_16_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_16; \
 				outX += 8; \
 			} \
 		} else { \
@@ -738,7 +718,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		} \
 	}
 
-#define BACKGROUND_MODE_0_TILE_256_LOOP(TYPE) \
+#define BACKGROUND_MODE_0_TILE_256_LOOP \
 	uint32_t tileData; \
 	uint32_t current; \
 	int pixelData; \
@@ -748,26 +728,26 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		if (!mapData.hflip) { \
 			tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
 			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
 			} else { \
 				outX += 4; \
 			} \
 			tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
-					BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+					BACKGROUND_DRAW_PIXEL_256; \
 					++outX; \
 			} else { \
 				outX += 4; \
@@ -776,13 +756,13 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 			uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 			if (tileData) { \
 				outX += 3; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				outX += 4; \
 			} else { \
 				outX += 4; \
@@ -790,13 +770,13 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 			tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
 			if (tileData) { \
 				outX += 3; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				--outX; \
-				BACKGROUND_DRAW_PIXEL_256_ ## TYPE; \
+				BACKGROUND_DRAW_PIXEL_256; \
 				outX += 4; \
 			} else { \
 				outX += 4; \
@@ -853,6 +833,10 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t screenBase;
 	uint32_t charBase;
 	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	color_t* palette = renderer->normalPalette;
+	if (variant) {
+		palette = renderer->variantPalette;
+	}
 
 	int outX = renderer->start;
 	int tileX = 0;
@@ -871,24 +855,12 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
 			if (!mapData.hflip) {
 				tileData >>= 4 * mod8;
-				if (!variant) {
-					for (; outX < end; ++outX) {
-						BACKGROUND_DRAW_PIXEL_16_NORMAL;
-					}
-				} else {
-					for (; outX < end; ++outX) {
-						BACKGROUND_DRAW_PIXEL_16_VARIANT;
-					}
+				for (; outX < end; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16;
 				}
 			} else {
-				if (!variant) {
-					for (outX = end - 1; outX >= renderer->start; --outX) {
-						BACKGROUND_DRAW_PIXEL_16_NORMAL;
-					}
-				} else {
-					for (outX = end - 1; outX >= renderer->start; --outX) {
-						BACKGROUND_DRAW_PIXEL_16_VARIANT;
-					}
+				for (outX = end - 1; outX >= renderer->start; --outX) {
+					BACKGROUND_DRAW_PIXEL_16;
 				}
 			}
 		} else {
@@ -900,27 +872,15 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
 				tileData >>= 8 * shift;
 				shift = 0;
-				if (!variant) {
-					for (; outX < end2; ++outX) {
-						BACKGROUND_DRAW_PIXEL_256_NORMAL;
-					}
-				} else {
-					for (; outX < end2; ++outX) {
-						BACKGROUND_DRAW_PIXEL_256_VARIANT;
-					}
+				for (; outX < end2; ++outX) {
+					BACKGROUND_DRAW_PIXEL_256;
 				}
 			}
 
 			tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
 			tileData >>= 8 * shift;
-			if (!variant) {
-				for (; outX < end; ++outX) {
-					BACKGROUND_DRAW_PIXEL_256_NORMAL;
-				}
-			} else {
-				for (; outX < end; ++outX) {
-					BACKGROUND_DRAW_PIXEL_256_VARIANT;
-				}
+			for (; outX < end; ++outX) {
+				BACKGROUND_DRAW_PIXEL_256;
 			}
 		}
 	}
@@ -943,14 +903,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 					tileData >>= 4 * -outX;
 					outX = 0;
 				}
-				if (!variant) {
-					for (; outX < renderer->end; ++outX) {
-						BACKGROUND_DRAW_PIXEL_16_NORMAL;
-					}
-				} else {
-					for (; outX < renderer->end; ++outX) {
-						BACKGROUND_DRAW_PIXEL_16_VARIANT;
-					}
+				for (; outX < renderer->end; ++outX) {
+					BACKGROUND_DRAW_PIXEL_16;
 				}
 			} else {
 				tileData >>= 4 * (0x8 - mod8);
@@ -958,14 +912,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 				if (end2 < -1) {
 					end2 = -1;
 				}
-				if (!variant) {
-					for (outX = renderer->end - 1; outX > end2; --outX) {
-						BACKGROUND_DRAW_PIXEL_16_NORMAL;
-					}
-				} else {
-					for (outX = renderer->end - 1; outX > end2; --outX) {
-						BACKGROUND_DRAW_PIXEL_16_VARIANT;
-					}
+				for (outX = renderer->end - 1; outX > end2; --outX) {
+					BACKGROUND_DRAW_PIXEL_16;
 				}
 			}
 		} else {
@@ -975,27 +923,15 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			int end2 = 4 - end;
 			if (end2 > 0) {
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
-				if (!variant) {
-					for (; outX < renderer->end - end2; ++outX) {
-						BACKGROUND_DRAW_PIXEL_256_NORMAL;
-					}
-				} else {
-					for (; outX < renderer->end - end2; ++outX) {
-						BACKGROUND_DRAW_PIXEL_256_VARIANT;
-					}
+				for (; outX < renderer->end - end2; ++outX) {
+					BACKGROUND_DRAW_PIXEL_256;
 				}
 				++charBase;
 			}
 
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
-			if (!variant) {
-				for (; outX < renderer->end; ++outX) {
-					BACKGROUND_DRAW_PIXEL_256_NORMAL;
-				}
-			} else {
-				for (; outX < renderer->end; ++outX) {
-					BACKGROUND_DRAW_PIXEL_256_VARIANT;
-				}
+			for (; outX < renderer->end; ++outX) {
+				BACKGROUND_DRAW_PIXEL_256;
 			}
 		}
 
@@ -1004,17 +940,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	if (!background->multipalette) {
-		if (!variant) {
-			BACKGROUND_MODE_0_TILE_16_LOOP(NORMAL);
-		 } else {
-			BACKGROUND_MODE_0_TILE_16_LOOP(VARIANT);
-		 }
+		BACKGROUND_MODE_0_TILE_16_LOOP;
 	} else {
-		if (!variant) {
-			BACKGROUND_MODE_0_TILE_256_LOOP(NORMAL);
-		 } else {
-			BACKGROUND_MODE_0_TILE_256_LOOP(VARIANT);
-		 }
+		BACKGROUND_MODE_0_TILE_256_LOOP;
 	}
 }
 
