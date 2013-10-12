@@ -405,7 +405,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 #ifdef COLOR_16_BIT
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-		row[x] = softwareRenderer->row[x];
+		uint32_t c = softwareRenderer->row[x];
+#ifdef COLOR_5_6_5
+		c = ((c & 0x001F) << 11) | ((c & 0x03E0) << 1) | ((c & 0x7C00) >> 10);
+#endif
+		row[x] = c;
 	}
 #else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
