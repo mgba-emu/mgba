@@ -4,6 +4,7 @@
 
 void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_DISPCNT >> 1] = 0x0080;
+	gba->memory.io[REG_RCNT >> 1] = 0x8000;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
 }
 
