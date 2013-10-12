@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
+static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest);
 static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 
 static void _RegisterRamReset(struct GBA* gba) {
@@ -259,6 +260,22 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				break;
 		}
 		break;
+	case 0x13:
+		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
+			case REGION_WORKING_RAM:
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3))]);
+				break;
+			case REGION_WORKING_IRAM:
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 3))]);
+				break;
+			case REGION_VRAM:
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC)]);
+				break;
+			default:
+				GBALog(gba, GBA_LOG_WARN, "Bad Huffman destination");
+				break;
+		}
+		break;
 	case 0x14:
 	case 0x15:
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
@@ -324,6 +341,81 @@ static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 			blockheader = memory->d.loadU8(&memory->d, sPointer++, 0);
 			blocksRemaining = 8;
 		}
+	}
+}
+
+static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest) {
+	source = source & 0xFFFFFFFC;
+	uint32_t header = memory->d.load32(&memory->d, source, 0);
+	int remaining = header >> 8;
+	int bits = header & 0xF;
+	if (32 % bits) {
+		GBALog(memory->p, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
+		return;
+	}
+	int padding = (4 - remaining) & 0x3;
+	remaining &= 0xFFFFFFFC;
+	// We assume the signature byte (0x20) is correct
+	//var tree = [];
+	int treesize = (memory->d.load8(&memory->d, source + 4, 0) << 1) + 1;
+	int block = 0;
+	uint32_t treeBase = source + 5;
+	uint32_t sPointer = source + 5 + treesize;
+	uint32_t* dPointer = dest;
+	uint32_t nPointer = treeBase;
+	union HuffmanNode {
+		struct {
+			unsigned offset : 6;
+			unsigned rTerm : 1;
+			unsigned lTerm : 1;
+		};
+		uint8_t packed;
+	} node;
+	int bitsRemaining;
+	int readBits;
+	int bitsSeen = 0;
+	node.packed = memory->d.load8(&memory->d, nPointer, 0);
+	while (remaining > 0) {
+		uint32_t bitstream = memory->d.load32(&memory->d, sPointer, 0);
+		sPointer += 4;
+		for (bitsRemaining = 32; bitsRemaining > 0; --bitsRemaining, bitstream <<= 1) {
+			uint32_t next = (nPointer & ~1) + node.offset * 2 + 2;
+			if (bitstream & 0x80000000) {
+				// Go right
+				if (node.rTerm) {
+					readBits = memory->d.load8(&memory->d, next + 1, 0);
+				} else {
+					nPointer = next + 1;
+					node.packed = memory->d.load8(&memory->d, nPointer, 0);
+					continue;
+				}
+			} else {
+				// Go left
+				if (node.lTerm) {
+					readBits = memory->d.load8(&memory->d, next, 0);
+				} else {
+					nPointer = next;
+					node.packed = memory->d.load8(&memory->d, nPointer, 0);
+					continue;
+				}
+			}
+
+			block |= (readBits & ((1 << bits) - 1)) << bitsSeen;
+			bitsSeen += bits;
+			nPointer = treeBase;
+			node.packed = memory->d.load8(&memory->d, nPointer, 0);
+			if (bitsSeen == 32) {
+				bitsSeen = 0;
+				*dPointer = block;
+				++dPointer;
+				remaining -= 4;
+				block = 0;
+			}
+		}
+
+	}
+	if (padding) {
+		*dPointer = block;
 	}
 }
 
