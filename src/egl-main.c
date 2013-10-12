@@ -2,6 +2,7 @@
 #include "gba-thread.h"
 #include "gba.h"
 #include "renderers/video-software.h"
+#include "sdl-audio.h"
 #include "sdl-events.h"
 
 #include <SDL.h>
@@ -19,6 +20,8 @@
 
 struct GBAVideoEGLRenderer {
 	struct GBAVideoSoftwareRenderer d;
+	struct GBASDLAudio audio;
+	struct GBASDLEvents events;
 
 	EGLDisplay display;
 	EGLSurface surface;
@@ -60,6 +63,8 @@ static const GLfloat _vertices[] = {
 static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer);
 static void _GBAEGLDeinit(struct GBAVideoEGLRenderer* renderer);
 static void _GBAEGLRunloop(struct GBAThread* context, struct GBAVideoEGLRenderer* renderer);
+static void _GBASDLStart(struct GBAThread* context);
+static void _GBASDLClean(struct GBAThread* context);
 
 int main(int argc, char** argv) {
 	const char* fname = "test.rom";
@@ -80,7 +85,15 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
 	context.fd = fd;
+	context.fname = fname;
+	context.useDebugger = 0;
 	context.renderer = &renderer.d.d;
+	context.frameskip = 0;
+	context.sync.videoFrameWait = 0;
+	context.sync.audioWait = 1;
+	context.startCallback = _GBASDLStart;
+	context.cleanCallback = _GBASDLClean;
+	context.userData = &renderer;
 	GBAThreadStart(&context);
 
 	_GBAEGLRunloop(&context, &renderer);
@@ -98,7 +111,9 @@ static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer) {
 		return 0;
 	}
 
-	GBASDLInitEvents();
+	GBASDLInitEvents(&renderer->events);
+	GBASDLInitAudio(&renderer->audio);
+
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	int major, minor;
@@ -113,10 +128,10 @@ static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer) {
 	}
 
 	const EGLint requestConfig[] = {
-		EGL_RED_SIZE, 8,
-		EGL_GREEN_SIZE, 8,
-		EGL_BLUE_SIZE, 8,
-		EGL_ALPHA_SIZE, 8,
+		EGL_RED_SIZE, 5,
+		EGL_GREEN_SIZE, 5,
+		EGL_BLUE_SIZE, 5,
+		EGL_ALPHA_SIZE, 1,
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_NONE
 	};
@@ -202,35 +217,25 @@ static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer) {
 static void _GBAEGLRunloop(struct GBAThread* context, struct GBAVideoEGLRenderer* renderer) {
 	SDL_Event event;
 
-	while (context->started && context->debugger->state != DEBUGGER_EXITING) {
-		pthread_mutex_lock(&renderer->d.mutex);
-		if (renderer->d.d.framesPending) {
-			renderer->d.d.framesPending = 0;
-			pthread_mutex_unlock(&renderer->d.mutex);
+	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
+		GBASyncWaitFrameStart(&context->sync, context->frameskip);
+		glViewport(0, 0, 240, 160);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(renderer->program);
+		glUniform1i(renderer->texLocation, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderer->tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+		glVertexAttribPointer(renderer->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
+		glEnableVertexAttribArray(renderer->positionLocation);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glUseProgram(0);
+		eglSwapBuffers(renderer->display, renderer->surface);
 
-			glViewport(0, 0, 240, 160);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glUseProgram(renderer->program);
-			glUniform1i(renderer->texLocation, 0);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, renderer->tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
-			glVertexAttribPointer(renderer->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
-			glEnableVertexAttribArray(renderer->positionLocation);
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-			glUseProgram(0);
-			eglSwapBuffers(renderer->display, renderer->surface);
-
-			while (SDL_PollEvent(&event)) {
-				GBASDLHandleEvent(context, &event);
-			}
-			pthread_mutex_lock(&renderer->d.mutex);
-			pthread_cond_broadcast(&renderer->d.downCond);
-		} else {
-			pthread_cond_broadcast(&renderer->d.downCond);
-			pthread_cond_wait(&renderer->d.upCond, &renderer->d.mutex);
+		while (SDL_PollEvent(&event)) {
+			GBASDLHandleEvent(context, &event);
 		}
-		pthread_mutex_unlock(&renderer->d.mutex);
+		GBASyncWaitFrameEnd(&context->sync);
 	}
 }
 
@@ -240,8 +245,19 @@ static void _GBAEGLDeinit(struct GBAVideoEGLRenderer* renderer) {
 	eglDestroyContext(renderer->display, renderer->context);
 	eglTerminate(renderer->display);
 
-	GBASDLDeinitEvents();
+	GBASDLDeinitEvents(&renderer->events);
+	GBASDLDeinitAudio(&renderer->audio);
 	SDL_Quit();
 
 	bcm_host_deinit();
+}
+
+static void _GBASDLStart(struct GBAThread* threadContext) {
+	struct GBAVideoEGLRenderer* renderer = threadContext->userData;
+	renderer->audio.audio = &threadContext->gba->audio;
+}
+
+static void _GBASDLClean(struct GBAThread* threadContext) {
+	struct GBAVideoEGLRenderer* renderer = threadContext->userData;
+	renderer->audio.audio = 0;
 }
