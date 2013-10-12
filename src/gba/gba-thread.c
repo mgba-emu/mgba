@@ -17,7 +17,9 @@ static void* _GBAThreadRun(void* context) {
 	static pthread_once_t once = PTHREAD_ONCE_INIT;
 	pthread_once(&once, _createTLS);
 
+#ifdef USE_DEBUGGER
 	struct ARMDebugger debugger;
+#endif
 	struct GBA gba;
 	struct GBAThread* threadContext = context;
 	char* savedata = 0;
@@ -57,12 +59,18 @@ static void* _GBAThreadRun(void* context) {
 		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
 		gba.savefile = savedata;
 	}
+
+#ifdef USE_DEBUGGER
 	if (threadContext->useDebugger) {
 		threadContext->debugger = &debugger;
 		GBAAttachDebugger(&gba, &debugger);
 	} else {
 		threadContext->debugger = 0;
 	}
+#else
+	threadContext->debugger = 0;
+#endif
+
 	gba.keySource = &threadContext->activeKeys;
 
 	if (threadContext->startCallback) {
@@ -74,14 +82,18 @@ static void* _GBAThreadRun(void* context) {
 	pthread_cond_broadcast(&threadContext->startCond);
 	pthread_mutex_unlock(&threadContext->startMutex);
 
+#ifdef USE_DEBUGGER
 	if (threadContext->useDebugger) {
 		ARMDebuggerRun(&debugger);
 		threadContext->started = 0;
 	} else {
+#endif
 		while (threadContext->started) {
 			ARMRun(&gba.cpu);
 		}
+#ifdef USE_DEBUGGER
 	}
+#endif
 
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
