@@ -82,7 +82,7 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 	}
 
 	GBASDLInitEvents(&renderer->events);
-//	GBASDLInitAudio(&renderer->audio);
+	GBASDLInitAudio(&renderer->audio);
 
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(240, 160, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
