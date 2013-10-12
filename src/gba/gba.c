@@ -22,9 +22,16 @@ enum {
 	SP_BASE_SUPERVISOR = 0x03FFFFE0
 };
 
+static const struct SavedataOverride _savedataOverrides[] = {
+	{ 'EEPB', SAVEDATA_FLASH1M },
+	{ 0, 0 }
+};
+
 static void GBAProcessEvents(struct ARMBoard* board);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
+
+static void _checkOverrides(struct GBA* gba, uint32_t code);
 
 void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
@@ -270,6 +277,7 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	gba->activeFile = fname;
 	fstat(fd, &info);
 	gba->memory.romSize = info.st_size;
+	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
 	// TODO: error check
 }
 
@@ -430,5 +438,29 @@ void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 		abort();
 	} else {
 		ARMDebuggerEnter(gbaBoard->p->debugger);
+	}
+}
+
+void _checkOverrides(struct GBA* gba, uint32_t id) {
+	int i;
+	for (i = 0; _savedataOverrides[i].id; ++i) {
+		if (_savedataOverrides[i].id == id) {
+			gba->memory.savedata.type = _savedataOverrides[i].type;
+			switch (_savedataOverrides[i].type) {
+				case SAVEDATA_FLASH512:
+				case SAVEDATA_FLASH1M:
+					GBASavedataInitFlash(&gba->memory.savedata);
+					break;
+				case SAVEDATA_EEPROM:
+					GBASavedataInitEEPROM(&gba->memory.savedata);
+					break;
+				case SAVEDATA_SRAM:
+					GBASavedataInitSRAM(&gba->memory.savedata);
+					break;
+				case SAVEDATA_NONE:
+					break;
+			}
+			return;
+		}
 	}
 }

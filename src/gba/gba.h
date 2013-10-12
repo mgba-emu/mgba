@@ -93,6 +93,21 @@ struct GBA {
 	int logLevel;
 };
 
+struct GBACartridge {
+	uint32_t entry;
+	uint8_t logo[156];
+	char title[12];
+	uint32_t id;
+	uint16_t maker;
+	uint8_t type;
+	uint8_t unit;
+	uint8_t device;
+	uint8_t reserved[7];
+	uint8_t version;
+	uint8_t checksum;
+	// And ROM data...
+};
+
 void GBAInit(struct GBA* gba);
 void GBADeinit(struct GBA* gba);
 

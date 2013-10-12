@@ -68,8 +68,15 @@ struct GBASavedata {
 	enum FlashStateMachine flashState;
 };
 
+struct SavedataOverride {
+	uint32_t id;
+	enum SavedataType type;
+};
+
 void GBASavedataInit(struct GBASavedata* savedata, const char* filename);
 void GBASavedataDeinit(struct GBASavedata* savedata);
+
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);

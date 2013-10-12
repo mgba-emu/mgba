@@ -114,6 +114,7 @@ struct GBAMemory {
 
 	struct GBASavedata savedata;
 	size_t romSize;
+	uint16_t romID;
 	int fullBios;
 
 	char waitstates32[256];

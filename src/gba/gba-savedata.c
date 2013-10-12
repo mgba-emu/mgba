@@ -21,6 +21,14 @@ void GBASavedataInit(struct GBASavedata* savedata, const char* filename) {
 	savedata->filename = filename;
 }
 
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+	if (savedata->type != SAVEDATA_NONE) {
+		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		return;
+	}
+	savedata->type = type;
+}
+
 void GBASavedataDeinit(struct GBASavedata* savedata) {
 	switch (savedata->type) {
 	case SAVEDATA_SRAM:
@@ -43,7 +51,13 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 }
 
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
-	savedata->type = SAVEDATA_FLASH512;
+	if (savedata->type == SAVEDATA_NONE) {
+		savedata->type = SAVEDATA_FLASH512;
+	}
+	if (savedata->type != SAVEDATA_FLASH512 && savedata->type != SAVEDATA_FLASH1M) {
+		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		return;
+	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
 	int flags = MAP_SHARED;
@@ -66,7 +80,12 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 }
 
 void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
-	savedata->type = SAVEDATA_EEPROM;
+	if (savedata->type == SAVEDATA_NONE) {
+		savedata->type = SAVEDATA_EEPROM;
+	} else {
+		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		return;
+	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
 	int flags = MAP_SHARED;
@@ -87,7 +106,12 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 }
 
 void GBASavedataInitSRAM(struct GBASavedata* savedata) {
-	savedata->type = SAVEDATA_SRAM;
+	if (savedata->type == SAVEDATA_NONE) {
+		savedata->type = SAVEDATA_SRAM;
+	} else {
+		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		return;
+	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
 	int flags = MAP_SHARED;
