@@ -12,7 +12,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src/debugger)
 include_directories(${CMAKE_SOURCE_DIR}/src/util)
-include_directories(${CMAKE_SOURCE_DIR}/third-party/linenoise)
 
 find_package(SDL 1.2 REQUIRED)
 file(GLOB SDL_SRC ${CMAKE_SOURCE_DIR}/src/sdl/sdl-*.c)
