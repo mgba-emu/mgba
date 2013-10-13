@@ -458,7 +458,8 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 			GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
 			break;
 		}
-		gbaMemory->p->video.renderer->vram[(address >> 1) & 0xFFFF] = (value) | (value << 8);
+		((int8_t*) gbaMemory->p->video.renderer->vram)[address & 0x1FFFE] = value;
+		((int8_t*) gbaMemory->p->video.renderer->vram)[(address & 0x1FFFE) | 1] = value;
 		break;
 	case BASE_OAM:
 		GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
