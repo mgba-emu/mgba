@@ -721,7 +721,8 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 				dest += destOffset;
 			}
 		} else if (destRegion == REGION_CART2_EX) {
-			if (memory->savedata.type != SAVEDATA_EEPROM) {
+			if (memory->savedata.type == SAVEDATA_NONE) {
+				GBASavedataInit(&memory->savedata, memory->p->savefile);
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			while (wordsRemaining) {
