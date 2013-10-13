@@ -23,6 +23,7 @@ enum {
 };
 
 static const struct SavedataOverride _savedataOverrides[] = {
+	{ 'E4XA', SAVEDATA_FLASH1M },
 	{ 'EEPB', SAVEDATA_FLASH1M },
 	{ 0, 0 }
 };
