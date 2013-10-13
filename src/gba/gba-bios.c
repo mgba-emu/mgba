@@ -263,13 +263,13 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 	case 0x13:
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3))]);
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3)) >> 2]);
 				break;
 			case REGION_WORKING_IRAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 3))]);
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 3)) >> 2]);
 				break;
 			case REGION_VRAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC)]);
+				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC) >> 2]);
 				break;
 			default:
 				GBALog(gba, GBA_LOG_WARN, "Bad Huffman destination");
