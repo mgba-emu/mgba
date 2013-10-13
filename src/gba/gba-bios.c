@@ -357,7 +357,7 @@ static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest
 	remaining &= 0xFFFFFFFC;
 	// We assume the signature byte (0x20) is correct
 	//var tree = [];
-	int treesize = (memory->d.load8(&memory->d, source + 4, 0) << 1) + 1;
+	int treesize = (memory->d.loadU8(&memory->d, source + 4, 0) << 1) + 1;
 	int block = 0;
 	uint32_t treeBase = source + 5;
 	uint32_t sPointer = source + 5 + treesize;
