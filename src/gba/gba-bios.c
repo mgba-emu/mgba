@@ -245,6 +245,10 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		break;
 	case 0x11:
 	case 0x12:
+		if (gba->cpu.gprs[0] < BASE_WORKING_RAM) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 source");
+			break;
+		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
@@ -256,11 +260,15 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
-				GBALog(gba, GBA_LOG_WARN, "Bad LZ77 destination");
+				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
 				break;
 		}
 		break;
 	case 0x13:
+		if (gba->cpu.gprs[0] < BASE_WORKING_RAM) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman source");
+			break;
+		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
 				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3)) >> 2]);
@@ -272,12 +280,16 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC) >> 2]);
 				break;
 			default:
-				GBALog(gba, GBA_LOG_WARN, "Bad Huffman destination");
+				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
 				break;
 		}
 		break;
 	case 0x14:
 	case 0x15:
+		if (gba->cpu.gprs[0] < BASE_WORKING_RAM) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL source");
+			break;
+		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
 				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
@@ -289,7 +301,7 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
-				GBALog(gba, GBA_LOG_WARN, "Bad RL destination");
+				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
 				break;
 		}
 		break;
