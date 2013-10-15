@@ -1246,7 +1246,7 @@ static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct 
 		inY = height - inY - 1;
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (!sprite->multipalette) {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(16, OBJWIN);
@@ -1283,7 +1283,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	int inY = y - sprite->y;
 	if (inY < 0) {
 		inY += 256;
