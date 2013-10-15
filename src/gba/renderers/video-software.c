@@ -620,7 +620,7 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	// We stash the priority on the top bits so we can do a one-operator comparison
 	// The lower the number, the higher the priority, and sprites take precendence over backgrounds
 	// We want to do special processing if the color pixel is target 1, however
-	if ((color & 0xF8000000) < (current & 0xF8000000)) {
+	if ((color & FLAG_ORDER_MASK) < (current & FLAG_ORDER_MASK)) {
 		if (current & FLAG_UNWRITTEN) {
 			renderer->row[offset] = color | (current & FLAG_OBJWIN);
 		} else if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
@@ -1183,14 +1183,14 @@ static const int _objSizes[32] = {
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData && !(renderer->spriteLayer[outX])) { \
+	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData && !(renderer->spriteLayer[outX])) { \
+	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
@@ -1207,14 +1207,14 @@ static const int _objSizes[32] = {
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData && !(renderer->spriteLayer[outX])) { \
+	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_VARIANT(localX) \
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData && !(renderer->spriteLayer[outX])) { \
+	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData] | flags; \
 	}
 
@@ -1233,7 +1233,7 @@ static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct 
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return;
 	}
-	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
+	uint32_t flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
@@ -1276,7 +1276,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
 		return;
 	}
-	int flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
+	uint32_t flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
 	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 * renderer->target2Obj;
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
