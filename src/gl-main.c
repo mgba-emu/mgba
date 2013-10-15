@@ -99,7 +99,7 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	GBASDLInitEvents(&renderer->events);
 	GBASDLInitAudio(&renderer->audio);
 
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0);
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
