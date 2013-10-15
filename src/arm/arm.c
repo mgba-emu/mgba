@@ -145,7 +145,7 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 		instructionWidth = WORD_SIZE_ARM;
 	}
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->cpsr.priv = MODE_IRQ;
+	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_SWI + WORD_SIZE_ARM;
 	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
