@@ -597,8 +597,6 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 					_drawBackgroundMode5(renderer, &renderer->bg[2], y);
 					break;
 				}
-				renderer->bg[2].sx += renderer->bg[2].dmx;
-				renderer->bg[2].sy += renderer->bg[2].dmy;
 			}
 			if (TEST_LAYER_ENABLED(3)) {
 				switch (renderer->dispcnt.mode) {
@@ -609,11 +607,13 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 					_drawBackgroundMode2(renderer, &renderer->bg[3], y);
 					break;
 				}
-				renderer->bg[3].sx += renderer->bg[3].dmx;
-				renderer->bg[3].sy += renderer->bg[3].dmy;
 			}
 		}
 	}
+	renderer->bg[2].sx += renderer->bg[2].dmx;
+	renderer->bg[2].sy += renderer->bg[2].dmy;
+	renderer->bg[3].sx += renderer->bg[3].dmx;
+	renderer->bg[3].sy += renderer->bg[3].dmy;
 }
 
 static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, uint32_t current) {
