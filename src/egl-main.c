@@ -217,25 +217,26 @@ static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer) {
 static void _GBAEGLRunloop(struct GBAThread* context, struct GBAVideoEGLRenderer* renderer) {
 	SDL_Event event;
 
-	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
-		GBASyncWaitFrameStart(&context->sync, context->frameskip);
-		glViewport(0, 0, 240, 160);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(renderer->program);
-		glUniform1i(renderer->texLocation, 0);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, renderer->tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
-		glVertexAttribPointer(renderer->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
-		glEnableVertexAttribArray(renderer->positionLocation);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		glUseProgram(0);
-		eglSwapBuffers(renderer->display, renderer->surface);
+	while (context->state < THREAD_EXITING) {
+		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+			glViewport(0, 0, 240, 160);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glUseProgram(renderer->program);
+			glUniform1i(renderer->texLocation, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, renderer->tex);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+			glVertexAttribPointer(renderer->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
+			glEnableVertexAttribArray(renderer->positionLocation);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glUseProgram(0);
+			eglSwapBuffers(renderer->display, renderer->surface);
+		}
+		GBASyncWaitFrameEnd(&context->sync);
 
 		while (SDL_PollEvent(&event)) {
 			GBASDLHandleEvent(context, &event);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
 	}
 }
 

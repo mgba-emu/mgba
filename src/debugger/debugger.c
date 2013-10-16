@@ -158,7 +158,7 @@ static void _printStatus(struct ARMDebugger* debugger, struct DebugVector* dv) {
 
 static void _quit(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	(void)(dv);
-	debugger->state = DEBUGGER_EXITING;
+	debugger->state = DEBUGGER_SHUTDOWN;
 }
 
 static void _readByte(struct ARMDebugger* debugger, struct DebugVector* dv) {
@@ -600,7 +600,10 @@ void ARMDebuggerDeinit(struct ARMDebugger* debugger) {
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
-	while (debugger->state != DEBUGGER_EXITING) {
+	if (debugger->state == DEBUGGER_EXITING) {
+		debugger->state = DEBUGGER_RUNNING;
+	}
+	while (debugger->state < DEBUGGER_EXITING) {
 		if (!debugger->breakpoints) {
 			while (debugger->state == DEBUGGER_RUNNING) {
 				ARMRun(debugger->cpu);
@@ -612,14 +615,14 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 			}
 		}
 		switch (debugger->state) {
+		case DEBUGGER_RUNNING:
+			break;
 		case DEBUGGER_PAUSED:
 			_commandLine(debugger);
 			break;
 		case DEBUGGER_EXITING:
+		case DEBUGGER_SHUTDOWN:
 			return;
-		default:
-			// Should never be reached
-			break;
 		}
 	}
 }

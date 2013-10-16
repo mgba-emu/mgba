@@ -136,22 +136,23 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, 240, 160, 0, 0, 1);
-	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
-		GBASyncWaitFrameStart(&context->sync, context->frameskip);
-		glBindTexture(GL_TEXTURE_2D, renderer->tex);
+	while (context->state < THREAD_EXITING) {
+		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+			glBindTexture(GL_TEXTURE_2D, renderer->tex);
 #ifdef COLOR_16_BIT
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
 #else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-		SDL_GL_SwapBuffers();
+			SDL_GL_SwapBuffers();
+		}
+		GBASyncWaitFrameEnd(&context->sync);
 
 		while (SDL_PollEvent(&event)) {
 			GBASDLHandleEvent(context, &event);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
 	}
 }
 

@@ -97,16 +97,17 @@ static void _GBASDLRunloop(struct GBAThread* context) {
 	SDL_Event event;
 	SDL_Surface* surface = SDL_GetVideoSurface();
 
-	while (context->started && (!context->debugger || context->debugger->state != DEBUGGER_EXITING)) {
-		GBASyncWaitFrameStart(&context->sync, context->frameskip);
-		SDL_UnlockSurface(surface);
-		SDL_Flip(surface);
-		SDL_LockSurface(surface);
+	while (context->state < THREAD_EXITING) {
+		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+			SDL_UnlockSurface(surface);
+			SDL_Flip(surface);
+			SDL_LockSurface(surface);
+		}
+		GBASyncWaitFrameEnd(&context->sync);
 
 		while (SDL_PollEvent(&event)) {
 			GBASDLHandleEvent(context, &event);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
 	}
 }
 

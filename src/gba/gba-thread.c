@@ -77,23 +77,40 @@ static void* _GBAThreadRun(void* context) {
 		threadContext->startCallback(threadContext);
 	}
 
-	threadContext->started = 1;
-	pthread_mutex_lock(&threadContext->startMutex);
-	pthread_cond_broadcast(&threadContext->startCond);
-	pthread_mutex_unlock(&threadContext->startMutex);
+	pthread_mutex_lock(&threadContext->stateMutex);
+	threadContext->state = THREAD_RUNNING;
+	pthread_cond_broadcast(&threadContext->stateCond);
+	pthread_mutex_unlock(&threadContext->stateMutex);
 
+	while (threadContext->state < THREAD_EXITING) {
 #ifdef USE_DEBUGGER
-	if (threadContext->useDebugger) {
-		ARMDebuggerRun(&debugger);
-		threadContext->started = 0;
-	} else {
+		if (threadContext->useDebugger) {
+			ARMDebuggerRun(&debugger);
+			if (debugger.state == DEBUGGER_SHUTDOWN) {
+				pthread_mutex_lock(&threadContext->stateMutex);
+				threadContext->state = THREAD_EXITING;
+				pthread_mutex_unlock(&threadContext->stateMutex);
+			}
+		} else {
 #endif
-		while (threadContext->started) {
-			ARMRun(&gba.cpu);
+			while (threadContext->state == THREAD_RUNNING) {
+				ARMRun(&gba.cpu);
+			}
+#ifdef USE_DEBUGGER
 		}
-#ifdef USE_DEBUGGER
-	}
 #endif
+		while (threadContext->state == THREAD_PAUSED) {
+			pthread_mutex_lock(&threadContext->stateMutex);
+			pthread_cond_wait(&threadContext->stateCond, &threadContext->stateMutex);
+			pthread_mutex_unlock(&threadContext->stateMutex);
+		}
+	}
+
+	while (threadContext->state != THREAD_SHUTDOWN) {
+		pthread_mutex_lock(&threadContext->stateMutex);
+		threadContext->state = THREAD_SHUTDOWN;
+		pthread_mutex_unlock(&threadContext->stateMutex);
+	}
 
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
@@ -110,20 +127,21 @@ static void* _GBAThreadRun(void* context) {
 
 int GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
-	pthread_mutex_init(&threadContext->startMutex, 0);
-	pthread_cond_init(&threadContext->startCond, 0);
+	pthread_mutex_init(&threadContext->stateMutex, 0);
+	pthread_cond_init(&threadContext->stateCond, 0);
 
 	pthread_mutex_init(&threadContext->sync.videoFrameMutex, 0);
 	pthread_cond_init(&threadContext->sync.videoFrameAvailableCond, 0);
 	pthread_cond_init(&threadContext->sync.videoFrameRequiredCond, 0);
 	pthread_cond_init(&threadContext->sync.audioRequiredCond, 0);
 
-	pthread_mutex_lock(&threadContext->startMutex);
+	pthread_mutex_lock(&threadContext->stateMutex);
 	threadContext->activeKeys = 0;
-	threadContext->started = 0;
+	threadContext->state = THREAD_INITIALIZED;
+	threadContext->sync.videoFrameOn = 1;
 	pthread_create(&threadContext->thread, 0, _GBAThreadRun, threadContext);
-	pthread_cond_wait(&threadContext->startCond, &threadContext->startMutex);
-	pthread_mutex_unlock(&threadContext->startMutex);
+	pthread_cond_wait(&threadContext->stateCond, &threadContext->stateMutex);
+	pthread_mutex_unlock(&threadContext->stateMutex);
 
 	return 0;
 }
@@ -136,8 +154,8 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 
 	pthread_join(threadContext->thread, 0);
 
-	pthread_mutex_destroy(&threadContext->startMutex);
-	pthread_cond_destroy(&threadContext->startCond);
+	pthread_mutex_destroy(&threadContext->stateMutex);
+	pthread_cond_destroy(&threadContext->stateCond);
 
 	pthread_mutex_destroy(&threadContext->sync.videoFrameMutex);
 	pthread_cond_broadcast(&threadContext->sync.videoFrameAvailableCond);
@@ -147,6 +165,28 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 
 	pthread_cond_broadcast(&threadContext->sync.audioRequiredCond);
 	pthread_cond_destroy(&threadContext->sync.audioRequiredCond);
+}
+
+void GBAThreadTogglePause(struct GBAThread* threadContext) {
+	int frameOn = 1;
+	pthread_mutex_lock(&threadContext->stateMutex);
+	if (threadContext->state == THREAD_PAUSED) {
+		threadContext->state = THREAD_RUNNING;
+	} else if (threadContext->state == THREAD_RUNNING) {
+		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
+			threadContext->debugger->state = DEBUGGER_EXITING;
+		}
+		threadContext->state = THREAD_PAUSED;
+		frameOn = 0;
+	}
+	pthread_cond_broadcast(&threadContext->stateCond);
+	pthread_mutex_unlock(&threadContext->stateMutex);
+	pthread_mutex_lock(&threadContext->sync.videoFrameMutex);
+	if (frameOn != threadContext->sync.videoFrameOn) {
+		threadContext->sync.videoFrameOn = frameOn;
+		pthread_cond_broadcast(&threadContext->sync.videoFrameAvailableCond);
+	}
+	pthread_mutex_unlock(&threadContext->sync.videoFrameMutex);
 }
 
 struct GBAThread* GBAThreadGetContext(void) {
@@ -161,23 +201,29 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	pthread_mutex_lock(&sync->videoFrameMutex);
 	++sync->videoFramePending;
 	--sync->videoFrameSkip;
-	pthread_cond_broadcast(&sync->videoFrameAvailableCond);
-	if (sync->videoFrameWait) {
-		pthread_cond_wait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
+	if (sync->videoFrameSkip < 0) {
+		pthread_cond_broadcast(&sync->videoFrameAvailableCond);
+		if (sync->videoFrameWait) {
+			pthread_cond_wait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
+		}
 	}
 	pthread_mutex_unlock(&sync->videoFrameMutex);
 }
 
-void GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
+int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync) {
-		return;
+		return 1;
 	}
 
 	pthread_mutex_lock(&sync->videoFrameMutex);
 	pthread_cond_broadcast(&sync->videoFrameRequiredCond);
+	if (!sync->videoFrameOn) {
+		return 0;
+	}
 	pthread_cond_wait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
+	return 1;
 }
 
 void GBASyncWaitFrameEnd(struct GBASync* sync) {

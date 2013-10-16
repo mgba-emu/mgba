@@ -76,7 +76,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GBAVideoGLSLRendere
 	SDL_Event event;
 
 	glEnable(GL_TEXTURE_2D);
-	while (context->started && context->debugger->state != DEBUGGER_EXITING) {
+	while (context->state < THREAD_EXITING) {
 		GBAVideoGLSLRendererProcessEvents(renderer);
 		pthread_mutex_lock(&renderer->mutex);
 		if (renderer->d.framesPending) {

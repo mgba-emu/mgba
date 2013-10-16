@@ -55,6 +55,14 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		context->sync.audioWait = !context->sync.audioWait;
 		return;
 	default:
+		if (event->keysym.mod & KMOD_CTRL && event->type == SDL_KEYDOWN) {
+			switch (event->keysym.sym) {
+			case SDLK_p:
+				GBAThreadTogglePause(context);
+			default:
+				break;
+			}
+		}
 		return;
 	}
 
@@ -124,9 +132,11 @@ void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) 
 		// FIXME: this isn't thread-safe
 		if (context->debugger) {
 			context->debugger->state = DEBUGGER_EXITING;
-		} else {
-			context->started = 0;
 		}
+		pthread_mutex_lock(&context->stateMutex);
+		context->state = THREAD_EXITING;
+		pthread_cond_broadcast(&context->stateCond);
+		pthread_mutex_unlock(&context->stateMutex);
 		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
