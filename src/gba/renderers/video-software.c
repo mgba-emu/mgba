@@ -1234,7 +1234,7 @@ static void _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct 
 		return;
 	}
 	uint32_t flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
-	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
+	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
@@ -1277,7 +1277,7 @@ static void _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* render
 		return;
 	}
 	uint32_t flags = (sprite->priority << OFFSET_PRIORITY) | FLAG_FINALIZED;
-	flags |= FLAG_TARGET_1 * ((renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
+	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_TARGET_2 * renderer->target2Obj;
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
