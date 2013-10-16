@@ -54,6 +54,9 @@ struct GBAThread {
 
 int GBAThreadStart(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
+
+void GBAThreadPause(struct GBAThread* threadContext);
+void GBAThreadUnpause(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 

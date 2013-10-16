@@ -167,11 +167,47 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	pthread_cond_destroy(&threadContext->sync.audioRequiredCond);
 }
 
+void GBAThreadPause(struct GBAThread* threadContext) {
+	int frameOn = 1;
+	pthread_mutex_lock(&threadContext->stateMutex);
+	if (threadContext->state == THREAD_RUNNING) {
+		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
+			threadContext->debugger->state = DEBUGGER_EXITING;
+		}
+		threadContext->state = THREAD_PAUSED;
+		frameOn = 0;
+	}
+	pthread_mutex_unlock(&threadContext->stateMutex);
+	pthread_mutex_lock(&threadContext->sync.videoFrameMutex);
+	if (frameOn != threadContext->sync.videoFrameOn) {
+		threadContext->sync.videoFrameOn = frameOn;
+		pthread_cond_broadcast(&threadContext->sync.videoFrameAvailableCond);
+	}
+	pthread_mutex_unlock(&threadContext->sync.videoFrameMutex);
+}
+
+void GBAThreadUnpause(struct GBAThread* threadContext) {
+	int frameOn = 1;
+	pthread_mutex_lock(&threadContext->stateMutex);
+	if (threadContext->state == THREAD_PAUSED) {
+		threadContext->state = THREAD_RUNNING;
+		pthread_cond_broadcast(&threadContext->stateCond);
+	}
+	pthread_mutex_unlock(&threadContext->stateMutex);
+	pthread_mutex_lock(&threadContext->sync.videoFrameMutex);
+	if (frameOn != threadContext->sync.videoFrameOn) {
+		threadContext->sync.videoFrameOn = frameOn;
+		pthread_cond_broadcast(&threadContext->sync.videoFrameAvailableCond);
+	}
+	pthread_mutex_unlock(&threadContext->sync.videoFrameMutex);
+}
+
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	pthread_mutex_lock(&threadContext->stateMutex);
 	if (threadContext->state == THREAD_PAUSED) {
 		threadContext->state = THREAD_RUNNING;
+		pthread_cond_broadcast(&threadContext->stateCond);
 	} else if (threadContext->state == THREAD_RUNNING) {
 		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
@@ -179,7 +215,6 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 		threadContext->state = THREAD_PAUSED;
 		frameOn = 0;
 	}
-	pthread_cond_broadcast(&threadContext->stateCond);
 	pthread_mutex_unlock(&threadContext->stateMutex);
 	pthread_mutex_lock(&threadContext->sync.videoFrameMutex);
 	if (frameOn != threadContext->sync.videoFrameOn) {
