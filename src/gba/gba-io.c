@@ -15,6 +15,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		switch (address) {
 		// Video
 		case REG_DISPSTAT:
+			value &= 0xFFF8;
 			GBAVideoWriteDISPSTAT(&gba->video, value);
 			break;
 
