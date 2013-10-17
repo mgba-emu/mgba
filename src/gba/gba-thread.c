@@ -56,8 +56,8 @@ static void* _GBAThreadRun(void* context) {
 				strcat(savedata, "sav");
 			}
 		}
-		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
 		gba.savefile = savedata;
+		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
 	}
 
 #ifdef USE_DEBUGGER

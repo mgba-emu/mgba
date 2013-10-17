@@ -454,6 +454,9 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	for (i = 0; _savedataOverrides[i].id; ++i) {
 		if (_savedataOverrides[i].id == id) {
+			if (_savedataOverrides[i].type != SAVEDATA_NONE) {
+				GBASavedataInit(&gba->memory.savedata, gba->savefile);
+			}
 			gba->memory.savedata.type = _savedataOverrides[i].type;
 			switch (_savedataOverrides[i].type) {
 				case SAVEDATA_FLASH512:
