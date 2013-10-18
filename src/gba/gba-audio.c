@@ -310,15 +310,15 @@ static void _sample(struct GBAAudio* audio) {
 	}
 
 	if (audio->chALeft) {
-		sampleLeft += audio->chA.sample >> audio->volumeChA;
+		sampleLeft += (audio->chA.sample << 2) >> audio->volumeChA;
 	}
 
 	if (audio->chARight) {
-		sampleRight += audio->chA.sample >> audio->volumeChA;
+		sampleRight += (audio->chA.sample << 2) >> audio->volumeChA;
 	}
 
 	if (audio->chBLeft) {
-		sampleLeft += audio->chB.sample >> audio->volumeChB;
+		sampleLeft += (audio->chB.sample << 2) >> audio->volumeChB;
 	}
 
 	if (audio->chBRight) {
