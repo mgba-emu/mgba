@@ -98,6 +98,9 @@ struct GBAAudioChannel4 {
 		};
 		uint16_t packed;
 	} control;
+
+	unsigned lfsr;
+	int8_t sample;
 };
 
 struct GBAAudioFIFO {

@@ -21,6 +21,7 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->nextCh2 = 0;
 	audio->nextCh3 = 0;
 	audio->nextCh4 = 0;
+	audio->ch4.sample = 0;
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
@@ -46,6 +47,8 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->nextEvent -= cycles;
 	if (audio->nextEvent <= 0) {
+		audio->nextEvent = INT_MAX;
+
 		audio->nextCh1 -= audio->eventDiff;
 		audio->nextCh2 -= audio->eventDiff;
 		audio->nextCh3 -= audio->eventDiff;
@@ -65,6 +68,9 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 
 		if ((audio->ch4Right || audio->ch4Left) && audio->nextCh4 <= 0) {
 			audio->nextCh4 += _updateChannel4(&audio->ch4);
+			if (audio->nextCh4 < audio->nextEvent) {
+				audio->nextEvent = audio->nextCh4;
+			}
 		}
 
 		audio->nextSample -= audio->eventDiff;
@@ -73,7 +79,9 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 			audio->nextSample += audio->sampleInterval;
 		}
 
-		audio->nextEvent = audio->nextSample;
+		if (audio->nextSample < audio->nextEvent) {
+			audio->nextEvent = audio->nextSample;
+		}
 		audio->eventDiff = audio->nextEvent;
 	}
 	return audio->nextEvent;
@@ -132,6 +140,14 @@ void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->ch4.control.packed = value;
+	if (audio->ch4.control.restart) {
+		if (audio->ch4.control.power) {
+			audio->ch4.lfsr = 0x40;
+		} else {
+			audio->ch4.lfsr = 0x4000;
+		}
+		audio->nextCh4 = 0;
+	}
 }
 
 void GBAAudioWriteSOUNDCNT_LO(struct GBAAudio* audio, uint16_t value) {
@@ -200,27 +216,43 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 }
 
 static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
-	return INT_MAX / 4;
+	int lsb = ch->lfsr & 1;
+	ch->sample = lsb * 0xFF - 0x80;
+	ch->lfsr >>= 1;
+	ch->lfsr ^= (lsb * 0x60) << (ch->control.power ? 0 : 8);
+	int timing = ch->control.ratio ? 2 * ch->control.ratio : 1;
+	timing <<= ch->control.frequency;
+	timing *= 32;
+	return timing;
 }
 
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
+	int psgShift = 2 - audio->volume;
+
+	if (audio->ch4Left) {
+		sampleLeft += audio->ch4.sample >> psgShift;
+	}
+
+	if (audio->ch4Right) {
+		sampleRight += audio->ch4.sample >> psgShift;
+	}
 
 	if (audio->chALeft) {
-		sampleLeft += audio->chA.sample;
+		sampleLeft += audio->chA.sample >> audio->volumeChA;
 	}
 
 	if (audio->chARight) {
-		sampleRight += audio->chA.sample;
+		sampleRight += audio->chA.sample >> audio->volumeChA;
 	}
 
 	if (audio->chBLeft) {
-		sampleLeft += audio->chB.sample;
+		sampleLeft += audio->chB.sample >> audio->volumeChB;
 	}
 
 	if (audio->chBRight) {
-		sampleRight += audio->chB.sample;
+		sampleRight += audio->chB.sample >> audio->volumeChB;
 	}
 
 	pthread_mutex_lock(&audio->bufferMutex);
