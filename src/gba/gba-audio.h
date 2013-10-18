@@ -10,15 +10,19 @@ struct GBADMA;
 
 const unsigned GBA_AUDIO_SAMPLES;
 
-union GBAAudioWave {
-	struct {
-		unsigned length : 6;
-		unsigned duty : 2;
-		unsigned stepTime : 3;
-		unsigned direction : 1;
-		unsigned initialVolume : 4;
+struct GBAAudioEnvelope {
+	union {
+		struct {
+			unsigned length : 6;
+			unsigned duty : 2;
+			unsigned stepTime : 3;
+			unsigned direction : 1;
+			unsigned initialVolume : 4;
+		};
+		uint16_t packed;
 	};
-	uint16_t packed;
+	int currentVolume;
+	int32_t nextStep;
 };
 
 union GBAAudioSquareControl {
@@ -42,12 +46,12 @@ struct GBAAudioChannel1 {
 		uint16_t packed;
 	} sweep;
 
-	union GBAAudioWave wave;
+	struct GBAAudioEnvelope envelope;
 	union GBAAudioSquareControl control;
 };
 
 struct GBAAudioChannel2 {
-	union GBAAudioWave wave;
+	struct GBAAudioEnvelope envelope;
 	union GBAAudioSquareControl control;
 };
 
@@ -86,7 +90,7 @@ struct GBAAudioChannel3 {
 };
 
 struct GBAAudioChannel4 {
-	union GBAAudioWave wave;
+	struct GBAAudioEnvelope envelope;
 	union {
 		struct {
 			unsigned ratio : 3;

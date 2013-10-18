@@ -25,6 +25,8 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
+	audio->soundcntLo = 0;
+	audio->soundcntHi = 0;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
 	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
@@ -107,7 +109,7 @@ void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->ch1.wave.packed = value;
+	audio->ch1.envelope.packed = value;
 }
 
 void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
@@ -115,7 +117,7 @@ void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch2.wave.packed = value;
+	audio->ch2.envelope.packed = value;
 }
 
 void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
@@ -135,7 +137,7 @@ void GBAAudioWriteSOUND3CNT_X(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch4.wave.packed = value;
+	audio->ch4.envelope.packed = value;
 }
 
 void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
