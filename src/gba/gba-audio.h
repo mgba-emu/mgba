@@ -173,6 +173,10 @@ struct GBAAudio {
 
 	int32_t nextEvent;
 	int32_t eventDiff;
+	int32_t nextCh1;
+	int32_t nextCh2;
+	int32_t nextCh3;
+	int32_t nextCh4;
 	int32_t nextSample;
 
 	int32_t sampleInterval;

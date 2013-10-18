@@ -4,13 +4,23 @@
 #include "gba-io.h"
 #include "gba-thread.h"
 
+#include <limits.h>
+
 const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 
+static int32_t _updateChannel1(struct GBAAudioChannel1* ch);
+static int32_t _updateChannel2(struct GBAAudioChannel2* ch);
+static int32_t _updateChannel3(struct GBAAudioChannel3* ch);
+static int32_t _updateChannel4(struct GBAAudioChannel4* ch);
 static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio) {
 	audio->nextEvent = 0;
+	audio->nextCh1 = 0;
+	audio->nextCh2 = 0;
+	audio->nextCh3 = 0;
+	audio->nextCh4 = 0;
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
@@ -36,6 +46,27 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->nextEvent -= cycles;
 	if (audio->nextEvent <= 0) {
+		audio->nextCh1 -= audio->eventDiff;
+		audio->nextCh2 -= audio->eventDiff;
+		audio->nextCh3 -= audio->eventDiff;
+		audio->nextCh4 -= audio->eventDiff;
+
+		if ((audio->ch1Right || audio->ch1Left) && audio->nextCh1 <= 0) {
+			audio->nextCh1 += _updateChannel1(&audio->ch1);
+		}
+
+		if ((audio->ch2Right || audio->ch2Left) && audio->nextCh2 <= 0) {
+			audio->nextCh2 += _updateChannel2(&audio->ch2);
+		}
+
+		if ((audio->ch3Right || audio->ch3Left) && audio->nextCh3 <= 0) {
+			audio->nextCh3 += _updateChannel3(&audio->ch3);
+		}
+
+		if ((audio->ch4Right || audio->ch4Left) && audio->nextCh4 <= 0) {
+			audio->nextCh4 += _updateChannel4(&audio->ch4);
+		}
+
 		audio->nextSample -= audio->eventDiff;
 		if (audio->nextSample <= 0) {
 			_sample(audio);
@@ -154,6 +185,22 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 		GBAMemoryServiceDMA(&audio->p->memory, channel->dmaSource, dma);
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
+}
+
+static int32_t _updateChannel1(struct GBAAudioChannel1* ch) {
+	return INT_MAX / 4;
+}
+
+static int32_t _updateChannel2(struct GBAAudioChannel2* ch) {
+	return INT_MAX / 4;
+}
+
+static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
+	return INT_MAX / 4;
+}
+
+static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
+	return INT_MAX / 4;
 }
 
 static void _sample(struct GBAAudio* audio) {

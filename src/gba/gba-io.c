@@ -22,33 +22,43 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		// Audio
 		case REG_SOUND1CNT_LO:
 			GBAAudioWriteSOUND1CNT_LO(&gba->audio, value);
+			value &= 0x00FF;
 			break;
 		case REG_SOUND1CNT_HI:
 			GBAAudioWriteSOUND1CNT_HI(&gba->audio, value);
+			value &= 0xFFC0;
 			break;
 		case REG_SOUND1CNT_X:
 			GBAAudioWriteSOUND1CNT_X(&gba->audio, value);
+			value &= 0x4000;
 			break;
 		case REG_SOUND2CNT_LO:
 			GBAAudioWriteSOUND2CNT_LO(&gba->audio, value);
+			value &= 0xFFC0;
 			break;
 		case REG_SOUND2CNT_HI:
 			GBAAudioWriteSOUND2CNT_HI(&gba->audio, value);
+			value &= 0x4000;
 			break;
 		case REG_SOUND3CNT_LO:
 			GBAAudioWriteSOUND3CNT_LO(&gba->audio, value);
+			value &= 0x00E0;
 			break;
 		case REG_SOUND3CNT_HI:
 			GBAAudioWriteSOUND3CNT_HI(&gba->audio, value);
+			value &= 0xE000;
 			break;
 		case REG_SOUND3CNT_X:
 			GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
+			value &= 0x4000;
 			break;
 		case REG_SOUND4CNT_LO:
 			GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
+			value &= 0xFF00;
 			break;
 		case REG_SOUND4CNT_HI:
 			GBAAudioWriteSOUND4CNT_HI(&gba->audio, value);
+			value &= 0x40FF;
 			break;
 		case REG_SOUNDCNT_LO:
 			GBAAudioWriteSOUNDCNT_LO(&gba->audio, value);
@@ -284,6 +294,16 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_BG1CNT:
 	case REG_BG2CNT:
 	case REG_BG3CNT:
+	case REG_SOUND1CNT_LO:
+	case REG_SOUND1CNT_HI:
+	case REG_SOUND1CNT_X:
+	case REG_SOUND2CNT_LO:
+	case REG_SOUND2CNT_HI:
+	case REG_SOUND3CNT_LO:
+	case REG_SOUND3CNT_HI:
+	case REG_SOUND3CNT_X:
+	case REG_SOUND4CNT_LO:
+	case REG_SOUND4CNT_HI:
 	case REG_DMA0CNT_HI:
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
