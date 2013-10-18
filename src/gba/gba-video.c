@@ -63,6 +63,7 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 	video->nextEvent -= cycles;
+	video->eventDiff += cycles;
 	if (video->nextEvent <= 0) {
 		video->lastHblank -= video->eventDiff;
 		video->nextHblank -= video->eventDiff;
@@ -124,7 +125,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			}
 		}
 
-		video->eventDiff = video->nextEvent;
+		video->eventDiff = 0;
 	}
 	return video->nextEvent;
 }
