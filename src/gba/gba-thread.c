@@ -139,6 +139,7 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->sync.videoFrameOn = 1;
+	threadContext->sync.videoFrameSkip = 0;
 	pthread_create(&threadContext->thread, 0, _GBAThreadRun, threadContext);
 	pthread_cond_wait(&threadContext->stateCond, &threadContext->stateMutex);
 	pthread_mutex_unlock(&threadContext->stateMutex);
