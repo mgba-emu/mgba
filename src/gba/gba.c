@@ -38,6 +38,7 @@ void GBAInit(struct GBA* gba) {
 	gba->errno = GBA_NO_ERROR;
 	gba->errstr = 0;
 	gba->debugger = 0;
+	gba->savefile = 0;
 
 	ARMInit(&gba->cpu);
 
@@ -281,6 +282,9 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	gba->activeFile = fname;
 	fstat(fd, &info);
 	gba->memory.romSize = info.st_size;
+	if (gba->savefile) {
+		GBASavedataInit(&gba->memory.savedata, gba->savefile);
+	}
 	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
 	// TODO: error check
 }
@@ -454,9 +458,6 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	for (i = 0; _savedataOverrides[i].id; ++i) {
 		if (_savedataOverrides[i].id == id) {
-			if (_savedataOverrides[i].type != SAVEDATA_NONE) {
-				GBASavedataInit(&gba->memory.savedata, gba->savefile);
-			}
 			gba->memory.savedata.type = _savedataOverrides[i].type;
 			switch (_savedataOverrides[i].type) {
 				case SAVEDATA_FLASH512:

@@ -317,7 +317,6 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 	case BASE_CART_SRAM:
 		wait = gbaMemory->waitstates16[address >> BASE_OFFSET];
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
-			GBASavedataInit(&gbaMemory->savedata, gbaMemory->p->savefile);
 			GBASavedataInitSRAM(&gbaMemory->savedata);
 		} else if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
 			value = gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
@@ -416,7 +415,6 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		break;
 	case BASE_CART2_EX:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
-			GBASavedataInit(&gbaMemory->savedata, gbaMemory->p->savefile);
 			GBASavedataInitEEPROM(&gbaMemory->savedata);
 		}
 		GBASavedataWriteEEPROM(&gbaMemory->savedata, value, 1);
@@ -469,7 +467,6 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		break;
 	case BASE_CART_SRAM:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
-			GBASavedataInit(&gbaMemory->savedata, gbaMemory->p->savefile);
 			if (address == SAVEDATA_FLASH_BASE) {
 				GBASavedataInitFlash(&gbaMemory->savedata);
 			} else {
@@ -723,7 +720,6 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 			}
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_NONE) {
-				GBASavedataInit(&memory->savedata, memory->p->savefile);
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			while (wordsRemaining) {
