@@ -58,6 +58,7 @@ void GBAInit(struct GBA* gba) {
 
 	GBAIOInit(gba);
 
+	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
 
 	gba->springIRQ = 0;

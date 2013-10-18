@@ -106,6 +106,7 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->executionMode = MODE_THUMB;
 	_ARMSetMode(cpu, MODE_ARM);
 
+	cpu->currentPC = 0;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 

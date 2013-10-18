@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
 	}
 
 	sigset_t signals;
+	sigemptyset(&signals);
 	sigaddset(&signals, SIGINT);
 	sigaddset(&signals, SIGTRAP);
 	pthread_sigmask(SIG_BLOCK, &signals, 0);

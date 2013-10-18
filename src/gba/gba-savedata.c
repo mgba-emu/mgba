@@ -46,7 +46,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 	default:
 		break;
 	}
-	close(savedata->fd);
+	if (savedata->fd >= 0) {
+		close(savedata->fd);
+	}
 	savedata->type = SAVEDATA_NONE;
 }
 
