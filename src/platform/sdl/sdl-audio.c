@@ -37,12 +37,12 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 static void _pulldownResample(struct GBASDLAudio* context) {
 	int32_t value;
 	if (CircleBufferRead32(&context->audio->left, &value)) {
-		context->currentSample.left = value << 7;
+		context->currentSample.left = value << 5;
 	} else {
 		context->currentSample.left = 0;
 	}
 	if (CircleBufferRead32(&context->audio->right, &value)) {
-		context->currentSample.right = value << 7;
+		context->currentSample.right = value << 5;
 	} else {
 		context->currentSample.right = 0;
 	}
