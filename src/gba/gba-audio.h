@@ -36,7 +36,6 @@ struct GBAAudioSquareControl {
 		uint16_t packed;
 	};
 	int hi;
-	int currentFrequency;
 	int32_t nextStep;
 };
 
@@ -51,6 +50,7 @@ struct GBAAudioChannel1 {
 		uint16_t packed;
 	} sweep;
 	int32_t nextSweep;
+	int playing;
 
 	struct GBAAudioEnvelope envelope;
 	struct GBAAudioSquareControl control;

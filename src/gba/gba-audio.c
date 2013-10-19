@@ -28,6 +28,7 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->ch1.envelope.nextStep = INT_MAX;
 	audio->ch1.control.nextStep = 0;
 	audio->ch1.nextSweep = INT_MAX;
+	audio->ch1.playing = 0;
 	audio->ch1.sample = 0;
 	audio->ch2.envelope.nextStep = INT_MAX;
 	audio->ch2.control.nextStep = 0;
@@ -55,6 +56,7 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 	CircleBufferDeinit(&audio->chA.fifo);
 	CircleBufferDeinit(&audio->chB.fifo);
 
+	pthread_mutex_lock(&audio->bufferMutex);
 	pthread_mutex_destroy(&audio->bufferMutex);
 }
 
@@ -168,26 +170,33 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	audio->ch1.sweep.packed = value;
-	if (!audio->ch1.sweep.time) {
+	if (audio->ch1.sweep.time) {
+		audio->ch1.nextSweep = audio->ch1.sweep.time * SWEEP_CYCLES;
+	} else {
 		audio->ch1.nextSweep = INT_MAX;
 	}
 }
 
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->ch1.envelope.packed = value;
-	if (audio->ch1.envelope.stepTime) {
-		audio->ch1.envelope.nextStep = 0;
-	} else {
-		audio->ch1.envelope.nextStep = INT_MAX;
-	}
 }
 
 void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 	audio->ch1.control.packed = value;
-	audio->ch1.control.currentFrequency = audio->ch1.control.frequency;
 	if (audio->ch1.control.restart) {
 		if (audio->ch1.sweep.time) {
 			audio->ch1.nextSweep = audio->ch1.sweep.time * SWEEP_CYCLES;
+		} else {
+			audio->ch1.nextSweep = INT_MAX;
+		}
+		if (!audio->ch1.playing) {
+			audio->nextCh1 = 0;
+		}
+		audio->ch1.playing = 1;
+		if (audio->ch1.envelope.stepTime) {
+			audio->ch1.envelope.nextStep = 0;
+		} else {
+			audio->ch1.envelope.nextStep = INT_MAX;
 		}
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
 		if (audio->ch1.envelope.stepTime) {
@@ -195,7 +204,6 @@ void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 		} else {
 			audio->ch1.envelope.nextStep = INT_MAX;
 		}
-		audio->nextCh1 = 0;
 	}
 }
 
@@ -210,7 +218,6 @@ void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->ch2.control.packed = value;
-	audio->ch2.control.currentFrequency = audio->ch2.control.frequency;
 	if (audio->ch2.control.restart) {
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
 		if (audio->ch2.envelope.stepTime) {
@@ -316,7 +323,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* control, int duty) {
 	control->hi = !control->hi;
-	int period = 16 * (2048 - control->currentFrequency);
+	int period = 16 * (2048 - control->frequency);
 	switch (duty) {
 	case 0:
 		return control->hi ? period : period * 7;
@@ -351,18 +358,18 @@ static void _updateEnvelope(struct GBAAudioEnvelope* envelope) {
 
 static void _updateSweep(struct GBAAudioChannel1* ch) {
 	if (ch->sweep.direction) {
-		int currentFrequency = ch->control.currentFrequency;
-		currentFrequency -= currentFrequency >> ch->sweep.shift;
-		if (currentFrequency >= 0) {
-			ch->control.currentFrequency = currentFrequency;
+		int frequency = ch->control.frequency;
+		frequency -= frequency >> ch->sweep.shift;
+		if (frequency >= 0) {
+			ch->control.frequency = frequency;
 		}
 	} else {
-		int currentFrequency = ch->control.currentFrequency;
-		currentFrequency += currentFrequency >> ch->sweep.shift;
-		if (currentFrequency < 2048) {
-			ch->control.currentFrequency = currentFrequency;
+		int frequency = ch->control.frequency;
+		frequency += frequency >> ch->sweep.shift;
+		if (frequency < 2048) {
+			ch->control.frequency = frequency;
 		} else {
-			// TODO: Stop playing
+			ch->playing = 0;
 		}
 	}
 	ch->nextSweep += ch->sweep.time * SWEEP_CYCLES;
