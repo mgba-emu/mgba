@@ -69,7 +69,7 @@ struct GBAAudioChannel3 {
 			unsigned : 5;
 			unsigned size : 1;
 			unsigned bank : 1;
-			unsigned disable : 1;
+			unsigned enable : 1;
 			unsigned : 7;
 		};
 		uint16_t packed;
@@ -80,8 +80,6 @@ struct GBAAudioChannel3 {
 			unsigned length : 8;
 			unsigned : 5;
 			unsigned volume : 3;
-			unsigned disable : 1;
-			unsigned : 7;
 		};
 		uint16_t packed;
 	} wave;
@@ -95,6 +93,9 @@ struct GBAAudioChannel3 {
 		};
 		uint16_t packed;
 	} control;
+
+	uint32_t wavedata[8];
+	int8_t sample;
 };
 
 struct GBAAudioChannel4 {

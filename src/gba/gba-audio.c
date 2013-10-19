@@ -33,6 +33,8 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->ch2.envelope.nextStep = INT_MAX;
 	audio->ch2.control.nextStep = 0;
 	audio->ch2.sample = 0;
+	audio->ch3.bank.packed = 0;
+	audio->ch3.sample = 0;
 	audio->ch4.sample = 0;
 	audio->ch4.envelope.nextStep = INT_MAX;
 	audio->eventDiff = 0;
@@ -281,7 +283,7 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
-	GBALog(audio->p, GBA_LOG_STUB, "Audio unimplemented");
+	audio->ch3.wavedata[address | (!audio->ch3.bank.bank * 4)] = value;
 }
 
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
@@ -390,7 +392,47 @@ static int32_t _updateChannel2(struct GBAAudioChannel2* ch) {
 }
 
 static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
-	return INT_MAX / 4;
+	int i;
+	int start;
+	int end;
+	int volume;
+	switch (ch->wave.volume) {
+	case 0:
+		volume = 0;
+		break;
+	case 1:
+		volume = 4;
+		break;
+	case 2:
+		volume = 2;
+		break;
+	case 3:
+		volume = 1;
+		break;
+	default:
+		volume = 3;
+		break;
+	}
+	if (ch->bank.size) {
+		start = 7;
+		end = 0;
+	} else if (ch->bank.bank) {
+		start = 7;
+		end = 4;
+	} else {
+		start = 3;
+		end = 0;
+	}
+	uint32_t bitsCarry = ch->wavedata[end] & 0xF0000000;
+	uint32_t bits;
+	for (i = start; i >= end; --i) {
+		bits = ch->wavedata[i] & 0xF0000000;
+		ch->wavedata[i] <<= 4;
+		ch->wavedata[i] |= bitsCarry >> 28;
+		bitsCarry = bits;
+	}
+	ch->sample = ((bitsCarry >> 26) - 0x20) * volume;
+	return 16 * (2048 - ch->control.rate);
 }
 
 static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
@@ -424,6 +466,14 @@ static void _sample(struct GBAAudio* audio) {
 
 	if (audio->ch2Right) {
 		sampleRight += audio->ch2.sample >> psgShift;
+	}
+
+	if (audio->ch3Left) {
+		sampleLeft += audio->ch3.sample >> psgShift;
+	}
+
+	if (audio->ch3Right) {
+		sampleRight += audio->ch3.sample >> psgShift;
 	}
 
 	if (audio->ch4Left) {
