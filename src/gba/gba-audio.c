@@ -310,19 +310,19 @@ static void _sample(struct GBAAudio* audio) {
 	}
 
 	if (audio->chALeft) {
-		sampleLeft += (audio->chA.sample << 2) >> audio->volumeChA;
+		sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
 	}
 
 	if (audio->chARight) {
-		sampleRight += (audio->chA.sample << 2) >> audio->volumeChA;
+		sampleRight += (audio->chA.sample << 2) >> !audio->volumeChA;
 	}
 
 	if (audio->chBLeft) {
-		sampleLeft += (audio->chB.sample << 2) >> audio->volumeChB;
+		sampleLeft += (audio->chB.sample << 2) >> !audio->volumeChB;
 	}
 
 	if (audio->chBRight) {
-		sampleRight += audio->chB.sample >> audio->volumeChB;
+		sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
 	}
 
 	pthread_mutex_lock(&audio->bufferMutex);
