@@ -434,7 +434,7 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 		bitsCarry = bits;
 	}
 	ch->sample = ((bitsCarry >> 26) - 0x20) * volume;
-	return 16 * (2048 - ch->control.rate);
+	return 8 * (2048 - ch->control.rate);
 }
 
 static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
