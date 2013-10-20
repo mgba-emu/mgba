@@ -450,39 +450,42 @@ static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
-	int psgShift = 2 - audio->volume;
+	int psgShift = 1 + audio->volume;
 
 	if (audio->ch1Left) {
-		sampleLeft += audio->ch1.sample >> psgShift;
+		sampleLeft += audio->ch1.sample;
 	}
 
 	if (audio->ch1Right) {
-		sampleRight += audio->ch1.sample >> psgShift;
+		sampleRight += audio->ch1.sample;
 	}
 
 	if (audio->ch2Left) {
-		sampleLeft += audio->ch2.sample >> psgShift;
+		sampleLeft += audio->ch2.sample;
 	}
 
 	if (audio->ch2Right) {
-		sampleRight += audio->ch2.sample >> psgShift;
+		sampleRight += audio->ch2.sample;
 	}
 
 	if (audio->ch3Left) {
-		sampleLeft += audio->ch3.sample >> psgShift;
+		sampleLeft += audio->ch3.sample;
 	}
 
 	if (audio->ch3Right) {
-		sampleRight += audio->ch3.sample >> psgShift;
+		sampleRight += audio->ch3.sample;
 	}
 
 	if (audio->ch4Left) {
-		sampleLeft += audio->ch4.sample >> psgShift;
+		sampleLeft += audio->ch4.sample;
 	}
 
 	if (audio->ch4Right) {
-		sampleRight += audio->ch4.sample >> psgShift;
+		sampleRight += audio->ch4.sample;
 	}
+
+	sampleLeft = (sampleLeft * (1 + audio->volumeLeft)) >> psgShift;
+	sampleRight = (sampleRight * (1 + audio->volumeRight)) >> psgShift;
 
 	if (audio->chALeft) {
 		sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
