@@ -42,6 +42,7 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->sampleRate = 0x8000;
 	audio->soundcntLo = 0;
 	audio->soundcntHi = 0;
+	audio->soundcntX = 0;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
 	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
@@ -67,77 +68,78 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->eventDiff += cycles;
 	while (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
+		if (audio->enable) {
+			audio->nextCh1 -= audio->eventDiff;
+			audio->nextCh2 -= audio->eventDiff;
+			audio->nextCh3 -= audio->eventDiff;
+			audio->nextCh4 -= audio->eventDiff;
 
-		audio->nextCh1 -= audio->eventDiff;
-		audio->nextCh2 -= audio->eventDiff;
-		audio->nextCh3 -= audio->eventDiff;
-		audio->nextCh4 -= audio->eventDiff;
-
-		if (audio->ch1.envelope.nextStep != INT_MAX) {
-			audio->ch1.envelope.nextStep -= audio->eventDiff;
-			if (audio->ch1.envelope.nextStep <= 0) {
-				_updateEnvelope(&audio->ch1.envelope);
-				if (audio->ch1.envelope.nextStep < audio->nextEvent) {
-					audio->nextEvent = audio->ch1.envelope.nextStep;
+			if (audio->ch1.envelope.nextStep != INT_MAX) {
+				audio->ch1.envelope.nextStep -= audio->eventDiff;
+				if (audio->ch1.envelope.nextStep <= 0) {
+					_updateEnvelope(&audio->ch1.envelope);
+					if (audio->ch1.envelope.nextStep < audio->nextEvent) {
+						audio->nextEvent = audio->ch1.envelope.nextStep;
+					}
 				}
 			}
-		}
 
-		if (audio->ch1.nextSweep != INT_MAX) {
-			audio->ch1.nextSweep -= audio->eventDiff;
-			if (audio->ch1.nextSweep <= 0) {
-				_updateSweep(&audio->ch1);
-				if (audio->ch1.nextSweep < audio->nextEvent) {
-					audio->nextEvent = audio->ch1.nextSweep;
+			if (audio->ch1.nextSweep != INT_MAX) {
+				audio->ch1.nextSweep -= audio->eventDiff;
+				if (audio->ch1.nextSweep <= 0) {
+					_updateSweep(&audio->ch1);
+					if (audio->ch1.nextSweep < audio->nextEvent) {
+						audio->nextEvent = audio->ch1.nextSweep;
+					}
 				}
 			}
-		}
 
-		if (audio->ch2.envelope.nextStep != INT_MAX) {
-			audio->ch2.envelope.nextStep -= audio->eventDiff;
-			if (audio->ch2.envelope.nextStep <= 0) {
-				_updateEnvelope(&audio->ch2.envelope);
-				if (audio->ch2.envelope.nextStep < audio->nextEvent) {
-					audio->nextEvent = audio->ch2.envelope.nextStep;
+			if (audio->ch2.envelope.nextStep != INT_MAX) {
+				audio->ch2.envelope.nextStep -= audio->eventDiff;
+				if (audio->ch2.envelope.nextStep <= 0) {
+					_updateEnvelope(&audio->ch2.envelope);
+					if (audio->ch2.envelope.nextStep < audio->nextEvent) {
+						audio->nextEvent = audio->ch2.envelope.nextStep;
+					}
 				}
 			}
-		}
 
-		if (audio->ch4.envelope.nextStep != INT_MAX) {
-			audio->ch4.envelope.nextStep -= audio->eventDiff;
-			if (audio->ch4.envelope.nextStep <= 0) {
-				_updateEnvelope(&audio->ch4.envelope);
-				if (audio->ch4.envelope.nextStep < audio->nextEvent) {
-					audio->nextEvent = audio->ch4.envelope.nextStep;
+			if (audio->ch4.envelope.nextStep != INT_MAX) {
+				audio->ch4.envelope.nextStep -= audio->eventDiff;
+				if (audio->ch4.envelope.nextStep <= 0) {
+					_updateEnvelope(&audio->ch4.envelope);
+					if (audio->ch4.envelope.nextStep < audio->nextEvent) {
+						audio->nextEvent = audio->ch4.envelope.nextStep;
+					}
 				}
 			}
-		}
 
-		if ((audio->ch1Right || audio->ch1Left) && audio->nextCh1 <= 0) {
-			audio->nextCh1 += _updateChannel1(&audio->ch1);
-			if (audio->nextCh1 < audio->nextEvent) {
-				audio->nextEvent = audio->nextCh1;
+			if ((audio->ch1Right || audio->ch1Left) && audio->nextCh1 <= 0) {
+				audio->nextCh1 += _updateChannel1(&audio->ch1);
+				if (audio->nextCh1 < audio->nextEvent) {
+					audio->nextEvent = audio->nextCh1;
+				}
 			}
-		}
 
-		if ((audio->ch2Right || audio->ch2Left) && audio->nextCh2 <= 0) {
-			audio->nextCh2 += _updateChannel2(&audio->ch2);
-			if (audio->nextCh2 < audio->nextEvent) {
-				audio->nextEvent = audio->nextCh2;
+			if ((audio->ch2Right || audio->ch2Left) && audio->nextCh2 <= 0) {
+				audio->nextCh2 += _updateChannel2(&audio->ch2);
+				if (audio->nextCh2 < audio->nextEvent) {
+					audio->nextEvent = audio->nextCh2;
+				}
 			}
-		}
 
-		if ((audio->ch3Right || audio->ch3Left) && audio->nextCh3 <= 0) {
-			audio->nextCh3 += _updateChannel3(&audio->ch3);
-			if (audio->nextCh3 < audio->nextEvent) {
-				audio->nextEvent = audio->nextCh3;
+			if ((audio->ch3Right || audio->ch3Left) && audio->nextCh3 <= 0) {
+				audio->nextCh3 += _updateChannel3(&audio->ch3);
+				if (audio->nextCh3 < audio->nextEvent) {
+					audio->nextEvent = audio->nextCh3;
+				}
 			}
-		}
 
-		if ((audio->ch4Right || audio->ch4Left) && audio->nextCh4 <= 0) {
-			audio->nextCh4 += _updateChannel4(&audio->ch4);
-			if (audio->nextCh4 < audio->nextEvent) {
-				audio->nextEvent = audio->nextCh4;
+			if ((audio->ch4Right || audio->ch4Left) && audio->nextCh4 <= 0) {
+				audio->nextCh4 += _updateChannel4(&audio->ch4);
+				if (audio->nextCh4 < audio->nextEvent) {
+					audio->nextEvent = audio->nextCh4;
+				}
 			}
 		}
 
