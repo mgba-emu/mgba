@@ -37,6 +37,7 @@ struct GBAAudioSquareControl {
 	};
 	int hi;
 	int32_t nextStep;
+	int32_t endTime;
 };
 
 struct GBAAudioChannel1 {
@@ -50,7 +51,6 @@ struct GBAAudioChannel1 {
 		uint16_t packed;
 	} sweep;
 	int32_t nextSweep;
-	int playing;
 
 	struct GBAAudioEnvelope envelope;
 	struct GBAAudioSquareControl control;
@@ -84,14 +84,17 @@ struct GBAAudioChannel3 {
 		uint16_t packed;
 	} wave;
 
-	union {
-		struct {
-			unsigned rate : 11;
-			unsigned : 3;
-			unsigned stop : 1;
-			unsigned restart : 1;
+	struct {
+		union {
+			struct {
+				unsigned rate : 11;
+				unsigned : 3;
+				unsigned stop : 1;
+				unsigned restart : 1;
+			};
+			uint16_t packed;
 		};
-		uint16_t packed;
+		int32_t endTime;
 	} control;
 
 	uint32_t wavedata[8];
@@ -100,16 +103,19 @@ struct GBAAudioChannel3 {
 
 struct GBAAudioChannel4 {
 	struct GBAAudioEnvelope envelope;
-	union {
-		struct {
-			unsigned ratio : 3;
-			unsigned power : 1;
-			unsigned frequency : 4;
-			unsigned : 6;
-			unsigned stop : 1;
-			unsigned restart : 1;
+	struct {
+		union {
+			struct {
+				unsigned ratio : 3;
+				unsigned power : 1;
+				unsigned frequency : 4;
+				unsigned : 6;
+				unsigned stop : 1;
+				unsigned restart : 1;
+			};
+			uint16_t packed;
 		};
-		uint16_t packed;
+		int32_t endTime;
 	} control;
 
 	unsigned lfsr;
