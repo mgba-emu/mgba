@@ -677,123 +677,6 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		localY = 7 - (inY & 0x7); \
 	}
 
-#define BACKGROUND_MODE_0_TILE_16_LOOP \
-	uint32_t tileData; \
-	uint32_t current; \
-	int paletteData, pixelData; \
-	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		paletteData = mapData.palette << 4; \
-		charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY; \
-		tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
-		if (tileData) { \
-			if (!mapData.hflip) { \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				++outX; \
-			} else { \
-				outX += 7; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_16; \
-				outX += 8; \
-			} \
-		} else { \
-			outX += 8; \
-		} \
-	}
-
-#define BACKGROUND_MODE_0_TILE_256_LOOP \
-	uint32_t tileData; \
-	uint32_t current; \
-	int pixelData; \
-	for (; tileX < tileEnd; ++tileX) { \
-		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1); \
-		if (!mapData.hflip) { \
-			tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
-			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-			} else { \
-				outX += 4; \
-			} \
-			tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
-			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-					BACKGROUND_DRAW_PIXEL_256; \
-					++outX; \
-			} else { \
-				outX += 4; \
-			} \
-		} else { \
-			uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
-			if (tileData) { \
-				outX += 3; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				outX += 4; \
-			} else { \
-				outX += 4; \
-			} \
-			tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
-			if (tileData) { \
-				outX += 3; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				--outX; \
-				BACKGROUND_DRAW_PIXEL_256; \
-				outX += 4; \
-			} else { \
-				outX += 4; \
-			} \
-		} \
-	}
-
 #define PREPARE_OBJWIN \
 	int objwinSlowPath = renderer->dispcnt.objwinEnable; \
 	int objwinOnly = 0; \
@@ -957,9 +840,120 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	if (!background->multipalette) {
-		BACKGROUND_MODE_0_TILE_16_LOOP;
+		uint32_t tileData;
+		uint32_t current;
+		int paletteData, pixelData;
+		for (; tileX < tileEnd; ++tileX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			paletteData = mapData.palette << 4;
+			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+			tileData = ((uint32_t*)renderer->d.vram)[charBase];
+			if (tileData) {
+				if (!mapData.hflip) {
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+				} else {
+					outX += 7;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_16;
+					outX += 8;
+				}
+			} else {
+				outX += 8;
+			}
+		}
 	} else {
-		BACKGROUND_MODE_0_TILE_256_LOOP;
+		uint32_t tileData;
+		uint32_t current;
+		int pixelData;
+		for (; tileX < tileEnd; ++tileX) {
+			BACKGROUND_TEXT_SELECT_CHARACTER;
+			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
+			if (!mapData.hflip) {
+				tileData = ((uint32_t*)renderer->d.vram)[charBase];
+				if (tileData) {
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+				} else {
+					outX += 4;
+				}
+				tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
+				if (tileData) {
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+						BACKGROUND_DRAW_PIXEL_256;
+						++outX;
+				} else {
+					outX += 4;
+				}
+			} else {
+				uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
+				if (tileData) {
+					outX += 3;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					outX += 4;
+				} else {
+					outX += 4;
+				}
+				tileData = ((uint32_t*)renderer->d.vram)[charBase];
+				if (tileData) {
+					outX += 3;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					--outX;
+					BACKGROUND_DRAW_PIXEL_256;
+					outX += 4;
+				} else {
+					outX += 4;
+				}
+			}
+		}
 	}
 }
 
