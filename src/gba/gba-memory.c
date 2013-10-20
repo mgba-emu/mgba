@@ -7,8 +7,6 @@
 #include <string.h>
 #include <sys/mman.h>
 
-static const char* GBA_CANNOT_MMAP = "Could not map memory";
-
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count);
 
@@ -40,8 +38,8 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 
 	if (!memory->wram || !memory->iwram) {
 		GBAMemoryDeinit(memory);
-		memory->p->errno = GBA_OUT_OF_MEMORY;
-		memory->p->errstr = GBA_CANNOT_MMAP;
+		GBALog(memory->p, GBA_LOG_ERROR, "Could not map memory");
+		return;
 	}
 
 	int i;

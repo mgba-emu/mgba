@@ -88,8 +88,6 @@ struct GBA {
 
 	const char* activeFile;
 	const char* savefile;
-	enum GBAError errno;
-	const char* errstr;
 	int logLevel;
 };
 

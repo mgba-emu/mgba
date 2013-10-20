@@ -35,8 +35,6 @@ static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
 static void _checkOverrides(struct GBA* gba, uint32_t code);
 
 void GBAInit(struct GBA* gba) {
-	gba->errno = GBA_NO_ERROR;
-	gba->errstr = 0;
 	gba->debugger = 0;
 	gba->savefile = 0;
 
