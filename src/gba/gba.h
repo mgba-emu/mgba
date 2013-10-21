@@ -54,6 +54,8 @@ enum GBAKey {
 	GBA_KEY_L = 9
 };
 
+struct GBARotationSource;
+
 struct GBABoard {
 	struct ARMBoard d;
 	struct GBA* p;
@@ -85,6 +87,7 @@ struct GBA {
 
 	int springIRQ;
 	int* keySource;
+	struct GBARotationSource* rotationSource;
 
 	const char* activeFile;
 	const char* savefile;

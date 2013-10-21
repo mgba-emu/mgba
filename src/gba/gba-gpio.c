@@ -1,6 +1,7 @@
 #include "gba.h"
 
 #include "gba-gpio.h"
+#include "gba-sensors.h"
 
 #include <time.h>
 
@@ -12,6 +13,8 @@ static unsigned _rtcOutput(struct GBACartridgeGPIO* gpio);
 static void _rtcProcessByte(struct GBACartridgeGPIO* gpio);
 static void _rtcUpdateClock(struct GBACartridgeGPIO* gpio);
 static unsigned _rtcBCD(unsigned value);
+
+static void _gyroReadPins(struct GBACartridgeGPIO* gpio);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
@@ -45,7 +48,7 @@ void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t valu
 		gpio->readWrite = value;
 		break;
 	default:
-		GBALog(0, GBA_LOG_WARN, "Invalid GPIO address");
+		GBALog(gpio->p, GBA_LOG_WARN, "Invalid GPIO address");
 	}
 
 	if (gpio->readWrite) {
@@ -73,6 +76,10 @@ void _readPins(struct GBACartridgeGPIO* gpio) {
 	if (gpio->gpioDevices & GPIO_RTC) {
 		_rtcReadPins(gpio);
 	}
+
+	if (gpio->gpioDevices & GPIO_GYRO) {
+		_gyroReadPins(gpio);
+	}
 }
 
 void _outputPins(struct GBACartridgeGPIO* gpio, unsigned pins) {
@@ -81,7 +88,9 @@ void _outputPins(struct GBACartridgeGPIO* gpio, unsigned pins) {
 		old &= gpio->direction;
 		gpio->gpioBase[0] = old | (pins & ~gpio->direction & 0xF);
 	}
-};
+}
+
+// == RTC
 
 void _rtcReadPins(struct GBACartridgeGPIO* gpio) {
 	// Transfer sequence:
@@ -115,7 +124,7 @@ void _rtcReadPins(struct GBACartridgeGPIO* gpio) {
 				// GPIO direction should always != reading
 				if (gpio->dir1) {
 					if (gpio->rtc.command.reading) {
-						GBALog(0, GBA_LOG_GAME_ERROR, "Attempting to write to RTC while in read mode");
+						GBALog(gpio->p, GBA_LOG_GAME_ERROR, "Attempting to write to RTC while in read mode");
 					}
 					++gpio->rtc.bitsRead;
 					if (gpio->rtc.bitsRead == 8) {
@@ -168,7 +177,7 @@ void _rtcProcessByte(struct GBACartridgeGPIO* gpio) {
 				break;
 			}
 		} else {
-			GBALog(0, GBA_LOG_WARN, "Invalid RTC command byte: %02X", gpio->rtc.bits);
+			GBALog(gpio->p, GBA_LOG_WARN, "Invalid RTC command byte: %02X", gpio->rtc.bits);
 		}
 	} else {
 		switch (gpio->rtc.command.command) {
@@ -176,7 +185,7 @@ void _rtcProcessByte(struct GBACartridgeGPIO* gpio) {
 			gpio->rtc.control.packed = gpio->rtc.bits;
 			break;
 		case RTC_FORCE_IRQ:
-			GBALog(0, GBA_LOG_STUB, "Unimplemented RTC command %u", gpio->rtc.command.command);
+			GBALog(gpio->p, GBA_LOG_STUB, "Unimplemented RTC command %u", gpio->rtc.command.command);
 			break;
 		case RTC_RESET:
 		case RTC_DATETIME:
@@ -233,4 +242,39 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
+}
+
+// == Gyro
+
+void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio) {
+	gpio->gpioDevices |= GPIO_GYRO;
+	gpio->gyroSample = 0;
+	gpio->gyroEdge = 0;
+}
+
+
+void _gyroReadPins(struct GBACartridgeGPIO* gpio) {
+	struct GBARotationSource* gyro = gpio->p->rotationSource;
+	if (!gyro) {
+		return;
+	}
+
+	if (gpio->p0) {
+		if (gyro->sample) {
+			gyro->sample(gyro);
+		}
+		int32_t sample = gyro->readGyroZ(gyro);
+
+		// Normalize to ~12 bits, focused on 0x6C0
+		gpio->gyroSample = (sample >> 21) + 0x6C0; // Crop off an extra bit so that we can't go negative
+	}
+
+	if (gpio->gyroEdge && !gpio->p1) {
+		// Write bit on falling edge
+		unsigned bit = gpio->gyroSample >> 15;
+		gpio->gyroSample <<= 1;
+		_outputPins(gpio, bit << 2);
+	}
+
+	gpio->gyroEdge = gpio->p1;
 }

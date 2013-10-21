@@ -33,6 +33,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ 'EVXA', SAVEDATA_FLASH1M, GPIO_RTC },
 	{ 'E4XA', SAVEDATA_FLASH1M, GPIO_NONE },
 	{ 'EEPB', SAVEDATA_FLASH1M, GPIO_RTC },
+	{ 'EWZR', SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO },
 	{ 0, 0, 0 }
 };
 
@@ -69,6 +70,7 @@ void GBAInit(struct GBA* gba) {
 
 	gba->springIRQ = 0;
 	gba->keySource = 0;
+	gba->rotationSource = 0;
 
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR;
 
@@ -484,6 +486,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 
 			if (_overrides[i].gpio & GPIO_RTC) {
 				GBAGPIOInitRTC(&gba->memory.gpio);
+			}
+
+			if (_overrides[i].gpio & GPIO_GYRO) {
+				GBAGPIOInitGyro(&gba->memory.gpio);
 			}
 			return;
 		}

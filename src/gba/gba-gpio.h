@@ -64,6 +64,7 @@ struct GBARTC {
 };
 
 struct GBACartridgeGPIO {
+	struct GBA* p;
 	int gpioDevices;
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
@@ -89,11 +90,16 @@ struct GBACartridgeGPIO {
 	};
 
 	struct GBARTC rtc;
+
+	uint16_t gyroSample;
+	int gyroEdge;
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
 void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t value);
 
 void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
+
+void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
 
 #endif
