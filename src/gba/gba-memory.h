@@ -3,6 +3,7 @@
 
 #include "arm.h"
 
+#include "gba-gpio.h"
 #include "gba-savedata.h"
 
 #include <string.h>
@@ -112,6 +113,7 @@ struct GBAMemory {
 	uint32_t* rom;
 	uint16_t io[SIZE_IO >> 1];
 
+	struct GBACartridgeGPIO gpio;
 	struct GBASavedata savedata;
 	size_t romSize;
 	uint16_t romID;

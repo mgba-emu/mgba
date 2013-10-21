@@ -1,5 +1,6 @@
 #include "gba-memory.h"
 
+#include "gba-gpio.h"
 #include "gba-io.h"
 #include "hle-bios.h"
 
@@ -409,7 +410,12 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
 		break;
 	case BASE_CART0:
-		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store16: 0x%08X", address);
+		if (IS_GPIO_REGISTER(address & 0xFFFFFF)) {
+			uint32_t reg = address & 0xFFFFFF;
+			GBAGPIOWrite(&gbaMemory->gpio, reg, value);
+		} else {
+			GBALog(gbaMemory->p, GBA_LOG_GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
+		}
 		break;
 	case BASE_CART2_EX:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {

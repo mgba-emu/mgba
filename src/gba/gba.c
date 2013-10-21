@@ -22,10 +22,16 @@ enum {
 	SP_BASE_SUPERVISOR = 0x03FFFFE0
 };
 
-static const struct SavedataOverride _savedataOverrides[] = {
-	{ 'E4XA', SAVEDATA_FLASH1M },
-	{ 'EEPB', SAVEDATA_FLASH1M },
-	{ 0, 0 }
+struct GBACartridgeOverride {
+	uint32_t id;
+	enum SavedataType type;
+	int gpio;
+};
+
+static const struct GBACartridgeOverride _overrides[] = {
+	{ 'E4XA', SAVEDATA_FLASH1M, GPIO_NONE },
+	{ 'EEPB', SAVEDATA_FLASH1M, GPIO_RTC },
+	{ 0, 0, 0 }
 };
 
 static void GBAProcessEvents(struct ARMBoard* board);
@@ -284,6 +290,7 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	if (gba->savefile) {
 		GBASavedataInit(&gba->memory.savedata, gba->savefile);
 	}
+	GBAGPIOInit(&gba->memory.gpio, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
 	// TODO: error check
 }
@@ -455,10 +462,10 @@ void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 
 void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
-	for (i = 0; _savedataOverrides[i].id; ++i) {
-		if (_savedataOverrides[i].id == id) {
-			gba->memory.savedata.type = _savedataOverrides[i].type;
-			switch (_savedataOverrides[i].type) {
+	for (i = 0; _overrides[i].id; ++i) {
+		if (_overrides[i].id == id) {
+			gba->memory.savedata.type = _overrides[i].type;
+			switch (_overrides[i].type) {
 				case SAVEDATA_FLASH512:
 				case SAVEDATA_FLASH1M:
 					GBASavedataInitFlash(&gba->memory.savedata);
@@ -473,6 +480,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 					break;
 			}
 			return;
+
+			if (_overrides[i].gpio & GPIO_RTC) {
+				GBAGPIOInitRTC(&gba->memory.gpio);
+			}
 		}
 	}
 }
