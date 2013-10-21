@@ -466,10 +466,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	for (i = 0; _overrides[i].id; ++i) {
 		if (_overrides[i].id == id) {
-			gba->memory.savedata.type = _overrides[i].type;
 			switch (_overrides[i].type) {
 				case SAVEDATA_FLASH512:
 				case SAVEDATA_FLASH1M:
+					gba->memory.savedata.type = _overrides[i].type;
 					GBASavedataInitFlash(&gba->memory.savedata);
 					break;
 				case SAVEDATA_EEPROM:
