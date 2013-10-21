@@ -24,13 +24,48 @@ enum GPIODirection {
 	GPIO_READ_WRITE = 1
 };
 
+union RTCControl {
+	struct {
+		unsigned : 3;
+		unsigned minIRQ : 1;
+		unsigned : 2;
+		unsigned hour24 : 1;
+		unsigned poweroff : 1;
+	};
+	uint8_t packed;
+};
+
+enum RTCCommand {
+	RTC_RESET = 0,
+	RTC_DATETIME = 2,
+	RTC_FORCE_IRQ = 3,
+	RTC_CONTROL = 4,
+	RTC_TIME = 6
+};
+
+union RTCCommandData {
+	struct {
+		unsigned magic : 4;
+		enum RTCCommand command : 3;
+		unsigned reading : 1;
+	};
+	uint8_t packed;
+};
+
 struct GBARTC {
-	// TODO
+	int bytesRemaining;
+	int transferStep;
+	int bitsRead;
+	int bits;
+	int commandActive;
+	union RTCCommandData command;
+	union RTCControl control;
+	uint8_t time[7];
 };
 
 struct GBACartridgeGPIO {
 	int gpioDevices;
-	enum GPIODirection direction;
+	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 
 	union {
@@ -50,7 +85,7 @@ struct GBACartridgeGPIO {
 			unsigned dir2 : 1;
 			unsigned dir3 : 1;			
 		};
-		uint16_t pinDirection;
+		uint16_t direction;
 	};
 
 	struct GBARTC rtc;

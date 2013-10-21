@@ -29,6 +29,8 @@ struct GBACartridgeOverride {
 };
 
 static const struct GBACartridgeOverride _overrides[] = {
+	{ 'EPXA', SAVEDATA_FLASH1M, GPIO_RTC },
+	{ 'EVXA', SAVEDATA_FLASH1M, GPIO_RTC },
 	{ 'E4XA', SAVEDATA_FLASH1M, GPIO_NONE },
 	{ 'EEPB', SAVEDATA_FLASH1M, GPIO_RTC },
 	{ 0, 0, 0 }
@@ -479,11 +481,11 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 				case SAVEDATA_NONE:
 					break;
 			}
-			return;
 
 			if (_overrides[i].gpio & GPIO_RTC) {
 				GBAGPIOInitRTC(&gba->memory.gpio);
 			}
+			return;
 		}
 	}
 }
