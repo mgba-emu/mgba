@@ -118,6 +118,7 @@ void GBAInit(struct GBA* gba) {
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
+	gba->rumble = 0;
 
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR;
 
