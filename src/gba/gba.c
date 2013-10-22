@@ -534,6 +534,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 			if (_overrides[i].gpio & GPIO_GYRO) {
 				GBAGPIOInitGyro(&gba->memory.gpio);
 			}
+
+			if (_overrides[i].gpio & GPIO_RUMBLE) {
+				GBAGPIOInitRumble(&gba->memory.gpio);
+			}
 			return;
 		}
 	}

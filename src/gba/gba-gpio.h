@@ -63,6 +63,10 @@ struct GBARTC {
 	uint8_t time[7];
 };
 
+struct GBARumble {
+	void (*setRumble)(struct GBARumble*, int enable);
+};
+
 struct GBACartridgeGPIO {
 	struct GBA* p;
 	int gpioDevices;
@@ -101,5 +105,7 @@ void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t valu
 void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
 
 void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
+
+void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
 
 #endif

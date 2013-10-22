@@ -88,6 +88,7 @@ struct GBA {
 	int springIRQ;
 	int* keySource;
 	struct GBARotationSource* rotationSource;
+	struct GBARumble* rumble;
 
 	const char* activeFile;
 	const char* savefile;

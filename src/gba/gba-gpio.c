@@ -16,6 +16,8 @@ static unsigned _rtcBCD(unsigned value);
 
 static void _gyroReadPins(struct GBACartridgeGPIO* gpio);
 
+static void _rumbleReadPins(struct GBACartridgeGPIO* gpio);
+
 static const int RTC_BYTES[8] = {
 	0, // Force reset
 	0, // Empty
@@ -79,6 +81,10 @@ void _readPins(struct GBACartridgeGPIO* gpio) {
 
 	if (gpio->gpioDevices & GPIO_GYRO) {
 		_gyroReadPins(gpio);
+	}
+
+	if (gpio->gpioDevices & GPIO_RUMBLE) {
+		_rumbleReadPins(gpio);
 	}
 }
 
@@ -252,7 +258,6 @@ void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio) {
 	gpio->gyroEdge = 0;
 }
 
-
 void _gyroReadPins(struct GBACartridgeGPIO* gpio) {
 	struct GBARotationSource* gyro = gpio->p->rotationSource;
 	if (!gyro) {
@@ -277,4 +282,19 @@ void _gyroReadPins(struct GBACartridgeGPIO* gpio) {
 	}
 
 	gpio->gyroEdge = gpio->p1;
+}
+
+// == Rumble
+
+void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio) {
+	gpio->gpioDevices |= GPIO_RUMBLE;
+}
+
+void _rumbleReadPins(struct GBACartridgeGPIO* gpio) {
+	struct GBARumble* rumble = gpio->p->rumble;
+	if (!rumble) {
+		return;
+	}
+
+	rumble->setRumble(rumble, gpio->p3);
 }
