@@ -37,6 +37,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ 'E23U', SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
 	{ 'P23U', SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
 
+	// Drill Dozer
+	{ 'J94V', SAVEDATA_SRAM, GPIO_RUMBLE },
+	{ 'E94V', SAVEDATA_SRAM, GPIO_RUMBLE },
+
 	// Pokemon Ruby
 	{ 'JVXA', SAVEDATA_FLASH1M, GPIO_RTC },
 	{ 'EVXA', SAVEDATA_FLASH1M, GPIO_RTC },
