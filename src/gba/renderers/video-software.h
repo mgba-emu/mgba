@@ -116,6 +116,16 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldb;
 	uint16_t bldy;
 
+	union {
+		struct {
+			unsigned bgH : 4;
+			unsigned bgV : 4;
+			unsigned objH : 4;
+			unsigned objV : 4;
+		};
+		uint16_t packed;
+	} mosaic;
+
 	struct WindowN {
 		union WindowRegion h;
 		union WindowRegion v;

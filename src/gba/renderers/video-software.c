@@ -260,6 +260,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->objwin.packed = value >> 8;
 		break;
 	case REG_MOSAIC:
+		softwareRenderer->mosaic.packed = value;
+		break;
 	case REG_GREENSWP:
 		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
 		break;
@@ -710,6 +712,10 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
 	int inX = renderer->start + background->x;
+	if (background->mosaic) {
+		int mosaicV = renderer->mosaic.bgV + 1;
+		y -= y % mosaicV;
+	}
 	int inY = y + background->y;
 	union GBATextMapData mapData;
 
@@ -739,12 +745,15 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	PREPARE_OBJWIN;
 
 	int outX = renderer->start;
+
+	uint32_t tileData;
+	uint32_t current;
+	int pixelData;
+	int paletteData;
 	int tileX = 0;
 	int tileEnd = (renderer->end - renderer->start + (inX & 0x7)) >> 3;
+
 	if (inX & 0x7) {
-		uint32_t tileData;
-		uint32_t current;
-		int pixelData, paletteData;
 		int mod8 = inX & 0x7;
 		BACKGROUND_TEXT_SELECT_CHARACTER;
 
@@ -786,8 +795,6 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 	if (inX & 0x7 || (renderer->end - renderer->start) & 0x7) {
 		tileX = tileEnd;
-		uint32_t tileData;
-		uint32_t current;
 		int pixelData, paletteData;
 		int mod8 = (inX + renderer->end - renderer->start) & 0x7;
 		BACKGROUND_TEXT_SELECT_CHARACTER;
@@ -839,10 +846,49 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		outX = renderer->start + tileX * 8 - (inX & 0x7);
 	}
 
+	if (background->mosaic) {
+		int mosaicH = renderer->mosaic.bgH + 1;
+		int x;
+		int mosaicWait = outX % mosaicH;
+		int carryData = 0;
+
+		if (!background->multipalette) {
+			for (; tileX < tileEnd; ++tileX) {
+				BACKGROUND_TEXT_SELECT_CHARACTER;
+				charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+				tileData = carryData;
+				for (x = 0; x < 8; ++x) {
+					if (!mosaicWait) {
+						paletteData = mapData.palette << 4;
+						tileData = ((uint32_t*)renderer->d.vram)[charBase];
+						if (!mapData.hflip) {
+							tileData >>= x * 4;
+						} else {
+							tileData >>= (7 - x) * 4;
+						}
+						tileData &= 0xF;
+						tileData |= tileData << 4;
+						tileData |= tileData << 8;
+						tileData |= tileData << 12;
+						tileData |= tileData << 16;
+						tileData |= tileData << 20;
+						tileData |= tileData << 24;
+						tileData |= tileData << 28;
+						carryData = tileData;
+						mosaicWait = mosaicH;
+					}
+					--mosaicWait;
+					BACKGROUND_DRAW_PIXEL_16;
+					++outX;
+				}
+			}
+		} else {
+			// TODO: 256-color mosaic
+		}
+		return;
+	}
+
 	if (!background->multipalette) {
-		uint32_t tileData;
-		uint32_t current;
-		int paletteData, pixelData;
 		for (; tileX < tileEnd; ++tileX) {
 			BACKGROUND_TEXT_SELECT_CHARACTER;
 			paletteData = mapData.palette << 4;
@@ -890,9 +936,6 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			}
 		}
 	} else {
-		uint32_t tileData;
-		uint32_t current;
-		int pixelData;
 		for (; tileX < tileEnd; ++tileX) {
 			BACKGROUND_TEXT_SELECT_CHARACTER;
 			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
