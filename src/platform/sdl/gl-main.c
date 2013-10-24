@@ -148,6 +148,8 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 			SDL_GL_SwapBuffers();
+		} else {
+			usleep(50000);
 		}
 		GBASyncWaitFrameEnd(&context->sync);
 
