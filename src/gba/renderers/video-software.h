@@ -144,8 +144,6 @@ struct GBAVideoSoftwareRenderer {
 
 	int start;
 	int end;
-
-	uint32_t enabledBitmap[4];
 };
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);
