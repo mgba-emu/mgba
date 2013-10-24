@@ -372,7 +372,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		} else {
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
-		for (; x < softwareRenderer->windows[w].endX; ++x) {
+		int end = softwareRenderer->windows[w].endX;
+		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
 	}
@@ -388,7 +389,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			} else {
 				backdrop |= softwareRenderer->variantPalette[0];
 			}
-			for (; x < softwareRenderer->windows[w].endX; ++x) {
+			int end = softwareRenderer->windows[w].endX;
+			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
 				if (color & FLAG_TARGET_1 && !(color & FLAG_FINALIZED)) {
 					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
