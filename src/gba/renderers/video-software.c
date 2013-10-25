@@ -531,6 +531,7 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int w;
 	renderer->end = 0;
+	int spriteLayers = 0;
 	if (renderer->dispcnt.objEnable) {
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
@@ -543,8 +544,10 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			for (i = 0; i < 128; ++i) {
 				struct GBAObj* sprite = &renderer->d.oam->obj[i];
 				if (sprite->transformed) {
+					spriteLayers |= 1 << sprite->priority;
 					_preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
 				} else if (!sprite->disable) {
+					spriteLayers |= 1 << sprite->priority;
 					_preprocessSprite(renderer, sprite, y);
 				}
 			}
@@ -553,7 +556,9 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 
 	int priority;
 	for (priority = 0; priority < 4; ++priority) {
-		_postprocessSprite(renderer, priority);
+		if (spriteLayers & (1 << priority)) {
+			_postprocessSprite(renderer, priority);
+		}
 		renderer->end = 0;
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
