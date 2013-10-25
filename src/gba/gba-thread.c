@@ -7,15 +7,15 @@
 #include <stdlib.h>
 #include <signal.h>
 
-static pthread_key_t contextKey;
+static pthread_key_t _contextKey;
+static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
 
 static void _createTLS(void) {
-	pthread_key_create(&contextKey, 0);
+	pthread_key_create(&_contextKey, 0);
 }
 
 static void* _GBAThreadRun(void* context) {
-	static pthread_once_t once = PTHREAD_ONCE_INIT;
-	pthread_once(&once, _createTLS);
+	pthread_once(&_contextOnce, _createTLS);
 
 #ifdef USE_DEBUGGER
 	struct ARMDebugger debugger;
@@ -31,7 +31,7 @@ static void* _GBAThreadRun(void* context) {
 	GBAInit(&gba);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
-	pthread_setspecific(contextKey, threadContext);
+	pthread_setspecific(_contextKey, threadContext);
 	if (threadContext->renderer) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
@@ -226,7 +226,8 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 }
 
 struct GBAThread* GBAThreadGetContext(void) {
-	return pthread_getspecific(contextKey);
+	pthread_once(&_contextOnce, _createTLS);
+	return pthread_getspecific(_contextKey);
 }
 
 void GBASyncPostFrame(struct GBASync* sync) {
