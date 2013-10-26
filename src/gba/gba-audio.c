@@ -217,12 +217,15 @@ void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->ch1.envelope.packed = value;
+	audio->ch1.envelope.dead = 0;
 	if (audio->ch1.envelope.stepTime) {
 		audio->ch1.envelope.nextStep = 0;
 	} else {
 		audio->ch1.envelope.nextStep = INT_MAX;
+		if (audio->ch1.envelope.initialVolume == 0) {
+			audio->ch1.envelope.dead = 1;
+		}
 	}
-	audio->ch1.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
@@ -254,12 +257,15 @@ void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	audio->ch2.envelope.packed = value;
+	audio->ch2.envelope.dead = 0;
 	if (audio->ch2.envelope.stepTime) {
 		audio->ch2.envelope.nextStep = 0;
 	} else {
 		audio->ch2.envelope.nextStep = INT_MAX;
+		if (audio->ch2.envelope.initialVolume == 0) {
+			audio->ch2.envelope.dead = 1;
+		}
 	}
-	audio->ch2.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
@@ -295,12 +301,15 @@ void GBAAudioWriteSOUND3CNT_X(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	audio->ch4.envelope.packed = value;
+	audio->ch4.envelope.dead = 0;
 	if (audio->ch4.envelope.stepTime) {
 		audio->ch4.envelope.nextStep = 0;
 	} else {
 		audio->ch4.envelope.nextStep = INT_MAX;
+		if (audio->ch4.envelope.initialVolume == 0) {
+			audio->ch4.envelope.dead = 1;
+		}
 	}
-	audio->ch4.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
