@@ -44,7 +44,11 @@ enum BlendEffect {
 
 enum {
 #ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	GBA_COLOR_WHITE = 0xFFDF,
+#else
 	GBA_COLOR_WHITE = 0x7FFF,
+#endif
 #else
 	GBA_COLOR_WHITE = 0x00F8F8F8,
 #endif
