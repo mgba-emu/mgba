@@ -1103,11 +1103,12 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 
 		uint32_t current = renderer->row[outX];
-		if (color && !(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
-			if (!variant) {
-				_composite(renderer, outX, renderer->normalPalette[color] | flags, current);
-			} else {
-				_composite(renderer, outX, renderer->variantPalette[color] | flags, current);
+		if (color && !(current & FLAG_FINALIZED)) {
+			if (!objwinSlowPath) {
+				_composite(renderer, outX, palette[color] | flags, current);
+			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
+				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
+				_composite(renderer, outX, currentPalette[color] | flags, current);
 			}
 		}
 	}
