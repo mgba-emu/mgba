@@ -1216,14 +1216,7 @@ static const int _objSizes[32] = {
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
-	}
-
-#define SPRITE_DRAW_PIXEL_16_VARIANT(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
-	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData | (sprite->palette << 4)] | flags; \
+		renderer->spriteLayer[outX] = palette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
@@ -1240,14 +1233,7 @@ static const int _objSizes[32] = {
 	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = renderer->normalPalette[0x100 | tileData] | flags; \
-	}
-
-#define SPRITE_DRAW_PIXEL_256_VARIANT(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
-	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = renderer->variantPalette[0x100 | tileData] | flags; \
+		renderer->spriteLayer[outX] = palette[0x100 | tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
@@ -1279,21 +1265,21 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	color_t* palette = renderer->normalPalette;
+	if (variant) {
+		palette = renderer->variantPalette;
+	}
 	if (!sprite->multipalette) {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(16, OBJWIN);
-		} else if (!variant) {
-			SPRITE_NORMAL_LOOP(16, NORMAL);
 		} else {
-			SPRITE_NORMAL_LOOP(16, VARIANT);
+			SPRITE_NORMAL_LOOP(16, NORMAL);
 		}
 	} else {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(256, OBJWIN);
-		} else if (!variant) {
-			SPRITE_NORMAL_LOOP(256, NORMAL);
 		} else {
-			SPRITE_NORMAL_LOOP(256, VARIANT);
+			SPRITE_NORMAL_LOOP(256, NORMAL);
 		}
 	}
 	return 1;
@@ -1317,6 +1303,10 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	color_t* palette = renderer->normalPalette;
+	if (variant) {
+		palette = renderer->variantPalette;
+	}
 	int inY = y - sprite->y;
 	if (inY < 0) {
 		inY += 256;
@@ -1324,18 +1314,14 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 	if (!sprite->multipalette) {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
-		} else if (!variant) {
-			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
 		} else {
-			SPRITE_TRANSFORMED_LOOP(16, VARIANT);
+			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
 		}
 	} else {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
-		} else if (!variant) {
-			SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 		} else {
-			SPRITE_TRANSFORMED_LOOP(256, VARIANT);
+			SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 		}
 	}
 	return 1;
