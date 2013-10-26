@@ -68,17 +68,15 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	while (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
 		if (audio->enable) {
-			audio->nextCh1 -= audio->eventDiff;
-			audio->nextCh2 -= audio->eventDiff;
-			audio->nextCh3 -= audio->eventDiff;
-			audio->nextCh4 -= audio->eventDiff;
-
-			if (audio->playingCh1) {
-				audio->ch1.envelope.nextStep -= audio->eventDiff;
-				if (audio->ch1.envelope.nextStep <= 0) {
-					_updateEnvelope(&audio->ch1.envelope);
-					if (audio->ch1.envelope.nextStep < audio->nextEvent) {
-						audio->nextEvent = audio->ch1.envelope.nextStep;
+			if (audio->playingCh1 && !audio->ch1.envelope.dead) {
+				audio->nextCh1 -= audio->eventDiff;
+				if (audio->ch1.envelope.nextStep != INT_MAX) {
+					audio->ch1.envelope.nextStep -= audio->eventDiff;
+					if (audio->ch1.envelope.nextStep <= 0) {
+						_updateEnvelope(&audio->ch1.envelope);
+						if (audio->ch1.envelope.nextStep < audio->nextEvent) {
+							audio->nextEvent = audio->ch1.envelope.nextStep;
+						}
 					}
 				}
 
@@ -107,12 +105,15 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 				}
 			}
 
-			if (audio->playingCh2) {
-				audio->ch2.envelope.nextStep -= audio->eventDiff;
-				if (audio->ch2.envelope.nextStep <= 0) {
-					_updateEnvelope(&audio->ch2.envelope);
-					if (audio->ch2.envelope.nextStep < audio->nextEvent) {
-						audio->nextEvent = audio->ch2.envelope.nextStep;
+			if (audio->playingCh2 && !audio->ch2.envelope.dead) {
+				audio->nextCh2 -= audio->eventDiff;
+				if (audio->ch2.envelope.nextStep != INT_MAX) {
+					audio->ch2.envelope.nextStep -= audio->eventDiff;
+					if (audio->ch2.envelope.nextStep <= 0) {
+						_updateEnvelope(&audio->ch2.envelope);
+						if (audio->ch2.envelope.nextStep < audio->nextEvent) {
+							audio->nextEvent = audio->ch2.envelope.nextStep;
+						}
 					}
 				}
 
@@ -132,6 +133,7 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 			}
 
 			if (audio->playingCh3) {
+				audio->nextCh3 -= audio->eventDiff;
 				if (audio->nextCh3 <= 0) {
 					audio->nextCh3 += _updateChannel3(&audio->ch3);
 					if (audio->nextCh3 < audio->nextEvent) {
@@ -147,12 +149,15 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 				}
 			}
 
-			if (audio->playingCh4) {
-				audio->ch4.envelope.nextStep -= audio->eventDiff;
-				if (audio->ch4.envelope.nextStep <= 0) {
-					_updateEnvelope(&audio->ch4.envelope);
-					if (audio->ch4.envelope.nextStep < audio->nextEvent) {
-						audio->nextEvent = audio->ch4.envelope.nextStep;
+			if (audio->playingCh4 && !audio->ch4.envelope.dead) {
+				audio->nextCh4 -= audio->eventDiff;
+				if (audio->ch4.envelope.nextStep != INT_MAX) {
+					audio->ch4.envelope.nextStep -= audio->eventDiff;
+					if (audio->ch4.envelope.nextStep <= 0) {
+						_updateEnvelope(&audio->ch4.envelope);
+						if (audio->ch4.envelope.nextStep < audio->nextEvent) {
+							audio->nextEvent = audio->ch4.envelope.nextStep;
+						}
 					}
 				}
 
@@ -212,6 +217,12 @@ void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->ch1.envelope.packed = value;
+	if (audio->ch1.envelope.stepTime) {
+		audio->ch1.envelope.nextStep = 0;
+	} else {
+		audio->ch1.envelope.nextStep = INT_MAX;
+	}
+	audio->ch1.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
@@ -248,6 +259,7 @@ void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	} else {
 		audio->ch2.envelope.nextStep = INT_MAX;
 	}
+	audio->ch2.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
@@ -288,6 +300,7 @@ void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	} else {
 		audio->ch4.envelope.nextStep = INT_MAX;
 	}
+	audio->ch4.envelope.dead = 0;
 }
 
 void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
@@ -392,6 +405,7 @@ static void _updateEnvelope(struct GBAAudioEnvelope* envelope) {
 		envelope->nextStep = INT_MAX;
 	} else if (envelope->currentVolume <= 0) {
 		envelope->currentVolume = 0;
+		envelope->dead = 1;
 		envelope->nextStep = INT_MAX;
 	} else {
 		envelope->nextStep += envelope->stepTime * (GBA_ARM7TDMI_FREQUENCY >> 6);

@@ -22,6 +22,7 @@ struct GBAAudioEnvelope {
 		uint16_t packed;
 	};
 	int currentVolume;
+	int dead;
 	int32_t nextStep;
 };
 
