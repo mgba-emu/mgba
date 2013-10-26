@@ -7,7 +7,8 @@ static const ThumbInstruction _thumbTable[0x400];
 void ThumbStep(struct ARMCore* cpu) {
 	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
-	uint16_t opcode = ((uint16_t*) cpu->memory->activeRegion)[(cpu->currentPC & cpu->memory->activeMask) >> 1];
+	uint16_t opcode;
+	LOAD_16(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }

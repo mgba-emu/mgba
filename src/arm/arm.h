@@ -3,6 +3,18 @@
 
 #include <stdint.h>
 
+#ifdef __POWERPC__
+#define LOAD_32(DEST, ADDR, ARR) asm("lwbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
+#define LOAD_16(DEST, ADDR, ARR) asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
+#define STORE_32(SRC, ADDR, ARR) asm("stwbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
+#define STORE_16(SRC, ADDR, ARR) asm("sthbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
+#else
+#define LOAD_32(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
+#define LOAD_16(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
+#define STORE_32(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = SRC
+#define STORE_16(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
+#endif
+
 enum {
 	ARM_SP = 13,
 	ARM_LR = 14,
@@ -52,6 +64,17 @@ struct ARMCore;
 
 union PSR {
 	struct {
+#ifdef __POWERPC__
+		unsigned n : 1;
+		unsigned z : 1;
+		unsigned c : 1;
+		unsigned v : 1;
+		unsigned : 20;
+		unsigned i : 1;
+		unsigned f : 1;
+		enum ExecutionMode t : 1;
+		enum PrivilegeMode priv : 5;
+#else
 		enum PrivilegeMode priv : 5;
 		enum ExecutionMode t : 1;
 		unsigned f : 1;
@@ -61,6 +84,7 @@ union PSR {
 		unsigned c : 1;
 		unsigned z : 1;
 		unsigned n : 1;
+#endif
 	};
 
 	int32_t packed;

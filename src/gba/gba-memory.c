@@ -127,7 +127,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	case BASE_BIOS:
 		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
 			if (address < SIZE_BIOS) {
-				value = gbaMemory->bios[address >> 2];
+				LOAD_32(value, address, gbaMemory->bios);
 			} else {
 				value = 0;
 			}
@@ -136,23 +136,23 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_WORKING_RAM:
-		value = gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2];
+		LOAD_32(value, address & (SIZE_WORKING_RAM - 1), gbaMemory->wram);
 		wait = gbaMemory->waitstates32[REGION_WORKING_RAM];
 		break;
 	case BASE_WORKING_IRAM:
-		value = gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2];
+		LOAD_32(value, address & (SIZE_WORKING_IRAM - 1), gbaMemory->iwram);
 		break;
 	case BASE_IO:
 		value = GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gbaMemory->p, (address & (SIZE_IO - 1)) | 2) << 16);
 		break;
 	case BASE_PALETTE_RAM:
-		value = ((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2];
+		LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gbaMemory->p->video.palette);
 		break;
 	case BASE_VRAM:
-		value = ((int32_t*) gbaMemory->p->video.renderer->vram)[(address & 0x0001FFFF) >> 2];
+		LOAD_32(value, address & 0x0001FFFF, gbaMemory->p->video.renderer->vram);
 		break;
 	case BASE_OAM:
-		value = ((int32_t*) gbaMemory->p->video.oam.raw)[(address & (SIZE_OAM - 1)) >> 2];
+		LOAD_32(value, address & (SIZE_OAM - 1), gbaMemory->p->video.oam.raw);
 		break;
 	case BASE_CART0:
 	case BASE_CART0_EX:
@@ -162,7 +162,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	case BASE_CART2_EX:
 		wait = gbaMemory->waitstates32[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
-			value = gbaMemory->rom[(address & (SIZE_CART0 - 1)) >> 2];
+			LOAD_32(value, address & (SIZE_CART0 - 1), gbaMemory->rom);
 		}
 		break;
 	case BASE_CART_SRAM:
@@ -201,7 +201,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	case BASE_BIOS:
 		if (gbaMemory->p->cpu.currentPC >> BASE_OFFSET == REGION_BIOS) {
 			if (address < SIZE_BIOS) {
-				value = ((int16_t*) gbaMemory->bios)[address >> 1];
+				LOAD_16(value, address, gbaMemory->bios);
 			} else {
 				value = 0;
 			}
@@ -210,23 +210,23 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_WORKING_RAM:
-		value = ((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1];
+		LOAD_16(value, address & (SIZE_WORKING_RAM - 1), gbaMemory->wram);
 		wait = gbaMemory->waitstates16[REGION_WORKING_RAM];
 		break;
 	case BASE_WORKING_IRAM:
-		value = ((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1];
+		LOAD_16(value, address & (SIZE_WORKING_IRAM - 1), gbaMemory->iwram);
 		break;
 	case BASE_IO:
 		value = GBAIORead(gbaMemory->p, address & (SIZE_IO - 1));
 		break;
 	case BASE_PALETTE_RAM:
-		value = gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1];
+		LOAD_16(value, address & (SIZE_PALETTE_RAM - 1), gbaMemory->p->video.palette);
 		break;
 	case BASE_VRAM:
-		value = gbaMemory->p->video.renderer->vram[(address & 0x0001FFFF) >> 1];
+		LOAD_16(value, address & 0x0001FFFF, gbaMemory->p->video.renderer->vram);
 		break;
 	case BASE_OAM:
-		value = gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1];
+		LOAD_16(value, address & (SIZE_OAM - 1), gbaMemory->p->video.oam.raw);
 		break;
 	case BASE_CART0:
 	case BASE_CART0_EX:
@@ -235,7 +235,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	case BASE_CART2:
 		wait = gbaMemory->waitstates16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
-			value = ((int16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+			LOAD_16(value, address & (SIZE_CART0 - 1), gbaMemory->rom);
 		}
 		break;
 	case BASE_CART2_EX:
@@ -243,7 +243,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		if (gbaMemory->savedata.type == SAVEDATA_EEPROM) {
 			value = GBASavedataReadEEPROM(&gbaMemory->savedata);
 		} else if ((address & (SIZE_CART0 - 1)) < gbaMemory->romSize) {
-			value = ((uint16_t*) gbaMemory->rom)[(address & (SIZE_CART0 - 1)) >> 1];
+			LOAD_16(value, address & (SIZE_CART0 - 1), gbaMemory->rom);
 		}
 		break;
 	case BASE_CART_SRAM:
@@ -342,27 +342,27 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* 
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_WORKING_RAM:
-		gbaMemory->wram[(address & (SIZE_WORKING_RAM - 1)) >> 2] = value;
+		STORE_32(value, address & (SIZE_WORKING_RAM - 1), gbaMemory->wram);
 		wait = gbaMemory->waitstates32[REGION_WORKING_RAM];
 		break;
 	case BASE_WORKING_IRAM:
-		gbaMemory->iwram[(address & (SIZE_WORKING_IRAM - 1)) >> 2] = value;
+		STORE_32(value, address & (SIZE_WORKING_IRAM - 1), gbaMemory->iwram);
 		break;
 	case BASE_IO:
 		GBAIOWrite32(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
-		((int32_t*) gbaMemory->p->video.palette)[(address & (SIZE_PALETTE_RAM - 1)) >> 2] = value;
+		STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gbaMemory->p->video.palette);
 		gbaMemory->p->video.renderer->writePalette(gbaMemory->p->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16);
 		gbaMemory->p->video.renderer->writePalette(gbaMemory->p->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 		break;
 	case BASE_VRAM:
 		if ((address & OFFSET_MASK) < SIZE_VRAM - 2) {
-			((int32_t*) gbaMemory->p->video.renderer->vram)[(address & 0x0001FFFF) >> 2] = value;
+			STORE_32(value, address & 0x0001FFFF, gbaMemory->p->video.renderer->vram);
 		}
 		break;
 	case BASE_OAM:
-		((int32_t*) gbaMemory->p->video.oam.raw)[(address & (SIZE_OAM - 1)) >> 2] = value;
+		STORE_32(value, address & (SIZE_OAM - 1), gbaMemory->p->video.oam.raw);
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, (address & (SIZE_OAM - 4)) >> 1);
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
 		break;
@@ -388,26 +388,26 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_WORKING_RAM:
-		((int16_t*) gbaMemory->wram)[(address & (SIZE_WORKING_RAM - 1)) >> 1] = value;
+		STORE_16(value, address & (SIZE_WORKING_RAM - 1), gbaMemory->wram);
 		wait = gbaMemory->waitstates16[REGION_WORKING_RAM];
 		break;
 	case BASE_WORKING_IRAM:
-		((int16_t*) gbaMemory->iwram)[(address & (SIZE_WORKING_IRAM - 1)) >> 1] = value;
+		STORE_16(value, address & (SIZE_WORKING_IRAM - 1), gbaMemory->iwram);
 		break;
 	case BASE_IO:
 		GBAIOWrite(gbaMemory->p, address & (SIZE_IO - 1), value);
 		break;
 	case BASE_PALETTE_RAM:
-		gbaMemory->p->video.palette[(address & (SIZE_PALETTE_RAM - 1)) >> 1] = value;
+		STORE_16(value, address & (SIZE_PALETTE_RAM - 1), gbaMemory->p->video.palette);
 		gbaMemory->p->video.renderer->writePalette(gbaMemory->p->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 		break;
 	case BASE_VRAM:
 		if ((address & OFFSET_MASK) < SIZE_VRAM) {
-			gbaMemory->p->video.renderer->vram[(address & 0x0001FFFF) >> 1] = value;
+			STORE_16(value, address & 0x0001FFFF, gbaMemory->p->video.renderer->vram);
 		}
 		break;
 	case BASE_OAM:
-		gbaMemory->p->video.oam.raw[(address & (SIZE_OAM - 1)) >> 1] = value;
+		STORE_16(value, address & (SIZE_OAM - 1), gbaMemory->p->video.oam.raw);
 		gbaMemory->p->video.renderer->writeOAM(gbaMemory->p->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
 		break;
 	case BASE_CART0:

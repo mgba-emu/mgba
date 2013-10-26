@@ -186,7 +186,8 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 static const ARMInstruction _armTable[0x1000];
 
 static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
-	uint32_t opcode = memory->activeRegion[(address & memory->activeMask) >> 2];
+	uint32_t opcode;
+	LOAD_32(opcode, address & memory->activeMask, memory->activeRegion);
 	*opcodeOut = opcode;
 	return _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 }
