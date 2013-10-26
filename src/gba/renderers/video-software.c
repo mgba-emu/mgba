@@ -993,8 +993,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 #define BACKGROUND_BITMAP_INIT \
 	(void)(unused); \
-	int32_t x = background->sx - background->dx; \
-	int32_t y = background->sy - background->dy; \
+	int32_t x = background->sx + (renderer->start - 1) * background->dx; \
+	int32_t y = background->sy + (renderer->start - 1) * background->dy; \
 	int32_t localX; \
 	int32_t localY; \
 	\
@@ -1030,7 +1030,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint8_t tileData;
 
 	int outX;
-	for (outX = renderer->start; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		x += background->dx;
 		y += background->dy;
 
@@ -1065,7 +1065,7 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t color32;
 
 	int outX;
-	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
@@ -1097,7 +1097,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	int outX;
-	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
@@ -1124,7 +1124,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	int outX;
-	for (outX = 0; outX < VIDEO_HORIZONTAL_PIXELS; ++outX) {
+	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		color = ((uint16_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * 160];
