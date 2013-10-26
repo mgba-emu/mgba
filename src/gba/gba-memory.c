@@ -318,7 +318,8 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		wait = gbaMemory->waitstates16[address >> BASE_OFFSET];
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInitSRAM(&gbaMemory->savedata);
-		} else if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
+		}
+		if (gbaMemory->savedata.type == SAVEDATA_SRAM) {
 			value = gbaMemory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 		} else if (gbaMemory->savedata.type == SAVEDATA_FLASH512 || gbaMemory->savedata.type == SAVEDATA_FLASH1M) {
 			value = GBASavedataReadFlash(&gbaMemory->savedata, address);
