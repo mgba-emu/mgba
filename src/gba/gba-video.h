@@ -111,15 +111,10 @@ union GBAOAM {
 	uint16_t raw[512];
 };
 
-union GBATextMapData {
-	struct {
-		unsigned tile : 10;
-		unsigned hflip : 1;
-		unsigned vflip : 1;
-		unsigned palette : 4;
-	};
-	uint16_t packed;
-};
+#define GBA_TEXT_MAP_TILE(MAP) ((MAP) & 0x03FF)
+#define GBA_TEXT_MAP_HFLIP(MAP) ((MAP) & 0x0400)
+#define GBA_TEXT_MAP_VFLIP(MAP) ((MAP) & 0x0800)
+#define GBA_TEXT_MAP_PALETTE(MAP) (((MAP) & 0xF000) >> 12)
 
 union GBARegisterDISPCNT {
 	struct {

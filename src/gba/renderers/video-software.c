@@ -663,8 +663,8 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 		xBase += (localX & 0x100) << 5; \
 	} \
 	screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2); \
-	mapData.packed = renderer->d.vram[screenBase]; \
-	if (!mapData.vflip) { \
+	mapData = renderer->d.vram[screenBase]; \
+	if (!GBA_TEXT_MAP_VFLIP(mapData)) { \
 		localY = inY & 0x7; \
 	} else { \
 		localY = 7 - (inY & 0x7); \
@@ -708,7 +708,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		y -= y % mosaicV;
 	}
 	int inY = y + background->y;
-	union GBATextMapData mapData;
+	uint16_t mapData;
 
 	unsigned yBase = inY & 0xF8;
 	if (background->size == 2) {
@@ -750,10 +750,10 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		int end = outX + 0x8 - mod8;
 		if (!background->multipalette) {
-			paletteData = mapData.palette << 4;
-			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4;
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY;
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
-			if (!mapData.hflip) {
+			if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 				tileData >>= 4 * mod8;
 				for (; outX < end; ++outX) {
 					BACKGROUND_DRAW_PIXEL_16;
@@ -765,7 +765,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			}
 		} else {
 			// TODO: hflip
-			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1);
 			int end2 = end - 4;
 			int shift = inX & 0x3;
 			if (end2 > 0) {
@@ -792,10 +792,10 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		int end = 0x8 - mod8;
 		if (!background->multipalette) {
-			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY;
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
-			paletteData = mapData.palette << 4;
-			if (!mapData.hflip) {
+			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4;
+			if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 				outX = renderer->end - mod8;
 				if (outX < 0) {
 					tileData >>= 4 * -outX;
@@ -816,7 +816,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			}
 		} else {
 			// TODO: hflip
-			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1);
 			outX = renderer->end - 8 + end;
 			int end2 = 4 - end;
 			if (end2 > 0) {
@@ -846,13 +846,13 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		if (!background->multipalette) {
 			for (; tileX < tileEnd; ++tileX) {
 				BACKGROUND_TEXT_SELECT_CHARACTER;
-				charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+				charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY;
 				tileData = carryData;
 				for (x = 0; x < 8; ++x) {
 					if (!mosaicWait) {
-						paletteData = mapData.palette << 4;
+						paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4;
 						tileData = ((uint32_t*)renderer->d.vram)[charBase];
-						if (!mapData.hflip) {
+						if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 							tileData >>= x * 4;
 						} else {
 							tileData >>= (7 - x) * 4;
@@ -882,11 +882,11 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	if (!background->multipalette) {
 		for (; tileX < tileEnd; ++tileX) {
 			BACKGROUND_TEXT_SELECT_CHARACTER;
-			paletteData = mapData.palette << 4;
-			charBase = ((background->charBase + (mapData.tile << 5)) >> 2) + localY;
+			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4;
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY;
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
 			if (tileData) {
-				if (!mapData.hflip) {
+				if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 					BACKGROUND_DRAW_PIXEL_16;
 					++outX;
 					BACKGROUND_DRAW_PIXEL_16;
@@ -929,8 +929,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	} else {
 		for (; tileX < tileEnd; ++tileX) {
 			BACKGROUND_TEXT_SELECT_CHARACTER;
-			charBase = ((background->charBase + (mapData.tile << 6)) >> 2) + (localY << 1);
-			if (!mapData.hflip) {
+			charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1);
+			if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
 				if (tileData) {
 						BACKGROUND_DRAW_PIXEL_256;
