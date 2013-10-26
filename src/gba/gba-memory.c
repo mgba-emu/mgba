@@ -194,7 +194,7 @@ uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address, int* cycleCounte
 
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
-	int16_t value = 0;
+	uint16_t value = 0;
 	int wait = 0;
 
 	switch (address & ~OFFSET_MASK) {
@@ -260,7 +260,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 	}
 	// Unaligned 16-bit loads are "unpredictable", but the GBA rotates them, so we have to, too.
 	int rotate = (address & 1) << 3;
-	return (value >> rotate) | ((value << rotate) & 0xFF00);
+	return (value >> rotate) | (value << (16 - rotate));
 }
 
 uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
