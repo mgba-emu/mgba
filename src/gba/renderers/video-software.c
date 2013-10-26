@@ -1061,27 +1061,30 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint16_t color;
-	uint32_t color32;
+	uint32_t color;
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+#ifndef COLOR_16_BIT
+		color_t color32;
 		color32 = 0;
 		color32 |= (color << 3) & 0xF8;
 		color32 |= (color << 6) & 0xF800;
 		color32 |= (color << 9) & 0xF80000;
+		color = color32;
+#endif
 
 		uint32_t current = renderer->row[outX];
 		if (!(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
-				_composite(renderer, outX, color32 | flags, current);
+				_composite(renderer, outX, color | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_composite(renderer, outX, _brighten(color32, renderer->bldy) | flags, current);
+				_composite(renderer, outX, _brighten(color, renderer->bldy) | flags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_composite(renderer, outX, _darken(color32, renderer->bldy) | flags, current);
+				_composite(renderer, outX, _darken(color, renderer->bldy) | flags, current);
 			}
 		}
 	}
