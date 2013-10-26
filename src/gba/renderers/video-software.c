@@ -613,10 +613,10 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, ui
 	// We stash the priority on the top bits so we can do a one-operator comparison
 	// The lower the number, the higher the priority, and sprites take precendence over backgrounds
 	// We want to do special processing if the color pixel is target 1, however
-	if ((color & FLAG_ORDER_MASK) < (current & FLAG_ORDER_MASK)) {
-		if (current & FLAG_UNWRITTEN) {
-			renderer->row[offset] = color | (current & FLAG_OBJWIN);
-		} else if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
+	if (current & FLAG_UNWRITTEN) {
+		renderer->row[offset] = color | (current & FLAG_OBJWIN);
+	} else if ((color & FLAG_ORDER_MASK) < (current & FLAG_ORDER_MASK)) {
+		if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
 			renderer->row[offset] = color | FLAG_FINALIZED;
 		} else {
 			renderer->row[offset] = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
