@@ -40,5 +40,9 @@ else()
 	include_directories(${SDL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 endif()
 
+if(BUILD_PERF)
+	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/perf-main.c)
+endif()
+
 add_executable(${BINARY_NAME} ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${PLATFORM_SRC} ${MAIN_SRC})
 target_link_libraries(${BINARY_NAME} m pthread ${DEBUGGER_LIB} ${SDL_LIBRARY} ${OPENGL_LIBRARY})
