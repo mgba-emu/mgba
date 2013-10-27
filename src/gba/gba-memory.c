@@ -62,7 +62,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 		memory->waitstatesPrefetch32[i] = 0;
 	}
 
-	memory->activeRegion = 0;
+	memory->activeRegion = -1;
 	memory->d.activeRegion = 0;
 	memory->d.activeMask = 0;
 	memory->d.setActiveRegion = GBASetActiveRegion;
@@ -81,10 +81,14 @@ void GBAMemoryDeinit(struct GBAMemory* memory) {
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 	struct GBAMemory* gbaMemory = (struct GBAMemory*) memory;
 
+	int newRegion = address >> BASE_OFFSET;
+	if (newRegion == gbaMemory->activeRegion) {
+		return;
+	}
 	if (gbaMemory->activeRegion == REGION_BIOS) {
 		gbaMemory->biosPrefetch = memory->load32(memory, gbaMemory->p->cpu.currentPC + WORD_SIZE_ARM * 2, 0);
 	}
-	gbaMemory->activeRegion = address >> BASE_OFFSET;
+	gbaMemory->activeRegion = newRegion;
 	memory->activePrefetchCycles32 = gbaMemory->waitstatesPrefetch32[gbaMemory->activeRegion];
 	memory->activePrefetchCycles16 = gbaMemory->waitstatesPrefetch16[gbaMemory->activeRegion];
 	memory->activeNonseqCycles32 = gbaMemory->waitstates32[gbaMemory->activeRegion];
