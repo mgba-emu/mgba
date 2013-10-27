@@ -1181,6 +1181,21 @@ static const int _objSizes[32] = {
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
 	}
 
+#define SPRITE_MOSAIC_LOOP(DEPTH, TYPE) \
+	SPRITE_YBASE_ ## DEPTH(inY); \
+	if (outX % mosaicH) { \
+		outX += mosaicH - (outX % mosaicH); \
+		inX += (mosaicH - (outX % mosaicH)) * xOffset; \
+	} \
+	for (; outX < condition; ++outX, inX += xOffset) { \
+		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
+			continue; \
+		} \
+		int localX = inX - xOffset * (outX % mosaicH); \
+		SPRITE_XBASE_ ## DEPTH(localX); \
+		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
+	}
+
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	int outX; \
 	for (outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
@@ -1247,13 +1262,6 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	flags |= FLAG_TARGET_2 *renderer->target2Obj;
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
-	int inY = y - sprite->y;
-	if (sprite->y + height - 256 >= 0) {
-		inY += 256;
-	}
-	if (sprite->vflip) {
-		inY = height - inY - 1;
-	}
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	color_t* palette = renderer->normalPalette;
@@ -1263,6 +1271,20 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 
 	int outX = x >= start ? x : start;
 	int condition = x + width;
+	int mosaicH = 1;
+	if (sprite->mosaic) {
+		int mosaicV = renderer->mosaic.objV + 1;
+		mosaicH = renderer->mosaic.objH + 1;
+		y -= y % mosaicV;
+		condition += mosaicH - (condition % mosaicH);
+	}
+	int inY = y - sprite->y;
+	if (sprite->y + height - 256 >= 0) {
+		inY += 256;
+	}
+	if (sprite->vflip) {
+		inY = height - inY - 1;
+	}
 	if (end < condition) {
 		condition = end;
 	}
@@ -1275,12 +1297,16 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	if (!sprite->multipalette) {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(16, OBJWIN);
+		} else if (sprite->mosaic) {
+			SPRITE_MOSAIC_LOOP(16, NORMAL);
 		} else {
 			SPRITE_NORMAL_LOOP(16, NORMAL);
 		}
 	} else {
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(256, OBJWIN);
+		} else if (sprite->mosaic) {
+			SPRITE_MOSAIC_LOOP(256, NORMAL);
 		} else {
 			SPRITE_NORMAL_LOOP(256, NORMAL);
 		}
