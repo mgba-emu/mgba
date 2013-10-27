@@ -1172,23 +1172,14 @@ static const int _objSizes[32] = {
 };
 
 #define SPRITE_NORMAL_LOOP(DEPTH, TYPE) \
-		SPRITE_YBASE_ ## DEPTH(inY); \
-		int outX = x >= start ? x : start; \
-		int condition = x + width; \
-		if (end < condition) { \
-			condition = end; \
+	SPRITE_YBASE_ ## DEPTH(inY); \
+	for (; outX < condition; ++outX, inX += xOffset) { \
+		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
+			continue; \
 		} \
-		for (; outX < condition; ++outX) { \
-			int inX = outX - x; \
-			if (sprite->hflip) { \
-				inX = width - inX - 1; \
-			} \
-			if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
-				continue; \
-			} \
-			SPRITE_XBASE_ ## DEPTH(inX); \
-			SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
-		}
+		SPRITE_XBASE_ ## DEPTH(inX); \
+		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(inX); \
+	}
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	int outX; \
@@ -1268,6 +1259,18 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	color_t* palette = renderer->normalPalette;
 	if (variant) {
 		palette = renderer->variantPalette;
+	}
+
+	int outX = x >= start ? x : start;
+	int condition = x + width;
+	if (end < condition) {
+		condition = end;
+	}
+	int inX = outX - x;
+	int xOffset = 1;
+	if (sprite->hflip) {
+		inX = width - inX - 1;
+		xOffset = -1;
 	}
 	if (!sprite->multipalette) {
 		if (flags & FLAG_OBJWIN) {
