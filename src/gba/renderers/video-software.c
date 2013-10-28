@@ -727,12 +727,11 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixe
 	if (background->size & 1) { \
 		xBase += (localX & 0x100) << 5; \
 	} \
-	screenBase = (background->screenBase >> 1) + (xBase >> 3) + (yBase << 2); \
+	screenBase = yBase + (xBase >> 3); \
 	mapData = renderer->d.vram[screenBase]; \
-	if (!GBA_TEXT_MAP_VFLIP(mapData)) { \
-		localY = inY & 0x7; \
-	} else { \
-		localY = 7 - (inY & 0x7); \
+	localY = inY & 0x7; \
+	if (GBA_TEXT_MAP_VFLIP(mapData)) { \
+		localY = 7 - localY; \
 	}
 
 #define PREPARE_OBJWIN \
@@ -781,6 +780,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	} else if (background->size == 3) {
 		yBase += (inY & 0x100) << 1;
 	}
+	yBase = (background->screenBase >> 1) + (yBase << 2);
 
 	int localX;
 	int localY;
