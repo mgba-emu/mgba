@@ -1184,8 +1184,8 @@ static const int _objSizes[32] = {
 #define SPRITE_MOSAIC_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	if (outX % mosaicH) { \
-		outX += mosaicH - (outX % mosaicH); \
 		inX += (mosaicH - (outX % mosaicH)) * xOffset; \
+		outX += mosaicH - (outX % mosaicH); \
 	} \
 	for (; outX < condition; ++outX, inX += xOffset) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
@@ -1251,6 +1251,10 @@ static const int _objSizes[32] = {
 
 static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
 	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
+	if (sprite->mosaic) {
+		int mosaicV = renderer->mosaic.objV + 1;
+		y -= y % mosaicV;
+	}
 	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
 		return 0;
 	}
@@ -1273,10 +1277,10 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	int condition = x + width;
 	int mosaicH = 1;
 	if (sprite->mosaic) {
-		int mosaicV = renderer->mosaic.objV + 1;
 		mosaicH = renderer->mosaic.objH + 1;
-		y -= y % mosaicV;
-		condition += mosaicH - (condition % mosaicH);
+		if (condition % mosaicH) {
+			condition += mosaicH - (condition % mosaicH);
+		}
 	}
 	int inY = y - sprite->y;
 	if (sprite->y + height - 256 >= 0) {
