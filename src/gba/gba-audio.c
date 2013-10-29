@@ -73,10 +73,12 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 				if (audio->ch1.envelope.nextStep != INT_MAX) {
 					audio->ch1.envelope.nextStep -= audio->eventDiff;
 					if (audio->ch1.envelope.nextStep <= 0) {
+						int8_t sample = audio->ch1.control.hi * 0x10 - 0x8;
 						_updateEnvelope(&audio->ch1.envelope);
 						if (audio->ch1.envelope.nextStep < audio->nextEvent) {
 							audio->nextEvent = audio->ch1.envelope.nextStep;
 						}
+						audio->ch1.sample = sample * audio->ch1.envelope.currentVolume;
 					}
 				}
 
@@ -110,10 +112,12 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 				if (audio->ch2.envelope.nextStep != INT_MAX) {
 					audio->ch2.envelope.nextStep -= audio->eventDiff;
 					if (audio->ch2.envelope.nextStep <= 0) {
+						int8_t sample = audio->ch2.control.hi * 0x10 - 0x8;
 						_updateEnvelope(&audio->ch2.envelope);
 						if (audio->ch2.envelope.nextStep < audio->nextEvent) {
 							audio->nextEvent = audio->ch2.envelope.nextStep;
 						}
+						audio->ch2.sample = sample * audio->ch2.envelope.currentVolume;
 					}
 				}
 
@@ -154,10 +158,12 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 				if (audio->ch4.envelope.nextStep != INT_MAX) {
 					audio->ch4.envelope.nextStep -= audio->eventDiff;
 					if (audio->ch4.envelope.nextStep <= 0) {
+						int8_t sample = (audio->ch4.sample >> 31) * 0x8;
 						_updateEnvelope(&audio->ch4.envelope);
 						if (audio->ch4.envelope.nextStep < audio->nextEvent) {
 							audio->nextEvent = audio->ch4.envelope.nextStep;
 						}
+						audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
 					}
 				}
 
@@ -224,6 +230,7 @@ void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
 		audio->ch1.envelope.nextStep = INT_MAX;
 		if (audio->ch1.envelope.initialVolume == 0) {
 			audio->ch1.envelope.dead = 1;
+			audio->ch1.sample = 0;
 		}
 	}
 }
@@ -264,6 +271,7 @@ void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
 		audio->ch2.envelope.nextStep = INT_MAX;
 		if (audio->ch2.envelope.initialVolume == 0) {
 			audio->ch2.envelope.dead = 1;
+			audio->ch2.sample = 0;
 		}
 	}
 }
@@ -285,6 +293,9 @@ void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUND3CNT_LO(struct GBAAudio* audio, uint16_t value) {
 	audio->ch3.bank.packed = value;
+	if (audio->ch3.control.endTime >= 0) {
+		audio->playingCh3 = audio->ch3.bank.enable;
+	}
 }
 
 void GBAAudioWriteSOUND3CNT_HI(struct GBAAudio* audio, uint16_t value) {
@@ -295,7 +306,7 @@ void GBAAudioWriteSOUND3CNT_X(struct GBAAudio* audio, uint16_t value) {
 	audio->ch3.control.packed = value;
 	audio->ch3.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (256 - audio->ch3.wave.length)) >> 8;
 	if (audio->ch3.control.restart) {
-		audio->playingCh3 = 1;
+		audio->playingCh3 = audio->ch3.bank.enable;
 	}
 }
 
@@ -308,6 +319,7 @@ void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
 		audio->ch4.envelope.nextStep = INT_MAX;
 		if (audio->ch4.envelope.initialVolume == 0) {
 			audio->ch4.envelope.dead = 1;
+			audio->ch4.sample = 0;
 		}
 	}
 }
