@@ -526,7 +526,7 @@ static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
-	int psgShift = 1 + audio->volume;
+	int psgShift = 6 - audio->volume;
 
 	if (audio->ch1Left) {
 		sampleLeft += audio->ch1.sample;
