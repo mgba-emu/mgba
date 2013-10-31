@@ -2,6 +2,7 @@
 
 #include "arm.h"
 #include "isa-inlines.h"
+#include "emitter-inlines.h"
 
 enum {
 	PSR_USER_MASK = 0xF0000000,

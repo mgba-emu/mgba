@@ -5,29 +5,6 @@
 
 #define UNUSED(V) (void)(V)
 
-#define DO_4(DIRECTIVE) \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE
-
-#define DO_8(DIRECTIVE) \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE, \
-	DIRECTIVE
-
-#define DO_256(DIRECTIVE) \
-	DO_4(DO_8(DO_8(DIRECTIVE)))
-
-#define DO_INTERLACE(LEFT, RIGHT) \
-	LEFT, \
-	RIGHT
-
 #define ARM_COND_EQ (cpu->cpsr.z)
 #define ARM_COND_NE (!cpu->cpsr.z)
 #define ARM_COND_CS (cpu->cpsr.c)
