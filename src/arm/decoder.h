@@ -99,7 +99,9 @@ enum ThumbMnemonic {
 	THUMB_MN_STRH,
 	THUMB_MN_SUB,
 	THUMB_MN_SWI,
-	THUMB_MN_TST
+	THUMB_MN_TST,
+
+	THUMB_MN_MAX
 };
 
 struct ThumbInstructionInfo {
@@ -117,5 +119,6 @@ struct ThumbInstructionInfo {
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info);
+int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen);
 
 #endif

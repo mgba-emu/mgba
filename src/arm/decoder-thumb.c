@@ -4,6 +4,9 @@
 #include "emitter-thumb.h"
 #include "isa-inlines.h"
 
+#include <stdio.h>
+#include <string.h>
+
 #define DEFINE_THUMB_DECODER(NAME, MNEMONIC, BODY) \
 	static void _ThumbDecode ## NAME (uint16_t opcode, struct ThumbInstructionInfo* info) { \
 		UNUSED(opcode); \
@@ -200,18 +203,17 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, STR)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, STRB)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STRH)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, MNEMONIC, SPECIAL_REG) \
+#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, MNEMONIC, SPECIAL_REG, ADDITIONAL_REG) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->memory.baseReg = RN; \
 		info->accessesSpecialRegisters = SPECIAL_REG; \
-		info->op1.immediate = opcode & 0xFF; \
-		info->operandFormat = ARM_OPERAND_IMMEDIATE_1 | \
-			ARM_OPERAND_AFFECTED_1; \
+		info->op1.immediate = (opcode & 0xFF) | ADDITIONAL_REG; \
+		info->operandFormat = ARM_OPERAND_IMMEDIATE_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_POST_INCREMENT;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME) \
-	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, NAME, 0)
+	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, NAME, 0, 0)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA)
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA)
@@ -250,10 +252,10 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_SP_MODIFY_THUMB(ADD7, ADD)
 DEFINE_SP_MODIFY_THUMB(SUB4, SUB)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, ARM_SP, POP, 1)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, ARM_SP, POP, 1)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, ARM_SP, PUSH, 1)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR, ARM_SP, PUSH, 1)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, ARM_SP, POP, 1, 0)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, ARM_SP, POP, 1, 1 << ARM_PC)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, ARM_SP, PUSH, 1, 0)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR, ARM_SP, PUSH, 1, 1 << ARM_LR)
 
 DEFINE_THUMB_DECODER(ILL, ILL, info->traps = 1;)
 DEFINE_THUMB_DECODER(BKPT, BKPT, info->traps = 1;)
@@ -300,4 +302,149 @@ void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
 	info->affectsCPSR = 0;
 	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 6];
 	decoder(opcode, info);
+}
+
+#define ADVANCE(AMOUNT) \
+	if (AMOUNT > blen) { \
+		buffer[blen - 1] = '\0'; \
+		return total; \
+	} \
+	total += AMOUNT; \
+	buffer += AMOUNT; \
+	blen -= AMOUNT;
+
+static int _decodeRegister(int reg, char* buffer, int blen) {
+	switch (reg) {
+	case ARM_SP:
+		strncpy(buffer, "sp", blen);
+		return 2;
+	case ARM_LR:
+		strncpy(buffer, "lr", blen);
+		return 2;
+	case ARM_PC:
+		strncpy(buffer, "pc", blen);
+		return 2;
+	default:
+		return snprintf(buffer, blen, "r%i", reg);
+	}
+}
+
+static int _decodeRegisterList(int list, char* buffer, int blen) {
+	if (blen <= 0) {
+		return 0;
+	}
+	int total = 1;
+	strncpy(buffer, "{", blen);
+	ADVANCE(1);
+	int i;
+	int start = -1;
+	int end = -1;
+	int written;
+	printf("%x\n", list);
+	for (i = 0; i <= ARM_PC; ++i) {
+		if (list & 1) {
+			if (start < 0) {
+				start = i;
+				end = i;
+			} else if (end + 1 == i) {
+				end = i;
+			} else {
+				if (end > start) {
+					written = _decodeRegister(start, buffer, blen);
+					ADVANCE(written);
+					strncpy(buffer, "-", blen);
+					ADVANCE(1);
+				}
+				written = _decodeRegister(end, buffer, blen);
+				ADVANCE(written);
+				strncpy(buffer, ",", blen);
+				ADVANCE(1);
+				start = i;
+				end = i;
+			}
+		}
+		list >>= 1;
+	}
+	if (start >= 0) {
+		if (end > start) {
+			written = _decodeRegister(start, buffer, blen);
+			ADVANCE(written);
+			strncpy(buffer, "-", blen);
+			ADVANCE(1);
+		}
+		written = _decodeRegister(end, buffer, blen);
+		ADVANCE(written);
+	}
+	strncpy(buffer, "}", blen);
+	ADVANCE(1);
+	return total;
+}
+
+static const char* _thumbMnemonicStrings[] = {
+	"ill",
+	"adc",
+	"add",
+	"and",
+	"asr",
+	"b",
+	"bic",
+	"bkpt",
+	"bl",
+	"blh",
+	"bx",
+	"cmn",
+	"cmp",
+	"eor",
+	"ldmia",
+	"ldr",
+	"ldrb",
+	"ldrh",
+	"ldrsb",
+	"ldrsh",
+	"lsl",
+	"lsr",
+	"mov",
+	"mul",
+	"mvn",
+	"neg",
+	"orr",
+	"pop",
+	"push",
+	"ror",
+    "sbc",
+    "stmia",
+	"str",
+	"strb",
+	"strh",
+	"sub",
+	"swi",
+	"tst"
+};
+
+int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
+	struct ThumbInstructionInfo info;
+	ARMDecodeThumb(opcode, &info);
+	const char* mnemonic = _thumbMnemonicStrings[info.mnemonic];
+	int written;
+	int total = 0;
+	written = snprintf(buffer, blen, "%s ", mnemonic);
+	ADVANCE(written);
+
+	switch (info.mnemonic) {
+	case THUMB_MN_LDMIA:
+	case THUMB_MN_STMIA:
+		written = _decodeRegister(info.memory.baseReg, buffer, blen);
+		ADVANCE(written);
+		strncpy(buffer, "!, ", blen);
+		ADVANCE(3);
+	case THUMB_MN_POP:
+	case THUMB_MN_PUSH:
+		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
+		ADVANCE(written);
+		break;
+	default:
+		break;
+	}
+	buffer[total] = '\0';
+	return total;
 }
