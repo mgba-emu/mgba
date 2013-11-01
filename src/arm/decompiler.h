@@ -3,26 +3,62 @@
 
 #include <stdint.h>
 
-union ARMOperand {
-	uint8_t reg;
-	int32_t immediate;
-};
-
-struct ARMMemoryAccess {
-	uint8_t baseRegister;
-	union ARMOperand offset;
-};
-
+// Bit 0: a register is involved with this operand
+// Bit 1: an immediate is invovled with this operand
+// Bit 2: a memory access is invovled with this operand
+// Bit 3: the destination of this operand is affected by this opcode
+// Bit 4: this operand is shifted by a register
+// Bit 5: this operand is shifted by an immediate
+// Bit 6: this operand is added or subtracted to the base register
 enum ARMOperandFormat {
 	ARM_OPERAND_NONE =               0x00000000,
 	ARM_OPERAND_REGISTER_1 =         0x00000001,
 	ARM_OPERAND_IMMEDIATE_1 =        0x00000002,
-	ARM_OPERAND_MEMORY_REGISTER_1 =  0x00000005,
-	ARM_OPERAND_MEMORY_IMMEDIATE_1 = 0x00000006,
-	ARM_OPERAND_MEMORY_OFFSET_1 =    0x00000007,
-	ARM_OPERAND_AFFECTED_1 =         0x00000080,
-	ARM_OPERAND_MEMORY_POST_INCR_1 = 0x00000097,
-	ARM_OPERAND_MEMORY_PRE_INCR_1 =  0x000000A7,
+	ARM_OPERAND_MEMORY_1 =           0x00000004,
+	ARM_OPERAND_AFFECTED_1 =         0x00000008,
+	ARM_OPERAND_SHIFT_REGISTER_1 =   0x00000010,
+	ARM_OPERAND_SHIFT_IMMEDIATE_1 =  0x00000020,
+
+	ARM_OPERAND_REGISTER_2 =         0x00000100,
+	ARM_OPERAND_IMMEDIATE_2 =        0x00000200,
+	ARM_OPERAND_MEMORY_2 =           0x00000400,
+	ARM_OPERAND_AFFECTED_2 =         0x00000800,
+	ARM_OPERAND_SHIFT_REGISTER_2 =   0x00001000,
+	ARM_OPERAND_SHIFT_IMMEDIATE_2 =  0x00002000,
+
+	ARM_OPERAND_REGISTER_3 =         0x00010000,
+	ARM_OPERAND_IMMEDIATE_3 =        0x00020000,
+	ARM_OPERAND_MEMORY_3 =           0x00040000,
+	ARM_OPERAND_AFFECTED_3 =         0x00080000,
+	ARM_OPERAND_SHIFT_REGISTER_3 =   0x00100000,
+	ARM_OPERAND_SHIFT_IMMEDIATE_3 =  0x00200000
+};
+
+enum ARMMemoryFormat {
+	ARM_MEMORY_REGISTER_BASE =    0x0001,
+	ARM_MEMORY_IMMEDIATE_OFFSET = 0x0002,
+	ARM_MEMORY_REGISTER_OFFSET  = 0x0004,
+	ARM_MEMORY_SHIFTED_OFFSET =   0x0008,
+	ARM_MEMORY_PRE_INCREMENT =    0x0010,
+	ARM_MEMORY_POST_INCREMENT =   0x0020
+};
+
+union ARMOperand {
+	struct {
+		uint8_t reg;
+		uint8_t shifterOp;
+		union {
+			uint8_t shifterReg;
+			uint8_t shifterImm;
+		};
+	};
+	int32_t immediate;
+};
+
+struct ARMMemoryAccess {
+	uint8_t baseReg;
+	uint16_t format;
+	union ARMOperand offset;
 };
 
 enum ThumbMnemonic {
@@ -33,6 +69,7 @@ enum ThumbMnemonic {
 	THUMB_MN_ASR,
 	THUMB_MN_B,
 	THUMB_MN_BIC,
+	THUMB_MN_BKPT,
 	THUMB_MN_BL,
 	THUMB_MN_BLH,
 	THUMB_MN_BX,
@@ -72,11 +109,11 @@ struct ThumbInstructionInfo {
 	union ARMOperand op2;
 	union ARMOperand op3;
 	struct ARMMemoryAccess memory;
-	int immediateFormat;
 	int operandFormat;
 	int branches;
-	int accessesMemory;
-	int accessesHighRegisters;
+	int traps;
+	int accessesSpecialRegisters;
+	int affectsCPSR;
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info);
