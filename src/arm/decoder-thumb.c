@@ -380,6 +380,11 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 	return total;
 }
 
+static int _decodeMemory(struct ARMMemoryAccess memory, char* buffer, int blen) {
+	// TODO
+	return 0;
+}
+
 static const char* _thumbMnemonicStrings[] = {
 	"ill",
 	"adc",
@@ -437,12 +442,51 @@ int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
 		ADVANCE(written);
 		strncpy(buffer, "!, ", blen);
 		ADVANCE(3);
+		// Fall through
 	case THUMB_MN_POP:
 	case THUMB_MN_PUSH:
 		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
 		ADVANCE(written);
 		break;
 	default:
+		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
+			written = snprintf(buffer, blen, "#%i", info.op1.immediate);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_MEMORY_1) {
+			written = _decodeMemory(info.memory, buffer, blen);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_REGISTER_1) {
+			written = _decodeRegister(info.op1.reg, buffer, blen);
+			ADVANCE(written);
+		}
+		if (info.operandFormat & ARM_OPERAND_2) {
+			strncpy(buffer, ", ", blen);
+			ADVANCE(2);
+		}
+		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_2) {
+			written = snprintf(buffer, blen, "#%i", info.op2.immediate);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_MEMORY_2) {
+			written = _decodeMemory(info.memory, buffer, blen);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_REGISTER_2) {
+			written = _decodeRegister(info.op2.reg, buffer, blen);
+			ADVANCE(written);
+		}
+		if (info.operandFormat & ARM_OPERAND_3) {
+			strncpy(buffer, ", ", blen);
+			ADVANCE(2);
+		}
+		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_3) {
+			written = snprintf(buffer, blen, "#%i", info.op3.immediate);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_MEMORY_3) {
+			written = _decodeMemory(info.memory, buffer, blen);
+			ADVANCE(written);
+		} else if (info.operandFormat & ARM_OPERAND_REGISTER_3) {
+			written = _decodeRegister(info.op1.reg, buffer, blen);
+			ADVANCE(written);
+		}
 		break;
 	}
 	buffer[total] = '\0';
