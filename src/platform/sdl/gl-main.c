@@ -23,6 +23,8 @@ struct GLSoftwareRenderer {
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
 
+	int viewportWidth;
+	int viewportHeight;
 	GLuint tex;
 };
 
@@ -59,6 +61,9 @@ int main(int argc, char** argv) {
 	struct GBAThread context;
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
+
+	renderer.viewportWidth = 240;
+	renderer.viewportHeight = 160;
 
 	if (!_GBASDLInit(&renderer)) {
 		return 1;
@@ -101,9 +106,9 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 #ifdef COLOR_16_BIT
-	SDL_SetVideoMode(240, 160, 16, SDL_OPENGL);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
 #else
-	SDL_SetVideoMode(240, 160, 32, SDL_OPENGL);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL);
 #endif
 
 	renderer->d.outputBuffer = malloc(256 * 256 * 4);
@@ -118,7 +123,7 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
 
-	glViewport(0, 0, 240, 160);
+	glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
 
 	return 1;
 }
