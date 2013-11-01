@@ -1,4 +1,4 @@
-#include "decompiler.h"
+#include "decoder.h"
 
 #include "arm.h"
 #include "emitter-thumb.h"

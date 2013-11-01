@@ -1,5 +1,5 @@
-#ifndef ARM_DECOMPILER_H
-#define ARM_DECOMPILER_H
+#ifndef ARM_DECODER_H
+#define ARM_DECODER_H
 
 #include <stdint.h>
 
