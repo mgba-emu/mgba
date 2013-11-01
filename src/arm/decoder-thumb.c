@@ -29,7 +29,7 @@
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->op1.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
-		info->memory.offset.shifterReg = IMMEDIATE << 2; \
+		info->memory.offset.immediate = IMMEDIATE << 2; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_MEMORY_2; \
@@ -333,7 +333,7 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 	if (blen <= 0) {
 		return 0;
 	}
-	int total = 1;
+	int total = 0;
 	strncpy(buffer, "{", blen);
 	ADVANCE(1);
 	int i;
@@ -381,8 +381,52 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 }
 
 static int _decodeMemory(struct ARMMemoryAccess memory, char* buffer, int blen) {
-	// TODO
-	return 0;
+	if (blen <= 0) {
+		return 0;
+	}
+	int total = 0;
+	strncpy(buffer, "[", blen);
+	ADVANCE(1);
+	int written;
+	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
+		written = _decodeRegister(memory.baseReg, buffer, blen);
+		ADVANCE(written);
+		if (memory.format & (ARM_MEMORY_REGISTER_OFFSET | ARM_MEMORY_IMMEDIATE_OFFSET) && !(memory.format & ARM_MEMORY_POST_INCREMENT)) {
+			strncpy(buffer, ", ", blen);
+			ADVANCE(2);
+		}
+	}
+	if (memory.format & ARM_MEMORY_POST_INCREMENT) {
+		strncpy(buffer, "], ", blen);
+		ADVANCE(3);
+	}
+	if (memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
+			written = snprintf(buffer, blen, "#-%i", memory.offset.immediate);
+			ADVANCE(written);
+		} else {
+			written = snprintf(buffer, blen, "#%i", memory.offset.immediate);
+			ADVANCE(written);
+		}
+	} else if (memory.format & ARM_MEMORY_REGISTER_OFFSET) {
+		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
+			strncpy(buffer, "-", blen);
+			ADVANCE(1);
+		}
+		written = _decodeRegister(memory.offset.reg, buffer, blen);
+		ADVANCE(written);
+	}
+	// TODO: shifted registers
+
+	if (!(memory.format & ARM_MEMORY_POST_INCREMENT)) {
+		strncpy(buffer, "]", blen);
+		ADVANCE(1);
+	}
+	if (memory.format & ARM_MEMORY_PRE_INCREMENT) {
+		strncpy(buffer, "!", blen);
+		ADVANCE(1);
+	}
+	return total;
 }
 
 static const char* _thumbMnemonicStrings[] = {
