@@ -224,7 +224,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STRH, STORE_CYCLES)
 		info->memory.baseReg = RN; \
 		info->accessesSpecialRegisters = SPECIAL_REG; \
 		info->op1.immediate = (opcode & 0xFF) | ADDITIONAL_REG; \
-		info->operandFormat = ARM_OPERAND_IMMEDIATE_1; \
+		info->operandFormat = ARM_OPERAND_MEMORY_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_POST_INCREMENT;)
 
