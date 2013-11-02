@@ -17,6 +17,15 @@
 	buffer += AMOUNT; \
 	blen -= AMOUNT;
 
+#define LOAD_CYCLES \
+	info->iCycles = 1; \
+	info->nDataCycles = 1;
+
+#define STORE_CYCLES \
+	info->sInstructionCycles = 0; \
+	info->nInstructionCycles = 1; \
+	info->nDataCycles = 1;
+
 static int _decodeRegister(int reg, char* buffer, int blen);
 static int _decodeRegisterList(int list, char* buffer, int blen);
 static int _decodePCRelative(uint32_t address, uint32_t pc, char* buffer, int blen);

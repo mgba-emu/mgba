@@ -139,6 +139,12 @@ struct ThumbInstructionInfo {
 	int accessesSpecialRegisters;
 	int affectsCPSR;
 	int condition;
+	int sDataCycles;
+	int nDataCycles;
+	int sInstructionCycles;
+	int nInstructionCycles;
+	int iCycles;
+	int cCycles;
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info);
