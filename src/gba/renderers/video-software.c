@@ -1267,7 +1267,11 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
+		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
+		variant = 0;
+	}
 	color_t* palette = renderer->normalPalette;
 	if (variant) {
 		palette = renderer->variantPalette;
@@ -1335,7 +1339,11 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 	int x = sprite->x;
 	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && sprite->mode != OBJ_MODE_SEMITRANSPARENT && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
+		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
+		variant = 0;
+	}
 	color_t* palette = renderer->normalPalette;
 	if (variant) {
 		palette = renderer->variantPalette;
