@@ -311,7 +311,7 @@ static const ThumbDecoder _thumbDecoderTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbDecode)
 };
 
-void _decodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
+void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
 	info->opcode = opcode;
 	info->branches = 0;
 	info->traps = 0;
@@ -371,7 +371,7 @@ const char* thumbMnemonicStrings[] = {
 
 int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 	struct ThumbInstructionInfo info;
-	_decodeThumb(opcode, &info);
+	ARMDecodeThumb(opcode, &info);
 	const char* mnemonic = thumbMnemonicStrings[info.mnemonic];
 	int written;
 	int total = 0;
