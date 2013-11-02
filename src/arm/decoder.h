@@ -9,7 +9,6 @@
 // Bit 3: the destination of this operand is affected by this opcode
 // Bit 4: this operand is shifted by a register
 // Bit 5: this operand is shifted by an immediate
-// Bit 6: this operand is added or subtracted to the base register
 enum ARMOperandFormat {
 	ARM_OPERAND_NONE =               0x00000000,
 	ARM_OPERAND_REGISTER_1 =         0x00000001,
