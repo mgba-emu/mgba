@@ -221,8 +221,9 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA)
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_THUMB_DECODER(B ## COND, B, \
 		int8_t immediate = opcode; \
-		info->op1.immediate += immediate << 1; \
+		info->op1.immediate = immediate << 1; \
 		info->branches = 1; \
+		info->condition = ARM_CONDITION_ ## COND; \
 		info->operandFormat = ARM_OPERAND_IMMEDIATE_1;)
 
 DEFINE_CONDITIONAL_BRANCH_THUMB(EQ)
@@ -300,6 +301,7 @@ void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
 	info->traps = 0;
 	info->accessesSpecialRegisters = 0;
 	info->affectsCPSR = 0;
+	info->condition = ARM_CONDITION_AL;
 	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 6];
 	decoder(opcode, info);
 }
@@ -380,7 +382,11 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 	return total;
 }
 
-static int _decodeMemory(struct ARMMemoryAccess memory, char* buffer, int blen) {
+static int _decodePCRelative(uint32_t address, uint32_t pc, char* buffer, int blen) {
+	return snprintf(buffer, blen, "$%08X", address + pc);
+}
+
+static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, int blen) {
 	if (blen <= 0) {
 		return 0;
 	}
@@ -389,18 +395,23 @@ static int _decodeMemory(struct ARMMemoryAccess memory, char* buffer, int blen) 
 	ADVANCE(1);
 	int written;
 	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
-		written = _decodeRegister(memory.baseReg, buffer, blen);
-		ADVANCE(written);
-		if (memory.format & (ARM_MEMORY_REGISTER_OFFSET | ARM_MEMORY_IMMEDIATE_OFFSET) && !(memory.format & ARM_MEMORY_POST_INCREMENT)) {
-			strncpy(buffer, ", ", blen);
-			ADVANCE(2);
+		if (memory.baseReg == ARM_PC && memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+			written = _decodePCRelative(memory.offset.immediate, pc, buffer, blen);
+			ADVANCE(written);
+		} else {
+			written = _decodeRegister(memory.baseReg, buffer, blen);
+			ADVANCE(written);
+			if (memory.format & (ARM_MEMORY_REGISTER_OFFSET | ARM_MEMORY_IMMEDIATE_OFFSET) && !(memory.format & ARM_MEMORY_POST_INCREMENT)) {
+				strncpy(buffer, ", ", blen);
+				ADVANCE(2);
+			}
 		}
 	}
 	if (memory.format & ARM_MEMORY_POST_INCREMENT) {
 		strncpy(buffer, "], ", blen);
 		ADVANCE(3);
 	}
-	if (memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+	if (memory.format & ARM_MEMORY_IMMEDIATE_OFFSET && memory.baseReg != ARM_PC) {
 		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
 			written = snprintf(buffer, blen, "#-%i", memory.offset.immediate);
 			ADVANCE(written);
@@ -428,6 +439,25 @@ static int _decodeMemory(struct ARMMemoryAccess memory, char* buffer, int blen) 
 	}
 	return total;
 }
+
+static const char* _armConditions[] = {
+	"eq",
+	"ne",
+	"cs",
+	"cc",
+	"mi",
+	"pl",
+	"vs",
+	"vc",
+	"hi",
+	"ls",
+	"ge",
+	"lt",
+	"gt",
+	"le",
+	"al",
+	"nv"
+};
 
 static const char* _thumbMnemonicStrings[] = {
 	"ill",
@@ -470,13 +500,17 @@ static const char* _thumbMnemonicStrings[] = {
 	"tst"
 };
 
-int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
+int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 	struct ThumbInstructionInfo info;
 	ARMDecodeThumb(opcode, &info);
 	const char* mnemonic = _thumbMnemonicStrings[info.mnemonic];
 	int written;
 	int total = 0;
-	written = snprintf(buffer, blen, "%s ", mnemonic);
+	const char* cond = "";
+	if (info.condition != ARM_CONDITION_AL && info.condition < ARM_CONDITION_NV) {
+		cond = _armConditions[info.condition];
+	}
+	written = snprintf(buffer, blen, "%s%s ", mnemonic, cond);
 	ADVANCE(written);
 
 	switch (info.mnemonic) {
@@ -492,12 +526,16 @@ int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
 		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
 		ADVANCE(written);
 		break;
+	case THUMB_MN_B:
+		written = _decodePCRelative(info.op1.immediate, pc, buffer, blen);
+		ADVANCE(written);
+		break;
 	default:
 		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
 			written = snprintf(buffer, blen, "#%i", info.op1.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_1) {
-			written = _decodeMemory(info.memory, buffer, blen);
+			written = _decodeMemory(info.memory, pc, buffer, blen);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_REGISTER_1) {
 			written = _decodeRegister(info.op1.reg, buffer, blen);
@@ -511,7 +549,7 @@ int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
 			written = snprintf(buffer, blen, "#%i", info.op2.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_2) {
-			written = _decodeMemory(info.memory, buffer, blen);
+			written = _decodeMemory(info.memory, pc, buffer, blen);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_REGISTER_2) {
 			written = _decodeRegister(info.op2.reg, buffer, blen);
@@ -525,7 +563,7 @@ int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen) {
 			written = snprintf(buffer, blen, "#%i", info.op3.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_3) {
-			written = _decodeMemory(info.memory, buffer, blen);
+			written = _decodeMemory(info.memory, pc, buffer, blen);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_REGISTER_3) {
 			written = _decodeRegister(info.op1.reg, buffer, blen);

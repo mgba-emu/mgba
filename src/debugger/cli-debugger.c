@@ -144,7 +144,7 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 		printf("%08X\n", instruction);
 	} else {
 		uint16_t instruction = debugger->d.cpu->memory->loadU16(debugger->d.cpu->memory, address, 0);
-		ARMDisassembleThumb(instruction, disassembly, sizeof(disassembly));
+		ARMDisassembleThumb(instruction, debugger->d.cpu->gprs[ARM_PC] + WORD_SIZE_THUMB, disassembly, sizeof(disassembly));
 		printf("%04X: %s\n", instruction, disassembly);
 	}
 }

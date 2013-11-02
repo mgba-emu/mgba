@@ -47,6 +47,25 @@ enum ARMMemoryFormat {
 	ARM_MEMORY_OFFSET_SUBTRACT =  0x0040
 };
 
+enum ARMCondition {
+	ARM_CONDITION_EQ = 0x0,
+	ARM_CONDITION_NE = 0x1,
+	ARM_CONDITION_CS = 0x2,
+	ARM_CONDITION_CC = 0x3,
+	ARM_CONDITION_MI = 0x4,
+	ARM_CONDITION_PL = 0x5,
+	ARM_CONDITION_VS = 0x6,
+	ARM_CONDITION_VC = 0x7,
+	ARM_CONDITION_HI = 0x8,
+	ARM_CONDITION_LS = 0x9,
+	ARM_CONDITION_GE = 0xA,
+	ARM_CONDITION_LT = 0xB,
+	ARM_CONDITION_GT = 0xC,
+	ARM_CONDITION_LE = 0xD,
+	ARM_CONDITION_AL = 0xE,
+	ARM_CONDITION_NV = 0xF
+};
+
 union ARMOperand {
 	struct {
 		uint8_t reg;
@@ -120,9 +139,10 @@ struct ThumbInstructionInfo {
 	int traps;
 	int accessesSpecialRegisters;
 	int affectsCPSR;
+	int condition;
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info);
-int ARMDisassembleThumb(uint16_t opcode, char* buffer, int blen);
+int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen);
 
 #endif
