@@ -139,6 +139,7 @@ DEFINE_DATA_FORM_5_DECODER_THUMB(MVN, MVN, ARM_OPERAND_AFFECTED_1)
 		info->op1.reg = (opcode & 0x0007) | H1; \
 		info->op2.reg = ((opcode >> 3) & 0x0007) | H2; \
 		info->accessesSpecialRegisters = info->op1.reg > 12 || info->op2.reg > 12; \
+		info->branches = info->op1.reg == ARM_PC; \
 		info->affectsCPSR = CPSR; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			AFFECTED | \
@@ -224,6 +225,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STRH, STORE_CYCLES)
 		info->memory.baseReg = RN; \
 		info->accessesSpecialRegisters = SPECIAL_REG; \
 		info->op1.immediate = (opcode & 0xFF) | ADDITIONAL_REG; \
+		info->branches = info->op1.immediate & (1 << ARM_PC); \
 		info->operandFormat = ARM_OPERAND_MEMORY_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_POST_INCREMENT;)
