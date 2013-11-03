@@ -517,6 +517,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Obj = bldcnt.target2Obj;
 	renderer->target2Bd = bldcnt.target2Bd;
 
+	renderer->anyTarget2 = bldcnt.packed & 0x3F00;
+
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
 	}
@@ -725,6 +727,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND;
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
 	flags |= FLAG_TARGET_2 * background->target2;
+	if (!renderer->anyTarget2) {
+		flags |= FLAG_FINALIZED;
+	}
 
 	uint32_t screenBase;
 	uint32_t charBase;
@@ -1001,6 +1006,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
 	flags |= FLAG_TARGET_2 * background->target2; \
+	if (!renderer->anyTarget2) { \
+		flags |= FLAG_FINALIZED; \
+	} \
 	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
 	color_t* palette = renderer->normalPalette; \
 	if (variant) { \

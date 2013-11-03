@@ -115,6 +115,7 @@ struct GBAVideoSoftwareRenderer {
 	enum BlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
+	int anyTarget2;
 
 	uint16_t blda;
 	uint16_t bldb;
