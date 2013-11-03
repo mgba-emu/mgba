@@ -611,49 +611,49 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	renderer->bg[3].sy += renderer->bg[3].dmy;
 }
 
-static void _composite(struct GBAVideoSoftwareRenderer* renderer, int offset, uint32_t color, uint32_t current) {
+static void _composite(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
 	// We stash the priority on the top bits so we can do a one-operator comparison
 	// The lower the number, the higher the priority, and sprites take precendence over backgrounds
 	// We want to do special processing if the color pixel is target 1, however
 	if (current & FLAG_UNWRITTEN) {
-		renderer->row[offset] = color | (current & FLAG_OBJWIN);
+		*pixel = color | (current & FLAG_OBJWIN);
 	} else if ((color & FLAG_ORDER_MASK) < (current & FLAG_ORDER_MASK)) {
 		if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
-			renderer->row[offset] = color | FLAG_FINALIZED;
+			*pixel = color | FLAG_FINALIZED;
 		} else {
-			renderer->row[offset] = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
+			*pixel = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
 		}
 	} else {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			renderer->row[offset] = _mix(renderer->blda, current, renderer->bldb, color) | FLAG_FINALIZED;
+			*pixel = _mix(renderer->blda, current, renderer->bldb, color) | FLAG_FINALIZED;
 		} else {
-			renderer->row[offset] = current | FLAG_FINALIZED;
+			*pixel = current | FLAG_FINALIZED;
 		}
 	}
 }
 
 #define BACKGROUND_DRAW_PIXEL_16 \
 	pixelData = tileData & 0xF; \
-	current = renderer->row[outX]; \
+	current = *pixel; \
 	if (pixelData && !(current & FLAG_FINALIZED)) { \
 		if (!objwinSlowPath) { \
-			_composite(renderer, outX, palette[pixelData | paletteData] | flags, current); \
+			_composite(renderer, pixel, palette[pixelData | paletteData] | flags, current); \
 		} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
 			color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette; \
-			_composite(renderer, outX, currentPalette[pixelData | paletteData] | flags, current); \
+			_composite(renderer, pixel, currentPalette[pixelData | paletteData] | flags, current); \
 		} \
 	} \
 	tileData >>= 4;
 
 #define BACKGROUND_DRAW_PIXEL_256 \
 	pixelData = tileData & 0xFF; \
-	current = renderer->row[outX]; \
+	current = *pixel; \
 	if (pixelData && !(current & FLAG_FINALIZED)) { \
 		if (!objwinSlowPath) { \
-			_composite(renderer, outX, palette[pixelData] | flags, current); \
+			_composite(renderer, pixel, palette[pixelData] | flags, current); \
 		} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
 			color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette; \
-			_composite(renderer, outX, currentPalette[pixelData] | flags, current); \
+			_composite(renderer, pixel, currentPalette[pixelData] | flags, current); \
 		} \
 	} \
 	tileData >>= 8;
@@ -761,10 +761,12 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 				tileData >>= 4 * mod8;
 				for (; outX < end; ++outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_16;
 				}
 			} else {
 				for (outX = end - 1; outX >= renderer->start; --outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_16;
 				}
 			}
@@ -778,6 +780,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 				tileData >>= 8 * shift;
 				shift = 0;
 				for (; outX < end2; ++outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_256;
 				}
 			}
@@ -785,6 +788,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
 			tileData >>= 8 * shift;
 			for (; outX < end; ++outX) {
+				uint32_t* pixel = &renderer->row[outX];
 				BACKGROUND_DRAW_PIXEL_256;
 			}
 		}
@@ -807,6 +811,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 					outX = 0;
 				}
 				for (; outX < renderer->end; ++outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_16;
 				}
 			} else {
@@ -816,6 +821,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 					end2 = -1;
 				}
 				for (outX = renderer->end - 1; outX > end2; --outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_16;
 				}
 			}
@@ -827,6 +833,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			if (end2 > 0) {
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
 				for (; outX < renderer->end - end2; ++outX) {
+					uint32_t* pixel = &renderer->row[outX];
 					BACKGROUND_DRAW_PIXEL_256;
 				}
 				++charBase;
@@ -834,6 +841,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 			tileData = ((uint32_t*)renderer->d.vram)[charBase];
 			for (; outX < renderer->end; ++outX) {
+				uint32_t* pixel = &renderer->row[outX];
 				BACKGROUND_DRAW_PIXEL_256;
 			}
 		}
@@ -842,6 +850,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		outX = renderer->start + tileX * 8 - (inX & 0x7);
 	}
 
+	uint32_t* pixel = &renderer->row[outX];
 	if (background->mosaic) {
 		int mosaicH = renderer->mosaic.bgH + 1;
 		int x;
@@ -875,7 +884,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 					}
 					--mosaicWait;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 				}
 			}
 		} else {
@@ -893,42 +902,42 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			if (tileData) {
 				if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					++outX;
+					++pixel;
 				} else {
-					outX += 7;
+					pixel += 7;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_16;
-					outX += 8;
+					pixel += 8;
 				}
 			} else {
-				outX += 8;
+				pixel += 8;
 			}
 		}
 	} else {
@@ -939,58 +948,54 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
 				if (tileData) {
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 				} else {
-					outX += 4;
+					pixel += 4;
 				}
 				tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
 				if (tileData) {
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 						BACKGROUND_DRAW_PIXEL_256;
-						++outX;
+						++pixel;
 				} else {
-					outX += 4;
+					pixel += 4;
 				}
 			} else {
 				uint32_t tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
 				if (tileData) {
-					outX += 3;
+					pixel += 3;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					outX += 4;
-				} else {
-					outX += 4;
 				}
+				pixel += 4;
 				tileData = ((uint32_t*)renderer->d.vram)[charBase];
 				if (tileData) {
-					outX += 3;
+					pixel += 3;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					--outX;
+					--pixel;
 					BACKGROUND_DRAW_PIXEL_256;
-					outX += 4;
-				} else {
-					outX += 4;
 				}
+				pixel += 4;
 			}
 		}
 	}
@@ -1038,7 +1043,8 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint8_t tileData;
 
 	int outX;
-	for (outX = renderer->start; outX < renderer->end; ++outX) {
+	uint32_t* pixel;
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		x += background->dx;
 		y += background->dy;
 
@@ -1054,13 +1060,13 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 		mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)];
 		tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
-		uint32_t current = renderer->row[outX];
+		uint32_t current = *pixel;
 		if (tileData && !(current & FLAG_FINALIZED)) {
 			if (!objwinSlowPath) {
-				_composite(renderer, outX, palette[tileData] | flags, current);
+				_composite(renderer, pixel, palette[tileData] | flags, current);
 			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
-				_composite(renderer, outX, currentPalette[tileData] | flags, current);
+				_composite(renderer, pixel, currentPalette[tileData] | flags, current);
 			}
 		}
 	}
@@ -1072,7 +1078,8 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t color;
 
 	int outX;
-	for (outX = renderer->start; outX < renderer->end; ++outX) {
+	uint32_t* pixel;
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
@@ -1085,14 +1092,14 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 		color = color32;
 #endif
 
-		uint32_t current = renderer->row[outX];
+		uint32_t current = *pixel;
 		if (!(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
-				_composite(renderer, outX, color | flags, current);
+				_composite(renderer, pixel, color | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_composite(renderer, outX, _brighten(color, renderer->bldy) | flags, current);
+				_composite(renderer, pixel, _brighten(color, renderer->bldy) | flags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_composite(renderer, outX, _darken(color, renderer->bldy) | flags, current);
+				_composite(renderer, pixel, _darken(color, renderer->bldy) | flags, current);
 			}
 		}
 	}
@@ -1108,18 +1115,19 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	int outX;
-	for (outX = renderer->start; outX < renderer->end; ++outX) {
+	uint32_t* pixel;
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
 		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 
-		uint32_t current = renderer->row[outX];
+		uint32_t current = *pixel;
 		if (color && !(current & FLAG_FINALIZED)) {
 			if (!objwinSlowPath) {
-				_composite(renderer, outX, palette[color] | flags, current);
+				_composite(renderer, pixel, palette[color] | flags, current);
 			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
-				_composite(renderer, outX, currentPalette[color] | flags, current);
+				_composite(renderer, pixel, currentPalette[color] | flags, current);
 			}
 		}
 	}
@@ -1135,7 +1143,8 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 	int outX;
-	for (outX = renderer->start; outX < renderer->end; ++outX) {
+	uint32_t* pixel;
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		color = ((uint16_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * 160];
@@ -1147,14 +1156,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 		color = color32;
 #endif
 
-		uint32_t current = renderer->row[outX];
+		uint32_t current = *pixel;
 		if (!(current & FLAG_FINALIZED) && (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly)) {
 			if (!variant) {
-				_composite(renderer, outX, color | flags, current);
+				_composite(renderer, pixel, color | flags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_composite(renderer, outX, _brighten(color, renderer->bldy) | flags, current);
+				_composite(renderer, pixel, _brighten(color, renderer->bldy) | flags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_composite(renderer, outX, _darken(color, renderer->bldy) | flags, current);
+				_composite(renderer, pixel, _darken(color, renderer->bldy) | flags, current);
 			}
 		}
 	}
@@ -1378,11 +1387,12 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority) {
 	int x;
-	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+	uint32_t* pixel = renderer->row;
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
 		uint32_t color = renderer->spriteLayer[x];
-		uint32_t current = renderer->row[x];
+		uint32_t current = *pixel;
 		if ((color & FLAG_FINALIZED) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority && !(current & FLAG_FINALIZED)) {
-			_composite(renderer, x, color & ~FLAG_FINALIZED, current);
+			_composite(renderer, pixel, color & ~FLAG_FINALIZED, current);
 		}
 	}
 }
