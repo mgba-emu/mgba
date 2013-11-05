@@ -62,9 +62,25 @@ int main(int argc, char** argv) {
 }
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
+	struct timespec lastEcho;
+	clock_gettime(CLOCK_REALTIME, &lastEcho);
+	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
 		if (GBASyncWaitFrameStart(&context->sync, 0)) {
 			++*frames;
+			++lastFrames;
+			struct timespec currentTime;
+			long timeDiff;
+			clock_gettime(CLOCK_REALTIME, &currentTime);
+			timeDiff = currentTime.tv_sec - lastEcho.tv_sec;
+			timeDiff *= 1000;
+			timeDiff += (currentTime.tv_nsec - lastEcho.tv_nsec) / 1000000;
+			if (timeDiff >= 1000) {
+				printf("\033[2K\rCurrent FPS: %g (%gx)", lastFrames / (timeDiff / 1000.0f), lastFrames / (float) (60 * (timeDiff / 1000.0f)));
+				fflush(stdout);
+				lastEcho = currentTime;
+				lastFrames = 0;
+			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
 	}
