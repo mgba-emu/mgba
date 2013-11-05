@@ -36,9 +36,9 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
-static inline color_t _brighten(color_t color, int y);
-static inline color_t _darken(color_t color, int y);
-static color_t _mix(int weightA, color_t colorA, int weightB, color_t colorB);
+static inline unsigned _brighten(unsigned color, int y);
+static inline unsigned _darken(unsigned color, int y);
+static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
@@ -277,9 +277,9 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 #ifdef COLOR_16_BIT
-	color_t color = value;
+	unsigned color = value;
 #else
-	color_t color = 0;
+	unsigned color = 0;
 	color |= (value << 3) & 0xF8;
 	color |= (value << 6) & 0xF800;
 	color |= (value << 9) & 0xF80000;
@@ -1084,7 +1084,7 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		color = ((uint16_t*)renderer->d.vram)[(localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
 #ifndef COLOR_16_BIT
-		color_t color32;
+		unsigned color32;
 		color32 = 0;
 		color32 |= (color << 3) & 0xF8;
 		color32 |= (color << 6) & 0xF800;
@@ -1149,7 +1149,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		color = ((uint16_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * 160];
 #ifndef COLOR_16_BIT
-		color_t color32 = 0;
+		unsigned color32 = 0;
 		color32 |= (color << 9) & 0xF80000;
 		color32 |= (color << 3) & 0xF8;
 		color32 |= (color << 6) & 0xF800;
@@ -1414,9 +1414,9 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	}
 }
 
-static inline color_t _brighten(color_t color, int y) {
-	color_t c = 0;
-	color_t a;
+static inline unsigned _brighten(unsigned color, int y) {
+	unsigned c = 0;
+	unsigned a;
 #ifdef COLOR_16_BIT
 	a = color & 0x1F;
 	c |= (a + ((0x1F - a) * y) / 16) & 0x1F;
@@ -1439,9 +1439,9 @@ static inline color_t _brighten(color_t color, int y) {
 	return c;
 }
 
-static inline color_t _darken(color_t color, int y) {
-	color_t c = 0;
-	color_t a;
+static inline unsigned _darken(unsigned color, int y) {
+	unsigned c = 0;
+	unsigned a;
 #ifdef COLOR_16_BIT
 	a = color & 0x1F;
 	c |= (a - (a * y) / 16) & 0x1F;
@@ -1464,9 +1464,9 @@ static inline color_t _darken(color_t color, int y) {
 	return c;
 }
 
-static color_t _mix(int weightA, color_t colorA, int weightB, color_t colorB) {
-	color_t c = 0;
-	color_t a, b;
+static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB) {
+	unsigned c = 0;
+	unsigned a, b;
 #ifdef COLOR_16_BIT
 	a = colorA & 0x1F;
 	b = colorB & 0x1F;
