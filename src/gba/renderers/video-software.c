@@ -1484,14 +1484,14 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	b = colorB & 0x3E0;
 	c |= ((a * weightA + b * weightB) / 16) & 0x7E0;
 	if (c & 0x0400) {
-		c |= 0x03E0;
+		c = (c & 0x001F) | 0x03E0;
 	}
 
 	a = colorA & 0x7C00;
 	b = colorB & 0x7C00;
 	c |= ((a * weightA + b * weightB) / 16) & 0xFC00;
 	if (c & 0x8000) {
-		c |= 0x7C00;
+		c = (c &0x03FF) | 0x7C00;
 	}
 #else
 	a = colorA & 0xF8;
