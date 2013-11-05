@@ -1056,7 +1056,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 		if (background->overflow) {
 			localX = x & (sizeAdjusted - 1);
 			localY = y & (sizeAdjusted - 1);
-		} else if (x < 0 || y < 0 || x >= sizeAdjusted || y >= sizeAdjusted) {
+		} else if ((x | y) & ~(sizeAdjusted - 1)) {
 			continue;
 		} else {
 			localX = x;
