@@ -616,20 +616,21 @@ static void _composite(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixe
 	// The lower the number, the higher the priority, and sprites take precendence over backgrounds
 	// We want to do special processing if the color pixel is target 1, however
 	if (current & FLAG_UNWRITTEN) {
-		*pixel = color | (current & FLAG_OBJWIN);
+		color |= (current & FLAG_OBJWIN);
 	} else if ((color & FLAG_ORDER_MASK) < (current & FLAG_ORDER_MASK)) {
 		if (!(color & FLAG_TARGET_1) || !(current & FLAG_TARGET_2)) {
-			*pixel = color | FLAG_FINALIZED;
+			color |= FLAG_FINALIZED;
 		} else {
-			*pixel = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
+			color = _mix(renderer->bldb, current, renderer->blda, color) | FLAG_FINALIZED;
 		}
 	} else {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			*pixel = _mix(renderer->blda, current, renderer->bldb, color) | FLAG_FINALIZED;
+			color = _mix(renderer->blda, current, renderer->bldb, color) | FLAG_FINALIZED;
 		} else {
-			*pixel = current | FLAG_FINALIZED;
+			color = current | FLAG_FINALIZED;
 		}
 	}
+	*pixel = color;
 }
 
 #define BACKGROUND_DRAW_PIXEL_16 \
