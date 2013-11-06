@@ -1245,7 +1245,7 @@ static const int _objSizes[32] = {
 	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = palette[0x100 | tileData | (sprite->palette << 4)] | flags; \
+		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
@@ -1262,7 +1262,7 @@ static const int _objSizes[32] = {
 	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
-		renderer->spriteLayer[outX] = palette[0x100 | tileData] | flags; \
+		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
@@ -1295,9 +1295,9 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
 		variant = 0;
 	}
-	color_t* palette = renderer->normalPalette;
+	color_t* palette = &renderer->normalPalette[0x100];
 	if (variant) {
-		palette = renderer->variantPalette;
+		palette = &renderer->variantPalette[0x100];
 	}
 
 	int outX = x >= start ? x : start;
@@ -1326,6 +1326,7 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 		xOffset = -1;
 	}
 	if (!sprite->multipalette) {
+		palette = &palette[sprite->palette << 4];
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_NORMAL_LOOP(16, OBJWIN);
 		} else if (sprite->mosaic) {
@@ -1367,15 +1368,16 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
 		variant = 0;
 	}
-	color_t* palette = renderer->normalPalette;
+	color_t* palette = &renderer->normalPalette[0x100];
 	if (variant) {
-		palette = renderer->variantPalette;
+		palette = &renderer->variantPalette[0x100];
 	}
 	int inY = y - sprite->y;
 	if (inY < 0) {
 		inY += 256;
 	}
 	if (!sprite->multipalette) {
+		palette = &palette[sprite->palette << 4];
 		if (flags & FLAG_OBJWIN) {
 			SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
 		} else {
