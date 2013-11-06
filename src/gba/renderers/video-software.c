@@ -1242,14 +1242,14 @@ static const int _objSizes[32] = {
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = palette[0x100 | tileData | (sprite->palette << 4)] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1259,14 +1259,14 @@ static const int _objSizes[32] = {
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (!(renderer->spriteLayer[outX]) || ((renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags))) { \
 		renderer->spriteLayer[outX] = palette[0x100 | tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	uint16_t tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
