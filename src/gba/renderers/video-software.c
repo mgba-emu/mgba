@@ -277,7 +277,14 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 #ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	unsigned color = 0;
+	color |= (value & 0x001F) << 11;
+	color |= (value & 0x03E0) << 1;
+	color |= (value & 0x7C00) >> 10;
+#else
 	unsigned color = value;
+#endif
 #else
 	unsigned color = 0;
 	color |= (value << 3) & 0xF8;
@@ -401,11 +408,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 #ifdef COLOR_16_BIT
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-		uint32_t c = softwareRenderer->row[x];
-#ifdef COLOR_5_6_5
-		c = ((c & 0x001F) << 11) | ((c & 0x03E0) << 1) | ((c & 0x7C00) >> 10);
-#endif
-		row[x] = c;
+		row[x] = softwareRenderer->row[x];
 	}
 #else
 	memcpy(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
@@ -1429,11 +1432,19 @@ static inline unsigned _brighten(unsigned color, int y) {
 	a = color & 0x1F;
 	c |= (a + ((0x1F - a) * y) / 16) & 0x1F;
 
+#ifdef COLOR_5_6_5
+	a = color & 0x7C0;
+	c |= (a + ((0x7C0 - a) * y) / 16) & 0x7C0;
+
+	a = color & 0xF800;
+	c |= (a + ((0xF800 - a) * y) / 16) & 0xF800;
+#else
 	a = color & 0x3E0;
 	c |= (a + ((0x3E0 - a) * y) / 16) & 0x3E0;
 
 	a = color & 0x7C00;
 	c |= (a + ((0x7C00 - a) * y) / 16) & 0x7C00;
+#endif
 #else
 	a = color & 0xF8;
 	c |= (a + ((0xF8 - a) * y) / 16) & 0xF8;
@@ -1454,11 +1465,19 @@ static inline unsigned _darken(unsigned color, int y) {
 	a = color & 0x1F;
 	c |= (a - (a * y) / 16) & 0x1F;
 
+#ifdef COLOR_5_6_5
+	a = color & 0x7C0;
+	c |= (a - (a * y) / 16) & 0x7C0;
+
+	a = color & 0xF800;
+	c |= (a - (a * y) / 16) & 0xF800;
+#else
 	a = color & 0x3E0;
 	c |= (a - (a * y) / 16) & 0x3E0;
 
 	a = color & 0x7C00;
 	c |= (a - (a * y) / 16) & 0x7C00;
+#endif
 #else
 	a = color & 0xF8;
 	c |= (a - (a * y) / 16) & 0xF8;
@@ -1483,6 +1502,21 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 		c = 0x001F;
 	}
 
+#ifdef COLOR_5_6_5
+	a = colorA & 0x7C0;
+	b = colorB & 0x7C0;
+	c |= ((a * weightA + b * weightB) / 16) & 0xFC0;
+	if (c & 0x0800) {
+		c = (c & 0x001F) | 0x07C0;
+	}
+
+	a = colorA & 0xF800;
+	b = colorB & 0xF800;
+	c |= ((a * weightA + b * weightB) / 16) & 0x1F800;
+	if (c & 0x10000) {
+		c = (c &0x07FF) | 0xF800;
+	}
+#else
 	a = colorA & 0x3E0;
 	b = colorB & 0x3E0;
 	c |= ((a * weightA + b * weightB) / 16) & 0x7E0;
@@ -1496,6 +1530,7 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	if (c & 0x8000) {
 		c = (c &0x03FF) | 0x7C00;
 	}
+#endif
 #else
 	a = colorA & 0xF8;
 	b = colorB & 0xF8;
