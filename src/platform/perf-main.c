@@ -62,19 +62,19 @@ int main(int argc, char** argv) {
 }
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
-	struct timespec lastEcho;
-	clock_gettime(CLOCK_REALTIME, &lastEcho);
+	struct timeval lastEcho;
+	gettimeofday(&lastEcho, 0);
 	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
 		if (GBASyncWaitFrameStart(&context->sync, 0)) {
 			++*frames;
 			++lastFrames;
-			struct timespec currentTime;
+			struct timeval currentTime;
 			long timeDiff;
-			clock_gettime(CLOCK_REALTIME, &currentTime);
+			gettimeofday(&currentTime, 0);
 			timeDiff = currentTime.tv_sec - lastEcho.tv_sec;
 			timeDiff *= 1000;
-			timeDiff += (currentTime.tv_nsec - lastEcho.tv_nsec) / 1000000;
+			timeDiff += (currentTime.tv_usec - lastEcho.tv_usec) / 1000;
 			if (timeDiff >= 1000) {
 				printf("\033[2K\rCurrent FPS: %g (%gx)", lastFrames / (timeDiff / 1000.0f), lastFrames / (float) (60 * (timeDiff / 1000.0f)));
 				fflush(stdout);
