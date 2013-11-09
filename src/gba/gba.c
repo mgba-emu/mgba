@@ -115,6 +115,7 @@ void GBAInit(struct GBA* gba) {
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
 
+	gba->halted = 0;
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
