@@ -906,7 +906,37 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 				}
 			}
 		} else {
-			// TODO: 256-color mosaic
+			for (; tileX < tileEnd; ++tileX) {
+				BACKGROUND_TEXT_SELECT_CHARACTER;
+				charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1);
+				tileData = carryData;
+				for (x = 0; x < 8; ++x) {
+					if (!mosaicWait) {
+						if (x >= 4) {
+							tileData = ((uint32_t*)renderer->d.vram)[charBase + 1];
+							if (!GBA_TEXT_MAP_HFLIP(mapData)) {
+								tileData >>= (x - 4) * 8;
+							} else {
+								tileData >>= (7 - x) * 8;
+							}
+						} else {
+							tileData = ((uint32_t*)renderer->d.vram)[charBase];
+							if (!GBA_TEXT_MAP_HFLIP(mapData)) {
+								tileData >>= x * 8;
+							} else {
+								tileData >>= (3 - x) * 8;
+							}
+						}
+						tileData &= 0xFF;
+						carryData = tileData;
+						mosaicWait = mosaicH;
+					}
+					tileData |= tileData << 8;
+					--mosaicWait;
+					BACKGROUND_DRAW_PIXEL_256;
+					++pixel;
+				}
+			}
 		}
 		return;
 	}
