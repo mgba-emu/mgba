@@ -73,6 +73,8 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->objwin.priority = 2;
 	softwareRenderer->winout.priority = 3;
 
+	softwareRenderer->mosaic.packed = 0;
+
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
 		bg->index = i;
