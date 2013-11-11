@@ -763,6 +763,10 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		BACKGROUND_TEXT_SELECT_CHARACTER;
 
 		int end = outX + 0x8 - mod8;
+		if (end > renderer->end) {
+			// TODO: ensure tiles are properly aligned from this
+			end = renderer->end;
+		}
 		if (!background->multipalette) {
 			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4;
 			palette = &mainPalette[paletteData];
@@ -817,9 +821,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 			palette = &mainPalette[paletteData];
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) {
 				outX = renderer->end - mod8;
-				if (outX < 0) {
-					tileData >>= 4 * -outX;
-					outX = 0;
+				if (outX < renderer->start) {
+					tileData >>= 4 * (renderer->start - outX);
+					outX = renderer->start;
 				}
 				for (; outX < renderer->end; ++outX) {
 					uint32_t* pixel = &renderer->row[outX];
