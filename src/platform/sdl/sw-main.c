@@ -112,8 +112,6 @@ static void _GBASDLRunloop(struct GBAThread* context) {
 }
 
 static void _GBASDLDeinit(struct SoftwareRenderer* renderer) {
-	free(renderer->d.outputBuffer);
-
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 	SDL_Quit();
