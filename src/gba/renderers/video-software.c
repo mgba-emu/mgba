@@ -1535,40 +1535,36 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	unsigned c = 0;
 	unsigned a, b;
 #ifdef COLOR_16_BIT
-	a = colorA & 0x1F;
-	b = colorB & 0x1F;
-	c |= ((a * weightA + b * weightB) / 16) & 0x3F;
-	if (c & 0x0020) {
-		c = 0x001F;
-	}
-
 #ifdef COLOR_5_6_5
-	a = colorA & 0x7C0;
-	b = colorB & 0x7C0;
-	c |= ((a * weightA + b * weightB) / 16) & 0xFC0;
-	if (c & 0x0800) {
-		c = (c & 0x001F) | 0x07C0;
+	a = colorA & ~0x7C0;
+	b = colorB & ~0x7C0;
+	a |= (colorA & 0x7C0) << 16;
+	b |= (colorB & 0x7C0) << 16;
+	c |= ((a * weightA + b * weightB) / 16);
+	if (c & 0x0020) {
+		c = (c & ~0x0020) | 0x001F;
 	}
-
-	a = colorA & 0xF800;
-	b = colorB & 0xF800;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1F800;
 	if (c & 0x10000) {
-		c = (c &0x07FF) | 0xF800;
+		c = (c & ~0x10000) | 0xF800;
 	}
+	if (c & 0x08000000) {
+		c = (c & 0x08000000) | 0x07C00000;
+	}
+	c = (c & 0xFFFF) | (c >> 16);
 #else
-	a = colorA & 0x3E0;
-	b = colorB & 0x3E0;
-	c |= ((a * weightA + b * weightB) / 16) & 0x7E0;
-	if (c & 0x0400) {
-		c = (c & 0x001F) | 0x03E0;
+	a = colorA & ~0x3E0;
+	b = colorB & ~0x3E0;
+	a |= (colorA & 0x3E0) << 16;
+	b |= (colorB & 0x3E0) << 16;
+	c |= ((a * weightA + b * weightB) / 16);
+	if (c & 0x0020) {
+		c = (c & ~0x0020) | 0x001F;
 	}
-
-	a = colorA & 0x7C00;
-	b = colorB & 0x7C00;
-	c |= ((a * weightA + b * weightB) / 16) & 0xFC00;
-	if (c & 0x8000) {
-		c = (c &0x03FF) | 0x7C00;
+	if (c & 0x10000) {
+		c = (c & ~0x10000) | 0xF800;
+	}
+	if (c & 0x04000000) {
+		c = (c & 0x04000000) | 0x03E00000;
 	}
 #endif
 #else
