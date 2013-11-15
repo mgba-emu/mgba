@@ -85,7 +85,6 @@ struct GBA {
 		unsigned enable : 1;
 	} timers[4];
 
-	int halted;
 	int springIRQ;
 	int* keySource;
 	struct GBARotationSource* rotationSource;
@@ -128,7 +127,8 @@ void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 void GBATestIRQ(struct ARMBoard* board);
-void GBAHalt(struct GBA* gba);
+int GBAWaitForIRQ(struct GBA* gba);
+int GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 

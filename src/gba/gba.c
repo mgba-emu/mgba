@@ -115,7 +115,6 @@ void GBAInit(struct GBA* gba) {
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
 
-	gba->halted = 0;
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
@@ -153,47 +152,37 @@ void GBABoardReset(struct ARMBoard* board) {
 
 static void GBAProcessEvents(struct ARMBoard* board) {
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;
-	do {
-		int32_t cycles = board->cpu->cycles;
-		int32_t nextEvent = INT_MAX;
-		int32_t testEvent;
+	int32_t cycles = board->cpu->cycles;
+	int32_t nextEvent = INT_MAX;
+	int32_t testEvent;
 
-		if (gbaBoard->p->springIRQ) {
-			ARMRaiseIRQ(&gbaBoard->p->cpu);
-			gbaBoard->p->springIRQ = 0;
-		}
+	if (gbaBoard->p->springIRQ) {
+		ARMRaiseIRQ(&gbaBoard->p->cpu);
+		gbaBoard->p->springIRQ = 0;
+	}
 
-		testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+	testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
 
-		testEvent = GBAAudioProcessEvents(&gbaBoard->p->audio, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+	testEvent = GBAAudioProcessEvents(&gbaBoard->p->audio, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
 
-		testEvent = GBAMemoryProcessEvents(&gbaBoard->p->memory, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+	testEvent = GBAMemoryProcessEvents(&gbaBoard->p->memory, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
 
-		testEvent = GBATimersProcessEvents(gbaBoard->p, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+	testEvent = GBATimersProcessEvents(gbaBoard->p, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
 
-		board->cpu->cycles = 0;
-		board->cpu->nextEvent = nextEvent;
-
-		if (gbaBoard->p->halted) {
-			gbaBoard->p->halted = !(gbaBoard->p->memory.io[REG_IF >> 1] & gbaBoard->p->memory.io[REG_IE >> 1]);
-			board->cpu->cycles = nextEvent;
-			if (nextEvent == INT_MAX) {
-				break;
-			}
-		}
-	} while (gbaBoard->p->halted);
+	board->cpu->cycles = 0;
+	board->cpu->nextEvent = nextEvent;
 }
 
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
@@ -467,9 +456,28 @@ void GBATestIRQ(struct ARMBoard* board) {
 	}
 }
 
-void GBAHalt(struct GBA* gba) {
-	gba->cpu.cycles = gba->cpu.nextEvent;
-	gba->halted = 1;
+int GBAWaitForIRQ(struct GBA* gba) {
+	int irqs = gba->memory.io[REG_IF >> 1];
+	int newIRQs = 0;
+	gba->memory.io[REG_IF >> 1] = 0;
+	while (1) {
+		if (gba->cpu.nextEvent == INT_MAX) {
+			break;
+		} else {
+			gba->cpu.cycles = gba->cpu.nextEvent;
+			GBAProcessEvents(&gba->board.d);
+			if (gba->memory.io[REG_IF >> 1]) {
+				newIRQs = gba->memory.io[REG_IF >> 1];
+				break;
+			}
+		}
+	}
+	gba->memory.io[REG_IF >> 1] = newIRQs | irqs;
+	return newIRQs;
+}
+
+int GBAHalt(struct GBA* gba) {
+	return GBAWaitForIRQ(gba);
 }
 
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
