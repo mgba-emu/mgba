@@ -1531,32 +1531,26 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	a |= (colorA & 0x7C0) << 16;
 	b |= (colorB & 0x7C0) << 16;
 	c |= ((a * weightA + b * weightB) / 16);
-	if (c & 0x0020) {
-		c = (c & ~0x0020) | 0x001F;
-	}
-	if (c & 0x10000) {
-		c = (c & ~0x10000) | 0xF800;
-	}
 	if (c & 0x08000000) {
 		c = (c & 0x08000000) | 0x07C00000;
 	}
-	c = (c & 0xFFFF) | (c >> 16);
 #else
 	a = colorA & ~0x3E0;
 	b = colorB & ~0x3E0;
 	a |= (colorA & 0x3E0) << 16;
 	b |= (colorB & 0x3E0) << 16;
 	c |= ((a * weightA + b * weightB) / 16);
+	if (c & 0x04000000) {
+		c = (c & 0x04000000) | 0x03E00000;
+	}
+#endif
 	if (c & 0x0020) {
 		c = (c & ~0x0020) | 0x001F;
 	}
 	if (c & 0x10000) {
 		c = (c & ~0x10000) | 0xF800;
 	}
-	if (c & 0x04000000) {
-		c = (c & 0x04000000) | 0x03E00000;
-	}
-#endif
+	c = (c & 0xFFFF) | (c >> 16);
 #else
 	a = colorA & 0xF8;
 	b = colorB & 0xF8;
