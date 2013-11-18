@@ -68,6 +68,16 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ 'DEPB', SAVEDATA_FLASH1M, GPIO_RTC },
 	{ 'FEPB', SAVEDATA_FLASH1M, GPIO_RTC },
 
+	// Pokemon FireRed
+	{ 'JRPB', SAVEDATA_FLASH1M, GPIO_NONE },
+	{ 'ERPB', SAVEDATA_FLASH1M, GPIO_NONE },
+	{ 'PRPB', SAVEDATA_FLASH1M, GPIO_NONE },
+
+	// Pokemon LeafGreen
+	{ 'JGPB', SAVEDATA_FLASH1M, GPIO_NONE },
+	{ 'EGPB', SAVEDATA_FLASH1M, GPIO_NONE },
+	{ 'PGPB', SAVEDATA_FLASH1M, GPIO_NONE },
+
 	// RockMan EXE 4.5 - Real Operation
 	{ 'J4RB', SAVEDATA_FLASH512, GPIO_RTC },
 
