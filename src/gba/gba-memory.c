@@ -170,6 +170,7 @@ int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
 		break;
 	default:
@@ -251,6 +252,7 @@ int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter)
 		}
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Load16: 0x%08X", address);
 		break;
 	default:
@@ -319,6 +321,7 @@ int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
 		}
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		wait = gbaMemory->waitstates16[address >> BASE_OFFSET];
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			GBASavedataInitSRAM(&gbaMemory->savedata);
@@ -375,6 +378,7 @@ void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* 
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 		break;
 	default:
@@ -430,6 +434,7 @@ void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* 
 		GBASavedataWriteEEPROM(&gbaMemory->savedata, value, 1);
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store16: 0x%08X", address);
 		break;
 	default:
@@ -476,6 +481,7 @@ void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cy
 		GBALog(gbaMemory->p, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case BASE_CART_SRAM:
+	case BASE_CART_SRAM_MIRROR:
 		if (gbaMemory->savedata.type == SAVEDATA_NONE) {
 			if (address == SAVEDATA_FLASH_BASE) {
 				GBASavedataInitFlash(&gbaMemory->savedata);
@@ -517,10 +523,10 @@ void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters) {
 	int ws2seq = (parameters & 0x0400) >> 10;
 	int prefetch = parameters & 0x4000;
 
-	memory->waitstates16[REGION_CART_SRAM] =  GBA_ROM_WAITSTATES[sram];
-	memory->waitstatesSeq16[REGION_CART_SRAM] = GBA_ROM_WAITSTATES[sram];
-	memory->waitstates32[REGION_CART_SRAM] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
-	memory->waitstatesSeq32[REGION_CART_SRAM] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
+	memory->waitstates16[REGION_CART_SRAM] = memory->waitstates16[REGION_CART_SRAM_MIRROR] =  GBA_ROM_WAITSTATES[sram];
+	memory->waitstatesSeq16[REGION_CART_SRAM] = memory->waitstatesSeq16[REGION_CART_SRAM_MIRROR] = GBA_ROM_WAITSTATES[sram];
+	memory->waitstates32[REGION_CART_SRAM] = memory->waitstates32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
+	memory->waitstatesSeq32[REGION_CART_SRAM] = memory->waitstatesSeq32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
 
 	memory->waitstates16[REGION_CART0] = memory->waitstates16[REGION_CART0_EX] = GBA_ROM_WAITSTATES[ws0];
 	memory->waitstates16[REGION_CART1] = memory->waitstates16[REGION_CART1_EX] = GBA_ROM_WAITSTATES[ws1];
