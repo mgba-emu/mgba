@@ -48,8 +48,6 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
-
-	pthread_mutex_init(&audio->bufferMutex, 0);
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {
@@ -57,9 +55,6 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 	CircleBufferDeinit(&audio->right);
 	CircleBufferDeinit(&audio->chA.fifo);
 	CircleBufferDeinit(&audio->chB.fifo);
-
-	pthread_mutex_lock(&audio->bufferMutex);
-	pthread_mutex_destroy(&audio->bufferMutex);
 }
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
@@ -397,6 +392,27 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
 
+unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples) {
+	GBASyncLockAudio(audio->p->sync);
+	unsigned read = 0;
+	if (left) {
+		unsigned readL = CircleBufferRead(&audio->left, left, nSamples * sizeof(int32_t)) >> 2;
+		if (readL < nSamples) {
+			memset((int32_t*) left + readL, 0, nSamples - readL);
+		}
+		read = readL;
+	}
+	if (right) {
+		unsigned readR = CircleBufferRead(&audio->right, right, nSamples * sizeof(int32_t)) >> 2;
+		if (readR < nSamples) {
+			memset((int32_t*) right + readR, 0, nSamples - readR);
+		}
+		read = read >= readR ? read : readR;
+	}
+	GBASyncConsumeAudio(audio->p->sync);
+	return read;
+}
+
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* control, int duty) {
 	control->hi = !control->hi;
 	int period = 16 * (2048 - control->frequency);
@@ -579,14 +595,9 @@ static void _sample(struct GBAAudio* audio) {
 		sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
 	}
 
-	pthread_mutex_lock(&audio->bufferMutex);
-	while (CircleBufferSize(&audio->left) + (GBA_AUDIO_SAMPLES * 2 / 5) >= audio->left.capacity) {
-		if (!audio->p->sync->audioWait) {
-			break;
-		}
-		GBASyncProduceAudio(audio->p->sync, &audio->bufferMutex);
-	}
-	CircleBufferWrite32(&audio->left, sampleLeft);
-	CircleBufferWrite32(&audio->right, sampleRight);
-	pthread_mutex_unlock(&audio->bufferMutex);
+	GBASyncLockAudio(audio->p->sync);
+	CircleBufferWrite32(&audio->left, sampleLeft << 5);
+	CircleBufferWrite32(&audio->right, sampleRight << 5);
+	unsigned produced = CircleBufferSize(&audio->left);
+	GBASyncProduceAudio(audio->p->sync, produced >= GBA_AUDIO_SAMPLES * 3);
 }

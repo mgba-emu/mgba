@@ -3,17 +3,12 @@
 
 #include <SDL.h>
 
-struct StereoSample {
-	Sint16 left;
-	Sint16 right;
-};
-
 struct GBASDLAudio {
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
 	float drift;
+	float ratio;
 	struct GBAAudio* audio;
-	struct StereoSample currentSample;
 };
 
 int GBASDLInitAudio(struct GBASDLAudio* context);

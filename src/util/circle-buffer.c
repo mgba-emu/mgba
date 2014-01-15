@@ -87,3 +87,29 @@ int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value) {
 	buffer->size -= sizeof(int32_t);
 	return 1;
 }
+
+int CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length) {
+	int8_t* data = buffer->readPtr;
+	if (buffer->size == 0) {
+		return 0;
+	}
+	if (length > buffer->size) {
+		length = buffer->size;
+	}
+	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
+	if (length <= remaining) {
+		memcpy(output, data, length);
+		if (length == remaining) {
+			buffer->readPtr = buffer->data;
+		} else {
+			buffer->readPtr = (int8_t*) data + length;
+		}
+	} else {
+		memcpy(output, data, remaining);
+		memcpy((int8_t*) output + remaining, buffer->data, length - remaining);
+		buffer->readPtr = (int8_t*) buffer->data + length - remaining;
+	}
+
+	buffer->size -= length;
+	return length;
+}

@@ -3,6 +3,13 @@
 #include "gba.h"
 #include "gba-thread.h"
 
+#define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
+
+struct StereoSample {
+	Sint16 left;
+	Sint16 right;
+};
+
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
 int GBASDLInitAudio(struct GBASDLAudio* context) {
@@ -34,42 +41,52 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-static void _pulldownResample(struct GBASDLAudio* context) {
-	int32_t value;
-	if (CircleBufferRead32(&context->audio->left, &value)) {
-		context->currentSample.left = value << 5;
-	} else {
-		context->currentSample.left = 0;
-	}
-	if (CircleBufferRead32(&context->audio->right, &value)) {
-		context->currentSample.right = value << 5;
-	} else {
-		context->currentSample.right = 0;
+static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* output, ssize_t samples) {
+	int32_t left[BUFFER_SIZE];
+	int32_t right[BUFFER_SIZE];
+
+	// toRead is in GBA samples
+	int toRead = samples / context->ratio;
+	while (samples > 0) {
+		int currentRead = BUFFER_SIZE >> 2;
+		if (currentRead > toRead) {
+			currentRead = toRead;
+		}
+		unsigned read = GBAAudioCopy(context->audio, left, right, currentRead);
+		toRead -= read;
+		unsigned i;
+		for (i = 0; i < read; ++i) {
+			context->drift += context->ratio;
+			while (context->drift >= 0) {
+				output->left = left[i];
+				output->right = right[i];
+				++output;
+				--samples;
+#ifndef NDEBUG
+				if (samples < 0) {
+					abort();
+				}
+#endif
+				context->drift -= 1.f;
+			}
+		}
+		if (read < BUFFER_SIZE >> 2) {
+			memset(output, 0, toRead);
+			return;
+		}
 	}
 }
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBASDLAudio* audioContext = context;
-	int i;
 	if (!context || !audioContext->audio) {
-		for (i = 0; i < len; ++i) {
-			data[i] = 0;
-		}
+		memset(data, 0, len);
 		return;
 	}
+	audioContext->ratio = audioContext->obtainedSpec.freq / (float) audioContext->audio->sampleRate;
 	struct StereoSample* ssamples = (struct StereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {
-		pthread_mutex_lock(&audioContext->audio->bufferMutex);
-		for (i = 0; i < len; ++i) {
-			audioContext->drift += audioContext->audio->sampleRate / (float) audioContext->obtainedSpec.freq;
-			while (audioContext->drift >= 0) {
-				_pulldownResample(audioContext);
-				audioContext->drift -= 1.f;
-			}
-			ssamples[i] = audioContext->currentSample;
-		}
-		GBASyncConsumeAudio(audioContext->audio->p->sync);
-		pthread_mutex_unlock(&audioContext->audio->bufferMutex);
+		_pulldownResample(audioContext, ssamples, len);
 	}
 }
