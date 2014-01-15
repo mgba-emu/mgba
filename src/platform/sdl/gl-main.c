@@ -56,11 +56,13 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+#ifndef _WIN32
 	sigset_t signals;
 	sigemptyset(&signals);
 	sigaddset(&signals, SIGINT);
 	sigaddset(&signals, SIGTRAP);
 	pthread_sigmask(SIG_BLOCK, &signals, 0);
+#endif
 
 	struct GBAThread context;
 	struct GLSoftwareRenderer renderer;
@@ -118,8 +120,10 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#ifndef _WIN32
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#endif
 
 	glViewport(0, 0, 240, 160);
 

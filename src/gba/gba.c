@@ -3,6 +3,7 @@
 #include "gba-bios.h"
 #include "gba-io.h"
 #include "gba-thread.h"
+#include "memory.h"
 
 #include "debugger.h"
 
@@ -11,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
@@ -345,7 +345,7 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	struct stat info;
-	gba->memory.rom = mmap(0, SIZE_CART0, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	gba->memory.rom = fileMemoryMap(fd, SIZE_CART0, MEMORY_READ);
 	gba->activeFile = fname;
 	fstat(fd, &info);
 	gba->memory.romSize = info.st_size;
@@ -358,7 +358,7 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 }
 
 void GBALoadBIOS(struct GBA* gba, int fd) {
-	gba->memory.bios = mmap(0, SIZE_BIOS, PROT_READ, MAP_SHARED, fd, 0);
+	gba->memory.bios = fileMemoryMap(fd, SIZE_BIOS, MEMORY_READ);
 	gba->memory.fullBios = 1;
 	if ((gba->cpu.gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
 		gba->memory.d.setActiveRegion(&gba->memory.d, gba->cpu.gprs[ARM_PC]);

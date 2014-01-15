@@ -24,9 +24,11 @@ static void* _GBAThreadRun(void* context) {
 	struct GBAThread* threadContext = context;
 	char* savedata = 0;
 
+#ifndef _WIN32
 	sigset_t signals;
 	sigfillset(&signals);
 	pthread_sigmask(SIG_UNBLOCK, &signals, 0);
+#endif
 
 	GBAInit(&gba);
 	threadContext->gba = &gba;

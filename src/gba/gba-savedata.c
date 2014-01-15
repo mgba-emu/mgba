@@ -1,11 +1,11 @@
 #include "gba-savedata.h"
 
 #include "gba.h"
+#include "memory.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
@@ -32,16 +32,16 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
 	switch (savedata->type) {
 	case SAVEDATA_SRAM:
-		munmap(savedata->data, SIZE_CART_SRAM);
+		mappedMemoryFree(savedata->data, SIZE_CART_SRAM);
 		break;
 	case SAVEDATA_FLASH512:
-		munmap(savedata->data, SIZE_CART_FLASH512);
+		mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
 		break;
 	case SAVEDATA_FLASH1M:
-		munmap(savedata->data, SIZE_CART_FLASH1M);
+		mappedMemoryFree(savedata->data, SIZE_CART_FLASH1M);
 		break;
 	case SAVEDATA_EEPROM:
-		munmap(savedata->data, SIZE_CART_EEPROM);
+		mappedMemoryFree(savedata->data, SIZE_CART_EEPROM);
 		break;
 	default:
 		break;
@@ -62,19 +62,18 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
-		flags |= MAP_ANON;
+		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
 		end = lseek(savedata->fd, 0, SEEK_END);
 		if (end < SIZE_CART_FLASH512) {
 			ftruncate(savedata->fd, SIZE_CART_FLASH1M);
 		}
+		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_FLASH1M, MEMORY_WRITE);
 	}
-	// mmap enough so that we can expand the file if we need to
-	savedata->data = mmap(0, SIZE_CART_FLASH1M, PROT_READ | PROT_WRITE, flags, savedata->fd, 0);
+
 	savedata->currentBank = savedata->data;
 	if (end < SIZE_CART_FLASH512) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_FLASH512 - end);
@@ -90,18 +89,17 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
-		flags |= MAP_ANON;
+		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
 		end = lseek(savedata->fd, 0, SEEK_END);
 		if (end < SIZE_CART_EEPROM) {
 			ftruncate(savedata->fd, SIZE_CART_EEPROM);
 		}
+		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_EEPROM, MEMORY_WRITE);
 	}
-	savedata->data = mmap(0, SIZE_CART_EEPROM, PROT_READ | PROT_WRITE, flags, savedata->fd, 0);
 	if (end < SIZE_CART_EEPROM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
 	}
@@ -116,18 +114,18 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	}
 	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	int flags = MAP_SHARED;
 	if (savedata->fd < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
-		flags |= MAP_ANON;
+		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM);
 	} else {
 		end = lseek(savedata->fd, 0, SEEK_END);
 		if (end < SIZE_CART_SRAM) {
 			ftruncate(savedata->fd, SIZE_CART_SRAM);
 		}
+		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_SRAM, MEMORY_WRITE);
 	}
-	savedata->data = mmap(0, SIZE_CART_SRAM, PROT_READ | PROT_WRITE, flags, savedata->fd, 0);
+
 	if (end < SIZE_CART_SRAM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM - end);
 	}

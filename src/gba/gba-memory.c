@@ -3,10 +3,10 @@
 #include "gba-gpio.h"
 #include "gba-io.h"
 #include "hle-bios.h"
+#include "memory.h"
 
 #include <limits.h>
 #include <string.h>
-#include <sys/mman.h>
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count);
@@ -31,8 +31,8 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 
 	memory->bios = (uint32_t*) hleBios;
 	memory->fullBios = 0;
-	memory->wram = mmap(0, SIZE_WORKING_RAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-	memory->iwram = mmap(0, SIZE_WORKING_IRAM, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+	memory->wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	memory->iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
 	memory->rom = 0;
 	memory->gpio.p = memory->p;
 	memset(memory->io, 0, sizeof(memory->io));
@@ -73,8 +73,8 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 }
 
 void GBAMemoryDeinit(struct GBAMemory* memory) {
-	munmap(memory->wram, SIZE_WORKING_RAM);
-	munmap(memory->iwram, SIZE_WORKING_IRAM);
+	mappedMemoryFree(memory->wram, SIZE_WORKING_RAM);
+	mappedMemoryFree(memory->iwram, SIZE_WORKING_IRAM);
 	GBASavedataDeinit(&memory->savedata);
 }
 

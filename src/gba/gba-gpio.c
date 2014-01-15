@@ -229,7 +229,11 @@ unsigned _rtcOutput(struct GBACartridgeGPIO* gpio) {
 void _rtcUpdateClock(struct GBACartridgeGPIO* gpio) {
 	time_t t = time(0);
 	struct tm date;
+#ifdef _WIN32
+	date = *localtime(&t);
+#else
 	localtime_r(&t, &date);
+#endif
 	gpio->rtc.time[0] = _rtcBCD(date.tm_year - 100);
 	gpio->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
 	gpio->rtc.time[2] = _rtcBCD(date.tm_mday);
