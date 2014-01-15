@@ -44,6 +44,6 @@ void* fileMemoryMap(int fd, size_t size, int flags) {
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
-	munmap(memory, memory);
+	munmap(memory, size);
 }
 #endif
