@@ -16,6 +16,11 @@ include_directories(${CMAKE_SOURCE_DIR}/src/util)
 
 find_package(SDL 1.2 REQUIRED)
 file(GLOB PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-*.c)
+if(WIN32)
+	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
+else()
+	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
+endif()
 include_directories(${CMAKE_SOURCE_DIR}/src/platform/sdl)
 
 if(USE_DEBUGGER)
@@ -47,5 +52,5 @@ if(BUILD_PERF)
 	set(EXTRA_LIB ${EXTRA_LIB} rt)
 endif()
 
-add_executable(${BINARY_NAME} WIN32 ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${PLATFORM_SRC} ${MAIN_SRC})
+add_executable(${BINARY_NAME} WIN32 ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${PLATFORM_SRC} ${OS_SRC} ${MAIN_SRC})
 target_link_libraries(${BINARY_NAME} m pthread ${DEBUGGER_LIB} ${SDL_LIBRARY} ${OPENGL_LIBRARY} ${EXTRA_LIB})
