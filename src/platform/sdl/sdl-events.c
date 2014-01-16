@@ -133,10 +133,10 @@ void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) 
 		if (context->debugger) {
 			context->debugger->state = DEBUGGER_EXITING;
 		}
-		pthread_mutex_lock(&context->stateMutex);
+		MutexLock(&context->stateMutex);
 		context->state = THREAD_EXITING;
-		pthread_cond_broadcast(&context->stateCond);
-		pthread_mutex_unlock(&context->stateMutex);
+		ConditionWake(&context->stateCond);
+		MutexUnlock(&context->stateMutex);
 		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:

@@ -1,7 +1,7 @@
 #ifndef GBA_THREAD_H
 #define GBA_THREAD_H
 
-#include <pthread.h>
+#include "threading.h"
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
@@ -29,10 +29,10 @@ struct GBAThread {
 	int frameskip;
 
 	// Threading state
-	pthread_t thread;
+	Thread thread;
 
-	pthread_mutex_t stateMutex;
-	pthread_cond_t stateCond;
+	Mutex stateMutex;
+	Condition stateCond;
 
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
@@ -43,13 +43,13 @@ struct GBAThread {
 		int videoFrameWait;
 		int videoFrameSkip;
 		int videoFrameOn;
-		pthread_mutex_t videoFrameMutex;
-		pthread_cond_t videoFrameAvailableCond;
-		pthread_cond_t videoFrameRequiredCond;
+		Mutex videoFrameMutex;
+		Condition videoFrameAvailableCond;
+		Condition videoFrameRequiredCond;
 
 		int audioWait;
-		pthread_cond_t audioRequiredCond;
-		pthread_mutex_t audioBufferMutex;
+		Condition audioRequiredCond;
+		Mutex audioBufferMutex;
 	} sync;
 };
 
