@@ -46,9 +46,10 @@ static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* 
 	int32_t right[BUFFER_SIZE];
 
 	// toRead is in GBA samples
+	// TODO: Do this with fixed-point math
 	int toRead = samples / context->ratio;
 	while (samples > 0) {
-		int currentRead = BUFFER_SIZE >> 2;
+		int currentRead = BUFFER_SIZE >> 1;
 		if (currentRead > toRead) {
 			currentRead = toRead;
 		}
@@ -57,22 +58,25 @@ static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* 
 		unsigned i;
 		for (i = 0; i < read; ++i) {
 			context->drift += context->ratio;
-			while (context->drift >= 0) {
+			while (context->drift >= 1.f) {
 				output->left = left[i];
 				output->right = right[i];
 				++output;
 				--samples;
-#ifndef NDEBUG
-				if (samples < 0) {
-					abort();
-				}
-#endif
 				context->drift -= 1.f;
+				if (samples < 0) {
+					return;
+				}
 			}
 		}
 		if (read < BUFFER_SIZE >> 2) {
-			memset(output, 0, toRead);
-			return;
+			if (samples > 1) {
+				memset(output, 0, samples * sizeof(struct StereoSample));
+				return;
+			} else {
+				// Account for lost sample due to floating point conversion
+				toRead = 1;
+			}
 		}
 	}
 }
