@@ -150,6 +150,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glFlush();
 		}
 		GBASyncWaitFrameEnd(&context->sync);
 		SDL_GL_SwapBuffers();
