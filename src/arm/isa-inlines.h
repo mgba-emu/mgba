@@ -64,6 +64,7 @@
 	}
 
 #define ARM_STUB cpu->board->hitStub(cpu->board, opcode)
+#define ARM_ILL cpu->board->hitIllegal(cpu->board, opcode)
 
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \

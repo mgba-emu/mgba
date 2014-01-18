@@ -97,6 +97,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 static void GBAProcessEvents(struct ARMBoard* board);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMBoard* board, uint32_t opcode);
+static void GBAIllegal(struct ARMBoard* board, uint32_t opcode);
 
 static void _checkOverrides(struct GBA* gba, uint32_t code);
 
@@ -146,6 +147,7 @@ void GBABoardInit(struct GBABoard* board) {
 	board->d.processEvents = GBAProcessEvents;
 	board->d.swi16 = GBASwi16;
 	board->d.swi32 = GBASwi32;
+	board->d.hitIllegal = GBAIllegal;
 	board->d.readCPSR = GBATestIRQ;
 	board->d.hitStub = GBAHitStub;
 }
@@ -528,7 +530,16 @@ void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 #else
 	abort();
 #endif
+}
 
+void GBAIllegal(struct ARMBoard* board, uint32_t opcode) {
+	struct GBABoard* gbaBoard = (struct GBABoard*) board;
+	GBALog(gbaBoard->p, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+#ifdef USE_DEBUGGER
+	if (gbaBoard->p->debugger) {
+		ARMDebuggerEnter(gbaBoard->p->debugger);
+	}
+#endif
 }
 
 void _checkOverrides(struct GBA* gba, uint32_t id) {
