@@ -7,6 +7,9 @@
 #include <math.h>
 #include <stdlib.h>
 
+const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
+const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
+
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
 static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest);
 static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
@@ -237,6 +240,8 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 	case 0xC:
 		_FastCpuSet(gba);
 		break;
+	case 0xD:
+		gba->cpu.gprs[0] = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 	case 0xE:
 		_BgAffineSet(gba);
 		break;
@@ -315,6 +320,15 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 
 void GBASwi32(struct ARMBoard* board, int immediate) {
 	GBASwi16(board, immediate >> 16);
+}
+
+uint32_t GBAChecksum(uint32_t* memory, size_t size) {
+	size_t i;
+	uint32_t sum = 0;
+	for (i = 0; i < size; i += 4) {
+		sum += memory[i >> 2];
+	}
+	return sum;
 }
 
 static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {

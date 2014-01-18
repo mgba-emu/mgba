@@ -360,6 +360,15 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 void GBALoadBIOS(struct GBA* gba, int fd) {
 	gba->memory.bios = fileMemoryMap(fd, SIZE_BIOS, MEMORY_READ);
 	gba->memory.fullBios = 1;
+	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+	GBALog(gba, GBA_LOG_DEBUG, "BIOS Checksum: 0x%X", checksum);
+	if (checksum == GBA_BIOS_CHECKSUM) {
+		GBALog(gba, GBA_LOG_INFO, "Official GBA BIOS detected");
+	} else if (checksum == GBA_DS_BIOS_CHECKSUM) {
+		GBALog(gba, GBA_LOG_INFO, "Official GBA (DS) BIOS detected");
+	} else {
+		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
+	}
 	if ((gba->cpu.gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
 		gba->memory.d.setActiveRegion(&gba->memory.d, gba->cpu.gprs[ARM_PC]);
 	}
