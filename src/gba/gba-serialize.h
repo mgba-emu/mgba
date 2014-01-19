@@ -1,3 +1,6 @@
+#ifndef GBA_SERIALIZE_H
+#define GBA_SERIALIZE_H
+
 #include "gba.h"
 
 const uint32_t GBA_SAVESTATE_MAGIC;
@@ -152,3 +155,5 @@ int GBALoadState(struct GBA* gba, int slot);
 struct GBASerializedState* GBAMapState(int fd);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
+
+#endif
