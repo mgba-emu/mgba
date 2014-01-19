@@ -2,6 +2,7 @@
 
 #include "gba-gpio.h"
 #include "gba-io.h"
+#include "gba-serialize.h"
 #include "hle-bios.h"
 #include "memory.h"
 
@@ -779,4 +780,14 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 		}
 		GBAMemoryScheduleDMA(memory, number, info);
 	}
+}
+
+void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state) {
+	memcpy(state->wram, memory->wram, SIZE_WORKING_RAM);
+	memcpy(state->iwram, memory->iwram, SIZE_WORKING_IRAM);
+}
+
+void GBAMemoryDeserialize(struct GBAMemory* memory, struct GBASerializedState* state) {
+	memcpy(memory->wram, state->wram, SIZE_WORKING_RAM);
+	memcpy(memory->iwram, state->iwram, SIZE_WORKING_IRAM);
 }

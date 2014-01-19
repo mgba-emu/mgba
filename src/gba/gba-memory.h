@@ -157,4 +157,8 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 void GBAMemoryRunHblankDMAs(struct GBAMemory* memory);
 void GBAMemoryRunVblankDMAs(struct GBAMemory* memory);
 
+struct GBASerializedState;
+void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state);
+void GBAMemoryDeserialize(struct GBAMemory* memory, struct GBASerializedState* state);
+
 #endif

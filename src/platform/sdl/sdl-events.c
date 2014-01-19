@@ -2,6 +2,7 @@
 
 #include "debugger.h"
 #include "gba-io.h"
+#include "gba-serialize.h"
 #include "gba-video.h"
 
 int GBASDLInitEvents(struct GBASDLEvents* context) {
@@ -62,12 +63,53 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		context->sync.audioWait = !context->sync.audioWait;
 		return;
 	default:
-		if (event->keysym.mod & KMOD_CTRL && event->type == SDL_KEYDOWN) {
-			switch (event->keysym.sym) {
-			case SDLK_p:
-				GBAThreadTogglePause(context);
-			default:
-				break;
+		if (event->type == SDL_KEYDOWN) {
+			if (event->keysym.mod & KMOD_CTRL) {
+				switch (event->keysym.sym) {
+				case SDLK_p:
+					GBAThreadTogglePause(context);
+				default:
+					break;
+				}
+			}
+			if (event->keysym.mod & KMOD_SHIFT) {
+				switch (event->keysym.sym) {
+				case SDLK_F1:
+				case SDLK_F2:
+				case SDLK_F3:
+				case SDLK_F4:
+				case SDLK_F5:
+				case SDLK_F6:
+				case SDLK_F7:
+				case SDLK_F8:
+				case SDLK_F9:
+				case SDLK_F10:
+					GBAThreadPause(context);
+					GBASaveState(context->gba, event->keysym.sym - SDLK_F1);
+					GBAThreadUnpause(context);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (event->keysym.sym) {
+				case SDLK_F1:
+				case SDLK_F2:
+				case SDLK_F3:
+				case SDLK_F4:
+				case SDLK_F5:
+				case SDLK_F6:
+				case SDLK_F7:
+				case SDLK_F8:
+				case SDLK_F9:
+				case SDLK_F10:
+					GBAThreadPause(context);
+					GBALoadState(context->gba, event->keysym.sym - SDLK_F1);
+					GBAThreadUnpause(context);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		return;
