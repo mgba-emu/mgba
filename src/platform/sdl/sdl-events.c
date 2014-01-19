@@ -51,6 +51,11 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 	case SDLK_RIGHT:
 		key = GBA_KEY_RIGHT;
 		break;
+	case SDLK_F11:
+		if (event->type == SDL_KEYDOWN) {
+			ARMDebuggerEnter(context->debugger);
+		}
+		break;
 	case SDLK_TAB:
 		context->sync.audioWait = !context->sync.audioWait;
 		return;
