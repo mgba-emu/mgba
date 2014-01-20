@@ -52,8 +52,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
-	sigfillset(&signals);
-	sigdelset(&signals, SIGTRAP);
+	sigemptyset(&signals);
 	pthread_sigmask(SIG_SETMASK, &signals, 0);
 #endif
 
