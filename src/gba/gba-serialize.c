@@ -11,6 +11,8 @@
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
+	state->versionMagic = GBA_SAVESTATE_MAGIC;
+
 	memcpy(state->cpu.gprs, gba->cpu.gprs, sizeof(state->cpu.gprs));
 	state->cpu.cpsr = gba->cpu.cpsr;
 	state->cpu.spsr = gba->cpu.spsr;
