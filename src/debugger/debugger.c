@@ -11,6 +11,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef USE_PTHREADS
+#include <pthread.h>
+#endif
+
 struct DebugVector {
 	struct DebugVector* next;
 	enum DVType {
@@ -92,9 +96,18 @@ static void _handleDeath(int sig) {
 static void _breakInto(struct ARMDebugger* debugger, struct DebugVector* dv) {
 	(void)(debugger);
 	(void)(dv);
-	sig_t oldSignal = signal(SIGTRAP, _handleDeath);
+	struct sigaction sa, osa;
+	sa.sa_handler = _handleDeath;
+	sigemptyset(&sa.sa_mask);
+	sigaddset(&sa.sa_mask, SIGTRAP);
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGTRAP, &sa, &osa);
+#ifdef USE_PTHREADS
+	pthread_kill(pthread_self(), SIGTRAP);
+#else
 	kill(getpid(), SIGTRAP);
-	signal(SIGTRAP, oldSignal);
+#endif
+	sigaction(SIGTRAP, &osa, 0);
 }
 
 static void _continue(struct ARMDebugger* debugger, struct DebugVector* dv) {

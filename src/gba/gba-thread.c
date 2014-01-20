@@ -53,7 +53,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
 	sigfillset(&signals);
-	pthread_sigmask(SIG_UNBLOCK, &signals, 0);
+	sigdelset(&signals, SIGTRAP);
+	pthread_sigmask(SIG_SETMASK, &signals, 0);
 #endif
 
 	GBAInit(&gba);
@@ -165,6 +166,14 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	ConditionInit(&threadContext->sync.videoFrameRequiredCond);
 	MutexInit(&threadContext->sync.audioBufferMutex);
 	ConditionInit(&threadContext->sync.audioRequiredCond);
+
+#ifndef _WIN32
+	sigset_t signals;
+	sigemptyset(&signals);
+	sigaddset(&signals, SIGINT);
+	sigaddset(&signals, SIGTRAP);
+	pthread_sigmask(SIG_BLOCK, &signals, 0);
+#endif
 
 	MutexLock(&threadContext->stateMutex);
 	ThreadCreate(&threadContext->thread, _GBAThreadRun, threadContext);

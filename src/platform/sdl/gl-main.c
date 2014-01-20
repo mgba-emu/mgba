@@ -56,14 +56,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-#ifndef _WIN32
-	sigset_t signals;
-	sigemptyset(&signals);
-	sigaddset(&signals, SIGINT);
-	sigaddset(&signals, SIGTRAP);
-	pthread_sigmask(SIG_BLOCK, &signals, 0);
-#endif
-
 	struct GBAThread context;
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
