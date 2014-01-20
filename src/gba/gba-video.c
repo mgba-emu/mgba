@@ -132,10 +132,12 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 }
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
-	video->vblankIRQ = value & 0x0008;
-	video->hblankIRQ = value & 0x0010;
-	video->vcounterIRQ = value & 0x0020;
-	video->vcountSetting = (value & 0xFF00) >> 8;
+	union GBARegisterDISPSTAT dispstat;
+	dispstat.packed = value;
+	video->vblankIRQ = dispstat.vblankIRQ;
+	video->hblankIRQ = dispstat.hblankIRQ;
+	video->vcounterIRQ = dispstat.vcounterIRQ;
+	video->vcountSetting = dispstat.vcountSetting;
 
 	if (video->vcounterIRQ) {
 		// FIXME: this can be too late if we're in the middle of an Hblank
@@ -181,26 +183,14 @@ void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state)
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	union {
-		struct {
-			unsigned inVblank : 1;
-			unsigned inHblank : 1;
-			unsigned vcounter : 1;
-			unsigned vblankIRQ : 1;
-			unsigned hblankIRQ : 1;
-			unsigned vcounterIRQ : 1;
-			unsigned : 2;
-			unsigned vcount : 1;
-		};
-		uint32_t packed;
-	} dispstat;
+	union GBARegisterDISPSTAT dispstat;
 	dispstat.inVblank = video->inVblank;
 	dispstat.inHblank = video->inHblank;
 	dispstat.vcounter = video->vcounter;
 	dispstat.vblankIRQ = video->vblankIRQ;
 	dispstat.hblankIRQ = video->hblankIRQ;
 	dispstat.vcounterIRQ = video->vcounterIRQ;
-	dispstat.vcount = video->vcount;
+	dispstat.vcountSetting = video->vcountSetting;
 	state->io[REG_DISPSTAT >> 1] = dispstat.packed;
 	state->video.nextEvent = video->nextEvent;
 	state->video.eventDiff = video->eventDiff;
@@ -218,19 +208,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
 		GBAStore16(&video->p->memory.d, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
-	union {
-		struct {
-			unsigned inVblank : 1;
-			unsigned inHblank : 1;
-			unsigned vcounter : 1;
-			unsigned vblankIRQ : 1;
-			unsigned hblankIRQ : 1;
-			unsigned vcounterIRQ : 1;
-			unsigned : 2;
-			unsigned vcount : 1;
-		};
-		uint32_t packed;
-	} dispstat;
+	union GBARegisterDISPSTAT dispstat;
 	dispstat.packed = state->io[REG_DISPSTAT >> 1];
 	video->inVblank = dispstat.inVblank;
 	video->inHblank = dispstat.inHblank;
@@ -238,7 +216,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	video->vblankIRQ = dispstat.vblankIRQ;
 	video->hblankIRQ = dispstat.hblankIRQ;
 	video->vcounterIRQ = dispstat.vcounterIRQ;
-	video->vcount = dispstat.vcount;
+	video->vcountSetting = dispstat.vcountSetting;
 	video->nextEvent = state->video.nextEvent;
 	video->eventDiff = state->video.eventDiff;
 	video->lastHblank = state->video.lastHblank;
@@ -246,4 +224,5 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	video->nextHblankIRQ = state->video.nextHblankIRQ;
 	video->nextVblankIRQ = state->video.nextVblankIRQ;
 	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
+	video->vcount = state->io[REG_VCOUNT >> 1];
 }

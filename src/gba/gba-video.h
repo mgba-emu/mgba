@@ -136,6 +136,20 @@ union GBARegisterDISPCNT {
 	uint16_t packed;
 };
 
+union GBARegisterDISPSTAT {
+	struct {
+		unsigned inVblank : 1;
+		unsigned inHblank : 1;
+		unsigned vcounter : 1;
+		unsigned vblankIRQ : 1;
+		unsigned hblankIRQ : 1;
+		unsigned vcounterIRQ : 1;
+		unsigned : 2;
+		unsigned vcountSetting : 8;
+	};
+	uint32_t packed;
+};
+
 union GBARegisterBGCNT {
 	struct {
 		unsigned priority : 2;
