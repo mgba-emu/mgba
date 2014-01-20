@@ -1,5 +1,6 @@
 #include "gba-serialize.h"
 
+#include "gba-io.h"
 #include "memory.h"
 
 #include <fcntl.h>
@@ -22,6 +23,8 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	memcpy(state->cpu.bankedSPSRs, gba->cpu.bankedSPSRs, 6 * sizeof(int32_t));
 
 	GBAMemorySerialize(&gba->memory, state);
+	GBAIOSerialize(gba, state);
+	GBAVideoSerialize(&gba->video, state);
 }
 
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -37,6 +40,8 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	gba->cpu.memory->setActiveRegion(gba->cpu.memory, gba->cpu.gprs[ARM_PC]);
 
 	GBAMemoryDeserialize(&gba->memory, state);
+	GBAIODeserialize(gba, state);
+	GBAVideoDeserialize(&gba->video, state);
 }
 
 static int _getStateFd(struct GBA* gba, int slot) {

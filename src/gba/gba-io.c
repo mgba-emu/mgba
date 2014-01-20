@@ -1,5 +1,6 @@
 #include "gba-io.h"
 
+#include "gba-serialize.h"
 #include "gba-video.h"
 
 void GBAIOInit(struct GBA* gba) {
@@ -325,4 +326,16 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 	}
 	return gba->memory.io[address >> 1];
+}
+
+void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
+	memcpy(state->io, gba->memory.io, SIZE_IO);
+}
+
+void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
+	// TODO: Actually fill this out
+	int i;
+	for (i = 0; i < REG_SOUND1CNT_LO; i += 2) {
+		GBAIOWrite(gba, i, state->io[i >> 1]);
+	}
 }

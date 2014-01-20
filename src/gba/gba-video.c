@@ -2,6 +2,7 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-serialize.h"
 #include "gba-thread.h"
 #include "memory.h"
 
@@ -174,4 +175,75 @@ static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer,
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	(void)(renderer);
 	// Nothing to do
+}
+
+void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state) {
+	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
+	memcpy(state->oam, video->oam.raw, SIZE_OAM);
+	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
+	union {
+		struct {
+			unsigned inVblank : 1;
+			unsigned inHblank : 1;
+			unsigned vcounter : 1;
+			unsigned vblankIRQ : 1;
+			unsigned hblankIRQ : 1;
+			unsigned vcounterIRQ : 1;
+			unsigned : 2;
+			unsigned vcount : 1;
+		};
+		uint32_t packed;
+	} dispstat;
+	dispstat.inVblank = video->inVblank;
+	dispstat.inHblank = video->inHblank;
+	dispstat.vcounter = video->vcounter;
+	dispstat.vblankIRQ = video->vblankIRQ;
+	dispstat.hblankIRQ = video->hblankIRQ;
+	dispstat.vcounterIRQ = video->vcounterIRQ;
+	dispstat.vcount = video->vcount;
+	state->io[REG_DISPSTAT >> 1] = dispstat.packed;
+	state->video.nextEvent = video->nextEvent;
+	state->video.eventDiff = video->eventDiff;
+	state->video.lastHblank = video->lastHblank;
+	state->video.nextHblank = video->nextHblank;
+	state->video.nextHblankIRQ = video->nextHblankIRQ;
+	state->video.nextVblankIRQ = video->nextVblankIRQ;
+	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
+}
+
+void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* state) {
+	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
+	memcpy(video->oam.raw, state->oam, SIZE_OAM);
+	int i;
+	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
+		GBAStore16(&video->p->memory.d, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+	}
+	union {
+		struct {
+			unsigned inVblank : 1;
+			unsigned inHblank : 1;
+			unsigned vcounter : 1;
+			unsigned vblankIRQ : 1;
+			unsigned hblankIRQ : 1;
+			unsigned vcounterIRQ : 1;
+			unsigned : 2;
+			unsigned vcount : 1;
+		};
+		uint32_t packed;
+	} dispstat;
+	dispstat.packed = state->io[REG_DISPSTAT >> 1];
+	video->inVblank = dispstat.inVblank;
+	video->inHblank = dispstat.inHblank;
+	video->vcounter = dispstat.vcounter;
+	video->vblankIRQ = dispstat.vblankIRQ;
+	video->hblankIRQ = dispstat.hblankIRQ;
+	video->vcounterIRQ = dispstat.vcounterIRQ;
+	video->vcount = dispstat.vcount;
+	video->nextEvent = state->video.nextEvent;
+	video->eventDiff = state->video.eventDiff;
+	video->lastHblank = state->video.lastHblank;
+	video->nextHblank = state->video.nextHblank;
+	video->nextHblankIRQ = state->video.nextHblankIRQ;
+	video->nextVblankIRQ = state->video.nextVblankIRQ;
+	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
 }
