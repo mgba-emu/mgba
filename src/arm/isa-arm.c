@@ -706,8 +706,21 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
 	cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);,
 	currentCycles += cpu->memory->activeNonseqCycles32 - cpu->memory->activePrefetchCycles32)
 
-DEFINE_INSTRUCTION_ARM(SWP, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(SWPB, ARM_STUB)
+DEFINE_INSTRUCTION_ARM(SWP,
+	int rm = opcode & 0xF;
+	int rd = (opcode >> 12) & 0xF;
+	int rn = (opcode >> 16) & 0xF;
+	int32_t d = cpu->memory->load32(cpu->memory, cpu->gprs[rn], &currentCycles);
+	cpu->memory->store32(cpu->memory, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
+	cpu->gprs[rd] = d;)
+
+DEFINE_INSTRUCTION_ARM(SWPB,
+	int rm = opcode & 0xF;
+	int rd = (opcode >> 12) & 0xF;
+	int rn = (opcode >> 16) & 0xF;
+	int32_t d = cpu->memory->loadU8(cpu->memory, cpu->gprs[rn], &currentCycles);
+	cpu->memory->store8(cpu->memory, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
+	cpu->gprs[rd] = d;)
 
 // End load/store definitions
 
