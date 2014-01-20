@@ -532,7 +532,6 @@ void ARMStep(struct ARMCore* cpu) {
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rn = (opcode >> 16) & 0xF; \
 		int rs = opcode & 0x0000FFFF; \
-		int writeback = 1; \
 		int m; \
 		int i; \
 		int total = 0; \
@@ -542,9 +541,7 @@ void ARMStep(struct ARMCore* cpu) {
 		S_POST; \
 		currentCycles += cpu->memory->waitMultiple(cpu->memory, addr, total); \
 		POST_BODY; \
-		if (writeback) { \
-			WRITEBACK; \
-		})
+		WRITEBACK;)
 
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, BODY, POST_BODY) \
@@ -703,10 +700,6 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	++currentCycles;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
-	}
-	int rnx = 1 << rn;
-	if (rnx & rs && ((rnx - 1) & rs)) {
-		writeback = 0;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
