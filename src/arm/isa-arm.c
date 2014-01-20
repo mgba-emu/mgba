@@ -795,7 +795,7 @@ DEFINE_INSTRUCTION_ARM(MRSR, \
 DEFINE_INSTRUCTION_ARM(MSRI,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
-	int rotate = (opcode & 0x00000F00) >> 8;
+	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	if (mask & PSR_USER_MASK) {
@@ -809,7 +809,7 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 DEFINE_INSTRUCTION_ARM(MSRRI,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
-	int rotate = (opcode & 0x00000F00) >> 8;
+	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
