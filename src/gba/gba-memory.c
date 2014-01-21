@@ -762,9 +762,9 @@ void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* in
 	if (info->doIrq) {
 		info->nextIRQ = memory->p->cpu.cycles + 2;
 		info->nextIRQ += (width == 4 ? memory->waitstates32[sourceRegion] + memory->waitstates32[destRegion]
-		                            : memory->waitstates16[sourceRegion] + memory->waitstates16[destRegion]);
+		                             : memory->waitstates16[sourceRegion] + memory->waitstates16[destRegion]);
 		info->nextIRQ += (info->count - 1) * (width == 4 ? memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion]
-		                                               : memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion]);
+		                                                 : memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion]);
 	}
 
 	info->nextSource = source;

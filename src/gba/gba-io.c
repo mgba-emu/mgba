@@ -263,7 +263,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_IME:
 			GBAWriteIME(gba, value);
 			break;
-		case 0x20A:
+		case REG_MAX:
 			// Some bad interrupt libraries will write to this
 			break;
 		default:
@@ -402,7 +402,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_IME:
 		// Handled transparently by registers
 		break;
-	case 0x20A:
+	case REG_MAX:
 		// Some bad interrupt libraries will read from this
 		break;
 	default:
@@ -424,7 +424,6 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 }
 
 void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
-	// TODO: Actually fill this out
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
 		if (_isSpecialRegister[i >> 1]) {
