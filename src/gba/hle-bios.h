@@ -1,7 +1,10 @@
 #ifndef HLE_BIOS_H
 #define HLE_BIOS_H
 
-extern const unsigned int hleBiosLength;
-extern const unsigned char hleBios[];
+#include <stdint.h>
+#include <string.h>
+
+extern const size_t hleBiosLength;
+extern const uint8_t hleBios[];
 
 #endif

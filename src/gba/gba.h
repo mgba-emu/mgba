@@ -86,6 +86,7 @@ struct GBA {
 	} timers[4];
 
 	int springIRQ;
+	uint32_t biosChecksum;
 	int* keySource;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;

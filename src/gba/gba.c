@@ -133,6 +133,8 @@ void GBAInit(struct GBA* gba) {
 
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR;
 
+	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+
 	ARMReset(&gba->cpu);
 }
 
@@ -371,6 +373,7 @@ void GBALoadBIOS(struct GBA* gba, int fd) {
 	} else {
 		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
 	}
+	gba->biosChecksum = checksum;
 	if ((gba->cpu.gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
 		gba->memory.d.setActiveRegion(&gba->memory.d, gba->cpu.gprs[ARM_PC]);
 	}

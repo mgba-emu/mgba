@@ -13,6 +13,9 @@ const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	state->versionMagic = GBA_SAVESTATE_MAGIC;
+	state->biosChecksum = gba->biosChecksum;
+	state->id = ((struct GBACartridge*) gba->memory.rom)->id;
+	memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
 
 	memcpy(state->cpu.gprs, gba->cpu.gprs, sizeof(state->cpu.gprs));
 	state->cpu.cpsr = gba->cpu.cpsr;
@@ -28,6 +31,18 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 }
 
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
+	if (state->versionMagic != GBA_SAVESTATE_MAGIC) {
+		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate");
+		return;
+	}
+	if (state->biosChecksum != gba->biosChecksum) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS");
+		return;
+	}
+	if (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
+		return;
+	}
 	memcpy(gba->cpu.gprs, state->cpu.gprs, sizeof(gba->cpu.gprs));
 	gba->cpu.cpsr = state->cpu.cpsr;
 	gba->cpu.spsr = state->cpu.spsr;
