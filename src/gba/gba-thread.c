@@ -291,6 +291,11 @@ void GBASyncPostFrame(struct GBASync* sync) {
 		}
 	}
 	MutexUnlock(&sync->videoFrameMutex);
+
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (thread->frameCallback) {
+		thread->frameCallback(thread);
+	}
 }
 
 int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {

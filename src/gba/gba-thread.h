@@ -36,6 +36,7 @@ struct GBAThread {
 
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
+	ThreadCallback frameCallback;
 	void* userData;
 
 	struct GBASync {

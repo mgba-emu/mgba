@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
 	context.sync.audioWait = 1;
 	context.startCallback = _GBASDLStart;
 	context.cleanCallback = _GBASDLClean;
+	context.frameCallback = 0;
 	context.userData = &renderer;
 	GBAThreadStart(&context);
 

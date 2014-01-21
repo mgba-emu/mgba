@@ -11,12 +11,18 @@ int GBASDLInitEvents(struct GBASDLEvents* context) {
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
 	context->joystick = SDL_JoystickOpen(0);
+	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	return 1;
 }
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	SDL_JoystickClose(context->joystick);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+}
+
+static void _pauseAfterFrame(struct GBAThread* context) {
+	context->frameCallback = 0;
+	GBAThreadPause(context);
 }
 
 static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event) {
@@ -68,6 +74,12 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 				switch (event->keysym.sym) {
 				case SDLK_p:
 					GBAThreadTogglePause(context);
+					break;
+				case SDLK_n:
+					GBAThreadPause(context);
+					context->frameCallback = _pauseAfterFrame;
+					GBAThreadUnpause(context);
+					break;
 				default:
 					break;
 				}
