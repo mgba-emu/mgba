@@ -4,6 +4,7 @@
 #include "gba.h"
 
 enum GBAIORegisters {
+	// Video
 	REG_DISPCNT = 0x000,
 	REG_GREENSWP = 0x002,
 	REG_DISPSTAT = 0x004,
@@ -136,6 +137,8 @@ enum GBAIORegisters {
 	REG_IF = 0x202,
 	REG_WAITCNT = 0x204,
 	REG_IME = 0x208,
+
+	REG_MAX = 0x20A,
 
 	REG_POSTFLG = 0x300,
 	REG_HALTCNT = 0x301

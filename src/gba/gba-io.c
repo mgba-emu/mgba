@@ -3,6 +3,90 @@
 #include "gba-serialize.h"
 #include "gba-video.h"
 
+static const int _isValidRegister[REG_MAX >> 1] = {
+	// Video
+	1, 0, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 0,
+	1, 1, 1, 0, 0, 0, 0, 0,
+	// Audio
+	1, 1, 1, 0, 1, 0, 1, 0,
+	1, 1, 1, 0, 1, 0, 1, 0,
+	1, 1, 1, 0, 1, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 0, 0, 0, 0,
+	// DMA
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Timers
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// SIO
+	1, 1, 1, 1, 1, 0, 0, 0,
+	1, 1, 1, 0, 0, 0, 0, 0,
+	1, 0, 0, 0, 0, 0, 0, 0,
+	1, 0, 1, 0, 1, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Interrupts
+	1, 1, 1, 0, 1
+};
+
+static const int _isSpecialRegister[REG_MAX >> 1] = {
+	// Video
+	0, 0, 0, 1, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Audio
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 0, 0, 0, 0,
+	// DMA
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Timers
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// SIO
+	1, 1, 1, 1, 1, 0, 0, 0,
+	1, 1, 1, 0, 0, 0, 0, 0,
+	1, 0, 0, 0, 0, 0, 0, 0,
+	1, 0, 1, 0, 1, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Interrupts
+	1, 1, 1, 0, 1
+};
+
 void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_DISPCNT >> 1] = 0x0080;
 	gba->memory.io[REG_RCNT >> 1] = 0x8000;
@@ -329,13 +413,24 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 }
 
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
-	memcpy(state->io, gba->memory.io, SIZE_IO);
+	int i;
+	for (i = 0; i < REG_MAX; i += 2) {
+		if (_isSpecialRegister[i >> 1]) {
+			state->io[i >> 1] = gba->memory.io[i >> 1];
+		} else if (_isValidRegister[i >> 1]) {
+			state->io[i >> 1] = GBAIORead(gba, i);
+		}
+	}
 }
 
 void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	// TODO: Actually fill this out
 	int i;
-	for (i = 0; i < REG_SOUND1CNT_LO; i += 2) {
-		GBAIOWrite(gba, i, state->io[i >> 1]);
+	for (i = 0; i < REG_MAX; i += 2) {
+		if (_isSpecialRegister[i >> 1]) {
+			gba->memory.io[i >> 1] = state->io[i >> 1];
+		} else if (_isValidRegister[i >> 1]) {
+			GBAIOWrite(gba, i, state->io[i >> 1]);
+		}
 	}
 }
