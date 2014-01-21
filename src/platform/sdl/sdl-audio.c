@@ -4,6 +4,7 @@
 #include "gba-thread.h"
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
+#define FPS_TARGET 60.f
 
 struct StereoSample {
 	Sint16 left;
@@ -87,7 +88,8 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
-	audioContext->ratio = audioContext->obtainedSpec.freq / (float) audioContext->audio->sampleRate;
+	float ratio = 280896.0f * FPS_TARGET / GBA_ARM7TDMI_FREQUENCY;
+	audioContext->ratio = audioContext->obtainedSpec.freq / ratio / (float) audioContext->audio->sampleRate;
 	struct StereoSample* ssamples = (struct StereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {
