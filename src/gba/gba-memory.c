@@ -7,6 +7,7 @@
 #include "memory.h"
 
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
@@ -117,8 +118,10 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 		memory->activeMask = SIZE_CART0 - 1;
 		break;
 	default:
+		GBALog(gbaMemory->p, GBA_LOG_ERROR, "Jumped to invalid address");
 		memory->activeRegion = 0;
 		memory->activeMask = 0;
+		abort();
 		break;
 	}
 }
