@@ -5,7 +5,7 @@
 
 struct ARMCore;
 
-void ThumbStep(struct ARMCore* cpu);
 typedef void (*ThumbInstruction)(struct ARMCore*, uint16_t opcode);
+const ThumbInstruction _thumbTable[0x400];
 
 #endif

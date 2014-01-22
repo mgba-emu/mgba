@@ -9,8 +9,6 @@ enum {
 	PSR_STATE_MASK = 0x00000020
 };
 
-#define ARM_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles32)
-
 // Addressing mode 1
 static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
@@ -181,119 +179,6 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->shifterOperand = ARM_ROR(immediate, rotate);
 		cpu->shifterCarryOut = ARM_SIGN(cpu->shifterOperand);
 	}
-}
-
-static const ARMInstruction _armTable[0x1000];
-
-static ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
-	uint32_t opcode;
-	LOAD_32(opcode, address & memory->activeMask, memory->activeRegion);
-	*opcodeOut = opcode;
-	return _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
-}
-
-void ARMStep(struct ARMCore* cpu) {
-	// TODO
-	uint32_t opcode;
-	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
-	ARMInstruction instruction = _ARMLoadInstructionARM(cpu->memory, cpu->currentPC, &opcode);
-	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
-
-	int condition = opcode >> 28;
-	if (condition == 0xE) {
-		instruction(cpu, opcode);
-		return;
-	} else {
-		switch (condition) {
-		case 0x0:
-			if (!ARM_COND_EQ) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x1:
-			if (!ARM_COND_NE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x2:
-			if (!ARM_COND_CS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x3:
-			if (!ARM_COND_CC) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x4:
-			if (!ARM_COND_MI) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x5:
-			if (!ARM_COND_PL) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x6:
-			if (!ARM_COND_VS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x7:
-			if (!ARM_COND_VC) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x8:
-			if (!ARM_COND_HI) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0x9:
-			if (!ARM_COND_LS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0xA:
-			if (!ARM_COND_GE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0xB:
-			if (!ARM_COND_LT) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0xC:
-			if (!ARM_COND_GT) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		case 0xD:
-			if (!ARM_COND_LE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
-			break;
-		default:
-			break;
-		}
-	}
-	instruction(cpu, opcode);
 }
 
 // Instruction definitions
@@ -1141,6 +1026,6 @@ DEFINE_INSTRUCTION_ARM(SWI, cpu->board->swi32(cpu->board, opcode & 0xFFFFFF))
 	DECLARE_ARM_COPROCESSOR_BLOCK(EMITTER, CDP, MRC), \
 	DECLARE_ARM_SWI_BLOCK(EMITTER)
 
-static const ARMInstruction _armTable[0x1000] = {
+const ARMInstruction _armTable[0x1000] = {
 	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction)
 };

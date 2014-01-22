@@ -155,6 +155,125 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->cpsr.i = 1;
 }
 
+static inline ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
+	uint32_t opcode;
+	LOAD_32(opcode, address & memory->activeMask, memory->activeRegion);
+	*opcodeOut = opcode;
+	return _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
+}
+
+static inline void ARMStep(struct ARMCore* cpu) {
+	uint32_t opcode;
+	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
+	ARMInstruction instruction = _ARMLoadInstructionARM(cpu->memory, cpu->currentPC, &opcode);
+	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
+
+	int condition = opcode >> 28;
+	if (condition == 0xE) {
+		instruction(cpu, opcode);
+		return;
+	} else {
+		switch (condition) {
+		case 0x0:
+			if (!ARM_COND_EQ) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x1:
+			if (!ARM_COND_NE) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x2:
+			if (!ARM_COND_CS) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x3:
+			if (!ARM_COND_CC) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x4:
+			if (!ARM_COND_MI) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x5:
+			if (!ARM_COND_PL) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x6:
+			if (!ARM_COND_VS) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x7:
+			if (!ARM_COND_VC) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x8:
+			if (!ARM_COND_HI) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0x9:
+			if (!ARM_COND_LS) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0xA:
+			if (!ARM_COND_GE) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0xB:
+			if (!ARM_COND_LT) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0xC:
+			if (!ARM_COND_GT) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		case 0xD:
+			if (!ARM_COND_LE) {
+				cpu->cycles += ARM_PREFETCH_CYCLES;
+				return;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	instruction(cpu, opcode);
+}
+
+static inline void ThumbStep(struct ARMCore* cpu) {
+	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
+	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+	uint16_t opcode;
+	LOAD_16(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
+	ThumbInstruction instruction = _thumbTable[opcode >> 6];
+	instruction(cpu, opcode);
+}
+
 void ARMRun(struct ARMCore* cpu) {
 	if (cpu->executionMode == MODE_THUMB) {
 		ThumbStep(cpu);

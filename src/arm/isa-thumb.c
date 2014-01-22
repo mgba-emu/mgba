@@ -2,17 +2,6 @@
 
 #include "isa-inlines.h"
 
-static const ThumbInstruction _thumbTable[0x400];
-
-void ThumbStep(struct ARMCore* cpu) {
-	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
-	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
-	uint16_t opcode;
-	LOAD_16(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
-	ThumbInstruction instruction = _thumbTable[opcode >> 6];
-	instruction(cpu, opcode);
-}
-
 // Instruction definitions
 // Beware pre-processor insanity
 
@@ -591,6 +580,6 @@ DEFINE_INSTRUCTION_THUMB(SWI, cpu->board->swi16(cpu->board, opcode & 0xFF))
 	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BL1))), \
 	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BL2)))
 
-static const ThumbInstruction _thumbTable[0x400] = {
+const ThumbInstruction _thumbTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction)
 };
