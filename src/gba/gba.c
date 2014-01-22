@@ -165,38 +165,40 @@ void GBABoardReset(struct ARMBoard* board) {
 }
 
 static void GBAProcessEvents(struct ARMBoard* board) {
-	struct GBABoard* gbaBoard = (struct GBABoard*) board;
-	int32_t cycles = board->cpu->cycles;
-	int32_t nextEvent = INT_MAX;
-	int32_t testEvent;
+	do {
+		struct GBABoard* gbaBoard = (struct GBABoard*) board;
+		int32_t cycles = board->cpu->cycles;
+		int32_t nextEvent = INT_MAX;
+		int32_t testEvent;
 
-	if (gbaBoard->p->springIRQ) {
-		ARMRaiseIRQ(&gbaBoard->p->cpu);
-		gbaBoard->p->springIRQ = 0;
-	}
+		if (gbaBoard->p->springIRQ) {
+			ARMRaiseIRQ(&gbaBoard->p->cpu);
+			gbaBoard->p->springIRQ = 0;
+		}
 
-	testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBAVideoProcessEvents(&gbaBoard->p->video, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	testEvent = GBAAudioProcessEvents(&gbaBoard->p->audio, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBAAudioProcessEvents(&gbaBoard->p->audio, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	testEvent = GBAMemoryProcessEvents(&gbaBoard->p->memory, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBATimersProcessEvents(gbaBoard->p, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	testEvent = GBATimersProcessEvents(gbaBoard->p, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBAMemoryRunDMAs(&gbaBoard->p->memory, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	board->cpu->cycles = 0;
-	board->cpu->nextEvent = nextEvent;
+		board->cpu->cycles -= cycles;
+		board->cpu->nextEvent = nextEvent;
+	} while (board->cpu->cycles >= board->cpu->nextEvent);
 }
 
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
@@ -221,11 +223,11 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 
 				if (gba->audio.enable) {
 					if ((gba->audio.chALeft || gba->audio.chARight) && gba->audio.chATimer == 0) {
-						GBAAudioSampleFIFO(&gba->audio, 0);
+						GBAAudioSampleFIFO(&gba->audio, 0, timer->lastEvent);
 					}
 
 					if ((gba->audio.chBLeft || gba->audio.chBRight) && gba->audio.chBTimer == 0) {
-						GBAAudioSampleFIFO(&gba->audio, 1);
+						GBAAudioSampleFIFO(&gba->audio, 1, timer->lastEvent);
 					}
 				}
 
@@ -256,11 +258,11 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 
 				if (gba->audio.enable) {
 					if ((gba->audio.chALeft || gba->audio.chARight) && gba->audio.chATimer == 1) {
-						GBAAudioSampleFIFO(&gba->audio, 0);
+						GBAAudioSampleFIFO(&gba->audio, 0, timer->lastEvent);
 					}
 
 					if ((gba->audio.chBLeft || gba->audio.chBRight) && gba->audio.chBTimer == 1) {
-						GBAAudioSampleFIFO(&gba->audio, 1);
+						GBAAudioSampleFIFO(&gba->audio, 1, timer->lastEvent);
 					}
 				}
 

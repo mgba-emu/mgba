@@ -102,7 +102,7 @@ struct GBADMA {
 	uint32_t nextSource;
 	uint32_t nextDest;
 	int32_t nextCount;
-	int32_t nextIRQ;
+	int32_t nextEvent;
 };
 
 struct GBAMemory {
@@ -131,9 +131,10 @@ struct GBAMemory {
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
+	int activeDMA;
+	int32_t nextDMA;
+	int32_t eventDiff;
 };
-
-int32_t GBAMemoryProcessEvents(struct GBAMemory* memory, int32_t cycles);
 
 int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
 int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
@@ -153,9 +154,10 @@ void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count);
 uint16_t GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control);
 
 void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
-void GBAMemoryServiceDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
-void GBAMemoryRunHblankDMAs(struct GBAMemory* memory);
-void GBAMemoryRunVblankDMAs(struct GBAMemory* memory);
+void GBAMemoryRunHblankDMAs(struct GBAMemory* memory, int32_t cycles);
+void GBAMemoryRunVblankDMAs(struct GBAMemory* memory, int32_t cycles);
+void GBAMemoryUpdateDMAs(struct GBAMemory* memory, int32_t cycles);
+int32_t GBAMemoryRunDMAs(struct GBAMemory* memory, int32_t cycles);
 
 struct GBASerializedState;
 void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state);

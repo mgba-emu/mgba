@@ -374,7 +374,7 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 	}
 }
 
-void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
+void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	struct GBAAudioFIFO* channel;
 	if (fifoId == 0) {
 		channel = &audio->chA;
@@ -387,7 +387,8 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId) {
 	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t)) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		dma->nextCount = 4;
-		GBAMemoryServiceDMA(&audio->p->memory, channel->dmaSource, dma);
+		dma->nextEvent = 0;
+		GBAMemoryUpdateDMAs(&audio->p->memory, -cycles);
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
