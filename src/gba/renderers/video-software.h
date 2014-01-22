@@ -16,6 +16,8 @@ struct GBAVideoSoftwareSprite {
 		struct GBAObj obj;
 		struct GBATransformedObj tobj;
 	};
+	int y;
+	int endY;
 };
 
 struct GBAVideoSoftwareBackground {

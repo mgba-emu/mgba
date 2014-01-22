@@ -5,6 +5,25 @@
 
 #include <string.h>
 
+static const int _objSizes[32] = {
+	8, 8,
+	16, 16,
+	32, 32,
+	64, 64,
+	16, 8,
+	32, 8,
+	32, 16,
+	64, 32,
+	8, 16,
+	8, 32,
+	16, 32,
+	32, 64,
+	0, 0,
+	0, 0,
+	0, 0,
+	0, 0
+};
+
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
@@ -351,6 +370,12 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 	for (i = 0; i < 128; ++i) {
 		struct GBAObj* obj = &renderer->d.oam->obj[i];
 		if (obj->transformed || !obj->disable) {
+			int height = _objSizes[obj->shape * 8 + obj->size * 2 + 1];
+			if (obj->transformed) {
+				height <<= ((struct GBATransformedObj*) obj)->doublesize;
+			}
+			renderer->sprites[oamMax].y = obj->y;
+			renderer->sprites[oamMax].endY = obj->y + height;
 			renderer->sprites[oamMax].obj = *obj;
 			++oamMax;
 		}
@@ -570,6 +595,8 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}
+		int mosaicV = renderer->mosaic.objV + 1;
+		int mosaicY = y - (y % mosaicV);
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
@@ -580,11 +607,18 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			int i;
 			int drawn;
 			for (i = 0; i < renderer->oamMax; ++i) {
+				int localY = y;
 				struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
+				if (sprite->obj.mosaic) {
+					localY = mosaicY;
+				}
+				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
+					continue;
+				}
 				if (sprite->obj.transformed) {
-					drawn = _preprocessTransformedSprite(renderer, &sprite->tobj, y);
+					drawn = _preprocessTransformedSprite(renderer, &sprite->tobj, localY);
 				} else {
-					drawn = _preprocessSprite(renderer, &sprite->obj, y);
+					drawn = _preprocessSprite(renderer, &sprite->obj, localY);
 				}
 				spriteLayers |= drawn << sprite->obj.priority;
 			}
@@ -1231,25 +1265,6 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 }
 
-static const int _objSizes[32] = {
-	8, 8,
-	16, 16,
-	32, 32,
-	64, 64,
-	16, 8,
-	32, 8,
-	32, 16,
-	64, 32,
-	8, 16,
-	8, 32,
-	16, 32,
-	32, 64,
-	0, 0,
-	0, 0,
-	0, 0,
-	0, 0
-};
-
 #define SPRITE_NORMAL_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	for (; outX < condition; ++outX, inX += xOffset) { \
@@ -1329,15 +1344,8 @@ static const int _objSizes[32] = {
 	}
 
 static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
-	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
-	if (sprite->mosaic) {
-		int mosaicV = renderer->mosaic.objV + 1;
-		y -= y % mosaicV;
-	}
-	if ((y < sprite->y && (sprite->y + height - 256 < 0 || y >= sprite->y + height - 256)) || y >= sprite->y + height) {
-		return 0;
-	}
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
+	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
 	int start = renderer->start;
 	int end = renderer->end;
 	uint32_t flags = sprite->priority << OFFSET_PRIORITY;
@@ -1402,13 +1410,10 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 }
 
 static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y) {
-	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
-	int totalHeight = height << sprite->doublesize;
-	if ((y < sprite->y && (sprite->y + totalHeight - 256 < 0 || y >= sprite->y + totalHeight - 256)) || y >= sprite->y + totalHeight) {
-		return 0;
-	}
 	int width = _objSizes[sprite->shape * 8 + sprite->size * 2];
+	int height = _objSizes[sprite->shape * 8 + sprite->size * 2 + 1];
 	int totalWidth = width << sprite->doublesize;
+	int totalHeight = height << sprite->doublesize;
 	int start = renderer->start;
 	int end = renderer->end;
 	uint32_t flags = sprite->priority << OFFSET_PRIORITY;
