@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
 	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
+	context.sync.videoFrameWait = 1;
 	context.sync.audioWait = 1;
 	context.startCallback = _GBASDLStart;
 	context.cleanCallback = _GBASDLClean;
@@ -148,7 +148,9 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-			glFlush();
+			if (context->sync.videoFrameWait) {
+				glFlush();
+			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
 		SDL_GL_SwapBuffers();
