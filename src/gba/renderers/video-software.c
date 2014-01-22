@@ -356,8 +356,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	int x;
-	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; x += 4) {
 		softwareRenderer->spriteLayer[x] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 1] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 2] = FLAG_UNWRITTEN;
+		softwareRenderer->spriteLayer[x + 3] = FLAG_UNWRITTEN;
 	}
 
 	softwareRenderer->windows[0].endX = VIDEO_HORIZONTAL_PIXELS;
