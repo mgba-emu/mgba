@@ -155,21 +155,15 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->cpsr.i = 1;
 }
 
-static inline ARMInstruction _ARMLoadInstructionARM(struct ARMMemory* memory, uint32_t address, uint32_t* opcodeOut) {
-	uint32_t opcode;
-	LOAD_32(opcode, address & memory->activeMask, memory->activeRegion);
-	*opcodeOut = opcode;
-	return _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
-}
-
 static inline void ARMStep(struct ARMCore* cpu) {
 	uint32_t opcode;
 	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
-	ARMInstruction instruction = _ARMLoadInstructionARM(cpu->memory, cpu->currentPC, &opcode);
+	LOAD_32(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
 
 	int condition = opcode >> 28;
 	if (condition == 0xE) {
+		ARMInstruction instruction = _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 		instruction(cpu, opcode);
 		return;
 	} else {
@@ -262,6 +256,7 @@ static inline void ARMStep(struct ARMCore* cpu) {
 			break;
 		}
 	}
+	ARMInstruction instruction = _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 	instruction(cpu, opcode);
 }
 
