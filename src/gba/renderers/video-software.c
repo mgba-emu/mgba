@@ -31,6 +31,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
+static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer);
 static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBATransformedObj* sprite, int y);
 static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
@@ -274,6 +275,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	softwareRenderer->oamDirty = 1;
 }
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -342,6 +344,21 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 		}
 	}
 }
+
+static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
+	int i;
+	int oamMax = 0;
+	for (i = 0; i < 128; ++i) {
+		struct GBAObj* obj = &renderer->d.oam->obj[i];
+		if (obj->transformed || !obj->disable) {
+			renderer->sprites[oamMax].obj = *obj;
+			++oamMax;
+		}
+	}
+	renderer->oamMax = oamMax;
+	renderer->oamDirty = 0;
+}
+
 
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
@@ -550,6 +567,9 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	renderer->end = 0;
 	int spriteLayers = 0;
 	if (renderer->dispcnt.objEnable) {
+		if (renderer->oamDirty) {
+			_cleanOAM(renderer);
+		}
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
@@ -559,15 +579,14 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 			int i;
 			int drawn;
-			for (i = 0; i < 128; ++i) {
-				struct GBAObj* sprite = &renderer->d.oam->obj[i];
-				if (sprite->transformed) {
-					drawn = _preprocessTransformedSprite(renderer, &renderer->d.oam->tobj[i], y);
-					spriteLayers |= drawn << sprite->priority;
-				} else if (!sprite->disable) {
-					drawn = _preprocessSprite(renderer, sprite, y);
-					spriteLayers |= drawn << sprite->priority;
+			for (i = 0; i < renderer->oamMax; ++i) {
+				struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
+				if (sprite->obj.transformed) {
+					drawn = _preprocessTransformedSprite(renderer, &sprite->tobj, y);
+				} else {
+					drawn = _preprocessSprite(renderer, &sprite->obj, y);
 				}
+				spriteLayers |= drawn << sprite->obj.priority;
 			}
 		}
 	}

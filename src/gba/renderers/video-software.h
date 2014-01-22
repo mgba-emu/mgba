@@ -11,6 +11,13 @@ typedef uint16_t color_t;
 typedef uint32_t color_t;
 #endif
 
+struct GBAVideoSoftwareSprite {
+	union {
+		struct GBAObj obj;
+		struct GBATransformedObj tobj;
+	};
+};
+
 struct GBAVideoSoftwareBackground {
 	int index;
 	int enabled;
@@ -149,6 +156,10 @@ struct GBAVideoSoftwareRenderer {
 	struct Window windows[MAX_WINDOW];
 
 	struct GBAVideoSoftwareBackground bg[4];
+
+	int oamDirty;
+	int oamMax;
+	struct GBAVideoSoftwareSprite sprites[128];
 
 	int start;
 	int end;
