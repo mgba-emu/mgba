@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 	context.sync.audioWait = 0;
 	context.startCallback = 0;
 	context.cleanCallback = 0;
+	context.frameCallback = 0;
 	_thread = &context;
 	GBAThreadStart(&context);
 
