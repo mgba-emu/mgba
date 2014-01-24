@@ -42,6 +42,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	memset(memory->dma, 0, sizeof(memory->dma));
 	int i;
 	for (i = 0; i < 4; ++i) {
+		memory->dma[i].count = 0x10000;
 		memory->dma[i].nextEvent = INT_MAX;
 	}
 	memory->activeDMA = -1;
