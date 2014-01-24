@@ -3,6 +3,8 @@
 #include "gba.h"
 #include "gba-thread.h"
 
+#include <math.h>
+
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 #define FPS_TARGET 60.f
 
@@ -48,9 +50,9 @@ static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* 
 
 	// toRead is in GBA samples
 	// TODO: Do this with fixed-point math
-	int toRead = samples / context->ratio;
+	unsigned toRead = ceilf(samples / context->ratio);
 	while (samples > 0) {
-		int currentRead = BUFFER_SIZE >> 1;
+		unsigned currentRead = BUFFER_SIZE >> 2;
 		if (currentRead > toRead) {
 			currentRead = toRead;
 		}
@@ -70,14 +72,9 @@ static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* 
 				}
 			}
 		}
-		if (read < BUFFER_SIZE >> 2) {
-			if (samples > 1) {
-				memset(output, 0, samples * sizeof(struct StereoSample));
-				return;
-			} else {
-				// Account for lost sample due to floating point conversion
-				toRead = 1;
-			}
+		if (read < currentRead) {
+			memset(output, 0, samples * sizeof(struct StereoSample));
+			return;
 		}
 	}
 }
