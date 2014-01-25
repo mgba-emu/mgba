@@ -204,8 +204,10 @@ void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state)
 
 void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
-	memcpy(video->oam.raw, state->oam, SIZE_OAM);
 	int i;
+	for (i = 0; i < SIZE_OAM; i += 2) {
+		GBAStore16(&video->p->memory.d, BASE_OAM | i, state->oam[i >> 1], 0);
+	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
 		GBAStore16(&video->p->memory.d, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
