@@ -59,7 +59,55 @@ const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x001F4 - 0x001F7: Next vblank IRQ
  * | 0x001F8 - 0x001FB: Next vcounter IRQ
  * | 0x001FC - 0x001FF: Reserved
- * 0x00200 - 0x003FF: Reserved (leave zero)
+ * 0x00200 - 0x00213: Timer 0
+ * | 0x00200 - 0x00201: Reload value
+ * | 0x00202 - 0x00203: Old reload value
+ * | 0x00204 - 0x00207: Last event
+ * | 0x00208 - 0x0020B: Next event
+ * | 0x0020C - 0x0020F: Overflow interval
+ * | 0x00210 - 0x00213: Miscellaenous flags
+ * 0x00214 - 0x00227: Timer 1
+ * | 0x00214 - 0x00215: Reload value
+ * | 0x00216 - 0x00217: Old reload value
+ * | 0x00218 - 0x0021B: Last event
+ * | 0x0021C - 0x0021F: Next event
+ * | 0x00220 - 0x00223: Overflow interval
+ * | 0x00224 - 0x00227: Miscellaenous flags
+ * 0x00228 - 0x0023B: Timer 2
+ * | 0x00228 - 0x00229: Reload value
+ * | 0x0022A - 0x0022B: Old reload value
+ * | 0x0022C - 0x0022F: Last event
+ * | 0x00230 - 0x00233: Next event
+ * | 0x00234 - 0x00237: Overflow interval
+ * | 0x00238 - 0x0023B: Miscellaenous flags
+ * 0x0023C - 0x00250: Timer 3
+ * | 0x0023C - 0x0023D: Reload value
+ * | 0x0023E - 0x0023F: Old reload value
+ * | 0x00240 - 0x00243: Last event
+ * | 0x00244 - 0x00247: Next event
+ * | 0x00248 - 0x0024B: Overflow interval
+ * | 0x0024C - 0x0024F: Miscellaenous flags
+ * 0x00250 - 0x0025F: DMA 0
+ * | 0x00250 - 0x00253: DMA next source
+ * | 0x00254 - 0x00257: DMA next destination
+ * | 0x00258 - 0x0025B: DMA next count
+ * | 0x0025C - 0x0025F: DMA next event
+ * 0x00260 - 0x0026F: DMA 1
+ * | 0x00260 - 0x00263: DMA next source
+ * | 0x00264 - 0x00267: DMA next destination
+ * | 0x00268 - 0x0026B: DMA next count
+ * | 0x0026C - 0x0026F: DMA next event
+ * 0x00270 - 0x0027F: DMA 2
+ * | 0x00270 - 0x00273: DMA next source
+ * | 0x00274 - 0x00277: DMA next destination
+ * | 0x00278 - 0x0027B: DMA next count
+ * | 0x0027C - 0x0027F: DMA next event
+ * 0x00280 - 0x0028F: DMA 3
+ * | 0x00280 - 0x00283: DMA next source
+ * | 0x00284 - 0x00287: DMA next destination
+ * | 0x00288 - 0x0028B: DMA next count
+ * | 0x0028C - 0x0028F: DMA next event
+ * 0x00290 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -136,7 +184,16 @@ struct GBASerializedState {
 		int32_t : 32;
 	} video;
 
-	uint32_t reservedGpio[128];
+	struct GBATimer timers[4];
+
+	struct {
+		uint32_t nextSource;
+		uint32_t nextDest;
+		int32_t nextCount;
+		int32_t nextEvent;
+	} dma[4];
+
+	uint32_t reservedGpio[92];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

@@ -421,6 +421,15 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 			state->io[i >> 1] = GBAIORead(gba, i);
 		}
 	}
+
+	for (i = 0; i < 4; ++i) {
+		state->dma[i].nextSource = gba->memory.dma[i].nextSource;
+		state->dma[i].nextDest = gba->memory.dma[i].nextDest;
+		state->dma[i].nextCount = gba->memory.dma[i].nextCount;
+		state->dma[i].nextEvent = gba->memory.dma[i].nextEvent;
+	}
+
+	memcpy(state->timers, gba->timers, sizeof(state->timers));
 }
 
 void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -432,4 +441,13 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 			GBAIOWrite(gba, i, state->io[i >> 1]);
 		}
 	}
+
+	for (i = 0; i < 4; ++i) {
+		gba->memory.dma[i].nextSource = state->dma[i].nextSource;
+		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
+		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
+		gba->memory.dma[i].nextEvent = state->dma[i].nextEvent;
+	}
+
+	memcpy(state->timers, gba->timers, sizeof(gba->timers));
 }
