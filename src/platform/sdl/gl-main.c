@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	context.useDebugger = 1;
 	context.renderer = &renderer.d.d;
 	context.frameskip = 0;
-	context.sync.videoFrameWait = 1;
+	context.sync.videoFrameWait = 0;
 	context.sync.audioWait = 1;
 	context.startCallback = _GBASDLStart;
 	context.cleanCallback = _GBASDLClean;

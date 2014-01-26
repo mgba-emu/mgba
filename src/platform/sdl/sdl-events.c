@@ -67,7 +67,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 #endif
 	case SDLK_TAB:
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
-		context->sync.videoFrameWait = event->type != SDL_KEYDOWN;
 		return;
 	default:
 		if (event->type == SDL_KEYDOWN) {
