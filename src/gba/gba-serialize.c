@@ -2,6 +2,7 @@
 
 #include "gba-audio.h"
 #include "gba-io.h"
+#include "gba-thread.h"
 #include "memory.h"
 
 #include <fcntl.h>
@@ -101,10 +102,41 @@ struct GBASerializedState* GBAMapState(int fd) {
 	return fileMemoryMap(fd, sizeof(struct GBASerializedState), MEMORY_WRITE);
 }
 
-struct GBASerializedState* GBAAloocateState(void) {
+struct GBASerializedState* GBAAllocateState(void) {
 	return anonymousMemoryMap(sizeof(struct GBASerializedState));
 }
 
 void GBADeallocateState(struct GBASerializedState* state) {
 	mappedMemoryFree(state, sizeof(struct GBASerializedState));
+}
+
+void GBARecordFrame(struct GBAThread* thread) {
+	int offset = thread->rewindBufferWriteOffset;
+	struct GBASerializedState* state = thread->rewindBuffer[offset];
+	if (!state) {
+		state = GBAAllocateState();
+		thread->rewindBuffer[offset] = state;
+	}
+	GBASerialize(thread->gba, state);
+	thread->rewindBufferSize = thread->rewindBufferSize == thread->rewindBufferCapacity ? thread->rewindBufferCapacity : thread->rewindBufferSize + 1;
+	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferSize;
+}
+
+void GBARewind(struct GBAThread* thread, int nStates) {
+	if (nStates > thread->rewindBufferSize || nStates < 0) {
+		nStates = thread->rewindBufferSize;
+	}
+	if (nStates == 0) {
+		return;
+	}
+	int offset = thread->rewindBufferWriteOffset - nStates;
+	if (offset < 0) {
+		offset += thread->rewindBufferSize;
+	}
+	struct GBASerializedState* state = thread->rewindBuffer[offset];
+	if (!state) {
+		return;
+	}
+	thread->rewindBufferSize -= nStates;
+	GBADeserialize(thread->gba, state);
 }

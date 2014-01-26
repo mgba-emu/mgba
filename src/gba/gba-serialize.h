@@ -233,4 +233,8 @@ struct GBASerializedState* GBAMapState(int fd);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 
+struct GBAThread;
+void GBARecordFrame(struct GBAThread* thread);
+void GBARewind(struct GBAThread* thread, int nStates);
+
 #endif

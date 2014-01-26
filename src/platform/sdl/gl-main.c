@@ -80,6 +80,8 @@ int main(int argc, char** argv) {
 	context.cleanCallback = _GBASDLClean;
 	context.frameCallback = 0;
 	context.userData = &renderer;
+	context.rewindBufferCapacity = 10;
+	context.rewindBufferInterval = 30;
 	GBAThreadStart(&context);
 
 	_GBASDLRunloop(&context, &renderer);

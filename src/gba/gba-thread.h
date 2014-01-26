@@ -52,6 +52,13 @@ struct GBAThread {
 		Condition audioRequiredCond;
 		Mutex audioBufferMutex;
 	} sync;
+
+	int rewindBufferSize;
+	int rewindBufferCapacity;
+	int rewindBufferInterval;
+	int rewindBufferNext;
+	struct GBASerializedState** rewindBuffer;
+	int rewindBufferWriteOffset;
 };
 
 int GBAThreadStart(struct GBAThread* threadContext);

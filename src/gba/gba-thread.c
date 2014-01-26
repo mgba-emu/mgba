@@ -3,6 +3,7 @@
 #include "arm.h"
 #include "debugger.h"
 #include "gba.h"
+#include "gba-serialize.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -157,6 +158,12 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->sync.videoFrameOn = 1;
 	threadContext->sync.videoFrameSkip = 0;
 
+	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
+	threadContext->rewindBufferSize = 0;
+	if (threadContext->rewindBufferCapacity) {
+		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
+	}
+
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
 
@@ -204,6 +211,14 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 	ConditionDeinit(&threadContext->sync.audioRequiredCond);
 	MutexDeinit(&threadContext->sync.audioBufferMutex);
+
+	int i;
+	for (i = 0; i < threadContext->rewindBufferCapacity; ++i) {
+		if (threadContext->rewindBuffer[i]) {
+			GBADeallocateState(threadContext->rewindBuffer[i]);
+		}
+	}
+	free(threadContext->rewindBuffer);
 }
 
 void GBAThreadPause(struct GBAThread* threadContext) {
@@ -293,6 +308,13 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 
 	struct GBAThread* thread = GBAThreadGetContext();
+	if (thread->rewindBuffer) {
+		--thread->rewindBufferNext;
+		if (thread->rewindBufferNext <= 0) {
+			thread->rewindBufferNext = thread->rewindBufferInterval;
+			GBARecordFrame(thread);
+		}
+	}
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
 	}
