@@ -1,5 +1,6 @@
 #include "gba-serialize.h"
 
+#include "gba-audio.h"
 #include "gba-io.h"
 #include "memory.h"
 
@@ -28,6 +29,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
+	GBAAudioSerialize(&gba->audio, state);
 }
 
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -57,6 +59,7 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
 	GBAVideoDeserialize(&gba->video, state);
+	GBAAudioDeserialize(&gba->audio, state);
 }
 
 static int _getStateFd(struct GBA* gba, int slot) {

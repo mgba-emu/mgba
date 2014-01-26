@@ -2,6 +2,7 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-serialize.h"
 #include "gba-thread.h"
 
 #include <limits.h>
@@ -605,4 +606,72 @@ static void _sample(struct GBAAudio* audio) {
 	CircleBufferWrite32(&audio->right, sampleRight << 5);
 	unsigned produced = CircleBufferSize(&audio->left);
 	GBASyncProduceAudio(audio->p->sync, produced >= GBA_AUDIO_SAMPLES * 3);
+}
+
+void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
+	state->audio.ch1Volume = audio->ch1.envelope.currentVolume;
+	state->audio.ch1Dead = audio->ch1.envelope.dead;
+	state->audio.ch1Hi = audio->ch1.control.hi;
+	state->audio.ch1.envelopeNextStep = audio->ch1.envelope.nextStep;
+	state->audio.ch1.waveNextStep = audio->ch1.control.nextStep;
+	state->audio.ch1.sweepNextStep = audio->ch1.nextSweep;
+	state->audio.ch1.endTime = audio->ch1.control.endTime;
+	state->audio.ch1.nextEvent = audio->nextCh1;
+
+	state->audio.ch2Volume = audio->ch2.envelope.currentVolume;
+	state->audio.ch2Dead = audio->ch2.envelope.dead;
+	state->audio.ch2Hi = audio->ch2.control.hi;
+	state->audio.ch2.envelopeNextStep = audio->ch2.envelope.nextStep;
+	state->audio.ch2.waveNextStep = audio->ch2.control.nextStep;
+	state->audio.ch2.endTime = audio->ch2.control.endTime;
+	state->audio.ch2.nextEvent = audio->nextCh2;
+
+	memcpy(state->audio.ch3.wavebanks, audio->ch3.wavedata, sizeof(state->audio.ch3.wavebanks));
+	state->audio.ch3.endTime = audio->ch3.control.endTime;
+	state->audio.ch3.nextEvent = audio->nextCh3;
+
+	state->audio.ch4Volume = audio->ch4.envelope.currentVolume;
+	state->audio.ch4Dead = audio->ch4.envelope.dead;
+	state->audio.ch4.envelopeNextStep = audio->ch4.envelope.nextStep;
+	state->audio.ch4.lfsr = audio->ch4.lfsr;
+	state->audio.ch4.endTime = audio->ch4.control.endTime;
+	state->audio.ch4.nextEvent = audio->nextCh4;
+
+	state->audio.nextEvent = audio->nextEvent;
+	state->audio.eventDiff = audio->eventDiff;
+	state->audio.nextSample = audio->nextSample;
+}
+
+void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
+	audio->ch1.envelope.currentVolume = state->audio.ch1Volume;
+	audio->ch1.envelope.dead = state->audio.ch1Dead;
+	audio->ch1.control.hi = state->audio.ch1Hi;
+	audio->ch1.envelope.nextStep = state->audio.ch1.envelopeNextStep;
+	audio->ch1.control.nextStep = state->audio.ch1.waveNextStep;
+	audio->ch1.nextSweep = state->audio.ch1.sweepNextStep;
+	audio->ch1.control.endTime = state->audio.ch1.endTime;
+	audio->nextCh1 = state->audio.ch1.nextEvent;
+
+	audio->ch2.envelope.currentVolume = state->audio.ch2Volume;
+	audio->ch2.envelope.dead = state->audio.ch2Dead;
+	audio->ch2.control.hi = state->audio.ch2Hi;
+	audio->ch2.envelope.nextStep = state->audio.ch2.envelopeNextStep;
+	audio->ch2.control.nextStep = state->audio.ch2.waveNextStep;
+	audio->ch2.control.endTime = state->audio.ch2.endTime;
+	audio->nextCh2 = state->audio.ch2.nextEvent;
+
+	memcpy(audio->ch3.wavedata, state->audio.ch3.wavebanks, sizeof(audio->ch3.wavedata));
+	audio->ch3.control.endTime = state->audio.ch3.endTime;
+	audio->nextCh3 = state->audio.ch3.nextEvent;
+
+	audio->ch4.envelope.currentVolume = state->audio.ch4Volume;
+	audio->ch4.envelope.dead = state->audio.ch4Dead;
+	audio->ch4.envelope.nextStep = state->audio.ch4.envelopeNextStep;
+	audio->ch4.lfsr = state->audio.ch4.lfsr;
+	audio->ch4.control.endTime = state->audio.ch4.endTime;
+	audio->nextCh4 = state->audio.ch4.nextEvent;
+
+	audio->nextEvent = state->audio.nextEvent;
+	audio->eventDiff = state->audio.eventDiff;
+	audio->nextSample = state->audio.nextSample;
 }

@@ -230,4 +230,8 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 
 unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples);
 
+struct GBASerializedState;
+void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);
+void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state);
+
 #endif
