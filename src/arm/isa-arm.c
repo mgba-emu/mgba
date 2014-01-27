@@ -659,7 +659,8 @@ DEFINE_INSTRUCTION_ARM(MSR,
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
-	})
+	}
+	_ARMReadCPSR(cpu);)
 
 DEFINE_INSTRUCTION_ARM(MSRR,
 	int c = opcode & 0x00010000;
@@ -689,7 +690,8 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
-	})
+	}
+	_ARMReadCPSR(cpu);)
 
 DEFINE_INSTRUCTION_ARM(MSRRI,
 	int c = opcode & 0x00010000;
