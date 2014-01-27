@@ -27,6 +27,7 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 
 static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = 0;
+	int isPaused = GBAThreadIsPaused(context);
 	switch (event->keysym.sym) {
 	case SDLK_z:
 		key = GBA_KEY_A;
@@ -69,9 +70,13 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	case SDLK_LEFTBRACKET:
-		GBAThreadPause(context);
+		if (!isPaused) {
+			GBAThreadPause(context);
+		}
 		GBARewind(context, 10);
-		GBAThreadUnpause(context);
+		if (!isPaused) {
+			GBAThreadUnpause(context);
+		}
 	default:
 		if (event->type == SDL_KEYDOWN) {
 			if (event->keysym.mod & KMOD_CTRL) {
@@ -100,9 +105,13 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					GBAThreadPause(context);
+					if (!isPaused) {
+						GBAThreadPause(context);
+					}
 					GBASaveState(context->gba, event->keysym.sym - SDLK_F1);
-					GBAThreadUnpause(context);
+					if (!isPaused) {
+						GBAThreadUnpause(context);
+					}
 					break;
 				default:
 					break;
@@ -119,9 +128,13 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					GBAThreadPause(context);
+					if (!isPaused) {
+						GBAThreadPause(context);
+					}
 					GBALoadState(context->gba, event->keysym.sym - SDLK_F1);
-					GBAThreadUnpause(context);
+					if (!isPaused) {
+						GBAThreadUnpause(context);
+					}
 					break;
 				default:
 					break;

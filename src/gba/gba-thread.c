@@ -256,6 +256,14 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
+int GBAThreadIsPaused(struct GBAThread* threadContext) {
+	int isPaused;
+	MutexLock(&threadContext->stateMutex);
+	isPaused = threadContext->state == THREAD_PAUSED;
+	MutexUnlock(&threadContext->stateMutex);
+	return isPaused;
+}
+
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
@@ -277,7 +285,6 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
-
 
 #ifdef USE_PTHREADS
 struct GBAThread* GBAThreadGetContext(void) {
