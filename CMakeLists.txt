@@ -61,5 +61,9 @@ if(BUILD_PERF)
 	endif()
 endif()
 
-add_executable(${BINARY_NAME} WIN32 ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${PLATFORM_SRC} ${OS_SRC} ${MAIN_SRC})
+add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${PLATFORM_SRC} ${OS_SRC})
 target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${EXTRA_LIB})
+
+add_executable(${BINARY_NAME}-bin WIN32 ${MAIN_SRC})
+target_link_libraries(${BINARY_NAME}-bin ${BINARY_NAME})
+set_target_properties(${BINARY_NAME}-bin PROPERTIES OUTPUT_NAME ${BINARY_NAME})
