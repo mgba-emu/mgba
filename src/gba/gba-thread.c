@@ -162,6 +162,8 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->rewindBufferSize = 0;
 	if (threadContext->rewindBufferCapacity) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
+	} else {
+		threadContext->rewindBuffer = 0;
 	}
 
 	MutexInit(&threadContext->stateMutex);
