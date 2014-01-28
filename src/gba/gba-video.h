@@ -46,48 +46,51 @@ union GBAColor {
 	uint16_t packed;
 };
 
+struct GBAObj {
+	unsigned y : 8;
+	unsigned transformed : 1;
+	unsigned disable : 1;
+	enum ObjMode mode : 2;
+	unsigned mosaic : 1;
+	unsigned multipalette : 1;
+	enum ObjShape shape : 2;
+
+	int x : 9;
+	int : 3;
+	unsigned hflip : 1;
+	unsigned vflip : 1;
+	unsigned size : 2;
+
+	unsigned tile : 10;
+	unsigned priority : 2;
+	unsigned palette : 4;
+
+	int : 16;
+};
+
+struct GBATransformedObj {
+	unsigned y : 8;
+	unsigned transformed : 1;
+	unsigned doublesize : 1;
+	enum ObjMode mode : 2;
+	unsigned mosaic : 1;
+	unsigned multipalette : 1;
+	enum ObjShape shape : 2;
+
+	int x : 9;
+	unsigned matIndex : 5;
+	unsigned size : 2;
+
+	unsigned tile : 10;
+	unsigned priority : 2;
+	unsigned palette : 4;
+
+	int : 16;
+};
+
 union GBAOAM {
-	struct GBAObj {
-		unsigned y : 8;
-		unsigned transformed : 1;
-		unsigned disable : 1;
-		enum ObjMode mode : 2;
-		unsigned mosaic : 1;
-		unsigned multipalette : 1;
-		enum ObjShape shape : 2;
-
-		int x : 9;
-		int : 3;
-		unsigned hflip : 1;
-		unsigned vflip : 1;
-		unsigned size : 2;
-
-		unsigned tile : 10;
-		unsigned priority : 2;
-		unsigned palette : 4;
-
-		int : 16;
-	} obj[128];
-
-	struct GBATransformedObj {
-		unsigned y : 8;
-		unsigned transformed : 1;
-		unsigned doublesize : 1;
-		enum ObjMode mode : 2;
-		unsigned mosaic : 1;
-		unsigned multipalette : 1;
-		enum ObjShape shape : 2;
-
-		int x : 9;
-		unsigned matIndex : 5;
-		unsigned size : 2;
-
-		unsigned tile : 10;
-		unsigned priority : 2;
-		unsigned palette : 4;
-
-		int : 16;
-	} tobj[128];
+	struct GBAObj obj[128];
+	struct GBATransformedObj tobj[128];
 
 	struct GBAOAMMatrix {
 		int : 16;

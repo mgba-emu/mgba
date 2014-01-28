@@ -14,6 +14,20 @@ enum ThreadState {
 	THREAD_SHUTDOWN = 3
 };
 
+struct GBASync {
+	int videoFramePending;
+	int videoFrameWait;
+	int videoFrameSkip;
+	int videoFrameOn;
+	Mutex videoFrameMutex;
+	Condition videoFrameAvailableCond;
+	Condition videoFrameRequiredCond;
+
+	int audioWait;
+	Condition audioRequiredCond;
+	Mutex audioBufferMutex;
+};
+
 struct GBAThread {
 	// Output
 	enum ThreadState state;
@@ -39,19 +53,7 @@ struct GBAThread {
 	ThreadCallback frameCallback;
 	void* userData;
 
-	struct GBASync {
-		int videoFramePending;
-		int videoFrameWait;
-		int videoFrameSkip;
-		int videoFrameOn;
-		Mutex videoFrameMutex;
-		Condition videoFrameAvailableCond;
-		Condition videoFrameRequiredCond;
-
-		int audioWait;
-		Condition audioRequiredCond;
-		Mutex audioBufferMutex;
-	} sync;
+	struct GBASync sync;
 
 	int rewindBufferSize;
 	int rewindBufferCapacity;
