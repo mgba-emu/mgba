@@ -24,21 +24,7 @@ void Window::selectROM() {
 }
 
 void Window::setupAudio(GBAAudio* audio) {
-	AudioDevice* device = new AudioDevice(audio, this);
-	AudioDevice::Thread* thread = new AudioDevice::Thread(device, this);
-	if (!m_audio) {
-		QAudioFormat format;
-		format.setSampleRate(44100);
-		format.setChannelCount(2);
-		format.setSampleSize(16);
-		format.setCodec("audio/pcm");
-		format.setByteOrder(QAudioFormat::LittleEndian);
-		format.setSampleType(QAudioFormat::SignedInt);
-
-		m_audio = new QAudioOutput(format, this);
-		m_audio->setBufferSize(1024);
-	}
-	device->setFormat(m_audio->format());
-	thread->setOutput(m_audio);
-	thread->start();
+	AudioDevice::Thread* thread = new AudioDevice::Thread(this);
+	thread->setInput(audio);
+	thread->start(QThread::HighPriority);
 }

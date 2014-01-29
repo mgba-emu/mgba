@@ -24,7 +24,6 @@ private slots:
 	void setupAudio(GBAAudio*);
 
 private:
-	QAudioOutput* m_audio;
 	GameController* m_controller;
 	Display* m_display;
 };

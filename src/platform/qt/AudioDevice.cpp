@@ -32,18 +32,31 @@ qint64 AudioDevice::writeData(const char*, qint64) {
 	return 0;
 }
 
-AudioDevice::Thread::Thread(AudioDevice* device, QObject* parent)
+AudioDevice::Thread::Thread(QObject* parent)
 	: QThread(parent)
-	, m_device(device)
 {
 	// Nothing to do
 }
 
-void AudioDevice::Thread::setOutput(QAudioOutput* output) {
-	m_audio = output;
+void AudioDevice::Thread::setInput(GBAAudio* input) {
+	m_input = input;
 }
 
 void AudioDevice::Thread::run() {
-	m_audio->start(m_device);
+	QAudioFormat format;
+	format.setSampleRate(44100);
+	format.setChannelCount(2);
+	format.setSampleSize(16);
+	format.setCodec("audio/pcm");
+	format.setByteOrder(QAudioFormat::LittleEndian);
+	format.setSampleType(QAudioFormat::SignedInt);
+
+	AudioDevice device(m_input);
+	QAudioOutput audioOutput(format);
+	audioOutput.setBufferSize(1024);
+	device.setFormat(audioOutput.format());
+
+	audioOutput.start(&device);
 	exec();
+	audioOutput.stop();
 }

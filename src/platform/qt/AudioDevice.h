@@ -20,16 +20,15 @@ public:
 
 	class Thread : public QThread {
 	public:
-		Thread(AudioDevice* device, QObject* parent = 0);
+		Thread(QObject* parent = 0);
 
-		void setOutput(QAudioOutput* output);
+		void setInput(GBAAudio* input);
 
 	protected:
 		void run();
 
 	private:
-		QAudioOutput* m_audio;
-		AudioDevice* m_device;
+		GBAAudio* m_input;
 	};
 
 protected:
