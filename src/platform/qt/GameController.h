@@ -6,10 +6,13 @@
 #include <QObject>
 #include <QString>
 
+#include "AudioDevice.h"
+
 extern "C" {
 #include "gba-thread.h"
 }
 
+struct GBAAudio;
 struct GBAVideoSoftwareRenderer;
 
 namespace QGBA {
@@ -23,12 +26,16 @@ public:
 
 signals:
 	void frameAvailable(const QImage&);
+	void audioDeviceAvailable(AudioDevice*);
 
 public slots:
 	bool loadGame(const QString& path);
 
 private:
+	void setupAudio(GBAAudio* audio);
+
 	QImage m_drawContext;
+	AudioDevice* m_audioContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 

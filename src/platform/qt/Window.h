@@ -1,6 +1,7 @@
 #ifndef QGBA_WINDOW
 #define QGBA_WINDOW
 
+#include <QAudioOutput>
 #include <QMainWindow>
 
 #include "GameController.h"
@@ -19,7 +20,11 @@ public:
 public slots:
 	void selectROM();
 
+private slots:
+	void setupAudio(AudioDevice*);
+
 private:
+	QAudioOutput* m_audio;
 	GameController* m_controller;
 	Display* m_display;
 };
