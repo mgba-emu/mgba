@@ -26,7 +26,7 @@ public:
 
 signals:
 	void frameAvailable(const QImage&);
-	void audioDeviceAvailable(AudioDevice*);
+	void audioDeviceAvailable(GBAAudio*);
 
 public slots:
 	bool loadGame(const QString& path);

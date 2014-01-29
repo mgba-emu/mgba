@@ -21,7 +21,7 @@ public slots:
 	void selectROM();
 
 private slots:
-	void setupAudio(AudioDevice*);
+	void setupAudio(GBAAudio*);
 
 private:
 	QAudioOutput* m_audio;

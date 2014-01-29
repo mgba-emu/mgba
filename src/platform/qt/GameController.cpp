@@ -24,7 +24,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.sync.audioWait = 1;
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->setupAudio(&context->gba->audio);
+		controller->audioDeviceAvailable(&context->gba->audio);
 	};
 	m_threadContext.cleanCallback = 0;
 	m_threadContext.frameCallback = [] (GBAThread* context) {
@@ -52,13 +52,4 @@ bool GameController::loadGame(const QString& path) {
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
 	return true;
-}
-
-void GameController::setupAudio(GBAAudio* audio) {
-	if (m_audioContext) {
-		delete m_audioContext;
-	}
-	m_audioContext = new AudioDevice(audio);
-
-	emit audioDeviceAvailable(m_audioContext);
 }

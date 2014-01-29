@@ -11,7 +11,7 @@ Window::Window(QWidget* parent) : QMainWindow(parent) {
 	m_display = new Display(this);
 	setCentralWidget(m_display);
 	connect(m_controller, SIGNAL(frameAvailable(const QImage&)), m_display, SLOT(draw(const QImage&)));
-	connect(m_controller, SIGNAL(audioDeviceAvailable(AudioDevice*)), this, SLOT(setupAudio(AudioDevice*)));
+	connect(m_controller, SIGNAL(audioDeviceAvailable(GBAAudio*)), this, SLOT(setupAudio(GBAAudio*)));
 
 	connect(actionOpen, SIGNAL(triggered()), this, SLOT(selectROM()));
 }
@@ -23,7 +23,9 @@ void Window::selectROM() {
 	}
 }
 
-void Window::setupAudio(AudioDevice* device) {
+void Window::setupAudio(GBAAudio* audio) {
+	AudioDevice* device = new AudioDevice(audio, this);
+	AudioDevice::Thread* thread = new AudioDevice::Thread(device, this);
 	if (!m_audio) {
 		QAudioFormat format;
 		format.setSampleRate(44100);
@@ -37,5 +39,6 @@ void Window::setupAudio(AudioDevice* device) {
 		m_audio->setBufferSize(1024);
 	}
 	device->setFormat(m_audio->format());
-	m_audio->start(device);
+	thread->setOutput(m_audio);
+	thread->start();
 }

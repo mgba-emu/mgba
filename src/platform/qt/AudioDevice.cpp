@@ -31,3 +31,19 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 qint64 AudioDevice::writeData(const char*, qint64) {
 	return 0;
 }
+
+AudioDevice::Thread::Thread(AudioDevice* device, QObject* parent)
+	: QThread(parent)
+	, m_device(device)
+{
+	// Nothing to do
+}
+
+void AudioDevice::Thread::setOutput(QAudioOutput* output) {
+	m_audio = output;
+}
+
+void AudioDevice::Thread::run() {
+	m_audio->start(m_device);
+	exec();
+}
