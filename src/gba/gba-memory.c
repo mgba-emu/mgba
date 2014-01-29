@@ -647,10 +647,10 @@ void GBAMemoryRunHblankDMAs(struct GBAMemory* memory, int32_t cycles) {
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (dma->enable && dma->timing == DMA_TIMING_HBLANK) {
-			dma->nextEvent = memory->p->cpu.cycles;
+			dma->nextEvent = cycles;
 		}
 	}
-	GBAMemoryUpdateDMAs(memory, -cycles);
+	GBAMemoryUpdateDMAs(memory, 0);
 }
 
 void GBAMemoryRunVblankDMAs(struct GBAMemory* memory, int32_t cycles) {
@@ -659,10 +659,10 @@ void GBAMemoryRunVblankDMAs(struct GBAMemory* memory, int32_t cycles) {
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
 		if (dma->enable && dma->timing == DMA_TIMING_VBLANK) {
-			dma->nextEvent = memory->p->cpu.cycles;
+			dma->nextEvent = cycles;
 		}
 	}
-	GBAMemoryUpdateDMAs(memory, -cycles);
+	GBAMemoryUpdateDMAs(memory, 0);
 }
 
 int32_t GBAMemoryRunDMAs(struct GBAMemory* memory, int32_t cycles) {
@@ -688,7 +688,7 @@ void GBAMemoryUpdateDMAs(struct GBAMemory* memory, int32_t cycles) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (dma->nextEvent != INT_MAX) {
 			dma->nextEvent -= cycles;
-			if (dma->enable && memory->nextDMA >= dma->nextEvent) {
+			if (dma->enable) {
 				memory->activeDMA = i;
 				memory->nextDMA = dma->nextEvent;
 			}
