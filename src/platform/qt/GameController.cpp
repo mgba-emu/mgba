@@ -31,6 +31,8 @@ GameController::GameController(QObject* parent)
 }
 
 GameController::~GameController() {
+	GBAThreadEnd(&m_threadContext);
+	GBAThreadJoin(&m_threadContext);
 	delete m_renderer;
 }
 
