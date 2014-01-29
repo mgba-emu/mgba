@@ -193,6 +193,15 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	return 0;
 }
 
+void GBAThreadEnd(struct GBAThread* threadContext) {
+	MutexLock(&threadContext->stateMutex);
+	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
+		threadContext->debugger->state = DEBUGGER_EXITING;
+	}
+	threadContext->state = THREAD_EXITING;
+	MutexUnlock(&threadContext->stateMutex);
+}
+
 void GBAThreadJoin(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->sync.videoFrameMutex);
 	threadContext->sync.videoFrameWait = 0;
