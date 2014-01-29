@@ -234,7 +234,7 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 
 unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples);
-void GBAAudioResampleNN(struct GBAAudio*, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples);
+unsigned GBAAudioResampleNN(struct GBAAudio*, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples);
 
 struct GBASerializedState;
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);

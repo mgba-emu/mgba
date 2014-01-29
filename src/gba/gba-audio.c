@@ -420,13 +420,14 @@ unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned 
 	return read;
 }
 
-void GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples) {
+unsigned GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples) {
 	int32_t left[GBA_AUDIO_SAMPLES];
 	int32_t right[GBA_AUDIO_SAMPLES];
 
 	// toRead is in GBA samples
 	// TODO: Do this with fixed-point math
 	unsigned toRead = ceilf(nSamples / ratio);
+	unsigned totalRead = 0;
 	while (nSamples) {
 		unsigned currentRead = GBA_AUDIO_SAMPLES;
 		if (currentRead > toRead) {
@@ -441,18 +442,20 @@ void GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, struc
 				output->left = left[i];
 				output->right = right[i];
 				++output;
+				++totalRead;
 				--nSamples;
 				*drift -= 1.f;
 				if (!nSamples) {
-					return;
+					return totalRead;
 				}
 			}
 		}
 		if (read < currentRead) {
 			memset(output, 0, nSamples * sizeof(struct GBAStereoSample));
-			return;
+			break;
 		}
 	}
+	return totalRead;
 }
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* control, int duty) {
