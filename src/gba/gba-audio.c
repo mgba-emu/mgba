@@ -6,6 +6,7 @@
 #include "gba-thread.h"
 
 #include <limits.h>
+#include <math.h>
 
 const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
@@ -417,6 +418,41 @@ unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned 
 	}
 	GBASyncConsumeAudio(audio->p->sync);
 	return read;
+}
+
+void GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples) {
+	int32_t left[GBA_AUDIO_SAMPLES];
+	int32_t right[GBA_AUDIO_SAMPLES];
+
+	// toRead is in GBA samples
+	// TODO: Do this with fixed-point math
+	unsigned toRead = ceilf(nSamples / ratio);
+	while (nSamples) {
+		unsigned currentRead = GBA_AUDIO_SAMPLES;
+		if (currentRead > toRead) {
+			currentRead = toRead;
+		}
+		unsigned read = GBAAudioCopy(audio, left, right, currentRead);
+		toRead -= read;
+		unsigned i;
+		for (i = 0; i < read; ++i) {
+			*drift += ratio;
+			while (*drift >= 1.f) {
+				output->left = left[i];
+				output->right = right[i];
+				++output;
+				--nSamples;
+				*drift -= 1.f;
+				if (!nSamples) {
+					return;
+				}
+			}
+		}
+		if (read < currentRead) {
+			memset(output, 0, nSamples * sizeof(struct GBAStereoSample));
+			return;
+		}
+	}
 }
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* control, int duty) {

@@ -7,7 +7,7 @@
 
 struct GBADMA;
 
-const unsigned GBA_AUDIO_SAMPLES;
+extern const unsigned GBA_AUDIO_SAMPLES;
 
 struct GBAAudioEnvelope {
 	union {
@@ -204,6 +204,11 @@ struct GBAAudio {
 	int32_t sampleInterval;
 };
 
+struct GBAStereoSample {
+	int16_t left;
+	int16_t right;
+};
+
 void GBAAudioInit(struct GBAAudio* audio);
 void GBAAudioDeinit(struct GBAAudio* audio);
 
@@ -229,6 +234,7 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 
 unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples);
+void GBAAudioResampleNN(struct GBAAudio*, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples);
 
 struct GBASerializedState;
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);
