@@ -3,15 +3,8 @@
 #include "gba.h"
 #include "gba-thread.h"
 
-#include <math.h>
-
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 #define FPS_TARGET 60.f
-
-struct StereoSample {
-	Sint16 left;
-	Sint16 right;
-};
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
@@ -44,41 +37,6 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-static void _pulldownResample(struct GBASDLAudio* context, struct StereoSample* output, ssize_t samples) {
-	int32_t left[BUFFER_SIZE];
-	int32_t right[BUFFER_SIZE];
-
-	// toRead is in GBA samples
-	// TODO: Do this with fixed-point math
-	unsigned toRead = ceilf(samples / context->ratio);
-	while (samples > 0) {
-		unsigned currentRead = BUFFER_SIZE >> 2;
-		if (currentRead > toRead) {
-			currentRead = toRead;
-		}
-		unsigned read = GBAAudioCopy(context->audio, left, right, currentRead);
-		toRead -= read;
-		unsigned i;
-		for (i = 0; i < read; ++i) {
-			context->drift += context->ratio;
-			while (context->drift >= 1.f) {
-				output->left = left[i];
-				output->right = right[i];
-				++output;
-				--samples;
-				context->drift -= 1.f;
-				if (samples < 0) {
-					return;
-				}
-			}
-		}
-		if (read < currentRead) {
-			memset(output, 0, samples * sizeof(struct StereoSample));
-			return;
-		}
-	}
-}
-
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBASDLAudio* audioContext = context;
 	if (!context || !audioContext->audio) {
@@ -87,9 +45,9 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	}
 	float ratio = 280896.0f * FPS_TARGET / GBA_ARM7TDMI_FREQUENCY;
 	audioContext->ratio = audioContext->obtainedSpec.freq / ratio / (float) audioContext->audio->sampleRate;
-	struct StereoSample* ssamples = (struct StereoSample*) data;
+	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {
-		_pulldownResample(audioContext, ssamples, len);
+		GBAAudioResampleNN(audioContext->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
 }
