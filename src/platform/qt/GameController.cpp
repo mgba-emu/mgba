@@ -16,23 +16,24 @@ GameController::GameController(QObject* parent)
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext.bits();
 	m_renderer->outputBufferStride = m_drawContext.bytesPerLine() / 4;
-	m_threadContext.useDebugger = 0;
-	m_threadContext.frameskip = 0;
-	m_threadContext.renderer = &m_renderer->d;
-	m_threadContext.frameskip = 0;
-	m_threadContext.sync.videoFrameWait = 0;
-	m_threadContext.sync.audioWait = 1;
+	m_threadContext = {
+		.useDebugger = 0,
+		.frameskip = 0,
+		.biosFd = -1,
+		.renderer = &m_renderer->d,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 1,
+		.userData = this,
+		.rewindBufferCapacity = 0
+	};
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->audioDeviceAvailable(&context->gba->audio);
 	};
-	m_threadContext.cleanCallback = 0;
 	m_threadContext.frameCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->frameAvailable(controller->m_drawContext);
 	};
-	m_threadContext.userData = this;
-	m_threadContext.rewindBufferCapacity = 0;
 }
 
 GameController::~GameController() {
