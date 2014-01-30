@@ -50,7 +50,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 
 	if (!memory->wram || !memory->iwram) {
 		GBAMemoryDeinit(memory);
-		GBALog(memory->p, GBA_LOG_ERROR, "Could not map memory");
+		GBALog(memory->p, GBA_LOG_FATAL, "Could not map memory");
 		return;
 	}
 
@@ -125,10 +125,9 @@ static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t address) {
 		memory->activeMask = SIZE_CART0 - 1;
 		break;
 	default:
-		GBALog(gbaMemory->p, GBA_LOG_ERROR, "Jumped to invalid address");
 		memory->activeRegion = 0;
 		memory->activeMask = 0;
-		abort();
+		GBALog(gbaMemory->p, GBA_LOG_FATAL, "Jumped to invalid address");
 		break;
 	}
 }

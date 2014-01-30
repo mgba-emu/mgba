@@ -130,7 +130,7 @@ void GBAInit(struct GBA* gba) {
 	gba->rotationSource = 0;
 	gba->rumble = 0;
 
-	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR;
+	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -521,7 +521,7 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 		return;
 	}
 
-	if (gba && !(level & gba->logLevel)) {
+	if (gba && !(level & gba->logLevel) && level != GBA_LOG_FATAL) {
 		return;
 	}
 
@@ -530,20 +530,22 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 	vprintf(format, args);
 	va_end(args);
 	printf("\n");
+
+	if (level == GBA_LOG_FATAL) {
+		abort();
+	}
 }
 
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;
-	GBALog(gbaBoard->p, GBA_LOG_STUB, "Stub opcode: %08x", opcode);
+	enum GBALogLevel level = GBA_LOG_FATAL;
 #ifdef USE_DEBUGGER
-	if (!gbaBoard->p->debugger) {
-		abort();
-	} else {
+	if (gbaBoard->p->debugger) {
+		level = GBA_LOG_STUB;
 		ARMDebuggerEnter(gbaBoard->p->debugger);
 	}
-#else
-	abort();
 #endif
+	GBALog(gbaBoard->p, level, "Stub opcode: %08x", opcode);
 }
 
 void GBAIllegal(struct ARMBoard* board, uint32_t opcode) {
