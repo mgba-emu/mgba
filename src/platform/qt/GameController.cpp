@@ -42,17 +42,27 @@ GameController::~GameController() {
 	delete m_renderer;
 }
 
-bool GameController::loadGame(const QString& path) {
+void GameController::loadGame(const QString& path) {
 	m_rom = new QFile(path);
 	if (!m_rom->open(QIODevice::ReadOnly)) {
 		delete m_rom;
 		m_rom = 0;
-		return false;
 	}
 	m_threadContext.fd = m_rom->handle();
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
-	return true;
+	emit gameStarted();
+}
+
+void GameController::setPaused(bool paused) {
+	if (paused == GBAThreadIsPaused(&m_threadContext)) {
+		return;
+	}
+	if (paused) {
+		GBAThreadPause(&m_threadContext);
+	} else {
+		GBAThreadUnpause(&m_threadContext);
+	}
 }
 
 void GameController::keyPressed(int key) {

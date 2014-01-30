@@ -27,9 +27,11 @@ public:
 signals:
 	void frameAvailable(const QImage&);
 	void audioDeviceAvailable(GBAAudio*);
+	void gameStarted();
 
 public slots:
-	bool loadGame(const QString& path);
+	void loadGame(const QString& path);
+	void setPaused(bool paused);
 	void keyPressed(int key);
 	void keyReleased(int key);
 

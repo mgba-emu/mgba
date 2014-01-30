@@ -16,6 +16,7 @@ Window::Window(QWidget* parent) : QMainWindow(parent) {
 	setCentralWidget(m_display);
 	connect(m_controller, SIGNAL(frameAvailable(const QImage&)), m_display, SLOT(draw(const QImage&)));
 	connect(m_controller, SIGNAL(audioDeviceAvailable(GBAAudio*)), this, SLOT(setupAudio(GBAAudio*)));
+	connect(m_controller, SIGNAL(gameStarted()), this, SLOT(gameStarted()));
 
 	setupMenu(menuBar());
 }
@@ -92,6 +93,12 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
+void Window::gameStarted() {
+	foreach (QAction* action,  m_gameActions) {
+		action->setDisabled(false);
+	}
+}
+
 void Window::setupAudio(GBAAudio* audio) {
 	AudioDevice::Thread* thread = new AudioDevice::Thread(this);
 	thread->setInput(audio);
@@ -102,4 +109,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM"), this, SLOT(selectROM()), QKeySequence::Open);
+
+	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
+	QAction* pause = new QAction(tr("&Pause"), 0);
+	pause->setChecked(false);
+	pause->setCheckable(true);
+	pause->setShortcut(tr("Ctrl+P"));
+	pause->setDisabled(true);
+	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
+	m_gameActions.append(pause);
+	emulationMenu->addAction(pause);
 }

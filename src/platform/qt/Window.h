@@ -28,12 +28,14 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event);
 
 private slots:
+	void gameStarted();
 	void setupAudio(GBAAudio*);
 
 private:
 	void setupMenu(QMenuBar*);
 	GameController* m_controller;
 	Display* m_display;
+	QList<QAction*> m_gameActions;
 };
 
 }
