@@ -44,6 +44,7 @@ void AudioThread::setInput(GBAAudio* input) {
 
 void AudioThread::shutdown() {
 	m_audioOutput->stop();
+	quit();
 }
 
 void AudioThread::run() {
