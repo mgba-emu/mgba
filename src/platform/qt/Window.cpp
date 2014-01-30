@@ -2,15 +2,14 @@
 
 #include <QFileDialog>
 #include <QKeyEvent>
-
-extern "C" {
-#include "gba.h"
-}
+#include <QKeySequence>
+#include <QMenuBar>
 
 using namespace QGBA;
 
 Window::Window(QWidget* parent) : QMainWindow(parent) {
-	setupUi(this);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	setMinimumSize(240, 160);
 
 	m_controller = new GameController(this);
 	m_display = new Display(this);
@@ -18,7 +17,7 @@ Window::Window(QWidget* parent) : QMainWindow(parent) {
 	connect(m_controller, SIGNAL(frameAvailable(const QImage&)), m_display, SLOT(draw(const QImage&)));
 	connect(m_controller, SIGNAL(audioDeviceAvailable(GBAAudio*)), this, SLOT(setupAudio(GBAAudio*)));
 
-	connect(actionOpen, SIGNAL(triggered()), this, SLOT(selectROM()));
+	setupMenu(menuBar());
 }
 
 GBAKey Window::mapKey(int qtKey) {
@@ -97,4 +96,10 @@ void Window::setupAudio(GBAAudio* audio) {
 	AudioDevice::Thread* thread = new AudioDevice::Thread(this);
 	thread->setInput(audio);
 	thread->start(QThread::HighPriority);
+}
+
+void Window::setupMenu(QMenuBar* menubar) {
+	menubar->clear();
+	QMenu* fileMenu = menubar->addMenu(tr("&File"));
+	fileMenu->addAction(tr("Load &ROM"), this, SLOT(selectROM()), QKeySequence::Open);
 }

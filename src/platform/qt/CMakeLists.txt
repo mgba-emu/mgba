@@ -13,12 +13,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Widgets REQUIRED)
 
-set(UI_FILES Window.ui)
 set(SOURCE_FILES AudioDevice.cpp Display.cpp GameController.cpp Window.cpp)
 
-qt5_wrap_ui(UI_HEADERS ${UI_FILES})
-
-add_executable(QGBAc WIN32 MACOSX_BUNDLE ${UI_FILES} ${UI_HEADERS} main.cpp ${SOURCE_FILES})
+add_executable(QGBAc WIN32 MACOSX_BUNDLE main.cpp ${SOURCE_FILES})
 
 qt5_use_modules(QGBAc Widgets Multimedia OpenGL)
 target_link_libraries(QGBAc ${OPENGL_LIBRARY} ${BINARY_NAME})

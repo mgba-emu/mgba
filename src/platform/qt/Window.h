@@ -11,11 +11,9 @@ extern "C" {
 #include "GameController.h"
 #include "Display.h"
 
-#include "ui_Window.h"
-
 namespace QGBA {
 
-class Window : public QMainWindow, Ui::GBAWindow {
+class Window : public QMainWindow {
 Q_OBJECT
 
 public:
@@ -33,6 +31,7 @@ private slots:
 	void setupAudio(GBAAudio*);
 
 private:
+	void setupMenu(QMenuBar*);
 	GameController* m_controller;
 	Display* m_display;
 };
