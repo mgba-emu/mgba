@@ -12,11 +12,12 @@ Window::Window(QWidget* parent) : QMainWindow(parent) {
 	setMinimumSize(240, 160);
 
 	m_controller = new GameController(this);
-	m_display = new Display(this);
+	m_display = new Display();
 	setCentralWidget(m_display);
-	connect(m_controller, SIGNAL(frameAvailable(const QImage&)), m_display, SLOT(draw(const QImage&)));
 	connect(m_controller, SIGNAL(audioDeviceAvailable(GBAAudio*)), this, SLOT(setupAudio(GBAAudio*)));
-	connect(m_controller, SIGNAL(gameStarted()), this, SLOT(gameStarted()));
+	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
+	connect(this, SIGNAL(startDrawing(const uint32_t*, GBAThread*)), m_display, SLOT(startDrawing(const uint32_t*, GBAThread*)), Qt::QueuedConnection);
+	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 
 	setupMenu(menuBar());
 }
@@ -93,8 +94,14 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
-void Window::gameStarted() {
-	foreach (QAction* action,  m_gameActions) {
+void Window::closeEvent(QCloseEvent* event) {
+	emit shutdown();
+	QMainWindow::closeEvent(event);
+}
+
+void Window::gameStarted(GBAThread* context) {
+	emit startDrawing(m_controller->drawContext(), context);
+	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
 }

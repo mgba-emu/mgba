@@ -9,13 +9,13 @@ using namespace QGBA;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(256, 256, QImage::Format_RGB32)
+	, m_drawContext(new uint32_t[256 * 256])
 	, m_audioContext(0)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
-	m_renderer->outputBuffer = (color_t*) m_drawContext.bits();
-	m_renderer->outputBufferStride = m_drawContext.bytesPerLine() / 4;
+	m_renderer->outputBuffer = (color_t*) m_drawContext;
+	m_renderer->outputBufferStride = 256;
 	m_threadContext = {
 		.useDebugger = 0,
 		.frameskip = 0,
@@ -43,6 +43,9 @@ GameController::GameController(QObject* parent)
 }
 
 GameController::~GameController() {
+	if (GBAThreadIsPaused(&m_threadContext)) {
+		GBAThreadUnpause(&m_threadContext);
+	}
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
 	delete m_renderer;
@@ -60,7 +63,7 @@ void GameController::loadGame(const QString& path) {
 	m_threadContext.fd = m_rom->handle();
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
-	emit gameStarted();
+	emit gameStarted(&m_threadContext);
 }
 
 void GameController::setPaused(bool paused) {

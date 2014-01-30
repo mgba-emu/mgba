@@ -20,15 +20,20 @@ public:
 	Window(QWidget* parent = 0);
 	static GBAKey mapKey(int qtKey);
 
+signals:
+	void startDrawing(const uint32_t*, GBAThread*);
+	void shutdown();
+
 public slots:
 	void selectROM();
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event);
 	virtual void keyReleaseEvent(QKeyEvent* event);
+	virtual void closeEvent(QCloseEvent*) override;
 
 private slots:
-	void gameStarted();
+	void gameStarted(GBAThread*);
 	void setupAudio(GBAAudio*);
 
 private:

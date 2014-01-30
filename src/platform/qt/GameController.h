@@ -25,10 +25,12 @@ public:
 	GameController(QObject* parent = 0);
 	~GameController();
 
+	const uint32_t* drawContext() const { return m_drawContext; }
+
 signals:
-	void frameAvailable(const QImage&);
+	void frameAvailable(const uint32_t*);
 	void audioDeviceAvailable(GBAAudio*);
-	void gameStarted();
+	void gameStarted(GBAThread*);
 
 public slots:
 	void loadGame(const QString& path);
@@ -40,7 +42,7 @@ public slots:
 private:
 	void setupAudio(GBAAudio* audio);
 
-	QImage m_drawContext;
+	uint32_t* m_drawContext;
 	AudioDevice* m_audioContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
