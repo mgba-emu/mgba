@@ -57,6 +57,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	pthread_sigmask(SIG_SETMASK, &signals, 0);
 #endif
 
+	gba.logHandler = threadContext->logHandler;
 	GBAInit(&gba);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;

@@ -8,7 +8,6 @@
 #include "debugger.h"
 
 #include <limits.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -513,9 +512,19 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 			gba = threadContext->gba;
 		}
 	}
+
+	if (gba && gba->logHandler) {
+		va_list args;
+		va_start(args, format);
+		gba->logHandler(gba, level, format, args);
+		va_end(args);
+		return;
+	}
+
 	if (gba && !(level & gba->logLevel)) {
 		return;
 	}
+
 	va_list args;
 	va_start(args, format);
 	vprintf(format, args);

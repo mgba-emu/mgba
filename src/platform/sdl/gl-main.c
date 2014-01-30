@@ -58,7 +58,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	struct GBAThread context;
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
@@ -69,19 +68,20 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	context.fd = fd;
-	context.fname = fname;
-	context.useDebugger = 1;
-	context.renderer = &renderer.d.d;
-	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
-	context.sync.audioWait = 1;
-	context.startCallback = _GBASDLStart;
-	context.cleanCallback = _GBASDLClean;
-	context.frameCallback = 0;
-	context.userData = &renderer;
-	context.rewindBufferCapacity = 10;
-	context.rewindBufferInterval = 30;
+	struct GBAThread context = {
+		.fd = fd,
+		.fname = fname,
+		.useDebugger = 1,
+		.renderer = &renderer.d.d,
+		.frameskip = 0,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 1,
+		.startCallback = _GBASDLStart,
+		.cleanCallback = _GBASDLClean,
+		.userData = &renderer,
+		.rewindBufferCapacity = 10,
+		.rewindBufferInterval = 30
+	};
 	GBAThreadStart(&context);
 
 	_GBASDLRunloop(&context, &renderer);

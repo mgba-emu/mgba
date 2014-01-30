@@ -7,6 +7,8 @@
 #include "gba-video.h"
 #include "gba-audio.h"
 
+#include <stdarg.h>
+
 extern const uint32_t GBA_ARM7TDMI_FREQUENCY;
 
 enum GBAIRQ {
@@ -55,6 +57,8 @@ enum GBAKey {
 };
 
 struct GBARotationSource;
+struct GBA;
+typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
 struct GBABoard {
 	struct ARMBoard d;
@@ -93,7 +97,9 @@ struct GBA {
 
 	const char* activeFile;
 	const char* savefile;
+
 	int logLevel;
+	GBALogHandler logHandler;
 };
 
 struct GBACartridge {

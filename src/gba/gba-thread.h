@@ -1,6 +1,7 @@
 #ifndef GBA_THREAD_H
 #define GBA_THREAD_H
 
+#include "gba.h"
 #include "threading.h"
 
 struct GBAThread;
@@ -48,6 +49,7 @@ struct GBAThread {
 	Mutex stateMutex;
 	Condition stateCond;
 
+	GBALogHandler logHandler;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
