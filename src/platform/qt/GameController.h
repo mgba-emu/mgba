@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QImage>
 #include <QObject>
+#include <QMutex>
 #include <QString>
 
 #include "AudioDevice.h"
@@ -32,6 +33,7 @@ signals:
 public slots:
 	void loadGame(const QString& path);
 	void setPaused(bool paused);
+	void frameAdvance();
 	void keyPressed(int key);
 	void keyReleased(int key);
 
@@ -45,6 +47,9 @@ private:
 
 	QFile* m_rom;
 	QFile* m_bios;
+
+	QMutex m_pauseMutex;
+	bool m_pauseAfterFrame;
 };
 
 }

@@ -32,6 +32,12 @@ GameController::GameController(QObject* parent)
 	};
 	m_threadContext.frameCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		controller->m_pauseMutex.lock();
+		if (controller->m_pauseAfterFrame) {
+			GBAThreadPause(context);
+			controller->m_pauseAfterFrame = false;
+		}
+		controller->m_pauseMutex.unlock();
 		controller->frameAvailable(controller->m_drawContext);
 	};
 }
@@ -48,6 +54,9 @@ void GameController::loadGame(const QString& path) {
 		delete m_rom;
 		m_rom = 0;
 	}
+
+	m_pauseAfterFrame = false;
+
 	m_threadContext.fd = m_rom->handle();
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
@@ -63,6 +72,13 @@ void GameController::setPaused(bool paused) {
 	} else {
 		GBAThreadUnpause(&m_threadContext);
 	}
+}
+
+void GameController::frameAdvance() {
+	m_pauseMutex.lock();
+	m_pauseAfterFrame = true;
+	setPaused(false);
+	m_pauseMutex.unlock();
 }
 
 void GameController::keyPressed(int key) {

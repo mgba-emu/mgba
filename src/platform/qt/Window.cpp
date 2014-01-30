@@ -119,4 +119,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
 	m_gameActions.append(pause);
 	emulationMenu->addAction(pause);
+
+	QAction* frameAdvance = new QAction(tr("&Next frame"), 0);
+	frameAdvance->setShortcut(tr("Ctrl+N"));
+	frameAdvance->setDisabled(true);
+	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
+	m_gameActions.append(frameAdvance);
+	emulationMenu->addAction(frameAdvance);
 }
