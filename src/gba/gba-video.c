@@ -46,6 +46,11 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->nextVcounterIRQ = 0;
 
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
+
+	int i;
+	for (i = 0; i < 128; ++i) {
+		video->oam.obj[i].disable = 1;
+	}
 }
 
 void GBAVideoDeinit(struct GBAVideo* video) {
