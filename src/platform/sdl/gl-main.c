@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
 
 	struct GBAThread context = {
 		.fd = fd,
+		.biosFd = -1,
 		.fname = fname,
 		.useDebugger = 1,
 		.renderer = &renderer.d.d,

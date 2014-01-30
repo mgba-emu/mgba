@@ -92,6 +92,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 		gba.savefile = savedata;
 		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
+		if (threadContext->biosFd >= 0) {
+			GBALoadBIOS(&gba, threadContext->biosFd);
+		}
 	}
 
 #ifdef USE_DEBUGGER

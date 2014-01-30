@@ -39,6 +39,7 @@ struct GBAThread {
 	// Input
 	struct GBAVideoRenderer* renderer;
 	int fd;
+	int biosFd;
 	const char* fname;
 	int activeKeys;
 	int frameskip;
