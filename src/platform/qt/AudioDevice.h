@@ -10,6 +10,27 @@ struct GBAAudio;
 
 namespace QGBA {
 
+
+
+class AudioThread : public QThread {
+Q_OBJECT
+
+public:
+	AudioThread(QObject* parent = 0);
+
+	void setInput(GBAAudio* input);
+
+public slots:
+	void shutdown();
+
+protected:
+	void run();
+
+private:
+	GBAAudio* m_input;
+	QAudioOutput* m_audioOutput;
+};
+
 class AudioDevice : public QIODevice {
 Q_OBJECT
 
@@ -17,19 +38,6 @@ public:
 	AudioDevice(GBAAudio* audio, QObject* parent = 0);
 
 	void setFormat(const QAudioFormat& format);
-
-	class Thread : public QThread {
-	public:
-		Thread(QObject* parent = 0);
-
-		void setInput(GBAAudio* input);
-
-	protected:
-		void run();
-
-	private:
-		GBAAudio* m_input;
-	};
 
 protected:
 	virtual qint64 readData(char* data, qint64 maxSize);

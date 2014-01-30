@@ -107,9 +107,10 @@ void Window::gameStarted(GBAThread* context) {
 }
 
 void Window::setupAudio(GBAAudio* audio) {
-	AudioDevice::Thread* thread = new AudioDevice::Thread(this);
+	AudioThread* thread = new AudioThread(this);
 	thread->setInput(audio);
 	thread->start(QThread::HighPriority);
+	connect(this, SIGNAL(shutdown()), thread, SLOT(shutdown()));
 }
 
 void Window::setupMenu(QMenuBar* menubar) {

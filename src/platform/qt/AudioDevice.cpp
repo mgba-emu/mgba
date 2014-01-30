@@ -32,17 +32,21 @@ qint64 AudioDevice::writeData(const char*, qint64) {
 	return 0;
 }
 
-AudioDevice::Thread::Thread(QObject* parent)
+AudioThread::AudioThread(QObject* parent)
 	: QThread(parent)
 {
 	// Nothing to do
 }
 
-void AudioDevice::Thread::setInput(GBAAudio* input) {
+void AudioThread::setInput(GBAAudio* input) {
 	m_input = input;
 }
 
-void AudioDevice::Thread::run() {
+void AudioThread::shutdown() {
+	m_audioOutput->stop();
+}
+
+void AudioThread::run() {
 	QAudioFormat format;
 	format.setSampleRate(44100);
 	format.setChannelCount(2);
@@ -52,11 +56,10 @@ void AudioDevice::Thread::run() {
 	format.setSampleType(QAudioFormat::SignedInt);
 
 	AudioDevice device(m_input);
-	QAudioOutput audioOutput(format);
-	audioOutput.setBufferSize(1024);
-	device.setFormat(audioOutput.format());
+	m_audioOutput = new QAudioOutput(format);
+	m_audioOutput->setBufferSize(1024);
+	device.setFormat(m_audioOutput->format());
+	m_audioOutput->start(&device);
 
-	audioOutput.start(&device);
 	exec();
-	audioOutput.stop();
 }
