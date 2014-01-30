@@ -204,6 +204,10 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 	}
 	threadContext->state = THREAD_EXITING;
 	MutexUnlock(&threadContext->stateMutex);
+	MutexLock(&threadContext->sync.audioBufferMutex);
+	threadContext->sync.audioWait = 0;
+	ConditionWake(&threadContext->sync.audioRequiredCond);
+	MutexUnlock(&threadContext->sync.audioBufferMutex);
 }
 
 void GBAThreadJoin(struct GBAThread* threadContext) {
