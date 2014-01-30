@@ -53,3 +53,13 @@ bool GameController::loadGame(const QString& path) {
 	GBAThreadStart(&m_threadContext);
 	return true;
 }
+
+void GameController::keyPressed(int key) {
+	int mappedKey = 1 << key;
+	m_threadContext.activeKeys |= mappedKey;
+}
+
+void GameController::keyReleased(int key) {
+	int mappedKey = 1 << key;
+	m_threadContext.activeKeys &= ~mappedKey;
+}

@@ -30,6 +30,8 @@ signals:
 
 public slots:
 	bool loadGame(const QString& path);
+	void keyPressed(int key);
+	void keyReleased(int key);
 
 private:
 	void setupAudio(GBAAudio* audio);
