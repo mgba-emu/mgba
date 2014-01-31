@@ -26,23 +26,22 @@ int main(int argc, char** argv) {
 
 	signal(SIGINT, _GBAPerfShutdown);
 
-	struct GBAThread context;
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
 
-	context.fd = fd;
-	context.fname = fname;
-	context.useDebugger = 0;
-	context.renderer = &renderer.d;
-	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
-	context.sync.audioWait = 0;
-	context.startCallback = 0;
-	context.cleanCallback = 0;
-	context.frameCallback = 0;
+	struct GBAThread context = {
+		.fd = fd,
+		.fname = fname,
+		.biosFd = -1,
+		.useDebugger = 0,
+		.renderer = &renderer.d,
+		.frameskip = 0,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 0
+	};
 	_thread = &context;
 	GBAThreadStart(&context);
 
