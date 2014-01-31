@@ -1104,6 +1104,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		int x; \
 		int mosaicWait = outX % mosaicH; \
 		int carryData = 0; \
+		paletteData = 0; /* Quiets compiler warning */ \
 		DRAW_BACKGROUND_MODE_0_MOSAIC_ ## BPP (BLEND, OBJWIN) \
 		return; \
 	} \
