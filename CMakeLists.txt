@@ -43,7 +43,7 @@ add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDER
 target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB})
 
 if(BUILD_SDL)
-	add_subdirectory(src/platform/sdl)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/sdl ${CMAKE_BINARY_DIR}/sdl)
 endif()
 
 if(BUILD_PERF)
