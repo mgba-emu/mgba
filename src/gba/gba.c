@@ -561,7 +561,8 @@ void GBAIllegal(struct ARMBoard* board, uint32_t opcode) {
 void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	for (i = 0; _overrides[i].id[0]; ++i) {
-		if (*(uint32_t*) &_overrides[i].id == id) {
+		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
+		if (*overrideId == id) {
 			switch (_overrides[i].type) {
 				case SAVEDATA_FLASH512:
 				case SAVEDATA_FLASH1M:
