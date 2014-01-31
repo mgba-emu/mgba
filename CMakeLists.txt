@@ -58,5 +58,5 @@ if(BUILD_PERF)
 endif()
 
 if(BUILD_QT)
-	add_subdirectory(src/platform/qt)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/qt ${CMAKE_BINARY_DIR}/qt)
 endif()
