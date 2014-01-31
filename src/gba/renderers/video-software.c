@@ -5,6 +5,8 @@
 
 #include <string.h>
 
+#define UNUSED(X) (void) (X)
+
 static const int _objSizes[32] = {
 	8, 8,
 	16, 16,
@@ -123,6 +125,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+	UNUSED(softwareRenderer);
 }
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -295,6 +298,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	softwareRenderer->oamDirty = 1;
+	UNUSED(oam);
 }
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -486,7 +490,7 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 }
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
-	(void)(renderer);
+	UNUSED(renderer);
 	union GBARegisterBGCNT reg = { .packed = value };
 	bg->priority = reg.priority;
 	bg->charBase = reg.charBase << 14;
@@ -713,14 +717,14 @@ static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* rend
 }
 
 static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
-	(void) (renderer);
+	UNUSED(renderer);
 	if (color < current) {
 		*pixel = color | (current & FLAG_OBJWIN);
 	}
 }
 
 static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
-	(void) (renderer);
+	UNUSED(renderer);
 	if (color < current) {
 		*pixel = color;
 	}
@@ -1082,11 +1086,12 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	} \
 	if (inX & 0x7 || (renderer->end - renderer->start) & 0x7) { \
 		tileX = tileEnd; \
-		int pixelData, paletteData; \
+		int pixelData; \
 		int mod8 = (inX + renderer->end - renderer->start) & 0x7; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		\
 		int end = 0x8 - mod8; \
+		UNUSED(end); \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
 		\
 		tileX = (inX & 0x7) != 0; \
@@ -1182,7 +1187,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 }
 
 #define BACKGROUND_BITMAP_INIT \
-	(void)(unused); \
+	UNUSED(unused); \
 	int32_t x = background->sx + (renderer->start - 1) * background->dx; \
 	int32_t y = background->sy + (renderer->start - 1) * background->dy; \
 	int32_t localX; \
