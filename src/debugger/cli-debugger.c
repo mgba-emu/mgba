@@ -41,6 +41,7 @@ static void _readByte(struct CLIDebugger*, struct DebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct DebugVector*);
 static void _readWord(struct CLIDebugger*, struct DebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct DebugVector*);
+static void _clearBreakpoint(struct CLIDebugger*, struct DebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
@@ -53,6 +54,8 @@ static struct {
 	{ "break", _setBreakpoint },
 	{ "c", _continue },
 	{ "continue", _continue },
+	{ "d", _clearBreakpoint },
+	{ "delete", _clearBreakpoint },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "n", _next },
@@ -207,6 +210,15 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerSetBreakpoint(&debugger->d, address);
+}
+
+static void _clearBreakpoint(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	if (!dv || dv->type != INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	ARMDebuggerClearBreakpoint(&debugger->d, address);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv) {
@@ -532,6 +544,7 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 	(void) (debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
+	case DEBUGGER_ENTER_ATTACHED:
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
 		printf("Hit breakpoint\n");
