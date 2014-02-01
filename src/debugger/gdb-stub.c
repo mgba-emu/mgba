@@ -77,18 +77,20 @@ static void _sendMessage(struct GDBStub* stub) {
 		stub->lineAck = GDB_ACK_PENDING;
 	}
 	uint8_t checksum = 0;
-	int i;
+	int i = 1;
 	char buffer = stub->outgoing[0];
 	char swap;
 	stub->outgoing[0] = '$';
-	for (i = 1; i < GDB_STUB_MAX_LINE - 5; ++i) {
-		checksum += buffer;
-		swap = stub->outgoing[i];
-		stub->outgoing[i] = buffer;
-		buffer = swap;
-		if (!buffer) {
-			++i;
-			break;
+	if (buffer) {
+		for (; i < GDB_STUB_MAX_LINE - 5; ++i) {
+			checksum += buffer;
+			swap = stub->outgoing[i];
+			stub->outgoing[i] = buffer;
+			buffer = swap;
+			if (!buffer) {
+				++i;
+				break;
+			}
 		}
 	}
 	stub->outgoing[i] = '#';
@@ -166,7 +168,27 @@ static void _readRegister(struct GDBStub* stub, const char* message) {
 		return;
 	}
 	_int2hex32(value, stub->outgoing);
-	stub->outgoing[8] = 0;
+	stub->outgoing[8] = '\0';
+	_sendMessage(stub);
+}
+
+static void _processQMinCommand(struct GDBStub* stub, const char* message) {
+	stub->outgoing[0] = '\0';
+	_sendMessage(stub);
+}
+
+static void _processQMajCommand(struct GDBStub* stub, const char* message) {
+	stub->outgoing[0] = '\0';
+	_sendMessage(stub);
+}
+
+static void _processVMajCommand(struct GDBStub* stub, const char* message) {
+	stub->outgoing[0] = '\0';
+	_sendMessage(stub);
+}
+
+static void _processVMinCommand(struct GDBStub* stub, const char* message) {
+	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
 
@@ -227,6 +249,18 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		break;
 	case 'p':
 		_readRegister(stub, message);
+		break;
+	case 'Q':
+		_processQMajCommand(stub, message);
+		break;
+	case 'q':
+		_processQMinCommand(stub, message);
+		break;
+	case 'V':
+		_processVMajCommand(stub, message);
+		break;
+	case 'v':
+		_processVMinCommand(stub, message);
 		break;
 	default:
 		_error(stub, GDB_UNSUPPORTED_COMMAND);
