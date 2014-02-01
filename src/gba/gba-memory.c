@@ -47,6 +47,7 @@ void GBAMemoryInit(struct GBAMemory* memory) {
 	}
 	memory->activeDMA = -1;
 	memory->nextDMA = INT_MAX;
+	memory->eventDiff = 0;
 
 	if (!memory->wram || !memory->iwram) {
 		GBAMemoryDeinit(memory);
