@@ -1,4 +1,4 @@
-#include "debugger.h"
+#include "cli-debugger.h"
 #include "gba-thread.h"
 #include "gba.h"
 #include "sdl-audio.h"
@@ -68,11 +68,13 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
+	struct CLIDebugger debugger;
+	CLIDebuggerCreate(&debugger);
 	struct GBAThread context = {
 		.fd = fd,
 		.biosFd = -1,
 		.fname = fname,
-		.useDebugger = 1,
+		.debugger = &debugger.d,
 		.renderer = &renderer.d.d,
 		.frameskip = 0,
 		.sync.videoFrameWait = 0,

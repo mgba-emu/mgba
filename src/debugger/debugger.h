@@ -1,9 +1,7 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
-#ifdef USE_DEBUGGER
 #include "arm.h"
-#endif
 
 enum DebuggerState {
 	DEBUGGER_PAUSED,
@@ -11,8 +9,6 @@ enum DebuggerState {
 	DEBUGGER_EXITING,
 	DEBUGGER_SHUTDOWN
 };
-
-#ifdef USE_DEBUGGER
 
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
@@ -53,13 +49,5 @@ void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
-
-#else
-
-struct ARMDebugger {
-	enum DebuggerState state;
-};
-
-#endif
 
 #endif

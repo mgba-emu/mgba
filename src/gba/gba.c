@@ -341,12 +341,10 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 	return nextEvent;
 }
 
-#ifdef USE_DEBUGGER
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 	ARMDebuggerInit(debugger, &gba->cpu);
 	gba->debugger = debugger;
 }
-#endif
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	struct stat info;
@@ -539,23 +537,19 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;
 	enum GBALogLevel level = GBA_LOG_FATAL;
-#ifdef USE_DEBUGGER
 	if (gbaBoard->p->debugger) {
 		level = GBA_LOG_STUB;
 		ARMDebuggerEnter(gbaBoard->p->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
 	}
-#endif
 	GBALog(gbaBoard->p, level, "Stub opcode: %08x", opcode);
 }
 
 void GBAIllegal(struct ARMBoard* board, uint32_t opcode) {
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;
 	GBALog(gbaBoard->p, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
-#ifdef USE_DEBUGGER
 	if (gbaBoard->p->debugger) {
 		ARMDebuggerEnter(gbaBoard->p->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
 	}
-#endif
 }
 
 void _checkOverrides(struct GBA* gba, uint32_t id) {

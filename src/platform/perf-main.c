@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
 		.fd = fd,
 		.fname = fname,
 		.biosFd = -1,
-		.useDebugger = 0,
 		.renderer = &renderer.d,
 		.frameskip = 0,
 		.sync.videoFrameWait = 0,
