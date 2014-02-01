@@ -29,6 +29,13 @@ struct DebugMemoryShim {
 	struct DebugBreakpoint* watchpoints;
 };
 
+enum DebuggerEntryReason {
+	DEBUGGER_ENTER_MANUAL,
+	DEBUGGER_ENTER_BREAKPOINT,
+	DEBUGGER_ENTER_WATCHPOINT,
+	DEBUGGER_ENTER_ILLEGAL_OP
+};
+
 struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
@@ -38,12 +45,17 @@ struct ARMDebugger {
 
 	struct DebugBreakpoint* breakpoints;
 	struct DebugMemoryShim memoryShim;
+
+	void (*init)(struct ARMDebugger*, struct ARMCore*);
+	void (*deinit)(struct ARMDebugger*);
+	void (*paused)(struct ARMDebugger*);
+	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
 void ARMDebuggerDeinit(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
-void ARMDebuggerEnter(struct ARMDebugger*);
+void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 
 #else
 

@@ -542,7 +542,7 @@ void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 #ifdef USE_DEBUGGER
 	if (gbaBoard->p->debugger) {
 		level = GBA_LOG_STUB;
-		ARMDebuggerEnter(gbaBoard->p->debugger);
+		ARMDebuggerEnter(gbaBoard->p->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
 	}
 #endif
 	GBALog(gbaBoard->p, level, "Stub opcode: %08x", opcode);
@@ -553,7 +553,7 @@ void GBAIllegal(struct ARMBoard* board, uint32_t opcode) {
 	GBALog(gbaBoard->p, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 #ifdef USE_DEBUGGER
 	if (gbaBoard->p->debugger) {
-		ARMDebuggerEnter(gbaBoard->p->debugger);
+		ARMDebuggerEnter(gbaBoard->p->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
 	}
 #endif
 }

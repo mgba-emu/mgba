@@ -242,8 +242,7 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	}
 	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
 		if (breakpoint->address + instructionLength == debugger->cpu->gprs[ARM_PC]) {
-			debugger->state = DEBUGGER_PAUSED;
-			printf("Hit breakpoint\n");
+			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT);
 			break;
 		}
 	}
@@ -251,7 +250,7 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 
 static void _breakIntoDefault(int signal) {
 	(void)(signal);
-	_activeDebugger->state = DEBUGGER_PAUSED;
+	ARMDebuggerEnter(_activeDebugger, DEBUGGER_ENTER_MANUAL);
 }
 
 enum _DVParseState {
@@ -558,6 +557,23 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
+static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+	(void) (debugger);
+	switch (reason) {
+	case DEBUGGER_ENTER_MANUAL:
+		break;
+	case DEBUGGER_ENTER_BREAKPOINT:
+		printf("Hit breakpoint\n");
+		break;
+	case DEBUGGER_ENTER_WATCHPOINT:
+		printf("Hit watchpoint\n");
+		break;
+	case DEBUGGER_ENTER_ILLEGAL_OP:
+		printf("Hit illegal opcode\n");
+		break;
+	}
+}
+
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	(void)(ch);
 	const LineInfo* li = el_line(elstate);
@@ -603,6 +619,10 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->memoryShim.p = debugger;
 	debugger->memoryShim.watchpoints = 0;
 	_activeDebugger = debugger;
+	debugger->init = 0;
+	debugger->deinit = 0;
+	debugger->paused = _commandLine;
+	debugger->entered = _reportEntry;
 	signal(SIGINT, _breakIntoDefault);
 }
 
@@ -631,7 +651,7 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		case DEBUGGER_RUNNING:
 			break;
 		case DEBUGGER_PAUSED:
-			_commandLine(debugger);
+			debugger->paused(debugger);
 			break;
 		case DEBUGGER_EXITING:
 		case DEBUGGER_SHUTDOWN:
@@ -640,6 +660,9 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	}
 }
 
-void ARMDebuggerEnter(struct ARMDebugger* debugger) {
+void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
 	debugger->state = DEBUGGER_PAUSED;
+	if (debugger->entered) {
+		debugger->entered(debugger, reason);
+	}
 }
