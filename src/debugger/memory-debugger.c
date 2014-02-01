@@ -48,31 +48,6 @@ void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {
 	debugger->cpu->memory = &debugger->memoryShim.d;
 }
 
-int32_t ARMDebuggerLoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
-	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
-	return debugMemory->original->load32(debugMemory->original, address, cycleCounter);
-}
-
-int16_t ARMDebuggerLoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
-	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
-	return debugMemory->original->load16(debugMemory->original, address, cycleCounter);
-}
-
-uint16_t ARMDebuggerLoadU16(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
-	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
-	return debugMemory->original->loadU16(debugMemory->original, address, cycleCounter);
-}
-
-int8_t ARMDebuggerLoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
-	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
-	return debugMemory->original->load8(debugMemory->original, address, cycleCounter);
-}
-
-uint8_t ARMDebuggerLoadU8(struct ARMMemory* memory, uint32_t address, int* cycleCounter) {
-	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
-	return debugMemory->original->loadU8(debugMemory->original, address, cycleCounter);
-}
-
 void ARMDebuggerShim_store32(struct ARMMemory* memory, uint32_t address, int32_t value, int* cycleCounter) {
 	struct DebugMemoryShim* debugMemory = (struct DebugMemoryShim*) memory;
 	if (_checkWatchpoints(debugMemory->watchpoints, address, 4)) {
