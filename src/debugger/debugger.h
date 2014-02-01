@@ -12,7 +12,7 @@ enum DebuggerState {
 
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
-	int32_t address;
+	uint32_t address;
 };
 
 struct DebugMemoryShim {
@@ -49,6 +49,7 @@ void ARMDebuggerDeinit(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 
 #endif

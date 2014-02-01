@@ -115,6 +115,17 @@ static void _int2hex32(uint32_t value, char* out) {
 	out[1] = language[value & 0xF];
 }
 
+static uint32_t _readHex(const char* in, unsigned* out) {
+	unsigned i;
+	for (i = 0; i < 8; ++i) {
+		if (in[i] == ',') {
+			break;
+		}
+	}
+	*out += i;
+	return _hex2int(in, i);
+}
+
 static void _sendMessage(struct GDBStub* stub) {
 	if (stub->lineAck != GDB_ACK_OFF) {
 		stub->lineAck = GDB_ACK_PENDING;
@@ -168,20 +179,10 @@ static void _continue(struct GDBStub* stub, const char* message) {
 
 static void _readMemory(struct GDBStub* stub, const char* message) {
 	const char* readAddress = message;
-	unsigned i;
-	for (i = 0; i < 8; ++i) {
-		if (readAddress[i] == ',') {
-			break;
-		}
-	}
-	uint32_t address = _hex2int(readAddress, i);
+	unsigned i = 0;
+	uint32_t address = _readHex(readAddress, &i);
 	readAddress += i + 1;
-	for (i = 0; i < 8; ++i) {
-		if (readAddress[i] == '#') {
-			break;
-		}
-	}
-	uint32_t size = _hex2int(readAddress, i);
+	uint32_t size = _readHex(readAddress, &i);
 	if (size > 512) {
 		_error(stub, GDB_BAD_ARGUMENTS);
 		return;
@@ -210,13 +211,8 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 
 static void _readRegister(struct GDBStub* stub, const char* message) {
 	const char* readAddress = message;
-	unsigned i;
-	for (i = 0; i < 8; ++i) {
-		if (readAddress[i] == '#') {
-			break;
-		}
-	}
-	uint32_t reg = _hex2int(readAddress, i);
+	unsigned i = 0;
+	uint32_t reg = _readHex(readAddress, &i);
 	uint32_t value;
 	if (reg < 0x10) {
 		value = stub->d.cpu->gprs[reg];
@@ -280,20 +276,31 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	case '0': // Memory breakpoints are not currently supported
 	case '1': {
 		const char* readAddress = &message[2];
-		unsigned i;
-		for (i = 0; i < 8; ++i) {
-			if (readAddress[i] == ',') {
-				break;
-			}
-		}
-		uint32_t address = _hex2int(readAddress, i);
-		for (i = 0; i < 8; ++i) {
-			if (readAddress[i] == '#') {
-				break;
-			}
-		}
-		uint32_t kind = _hex2int(readAddress, i); // We don't use this in hardware watchpoints
+		unsigned i = 0;
+		uint32_t address = _readHex(readAddress, &i);
+		readAddress += i + 1;
+		uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
 		ARMDebuggerSetBreakpoint(&stub->d, address);
+		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+		_sendMessage(stub);
+		break;
+	}
+	case '2':
+	case '3':
+		// TODO: Watchpoints
+	default:
+		break;
+	}
+}
+
+static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
+	switch (message[0]) {
+	case '0': // Memory breakpoints are not currently supported
+	case '1': {
+		const char* readAddress = &message[2];
+		unsigned i = 0;
+		uint32_t address = _readHex(readAddress, &i);
+		ARMDebuggerClearBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
@@ -393,6 +400,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		break;
 	case 'Z':
 		_setBreakpoint(stub, message);
+		break;
+	case 'z':
+		_clearBreakpoint(stub, message);
 		break;
 	default:
 		_error(stub, GDB_UNSUPPORTED_COMMAND);

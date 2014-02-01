@@ -16,7 +16,7 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 		instructionLength = WORD_SIZE_THUMB;
 	}
 	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
-		if (breakpoint->address + instructionLength == debugger->cpu->gprs[ARM_PC]) {
+		if (breakpoint->address + instructionLength == (uint32_t) debugger->cpu->gprs[ARM_PC]) {
 			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT);
 			break;
 		}
@@ -84,6 +84,17 @@ void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
 	breakpoint->address = address;
 	breakpoint->next = debugger->breakpoints;
 	debugger->breakpoints = breakpoint;
+}
+
+void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
+	struct DebugBreakpoint** previous = &debugger->breakpoints;
+	struct DebugBreakpoint* breakpoint;
+	for (; (breakpoint = *previous); previous = &breakpoint->next) {
+		if (breakpoint->address == address) {
+			*previous = breakpoint->next;
+			free(breakpoint);
+		}
+	}
 }
 
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
