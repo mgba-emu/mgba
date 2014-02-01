@@ -378,10 +378,12 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 			if (obj->transformed) {
 				height <<= ((struct GBATransformedObj*) obj)->doublesize;
 			}
-			renderer->sprites[oamMax].y = obj->y;
-			renderer->sprites[oamMax].endY = obj->y + height;
-			renderer->sprites[oamMax].obj = *obj;
-			++oamMax;
+			if (obj->y < VIDEO_VERTICAL_PIXELS || obj->y + height >= VIDEO_VERTICAL_TOTAL_PIXELS) {
+				renderer->sprites[oamMax].y = obj->y;
+				renderer->sprites[oamMax].endY = obj->y + height;
+				renderer->sprites[oamMax].obj = *obj;
+				++oamMax;
+			}
 		}
 	}
 	renderer->oamMax = oamMax;
