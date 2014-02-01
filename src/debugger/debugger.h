@@ -2,8 +2,6 @@
 #define DEBUGGER_H
 
 #ifdef USE_DEBUGGER
-#include <histedit.h>
-
 #include "arm.h"
 #endif
 
@@ -40,13 +38,10 @@ struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
-	EditLine* elstate;
-	History* histate;
-
 	struct DebugBreakpoint* breakpoints;
 	struct DebugMemoryShim memoryShim;
 
-	void (*init)(struct ARMDebugger*, struct ARMCore*);
+	void (*init)(struct ARMDebugger*);
 	void (*deinit)(struct ARMDebugger*);
 	void (*paused)(struct ARMDebugger*);
 	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
@@ -56,6 +51,8 @@ void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
 void ARMDebuggerDeinit(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
+void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 
 #else
 

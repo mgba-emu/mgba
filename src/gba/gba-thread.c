@@ -1,7 +1,7 @@
 #include "gba-thread.h"
 
 #include "arm.h"
-#include "debugger.h"
+#include "cli-debugger.h"
 #include "gba.h"
 #include "gba-serialize.h"
 
@@ -45,7 +45,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #endif
 
 #ifdef USE_DEBUGGER
-	struct ARMDebugger debugger;
+	struct CLIDebugger debugger;
+	CLIDebuggerCreate(&debugger);
 #endif
 	struct GBA gba;
 	struct GBAThread* threadContext = context;
@@ -99,8 +100,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 #ifdef USE_DEBUGGER
 	if (threadContext->useDebugger) {
-		threadContext->debugger = &debugger;
-		GBAAttachDebugger(&gba, &debugger);
+		threadContext->debugger = &debugger.d;
+		GBAAttachDebugger(&gba, &debugger.d);
 	} else {
 		threadContext->debugger = 0;
 	}
@@ -119,8 +120,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	while (threadContext->state < THREAD_EXITING) {
 #ifdef USE_DEBUGGER
 		if (threadContext->useDebugger) {
-			ARMDebuggerRun(&debugger);
-			if (debugger.state == DEBUGGER_SHUTDOWN) {
+			ARMDebuggerRun(&debugger.d);
+			if (debugger.d.state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, 0);
 			}
 		} else {
