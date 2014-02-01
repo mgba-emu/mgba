@@ -450,7 +450,6 @@ int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
 	if (flags == -1) {
 		goto cleanup;
 	}
-	flags |= O_NONBLOCK;
 	fcntl(stub->socket, F_SETFL, flags | O_NONBLOCK);
 
 	return 1;
