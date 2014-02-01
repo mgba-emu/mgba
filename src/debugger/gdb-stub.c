@@ -14,6 +14,11 @@ enum GDBError {
 	GDB_UNSUPPORTED_COMMAND = 0x07
 };
 
+enum {
+	MACH_O_ARM = 12,
+	MACH_O_ARM_V4T = 5
+};
+
 static void _gdbStubDeinit(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	if (stub->socket >= 0) {
@@ -101,7 +106,12 @@ static void _sendMessage(struct GDBStub* stub) {
 }
 
 static void _error(struct GDBStub* stub, enum GDBError error) {
-	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 1, "E%02x", error);
+	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "E%02x", error);
+	_sendMessage(stub);
+}
+
+static void _writeHostInfo(struct GDBStub* stub) {
+	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "cputype:%u;cpusubtype:%u:ostype:none;vendor:none;endian:little;ptrsize:4;", MACH_O_ARM, MACH_O_ARM_V4T);
 	_sendMessage(stub);
 }
 
@@ -172,12 +182,16 @@ static void _readRegister(struct GDBStub* stub, const char* message) {
 	_sendMessage(stub);
 }
 
-static void _processQMinCommand(struct GDBStub* stub, const char* message) {
+static void _processQReadCommand(struct GDBStub* stub, const char* message) {
+	if (!strncmp("HostInfo", message, 8)) {
+		_writeHostInfo(stub);
+		return;
+	}
 	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
 
-static void _processQMajCommand(struct GDBStub* stub, const char* message) {
+static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
@@ -251,10 +265,10 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		_readRegister(stub, message);
 		break;
 	case 'Q':
-		_processQMajCommand(stub, message);
+		_processQWriteCommand(stub, message);
 		break;
 	case 'q':
-		_processQMinCommand(stub, message);
+		_processQReadCommand(stub, message);
 		break;
 	case 'V':
 		_processVMajCommand(stub, message);
