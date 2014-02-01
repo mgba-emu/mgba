@@ -5,7 +5,7 @@
 #include "sdl-audio.h"
 #include "sdl-events.h"
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
@@ -76,7 +76,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	struct GBAThread context;
 	struct GBAVideoEGLRenderer renderer;
 
 	if (!_GBAEGLInit(&renderer)) {
@@ -84,16 +83,19 @@ int main(int argc, char** argv) {
 	}
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
-	context.fd = fd;
-	context.fname = fname;
-	context.useDebugger = 0;
-	context.renderer = &renderer.d.d;
-	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
-	context.sync.audioWait = 1;
-	context.startCallback = _GBASDLStart;
-	context.cleanCallback = _GBASDLClean;
-	context.userData = &renderer;
+	struct GBAThread context = {
+		.fd = fd,
+		.fname = fname,
+		.biosFd = -1,
+		.useDebugger = 0,
+		.renderer = &renderer.d.d,
+		.frameskip = 0,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 0,
+		.startCallback = _GBASDLStart,
+		.cleanCallback = _GBASDLClean,
+		.userData = &renderer
+	};
 	GBAThreadStart(&context);
 
 	_GBAEGLRunloop(&context, &renderer);
