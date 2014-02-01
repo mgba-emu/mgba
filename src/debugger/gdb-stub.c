@@ -150,7 +150,6 @@ static void _sendMessage(struct GDBStub* stub) {
 	stub->outgoing[i] = '#';
 	_int2hex8(checksum, &stub->outgoing[i + 1]);
 	stub->outgoing[i + 3] = 0;
-	printf("> %s\n", stub->outgoing);
 	send(stub->connection, stub->outgoing, i + 3, 0);
 }
 
@@ -175,6 +174,15 @@ static void _continue(struct GDBStub* stub, const char* message) {
 		fcntl(stub->connection, F_SETFL, flags | O_NONBLOCK);
 	}
 	// TODO: parse message
+	(void) (message);
+}
+
+static void _step(struct GDBStub* stub, const char* message) {
+	ARMRun(stub->d.cpu);
+	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
+	_sendMessage(stub);
+	// TODO: parse message
+	(void) (message);
 }
 
 static void _readMemory(struct GDBStub* stub, const char* message) {
@@ -258,6 +266,7 @@ static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 }
 
 static void _processVWriteCommand(struct GDBStub* stub, const char* message) {
+	(void) (message);
 	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
@@ -280,6 +289,7 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		uint32_t address = _readHex(readAddress, &i);
 		readAddress += i + 1;
 		uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
+		(void) (kind);
 		ARMDebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
@@ -316,7 +326,6 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	uint8_t checksum = 0;
 	int parsed = 1;
-	printf("< %s\n", stub->line);
 	switch (*message) {
 	case '+':
 		stub->lineAck = GDB_ACK_RECEIVED;
@@ -391,6 +400,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		break;
 	case 'q':
 		_processQReadCommand(stub, message);
+		break;
+	case 's':
+		_step(stub, message);
 		break;
 	case 'V':
 		_processVWriteCommand(stub, message);
