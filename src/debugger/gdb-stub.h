@@ -5,10 +5,19 @@
 
 #define GDB_STUB_MAX_LINE 256
 
+enum GDBStubAckState {
+	GDB_ACK_PENDING = 0,
+	GDB_ACK_RECEIVED,
+	GDB_NAK_RECEIVED,
+	GDB_ACK_OFF
+};
+
 struct GDBStub {
 	struct ARMDebugger d;
 
 	char line[GDB_STUB_MAX_LINE];
+	char outgoing[GDB_STUB_MAX_LINE];
+	enum GDBStubAckState lineAck;
 
 	int socket;
 	int connection;
