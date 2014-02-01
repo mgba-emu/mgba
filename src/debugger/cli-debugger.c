@@ -28,7 +28,7 @@ static const char* ERROR_MISSING_ARGS = "Arguments missing";
 
 static struct CLIDebugger* _activeDebugger;
 
-typedef void (DebuggerComamnd)(struct CLIDebugger*, struct DebugVector*);
+typedef void (DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakInto(struct CLIDebugger*, struct DebugVector*);
 static void _continue(struct CLIDebugger*, struct DebugVector*);
@@ -47,7 +47,7 @@ static void _breakIntoDefault(int signal);
 
 static struct {
 	const char* name;
-	DebuggerComamnd* command;
+	DebuggerCommand* command;
 } _debuggerCommands[] = {
 	{ "b", _setBreakpoint },
 	{ "break", _setBreakpoint },
