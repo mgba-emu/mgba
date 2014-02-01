@@ -125,14 +125,13 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 	}
 	uint32_t address = _hex2int(readAddress, i);
 	readAddress += i + 1;
-	// TODO: expand this capacity
-	for (i = 0; i < 1; ++i) {
+	for (i = 0; i < 8; ++i) {
 		if (readAddress[i] == '#') {
 			break;
 		}
 	}
 	uint32_t size = _hex2int(readAddress, i);
-	if (size > 4) {
+	if (size > 512) {
 		_error(stub, GDB_BAD_ARGUMENTS);
 		return;
 	}

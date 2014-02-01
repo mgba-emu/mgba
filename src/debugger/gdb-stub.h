@@ -3,7 +3,7 @@
 
 #include "debugger.h"
 
-#define GDB_STUB_MAX_LINE 256
+#define GDB_STUB_MAX_LINE 1200
 
 enum GDBStubAckState {
 	GDB_ACK_PENDING = 0,
