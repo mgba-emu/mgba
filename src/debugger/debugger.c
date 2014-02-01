@@ -27,6 +27,7 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_PAUSED;
 	debugger->breakpoints = 0;
+	debugger->memoryShim.original = cpu->memory;
 	debugger->memoryShim.p = debugger;
 	debugger->memoryShim.watchpoints = 0;
 	if (debugger->init) {

@@ -10,6 +10,7 @@
 
 enum GDBError {
 	GDB_NO_ERROR = 0x00,
+	GDB_BAD_ARGUMENTS = 0x06,
 	GDB_UNSUPPORTED_COMMAND = 0x07
 };
 
@@ -31,39 +32,43 @@ static void _nak(struct GDBStub* stub) {
 	send(stub->connection, &nak, 1, 0);
 }
 
-static int _hex2int(const char* hex) {
-	uint8_t dec = 0;
+static uint32_t _hex2int(const char* hex, int maxDigits) {
+	uint32_t value = 0;
 	uint8_t letter;
 
-	letter = *hex - '0';
-	if (letter > 9) {
-		letter = *hex - 'a';
-		if  (letter > 5) {
-			return -1;
+	while (maxDigits--) {
+		letter = *hex - '0';
+		if (letter > 9) {
+			letter = *hex - 'a';
+			if  (letter > 5) {
+				break;
+			}
+			value *= 0x10;
+			value += letter + 10;
+		} else {
+			value *= 0x10;
+			value += letter;
 		}
-		dec += letter + 10;
-	} else {
-		dec += letter;
+		++hex;
 	}
-	++hex;
-	dec *= 0x10;
-
-	letter = *hex - '0';
-	if (letter > 9) {
-		letter = *hex - 'a';
-		if  (letter > 5) {
-			return -1;
-		}
-		dec += letter + 10;
-	} else {
-		dec += letter;
-	}
-	return dec;
+	return value;
 }
 
-static void _int2hex(uint8_t value, char* out) {
+static void _int2hex8(uint8_t value, char* out) {
 	static const char language[] = "0123456789abcdef";
 	out[0] = language[value >> 4];
+	out[1] = language[value & 0xF];
+}
+
+static void _int2hex32(uint32_t value, char* out) {
+	static const char language[] = "0123456789abcdef";
+	out[6] = language[value >> 28];
+	out[7] = language[(value >> 24) & 0xF];
+	out[4] = language[(value >> 20) & 0xF];
+	out[5] = language[(value >> 16) & 0xF];
+	out[2] = language[(value >> 12) & 0xF];
+	out[3] = language[(value >> 8) & 0xF];
+	out[0] = language[(value >> 4) & 0xF];
 	out[1] = language[value & 0xF];
 }
 
@@ -87,14 +92,81 @@ static void _sendMessage(struct GDBStub* stub) {
 		}
 	}
 	stub->outgoing[i] = '#';
-	_int2hex(checksum, &stub->outgoing[i + 1]);
-	stub->outgoing[GDB_STUB_MAX_LINE - 1] = 0;
+	_int2hex8(checksum, &stub->outgoing[i + 1]);
+	stub->outgoing[i + 3] = 0;
 	printf("> %s\n", stub->outgoing);
 	send(stub->connection, stub->outgoing, i + 3, 0);
 }
 
 static void _error(struct GDBStub* stub, enum GDBError error) {
 	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 1, "E%02x", error);
+	_sendMessage(stub);
+}
+
+static void _readMemory(struct GDBStub* stub, const char* message) {
+	const char* readAddress = message;
+	unsigned i;
+	for (i = 0; i < 8; ++i) {
+		if (readAddress[i] == ',') {
+			break;
+		}
+	}
+	uint32_t address = _hex2int(readAddress, i);
+	readAddress += i + 1;
+	// TODO: expand this capacity
+	for (i = 0; i < 1; ++i) {
+		if (readAddress[i] == '#') {
+			break;
+		}
+	}
+	uint32_t size = _hex2int(readAddress, i);
+	if (size > 4) {
+		_error(stub, GDB_BAD_ARGUMENTS);
+		return;
+	}
+	struct ARMMemory* memory = stub->d.memoryShim.original;
+	int writeAddress = 0;
+	for (i = 0; i < size; ++i, writeAddress += 2) {
+		uint8_t byte = memory->load8(memory, address + i, 0);
+		_int2hex8(byte, &stub->outgoing[writeAddress]);
+	}
+	stub->outgoing[writeAddress] = 0;
+	_sendMessage(stub);
+}
+
+static void _readGPRs(struct GDBStub* stub, const char* message) {
+	(void) (message);
+	int r;
+	int i = 0;
+	for (r = 0; r < 16; ++r) {
+		_int2hex32(stub->d.cpu->gprs[r], &stub->outgoing[i]);
+		i += 8;
+	}
+	stub->outgoing[i] = 0;
+	_sendMessage(stub);
+}
+
+static void _readRegister(struct GDBStub* stub, const char* message) {
+	const char* readAddress = message;
+	unsigned i;
+	for (i = 0; i < 8; ++i) {
+		if (readAddress[i] == '#') {
+			break;
+		}
+	}
+	uint32_t reg = _hex2int(readAddress, i);
+	uint32_t value;
+	if (reg < 0x10) {
+		value = stub->d.cpu->gprs[reg];
+	} else if (reg == 0x19) {
+		value = stub->d.cpu->cpsr.packed;
+	} else {
+		stub->outgoing[0] = '\0';
+		_sendMessage(stub);
+		return;
+	}
+	_int2hex32(value, stub->outgoing);
+	stub->outgoing[8] = 0;
 	_sendMessage(stub);
 }
 
@@ -114,33 +186,52 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		break;
 	default:
 		_nak(stub);
+		return parsed;
 	}
-	for (; *message && *message != '#'; ++message, ++parsed) {
-		checksum += *message;
+
+	int i;
+	char messageType = message[0];
+	for (i = 0; message[i] && message[i] != '#'; ++i, ++parsed) {
+		checksum += message[i];
 	}
-	if (!*message) {
+	if (!message[i]) {
 		_nak(stub);
 		return parsed;
 	}
-	++message;
+	++i;
 	++parsed;
-	if (!message[0]) {
+	if (!message[i]) {
 		_nak(stub);
 		return parsed;
-	} else if (!message[1]) {
+	} else if (!message[i + 1]) {
 		++parsed;
 		_nak(stub);
 		return parsed;
 	}
 	parsed += 2;
-	int networkChecksum = _hex2int(message);
+	int networkChecksum = _hex2int(&message[i], 2);
 	if (networkChecksum != checksum) {
 		printf("Checksum error: expected %02x, got %02x\n", checksum, networkChecksum);
 		_nak(stub);
 		return parsed;
 	}
+
 	_ack(stub);
-	_error(stub, GDB_UNSUPPORTED_COMMAND);
+	++message;
+	switch (messageType) {
+	case 'g':
+		_readGPRs(stub, message);
+		break;
+	case 'm':
+		_readMemory(stub, message);
+		break;
+	case 'p':
+		_readRegister(stub, message);
+		break;
+	default:
+		_error(stub, GDB_UNSUPPORTED_COMMAND);
+		break;
+	}
 	return parsed;
 }
 
