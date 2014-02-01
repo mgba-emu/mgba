@@ -29,7 +29,9 @@ void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->breakpoints = 0;
 	debugger->memoryShim.p = debugger;
 	debugger->memoryShim.watchpoints = 0;
-	debugger->init(debugger);
+	if (debugger->init) {
+		debugger->init(debugger);
+	}
 }
 
 void ARMDebuggerDeinit(struct ARMDebugger* debugger) {
@@ -56,7 +58,11 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		case DEBUGGER_RUNNING:
 			break;
 		case DEBUGGER_PAUSED:
-			debugger->paused(debugger);
+			if (debugger->paused) {
+				debugger->paused(debugger);
+			} else {
+				debugger->state = DEBUGGER_RUNNING;
+			}
 			break;
 		case DEBUGGER_EXITING:
 		case DEBUGGER_SHUTDOWN:
