@@ -5,6 +5,12 @@
 #include "gba-serialize.h"
 #include "gba-video.h"
 
+#if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
+#define GUI_MOD KMOD_GUI
+#else
+#define GUI_MOD KMOD_CTRL
+#endif
+
 int GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return 0;
@@ -79,7 +85,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		}
 	default:
 		if (event->type == SDL_KEYDOWN) {
-			if (event->keysym.mod & KMOD_CTRL) {
+			if (event->keysym.mod & GUI_MOD) {
 				switch (event->keysym.sym) {
 				case SDLK_p:
 					GBAThreadTogglePause(context);
