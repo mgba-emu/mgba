@@ -108,8 +108,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	while (threadContext->state < THREAD_EXITING) {
 		if (threadContext->debugger) {
-			ARMDebuggerRun(threadContext->debugger);
-			if (threadContext->debugger->state == DEBUGGER_SHUTDOWN) {
+			struct ARMDebugger* debugger = threadContext->debugger;
+			ARMDebuggerRun(debugger);
+			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, 0);
 			}
 		} else {
