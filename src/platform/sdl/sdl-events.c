@@ -33,7 +33,7 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 	GBAThreadPause(context);
 }
 
-static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event) {
+static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = 0;
 	int isPaused = GBAThreadIsPaused(context);
 	switch (event->keysym.sym) {
@@ -87,6 +87,12 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		if (event->type == SDL_KEYDOWN) {
 			if (event->keysym.mod & GUI_MOD) {
 				switch (event->keysym.sym) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				case SDLK_f:
+					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+					sdlContext->fullscreen = !sdlContext->fullscreen;
+					break;
+#endif
 				case SDLK_p:
 					GBAThreadTogglePause(context);
 					break;
@@ -210,7 +216,7 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
-void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) {
+void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
 		// FIXME: this isn't thread-safe
@@ -224,7 +230,7 @@ void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) 
 		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
-		_GBASDLHandleKeypress(context, &event->key);
+		_GBASDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:

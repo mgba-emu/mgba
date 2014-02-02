@@ -132,6 +132,8 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL);
 	SDL_GL_CreateContext(renderer->window);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+	renderer->events.window = renderer->window;
+	renderer->events.fullscreen = 0;
 #else
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
@@ -189,7 +191,13 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 #endif
 
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &event);
+			int fullscreen = renderer->events.fullscreen;
+			GBASDLHandleEvent(context, &renderer->events, &event);
+			// Event handling can change the size of the screen
+			if (renderer->events.fullscreen != fullscreen) {
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+			}
 		}
 	}
 }
