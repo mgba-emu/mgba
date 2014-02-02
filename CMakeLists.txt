@@ -41,6 +41,7 @@ else()
 endif()
 
 if(USE_GDB_STUB)
+	add_definitions(-DUSE_GDB_STUB)
 	set(DEBUGGER_SRC "${DEBUGGER_SRC};${CMAKE_SOURCE_DIR}/src/debugger/gdb-stub.c")
 endif()
 source_group("ARM debugger" FILES ${DEBUGGER_SRC})
