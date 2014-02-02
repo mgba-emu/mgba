@@ -346,6 +346,11 @@ void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 	gba->debugger = debugger;
 }
 
+void GBADetachDebugger(struct GBA* gba) {
+	ARMDebuggerDeinit(gba->debugger);
+	gba->debugger = 0;
+}
+
 void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	struct stat info;
 	gba->memory.rom = fileMemoryMap(fd, SIZE_CART0, MEMORY_READ);

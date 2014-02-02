@@ -141,6 +141,7 @@ int GBAWaitForIRQ(struct GBA* gba);
 int GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
+void GBADetachDebugger(struct GBA* gba);
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname);
 void GBALoadBIOS(struct GBA* gba, int fd);
