@@ -22,7 +22,7 @@ class GameController : public QObject {
 Q_OBJECT
 
 public:
-	GameController(QObject* parent = 0);
+	GameController(QObject* parent = nullptr);
 	~GameController();
 
 	const uint32_t* drawContext() const { return m_drawContext; }

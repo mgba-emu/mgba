@@ -14,15 +14,15 @@ class Display : public QGLWidget {
 Q_OBJECT
 
 public:
-	Display(QWidget* parent = 0);
+	Display(QWidget* parent = nullptr);
 
 public slots:
 	void startDrawing(const uint32_t* buffer, GBAThread* context);
 	void stopDrawing();
 
 protected:
-	virtual void paintEvent(QPaintEvent*) {};
-	virtual void resizeEvent(QResizeEvent*);
+	virtual void paintEvent(QPaintEvent*) override {};
+	virtual void resizeEvent(QResizeEvent*) override;
 
 private:
 	Painter* m_painter;

@@ -16,7 +16,7 @@ class AudioThread : public QThread {
 Q_OBJECT
 
 public:
-	AudioThread(QObject* parent = 0);
+	AudioThread(QObject* parent = nullptr);
 
 	void setInput(GBAAudio* input);
 
@@ -35,13 +35,13 @@ class AudioDevice : public QIODevice {
 Q_OBJECT
 
 public:
-	AudioDevice(GBAAudio* audio, QObject* parent = 0);
+	AudioDevice(GBAAudio* audio, QObject* parent = nullptr);
 
 	void setFormat(const QAudioFormat& format);
 
 protected:
-	virtual qint64 readData(char* data, qint64 maxSize);
-	virtual qint64 writeData(const char* data, qint64 maxSize);
+	virtual qint64 readData(char* data, qint64 maxSize) override;
+	virtual qint64 writeData(const char* data, qint64 maxSize) override;
 
 private:
 	GBAAudio* m_audio;

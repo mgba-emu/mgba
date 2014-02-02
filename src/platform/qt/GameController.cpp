@@ -10,7 +10,7 @@ using namespace QGBA;
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
-	, m_audioContext(0)
+	, m_audioContext(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);

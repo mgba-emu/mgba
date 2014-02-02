@@ -19,7 +19,7 @@ class Window : public QMainWindow {
 Q_OBJECT
 
 public:
-	Window(QWidget* parent = 0);
+	Window(QWidget* parent = nullptr);
 	static GBAKey mapKey(int qtKey);
 
 signals:
@@ -34,8 +34,8 @@ public slots:
 #endif
 
 protected:
-	virtual void keyPressEvent(QKeyEvent* event);
-	virtual void keyReleaseEvent(QKeyEvent* event);
+	virtual void keyPressEvent(QKeyEvent* event) override;
+	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void closeEvent(QCloseEvent*) override;
 
 private slots:
