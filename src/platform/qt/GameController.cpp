@@ -51,6 +51,23 @@ GameController::~GameController() {
 	delete m_renderer;
 }
 
+ARMDebugger* GameController::debugger() {
+	return m_threadContext.debugger;
+}
+
+void GameController::setDebugger(ARMDebugger* debugger) {
+	bool wasPaused = isPaused();
+	setPaused(true);
+	if (m_threadContext.debugger) {
+		GBADetachDebugger(m_threadContext.gba);
+	}
+	m_threadContext.debugger = debugger;
+	if (m_threadContext.debugger) {
+		GBAAttachDebugger(m_threadContext.gba, m_threadContext.debugger);
+	}
+	setPaused(wasPaused);
+}
+
 void GameController::loadGame(const QString& path) {
 	m_rom = new QFile(path);
 	if (!m_rom->open(QIODevice::ReadOnly)) {
@@ -64,6 +81,10 @@ void GameController::loadGame(const QString& path) {
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
 	emit gameStarted(&m_threadContext);
+}
+
+bool GameController::isPaused() {
+	return GBAThreadIsPaused(&m_threadContext);
 }
 
 void GameController::setPaused(bool paused) {

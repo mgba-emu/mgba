@@ -5,9 +5,17 @@
 #include <QKeySequence>
 #include <QMenuBar>
 
+#include "GDBWindow.h"
+#include "GDBController.h"
+
 using namespace QGBA;
 
-Window::Window(QWidget* parent) : QMainWindow(parent) {
+Window::Window(QWidget* parent)
+	: QMainWindow(parent)
+#ifdef USE_GDB_STUB
+	, m_gdbController(nullptr)
+#endif
+{
 	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	setMinimumSize(240, 160);
 
@@ -65,6 +73,16 @@ void Window::selectROM() {
 		m_controller->loadGame(filename);
 	}
 }
+
+#ifdef USE_GDB_STUB
+void Window::gdbOpen() {
+	if (!m_gdbController) {
+		m_gdbController = new GDBController(m_controller, this);
+	}
+	GDBWindow* window = new GDBWindow(m_gdbController);
+	window->show();
+}
+#endif
 
 void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
@@ -134,4 +152,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
+
+	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
+#ifdef USE_GDB_STUB
+	QAction* gdbWindow = new QAction(tr("Start &GDB server"), nullptr);
+	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
+	debuggingMenu->addAction(gdbWindow);
+#endif
 }

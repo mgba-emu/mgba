@@ -16,6 +16,10 @@ find_package(OpenGL REQUIRED)
 
 set(SOURCE_FILES AudioDevice.cpp Display.cpp GameController.cpp Window.cpp)
 
+if(USE_GDB_STUB)
+	set(SOURCE_FILES ${SOURCE_FILES} GDBController.cpp GDBWindow.cpp)
+endif()
+
 add_executable(QGBAc WIN32 MACOSX_BUNDLE main.cpp ${SOURCE_FILES})
 
 qt5_use_modules(QGBAc Widgets Multimedia OpenGL)

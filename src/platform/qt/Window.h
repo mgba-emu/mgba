@@ -13,6 +13,8 @@ extern "C" {
 
 namespace QGBA {
 
+class GDBController;
+
 class Window : public QMainWindow {
 Q_OBJECT
 
@@ -26,6 +28,10 @@ signals:
 
 public slots:
 	void selectROM();
+
+#ifdef USE_GDB_STUB
+	void gdbOpen();
+#endif
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event);
@@ -41,6 +47,10 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+
+#ifdef USE_GDB_STUB
+	GDBController* m_gdbController;
+#endif
 };
 
 }

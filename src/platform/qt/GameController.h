@@ -27,6 +27,13 @@ public:
 
 	const uint32_t* drawContext() const { return m_drawContext; }
 
+	bool isPaused();
+
+#ifdef USE_GDB_STUB
+	ARMDebugger* debugger();
+	void setDebugger(ARMDebugger*);
+#endif
+
 signals:
 	void frameAvailable(const uint32_t*);
 	void audioDeviceAvailable(GBAAudio*);
