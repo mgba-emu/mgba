@@ -477,6 +477,9 @@ int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
 	return 1;
 
 cleanup:
+	if (stub->d.log) {
+		stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't listen on port");
+	}
 	close(stub->socket);
 	stub->socket = -1;
 	return 0;
@@ -501,6 +504,9 @@ void GDBStubShutdown(struct GDBStub* stub) {
 }
 
 void GDBStubUpdate(struct GDBStub* stub) {
+	if (stub->socket == -1) {
+		return;
+	}
 	if (stub->connection == -1) {
 		stub->connection = accept(stub->socket, 0, 0);
 		if (stub->connection >= 0) {
