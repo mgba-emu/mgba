@@ -536,7 +536,10 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 }
 
 void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
-	struct GBABoard* gbaBoard = (struct GBABoard*) debugger->cpu->board;
+	struct GBABoard* gbaBoard = 0;
+	if (debugger->cpu && debugger->cpu->board) {
+		gbaBoard = (struct GBABoard*) debugger->cpu->board;
+	}
 
 	enum GBALogLevel gbaLevel;
 	switch (level) {
@@ -555,7 +558,7 @@ void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel leve
 	}
 	va_list args;
 	va_start(args, format);
-	_GBAVLog(gbaBoard->p, gbaLevel, format, args);
+	_GBAVLog(gbaBoard ? gbaBoard->p : 0, gbaLevel, format, args);
 	va_end(args);
 }
 
