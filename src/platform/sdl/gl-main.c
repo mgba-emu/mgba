@@ -22,6 +22,9 @@ struct GLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Window* window;
+#endif
 
 	int viewportWidth;
 	int viewportHeight;
@@ -105,15 +108,25 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	GBASDLInitEvents(&renderer->events);
 	GBASDLInitAudio(&renderer->audio);
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+#else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+#endif
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL);
+	SDL_GL_CreateContext(renderer->window);
+	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+#else
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
 #else
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL);
+#endif
 #endif
 
 	renderer->d.outputBuffer = malloc(256 * 256 * 4);
@@ -158,7 +171,11 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_GL_SwapWindow(renderer->window);
+#else
 		SDL_GL_SwapBuffers();
+#endif
 
 		while (SDL_PollEvent(&event)) {
 			GBASDLHandleEvent(context, &event);
@@ -171,6 +188,9 @@ static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer) {
 
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_DestroyWindow(renderer->window);
+#endif
 	SDL_Quit();
 }
 

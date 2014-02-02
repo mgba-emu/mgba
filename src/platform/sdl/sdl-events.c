@@ -11,7 +11,9 @@ int GBASDLInitEvents(struct GBASDLEvents* context) {
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
 	context->joystick = SDL_JoystickOpen(0);
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#endif
 	return 1;
 }
 
