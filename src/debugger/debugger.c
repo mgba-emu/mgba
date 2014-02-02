@@ -25,7 +25,7 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 
 void ARMDebuggerInit(struct ARMDebugger* debugger, struct ARMCore* cpu) {
 	debugger->cpu = cpu;
-	debugger->state = DEBUGGER_PAUSED;
+	debugger->state = DEBUGGER_RUNNING;
 	debugger->breakpoints = 0;
 	debugger->memoryShim.original = cpu->memory;
 	debugger->memoryShim.p = debugger;
