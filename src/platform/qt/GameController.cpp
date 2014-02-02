@@ -17,7 +17,7 @@ GameController::GameController(QObject* parent)
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
 	m_renderer->outputBufferStride = 256;
 	m_threadContext = {
-		.useDebugger = 0,
+		.debugger = 0,
 		.frameskip = 0,
 		.biosFd = -1,
 		.renderer = &m_renderer->d,

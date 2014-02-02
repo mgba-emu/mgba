@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
 		.fd = fd,
 		.fname = fname,
 		.biosFd = -1,
-		.useDebugger = 0,
 		.renderer = &renderer.d,
 		.frameskip = 0,
 		.sync.videoFrameWait = 0,
@@ -87,6 +86,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
 }
 
 static void _GBAPerfShutdown(int signal) {
+	(void) (signal);
 	pthread_mutex_lock(&_thread->stateMutex);
 	_thread->state = THREAD_EXITING;
 	pthread_mutex_unlock(&_thread->stateMutex);

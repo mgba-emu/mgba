@@ -44,9 +44,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 #endif
 
-#ifdef USE_DEBUGGER
-	struct ARMDebugger debugger;
-#endif
 	struct GBA gba;
 	struct GBAThread* threadContext = context;
 	char* savedata = 0;
@@ -97,16 +94,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 	}
 
-#ifdef USE_DEBUGGER
-	if (threadContext->useDebugger) {
-		threadContext->debugger = &debugger;
-		GBAAttachDebugger(&gba, &debugger);
-	} else {
-		threadContext->debugger = 0;
+	if (threadContext->debugger) {
+		GBAAttachDebugger(&gba, threadContext->debugger);
 	}
-#else
-	threadContext->debugger = 0;
-#endif
 
 	gba.keySource = &threadContext->activeKeys;
 
@@ -117,20 +107,16 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	_changeState(threadContext, THREAD_RUNNING, 1);
 
 	while (threadContext->state < THREAD_EXITING) {
-#ifdef USE_DEBUGGER
-		if (threadContext->useDebugger) {
-			ARMDebuggerRun(&debugger);
-			if (debugger.state == DEBUGGER_SHUTDOWN) {
+		if (threadContext->debugger) {
+			ARMDebuggerRun(threadContext->debugger);
+			if (threadContext->debugger->state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, 0);
 			}
 		} else {
-#endif
 			while (threadContext->state == THREAD_RUNNING) {
 				ARMRun(&gba.cpu);
 			}
-#ifdef USE_DEBUGGER
 		}
-#endif
 		MutexLock(&threadContext->stateMutex);
 		while (threadContext->state == THREAD_PAUSED) {
 			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);

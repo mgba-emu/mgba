@@ -32,12 +32,11 @@ struct GBASync {
 struct GBAThread {
 	// Output
 	enum ThreadState state;
-	int useDebugger;
 	struct GBA* gba;
-	struct ARMDebugger* debugger;
 
 	// Input
 	struct GBAVideoRenderer* renderer;
+	struct ARMDebugger* debugger;
 	int fd;
 	int biosFd;
 	const char* fname;

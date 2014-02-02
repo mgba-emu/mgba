@@ -2,6 +2,7 @@
 #define GBA_H
 
 #include "arm.h"
+#include "debugger.h"
 
 #include "gba-memory.h"
 #include "gba-video.h"
@@ -146,5 +147,8 @@ void GBALoadBIOS(struct GBA* gba, int fd);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
+
+__attribute__((format (printf, 3, 4)))
+void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

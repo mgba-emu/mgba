@@ -1,11 +1,7 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
-#ifdef USE_DEBUGGER
-#include <histedit.h>
-
 #include "arm.h"
-#endif
 
 enum DebuggerState {
 	DEBUGGER_PAUSED,
@@ -14,11 +10,9 @@ enum DebuggerState {
 	DEBUGGER_SHUTDOWN
 };
 
-#ifdef USE_DEBUGGER
-
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
-	int32_t address;
+	uint32_t address;
 };
 
 struct DebugMemoryShim {
@@ -29,28 +23,43 @@ struct DebugMemoryShim {
 	struct DebugBreakpoint* watchpoints;
 };
 
+enum DebuggerEntryReason {
+	DEBUGGER_ENTER_MANUAL,
+	DEBUGGER_ENTER_ATTACHED,
+	DEBUGGER_ENTER_BREAKPOINT,
+	DEBUGGER_ENTER_WATCHPOINT,
+	DEBUGGER_ENTER_ILLEGAL_OP
+};
+
+enum DebuggerLogLevel {
+	DEBUGGER_LOG_DEBUG = 0x01,
+	DEBUGGER_LOG_INFO = 0x02,
+	DEBUGGER_LOG_WARN = 0x04,
+	DEBUGGER_LOG_ERROR = 0x08
+};
+
 struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
-	EditLine* elstate;
-	History* histate;
-
 	struct DebugBreakpoint* breakpoints;
 	struct DebugMemoryShim memoryShim;
+
+	void (*init)(struct ARMDebugger*);
+	void (*deinit)(struct ARMDebugger*);
+	void (*paused)(struct ARMDebugger*);
+	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
+
+	__attribute__((format (printf, 3, 4)))
+	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
 void ARMDebuggerDeinit(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
-void ARMDebuggerEnter(struct ARMDebugger*);
-
-#else
-
-struct ARMDebugger {
-	enum DebuggerState state;
-};
-
-#endif
+void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
+void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 
 #endif
