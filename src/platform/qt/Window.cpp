@@ -134,7 +134,7 @@ void Window::setupAudio(GBAAudio* audio) {
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	fileMenu->addAction(tr("Load &ROM"), this, SLOT(selectROM()), QKeySequence::Open);
+	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
 	QAction* pause = new QAction(tr("&Pause"), 0);
@@ -155,7 +155,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
 #ifdef USE_GDB_STUB
-	QAction* gdbWindow = new QAction(tr("Start &GDB server"), nullptr);
+	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), nullptr);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	debuggingMenu->addAction(gdbWindow);
 #endif
