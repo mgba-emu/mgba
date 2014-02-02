@@ -71,7 +71,9 @@ static void _ack(struct GDBStub* stub) {
 
 static void _nak(struct GDBStub* stub) {
 	char nak = '-';
-	printf("Packet error\n");
+	if (stub->d.log) {
+		stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Packet error");
+	}
 	send(stub->connection, &nak, 1, 0);
 }
 
@@ -150,6 +152,9 @@ static void _sendMessage(struct GDBStub* stub) {
 	stub->outgoing[i] = '#';
 	_int2hex8(checksum, &stub->outgoing[i + 1]);
 	stub->outgoing[i + 3] = 0;
+	if (stub->d.log) {
+		stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "> %s", stub->outgoing);
+	}
 	send(stub->connection, stub->outgoing, i + 3, 0);
 }
 
@@ -366,7 +371,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	parsed += 2;
 	int networkChecksum = _hex2int(&message[i], 2);
 	if (networkChecksum != checksum) {
-		printf("Checksum error: expected %02x, got %02x\n", checksum, networkChecksum);
+		if (stub->d.log) {
+			stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Checksum error: expected %02x, got %02x", checksum, networkChecksum);
+		}
 		_nak(stub);
 		return parsed;
 	}
@@ -430,6 +437,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.deinit = _gdbStubDeinit;
 	stub->d.paused = _gdbStubPoll;
 	stub->d.entered = _gdbStubEntered;
+	stub->d.log = 0;
 }
 
 int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
@@ -439,7 +447,9 @@ int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
 	// TODO: support IPv6
 	stub->socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (stub->socket < 0) {
-		printf("Couldn't open socket\n");
+		if (stub->d.log) {
+			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
+		}
 		return 0;
 	}
 
@@ -518,6 +528,9 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 		stub->line[messageLen] = '\0';
+		if (stub->d.log) {
+			stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "< %s", stub->line);
+		}
 		ssize_t position = 0;
 		while (position < messageLen) {
 			position += _parseGDBMessage(stub, &stub->line[position]);
@@ -525,7 +538,8 @@ void GDBStubUpdate(struct GDBStub* stub) {
 	}
 
 connectionLost:
-	// TODO: add logging support to the debugging interface
-	printf("Connection lost\n");
+	if (stub->d.log) {
+		stub->d.log(&stub->d, DEBUGGER_LOG_INFO, "Connection lost");
+	}
 	GDBStubHangup(stub);
 }

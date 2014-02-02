@@ -503,7 +503,7 @@ int GBAHalt(struct GBA* gba) {
 	return GBAWaitForIRQ(gba);
 }
 
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
+static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
 	if (!gba) {
 		struct GBAThread* threadContext = GBAThreadGetContext();
 		if (threadContext) {
@@ -512,10 +512,7 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 	}
 
 	if (gba && gba->logHandler) {
-		va_list args;
-		va_start(args, format);
 		gba->logHandler(gba, level, format, args);
-		va_end(args);
 		return;
 	}
 
@@ -523,16 +520,45 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 		return;
 	}
 
-	va_list args;
-	va_start(args, format);
 	vprintf(format, args);
-	va_end(args);
 	printf("\n");
 
 	if (level == GBA_LOG_FATAL) {
 		abort();
 	}
 }
+
+void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	_GBAVLog(gba, level, format, args);
+	va_end(args);
+}
+
+void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
+	struct GBABoard* gbaBoard = (struct GBABoard*) debugger->cpu->board;
+
+	enum GBALogLevel gbaLevel;
+	switch (level) {
+	case DEBUGGER_LOG_DEBUG:
+		gbaLevel = GBA_LOG_DEBUG;
+		break;
+	case DEBUGGER_LOG_INFO:
+		gbaLevel = GBA_LOG_INFO;
+		break;
+	case DEBUGGER_LOG_WARN:
+		gbaLevel = GBA_LOG_WARN;
+		break;
+	case DEBUGGER_LOG_ERROR:
+		gbaLevel = GBA_LOG_ERROR;
+		break;
+	}
+	va_list args;
+	va_start(args, format);
+	_GBAVLog(gbaBoard->p, gbaLevel, format, args);
+	va_end(args);
+}
+
 
 void GBAHitStub(struct ARMBoard* board, uint32_t opcode) {
 	struct GBABoard* gbaBoard = (struct GBABoard*) board;

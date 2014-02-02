@@ -31,6 +31,13 @@ enum DebuggerEntryReason {
 	DEBUGGER_ENTER_ILLEGAL_OP
 };
 
+enum DebuggerLogLevel {
+	DEBUGGER_LOG_DEBUG = 0x01,
+	DEBUGGER_LOG_INFO = 0x02,
+	DEBUGGER_LOG_WARN = 0x04,
+	DEBUGGER_LOG_ERROR = 0x08
+};
+
 struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
@@ -42,6 +49,9 @@ struct ARMDebugger {
 	void (*deinit)(struct ARMDebugger*);
 	void (*paused)(struct ARMDebugger*);
 	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
+
+	__attribute__((format (printf, 3, 4)))
+	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 
 void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
