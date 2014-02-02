@@ -113,10 +113,21 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 #else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #endif
+
+#ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+#else
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+#ifdef COLOR_5_6_5
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+#else
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+#endif
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+#endif
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL);
 	SDL_GL_CreateContext(renderer->window);

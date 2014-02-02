@@ -30,6 +30,13 @@ else()
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
 
+if(BUILD_BBB OR BUILD_RASPI)
+	enable_language(ASM)
+	if(NOT BUILD_EGL)
+		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
+	endif()
+endif()
+
 set(DEBUGGER_SRC "${CMAKE_SOURCE_DIR}/src/debugger/debugger.c;${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c")
 
 if(USE_CLI_DEBUGGER)
