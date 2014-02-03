@@ -185,6 +185,14 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	return 0;
 }
 
+int GBAThreadHasStarted(struct GBAThread* threadContext) {
+	int hasStarted;
+	MutexLock(&threadContext->stateMutex);
+	hasStarted = threadContext->state > THREAD_INITIALIZED;
+	MutexUnlock(&threadContext->stateMutex);
+	return hasStarted;
+}
+
 void GBAThreadEnd(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
