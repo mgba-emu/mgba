@@ -10,25 +10,6 @@ struct GBAThread;
 
 namespace QGBA {
 
-class AudioThread : public QThread {
-Q_OBJECT
-
-public:
-	AudioThread(QObject* parent = nullptr);
-
-	void setInput(GBAThread* input);
-
-public slots:
-	void shutdown();
-
-protected:
-	void run();
-
-private:
-	GBAThread* m_input;
-	QAudioOutput* m_audioOutput;
-};
-
 class AudioDevice : public QIODevice {
 Q_OBJECT
 
@@ -45,6 +26,28 @@ private:
 	GBAThread* m_context;
 	float m_drift;
 	float m_ratio;
+};
+
+class AudioThread : public QThread {
+Q_OBJECT
+
+public:
+	AudioThread(QObject* parent = nullptr);
+
+	void setInput(GBAThread* input);
+
+public slots:
+	void shutdown();
+	void pause();
+	void resume();
+
+protected:
+	void run();
+
+private:
+	GBAThread* m_input;
+	QAudioOutput* m_audioOutput;
+	AudioDevice* m_device;
 };
 
 }

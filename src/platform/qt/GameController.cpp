@@ -18,6 +18,7 @@ GameController::GameController(QObject* parent)
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
 	m_renderer->outputBufferStride = 256;
 	m_threadContext = {
+		.state = THREAD_INITIALIZED,
 		.debugger = 0,
 		.frameskip = 0,
 		.biosFd = -1,
@@ -92,7 +93,7 @@ void GameController::loadGame(const QString& path) {
 
 void GameController::closeGame() {
 	// TODO: Make this threadsafe
-	if (m_threadContext.state >= THREAD_EXITING) {
+	if (m_threadContext.state >= THREAD_EXITING || m_threadContext.state <= THREAD_INITIALIZED) {
 		return;
 	}
 	GBAThreadEnd(&m_threadContext);

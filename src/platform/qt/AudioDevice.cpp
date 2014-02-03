@@ -53,6 +53,14 @@ void AudioThread::shutdown() {
 	quit();
 }
 
+void AudioThread::pause() {
+	m_audioOutput->stop();
+}
+
+void AudioThread::resume() {
+	m_audioOutput->start(m_device);
+}
+
 void AudioThread::run() {
 	QAudioFormat format;
 	format.setSampleRate(44100);
@@ -62,11 +70,11 @@ void AudioThread::run() {
 	format.setByteOrder(QAudioFormat::LittleEndian);
 	format.setSampleType(QAudioFormat::SignedInt);
 
-	AudioDevice device(m_input);
+	m_device = new AudioDevice(m_input);
 	m_audioOutput = new QAudioOutput(format);
 	m_audioOutput->setBufferSize(1024);
-	device.setFormat(m_audioOutput->format());
-	m_audioOutput->start(&device);
+	m_device->setFormat(m_audioOutput->format());
+	m_audioOutput->start(m_device);
 
 	exec();
 }
