@@ -19,6 +19,7 @@ static int32_t _updateChannel1(struct GBAAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAAudioChannel2* ch);
 static int32_t _updateChannel3(struct GBAAudioChannel3* ch);
 static int32_t _updateChannel4(struct GBAAudioChannel4* ch);
+static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio) {
@@ -45,6 +46,7 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
+	audio->soundbias = 0x200;
 	audio->soundcntLo = 0;
 	audio->soundcntHi = 0;
 	audio->soundcntX = 0;
@@ -357,6 +359,10 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 	audio->soundcntX = (value & 0x80) | (audio->soundcntX & 0x0F);
 }
 
+void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
+	audio->soundbias = value;
+}
+
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
 	audio->ch3.wavedata[address | (!audio->ch3.bank.bank * 4)] = value;
 }
@@ -584,6 +590,16 @@ static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
 	return timing;
 }
 
+static int _applyBias(struct GBAAudio* audio, int sample) {
+	sample += audio->bias;
+	if (sample >= 0x400) {
+		sample = 0x3FF;
+	} else if (sample < 0) {
+		sample = 0;
+	}
+	return (sample - audio->bias) << 6;
+}
+
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
@@ -640,9 +656,12 @@ static void _sample(struct GBAAudio* audio) {
 		sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
 	}
 
+	sampleLeft = _applyBias(audio, sampleLeft);
+	sampleRight = _applyBias(audio, sampleRight);
+
 	GBASyncLockAudio(audio->p->sync);
-	CircleBufferWrite32(&audio->left, sampleLeft << 5);
-	CircleBufferWrite32(&audio->right, sampleRight << 5);
+	CircleBufferWrite32(&audio->left, sampleLeft);
+	CircleBufferWrite32(&audio->right, sampleRight);
 	unsigned produced = CircleBufferSize(&audio->left);
 	GBASyncProduceAudio(audio->p->sync, produced >= GBA_AUDIO_SAMPLES * 3);
 }

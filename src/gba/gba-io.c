@@ -16,7 +16,7 @@ static const int _isValidRegister[REG_MAX >> 1] = {
 	1, 1, 1, 0, 1, 0, 1, 0,
 	1, 1, 1, 0, 1, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 0, 0, 0,
 	// DMA
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -91,6 +91,7 @@ void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_DISPCNT >> 1] = 0x0080;
 	gba->memory.io[REG_RCNT >> 1] = 0x8000;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
+	gba->memory.io[REG_SOUNDBIAS >> 1] = 0x200;
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
@@ -151,6 +152,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		case REG_SOUNDCNT_X:
 			GBAAudioWriteSOUNDCNT_X(&gba->audio, value);
+			break;
+		case REG_SOUNDBIAS:
+			GBAAudioWriteSOUNDBIAS(&gba->audio, value);
 			break;
 
 		case REG_WAVE_RAM0_LO:
