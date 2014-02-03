@@ -193,6 +193,15 @@ struct GBAAudio {
 
 	unsigned sampleRate;
 
+	union {
+		struct {
+			unsigned bias : 10;
+			unsigned : 4;
+			unsigned resolution : 2;
+		};
+		uint16_t soundbias;
+	};
+
 	int32_t nextEvent;
 	int32_t eventDiff;
 	int32_t nextCh1;
@@ -228,6 +237,7 @@ void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUNDCNT_LO(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value);
+void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value);
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
