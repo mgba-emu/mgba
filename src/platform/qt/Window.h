@@ -40,7 +40,6 @@ protected:
 
 private slots:
 	void gameStarted(GBAThread*);
-	void setupAudio(GBAAudio*);
 
 private:
 	void setupMenu(QMenuBar*);

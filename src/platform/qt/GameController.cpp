@@ -11,6 +11,7 @@ GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_audioContext(nullptr)
+	, m_rom(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -21,15 +22,19 @@ GameController::GameController(QObject* parent)
 		.frameskip = 0,
 		.biosFd = -1,
 		.renderer = &m_renderer->d,
-		.sync.videoFrameWait = 0,
-		.sync.audioWait = 1,
 		.userData = this,
 		.rewindBufferCapacity = 0
 	};
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->audioDeviceAvailable(&context->gba->audio);
+		controller->gameStarted(context);
 	};
+
+	m_threadContext.cleanCallback = [] (GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		controller->gameStopped(context);
+	};
+
 	m_threadContext.frameCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_pauseMutex.lock();
@@ -69,6 +74,9 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 }
 
 void GameController::loadGame(const QString& path) {
+	closeGame();
+	m_threadContext.sync.videoFrameWait = 0;
+	m_threadContext.sync.audioWait = 1;
 	m_rom = new QFile(path);
 	if (!m_rom->open(QIODevice::ReadOnly)) {
 		delete m_rom;
@@ -80,7 +88,20 @@ void GameController::loadGame(const QString& path) {
 	m_threadContext.fd = m_rom->handle();
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
-	emit gameStarted(&m_threadContext);
+}
+
+void GameController::closeGame() {
+	// TODO: Make this threadsafe
+	if (m_threadContext.state >= THREAD_EXITING) {
+		return;
+	}
+	GBAThreadEnd(&m_threadContext);
+	GBAThreadJoin(&m_threadContext);
+	if (m_rom) {
+		m_rom->close();
+		delete m_rom;
+	}
+	emit gameStopped(&m_threadContext);
 }
 
 bool GameController::isPaused() {

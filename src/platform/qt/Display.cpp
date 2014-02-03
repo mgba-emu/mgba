@@ -1,5 +1,6 @@
 #include "Display.h"
 
+#include <QApplication>
 #include <QResizeEvent>
 
 extern "C" {
@@ -32,6 +33,9 @@ Display::Display(QWidget* parent)
 }
 
 void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
+	if (m_drawThread) {
+		return;
+	}
 	m_drawThread = new QThread(this);
 	m_painter = new Painter(this);
 	m_painter->setGLContext(this);
@@ -48,7 +52,14 @@ void Display::stopDrawing() {
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
+		m_drawThread = nullptr;
 	}
+}
+
+void Display::initializeGL() {
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	swapBuffers();
 }
 
 void Display::resizeEvent(QResizeEvent* event) {
@@ -123,5 +134,8 @@ void Painter::stop() {
 	delete m_drawTimer;
 	m_gl->makeCurrent();
 	glDeleteTextures(1, &m_tex);
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_gl->swapBuffers();
 	m_gl->doneCurrent();
+	m_gl->context()->moveToThread(QApplication::instance()->thread());
 }

@@ -36,11 +36,12 @@ public:
 
 signals:
 	void frameAvailable(const uint32_t*);
-	void audioDeviceAvailable(GBAAudio*);
 	void gameStarted(GBAThread*);
+	void gameStopped(GBAThread*);
 
 public slots:
 	void loadGame(const QString& path);
+	void closeGame();
 	void setPaused(bool paused);
 	void frameAdvance();
 	void keyPressed(int key);

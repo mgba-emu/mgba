@@ -3,13 +3,14 @@
 extern "C" {
 #include "gba.h"
 #include "gba-audio.h"
+#include "gba-thread.h"
 }
 
 using namespace QGBA;
 
-AudioDevice::AudioDevice(GBAAudio* audio, QObject* parent)
+AudioDevice::AudioDevice(GBAThread* threadContext, QObject* parent)
 	: QIODevice(parent)
-	, m_audio(audio)
+	, m_context(threadContext)
 {
 	setOpenMode(ReadOnly);
 }
@@ -17,7 +18,7 @@ AudioDevice::AudioDevice(GBAAudio* audio, QObject* parent)
 void AudioDevice::setFormat(const QAudioFormat& format) {
 	// TODO: merge where the fudge rate exists
 	float fudgeRate = 16853760.0f / GBA_ARM7TDMI_FREQUENCY;
-	m_ratio = format.sampleRate() / (float) (m_audio->sampleRate * fudgeRate);
+	m_ratio = format.sampleRate() / (float) (m_context->gba->audio.sampleRate * fudgeRate);
 }
 
 qint64 AudioDevice::readData(char* data, qint64 maxSize) {
@@ -25,7 +26,11 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 		maxSize = 0xFFFFFFFF;
 	}
 
-	return GBAAudioResampleNN(m_audio, m_ratio, &m_drift, reinterpret_cast<GBAStereoSample*>(data), maxSize / sizeof(GBAStereoSample)) * sizeof(GBAStereoSample);
+	if (!m_context->gba) {
+		return 0;
+	}
+
+	return GBAAudioResampleNN(&m_context->gba->audio, m_ratio, &m_drift, reinterpret_cast<GBAStereoSample*>(data), maxSize / sizeof(GBAStereoSample)) * sizeof(GBAStereoSample);
 }
 
 qint64 AudioDevice::writeData(const char*, qint64) {
@@ -38,11 +43,12 @@ AudioThread::AudioThread(QObject* parent)
 	// Nothing to do
 }
 
-void AudioThread::setInput(GBAAudio* input) {
+void AudioThread::setInput(GBAThread* input) {
 	m_input = input;
 }
 
 void AudioThread::shutdown() {
+	disconnect();
 	m_audioOutput->stop();
 	quit();
 }

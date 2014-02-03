@@ -21,6 +21,7 @@ public slots:
 	void stopDrawing();
 
 protected:
+	virtual void initializeGL() override;
 	virtual void paintEvent(QPaintEvent*) override {};
 	virtual void resizeEvent(QResizeEvent*) override;
 

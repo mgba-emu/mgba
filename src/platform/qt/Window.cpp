@@ -22,8 +22,8 @@ Window::Window(QWidget* parent)
 	m_controller = new GameController(this);
 	m_display = new Display();
 	setCentralWidget(m_display);
-	connect(m_controller, SIGNAL(audioDeviceAvailable(GBAAudio*)), this, SLOT(setupAudio(GBAAudio*)));
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
+	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(startDrawing(const uint32_t*, GBAThread*)), m_display, SLOT(startDrawing(const uint32_t*, GBAThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 
@@ -122,19 +122,18 @@ void Window::gameStarted(GBAThread* context) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
-}
-
-void Window::setupAudio(GBAAudio* audio) {
 	AudioThread* thread = new AudioThread(this);
-	thread->setInput(audio);
+	thread->setInput(context);
 	thread->start(QThread::HighPriority);
 	connect(this, SIGNAL(shutdown()), thread, SLOT(shutdown()));
+	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), thread, SLOT(shutdown()));
 }
 
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
+	fileMenu->addAction(tr("Sh&utdown"), m_controller, SLOT(closeGame()));
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
 	QAction* pause = new QAction(tr("&Pause"), 0);

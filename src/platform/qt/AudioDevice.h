@@ -6,11 +6,9 @@
 #include <QIODevice>
 #include <QThread>
 
-struct GBAAudio;
+struct GBAThread;
 
 namespace QGBA {
-
-
 
 class AudioThread : public QThread {
 Q_OBJECT
@@ -18,7 +16,7 @@ Q_OBJECT
 public:
 	AudioThread(QObject* parent = nullptr);
 
-	void setInput(GBAAudio* input);
+	void setInput(GBAThread* input);
 
 public slots:
 	void shutdown();
@@ -27,7 +25,7 @@ protected:
 	void run();
 
 private:
-	GBAAudio* m_input;
+	GBAThread* m_input;
 	QAudioOutput* m_audioOutput;
 };
 
@@ -35,7 +33,7 @@ class AudioDevice : public QIODevice {
 Q_OBJECT
 
 public:
-	AudioDevice(GBAAudio* audio, QObject* parent = nullptr);
+	AudioDevice(GBAThread* threadContext, QObject* parent = nullptr);
 
 	void setFormat(const QAudioFormat& format);
 
@@ -44,7 +42,7 @@ protected:
 	virtual qint64 writeData(const char* data, qint64 maxSize) override;
 
 private:
-	GBAAudio* m_audio;
+	GBAThread* m_context;
 	float m_drift;
 	float m_ratio;
 };
