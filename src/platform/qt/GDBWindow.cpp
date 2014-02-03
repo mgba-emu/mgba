@@ -39,10 +39,13 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 	connect(m_bindAddressEdit, SIGNAL(textChanged(const QString&)), this, SLOT(bindAddressChanged(const QString&)));
 	settingsGrid->addWidget(m_bindAddressEdit, 1, 1, Qt::AlignLeft);
 
-	m_startStopButton = new QPushButton(tr("Start"));
-	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
-	connect(m_startStopButton, SIGNAL(clicked()), this, SLOT(started()));
+	m_startStopButton = new QPushButton;
 	mainSegment->addWidget(m_startStopButton);
+	if (m_gdbController->isAttached()) {
+		started();
+	} else {
+		stopped();
+	}
 }
 
 void GDBWindow::portChanged(const QString& portString) {
