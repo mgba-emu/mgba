@@ -96,6 +96,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	if (threadContext->debugger) {
 		GBAAttachDebugger(&gba, threadContext->debugger);
+		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED);
 	}
 
 	gba.keySource = &threadContext->activeKeys;
