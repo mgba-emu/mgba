@@ -133,6 +133,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		threadContext->cleanCallback(threadContext);
 	}
 
+	threadContext->gba = 0;
 	GBADeinit(&gba);
 
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
