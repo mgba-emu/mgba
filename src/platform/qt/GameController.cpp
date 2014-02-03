@@ -68,7 +68,7 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 		GBADetachDebugger(m_threadContext.gba);
 	}
 	m_threadContext.debugger = debugger;
-	if (m_threadContext.debugger) {
+	if (m_threadContext.debugger && GBAThreadHasStarted(&m_threadContext)) {
 		GBAAttachDebugger(m_threadContext.gba, m_threadContext.debugger);
 	}
 	setPaused(wasPaused);
