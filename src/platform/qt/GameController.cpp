@@ -11,8 +11,14 @@ GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_audioContext(nullptr)
+	, m_activeKeys(0)
 	, m_rom(nullptr)
 {
+#ifdef BUILD_SDL
+	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
+	GBASDLInitEvents(&m_sdlEvents);
+	SDL_JoystickEventState(SDL_QUERY);
+#endif
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
@@ -46,6 +52,10 @@ GameController::GameController(QObject* parent)
 		controller->m_pauseMutex.unlock();
 		controller->frameAvailable(controller->m_drawContext);
 	};
+
+#ifdef BUILD_SDL
+	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(testSDLEvents()));
+#endif
 }
 
 GameController::~GameController() {
@@ -129,10 +139,56 @@ void GameController::frameAdvance() {
 
 void GameController::keyPressed(int key) {
 	int mappedKey = 1 << key;
-	m_threadContext.activeKeys |= mappedKey;
+	m_activeKeys |= mappedKey;
+	updateKeys();
 }
 
 void GameController::keyReleased(int key) {
 	int mappedKey = 1 << key;
-	m_threadContext.activeKeys &= ~mappedKey;
+	m_activeKeys &= ~mappedKey;
+	updateKeys();
 }
+
+void GameController::updateKeys() {
+	int activeKeys = m_activeKeys;
+#ifdef BUILD_SDL
+	activeKeys |= m_activeButtons;
+#endif
+	m_threadContext.activeKeys = activeKeys;
+}
+
+#ifdef BUILD_SDL
+void GameController::testSDLEvents() {
+	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_JoystickUpdate();
+	int numButtons = SDL_JoystickNumButtons(joystick);
+	m_activeButtons = 0;
+	int i;
+	for (i = 0; i < numButtons; ++i) {
+		GBAKey key = GBASDLMapButtonToKey(i);
+		if (key == GBA_KEY_NONE) {
+			continue;
+		}
+		if (SDL_JoystickGetButton(joystick, i)) {
+			m_activeButtons |= 1 << key;
+		}
+	}
+	int numHats = SDL_JoystickNumHats(joystick);
+	for (i = 0; i < numHats; ++i) {
+		int hat = SDL_JoystickGetHat(joystick, i);
+		if (hat & SDL_HAT_UP) {
+			m_activeButtons |= 1 << GBA_KEY_UP;
+		}
+		if (hat & SDL_HAT_LEFT) {
+			m_activeButtons |= 1 << GBA_KEY_LEFT;
+		}
+		if (hat & SDL_HAT_DOWN) {
+			m_activeButtons |= 1 << GBA_KEY_DOWN;
+		}
+		if (hat & SDL_HAT_RIGHT) {
+			m_activeButtons |= 1 << GBA_KEY_RIGHT;
+		}
+	}
+	updateKeys();
+}
+#endif

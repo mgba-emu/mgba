@@ -11,6 +11,9 @@
 
 extern "C" {
 #include "gba-thread.h"
+#ifdef BUILD_SDL
+#include "sdl-events.h"
+#endif
 }
 
 struct GBAAudio;
@@ -47,13 +50,23 @@ public slots:
 	void keyPressed(int key);
 	void keyReleased(int key);
 
+#ifdef BUILD_SDL
+private slots:
+	void testSDLEvents();
+
 private:
-	void setupAudio(GBAAudio* audio);
+	GBASDLEvents m_sdlEvents;
+	int m_activeButtons;
+#endif
+
+private:
+	void updateKeys();
 
 	uint32_t* m_drawContext;
 	AudioDevice* m_audioContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
+	int m_activeKeys;
 
 	QFile* m_rom;
 	QFile* m_bios;
