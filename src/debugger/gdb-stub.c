@@ -1,13 +1,8 @@
 #include "gdb-stub.h"
 
 #include <errno.h>
-#include <fcntl.h>
-#include <netinet/in.h>
 #include <signal.h>
-#include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
 
 enum GDBError {
 	GDB_NO_ERROR = 0x00,
@@ -50,15 +45,12 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 
 static void _gdbStubPoll(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	int flags;
 	while (stub->d.state == DEBUGGER_PAUSED) {
 		if (stub->connection >= 0) {
-			flags = fcntl(stub->connection, F_GETFL);
-			if (flags == -1) {
+			if (!SocketSetBlocking(stub->connection, 1)) {
 				GDBStubHangup(stub);
 				return;
 			}
-			fcntl(stub->connection, F_SETFL, flags & ~O_NONBLOCK);
 		}
 		GDBStubUpdate(stub);
 	}
@@ -66,7 +58,7 @@ static void _gdbStubPoll(struct ARMDebugger* debugger) {
 
 static void _ack(struct GDBStub* stub) {
 	char ack = '+';
-	send(stub->connection, &ack, 1, 0);
+	SocketSend(stub->connection, &ack, 1);
 }
 
 static void _nak(struct GDBStub* stub) {
@@ -74,7 +66,7 @@ static void _nak(struct GDBStub* stub) {
 	if (stub->d.log) {
 		stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Packet error");
 	}
-	send(stub->connection, &nak, 1, 0);
+	SocketSend(stub->connection, &nak, 1);
 }
 
 static uint32_t _hex2int(const char* hex, int maxDigits) {
@@ -155,7 +147,7 @@ static void _sendMessage(struct GDBStub* stub) {
 	if (stub->d.log) {
 		stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "> %s", stub->outgoing);
 	}
-	send(stub->connection, stub->outgoing, i + 3, 0);
+	SocketSend(stub->connection, stub->outgoing, i + 3);
 }
 
 static void _error(struct GDBStub* stub, enum GDBError error) {
@@ -171,12 +163,10 @@ static void _writeHostInfo(struct GDBStub* stub) {
 static void _continue(struct GDBStub* stub, const char* message) {
 	stub->d.state = DEBUGGER_RUNNING;
 	if (stub->connection >= 0) {
-		int flags = fcntl(stub->connection, F_GETFL);
-		if (flags == -1) {
+		if (!SocketSetBlocking(stub->connection, 0)) {
 			GDBStubHangup(stub);
 			return;
 		}
-		fcntl(stub->connection, F_SETFL, flags | O_NONBLOCK);
 	}
 	// TODO: parse message
 	(void) (message);
@@ -445,34 +435,20 @@ int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
 		GDBStubShutdown(stub);
 	}
 	// TODO: support IPv6
-	stub->socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	stub->socket = SocketOpenTCP(port, bindAddress);
 	if (stub->socket < 0) {
 		if (stub->d.log) {
 			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
 		}
 		return 0;
 	}
-
-	struct sockaddr_in bindInfo = {
-		.sin_family = AF_INET,
-		.sin_port = htons(port),
-		.sin_addr = {
-			.s_addr = htonl(bindAddress)
-		}
-	};
-	int err = bind(stub->socket, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
+	int err = SocketListen(stub->socket, 1);
 	if (err) {
 		goto cleanup;
 	}
-	err = listen(stub->socket, 1);
-	if (err) {
+	if (!SocketSetBlocking(stub->socket, 0)) {
 		goto cleanup;
 	}
-	int flags = fcntl(stub->socket, F_GETFL);
-	if (flags == -1) {
-		goto cleanup;
-	}
-	fcntl(stub->socket, F_SETFL, flags | O_NONBLOCK);
 
 	return 1;
 
@@ -480,14 +456,14 @@ cleanup:
 	if (stub->d.log) {
 		stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't listen on port");
 	}
-	close(stub->socket);
+	SocketClose(stub->socket);
 	stub->socket = -1;
 	return 0;
 }
 
 void GDBStubHangup(struct GDBStub* stub) {
 	if (stub->connection >= 0) {
-		close(stub->connection);
+		SocketClose(stub->connection);
 		stub->connection = -1;
 	}
 	if (stub->d.state == DEBUGGER_PAUSED) {
@@ -498,7 +474,7 @@ void GDBStubHangup(struct GDBStub* stub) {
 void GDBStubShutdown(struct GDBStub* stub) {
 	GDBStubHangup(stub);
 	if (stub->socket >= 0) {
-		close(stub->socket);
+		SocketClose(stub->socket);
 		stub->socket = -1;
 	}
 }
@@ -508,13 +484,11 @@ void GDBStubUpdate(struct GDBStub* stub) {
 		return;
 	}
 	if (stub->connection == -1) {
-		stub->connection = accept(stub->socket, 0, 0);
+		stub->connection = SocketAccept(stub->socket, 0, 0);
 		if (stub->connection >= 0) {
-			int flags = fcntl(stub->connection, F_GETFL);
-			if (flags == -1) {
+			if (!SocketSetBlocking(stub->connection, 0)) {
 				goto connectionLost;
 			}
-			fcntl(stub->connection, F_SETFL, flags | O_NONBLOCK);
 			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED);
 		} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			return;
@@ -523,7 +497,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 		}
 	}
 	while (1) {
-		ssize_t messageLen = recv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1, 0);
+		ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
 		if (messageLen == 0) {
 			goto connectionLost;
 		}

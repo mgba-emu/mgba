@@ -2,6 +2,7 @@
 #define GDB_STUB_H
 
 #include "debugger.h"
+#include "socket.h"
 
 #define GDB_STUB_MAX_LINE 1200
 
@@ -19,8 +20,8 @@ struct GDBStub {
 	char outgoing[GDB_STUB_MAX_LINE];
 	enum GDBStubAckState lineAck;
 
-	int socket;
-	int connection;
+	Socket socket;
+	Socket connection;
 };
 
 void GDBStubCreate(struct GDBStub*);
