@@ -99,6 +99,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED);
 	}
 
+	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
+
 	gba.keySource = &threadContext->activeKeys;
 
 	if (threadContext->startCallback) {

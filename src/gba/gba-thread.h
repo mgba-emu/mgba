@@ -36,6 +36,7 @@ struct GBAThread {
 
 	// Input
 	struct GBAVideoRenderer* renderer;
+	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
 	int fd;
 	int biosFd;

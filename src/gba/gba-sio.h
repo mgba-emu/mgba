@@ -12,24 +12,32 @@ enum GBASIOMode {
 	SIO_JOYBUS = 12
 };
 
-enum GBASIOMultiMode {
-	VBA_LINK_COMPAT
-};
-
 enum {
 	RCNT_INITIAL = 0x8000
 };
 
+struct GBASIO;
+
 struct GBASIODriver {
+	void (*init)(struct GBASIODriver* driver, struct GBASIO* sio);
+	void (*deinit)(struct GBASIODriver* driver);
+
 	int (*attach)(struct GBASIODriver* driver);
+	int (*detach)(struct GBASIODriver* driver);
+	void (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+};
+
+struct GBASIODriverSet {
+	struct GBASIODriver* multiplayer;
+	struct GBASIODriver* joybus;
 };
 
 struct GBASIO {
 	struct GBA* p;
 
 	enum GBASIOMode mode;
-	enum GBASIOMultiMode multiMode;
-	struct GBASIODriver* driver;
+	struct GBASIODriverSet drivers;
+	struct GBASIODriver* activeDriver;
 
 	uint16_t rcnt;
 	union {
@@ -64,6 +72,8 @@ struct GBASIO {
 };
 
 void GBASIOInit(struct GBASIO* sio);
+void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
+void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
