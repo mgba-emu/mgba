@@ -122,6 +122,9 @@ void GBAInit(struct GBA* gba) {
 
 	GBAIOInit(gba);
 
+	gba->sio.p = gba;
+	GBASIOInit(&gba->sio);
+
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
 

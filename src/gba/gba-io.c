@@ -1,6 +1,7 @@
 #include "gba-io.h"
 
 #include "gba-serialize.h"
+#include "gba-sio.h"
 #include "gba-video.h"
 
 static const int _isValidRegister[REG_MAX >> 1] = {
@@ -89,7 +90,7 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 
 void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_DISPCNT >> 1] = 0x0080;
-	gba->memory.io[REG_RCNT >> 1] = 0x8000;
+	gba->memory.io[REG_RCNT >> 1] = RCNT_INITIAL;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
 }
 
@@ -248,6 +249,15 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_TM3CNT_HI:
 			value &= 0x00C7;
 			GBATimerWriteTMCNT_HI(gba, 3, value);
+			break;
+
+		// SIO
+		case REG_SIOCNT:
+			GBASIOWriteSIOCNT(&gba->sio, value);
+			break;
+		case REG_RCNT:
+			value &= 0xC1FF;
+			GBASIOWriteRCNT(&gba->sio, value);
 			break;
 
 		// Interrupts and misc

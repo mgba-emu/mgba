@@ -7,6 +7,7 @@
 #include "gba-memory.h"
 #include "gba-video.h"
 #include "gba-audio.h"
+#include "gba-sio.h"
 
 #include <stdarg.h>
 
@@ -74,6 +75,7 @@ struct GBA {
 	struct GBAMemory memory;
 	struct GBAVideo video;
 	struct GBAAudio audio;
+	struct GBASIO sio;
 
 	struct GBASync* sync;
 
