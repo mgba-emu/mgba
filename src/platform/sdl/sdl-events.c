@@ -20,6 +20,26 @@ void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 
+enum GBAKey GBASDLMapButtonToKey(int button) {
+	// Sorry, hardcoded to my gamepad for now
+	switch (button) {
+	case 2:
+		return GBA_KEY_A;
+	case 1:
+		return GBA_KEY_B;
+	case 6:
+		return GBA_KEY_L;
+	case 7:
+		return GBA_KEY_R;
+	case 8:
+		return GBA_KEY_START;
+	case 9:
+		return GBA_KEY_SELECT;
+	default:
+		return GBA_KEY_NONE;
+	}
+}
+
 static void _pauseAfterFrame(struct GBAThread* context) {
 	context->frameCallback = 0;
 	GBAThreadPause(context);
@@ -151,27 +171,8 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 
 static void _GBASDLHandleJoyButton(struct GBAThread* context, const struct SDL_JoyButtonEvent* event) {
 	enum GBAKey key = 0;
-	// Sorry, hardcoded to my gamepad for now
-	switch (event->button) {
-	case 2:
-		key = GBA_KEY_A;
-		break;
-	case 1:
-		key = GBA_KEY_B;
-		break;
-	case 6:
-		key = GBA_KEY_L;
-		break;
-	case 7:
-		key = GBA_KEY_R;
-		break;
-	case 8:
-		key = GBA_KEY_START;
-		break;
-	case 9:
-		key = GBA_KEY_SELECT;
-		break;
-	default:
+	key = GBASDLMapButtonToKey(event->button);
+	if (key == GBA_KEY_NONE) {
 		return;
 	}
 

@@ -14,4 +14,6 @@ void GBASDLDeinitEvents(struct GBASDLEvents*);
 
 void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event);
 
+enum GBAKey GBASDLMapButtonToKey(int button);
+
 #endif
