@@ -55,7 +55,8 @@ enum GBAKey {
 	GBA_KEY_UP = 6,
 	GBA_KEY_DOWN = 7,
 	GBA_KEY_R = 8,
-	GBA_KEY_L = 9
+	GBA_KEY_L = 9,
+	GBA_KEY_NONE = -1
 };
 
 struct GBARotationSource;
