@@ -83,9 +83,13 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 		driver->p = sio;
 
 		if (driver->init) {
-			driver->init(driver);
+			if (!driver->init(driver)) {
+				driver->deinit(driver);
+				GBALog(sio->p, GBA_LOG_ERROR, "Could not initialize SIO driver");
+				return;
+			}
 		}
-		if (*driverLoc == sio->activeDriver) {
+		if (*driverLoc && *driverLoc == sio->activeDriver) {
 			sio->activeDriver = driver;
 			if ((*driverLoc)->load) {
 				(*driverLoc)->load(*driverLoc);
