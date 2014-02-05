@@ -19,12 +19,14 @@ enum {
 struct GBASIO;
 
 struct GBASIODriver {
-	void (*init)(struct GBASIODriver* driver, struct GBASIO* sio);
-	void (*deinit)(struct GBASIODriver* driver);
+	struct GBASIO* p;
 
-	int (*attach)(struct GBASIODriver* driver);
-	int (*detach)(struct GBASIODriver* driver);
+	void (*init)(struct GBASIODriver* driver);
+	void (*deinit)(struct GBASIODriver* driver);
+	int (*load)(struct GBASIODriver* driver);
+	int (*unload)(struct GBASIODriver* driver);
 	void (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+	int32_t (*processEvents)(struct GBASIODriver* driver, int32_t cycles);
 };
 
 struct GBASIODriverSet {
@@ -72,11 +74,15 @@ struct GBASIO {
 };
 
 void GBASIOInit(struct GBASIO* sio);
+void GBASIODeinit(struct GBASIO* sio);
+
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value);
+
+int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles);
 
 #endif
