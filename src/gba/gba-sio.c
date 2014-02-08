@@ -6,6 +6,9 @@
 
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
 	switch (mode) {
+	case SIO_NORMAL_8:
+	case SIO_NORMAL_32:
+		return sio->drivers.normal;
 	case SIO_MULTI:
 		return sio->drivers.multiplayer;
 	case SIO_JOYBUS:
@@ -61,6 +64,10 @@ void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode) {
 	struct GBASIODriver** driverLoc;
 	switch (mode) {
+	case SIO_NORMAL_8:
+	case SIO_NORMAL_32:
+		driverLoc = &sio->drivers.normal;
+		break;
 	case SIO_MULTI:
 		driverLoc = &sio->drivers.multiplayer;
 		break;

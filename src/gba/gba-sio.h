@@ -30,6 +30,7 @@ struct GBASIODriver {
 };
 
 struct GBASIODriverSet {
+	struct GBASIODriver* normal;
 	struct GBASIODriver* multiplayer;
 	struct GBASIODriver* joybus;
 };
