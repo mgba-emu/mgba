@@ -89,10 +89,10 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 				return;
 			}
 		}
-		if (*driverLoc && *driverLoc == sio->activeDriver) {
+		if (sio->mode == mode) {
 			sio->activeDriver = driver;
-			if ((*driverLoc)->load) {
-				(*driverLoc)->load(*driverLoc);
+			if (driver->load) {
+				driver->load(driver);
 			}
 		}
 	}
