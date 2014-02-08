@@ -53,6 +53,9 @@ void GBASIODeinit(struct GBASIO* sio) {
 }
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
+	if (drivers->normal) {
+		GBASIOSetDriver(sio, drivers->normal, SIO_NORMAL_8);
+	}
 	if (drivers->multiplayer) {
 		GBASIOSetDriver(sio, drivers->multiplayer, SIO_MULTI);
 	}
