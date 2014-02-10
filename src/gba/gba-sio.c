@@ -108,11 +108,11 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
+	if (sio->activeDriver && sio->activeDriver->writeRegister) {
+		value = sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOCNT, value);
+	}
 	sio->siocnt = value;
 	_switchMode(sio);
-	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOCNT, value);
-	}
 }
 
 void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value) {

@@ -259,6 +259,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			value &= 0xC1FF;
 			GBASIOWriteRCNT(&gba->sio, value);
 			break;
+		case REG_SIOMLT_SEND:
+			GBASIOWriteSIOMLT_SEND(&gba->sio, value);
+			break;
 
 		// Interrupts and misc
 		case REG_WAITCNT:
@@ -411,6 +414,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
 	case REG_DMA3CNT_HI:
+	case REG_SIOMULTI0:
+	case REG_SIOMULTI1:
+	case REG_SIOMULTI2:
+	case REG_SIOMULTI3:
+	case REG_SIOMLT_SEND:
 	case REG_IE:
 	case REG_IF:
 	case REG_WAITCNT:

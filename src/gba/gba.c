@@ -2,6 +2,7 @@
 
 #include "gba-bios.h"
 #include "gba-io.h"
+#include "gba-sio.h"
 #include "gba-thread.h"
 #include "memory.h"
 
@@ -194,6 +195,11 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 		}
 
 		testEvent = GBAMemoryRunDMAs(&gbaBoard->p->memory, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
+
+		testEvent = GBASIOProcessEvents(&gbaBoard->p->sio, cycles);
 		if (testEvent < nextEvent) {
 			nextEvent = testEvent;
 		}
@@ -447,10 +453,6 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 };
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
-	if (value & (1 << IRQ_SIO)) {
-		GBALog(gba, GBA_LOG_STUB, "SIO interrupts not implemented");
-	}
-
 	if (value & (1 << IRQ_KEYPAD)) {
 		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
 	}

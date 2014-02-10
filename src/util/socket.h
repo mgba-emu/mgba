@@ -8,6 +8,7 @@ typedef SOCKET Socket;
 #else
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -79,6 +80,10 @@ static inline int SocketSetBlocking(Socket socket, int blocking) {
 	}
 	return fcntl(socket, F_SETFL, flags) >= 0;
 #endif
+}
+
+static inline int SocketSetTCPPush(Socket socket, int push) {
+	return setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*) &push, sizeof(int)) >= 0;
 }
 
 #endif
