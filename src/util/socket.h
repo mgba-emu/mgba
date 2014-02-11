@@ -52,6 +52,27 @@ static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 	return sock;
 }
 
+static inline Socket SocketConnectTCP(int port, uint32_t destinationAddress) {
+	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0) {
+		return sock;
+	}
+
+	struct sockaddr_in bindInfo = {
+		.sin_family = AF_INET,
+		.sin_port = htons(port),
+		.sin_addr = {
+			.s_addr = htonl(destinationAddress)
+		}
+	};
+	int err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
+	if (err) {
+		close(sock);
+		return -1;
+	}
+	return sock;
+}
+
 static inline Socket SocketListen(Socket socket, int queueLength) {
 	return listen(socket, queueLength);
 }
