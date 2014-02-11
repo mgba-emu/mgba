@@ -37,6 +37,12 @@ static void _changeState(struct GBAThread* threadContext, enum ThreadState newSt
 	MutexUnlock(&threadContext->stateMutex);
 }
 
+static void _waitOnInterrupt(struct GBAThread* threadContext) {
+	while (threadContext->state == THREAD_INTERRUPTED) {
+		ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
+	}
+}
+
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
@@ -122,7 +128,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		}
 		MutexLock(&threadContext->stateMutex);
-		while (threadContext->state == THREAD_PAUSED) {
+		while (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_INTERRUPTED) {
 			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 		}
 		MutexUnlock(&threadContext->stateMutex);
@@ -239,9 +245,25 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	free(threadContext->rewindBuffer);
 }
 
+void GBAThreadInterrupt(struct GBAThread* threadContext) {
+	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
+	threadContext->savedState = threadContext->state;
+	threadContext->state = THREAD_INTERRUPTED;
+	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
+		threadContext->debugger->state = DEBUGGER_EXITING;
+	}
+	MutexUnlock(&threadContext->stateMutex);
+}
+
+void GBAThreadContinue(struct GBAThread* threadContext) {
+	_changeState(threadContext, threadContext->savedState, 1);
+}
+
 void GBAThreadPause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_RUNNING) {
 		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
@@ -261,6 +283,7 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 void GBAThreadUnpause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
@@ -277,6 +300,7 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 int GBAThreadIsPaused(struct GBAThread* threadContext) {
 	int isPaused;
 	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
 	isPaused = threadContext->state == THREAD_PAUSED;
 	MutexUnlock(&threadContext->stateMutex);
 	return isPaused;
@@ -285,6 +309,7 @@ int GBAThreadIsPaused(struct GBAThread* threadContext) {
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);

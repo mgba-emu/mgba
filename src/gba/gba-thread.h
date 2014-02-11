@@ -10,9 +10,10 @@ typedef void (*ThreadCallback)(struct GBAThread* threadContext);
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
 	THREAD_RUNNING = 0,
-	THREAD_PAUSED = 1,
-	THREAD_EXITING = 2,
-	THREAD_SHUTDOWN = 3
+	THREAD_INTERRUPTED = 1,
+	THREAD_PAUSED = 2,
+	THREAD_EXITING = 3,
+	THREAD_SHUTDOWN = 4
 };
 
 struct GBASync {
@@ -49,6 +50,7 @@ struct GBAThread {
 
 	Mutex stateMutex;
 	Condition stateCond;
+	enum ThreadState savedState;
 
 	GBALogHandler logHandler;
 	ThreadCallback startCallback;
@@ -70,6 +72,9 @@ int GBAThreadStart(struct GBAThread* threadContext);
 int GBAThreadHasStarted(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
+
+void GBAThreadInterrupt(struct GBAThread* threadContext);
+void GBAThreadContinue(struct GBAThread* threadContext);
 
 void GBAThreadPause(struct GBAThread* threadContext);
 void GBAThreadUnpause(struct GBAThread* threadContext);
