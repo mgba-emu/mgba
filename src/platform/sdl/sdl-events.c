@@ -5,13 +5,21 @@
 #include "gba-serialize.h"
 #include "gba-video.h"
 
+#if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
+#define GUI_MOD KMOD_GUI
+#else
+#define GUI_MOD KMOD_CTRL
+#endif
+
 int GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return 0;
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
 	context->joystick = SDL_JoystickOpen(0);
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#endif
 	return 1;
 }
 
@@ -45,9 +53,8 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 	GBAThreadPause(context);
 }
 
-static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_KeyboardEvent* event) {
+static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = 0;
-	int isPaused = GBAThreadIsPaused(context);
 	switch (event->keysym.sym) {
 	case SDLK_z:
 		key = GBA_KEY_A;
@@ -83,22 +90,25 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 		if (event->type == SDL_KEYDOWN && context->debugger) {
 			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
 		}
-		break;
+		return;
 	case SDLK_TAB:
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	case SDLK_LEFTBRACKET:
-		if (!isPaused) {
-			GBAThreadPause(context);
-		}
+		GBAThreadInterrupt(context);
 		GBARewind(context, 10);
-		if (!isPaused) {
-			GBAThreadUnpause(context);
-		}
+		GBAThreadContinue(context);
+		return;
 	default:
 		if (event->type == SDL_KEYDOWN) {
-			if (event->keysym.mod & KMOD_CTRL) {
+			if (event->keysym.mod & GUI_MOD) {
 				switch (event->keysym.sym) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				case SDLK_f:
+					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+					sdlContext->fullscreen = !sdlContext->fullscreen;
+					break;
+#endif
 				case SDLK_p:
 					GBAThreadTogglePause(context);
 					break;
@@ -123,13 +133,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					if (!isPaused) {
-						GBAThreadPause(context);
-					}
+					GBAThreadInterrupt(context);
 					GBASaveState(context->gba, event->keysym.sym - SDLK_F1);
-					if (!isPaused) {
-						GBAThreadUnpause(context);
-					}
+					GBAThreadContinue(context);
 					break;
 				default:
 					break;
@@ -146,13 +152,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, const struct SDL_Ke
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					if (!isPaused) {
-						GBAThreadPause(context);
-					}
+					GBAThreadInterrupt(context);
 					GBALoadState(context->gba, event->keysym.sym - SDLK_F1);
-					if (!isPaused) {
-						GBAThreadUnpause(context);
-					}
+					GBAThreadContinue(context);
 					break;
 				default:
 					break;
@@ -203,7 +205,7 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
-void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) {
+void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
 		// FIXME: this isn't thread-safe
@@ -217,7 +219,7 @@ void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event) 
 		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
-		_GBASDLHandleKeypress(context, &event->key);
+		_GBASDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:

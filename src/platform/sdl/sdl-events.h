@@ -7,12 +7,18 @@
 
 struct GBASDLEvents {
 	SDL_Joystick* joystick;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Window* window;
+	int fullscreen;
+#endif
 };
 
 int GBASDLInitEvents(struct GBASDLEvents*);
 void GBASDLDeinitEvents(struct GBASDLEvents*);
 
-void GBASDLHandleEvent(struct GBAThread* context, const union SDL_Event* event);
+void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event);
+
+enum GBAKey GBASDLMapButtonToKey(int button);
 
 enum GBAKey GBASDLMapButtonToKey(int button);
 

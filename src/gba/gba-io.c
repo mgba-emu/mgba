@@ -1,6 +1,7 @@
 #include "gba-io.h"
 
 #include "gba-serialize.h"
+#include "gba-sio.h"
 #include "gba-video.h"
 
 static const int _isValidRegister[REG_MAX >> 1] = {
@@ -89,7 +90,7 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 
 void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_DISPCNT >> 1] = 0x0080;
-	gba->memory.io[REG_RCNT >> 1] = 0x8000;
+	gba->memory.io[REG_RCNT >> 1] = RCNT_INITIAL;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
 	gba->memory.io[REG_SOUNDBIAS >> 1] = 0x200;
 }
@@ -254,6 +255,18 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBATimerWriteTMCNT_HI(gba, 3, value);
 			break;
 
+		// SIO
+		case REG_SIOCNT:
+			GBASIOWriteSIOCNT(&gba->sio, value);
+			break;
+		case REG_RCNT:
+			value &= 0xC1FF;
+			GBASIOWriteRCNT(&gba->sio, value);
+			break;
+		case REG_SIOMLT_SEND:
+			GBASIOWriteSIOMLT_SEND(&gba->sio, value);
+			break;
+
 		// Interrupts and misc
 		case REG_WAITCNT:
 			GBAAdjustWaitstates(&gba->memory, value);
@@ -369,6 +382,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		}
 		break;
 
+	case REG_SIOCNT:
+		return gba->sio.siocnt;
+	case REG_RCNT:
+		return gba->sio.rcnt;
+
 	case REG_DMA0CNT_LO:
 	case REG_DMA1CNT_LO:
 	case REG_DMA2CNT_LO:
@@ -400,6 +418,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
 	case REG_DMA3CNT_HI:
+	case REG_SIOMULTI0:
+	case REG_SIOMULTI1:
+	case REG_SIOMULTI2:
+	case REG_SIOMULTI3:
+	case REG_SIOMLT_SEND:
 	case REG_IE:
 	case REG_IF:
 	case REG_WAITCNT:
