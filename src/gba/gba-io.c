@@ -355,10 +355,6 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	switch (address) {
-	case REG_DISPSTAT:
-		return gba->memory.io[REG_DISPSTAT >> 1] | GBAVideoReadDISPSTAT(&gba->video);
-		break;
-
 	case REG_TM0CNT_LO:
 		GBATimerUpdateRegister(gba, 0);
 		break;
@@ -390,6 +386,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Write-only register
 		return 0;
 	case REG_DISPCNT:
+	case REG_DISPSTAT:
 	case REG_VCOUNT:
 	case REG_BG0CNT:
 	case REG_BG1CNT:

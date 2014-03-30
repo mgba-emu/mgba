@@ -134,6 +134,8 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 
 		video->eventDiff = 0;
 	}
+	video->p->memory.io[REG_DISPSTAT >> 1] &= 0xFFF8;
+	video->p->memory.io[REG_DISPSTAT >> 1] |= (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
 	return video->nextEvent;
 }
 
@@ -152,10 +154,6 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 			video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 		}
 	}
-}
-
-uint16_t GBAVideoReadDISPSTAT(struct GBAVideo* video) {
-	return (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
 }
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
