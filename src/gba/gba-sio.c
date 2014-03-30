@@ -40,6 +40,8 @@ static void _switchMode(struct GBASIO* sio) {
 void GBASIOInit(struct GBASIO* sio) {
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
+	sio->mode = -1;
+	sio->activeDriver = 0;
 	_switchMode(sio);
 }
 
