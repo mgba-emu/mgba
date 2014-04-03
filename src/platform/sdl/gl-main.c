@@ -1,4 +1,4 @@
-#include "cli-debugger.h"
+#include "debugger/cli-debugger.h"
 #include "gba-thread.h"
 #include "gba.h"
 #include "sdl-audio.h"

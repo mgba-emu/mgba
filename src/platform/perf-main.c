@@ -5,9 +5,6 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames);
 static void _GBAPerfShutdown(int signal);

@@ -1,7 +1,7 @@
 #ifndef GBA_SAVEDATA_H
 #define GBA_SAVEDATA_H
 
-#include <stdint.h>
+#include "common.h"
 
 enum SavedataType {
 	SAVEDATA_NONE = 0,

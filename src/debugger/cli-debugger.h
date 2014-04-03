@@ -1,6 +1,8 @@
 #ifndef CLI_DEBUGGER_H
 #define CLI_DEBUGGER_H
 
+#include "common.h"
+
 #include "debugger.h"
 
 #include <histedit.h>

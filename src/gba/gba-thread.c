@@ -1,11 +1,11 @@
 #include "gba-thread.h"
 
 #include "arm.h"
-#include "debugger.h"
 #include "gba.h"
 #include "gba-serialize.h"
 
-#include <stdlib.h>
+#include "debugger/debugger.h"
+
 #include <signal.h>
 
 #ifdef USE_PTHREADS

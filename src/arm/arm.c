@@ -4,8 +4,6 @@
 #include "isa-inlines.h"
 #include "isa-thumb.h"
 
-#include <limits.h>
-
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
 void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {

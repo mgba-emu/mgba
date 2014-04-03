@@ -1,12 +1,11 @@
 #include "gba-savedata.h"
 
 #include "gba.h"
-#include "memory.h"
+
+#include "util/memory.h"
 
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);

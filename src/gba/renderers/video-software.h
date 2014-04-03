@@ -1,9 +1,9 @@
 #ifndef VIDEO_SOFTWARE_H
 #define VIDEO_SOFTWARE_H
 
-#include "gba-video.h"
+#include "common.h"
 
-#include <pthread.h>
+#include "gba-video.h"
 
 #ifdef COLOR_16_BIT
 typedef uint16_t color_t;

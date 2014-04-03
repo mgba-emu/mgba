@@ -1,6 +1,8 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#include "common.h"
+
 #ifdef _WIN32
 #include <winsock2.h>
 
@@ -9,9 +11,7 @@ typedef SOCKET Socket;
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <stdio.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 typedef int Socket;
 #endif

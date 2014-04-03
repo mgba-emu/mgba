@@ -1,6 +1,8 @@
 #ifndef SDL_EVENTS_H
 #define SDL_EVENTS_H
 
+#include "common.h"
+
 #include "gba-thread.h"
 
 #include <SDL.h>

@@ -2,8 +2,6 @@
 
 #include "gba-io.h"
 
-#include <limits.h>
-
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
 	switch (mode) {
 	case SIO_NORMAL_8:

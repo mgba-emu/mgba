@@ -1,15 +1,15 @@
 #ifndef GBA_H
 #define GBA_H
 
+#include "common.h"
+
 #include "arm.h"
-#include "debugger.h"
+#include "debugger/debugger.h"
 
 #include "gba-memory.h"
 #include "gba-video.h"
 #include "gba-audio.h"
 #include "gba-sio.h"
-
-#include <stdarg.h>
 
 extern const uint32_t GBA_ARM7TDMI_FREQUENCY;
 

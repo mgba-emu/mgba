@@ -1,9 +1,9 @@
 #ifndef GBA_AUDIO_H
 #define GBA_AUDIO_H
 
-#include "circle-buffer.h"
+#include "common.h"
 
-#include <stdint.h>
+#include "util/circle-buffer.h"
 
 struct GBADMA;
 

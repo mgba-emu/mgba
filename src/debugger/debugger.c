@@ -4,8 +4,6 @@
 
 #include "memory-debugger.h"
 
-#include <stdlib.h>
-
 static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	struct DebugBreakpoint* breakpoint;
 	int instructionLength;

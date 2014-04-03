@@ -1,8 +1,11 @@
 #ifndef GBA_THREAD_H
 #define GBA_THREAD_H
 
+#include "common.h"
+
 #include "gba.h"
-#include "threading.h"
+
+#include "util/threading.h"
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);

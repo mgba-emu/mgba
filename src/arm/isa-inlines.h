@@ -1,6 +1,8 @@
 #ifndef ISA_INLINES_H
 #define ISA_INLINES_H
 
+#include "common.h"
+
 #include "arm.h"
 
 #define UNUSED(V) (void)(V)

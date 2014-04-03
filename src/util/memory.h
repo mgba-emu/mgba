@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <unistd.h>
+#include "common.h"
 
 #define MEMORY_READ 1
 #define MEMORY_WRITE 2

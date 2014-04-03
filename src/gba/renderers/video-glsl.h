@@ -1,6 +1,8 @@
 #ifndef VIDEO_GLSL_H
 #define VIDEO_GLSL_H
 
+#include "common.h"
+
 #include "gba-video.h"
 
 #include <pthread.h>

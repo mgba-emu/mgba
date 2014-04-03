@@ -4,9 +4,6 @@
 #include "gba-io.h"
 #include "gba-memory.h"
 
-#include <math.h>
-#include <stdlib.h>
-
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 

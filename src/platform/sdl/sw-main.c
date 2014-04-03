@@ -1,4 +1,4 @@
-#include "debugger.h"
+#include "debugger/debugger.h"
 #include "gba-thread.h"
 #include "gba.h"
 #include "renderers/video-software.h"
@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <unistd.h>
 
 struct SoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;

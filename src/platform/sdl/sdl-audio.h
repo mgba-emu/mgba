@@ -1,6 +1,8 @@
 #ifndef SDL_AUDIO_H
 #define SDL_AUDIO_H
 
+#include "common.h"
+
 #include <SDL.h>
 
 struct GBASDLAudio {

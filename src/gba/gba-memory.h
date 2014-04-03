@@ -1,12 +1,12 @@
 #ifndef GBA_MEMORY_H
 #define GBA_MEMORY_H
 
+#include "common.h"
+
 #include "arm.h"
 
 #include "gba-gpio.h"
 #include "gba-savedata.h"
-
-#include <string.h>
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,

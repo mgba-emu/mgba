@@ -1,7 +1,7 @@
 #ifndef GBA_GPIO_H
 #define GBA_GPIO_H
 
-#include <stdint.h>
+#include "common.h"
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 

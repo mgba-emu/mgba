@@ -1,9 +1,9 @@
 #ifndef GBA_VIDEO_H
 #define GBA_VIDEO_H
 
-#include "gba-memory.h"
+#include "common.h"
 
-#include <stdint.h>
+#include "gba-memory.h"
 
 enum {
 	VIDEO_CYCLES_PER_PIXEL = 4,

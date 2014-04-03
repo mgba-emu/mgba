@@ -1,6 +1,6 @@
 #include "sdl-events.h"
 
-#include "debugger.h"
+#include "debugger/debugger.h"
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "gba-video.h"

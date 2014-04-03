@@ -1,6 +1,8 @@
 #ifndef GBA_IO_H
 #define GBA_IO_H
 
+#include "common.h"
+
 #include "gba.h"
 
 enum GBAIORegisters {

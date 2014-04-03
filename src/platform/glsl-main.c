@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <unistd.h>
 
 static int _GBASDLInit(void);
 static void _GBASDLDeinit(void);

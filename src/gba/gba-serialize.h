@@ -1,6 +1,8 @@
 #ifndef GBA_SERIALIZE_H
 #define GBA_SERIALIZE_H
 
+#include "common.h"
+
 #include "gba.h"
 
 const uint32_t GBA_SAVESTATE_MAGIC;

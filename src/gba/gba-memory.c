@@ -4,11 +4,7 @@
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "hle-bios.h"
-#include "memory.h"
-
-#include <limits.h>
-#include <stdlib.h>
-#include <string.h>
+#include "util/memory.h"
 
 static void GBASetActiveRegion(struct ARMMemory* memory, uint32_t region);
 static int GBAWaitMultiple(struct ARMMemory* memory, uint32_t startAddress, int count);

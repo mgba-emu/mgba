@@ -4,14 +4,11 @@
 #include "gba-io.h"
 #include "gba-sio.h"
 #include "gba-thread.h"
-#include "memory.h"
 
-#include "debugger.h"
+#include "util/memory.h"
 
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "debugger/debugger.h"
+
 #include <sys/stat.h>
 
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;

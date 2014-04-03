@@ -1,8 +1,6 @@
 #include "gdb-stub.h"
 
 #include <errno.h>
-#include <signal.h>
-#include <string.h>
 
 enum GDBError {
 	GDB_NO_ERROR = 0x00,

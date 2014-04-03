@@ -3,13 +3,10 @@
 #include "gba-audio.h"
 #include "gba-io.h"
 #include "gba-thread.h"
-#include "memory.h"
+
+#include "util/memory.h"
 
 #include <fcntl.h>
-#include <limits.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 

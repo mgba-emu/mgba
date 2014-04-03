@@ -5,9 +5,6 @@
 #include "gba-serialize.h"
 #include "gba-thread.h"
 
-#include <limits.h>
-#include <math.h>
-
 const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)

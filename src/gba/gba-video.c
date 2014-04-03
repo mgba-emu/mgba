@@ -4,10 +4,8 @@
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "gba-thread.h"
-#include "memory.h"
 
-#include <limits.h>
-#include <string.h>
+#include "util/memory.h"
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);

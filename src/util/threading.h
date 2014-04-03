@@ -1,6 +1,7 @@
 #ifndef THREADING_H
 #define THREADING_H
 
+#include "common.h"
 
 #ifdef USE_PTHREADS
 #include <pthread.h>

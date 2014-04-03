@@ -1,8 +1,5 @@
 #include "circle-buffer.h"
 
-#include <stddef.h>	
-#include <stdlib.h>
-
 #ifndef NDEBUG
 static int _checkIntegrity(struct CircleBuffer* buffer) {
 	if ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr == buffer->size) {
