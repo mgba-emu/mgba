@@ -191,13 +191,17 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 #endif
 
 		while (SDL_PollEvent(&event)) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 			int fullscreen = renderer->events.fullscreen;
+#endif
 			GBASDLHandleEvent(context, &renderer->events, &event);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->events.fullscreen != fullscreen) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
 			}
+#endif
 		}
 	}
 }
