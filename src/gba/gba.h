@@ -139,8 +139,7 @@ void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 void GBATestIRQ(struct ARMBoard* board);
-int GBAWaitForIRQ(struct GBA* gba);
-int GBAHalt(struct GBA* gba);
+void GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);

@@ -203,6 +203,10 @@ static void GBAProcessEvents(struct ARMBoard* board) {
 
 		board->cpu->cycles -= cycles;
 		board->cpu->nextEvent = nextEvent;
+
+		if (board->cpu->halted) {
+			board->cpu->cycles = board->cpu->nextEvent;
+		}
 	} while (board->cpu->cycles >= board->cpu->nextEvent);
 }
 
@@ -471,6 +475,7 @@ void GBAWriteIME(struct GBA* gba, uint16_t value) {
 
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	gba->memory.io[REG_IF >> 1] |= 1 << irq;
+	gba->cpu.halted = 0;
 
 	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
 		ARMRaiseIRQ(&gba->cpu);
@@ -486,28 +491,9 @@ void GBATestIRQ(struct ARMBoard* board) {
 	}
 }
 
-int GBAWaitForIRQ(struct GBA* gba) {
-	int irqs = gba->memory.io[REG_IF >> 1];
-	int newIRQs = 0;
-	gba->memory.io[REG_IF >> 1] = 0;
-	while (1) {
-		if (gba->cpu.nextEvent == INT_MAX) {
-			break;
-		} else {
-			gba->cpu.cycles = gba->cpu.nextEvent;
-			GBAProcessEvents(&gba->board.d);
-			if (gba->memory.io[REG_IF >> 1]) {
-				newIRQs = gba->memory.io[REG_IF >> 1];
-				break;
-			}
-		}
-	}
-	gba->memory.io[REG_IF >> 1] = newIRQs | irqs;
-	return newIRQs;
-}
-
-int GBAHalt(struct GBA* gba) {
-	return GBAWaitForIRQ(gba);
+void GBAHalt(struct GBA* gba) {
+	gba->cpu.nextEvent = 0;
+	gba->cpu.halted = 1;
 }
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
