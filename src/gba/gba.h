@@ -65,7 +65,9 @@ struct GBA;
 typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
 struct GBA {
-	struct ARMCore cpu;
+	struct ARMComponent d;
+
+	struct ARMCore* cpu;
 	struct GBAMemory memory;
 	struct GBAVideo video;
 	struct GBAAudio audio;
@@ -116,11 +118,11 @@ struct GBACartridge {
 	// And ROM data...
 };
 
-void GBAInit(struct GBA* gba);
-void GBADeinit(struct GBA* gba);
+void GBACreate(struct GBA* gba);
+void GBADestroy(struct GBA* gba);
 
-void GBABoardInit(struct ARMBoard* board);
-void GBABoardReset(struct ARMCore* cpu);
+void GBABInterruptHandlerInit(struct ARMInterruptHandler* board);
+void GBAReset(struct ARMCore* cpu);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);

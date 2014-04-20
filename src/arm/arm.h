@@ -99,15 +99,21 @@ struct ARMMemory {
 	int (*waitMultiple)(struct ARMCore*, uint32_t startAddress, int count);
 };
 
-struct ARMBoard {
-	void (*reset)(struct ARMCore* board);
-	void (*processEvents)(struct ARMCore* board);
-	void (*swi16)(struct ARMCore* board, int immediate);
-	void (*swi32)(struct ARMCore* board, int immediate);
-	void (*hitIllegal)(struct ARMCore* board, uint32_t opcode);
-	void (*readCPSR)(struct ARMCore* board);
+struct ARMInterruptHandler {
+	void (*reset)(struct ARMCore* cpu);
+	void (*processEvents)(struct ARMCore* cpu);
+	void (*swi16)(struct ARMCore* cpu, int immediate);
+	void (*swi32)(struct ARMCore* cpu, int immediate);
+	void (*hitIllegal)(struct ARMCore* cpu, uint32_t opcode);
+	void (*readCPSR)(struct ARMCore* cpu);
 
-	void (*hitStub)(struct ARMCore* board, uint32_t opcode);
+	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
+};
+
+struct ARMComponent {
+	long id;
+	void (*init)(struct ARMCore* cpu, struct ARMComponent* component);
+	void (*deinit)(struct ARMComponent* component);
 };
 
 struct ARMCore {
@@ -130,15 +136,16 @@ struct ARMCore {
 	enum PrivilegeMode privilegeMode;
 
 	struct ARMMemory memory;
-	struct ARMBoard board;
+	struct ARMInterruptHandler irqh;
 
-	int64_t absoluteCycles;
-	int32_t lastCycles;
+	struct ARMComponent* master;
+
+	int numComponents;
+	struct ARMComponent** components;
 };
 
 void ARMInit(struct ARMCore* cpu);
-void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
-void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board);
+void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);

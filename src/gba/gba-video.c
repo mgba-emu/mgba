@@ -207,10 +207,10 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {
-		GBAStore16(&video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
+		GBAStore16(video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
 	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		GBAStore16(&video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
 	union GBARegisterDISPSTAT dispstat;
 	dispstat.packed = state->io[REG_DISPSTAT >> 1];

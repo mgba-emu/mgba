@@ -65,8 +65,8 @@
 		cpu->cycles += 4; \
 	}
 
-#define ARM_STUB cpu->board.hitStub(cpu, opcode)
-#define ARM_ILL cpu->board.hitIllegal(cpu, opcode)
+#define ARM_STUB cpu->irqh.hitStub(cpu, opcode)
+#define ARM_ILL cpu->irqh.hitIllegal(cpu, opcode)
 
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
@@ -100,7 +100,7 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, cpu->cpsr.t);
 	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
-	cpu->board.readCPSR(cpu);
+	cpu->irqh.readCPSR(cpu);
 }
 
 #endif

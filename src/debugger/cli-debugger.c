@@ -604,6 +604,7 @@ static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
 }
 
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
+	ARMDebuggerCreate(&debugger->d);
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
 	debugger->d.paused = _commandLine;

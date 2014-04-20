@@ -420,6 +420,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 }
 
 void GDBStubCreate(struct GDBStub* stub) {
+	ARMDebuggerCreate(&stub->d);
 	stub->socket = -1;
 	stub->connection = -1;
 	stub->d.init = 0;

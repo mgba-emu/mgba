@@ -7,11 +7,10 @@
 
 #include "util/memory.h"
 
-#include "debugger/debugger.h"
-
 #include <sys/stat.h>
 
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
+const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
@@ -91,6 +90,8 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ { 0, 0, 0, 0 }, 0, 0 }
 };
 
+static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
+static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -98,14 +99,19 @@ static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
 
 static void _checkOverrides(struct GBA* gba, uint32_t code);
 
-void GBAInit(struct GBA* gba) {
+void GBACreate(struct GBA* gba) {
+	gba->d.id = GBA_COMPONENT_MAGIC;
+	gba->d.init = GBAInit;
+}
+
+static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
+	struct GBA* gba = (struct GBA*) component;
+	gba->cpu = cpu;
 	gba->debugger = 0;
 	gba->savefile = 0;
 
-	ARMInit(&gba->cpu);
-
+	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
-	GBABoardInit(&gba->cpu.board);
 
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
@@ -129,27 +135,25 @@ void GBAInit(struct GBA* gba) {
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
-
-	ARMReset(&gba->cpu);
 }
 
-void GBADeinit(struct GBA* gba) {
+void GBADestroy(struct GBA* gba) {
 	GBAMemoryDeinit(gba);
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 }
 
-void GBABoardInit(struct ARMBoard* board) {
-	board->reset = GBABoardReset;
-	board->processEvents = GBAProcessEvents;
-	board->swi16 = GBASwi16;
-	board->swi32 = GBASwi32;
-	board->hitIllegal = GBAIllegal;
-	board->readCPSR = GBATestIRQ;
-	board->hitStub = GBAHitStub;
+void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
+	irqh->reset = GBAReset;
+	irqh->processEvents = GBAProcessEvents;
+	irqh->swi16 = GBASwi16;
+	irqh->swi32 = GBASwi32;
+	irqh->hitIllegal = GBAIllegal;
+	irqh->readCPSR = GBATestIRQ;
+	irqh->hitStub = GBAHitStub;
 }
 
-void GBABoardReset(struct ARMCore* cpu) {
+void GBAReset(struct ARMCore* cpu) {
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
 	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
@@ -160,7 +164,7 @@ void GBABoardReset(struct ARMCore* cpu) {
 
 static void GBAProcessEvents(struct ARMCore* cpu) {
 	do {
-		struct GBA* gba = (struct GBA*) cpu;
+		struct GBA* gba = (struct GBA*) cpu->master;
 		int32_t cycles = cpu->cycles;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
@@ -346,12 +350,10 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
-	ARMDebuggerInit(debugger, &gba->cpu);
 	gba->debugger = debugger;
 }
 
 void GBADetachDebugger(struct GBA* gba) {
-	ARMDebuggerDeinit(gba->debugger);
 	gba->debugger = 0;
 }
 
@@ -382,8 +384,8 @@ void GBALoadBIOS(struct GBA* gba, int fd) {
 		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
 	}
 	gba->biosChecksum = checksum;
-	if ((gba->cpu.gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
-		gba->cpu.memory.setActiveRegion(&gba->cpu, gba->cpu.gprs[ARM_PC]);
+	if ((gba->cpu->gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
+		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	// TODO: error check
 }
@@ -391,7 +393,7 @@ void GBALoadBIOS(struct GBA* gba, int fd) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu.cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
 	}
 }
 
@@ -425,7 +427,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	currentTimer->enable = !!(control & 0x0080);
 	if (!wasEnabled && currentTimer->enable) {
 		if (!currentTimer->countUp) {
-			currentTimer->nextEvent = gba->cpu.cycles + currentTimer->overflowInterval;
+			currentTimer->nextEvent = gba->cpu->cycles + currentTimer->overflowInterval;
 		} else {
 			currentTimer->nextEvent = INT_MAX;
 		}
@@ -434,7 +436,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		gba->timersEnabled |= 1 << timer;
 	} else if (wasEnabled && !currentTimer->enable) {
 		if (!currentTimer->countUp) {
-			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu.cycles - currentTimer->lastEvent) >> oldPrescale);
+			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> oldPrescale);
 		}
 		gba->timersEnabled &= ~(1 << timer);
 	} else if (currentTimer->prescaleBits != oldPrescale && !currentTimer->countUp) {
@@ -442,8 +444,8 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->nextEvent = currentTimer->lastEvent + currentTimer->overflowInterval;
 	}
 
-	if (currentTimer->nextEvent < gba->cpu.nextEvent) {
-		gba->cpu.nextEvent = currentTimer->nextEvent;
+	if (currentTimer->nextEvent < gba->cpu->nextEvent) {
+		gba->cpu->nextEvent = currentTimer->nextEvent;
 	}
 };
 
@@ -457,36 +459,36 @@ void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
-		ARMRaiseIRQ(&gba->cpu);
+		ARMRaiseIRQ(gba->cpu);
 	}
 }
 
 void GBAWriteIME(struct GBA* gba, uint16_t value) {
 	if (value && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
-		ARMRaiseIRQ(&gba->cpu);
+		ARMRaiseIRQ(gba->cpu);
 	}
 }
 
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq) {
 	gba->memory.io[REG_IF >> 1] |= 1 << irq;
-	gba->cpu.halted = 0;
+	gba->cpu->halted = 0;
 
 	if (gba->memory.io[REG_IME >> 1] && (gba->memory.io[REG_IE >> 1] & 1 << irq)) {
-		ARMRaiseIRQ(&gba->cpu);
+		ARMRaiseIRQ(gba->cpu);
 	}
 }
 
 void GBATestIRQ(struct ARMCore* cpu) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = 1;
-		gba->cpu.nextEvent = 0;
+		gba->cpu->nextEvent = 0;
 	}
 }
 
 void GBAHalt(struct GBA* gba) {
-	gba->cpu.nextEvent = 0;
-	gba->cpu.halted = 1;
+	gba->cpu->nextEvent = 0;
+	gba->cpu->halted = 1;
 }
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
@@ -524,7 +526,7 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
 	struct GBA* gba = 0;
 	if (debugger->cpu) {
-		gba = (struct GBA*) debugger->cpu;
+		gba = (struct GBA*) debugger->cpu->master;
 	}
 
 	enum GBALogLevel gbaLevel;
@@ -560,7 +562,7 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 }
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 	if (gba->debugger) {
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);

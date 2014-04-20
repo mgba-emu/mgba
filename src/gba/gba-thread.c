@@ -51,8 +51,16 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #endif
 
 	struct GBA gba;
+	struct ARMCore cpu;
 	struct GBAThread* threadContext = context;
+	struct ARMComponent* components[1] = {};
+	int numComponents = 0;
 	char* savedata = 0;
+
+	if (threadContext->debugger) {
+		components[numComponents] = &threadContext->debugger->d;
+		++numComponents;
+	}
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
@@ -61,7 +69,10 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #endif
 
 	gba.logHandler = threadContext->logHandler;
-	GBAInit(&gba);
+	GBACreate(&gba);
+	ARMSetComponents(&cpu, &gba.d, numComponents, components);
+	ARMInit(&cpu);
+	ARMReset(&cpu);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
 #ifdef USE_PTHREADS
@@ -124,7 +135,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		} else {
 			while (threadContext->state == THREAD_RUNNING) {
-				ARMRun(&gba.cpu);
+				ARMRun(&cpu);
 			}
 		}
 		MutexLock(&threadContext->stateMutex);
@@ -143,7 +154,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	threadContext->gba = 0;
-	GBADeinit(&gba);
+	GBADestroy(&gba);
 
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);

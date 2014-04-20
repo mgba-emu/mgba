@@ -19,14 +19,15 @@ static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
 
 void GBAMemoryInit(struct GBA* gba) {
-	gba->cpu.memory.load32 = GBALoad32;
-	gba->cpu.memory.load16 = GBALoad16;
-	gba->cpu.memory.loadU16 = GBALoadU16;
-	gba->cpu.memory.load8 = GBALoad8;
-	gba->cpu.memory.loadU8 = GBALoadU8;
-	gba->cpu.memory.store32 = GBAStore32;
-	gba->cpu.memory.store16 = GBAStore16;
-	gba->cpu.memory.store8 = GBAStore8;
+	struct ARMCore* cpu = gba->cpu;
+	cpu->memory.load32 = GBALoad32;
+	cpu->memory.load16 = GBALoad16;
+	cpu->memory.loadU16 = GBALoadU16;
+	cpu->memory.load8 = GBALoad8;
+	cpu->memory.loadU8 = GBALoadU8;
+	cpu->memory.store32 = GBAStore32;
+	cpu->memory.store16 = GBAStore16;
+	cpu->memory.store8 = GBAStore8;
 
 	gba->memory.bios = (uint32_t*) hleBios;
 	gba->memory.fullBios = 0;
@@ -69,13 +70,13 @@ void GBAMemoryInit(struct GBA* gba) {
 	}
 
 	gba->memory.activeRegion = -1;
-	gba->cpu.memory.activeRegion = 0;
-	gba->cpu.memory.activeMask = 0;
-	gba->cpu.memory.setActiveRegion = GBASetActiveRegion;
-	gba->cpu.memory.activePrefetchCycles32 = 0;
-	gba->cpu.memory.activePrefetchCycles16 = 0;
+	cpu->memory.activeRegion = 0;
+	cpu->memory.activeMask = 0;
+	cpu->memory.setActiveRegion = GBASetActiveRegion;
+	cpu->memory.activePrefetchCycles32 = 0;
+	cpu->memory.activePrefetchCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
-	gba->cpu.memory.waitMultiple = GBAWaitMultiple;
+	cpu->memory.waitMultiple = GBAWaitMultiple;
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
@@ -85,7 +86,7 @@ void GBAMemoryDeinit(struct GBA* gba) {
 }
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
 	int newRegion = address >> BASE_OFFSET;
@@ -131,7 +132,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 }
 
 int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value = 0;
 	int wait = 0;
@@ -185,9 +186,9 @@ int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
 		if (cpu->executionMode == MODE_ARM) {
-			value = cpu->memory.load32(&gba->cpu, cpu->currentPC + WORD_SIZE_ARM * 2, 0);
+			value = cpu->memory.load32(cpu, cpu->currentPC + WORD_SIZE_ARM * 2, 0);
 		} else {
-			value = cpu->memory.load16(&gba->cpu, cpu->currentPC + WORD_SIZE_THUMB * 2, 0);
+			value = cpu->memory.load16(cpu, cpu->currentPC + WORD_SIZE_THUMB * 2, 0);
 			value |= value << 16;
 		}
 		break;
@@ -207,7 +208,7 @@ uint16_t GBALoadU16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 }
 
 int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint16_t value = 0;
 	int wait = 0;
@@ -267,7 +268,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-		value = cpu->memory.load16(&gba->cpu, cpu->currentPC + (cpu->executionMode == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB) * 2, 0);
+		value = cpu->memory.load16(cpu, cpu->currentPC + (cpu->executionMode == MODE_ARM ? WORD_SIZE_ARM : WORD_SIZE_THUMB) * 2, 0);
 		break;
 	}
 
@@ -284,7 +285,7 @@ uint8_t GBALoadU8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 }
 
 int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int8_t value = 0;
 	int wait = 0;
@@ -356,7 +357,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 }
 
 void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int wait = 0;
 
@@ -404,7 +405,7 @@ void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 }
 
 void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int wait = 0;
 
@@ -461,7 +462,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 }
 
 void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int wait = 0;
 
@@ -521,7 +522,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 }
 
 static int GBAWaitMultiple(struct ARMCore* cpu, uint32_t startAddress, int count) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int wait = 1 + memory->waitstates32[startAddress >> BASE_OFFSET];
 	wait += (1 + memory->waitstatesSeq32[startAddress >> BASE_OFFSET]) * (count - 1);
@@ -530,6 +531,7 @@ static int GBAWaitMultiple(struct ARMCore* cpu, uint32_t startAddress, int count
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	struct GBAMemory* memory = &gba->memory;
+	struct ARMCore* cpu = gba->cpu;
 	int sram = parameters & 0x0003;
 	int ws0 = (parameters & 0x000C) >> 2;
 	int ws0seq = (parameters & 0x0010) >> 4;
@@ -578,10 +580,10 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 		memory->waitstatesPrefetch32[REGION_CART2] = memory->waitstatesPrefetch32[REGION_CART2_EX] = 0;
 	}
 
-	gba->cpu.memory.activePrefetchCycles32 = memory->waitstatesPrefetch32[memory->activeRegion];
-	gba->cpu.memory.activePrefetchCycles16 = memory->waitstatesPrefetch16[memory->activeRegion];
-	gba->cpu.memory.activeNonseqCycles32 = memory->waitstates32[memory->activeRegion];
-	gba->cpu.memory.activeNonseqCycles16 = memory->waitstates16[memory->activeRegion];
+	cpu->memory.activePrefetchCycles32 = memory->waitstatesPrefetch32[memory->activeRegion];
+	cpu->memory.activePrefetchCycles16 = memory->waitstatesPrefetch16[memory->activeRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstates32[memory->activeRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstates16[memory->activeRegion];
 }
 
 void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
@@ -620,9 +622,10 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 };
 
 void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
+	struct ARMCore* cpu = gba->cpu;
 	switch (info->timing) {
 	case DMA_TIMING_NOW:
-		info->nextEvent = gba->cpu.cycles;
+		info->nextEvent = cpu->cycles;
 		GBAMemoryUpdateDMAs(gba, 0);
 		break;
 	case DMA_TIMING_HBLANK:
@@ -695,6 +698,7 @@ int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles) {
 void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 	int i;
 	struct GBAMemory* memory = &gba->memory;
+	struct ARMCore* cpu = gba->cpu;
 	memory->activeDMA = -1;
 	memory->nextDMA = INT_MAX;
 	for (i = 3; i >= 0; --i) {
@@ -707,13 +711,14 @@ void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 			}
 		}
 	}
-	if (memory->nextDMA < gba->cpu.nextEvent) {
-		gba->cpu.nextEvent = memory->nextDMA;
+	if (memory->nextDMA < cpu->nextEvent) {
+		cpu->nextEvent = memory->nextDMA;
 	}
 }
 
 void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct GBAMemory* memory = &gba->memory;
+	struct ARMCore* cpu = gba->cpu;
 	uint32_t width = info->width ? 4 : 2;
 	int sourceOffset = DMA_OFFSET[info->srcControl] * width;
 	int destOffset = DMA_OFFSET[info->dstControl] * width;
@@ -744,8 +749,8 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 
 	if (width == 4) {
 		int32_t word;
-		word = gba->cpu.memory.load32(&gba->cpu, source, 0);
-		gba->cpu.memory.store32(&gba->cpu, dest, word, 0);
+		word = cpu->memory.load32(cpu, source, 0);
+		cpu->memory.store32(cpu, dest, word, 0);
 		source += sourceOffset;
 		dest += destOffset;
 		--wordsRemaining;
@@ -753,7 +758,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		uint16_t word;
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			word = GBASavedataReadEEPROM(&memory->savedata);
-			gba->cpu.memory.store16(&gba->cpu, dest, word, 0);
+			cpu->memory.store16(cpu, dest, word, 0);
 			source += sourceOffset;
 			dest += destOffset;
 			--wordsRemaining;
@@ -761,14 +766,14 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			if (memory->savedata.type == SAVEDATA_NONE) {
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
-			word = gba->cpu.memory.load16(&gba->cpu, source, 0);
+			word = cpu->memory.load16(cpu, source, 0);
 			GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
 			source += sourceOffset;
 			dest += destOffset;
 			--wordsRemaining;
 		} else {
-			word = gba->cpu.memory.load16(&gba->cpu, source, 0);
-			gba->cpu.memory.store16(&gba->cpu, dest, word, 0);
+			word = cpu->memory.load16(cpu, source, 0);
+			cpu->memory.store16(cpu, dest, word, 0);
 			source += sourceOffset;
 			dest += destOffset;
 			--wordsRemaining;
@@ -804,7 +809,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			memory->dma[i].nextEvent += cycles;
 		}
 	}
-	gba->cpu.cycles += cycles;
+	cpu->cycles += cycles;
 }
 
 void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state) {

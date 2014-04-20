@@ -65,8 +65,20 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 }
 
 void ARMInit(struct ARMCore* cpu) {
-	// TODO: Remove
+	cpu->master->init(cpu, cpu->master);
+	int i;
+	for (i = 0; i < cpu->numComponents; ++i) {
+		cpu->components[i]->init(cpu, cpu->components[i]);
+	}
 }
+
+void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras) {
+	// TODO: Call init/deinit
+	cpu->master = master;
+	cpu->numComponents = extra;
+	cpu->components = extras;
+}
+
 
 void ARMReset(struct ARMCore* cpu) {
 	int i;
@@ -101,7 +113,7 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
 
-	cpu->board.reset(cpu);
+	cpu->irqh.reset(cpu);
 }
 
 void ARMRaiseIRQ(struct ARMCore* cpu) {
@@ -264,6 +276,6 @@ void ARMRun(struct ARMCore* cpu) {
 		ARMStep(cpu);
 	}
 	if (cpu->cycles >= cpu->nextEvent) {
-		cpu->board.processEvents(cpu);
+		cpu->irqh.processEvents(cpu);
 	}
 }

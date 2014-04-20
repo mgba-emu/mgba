@@ -37,6 +37,7 @@ struct GBAThread {
 	// Output
 	enum ThreadState state;
 	struct GBA* gba;
+	struct ARMCore* cpu;
 
 	// Input
 	struct GBAVideoRenderer* renderer;

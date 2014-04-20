@@ -40,6 +40,7 @@ enum DebuggerLogLevel {
 };
 
 struct ARMDebugger {
+	struct ARMComponent d;
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
@@ -55,8 +56,7 @@ struct ARMDebugger {
 	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 
-void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
-void ARMDebuggerDeinit(struct ARMDebugger*);
+void ARMDebuggerCreate(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);

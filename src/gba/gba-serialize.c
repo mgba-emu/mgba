@@ -16,13 +16,13 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	state->id = ((struct GBACartridge*) gba->memory.rom)->id;
 	memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
 
-	memcpy(state->cpu.gprs, gba->cpu.gprs, sizeof(state->cpu.gprs));
-	state->cpu.cpsr = gba->cpu.cpsr;
-	state->cpu.spsr = gba->cpu.spsr;
-	state->cpu.cycles = gba->cpu.cycles;
-	state->cpu.nextEvent = gba->cpu.nextEvent;
-	memcpy(state->cpu.bankedRegisters, gba->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(state->cpu.bankedSPSRs, gba->cpu.bankedSPSRs, 6 * sizeof(int32_t));
+	memcpy(state->cpu.gprs, gba->cpu->gprs, sizeof(state->cpu.gprs));
+	state->cpu.cpsr = gba->cpu->cpsr;
+	state->cpu.spsr = gba->cpu->spsr;
+	state->cpu.cycles = gba->cpu->cycles;
+	state->cpu.nextEvent = gba->cpu->nextEvent;
+	memcpy(state->cpu.bankedRegisters, gba->cpu->bankedRegisters, 6 * 7 * sizeof(int32_t));
+	memcpy(state->cpu.bankedSPSRs, gba->cpu->bankedSPSRs, 6 * sizeof(int32_t));
 
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
@@ -43,16 +43,16 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
 		return;
 	}
-	memcpy(gba->cpu.gprs, state->cpu.gprs, sizeof(gba->cpu.gprs));
-	gba->cpu.cpsr = state->cpu.cpsr;
-	gba->cpu.spsr = state->cpu.spsr;
-	gba->cpu.cycles = state->cpu.cycles;
-	gba->cpu.nextEvent = state->cpu.nextEvent;
-	memcpy(gba->cpu.bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(gba->cpu.bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
-	gba->cpu.executionMode = gba->cpu.cpsr.t ? MODE_THUMB : MODE_ARM;
-	gba->cpu.privilegeMode = gba->cpu.cpsr.priv;
-	gba->cpu.memory.setActiveRegion(&gba->cpu, gba->cpu.gprs[ARM_PC]);
+	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
+	gba->cpu->cpsr = state->cpu.cpsr;
+	gba->cpu->spsr = state->cpu.spsr;
+	gba->cpu->cycles = state->cpu.cycles;
+	gba->cpu->nextEvent = state->cpu.nextEvent;
+	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
+	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
+	gba->cpu->executionMode = gba->cpu->cpsr.t ? MODE_THUMB : MODE_ARM;
+	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
+	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
