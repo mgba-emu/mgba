@@ -4,6 +4,8 @@
 
 #include "memory-debugger.h"
 
+const uint32_t ARM_DEBUGGER_ID = 0xDEADBEEF;
+
 static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	struct DebugBreakpoint* breakpoint;
 	int instructionLength;
@@ -25,6 +27,7 @@ static void ARMDebuggerInit(struct ARMCore*, struct ARMComponent*);
 static void ARMDebuggerDeinit(struct ARMComponent*);
 
 void ARMDebuggerCreate(struct ARMDebugger* debugger) {
+	debugger->d.id = ARM_DEBUGGER_ID;
 	debugger->d.init = ARMDebuggerInit;
 	debugger->d.deinit = ARMDebuggerDeinit;
 }
@@ -34,9 +37,8 @@ void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_RUNNING;
 	debugger->breakpoints = 0;
-	debugger->memoryShim.original = cpu->memory;
-	debugger->memoryShim.p = debugger;
-	debugger->memoryShim.watchpoints = 0;
+	debugger->originalMemory = cpu->memory;
+	debugger->watchpoints = 0;
 	if (debugger->init) {
 		debugger->init(debugger);
 	}
@@ -105,9 +107,11 @@ void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) 
 }
 
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	// FIXME: Make watchpoints work again
+	if (!debugger->watchpoints) {
+		ARMDebuggerInstallMemoryShim(debugger);
+	}
 	struct DebugBreakpoint* watchpoint = malloc(sizeof(struct DebugBreakpoint));
 	watchpoint->address = address;
-	watchpoint->next = debugger->memoryShim.watchpoints;
-	debugger->memoryShim.watchpoints = watchpoint;
+	watchpoint->next = debugger->watchpoints;
+	debugger->watchpoints = watchpoint;
 }

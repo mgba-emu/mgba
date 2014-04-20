@@ -221,8 +221,8 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	// TODO: Redo watchpoints
-	(void) (debugger);
+	uint32_t address = dv->intValue;
+	ARMDebuggerSetWatchpoint(&debugger->d, address);
 }
 
 static void _breakIntoDefault(int signal) {

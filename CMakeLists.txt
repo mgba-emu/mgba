@@ -36,7 +36,7 @@ if(BUILD_BBB OR BUILD_RASPI)
 	endif()
 endif()
 
-set(DEBUGGER_SRC "${CMAKE_SOURCE_DIR}/src/debugger/debugger.c")
+set(DEBUGGER_SRC "${CMAKE_SOURCE_DIR}/src/debugger/debugger.c;${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c")
 
 if(USE_CLI_DEBUGGER)
 	set(DEBUGGER_SRC "${DEBUGGER_SRC};${CMAKE_SOURCE_DIR}/src/debugger/cli-debugger.c")

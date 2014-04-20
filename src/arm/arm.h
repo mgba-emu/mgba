@@ -111,7 +111,7 @@ struct ARMInterruptHandler {
 };
 
 struct ARMComponent {
-	long id;
+	uint32_t id;
 	void (*init)(struct ARMCore* cpu, struct ARMComponent* component);
 	void (*deinit)(struct ARMComponent* component);
 };

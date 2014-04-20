@@ -5,6 +5,8 @@
 
 #include "arm.h"
 
+const uint32_t ARM_DEBUGGER_ID;
+
 enum DebuggerState {
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
@@ -15,13 +17,6 @@ enum DebuggerState {
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
 	uint32_t address;
-};
-
-struct DebugMemoryShim {
-	struct ARMMemory original;
-
-	struct ARMDebugger* p;
-	struct DebugBreakpoint* watchpoints;
 };
 
 enum DebuggerEntryReason {
@@ -45,7 +40,8 @@ struct ARMDebugger {
 	struct ARMCore* cpu;
 
 	struct DebugBreakpoint* breakpoints;
-	struct DebugMemoryShim memoryShim;
+	struct DebugBreakpoint* watchpoints;
+	struct ARMMemory originalMemory;
 
 	void (*init)(struct ARMDebugger*);
 	void (*deinit)(struct ARMDebugger*);
