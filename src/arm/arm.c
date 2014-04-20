@@ -72,6 +72,18 @@ void ARMInit(struct ARMCore* cpu) {
 	}
 }
 
+void ARMDeinit(struct ARMCore* cpu) {
+	if (cpu->master->deinit) {
+		cpu->master->deinit(cpu->master);
+	}
+	int i;
+	for (i = 0; i < cpu->numComponents; ++i) {
+		if (cpu->components[i]->deinit) {
+			cpu->components[i]->deinit(cpu->components[i]);
+		}
+	}
+}
+
 void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras) {
 	// TODO: Call init/deinit
 	cpu->master = master;

@@ -102,6 +102,7 @@ static void _checkOverrides(struct GBA* gba, uint32_t code);
 void GBACreate(struct GBA* gba) {
 	gba->d.id = GBA_COMPONENT_MAGIC;
 	gba->d.init = GBAInit;
+	gba->d.deinit = 0;
 }
 
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {

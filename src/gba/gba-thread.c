@@ -154,6 +154,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	threadContext->gba = 0;
+	ARMDeinit(&cpu);
 	GBADestroy(&gba);
 
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);

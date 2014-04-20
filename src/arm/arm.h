@@ -145,6 +145,7 @@ struct ARMCore {
 };
 
 void ARMInit(struct ARMCore* cpu);
+void ARMDeinit(struct ARMCore* cpu);
 void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
 
 void ARMReset(struct ARMCore* cpu);
