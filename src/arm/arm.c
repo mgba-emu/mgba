@@ -124,6 +124,7 @@ void ARMReset(struct ARMCore* cpu) {
 
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
+	cpu->halted = 0;
 
 	cpu->irqh.reset(cpu);
 }
