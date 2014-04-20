@@ -6,6 +6,7 @@
 #include "gba.h"
 
 #include "util/threading.h"
+#include "platform/commandline.h"
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
@@ -71,6 +72,8 @@ struct GBAThread {
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
 };
+
+void GBAMapOptionsToContext(struct StartupOptions*, struct GBAThread*);
 
 int GBAThreadStart(struct GBAThread* threadContext);
 int GBAThreadHasStarted(struct GBAThread* threadContext);

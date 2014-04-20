@@ -164,6 +164,15 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	return 0;
 }
 
+void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
+	threadContext->fd = opts->fd;
+	threadContext->fname = opts->fname;
+	threadContext->biosFd = opts->biosFd;
+	threadContext->frameskip = opts->frameskip;
+	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
+	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+}
+
 int GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
 	threadContext->activeKeys = 0;
