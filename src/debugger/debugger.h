@@ -18,8 +18,7 @@ struct DebugBreakpoint {
 };
 
 struct DebugMemoryShim {
-	struct ARMMemory d;
-	struct ARMMemory* original;
+	struct ARMMemory original;
 
 	struct ARMDebugger* p;
 	struct DebugBreakpoint* watchpoints;

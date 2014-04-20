@@ -79,15 +79,15 @@ union PSR {
 };
 
 struct ARMMemory {
-	int32_t (*load32)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	int16_t (*load16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	int8_t (*load8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	int32_t (*load32)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	int16_t (*load16)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint16_t (*loadU16)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	int8_t (*load8)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint8_t (*loadU8)(struct ARMCore*, uint32_t address, int* cycleCounter);
 
-	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value, int* cycleCounter);
-	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value, int* cycleCounter);
-	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value, int* cycleCounter);
+	void (*store32)(struct ARMCore*, uint32_t address, int32_t value, int* cycleCounter);
+	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
+	void (*store8)(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;
@@ -95,20 +95,19 @@ struct ARMMemory {
 	uint32_t activePrefetchCycles16;
 	uint32_t activeNonseqCycles32;
 	uint32_t activeNonseqCycles16;
-	void (*setActiveRegion)(struct ARMMemory*, uint32_t address);
-	int (*waitMultiple)(struct ARMMemory*, uint32_t startAddress, int count);
+	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
+	int (*waitMultiple)(struct ARMCore*, uint32_t startAddress, int count);
 };
 
 struct ARMBoard {
-	struct ARMCore* cpu;
-	void (*reset)(struct ARMBoard* board);
-	void (*processEvents)(struct ARMBoard* board);
-	void (*swi16)(struct ARMBoard* board, int immediate);
-	void (*swi32)(struct ARMBoard* board, int immediate);
-	void (*hitIllegal)(struct ARMBoard* board, uint32_t opcode);
-	void (*readCPSR)(struct ARMBoard* board);
+	void (*reset)(struct ARMCore* board);
+	void (*processEvents)(struct ARMCore* board);
+	void (*swi16)(struct ARMCore* board, int immediate);
+	void (*swi32)(struct ARMCore* board, int immediate);
+	void (*hitIllegal)(struct ARMCore* board, uint32_t opcode);
+	void (*readCPSR)(struct ARMCore* board);
 
-	void (*hitStub)(struct ARMBoard* board, uint32_t opcode);
+	void (*hitStub)(struct ARMCore* board, uint32_t opcode);
 };
 
 struct ARMCore {
@@ -130,8 +129,8 @@ struct ARMCore {
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
-	struct ARMMemory* memory;
-	struct ARMBoard* board;
+	struct ARMMemory memory;
+	struct ARMBoard board;
 
 	int64_t absoluteCycles;
 	int32_t lastCycles;

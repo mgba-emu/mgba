@@ -7,9 +7,9 @@
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
-static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
-static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest);
-static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest);
+static void _unLz77(struct GBA* gba, uint32_t source, uint8_t* dest);
+static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest);
+static void _unRl(struct GBA* gba, uint32_t source, uint8_t* dest);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu.gprs[0];
@@ -29,18 +29,18 @@ static void _CpuSet(struct GBA* gba) {
 		if (wordsize == 4) {
 			source &= 0xFFFFFFFC;
 			dest &= 0xFFFFFFFC;
-			int32_t word = gba->memory.d.load32(&gba->memory.d, source, &gba->cpu.cycles);
+			int32_t word = gba->cpu.memory.load32(&gba->cpu, source, &gba->cpu.cycles);
 			for (i = 0; i < count; ++i) {
-				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, &gba->cpu.cycles);
-				gba->board.d.processEvents(&gba->board.d);
+				gba->cpu.memory.store32(&gba->cpu, dest + (i << 2), word, &gba->cpu.cycles);
+				gba->cpu.board.processEvents(&gba->cpu);
 			}
 		} else {
 			source &= 0xFFFFFFFE;
 			dest &= 0xFFFFFFFE;
-			uint16_t word = gba->memory.d.load16(&gba->memory.d, source, &gba->cpu.cycles);
+			uint16_t word = gba->cpu.memory.load16(&gba->cpu, source, &gba->cpu.cycles);
 			for (i = 0; i < count; ++i) {
-				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, &gba->cpu.cycles);
-				gba->board.d.processEvents(&gba->board.d);
+				gba->cpu.memory.store16(&gba->cpu, dest + (i << 1), word, &gba->cpu.cycles);
+				gba->cpu.board.processEvents(&gba->cpu);
 			}
 		}
 	} else {
@@ -48,17 +48,17 @@ static void _CpuSet(struct GBA* gba) {
 			source &= 0xFFFFFFFC;
 			dest &= 0xFFFFFFFC;
 			for (i = 0; i < count; ++i) {
-				int32_t word = gba->memory.d.load32(&gba->memory.d, source + (i << 2), &gba->cpu.cycles);
-				gba->memory.d.store32(&gba->memory.d, dest + (i << 2), word, &gba->cpu.cycles);
-				gba->board.d.processEvents(&gba->board.d);
+				int32_t word = gba->cpu.memory.load32(&gba->cpu, source + (i << 2), &gba->cpu.cycles);
+				gba->cpu.memory.store32(&gba->cpu, dest + (i << 2), word, &gba->cpu.cycles);
+				gba->cpu.board.processEvents(&gba->cpu);
 			}
 		} else {
 			source &= 0xFFFFFFFE;
 			dest &= 0xFFFFFFFE;
 			for (i = 0; i < count; ++i) {
-				uint16_t word = gba->memory.d.load16(&gba->memory.d, source + (i << 1), &gba->cpu.cycles);
-				gba->memory.d.store16(&gba->memory.d, dest + (i << 1), word, &gba->cpu.cycles);
-				gba->board.d.processEvents(&gba->board.d);
+				uint16_t word = gba->cpu.memory.load16(&gba->cpu, source + (i << 1), &gba->cpu.cycles);
+				gba->cpu.memory.store16(&gba->cpu, dest + (i << 1), word, &gba->cpu.cycles);
+				gba->cpu.board.processEvents(&gba->cpu);
 			}
 		}
 	}
@@ -69,34 +69,34 @@ static void _FastCpuSet(struct GBA* gba) {
 	uint32_t dest = gba->cpu.gprs[1] & 0xFFFFFFFC;
 	uint32_t mode = gba->cpu.gprs[2];
 	int count = mode & 0x000FFFFF;
-	int storeCycles = gba->memory.d.waitMultiple(&gba->memory.d, dest, 4);
+	int storeCycles = gba->cpu.memory.waitMultiple(&gba->cpu, dest, 4);
 	count = ((count + 7) >> 3) << 3;
 	int i;
 	if (mode & 0x01000000) {
-		int32_t word = gba->memory.d.load32(&gba->memory.d, source, &gba->cpu.cycles);
+		int32_t word = gba->cpu.memory.load32(&gba->cpu, source, &gba->cpu.cycles);
 		for (i = 0; i < count; i += 4) {
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 0) << 2), word, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 1) << 2), word, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 2) << 2), word, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 3) << 2), word, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 0) << 2), word, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 1) << 2), word, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 2) << 2), word, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 3) << 2), word, 0);
 			gba->cpu.cycles += storeCycles;
-			gba->board.d.processEvents(&gba->board.d);
+			gba->cpu.board.processEvents(&gba->cpu);
 		}
 	} else {
-		int loadCycles = gba->memory.d.waitMultiple(&gba->memory.d, source, 4);
+		int loadCycles = gba->cpu.memory.waitMultiple(&gba->cpu, source, 4);
 		for (i = 0; i < count; i += 4) {
-			int32_t word0 = gba->memory.d.load32(&gba->memory.d, source + ((i + 0) << 2), 0);
-			int32_t word1 = gba->memory.d.load32(&gba->memory.d, source + ((i + 1) << 2), 0);
-			int32_t word2 = gba->memory.d.load32(&gba->memory.d, source + ((i + 2) << 2), 0);
-			int32_t word3 = gba->memory.d.load32(&gba->memory.d, source + ((i + 3) << 2), 0);
+			int32_t word0 = gba->cpu.memory.load32(&gba->cpu, source + ((i + 0) << 2), 0);
+			int32_t word1 = gba->cpu.memory.load32(&gba->cpu, source + ((i + 1) << 2), 0);
+			int32_t word2 = gba->cpu.memory.load32(&gba->cpu, source + ((i + 2) << 2), 0);
+			int32_t word3 = gba->cpu.memory.load32(&gba->cpu, source + ((i + 3) << 2), 0);
 			gba->cpu.cycles += loadCycles;
-			gba->board.d.processEvents(&gba->board.d);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 0) << 2), word0, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 1) << 2), word1, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 2) << 2), word2, 0);
-			gba->memory.d.store32(&gba->memory.d, dest + ((i + 3) << 2), word3, 0);
+			gba->cpu.board.processEvents(&gba->cpu);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 0) << 2), word0, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 1) << 2), word1, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 2) << 2), word2, 0);
+			gba->cpu.memory.store32(&gba->cpu, dest + ((i + 3) << 2), word3, 0);
 			gba->cpu.cycles += storeCycles;
-			gba->board.d.processEvents(&gba->board.d);
+			gba->cpu.board.processEvents(&gba->cpu);
 		}
 	}
 }
@@ -117,13 +117,13 @@ static void _BgAffineSet(struct GBA* gba) {
 		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
 		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
 		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
-		ox = gba->memory.d.load32(&gba->memory.d, offset, 0) / 256.f;
-		oy = gba->memory.d.load32(&gba->memory.d, offset + 4, 0) / 256.f;
-		cx = gba->memory.d.load16(&gba->memory.d, offset + 8, 0);
-		cy = gba->memory.d.load16(&gba->memory.d, offset + 10, 0);
-		sx = gba->memory.d.load16(&gba->memory.d, offset + 12, 0) / 256.f;
-		sy = gba->memory.d.load16(&gba->memory.d, offset + 14, 0) / 256.f;
-		theta = (gba->memory.d.loadU16(&gba->memory.d, offset + 16, 0) >> 8) / 128.f * M_PI;
+		ox = gba->cpu.memory.load32(&gba->cpu, offset, 0) / 256.f;
+		oy = gba->cpu.memory.load32(&gba->cpu, offset + 4, 0) / 256.f;
+		cx = gba->cpu.memory.load16(&gba->cpu, offset + 8, 0);
+		cy = gba->cpu.memory.load16(&gba->cpu, offset + 10, 0);
+		sx = gba->cpu.memory.load16(&gba->cpu, offset + 12, 0) / 256.f;
+		sy = gba->cpu.memory.load16(&gba->cpu, offset + 14, 0) / 256.f;
+		theta = (gba->cpu.memory.loadU16(&gba->cpu, offset + 16, 0) >> 8) / 128.f * M_PI;
 		offset += 20;
 		// Rotation
 		a = d = cosf(theta);
@@ -136,12 +136,12 @@ static void _BgAffineSet(struct GBA* gba) {
 		// Translate
 		rx = ox - (a * cx + b * cy);
 		ry = oy - (c * cx + d * cy);
-		gba->memory.d.store16(&gba->memory.d, destination, a * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + 2, b * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + 4, c * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + 6, d * 256, 0);
-		gba->memory.d.store32(&gba->memory.d, destination + 8, rx * 256, 0);
-		gba->memory.d.store32(&gba->memory.d, destination + 12, ry * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination, a * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + 2, b * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + 4, c * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + 6, d * 256, 0);
+		gba->cpu.memory.store32(&gba->cpu, destination + 8, rx * 256, 0);
+		gba->cpu.memory.store32(&gba->cpu, destination + 12, ry * 256, 0);
 		destination += 16;
 	}
 }
@@ -157,9 +157,9 @@ static void _ObjAffineSet(struct GBA* gba) {
 	while (i--) {
 		// [ sx   0 ]   [ cos(theta)  -sin(theta) ]   [ A B ]
 		// [  0  sy ] * [ sin(theta)   cos(theta) ] = [ C D ]
-		sx = gba->memory.d.load16(&gba->memory.d, offset, 0) / 256.f;
-		sy = gba->memory.d.load16(&gba->memory.d, offset + 2, 0) / 256.f;
-		theta = (gba->memory.d.loadU16(&gba->memory.d, offset + 4, 0) >> 8) / 128.f * M_PI;
+		sx = gba->cpu.memory.load16(&gba->cpu, offset, 0) / 256.f;
+		sy = gba->cpu.memory.load16(&gba->cpu, offset + 2, 0) / 256.f;
+		theta = (gba->cpu.memory.loadU16(&gba->cpu, offset + 4, 0) >> 8) / 128.f * M_PI;
 		offset += 6;
 		// Rotation
 		a = d = cosf(theta);
@@ -169,21 +169,21 @@ static void _ObjAffineSet(struct GBA* gba) {
 		b *= -sx;
 		c *= sy;
 		d *= sy;
-		gba->memory.d.store16(&gba->memory.d, destination, a * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + diff, b * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + diff * 2, c * 256, 0);
-		gba->memory.d.store16(&gba->memory.d, destination + diff * 3, d * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination, a * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + diff, b * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + diff * 2, c * 256, 0);
+		gba->cpu.memory.store16(&gba->cpu, destination + diff * 3, d * 256, 0);
 		destination += diff * 4;
 	}
 }
 
 static void _MidiKey2Freq(struct GBA* gba) {
-	uint32_t key = gba->memory.d.load32(&gba->memory.d, gba->cpu.gprs[0] + 4, 0);
+	uint32_t key = gba->cpu.memory.load32(&gba->cpu, gba->cpu.gprs[0] + 4, 0);
 	gba->cpu.gprs[0] = key / powf(2, (180.f - gba->cpu.gprs[1] - gba->cpu.gprs[2] / 256.f) / 12.f);
 }
 
-void GBASwi16(struct ARMBoard* board, int immediate) {
-	struct GBA* gba = ((struct GBABoard*) board)->p;
+void GBASwi16(struct ARMCore* cpu, int immediate) {
+	struct GBA* gba = (struct GBA*) cpu;
 	if (gba->memory.fullBios) {
 		ARMRaiseSWI(&gba->cpu);
 		return;
@@ -253,13 +253,13 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
-				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
+				_unLz77(gba, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
 				break;
 			case REGION_WORKING_IRAM:
-				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
+				_unLz77(gba, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
 				break;
 			case REGION_VRAM:
-				_unLz77(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+				_unLz77(gba, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
@@ -273,13 +273,13 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3)) >> 2]);
+				_unHuffman(gba, gba->cpu.gprs[0], &((uint32_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 3)) >> 2]);
 				break;
 			case REGION_WORKING_IRAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 3)) >> 2]);
+				_unHuffman(gba, gba->cpu.gprs[0], &((uint32_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 3)) >> 2]);
 				break;
 			case REGION_VRAM:
-				_unHuffman(&gba->memory, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC) >> 2]);
+				_unHuffman(gba, gba->cpu.gprs[0], &((uint32_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFC) >> 2]);
 				break;
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
@@ -294,13 +294,13 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 		}
 		switch (gba->cpu.gprs[1] >> BASE_OFFSET) {
 			case REGION_WORKING_RAM:
-				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
+				_unRl(gba, gba->cpu.gprs[0], &((uint8_t*) gba->memory.wram)[(gba->cpu.gprs[1] & (SIZE_WORKING_RAM - 1))]);
 				break;
 			case REGION_WORKING_IRAM:
-				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
+				_unRl(gba, gba->cpu.gprs[0], &((uint8_t*) gba->memory.iwram)[(gba->cpu.gprs[1] & (SIZE_WORKING_IRAM - 1))]);
 				break;
 			case REGION_VRAM:
-				_unRl(&gba->memory, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
+				_unRl(gba, gba->cpu.gprs[0], &((uint8_t*) gba->video.renderer->vram)[(gba->cpu.gprs[1] & 0x0001FFFF)]);
 				break;
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
@@ -315,8 +315,8 @@ void GBASwi16(struct ARMBoard* board, int immediate) {
 	}
 }
 
-void GBASwi32(struct ARMBoard* board, int immediate) {
-	GBASwi16(board, immediate >> 16);
+void GBASwi32(struct ARMCore* cpu, int immediate) {
+	GBASwi16(cpu, immediate >> 16);
 }
 
 uint32_t GBAChecksum(uint32_t* memory, size_t size) {
@@ -328,8 +328,8 @@ uint32_t GBAChecksum(uint32_t* memory, size_t size) {
 	return sum;
 }
 
-static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
-	int remaining = (memory->d.load32(&memory->d, source, 0) & 0xFFFFFF00) >> 8;
+static void _unLz77(struct GBA* gba, uint32_t source, uint8_t* dest) {
+	int remaining = (gba->cpu.memory.load32(&gba->cpu, source, 0) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
 	int blockheader;
 	uint32_t sPointer = source + 4;
@@ -342,7 +342,7 @@ static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
 				// Compressed
-				block = memory->d.loadU8(&memory->d, sPointer, 0) | (memory->d.loadU8(&memory->d, sPointer + 1, 0) << 8);
+				block = gba->cpu.memory.loadU8(&gba->cpu, sPointer, 0) | (gba->cpu.memory.loadU8(&gba->cpu, sPointer + 1, 0) << 8);
 				sPointer += 2;
 				disp = dPointer - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
 				bytes = ((block & 0x00F0) >> 4) + 3;
@@ -354,33 +354,33 @@ static void _unLz77(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 				}
 			} else {
 				// Uncompressed
-				*dPointer = memory->d.loadU8(&memory->d, sPointer++, 0);
+				*dPointer = gba->cpu.memory.loadU8(&gba->cpu, sPointer++, 0);
 				++dPointer;
 				--remaining;
 			}
 			blockheader <<= 1;
 			--blocksRemaining;
 		} else {
-			blockheader = memory->d.loadU8(&memory->d, sPointer++, 0);
+			blockheader = gba->cpu.memory.loadU8(&gba->cpu, sPointer++, 0);
 			blocksRemaining = 8;
 		}
 	}
 }
 
-static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest) {
+static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest) {
 	source = source & 0xFFFFFFFC;
-	uint32_t header = memory->d.load32(&memory->d, source, 0);
+	uint32_t header = gba->cpu.memory.load32(&gba->cpu, source, 0);
 	int remaining = header >> 8;
 	int bits = header & 0xF;
 	if (32 % bits) {
-		GBALog(memory->p, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
 	int padding = (4 - remaining) & 0x3;
 	remaining &= 0xFFFFFFFC;
 	// We assume the signature byte (0x20) is correct
 	//var tree = [];
-	int treesize = (memory->d.loadU8(&memory->d, source + 4, 0) << 1) + 1;
+	int treesize = (gba->cpu.memory.loadU8(&gba->cpu, source + 4, 0) << 1) + 1;
 	int block = 0;
 	uint32_t treeBase = source + 5;
 	uint32_t sPointer = source + 5 + treesize;
@@ -397,28 +397,28 @@ static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest
 	int bitsRemaining;
 	int readBits;
 	int bitsSeen = 0;
-	node.packed = memory->d.load8(&memory->d, nPointer, 0);
+	node.packed = gba->cpu.memory.load8(&gba->cpu, nPointer, 0);
 	while (remaining > 0) {
-		uint32_t bitstream = memory->d.load32(&memory->d, sPointer, 0);
+		uint32_t bitstream = gba->cpu.memory.load32(&gba->cpu, sPointer, 0);
 		sPointer += 4;
 		for (bitsRemaining = 32; bitsRemaining > 0; --bitsRemaining, bitstream <<= 1) {
 			uint32_t next = (nPointer & ~1) + node.offset * 2 + 2;
 			if (bitstream & 0x80000000) {
 				// Go right
 				if (node.rTerm) {
-					readBits = memory->d.load8(&memory->d, next + 1, 0);
+					readBits = gba->cpu.memory.load8(&gba->cpu, next + 1, 0);
 				} else {
 					nPointer = next + 1;
-					node.packed = memory->d.load8(&memory->d, nPointer, 0);
+					node.packed = gba->cpu.memory.load8(&gba->cpu, nPointer, 0);
 					continue;
 				}
 			} else {
 				// Go left
 				if (node.lTerm) {
-					readBits = memory->d.load8(&memory->d, next, 0);
+					readBits = gba->cpu.memory.load8(&gba->cpu, next, 0);
 				} else {
 					nPointer = next;
-					node.packed = memory->d.load8(&memory->d, nPointer, 0);
+					node.packed = gba->cpu.memory.load8(&gba->cpu, nPointer, 0);
 					continue;
 				}
 			}
@@ -426,7 +426,7 @@ static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest
 			block |= (readBits & ((1 << bits) - 1)) << bitsSeen;
 			bitsSeen += bits;
 			nPointer = treeBase;
-			node.packed = memory->d.load8(&memory->d, nPointer, 0);
+			node.packed = gba->cpu.memory.load8(&gba->cpu, nPointer, 0);
 			if (bitsSeen == 32) {
 				bitsSeen = 0;
 				*dPointer = block;
@@ -442,9 +442,9 @@ static void _unHuffman(struct GBAMemory* memory, uint32_t source, uint32_t* dest
 	}
 }
 
-static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
+static void _unRl(struct GBA* gba, uint32_t source, uint8_t* dest) {
 	source = source & 0xFFFFFFFC;
-	int remaining = (memory->d.load32(&memory->d, source, 0) & 0xFFFFFF00) >> 8;
+	int remaining = (gba->cpu.memory.load32(&gba->cpu, source, 0) & 0xFFFFFF00) >> 8;
 	int padding = (4 - remaining) & 0x3;
 	// We assume the signature byte (0x30) is correct
 	int blockheader;
@@ -452,12 +452,12 @@ static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 	uint32_t sPointer = source + 4;
 	uint8_t* dPointer = dest;
 	while (remaining > 0) {
-		blockheader = memory->d.loadU8(&memory->d, sPointer++, 0);
+		blockheader = gba->cpu.memory.loadU8(&gba->cpu, sPointer++, 0);
 		if (blockheader & 0x80) {
 			// Compressed
 			blockheader &= 0x7F;
 			blockheader += 3;
-			block = memory->d.loadU8(&memory->d, sPointer++, 0);
+			block = gba->cpu.memory.loadU8(&gba->cpu, sPointer++, 0);
 			while (blockheader-- && remaining) {
 				--remaining;
 				*dPointer = block;
@@ -468,7 +468,7 @@ static void _unRl(struct GBAMemory* memory, uint32_t source, uint8_t* dest) {
 			blockheader++;
 			while (blockheader-- && remaining) {
 				--remaining;
-				*dPointer = memory->d.loadU8(&memory->d, sPointer++, 0);
+				*dPointer = gba->cpu.memory.loadU8(&gba->cpu, sPointer++, 0);
 				++dPointer;
 			}
 		}

@@ -65,18 +65,18 @@
 		cpu->cycles += 4; \
 	}
 
-#define ARM_STUB cpu->board->hitStub(cpu->board, opcode)
-#define ARM_ILL cpu->board->hitIllegal(cpu->board, opcode)
+#define ARM_STUB cpu->board.hitStub(cpu, opcode)
+#define ARM_ILL cpu->board.hitIllegal(cpu, opcode)
 
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
-	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC] - WORD_SIZE_ARM); \
-	currentCycles += 2 + cpu->memory->activeNonseqCycles32 + cpu->memory->activePrefetchCycles32;
+	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC] - WORD_SIZE_ARM); \
+	currentCycles += 2 + cpu->memory.activeNonseqCycles32 + cpu->memory.activePrefetchCycles32;
 
 #define THUMB_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB) + WORD_SIZE_THUMB; \
-	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC] - WORD_SIZE_THUMB); \
-	currentCycles += 2 + cpu->memory->activeNonseqCycles16 + cpu->memory->activePrefetchCycles16;
+	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC] - WORD_SIZE_THUMB); \
+	currentCycles += 2 + cpu->memory.activeNonseqCycles16 + cpu->memory.activePrefetchCycles16;
 
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {
 	return mode != MODE_SYSTEM && mode != MODE_USER;
@@ -100,7 +100,7 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, cpu->cpsr.t);
 	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
-	cpu->board->readCPSR(cpu->board);
+	cpu->board.readCPSR(cpu);
 }
 
 #endif

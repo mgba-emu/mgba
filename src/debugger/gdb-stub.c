@@ -189,10 +189,10 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 		_error(stub, GDB_BAD_ARGUMENTS);
 		return;
 	}
-	struct ARMMemory* memory = stub->d.memoryShim.original;
+	struct ARMCore* cpu = stub->d.cpu;
 	int writeAddress = 0;
 	for (i = 0; i < size; ++i, writeAddress += 2) {
-		uint8_t byte = memory->load8(memory, address + i, 0);
+		uint8_t byte = cpu->memory.load8(cpu, address + i, 0);
 		_int2hex8(byte, &stub->outgoing[writeAddress]);
 	}
 	stub->outgoing[writeAddress] = 0;

@@ -249,7 +249,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 
 #define ARM_STORE_POST_BODY \
 	currentCycles -= ARM_PREFETCH_CYCLES; \
-	currentCycles += 1 + cpu->memory->activeNonseqCycles32;
+	currentCycles += 1 + cpu->memory.activeNonseqCycles32;
 
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
@@ -424,7 +424,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		S_PRE; \
 		LOOP(BODY); \
 		S_POST; \
-		currentCycles += cpu->memory->waitMultiple(cpu->memory, addr, total); \
+		currentCycles += cpu->memory.waitMultiple(cpu, addr, total); \
 		POST_BODY; \
 		WRITEBACK;)
 
@@ -543,68 +543,68 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
 
 // Begin load/store definitions
 
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory->store16(cpu->memory, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.loadU8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.loadU16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, address, &currentCycles);
+	cpu->gprs[rd] = cpu->memory.loadU8(cpu, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory->load32(cpu->memory, address, &currentCycles);
+	cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory->store8(cpu->memory, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, addr & 0xFFFFFFFC, 0);,
+	cpu->gprs[i] = cpu->memory.load32(cpu, addr & 0xFFFFFFFC, 0);,
 	++currentCycles;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
-	cpu->memory->store32(cpu->memory, addr, cpu->gprs[i], 0);,
-	currentCycles += cpu->memory->activeNonseqCycles32 - cpu->memory->activePrefetchCycles32)
+	cpu->memory.store32(cpu, addr, cpu->gprs[i], 0);,
+	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activePrefetchCycles32)
 
 DEFINE_INSTRUCTION_ARM(SWP,
 	int rm = opcode & 0xF;
 	int rd = (opcode >> 12) & 0xF;
 	int rn = (opcode >> 16) & 0xF;
-	int32_t d = cpu->memory->load32(cpu->memory, cpu->gprs[rn], &currentCycles);
-	cpu->memory->store32(cpu->memory, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
+	int32_t d = cpu->memory.load32(cpu, cpu->gprs[rn], &currentCycles);
+	cpu->memory.store32(cpu, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
 	cpu->gprs[rd] = d;)
 
 DEFINE_INSTRUCTION_ARM(SWPB,
 	int rm = opcode & 0xF;
 	int rd = (opcode >> 12) & 0xF;
 	int rn = (opcode >> 16) & 0xF;
-	int32_t d = cpu->memory->loadU8(cpu->memory, cpu->gprs[rn], &currentCycles);
-	cpu->memory->store8(cpu->memory, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
+	int32_t d = cpu->memory.loadU8(cpu, cpu->gprs[rn], &currentCycles);
+	cpu->memory.store8(cpu, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
 	cpu->gprs[rd] = d;)
 
 // End load/store definitions
@@ -702,7 +702,7 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
 
-DEFINE_INSTRUCTION_ARM(SWI, cpu->board->swi32(cpu->board, opcode & 0xFFFFFF))
+DEFINE_INSTRUCTION_ARM(SWI, cpu->board.swi32(cpu, opcode & 0xFFFFFF))
 
 #define DECLARE_INSTRUCTION_ARM(EMITTER, NAME) \
 	EMITTER ## NAME

@@ -90,7 +90,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 					video->renderer->finishFrame(video->renderer);
 				}
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
-				GBAMemoryRunVblankDMAs(&video->p->memory, lastEvent);
+				GBAMemoryRunVblankDMAs(video->p, lastEvent);
 				if (video->vblankIRQ) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
@@ -123,7 +123,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextHblankIRQ = video->nextHblank;
 
 			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
-				GBAMemoryRunHblankDMAs(&video->p->memory, lastEvent);
+				GBAMemoryRunHblankDMAs(video->p, lastEvent);
 			}
 			if (video->hblankIRQ) {
 				GBARaiseIRQ(video->p, IRQ_HBLANK);
@@ -207,10 +207,10 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {
-		GBAStore16(&video->p->memory.d, BASE_OAM | i, state->oam[i >> 1], 0);
+		GBAStore16(&video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
 	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		GBAStore16(&video->p->memory.d, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+		GBAStore16(&video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
 	union GBARegisterDISPSTAT dispstat;
 	dispstat.packed = state->io[REG_DISPSTAT >> 1];

@@ -64,14 +64,8 @@ struct GBARotationSource;
 struct GBA;
 typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
-struct GBABoard {
-	struct ARMBoard d;
-	struct GBA* p;
-};
-
 struct GBA {
 	struct ARMCore cpu;
-	struct GBABoard board;
 	struct GBAMemory memory;
 	struct GBAVideo video;
 	struct GBAAudio audio;
@@ -125,11 +119,8 @@ struct GBACartridge {
 void GBAInit(struct GBA* gba);
 void GBADeinit(struct GBA* gba);
 
-void GBAMemoryInit(struct GBAMemory* memory);
-void GBAMemoryDeinit(struct GBAMemory* memory);
-
-void GBABoardInit(struct GBABoard* board);
-void GBABoardReset(struct ARMBoard* board);
+void GBABoardInit(struct ARMBoard* board);
+void GBABoardReset(struct ARMCore* cpu);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
@@ -138,7 +129,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
-void GBATestIRQ(struct ARMBoard* board);
+void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);

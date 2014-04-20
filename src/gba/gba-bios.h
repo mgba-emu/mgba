@@ -5,8 +5,8 @@
 
 #include "arm.h"
 
-void GBASwi16(struct ARMBoard* board, int immediate);
-void GBASwi32(struct ARMBoard* board, int immediate);
+void GBASwi16(struct ARMCore* cpu, int immediate);
+void GBASwi32(struct ARMCore* cpu, int immediate);
 
 uint32_t GBAChecksum(uint32_t* memory, size_t size);
 const uint32_t GBA_BIOS_CHECKSUM;

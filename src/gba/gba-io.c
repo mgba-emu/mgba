@@ -200,28 +200,28 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		case REG_DMA0CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
+			GBAMemoryWriteDMACNT_LO(gba, 0, value);
 			break;
 		case REG_DMA0CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 0, value);
 			break;
 		case REG_DMA1CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 1, value);
+			GBAMemoryWriteDMACNT_LO(gba, 1, value);
 			break;
 		case REG_DMA1CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 1, value);
 			break;
 		case REG_DMA2CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 2, value);
+			GBAMemoryWriteDMACNT_LO(gba, 2, value);
 			break;
 		case REG_DMA2CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 2, value);
 			break;
 		case REG_DMA3CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 3, value);
+			GBAMemoryWriteDMACNT_LO(gba, 3, value);
 			break;
 		case REG_DMA3CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 3, value);
 			break;
 
 		// Timers
@@ -269,7 +269,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 		// Interrupts and misc
 		case REG_WAITCNT:
-			GBAAdjustWaitstates(&gba->memory, value);
+			GBAAdjustWaitstates(gba, value);
 			break;
 		case REG_IE:
 			GBAWriteIE(gba, value);
@@ -325,28 +325,28 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		GBAAudioWriteFIFO(&gba->audio, address, value);
 		break;
 	case REG_DMA0SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 0, value);
+		GBAMemoryWriteDMASAD(gba, 0, value);
 		break;
 	case REG_DMA0DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 0, value);
+		GBAMemoryWriteDMADAD(gba, 0, value);
 		break;
 	case REG_DMA1SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 1, value);
+		GBAMemoryWriteDMASAD(gba, 1, value);
 		break;
 	case REG_DMA1DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 1, value);
+		GBAMemoryWriteDMADAD(gba, 1, value);
 		break;
 	case REG_DMA2SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 2, value);
+		GBAMemoryWriteDMASAD(gba, 2, value);
 		break;
 	case REG_DMA2DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 2, value);
+		GBAMemoryWriteDMADAD(gba, 2, value);
 		break;
 	case REG_DMA3SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 3, value);
+		GBAMemoryWriteDMASAD(gba, 3, value);
 		break;
 	case REG_DMA3DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 3, value);
+		GBAMemoryWriteDMADAD(gba, 3, value);
 		break;
 	default:
 		GBAIOWrite(gba, address, value & 0xFFFF);

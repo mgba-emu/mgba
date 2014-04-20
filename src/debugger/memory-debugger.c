@@ -2,6 +2,8 @@
 
 #include "debugger.h"
 
+#include <string.h>
+
 static void ARMDebuggerShim_store32(struct ARMMemory*, uint32_t address, int32_t value, int* cycleCounter);
 static void ARMDebuggerShim_store16(struct ARMMemory*, uint32_t address, int16_t value, int* cycleCounter);
 static void ARMDebuggerShim_store8(struct ARMMemory*, uint32_t address, int8_t value, int* cycleCounter);

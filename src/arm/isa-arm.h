@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define ARM_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles32)
+#define ARM_PREFETCH_CYCLES (1 + cpu->memory.activePrefetchCycles32)
 
 struct ARMCore;
 

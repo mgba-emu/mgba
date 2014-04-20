@@ -52,7 +52,7 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	memcpy(gba->cpu.bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
 	gba->cpu.executionMode = gba->cpu.cpsr.t ? MODE_THUMB : MODE_ARM;
 	gba->cpu.privilegeMode = gba->cpu.cpsr.priv;
-	gba->cpu.memory->setActiveRegion(gba->cpu.memory, gba->cpu.gprs[ARM_PC]);
+	gba->cpu.memory.setActiveRegion(&gba->cpu, gba->cpu.gprs[ARM_PC]);
 
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);

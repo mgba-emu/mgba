@@ -397,7 +397,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		dma->nextCount = 4;
 		dma->nextEvent = 0;
-		GBAMemoryUpdateDMAs(&audio->p->memory, -cycles);
+		GBAMemoryUpdateDMAs(audio->p, -cycles);
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }

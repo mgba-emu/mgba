@@ -134,10 +134,10 @@ static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	// TODO: write a disassembler
 	if (mode == MODE_ARM) {
-		uint32_t instruction = debugger->d.cpu->memory->load32(debugger->d.cpu->memory, address, 0);
+		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 		printf("%08X\n", instruction);
 	} else {
-		uint16_t instruction = debugger->d.cpu->memory->loadU16(debugger->d.cpu->memory, address, 0);
+		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 		printf("%04X\n", instruction);
 	}
 }
@@ -174,7 +174,7 @@ static void _readByte(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.cpu->memory->loadU8(debugger->d.cpu->memory, address, 0);
+	uint8_t value = debugger->d.cpu->memory.loadU8(debugger->d.cpu, address, 0);
 	printf(" 0x%02X\n", value);
 }
 
@@ -184,7 +184,7 @@ static void _readHalfword(struct CLIDebugger* debugger, struct DebugVector* dv) 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.cpu->memory->loadU16(debugger->d.cpu->memory, address, 0);
+	uint16_t value = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 	printf(" 0x%04X\n", value);
 }
 
@@ -194,7 +194,7 @@ static void _readWord(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.cpu->memory->load32(debugger->d.cpu->memory, address, 0);
+	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 	printf(" 0x%08X\n", value);
 }
 
@@ -221,8 +221,8 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint32_t address = dv->intValue;
-	ARMDebuggerSetWatchpoint(&debugger->d, address);
+	// TODO: Redo watchpoints
+	(void) (debugger);
 }
 
 static void _breakIntoDefault(int signal) {

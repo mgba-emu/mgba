@@ -96,9 +96,7 @@ void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) 
 }
 
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	if (debugger->cpu->memory != &debugger->memoryShim.d) {
-		ARMDebuggerInstallMemoryShim(debugger);
-	}
+	// FIXME: Make watchpoints work again
 	struct DebugBreakpoint* watchpoint = malloc(sizeof(struct DebugBreakpoint));
 	watchpoint->address = address;
 	watchpoint->next = debugger->memoryShim.watchpoints;
