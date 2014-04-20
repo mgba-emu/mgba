@@ -1,5 +1,13 @@
 #include "commandline.h"
 
+#ifdef USE_CLI_DEBUGGER
+#include "debugger/cli-debugger.h"
+#endif
+
+#ifdef USE_GDB_STUB
+#include "debugger/gdb-stub.h"
+#endif
+
 #include <fcntl.h>
 #include <getopt.h>
 
@@ -49,6 +57,40 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv) {
 	}
 	opts->fd = open(opts->fname, O_RDONLY);
 	return 1;
+}
+
+struct ARMDebugger* createDebugger(struct StartupOptions* opts) {
+	union DebugUnion {
+		struct ARMDebugger d;
+#ifdef USE_CLI_DEBUGGER
+		struct CLIDebugger cli;
+#endif
+#ifdef USE_GDB_STUB
+		struct GDBStub gdb;
+#endif
+	};
+
+	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
+
+	switch (opts->debuggerType) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		CLIDebuggerCreate(&debugger->cli);
+		break;
+#endif
+#ifdef USE_GDB_STUB
+	case DEBUGGER_GDB:
+		GDBStubCreate(&debugger->gdb);
+		break;
+#endif
+	case DEBUGGER_NONE:
+	case DEBUGGER_MAX:
+		free(debugger);
+		return 0;
+		break;
+	}
+
+	return &debugger->d;
 }
 
 void usage(const char* arg0) {

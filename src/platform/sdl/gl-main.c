@@ -77,18 +77,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	union {
-		struct ARMDebugger d;
-#ifdef USE_CLI_DEBUGGER
-		struct CLIDebugger cli;
-#endif
-#ifdef USE_GDB_STUB
-		struct GDBStub gdb;
-#endif
-	} debugger;
-
 	struct GBAThread context = {
-		.debugger = &debugger.d,
 		.renderer = &renderer.d.d,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
@@ -97,22 +86,7 @@ int main(int argc, char** argv) {
 		.userData = &renderer
 	};
 
-	switch (opts.debuggerType) {
-#ifdef USE_CLI_DEBUGGER
-	case DEBUGGER_CLI:
-		CLIDebuggerCreate(&debugger.cli);
-		break;
-#endif
-#ifdef USE_GDB_STUB
-	case DEBUGGER_GDB:
-		GDBStubCreate(&debugger.gdb);
-		break;
-#endif
-	case DEBUGGER_NONE:
-	case DEBUGGER_MAX:
-		context.debugger = 0;
-		break;
-	}
+	context.debugger = createDebugger(&opts);
 
 	GBAMapOptionsToContext(&opts, &context);
 
@@ -125,6 +99,7 @@ int main(int argc, char** argv) {
 	if (opts.biosFd >= 0) {
 		close(opts.biosFd);
 	}
+	free(context.debugger);
 
 	_GBASDLDeinit(&renderer);
 
