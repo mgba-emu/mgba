@@ -30,7 +30,7 @@ struct StartupOptions {
 	int debugAtStart;
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv);
+int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, int hasGraphics);
 struct ARMDebugger* createDebugger(struct StartupOptions* opts);
 void usage(const char* arg0);
 

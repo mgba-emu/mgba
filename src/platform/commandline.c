@@ -15,12 +15,16 @@ static const char* _defaultFilename = "test.rom";
 
 static const struct option _options[] = {
 	{ "bios", 1, 0, 'b' },
+#ifdef USE_CLI_DEBUGGER
 	{ "debug", 1, 0, 'd' },
+#endif
+#ifdef USE_GDB_STUB
 	{ "gdb", 1, 0, 'g' },
+#endif
 	{ 0, 0, 0, 0 }
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv) {
+int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, int hasGraphics) {
 	memset(opts, 0, sizeof(*opts));
 	opts->fd = -1;
 	opts->biosFd = -1;
@@ -30,7 +34,19 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv) {
 
 	int multiplier = 1;
 	int ch;
-	while ((ch = getopt_long(argc, argv, "234b:dfg", _options, 0)) != -1) {
+	char options[64] =
+		"b:"
+#ifdef USE_CLI_DEBUGGER
+		"d"
+#endif
+#ifdef USE_GDB_STUB
+		"g"
+#endif
+	;
+	if (hasGraphics) {
+		strncat(options, "234f", sizeof(options) - strlen(options) - 1);
+	}
+	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
 		case 'b':
 			opts->biosFd = open(optarg, O_RDONLY);
@@ -55,12 +71,21 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv) {
 			break;
 #endif
 		case '2':
+			if (multiplier != 1) {
+				return 0;
+			}
 			multiplier = 2;
 			break;
 		case '3':
+			if (multiplier != 1) {
+				return 0;
+			}
 			multiplier = 3;
 			break;
 		case '4':
+			if (multiplier != 1) {
+				return 0;
+			}
 			multiplier = 4;
 			break;
 		default:

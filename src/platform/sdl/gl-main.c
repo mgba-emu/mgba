@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
 	struct StartupOptions opts;
-	if (!parseCommandArgs(&opts, argc, argv)) {
+	if (!parseCommandArgs(&opts, argc, argv, 1)) {
 		usage(argv[0]);
 		return 1;
 	}
