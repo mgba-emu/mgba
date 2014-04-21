@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer);
 
 	struct StartupOptions opts;
-	if (!parseCommandArgs(&opts, argc, argv, 0)) {
-		usage(argv[0], 0);
+	if (!parseCommandArgs(&opts, argc, argv, PERF_OPTIONS)) {
+		usage(argv[0], PERF_USAGE);
 		return 1;
 	}
 
@@ -28,7 +28,6 @@ int main(int argc, char** argv) {
 
 	struct GBAThread context = {
 		.renderer = &renderer.d,
-		.frameskip = 0,
 		.sync.videoFrameWait = 0,
 		.sync.audioWait = 0
 	};
@@ -40,7 +39,7 @@ int main(int argc, char** argv) {
 
 	GBAThreadStart(&context);
 
-	int frames = 0;
+	int frames = opts.perfDuration;
 	time_t start = time(0);
 	_GBAPerfRunloop(&context, &frames);
 	time_t end = time(0);
@@ -63,6 +62,8 @@ int main(int argc, char** argv) {
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
 	struct timeval lastEcho;
 	gettimeofday(&lastEcho, 0);
+	int duration = *frames;
+	*frames = 0;
 	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
 		if (GBASyncWaitFrameStart(&context->sync, 0)) {
@@ -82,7 +83,11 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
 			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
+		if (*frames == duration * 60) {
+			_GBAPerfShutdown(0);
+		}
 	}
+	printf("\033[2K\r");
 }
 
 static void _GBAPerfShutdown(int signal) {

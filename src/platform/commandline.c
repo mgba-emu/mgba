@@ -15,6 +15,7 @@ static const char* _defaultFilename = "test.rom";
 
 static const struct option _options[] = {
 	{ "bios", 1, 0, 'b' },
+	{ "frameskip", 1, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
 	{ "debug", 1, 0, 'd' },
 #endif
@@ -30,12 +31,11 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, c
 	opts->biosFd = -1;
 	opts->width = 240;
 	opts->height = 160;
-	opts->fullscreen = 0;
 
 	int multiplier = 1;
 	int ch;
 	char options[64] =
-		"b:"
+		"b:s:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -44,6 +44,7 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, c
 #endif
 	;
 	if (extraOptions) {
+		// TODO: modularize options to subparsers
 		strncat(options, extraOptions, sizeof(options) - strlen(options) - 1);
 	}
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
@@ -70,6 +71,12 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, c
 			opts->debuggerType = DEBUGGER_GDB;
 			break;
 #endif
+		case 's':
+			opts->frameskip = atoi(optarg);
+			break;
+		case 'S':
+			opts->perfDuration = atoi(optarg);
+			break;
 		case '2':
 			if (multiplier != 1) {
 				return 0;

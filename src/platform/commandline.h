@@ -22,6 +22,11 @@ enum DebuggerType {
 	"  -4               4x viewport\n" \
 	"  -f               Sart full-screen"
 
+#define PERF_OPTIONS "S:"
+#define PERF_USAGE \
+	"\nBenchmark options:\n" \
+	"  -S SEC           Run for SEC in-game seconds before exiting"
+
 struct StartupOptions {
 	int fd;
 	const char* fname;
@@ -33,6 +38,8 @@ struct StartupOptions {
 	int width;
 	int height;
 	int fullscreen;
+
+	int perfDuration;
 
 	enum DebuggerType debuggerType;
 	int debugAtStart;
