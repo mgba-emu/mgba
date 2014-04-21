@@ -14,6 +14,14 @@ enum DebuggerType {
 	DEBUGGER_MAX
 };
 
+#define GRAPHICS_OPTIONS "234f"
+#define GRAPHICS_USAGE \
+	"\nGraphics options:\n" \
+	"  -2               2x viewport\n" \
+	"  -3               3x viewport\n" \
+	"  -4               4x viewport\n" \
+	"  -f               Sart full-screen"
+
 struct StartupOptions {
 	int fd;
 	const char* fname;
@@ -30,8 +38,9 @@ struct StartupOptions {
 	int debugAtStart;
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, int hasGraphics);
+int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, const char* extraOptions);
+void usage(const char* arg0, const char* extraOptions);
+
 struct ARMDebugger* createDebugger(struct StartupOptions* opts);
-void usage(const char* arg0);
 
 #endif

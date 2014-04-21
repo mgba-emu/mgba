@@ -24,7 +24,7 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, int hasGraphics) {
+int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, const char* extraOptions) {
 	memset(opts, 0, sizeof(*opts));
 	opts->fd = -1;
 	opts->biosFd = -1;
@@ -43,8 +43,8 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, i
 		"g"
 #endif
 	;
-	if (hasGraphics) {
-		strncat(options, "234f", sizeof(options) - strlen(options) - 1);
+	if (extraOptions) {
+		strncat(options, extraOptions, sizeof(options) - strlen(options) - 1);
 	}
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
@@ -142,18 +142,17 @@ struct ARMDebugger* createDebugger(struct StartupOptions* opts) {
 	return &debugger->d;
 }
 
-void usage(const char* arg0) {
+void usage(const char* arg0, const char* extraOptions) {
 	printf("usage: %s [option ...] file\n", arg0);
-	printf("\nOptions:\n");
-	printf("  -2               2x viewport\n");
-	printf("  -3               3x viewport\n");
-	printf("  -4               4x viewport\n");
-	printf("  -b, --bios FILE  GBA BIOS file to use\n");
+	puts("\nGeneric options:");
+	puts("  -b, --bios FILE  GBA BIOS file to use");
 #ifdef USE_CLI_DEBUGGER
-	printf("  -d, --debug      Use command-line debugger\n");
+	puts("  -d, --debug      Use command-line debugger");
 #endif
-	printf("  -f               Sart full-screen\n");
 #ifdef USE_GDB_STUB
-	printf("  -g, --gdb        Start GDB session (default port 2345)\n");
+	puts("  -g, --gdb        Start GDB session (default port 2345)");
 #endif
+	if (extraOptions) {
+		puts(extraOptions);
+	}
 }

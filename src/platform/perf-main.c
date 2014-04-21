@@ -12,33 +12,32 @@ static void _GBAPerfShutdown(int signal);
 static struct GBAThread* _thread;
 
 int main(int argc, char** argv) {
-	const char* fname = "test.rom";
-	if (argc > 1) {
-		fname = argv[1];
-	}
-	int fd = open(fname, O_RDONLY);
-	if (fd < 0) {
-		return 1;
-	}
-
 	signal(SIGINT, _GBAPerfShutdown);
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
+	struct StartupOptions opts;
+	if (!parseCommandArgs(&opts, argc, argv, 0)) {
+		usage(argv[0], 0);
+		return 1;
+	}
+
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
 
 	struct GBAThread context = {
-		.fd = fd,
-		.fname = fname,
-		.biosFd = -1,
 		.renderer = &renderer.d,
 		.frameskip = 0,
 		.sync.videoFrameWait = 0,
 		.sync.audioWait = 0
 	};
 	_thread = &context;
+
+	context.debugger = createDebugger(&opts);
+
+	GBAMapOptionsToContext(&opts, &context);
+
 	GBAThreadStart(&context);
 
 	int frames = 0;
@@ -48,7 +47,11 @@ int main(int argc, char** argv) {
 	int duration = end - start;
 
 	GBAThreadJoin(&context);
-	close(fd);
+	close(opts.fd);
+	if (opts.biosFd >= 0) {
+		close(opts.biosFd);
+	}
+	free(context.debugger);
 
 	free(renderer.outputBuffer);
 
