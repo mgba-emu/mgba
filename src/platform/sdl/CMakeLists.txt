@@ -16,7 +16,7 @@ endif()
 
 file(GLOB PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-*.c)
 set(PLATFORM_LIBRARY "${SDL_LIBRARY};${SDLMAIN_LIBRARY}")
-include_directories(${CMAKE_SOURCE_DIR}/src/platform/sdl)
+include_directories(${CMAKE_SOURCE_DIR}/src/platform/sdl ${SDL_INCLUDE_DIR})
 
 if(BUILD_RASPI)
 	add_definitions(-DBUILD_RASPI)
@@ -27,13 +27,11 @@ if(BUILD_RASPI)
 endif()
 
 if(BUILD_BBB OR BUILD_RASPI)
-	enable_language(ASM)
-	add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sw-main.c)
 else()
 	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-main.c)
 	find_package(OpenGL REQUIRED)
-	include_directories(${SDL_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
 add_executable(${BINARY_NAME}-sdl WIN32 ${PLATFORM_SRC} ${MAIN_SRC})
