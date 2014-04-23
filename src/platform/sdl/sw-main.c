@@ -1,4 +1,11 @@
-#include "debugger/debugger.h"
+#ifdef USE_CLI_DEBUGGER
+#include "debugger/cli-debugger.h"
+#endif
+
+#ifdef USE_GDB_STUB
+#include "debugger/gdb-stub.h"
+#endif
+
 #include "gba-thread.h"
 #include "gba.h"
 #include "renderers/video-software.h"
@@ -7,7 +14,6 @@
 
 #include <SDL.h>
 
-#include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
@@ -20,38 +26,36 @@ struct SoftwareRenderer {
 
 static int _GBASDLInit(struct SoftwareRenderer* renderer);
 static void _GBASDLDeinit(struct SoftwareRenderer* renderer);
-static void _GBASDLRunloop(struct GBAThread* context);
+static void _GBASDLRunloop(struct GBAThread* context, struct SoftwareRenderer* renderer);
 static void _GBASDLStart(struct GBAThread* context);
 static void _GBASDLClean(struct GBAThread* context);
 
 int main(int argc, char** argv) {
-	const char* fname = "test.rom";
-	if (argc > 1) {
-		fname = argv[1];
-	}
-	int fd = open(fname, O_RDONLY);
-	if (fd < 0) {
-		return 1;
-	}
-
-	struct GBAThread context;
 	struct SoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
+
+	struct StartupOptions opts;
+	if (!parseCommandArgs(&opts, argc, argv, GRAPHICS_OPTIONS)) {
+		usage(argv[0], GRAPHICS_USAGE);
+		return 1;
+	}
 
 	if (!_GBASDLInit(&renderer)) {
 		return 1;
 	}
 
-	context.fd = fd;
-	context.fname = fname;
-	context.useDebugger = 1;
-	context.renderer = &renderer.d.d;
-	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
-	context.sync.audioWait = 1;
-	context.startCallback = _GBASDLStart;
-	context.cleanCallback = _GBASDLClean;
-	context.userData = &renderer;
+	struct GBAThread context = {
+		.renderer = &renderer.d.d,
+		.startCallback = _GBASDLStart,
+		.cleanCallback = _GBASDLClean,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 1,
+		.userData = &renderer
+	};
+
+	context.debugger = createDebugger(&opts);
+
+	GBAMapOptionsToContext(&opts, &context);
 
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
@@ -64,11 +68,15 @@ int main(int argc, char** argv) {
 
 	GBAThreadStart(&context);
 
-	_GBASDLRunloop(&context);
+	_GBASDLRunloop(&context, &renderer);
 
 	SDL_UnlockSurface(surface);
 	GBAThreadJoin(&context);
-	close(fd);
+	close(opts.fd);
+	if (opts.biosFd >= 0) {
+		close(opts.biosFd);
+	}
+	free(context.debugger);
 
 	_GBASDLDeinit(&renderer);
 
@@ -92,7 +100,7 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 	return 1;
 }
 
-static void _GBASDLRunloop(struct GBAThread* context) {
+static void _GBASDLRunloop(struct GBAThread* context, struct SoftwareRenderer* renderer) {
 	SDL_Event event;
 	SDL_Surface* surface = SDL_GetVideoSurface();
 
@@ -105,7 +113,7 @@ static void _GBASDLRunloop(struct GBAThread* context) {
 		GBASyncWaitFrameEnd(&context->sync);
 
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &event);
+			GBASDLHandleEvent(context, &renderer->events, &event);
 		}
 	}
 }
