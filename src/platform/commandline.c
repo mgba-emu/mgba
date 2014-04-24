@@ -1,5 +1,7 @@
 #include "commandline.h"
 
+#include "debugger/debugger.h"
+
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 #endif
