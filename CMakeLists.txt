@@ -21,6 +21,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
+	set(OS_LIB "${OS_LIB};Ws2_32")
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 else()

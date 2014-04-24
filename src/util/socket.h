@@ -5,7 +5,9 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 
+#define SOCKET_FAILED(s) (s) == INVALID_SOCKET
 typedef SOCKET Socket;
 #else
 #include <fcntl.h>
@@ -13,6 +15,8 @@ typedef SOCKET Socket;
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 
+#define INVALID_SOCKET (-1)
+#define SOCKET_FAILED(s) (s) < 0
 typedef int Socket;
 #endif
 
@@ -33,7 +37,7 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 
 static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock < 0) {
+	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
 
@@ -54,7 +58,7 @@ static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 
 static inline Socket SocketConnectTCP(int port, uint32_t destinationAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock < 0) {
+	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
 
@@ -87,8 +91,8 @@ static inline int SocketClose(Socket socket) {
 
 static inline int SocketSetBlocking(Socket socket, int blocking) {
 #ifdef _WIN32
-	blocking = !blocking;
-	return ioctlsocket(socket, FIONBIO, &blocking) == NO_ERROR;
+	u_long unblocking = !blocking;
+	return ioctlsocket(socket, FIONBIO, &unblocking) == NO_ERROR;
 #else
 	int flags = fcntl(socket, F_GETFL);
 	if (flags == -1) {
