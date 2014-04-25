@@ -22,6 +22,13 @@ struct SoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Window* window;
+	SDL_Texture* tex;
+	SDL_Renderer* sdlRenderer;
+	int viewportWidth;
+	int viewportHeight;
+#endif
 };
 
 static int _GBASDLInit(struct SoftwareRenderer* renderer);
@@ -57,6 +64,31 @@ int main(int argc, char** argv) {
 
 	GBAMapOptionsToContext(&opts, &context);
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	renderer.viewportWidth = opts.width;
+	renderer.viewportHeight = opts.height;
+	renderer.window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer.viewportWidth, renderer.viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer.events.fullscreen));
+	SDL_GetWindowSize(renderer.window, &renderer.viewportWidth, &renderer.viewportHeight);
+	renderer.events.window = renderer.window;
+	renderer.events.fullscreen = 0;
+	renderer.sdlRenderer = SDL_CreateRenderer(renderer.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	renderer.tex = SDL_CreateTexture(renderer.sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#else
+	renderer.tex = SDL_CreateTexture(renderer.sdlRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#endif
+#else
+	renderer.tex = SDL_CreateTexture(renderer.sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+#endif
+
+	SDL_LockTexture(renderer.tex, 0, &renderer.d.outputBuffer, &renderer.d.outputBufferStride);
+#ifdef COLOR_16_BIT
+	renderer.d.outputBufferStride /= 2;
+#else
+	renderer.d.outputBufferStride /= 4;
+#endif
+#else
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
 	renderer.d.outputBuffer = surface->pixels;
@@ -65,12 +97,15 @@ int main(int argc, char** argv) {
 #else
 	renderer.d.outputBufferStride = surface->pitch / 4;
 #endif
+#endif
 
 	GBAThreadStart(&context);
 
 	_GBASDLRunloop(&context, &renderer);
 
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_UnlockSurface(surface);
+#endif
 	GBAThreadJoin(&context);
 	close(opts.fd);
 	if (opts.biosFd >= 0) {
@@ -91,10 +126,12 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 	GBASDLInitEvents(&renderer->events);
 	GBASDLInitAudio(&renderer->audio);
 
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(240, 160, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
 #else
 	SDL_SetVideoMode(240, 160, 32, SDL_DOUBLEBUF | SDL_HWSURFACE);
+#endif
 #endif
 
 	return 1;
@@ -102,13 +139,27 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 
 static void _GBASDLRunloop(struct GBAThread* context, struct SoftwareRenderer* renderer) {
 	SDL_Event event;
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
+#endif
 
 	while (context->state < THREAD_EXITING) {
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			SDL_UnlockTexture(renderer->tex);
+			SDL_RenderCopy(renderer->sdlRenderer, renderer->tex, 0, 0);
+			SDL_RenderPresent(renderer->sdlRenderer);
+			SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+#ifdef COLOR_16_BIT
+			renderer->d.outputBufferStride /= 2;
+#else
+			renderer->d.outputBufferStride /= 4;
+#endif
+#else
 			SDL_UnlockSurface(surface);
 			SDL_Flip(surface);
 			SDL_LockSurface(surface);
+#endif
 		}
 		GBASyncWaitFrameEnd(&context->sync);
 
