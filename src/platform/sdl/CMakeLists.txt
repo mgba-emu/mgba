@@ -1,4 +1,5 @@
 set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2 or 2)")
+set(BUILD_GL ON CACHE STRING "Build with OpenGL")
 
 if (SDL_VERSION EQUAL "2")
 	include(FindPkgConfig)
@@ -26,7 +27,7 @@ if(BUILD_RASPI)
 	target_link_libraries(${BINARY_NAME}-rpi ${BINARY_NAME} ${PLATFORM_LIBRARY} ${EGL_LIBRARY})
 endif()
 
-if(BUILD_BBB OR BUILD_RASPI)
+if(BUILD_BBB OR BUILD_RASPI OR NOT BUILD_GL)
 	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sw-main.c)
 else()
 	set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-main.c)
