@@ -49,13 +49,16 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
 	struct StartupOptions opts;
-	if (!parseCommandArgs(&opts, argc, argv, GRAPHICS_OPTIONS)) {
-		usage(argv[0], GRAPHICS_USAGE);
+	struct SubParser subparser;
+	struct GraphicsOpts graphicsOpts;
+	initParserForGraphics(&subparser, &graphicsOpts);
+	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
+		usage(argv[0], subparser.usage);
 		return 1;
 	}
 
-	renderer.viewportWidth = opts.width;
-	renderer.viewportHeight = opts.height;
+	renderer.viewportWidth = graphicsOpts.width;
+	renderer.viewportHeight = graphicsOpts.height;
 
 	if (!_GBASDLInit(&renderer)) {
 		return 1;
@@ -75,7 +78,7 @@ int main(int argc, char** argv) {
 	GBAMapOptionsToContext(&opts, &context);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.events.fullscreen = opts.fullscreen;
+	renderer.events.fullscreen = graphicsOpts.fullscreen;
 	renderer.window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer.viewportWidth, renderer.viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer.events.fullscreen));
 	SDL_GetWindowSize(renderer.window, &renderer.viewportWidth, &renderer.viewportHeight);
 	renderer.events.window = renderer.window;
@@ -100,7 +103,7 @@ int main(int argc, char** argv) {
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
 
-	renderer.ratio = renderer.viewportWidth / VIDEO_HORIZONTAL_PIXELS;
+	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 1) {
 		renderer.d.outputBuffer = surface->pixels;
 #ifdef COLOR_16_BIT

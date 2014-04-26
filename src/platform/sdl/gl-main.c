@@ -62,15 +62,18 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
 	struct StartupOptions opts;
-	if (!parseCommandArgs(&opts, argc, argv, GRAPHICS_OPTIONS)) {
-		usage(argv[0], GRAPHICS_USAGE);
+	struct SubParser subparser;
+	struct GraphicsOpts graphicsOpts;
+	initParserForGraphics(&subparser, &graphicsOpts);
+	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
+		usage(argv[0], subparser.usage);
 		return 1;
 	}
 
-	renderer.viewportWidth = opts.width;
-	renderer.viewportHeight = opts.height;
+	renderer.viewportWidth = graphicsOpts.width;
+	renderer.viewportHeight = graphicsOpts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.events.fullscreen = opts.fullscreen;
+	renderer.events.fullscreen = graphicsOpts.fullscreen;
 #endif
 
 	if (!_GBASDLInit(&renderer)) {

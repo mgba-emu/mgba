@@ -14,19 +14,6 @@ enum DebuggerType {
 	DEBUGGER_MAX
 };
 
-#define GRAPHICS_OPTIONS "234f"
-#define GRAPHICS_USAGE \
-	"\nGraphics options:\n" \
-	"  -2               2x viewport\n" \
-	"  -3               3x viewport\n" \
-	"  -4               4x viewport\n" \
-	"  -f               Sart full-screen"
-
-#define PERF_OPTIONS "S:"
-#define PERF_USAGE \
-	"\nBenchmark options:\n" \
-	"  -S SEC           Run for SEC in-game seconds before exiting"
-
 struct StartupOptions {
 	int fd;
 	const char* fname;
@@ -35,19 +22,28 @@ struct StartupOptions {
 	int rewindBufferCapacity;
 	int rewindBufferInterval;
 
-	int width;
-	int height;
-	int fullscreen;
-
-	int perfDuration;
-
 	enum DebuggerType debuggerType;
 	int debugAtStart;
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, const char* extraOptions);
+struct SubParser {
+	const char* usage;
+	int (*parse)(struct SubParser* parser, int option, const char* arg);
+	const char* extraOptions;
+	void* opts;
+};
+
+struct GraphicsOpts {
+	int multiplier;
+	int fullscreen;
+	int width;
+	int height;
+};
+
+int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser);
 void usage(const char* arg0, const char* extraOptions);
 
+void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);
 struct ARMDebugger* createDebugger(struct StartupOptions* opts);
 
 #endif
