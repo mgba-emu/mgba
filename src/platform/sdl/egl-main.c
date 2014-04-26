@@ -49,7 +49,9 @@ static const char* _fragmentShader =
 	"uniform sampler2D tex;\n"
 
 	"void main() {\n"
-	"	gl_FragColor = texture2D(tex, texCoord);\n"
+	"	vec4 color = texture2D(tex, texCoord);\n"
+	"	color.a = 1.;\n"
+	"	gl_FragColor = color;"
 	"}";
 
 static const GLfloat _vertices[] = {
