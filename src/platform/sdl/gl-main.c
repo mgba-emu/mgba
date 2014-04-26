@@ -139,7 +139,6 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	SDL_GL_CreateContext(renderer->window);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->events.window = renderer->window;
-	renderer->events.fullscreen = 0;
 #else
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);

@@ -67,10 +67,10 @@ int main(int argc, char** argv) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
+	renderer.events.fullscreen = opts.fullscreen;
 	renderer.window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer.viewportWidth, renderer.viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer.events.fullscreen));
 	SDL_GetWindowSize(renderer.window, &renderer.viewportWidth, &renderer.viewportHeight);
 	renderer.events.window = renderer.window;
-	renderer.events.fullscreen = 0;
 	renderer.sdlRenderer = SDL_CreateRenderer(renderer.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
