@@ -553,7 +553,7 @@ void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel leve
 
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
-	struct GBA* gba = (struct GBA*) cpu;
+	struct GBA* gba = (struct GBA*) cpu->master;
 	enum GBALogLevel level = GBA_LOG_FATAL;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
