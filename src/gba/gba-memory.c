@@ -378,8 +378,10 @@ void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 		break;
 	case BASE_VRAM:
-		if ((address & OFFSET_MASK) < SIZE_VRAM - 2) {
+		if ((address & OFFSET_MASK) < SIZE_VRAM) {
 			STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else if ((address & OFFSET_MASK) < 0x00020000) {
+			STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram);
 		}
 		break;
 	case BASE_OAM:
@@ -427,6 +429,8 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case BASE_VRAM:
 		if ((address & OFFSET_MASK) < SIZE_VRAM) {
 			STORE_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else if ((address & OFFSET_MASK) < 0x00020000) {
+			STORE_16(value, address & 0x00017FFF, gba->video.renderer->vram);
 		}
 		break;
 	case BASE_OAM:
