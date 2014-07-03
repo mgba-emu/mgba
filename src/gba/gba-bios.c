@@ -17,92 +17,6 @@ static void _RegisterRamReset(struct GBA* gba) {
 	GBALog(gba, GBA_LOG_STUB, "RegisterRamReset unimplemented");
 }
 
-static void _CpuSet(struct GBA* gba) {
-	struct ARMCore* cpu = gba->cpu;
-	uint32_t source = cpu->gprs[0];
-	uint32_t dest = cpu->gprs[1];
-	uint32_t mode = cpu->gprs[2];
-	int count = mode & 0x000FFFFF;
-	int fill = mode & 0x01000000;
-	int wordsize = (mode & 0x04000000) ? 4 : 2;
-	int i;
-	if (fill) {
-		if (wordsize == 4) {
-			source &= 0xFFFFFFFC;
-			dest &= 0xFFFFFFFC;
-			int32_t word = cpu->memory.load32(cpu, source, &cpu->cycles);
-			for (i = 0; i < count; ++i) {
-				cpu->memory.store32(cpu, dest + (i << 2), word, &cpu->cycles);
-				cpu->irqh.processEvents(cpu);
-			}
-		} else {
-			source &= 0xFFFFFFFE;
-			dest &= 0xFFFFFFFE;
-			uint16_t word = cpu->memory.load16(cpu, source, &cpu->cycles);
-			for (i = 0; i < count; ++i) {
-				cpu->memory.store16(cpu, dest + (i << 1), word, &cpu->cycles);
-				cpu->irqh.processEvents(cpu);
-			}
-		}
-	} else {
-		if (wordsize == 4) {
-			source &= 0xFFFFFFFC;
-			dest &= 0xFFFFFFFC;
-			for (i = 0; i < count; ++i) {
-				int32_t word = cpu->memory.load32(cpu, source + (i << 2), &cpu->cycles);
-				cpu->memory.store32(cpu, dest + (i << 2), word, &cpu->cycles);
-				cpu->irqh.processEvents(cpu);
-			}
-		} else {
-			source &= 0xFFFFFFFE;
-			dest &= 0xFFFFFFFE;
-			for (i = 0; i < count; ++i) {
-				uint16_t word = cpu->memory.load16(cpu, source + (i << 1), &cpu->cycles);
-				cpu->memory.store16(cpu, dest + (i << 1), word, &cpu->cycles);
-				cpu->irqh.processEvents(cpu);
-			}
-		}
-	}
-}
-
-static void _FastCpuSet(struct GBA* gba) {
-	struct ARMCore* cpu = gba->cpu;
-	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
-	uint32_t dest = cpu->gprs[1] & 0xFFFFFFFC;
-	uint32_t mode = cpu->gprs[2];
-	int count = mode & 0x000FFFFF;
-	int storeCycles = cpu->memory.waitMultiple(cpu, dest, 4);
-	count = ((count + 7) >> 3) << 3;
-	int i;
-	if (mode & 0x01000000) {
-		int32_t word = cpu->memory.load32(cpu, source, &cpu->cycles);
-		for (i = 0; i < count; i += 4) {
-			cpu->memory.store32(cpu, dest + ((i + 0) << 2), word, 0);
-			cpu->memory.store32(cpu, dest + ((i + 1) << 2), word, 0);
-			cpu->memory.store32(cpu, dest + ((i + 2) << 2), word, 0);
-			cpu->memory.store32(cpu, dest + ((i + 3) << 2), word, 0);
-			cpu->cycles += storeCycles;
-			cpu->irqh.processEvents(cpu);
-		}
-	} else {
-		int loadCycles = cpu->memory.waitMultiple(cpu, source, 4);
-		for (i = 0; i < count; i += 4) {
-			int32_t word0 = cpu->memory.load32(cpu, source + ((i + 0) << 2), 0);
-			int32_t word1 = cpu->memory.load32(cpu, source + ((i + 1) << 2), 0);
-			int32_t word2 = cpu->memory.load32(cpu, source + ((i + 2) << 2), 0);
-			int32_t word3 = cpu->memory.load32(cpu, source + ((i + 3) << 2), 0);
-			cpu->cycles += loadCycles;
-			cpu->irqh.processEvents(cpu);
-			cpu->memory.store32(cpu, dest + ((i + 0) << 2), word0, 0);
-			cpu->memory.store32(cpu, dest + ((i + 1) << 2), word1, 0);
-			cpu->memory.store32(cpu, dest + ((i + 2) << 2), word2, 0);
-			cpu->memory.store32(cpu, dest + ((i + 3) << 2), word3, 0);
-			cpu->cycles += storeCycles;
-			cpu->irqh.processEvents(cpu);
-		}
-	}
-}
-
 static void _BgAffineSet(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
 	int i = cpu->gprs[2];
@@ -237,10 +151,8 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		cpu->gprs[0] = atan2f(cpu->gprs[1] / 16384.f, cpu->gprs[0] / 16384.f) / (2 * M_PI) * 0x10000;
 		break;
 	case 0xB:
-		_CpuSet(gba);
-		break;
 	case 0xC:
-		_FastCpuSet(gba);
+		ARMRaiseSWI(cpu);
 		break;
 	case 0xD:
 		cpu->gprs[0] = GBAChecksum(gba->memory.bios, SIZE_BIOS);
