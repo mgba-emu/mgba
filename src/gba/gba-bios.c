@@ -101,6 +101,38 @@ static void _MidiKey2Freq(struct GBA* gba) {
 	cpu->gprs[0] = key / powf(2, (180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
 }
 
+static void _Div(struct ARMCore* cpu, int32_t num, int32_t denom) {
+	if (denom != 0) {
+		div_t result = div(num, denom);
+		cpu->gprs[0] = result.quot;
+		cpu->gprs[1] = result.rem;
+		cpu->gprs[3] = abs(result.quot);
+	} else {
+		switch (num) {
+		case 0:
+			cpu->gprs[0] = 1;
+			cpu->gprs[1] = 0;
+			cpu->gprs[3] = 1;
+			break;
+		case 1:
+			cpu->gprs[0] = 1;
+			cpu->gprs[1] = 1;
+			cpu->gprs[3] = 1;
+			break;
+		case -1:
+			cpu->gprs[0] = -1;
+			cpu->gprs[1] = -1;
+			cpu->gprs[3] = 1;
+			break;
+		default:
+			// Technically this should hang, but that would be painful to emulate in HLE
+			cpu->gprs[0] = 0;
+			cpu->gprs[1] = 0;
+			cpu->gprs[3] = 0;
+		}
+	}
+}
+
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	GBALog(gba, GBA_LOG_DEBUG, "SWI: %02x", immediate);
@@ -124,20 +156,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		break;
 	case 0x6:
-		{
-			div_t result = div(cpu->gprs[0], cpu->gprs[1]);
-			cpu->gprs[0] = result.quot;
-			cpu->gprs[1] = result.rem;
-			cpu->gprs[3] = abs(result.quot);
-		}
+		_Div(cpu, cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0x7:
-		{
-			div_t result = div(cpu->gprs[1], cpu->gprs[0]);
-			cpu->gprs[0] = result.quot;
-			cpu->gprs[1] = result.rem;
-			cpu->gprs[3] = abs(result.quot);
-		}
+		_Div(cpu, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case 0x8:
 		cpu->gprs[0] = sqrt(cpu->gprs[0]);
