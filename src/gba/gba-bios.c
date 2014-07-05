@@ -108,28 +108,11 @@ static void _Div(struct ARMCore* cpu, int32_t num, int32_t denom) {
 		cpu->gprs[1] = result.rem;
 		cpu->gprs[3] = abs(result.quot);
 	} else {
-		switch (num) {
-		case 0:
-			cpu->gprs[0] = 1;
-			cpu->gprs[1] = 0;
-			cpu->gprs[3] = 1;
-			break;
-		case 1:
-			cpu->gprs[0] = 1;
-			cpu->gprs[1] = 1;
-			cpu->gprs[3] = 1;
-			break;
-		case -1:
-			cpu->gprs[0] = -1;
-			cpu->gprs[1] = -1;
-			cpu->gprs[3] = 1;
-			break;
-		default:
-			// Technically this should hang, but that would be painful to emulate in HLE
-			cpu->gprs[0] = 0;
-			cpu->gprs[1] = 0;
-			cpu->gprs[3] = 0;
-		}
+		// If abs(num) > 1, this should hang, but that would be painful to
+		// emulate in HLE, and no game will get into a state where it hangs...
+		cpu->gprs[0] = (num < 0) ? -1 : 1;
+		cpu->gprs[1] = num;
+		cpu->gprs[3] = 1;
 	}
 }
 
