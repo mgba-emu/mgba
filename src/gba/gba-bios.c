@@ -118,16 +118,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0x05:
 		// VBlankIntrWait
-		cpu->gprs[0] = 1;
-		cpu->gprs[1] = 1;
 		// Fall through:
 	case 0x04:
 		// IntrWait
-		gba->memory.io[REG_IME >> 1] = 1;
-		if (!cpu->gprs[0] && gba->memory.io[REG_IF >> 1] & cpu->gprs[1]) {
-			break;
-		}
-		gba->memory.io[REG_IF >> 1] = 0;
 		ARMRaiseSWI(cpu);
 		break;
 	case 0x6:
