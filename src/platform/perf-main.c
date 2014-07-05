@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
-	struct PerfOpts perfOpts = {};
+	struct PerfOpts perfOpts = { 0 };
 	struct SubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,

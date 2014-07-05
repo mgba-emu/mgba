@@ -117,6 +117,7 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 }
 
 int _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
+	(void) (arg);
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
