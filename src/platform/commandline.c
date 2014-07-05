@@ -44,7 +44,7 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 
 	int ch;
 	char options[64] =
-		"b:s:"
+		"b:l:s:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -77,6 +77,9 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 			opts->debuggerType = DEBUGGER_GDB;
 			break;
 #endif
+		case 'l':
+			opts->logLevel = atoi(optarg);
+			break;
 		case 's':
 			opts->frameskip = atoi(optarg);
 			break;

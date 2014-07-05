@@ -18,6 +18,7 @@ struct StartupOptions {
 	int fd;
 	const char* fname;
 	int biosFd;
+	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;
 	int rewindBufferInterval;

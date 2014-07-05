@@ -75,6 +75,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	ARMReset(&cpu);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
+	gba.logLevel = threadContext->logLevel;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
 #else
@@ -169,6 +170,7 @@ void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threa
 	threadContext->fname = opts->fname;
 	threadContext->biosFd = opts->biosFd;
 	threadContext->frameskip = opts->frameskip;
+	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
 	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
 }

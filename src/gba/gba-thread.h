@@ -58,6 +58,7 @@ struct GBAThread {
 	enum ThreadState savedState;
 
 	GBALogHandler logHandler;
+	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
