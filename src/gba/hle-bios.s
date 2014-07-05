@@ -87,49 +87,52 @@ stmfd  sp!, {lr}
 mrs    r5, spsr
 msr    cpsr, #0x1F
 mov    r3, r2, lsl #12
-mov    r3, r3, lsr #12
 tst    r2, #0x01000000
 beq    0f
 # Fill
 tst    r2, #0x04000000
 beq    1f
 # Word
+add    r3, r1, r3, lsr #10
 ldmia  r0!, {r2}
 2:
-stmia  r1!, {r2}
-subs   r3, #1
-bne    2b
+cmp    r1, r3
+stmltia  r1!, {r2}
+blt    2b
 b      3f
 # Halfword
 1:
 bic    r0, #1
 bic    r1, #1
+add    r3, r1, r3, lsr #11
 ldrh   r2, [r0]
 2:
-strh   r2, [r1], #2
-subs   r3, #1
-bne    2b
+cmp    r1, r3
+strlth r2, [r1], #2
+blt    2b
 b      3f
 # Copy
 0:
 tst    r2, #0x04000000
 beq    1f
 # Word
+add    r3, r1, r3, lsr #10
 2:
-ldmia  r0!, {r2}
-stmia  r1!, {r2}
-subs   r3, #1
-bne    2b
+cmp    r1, r3
+ldmltia r0!, {r2}
+stmltia r1!, {r2}
+blt    2b
 b      3f
 # Halfword
 1:
+add    r3, r1, r3, lsr #11
 bic    r0, #1
 bic    r1, #1
 2:
-ldrh   r2, [r0], #2
-strh   r2, [r1], #2
-subs   r3, #1
-bne    2b
+cmp    r1, r3
+ldrlth r2, [r0], #2
+strlth r2, [r1], #2
+blt    2b
 3:
 msr    cpsr, #0x93
 msr    spsr, r5
@@ -142,28 +145,28 @@ msr    cpsr, #0x1F
 stmfd  sp!, {r4-r10}
 tst    r2, #0x01000000
 mov    r3, r2, lsl #12
-mov    r2, r3, lsr #12
+add    r2, r1, r3, lsr #10
 beq    0f
 # Fill
-ldmia  r0!, {r4}
-mov    r5, r4
-mov    r3, r4
-mov    r6, r4
-mov    r7, r4
-mov    r8, r4
-mov    r9, r4
-mov    r10, r4
+ldr    r3, [r0]
+mov    r4, r3
+mov    r5, r3
+mov    r6, r3
+mov    r7, r3
+mov    r8, r3
+mov    r9, r3
+mov    r10, r3
 1:
-stmia  r1!, {r3-r10}
-subs   r2, #8
-bgt    1b
+cmp    r1, r2
+stmltia r1!, {r3-r10}
+blt    1b
 b      2f
 # Copy
 0:
-ldmia  r0!, {r3-r10}
-stmia  r1!, {r3-r10}
-subs   r2, #8
-bgt    0b
+cmp    r1, r2
+ldmltia r0!, {r3-r10}
+stmltia r1!, {r3-r10}
+blt    0b
 2:
 ldmfd  sp!, {r4-r10}
 msr    cpsr, #0x93
