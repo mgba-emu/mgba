@@ -83,6 +83,8 @@ msr    spsr, r5
 ldmfd  sp!, {r2-r3, pc}
 
 CpuSet:
+stmfd  sp!, {lr}
+mrs    r5, spsr
 msr    cpsr, #0x1F
 mov    r3, r2, lsl #12
 mov    r3, r3, lsr #12
@@ -130,9 +132,12 @@ subs   r3, #1
 bne    2b
 3:
 msr    cpsr, #0x93
-bx     lr
+msr    spsr, r5
+ldmfd  sp!, {pc}
 
 CpuFastSet:
+stmfd  sp!, {lr}
+mrs    r5, spsr
 msr    cpsr, #0x1F
 stmfd  sp!, {r4-r10}
 tst    r2, #0x01000000
@@ -162,4 +167,5 @@ bgt    0b
 2:
 ldmfd  sp!, {r4-r10}
 msr    cpsr, #0x93
-bx     lr
+msr    spsr, r5
+ldmfd  sp!, {pc}
