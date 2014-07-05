@@ -103,6 +103,8 @@ static void _MidiKey2Freq(struct GBA* gba) {
 
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
+	GBALog(gba, GBA_LOG_DEBUG, "SWI: %02x", immediate);
+
 	if (gba->memory.fullBios) {
 		ARMRaiseSWI(cpu);
 		return;
