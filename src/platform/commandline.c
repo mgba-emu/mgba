@@ -19,7 +19,7 @@
 	"  -2               2x viewport\n" \
 	"  -3               3x viewport\n" \
 	"  -4               4x viewport\n" \
-	"  -f               Sart full-screen"
+	"  -f               Start full-screen"
 
 static const char* _defaultFilename = "test.rom";
 
