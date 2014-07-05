@@ -88,9 +88,17 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->bldb = 0;
 	softwareRenderer->bldy = 0;
 
+	softwareRenderer->winN[0].h.packed = 0;
+	softwareRenderer->winN[0].v.packed = 0;
+	softwareRenderer->winN[0].control.packed = 0;
 	softwareRenderer->winN[0].control.priority = 0;
+	softwareRenderer->winN[1].h.packed = 0;
+	softwareRenderer->winN[1].v.packed = 0;
+	softwareRenderer->winN[1].control.packed = 0;
 	softwareRenderer->winN[1].control.priority = 1;
+	softwareRenderer->objwin.packed = 0;
 	softwareRenderer->objwin.priority = 2;
+	softwareRenderer->winout.packed = 0;
 	softwareRenderer->winout.priority = 3;
 
 	softwareRenderer->mosaic.packed = 0;

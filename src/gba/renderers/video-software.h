@@ -87,17 +87,19 @@ union WindowRegion {
 	uint16_t packed;
 };
 
-union WindowControl {
-	struct {
-		unsigned bg0Enable : 1;
-		unsigned bg1Enable : 1;
-		unsigned bg2Enable : 1;
-		unsigned bg3Enable : 1;
-		unsigned objEnable : 1;
-		unsigned blendEnable : 1;
-		unsigned : 2;
+struct WindowControl {
+	union {
+		struct {
+			unsigned bg0Enable : 1;
+			unsigned bg1Enable : 1;
+			unsigned bg2Enable : 1;
+			unsigned bg3Enable : 1;
+			unsigned objEnable : 1;
+			unsigned blendEnable : 1;
+			unsigned : 2;
+		};
+		uint8_t packed;
 	};
-	uint8_t packed;
 	int8_t priority;
 };
 
@@ -105,7 +107,7 @@ union WindowControl {
 
 struct Window {
 	uint8_t endX;
-	union WindowControl control;
+	struct WindowControl control;
 };
 
 struct GBAVideoSoftwareRenderer {
@@ -146,13 +148,13 @@ struct GBAVideoSoftwareRenderer {
 	struct WindowN {
 		union WindowRegion h;
 		union WindowRegion v;
-		union WindowControl control;
+		struct WindowControl control;
 	} winN[2];
 
-	union WindowControl winout;
-	union WindowControl objwin;
+	struct WindowControl winout;
+	struct WindowControl objwin;
 
-	union WindowControl currentWindow;
+	struct WindowControl currentWindow;
 
 	int nWindows;
 	struct Window windows[MAX_WINDOW];
