@@ -83,7 +83,7 @@ msr    spsr, r5
 ldmfd  sp!, {pc}
 
 CpuSet:
-msr    cpsr, #0x9F
+msr    cpsr, #0x1F
 mov    r3, r2, lsl #12
 mov    r3, r3, lsr #12
 tst    r2, #0x01000000
@@ -133,15 +133,14 @@ msr    cpsr, #0x93
 bx     lr
 
 CpuFastSet:
-msr    cpsr, #0x9F
+msr    cpsr, #0x1F
 stmfd  sp!, {r4-r10}
-mov    r3, r2, lsl #12
-mov    r3, r3, lsr #12
 tst    r2, #0x01000000
+mov    r3, r2, lsl #12
+mov    r2, r3, lsr #12
 beq    0f
 # Fill
 ldmia  r0!, {r4}
-mov    r2, r3
 mov    r5, r4
 mov    r3, r4
 mov    r6, r4
@@ -156,12 +155,10 @@ bgt    1b
 b      2f
 # Copy
 0:
-mov    r2, r3
-1:
 ldmia  r0!, {r3-r10}
 stmia  r1!, {r3-r10}
 subs   r2, #8
-bgt    1b
+bgt    0b
 2:
 ldmfd  sp!, {r4-r10}
 msr    cpsr, #0x93
