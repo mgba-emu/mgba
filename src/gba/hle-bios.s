@@ -56,7 +56,7 @@ VBlankIntrWait:
 mov    r0, #1
 mov    r1, #1
 IntrWait:
-stmfd  sp!, {lr}
+stmfd  sp!, {r2-r3, lr}
 mrs    r5, spsr
 msr    cpsr, #0x1F
 # Pull current interrupts enabled and add the ones we need
@@ -80,7 +80,7 @@ strb   r2, [r4, #0x208]
 beq    0b
 msr    cpsr, #0x93
 msr    spsr, r5
-ldmfd  sp!, {pc}
+ldmfd  sp!, {r2-r3, pc}
 
 CpuSet:
 msr    cpsr, #0x1F
