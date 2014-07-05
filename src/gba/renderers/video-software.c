@@ -259,24 +259,36 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_WIN0H:
 		softwareRenderer->winN[0].h.packed = value;
+		if (softwareRenderer->winN[0].h.start > VIDEO_HORIZONTAL_PIXELS) {
+			softwareRenderer->winN[0].h.start = 0;
+		}
 		if (softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end || softwareRenderer->winN[0].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
 	case REG_WIN1H:
 		softwareRenderer->winN[1].h.packed = value;
+		if (softwareRenderer->winN[1].h.start > VIDEO_HORIZONTAL_PIXELS) {
+			softwareRenderer->winN[1].h.start = 0;
+		}
 		if (softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end || softwareRenderer->winN[1].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
 	case REG_WIN0V:
 		softwareRenderer->winN[0].v.packed = value;
+		if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS) {
+			softwareRenderer->winN[0].v.start = 0;
+		}
 		if (softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end || softwareRenderer->winN[0].v.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].v.end = VIDEO_VERTICAL_PIXELS;
 		}
 		break;
 	case REG_WIN1V:
 		softwareRenderer->winN[1].v.packed = value;
+		if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS) {
+			softwareRenderer->winN[1].v.start = 0;
+		}
 		if (softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end || softwareRenderer->winN[1].v.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].v.end = VIDEO_VERTICAL_PIXELS;
 		}
