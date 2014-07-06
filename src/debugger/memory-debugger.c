@@ -4,10 +4,7 @@
 
 #include <string.h>
 
-static void ARMDebuggerShim_store32(struct ARMCore*, uint32_t address, int32_t value, int* cycleCounter);
-static void ARMDebuggerShim_store16(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
-static void ARMDebuggerShim_store8(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
-static void ARMDebuggerShim_setActiveRegion(struct ARMCore* cpu, uint32_t address);
+static int _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
@@ -28,12 +25,26 @@ static void ARMDebuggerShim_setActiveRegion(struct ARMCore* cpu, uint32_t addres
 		return debugger->originalMemory.NAME(cpu, ARGS); \
 	}
 
-CREATE_SHIM(load32, int32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_SHIM(load16, int16_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_SHIM(loadU16, uint16_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_SHIM(load8, int8_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_SHIM(loadU8, uint8_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+#define CREATE_WATCHPOINT_SHIM(NAME, WIDTH, RETURN, TYPES, ARGS...) \
+	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
+		struct ARMDebugger* debugger; \
+		FIND_DEBUGGER(debugger, cpu); \
+		if (_checkWatchpoints(debugger->watchpoints, address, WIDTH)) { \
+			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT); \
+		} \
+		return debugger->originalMemory.NAME(cpu, ARGS); \
+	}
+
+CREATE_WATCHPOINT_SHIM(load32, 4, int32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(load16, 2, int16_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(loadU16, 2, uint16_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(load8, 1, int8_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(loadU8, 1, uint8_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store32, 4, void, (struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter), address, value, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store16, 2, void, (struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter), address, value, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store8, 1, void, (struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter), address, value, cycleCounter)
 CREATE_SHIM(waitMultiple, int, (struct ARMCore* cpu, uint32_t startAddress, int count), startAddress, count)
+CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
 static int _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width) {
 	width -= 1;
@@ -57,37 +68,4 @@ void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {
 	debugger->cpu->memory.loadU8 = ARMDebuggerShim_loadU8;
 	debugger->cpu->memory.setActiveRegion = ARMDebuggerShim_setActiveRegion;
 	debugger->cpu->memory.waitMultiple = ARMDebuggerShim_waitMultiple;
-}
-
-void ARMDebuggerShim_store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
-	struct ARMDebugger* debugger;
-	FIND_DEBUGGER(debugger, cpu);
-	if (_checkWatchpoints(debugger->watchpoints, address, 4)) {
-		ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT);
-	}
-	debugger->originalMemory.store32(debugger->cpu, address, value, cycleCounter);
-}
-
-void ARMDebuggerShim_store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter) {
-	struct ARMDebugger* debugger;
-	FIND_DEBUGGER(debugger, cpu);
-	if (_checkWatchpoints(debugger->watchpoints, address, 2)) {
-		ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT);
-	}
-	debugger->originalMemory.store16(debugger->cpu, address, value, cycleCounter);
-}
-
-void ARMDebuggerShim_store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter) {
-	struct ARMDebugger* debugger;
-	FIND_DEBUGGER(debugger, cpu);
-	if (_checkWatchpoints(debugger->watchpoints, address, 1)) {
-		ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT);
-	}
-	debugger->originalMemory.store8(debugger->cpu, address, value, cycleCounter);
-}
-
-void ARMDebuggerShim_setActiveRegion(struct ARMCore* cpu, uint32_t address) {
-	struct ARMDebugger* debugger;
-	FIND_DEBUGGER(debugger, cpu);
-	debugger->originalMemory.setActiveRegion(cpu, address);
 }
