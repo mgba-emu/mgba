@@ -400,6 +400,9 @@ void GBALoadBIOS(struct GBA* gba, int fd) {
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
+	if (!patchedSize) {
+		return;
+	}
 	gba->memory.rom = anonymousMemoryMap(patchedSize);
 	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize > patchedSize ? patchedSize : gba->memory.romSize);
 	if (!patch->applyPatch(patch, gba->memory.rom, patchedSize)) {
