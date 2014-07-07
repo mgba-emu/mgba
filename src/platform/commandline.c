@@ -25,6 +25,7 @@ static const char* _defaultFilename = "test.rom";
 
 static const struct option _options[] = {
 	{ "bios", 1, 0, 'b' },
+	{ "patch", 1, 0, 'p' },
 	{ "frameskip", 1, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
 	{ "debug", 1, 0, 'd' },
@@ -41,10 +42,11 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 	memset(opts, 0, sizeof(*opts));
 	opts->fd = -1;
 	opts->biosFd = -1;
+	opts->patchFd = -1;
 
 	int ch;
 	char options[64] =
-		"b:l:s:"
+		"b:l:p:s:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -79,6 +81,9 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 #endif
 		case 'l':
 			opts->logLevel = atoi(optarg);
+			break;
+		case 'p':
+			opts->patchFd = open(optarg, O_RDONLY);
 			break;
 		case 's':
 			opts->frameskip = atoi(optarg);

@@ -62,6 +62,8 @@ enum GBAKey {
 
 struct GBARotationSource;
 struct GBA;
+struct Patch;
+
 typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
 struct GBA {
@@ -95,6 +97,8 @@ struct GBA {
 	int* keySource;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;
+	void* pristineRom;
+	size_t pristineRomSize;
 
 	const char* activeFile;
 	const char* savefile;
@@ -139,6 +143,7 @@ void GBADetachDebugger(struct GBA* gba);
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname);
 void GBALoadBIOS(struct GBA* gba, int fd);
+void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);

@@ -82,6 +82,9 @@ void GBAMemoryInit(struct GBA* gba) {
 void GBAMemoryDeinit(struct GBA* gba) {
 	mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
 	mappedMemoryFree(gba->memory.iwram, SIZE_WORKING_IRAM);
+	if (gba->memory.rom) {
+		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
+	}
 	GBASavedataDeinit(&gba->memory.savedata);
 }
 

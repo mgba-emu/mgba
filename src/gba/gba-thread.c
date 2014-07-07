@@ -6,6 +6,8 @@
 
 #include "debugger/debugger.h"
 
+#include "util/patch.h"
+
 #include <signal.h>
 
 #ifdef USE_PTHREADS
@@ -52,6 +54,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	struct GBA gba;
 	struct ARMCore cpu;
+	struct Patch patch;
 	struct GBAThread* threadContext = context;
 	struct ARMComponent* components[1] = {};
 	int numComponents = 0;
@@ -109,6 +112,10 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
 		if (threadContext->biosFd >= 0) {
 			GBALoadBIOS(&gba, threadContext->biosFd);
+		}
+
+		if (threadContext->patchFd >= 0 && loadPatch(threadContext->patchFd, &patch)) {
+			GBAApplyPatch(&gba, &patch);
 		}
 	}
 
@@ -169,6 +176,7 @@ void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threa
 	threadContext->fd = opts->fd;
 	threadContext->fname = opts->fname;
 	threadContext->biosFd = opts->biosFd;
+	threadContext->patchFd = opts->patchFd;
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;

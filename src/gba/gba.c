@@ -6,6 +6,7 @@
 #include "gba-thread.h"
 
 #include "util/memory.h"
+#include "util/patch.h"
 
 #include <sys/stat.h>
 
@@ -139,6 +140,10 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 }
 
 void GBADestroy(struct GBA* gba) {
+	if (gba->pristineRom == gba->memory.rom) {
+		gba->memory.rom = 0;
+	}
+	mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
 	GBAMemoryDeinit(gba);
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
@@ -360,10 +365,12 @@ void GBADetachDebugger(struct GBA* gba) {
 
 void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	struct stat info;
-	gba->memory.rom = fileMemoryMap(fd, SIZE_CART0, MEMORY_READ);
+	gba->pristineRom = fileMemoryMap(fd, SIZE_CART0, MEMORY_READ);
+	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	fstat(fd, &info);
-	gba->memory.romSize = info.st_size;
+	gba->pristineRomSize = info.st_size;
+	gba->memory.romSize = gba->pristineRomSize;
 	if (gba->savefile) {
 		GBASavedataInit(&gba->memory.savedata, gba->savefile);
 	}
@@ -389,6 +396,18 @@ void GBALoadBIOS(struct GBA* gba, int fd) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	// TODO: error check
+}
+
+void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
+	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
+	gba->memory.rom = anonymousMemoryMap(patchedSize);
+	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize > patchedSize ? patchedSize : gba->memory.romSize);
+	if (!patch->applyPatch(patch, gba->memory.rom, patchedSize)) {
+		mappedMemoryFree(gba->memory.rom, patchedSize);
+		gba->memory.rom = gba->pristineRom;
+		return;
+	}
+	gba->memory.romSize = patchedSize;
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {

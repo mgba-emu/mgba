@@ -46,6 +46,7 @@ struct GBAThread {
 	struct ARMDebugger* debugger;
 	int fd;
 	int biosFd;
+	int patchFd;
 	const char* fname;
 	int activeKeys;
 	int frameskip;
