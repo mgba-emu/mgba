@@ -37,7 +37,9 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 	if (state->biosChecksum != gba->biosChecksum) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS");
-		return;
+		if (state->cpu.gprs[ARM_PC] < SIZE_BIOS && state->cpu.gprs[ARM_PC] >= 0x20) {
+			return;
+		}
 	}
 	if (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
