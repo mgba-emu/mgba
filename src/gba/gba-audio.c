@@ -692,6 +692,10 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	state->audio.ch4.endTime = audio->ch4.control.endTime;
 	state->audio.ch4.nextEvent = audio->nextCh4;
 
+	CircleBufferDump(&audio->chA.fifo, state->audio.fifoA, sizeof(state->audio.fifoA));
+	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
+	state->audio.fifoSize = CircleBufferSize(&audio->chA.fifo);
+
 	state->audio.nextEvent = audio->nextEvent;
 	state->audio.eventDiff = audio->eventDiff;
 	state->audio.nextSample = audio->nextSample;
@@ -725,6 +729,14 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	audio->ch4.lfsr = state->audio.ch4.lfsr;
 	audio->ch4.control.endTime = state->audio.ch4.endTime;
 	audio->nextCh4 = state->audio.ch4.nextEvent;
+
+	CircleBufferClear(&audio->chA.fifo);
+	CircleBufferClear(&audio->chB.fifo);
+	unsigned i;
+	for (i = 0; i < state->audio.fifoSize / sizeof(uint32_t); ++i) {
+		CircleBufferWrite32(&audio->chA.fifo, state->audio.fifoA[i]);
+		CircleBufferWrite32(&audio->chB.fifo, state->audio.fifoB[i]);
+	}
 
 	audio->nextEvent = state->audio.nextEvent;
 	audio->eventDiff = state->audio.eventDiff;

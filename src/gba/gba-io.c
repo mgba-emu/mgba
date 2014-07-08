@@ -61,9 +61,9 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Timers
@@ -466,12 +466,19 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 		}
 	}
 
+	gba->timersEnabled = 0;
+	memcpy(gba->timers, state->timers, sizeof(gba->timers));
 	for (i = 0; i < 4; ++i) {
 		gba->memory.dma[i].nextSource = state->dma[i].nextSource;
 		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
 		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
 		gba->memory.dma[i].nextEvent = state->dma[i].nextEvent;
-	}
+		if (gba->memory.dma[i].timing != DMA_TIMING_NOW) {
+			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
+		}
 
-	memcpy(state->timers, gba->timers, sizeof(gba->timers));
+		if (gba->timers[i].enable) {
+			gba->timersEnabled |= 1 << i;
+		}
+	}
 }
