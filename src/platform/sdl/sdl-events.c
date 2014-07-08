@@ -95,7 +95,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	case SDLK_LEFTBRACKET:
-		GBAThreadInterrupt(context);
+		GBAThreadTryPause(context);
 		GBARewind(context, 10);
 		GBAThreadContinue(context);
 		return;
@@ -133,7 +133,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					GBAThreadInterrupt(context);
+					GBAThreadTryPause(context);
 					GBASaveState(context->gba, event->keysym.sym - SDLK_F1);
 					GBAThreadContinue(context);
 					break;
@@ -152,7 +152,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F8:
 				case SDLK_F9:
 				case SDLK_F10:
-					GBAThreadInterrupt(context);
+					GBAThreadTryPause(context);
 					GBALoadState(context->gba, event->keysym.sym - SDLK_F1);
 					GBAThreadContinue(context);
 					break;

@@ -147,7 +147,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		}
 		MutexLock(&threadContext->stateMutex);
-		while (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_INTERRUPTED) {
+		if (threadContext->state == THREAD_INTERRUPTED) {
+			threadContext->state = THREAD_PAUSED;
+			ConditionWake(&threadContext->stateCond);
+		}
+		while (threadContext->state == THREAD_PAUSED) {
 			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 		}
 		MutexUnlock(&threadContext->stateMutex);
@@ -276,11 +280,12 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	free(threadContext->rewindBuffer);
 }
 
-void GBAThreadInterrupt(struct GBAThread* threadContext) {
+void GBAThreadTryPause(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	_waitOnInterrupt(threadContext);
 	threadContext->savedState = threadContext->state;
 	threadContext->state = THREAD_INTERRUPTED;
+	_waitOnInterrupt(threadContext);
+	threadContext->state = THREAD_PAUSED;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
 	}
