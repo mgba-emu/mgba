@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
 	renderer.viewportHeight = graphicsOpts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.events.fullscreen = graphicsOpts.fullscreen;
+	renderer.events.windowUpdated = 0;
 #endif
 
 	if (!_GBASDLInit(&renderer)) {
@@ -138,7 +139,7 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->events.fullscreen));
+	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->events.fullscreen));
 	SDL_GL_CreateContext(renderer->window);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->events.window = renderer->window;
@@ -199,15 +200,13 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 #endif
 
 		while (SDL_PollEvent(&event)) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			int fullscreen = renderer->events.fullscreen;
-#endif
 			GBASDLHandleEvent(context, &renderer->events, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
-			if (renderer->events.fullscreen != fullscreen) {
+			if (renderer->events.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+				renderer->events.windowUpdated = 0;
 			}
 #endif
 		}

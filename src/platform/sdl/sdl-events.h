@@ -12,6 +12,7 @@ struct GBASDLEvents {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
 	int fullscreen;
+	int windowUpdated;
 #endif
 };
 

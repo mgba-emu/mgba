@@ -107,6 +107,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_f:
 					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 					sdlContext->fullscreen = !sdlContext->fullscreen;
+					sdlContext->windowUpdated = 1;
 					break;
 #endif
 				case SDLK_p:
@@ -205,6 +206,17 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
+	(void) (context);
+	switch (event->event) {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		sdlContext->windowUpdated = 1;
+		break;
+	}
+}
+#endif
+
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
@@ -217,6 +229,11 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 		ConditionWake(&context->stateCond);
 		MutexUnlock(&context->stateMutex);
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	case SDL_WINDOWEVENT:
+		_GBASDLHandleWindowEvent(context, sdlContext, &event->window);
+		break;
+#endif
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 		_GBASDLHandleKeypress(context, sdlContext, &event->key);
