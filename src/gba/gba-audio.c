@@ -563,15 +563,17 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 		start = 3;
 		end = 0;
 	}
-	uint32_t bitsCarry = ch->wavedata[end] & 0xF0000000;
+	uint32_t bitsCarry = ch->wavedata[end] & 0x0F000000;
 	uint32_t bits;
 	for (i = start; i >= end; --i) {
-		bits = ch->wavedata[i] & 0xF0000000;
-		ch->wavedata[i] <<= 4;
-		ch->wavedata[i] |= bitsCarry >> 28;
+		bits = ch->wavedata[i] & 0x0F000000;
+		ch->wavedata[i] = ((ch->wavedata[i] & 0xF0F0F0F0) >> 4) | ((ch->wavedata[i] & 0x000F0F0F) << 12);
+		ch->wavedata[i] |= bitsCarry >> 20;
 		bitsCarry = bits;
 	}
-	ch->sample = ((bitsCarry >> 26) - 0x20) * volume;
+	ch->sample = (bitsCarry >> 20);
+	ch->sample >>= 2;
+	ch->sample *= volume;
 	return 8 * (2048 - ch->control.rate);
 }
 
