@@ -8,6 +8,7 @@ if (SDL_VERSION EQUAL "2")
 		set(SDL_INCLUDE_DIR ${SDL2_INCLUDE_DIRS})
 		set(SDL_LIBRARY ${SDL2_LIBRARIES})
 		set(SDLMAIN_LIBRARY "")
+		link_directories(${SDL2_LIBDIR})
 	endif()
 endif()
 
