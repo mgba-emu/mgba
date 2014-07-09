@@ -175,8 +175,8 @@ struct GBASerializedState {
 			int32_t endTime;
 			int32_t nextEvent;
 		} ch4;
-		uint32_t fifoA[8];
-		uint32_t fifoB[8];
+		uint8_t fifoA[32];
+		uint8_t fifoB[32];
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
