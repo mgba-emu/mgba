@@ -1420,14 +1420,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1437,14 +1437,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1459,7 +1459,8 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
-	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
+	unsigned charBase = sprite->tile * 0x20;
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
 		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
@@ -1527,7 +1528,8 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
-	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
+	unsigned charBase = sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
