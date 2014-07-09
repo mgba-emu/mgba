@@ -147,8 +147,12 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		}
 		MutexLock(&threadContext->stateMutex);
-		if (threadContext->state == THREAD_INTERRUPTED) {
+		if (threadContext->state == THREAD_PAUSING) {
 			threadContext->state = THREAD_PAUSED;
+			ConditionWake(&threadContext->stateCond);
+		}
+		if (threadContext->state == THREAD_INTERRUPTING) {
+			threadContext->state = THREAD_INTERRUPTED;
 			ConditionWake(&threadContext->stateCond);
 		}
 		while (threadContext->state == THREAD_PAUSED) {
@@ -280,14 +284,17 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	free(threadContext->rewindBuffer);
 }
 
-void GBAThreadTryPause(struct GBAThread* threadContext) {
+void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->savedState = threadContext->state;
-	threadContext->state = THREAD_INTERRUPTED;
 	_waitOnInterrupt(threadContext);
-	threadContext->state = THREAD_PAUSED;
+	threadContext->state = THREAD_INTERRUPTING;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
+	}
+	ConditionWake(&threadContext->stateCond);
+	while (threadContext->state == THREAD_INTERRUPTING) {
+		ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 	}
 	MutexUnlock(&threadContext->stateMutex);
 }
@@ -304,7 +311,7 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
 		}
-		threadContext->state = THREAD_PAUSED;
+		threadContext->state = THREAD_PAUSING;
 		frameOn = 0;
 	}
 	MutexUnlock(&threadContext->stateMutex);
@@ -320,7 +327,7 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
-	if (threadContext->state == THREAD_PAUSED) {
+	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
 	}
