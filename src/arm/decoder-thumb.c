@@ -413,7 +413,7 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 	case ARM_MN_STM:
 		written = _decodeRegister(info.memory.baseReg, buffer, blen);
 		ADVANCE(written);
-		strncpy(buffer, "!, ", blen);
+		strncpy(buffer, "!, ", blen - 1);
 		ADVANCE(3);
 		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
 		ADVANCE(written);
@@ -424,7 +424,7 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 		break;
 	default:
 		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_1) {
-			written = snprintf(buffer, blen, "#%i", info.op1.immediate);
+			written = snprintf(buffer, blen - 1, "#%i", info.op1.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_1) {
 			written = _decodeMemory(info.memory, pc, buffer, blen);
@@ -438,7 +438,7 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 			ADVANCE(2);
 		}
 		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_2) {
-			written = snprintf(buffer, blen, "#%i", info.op2.immediate);
+			written = snprintf(buffer, blen - 1, "#%i", info.op2.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_2) {
 			written = _decodeMemory(info.memory, pc, buffer, blen);
@@ -448,11 +448,11 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 			ADVANCE(written);
 		}
 		if (info.operandFormat & ARM_OPERAND_3) {
-			strncpy(buffer, ", ", blen);
+			strncpy(buffer, ", ", blen - 1);
 			ADVANCE(2);
 		}
 		if (info.operandFormat & ARM_OPERAND_IMMEDIATE_3) {
-			written = snprintf(buffer, blen, "#%i", info.op3.immediate);
+			written = snprintf(buffer, blen - 1, "#%i", info.op3.immediate);
 			ADVANCE(written);
 		} else if (info.operandFormat & ARM_OPERAND_MEMORY_3) {
 			written = _decodeMemory(info.memory, pc, buffer, blen);
@@ -463,6 +463,6 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 		}
 		break;
 	}
-	buffer[total] = '\0';
+	buffer[blen - 1] = '\0';
 	return total;
 }
