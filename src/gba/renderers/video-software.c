@@ -1121,7 +1121,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	} \
 	\
 	uint32_t* pixel = &renderer->row[outX]; \
-	if (background->mosaic) { \
+	if (background->mosaic && renderer->mosaic.bgH) { \
 		int mosaicH = renderer->mosaic.bgH + 1; \
 		int x; \
 		int mosaicWait = outX % mosaicH; \
