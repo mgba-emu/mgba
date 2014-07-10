@@ -187,11 +187,11 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 #else
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			if (context->sync.videoFrameWait) {
 				glFlush();
 			}
 		}
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		GBASyncWaitFrameEnd(&context->sync);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		SDL_GL_SwapWindow(renderer->window);
