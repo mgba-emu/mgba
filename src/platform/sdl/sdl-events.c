@@ -208,7 +208,7 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
-	(void) (context);
+	UNUSED(context);
 	switch (event->event) {
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
 		sdlContext->windowUpdated = 1;

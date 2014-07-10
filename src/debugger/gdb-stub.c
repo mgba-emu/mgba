@@ -172,7 +172,7 @@ static void _continue(struct GDBStub* stub, const char* message) {
 		}
 	}
 	// TODO: parse message
-	(void) (message);
+	UNUSED(message);
 }
 
 static void _step(struct GDBStub* stub, const char* message) {
@@ -180,7 +180,7 @@ static void _step(struct GDBStub* stub, const char* message) {
 	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
 	_sendMessage(stub);
 	// TODO: parse message
-	(void) (message);
+	UNUSED(message);
 }
 
 static void _readMemory(struct GDBStub* stub, const char* message) {
@@ -204,7 +204,7 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 }
 
 static void _readGPRs(struct GDBStub* stub, const char* message) {
-	(void) (message);
+	UNUSED(message);
 	int r;
 	int i = 0;
 	for (r = 0; r < 16; ++r) {
@@ -264,7 +264,7 @@ static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 }
 
 static void _processVWriteCommand(struct GDBStub* stub, const char* message) {
-	(void) (message);
+	UNUSED(message);
 	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
@@ -287,7 +287,7 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		uint32_t address = _readHex(readAddress, &i);
 		readAddress += i + 1;
 		uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
-		(void) (kind);
+		UNUSED(kind);
 		ARMDebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);

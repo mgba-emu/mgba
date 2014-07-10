@@ -3,8 +3,6 @@
 #include "gba.h"
 #include "gba-io.h"
 
-#define UNUSED(X) (void) (X)
-
 static const int _objSizes[32] = {
 	8, 8,
 	16, 16,

@@ -83,13 +83,13 @@ static inline void _printPSR(union PSR psr) {
 }
 
 static void _handleDeath(int sig) {
-	(void)(sig);
+	UNUSED(sig);
 	printf("No debugger attached!\n");
 }
 
 static void _breakInto(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
-	(void)(dv);
+	UNUSED(debugger);
+	UNUSED(dv);
 	struct sigaction sa, osa;
 	sa.sa_handler = _handleDeath;
 	sigemptyset(&sa.sa_mask);
@@ -105,18 +105,18 @@ static void _breakInto(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _continue(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	debugger->d.state = DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	ARMRun(debugger->d.cpu);
 	_printStatus(debugger, 0);
 }
 
 static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
+	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" %u", dv->intValue);
 	}
@@ -124,7 +124,7 @@ static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
+	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" 0x%08X", dv->intValue);
 	}
@@ -143,7 +143,7 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	int r;
 	for (r = 0; r < 4; ++r) {
 		printf("%08X %08X %08X %08X\n",
@@ -164,7 +164,7 @@ static void _printStatus(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _quit(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	debugger->d.state = DEBUGGER_SHUTDOWN;
 }
 
@@ -226,7 +226,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 }
 
 static void _breakIntoDefault(int signal) {
-	(void)(signal);
+	UNUSED(signal);
 	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL);
 }
 
@@ -507,7 +507,7 @@ static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) 
 }
 
 static char* _prompt(EditLine* el) {
-	(void)(el);
+	UNUSED(el);
 	return "> ";
 }
 
@@ -536,7 +536,7 @@ static void _commandLine(struct ARMDebugger* debugger) {
 }
 
 static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
-	(void) (debugger);
+	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
@@ -554,7 +554,7 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 }
 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
-	(void)(ch);
+	UNUSED(ch);
 	const LineInfo* li = el_line(elstate);
 	const char* commandPtr;
 	int cmd = 0, len = 0;

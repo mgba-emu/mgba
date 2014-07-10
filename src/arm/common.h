@@ -11,6 +11,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define UNUSED(V) (void)(V)
+
 #ifdef __POWERPC__
 #define LOAD_32(DEST, ADDR, ARR) asm("lwbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
 #define LOAD_16(DEST, ADDR, ARR) asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))

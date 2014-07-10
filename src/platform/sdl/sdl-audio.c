@@ -31,7 +31,7 @@ int GBASDLInitAudio(struct GBASDLAudio* context) {
 }
 
 void GBASDLDeinitAudio(struct GBASDLAudio* context) {
-	(void)(context);
+	UNUSED(context);
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);

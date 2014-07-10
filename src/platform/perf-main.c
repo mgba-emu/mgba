@@ -110,7 +110,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
 }
 
 static void _GBAPerfShutdown(int signal) {
-	(void) (signal);
+	UNUSED(signal);
 	pthread_mutex_lock(&_thread->stateMutex);
 	_thread->state = THREAD_EXITING;
 	pthread_mutex_unlock(&_thread->stateMutex);

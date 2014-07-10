@@ -5,8 +5,6 @@
 
 #include "arm.h"
 
-#define UNUSED(V) (void)(V)
-
 #define DO_4(DIRECTIVE) \
 	DIRECTIVE, \
 	DIRECTIVE, \

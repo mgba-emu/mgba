@@ -155,29 +155,29 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 }
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+	UNUSED(renderer);
 	// Nothing to do
 }
 
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+	UNUSED(renderer);
 	// Nothing to do
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	(void)(renderer);
-	(void)(address);
+	UNUSED(renderer);
+	UNUSED(address);
 	return value;
 }
 
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
-	(void)(renderer);
-	(void)(y);
+	UNUSED(renderer);
+	UNUSED(y);
 	// Nothing to do
 }
 
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+	UNUSED(renderer);
 	// Nothing to do
 }
 

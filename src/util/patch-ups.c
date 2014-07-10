@@ -3,9 +3,6 @@
 #include "util/crc32.h"
 #include "util/patch.h"
 
-#include <stdint.h>
-#include <unistd.h>
-
 enum {
 	IN_CHECKSUM = -12,
 	OUT_CHECKSUM = -8,
@@ -65,7 +62,7 @@ int loadPatchUPS(struct Patch* patch) {
 }
 
 size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
-	(void) (inSize);
+	UNUSED(inSize);
 	lseek(patch->patchfd, 4, SEEK_SET);
 	if (_UPSDecodeLength(patch->patchfd) != inSize) {
 		return 0;

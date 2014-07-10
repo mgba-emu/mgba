@@ -22,9 +22,9 @@ static DWORD _contextKey;
 static INIT_ONCE _contextOnce = INIT_ONCE_STATIC_INIT;
 
 static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
-	(void) (once);
-	(void) (param);
-	(void) (context);
+	UNUSED(once);
+	UNUSED(param);
+	UNUSED(context);
 	_contextKey = TlsAlloc();
 	return TRUE;
 }

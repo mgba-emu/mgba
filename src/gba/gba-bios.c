@@ -13,7 +13,7 @@ static void _unRl(struct GBA* gba, uint32_t source, uint8_t* dest);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
-	(void)(registers);
+	UNUSED(registers);
 	GBALog(gba, GBA_LOG_STUB, "RegisterRamReset unimplemented");
 }
 
@@ -27,7 +27,7 @@ static void _BgAffineSet(struct GBA* gba) {
 	int offset = cpu->gprs[0];
 	int destination = cpu->gprs[1];
 	int diff = cpu->gprs[3];
-	(void)(diff); // Are we supposed to use this?
+	UNUSED(diff); // Are we supposed to use this?
 	float a, b, c, d;
 	float rx, ry;
 	while (i--) {

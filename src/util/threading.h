@@ -90,7 +90,7 @@ static inline int ConditionInit(Condition* cond) {
 
 static inline int ConditionDeinit(Condition* cond) {
 	// This is a no-op on Windows
-	(void)(cond);
+	UNUSED(cond);
 	return 0;
 }
 

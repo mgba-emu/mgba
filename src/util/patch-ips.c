@@ -2,9 +2,6 @@
 
 #include "util/patch.h"
 
-#include <stdint.h>
-#include <unistd.h>
-
 static size_t _IPSOutputSize(struct Patch* patch, size_t inSize);
 static int _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize);
 
@@ -35,7 +32,7 @@ int loadPatchIPS(struct Patch* patch) {
 }
 
 size_t _IPSOutputSize(struct Patch* patch, size_t inSize) {
-	(void) (patch);
+	UNUSED(patch);
 	return inSize;
 }
 

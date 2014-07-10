@@ -1,7 +1,7 @@
 #ifndef PATCH_H
 #define PATCH_H
 
-#include <string.h>
+#include "common.h"
 
 struct Patch {
 	int patchfd;
