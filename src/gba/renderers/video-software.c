@@ -1066,18 +1066,20 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
-				if (x >= 4) { \
-					tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
-					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+					if (x >= 4) { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 						tileData >>= (x - 4) * 8; \
 					} else { \
-						tileData >>= (7 - x) * 8; \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
+						tileData >>= x * 8; \
 					} \
 				} else { \
-					tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
-					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-						tileData >>= x * 8; \
+					if (x >= 4) { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
+						tileData >>= (7 - x) * 8; \
 					} else { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 						tileData >>= (3 - x) * 8; \
 					} \
 				} \
