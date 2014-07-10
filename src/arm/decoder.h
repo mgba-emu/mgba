@@ -77,58 +77,69 @@ union ARMOperand {
 	int32_t immediate;
 };
 
+enum ARMMultipleDirection {
+	ARM_DECREMENT_AFTER = 0,
+	ARM_INCREMENT_AFTER = 1,
+	ARM_DECREMENT_BEFORE = 2,
+	ARM_INCREMENT_BEFORE = 3,
+};
+
+enum ARMMemoryAccessType {
+	ARM_ACCESS_WORD = 4,
+	ARM_ACCESS_HALFWORD = 2,
+	ARM_ACCESS_SIGNED_HALFWORD = 10,
+	ARM_ACCESS_BYTE = 1,
+	ARM_ACCESS_SIGNED_BYTE = 9
+};
+
 struct ARMMemoryAccess {
 	uint8_t baseReg;
 	uint16_t format;
 	union ARMOperand offset;
+	union {
+		enum ARMMultipleDirection direction;
+		enum ARMMemoryAccessType width;
+	};
 };
 
-enum ThumbMnemonic {
-	THUMB_MN_ILL = 0,
-	THUMB_MN_ADC,
-	THUMB_MN_ADD,
-	THUMB_MN_AND,
-	THUMB_MN_ASR,
-	THUMB_MN_B,
-	THUMB_MN_BIC,
-	THUMB_MN_BKPT,
-	THUMB_MN_BL,
-	THUMB_MN_BLH,
-	THUMB_MN_BX,
-	THUMB_MN_CMN,
-	THUMB_MN_CMP,
-	THUMB_MN_EOR,
-	THUMB_MN_LDMIA,
-	THUMB_MN_LDR,
-	THUMB_MN_LDRB,
-	THUMB_MN_LDRH,
-	THUMB_MN_LDRSB,
-	THUMB_MN_LDRSH,
-	THUMB_MN_LSL,
-	THUMB_MN_LSR,
-	THUMB_MN_MOV,
-	THUMB_MN_MUL,
-	THUMB_MN_MVN,
-	THUMB_MN_NEG,
-	THUMB_MN_ORR,
-	THUMB_MN_POP,
-	THUMB_MN_PUSH,
-	THUMB_MN_ROR,
-	THUMB_MN_SBC,
-	THUMB_MN_STMIA,
-	THUMB_MN_STR,
-	THUMB_MN_STRB,
-	THUMB_MN_STRH,
-	THUMB_MN_SUB,
-	THUMB_MN_SWI,
-	THUMB_MN_TST,
+enum ARMMnemonic {
+	ARM_MN_ILL = 0,
+	ARM_MN_ADC,
+	ARM_MN_ADD,
+	ARM_MN_AND,
+	ARM_MN_ASR,
+	ARM_MN_B,
+	ARM_MN_BIC,
+	ARM_MN_BKPT,
+	ARM_MN_BL,
+	ARM_MN_BLH,
+	ARM_MN_BX,
+	ARM_MN_CMN,
+	ARM_MN_CMP,
+	ARM_MN_EOR,
+	ARM_MN_LDM,
+	ARM_MN_LDR,
+	ARM_MN_LSL,
+	ARM_MN_LSR,
+	ARM_MN_MOV,
+	ARM_MN_MUL,
+	ARM_MN_MVN,
+	ARM_MN_NEG,
+	ARM_MN_ORR,
+	ARM_MN_ROR,
+	ARM_MN_SBC,
+	ARM_MN_STM,
+	ARM_MN_STR,
+	ARM_MN_SUB,
+	ARM_MN_SWI,
+	ARM_MN_TST,
 
-	THUMB_MN_MAX
+	ARM_MN_MAX
 };
 
-struct ThumbInstructionInfo {
-	uint16_t opcode;
-	enum ThumbMnemonic mnemonic;
+struct ARMInstructionInfo {
+	uint32_t opcode;
+	enum ARMMnemonic mnemonic;
 	union ARMOperand op1;
 	union ARMOperand op2;
 	union ARMOperand op3;
@@ -146,7 +157,7 @@ struct ThumbInstructionInfo {
 	int cCycles;
 };
 
-void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info);
+void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
 int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen);
 
 #endif

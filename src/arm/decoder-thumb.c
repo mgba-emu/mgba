@@ -9,9 +9,9 @@
 #include <string.h>
 
 #define DEFINE_THUMB_DECODER(NAME, MNEMONIC, BODY) \
-	static void _ThumbDecode ## NAME (uint16_t opcode, struct ThumbInstructionInfo* info) { \
+	static void _ThumbDecode ## NAME (uint16_t opcode, struct ARMInstructionInfo* info) { \
 		UNUSED(opcode); \
-		info->mnemonic = THUMB_MN_ ## MNEMONIC; \
+		info->mnemonic = ARM_MN_ ## MNEMONIC; \
 		BODY; \
 	}
 
@@ -31,6 +31,7 @@
 		info->op1.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
 		info->memory.offset.immediate = IMMEDIATE * WIDTH; \
+		info->memory.width = (enum ARMMemoryAccessType) WIDTH; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_MEMORY_2; \
@@ -51,11 +52,11 @@ DEFINE_IMMEDIATE_5_DECODER_THUMB(LSL1, LSL, DATA,)
 DEFINE_IMMEDIATE_5_DECODER_THUMB(LSR1, LSR, DATA,)
 DEFINE_IMMEDIATE_5_DECODER_THUMB(ASR1, ASR, DATA,)
 DEFINE_IMMEDIATE_5_DECODER_THUMB(LDR1, LDR, MEM_LOAD, 4)
-DEFINE_IMMEDIATE_5_DECODER_THUMB(LDRB1, LDRB, MEM_LOAD, 1)
-DEFINE_IMMEDIATE_5_DECODER_THUMB(LDRH1, LDRH, MEM_LOAD, 2)
+DEFINE_IMMEDIATE_5_DECODER_THUMB(LDRB1, LDR, MEM_LOAD, 1)
+DEFINE_IMMEDIATE_5_DECODER_THUMB(LDRH1, LDR, MEM_LOAD, 2)
 DEFINE_IMMEDIATE_5_DECODER_THUMB(STR1, STR, MEM_STORE, 4)
-DEFINE_IMMEDIATE_5_DECODER_THUMB(STRB1, STRB, MEM_STORE, 1)
-DEFINE_IMMEDIATE_5_DECODER_THUMB(STRH1, STRH, MEM_STORE, 2)
+DEFINE_IMMEDIATE_5_DECODER_THUMB(STRB1, STR, MEM_STORE, 1)
+DEFINE_IMMEDIATE_5_DECODER_THUMB(STRH1, STR, MEM_STORE, 2)
 
 #define DEFINE_DATA_FORM_1_DECODER_EX_THUMB(NAME, RM, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
@@ -170,6 +171,7 @@ DEFINE_DECODER_WITH_HIGH_THUMB(MOV3, MOV, ARM_OPERAND_AFFECTED_1, 0)
 		info->op1.reg = RD; \
 		info->memory.baseReg = REG; \
 		info->memory.offset.immediate = (opcode & 0x00FF) << 2; \
+		info->memory.width = ARM_ACCESS_WORD; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_MEMORY_2; \
@@ -193,11 +195,12 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, STR, MEM_STORE, ARM_SP)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, ADD, DATA, ARM_PC)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, ADD, DATA, ARM_SP)
 
-#define DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB(NAME, RM, MNEMONIC, CYCLES) \
+#define DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB(NAME, RM, MNEMONIC, CYCLES, TYPE) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->memory.offset.reg = RM; \
 		info->op1.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
+		info->memory.width = TYPE; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \
 			ARM_OPERAND_MEMORY_2; \
@@ -205,32 +208,33 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, ADD, DATA, ARM_SP)
 			ARM_MEMORY_REGISTER_OFFSET; \
 		CYCLES;)
 
-#define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, MNEMONIC, CYCLES) \
-	COUNT_3(DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB, NAME ## _R, MNEMONIC, CYCLES)
+#define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, MNEMONIC, CYCLES, TYPE) \
+	COUNT_3(DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB, NAME ## _R, MNEMONIC, CYCLES, TYPE)
 
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, LDR, LOAD_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, LDRB, LOAD_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, LDRH, LOAD_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, LDRSB, LOAD_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, LDRSH, LOAD_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, STR, STORE_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, STRB, STORE_CYCLES)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STRH, STORE_CYCLES)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, LDR, LOAD_CYCLES, ARM_ACCESS_WORD)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, LDR, LOAD_CYCLES, ARM_ACCESS_BYTE)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, LDR, LOAD_CYCLES, ARM_ACCESS_HALFWORD)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, LDR, LOAD_CYCLES, ARM_ACCESS_SIGNED_BYTE)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, LDR, LOAD_CYCLES, ARM_ACCESS_SIGNED_HALFWORD)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, STR, STORE_CYCLES, ARM_ACCESS_WORD)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, STR, STORE_CYCLES, ARM_ACCESS_BYTE)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STR, STORE_CYCLES, ARM_ACCESS_HALFWORD)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, MNEMONIC, SPECIAL_REG, ADDITIONAL_REG) \
+#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, MNEMONIC, DIRECTION, ADDITIONAL_REG) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->memory.baseReg = RN; \
 		info->op1.immediate = (opcode & 0xFF) | ADDITIONAL_REG; \
 		info->branches = info->op1.immediate & (1 << ARM_PC); \
 		info->operandFormat = ARM_OPERAND_MEMORY_1; \
+		info->memory.direction = DIRECTION; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_POST_INCREMENT;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME) \
-	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, NAME, 0, 0)
+	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## IA_R, NAME, ARM_INCREMENT_AFTER, 0)
 
-DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA)
-DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA)
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDM)
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(STM)
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_THUMB_DECODER(B ## COND, B, \
@@ -266,10 +270,10 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_SP_MODIFY_THUMB(ADD7, ADD)
 DEFINE_SP_MODIFY_THUMB(SUB4, SUB)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, ARM_SP, POP, 1, 0)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, ARM_SP, POP, 1, 1 << ARM_PC)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, ARM_SP, PUSH, 1, 0)
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR, ARM_SP, PUSH, 1, 1 << ARM_LR)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP, ARM_SP, LDM, ARM_INCREMENT_AFTER, 0)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR, ARM_SP, LDM, ARM_INCREMENT_AFTER, 1 << ARM_PC)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH, ARM_SP, STM, ARM_DECREMENT_BEFORE, 0)
+DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR, ARM_SP, STM, ARM_DECREMENT_BEFORE, 1 << ARM_LR)
 
 DEFINE_THUMB_DECODER(ILL, ILL, info->traps = 1;)
 DEFINE_THUMB_DECODER(BKPT, BKPT, info->traps = 1;)
@@ -300,13 +304,13 @@ DEFINE_THUMB_DECODER(SWI, SWI,
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
 	info->traps = 1;)
 
-typedef void (*ThumbDecoder)(uint16_t opcode, struct ThumbInstructionInfo* info);
+typedef void (*ThumbDecoder)(uint16_t opcode, struct ARMInstructionInfo* info);
 
 static const ThumbDecoder _thumbDecoderTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbDecode)
 };
 
-void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
+void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
 	info->opcode = opcode;
 	info->branches = 0;
 	info->traps = 0;
@@ -322,7 +326,7 @@ void ARMDecodeThumb(uint16_t opcode, struct ThumbInstructionInfo* info) {
 	decoder(opcode, info);
 }
 
-const char* thumbMnemonicStrings[] = {
+const char* armMnemonicStrings[] = {
 	"ill",
 	"adc",
 	"add",
@@ -337,12 +341,8 @@ const char* thumbMnemonicStrings[] = {
 	"cmn",
 	"cmp",
 	"eor",
-	"ldmia",
+	"ldm",
 	"ldr",
-	"ldrb",
-	"ldrh",
-	"ldrsb",
-	"ldrsh",
 	"lsl",
 	"lsr",
 	"mov",
@@ -350,46 +350,75 @@ const char* thumbMnemonicStrings[] = {
 	"mvn",
 	"neg",
 	"orr",
-	"pop",
-	"push",
 	"ror",
     "sbc",
-    "stmia",
+    "stm",
 	"str",
-	"strb",
-	"strh",
 	"sub",
 	"swi",
 	"tst"
 };
 
+const char* armDirectionStrings[] = {
+	"da",
+	"ia",
+	"db",
+	"da"
+};
+
+const char* armAccessTypeStrings[] = {
+	"",
+	"b",
+	"h",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"",
+	"sb",
+	"sh",
+	""
+	""
+};
+
 int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
-	struct ThumbInstructionInfo info;
+	struct ARMInstructionInfo info;
 	ARMDecodeThumb(opcode, &info);
-	const char* mnemonic = thumbMnemonicStrings[info.mnemonic];
+	const char* mnemonic = armMnemonicStrings[info.mnemonic];
 	int written;
 	int total = 0;
 	const char* cond = "";
 	if (info.condition != ARM_CONDITION_AL && info.condition < ARM_CONDITION_NV) {
 		cond = _armConditions[info.condition];
 	}
-	written = snprintf(buffer, blen, "%s%s ", mnemonic, cond);
+	const char* flags = "";
+	switch (info.mnemonic) {
+	case ARM_MN_LDM:
+	case ARM_MN_STM:
+		flags = armDirectionStrings[info.memory.direction];
+		break;
+	case ARM_MN_LDR:
+	case ARM_MN_STR:
+		flags = armAccessTypeStrings[info.memory.direction];
+		break;
+	default:
+		break;
+	}
+	written = snprintf(buffer, blen - 1, "%s%s%s ", mnemonic, flags, cond);
 	ADVANCE(written);
 
 	switch (info.mnemonic) {
-	case THUMB_MN_LDMIA:
-	case THUMB_MN_STMIA:
+	case ARM_MN_LDM:
+	case ARM_MN_STM:
 		written = _decodeRegister(info.memory.baseReg, buffer, blen);
 		ADVANCE(written);
 		strncpy(buffer, "!, ", blen);
 		ADVANCE(3);
-		// Fall through
-	case THUMB_MN_POP:
-	case THUMB_MN_PUSH:
 		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
 		ADVANCE(written);
 		break;
-	case THUMB_MN_B:
+	case ARM_MN_B:
 		written = _decodePCRelative(info.op1.immediate, pc, buffer, blen);
 		ADVANCE(written);
 		break;
