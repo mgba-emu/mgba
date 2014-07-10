@@ -17,7 +17,7 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 }
 
 static void _switchMode(struct GBASIO* sio) {
-	int mode = ((sio->rcnt >> 14) & 0xC) | ((sio->siocnt >> 12) & 0x3);
+	unsigned mode = ((sio->rcnt >> 14) & 0xC) | ((sio->siocnt >> 12) & 0x3);
 	enum GBASIOMode oldMode = sio->mode;
 	if (mode < 8) {
 		sio->mode = (enum GBASIOMode) (mode & 0x3);
