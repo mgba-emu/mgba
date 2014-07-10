@@ -136,7 +136,6 @@ struct ThumbInstructionInfo {
 	int operandFormat;
 	int branches;
 	int traps;
-	int accessesSpecialRegisters;
 	int affectsCPSR;
 	int condition;
 	int sDataCycles;
