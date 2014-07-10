@@ -26,8 +26,6 @@ static void _BgAffineSet(struct GBA* gba) {
 	float theta;
 	int offset = cpu->gprs[0];
 	int destination = cpu->gprs[1];
-	int diff = cpu->gprs[3];
-	UNUSED(diff); // Are we supposed to use this?
 	float a, b, c, d;
 	float rx, ry;
 	while (i--) {
