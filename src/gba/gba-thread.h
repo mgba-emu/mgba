@@ -84,7 +84,7 @@ int GBAThreadHasStarted(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
 
-void GBAThreadTryPause(struct GBAThread* threadContext);
+void GBAThreadInterrupt(struct GBAThread* threadContext);
 void GBAThreadContinue(struct GBAThread* threadContext);
 
 void GBAThreadPause(struct GBAThread* threadContext);
