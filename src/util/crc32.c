@@ -89,7 +89,7 @@ static uint32_t crc32Table[] = {
 };
 
 uint32_t crc32(const void* buf, size_t size) {
-	updateCrc32(0, buf, size);
+	return updateCrc32(0, buf, size);
 }
 
 uint32_t updateCrc32(uint32_t crc, const void* buf, size_t size) {
