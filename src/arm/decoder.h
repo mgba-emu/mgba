@@ -106,7 +106,9 @@ enum ARMMemoryAccessType {
 	ARM_ACCESS_HALFWORD = 2,
 	ARM_ACCESS_SIGNED_HALFWORD = 10,
 	ARM_ACCESS_BYTE = 1,
-	ARM_ACCESS_SIGNED_BYTE = 9
+	ARM_ACCESS_SIGNED_BYTE = 9,
+	ARM_ACCESS_TRANSLATED_WORD = 20,
+	ARM_ACCESS_TRANSLATED_BYTE = 17
 };
 
 struct ARMMemoryAccess {
@@ -137,6 +139,8 @@ enum ARMMnemonic {
 	ARM_MN_LSR,
 	ARM_MN_MLA,
 	ARM_MN_MOV,
+	ARM_MN_MRS,
+	ARM_MN_MSR,
 	ARM_MN_MUL,
 	ARM_MN_MVN,
 	ARM_MN_NEG,
@@ -151,6 +155,7 @@ enum ARMMnemonic {
 	ARM_MN_STR,
 	ARM_MN_SUB,
 	ARM_MN_SWI,
+	ARM_MN_SWP,
 	ARM_MN_TEQ,
 	ARM_MN_TST,
 	ARM_MN_UMLAL,
@@ -180,7 +185,8 @@ struct ARMInstructionInfo {
 	int cCycles;
 };
 
+void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
-int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen);
+int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
 
 #endif
