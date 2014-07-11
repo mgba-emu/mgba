@@ -202,7 +202,7 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, ADD, DATA, ARM_SP)
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
 		info->memory.width = TYPE; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
-			ARM_OPERAND_AFFECTED_1 | \
+			ARM_OPERAND_AFFECTED_1 | /* TODO: Remove this for STR */ \
 			ARM_OPERAND_MEMORY_2; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_REGISTER_OFFSET; \
@@ -220,6 +220,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, STR, STORE_CYCLES, ARM_ACCESS_WORD)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, STR, STORE_CYCLES, ARM_ACCESS_BYTE)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STR, STORE_CYCLES, ARM_ACCESS_HALFWORD)
 
+// TODO: Estimate memory cycles
 #define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, MNEMONIC, DIRECTION, ADDITIONAL_REG) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->memory.baseReg = RN; \
@@ -227,7 +228,8 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STR, STORE_CYCLES, ARM_ACCESS_HALFW
 		info->branches = info->op1.immediate & (1 << ARM_PC); \
 		info->operandFormat = ARM_OPERAND_MEMORY_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
-			ARM_MEMORY_POST_INCREMENT | DIRECTION;)
+			ARM_MEMORY_WRITEBACK | \
+			DIRECTION;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME) \
 	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## IA_R, NAME, ARM_MEMORY_INCREMENT_AFTER, 0)
@@ -422,8 +424,12 @@ int ARMDisassembleThumb(uint16_t opcode, uint32_t pc, char* buffer, int blen) {
 	case ARM_MN_STM:
 		written = _decodeRegister(info.memory.baseReg, buffer, blen);
 		ADVANCE(written);
-		strncpy(buffer, "!, ", blen - 1);
-		ADVANCE(3);
+		if (info.memory.format & ARM_MEMORY_WRITEBACK) {
+			strncpy(buffer, "!", blen - 1);
+			ADVANCE(1);
+		}
+		strncpy(buffer, ", ", blen - 1);
+		ADVANCE(2);
 		written = _decodeRegisterList(info.op1.immediate, buffer, blen);
 		ADVANCE(written);
 		break;
