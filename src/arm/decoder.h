@@ -43,8 +43,16 @@ enum ARMMemoryFormat {
 	ARM_MEMORY_SHIFTED_OFFSET =   0x0008,
 	ARM_MEMORY_PRE_INCREMENT =    0x0010,
 	ARM_MEMORY_POST_INCREMENT =   0x0020,
-	ARM_MEMORY_OFFSET_SUBTRACT =  0x0040
+	ARM_MEMORY_OFFSET_SUBTRACT =  0x0040,
+
+	ARM_MEMORY_WRITEBACK =        0x0080,
+	ARM_MEMORY_DECREMENT_AFTER =  0x0000,
+	ARM_MEMORY_INCREMENT_AFTER =  0x0100,
+	ARM_MEMORY_DECREMENT_BEFORE = 0x0200,
+	ARM_MEMORY_INCREMENT_BEFORE = 0x0300,
 };
+
+#define MEMORY_FORMAT_TO_DIRECTION(F) (((F) >> 8) & 0x7)
 
 enum ARMCondition {
 	ARM_CONDITION_EQ = 0x0,
@@ -77,13 +85,6 @@ union ARMOperand {
 	int32_t immediate;
 };
 
-enum ARMMultipleDirection {
-	ARM_DECREMENT_AFTER = 0,
-	ARM_INCREMENT_AFTER = 1,
-	ARM_DECREMENT_BEFORE = 2,
-	ARM_INCREMENT_BEFORE = 3,
-};
-
 enum ARMMemoryAccessType {
 	ARM_ACCESS_WORD = 4,
 	ARM_ACCESS_HALFWORD = 2,
@@ -96,10 +97,7 @@ struct ARMMemoryAccess {
 	uint8_t baseReg;
 	uint16_t format;
 	union ARMOperand offset;
-	union {
-		enum ARMMultipleDirection direction;
-		enum ARMMemoryAccessType width;
-	};
+	enum ARMMemoryAccessType width;
 };
 
 enum ARMMnemonic {
