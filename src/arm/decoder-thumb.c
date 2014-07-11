@@ -344,18 +344,28 @@ const char* armMnemonicStrings[] = {
 	"ldr",
 	"lsl",
 	"lsr",
+	"mla",
 	"mov",
 	"mul",
 	"mvn",
 	"neg",
 	"orr",
 	"ror",
-    "sbc",
-    "stm",
+	"rsb",
+	"rsc",
+	"sbc",
+	"smlal",
+	"smull"
+	"stm",
 	"str",
 	"sub",
 	"swi",
-	"tst"
+	"teq",
+	"tst",
+	"umlal",
+	"umull",
+
+	"ill"
 };
 
 const char* armDirectionStrings[] = {

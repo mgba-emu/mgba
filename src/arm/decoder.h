@@ -33,7 +33,15 @@ enum ARMOperandFormat {
 	ARM_OPERAND_AFFECTED_3 =         0x00080000,
 	ARM_OPERAND_SHIFT_REGISTER_3 =   0x00100000,
 	ARM_OPERAND_SHIFT_IMMEDIATE_3 =  0x00200000,
-	ARM_OPERAND_3 =                  0x00FF0000
+	ARM_OPERAND_3 =                  0x00FF0000,
+
+	ARM_OPERAND_REGISTER_4 =         0x01000000,
+	ARM_OPERAND_IMMEDIATE_4 =        0x02000000,
+	ARM_OPERAND_MEMORY_4 =           0x04000000,
+	ARM_OPERAND_AFFECTED_4 =         0x08000000,
+	ARM_OPERAND_SHIFT_REGISTER_4 =   0x10000000,
+	ARM_OPERAND_SHIFT_IMMEDIATE_4 =  0x20000000,
+	ARM_OPERAND_4 =                  0xFF000000
 };
 
 enum ARMMemoryFormat {
@@ -73,10 +81,19 @@ enum ARMCondition {
 	ARM_CONDITION_NV = 0xF
 };
 
+enum ARMShifterOperation {
+	ARM_SHIFT_NONE = 0,
+	ARM_SHIFT_LSL,
+	ARM_SHIFT_LSR,
+	ARM_SHIFT_ASR,
+	ARM_SHIFT_ROR,
+	ARM_SHIFT_RRX
+};
+
 union ARMOperand {
 	struct {
 		uint8_t reg;
-		uint8_t shifterOp;
+		enum ARMShifterOperation shifterOp;
 		union {
 			uint8_t shifterReg;
 			uint8_t shifterImm;
@@ -119,18 +136,26 @@ enum ARMMnemonic {
 	ARM_MN_LDR,
 	ARM_MN_LSL,
 	ARM_MN_LSR,
+	ARM_MN_MLA,
 	ARM_MN_MOV,
 	ARM_MN_MUL,
 	ARM_MN_MVN,
 	ARM_MN_NEG,
 	ARM_MN_ORR,
 	ARM_MN_ROR,
+	ARM_MN_RSB,
+	ARM_MN_RSC,
 	ARM_MN_SBC,
+	ARM_MN_SMLAL,
+	ARM_MN_SMULL,
 	ARM_MN_STM,
 	ARM_MN_STR,
 	ARM_MN_SUB,
 	ARM_MN_SWI,
+	ARM_MN_TEQ,
 	ARM_MN_TST,
+	ARM_MN_UMLAL,
+	ARM_MN_UMULL,
 
 	ARM_MN_MAX
 };
@@ -141,6 +166,7 @@ struct ARMInstructionInfo {
 	union ARMOperand op1;
 	union ARMOperand op2;
 	union ARMOperand op3;
+	union ARMOperand op4;
 	struct ARMMemoryAccess memory;
 	int operandFormat;
 	int branches;
