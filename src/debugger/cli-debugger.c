@@ -287,6 +287,39 @@ enum _DVParseState {
 	PARSE_EXPECT_SUFFIX,
 };
 
+enum Operation {
+	ASSIGN,
+	ADD,
+	SUBTRACT,
+	MULTIPLY,
+	DIVIDE
+};
+
+static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next) {
+	switch (operation) {
+	case ASSIGN:
+		current = next;
+		break;
+	case ADD:
+		current += next;
+		break;
+	case SUBTRACT:
+		current -= next;
+		break;
+	case MULTIPLY:
+		current *= next;
+		break;
+	case DIVIDE:
+		if (next != 0) {
+			current /= next;
+		} else {
+			return 0;
+		}
+		break;
+	}
+	return current;
+}
+
 static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
 	if (!string || length < 1) {
 		return 0;
@@ -295,6 +328,9 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 	enum _DVParseState state = PARSE_ROOT;
 	struct DebugVector dvTemp = { .type = INT_TYPE };
 	uint32_t current = 0;
+	uint32_t next = 0;
+
+	enum Operation operation = ASSIGN;
 
 	while (length > 0 && string[0] && string[0] != ' ' && state != PARSE_ERROR) {
 		char token = string[0];
@@ -325,14 +361,14 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case '8':
 			case '9':
 				state = PARSE_EXPECT_DECIMAL;
-				current = token - '0';
+				next = token - '0';
 				break;
 			case '0':
 				state = PARSE_EXPECT_PREFIX;
 				break;
 			case '$':
 				state = PARSE_EXPECT_HEX;
-				current = 0;
+				next = 0;
 				break;
 			default:
 				state = PARSE_ERROR;
@@ -342,7 +378,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		case PARSE_EXPECT_LR:
 			switch (token) {
 			case 'r':
-				current = debugger->d.cpu->gprs[ARM_LR];
+				next = debugger->d.cpu->gprs[ARM_LR];
 				state = PARSE_EXPECT_SUFFIX;
 				break;
 			default:
@@ -353,7 +389,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		case PARSE_EXPECT_PC:
 			switch (token) {
 			case 'c':
-				current = debugger->d.cpu->gprs[ARM_PC];
+				next = debugger->d.cpu->gprs[ARM_PC];
 				state = PARSE_EXPECT_SUFFIX;
 				break;
 			default:
@@ -364,7 +400,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		case PARSE_EXPECT_SP:
 			switch (token) {
 			case 'p':
-				current = debugger->d.cpu->gprs[ARM_SP];
+				next = debugger->d.cpu->gprs[ARM_SP];
 				state = PARSE_EXPECT_SUFFIX;
 				break;
 			default:
@@ -383,7 +419,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case '7':
 			case '8':
 			case '9':
-				current = debugger->d.cpu->gprs[token - '0'];
+				next = debugger->d.cpu->gprs[token - '0'];
 				state = PARSE_EXPECT_SUFFIX;
 				break;
 			case '1':
@@ -402,7 +438,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case '3':
 			case '4':
 			case '5':
-				current = debugger->d.cpu->gprs[token - '0' + 10];
+				next = debugger->d.cpu->gprs[token - '0' + 10];
 				state = PARSE_EXPECT_SUFFIX;
 				break;
 			default:
@@ -423,8 +459,32 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case '8':
 			case '9':
 				// TODO: handle overflow
-				current *= 10;
-				current += token - '0';
+				next *= 10;
+				next += token - '0';
+				break;
+			case '+':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = ADD;
+				break;
+			case '-':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = SUBTRACT;
+				break;
+			case '*':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = MULTIPLY;
+				break;
+			case '/':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = DIVIDE;
 				break;
 			default:
 				state = PARSE_ERROR;
@@ -443,8 +503,8 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case '8':
 			case '9':
 				// TODO: handle overflow
-				current *= 16;
-				current += token - '0';
+				next *= 16;
+				next += token - '0';
 				break;
 			case 'A':
 			case 'B':
@@ -453,8 +513,8 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case 'E':
 			case 'F':
 				// TODO: handle overflow
-				current *= 16;
-				current += token - 'A' + 10;
+				next *= 16;
+				next += token - 'A' + 10;
 				break;
 			case 'a':
 			case 'b':
@@ -463,8 +523,32 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			case 'e':
 			case 'f':
 				// TODO: handle overflow
-				current *= 16;
-				current += token - 'a' + 10;
+				next *= 16;
+				next += token - 'a' + 10;
+				break;
+			case '+':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = ADD;
+				break;
+			case '-':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = SUBTRACT;
+				break;
+			case '*':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = MULTIPLY;
+				break;
+			case '/':
+				current = _performOperation(operation, current, next);
+				next = 0;
+				state = PARSE_ROOT;
+				operation = DIVIDE;
 				break;
 			default:
 				state = PARSE_ERROR;
@@ -475,7 +559,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			switch (token) {
 			case 'X':
 			case 'x':
-				current = 0;
+				next = 0;
 				state = PARSE_EXPECT_HEX;
 				break;
 			default:
@@ -484,8 +568,26 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			}
 			break;
 		case PARSE_EXPECT_SUFFIX:
-			// TODO
-			state = PARSE_ERROR;
+			current = _performOperation(operation, current, next);
+			next = 0;
+			state = PARSE_ROOT;
+			switch (token) {
+			case '+':
+				operation = ADD;
+				break;
+			case '-':
+				operation = SUBTRACT;
+				break;
+			case '*':
+				operation = MULTIPLY;
+				break;
+			case '/':
+				operation = DIVIDE;
+				break;
+			default:
+				state = PARSE_ERROR;
+				break;
+			}
 			break;
 		case PARSE_ERROR:
 			// This shouldn't be reached
@@ -493,8 +595,10 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		}
 	}
 
+	current = _performOperation(operation, current, next);
+
 	struct DebugVector* dv = malloc(sizeof(struct DebugVector));
-	if (state == PARSE_ERROR) {
+	if (state == PARSE_ERROR || state == PARSE_ROOT) {
 		dv->type = ERROR_TYPE;
 		dv->next = 0;
 	} else {
