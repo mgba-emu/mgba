@@ -42,7 +42,8 @@ endif()
 
 set(DEBUGGER_SRC "${CMAKE_SOURCE_DIR}/src/debugger/debugger.c;${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c")
 
-if(USE_CLI_DEBUGGER)
+if(USE_CLI_DEBUGGER AND NOT WIN32)
+	# Win32 doesn't have a usable command line, nor libedit, so this is useless on Windows
 	add_definitions(-DUSE_CLI_DEBUGGER)
 	set(DEBUGGER_SRC "${DEBUGGER_SRC};${CMAKE_SOURCE_DIR}/src/debugger/cli-debugger.c")
 	set(DEBUGGER_LIB "edit")
