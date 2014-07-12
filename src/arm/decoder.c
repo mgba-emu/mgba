@@ -247,6 +247,22 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 	case ARM_MN_SWP:
 		flags = _armAccessTypeStrings[info->memory.width];
 		break;
+	case ARM_MN_ADD:
+	case ARM_MN_ADC:
+	case ARM_MN_AND:
+	case ARM_MN_BIC:
+	case ARM_MN_EOR:
+	case ARM_MN_MOV:
+	case ARM_MN_MVN:
+	case ARM_MN_ORR:
+	case ARM_MN_RSB:
+	case ARM_MN_RSC:
+	case ARM_MN_SBC:
+	case ARM_MN_SUB:
+		if (info->affectsCPSR && info->execMode == MODE_ARM) {
+			flags = "s";
+		}
+		break;
 	default:
 		break;
 	}

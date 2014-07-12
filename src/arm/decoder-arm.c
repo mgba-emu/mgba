@@ -392,6 +392,7 @@ static const ARMDecoder _armDecoderTable[0x1000] = {
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
+	info->execMode = MODE_ARM;
 	info->opcode = opcode;
 	info->branches = 0;
 	info->traps = 0;

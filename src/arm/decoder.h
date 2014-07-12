@@ -1,6 +1,8 @@
 #ifndef ARM_DECODER_H
 #define ARM_DECODER_H
 
+#include "arm.h"
+
 #include <stdint.h>
 
 // Bit 0: a register is involved with this operand
@@ -165,6 +167,7 @@ enum ARMMnemonic {
 };
 
 struct ARMInstructionInfo {
+	enum ExecutionMode execMode;
 	uint32_t opcode;
 	enum ARMMnemonic mnemonic;
 	union ARMOperand op1;

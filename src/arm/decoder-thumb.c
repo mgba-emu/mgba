@@ -312,6 +312,7 @@ static const ThumbDecoder _thumbDecoderTable[0x400] = {
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
+	info->execMode = MODE_THUMB;
 	info->opcode = opcode;
 	info->branches = 0;
 	info->traps = 0;
