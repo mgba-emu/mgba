@@ -28,6 +28,7 @@ typedef void (DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakInto(struct CLIDebugger*, struct DebugVector*);
 static void _continue(struct CLIDebugger*, struct DebugVector*);
+static void _disassemble(struct CLIDebugger*, struct DebugVector*);
 static void _next(struct CLIDebugger*, struct DebugVector*);
 static void _print(struct CLIDebugger*, struct DebugVector*);
 static void _printHex(struct CLIDebugger*, struct DebugVector*);
@@ -41,6 +42,7 @@ static void _clearBreakpoint(struct CLIDebugger*, struct DebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
+static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct {
 	const char* name;
@@ -52,6 +54,8 @@ static struct {
 	{ "continue", _continue },
 	{ "d", _clearBreakpoint },
 	{ "delete", _clearBreakpoint },
+	{ "dis", _disassemble },
+	{ "disasm", _disassemble },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "n", _next },
@@ -116,6 +120,39 @@ static void _next(struct CLIDebugger* debugger, struct DebugVector* dv) {
 	_printStatus(debugger, 0);
 }
 
+static void _disassemble(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	uint32_t address;
+	int size;
+	int wordSize;
+	enum ExecutionMode mode = debugger->d.cpu->executionMode;
+
+	if (mode == MODE_ARM) {
+		wordSize = WORD_SIZE_ARM;
+	} else {
+		wordSize = WORD_SIZE_THUMB;
+	}
+
+	if (!dv || dv->type != INT_TYPE) {
+		address = debugger->d.cpu->gprs[ARM_PC] - wordSize;
+	} else {
+		address = dv->intValue;
+		dv = dv->next;
+	}
+
+	if (!dv || dv->type != INT_TYPE) {
+		size = 1;
+	} else {
+		size = dv->intValue;
+		dv = dv->next; // TODO: Check for excess args
+	}
+
+	int i;
+	for (i = 0; i < size; ++i) {
+		_printLine(debugger, address, mode);
+		address += wordSize;
+	}
+}
+
 static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
 	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
@@ -138,12 +175,12 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 	if (mode == MODE_ARM) {
 		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 		ARMDecodeARM(instruction, &info);
-		ARMDisassemble(&info, debugger->d.cpu->gprs[ARM_PC] + WORD_SIZE_ARM, disassembly, sizeof(disassembly));
+		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		printf("%08X: %s\n", instruction, disassembly);
 	} else {
 		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 		ARMDecodeThumb(instruction, &info);
-		ARMDisassemble(&info, debugger->d.cpu->gprs[ARM_PC] + WORD_SIZE_THUMB, disassembly, sizeof(disassembly));
+		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
 		printf("%04X: %s\n", instruction, disassembly);
 	}
 }
