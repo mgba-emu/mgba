@@ -732,7 +732,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 static void _cliDebuggerInit(struct ARMDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	// TODO: get argv[0]
-	cliDebugger->elstate = el_init("gbac", stdin, stdout, stderr);
+	cliDebugger->elstate = el_init(BINARY_NAME, stdin, stdout, stderr);
 	el_set(cliDebugger->elstate, EL_PROMPT, _prompt);
 	el_set(cliDebugger->elstate, EL_EDITOR, "emacs");
 

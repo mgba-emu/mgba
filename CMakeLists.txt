@@ -19,6 +19,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+add_definitions(-DBINARY_NAME="${BINARY_NAME}" -DPROJECT_NAME="${PROJECT_NAME}")
+
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	set(OS_LIB "${OS_LIB};Ws2_32")
