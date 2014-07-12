@@ -295,46 +295,46 @@ enum Operation {
 	DIVIDE
 };
 
-static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next) {
+static void _performOperation(enum Operation operation, uint32_t next, struct DebugVector* dv) {
 	switch (operation) {
 	case ASSIGN:
-		current = next;
+		dv->intValue = next;
 		break;
 	case ADD:
-		current += next;
+		dv->intValue += next;
 		break;
 	case SUBTRACT:
-		current -= next;
+		dv->intValue -= next;
 		break;
 	case MULTIPLY:
-		current *= next;
+		dv->intValue *= next;
 		break;
 	case DIVIDE:
 		if (next != 0) {
-			current /= next;
+			dv->intValue /= next;
 		} else {
-			return 0;
+			dv->type = ERROR_TYPE;
+			return;
 		}
 		break;
 	}
-	return current;
 }
 
-static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
+static size_t _parseExpression(struct CLIDebugger* debugger, const char* string, size_t length, struct DebugVector* dv) {
 	if (!string || length < 1) {
 		return 0;
 	}
 
-	enum _DVParseState state = PARSE_ROOT;
-	struct DebugVector dvTemp = { .type = INT_TYPE };
-	uint32_t current = 0;
 	uint32_t next = 0;
+	size_t adjusted = 0;
 
+	enum _DVParseState state = PARSE_ROOT;
 	enum Operation operation = ASSIGN;
 
 	while (length > 0 && string[0] && string[0] != ' ' && state != PARSE_ERROR) {
 		char token = string[0];
 		++string;
+		++adjusted;
 		--length;
 		switch (state) {
 		case PARSE_ROOT:
@@ -463,25 +463,25 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 				next += token - '0';
 				break;
 			case '+':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = ADD;
 				break;
 			case '-':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = SUBTRACT;
 				break;
 			case '*':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = MULTIPLY;
 				break;
 			case '/':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = DIVIDE;
@@ -527,25 +527,25 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 				next += token - 'a' + 10;
 				break;
 			case '+':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = ADD;
 				break;
 			case '-':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = SUBTRACT;
 				break;
 			case '*':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = MULTIPLY;
 				break;
 			case '/':
-				current = _performOperation(operation, current, next);
+				_performOperation(operation, next, dv);
 				next = 0;
 				state = PARSE_ROOT;
 				operation = DIVIDE;
@@ -568,7 +568,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 			}
 			break;
 		case PARSE_EXPECT_SUFFIX:
-			current = _performOperation(operation, current, next);
+			_performOperation(operation, next, dv);
 			next = 0;
 			state = PARSE_ROOT;
 			switch (token) {
@@ -595,14 +595,33 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		}
 	}
 
-	current = _performOperation(operation, current, next);
+	if (state == PARSE_ERROR) {
+		dv->type = ERROR_TYPE;
+	} else {
+		_performOperation(operation, next, dv);
+	}
+	return adjusted;
+}
+
+static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
+	if (!string || length < 1) {
+		return 0;
+	}
+
+	struct DebugVector dvTemp = { .type = INT_TYPE };
+
+	size_t adjusted = _parseExpression(debugger, string, length, &dvTemp);
+	if (adjusted > length) {
+		dvTemp.type = ERROR_TYPE;
+	}
+	length -= adjusted;
+	string += adjusted;
 
 	struct DebugVector* dv = malloc(sizeof(struct DebugVector));
-	if (state == PARSE_ERROR || state == PARSE_ROOT) {
+	if (dvTemp.type == ERROR_TYPE) {
 		dv->type = ERROR_TYPE;
 		dv->next = 0;
 	} else {
-		dvTemp.intValue = current;
 		*dv = dvTemp;
 		if (string[0] == ' ') {
 			dv->next = _DVParse(debugger, string + 1, length - 1);
