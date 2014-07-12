@@ -3,8 +3,6 @@
 
 #include "arm.h"
 
-#include <stdint.h>
-
 // Bit 0: a register is involved with this operand
 // Bit 1: an immediate is invovled with this operand
 // Bit 2: a memory access is invovled with this operand

@@ -1,12 +1,8 @@
 #include "decoder.h"
 
-#include "arm.h"
 #include "decoder-inlines.h"
 #include "emitter-thumb.h"
 #include "isa-inlines.h"
-
-#include <stdio.h>
-#include <string.h>
 
 #define DEFINE_THUMB_DECODER(NAME, MNEMONIC, BODY) \
 	static void _ThumbDecode ## NAME (uint16_t opcode, struct ARMInstructionInfo* info) { \

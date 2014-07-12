@@ -1,12 +1,8 @@
 #include "decoder.h"
 
-#include "arm.h"
 #include "decoder-inlines.h"
 #include "emitter-arm.h"
 #include "isa-inlines.h"
-
-#include <stdio.h>
-#include <string.h>
 
 #define ADDR_MODE_1_SHIFT(OP) \
 	info->op3.reg = opcode & 0x0000000F; \
