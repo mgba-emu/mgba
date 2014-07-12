@@ -1,4 +1,5 @@
 #include "cli-debugger.h"
+#include "decoder.h"
 
 #include <signal.h>
 
@@ -132,13 +133,18 @@ static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
-	// TODO: write a disassembler
+	char disassembly[48];
+	struct ARMInstructionInfo info;
 	if (mode == MODE_ARM) {
 		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
-		printf("%08X\n", instruction);
+		ARMDecodeARM(instruction, &info);
+		ARMDisassemble(&info, debugger->d.cpu->gprs[ARM_PC] + WORD_SIZE_ARM, disassembly, sizeof(disassembly));
+		printf("%08X: %s\n", instruction, disassembly);
 	} else {
 		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
-		printf("%04X\n", instruction);
+		ARMDecodeThumb(instruction, &info);
+		ARMDisassemble(&info, debugger->d.cpu->gprs[ARM_PC] + WORD_SIZE_THUMB, disassembly, sizeof(disassembly));
+		printf("%04X: %s\n", instruction, disassembly);
 	}
 }
 
