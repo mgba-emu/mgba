@@ -248,15 +248,6 @@
 	DEFINE_LOAD_STORE_T_DECODER_SET_ARM(NAME ## _ROR_, MNEMONIC, ADDR_MODE_2_ROR, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_T_DECODER_SET_ARM(NAME ## I, MNEMONIC, ADDR_MODE_2_IMM, CYCLES, TYPE)
 
-#define DECREMENT_AFTER uint32_t addr = cpu->gprs[rn]
-#define INCREMENT_AFTER uint32_t addr = cpu->gprs[rn]
-#define DECREMENT_BEFORE uint32_t addr = cpu->gprs[rn] - 4
-#define INCREMENT_BEFORE uint32_t addr = cpu->gprs[rn] + 4
-#define DECREMENT_AFTERW cpu->gprs[rn] = addr
-#define INCREMENT_AFTERW cpu->gprs[rn] = addr
-#define DECREMENT_BEFOREW cpu->gprs[rn] = addr + 4
-#define INCREMENT_BEFOREW cpu->gprs[rn] = addr - 4
-
 #define DEFINE_LOAD_STORE_MULTIPLE_DECODER_EX_ARM(NAME, MNEMONIC, DIRECTION, WRITEBACK) \
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
 		info->memory.baseReg = (opcode >> 16) & 0xF; \
