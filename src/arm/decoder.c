@@ -46,6 +46,12 @@ static int _decodeRegister(int reg, char* buffer, int blen) {
 	case ARM_PC:
 		strncpy(buffer, "pc", blen - 1);
 		return 2;
+	case ARM_CPSR:
+		strncpy(buffer, "cpsr", blen - 1);
+		return 4;
+	case ARM_SPSR:
+		strncpy(buffer, "spsr", blen - 1);
+		return 4;
 	default:
 		return snprintf(buffer, blen - 1, "r%i", reg);
 	}

@@ -166,6 +166,11 @@ enum ARMMnemonic {
 	ARM_MN_MAX
 };
 
+enum {
+	ARM_CPSR = 16,
+	ARM_SPSR = 17
+};
+
 struct ARMInstructionInfo {
 	enum ExecutionMode execMode;
 	uint32_t opcode;
