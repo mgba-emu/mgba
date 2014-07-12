@@ -250,7 +250,7 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 	default:
 		break;
 	}
-	written = snprintf(buffer, blen - 1, "%s%s%s ", mnemonic, flags, cond);
+	written = snprintf(buffer, blen - 1, "%s%s%s ", mnemonic, cond, flags);
 	ADVANCE(written);
 
 	switch (info->mnemonic) {
