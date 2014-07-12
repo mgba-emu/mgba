@@ -606,6 +606,9 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 		*dv = dvTemp;
 		if (string[0] == ' ') {
 			dv->next = _DVParse(debugger, string + 1, length - 1);
+			if (dv->next && dv->next->type == ERROR_TYPE) {
+				dv->type = ERROR_TYPE;
+			}
 		}
 	}
 	return dv;
