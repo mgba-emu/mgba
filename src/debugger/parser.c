@@ -84,7 +84,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '*':
 			case '/':
 				lv->token.type = TOKEN_IDENTIFIER_TYPE;
-				lv->token.identifierValue = strndup(tokenStart, string - tokenStart);
+				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;

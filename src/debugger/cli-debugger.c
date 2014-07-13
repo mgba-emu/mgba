@@ -300,13 +300,41 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 	return current;
 }
 
-static uint32_t _evaluateParseTree(struct ParseTree* tree, struct DebugVector* dv) {
+static uint32_t _lookupIdentifier(struct ARMDebugger* debugger, const char* name, struct DebugVector* dv) {
+	if (strcmp(name, "sp") == 0) {
+		return debugger->cpu->gprs[ARM_SP];
+	}
+	if (strcmp(name, "lr") == 0) {
+		return debugger->cpu->gprs[ARM_LR];
+	}
+	if (strcmp(name, "pc") == 0) {
+		return debugger->cpu->gprs[ARM_PC];
+	}
+	if (strcmp(name, "cpsr") == 0) {
+		return debugger->cpu->cpsr.packed;
+	}
+	// TODO: test if mode has SPSR
+	if (strcmp(name, "spsr") == 0) {
+		return debugger->cpu->spsr.packed;
+	}
+	if (name[0] == 'r' && name[1] >= '0' && name[1] <= '9') {
+		int reg = atoi(&name[1]);
+		if (reg < 16) {
+			return debugger->cpu->gprs[reg];
+		}
+	}
+	dv->type = DV_ERROR_TYPE;
+	return 0;
+}
+
+static uint32_t _evaluateParseTree(struct ARMDebugger* debugger, struct ParseTree* tree, struct DebugVector* dv) {
 	switch (tree->token.type) {
 	case TOKEN_UINT_TYPE:
 		return tree->token.uintValue;
 	case TOKEN_OPERATOR_TYPE:
-		return _performOperation(tree->token.operatorValue, _evaluateParseTree(tree->lhs, dv), _evaluateParseTree(tree->rhs, dv), dv);
+		return _performOperation(tree->token.operatorValue, _evaluateParseTree(debugger, tree->lhs, dv), _evaluateParseTree(debugger, tree->rhs, dv), dv);
 	case TOKEN_IDENTIFIER_TYPE:
+		return _lookupIdentifier(debugger, tree->token.identifierValue, dv);
 	case TOKEN_ERROR_TYPE:
 		dv->type = DV_ERROR_TYPE;
 	}
@@ -332,7 +360,7 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 	if (tree.token.type == TOKEN_ERROR_TYPE) {
 		dvTemp.type = DV_ERROR_TYPE;
 	} else {
-		dvTemp.intValue = _evaluateParseTree(&tree, &dvTemp);
+		dvTemp.intValue = _evaluateParseTree(&debugger->d, &tree, &dvTemp);
 	}
 
 	parseFree(tree.lhs);
