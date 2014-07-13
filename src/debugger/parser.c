@@ -289,5 +289,9 @@ void parseFree(struct ParseTree* tree) {
 
 	parseFree(tree->lhs);
 	parseFree(tree->rhs);
+
+	if (tree->token.type == TOKEN_IDENTIFIER_TYPE) {
+		free(tree->token.identifierValue);
+	}
 	free(tree);
 }
