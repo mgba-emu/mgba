@@ -11,6 +11,7 @@ enum LexState {
 	LEX_EXPECT_DECIMAL,
 	LEX_EXPECT_HEX,
 	LEX_EXPECT_PREFIX,
+	LEX_EXPECT_OPERATOR
 };
 
 enum Operation {
@@ -27,6 +28,8 @@ struct Token {
 		TOKEN_UINT_TYPE,
 		TOKEN_IDENTIFIER_TYPE,
 		TOKEN_OPERATOR_TYPE,
+		TOKEN_OPEN_PAREN_TYPE,
+		TOKEN_CLOSE_PAREN_TYPE,
 	} type;
 	union {
 		uint32_t uintValue;

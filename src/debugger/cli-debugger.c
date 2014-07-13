@@ -336,6 +336,7 @@ static uint32_t _evaluateParseTree(struct ARMDebugger* debugger, struct ParseTre
 	case TOKEN_IDENTIFIER_TYPE:
 		return _lookupIdentifier(debugger, tree->token.identifierValue, dv);
 	case TOKEN_ERROR_TYPE:
+	default:
 		dv->type = DV_ERROR_TYPE;
 	}
 	return 0;

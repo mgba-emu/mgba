@@ -25,6 +25,7 @@ static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	lv = lvNext;
 	lvNext = malloc(sizeof(struct LexVector));
 	lvNext->next = lv->next;
+	lvNext->token.type = TOKEN_ERROR_TYPE;
 	lv->next = lvNext;
 	return lvNext;
 }
@@ -39,6 +40,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 
 	enum LexState state = LEX_ROOT;
 	const char* tokenStart = 0;
+	struct LexVector* lvNext;
 
 	while (length > 0 && string[0] && string[0] != ' ' && state != LEX_ERROR) {
 		char token = string[0];
@@ -68,6 +70,15 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				state = LEX_EXPECT_HEX;
 				next = 0;
 				break;
+			case '(':
+				state = LEX_ROOT;
+				lv->token.type = TOKEN_OPEN_PAREN_TYPE;
+				lvNext = malloc(sizeof(struct LexVector));
+				lvNext->next = lv->next;
+				lvNext->token.type = TOKEN_ERROR_TYPE;
+				lv->next = lvNext;
+				lv = lvNext;
+				break;
 			default:
 				if (tolower(token) >= 'a' && tolower(token <= 'z')) {
 					state = LEX_EXPECT_IDENTIFIER;
@@ -87,6 +98,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
+				break;
+			case ')':
+				lv->token.type = TOKEN_IDENTIFIER_TYPE;
+				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
+				state = LEX_EXPECT_OPERATOR;
 				break;
 			default:
 				break;
@@ -116,6 +132,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv->token.uintValue = next;
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
+				break;
+			case ')':
+				lv->token.type = TOKEN_UINT_TYPE;
+				lv->token.uintValue = next;
+				state = LEX_EXPECT_OPERATOR;
 				break;
 			default:
 				state = LEX_ERROR;
@@ -166,6 +187,11 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
+			case ')':
+				lv->token.type = TOKEN_UINT_TYPE;
+				lv->token.uintValue = next;
+				state = LEX_EXPECT_OPERATOR;
+				break;
 			default:
 				state = LEX_ERROR;
 				break;
@@ -183,6 +209,23 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				break;
 			}
 			break;
+		case LEX_EXPECT_OPERATOR:
+			switch (token) {
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+				lvNext = malloc(sizeof(struct LexVector));
+				lvNext->next = lv->next;
+				lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
+				lv->next = lvNext;
+				lv = _lexOperator(lv->next, token);
+				state = LEX_ROOT;
+				break;
+			default:
+				state = LEX_ERROR;
+			}
+			break;
 		case LEX_ERROR:
 			// This shouldn't be reached
 			break;
@@ -198,6 +241,12 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 	case LEX_EXPECT_IDENTIFIER:
 		lv->token.type = TOKEN_IDENTIFIER_TYPE;
 		lv->token.identifierValue = strndup(tokenStart, string - tokenStart);
+		break;
+	case LEX_EXPECT_OPERATOR:
+		lvNext = malloc(sizeof(struct LexVector));
+		lvNext->next = lv->next;
+		lvNext->token.type = TOKEN_CLOSE_PAREN_TYPE;
+		lv->next = lvNext;
 		break;
 	case LEX_ERROR:
 	default:
@@ -222,7 +271,7 @@ static struct ParseTree* _parseTreeCreate() {
 	return tree;
 }
 
-static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVector* lv, int precedence) {
+static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVector* lv, int precedence, int openParens) {
 	struct ParseTree* newTree = 0;
 	while (lv) {
 		int newPrecedence;
@@ -237,6 +286,16 @@ static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVect
 				return 0;
 			}
 			break;
+		case TOKEN_OPEN_PAREN_TYPE:
+			lv = _parseExpression(tree, lv->next, INT_MAX, openParens + 1);
+			break;
+		case TOKEN_CLOSE_PAREN_TYPE:
+			if (openParens <= 0) {
+				tree->token.type = TOKEN_ERROR_TYPE;
+				return 0;
+			}
+			return lv->next;
+			break;
 		case TOKEN_OPERATOR_TYPE:
 			newPrecedence = _operatorPrecedence[lv->token.operatorValue];
 			if (newPrecedence < precedence) {
@@ -245,7 +304,7 @@ static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVect
 				tree->lhs = newTree;
 				tree->rhs = _parseTreeCreate();
 				tree->token = lv->token;
-				lv = _parseExpression(tree->rhs, lv->next, newPrecedence);
+				lv = _parseExpression(tree->rhs, lv->next, newPrecedence, openParens);
 				if (tree->token.type == TOKEN_ERROR_TYPE) {
 					tree->token.type = TOKEN_ERROR_TYPE;
 				}
@@ -271,7 +330,7 @@ void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv) {
 	tree->lhs = 0;
 	tree->rhs = 0;
 
-	_parseExpression(tree, lv, _operatorPrecedence[OP_ASSIGN]);
+	_parseExpression(tree, lv, _operatorPrecedence[OP_ASSIGN], 0);
 }
 
 void lexFree(struct LexVector* lv) {
