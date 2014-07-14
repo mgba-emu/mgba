@@ -118,12 +118,14 @@ struct GBAMemory {
 	uint16_t romID;
 	int fullBios;
 
-	char waitstates32[256];
-	char waitstates16[256];
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
-	char waitstatesPrefetch32[256];
-	char waitstatesPrefetch16[256];
+	char waitstatesNonseq32[256];
+	char waitstatesNonseq16[256];
+	char waitstatesPrefetchSeq32[16];
+	char waitstatesPrefetchSeq16[16];
+	char waitstatesPrefetchNonseq32[16];
+	char waitstatesPrefetchNonseq16[16];
 	int activeRegion;
 	uint32_t biosPrefetch;
 

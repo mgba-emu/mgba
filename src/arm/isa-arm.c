@@ -590,7 +590,7 @@ DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
 	cpu->memory.store32(cpu, addr, cpu->gprs[i], 0);,
-	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activePrefetchCycles32)
+	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
 
 DEFINE_INSTRUCTION_ARM(SWP,
 	int rm = opcode & 0xF;

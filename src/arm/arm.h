@@ -91,10 +91,12 @@ struct ARMMemory {
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;
-	uint32_t activePrefetchCycles32;
-	uint32_t activePrefetchCycles16;
+	uint32_t activeSeqCycles32;
+	uint32_t activeSeqCycles16;
 	uint32_t activeNonseqCycles32;
 	uint32_t activeNonseqCycles16;
+	uint32_t activeUncachedCycles32;
+	uint32_t activeUncachedCycles16;
 	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
 	int (*waitMultiple)(struct ARMCore*, uint32_t startAddress, int count);
 };

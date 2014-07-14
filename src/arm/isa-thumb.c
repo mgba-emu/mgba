@@ -34,10 +34,10 @@
 	D = M - N; \
 	THUMB_SUBTRACTION_S(m, n, D)
 
-#define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activePrefetchCycles16)
+#define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
 #define THUMB_STORE_POST_BODY \
-	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activePrefetchCycles16;
+	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
 	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \

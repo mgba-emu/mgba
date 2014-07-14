@@ -46,12 +46,12 @@
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM) + WORD_SIZE_ARM; \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC] - WORD_SIZE_ARM); \
-	currentCycles += 2 + cpu->memory.activeNonseqCycles32 + cpu->memory.activePrefetchCycles32;
+	currentCycles += 2 + cpu->memory.activeUncachedCycles32 + cpu->memory.activeSeqCycles32;
 
 #define THUMB_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB) + WORD_SIZE_THUMB; \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC] - WORD_SIZE_THUMB); \
-	currentCycles += 2 + cpu->memory.activeNonseqCycles16 + cpu->memory.activePrefetchCycles16;
+	currentCycles += 2 + cpu->memory.activeUncachedCycles16 + cpu->memory.activeSeqCycles16;
 
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {
 	return mode != MODE_SYSTEM && mode != MODE_USER;
