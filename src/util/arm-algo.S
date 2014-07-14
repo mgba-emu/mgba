@@ -29,6 +29,7 @@ bne .L1
 pop {r4-r10}
 bx lr
 
+#ifdef __ARM_NEON
 # r0: Destination
 # r1: Source
 # r2: Width
@@ -90,3 +91,4 @@ mov r0, r7
 bne .n40
 pop {r4-r7}
 bx lr
+#endif
