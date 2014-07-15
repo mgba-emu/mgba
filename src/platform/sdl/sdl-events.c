@@ -118,6 +118,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					context->frameCallback = _pauseAfterFrame;
 					GBAThreadUnpause(context);
 					break;
+				case SDLK_r:
+					GBAThreadReset(context);
+					break;
 				default:
 					break;
 				}

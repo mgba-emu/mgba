@@ -18,6 +18,7 @@ enum ThreadState {
 	THREAD_INTERRUPTING,
 	THREAD_PAUSED,
 	THREAD_PAUSING,
+	THREAD_RESETING,
 	THREAD_EXITING,
 	THREAD_SHUTDOWN
 };
@@ -82,6 +83,7 @@ void GBAMapOptionsToContext(struct StartupOptions*, struct GBAThread*);
 int GBAThreadStart(struct GBAThread* threadContext);
 int GBAThreadHasStarted(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
+void GBAThreadReset(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
 
 void GBAThreadInterrupt(struct GBAThread* threadContext);

@@ -146,6 +146,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 				ARMRun(&cpu);
 			}
 		}
+
+		int resetScheduled = 0;
 		MutexLock(&threadContext->stateMutex);
 		if (threadContext->state == THREAD_PAUSING) {
 			threadContext->state = THREAD_PAUSED;
@@ -155,10 +157,17 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			threadContext->state = THREAD_INTERRUPTED;
 			ConditionWake(&threadContext->stateCond);
 		}
+		if (threadContext->state == THREAD_RESETING) {
+			threadContext->state = THREAD_RUNNING;
+			resetScheduled = 1;
+		}
 		while (threadContext->state == THREAD_PAUSED) {
 			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 		}
 		MutexUnlock(&threadContext->stateMutex);
+		if (resetScheduled) {
+			ARMReset(&cpu);
+		}
 	}
 
 	while (threadContext->state != THREAD_SHUTDOWN) {
@@ -252,6 +261,14 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 	threadContext->sync.audioWait = 0;
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 	MutexUnlock(&threadContext->sync.audioBufferMutex);
+}
+
+void GBAThreadReset(struct GBAThread* threadContext) {
+	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
+	threadContext->state = THREAD_RESETING;
+	ConditionWake(&threadContext->stateCond);
+	MutexUnlock(&threadContext->stateMutex);
 }
 
 void GBAThreadJoin(struct GBAThread* threadContext) {
