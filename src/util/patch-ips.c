@@ -1,15 +1,16 @@
 #include "util/patch-ips.h"
 
 #include "util/patch.h"
+#include "util/vfile.h"
 
 static size_t _IPSOutputSize(struct Patch* patch, size_t inSize);
 static bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize);
 
 bool loadPatchIPS(struct Patch* patch) {
-	lseek(patch->patchfd, 0, SEEK_SET);
+	patch->vf->seek(patch->vf, 0, SEEK_SET);
 
 	char buffer[5];
-	if (read(patch->patchfd, buffer, 5) != 5) {
+	if (patch->vf->read(patch->vf, buffer, 5) != 5) {
 		return false;
 	}
 
@@ -17,8 +18,8 @@ bool loadPatchIPS(struct Patch* patch) {
 		return false;
 	}
 
-	lseek(patch->patchfd, -3, SEEK_END);
-	if (read(patch->patchfd, buffer, 3) != 3) {
+	patch->vf->seek(patch->vf, -3, SEEK_END);
+	if (patch->vf->read(patch->vf, buffer, 3) != 3) {
 		return false;
 	}
 
@@ -37,7 +38,7 @@ size_t _IPSOutputSize(struct Patch* patch, size_t inSize) {
 }
 
 bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
-	if (lseek(patch->patchfd, 5, SEEK_SET) != 5) {
+	if (patch->vf->seek(patch->vf, 5, SEEK_SET) != 5) {
 		return false;
 	}
 	uint8_t* buf = out;
@@ -46,7 +47,7 @@ bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 		uint32_t offset = 0;
 		uint16_t size = 0;
 
-		if (read(patch->patchfd, &offset, 3) != 3) {
+		if (patch->vf->read(patch->vf, &offset, 3) != 3) {
 			return false;
 		}
 
@@ -55,17 +56,17 @@ bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 		}
 
 		offset = (offset >> 16) | (offset & 0xFF00) | ((offset << 16) & 0xFF0000);
-		if (read(patch->patchfd, &size, 2) != 2) {
+		if (patch->vf->read(patch->vf, &size, 2) != 2) {
 			return false;
 		}
 		if (!size) {
 			// RLE chunk
-			if (read(patch->patchfd, &size, 2) != 2) {
+			if (patch->vf->read(patch->vf, &size, 2) != 2) {
 				return false;
 			}
 			size = (size >> 8) | (size << 8);
 			uint8_t byte;
-			if (read(patch->patchfd, &byte, 1) != 1) {
+			if (patch->vf->read(patch->vf, &byte, 1) != 1) {
 				return false;
 			}
 			if (offset + size > outSize) {
@@ -77,7 +78,7 @@ bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 			if (offset + size > outSize) {
 				return false;
 			}
-			if (read(patch->patchfd, &buf[offset], size) != size) {
+			if (patch->vf->read(patch->vf, &buf[offset], size) != size) {
 				return false;
 			}
 		}

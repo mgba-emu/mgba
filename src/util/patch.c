@@ -3,8 +3,8 @@
 #include "util/patch-ips.h"
 #include "util/patch-ups.h"
 
-bool loadPatch(int patchfd, struct Patch* patch) {
-	patch->patchfd = patchfd;
+bool loadPatch(struct VFile* vf, struct Patch* patch) {
+	patch->vf = vf;
 
 	if (loadPatchIPS(patch)) {
 		return true;

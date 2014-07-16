@@ -7,6 +7,7 @@
 #include "debugger/debugger.h"
 
 #include "util/patch.h"
+#include "util/vfile.h"
 
 #include <signal.h>
 
@@ -114,7 +115,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			GBALoadBIOS(&gba, threadContext->biosFd);
 		}
 
-		if (threadContext->patchFd >= 0 && loadPatch(threadContext->patchFd, &patch)) {
+		if (threadContext->patchFd >= 0 && loadPatch(VFileFromFD(threadContext->patchFd), &patch)) {
 			GBAApplyPatch(&gba, &patch);
 		}
 	}
