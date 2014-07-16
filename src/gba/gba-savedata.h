@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+struct VFile;
+
 enum SavedataType {
 	SAVEDATA_NONE = 0,
 	SAVEDATA_SRAM,
@@ -55,7 +57,7 @@ struct GBASavedata {
 	uint8_t* data;
 	const char* filename;
 	enum SavedataCommand command;
-	int fd;
+	struct VFile* vf;
 
 	int readBitsRemaining;
 	int readAddress;

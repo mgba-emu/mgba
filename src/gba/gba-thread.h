@@ -47,9 +47,9 @@ struct GBAThread {
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
-	int fd;
-	int biosFd;
-	int patchFd;
+	struct VFile* fd;
+	struct VFile* biosFd;
+	struct VFile* patchFd;
 	const char* fname;
 	int activeKeys;
 	int frameskip;

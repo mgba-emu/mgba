@@ -5,6 +5,7 @@
 #include "gba-thread.h"
 
 #include "util/memory.h"
+#include "util/vfile.h"
 
 #include <fcntl.h>
 
@@ -62,43 +63,47 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioDeserialize(&gba->audio, state);
 }
 
-static int _getStateFd(struct GBA* gba, int slot) {
+static struct VFile* _getStateVf(struct GBA* gba, int slot) {
 	char path[PATH_MAX];
 	path[PATH_MAX - 1] = '\0';
 	snprintf(path, PATH_MAX - 1, "%s.ss%d", gba->activeFile, slot);
-	int fd = open(path, O_CREAT | O_RDWR, 0777);
-	if (fd >= 0) {
-		ftruncate(fd, sizeof(struct GBASerializedState));
+	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	if (vf) {
+		vf->truncate(vf, sizeof(struct GBASerializedState));
 	}
-	return fd;
+	return vf;
 }
 
 bool GBASaveState(struct GBA* gba, int slot) {
-	int fd = _getStateFd(gba, slot);
-	if (fd < 0) {
+	struct VFile* vf = _getStateVf(gba, slot);
+	if (!vf) {
 		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(fd);
+	struct GBASerializedState* state = GBAMapState(vf);
 	GBASerialize(gba, state);
-	GBADeallocateState(state);
-	close(fd);
+	GBAUnmapState(vf, state);
+	vf->close(vf);
 	return true;
 }
 
 bool GBALoadState(struct GBA* gba, int slot) {
-	int fd = _getStateFd(gba, slot);
-	if (fd < 0) {
+	struct VFile* vf = _getStateVf(gba, slot);
+	if (!vf) {
 		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(fd);
+	struct GBASerializedState* state = GBAMapState(vf);
 	GBADeserialize(gba, state);
-	GBADeallocateState(state);
-	close(fd);
+	GBAUnmapState(vf, state);
+	vf->close(vf);
 	return true;
 }
 
-struct GBASerializedState* GBAMapState(int fd) {
-	return fileMemoryMap(fd, sizeof(struct GBASerializedState), MEMORY_WRITE);
+struct GBASerializedState* GBAMapState(struct VFile* vf) {
+	return vf->map(vf, sizeof(struct GBASerializedState), MEMORY_WRITE);
+}
+
+void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state) {
+	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

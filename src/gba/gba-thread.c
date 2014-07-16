@@ -89,7 +89,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
 
-	if (threadContext->fd >= 0) {
+	if (threadContext->fd) {
 		if (threadContext->fname) {
 			char* dotPoint = strrchr(threadContext->fname, '.');
 			if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
@@ -111,11 +111,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 		gba.savefile = savedata;
 		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
-		if (threadContext->biosFd >= 0) {
+		if (threadContext->biosFd) {
 			GBALoadBIOS(&gba, threadContext->biosFd);
 		}
 
-		if (threadContext->patchFd >= 0 && loadPatch(VFileFromFD(threadContext->patchFd), &patch)) {
+		if (threadContext->patchFd && loadPatch(threadContext->patchFd, &patch)) {
 			GBAApplyPatch(&gba, &patch);
 		}
 	}
@@ -191,10 +191,10 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 }
 
 void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
-	threadContext->fd = opts->fd;
+	threadContext->fd = VFileFromFD(opts->fd);
 	threadContext->fname = opts->fname;
-	threadContext->biosFd = opts->biosFd;
-	threadContext->patchFd = opts->patchFd;
+	threadContext->biosFd = VFileFromFD(opts->biosFd);
+	threadContext->patchFd = VFileFromFD(opts->patchFd);
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;

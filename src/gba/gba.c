@@ -7,8 +7,7 @@
 
 #include "util/memory.h"
 #include "util/patch.h"
-
-#include <sys/stat.h>
+#include "util/vfile.h"
 
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
@@ -134,6 +133,9 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->rotationSource = 0;
 	gba->rumble = 0;
 
+	gba->romVf = 0;
+	gba->biosVf = 0;
+
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
@@ -143,7 +145,15 @@ void GBADestroy(struct GBA* gba) {
 	if (gba->pristineRom == gba->memory.rom) {
 		gba->memory.rom = 0;
 	}
-	mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
+
+	if (gba->romVf) {
+		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+	}
+
+	if (gba->biosVf) {
+		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
+	}
+
 	GBAMemoryDeinit(gba);
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
@@ -363,13 +373,13 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = 0;
 }
 
-void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
-	struct stat info;
-	gba->pristineRom = fileMemoryMap(fd, SIZE_CART0, MEMORY_READ);
+void GBALoadROM(struct GBA* gba, struct VFile* vf, const char* fname) {
+	gba->romVf = vf;
+	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
+	vf->seek(vf, 0, SEEK_SET);
+	gba->pristineRom = vf->map(vf, SIZE_CART0, MEMORY_READ);
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
-	fstat(fd, &info);
-	gba->pristineRomSize = info.st_size;
 	gba->memory.romSize = gba->pristineRomSize;
 	if (gba->savefile) {
 		GBASavedataInit(&gba->memory.savedata, gba->savefile);
@@ -379,8 +389,9 @@ void GBALoadROM(struct GBA* gba, int fd, const char* fname) {
 	// TODO: error check
 }
 
-void GBALoadBIOS(struct GBA* gba, int fd) {
-	gba->memory.bios = fileMemoryMap(fd, SIZE_BIOS, MEMORY_READ);
+void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
+	gba->biosVf = vf;
+	gba->memory.bios = vf->map(vf, SIZE_BIOS, MEMORY_READ);
 	gba->memory.fullBios = 1;
 	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 	GBALog(gba, GBA_LOG_DEBUG, "BIOS Checksum: 0x%X", checksum);
