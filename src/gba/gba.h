@@ -104,7 +104,6 @@ struct GBA {
 	struct VFile* biosVf;
 
 	const char* activeFile;
-	const char* savefile;
 
 	int logLevel;
 	GBALogHandler logHandler;
@@ -143,7 +142,7 @@ void GBAHalt(struct GBA* gba);
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBALoadROM(struct GBA* gba, struct VFile* vf, const char* fname);
+void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 

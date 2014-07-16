@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>

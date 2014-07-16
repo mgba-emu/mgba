@@ -55,7 +55,6 @@ enum {
 struct GBASavedata {
 	enum SavedataType type;
 	uint8_t* data;
-	const char* filename;
 	enum SavedataCommand command;
 	struct VFile* vf;
 
@@ -70,7 +69,7 @@ struct GBASavedata {
 	enum FlashStateMachine flashState;
 };
 
-void GBASavedataInit(struct GBASavedata* savedata, const char* filename);
+void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);

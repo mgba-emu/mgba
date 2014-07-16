@@ -12,13 +12,12 @@ static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
 
-void GBASavedataInit(struct GBASavedata* savedata, const char* filename) {
+void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->type = SAVEDATA_NONE;
 	savedata->data = 0;
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
-	savedata->vf = 0;
-	savedata->filename = filename;
+	savedata->vf = vf;
 }
 
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
@@ -47,7 +46,6 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 		case SAVEDATA_NONE:
 			break;
 		}
-		savedata->vf->close(savedata->vf);
 		savedata->vf = 0;
 	} else {
 		switch (savedata->type) {
@@ -78,10 +76,8 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->vf = VFileOpen(savedata->filename, O_RDWR | O_CREAT);
 	off_t end;
 	if (!savedata->vf) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
@@ -105,10 +101,8 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->vf = VFileOpen(savedata->filename, O_RDWR | O_CREAT);
 	off_t end;
 	if (!savedata->vf) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
@@ -130,10 +124,8 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->vf = VFileOpen(savedata->filename, O_RDWR | O_CREAT);
 	off_t end;
 	if (!savedata->vf) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM);
 	} else {

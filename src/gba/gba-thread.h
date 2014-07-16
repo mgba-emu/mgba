@@ -48,6 +48,7 @@ struct GBAThread {
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
 	struct VFile* fd;
+	struct VFile* saveFd;
 	struct VFile* biosFd;
 	struct VFile* patchFd;
 	const char* fname;

@@ -59,7 +59,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct GBAThread* threadContext = context;
 	struct ARMComponent* components[1] = {};
 	int numComponents = 0;
-	char* savedata = 0;
 
 	if (threadContext->debugger) {
 		components[numComponents] = &threadContext->debugger->d;
@@ -90,27 +89,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	if (threadContext->fd) {
-		if (threadContext->fname) {
-			char* dotPoint = strrchr(threadContext->fname, '.');
-			if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
-				savedata = strdup(threadContext->fname);
-				dotPoint = strrchr(savedata, '.');
-				dotPoint[1] = 's';
-				dotPoint[2] = 'a';
-				dotPoint[3] = 'v';
-				dotPoint[4] = '\0';
-			} else if (dotPoint) {
-				savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
-				strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
-				strcat(savedata, "sav");
-			} else {
-				savedata = malloc(strlen(threadContext->fname + 5));
-				strcpy(savedata, threadContext->fname);
-				strcat(savedata, "sav");
-			}
-		}
-		gba.savefile = savedata;
-		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
+		GBALoadROM(&gba, threadContext->fd, threadContext->saveFd, threadContext->fname);
 		if (threadContext->biosFd) {
 			GBALoadBIOS(&gba, threadContext->biosFd);
 		}
@@ -185,7 +164,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
-	free(savedata);
 
 	return 0;
 }
@@ -214,6 +192,29 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (threadContext->fname && !threadContext->saveFd) {
+		char* savedata = 0;
+		char* dotPoint = strrchr(threadContext->fname, '.');
+		if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
+			savedata = strdup(threadContext->fname);
+			dotPoint = strrchr(savedata, '.');
+			dotPoint[1] = 's';
+			dotPoint[2] = 'a';
+			dotPoint[3] = 'v';
+			dotPoint[4] = '\0';
+		} else if (dotPoint) {
+			savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
+			strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
+			strcat(savedata, "sav");
+		} else {
+			savedata = malloc(strlen(threadContext->fname + 5));
+			strcpy(savedata, threadContext->fname);
+			strcat(savedata, "sav");
+		}
+		threadContext->saveFd = VFileOpen(savedata, O_RDWR | O_CREAT);
+		free(savedata);
 	}
 
 	MutexInit(&threadContext->stateMutex);

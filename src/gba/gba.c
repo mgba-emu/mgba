@@ -109,7 +109,6 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	struct GBA* gba = (struct GBA*) component;
 	gba->cpu = cpu;
 	gba->debugger = 0;
-	gba->savefile = 0;
 
 	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
@@ -373,7 +372,7 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = 0;
 }
 
-void GBALoadROM(struct GBA* gba, struct VFile* vf, const char* fname) {
+void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
 	vf->seek(vf, 0, SEEK_SET);
@@ -381,9 +380,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, const char* fname) {
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
-	if (gba->savefile) {
-		GBASavedataInit(&gba->memory.savedata, gba->savefile);
-	}
+	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAGPIOInit(&gba->memory.gpio, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
 	// TODO: error check
