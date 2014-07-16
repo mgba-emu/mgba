@@ -128,7 +128,6 @@ struct GBACartridge {
 void GBACreate(struct GBA* gba);
 void GBADestroy(struct GBA* gba);
 
-void GBABInterruptHandlerInit(struct ARMInterruptHandler* board);
 void GBAReset(struct ARMCore* cpu);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
