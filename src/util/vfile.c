@@ -18,10 +18,10 @@ struct VFileFD {
 };
 
 static bool _vfdClose(struct VFile* vf);
-static size_t _vfdSeek(struct VFile* vf, off_t offset, int whence);
-static size_t _vfdRead(struct VFile* vf, void* buffer, size_t size);
-static size_t _vfdReadline(struct VFile* vf, char* buffer, size_t size);
-static size_t _vfdWrite(struct VFile* vf, void* buffer, size_t size);
+static off_t _vfdSeek(struct VFile* vf, off_t offset, int whence);
+static ssize_t _vfdRead(struct VFile* vf, void* buffer, size_t size);
+static ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size);
+static ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size);
 static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
@@ -63,17 +63,17 @@ bool _vfdClose(struct VFile* vf) {
 	return true;
 }
 
-size_t _vfdSeek(struct VFile* vf, off_t offset, int whence) {
+off_t _vfdSeek(struct VFile* vf, off_t offset, int whence) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	return lseek(vfd->fd, offset, whence);
 }
 
-size_t _vfdRead(struct VFile* vf, void* buffer, size_t size) {
+ssize_t _vfdRead(struct VFile* vf, void* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	return read(vfd->fd, buffer, size);
 }
 
-size_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
+ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
@@ -86,7 +86,7 @@ size_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
 	return buffer[bytesRead] = '\0';
 }
 
-size_t _vfdWrite(struct VFile* vf, void* buffer, size_t size) {
+ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	return write(vfd->fd, buffer, size);
 }
