@@ -200,7 +200,7 @@ void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threa
 	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
 }
 
-int GBAThreadStart(struct GBAThread* threadContext) {
+bool GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
@@ -239,11 +239,11 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	return 0;
+	return true;
 }
 
-int GBAThreadHasStarted(struct GBAThread* threadContext) {
-	int hasStarted;
+bool GBAThreadHasStarted(struct GBAThread* threadContext) {
+	bool hasStarted;
 	MutexLock(&threadContext->stateMutex);
 	hasStarted = threadContext->state > THREAD_INITIALIZED;
 	MutexUnlock(&threadContext->stateMutex);
@@ -357,8 +357,8 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
-int GBAThreadIsPaused(struct GBAThread* threadContext) {
-	int isPaused;
+bool GBAThreadIsPaused(struct GBAThread* threadContext) {
+	bool isPaused;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	isPaused = threadContext->state == THREAD_PAUSED;
@@ -367,7 +367,7 @@ int GBAThreadIsPaused(struct GBAThread* threadContext) {
 }
 
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
-	int frameOn = 1;
+	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED) {
@@ -378,7 +378,7 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
 		}
 		threadContext->state = THREAD_PAUSED;
-		frameOn = 0;
+		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
 	MutexLock(&threadContext->sync.videoFrameMutex);
@@ -430,20 +430,20 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	}
 }
 
-int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
+bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync) {
-		return 1;
+		return true;
 	}
 
 	MutexLock(&sync->videoFrameMutex);
 	ConditionWake(&sync->videoFrameRequiredCond);
 	if (!sync->videoFrameOn) {
-		return 0;
+		return false;
 	}
 	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
-	return 1;
+	return true;
 }
 
 void GBASyncWaitFrameEnd(struct GBASync* sync) {
@@ -454,7 +454,7 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-int GBASyncDrawingFrame(struct GBASync* sync) {
+bool GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
 }
 

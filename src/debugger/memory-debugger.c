@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-static int _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width);
+static bool _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
@@ -46,14 +46,14 @@ CREATE_WATCHPOINT_SHIM(store8, 1, void, (struct ARMCore* cpu, uint32_t address, 
 CREATE_SHIM(waitMultiple, int, (struct ARMCore* cpu, uint32_t startAddress, int count), startAddress, count)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
-static int _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width) {
+static bool _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width) {
 	width -= 1;
 	for (; watchpoints; watchpoints = watchpoints->next) {
 		if (!((watchpoints->address ^ address) & ~width)) {
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {

@@ -395,7 +395,7 @@ static void _DVFree(struct DebugVector* dv) {
 	}
 }
 
-static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
+static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	struct DebugVector* dv = 0;
@@ -405,7 +405,7 @@ static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) 
 		if (dv && dv->type == DV_ERROR_TYPE) {
 			printf("Parse error\n");
 			_DVFree(dv);
-			return 0;
+			return false;
 		}
 	} else {
 		cmdLength = count;
@@ -420,12 +420,12 @@ static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) 
 		if (strncasecmp(name, line, cmdLength) == 0) {
 			_debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
-			return 1;
+			return true;
 		}
 	}
 	_DVFree(dv);
 	printf("Command not found\n");
-	return 0;
+	return false;
 }
 
 static char* _prompt(EditLine* el) {

@@ -3,18 +3,18 @@
 #include "util/patch-ips.h"
 #include "util/patch-ups.h"
 
-int loadPatch(int patchfd, struct Patch* patch) {
+bool loadPatch(int patchfd, struct Patch* patch) {
 	patch->patchfd = patchfd;
 
 	if (loadPatchIPS(patch)) {
-		return 1;
+		return true;
 	}
 
 	if (loadPatchUPS(patch)) {
-		return 1;
+		return true;
 	}
 
 	patch->outputSize = 0;
 	patch->applyPatch = 0;
-	return 0;
+	return false;
 }

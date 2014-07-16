@@ -16,7 +16,7 @@ struct GBASDLEvents {
 #endif
 };
 
-int GBASDLInitEvents(struct GBASDLEvents*);
+bool GBASDLInitEvents(struct GBASDLEvents*);
 void GBASDLDeinitEvents(struct GBASDLEvents*);
 
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event);

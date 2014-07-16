@@ -30,7 +30,7 @@ struct StartupOptions {
 
 struct SubParser {
 	const char* usage;
-	int (*parse)(struct SubParser* parser, int option, const char* arg);
+	bool (*parse)(struct SubParser* parser, int option, const char* arg);
 	const char* extraOptions;
 	void* opts;
 };
@@ -42,7 +42,7 @@ struct GraphicsOpts {
 	int height;
 };
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser);
+bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser);
 void usage(const char* arg0, const char* extraOptions);
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);

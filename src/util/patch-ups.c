@@ -12,19 +12,19 @@ enum {
 };
 
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
-static int _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize);
+static bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize);
 static size_t _UPSDecodeLength(int fd);
 
-int loadPatchUPS(struct Patch* patch) {
+bool loadPatchUPS(struct Patch* patch) {
 	lseek(patch->patchfd, 0, SEEK_SET);
 
 	char buffer[BUFFER_SIZE];
 	if (read(patch->patchfd, buffer, 4) != 4) {
-		return 0;
+		return false;
 	}
 
 	if (memcmp(buffer, "UPS1", 4) != 0) {
-		return 0;
+		return false;
 	}
 
 	size_t filesize = lseek(patch->patchfd, 0, SEEK_END);
@@ -32,7 +32,7 @@ int loadPatchUPS(struct Patch* patch) {
 	uint32_t goodCrc32;
 	lseek(patch->patchfd, PATCH_CHECKSUM, SEEK_END);
 	if (read(patch->patchfd, &goodCrc32, 4) != 4) {
-		return 0;
+		return false;
 	}
 
 	size_t blocksize;
@@ -53,12 +53,12 @@ int loadPatchUPS(struct Patch* patch) {
 	}
 
 	if (crc != goodCrc32) {
-		return 0;
+		return false;
 	}
 
 	patch->outputSize = _UPSOutputSize;
 	patch->applyPatch = _UPSApplyPatch;
-	return 1;
+	return true;
 }
 
 size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
@@ -70,14 +70,14 @@ size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
 	return _UPSDecodeLength(patch->patchfd);
 }
 
-int _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
+bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 	// TODO: Input checksum
 
 	size_t filesize = lseek(patch->patchfd, 0, SEEK_END);
 	lseek(patch->patchfd, 4, SEEK_SET);
 	_UPSDecodeLength(patch->patchfd); // Discard input size
 	if (_UPSDecodeLength(patch->patchfd) != outSize) {
-		return 0;
+		return false;
 	}
 
 	size_t offset = 0;
@@ -87,9 +87,9 @@ int _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 		offset += _UPSDecodeLength(patch->patchfd);
 		uint8_t byte;
 
-		while (1) {
+		while (true) {
 			if (read(patch->patchfd, &byte, 1) != 1) {
-				return 0;
+				return false;
 			}
 			buf[offset] ^= byte;
 			++offset;
@@ -103,21 +103,21 @@ int _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 	uint32_t goodCrc32;
 	lseek(patch->patchfd, OUT_CHECKSUM, SEEK_END);
 	if (read(patch->patchfd, &goodCrc32, 4) != 4) {
-		return 0;
+		return false;
 	}
 
 	lseek(patch->patchfd, 0, SEEK_SET);
 	if (crc32(out, outSize) != goodCrc32) {
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
 }
 
 size_t _UPSDecodeLength(int fd) {
 	size_t shift = 1;
 	size_t value = 0;
 	uint8_t byte;
-	while (1) {
+	while (true) {
 		if (read(fd, &byte, 1) != 1) {
 			break;
 		}

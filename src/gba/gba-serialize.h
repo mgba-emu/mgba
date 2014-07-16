@@ -228,8 +228,8 @@ struct GBASerializedState {
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
 
-int GBASaveState(struct GBA* gba, int slot);
-int GBALoadState(struct GBA* gba, int slot);
+bool GBASaveState(struct GBA* gba, int slot);
+bool GBALoadState(struct GBA* gba, int slot);
 
 struct GBASerializedState* GBAMapState(int fd);
 struct GBASerializedState* GBAAllocateState(void);

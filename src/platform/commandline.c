@@ -36,9 +36,9 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-int _parseGraphicsArg(struct SubParser* parser, int option, const char* arg);
+bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg);
 
-int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser) {
 	memset(opts, 0, sizeof(*opts));
 	opts->fd = -1;
 	opts->biosFd = -1;
@@ -66,7 +66,7 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 #ifdef USE_CLI_DEBUGGER
 		case 'd':
 			if (opts->debuggerType != DEBUGGER_NONE) {
-				return 0;
+				return false;
 			}
 			opts->debuggerType = DEBUGGER_CLI;
 			break;
@@ -74,7 +74,7 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 #ifdef USE_GDB_STUB
 		case 'g':
 			if (opts->debuggerType != DEBUGGER_NONE) {
-				return 0;
+				return false;
 			}
 			opts->debuggerType = DEBUGGER_GDB;
 			break;
@@ -91,7 +91,7 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 		default:
 			if (subparser) {
 				if (!subparser->parse(subparser, ch, optarg)) {
-					return 0;
+					return false;
 				}
 			}
 			break;
@@ -104,10 +104,10 @@ int parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, s
 	} else if (argc == 0) {
 		opts->fname = _defaultFilename;
 	} else {
-		return 0;
+		return false;
 	}
 	opts->fd = open(opts->fname, O_RDONLY);
-	return 1;
+	return true;
 }
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) {
@@ -121,39 +121,39 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	opts->height = 160;
 }
 
-int _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
+bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
 	UNUSED(arg);
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
 		graphicsOpts->fullscreen = 1;
-		return 1;
+		return true;
 	case '2':
 		if (graphicsOpts->multiplier != 1) {
-			return 0;
+			return false;
 		}
 		graphicsOpts->multiplier = 2;
 		graphicsOpts->width *= graphicsOpts->multiplier;
 		graphicsOpts->height *= graphicsOpts->multiplier;
-		return 1;
+		return true;
 	case '3':
 		if (graphicsOpts->multiplier != 1) {
-			return 0;
+			return false;
 		}
 		graphicsOpts->multiplier = 3;
 		graphicsOpts->width *= graphicsOpts->multiplier;
 		graphicsOpts->height *= graphicsOpts->multiplier;
-		return 1;
+		return true;
 	case '4':
 		if (graphicsOpts->multiplier != 1) {
-			return 0;
+			return false;
 		}
 		graphicsOpts->multiplier = 4;
 		graphicsOpts->width *= graphicsOpts->multiplier;
 		graphicsOpts->height *= graphicsOpts->multiplier;
-		return 1;
+		return true;
 	default:
-		return 0;
+		return false;
 	}
 }
 

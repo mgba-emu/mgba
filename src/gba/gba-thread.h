@@ -27,7 +27,7 @@ struct GBASync {
 	int videoFramePending;
 	int videoFrameWait;
 	int videoFrameSkip;
-	int videoFrameOn;
+	bool videoFrameOn;
 	Mutex videoFrameMutex;
 	Condition videoFrameAvailableCond;
 	Condition videoFrameRequiredCond;
@@ -80,8 +80,8 @@ struct GBAThread {
 
 void GBAMapOptionsToContext(struct StartupOptions*, struct GBAThread*);
 
-int GBAThreadStart(struct GBAThread* threadContext);
-int GBAThreadHasStarted(struct GBAThread* threadContext);
+bool GBAThreadStart(struct GBAThread* threadContext);
+bool GBAThreadHasStarted(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
 void GBAThreadReset(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
@@ -91,14 +91,14 @@ void GBAThreadContinue(struct GBAThread* threadContext);
 
 void GBAThreadPause(struct GBAThread* threadContext);
 void GBAThreadUnpause(struct GBAThread* threadContext);
-int GBAThreadIsPaused(struct GBAThread* threadContext);
+bool GBAThreadIsPaused(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 
 void GBASyncPostFrame(struct GBASync* sync);
-int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
+bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
-int GBASyncDrawingFrame(struct GBASync* sync);
+bool GBASyncDrawingFrame(struct GBASync* sync);
 
 void GBASyncProduceAudio(struct GBASync* sync, int wait);
 void GBASyncLockAudio(struct GBASync* sync);

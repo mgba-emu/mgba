@@ -1,8 +1,10 @@
 #ifndef PATCH_UPS_H
 #define PATCH_UPS_H
 
+#include "common.h"
+
 struct Patch;
 
-int loadPatchUPS(struct Patch* patch);
+bool loadPatchUPS(struct Patch* patch);
 
 #endif

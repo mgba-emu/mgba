@@ -13,7 +13,7 @@ struct GBASDLAudio {
 	struct GBAAudio* audio;
 };
 
-int GBASDLInitAudio(struct GBASDLAudio* context);
+bool GBASDLInitAudio(struct GBASDLAudio* context);
 void GBASDLDeinitAudio(struct GBASDLAudio* context);
 
 #endif

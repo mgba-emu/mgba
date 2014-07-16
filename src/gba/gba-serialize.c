@@ -73,28 +73,28 @@ static int _getStateFd(struct GBA* gba, int slot) {
 	return fd;
 }
 
-int GBASaveState(struct GBA* gba, int slot) {
+bool GBASaveState(struct GBA* gba, int slot) {
 	int fd = _getStateFd(gba, slot);
 	if (fd < 0) {
-		return 0;
+		return false;
 	}
 	struct GBASerializedState* state = GBAMapState(fd);
 	GBASerialize(gba, state);
 	GBADeallocateState(state);
 	close(fd);
-	return 1;
+	return true;
 }
 
-int GBALoadState(struct GBA* gba, int slot) {
+bool GBALoadState(struct GBA* gba, int slot) {
 	int fd = _getStateFd(gba, slot);
 	if (fd < 0) {
-		return 0;
+		return false;
 	}
 	struct GBASerializedState* state = GBAMapState(fd);
 	GBADeserialize(gba, state);
 	GBADeallocateState(state);
 	close(fd);
-	return 1;
+	return true;
 }
 
 struct GBASerializedState* GBAMapState(int fd) {

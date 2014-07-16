@@ -11,7 +11,7 @@ const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAAudioEnvelope* envelope);
-static int _updateSweep(struct GBAAudioChannel1* ch);
+static bool _updateSweep(struct GBAAudioChannel1* ch);
 static int32_t _updateChannel1(struct GBAAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAAudioChannel2* ch);
 static int32_t _updateChannel3(struct GBAAudioChannel3* ch);
@@ -497,7 +497,7 @@ static void _updateEnvelope(struct GBAAudioEnvelope* envelope) {
 	}
 }
 
-static int _updateSweep(struct GBAAudioChannel1* ch) {
+static bool _updateSweep(struct GBAAudioChannel1* ch) {
 	if (ch->sweep.direction) {
 		int frequency = ch->control.frequency;
 		frequency -= frequency >> ch->sweep.shift;
@@ -510,11 +510,11 @@ static int _updateSweep(struct GBAAudioChannel1* ch) {
 		if (frequency < 2048) {
 			ch->control.frequency = frequency;
 		} else {
-			return 0;
+			return false;
 		}
 	}
 	ch->nextSweep += ch->sweep.time * SWEEP_CYCLES;
-	return 1;
+	return true;
 }
 
 static int32_t _updateChannel1(struct GBAAudioChannel1* ch) {

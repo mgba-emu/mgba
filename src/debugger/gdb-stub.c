@@ -500,7 +500,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 	}
-	while (1) {
+	while (true) {
 		ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
 		if (messageLen == 0) {
 			goto connectionLost;
