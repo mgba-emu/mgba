@@ -4,11 +4,9 @@
 #include "emitter-arm.h"
 #include "isa-inlines.h"
 
-enum {
-	PSR_USER_MASK = 0xF0000000,
-	PSR_PRIV_MASK = 0x000000CF,
-	PSR_STATE_MASK = 0x00000020
-};
+#define PSR_USER_MASK   0xF0000000
+#define PSR_PRIV_MASK   0x000000CF
+#define PSR_STATE_MASK  0x00000020
 
 // Addressing mode 1
 static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
