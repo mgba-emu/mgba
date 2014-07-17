@@ -23,6 +23,7 @@
 
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
+	{ "dirmode",      required_argument, 0, 'D' },
 	{ "frameskip", required_argument, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
 	{ "debug",     no_argument, 0, 'd' },
@@ -41,7 +42,7 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 
 	int ch;
 	char options[64] =
-		"b:l:p:s:"
+		"b:Dl:p:s:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -57,6 +58,9 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 		switch (ch) {
 		case 'b':
 			opts->bios = strdup(optarg);
+			break;
+		case 'D':
+			opts->dirmode = true;
 			break;
 #ifdef USE_CLI_DEBUGGER
 		case 'd':

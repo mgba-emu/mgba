@@ -169,7 +169,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 }
 
 void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
-	threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
+	if (opts->dirmode) {
+		threadContext->gamedir = VDirOpen(opts->fname);
+	} else {
+		threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
+	}
 	threadContext->fname = opts->fname;
 	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
 	threadContext->patch = VFileOpen(opts->patch, O_RDONLY);
@@ -192,6 +196,26 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (threadContext->gamedir) {
+		threadContext->gamedir->rewind(threadContext->gamedir);
+		struct VDirEntry* dirent = threadContext->gamedir->listNext(threadContext->gamedir);
+		while (dirent) {
+			struct Patch patchTemp;
+			struct VFile* vf = threadContext->gamedir->openFile(threadContext->gamedir, dirent->name(dirent), O_RDONLY);
+			if (!vf) {
+				continue;
+			}
+			if (!threadContext->rom && GBAIsROM(vf)) {
+				threadContext->rom = vf;
+			} else if (!threadContext->patch && loadPatch(vf, &patchTemp)) {
+				threadContext->patch = vf;
+			} else {
+				vf->close(vf);
+			}
+			dirent = threadContext->gamedir->listNext(threadContext->gamedir);
+		}
 	}
 
 	if (threadContext->fname && !threadContext->save) {

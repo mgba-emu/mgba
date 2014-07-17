@@ -22,6 +22,7 @@ struct VDirEntry {
 
 struct VDir {
 	bool (*close)(struct VDir* vd);
+	void (*rewind)(struct VDir* vd);
 	struct VDirEntry* (*listNext)(struct VDir* vd);
 	struct VFile* (*openFile)(struct VDir* vd, const char* name, int mode);
 };

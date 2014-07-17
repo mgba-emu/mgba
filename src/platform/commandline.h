@@ -18,6 +18,7 @@ struct StartupOptions {
 	char* fname;
 	char* bios;
 	char* patch;
+	bool dirmode;
 	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;

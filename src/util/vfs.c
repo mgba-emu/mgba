@@ -30,6 +30,7 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
 
 static bool _vdClose(struct VDir* vd);
+static void _vdRewind(struct VDir* vd);
 static struct VDirEntry* _vdListNext(struct VDir* vd);
 static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
 
@@ -171,6 +172,7 @@ struct VDir* VDirOpen(const char* path) {
 	}
 
 	vd->d.close = _vdClose;
+	vd->d.rewind = _vdRewind;
 	vd->d.listNext = _vdListNext;
 	vd->d.openFile = _vdOpenFile;
 	vd->path = strdup(path);
@@ -189,6 +191,11 @@ bool _vdClose(struct VDir* vd) {
 	free(vdde->path);
 	free(vdde);
 	return true;
+}
+
+void _vdRewind(struct VDir* vd) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	rewinddir(vdde->de);
 }
 
 struct VDirEntry* _vdListNext(struct VDir* vd) {
