@@ -88,13 +88,13 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
 
-	if (threadContext->fd) {
-		GBALoadROM(&gba, threadContext->fd, threadContext->saveFd, threadContext->fname);
-		if (threadContext->biosFd) {
-			GBALoadBIOS(&gba, threadContext->biosFd);
+	if (threadContext->rom) {
+		GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
+		if (threadContext->bios) {
+			GBALoadBIOS(&gba, threadContext->bios);
 		}
 
-		if (threadContext->patchFd && loadPatch(threadContext->patchFd, &patch)) {
+		if (threadContext->patch && loadPatch(threadContext->patch, &patch)) {
 			GBAApplyPatch(&gba, &patch);
 		}
 	}
@@ -169,10 +169,10 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 }
 
 void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
-	threadContext->fd = VFileOpen(opts->fname, O_RDONLY);
+	threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
 	threadContext->fname = opts->fname;
-	threadContext->biosFd = VFileOpen(opts->bios, O_RDONLY);
-	threadContext->patchFd = VFileOpen(opts->patch, O_RDONLY);
+	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
+	threadContext->patch = VFileOpen(opts->patch, O_RDONLY);
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
@@ -194,7 +194,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = 0;
 	}
 
-	if (threadContext->fname && !threadContext->saveFd) {
+	if (threadContext->fname && !threadContext->save) {
 		char* savedata = 0;
 		char* dotPoint = strrchr(threadContext->fname, '.');
 		if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
@@ -213,7 +213,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			strcpy(savedata, threadContext->fname);
 			strcat(savedata, "sav");
 		}
-		threadContext->saveFd = VFileOpen(savedata, O_RDWR | O_CREAT);
+		threadContext->save = VFileOpen(savedata, O_RDWR | O_CREAT);
 		free(savedata);
 	}
 
@@ -301,6 +301,26 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		}
 	}
 	free(threadContext->rewindBuffer);
+
+	if (threadContext->rom) {
+		threadContext->rom->close(threadContext->rom);
+		threadContext->rom = 0;
+	}
+
+	if (threadContext->save) {
+		threadContext->save->close(threadContext->save);
+		threadContext->save = 0;
+	}
+
+	if (threadContext->bios) {
+		threadContext->bios->close(threadContext->bios);
+		threadContext->bios = 0;
+	}
+
+	if (threadContext->patch) {
+		threadContext->patch->close(threadContext->patch);
+		threadContext->patch = 0;
+	}
 }
 
 void GBAThreadInterrupt(struct GBAThread* threadContext) {
