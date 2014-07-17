@@ -134,8 +134,8 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 		if (vfz->offset < vfz->readSize) {
 			size_t diff = vfz->readSize - vfz->offset;
 			void* start = &((uint8_t*) vfz->buffer)[vfz->offset];
-			if (diff > size) {
-				diff = size;
+			if (diff > size - bytesRead) {
+				diff = size - bytesRead;
 			}
 			if (buffer) {
 				void* bufferOffset = &((uint8_t*) buffer)[bytesRead];
