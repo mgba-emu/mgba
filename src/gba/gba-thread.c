@@ -201,7 +201,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = 0;
 	}
 
-	if (!GBAIsROM(threadContext->rom)) {
+	if (threadContext->rom && !GBAIsROM(threadContext->rom)) {
 		threadContext->rom->close(threadContext->rom);
 		threadContext->rom = 0;
 	}
@@ -224,6 +224,10 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			}
 			dirent = threadContext->gamedir->listNext(threadContext->gamedir);
 		}
+	}
+
+	if (!threadContext->rom) {
+		return false;
 	}
 
 	if (threadContext->fname && !threadContext->save) {
