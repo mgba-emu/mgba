@@ -15,10 +15,9 @@ enum DebuggerType {
 };
 
 struct StartupOptions {
-	int fd;
-	const char* fname;
-	int biosFd;
-	int patchFd;
+	char* fname;
+	char* bios;
+	char* patch;
 	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;
@@ -43,6 +42,8 @@ struct GraphicsOpts {
 };
 
 bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser);
+void freeOptions(struct StartupOptions* opts);
+
 void usage(const char* arg0, const char* extraOptions);
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);

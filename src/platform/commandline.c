@@ -21,18 +21,16 @@
 	"  -4               4x viewport\n" \
 	"  -f               Start full-screen"
 
-static const char* _defaultFilename = "test.rom";
-
 static const struct option _options[] = {
-	{ "bios", 1, 0, 'b' },
-	{ "patch", 1, 0, 'p' },
-	{ "frameskip", 1, 0, 's' },
+	{ "bios",      required_argument, 0, 'b' },
+	{ "frameskip", required_argument, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
-	{ "debug", 1, 0, 'd' },
+	{ "debug",     no_argument, 0, 'd' },
 #endif
 #ifdef USE_GDB_STUB
-	{ "gdb", 1, 0, 'g' },
+	{ "gdb",       no_argument, 0, 'g' },
 #endif
+	{ "patch",     required_argument, 0, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -40,9 +38,6 @@ bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg);
 
 bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser) {
 	memset(opts, 0, sizeof(*opts));
-	opts->fd = -1;
-	opts->biosFd = -1;
-	opts->patchFd = -1;
 
 	int ch;
 	char options[64] =
@@ -61,7 +56,7 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
 		case 'b':
-			opts->biosFd = open(optarg, O_RDONLY);
+			opts->bios = strdup(optarg);
 			break;
 #ifdef USE_CLI_DEBUGGER
 		case 'd':
@@ -83,7 +78,7 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 			opts->logLevel = atoi(optarg);
 			break;
 		case 'p':
-			opts->patchFd = open(optarg, O_RDONLY);
+			opts->patch = strdup(optarg);
 			break;
 		case 's':
 			opts->frameskip = atoi(optarg);
@@ -99,15 +94,22 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 	}
 	argc -= optind;
 	argv += optind;
-	if (argc == 1) {
-		opts->fname = argv[0];
-	} else if (argc == 0) {
-		opts->fname = _defaultFilename;
-	} else {
+	if (argc != 1) {
 		return false;
 	}
-	opts->fd = open(opts->fname, O_RDONLY);
+	opts->fname = strdup(argv[0]);
 	return true;
+}
+
+void freeOptions(struct StartupOptions* opts) {
+	free(opts->fname);
+	opts->fname = 0;
+
+	free(opts->bios);
+	opts->bios = 0;
+
+	free(opts->patch);
+	opts->patch = 0;
 }
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) {

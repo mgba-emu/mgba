@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
 	initParserForGraphics(&subparser, &graphicsOpts);
 	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);
+		freeOptions(&opts);
 		return 1;
 	}
 
@@ -61,6 +62,7 @@ int main(int argc, char** argv) {
 	renderer.viewportHeight = graphicsOpts.height;
 
 	if (!_GBASDLInit(&renderer)) {
+		freeOptions(&opts);
 		return 1;
 	}
 
@@ -129,11 +131,8 @@ int main(int argc, char** argv) {
 	SDL_UnlockSurface(surface);
 #endif
 	GBAThreadJoin(&context);
-	close(opts.fd);
-	if (opts.biosFd >= 0) {
-		close(opts.biosFd);
-	}
 	free(context.debugger);
+	freeOptions(&opts);
 
 	_GBASDLDeinit(&renderer);
 

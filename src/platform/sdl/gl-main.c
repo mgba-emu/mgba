@@ -67,6 +67,7 @@ int main(int argc, char** argv) {
 	initParserForGraphics(&subparser, &graphicsOpts);
 	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);
+		freeOptions(&opts);
 		return 1;
 	}
 
@@ -78,6 +79,7 @@ int main(int argc, char** argv) {
 #endif
 
 	if (!_GBASDLInit(&renderer)) {
+		freeOptions(&opts);
 		return 1;
 	}
 
@@ -99,10 +101,7 @@ int main(int argc, char** argv) {
 	_GBASDLRunloop(&context, &renderer);
 
 	GBAThreadJoin(&context);
-	close(opts.fd);
-	if (opts.biosFd >= 0) {
-		close(opts.biosFd);
-	}
+	freeOptions(&opts);
 	free(context.debugger);
 
 	_GBASDLDeinit(&renderer);

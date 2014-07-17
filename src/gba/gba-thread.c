@@ -169,10 +169,10 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 }
 
 void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
-	threadContext->fd = VFileFromFD(opts->fd);
+	threadContext->fd = VFileOpen(opts->fname, O_RDONLY);
 	threadContext->fname = opts->fname;
-	threadContext->biosFd = VFileFromFD(opts->biosFd);
-	threadContext->patchFd = VFileFromFD(opts->patchFd);
+	threadContext->biosFd = VFileOpen(opts->bios, O_RDONLY);
+	threadContext->patchFd = VFileOpen(opts->patch, O_RDONLY);
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
