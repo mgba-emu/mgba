@@ -173,6 +173,9 @@ void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threa
 		threadContext->gamedir = VDirOpen(opts->fname);
 	} else {
 		threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
+#if ENABLE_LIBZIP
+		threadContext->gamedir = VDirOpenZip(opts->fname, 0);
+#endif
 	}
 	threadContext->fname = opts->fname;
 	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
@@ -196,6 +199,11 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (!GBAIsROM(threadContext->rom)) {
+		threadContext->rom->close(threadContext->rom);
+		threadContext->rom = 0;
 	}
 
 	if (threadContext->gamedir) {

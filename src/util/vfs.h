@@ -32,4 +32,8 @@ struct VFile* VFileFromFD(int fd);
 
 struct VDir* VDirOpen(const char* path);
 
+#ifdef ENABLE_LIBZIP
+struct VDir* VDirOpenZip(const char* path, int flags);
+#endif
+
 #endif

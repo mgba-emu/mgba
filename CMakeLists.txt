@@ -21,6 +21,16 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_definitions(-DBINARY_NAME="${BINARY_NAME}" -DPROJECT_NAME="${PROJECT_NAME}")
 
+include(FindPkgConfig)
+pkg_search_module(LIBZIP libzip)
+if(LIBZIP_FOUND)
+	include_directories(${LIBZIP_INCLUDE_DIRS})
+	list(APPEND DEPENDENCY_LIB ${LIBZIP_LIBRARIES})
+	add_definitions(-DENABLE_LIBZIP)
+else()
+	message(WARNING "Could not find libzip for archive support")
+endif()
+
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	set(OS_LIB "${OS_LIB};Ws2_32")
@@ -59,7 +69,7 @@ endif()
 source_group("ARM debugger" FILES ${DEBUGGER_SRC})
 
 add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${OS_SRC})
-target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB})
+target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 
 if(BUILD_SDL)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/sdl ${CMAKE_BINARY_DIR}/sdl)
