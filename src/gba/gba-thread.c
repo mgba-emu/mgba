@@ -7,7 +7,7 @@
 #include "debugger/debugger.h"
 
 #include "util/patch.h"
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 #include <signal.h>
 

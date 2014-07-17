@@ -5,7 +5,7 @@
 #include "gba-thread.h"
 
 #include "util/memory.h"
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 #include <fcntl.h>
 

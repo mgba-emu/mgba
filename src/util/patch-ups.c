@@ -2,7 +2,7 @@
 
 #include "util/crc32.h"
 #include "util/patch.h"
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 enum {
 	IN_CHECKSUM = -12,

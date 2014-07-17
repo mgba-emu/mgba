@@ -1,7 +1,7 @@
 #include "util/patch-ips.h"
 
 #include "util/patch.h"
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 static size_t _IPSOutputSize(struct Patch* patch, size_t inSize);
 static bool _IPSApplyPatch(struct Patch* patch, void* out, size_t outSize);

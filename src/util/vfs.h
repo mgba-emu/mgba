@@ -1,5 +1,5 @@
-#ifndef VFILE_H
-#define VFILE_H
+#ifndef VFS_H
+#define VFS_H
 
 #include "common.h"
 
@@ -16,7 +16,19 @@ struct VFile {
 	void (*truncate)(struct VFile* vf, size_t size);
 };
 
+struct VDirEntry {
+	const char* (*name)(struct VDirEntry* vde);
+};
+
+struct VDir {
+	bool (*close)(struct VDir* vd);
+	struct VDirEntry* (*listNext)(struct VDir* vd);
+	struct VFile* (*openFile)(struct VDir* vd, const char* name, int mode);
+};
+
 struct VFile* VFileOpen(const char* path, int flags);
 struct VFile* VFileFromFD(int fd);
+
+struct VDir* VDirOpen(const char* path);
 
 #endif

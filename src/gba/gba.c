@@ -7,7 +7,7 @@
 
 #include "util/memory.h"
 #include "util/patch.h"
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;

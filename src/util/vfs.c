@@ -1,12 +1,15 @@
-#include "util/vfile.h"
+#include "util/vfs.h"
 
 #include <fcntl.h>
+#include <dirent.h>
 
 #ifndef _WIN32
 #include <sys/mman.h>
+#define PATH_SEP '/'
 #else
 #include <io.h>
 #include <Windows.h>
+#define PATH_SEP '\\'
 #endif
 
 struct VFileFD {
@@ -25,6 +28,12 @@ static ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size);
 static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
+
+static bool _vdClose(struct VDir* vd);
+static struct VDirEntry* _vdListNext(struct VDir* vd);
+static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
+
+static const char* _vdeName(struct VDirEntry* vde);
 
 struct VFile* VFileOpen(const char* path, int flags) {
 	int fd = open(path, flags, 0666);
@@ -136,4 +145,80 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 static void _vfdTruncate(struct VFile* vf, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	ftruncate(vfd->fd, size);
+}
+
+struct VDirEntryDE {
+	struct VDirEntry d;
+	struct dirent* ent;
+};
+
+struct VDirDE {
+	struct VDir d;
+	DIR* de;
+	struct VDirEntryDE vde;
+	char* path;
+};
+
+struct VDir* VDirOpen(const char* path) {
+	DIR* de = opendir(path);
+	if (!de) {
+		return 0;
+	}
+
+	struct VDirDE* vd = malloc(sizeof(struct VDirDE));
+	if (!vd) {
+		return 0;
+	}
+
+	vd->d.close = _vdClose;
+	vd->d.listNext = _vdListNext;
+	vd->d.openFile = _vdOpenFile;
+	vd->path = strdup(path);
+	vd->de = de;
+
+	vd->vde.d.name = _vdeName;
+
+	return &vd->d;
+}
+
+bool _vdClose(struct VDir* vd) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	if (closedir(vdde->de) < 0) {
+		return false;
+	}
+	free(vdde->path);
+	free(vdde);
+	return true;
+}
+
+struct VDirEntry* _vdListNext(struct VDir* vd) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	vdde->vde.ent = readdir(vdde->de);
+	if (vdde->vde.ent) {
+		return &vdde->vde.d;
+	}
+
+	return 0;
+}
+
+struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vdde->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s%c%s", dir, PATH_SEP, path);
+
+	struct VFile* file = VFileOpen(combined, mode);
+	free(combined);
+	return file;
+}
+
+const char* _vdeName(struct VDirEntry* vde) {
+	struct VDirEntryDE* vdede = (struct VDirEntryDE*) vde;
+	if (vdede->ent) {
+		return vdede->ent->d_name;
+	}
+	return 0;
 }
