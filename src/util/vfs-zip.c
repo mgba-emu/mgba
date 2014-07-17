@@ -110,7 +110,7 @@ off_t _vfzSeek(struct VFile* vf, off_t offset, int whence) {
 		return position;
 	}
 
-	if (position < vfz->fileSize) {
+	if (position <= vfz->fileSize) {
 		ssize_t read = vf->read(vf, 0, position - vfz->offset);
 		if (read < 0) {
 			return -1;
