@@ -248,9 +248,8 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
 			strcat(savedata, "sav");
 		} else {
-			savedata = malloc(strlen(threadContext->fname + 5));
-			strcpy(savedata, threadContext->fname);
-			strcat(savedata, "sav");
+			savedata = malloc(strlen(threadContext->fname + 5) * sizeof(char));
+			sprintf(savedata, "%s.sav", threadContext->fname);
 		}
 		threadContext->save = VFileOpen(savedata, O_RDWR | O_CREAT);
 		free(savedata);
