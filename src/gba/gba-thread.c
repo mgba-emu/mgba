@@ -357,6 +357,11 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		threadContext->patch->close(threadContext->patch);
 		threadContext->patch = 0;
 	}
+
+	if (threadContext->gamedir) {
+		threadContext->gamedir->close(threadContext->gamedir);
+		threadContext->gamedir = 0;
+	}
 }
 
 void GBAThreadInterrupt(struct GBAThread* threadContext) {

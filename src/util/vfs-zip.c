@@ -79,6 +79,7 @@ bool _vfzClose(struct VFile* vf) {
 	if (zip_fclose(vfz->zf) < 0) {
 		return false;
 	}
+	free(vfz->buffer);
 	free(vfz);
 	return true;
 }
