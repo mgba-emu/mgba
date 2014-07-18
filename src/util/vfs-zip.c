@@ -247,9 +247,20 @@ struct VDirEntry* _vdzListNext(struct VDir* vd) {
 
 struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	UNUSED(mode);
-	// TODO: support truncating, appending and creating
-
+	// TODO: support truncating, appending and creating, and write
 	struct VDirZip* vdz = (struct VDirZip*) vd;
+
+	if ((mode & O_RDWR) == O_RDWR) {
+		// libzip doesn't allow for random access, so read/write is impossible without
+		// reading the entire file first. This approach will be supported eventually.
+		return 0;
+	}
+
+	if (mode & O_WRONLY) {
+		// Write support is not yet implemented.
+		return 0;
+	}
+
 	struct zip_stat s;
 	if (zip_stat(vdz->z, path, 0, &s) < 0) {
 		return 0;
