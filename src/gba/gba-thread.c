@@ -224,6 +224,9 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			}
 			dirent = threadContext->gamedir->listNext(threadContext->gamedir);
 		}
+
+		// TODO: Differentiate ZIPs and filesystem directories
+		threadContext->save = threadContext->gamedir->openFile(threadContext->gamedir, "sram.sav", O_RDWR | O_CREAT);
 	}
 
 	if (!threadContext->rom) {
