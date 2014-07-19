@@ -2,6 +2,7 @@
 
 #include "debugger/debugger.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-video.h"
 
@@ -99,6 +100,12 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		GBARewind(context, 10);
 		GBAThreadContinue(context);
 		return;
+	case SDLK_ESCAPE:
+		GBAThreadInterrupt(context);
+		GBARRStopPlaying(context->gba);
+		GBARRStopRecording(context->gba);
+		GBAThreadContinue(context);
+		return;
 	default:
 		if (event->type == SDL_KEYDOWN) {
 			if (event->keysym.mod & GUI_MOD) {
@@ -120,6 +127,20 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					break;
 				case SDLK_r:
 					GBAThreadReset(context);
+					break;
+				case SDLK_t:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRStopPlaying(context->gba);
+					GBARRStartRecording(context->gba);
+					GBAThreadContinue(context);
+					break;
+				case SDLK_y:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRStopRecording(context->gba);
+					GBARRStartPlaying(context->gba);
+					GBAThreadContinue(context);
 					break;
 				default:
 					break;

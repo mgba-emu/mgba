@@ -2,6 +2,7 @@
 
 #include "gba-bios.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-sio.h"
 #include "gba-thread.h"
 
@@ -158,6 +159,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAMemoryDeinit(gba);
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
+	GBARRContextDestroy(gba);
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {

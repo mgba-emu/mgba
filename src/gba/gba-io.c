@@ -1,5 +1,6 @@
 #include "gba-io.h"
 
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-sio.h"
 #include "gba-video.h"
@@ -374,8 +375,14 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 
 	case REG_KEYINPUT:
-		if (gba->keySource) {
-			return 0x3FF ^ *gba->keySource;
+		if (GBARRIsPlaying(gba)) {
+			return 0x3FF ^ GBARRQueryInput(gba);
+		} else if (gba->keySource) {
+			uint16_t input = *gba->keySource;
+			if (GBARRIsRecording(gba)) {
+				GBARRLogInput(gba, input);
+			}
+			return 0x3FF ^ input;
 		}
 		break;
 

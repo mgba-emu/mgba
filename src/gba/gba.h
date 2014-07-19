@@ -98,6 +98,7 @@ struct GBA {
 	int* keySource;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;
+	struct GBARRContext* rr;
 	void* pristineRom;
 	size_t pristineRomSize;
 	struct VFile* romVf;

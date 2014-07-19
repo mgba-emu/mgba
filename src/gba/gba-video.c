@@ -2,6 +2,7 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-thread.h"
 
@@ -97,6 +98,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBASyncPostFrame(video->p->sync);
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
+				GBARRNextFrame(video->p);
 				video->inVblank = 0;
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS:
