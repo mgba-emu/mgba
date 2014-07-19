@@ -9,6 +9,7 @@
 #include "util/memory.h"
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
+static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
@@ -16,6 +17,7 @@ static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
 static struct GBAVideoRenderer dummyRenderer = {
 	.init = GBAVideoDummyRendererInit,
+	.reset = GBAVideoDummyRendererReset,
 	.deinit = GBAVideoDummyRendererDeinit,
 	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
@@ -24,7 +26,10 @@ static struct GBAVideoRenderer dummyRenderer = {
 
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
+	video->vram = 0;
+}
 
+void GBAVideoReset(struct GBAVideo* video) {
 	video->inHblank = 0;
 	video->inVblank = 0;
 	video->vcounter = 0;
@@ -44,11 +49,18 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->nextVblankIRQ = 0;
 	video->nextVcounterIRQ = 0;
 
+	if (video->vram) {
+		mappedMemoryFree(video->vram, SIZE_VRAM);
+	}
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
+	video->renderer->vram = video->vram;
 
 	int i;
 	for (i = 0; i < 128; ++i) {
-		video->oam.obj[i].disable = 1;
+		video->oam.raw[i * 4] = 0x0200;
+		video->oam.raw[i * 4 + 1] = 0x0000;
+		video->oam.raw[i * 4 + 2] = 0x0000;
+		video->oam.raw[i * 4 + 3] = 0x0000;
 	}
 }
 
@@ -157,6 +169,11 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 }
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
+}
+
+static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer) {
 	UNUSED(renderer);
 	// Nothing to do
 }

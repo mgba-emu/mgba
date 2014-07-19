@@ -60,6 +60,7 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
+	renderer->d.reset = GBAVideoSoftwareRendererInit;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;

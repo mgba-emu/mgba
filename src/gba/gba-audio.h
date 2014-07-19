@@ -219,6 +219,7 @@ struct GBAStereoSample {
 };
 
 void GBAAudioInit(struct GBAAudio* audio);
+void GBAAudioReset(struct GBAAudio* audio);
 void GBAAudioDeinit(struct GBAAudio* audio);
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles);

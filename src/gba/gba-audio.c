@@ -20,6 +20,13 @@ static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio) {
+	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
+	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+}
+
+void GBAAudioReset(struct GBAAudio* audio) {
 	audio->nextEvent = 0;
 	audio->nextCh1 = 0;
 	audio->nextCh2 = 0;
@@ -49,10 +56,10 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->soundcntX = 0;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
-	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
-	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
-	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
-	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+	CircleBufferClear(&audio->left);
+	CircleBufferClear(&audio->right);
+	CircleBufferClear(&audio->chA.fifo);
+	CircleBufferClear(&audio->chB.fifo);
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {

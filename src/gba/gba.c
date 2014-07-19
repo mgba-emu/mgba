@@ -182,6 +182,9 @@ void GBAReset(struct ARMCore* cpu) {
 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	GBAMemoryReset(gba);
+	GBAVideoReset(&gba->video);
+	GBAAudioReset(&gba->audio);
+	GBAIOInit(gba);
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {

@@ -102,7 +102,6 @@ void GBAMemoryReset(struct GBA* gba) {
 	if (!gba->memory.wram || !gba->memory.iwram) {
 		GBAMemoryDeinit(gba);
 		GBALog(gba, GBA_LOG_FATAL, "Could not map memory");
-		return;
 	}
 }
 

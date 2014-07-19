@@ -169,6 +169,7 @@ union GBARegisterBGCNT {
 
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
+	void (*reset)(struct GBAVideoRenderer* renderer);
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -213,6 +214,7 @@ struct GBAVideo {
 };
 
 void GBAVideoInit(struct GBAVideo* video);
+void GBAVideoReset(struct GBAVideo* video);
 void GBAVideoDeinit(struct GBAVideo* video);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
