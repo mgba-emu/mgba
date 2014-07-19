@@ -38,7 +38,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->vcounterIRQ = 0;
 	video->vcountSetting = 0;
 
-	video->vcount = -1;
+	video->vcount = 0;
 
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
@@ -124,10 +124,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBARaiseIRQ(video->p, IRQ_VCOUNTER);
 				video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 			}
-
-			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
-				video->renderer->drawScanline(video->renderer, video->vcount);
-			}
 		} else {
 			// Begin Hblank
 			video->inHblank = 1;
@@ -135,6 +131,10 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextEvent = video->lastHblank + VIDEO_HBLANK_LENGTH;
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
 			video->nextHblankIRQ = video->nextHblank;
+
+			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
+				video->renderer->drawScanline(video->renderer, video->vcount);
+			}
 
 			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
 				GBAMemoryRunHblankDMAs(video->p, lastEvent);
