@@ -65,10 +65,7 @@ int main(int argc, char** argv) {
 	int duration = end - start;
 
 	GBAThreadJoin(&context);
-	close(opts.fd);
-	if (opts.biosFd >= 0) {
-		close(opts.biosFd);
-	}
+	freeOptions(&opts);
 	free(context.debugger);
 
 	free(renderer.outputBuffer);
