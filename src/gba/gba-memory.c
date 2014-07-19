@@ -31,27 +31,12 @@ void GBAMemoryInit(struct GBA* gba) {
 
 	gba->memory.bios = (uint32_t*) hleBios;
 	gba->memory.fullBios = 0;
-	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
-	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
+	gba->memory.wram = 0;
+	gba->memory.iwram = 0;
 	gba->memory.rom = 0;
 	gba->memory.gpio.p = gba;
-	memset(gba->memory.io, 0, sizeof(gba->memory.io));
-	memset(gba->memory.dma, 0, sizeof(gba->memory.dma));
+
 	int i;
-	for (i = 0; i < 4; ++i) {
-		gba->memory.dma[i].count = 0x10000;
-		gba->memory.dma[i].nextEvent = INT_MAX;
-	}
-	gba->memory.activeDMA = -1;
-	gba->memory.nextDMA = INT_MAX;
-	gba->memory.eventDiff = 0;
-
-	if (!gba->memory.wram || !gba->memory.iwram) {
-		GBAMemoryDeinit(gba);
-		GBALog(gba, GBA_LOG_FATAL, "Could not map memory");
-		return;
-	}
-
 	for (i = 0; i < 16; ++i) {
 		gba->memory.waitstatesNonseq16[i] = GBA_BASE_WAITSTATES[i];
 		gba->memory.waitstatesSeq16[i] = GBA_BASE_WAITSTATES_SEQ[i];
@@ -90,6 +75,35 @@ void GBAMemoryDeinit(struct GBA* gba) {
 		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 	}
 	GBASavedataDeinit(&gba->memory.savedata);
+}
+
+void GBAMemoryReset(struct GBA* gba) {
+	if (gba->memory.wram) {
+		mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
+	}
+	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+
+	if (gba->memory.iwram) {
+		mappedMemoryFree(gba->memory.iwram, SIZE_WORKING_IRAM);
+	}
+	gba->memory.iwram = anonymousMemoryMap(SIZE_WORKING_IRAM);
+
+	memset(gba->memory.io, 0, sizeof(gba->memory.io));
+	memset(gba->memory.dma, 0, sizeof(gba->memory.dma));
+	int i;
+	for (i = 0; i < 4; ++i) {
+		gba->memory.dma[i].count = 0x10000;
+		gba->memory.dma[i].nextEvent = INT_MAX;
+	}
+	gba->memory.activeDMA = -1;
+	gba->memory.nextDMA = INT_MAX;
+	gba->memory.eventDiff = 0;
+
+	if (!gba->memory.wram || !gba->memory.iwram) {
+		GBAMemoryDeinit(gba);
+		GBALog(gba, GBA_LOG_FATAL, "Could not map memory");
+		return;
+	}
 }
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {

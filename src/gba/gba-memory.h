@@ -138,6 +138,8 @@ struct GBAMemory {
 void GBAMemoryInit(struct GBA* gba);
 void GBAMemoryDeinit(struct GBA* gba);
 
+void GBAMemoryReset(struct GBA* gba);
+
 int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
 int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
 uint16_t GBALoadU16(struct ARMCore* cpu, uint32_t address, int* cycleCounter);

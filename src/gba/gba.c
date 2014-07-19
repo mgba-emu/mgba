@@ -179,6 +179,9 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+
+	struct GBA* gba = (struct GBA*) cpu->master;
+	GBAMemoryReset(gba);
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {
