@@ -242,13 +242,13 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_3_WRITEBACK(ADDR) ADDR_MODE_2_WRITEBACK(ADDR)
 
 #define ARM_LOAD_POST_BODY \
+	++currentCycles; \
 	if (rd == ARM_PC) { \
 		ARM_WRITE_PC; \
 	}
 
 #define ARM_STORE_POST_BODY \
-	currentCycles -= ARM_PREFETCH_CYCLES; \
-	currentCycles += 1 + cpu->memory.activeNonseqCycles32;
+	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 
 #define DEFINE_INSTRUCTION_ARM(NAME, BODY) \
 	static void _ARMInstruction ## NAME (struct ARMCore* cpu, uint32_t opcode) { \
