@@ -3,29 +3,13 @@
 #include "gba.h"
 #include "util/vfs.h"
 
-enum {
-	GBA_RR_BLOCK_SIZE = 1018
-};
-
 #define FILE_INPUTS "input.log"
 
-struct GBARRBlock {
-	union GBARRInput {
-		struct {
-			uint16_t keys : 10;
-			uint16_t : 4;
-			bool reset : 1;
-			bool : 1;
-		};
-		uint16_t packed;
-	} inputs[GBA_RR_BLOCK_SIZE];
-	size_t numInputs;
-	struct GBARRBlock* next;
-};
-
-static void _allocBlock(struct GBARRContext* rr);
-
 void GBARRContextCreate(struct GBA* gba) {
+	if (gba->rr) {
+		return;
+	}
+
 	gba->rr = calloc(1, sizeof(*gba->rr));
 }
 
@@ -34,147 +18,58 @@ void GBARRContextDestroy(struct GBA* gba) {
 		return;
 	}
 
-	struct GBARRBlock* block = gba->rr->rootBlock;
-	while (block) {
-		struct GBARRBlock* nextBlock = block->next;
-		free(block);
-		block = nextBlock;
-	}
-	gba->rr->rootBlock = 0;
-	gba->rr->currentBlock = 0;
-	gba->rr->playbackBlock = 0;
 	free(gba->rr);
 	gba->rr = 0;
 }
 
-bool GBARRSave(struct GBARRContext* rr, struct VDir* vdir) {
-	if (!rr) {
+bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
+	if (rr->inputsStream && !rr->inputsStream->close(rr->inputsStream)) {
 		return false;
 	}
-
-	struct VFile* inputs = vdir->openFile(vdir, FILE_INPUTS, O_WRONLY | O_CREAT | O_TRUNC);
-	if (!inputs) {
-		return false;
-	}
-
-	ssize_t written = 0;
-	struct GBARRBlock* inputBlock;
-	for (inputBlock = rr->rootBlock; inputBlock; inputBlock = inputBlock->next) {
-		ssize_t thisWrite = inputs->write(inputs, inputBlock->inputs, sizeof(*inputBlock->inputs) * inputBlock->numInputs);
-		if (!thisWrite) {
-			written = -1;
-			break;
-		}
-		written += thisWrite;
-	}
-
-	if (!inputs->close(inputs)) {
-		return false;
-	}
-
-	return written >= 0;
+	rr->streamDir = stream;
+	rr->inputsStream = stream->openFile(stream, FILE_INPUTS, O_CREAT | O_RDWR);
+	return !!rr->inputsStream;
 }
 
-bool GBARRLoad(struct GBARRContext* rr, struct VDir* vdir) {
-	if (!rr) {
+bool GBARRStartPlaying(struct GBARRContext* rr) {
+	if (GBARRIsRecording(rr) || GBARRIsPlaying(rr)) {
 		return false;
 	}
 
-	struct VFile* inputs = vdir->openFile(vdir, FILE_INPUTS, O_RDONLY);
-	if (!inputs) {
-		return false;
-	}
-
-	struct GBARRBlock block = {
-		.next = 0,
-		.numInputs = GBA_RR_BLOCK_SIZE
-	};
-
-	ssize_t read;
-	do {
-		read = inputs->read(inputs, block.inputs, sizeof(block.inputs));
-		if (read) {
-			struct GBARRBlock* newBlock = calloc(1, sizeof(*rr->currentBlock));
-			memcpy(newBlock, &block, sizeof(*newBlock));
-			if (!rr->rootBlock) {
-				rr->rootBlock = newBlock;
-			}
-			if (rr->currentBlock) {
-				rr->currentBlock->next = newBlock;
-			}
-			rr->currentBlock = newBlock;
-			newBlock->numInputs = read / sizeof(block.inputs[0]);
-		}
-	} while (read > 0);
-
-	if (!inputs->close(inputs)) {
-		return false;
-	}
-
-	return read >= 0;
+	rr->isPlaying = true;
+	rr->inputId = 0;
+	return rr->inputsStream->seek(rr->inputsStream, 0, SEEK_SET) == 0;
 }
 
-bool GBARRStartPlaying(struct GBA* gba) {
-	if (!gba->rr) {
-		return false;
-	}
-	if (GBARRIsRecording(gba) || GBARRIsPlaying(gba)) {
-		return false;
-	}
-
-	gba->rr->playbackBlock = gba->rr->rootBlock;
-	gba->rr->inputId = 0;
-	return !!gba->rr->playbackBlock;
+void GBARRStopPlaying(struct GBARRContext* rr) {
+	rr->isPlaying = 0;
 }
 
-void GBARRStopPlaying(struct GBA* gba) {
-	if (!gba->rr) {
-		return;
-	}
-
-	gba->rr->playbackBlock = 0;
-}
-
-bool GBARRStartRecording(struct GBA* gba) {
-	if (!gba->rr) {
-		GBARRContextCreate(gba);
-	}
-	if (GBARRIsRecording(gba) || GBARRIsPlaying(gba)) {
+bool GBARRStartRecording(struct GBARRContext* rr) {
+	if (GBARRIsRecording(rr) || GBARRIsPlaying(rr)) {
 		return false;
 	}
 
-	gba->rr->isRecording = true;
+	rr->isRecording = true;
 	return true;
 }
 
-void GBARRStopRecording(struct GBA* gba) {
-	if (!gba->rr) {
+void GBARRStopRecording(struct GBARRContext* rr) {
+	rr->isRecording = false;
+}
+
+bool GBARRIsPlaying(struct GBARRContext* rr) {
+	return rr && rr->isPlaying;
+}
+
+bool GBARRIsRecording(struct GBARRContext* rr) {
+	return rr && rr->isRecording;
+}
+
+void GBARRNextFrame(struct GBARRContext* rr) {
+	if (!GBARRIsRecording(rr)) {
 		return;
 	}
-
-	gba->rr->isRecording = false;
-}
-
-bool GBARRIsPlaying(struct GBA* gba) {
-	if (!gba->rr) {
-		return false;
-	}
-	return gba->rr->playbackBlock;
-}
-
-bool GBARRIsRecording(struct GBA* gba) {
-	if (!gba->rr) {
-		return false;
-	}
-	return gba->rr->isRecording;
-}
-
-void GBARRNextFrame(struct GBA* gba) {
-	if (!GBARRIsRecording(gba)) {
-		return;
-	}
-
-	struct GBARRContext* rr = gba->rr;
 
 	++rr->frames;
 	if (!rr->inputThisFrame) {
@@ -184,57 +79,21 @@ void GBARRNextFrame(struct GBA* gba) {
 	rr->inputThisFrame = false;
 }
 
-void GBARRLogInput(struct GBA* gba, uint16_t input) {
-	if (!GBARRIsRecording(gba)) {
+void GBARRLogInput(struct GBARRContext* rr, uint16_t keys) {
+	if (!GBARRIsRecording(rr)) {
 		return;
 	}
 
-	struct GBARRContext* rr = gba->rr;
-	if (!rr->currentBlock) {
-		_allocBlock(rr);
-	}
-
-	size_t currentId = rr->currentBlock->numInputs;
-	if (currentId == GBA_RR_BLOCK_SIZE) {
-		_allocBlock(rr);
-		currentId = 0;
-	}
-
-	rr->currentBlock->inputs[currentId].keys = input;
-	++rr->currentBlock->numInputs;
+	rr->inputsStream->write(rr->inputsStream, &keys, sizeof(keys));
 	rr->inputThisFrame = true;
 }
 
-uint16_t GBARRQueryInput(struct GBA* gba) {
-	if (!GBARRIsPlaying(gba)) {
+uint16_t GBARRQueryInput(struct GBARRContext* rr) {
+	if (!GBARRIsPlaying(rr)) {
 		return 0;
 	}
 
-	struct GBARRBlock* block = gba->rr->playbackBlock;
-	size_t inputId = gba->rr->inputId;
-	uint16_t keys = 0;
-
-	keys = block->inputs[inputId].keys;
-	++inputId;
-	if (inputId == GBA_RR_BLOCK_SIZE) {
-		inputId = 0;
-		gba->rr->playbackBlock = gba->rr->playbackBlock->next;
-	} else if (!gba->rr->playbackBlock->next && gba->rr->playbackBlock->numInputs == inputId) {
-		gba->rr->playbackBlock = 0;
-	}
-	gba->rr->inputId = inputId;
+	uint16_t keys;
+	rr->inputsStream->read(rr->inputsStream, &keys, sizeof(keys));
 	return keys;
-}
-
-void _allocBlock(struct GBARRContext* rr) {
-	struct GBARRBlock* block = calloc(1, sizeof(*rr->currentBlock));
-
-	if (!rr->currentBlock) {
-		rr->currentBlock = block;
-		rr->rootBlock = block;
-		return;
-	}
-
-	rr->currentBlock->next = block;
-	rr->currentBlock = block;
 }

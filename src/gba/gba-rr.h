@@ -8,36 +8,38 @@ struct VDir;
 struct VFile;
 
 struct GBARRContext {
-	struct GBARRBlock* rootBlock;
-	struct GBARRBlock* currentBlock;
-
 	// Playback state
-	struct GBARRBlock* playbackBlock;
+	bool isPlaying;
 	size_t inputId;
 
 	// Recording state
 	bool isRecording;
 	bool inputThisFrame;
+
+	// Metadata
 	uint32_t frames;
 	uint32_t lagFrames;
+
+	// Streaming state
+	struct VDir* streamDir;
+	struct VFile* inputsStream;
 };
 
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
 
-bool GBARRSave(struct GBARRContext*, struct VDir*);
-bool GBARRLoad(struct GBARRContext*, struct VDir*);
+bool GBARRSetStream(struct GBARRContext*, struct VDir*);
 
-bool GBARRStartPlaying(struct GBA*);
-void GBARRStopPlaying(struct GBA*);
-bool GBARRStartRecording(struct GBA*);
-void GBARRStopRecording(struct GBA*);
+bool GBARRStartPlaying(struct GBARRContext*);
+void GBARRStopPlaying(struct GBARRContext*);
+bool GBARRStartRecording(struct GBARRContext*);
+void GBARRStopRecording(struct GBARRContext*);
 
-bool GBARRIsPlaying(struct GBA*);
-bool GBARRIsRecording(struct GBA*);
+bool GBARRIsPlaying(struct GBARRContext*);
+bool GBARRIsRecording(struct GBARRContext*);
 
-void GBARRNextFrame(struct GBA*);
-void GBARRLogInput(struct GBA*, uint16_t input);
-uint16_t GBARRQueryInput(struct GBA*);
+void GBARRNextFrame(struct GBARRContext*);
+void GBARRLogInput(struct GBARRContext*, uint16_t input);
+uint16_t GBARRQueryInput(struct GBARRContext*);
 
 #endif

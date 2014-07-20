@@ -110,7 +110,9 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBASyncPostFrame(video->p->sync);
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
-				GBARRNextFrame(video->p);
+				if (video->p->rr) {
+					GBARRNextFrame(video->p->rr);
+				}
 				video->inVblank = 0;
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS:

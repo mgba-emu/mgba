@@ -375,12 +375,12 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 
 	case REG_KEYINPUT:
-		if (GBARRIsPlaying(gba)) {
-			return 0x3FF ^ GBARRQueryInput(gba);
+		if (GBARRIsPlaying(gba->rr)) {
+			return 0x3FF ^ GBARRQueryInput(gba->rr);
 		} else if (gba->keySource) {
 			uint16_t input = *gba->keySource;
-			if (GBARRIsRecording(gba)) {
-				GBARRLogInput(gba, input);
+			if (GBARRIsRecording(gba->rr)) {
+				GBARRLogInput(gba->rr, input);
 			}
 			return 0x3FF ^ input;
 		}
