@@ -4,7 +4,7 @@
 #include <QObject>
 
 extern "C" {
-#include "gdb-stub.h"
+#include "debugger/gdb-stub.h"
 }
 
 namespace QGBA {

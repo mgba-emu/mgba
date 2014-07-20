@@ -3,6 +3,7 @@
 extern "C" {
 #include "gba.h"
 #include "renderers/video-software.h"
+#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -27,7 +28,7 @@ GameController::GameController(QObject* parent)
 		.state = THREAD_INITIALIZED,
 		.debugger = 0,
 		.frameskip = 0,
-		.biosFd = -1,
+		.bios = 0,
 		.renderer = &m_renderer->d,
 		.userData = this,
 		.rewindBufferCapacity = 0
@@ -96,7 +97,7 @@ void GameController::loadGame(const QString& path) {
 
 	m_pauseAfterFrame = false;
 
-	m_threadContext.fd = m_rom->handle();
+	m_threadContext.rom = VFileFromFD(m_rom->handle());
 	m_threadContext.fname = path.toLocal8Bit().constData();
 	GBAThreadStart(&m_threadContext);
 }
