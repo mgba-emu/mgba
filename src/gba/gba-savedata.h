@@ -72,8 +72,6 @@ struct GBASavedata {
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
-
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);

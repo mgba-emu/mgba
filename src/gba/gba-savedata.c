@@ -20,14 +20,6 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->vf = vf;
 }
 
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
-	if (savedata->type != SAVEDATA_NONE) {
-		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
-		return;
-	}
-	savedata->type = type;
-}
-
 void GBASavedataDeinit(struct GBASavedata* savedata) {
 	if (savedata->vf) {
 		switch (savedata->type) {
