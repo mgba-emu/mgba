@@ -1,9 +1,9 @@
 #ifndef ISA_ARM_H
 #define ISA_ARM_H
 
-#include <stdint.h>
+#include "common.h"
 
-#define ARM_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles32)
+#define ARM_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles32)
 
 struct ARMCore;
 

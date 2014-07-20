@@ -1,9 +1,17 @@
-#include "cli-debugger.h"
+#ifdef USE_CLI_DEBUGGER
+#include "debugger/cli-debugger.h"
+#endif
+
+#ifdef USE_GDB_STUB
+#include "debugger/gdb-stub.h"
+#endif
+
 #include "gba-thread.h"
 #include "gba.h"
 #include "sdl-audio.h"
 #include "sdl-events.h"
 #include "renderers/video-software.h"
+#include "platform/commandline.h"
 
 #include <SDL.h>
 #ifdef __APPLE__
@@ -12,11 +20,9 @@
 #include <GL/gl.h>
 #endif
 
-#include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <unistd.h>
 
 struct GLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
@@ -52,48 +58,51 @@ static const GLint _glTexCoords[] = {
 };
 
 int main(int argc, char** argv) {
-	const char* fname = "test.rom";
-	if (argc > 1) {
-		fname = argv[1];
-	}
-	int fd = open(fname, O_RDONLY);
-	if (fd < 0) {
-		return 1;
-	}
-
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
-	renderer.viewportWidth = 240;
-	renderer.viewportHeight = 160;
-
-	if (!_GBASDLInit(&renderer)) {
+	struct StartupOptions opts;
+	struct SubParser subparser;
+	struct GraphicsOpts graphicsOpts;
+	initParserForGraphics(&subparser, &graphicsOpts);
+	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
+		usage(argv[0], subparser.usage);
+		freeOptions(&opts);
 		return 1;
 	}
 
-	struct CLIDebugger debugger;
-	CLIDebuggerCreate(&debugger);
+	renderer.viewportWidth = graphicsOpts.width;
+	renderer.viewportHeight = graphicsOpts.height;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	renderer.events.fullscreen = graphicsOpts.fullscreen;
+	renderer.events.windowUpdated = 0;
+#endif
+
+	if (!_GBASDLInit(&renderer)) {
+		freeOptions(&opts);
+		return 1;
+	}
+
 	struct GBAThread context = {
-		.fd = fd,
-		.biosFd = -1,
-		.fname = fname,
-		.debugger = &debugger.d,
 		.renderer = &renderer.d.d,
-		.frameskip = 0,
-		.sync.videoFrameWait = 0,
-		.sync.audioWait = 1,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
-		.userData = &renderer,
-		.rewindBufferCapacity = 10,
-		.rewindBufferInterval = 30
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 1,
+		.userData = &renderer
 	};
+
+	context.debugger = createDebugger(&opts);
+
+	GBAMapOptionsToContext(&opts, &context);
+
 	GBAThreadStart(&context);
 
 	_GBASDLRunloop(&context, &renderer);
 
 	GBAThreadJoin(&context);
-	close(fd);
+	freeOptions(&opts);
+	free(context.debugger);
 
 	_GBASDLDeinit(&renderer);
 
@@ -129,11 +138,10 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer->window = SDL_CreateWindow("GBAc", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL);
+	renderer->window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->events.fullscreen));
 	SDL_GL_CreateContext(renderer->window);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->events.window = renderer->window;
-	renderer->events.fullscreen = 0;
 #else
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
@@ -174,15 +182,19 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
 #ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, renderer->d.outputBuffer);
+#else
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+#endif
 #else
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 			if (context->sync.videoFrameWait) {
 				glFlush();
 			}
 		}
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		GBASyncWaitFrameEnd(&context->sync);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		SDL_GL_SwapWindow(renderer->window);
@@ -191,13 +203,15 @@ static void _GBASDLRunloop(struct GBAThread* context, struct GLSoftwareRenderer*
 #endif
 
 		while (SDL_PollEvent(&event)) {
-			int fullscreen = renderer->events.fullscreen;
 			GBASDLHandleEvent(context, &renderer->events, &event);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
-			if (renderer->events.fullscreen != fullscreen) {
+			if (renderer->events.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+				renderer->events.windowUpdated = 0;
 			}
+#endif
 		}
 	}
 }

@@ -1,7 +1,11 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
+#include "common.h"
+
 #include "arm.h"
+
+const uint32_t ARM_DEBUGGER_ID;
 
 enum DebuggerState {
 	DEBUGGER_PAUSED,
@@ -13,14 +17,6 @@ enum DebuggerState {
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
 	uint32_t address;
-};
-
-struct DebugMemoryShim {
-	struct ARMMemory d;
-	struct ARMMemory* original;
-
-	struct ARMDebugger* p;
-	struct DebugBreakpoint* watchpoints;
 };
 
 enum DebuggerEntryReason {
@@ -39,11 +35,13 @@ enum DebuggerLogLevel {
 };
 
 struct ARMDebugger {
+	struct ARMComponent d;
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
 	struct DebugBreakpoint* breakpoints;
-	struct DebugMemoryShim memoryShim;
+	struct DebugBreakpoint* watchpoints;
+	struct ARMMemory originalMemory;
 
 	void (*init)(struct ARMDebugger*);
 	void (*deinit)(struct ARMDebugger*);
@@ -54,8 +52,7 @@ struct ARMDebugger {
 	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 
-void ARMDebuggerInit(struct ARMDebugger*, struct ARMCore*);
-void ARMDebuggerDeinit(struct ARMDebugger*);
+void ARMDebuggerCreate(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);

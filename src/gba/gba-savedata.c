@@ -1,53 +1,61 @@
 #include "gba-savedata.h"
 
 #include "gba.h"
-#include "memory.h"
+
+#include "util/memory.h"
+#include "util/vfs.h"
 
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
 
-void GBASavedataInit(struct GBASavedata* savedata, const char* filename) {
+void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->type = SAVEDATA_NONE;
 	savedata->data = 0;
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
-	savedata->fd = -1;
-	savedata->filename = filename;
-}
-
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
-	if (savedata->type != SAVEDATA_NONE) {
-		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
-		return;
-	}
-	savedata->type = type;
+	savedata->vf = vf;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
-	switch (savedata->type) {
-	case SAVEDATA_SRAM:
-		mappedMemoryFree(savedata->data, SIZE_CART_SRAM);
-		break;
-	case SAVEDATA_FLASH512:
-		mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
-		break;
-	case SAVEDATA_FLASH1M:
-		mappedMemoryFree(savedata->data, SIZE_CART_FLASH1M);
-		break;
-	case SAVEDATA_EEPROM:
-		mappedMemoryFree(savedata->data, SIZE_CART_EEPROM);
-		break;
-	default:
-		break;
-	}
-	if (savedata->fd >= 0) {
-		close(savedata->fd);
+	if (savedata->vf) {
+		switch (savedata->type) {
+		case SAVEDATA_SRAM:
+			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_SRAM);
+			break;
+		case SAVEDATA_FLASH512:
+			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH512);
+			break;
+		case SAVEDATA_FLASH1M:
+			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH1M);
+			break;
+		case SAVEDATA_EEPROM:
+			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_EEPROM);
+			break;
+		case SAVEDATA_NONE:
+			break;
+		}
+		savedata->vf = 0;
+	} else {
+		switch (savedata->type) {
+		case SAVEDATA_SRAM:
+			mappedMemoryFree(savedata->data, SIZE_CART_SRAM);
+			break;
+		case SAVEDATA_FLASH512:
+			mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
+			break;
+		case SAVEDATA_FLASH1M:
+			mappedMemoryFree(savedata->data, SIZE_CART_FLASH1M);
+			break;
+		case SAVEDATA_EEPROM:
+			mappedMemoryFree(savedata->data, SIZE_CART_EEPROM);
+			break;
+		case SAVEDATA_NONE:
+			break;
+		}
 	}
 	savedata->type = SAVEDATA_NONE;
 }
@@ -60,18 +68,16 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	if (savedata->fd < 0) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
-		end = lseek(savedata->fd, 0, SEEK_END);
+		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
 		if (end < SIZE_CART_FLASH512) {
-			ftruncate(savedata->fd, SIZE_CART_FLASH1M);
+			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 		}
-		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_FLASH1M, MEMORY_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, MAP_WRITE);
 	}
 
 	savedata->currentBank = savedata->data;
@@ -87,18 +93,16 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	if (savedata->fd < 0) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
-		end = lseek(savedata->fd, 0, SEEK_END);
+		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
 		if (end < SIZE_CART_EEPROM) {
-			ftruncate(savedata->fd, SIZE_CART_EEPROM);
+			savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
 		}
-		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_EEPROM, MEMORY_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, MAP_WRITE);
 	}
 	if (end < SIZE_CART_EEPROM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
@@ -112,18 +116,16 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	savedata->fd = open(savedata->filename, O_RDWR | O_CREAT, 0666);
 	off_t end;
-	if (savedata->fd < 0) {
-		GBALog(0, GBA_LOG_ERROR, "Cannot open savedata file %s (errno: %d)", savedata->filename, errno);
+	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM);
 	} else {
-		end = lseek(savedata->fd, 0, SEEK_END);
+		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
 		if (end < SIZE_CART_SRAM) {
-			ftruncate(savedata->fd, SIZE_CART_SRAM);
+			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM);
 		}
-		savedata->data = fileMemoryMap(savedata->fd, SIZE_CART_SRAM, MEMORY_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM, MAP_WRITE);
 	}
 
 	if (end < SIZE_CART_SRAM) {
@@ -300,7 +302,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0) {
 		savedata->type = SAVEDATA_FLASH1M;
-		ftruncate(savedata->fd, SIZE_CART_FLASH1M);
+		savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 	}
 }
 

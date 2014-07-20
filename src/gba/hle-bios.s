@@ -18,16 +18,31 @@ swiBase:
 cmp    sp, #0
 moveq  sp, #0x04000000
 subeq  sp, #0x20
-stmfd  sp!, {r2, lr}
-ldrb   r2, [lr, #-2]
-cmp    r2, #4
-bleq   IntrWait
-cmp    r2, #5
-moveq  r0, #1
-moveq  r1, #1
-bleq   IntrWait
-ldmfd  sp!, {r2, lr}
+stmfd  sp!, {r4-r5, lr}
+ldrb   r4, [lr, #-2]
+mov    r5, #swiTable
+ldr    r4, [r5, r4, lsl #2]
+cmp    r4, #0
+mov    lr, pc
+bxne   r4
+ldmfd  sp!, {r4-r5, lr}
 movs   pc, lr
+
+swiTable:
+.word SoftReset
+.word RegisterRamReset
+.word Halt
+.word Stop
+.word IntrWait
+.word VBlankIntrWait
+.word Div
+.word DivArm
+.word Sqrt
+.word ArcTan
+.word ArcTan2
+.word CpuSet
+.word CpuFastSet
+# ... The rest of this table isn't needed if the rest aren't implemented
 
 irqBase:
 stmfd  sp!, {r0-r3, r12, lr}
@@ -37,33 +52,123 @@ ldr    pc, [r0, #-4]
 ldmfd  sp!, {r0-r3, r12, lr}
 subs   pc, lr, #4
 
+VBlankIntrWait:
+mov    r0, #1
+mov    r1, #1
 IntrWait:
-stmfd  sp!, {r4, lr}
-# Save inputs
-mrs    r3, cpsr
-bic    r3, #0x80
-msr    cpsr, r3
+stmfd  sp!, {r2-r3, lr}
+mrs    r5, spsr
+msr    cpsr, #0x1F
 # Pull current interrupts enabled and add the ones we need
 mov    r4, #0x04000000
 # See if we want to return immediately
 cmp    r0, #0
 mov    r0, #0
 mov    r2, #1
-beq    .L1
+beq    1f
 # Halt
-.L0:
+0:
 strb   r0, [r4, #0x301]
-.L1:
+1:
 # Check which interrupts were acknowledged
-strb   r2, [r4, #0x204]
+strb   r0, [r4, #0x208]
 ldrh   r3, [r4, #-8]
 ands   r3, r1
 eorne  r3, r1
 strneh r3, [r4, #-8]
-strb   r0, [r4, #0x204]
-beq .L0
-#Restore state
-mrs    r0, cpsr
-orr    r0, #0x80
-msr    cpsr, r0
-ldmfd  sp!, {r4, pc}
+strb   r2, [r4, #0x208]
+beq    0b
+msr    cpsr, #0x93
+msr    spsr, r5
+ldmfd  sp!, {r2-r3, pc}
+
+CpuSet:
+stmfd  sp!, {lr}
+mrs    r5, spsr
+msr    cpsr, #0x1F
+mov    r3, r2, lsl #12
+tst    r2, #0x01000000
+beq    0f
+# Fill
+tst    r2, #0x04000000
+beq    1f
+# Word
+add    r3, r1, r3, lsr #10
+ldmia  r0!, {r2}
+2:
+cmp    r1, r3
+stmltia  r1!, {r2}
+blt    2b
+b      3f
+# Halfword
+1:
+bic    r0, #1
+bic    r1, #1
+add    r3, r1, r3, lsr #11
+ldrh   r2, [r0]
+2:
+cmp    r1, r3
+strlth r2, [r1], #2
+blt    2b
+b      3f
+# Copy
+0:
+tst    r2, #0x04000000
+beq    1f
+# Word
+add    r3, r1, r3, lsr #10
+2:
+cmp    r1, r3
+ldmltia r0!, {r2}
+stmltia r1!, {r2}
+blt    2b
+b      3f
+# Halfword
+1:
+add    r3, r1, r3, lsr #11
+bic    r0, #1
+bic    r1, #1
+2:
+cmp    r1, r3
+ldrlth r2, [r0], #2
+strlth r2, [r1], #2
+blt    2b
+3:
+msr    cpsr, #0x93
+msr    spsr, r5
+ldmfd  sp!, {pc}
+
+CpuFastSet:
+stmfd  sp!, {lr}
+mrs    r5, spsr
+msr    cpsr, #0x1F
+stmfd  sp!, {r4-r10}
+tst    r2, #0x01000000
+mov    r3, r2, lsl #12
+add    r2, r1, r3, lsr #10
+beq    0f
+# Fill
+ldr    r3, [r0]
+mov    r4, r3
+mov    r5, r3
+mov    r6, r3
+mov    r7, r3
+mov    r8, r3
+mov    r9, r3
+mov    r10, r3
+1:
+cmp    r1, r2
+stmltia r1!, {r3-r10}
+blt    1b
+b      2f
+# Copy
+0:
+cmp    r1, r2
+ldmltia r0!, {r3-r10}
+stmltia r1!, {r3-r10}
+blt    0b
+2:
+ldmfd  sp!, {r4-r10}
+msr    cpsr, #0x93
+msr    spsr, r5
+ldmfd  sp!, {pc}

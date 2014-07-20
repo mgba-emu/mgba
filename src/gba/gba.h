@@ -1,15 +1,15 @@
 #ifndef GBA_H
 #define GBA_H
 
+#include "common.h"
+
 #include "arm.h"
-#include "debugger.h"
+#include "debugger/debugger.h"
 
 #include "gba-memory.h"
 #include "gba-video.h"
 #include "gba-audio.h"
 #include "gba-sio.h"
-
-#include <stdarg.h>
 
 extern const uint32_t GBA_ARM7TDMI_FREQUENCY;
 
@@ -36,12 +36,12 @@ enum GBAError {
 };
 
 enum GBALogLevel {
-	GBA_LOG_STUB = 0x01,
-	GBA_LOG_DEBUG = 0x02,
-	GBA_LOG_INFO = 0x04,
-	GBA_LOG_WARN = 0x08,
-	GBA_LOG_ERROR = 0x10,
-	GBA_LOG_FATAL = 0x20,
+	GBA_LOG_FATAL = 0x01,
+	GBA_LOG_ERROR = 0x02,
+	GBA_LOG_WARN = 0x04,
+	GBA_LOG_INFO = 0x08,
+	GBA_LOG_DEBUG = 0x10,
+	GBA_LOG_STUB = 0x20,
 
 	GBA_LOG_GAME_ERROR = 0x100
 };
@@ -60,18 +60,17 @@ enum GBAKey {
 	GBA_KEY_NONE = -1
 };
 
-struct GBARotationSource;
 struct GBA;
+struct GBARotationSource;
+struct Patch;
+struct VFile;
+
 typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
-struct GBABoard {
-	struct ARMBoard d;
-	struct GBA* p;
-};
-
 struct GBA {
-	struct ARMCore cpu;
-	struct GBABoard board;
+	struct ARMComponent d;
+
+	struct ARMCore* cpu;
 	struct GBAMemory memory;
 	struct GBAVideo video;
 	struct GBAAudio audio;
@@ -99,9 +98,14 @@ struct GBA {
 	int* keySource;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;
+	struct GBARRContext* rr;
+	void* pristineRom;
+	size_t pristineRomSize;
+	uint32_t romCrc32;
+	struct VFile* romVf;
+	struct VFile* biosVf;
 
 	const char* activeFile;
-	const char* savefile;
 
 	int logLevel;
 	GBALogHandler logHandler;
@@ -122,14 +126,10 @@ struct GBACartridge {
 	// And ROM data...
 };
 
-void GBAInit(struct GBA* gba);
-void GBADeinit(struct GBA* gba);
+void GBACreate(struct GBA* gba);
+void GBADestroy(struct GBA* gba);
 
-void GBAMemoryInit(struct GBAMemory* memory);
-void GBAMemoryDeinit(struct GBAMemory* memory);
-
-void GBABoardInit(struct GBABoard* board);
-void GBABoardReset(struct ARMBoard* board);
+void GBAReset(struct ARMCore* cpu);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
@@ -138,15 +138,17 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
-void GBATestIRQ(struct ARMBoard* board);
-int GBAWaitForIRQ(struct GBA* gba);
-int GBAHalt(struct GBA* gba);
+void GBATestIRQ(struct ARMCore* cpu);
+void GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBALoadROM(struct GBA* gba, int fd, const char* fname);
-void GBALoadBIOS(struct GBA* gba, int fd);
+void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
+void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
+
+bool GBAIsROM(struct VFile* vf);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);

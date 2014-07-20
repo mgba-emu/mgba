@@ -1,11 +1,14 @@
 #include "gba-thread.h"
 
 #include "arm.h"
-#include "debugger.h"
 #include "gba.h"
 #include "gba-serialize.h"
 
-#include <stdlib.h>
+#include "debugger/debugger.h"
+
+#include "util/patch.h"
+#include "util/vfs.h"
+
 #include <signal.h>
 
 #ifdef USE_PTHREADS
@@ -20,9 +23,9 @@ static DWORD _contextKey;
 static INIT_ONCE _contextOnce = INIT_ONCE_STATIC_INIT;
 
 static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
-	(void) (once);
-	(void) (param);
-	(void) (context);
+	UNUSED(once);
+	UNUSED(param);
+	UNUSED(context);
 	_contextKey = TlsAlloc();
 	return TRUE;
 }
@@ -51,8 +54,16 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #endif
 
 	struct GBA gba;
+	struct ARMCore cpu;
+	struct Patch patch;
 	struct GBAThread* threadContext = context;
-	char* savedata = 0;
+	struct ARMComponent* components[1] = {};
+	int numComponents = 0;
+
+	if (threadContext->debugger) {
+		components[numComponents] = &threadContext->debugger->d;
+		++numComponents;
+	}
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
@@ -61,9 +72,13 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #endif
 
 	gba.logHandler = threadContext->logHandler;
-	GBAInit(&gba);
+	GBACreate(&gba);
+	ARMSetComponents(&cpu, &gba.d, numComponents, components);
+	ARMInit(&cpu);
+	ARMReset(&cpu);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
+	gba.logLevel = threadContext->logLevel;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
 #else
@@ -73,30 +88,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
 
-	if (threadContext->fd >= 0) {
-		if (threadContext->fname) {
-			char* dotPoint = strrchr(threadContext->fname, '.');
-			if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
-				savedata = strdup(threadContext->fname);
-				dotPoint = strrchr(savedata, '.');
-				dotPoint[1] = 's';
-				dotPoint[2] = 'a';
-				dotPoint[3] = 'v';
-				dotPoint[4] = '\0';
-			} else if (dotPoint) {
-				savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
-				strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
-				strcat(savedata, "sav");
-			} else {
-				savedata = malloc(strlen(threadContext->fname + 5));
-				strcpy(savedata, threadContext->fname);
-				strcat(savedata, "sav");
-			}
+	if (threadContext->rom) {
+		GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
+		if (threadContext->bios) {
+			GBALoadBIOS(&gba, threadContext->bios);
 		}
-		gba.savefile = savedata;
-		GBALoadROM(&gba, threadContext->fd, threadContext->fname);
-		if (threadContext->biosFd >= 0) {
-			GBALoadBIOS(&gba, threadContext->biosFd);
+
+		if (threadContext->patch && loadPatch(threadContext->patch, &patch)) {
+			GBAApplyPatch(&gba, &patch);
 		}
 	}
 
@@ -124,14 +123,31 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		} else {
 			while (threadContext->state == THREAD_RUNNING) {
-				ARMRun(&gba.cpu);
+				ARMRun(&cpu);
 			}
 		}
+
+		int resetScheduled = 0;
 		MutexLock(&threadContext->stateMutex);
-		while (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_INTERRUPTED) {
+		if (threadContext->state == THREAD_PAUSING) {
+			threadContext->state = THREAD_PAUSED;
+			ConditionWake(&threadContext->stateCond);
+		}
+		if (threadContext->state == THREAD_INTERRUPTING) {
+			threadContext->state = THREAD_INTERRUPTED;
+			ConditionWake(&threadContext->stateCond);
+		}
+		if (threadContext->state == THREAD_RESETING) {
+			threadContext->state = THREAD_RUNNING;
+			resetScheduled = 1;
+		}
+		while (threadContext->state == THREAD_PAUSED) {
 			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 		}
 		MutexUnlock(&threadContext->stateMutex);
+		if (resetScheduled) {
+			ARMReset(&cpu);
+		}
 	}
 
 	while (threadContext->state != THREAD_SHUTDOWN) {
@@ -143,16 +159,35 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	threadContext->gba = 0;
-	GBADeinit(&gba);
+	ARMDeinit(&cpu);
+	GBADestroy(&gba);
 
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
-	free(savedata);
 
 	return 0;
 }
 
-int GBAThreadStart(struct GBAThread* threadContext) {
+void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
+	if (opts->dirmode) {
+		threadContext->gameDir = VDirOpen(opts->fname);
+		threadContext->stateDir = threadContext->gameDir;
+	} else {
+		threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
+#if ENABLE_LIBZIP
+		threadContext->gameDir = VDirOpenZip(opts->fname, 0);
+#endif
+	}
+	threadContext->fname = opts->fname;
+	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
+	threadContext->patch = VFileOpen(opts->patch, O_RDONLY);
+	threadContext->frameskip = opts->frameskip;
+	threadContext->logLevel = opts->logLevel;
+	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
+	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+}
+
+bool GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
@@ -165,6 +200,61 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (threadContext->rom && !GBAIsROM(threadContext->rom)) {
+		threadContext->rom->close(threadContext->rom);
+		threadContext->rom = 0;
+	}
+
+	if (threadContext->gameDir) {
+		threadContext->gameDir->rewind(threadContext->gameDir);
+		struct VDirEntry* dirent = threadContext->gameDir->listNext(threadContext->gameDir);
+		while (dirent) {
+			struct Patch patchTemp;
+			struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
+			if (!vf) {
+				continue;
+			}
+			if (!threadContext->rom && GBAIsROM(vf)) {
+				threadContext->rom = vf;
+			} else if (!threadContext->patch && loadPatch(vf, &patchTemp)) {
+				threadContext->patch = vf;
+			} else {
+				vf->close(vf);
+			}
+			dirent = threadContext->gameDir->listNext(threadContext->gameDir);
+		}
+
+	}
+	if (threadContext->stateDir) {
+		threadContext->save = threadContext->stateDir->openFile(threadContext->stateDir, "sram.sav", O_RDWR | O_CREAT);
+	}
+
+	if (!threadContext->rom) {
+		return false;
+	}
+
+	if (threadContext->fname && !threadContext->save) {
+		char* savedata = 0;
+		char* dotPoint = strrchr(threadContext->fname, '.');
+		if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
+			savedata = strdup(threadContext->fname);
+			dotPoint = strrchr(savedata, '.');
+			dotPoint[1] = 's';
+			dotPoint[2] = 'a';
+			dotPoint[3] = 'v';
+			dotPoint[4] = '\0';
+		} else if (dotPoint) {
+			savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
+			strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
+			strcat(savedata, "sav");
+		} else {
+			savedata = malloc(strlen(threadContext->fname + 5) * sizeof(char));
+			sprintf(savedata, "%s.sav", threadContext->fname);
+		}
+		threadContext->save = VFileOpen(savedata, O_RDWR | O_CREAT);
+		free(savedata);
 	}
 
 	MutexInit(&threadContext->stateMutex);
@@ -191,11 +281,11 @@ int GBAThreadStart(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	return 0;
+	return true;
 }
 
-int GBAThreadHasStarted(struct GBAThread* threadContext) {
-	int hasStarted;
+bool GBAThreadHasStarted(struct GBAThread* threadContext) {
+	bool hasStarted;
 	MutexLock(&threadContext->stateMutex);
 	hasStarted = threadContext->state > THREAD_INITIALIZED;
 	MutexUnlock(&threadContext->stateMutex);
@@ -213,6 +303,14 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 	threadContext->sync.audioWait = 0;
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 	MutexUnlock(&threadContext->sync.audioBufferMutex);
+}
+
+void GBAThreadReset(struct GBAThread* threadContext) {
+	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
+	threadContext->state = THREAD_RESETING;
+	ConditionWake(&threadContext->stateCond);
+	MutexUnlock(&threadContext->stateMutex);
 }
 
 void GBAThreadJoin(struct GBAThread* threadContext) {
@@ -243,15 +341,52 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		}
 	}
 	free(threadContext->rewindBuffer);
+
+	if (threadContext->rom) {
+		threadContext->rom->close(threadContext->rom);
+		threadContext->rom = 0;
+	}
+
+	if (threadContext->save) {
+		threadContext->save->close(threadContext->save);
+		threadContext->save = 0;
+	}
+
+	if (threadContext->bios) {
+		threadContext->bios->close(threadContext->bios);
+		threadContext->bios = 0;
+	}
+
+	if (threadContext->patch) {
+		threadContext->patch->close(threadContext->patch);
+		threadContext->patch = 0;
+	}
+
+	if (threadContext->gameDir) {
+		if (threadContext->stateDir == threadContext->gameDir) {
+			threadContext->stateDir = 0;
+		}
+		threadContext->gameDir->close(threadContext->gameDir);
+		threadContext->gameDir = 0;
+	}
+
+	if (threadContext->stateDir) {
+		threadContext->stateDir->close(threadContext->stateDir);
+		threadContext->stateDir = 0;
+	}
 }
 
 void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	_waitOnInterrupt(threadContext);
 	threadContext->savedState = threadContext->state;
-	threadContext->state = THREAD_INTERRUPTED;
+	_waitOnInterrupt(threadContext);
+	threadContext->state = THREAD_INTERRUPTING;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
+	}
+	ConditionWake(&threadContext->stateCond);
+	while (threadContext->state == THREAD_INTERRUPTING) {
+		ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 	}
 	MutexUnlock(&threadContext->stateMutex);
 }
@@ -268,7 +403,7 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
 		}
-		threadContext->state = THREAD_PAUSED;
+		threadContext->state = THREAD_PAUSING;
 		frameOn = 0;
 	}
 	MutexUnlock(&threadContext->stateMutex);
@@ -284,7 +419,7 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
-	if (threadContext->state == THREAD_PAUSED) {
+	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
 	}
@@ -297,8 +432,8 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
-int GBAThreadIsPaused(struct GBAThread* threadContext) {
-	int isPaused;
+bool GBAThreadIsPaused(struct GBAThread* threadContext) {
+	bool isPaused;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	isPaused = threadContext->state == THREAD_PAUSED;
@@ -307,7 +442,7 @@ int GBAThreadIsPaused(struct GBAThread* threadContext) {
 }
 
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
-	int frameOn = 1;
+	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED) {
@@ -318,7 +453,7 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 			threadContext->debugger->state = DEBUGGER_EXITING;
 		}
 		threadContext->state = THREAD_PAUSED;
-		frameOn = 0;
+		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
 	MutexLock(&threadContext->sync.videoFrameMutex);
@@ -370,20 +505,20 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	}
 }
 
-int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
+bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync) {
-		return 1;
+		return true;
 	}
 
 	MutexLock(&sync->videoFrameMutex);
 	ConditionWake(&sync->videoFrameRequiredCond);
 	if (!sync->videoFrameOn) {
-		return 0;
+		return false;
 	}
 	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
-	return 1;
+	return true;
 }
 
 void GBASyncWaitFrameEnd(struct GBASync* sync) {
@@ -394,7 +529,7 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-int GBASyncDrawingFrame(struct GBASync* sync) {
+bool GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
 }
 

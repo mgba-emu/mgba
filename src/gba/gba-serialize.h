@@ -1,6 +1,8 @@
 #ifndef GBA_SERIALIZE_H
 #define GBA_SERIALIZE_H
 
+#include "common.h"
+
 #include "gba.h"
 
 const uint32_t GBA_SAVESTATE_MAGIC;
@@ -8,7 +10,8 @@ const uint32_t GBA_SAVESTATE_MAGIC;
 /* Savestate format:
  * 0x00000 - 0x00003: Version Magic (0x01000000)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
- * 0x00008 - 0x0000F: Reserved (leave zero)
+ * 0x00008 - 0x0000B: ROM CRC32
+ * 0x0000C - 0x0000F: Reserved (leave zero)
  * 0x00010 - 0x0001B: Game title (e.g. METROID4USA)
  * 0x0001C - 0x0001F: Game code (e.g. AMTE)
  * 0x00020 - 0x0012F: CPU state:
@@ -76,28 +79,28 @@ const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x00204 - 0x00207: Last event
  * | 0x00208 - 0x0020B: Next event
  * | 0x0020C - 0x0020F: Overflow interval
- * | 0x00210 - 0x00213: Miscellaenous flags
+ * | 0x00210 - 0x00213: Miscellaneous flags
  * 0x00214 - 0x00227: Timer 1
  * | 0x00214 - 0x00215: Reload value
  * | 0x00216 - 0x00217: Old reload value
  * | 0x00218 - 0x0021B: Last event
  * | 0x0021C - 0x0021F: Next event
  * | 0x00220 - 0x00223: Overflow interval
- * | 0x00224 - 0x00227: Miscellaenous flags
+ * | 0x00224 - 0x00227: Miscellaneous flags
  * 0x00228 - 0x0023B: Timer 2
  * | 0x00228 - 0x00229: Reload value
  * | 0x0022A - 0x0022B: Old reload value
  * | 0x0022C - 0x0022F: Last event
  * | 0x00230 - 0x00233: Next event
  * | 0x00234 - 0x00237: Overflow interval
- * | 0x00238 - 0x0023B: Miscellaenous flags
+ * | 0x00238 - 0x0023B: Miscellaneous flags
  * 0x0023C - 0x00250: Timer 3
  * | 0x0023C - 0x0023D: Reload value
  * | 0x0023E - 0x0023F: Old reload value
  * | 0x00240 - 0x00243: Last event
  * | 0x00244 - 0x00247: Next event
  * | 0x00248 - 0x0024B: Overflow interval
- * | 0x0024C - 0x0024F: Miscellaenous flags
+ * | 0x0024C - 0x0024F: Miscellaneous flags
  * 0x00250 - 0x0025F: DMA 0
  * | 0x00250 - 0x00253: DMA next source
  * | 0x00254 - 0x00257: DMA next destination
@@ -118,7 +121,25 @@ const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x00284 - 0x00287: DMA next destination
  * | 0x00288 - 0x0028B: DMA next count
  * | 0x0028C - 0x0028F: DMA next event
- * 0x00290 - 0x003FF: Reserved (leave zero)
+ * 0x00290 - 0x002BF: GPIO state
+ * | 0x00290 - 0x00291: Pin state
+ * | 0x00292 - 0x00293: Direction state
+ * | 0x00294 - 0x002B6: RTC state (see gba-gpio.h for format)
+ * | 0x002B7 - 0x002B7: GPIO devices
+ *   | bit 0: Has RTC values
+ *   | bit 1: Has rumble value (reserved)
+ *   | bit 2: Has light sensor value (reserved)
+ *   | bit 3: Has gyroscope value
+ *   | bit 4: Has tilt values (reserved)
+ *   | bits 5 - 7: Reserved
+ * | 0x002B8 - 0x002B9: Gyroscope sample
+ * | 0x002BA - 0x002BB: Tilt x sample (reserved)
+ * | 0x002BC - 0x002BD: Tilt y sample (reserved)
+ * | 0x002BE - 0x002BF: Flags
+ *   | bit 0: Is read enabled
+ *   | bit 1: Gyroscope sample is edge
+ *   | bits 2 - 15: Reserved
+ * 0x002C0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -131,7 +152,8 @@ const uint32_t GBA_SAVESTATE_MAGIC;
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
-	uint32_t reservedHeader[2];
+	uint32_t romCrc32;
+	uint32_t reservedHeader;
 
 	char title[12];
 	uint32_t id;
@@ -173,8 +195,8 @@ struct GBASerializedState {
 			int32_t endTime;
 			int32_t nextEvent;
 		} ch4;
-		uint32_t fifoA[8];
-		uint32_t fifoB[8];
+		uint8_t fifoA[32];
+		uint8_t fifoB[32];
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
@@ -213,7 +235,20 @@ struct GBASerializedState {
 		int32_t nextEvent;
 	} dma[4];
 
-	uint32_t reservedGpio[92];
+	struct {
+		uint16_t pinState;
+		uint16_t pinDirection;
+		struct GBARTC rtc;
+		uint8_t devices;
+		uint16_t gyroSample;
+		uint16_t tiltSampleX;
+		uint16_t tiltSampleY;
+		enum GPIODirection readWrite : 1;
+		unsigned gyroEdge : 1;
+		unsigned reserved : 14;
+	} gpio;
+
+	uint32_t reserved[80];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
@@ -223,13 +258,17 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
+struct VFile;
+
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
 
-int GBASaveState(struct GBA* gba, int slot);
-int GBALoadState(struct GBA* gba, int slot);
+bool GBASaveState(struct GBA* gba, int slot);
+bool GBALoadState(struct GBA* gba, int slot);
 
-struct GBASerializedState* GBAMapState(int fd);
+struct GBASerializedState* GBAMapState(struct VFile* vf);
+void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state);
+
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 

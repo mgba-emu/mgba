@@ -1,9 +1,9 @@
 #ifndef VIDEO_SOFTWARE_H
 #define VIDEO_SOFTWARE_H
 
-#include "gba-video.h"
+#include "common.h"
 
-#include <pthread.h>
+#include "gba-video.h"
 
 #ifdef COLOR_16_BIT
 typedef uint16_t color_t;
@@ -65,17 +65,14 @@ enum {
 	OFFSET_INDEX = 28,
 };
 
-enum PixelFlags {
-	FLAG_PRIORITY = 0xC0000000,
-	FLAG_INDEX = 0x30000000,
-	FLAG_IS_BACKGROUND = 0x08000000,
-	FLAG_UNWRITTEN = 0xFC000000,
-	FLAG_TARGET_1 = 0x02000000,
-	FLAG_TARGET_2 = 0x01000000,
-	FLAG_OBJWIN = 0x01000000,
-
-	FLAG_ORDER_MASK = 0xF8000000
-};
+#define FLAG_PRIORITY       0xC0000000
+#define FLAG_INDEX          0x30000000
+#define FLAG_IS_BACKGROUND  0x08000000
+#define FLAG_UNWRITTEN      0xFC000000
+#define FLAG_TARGET_1       0x02000000
+#define FLAG_TARGET_2       0x01000000
+#define FLAG_OBJWIN         0x01000000
+#define FLAG_ORDER_MASK     0xF8000000
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
@@ -87,17 +84,19 @@ union WindowRegion {
 	uint16_t packed;
 };
 
-union WindowControl {
-	struct {
-		unsigned bg0Enable : 1;
-		unsigned bg1Enable : 1;
-		unsigned bg2Enable : 1;
-		unsigned bg3Enable : 1;
-		unsigned objEnable : 1;
-		unsigned blendEnable : 1;
-		unsigned : 2;
+struct WindowControl {
+	union {
+		struct {
+			unsigned bg0Enable : 1;
+			unsigned bg1Enable : 1;
+			unsigned bg2Enable : 1;
+			unsigned bg3Enable : 1;
+			unsigned objEnable : 1;
+			unsigned blendEnable : 1;
+			unsigned : 2;
+		};
+		uint8_t packed;
 	};
-	uint8_t packed;
 	int8_t priority;
 };
 
@@ -105,7 +104,7 @@ union WindowControl {
 
 struct Window {
 	uint8_t endX;
-	union WindowControl control;
+	struct WindowControl control;
 };
 
 struct GBAVideoSoftwareRenderer {
@@ -146,13 +145,13 @@ struct GBAVideoSoftwareRenderer {
 	struct WindowN {
 		union WindowRegion h;
 		union WindowRegion v;
-		union WindowControl control;
+		struct WindowControl control;
 	} winN[2];
 
-	union WindowControl winout;
-	union WindowControl objwin;
+	struct WindowControl winout;
+	struct WindowControl objwin;
 
-	union WindowControl currentWindow;
+	struct WindowControl currentWindow;
 
 	int nWindows;
 	struct Window windows[MAX_WINDOW];

@@ -3,10 +3,6 @@
 #include "gba.h"
 #include "gba-io.h"
 
-#include <string.h>
-
-#define UNUSED(X) (void) (X)
-
 static const int _objSizes[32] = {
 	8, 8,
 	16, 16,
@@ -64,6 +60,7 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
+	renderer->d.reset = GBAVideoSoftwareRendererInit;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;
@@ -90,9 +87,17 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->bldb = 0;
 	softwareRenderer->bldy = 0;
 
+	softwareRenderer->winN[0].h.packed = 0;
+	softwareRenderer->winN[0].v.packed = 0;
+	softwareRenderer->winN[0].control.packed = 0;
 	softwareRenderer->winN[0].control.priority = 0;
+	softwareRenderer->winN[1].h.packed = 0;
+	softwareRenderer->winN[1].v.packed = 0;
+	softwareRenderer->winN[1].control.packed = 0;
 	softwareRenderer->winN[1].control.priority = 1;
+	softwareRenderer->objwin.packed = 0;
 	softwareRenderer->objwin.priority = 2;
+	softwareRenderer->winout.packed = 0;
 	softwareRenderer->winout.priority = 3;
 
 	softwareRenderer->mosaic.packed = 0;
@@ -253,24 +258,36 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_WIN0H:
 		softwareRenderer->winN[0].h.packed = value;
+		if (softwareRenderer->winN[0].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end) {
+			softwareRenderer->winN[0].h.start = 0;
+		}
 		if (softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end || softwareRenderer->winN[0].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
 	case REG_WIN1H:
 		softwareRenderer->winN[1].h.packed = value;
+		if (softwareRenderer->winN[1].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end) {
+			softwareRenderer->winN[1].h.start = 0;
+		}
 		if (softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end || softwareRenderer->winN[1].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
 	case REG_WIN0V:
 		softwareRenderer->winN[0].v.packed = value;
+		if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
+			softwareRenderer->winN[0].v.start = 0;
+		}
 		if (softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end || softwareRenderer->winN[0].v.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].v.end = VIDEO_VERTICAL_PIXELS;
 		}
 		break;
 	case REG_WIN1V:
 		softwareRenderer->winN[1].v.packed = value;
+		if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
+			softwareRenderer->winN[1].v.start = 0;
+		}
 		if (softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end || softwareRenderer->winN[1].v.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].v.end = VIDEO_VERTICAL_PIXELS;
 		}
@@ -1048,18 +1065,20 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
-				if (x >= 4) { \
-					tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
-					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+					if (x >= 4) { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 						tileData >>= (x - 4) * 8; \
 					} else { \
-						tileData >>= (7 - x) * 8; \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
+						tileData >>= x * 8; \
 					} \
 				} else { \
-					tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
-					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-						tileData >>= x * 8; \
+					if (x >= 4) { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase]; \
+						tileData >>= (7 - x) * 8; \
 					} else { \
+						tileData = ((uint32_t*)renderer->d.vram)[charBase + 1]; \
 						tileData >>= (3 - x) * 8; \
 					} \
 				} \
@@ -1101,7 +1120,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	} \
 	\
 	uint32_t* pixel = &renderer->row[outX]; \
-	if (background->mosaic) { \
+	if (background->mosaic && renderer->mosaic.bgH) { \
 		int mosaicH = renderer->mosaic.bgH + 1; \
 		int x; \
 		int mosaicWait = outX % mosaicH; \
@@ -1402,14 +1421,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1419,14 +1438,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	unsigned tileData = renderer->d.vram[(yBase + charBase + xBase) >> 1]; \
+	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1441,7 +1460,8 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
-	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
+	unsigned charBase = sprite->tile * 0x20;
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
 		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
@@ -1509,7 +1529,8 @@ static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* rendere
 	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || sprite->mode == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (sprite->mode == OBJ_MODE_OBJWIN);
 	int x = sprite->x;
-	unsigned charBase = BASE_TILE + sprite->tile * 0x20;
+	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
+	unsigned charBase = sprite->tile * 0x20;
 	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[sprite->matIndex];
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (sprite->mode == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {

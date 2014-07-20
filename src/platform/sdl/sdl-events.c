@@ -1,7 +1,8 @@
 #include "sdl-events.h"
 
-#include "debugger.h"
+#include "debugger/debugger.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-video.h"
 
@@ -11,16 +12,16 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
-int GBASDLInitEvents(struct GBASDLEvents* context) {
+bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		return 0;
+		return false;
 	}
 	SDL_JoystickEventState(SDL_ENABLE);
 	context->joystick = SDL_JoystickOpen(0);
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
-	return 1;
+	return true;
 }
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
@@ -99,6 +100,12 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		GBARewind(context, 10);
 		GBAThreadContinue(context);
 		return;
+	case SDLK_ESCAPE:
+		GBAThreadInterrupt(context);
+		GBARRStopPlaying(context->gba->rr);
+		GBARRStopRecording(context->gba->rr);
+		GBAThreadContinue(context);
+		return;
 	default:
 		if (event->type == SDL_KEYDOWN) {
 			if (event->keysym.mod & GUI_MOD) {
@@ -107,6 +114,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_f:
 					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 					sdlContext->fullscreen = !sdlContext->fullscreen;
+					sdlContext->windowUpdated = 1;
 					break;
 #endif
 				case SDLK_p:
@@ -116,6 +124,27 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBAThreadPause(context);
 					context->frameCallback = _pauseAfterFrame;
 					GBAThreadUnpause(context);
+					break;
+				case SDLK_r:
+					GBAThreadReset(context);
+					break;
+				case SDLK_t:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRContextCreate(context->gba);
+					GBARRSetStream(context->gba->rr, context->stateDir);
+					GBARRStopPlaying(context->gba->rr);
+					GBARRStartRecording(context->gba->rr);
+					GBAThreadContinue(context);
+					break;
+				case SDLK_y:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRContextCreate(context->gba);
+					GBARRSetStream(context->gba->rr, context->stateDir);
+					GBARRStopRecording(context->gba->rr);
+					GBARRStartPlaying(context->gba->rr, event->keysym.mod & KMOD_SHIFT);
+					GBAThreadContinue(context);
 					break;
 				default:
 					break;
@@ -205,6 +234,17 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
+	UNUSED(context);
+	switch (event->event) {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		sdlContext->windowUpdated = 1;
+		break;
+	}
+}
+#endif
+
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
@@ -217,6 +257,11 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 		ConditionWake(&context->stateCond);
 		MutexUnlock(&context->stateMutex);
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	case SDL_WINDOWEVENT:
+		_GBASDLHandleWindowEvent(context, sdlContext, &event->window);
+		break;
+#endif
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 		_GBASDLHandleKeypress(context, sdlContext, &event->key);

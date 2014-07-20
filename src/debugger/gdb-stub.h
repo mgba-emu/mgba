@@ -1,8 +1,11 @@
 #ifndef GDB_STUB_H
 #define GDB_STUB_H
 
-#include "debugger.h"
-#include "socket.h"
+#include "common.h"
+
+#include "debugger/debugger.h"
+
+#include "util/socket.h"
 
 #define GDB_STUB_MAX_LINE 1200
 

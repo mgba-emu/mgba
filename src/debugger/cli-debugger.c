@@ -1,11 +1,8 @@
 #include "cli-debugger.h"
+#include "decoder.h"
+#include "parser.h"
 
 #include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
@@ -14,9 +11,9 @@
 struct DebugVector {
 	struct DebugVector* next;
 	enum DVType {
-		ERROR_TYPE,
-		INT_TYPE,
-		CHAR_TYPE
+		DV_ERROR_TYPE,
+		DV_INT_TYPE,
+		DV_CHAR_TYPE
 	} type;
 	union {
 		int32_t intValue;
@@ -32,6 +29,7 @@ typedef void (DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakInto(struct CLIDebugger*, struct DebugVector*);
 static void _continue(struct CLIDebugger*, struct DebugVector*);
+static void _disassemble(struct CLIDebugger*, struct DebugVector*);
 static void _next(struct CLIDebugger*, struct DebugVector*);
 static void _print(struct CLIDebugger*, struct DebugVector*);
 static void _printHex(struct CLIDebugger*, struct DebugVector*);
@@ -45,6 +43,7 @@ static void _clearBreakpoint(struct CLIDebugger*, struct DebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
+static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct {
 	const char* name;
@@ -56,6 +55,8 @@ static struct {
 	{ "continue", _continue },
 	{ "d", _clearBreakpoint },
 	{ "delete", _clearBreakpoint },
+	{ "dis", _disassemble },
+	{ "disasm", _disassemble },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "n", _next },
@@ -88,13 +89,13 @@ static inline void _printPSR(union PSR psr) {
 }
 
 static void _handleDeath(int sig) {
-	(void)(sig);
+	UNUSED(sig);
 	printf("No debugger attached!\n");
 }
 
 static void _breakInto(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
-	(void)(dv);
+	UNUSED(debugger);
+	UNUSED(dv);
 	struct sigaction sa, osa;
 	sa.sa_handler = _handleDeath;
 	sigemptyset(&sa.sa_mask);
@@ -110,18 +111,51 @@ static void _breakInto(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _continue(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	debugger->d.state = DEBUGGER_RUNNING;
 }
 
 static void _next(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	ARMRun(debugger->d.cpu);
 	_printStatus(debugger, 0);
 }
 
+static void _disassemble(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	uint32_t address;
+	int size;
+	int wordSize;
+	enum ExecutionMode mode = debugger->d.cpu->executionMode;
+
+	if (mode == MODE_ARM) {
+		wordSize = WORD_SIZE_ARM;
+	} else {
+		wordSize = WORD_SIZE_THUMB;
+	}
+
+	if (!dv || dv->type != DV_INT_TYPE) {
+		address = debugger->d.cpu->gprs[ARM_PC] - wordSize;
+	} else {
+		address = dv->intValue;
+		dv = dv->next;
+	}
+
+	if (!dv || dv->type != DV_INT_TYPE) {
+		size = 1;
+	} else {
+		size = dv->intValue;
+		dv = dv->next; // TODO: Check for excess args
+	}
+
+	int i;
+	for (i = 0; i < size; ++i) {
+		_printLine(debugger, address, mode);
+		address += wordSize;
+	}
+}
+
 static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
+	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" %u", dv->intValue);
 	}
@@ -129,7 +163,7 @@ static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(debugger);
+	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" 0x%08X", dv->intValue);
 	}
@@ -137,18 +171,23 @@ static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
-	// TODO: write a disassembler
+	char disassembly[48];
+	struct ARMInstructionInfo info;
 	if (mode == MODE_ARM) {
-		uint32_t instruction = debugger->d.cpu->memory->load32(debugger->d.cpu->memory, address, 0);
-		printf("%08X\n", instruction);
+		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
+		ARMDecodeARM(instruction, &info);
+		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
+		printf("%08X: %s\n", instruction, disassembly);
 	} else {
-		uint16_t instruction = debugger->d.cpu->memory->loadU16(debugger->d.cpu->memory, address, 0);
-		printf("%04X\n", instruction);
+		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
+		ARMDecodeThumb(instruction, &info);
+		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+		printf("%04X: %s\n", instruction, disassembly);
 	}
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	int r;
 	for (r = 0; r < 4; ++r) {
 		printf("%08X %08X %08X %08X\n",
@@ -169,42 +208,42 @@ static void _printStatus(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _quit(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	(void)(dv);
+	UNUSED(dv);
 	debugger->d.state = DEBUGGER_SHUTDOWN;
 }
 
 static void _readByte(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.cpu->memory->loadU8(debugger->d.cpu->memory, address, 0);
+	uint8_t value = debugger->d.cpu->memory.loadU8(debugger->d.cpu, address, 0);
 	printf(" 0x%02X\n", value);
 }
 
 static void _readHalfword(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.cpu->memory->loadU16(debugger->d.cpu->memory, address, 0);
+	uint16_t value = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 	printf(" 0x%04X\n", value);
 }
 
 static void _readWord(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.cpu->memory->load32(debugger->d.cpu->memory, address, 0);
+	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 	printf(" 0x%08X\n", value);
 }
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
@@ -213,7 +252,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
@@ -222,7 +261,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct DebugVector* d
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv) {
-	if (!dv || dv->type != INT_TYPE) {
+	if (!dv || dv->type != DV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
@@ -231,239 +270,117 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct DebugVector* dv)
 }
 
 static void _breakIntoDefault(int signal) {
-	(void)(signal);
+	UNUSED(signal);
 	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL);
 }
 
-enum _DVParseState {
-	PARSE_ERROR = -1,
-	PARSE_ROOT = 0,
-	PARSE_EXPECT_REGISTER,
-	PARSE_EXPECT_REGISTER_2,
-	PARSE_EXPECT_LR,
-	PARSE_EXPECT_PC,
-	PARSE_EXPECT_SP,
-	PARSE_EXPECT_DECIMAL,
-	PARSE_EXPECT_HEX,
-	PARSE_EXPECT_PREFIX,
-	PARSE_EXPECT_SUFFIX,
-};
+static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct DebugVector* dv) {
+	switch (operation) {
+	case OP_ASSIGN:
+		current = next;
+		break;
+	case OP_ADD:
+		current += next;
+		break;
+	case OP_SUBTRACT:
+		current -= next;
+		break;
+	case OP_MULTIPLY:
+		current *= next;
+		break;
+	case OP_DIVIDE:
+		if (next != 0) {
+			current /= next;
+		} else {
+			dv->type = DV_ERROR_TYPE;
+			return 0;
+		}
+		break;
+	}
+	return current;
+}
+
+static uint32_t _lookupIdentifier(struct ARMDebugger* debugger, const char* name, struct DebugVector* dv) {
+	if (strcmp(name, "sp") == 0) {
+		return debugger->cpu->gprs[ARM_SP];
+	}
+	if (strcmp(name, "lr") == 0) {
+		return debugger->cpu->gprs[ARM_LR];
+	}
+	if (strcmp(name, "pc") == 0) {
+		return debugger->cpu->gprs[ARM_PC];
+	}
+	if (strcmp(name, "cpsr") == 0) {
+		return debugger->cpu->cpsr.packed;
+	}
+	// TODO: test if mode has SPSR
+	if (strcmp(name, "spsr") == 0) {
+		return debugger->cpu->spsr.packed;
+	}
+	if (name[0] == 'r' && name[1] >= '0' && name[1] <= '9') {
+		int reg = atoi(&name[1]);
+		if (reg < 16) {
+			return debugger->cpu->gprs[reg];
+		}
+	}
+	dv->type = DV_ERROR_TYPE;
+	return 0;
+}
+
+static uint32_t _evaluateParseTree(struct ARMDebugger* debugger, struct ParseTree* tree, struct DebugVector* dv) {
+	switch (tree->token.type) {
+	case TOKEN_UINT_TYPE:
+		return tree->token.uintValue;
+	case TOKEN_OPERATOR_TYPE:
+		return _performOperation(tree->token.operatorValue, _evaluateParseTree(debugger, tree->lhs, dv), _evaluateParseTree(debugger, tree->rhs, dv), dv);
+	case TOKEN_IDENTIFIER_TYPE:
+		return _lookupIdentifier(debugger, tree->token.identifierValue, dv);
+	case TOKEN_ERROR_TYPE:
+	default:
+		dv->type = DV_ERROR_TYPE;
+	}
+	return 0;
+}
 
 static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
 	if (!string || length < 1) {
 		return 0;
 	}
 
-	enum _DVParseState state = PARSE_ROOT;
-	struct DebugVector dvTemp = { .type = INT_TYPE };
-	uint32_t current = 0;
+	struct DebugVector dvTemp = { .type = DV_INT_TYPE };
 
-	while (length > 0 && string[0] && string[0] != ' ' && state != PARSE_ERROR) {
-		char token = string[0];
-		++string;
-		--length;
-		switch (state) {
-		case PARSE_ROOT:
-			switch (token) {
-			case 'r':
-				state = PARSE_EXPECT_REGISTER;
-				break;
-			case 'p':
-				state = PARSE_EXPECT_PC;
-				break;
-			case 's':
-				state = PARSE_EXPECT_SP;
-				break;
-			case 'l':
-				state = PARSE_EXPECT_LR;
-				break;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				state = PARSE_EXPECT_DECIMAL;
-				current = token - '0';
-				break;
-			case '0':
-				state = PARSE_EXPECT_PREFIX;
-				break;
-			case '$':
-				state = PARSE_EXPECT_HEX;
-				current = 0;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			};
-			break;
-		case PARSE_EXPECT_LR:
-			switch (token) {
-			case 'r':
-				current = debugger->d.cpu->gprs[ARM_LR];
-				state = PARSE_EXPECT_SUFFIX;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_PC:
-			switch (token) {
-			case 'c':
-				current = debugger->d.cpu->gprs[ARM_PC];
-				state = PARSE_EXPECT_SUFFIX;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_SP:
-			switch (token) {
-			case 'p':
-				current = debugger->d.cpu->gprs[ARM_SP];
-				state = PARSE_EXPECT_SUFFIX;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_REGISTER:
-			switch (token) {
-			case '0':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				current = debugger->d.cpu->gprs[token - '0'];
-				state = PARSE_EXPECT_SUFFIX;
-				break;
-			case '1':
-				state = PARSE_EXPECT_REGISTER_2;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_REGISTER_2:
-			switch (token) {
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-				current = debugger->d.cpu->gprs[token - '0' + 10];
-				state = PARSE_EXPECT_SUFFIX;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_DECIMAL:
-			switch (token) {
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				// TODO: handle overflow
-				current *= 10;
-				current += token - '0';
-				break;
-			default:
-				state = PARSE_ERROR;
-			}
-			break;
-		case PARSE_EXPECT_HEX:
-			switch (token) {
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				// TODO: handle overflow
-				current *= 16;
-				current += token - '0';
-				break;
-			case 'A':
-			case 'B':
-			case 'C':
-			case 'D':
-			case 'E':
-			case 'F':
-				// TODO: handle overflow
-				current *= 16;
-				current += token - 'A' + 10;
-				break;
-			case 'a':
-			case 'b':
-			case 'c':
-			case 'd':
-			case 'e':
-			case 'f':
-				// TODO: handle overflow
-				current *= 16;
-				current += token - 'a' + 10;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_PREFIX:
-			switch (token) {
-			case 'X':
-			case 'x':
-				current = 0;
-				state = PARSE_EXPECT_HEX;
-				break;
-			default:
-				state = PARSE_ERROR;
-				break;
-			}
-			break;
-		case PARSE_EXPECT_SUFFIX:
-			// TODO
-			state = PARSE_ERROR;
-			break;
-		case PARSE_ERROR:
-			// This shouldn't be reached
-			break;
-		}
+	struct LexVector lv = { .next = 0 };
+	size_t adjusted = lexExpression(&lv, string, length);
+	if (adjusted > length) {
+		dvTemp.type = DV_ERROR_TYPE;
+		lexFree(lv.next);
 	}
 
+	struct ParseTree tree;
+	parseLexedExpression(&tree, &lv);
+	if (tree.token.type == TOKEN_ERROR_TYPE) {
+		dvTemp.type = DV_ERROR_TYPE;
+	} else {
+		dvTemp.intValue = _evaluateParseTree(&debugger->d, &tree, &dvTemp);
+	}
+
+	parseFree(tree.lhs);
+	parseFree(tree.rhs);
+
+	length -= adjusted;
+	string += adjusted;
+
 	struct DebugVector* dv = malloc(sizeof(struct DebugVector));
-	if (state == PARSE_ERROR) {
-		dv->type = ERROR_TYPE;
+	if (dvTemp.type == DV_ERROR_TYPE) {
+		dv->type = DV_ERROR_TYPE;
 		dv->next = 0;
 	} else {
-		dvTemp.intValue = current;
 		*dv = dvTemp;
 		if (string[0] == ' ') {
 			dv->next = _DVParse(debugger, string + 1, length - 1);
+			if (dv->next && dv->next->type == DV_ERROR_TYPE) {
+				dv->type = DV_ERROR_TYPE;
+			}
 		}
 	}
 	return dv;
@@ -478,17 +395,17 @@ static void _DVFree(struct DebugVector* dv) {
 	}
 }
 
-static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
+static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	struct DebugVector* dv = 0;
 	if (firstSpace) {
 		cmdLength = firstSpace - line;
 		dv = _DVParse(debugger, firstSpace + 1, count - cmdLength - 1);
-		if (dv && dv->type == ERROR_TYPE) {
+		if (dv && dv->type == DV_ERROR_TYPE) {
 			printf("Parse error\n");
 			_DVFree(dv);
-			return 0;
+			return false;
 		}
 	} else {
 		cmdLength = count;
@@ -503,16 +420,16 @@ static int _parse(struct CLIDebugger* debugger, const char* line, size_t count) 
 		if (strncasecmp(name, line, cmdLength) == 0) {
 			_debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
-			return 1;
+			return true;
 		}
 	}
 	_DVFree(dv);
 	printf("Command not found\n");
-	return 0;
+	return false;
 }
 
 static char* _prompt(EditLine* el) {
-	(void)(el);
+	UNUSED(el);
 	return "> ";
 }
 
@@ -541,7 +458,7 @@ static void _commandLine(struct ARMDebugger* debugger) {
 }
 
 static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
-	(void) (debugger);
+	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
@@ -559,7 +476,7 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 }
 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
-	(void)(ch);
+	UNUSED(ch);
 	const LineInfo* li = el_line(elstate);
 	const char* commandPtr;
 	int cmd = 0, len = 0;
@@ -587,7 +504,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 static void _cliDebuggerInit(struct ARMDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	// TODO: get argv[0]
-	cliDebugger->elstate = el_init("gbac", stdin, stdout, stderr);
+	cliDebugger->elstate = el_init(BINARY_NAME, stdin, stdout, stderr);
 	el_set(cliDebugger->elstate, EL_PROMPT, _prompt);
 	el_set(cliDebugger->elstate, EL_EDITOR, "emacs");
 
@@ -609,6 +526,7 @@ static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
 }
 
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
+	ARMDebuggerCreate(&debugger->d);
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
 	debugger->d.paused = _commandLine;

@@ -1,9 +1,9 @@
 #ifndef GBA_VIDEO_H
 #define GBA_VIDEO_H
 
-#include "gba-memory.h"
+#include "common.h"
 
-#include <stdint.h>
+#include "gba-memory.h"
 
 enum {
 	VIDEO_CYCLES_PER_PIXEL = 4,
@@ -169,6 +169,7 @@ union GBARegisterBGCNT {
 
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
+	void (*reset)(struct GBAVideoRenderer* renderer);
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -213,12 +214,12 @@ struct GBAVideo {
 };
 
 void GBAVideoInit(struct GBAVideo* video);
+void GBAVideoReset(struct GBAVideo* video);
 void GBAVideoDeinit(struct GBAVideo* video);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
-uint16_t GBAVideoReadDISPSTAT(struct GBAVideo* video);
 
 struct GBASerializedState;
 void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state);

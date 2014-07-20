@@ -1,7 +1,9 @@
 #ifndef GBA_SAVEDATA_H
 #define GBA_SAVEDATA_H
 
-#include <stdint.h>
+#include "common.h"
+
+struct VFile;
 
 enum SavedataType {
 	SAVEDATA_NONE = 0,
@@ -53,9 +55,8 @@ enum {
 struct GBASavedata {
 	enum SavedataType type;
 	uint8_t* data;
-	const char* filename;
 	enum SavedataCommand command;
-	int fd;
+	struct VFile* vf;
 
 	int readBitsRemaining;
 	int readAddress;
@@ -68,10 +69,8 @@ struct GBASavedata {
 	enum FlashStateMachine flashState;
 };
 
-void GBASavedataInit(struct GBASavedata* savedata, const char* filename);
+void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
-
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);

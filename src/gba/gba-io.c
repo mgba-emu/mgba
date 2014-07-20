@@ -1,5 +1,6 @@
 #include "gba-io.h"
 
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-sio.h"
 #include "gba-video.h"
@@ -61,9 +62,9 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Timers
@@ -135,7 +136,8 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		case REG_SOUND3CNT_X:
 			GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
-			value &= 0x4000;
+			// TODO: The low bits need to not be readable, but still 8-bit writable
+			value &= 0x43FF;
 			break;
 		case REG_SOUND4CNT_LO:
 			GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
@@ -200,28 +202,28 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 
 		case REG_DMA0CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 0, value);
+			GBAMemoryWriteDMACNT_LO(gba, 0, value);
 			break;
 		case REG_DMA0CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 0, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 0, value);
 			break;
 		case REG_DMA1CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 1, value);
+			GBAMemoryWriteDMACNT_LO(gba, 1, value);
 			break;
 		case REG_DMA1CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 1, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 1, value);
 			break;
 		case REG_DMA2CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 2, value);
+			GBAMemoryWriteDMACNT_LO(gba, 2, value);
 			break;
 		case REG_DMA2CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 2, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 2, value);
 			break;
 		case REG_DMA3CNT_LO:
-			GBAMemoryWriteDMACNT_LO(&gba->memory, 3, value);
+			GBAMemoryWriteDMACNT_LO(gba, 3, value);
 			break;
 		case REG_DMA3CNT_HI:
-			value = GBAMemoryWriteDMACNT_HI(&gba->memory, 3, value);
+			value = GBAMemoryWriteDMACNT_HI(gba, 3, value);
 			break;
 
 		// Timers
@@ -269,7 +271,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 		// Interrupts and misc
 		case REG_WAITCNT:
-			GBAAdjustWaitstates(&gba->memory, value);
+			GBAAdjustWaitstates(gba, value);
 			break;
 		case REG_IE:
 			GBAWriteIE(gba, value);
@@ -325,28 +327,28 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		GBAAudioWriteFIFO(&gba->audio, address, value);
 		break;
 	case REG_DMA0SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 0, value);
+		GBAMemoryWriteDMASAD(gba, 0, value);
 		break;
 	case REG_DMA0DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 0, value);
+		GBAMemoryWriteDMADAD(gba, 0, value);
 		break;
 	case REG_DMA1SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 1, value);
+		GBAMemoryWriteDMASAD(gba, 1, value);
 		break;
 	case REG_DMA1DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 1, value);
+		GBAMemoryWriteDMADAD(gba, 1, value);
 		break;
 	case REG_DMA2SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 2, value);
+		GBAMemoryWriteDMASAD(gba, 2, value);
 		break;
 	case REG_DMA2DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 2, value);
+		GBAMemoryWriteDMADAD(gba, 2, value);
 		break;
 	case REG_DMA3SAD_LO:
-		GBAMemoryWriteDMASAD(&gba->memory, 3, value);
+		GBAMemoryWriteDMASAD(gba, 3, value);
 		break;
 	case REG_DMA3DAD_LO:
-		GBAMemoryWriteDMADAD(&gba->memory, 3, value);
+		GBAMemoryWriteDMADAD(gba, 3, value);
 		break;
 	default:
 		GBAIOWrite(gba, address, value & 0xFFFF);
@@ -359,10 +361,6 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	switch (address) {
-	case REG_DISPSTAT:
-		return gba->memory.io[REG_DISPSTAT >> 1] | GBAVideoReadDISPSTAT(&gba->video);
-		break;
-
 	case REG_TM0CNT_LO:
 		GBATimerUpdateRegister(gba, 0);
 		break;
@@ -377,8 +375,14 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 
 	case REG_KEYINPUT:
-		if (gba->keySource) {
-			return 0x3FF ^ *gba->keySource;
+		if (GBARRIsPlaying(gba->rr)) {
+			return 0x3FF ^ GBARRQueryInput(gba->rr);
+		} else if (gba->keySource) {
+			uint16_t input = *gba->keySource;
+			if (GBARRIsRecording(gba->rr)) {
+				GBARRLogInput(gba->rr, input);
+			}
+			return 0x3FF ^ input;
 		}
 		break;
 
@@ -394,6 +398,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Write-only register
 		return 0;
 	case REG_DISPCNT:
+	case REG_DISPSTAT:
 	case REG_VCOUNT:
 	case REG_BG0CNT:
 	case REG_BG1CNT:
@@ -457,6 +462,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 
 	memcpy(state->timers, gba->timers, sizeof(state->timers));
+	GBAGPIOSerialize(&gba->memory.gpio, state);
 }
 
 void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -469,12 +475,20 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 		}
 	}
 
+	gba->timersEnabled = 0;
+	memcpy(gba->timers, state->timers, sizeof(gba->timers));
 	for (i = 0; i < 4; ++i) {
 		gba->memory.dma[i].nextSource = state->dma[i].nextSource;
 		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
 		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
 		gba->memory.dma[i].nextEvent = state->dma[i].nextEvent;
-	}
+		if (gba->memory.dma[i].timing != DMA_TIMING_NOW) {
+			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
+		}
 
-	memcpy(state->timers, gba->timers, sizeof(gba->timers));
+		if (gba->timers[i].enable) {
+			gba->timersEnabled |= 1 << i;
+		}
+	}
+	GBAGPIODeserialize(&gba->memory.gpio, state);
 }

@@ -1,7 +1,7 @@
 #ifndef GBA_SENSORS_H
 #define GBA_SENSORS_H
 
-#include <stdint.h>
+#include "common.h"
 
 struct GBARotationSource {
 	void (*sample)(struct GBARotationSource*);

@@ -1,11 +1,11 @@
-#include "debugger.h"
+#include "debugger/debugger.h"
 #include "gba-thread.h"
 #include "gba.h"
 #include "renderers/video-software.h"
 #include "sdl-audio.h"
 #include "sdl-events.h"
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
@@ -16,7 +16,6 @@
 #include <malloc.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <unistd.h>
 
 struct GBAVideoEGLRenderer {
 	struct GBAVideoSoftwareRenderer d;
@@ -50,7 +49,9 @@ static const char* _fragmentShader =
 	"uniform sampler2D tex;\n"
 
 	"void main() {\n"
-	"	gl_FragColor = texture2D(tex, texCoord);\n"
+	"	vec4 color = texture2D(tex, texCoord);\n"
+	"	color.a = 1.;\n"
+	"	gl_FragColor = color;"
 	"}";
 
 static const GLfloat _vertices[] = {
@@ -76,7 +77,6 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	struct GBAThread context;
 	struct GBAVideoEGLRenderer renderer;
 
 	if (!_GBAEGLInit(&renderer)) {
@@ -84,16 +84,19 @@ int main(int argc, char** argv) {
 	}
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
-	context.fd = fd;
-	context.fname = fname;
-	context.useDebugger = 0;
-	context.renderer = &renderer.d.d;
-	context.frameskip = 0;
-	context.sync.videoFrameWait = 0;
-	context.sync.audioWait = 1;
-	context.startCallback = _GBASDLStart;
-	context.cleanCallback = _GBASDLClean;
-	context.userData = &renderer;
+	struct GBAThread context = {
+		.fd = fd,
+		.fname = fname,
+		.biosFd = -1,
+		.useDebugger = 0,
+		.renderer = &renderer.d.d,
+		.frameskip = 0,
+		.sync.videoFrameWait = 0,
+		.sync.audioWait = 0,
+		.startCallback = _GBASDLStart,
+		.cleanCallback = _GBASDLClean,
+		.userData = &renderer
+	};
 	GBAThreadStart(&context);
 
 	_GBAEGLRunloop(&context, &renderer);

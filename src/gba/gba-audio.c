@@ -5,16 +5,13 @@
 #include "gba-serialize.h"
 #include "gba-thread.h"
 
-#include <limits.h>
-#include <math.h>
-
 const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAAudioEnvelope* envelope);
-static int _updateSweep(struct GBAAudioChannel1* ch);
+static bool _updateSweep(struct GBAAudioChannel1* ch);
 static int32_t _updateChannel1(struct GBAAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAAudioChannel2* ch);
 static int32_t _updateChannel3(struct GBAAudioChannel3* ch);
@@ -23,6 +20,13 @@ static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio) {
+	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
+	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+}
+
+void GBAAudioReset(struct GBAAudio* audio) {
 	audio->nextEvent = 0;
 	audio->nextCh1 = 0;
 	audio->nextCh2 = 0;
@@ -52,10 +56,10 @@ void GBAAudioInit(struct GBAAudio* audio) {
 	audio->soundcntX = 0;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
-	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
-	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
-	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
-	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+	CircleBufferClear(&audio->left);
+	CircleBufferClear(&audio->right);
+	CircleBufferClear(&audio->chA.fifo);
+	CircleBufferClear(&audio->chB.fifo);
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {
@@ -68,7 +72,7 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->nextEvent -= cycles;
 	audio->eventDiff += cycles;
-	while (audio->nextEvent <= 0) {
+	if (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
 		if (audio->enable) {
 			if (audio->playingCh1 && !audio->ch1.envelope.dead) {
@@ -400,7 +404,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
 		dma->nextCount = 4;
 		dma->nextEvent = 0;
-		GBAMemoryUpdateDMAs(&audio->p->memory, -cycles);
+		GBAMemoryUpdateDMAs(audio->p, -cycles);
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
@@ -500,7 +504,7 @@ static void _updateEnvelope(struct GBAAudioEnvelope* envelope) {
 	}
 }
 
-static int _updateSweep(struct GBAAudioChannel1* ch) {
+static bool _updateSweep(struct GBAAudioChannel1* ch) {
 	if (ch->sweep.direction) {
 		int frequency = ch->control.frequency;
 		frequency -= frequency >> ch->sweep.shift;
@@ -513,11 +517,11 @@ static int _updateSweep(struct GBAAudioChannel1* ch) {
 		if (frequency < 2048) {
 			ch->control.frequency = frequency;
 		} else {
-			return 0;
+			return false;
 		}
 	}
 	ch->nextSweep += ch->sweep.time * SWEEP_CYCLES;
-	return 1;
+	return true;
 }
 
 static int32_t _updateChannel1(struct GBAAudioChannel1* ch) {
@@ -566,15 +570,17 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 		start = 3;
 		end = 0;
 	}
-	uint32_t bitsCarry = ch->wavedata[end] & 0xF0000000;
+	uint32_t bitsCarry = ch->wavedata[end] & 0x0F000000;
 	uint32_t bits;
 	for (i = start; i >= end; --i) {
-		bits = ch->wavedata[i] & 0xF0000000;
-		ch->wavedata[i] <<= 4;
-		ch->wavedata[i] |= bitsCarry >> 28;
+		bits = ch->wavedata[i] & 0x0F000000;
+		ch->wavedata[i] = ((ch->wavedata[i] & 0xF0F0F0F0) >> 4) | ((ch->wavedata[i] & 0x000F0F0F) << 12);
+		ch->wavedata[i] |= bitsCarry >> 20;
 		bitsCarry = bits;
 	}
-	ch->sample = ((bitsCarry >> 26) - 0x20) * volume;
+	ch->sample = (bitsCarry >> 20);
+	ch->sample >>= 2;
+	ch->sample *= volume;
 	return 8 * (2048 - ch->control.rate);
 }
 
@@ -695,6 +701,10 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	state->audio.ch4.endTime = audio->ch4.control.endTime;
 	state->audio.ch4.nextEvent = audio->nextCh4;
 
+	CircleBufferDump(&audio->chA.fifo, state->audio.fifoA, sizeof(state->audio.fifoA));
+	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
+	state->audio.fifoSize = CircleBufferSize(&audio->chA.fifo);
+
 	state->audio.nextEvent = audio->nextEvent;
 	state->audio.eventDiff = audio->eventDiff;
 	state->audio.nextSample = audio->nextSample;
@@ -728,6 +738,14 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	audio->ch4.lfsr = state->audio.ch4.lfsr;
 	audio->ch4.control.endTime = state->audio.ch4.endTime;
 	audio->nextCh4 = state->audio.ch4.nextEvent;
+
+	CircleBufferClear(&audio->chA.fifo);
+	CircleBufferClear(&audio->chB.fifo);
+	int i;
+	for (i = 0; i < state->audio.fifoSize; ++i) {
+		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
+		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
+	}
 
 	audio->nextEvent = state->audio.nextEvent;
 	audio->eventDiff = state->audio.eventDiff;

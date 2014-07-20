@@ -2,8 +2,6 @@
 
 #include "gba-io.h"
 
-#include <limits.h>
-
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
 	switch (mode) {
 	case SIO_NORMAL_8:
@@ -19,7 +17,7 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 }
 
 static void _switchMode(struct GBASIO* sio) {
-	int mode = ((sio->rcnt >> 14) & 0xC) | ((sio->siocnt >> 12) & 0x3);
+	unsigned mode = ((sio->rcnt >> 14) & 0xC) | ((sio->siocnt >> 12) & 0x3);
 	enum GBASIOMode oldMode = sio->mode;
 	if (mode < 8) {
 		sio->mode = (enum GBASIOMode) (mode & 0x3);
@@ -40,6 +38,11 @@ static void _switchMode(struct GBASIO* sio) {
 void GBASIOInit(struct GBASIO* sio) {
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
+	sio->mode = -1;
+	sio->activeDriver = 0;
+	sio->drivers.normal = 0;
+	sio->drivers.multiplayer = 0;
+	sio->drivers.joybus = 0;
 	_switchMode(sio);
 }
 
@@ -53,15 +56,9 @@ void GBASIODeinit(struct GBASIO* sio) {
 }
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
-	if (drivers->normal) {
-		GBASIOSetDriver(sio, drivers->normal, SIO_NORMAL_8);
-	}
-	if (drivers->multiplayer) {
-		GBASIOSetDriver(sio, drivers->multiplayer, SIO_MULTI);
-	}
-	if (drivers->joybus) {
-		GBASIOSetDriver(sio, drivers->multiplayer, SIO_JOYBUS);
-	}
+	GBASIOSetDriver(sio, drivers->normal, SIO_NORMAL_8);
+	GBASIOSetDriver(sio, drivers->multiplayer, SIO_MULTI);
+	GBASIOSetDriver(sio, drivers->joybus, SIO_JOYBUS);
 }
 
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode) {

@@ -2,14 +2,14 @@
 
 #include "gba.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-thread.h"
-#include "memory.h"
 
-#include <limits.h>
-#include <string.h>
+#include "util/memory.h"
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
+static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
@@ -17,6 +17,7 @@ static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
 static struct GBAVideoRenderer dummyRenderer = {
 	.init = GBAVideoDummyRendererInit,
+	.reset = GBAVideoDummyRendererReset,
 	.deinit = GBAVideoDummyRendererDeinit,
 	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
@@ -25,7 +26,10 @@ static struct GBAVideoRenderer dummyRenderer = {
 
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
+	video->vram = 0;
+}
 
+void GBAVideoReset(struct GBAVideo* video) {
 	video->inHblank = 0;
 	video->inVblank = 0;
 	video->vcounter = 0;
@@ -34,7 +38,7 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->vcounterIRQ = 0;
 	video->vcountSetting = 0;
 
-	video->vcount = -1;
+	video->vcount = 0;
 
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
@@ -45,11 +49,18 @@ void GBAVideoInit(struct GBAVideo* video) {
 	video->nextVblankIRQ = 0;
 	video->nextVcounterIRQ = 0;
 
+	if (video->vram) {
+		mappedMemoryFree(video->vram, SIZE_VRAM);
+	}
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
+	video->renderer->vram = video->vram;
 
 	int i;
 	for (i = 0; i < 128; ++i) {
-		video->oam.obj[i].disable = 1;
+		video->oam.raw[i * 4] = 0x0200;
+		video->oam.raw[i * 4 + 1] = 0x0000;
+		video->oam.raw[i * 4 + 2] = 0x0000;
+		video->oam.raw[i * 4 + 3] = 0x0000;
 	}
 }
 
@@ -92,13 +103,16 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 					video->renderer->finishFrame(video->renderer);
 				}
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
-				GBAMemoryRunVblankDMAs(&video->p->memory, lastEvent);
+				GBAMemoryRunVblankDMAs(video->p, lastEvent);
 				if (video->vblankIRQ) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
 				GBASyncPostFrame(video->p->sync);
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
+				if (video->p->rr) {
+					GBARRNextFrame(video->p->rr);
+				}
 				video->inVblank = 0;
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS:
@@ -112,10 +126,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBARaiseIRQ(video->p, IRQ_VCOUNTER);
 				video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 			}
-
-			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
-				video->renderer->drawScanline(video->renderer, video->vcount);
-			}
 		} else {
 			// Begin Hblank
 			video->inHblank = 1;
@@ -124,8 +134,12 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
 			video->nextHblankIRQ = video->nextHblank;
 
+			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
+				video->renderer->drawScanline(video->renderer, video->vcount);
+			}
+
 			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
-				GBAMemoryRunHblankDMAs(&video->p->memory, lastEvent);
+				GBAMemoryRunHblankDMAs(video->p, lastEvent);
 			}
 			if (video->hblankIRQ) {
 				GBARaiseIRQ(video->p, IRQ_HBLANK);
@@ -134,6 +148,8 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 
 		video->eventDiff = 0;
 	}
+	video->p->memory.io[REG_DISPSTAT >> 1] &= 0xFFF8;
+	video->p->memory.io[REG_DISPSTAT >> 1] |= (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
 	return video->nextEvent;
 }
 
@@ -154,34 +170,35 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 	}
 }
 
-uint16_t GBAVideoReadDISPSTAT(struct GBAVideo* video) {
-	return (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
+static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	// Nothing to do
 }
 
-static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
 	// Nothing to do
 }
 
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+	UNUSED(renderer);
 	// Nothing to do
 }
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	(void)(renderer);
-	(void)(address);
+	UNUSED(renderer);
+	UNUSED(address);
 	return value;
 }
 
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
-	(void)(renderer);
-	(void)(y);
+	UNUSED(renderer);
+	UNUSED(y);
 	// Nothing to do
 }
 
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
-	(void)(renderer);
+	UNUSED(renderer);
 	// Nothing to do
 }
 
@@ -211,10 +228,10 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {
-		GBAStore16(&video->p->memory.d, BASE_OAM | i, state->oam[i >> 1], 0);
+		GBAStore16(video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
 	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		GBAStore16(&video->p->memory.d, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
 	union GBARegisterDISPSTAT dispstat;
 	dispstat.packed = state->io[REG_DISPSTAT >> 1];

@@ -1,8 +1,12 @@
 #ifndef GBA_THREAD_H
 #define GBA_THREAD_H
 
+#include "common.h"
+
 #include "gba.h"
-#include "threading.h"
+
+#include "util/threading.h"
+#include "platform/commandline.h"
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
@@ -10,17 +14,20 @@ typedef void (*ThreadCallback)(struct GBAThread* threadContext);
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
 	THREAD_RUNNING = 0,
-	THREAD_INTERRUPTED = 1,
-	THREAD_PAUSED = 2,
-	THREAD_EXITING = 3,
-	THREAD_SHUTDOWN = 4
+	THREAD_INTERRUPTED,
+	THREAD_INTERRUPTING,
+	THREAD_PAUSED,
+	THREAD_PAUSING,
+	THREAD_RESETING,
+	THREAD_EXITING,
+	THREAD_SHUTDOWN
 };
 
 struct GBASync {
 	int videoFramePending;
 	int videoFrameWait;
 	int videoFrameSkip;
-	int videoFrameOn;
+	bool videoFrameOn;
 	Mutex videoFrameMutex;
 	Condition videoFrameAvailableCond;
 	Condition videoFrameRequiredCond;
@@ -34,13 +41,18 @@ struct GBAThread {
 	// Output
 	enum ThreadState state;
 	struct GBA* gba;
+	struct ARMCore* cpu;
 
 	// Input
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
-	int fd;
-	int biosFd;
+	struct VDir* gameDir;
+	struct VDir* stateDir;
+	struct VFile* rom;
+	struct VFile* save;
+	struct VFile* bios;
+	struct VFile* patch;
 	const char* fname;
 	int activeKeys;
 	int frameskip;
@@ -53,6 +65,7 @@ struct GBAThread {
 	enum ThreadState savedState;
 
 	GBALogHandler logHandler;
+	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
@@ -68,9 +81,12 @@ struct GBAThread {
 	int rewindBufferWriteOffset;
 };
 
-int GBAThreadStart(struct GBAThread* threadContext);
-int GBAThreadHasStarted(struct GBAThread* threadContext);
+void GBAMapOptionsToContext(struct StartupOptions*, struct GBAThread*);
+
+bool GBAThreadStart(struct GBAThread* threadContext);
+bool GBAThreadHasStarted(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
+void GBAThreadReset(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
 
 void GBAThreadInterrupt(struct GBAThread* threadContext);
@@ -78,14 +94,14 @@ void GBAThreadContinue(struct GBAThread* threadContext);
 
 void GBAThreadPause(struct GBAThread* threadContext);
 void GBAThreadUnpause(struct GBAThread* threadContext);
-int GBAThreadIsPaused(struct GBAThread* threadContext);
+bool GBAThreadIsPaused(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 
 void GBASyncPostFrame(struct GBASync* sync);
-int GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
+bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
-int GBASyncDrawingFrame(struct GBASync* sync);
+bool GBASyncDrawingFrame(struct GBASync* sync);
 
 void GBASyncProduceAudio(struct GBASync* sync, int wait);
 void GBASyncLockAudio(struct GBASync* sync);

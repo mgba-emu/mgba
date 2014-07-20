@@ -1,19 +1,7 @@
 #ifndef ARM_H
 #define ARM_H
 
-#include <stdint.h>
-
-#ifdef __POWERPC__
-#define LOAD_32(DEST, ADDR, ARR) asm("lwbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
-#define LOAD_16(DEST, ADDR, ARR) asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
-#define STORE_32(SRC, ADDR, ARR) asm("stwbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
-#define STORE_16(SRC, ADDR, ARR) asm("sthbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
-#else
-#define LOAD_32(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
-#define LOAD_16(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
-#define STORE_32(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = SRC
-#define STORE_16(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
-#endif
+#include "common.h"
 
 enum {
 	ARM_SP = 13,
@@ -91,36 +79,43 @@ union PSR {
 };
 
 struct ARMMemory {
-	int32_t (*load32)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	int16_t (*load16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	uint16_t (*loadU16)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	int8_t (*load8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
-	uint8_t (*loadU8)(struct ARMMemory*, uint32_t address, int* cycleCounter);
+	int32_t (*load32)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	int16_t (*load16)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint16_t (*loadU16)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	int8_t (*load8)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint8_t (*loadU8)(struct ARMCore*, uint32_t address, int* cycleCounter);
 
-	void (*store32)(struct ARMMemory*, uint32_t address, int32_t value, int* cycleCounter);
-	void (*store16)(struct ARMMemory*, uint32_t address, int16_t value, int* cycleCounter);
-	void (*store8)(struct ARMMemory*, uint32_t address, int8_t value, int* cycleCounter);
+	void (*store32)(struct ARMCore*, uint32_t address, int32_t value, int* cycleCounter);
+	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
+	void (*store8)(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;
-	uint32_t activePrefetchCycles32;
-	uint32_t activePrefetchCycles16;
+	uint32_t activeSeqCycles32;
+	uint32_t activeSeqCycles16;
 	uint32_t activeNonseqCycles32;
 	uint32_t activeNonseqCycles16;
-	void (*setActiveRegion)(struct ARMMemory*, uint32_t address);
-	int (*waitMultiple)(struct ARMMemory*, uint32_t startAddress, int count);
+	uint32_t activeUncachedCycles32;
+	uint32_t activeUncachedCycles16;
+	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
+	int (*waitMultiple)(struct ARMCore*, uint32_t startAddress, int count);
 };
 
-struct ARMBoard {
-	struct ARMCore* cpu;
-	void (*reset)(struct ARMBoard* board);
-	void (*processEvents)(struct ARMBoard* board);
-	void (*swi16)(struct ARMBoard* board, int immediate);
-	void (*swi32)(struct ARMBoard* board, int immediate);
-	void (*hitIllegal)(struct ARMBoard* board, uint32_t opcode);
-	void (*readCPSR)(struct ARMBoard* board);
+struct ARMInterruptHandler {
+	void (*reset)(struct ARMCore* cpu);
+	void (*processEvents)(struct ARMCore* cpu);
+	void (*swi16)(struct ARMCore* cpu, int immediate);
+	void (*swi32)(struct ARMCore* cpu, int immediate);
+	void (*hitIllegal)(struct ARMCore* cpu, uint32_t opcode);
+	void (*readCPSR)(struct ARMCore* cpu);
 
-	void (*hitStub)(struct ARMBoard* board, uint32_t opcode);
+	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
+};
+
+struct ARMComponent {
+	uint32_t id;
+	void (*init)(struct ARMCore* cpu, struct ARMComponent* component);
+	void (*deinit)(struct ARMComponent* component);
 };
 
 struct ARMCore {
@@ -130,6 +125,7 @@ struct ARMCore {
 
 	int32_t cycles;
 	int32_t nextEvent;
+	int halted;
 
 	int32_t bankedRegisters[6][7];
 	int32_t bankedSPSRs[6];
@@ -141,16 +137,18 @@ struct ARMCore {
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
-	struct ARMMemory* memory;
-	struct ARMBoard* board;
+	struct ARMMemory memory;
+	struct ARMInterruptHandler irqh;
 
-	int64_t absoluteCycles;
-	int32_t lastCycles;
+	struct ARMComponent* master;
+
+	int numComponents;
+	struct ARMComponent** components;
 };
 
 void ARMInit(struct ARMCore* cpu);
-void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory);
-void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board);
+void ARMDeinit(struct ARMCore* cpu);
+void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);

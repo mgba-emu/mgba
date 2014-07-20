@@ -2,7 +2,10 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <string.h>
+
+#ifndef SIGTRAP
+#define SIGTRAP 5 /* Win32 Signals do not include SIGTRAP */
+#endif
 
 enum GDBError {
 	GDB_NO_ERROR = 0x00,
@@ -19,7 +22,7 @@ static void _sendMessage(struct GDBStub* stub);
 
 static void _gdbStubDeinit(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	if (stub->socket >= 0) {
+	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
 }
@@ -46,7 +49,7 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 static void _gdbStubPoll(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	while (stub->d.state == DEBUGGER_PAUSED) {
-		if (stub->connection >= 0) {
+		if (!SOCKET_FAILED(stub->connection)) {
 			if (!SocketSetBlocking(stub->connection, 1)) {
 				GDBStubHangup(stub);
 				return;
@@ -162,14 +165,14 @@ static void _writeHostInfo(struct GDBStub* stub) {
 
 static void _continue(struct GDBStub* stub, const char* message) {
 	stub->d.state = DEBUGGER_RUNNING;
-	if (stub->connection >= 0) {
+	if (!SOCKET_FAILED(stub->connection)) {
 		if (!SocketSetBlocking(stub->connection, 0)) {
 			GDBStubHangup(stub);
 			return;
 		}
 	}
 	// TODO: parse message
-	(void) (message);
+	UNUSED(message);
 }
 
 static void _step(struct GDBStub* stub, const char* message) {
@@ -177,7 +180,7 @@ static void _step(struct GDBStub* stub, const char* message) {
 	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
 	_sendMessage(stub);
 	// TODO: parse message
-	(void) (message);
+	UNUSED(message);
 }
 
 static void _readMemory(struct GDBStub* stub, const char* message) {
@@ -190,10 +193,10 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 		_error(stub, GDB_BAD_ARGUMENTS);
 		return;
 	}
-	struct ARMMemory* memory = stub->d.memoryShim.original;
+	struct ARMCore* cpu = stub->d.cpu;
 	int writeAddress = 0;
 	for (i = 0; i < size; ++i, writeAddress += 2) {
-		uint8_t byte = memory->load8(memory, address + i, 0);
+		uint8_t byte = cpu->memory.load8(cpu, address + i, 0);
 		_int2hex8(byte, &stub->outgoing[writeAddress]);
 	}
 	stub->outgoing[writeAddress] = 0;
@@ -201,7 +204,7 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 }
 
 static void _readGPRs(struct GDBStub* stub, const char* message) {
-	(void) (message);
+	UNUSED(message);
 	int r;
 	int i = 0;
 	for (r = 0; r < 16; ++r) {
@@ -261,7 +264,7 @@ static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 }
 
 static void _processVWriteCommand(struct GDBStub* stub, const char* message) {
-	(void) (message);
+	UNUSED(message);
 	stub->outgoing[0] = '\0';
 	_sendMessage(stub);
 }
@@ -284,7 +287,7 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		uint32_t address = _readHex(readAddress, &i);
 		readAddress += i + 1;
 		uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
-		(void) (kind);
+		UNUSED(kind);
 		ARMDebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
@@ -421,8 +424,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 }
 
 void GDBStubCreate(struct GDBStub* stub) {
-	stub->socket = -1;
-	stub->connection = -1;
+	ARMDebuggerCreate(&stub->d);
+	stub->socket = INVALID_SOCKET;
+	stub->connection = INVALID_SOCKET;
 	stub->d.init = 0;
 	stub->d.deinit = _gdbStubDeinit;
 	stub->d.paused = _gdbStubPoll;
@@ -431,12 +435,12 @@ void GDBStubCreate(struct GDBStub* stub) {
 }
 
 int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
-	if (stub->socket >= 0) {
+	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
 	// TODO: support IPv6
 	stub->socket = SocketOpenTCP(port, bindAddress);
-	if (stub->socket < 0) {
+	if (SOCKET_FAILED(stub->socket)) {
 		if (stub->d.log) {
 			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
 		}
@@ -462,7 +466,7 @@ cleanup:
 }
 
 void GDBStubHangup(struct GDBStub* stub) {
-	if (stub->connection >= 0) {
+	if (!SOCKET_FAILED(stub->connection)) {
 		SocketClose(stub->connection);
 		stub->connection = -1;
 	}
@@ -473,19 +477,19 @@ void GDBStubHangup(struct GDBStub* stub) {
 
 void GDBStubShutdown(struct GDBStub* stub) {
 	GDBStubHangup(stub);
-	if (stub->socket >= 0) {
+	if (!SOCKET_FAILED(stub->socket)) {
 		SocketClose(stub->socket);
 		stub->socket = -1;
 	}
 }
 
 void GDBStubUpdate(struct GDBStub* stub) {
-	if (stub->socket == -1) {
+	if (stub->socket == INVALID_SOCKET) {
 		return;
 	}
-	if (stub->connection == -1) {
+	if (stub->connection == INVALID_SOCKET) {
 		stub->connection = SocketAccept(stub->socket, 0, 0);
-		if (stub->connection >= 0) {
+		if (!SOCKET_FAILED(stub->connection)) {
 			if (!SocketSetBlocking(stub->connection, 0)) {
 				goto connectionLost;
 			}
@@ -496,7 +500,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 	}
-	while (1) {
+	while (true) {
 		ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
 		if (messageLen == 0) {
 			goto connectionLost;

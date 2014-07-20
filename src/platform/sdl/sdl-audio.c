@@ -8,10 +8,10 @@
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
-int GBASDLInitAudio(struct GBASDLAudio* context) {
+bool GBASDLInitAudio(struct GBASDLAudio* context) {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system");
-		return 0;
+		return false;
 	}
 
 	context->desiredSpec.freq = 44100;
@@ -24,14 +24,14 @@ int GBASDLInitAudio(struct GBASDLAudio* context) {
 	context->drift = 0.f;
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
-		return 0;
+		return false;
 	}
 	SDL_PauseAudio(0);
-	return 1;
+	return true;
 }
 
 void GBASDLDeinitAudio(struct GBASDLAudio* context) {
-	(void)(context);
+	UNUSED(context);
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);

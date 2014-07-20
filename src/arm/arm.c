@@ -4,8 +4,6 @@
 #include "isa-inlines.h"
 #include "isa-thumb.h"
 
-#include <limits.h>
-
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
 void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
@@ -67,18 +65,31 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 }
 
 void ARMInit(struct ARMCore* cpu) {
-	cpu->memory = 0;
-	cpu->board = 0;
+	cpu->master->init(cpu, cpu->master);
+	int i;
+	for (i = 0; i < cpu->numComponents; ++i) {
+		cpu->components[i]->init(cpu, cpu->components[i]);
+	}
 }
 
-void ARMAssociateMemory(struct ARMCore* cpu, struct ARMMemory* memory) {
-	cpu->memory = memory;
+void ARMDeinit(struct ARMCore* cpu) {
+	if (cpu->master->deinit) {
+		cpu->master->deinit(cpu->master);
+	}
+	int i;
+	for (i = 0; i < cpu->numComponents; ++i) {
+		if (cpu->components[i]->deinit) {
+			cpu->components[i]->deinit(cpu->components[i]);
+		}
+	}
 }
 
-void ARMAssociateBoard(struct ARMCore* cpu, struct ARMBoard* board) {
-	cpu->board = board;
-	board->cpu = cpu;
+void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras) {
+	cpu->master = master;
+	cpu->numComponents = extra;
+	cpu->components = extras;
 }
+
 
 void ARMReset(struct ARMCore* cpu) {
 	int i;
@@ -112,8 +123,9 @@ void ARMReset(struct ARMCore* cpu) {
 
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
+	cpu->halted = 0;
 
-	cpu->board->reset(cpu->board);
+	cpu->irqh.reset(cpu);
 }
 
 void ARMRaiseIRQ(struct ARMCore* cpu) {
@@ -131,7 +143,7 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ + WORD_SIZE_ARM;
-	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
+	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
@@ -149,7 +161,7 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_SWI + WORD_SIZE_ARM;
-	cpu->memory->setActiveRegion(cpu->memory, cpu->gprs[ARM_PC]);
+	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
@@ -158,7 +170,7 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 static inline void ARMStep(struct ARMCore* cpu) {
 	uint32_t opcode;
 	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
-	LOAD_32(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
+	LOAD_32(opcode, cpu->currentPC & cpu->memory.activeMask, cpu->memory.activeRegion);
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
 
 	int condition = opcode >> 28;
@@ -264,7 +276,7 @@ static inline void ThumbStep(struct ARMCore* cpu) {
 	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
 	uint16_t opcode;
-	LOAD_16(opcode, cpu->currentPC & cpu->memory->activeMask, cpu->memory->activeRegion);
+	LOAD_16(opcode, cpu->currentPC & cpu->memory.activeMask, cpu->memory.activeRegion);
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }
@@ -276,6 +288,6 @@ void ARMRun(struct ARMCore* cpu) {
 		ARMStep(cpu);
 	}
 	if (cpu->cycles >= cpu->nextEvent) {
-		cpu->board->processEvents(cpu->board);
+		cpu->irqh.processEvents(cpu);
 	}
 }

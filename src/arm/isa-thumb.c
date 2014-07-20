@@ -1,6 +1,7 @@
 #include "isa-thumb.h"
 
 #include "isa-inlines.h"
+#include "emitter-thumb.h"
 
 // Instruction definitions
 // Beware pre-processor insanity
@@ -33,58 +34,12 @@
 	D = M - N; \
 	THUMB_SUBTRACTION_S(m, n, D)
 
-#define THUMB_PREFETCH_CYCLES (1 + cpu->memory->activePrefetchCycles16)
+#define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
+
+#define THUMB_LOAD_POST_BODY ++currentCycles;
 
 #define THUMB_STORE_POST_BODY \
-	currentCycles += cpu->memory->activeNonseqCycles16 - cpu->memory->activePrefetchCycles16;
-
-#define APPLY(F, ...) F(__VA_ARGS__)
-
-#define COUNT_1(EMITTER, PREFIX, ...) \
-	EMITTER(PREFIX ## 0, 0, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1, 1, __VA_ARGS__)
-
-#define COUNT_2(EMITTER, PREFIX, ...) \
-	COUNT_1(EMITTER, PREFIX, __VA_ARGS__) \
-	EMITTER(PREFIX ## 2, 2, __VA_ARGS__) \
-	EMITTER(PREFIX ## 3, 3, __VA_ARGS__)
-
-#define COUNT_3(EMITTER, PREFIX, ...) \
-	COUNT_2(EMITTER, PREFIX, __VA_ARGS__) \
-	EMITTER(PREFIX ## 4, 4, __VA_ARGS__) \
-	EMITTER(PREFIX ## 5, 5, __VA_ARGS__) \
-	EMITTER(PREFIX ## 6, 6, __VA_ARGS__) \
-	EMITTER(PREFIX ## 7, 7, __VA_ARGS__)
-
-#define COUNT_4(EMITTER, PREFIX, ...) \
-	COUNT_3(EMITTER, PREFIX, __VA_ARGS__) \
-	EMITTER(PREFIX ## 8, 8, __VA_ARGS__) \
-	EMITTER(PREFIX ## 9, 9, __VA_ARGS__) \
-	EMITTER(PREFIX ## A, 10, __VA_ARGS__) \
-	EMITTER(PREFIX ## B, 11, __VA_ARGS__) \
-	EMITTER(PREFIX ## C, 12, __VA_ARGS__) \
-	EMITTER(PREFIX ## D, 13, __VA_ARGS__) \
-	EMITTER(PREFIX ## E, 14, __VA_ARGS__) \
-	EMITTER(PREFIX ## F, 15, __VA_ARGS__)
-
-#define COUNT_5(EMITTER, PREFIX, ...) \
-	COUNT_4(EMITTER, PREFIX ## 0, __VA_ARGS__) \
-	EMITTER(PREFIX ## 10, 16, __VA_ARGS__) \
-	EMITTER(PREFIX ## 11, 17, __VA_ARGS__) \
-	EMITTER(PREFIX ## 12, 18, __VA_ARGS__) \
-	EMITTER(PREFIX ## 13, 19, __VA_ARGS__) \
-	EMITTER(PREFIX ## 14, 20, __VA_ARGS__) \
-	EMITTER(PREFIX ## 15, 21, __VA_ARGS__) \
-	EMITTER(PREFIX ## 16, 22, __VA_ARGS__) \
-	EMITTER(PREFIX ## 17, 23, __VA_ARGS__) \
-	EMITTER(PREFIX ## 18, 24, __VA_ARGS__) \
-	EMITTER(PREFIX ## 19, 25, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1A, 26, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1B, 27, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1C, 28, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1D, 29, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1E, 30, __VA_ARGS__) \
-	EMITTER(PREFIX ## 1F, 31, __VA_ARGS__) \
+	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
 	static void _ThumbInstruction ## NAME (struct ARMCore* cpu, uint16_t opcode) {  \
@@ -101,7 +56,7 @@
 		BODY;)
 
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
+	COUNT_CALL_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
 	if (!immediate) {
@@ -136,12 +91,12 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[rm] + immediate * 4, &currentCycles))
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, cpu->gprs[rm] + immediate, &currentCycles))
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, cpu->gprs[rm] + immediate * 2, &currentCycles))
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory->store32(cpu->memory, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory->store8(cpu->memory, cpu->gprs[rm] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory->store16(cpu->memory, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDR1, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rm] + immediate * 4, &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRB1, cpu->gprs[rd] = cpu->memory.loadU8(cpu, cpu->gprs[rm] + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LDRH1, cpu->gprs[rd] = cpu->memory.loadU16(cpu, cpu->gprs[rm] + immediate * 2, &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory.store32(cpu, cpu->gprs[rm] + immediate * 4, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory.store8(cpu, cpu->gprs[rm] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory.store16(cpu, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
 #define DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB(NAME, RM, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
@@ -151,7 +106,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory->store16(cpu->memory, cp
 		BODY;)
 
 #define DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_3(DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB, NAME ## 3_R, BODY)
+	COUNT_CALL_3(DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB, NAME ## 3_R, BODY)
 
 DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
 DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
@@ -164,7 +119,7 @@ DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->
 		BODY;)
 
 #define DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_3(DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB, NAME ## 1_, BODY)
+	COUNT_CALL_3(DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB, NAME ## 1_, BODY)
 
 DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], immediate))
 DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], immediate))
@@ -176,7 +131,7 @@ DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->
 		BODY;)
 
 #define DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
+	COUNT_CALL_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
 
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rd], immediate))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, int aluOut = cpu->gprs[rd] - immediate; THUMB_SUBTRACTION_S(cpu->gprs[rd], immediate, aluOut))
@@ -306,11 +261,11 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		BODY;)
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(NAME, BODY) \
-	COUNT_3(DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
+	COUNT_CALL_3(DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
 
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate, &currentCycles))
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[ARM_SP] + immediate, &currentCycles))
-DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory->store32(cpu->memory, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory.load32(cpu, (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[ARM_SP] + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory.store32(cpu, cpu->gprs[ARM_SP] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, cpu->gprs[rd] = (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + immediate)
@@ -323,16 +278,16 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + i
 		BODY;)
 
 #define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, BODY) \
-	COUNT_3(DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
+	COUNT_CALL_3(DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
 
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, cpu->gprs[rd] = cpu->memory->load32(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles))
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, cpu->gprs[rd] = cpu->memory->loadU8(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles))
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, cpu->gprs[rd] = cpu->memory->loadU16(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles))
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, cpu->gprs[rd] = cpu->memory->load8(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles))
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, cpu->gprs[rd] = cpu->memory->load16(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles))
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, cpu->memory->store32(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory->store8(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
-DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory->store16(cpu->memory, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, cpu->gprs[rd] = cpu->memory.loadU8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRH2, cpu->gprs[rd] = cpu->memory.loadU16(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSB, cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH, cpu->gprs[rd] = cpu->memory.load16(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, cpu->memory.store32(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory.store8(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
+DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory.store16(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, ADDRESS, LOOP, BODY, OP, PRE_BODY, POST_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
@@ -352,20 +307,21 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory->store16(cpu->memory, c
 			} \
 		} \
 		POST_BODY; \
-		currentCycles += cpu->memory->waitMultiple(cpu->memory, address, total); \
+		currentCycles += cpu->memory.waitMultiple(cpu, address, total); \
 		WRITEBACK;)
 
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, BODY, WRITEBACK) \
-	COUNT_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, cpu->gprs[rn], (m = 0x01, i = 0; i < 8; m <<= 1, ++i), BODY, +=, , , WRITEBACK)
+	COUNT_CALL_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, cpu->gprs[rn], (m = 0x01, i = 0; i < 8; m <<= 1, ++i), BODY, +=, , , WRITEBACK)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address, 0),
+	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
+	THUMB_LOAD_POST_BODY;
 	if (!((1 << rn) & rs)) {
 		cpu->gprs[rn] = address;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i], 0),
+	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
 	THUMB_STORE_POST_BODY;
 	cpu->gprs[rn] = address;)
 
@@ -399,20 +355,22 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP,
 	opcode & 0x00FF,
 	cpu->gprs[ARM_SP],
 	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address, 0),
+	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
 	+=,
-	, ,
+	,
+	THUMB_LOAD_POST_BODY;,
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR,
 	opcode & 0x00FF,
 	cpu->gprs[ARM_SP],
 	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
-	cpu->gprs[i] = cpu->memory->load32(cpu->memory, address, 0),
+	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
 	+=,
 	,
-	cpu->gprs[ARM_PC] = cpu->memory->load32(cpu->memory, address, 0) & 0xFFFFFFFE;
-	address += 4;,
+	cpu->gprs[ARM_PC] = cpu->memory.load32(cpu, address, 0) & 0xFFFFFFFE;
+	address += 4;
+	THUMB_LOAD_POST_BODY;,
 	cpu->gprs[ARM_SP] = address;
 	THUMB_WRITE_PC;)
 
@@ -420,7 +378,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
 	opcode & 0x00FF,
 	cpu->gprs[ARM_SP] - 4,
 	(m = 0x80, i = 7; m; m >>= 1, --i),
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i], 0),
+	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
 	-=,
 	,
 	THUMB_STORE_POST_BODY,
@@ -430,9 +388,9 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
 	opcode & 0x00FF,
 	cpu->gprs[ARM_SP] - 4,
 	(m = 0x80, i = 7; m; m >>= 1, --i),
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[i], 0),
+	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
 	-=,
-	cpu->memory->store32(cpu->memory, address, cpu->gprs[ARM_LR], 0);
+	cpu->memory.store32(cpu, address, cpu->gprs[ARM_LR], 0);
 	address -= 4;,
 	THUMB_STORE_POST_BODY,
 	cpu->gprs[ARM_SP] = address + 4)
@@ -469,116 +427,7 @@ DEFINE_INSTRUCTION_THUMB(BX,
 		ARM_WRITE_PC;
 	})
 
-DEFINE_INSTRUCTION_THUMB(SWI, cpu->board->swi16(cpu->board, opcode & 0xFF))
-
-#define DECLARE_INSTRUCTION_THUMB(EMITTER, NAME) \
-	EMITTER ## NAME
-
-#define DECLARE_INSTRUCTION_WITH_HIGH_THUMB(EMITTER, NAME) \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, NAME ## 00), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, NAME ## 01), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, NAME ## 10), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, NAME ## 11)
-
-#define DUMMY(X, ...) X,
-#define DUMMY_4(...) \
-	DUMMY(__VA_ARGS__) \
-	DUMMY(__VA_ARGS__) \
-	DUMMY(__VA_ARGS__) \
-	DUMMY(__VA_ARGS__)
-
-#define DECLARE_THUMB_EMITTER_BLOCK(EMITTER) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LSL1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LSR1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, ASR1_)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, ADD3_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, SUB3_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, ADD1_)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, SUB1_)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, MOV1_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, CMP1_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, ADD2_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, SUB2_R)) \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, AND), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, EOR), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, LSL2), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, LSR2), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ASR2), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ADC), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, SBC), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ROR), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, TST), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, NEG), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, CMP2), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, CMN), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ORR), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, MUL), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, BIC), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, MVN), \
-	DECLARE_INSTRUCTION_WITH_HIGH_THUMB(EMITTER, ADD4), \
-	DECLARE_INSTRUCTION_WITH_HIGH_THUMB(EMITTER, CMP3), \
-	DECLARE_INSTRUCTION_WITH_HIGH_THUMB(EMITTER, MOV3), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, BX), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, BX), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ILL), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ILL), \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, LDR3_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STR2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STRH2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STRB2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRSB_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDR2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRH2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRB2_R)) \
-	APPLY(COUNT_3, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRSH_R)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STR1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDR1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STRB1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRB1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, STRH1_)) \
-	APPLY(COUNT_5, DUMMY, DECLARE_INSTRUCTION_THUMB(EMITTER, LDRH1_)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, STR3_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, LDR4_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, ADD5_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, ADD6_R)) \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ADD7), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, ADD7), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, SUB4), \
-	DECLARE_INSTRUCTION_THUMB(EMITTER, SUB4), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, PUSH)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, PUSHR)), \
-	DO_8(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_8(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_8(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, POP)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, POPR)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BKPT)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, STMIA_R)) \
-	APPLY(COUNT_3, DUMMY_4, DECLARE_INSTRUCTION_THUMB(EMITTER, LDMIA_R)) \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BEQ)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BNE)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BCS)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BCC)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BMI)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BPL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BVS)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BVC)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BHI)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BLS)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BGE)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BLT)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BGT)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BLE)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL)), \
-	DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, SWI)), \
-	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, B))), \
-	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, ILL))), \
-	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BL1))), \
-	DO_8(DO_4(DECLARE_INSTRUCTION_THUMB(EMITTER, BL2)))
+DEFINE_INSTRUCTION_THUMB(SWI, cpu->irqh.swi16(cpu, opcode & 0xFF))
 
 const ThumbInstruction _thumbTable[0x400] = {
 	DECLARE_THUMB_EMITTER_BLOCK(_ThumbInstruction)

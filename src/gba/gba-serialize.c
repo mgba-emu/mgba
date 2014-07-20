@@ -3,29 +3,29 @@
 #include "gba-audio.h"
 #include "gba-io.h"
 #include "gba-thread.h"
-#include "memory.h"
+
+#include "util/memory.h"
+#include "util/vfs.h"
 
 #include <fcntl.h>
-#include <limits.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	state->versionMagic = GBA_SAVESTATE_MAGIC;
 	state->biosChecksum = gba->biosChecksum;
+	state->romCrc32 = gba->romCrc32;
+
 	state->id = ((struct GBACartridge*) gba->memory.rom)->id;
 	memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
 
-	memcpy(state->cpu.gprs, gba->cpu.gprs, sizeof(state->cpu.gprs));
-	state->cpu.cpsr = gba->cpu.cpsr;
-	state->cpu.spsr = gba->cpu.spsr;
-	state->cpu.cycles = gba->cpu.cycles;
-	state->cpu.nextEvent = gba->cpu.nextEvent;
-	memcpy(state->cpu.bankedRegisters, gba->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(state->cpu.bankedSPSRs, gba->cpu.bankedSPSRs, 6 * sizeof(int32_t));
+	memcpy(state->cpu.gprs, gba->cpu->gprs, sizeof(state->cpu.gprs));
+	state->cpu.cpsr = gba->cpu->cpsr;
+	state->cpu.spsr = gba->cpu->spsr;
+	state->cpu.cycles = gba->cpu->cycles;
+	state->cpu.nextEvent = gba->cpu->nextEvent;
+	memcpy(state->cpu.bankedRegisters, gba->cpu->bankedRegisters, 6 * 7 * sizeof(int32_t));
+	memcpy(state->cpu.bankedSPSRs, gba->cpu->bankedSPSRs, 6 * sizeof(int32_t));
 
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
@@ -40,22 +40,27 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 	if (state->biosChecksum != gba->biosChecksum) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS");
-		return;
+		if (state->cpu.gprs[ARM_PC] < SIZE_BIOS && state->cpu.gprs[ARM_PC] >= 0x20) {
+			return;
+		}
 	}
 	if (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
 		return;
 	}
-	memcpy(gba->cpu.gprs, state->cpu.gprs, sizeof(gba->cpu.gprs));
-	gba->cpu.cpsr = state->cpu.cpsr;
-	gba->cpu.spsr = state->cpu.spsr;
-	gba->cpu.cycles = state->cpu.cycles;
-	gba->cpu.nextEvent = state->cpu.nextEvent;
-	memcpy(gba->cpu.bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(gba->cpu.bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
-	gba->cpu.executionMode = gba->cpu.cpsr.t ? MODE_THUMB : MODE_ARM;
-	gba->cpu.privilegeMode = gba->cpu.cpsr.priv;
-	gba->cpu.memory->setActiveRegion(gba->cpu.memory, gba->cpu.gprs[ARM_PC]);
+	if (state->romCrc32 != gba->romCrc32) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
+	}
+	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
+	gba->cpu->cpsr = state->cpu.cpsr;
+	gba->cpu->spsr = state->cpu.spsr;
+	gba->cpu->cycles = state->cpu.cycles;
+	gba->cpu->nextEvent = state->cpu.nextEvent;
+	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
+	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
+	gba->cpu->executionMode = gba->cpu->cpsr.t ? MODE_THUMB : MODE_ARM;
+	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
+	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
@@ -63,43 +68,47 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioDeserialize(&gba->audio, state);
 }
 
-static int _getStateFd(struct GBA* gba, int slot) {
+static struct VFile* _getStateVf(struct GBA* gba, int slot) {
 	char path[PATH_MAX];
 	path[PATH_MAX - 1] = '\0';
 	snprintf(path, PATH_MAX - 1, "%s.ss%d", gba->activeFile, slot);
-	int fd = open(path, O_CREAT | O_RDWR, 0777);
-	if (fd >= 0) {
-		ftruncate(fd, sizeof(struct GBASerializedState));
+	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	if (vf) {
+		vf->truncate(vf, sizeof(struct GBASerializedState));
 	}
-	return fd;
+	return vf;
 }
 
-int GBASaveState(struct GBA* gba, int slot) {
-	int fd = _getStateFd(gba, slot);
-	if (fd < 0) {
-		return 0;
+bool GBASaveState(struct GBA* gba, int slot) {
+	struct VFile* vf = _getStateVf(gba, slot);
+	if (!vf) {
+		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(fd);
+	struct GBASerializedState* state = GBAMapState(vf);
 	GBASerialize(gba, state);
-	GBADeallocateState(state);
-	close(fd);
-	return 1;
+	GBAUnmapState(vf, state);
+	vf->close(vf);
+	return true;
 }
 
-int GBALoadState(struct GBA* gba, int slot) {
-	int fd = _getStateFd(gba, slot);
-	if (fd < 0) {
-		return 0;
+bool GBALoadState(struct GBA* gba, int slot) {
+	struct VFile* vf = _getStateVf(gba, slot);
+	if (!vf) {
+		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(fd);
+	struct GBASerializedState* state = GBAMapState(vf);
 	GBADeserialize(gba, state);
-	GBADeallocateState(state);
-	close(fd);
-	return 1;
+	GBAUnmapState(vf, state);
+	vf->close(vf);
+	return true;
 }
 
-struct GBASerializedState* GBAMapState(int fd) {
-	return fileMemoryMap(fd, sizeof(struct GBASerializedState), MEMORY_WRITE);
+struct GBASerializedState* GBAMapState(struct VFile* vf) {
+	return vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
+}
+
+void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state) {
+	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

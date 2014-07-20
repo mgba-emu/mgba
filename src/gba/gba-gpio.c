@@ -2,6 +2,7 @@
 
 #include "gba-gpio.h"
 #include "gba-sensors.h"
+#include "gba-serialize.h"
 
 #include <time.h>
 
@@ -301,4 +302,26 @@ void _rumbleReadPins(struct GBACartridgeGPIO* gpio) {
 	}
 
 	rumble->setRumble(rumble, gpio->p3);
+}
+
+// == Serialization
+
+void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state) {
+	state->gpio.readWrite = gpio->readWrite;
+	state->gpio.pinState = gpio->pinState;
+	state->gpio.pinDirection = gpio->direction;
+	state->gpio.devices = gpio->gpioDevices;
+	state->gpio.rtc = gpio->rtc;
+	state->gpio.gyroSample = gpio->gyroSample;
+	state->gpio.gyroEdge = gpio->gyroEdge;
+}
+
+void GBAGPIODeserialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state) {
+	gpio->readWrite = state->gpio.readWrite;
+	gpio->pinState = state->gpio.pinState;
+	gpio->direction = state->gpio.pinDirection;
+	// TODO: Deterministic RTC
+	gpio->rtc = state->gpio.rtc;
+	gpio->gyroSample = state->gpio.gyroSample;
+	gpio->gyroEdge = state->gpio.gyroEdge;
 }

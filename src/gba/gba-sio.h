@@ -1,7 +1,7 @@
 #ifndef GBA_SIO_H
 #define GBA_SIO_H
 
-#include <stdint.h>
+#include "common.h"
 
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,

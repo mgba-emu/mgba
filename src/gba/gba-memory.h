@@ -1,12 +1,12 @@
 #ifndef GBA_MEMORY_H
 #define GBA_MEMORY_H
 
+#include "common.h"
+
 #include "arm.h"
 
 #include "gba-gpio.h"
 #include "gba-savedata.h"
-
-#include <string.h>
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -106,9 +106,6 @@ struct GBADMA {
 };
 
 struct GBAMemory {
-	struct ARMMemory d;
-	struct GBA* p;
-
 	uint32_t* bios;
 	uint32_t* wram;
 	uint32_t* iwram;
@@ -121,12 +118,14 @@ struct GBAMemory {
 	uint16_t romID;
 	int fullBios;
 
-	char waitstates32[256];
-	char waitstates16[256];
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
-	char waitstatesPrefetch32[256];
-	char waitstatesPrefetch16[256];
+	char waitstatesNonseq32[256];
+	char waitstatesNonseq16[256];
+	char waitstatesPrefetchSeq32[16];
+	char waitstatesPrefetchSeq16[16];
+	char waitstatesPrefetchNonseq32[16];
+	char waitstatesPrefetchNonseq16[16];
 	int activeRegion;
 	uint32_t biosPrefetch;
 
@@ -136,28 +135,33 @@ struct GBAMemory {
 	int32_t eventDiff;
 };
 
-int32_t GBALoad32(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
-int16_t GBALoad16(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
-uint16_t GBALoadU16(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
-int8_t GBALoad8(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
-uint8_t GBALoadU8(struct ARMMemory* memory, uint32_t address, int* cycleCounter);
+void GBAMemoryInit(struct GBA* gba);
+void GBAMemoryDeinit(struct GBA* gba);
 
-void GBAStore32(struct ARMMemory* memory, uint32_t address, int32_t value, int* cycleCounter);
-void GBAStore16(struct ARMMemory* memory, uint32_t address, int16_t value, int* cycleCounter);
-void GBAStore8(struct ARMMemory* memory, uint32_t address, int8_t value, int* cycleCounter);
+void GBAMemoryReset(struct GBA* gba);
 
-void GBAAdjustWaitstates(struct GBAMemory* memory, uint16_t parameters);
+int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
+int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
+uint16_t GBALoadU16(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
+int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
+uint8_t GBALoadU8(struct ARMCore* cpu, uint32_t address, int* cycleCounter);
 
-void GBAMemoryWriteDMASAD(struct GBAMemory* memory, int dma, uint32_t address);
-void GBAMemoryWriteDMADAD(struct GBAMemory* memory, int dma, uint32_t address);
-void GBAMemoryWriteDMACNT_LO(struct GBAMemory* memory, int dma, uint16_t count);
-uint16_t GBAMemoryWriteDMACNT_HI(struct GBAMemory* memory, int dma, uint16_t control);
+void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter);
+void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter);
+void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter);
 
-void GBAMemoryScheduleDMA(struct GBAMemory* memory, int number, struct GBADMA* info);
-void GBAMemoryRunHblankDMAs(struct GBAMemory* memory, int32_t cycles);
-void GBAMemoryRunVblankDMAs(struct GBAMemory* memory, int32_t cycles);
-void GBAMemoryUpdateDMAs(struct GBAMemory* memory, int32_t cycles);
-int32_t GBAMemoryRunDMAs(struct GBAMemory* memory, int32_t cycles);
+void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
+
+void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address);
+void GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address);
+void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count);
+uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control);
+
+void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info);
+void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles);
+void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles);
+void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles);
+int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles);
 
 struct GBASerializedState;
 void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state);
