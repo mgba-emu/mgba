@@ -7,6 +7,8 @@ enum {
 	GBA_RR_BLOCK_SIZE = 1018
 };
 
+#define FILE_INPUTS "input.log"
+
 struct GBARRBlock {
 	union GBARRInput {
 		struct {
@@ -42,6 +44,69 @@ void GBARRContextDestroy(struct GBA* gba) {
 	gba->rr->currentBlock = 0;
 	gba->rr->playbackBlock = 0;
 	free(gba->rr);
+	gba->rr = 0;
+}
+
+bool GBARRSave(struct GBARRContext* rr, struct VDir* vdir) {
+	if (!rr) {
+		return false;
+	}
+
+	struct VFile* inputs = vdir->openFile(vdir, FILE_INPUTS, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!inputs) {
+		return false;
+	}
+
+	ssize_t written = 0;
+	struct GBARRBlock* inputBlock;
+	for (inputBlock = rr->rootBlock; inputBlock; inputBlock = inputBlock->next) {
+		ssize_t thisWrite = inputs->write(inputs, inputBlock->inputs, sizeof(*inputBlock->inputs) * inputBlock->numInputs);
+		if (!thisWrite) {
+			written = -1;
+			break;
+		}
+		written += thisWrite;
+	}
+
+	if (!inputs->close(inputs)) {
+		return false;
+	}
+
+	return written >= 0;
+}
+
+bool GBARRLoad(struct GBARRContext* rr, struct VDir* vdir) {
+	if (!rr) {
+		return false;
+	}
+
+	struct VFile* inputs = vdir->openFile(vdir, FILE_INPUTS, O_RDONLY);
+	if (!inputs) {
+		return false;
+	}
+
+	struct GBARRBlock block;
+	ssize_t read;
+	do {
+		read = inputs->read(inputs, block.inputs, sizeof(block.inputs));
+		if (read) {
+			struct GBARRBlock* newBlock = calloc(1, sizeof(*rr->currentBlock));
+			memcpy(newBlock, &block, sizeof(*newBlock));
+			if (!rr->rootBlock) {
+				rr->rootBlock = newBlock;
+			}
+			if (rr->currentBlock) {
+				rr->currentBlock->next = newBlock;
+			}
+			rr->currentBlock = newBlock;
+		}
+	} while (read > 0);
+
+	if (!inputs->close(inputs)) {
+		return false;
+	}
+
+	return read >= 0;
 }
 
 bool GBARRStartPlaying(struct GBA* gba) {

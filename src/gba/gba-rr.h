@@ -4,6 +4,7 @@
 #include "common.h"
 
 struct GBA;
+struct VDir;
 struct VFile;
 
 struct GBARRContext {
@@ -23,6 +24,9 @@ struct GBARRContext {
 
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
+
+bool GBARRSave(struct GBARRContext*, struct VDir*);
+bool GBARRLoad(struct GBARRContext*, struct VDir*);
 
 bool GBARRStartPlaying(struct GBA*);
 void GBARRStopPlaying(struct GBA*);

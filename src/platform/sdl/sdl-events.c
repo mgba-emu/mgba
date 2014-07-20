@@ -128,20 +128,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_r:
 					GBAThreadReset(context);
 					break;
-				case SDLK_t:
-					GBAThreadReset(context);
-					GBAThreadInterrupt(context);
-					GBARRStopPlaying(context->gba);
-					GBARRStartRecording(context->gba);
-					GBAThreadContinue(context);
-					break;
-				case SDLK_y:
-					GBAThreadReset(context);
-					GBAThreadInterrupt(context);
-					GBARRStopRecording(context->gba);
-					GBARRStartPlaying(context->gba);
-					GBAThreadContinue(context);
-					break;
 				default:
 					break;
 				}
@@ -162,6 +148,27 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBASaveState(context->gba, event->keysym.sym - SDLK_F1);
 					GBAThreadContinue(context);
 					break;
+				case SDLK_t:
+					if (context->gamedir) {
+						GBAThreadInterrupt(context);
+						GBARRStopPlaying(context->gba);
+						GBARRSave(context->gba->rr, context->gamedir);
+						GBAThreadContinue(context);
+					}
+					break;
+				case SDLK_y:
+					if (context->gamedir) {
+						GBAThreadReset(context);
+						GBAThreadInterrupt(context);
+						GBARRStopRecording(context->gba);
+						GBARRContextDestroy(context->gba);
+						GBARRContextCreate(context->gba);
+						if (GBARRLoad(context->gba->rr, context->gamedir)) {
+							GBARRStartPlaying(context->gba);
+						}
+						GBAThreadContinue(context);
+					}
+					break;
 				default:
 					break;
 				}
@@ -179,6 +186,20 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F10:
 					GBAThreadInterrupt(context);
 					GBALoadState(context->gba, event->keysym.sym - SDLK_F1);
+					GBAThreadContinue(context);
+					break;
+				case SDLK_t:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRStopPlaying(context->gba);
+					GBARRStartRecording(context->gba);
+					GBAThreadContinue(context);
+					break;
+				case SDLK_y:
+					GBAThreadReset(context);
+					GBAThreadInterrupt(context);
+					GBARRStopRecording(context->gba);
+					GBARRStartPlaying(context->gba);
 					GBAThreadContinue(context);
 					break;
 				default:
