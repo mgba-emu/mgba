@@ -42,6 +42,12 @@
 
 #include "util/crc32.h"
 
+#include "util/vfs.h"
+
+enum {
+	BUFFER_SIZE = 1024
+};
+
 static uint32_t crc32Table[] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 	0xe963a535, 0x9e6495a3,	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -101,4 +107,27 @@ uint32_t updateCrc32(uint32_t crc, const void* buf, size_t size) {
 	}
 
 	return ~crc;
+}
+
+uint32_t fileCrc32(struct VFile* vf, size_t endOffset) {
+	char buffer[BUFFER_SIZE];
+	size_t blocksize;
+	size_t alreadyRead = 0;
+	if (vf->seek(vf, 0, SEEK_SET) < 0) {
+		return 0;
+	}
+	uint32_t crc = 0;
+	while (alreadyRead < endOffset) {
+		size_t toRead = sizeof(buffer);
+		if (toRead + alreadyRead > endOffset) {
+			toRead = endOffset - alreadyRead;
+		}
+		blocksize = vf->read(vf, buffer, toRead);
+		alreadyRead += blocksize;
+		crc = updateCrc32(crc, buffer, blocksize);
+		if (blocksize < toRead) {
+			return 0;
+		}
+	}
+	return crc;
 }

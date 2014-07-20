@@ -8,8 +8,6 @@ enum {
 	IN_CHECKSUM = -12,
 	OUT_CHECKSUM = -8,
 	PATCH_CHECKSUM = -4,
-
-	BUFFER_SIZE = 1024
 };
 
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
@@ -19,7 +17,7 @@ static size_t _UPSDecodeLength(struct VFile* vf);
 bool loadPatchUPS(struct Patch* patch) {
 	patch->vf->seek(patch->vf, 0, SEEK_SET);
 
-	char buffer[BUFFER_SIZE];
+	char buffer[4];
 	if (patch->vf->read(patch->vf, buffer, 4) != 4) {
 		return false;
 	}
@@ -36,23 +34,7 @@ bool loadPatchUPS(struct Patch* patch) {
 		return false;
 	}
 
-	size_t blocksize;
-	size_t alreadyRead = 0;
-	patch->vf->seek(patch->vf, 0, SEEK_SET);
-	uint32_t crc = 0;
-	while (alreadyRead < filesize + PATCH_CHECKSUM) {
-		size_t toRead = sizeof(buffer);
-		if (toRead + alreadyRead > filesize + PATCH_CHECKSUM) {
-			toRead = filesize + PATCH_CHECKSUM - alreadyRead;
-		}
-		blocksize = patch->vf->read(patch->vf, buffer, toRead);
-		alreadyRead += blocksize;
-		crc = updateCrc32(crc, buffer, blocksize);
-		if (blocksize < toRead) {
-			return 0;
-		}
-	}
-
+	uint32_t crc = fileCrc32(patch->vf, filesize + PATCH_CHECKSUM);
 	if (crc != goodCrc32) {
 		return false;
 	}
