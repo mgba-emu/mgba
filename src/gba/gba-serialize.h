@@ -121,7 +121,25 @@ const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x00284 - 0x00287: DMA next destination
  * | 0x00288 - 0x0028B: DMA next count
  * | 0x0028C - 0x0028F: DMA next event
- * 0x00290 - 0x003FF: Reserved (leave zero)
+ * 0x00290 - 0x002BF: GPIO state
+ * | 0x00290 - 0x00291: Pin state
+ * | 0x00292 - 0x00293: Direction state
+ * | 0x00294 - 0x002B6: RTC state (see gba-gpio.h for format)
+ * | 0x002B7 - 0x002B7: GPIO devices
+ *   | bit 0: Has RTC values
+ *   | bit 1: Has rumble value (reserved)
+ *   | bit 2: Has light sensor value (reserved)
+ *   | bit 3: Has gyroscope value
+ *   | bit 4: Has tilt values (reserved)
+ *   | bits 5 - 7: Reserved
+ * | 0x002B8 - 0x002B9: Gyroscope sample
+ * | 0x002BA - 0x002BB: Tilt x sample (reserved)
+ * | 0x002BC - 0x002BD: Tilt y sample (reserved)
+ * | 0x002BE - 0x002BF: Flags
+ *   | bit 0: Is read enabled
+ *   | bit 1: Gyroscope sample is edge
+ *   | bits 2 - 15: Reserved
+ * 0x002C0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -217,7 +235,20 @@ struct GBASerializedState {
 		int32_t nextEvent;
 	} dma[4];
 
-	uint32_t reservedGpio[92];
+	struct {
+		uint16_t pinState;
+		uint16_t pinDirection;
+		struct GBARTC rtc;
+		uint8_t devices;
+		uint16_t gyroSample;
+		uint16_t tiltSampleX;
+		uint16_t tiltSampleY;
+		enum GPIODirection readWrite : 1;
+		unsigned gyroEdge : 1;
+		unsigned reserved : 14;
+	} gpio;
+
+	uint32_t reserved[80];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

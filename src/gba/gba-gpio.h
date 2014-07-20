@@ -10,7 +10,8 @@ enum GPIODevice {
 	GPIO_RTC = 1,
 	GPIO_RUMBLE = 2,
 	GPIO_LIGHT_SENSOR = 4,
-	GPIO_GYRO = 8
+	GPIO_GYRO = 8,
+	GPIO_TILT = 16
 };
 
 enum GPIORegister {
@@ -61,7 +62,7 @@ struct GBARTC {
 	union RTCCommandData command;
 	union RTCControl control;
 	uint8_t time[7];
-};
+} __attribute__((packed));
 
 struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
@@ -96,7 +97,7 @@ struct GBACartridgeGPIO {
 	struct GBARTC rtc;
 
 	uint16_t gyroSample;
-	int gyroEdge;
+	bool gyroEdge;
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
@@ -107,5 +108,9 @@ void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
 void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
 
 void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
+
+struct GBASerializedState;
+void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);
+void GBAGPIODeserialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);
 
 #endif
