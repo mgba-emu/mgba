@@ -31,18 +31,24 @@ bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
 	return !!rr->inputsStream;
 }
 
-bool GBARRStartPlaying(struct GBARRContext* rr) {
+bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 	if (GBARRIsRecording(rr) || GBARRIsPlaying(rr)) {
 		return false;
 	}
 
+	rr->autorecord = autorecord;
+	if (rr->inputsStream->seek(rr->inputsStream, 0, SEEK_SET) < 0) {
+		return false;
+	}
+	if (rr->inputsStream->read(rr->inputsStream, &rr->nextInput, sizeof(rr->nextInput)) != sizeof(rr->nextInput)) {
+		return false;
+	}
 	rr->isPlaying = true;
-	rr->inputId = 0;
-	return rr->inputsStream->seek(rr->inputsStream, 0, SEEK_SET) == 0;
+	return true;
 }
 
 void GBARRStopPlaying(struct GBARRContext* rr) {
-	rr->isPlaying = 0;
+	rr->isPlaying = false;
 }
 
 bool GBARRStartRecording(struct GBARRContext* rr) {
@@ -93,7 +99,10 @@ uint16_t GBARRQueryInput(struct GBARRContext* rr) {
 		return 0;
 	}
 
-	uint16_t keys;
-	rr->inputsStream->read(rr->inputsStream, &keys, sizeof(keys));
+	uint16_t keys = rr->nextInput;
+	rr->isPlaying = rr->inputsStream->read(rr->inputsStream, &rr->nextInput, sizeof(rr->nextInput)) == sizeof(rr->nextInput);
+	if (!rr->isPlaying && rr->autorecord) {
+		rr->isRecording = true;
+	}
 	return keys;
 }

@@ -143,7 +143,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBARRContextCreate(context->gba);
 					GBARRSetStream(context->gba->rr, context->stateDir);
 					GBARRStopRecording(context->gba->rr);
-					GBARRStartPlaying(context->gba->rr);
+					GBARRStartPlaying(context->gba->rr, event->keysym.mod & KMOD_SHIFT);
 					GBAThreadContinue(context);
 					break;
 				default:

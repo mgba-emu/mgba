@@ -10,7 +10,8 @@ struct VFile;
 struct GBARRContext {
 	// Playback state
 	bool isPlaying;
-	size_t inputId;
+	bool autorecord;
+	uint16_t nextInput;
 
 	// Recording state
 	bool isRecording;
@@ -30,7 +31,7 @@ void GBARRContextDestroy(struct GBA*);
 
 bool GBARRSetStream(struct GBARRContext*, struct VDir*);
 
-bool GBARRStartPlaying(struct GBARRContext*);
+bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);
 void GBARRStopPlaying(struct GBARRContext*);
 bool GBARRStartRecording(struct GBARRContext*);
 void GBARRStopRecording(struct GBARRContext*);
