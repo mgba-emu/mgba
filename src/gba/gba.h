@@ -101,6 +101,7 @@ struct GBA {
 	struct GBARRContext* rr;
 	void* pristineRom;
 	size_t pristineRomSize;
+	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
 

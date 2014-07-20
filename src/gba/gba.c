@@ -6,6 +6,7 @@
 #include "gba-sio.h"
 #include "gba-thread.h"
 
+#include "util/crc32.h"
 #include "util/memory.h"
 #include "util/patch.h"
 #include "util/vfs.h"
@@ -390,6 +391,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
+	gba->romCrc32 = crc32(gba->memory.rom, gba->memory.romSize);
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAGPIOInit(&gba->memory.gpio, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
@@ -429,6 +431,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.romSize = patchedSize;
+	gba->romCrc32 = crc32(gba->memory.rom, gba->memory.romSize);
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {

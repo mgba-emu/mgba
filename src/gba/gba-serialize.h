@@ -10,7 +10,8 @@ const uint32_t GBA_SAVESTATE_MAGIC;
 /* Savestate format:
  * 0x00000 - 0x00003: Version Magic (0x01000000)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
- * 0x00008 - 0x0000F: Reserved (leave zero)
+ * 0x00008 - 0x0000B: ROM CRC32
+ * 0x0000C - 0x0000F: Reserved (leave zero)
  * 0x00010 - 0x0001B: Game title (e.g. METROID4USA)
  * 0x0001C - 0x0001F: Game code (e.g. AMTE)
  * 0x00020 - 0x0012F: CPU state:
@@ -133,7 +134,8 @@ const uint32_t GBA_SAVESTATE_MAGIC;
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
-	uint32_t reservedHeader[2];
+	uint32_t romCrc32;
+	uint32_t reservedHeader;
 
 	char title[12];
 	uint32_t id;
