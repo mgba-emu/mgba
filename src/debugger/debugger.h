@@ -5,7 +5,7 @@
 
 #include "arm.h"
 
-const uint32_t ARM_DEBUGGER_ID;
+extern const uint32_t ARM_DEBUGGER_ID;
 
 enum DebuggerState {
 	DEBUGGER_PAUSED,

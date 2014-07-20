@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+#define restrict __restrict__
+#endif
+
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
