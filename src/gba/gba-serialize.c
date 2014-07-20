@@ -99,7 +99,7 @@ bool GBALoadState(struct GBA* gba, int slot) {
 }
 
 struct GBASerializedState* GBAMapState(struct VFile* vf) {
-	return vf->map(vf, sizeof(struct GBASerializedState), MEMORY_WRITE);
+	return vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 }
 
 void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state) {

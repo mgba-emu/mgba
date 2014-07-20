@@ -3,7 +3,10 @@
 
 #include "common.h"
 
-#include "memory.h"
+enum {
+	MAP_READ = 1,
+	MAP_WRITE = 2
+};
 
 struct VFile {
 	bool (*close)(struct VFile* vf);

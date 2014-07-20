@@ -386,7 +386,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
 	vf->seek(vf, 0, SEEK_SET);
-	gba->pristineRom = vf->map(vf, SIZE_CART0, MEMORY_READ);
+	gba->pristineRom = vf->map(vf, SIZE_CART0, MAP_READ);
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
@@ -398,7 +398,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
-	gba->memory.bios = vf->map(vf, SIZE_BIOS, MEMORY_READ);
+	gba->memory.bios = vf->map(vf, SIZE_BIOS, MAP_READ);
 	gba->memory.fullBios = 1;
 	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 	GBALog(gba, GBA_LOG_DEBUG, "BIOS Checksum: 0x%X", checksum);

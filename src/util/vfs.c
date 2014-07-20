@@ -105,7 +105,7 @@ ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size) {
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	int mmapFlags = MAP_PRIVATE;
-	if (flags & MEMORY_WRITE) {
+	if (flags & MAP_WRITE) {
 		mmapFlags = MAP_SHARED;
 	}
 	return mmap(0, size, PROT_READ | PROT_WRITE, mmapFlags, vfd->fd, 0);
@@ -118,9 +118,9 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 #else
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
-	int createFlags = PAGE_READONLY;
-	int mapFiles = FILE_MAP_READ;
-	if (flags & MEMORY_WRITE) {
+	int createFlags = PAGE_WRITECOPY;
+	int mapFiles = FILE_MAP_COPY;
+	if (flags & MAP_WRITE) {
 		createFlags = PAGE_READWRITE;
 		mapFiles = FILE_MAP_WRITE;
 	}
