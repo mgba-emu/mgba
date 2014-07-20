@@ -85,7 +85,11 @@ bool GBARRLoad(struct GBARRContext* rr, struct VDir* vdir) {
 		return false;
 	}
 
-	struct GBARRBlock block;
+	struct GBARRBlock block = {
+		.next = 0,
+		.numInputs = GBA_RR_BLOCK_SIZE
+	};
+
 	ssize_t read;
 	do {
 		read = inputs->read(inputs, block.inputs, sizeof(block.inputs));
@@ -99,6 +103,7 @@ bool GBARRLoad(struct GBARRContext* rr, struct VDir* vdir) {
 				rr->currentBlock->next = newBlock;
 			}
 			rr->currentBlock = newBlock;
+			newBlock->numInputs = read / sizeof(block.inputs[0]);
 		}
 	} while (read > 0);
 
