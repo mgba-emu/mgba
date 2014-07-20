@@ -170,11 +170,12 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
 	if (opts->dirmode) {
-		threadContext->gamedir = VDirOpen(opts->fname);
+		threadContext->gameDir = VDirOpen(opts->fname);
+		threadContext->stateDir = threadContext->gameDir;
 	} else {
 		threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
 #if ENABLE_LIBZIP
-		threadContext->gamedir = VDirOpenZip(opts->fname, 0);
+		threadContext->gameDir = VDirOpenZip(opts->fname, 0);
 #endif
 	}
 	threadContext->fname = opts->fname;
@@ -206,12 +207,12 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rom = 0;
 	}
 
-	if (threadContext->gamedir) {
-		threadContext->gamedir->rewind(threadContext->gamedir);
-		struct VDirEntry* dirent = threadContext->gamedir->listNext(threadContext->gamedir);
+	if (threadContext->gameDir) {
+		threadContext->gameDir->rewind(threadContext->gameDir);
+		struct VDirEntry* dirent = threadContext->gameDir->listNext(threadContext->gameDir);
 		while (dirent) {
 			struct Patch patchTemp;
-			struct VFile* vf = threadContext->gamedir->openFile(threadContext->gamedir, dirent->name(dirent), O_RDONLY);
+			struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
 			if (!vf) {
 				continue;
 			}
@@ -222,11 +223,12 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			} else {
 				vf->close(vf);
 			}
-			dirent = threadContext->gamedir->listNext(threadContext->gamedir);
+			dirent = threadContext->gameDir->listNext(threadContext->gameDir);
 		}
 
-		// TODO: Differentiate ZIPs and filesystem directories
-		threadContext->save = threadContext->gamedir->openFile(threadContext->gamedir, "sram.sav", O_RDWR | O_CREAT);
+	}
+	if (threadContext->stateDir) {
+		threadContext->save = threadContext->stateDir->openFile(threadContext->stateDir, "sram.sav", O_RDWR | O_CREAT);
 	}
 
 	if (!threadContext->rom) {
@@ -360,9 +362,17 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		threadContext->patch = 0;
 	}
 
-	if (threadContext->gamedir) {
-		threadContext->gamedir->close(threadContext->gamedir);
-		threadContext->gamedir = 0;
+	if (threadContext->gameDir) {
+		if (threadContext->stateDir == threadContext->gameDir) {
+			threadContext->stateDir = 0;
+		}
+		threadContext->gameDir->close(threadContext->gameDir);
+		threadContext->gameDir = 0;
+	}
+
+	if (threadContext->stateDir) {
+		threadContext->stateDir->close(threadContext->stateDir);
+		threadContext->stateDir = 0;
 	}
 }
 

@@ -149,21 +149,21 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBAThreadContinue(context);
 					break;
 				case SDLK_t:
-					if (context->gamedir) {
+					if (context->stateDir) {
 						GBAThreadInterrupt(context);
 						GBARRStopPlaying(context->gba);
-						GBARRSave(context->gba->rr, context->gamedir);
+						GBARRSave(context->gba->rr, context->stateDir);
 						GBAThreadContinue(context);
 					}
 					break;
 				case SDLK_y:
-					if (context->gamedir) {
+					if (context->stateDir) {
 						GBAThreadReset(context);
 						GBAThreadInterrupt(context);
 						GBARRStopRecording(context->gba);
 						GBARRContextDestroy(context->gba);
 						GBARRContextCreate(context->gba);
-						if (GBARRLoad(context->gba->rr, context->gamedir)) {
+						if (GBARRLoad(context->gba->rr, context->stateDir)) {
 							GBARRStartPlaying(context->gba);
 						}
 						GBAThreadContinue(context);

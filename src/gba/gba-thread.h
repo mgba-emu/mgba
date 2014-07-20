@@ -47,7 +47,8 @@ struct GBAThread {
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
-	struct VDir* gamedir;
+	struct VDir* gameDir;
+	struct VDir* stateDir;
 	struct VFile* rom;
 	struct VFile* save;
 	struct VFile* bios;
