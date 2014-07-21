@@ -2,13 +2,13 @@
 
 #ifndef NDEBUG
 static int _checkIntegrity(struct CircleBuffer* buffer) {
-	if ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr == buffer->size) {
+	if ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr == (ssize_t) buffer->size) {
 		return 1;
 	}
-	if (buffer->capacity - buffer->size == ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr)) {
+	if ((ssize_t) (buffer->capacity - buffer->size) == ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr)) {
 		return 1;
 	}
-	if (buffer->capacity - buffer->size == ((int8_t*) buffer->readPtr - (int8_t*) buffer->writePtr)) {
+	if ((ssize_t) (buffer->capacity - buffer->size) == ((int8_t*) buffer->readPtr - (int8_t*) buffer->writePtr)) {
 		return 1;
 	}
 	return 0;
@@ -26,8 +26,12 @@ void CircleBufferDeinit(struct CircleBuffer* buffer) {
 	buffer->data = 0;
 }
 
-unsigned CircleBufferSize(const struct CircleBuffer* buffer) {
+size_t CircleBufferSize(const struct CircleBuffer* buffer) {
 	return buffer->size;
+}
+
+size_t CircleBufferCapacity(const struct CircleBuffer* buffer) {
+	return buffer->capacity;
 }
 
 void CircleBufferClear(struct CircleBuffer* buffer) {
@@ -140,7 +144,7 @@ int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value) {
 	return 4;
 }
 
-int CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length) {
+size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length) {
 	int8_t* data = buffer->readPtr;
 	if (buffer->size == 0) {
 		return 0;
@@ -171,7 +175,7 @@ int CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length) {
 	return length;
 }
 
-int CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length) {
+size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length) {
 	int8_t* data = buffer->readPtr;
 	if (buffer->size == 0) {
 		return 0;
