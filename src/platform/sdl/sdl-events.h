@@ -23,6 +23,4 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 
 enum GBAKey GBASDLMapButtonToKey(int button);
 
-enum GBAKey GBASDLMapButtonToKey(int button);
-
 #endif
