@@ -16,7 +16,7 @@ bool GBASDLInitAudio(struct GBASDLAudio* context) {
 	context->desiredSpec.freq = 44100;
 	context->desiredSpec.format = AUDIO_S16SYS;
 	context->desiredSpec.channels = 2;
-	context->desiredSpec.samples = BUFFER_SIZE;
+	context->desiredSpec.samples = context->samples;
 	context->desiredSpec.callback = _GBASDLAudioCallback;
 	context->desiredSpec.userdata = context;
 	context->audio = 0;
