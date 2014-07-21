@@ -49,7 +49,15 @@ void AudioThread::setInput(GBAThread* input) {
 
 void AudioThread::shutdown() {
 	disconnect();
-	m_audioOutput->stop();
+	if (m_audioOutput) {
+		m_audioOutput->stop();
+		delete m_audioOutput;
+		m_audioOutput = nullptr;
+	}
+	if (m_device) {
+		delete m_device;
+		m_device = nullptr;
+	}
 	quit();
 }
 
