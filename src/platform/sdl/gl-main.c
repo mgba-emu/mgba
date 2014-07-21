@@ -230,6 +230,7 @@ static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer) {
 static void _GBASDLStart(struct GBAThread* threadContext) {
 	struct GLSoftwareRenderer* renderer = threadContext->userData;
 	renderer->audio.audio = &threadContext->gba->audio;
+	renderer->audio.thread = threadContext;
 }
 
 static void _GBASDLClean(struct GBAThread* threadContext) {

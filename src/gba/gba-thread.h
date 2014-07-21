@@ -56,6 +56,7 @@ struct GBAThread {
 	const char* fname;
 	int activeKeys;
 	int frameskip;
+	float fpsTarget;
 
 	// Threading state
 	Thread thread;

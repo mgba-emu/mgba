@@ -11,6 +11,8 @@
 
 #include <signal.h>
 
+static const float _defaultFPSTarget = 60.f;
+
 #ifdef USE_PTHREADS
 static pthread_key_t _contextKey;
 static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
@@ -200,6 +202,10 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (!threadContext->fpsTarget) {
+		threadContext->fpsTarget = _defaultFPSTarget;
 	}
 
 	if (threadContext->rom && !GBAIsROM(threadContext->rom)) {
