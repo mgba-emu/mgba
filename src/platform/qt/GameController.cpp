@@ -92,7 +92,7 @@ void GameController::loadGame(const QString& path) {
 	m_rom = new QFile(path);
 	if (!m_rom->open(QIODevice::ReadOnly)) {
 		delete m_rom;
-		m_rom = 0;
+		m_rom = nullptr;
 	}
 
 	m_pauseAfterFrame = false;
@@ -103,8 +103,7 @@ void GameController::loadGame(const QString& path) {
 }
 
 void GameController::closeGame() {
-	// TODO: Make this threadsafe
-	if (m_threadContext.state >= THREAD_EXITING || m_threadContext.state <= THREAD_INITIALIZED) {
+	if (!m_rom) {
 		return;
 	}
 	GBAThreadEnd(&m_threadContext);
@@ -112,6 +111,7 @@ void GameController::closeGame() {
 	if (m_rom) {
 		m_rom->close();
 		delete m_rom;
+		m_rom = nullptr;
 	}
 	emit gameStopped(&m_threadContext);
 }
