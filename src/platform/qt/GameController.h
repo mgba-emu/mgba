@@ -7,8 +7,6 @@
 #include <QMutex>
 #include <QString>
 
-#include "AudioDevice.h"
-
 extern "C" {
 #include "gba-thread.h"
 #ifdef BUILD_SDL
@@ -20,6 +18,8 @@ struct GBAAudio;
 struct GBAVideoSoftwareRenderer;
 
 namespace QGBA {
+
+class AudioDevice;
 
 class GameController : public QObject {
 Q_OBJECT

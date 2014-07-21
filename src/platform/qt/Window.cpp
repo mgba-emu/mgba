@@ -5,6 +5,8 @@
 #include <QKeySequence>
 #include <QMenuBar>
 
+#include "AudioDevice.h"
+#include "GameController.h"
 #include "GDBWindow.h"
 #include "GDBController.h"
 

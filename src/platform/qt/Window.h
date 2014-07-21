@@ -8,11 +8,12 @@ extern "C" {
 #include "gba.h"
 }
 
-#include "GameController.h"
 #include "Display.h"
 
 namespace QGBA {
 
+class AudioThread;
+class GameController;
 class GDBController;
 
 class Window : public QMainWindow {
