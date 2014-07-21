@@ -86,6 +86,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #else
 	TlsSetValue(_contextKey, threadContext);
 #endif
+
+	if (threadContext->audioBuffers) {
+		GBAAudioResizeBuffer(&gba.audio, threadContext->audioBuffers);
+	}
+
 	if (threadContext->renderer) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
@@ -549,6 +554,10 @@ void GBASyncProduceAudio(struct GBASync* sync, int wait) {
 
 void GBASyncLockAudio(struct GBASync* sync) {
 	MutexLock(&sync->audioBufferMutex);
+}
+
+void GBASyncUnlockAudio(struct GBASync* sync) {
+	MutexUnlock(&sync->audioBufferMutex);
 }
 
 void GBASyncConsumeAudio(struct GBASync* sync) {

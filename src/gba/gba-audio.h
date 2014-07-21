@@ -218,9 +218,11 @@ struct GBAStereoSample {
 	int16_t right;
 };
 
-void GBAAudioInit(struct GBAAudio* audio);
+void GBAAudioInit(struct GBAAudio* audio, size_t samples);
 void GBAAudioReset(struct GBAAudio* audio);
 void GBAAudioDeinit(struct GBAAudio* audio);
+
+void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples);
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles);
 void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info);
