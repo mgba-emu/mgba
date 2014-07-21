@@ -43,8 +43,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
-	float ratio = 280896.0f * FPS_TARGET / GBA_ARM7TDMI_FREQUENCY;
-	audioContext->ratio = audioContext->obtainedSpec.freq / ratio / (float) audioContext->audio->sampleRate;
+	audioContext->ratio = GBAAudioCalculateRatio(audioContext->audio, FPS_TARGET, audioContext->obtainedSpec.freq);
 	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {

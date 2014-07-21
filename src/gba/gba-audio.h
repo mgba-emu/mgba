@@ -251,4 +251,6 @@ struct GBASerializedState;
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state);
 
+float GBAAudioCalculateRatio(struct GBAAudio* audio, float desiredFPS, float desiredSampleRatio);
+
 #endif

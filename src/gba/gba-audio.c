@@ -4,6 +4,7 @@
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "gba-thread.h"
+#include "gba-video.h"
 
 const unsigned GBA_AUDIO_SAMPLES = 512;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
@@ -750,4 +751,8 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	audio->nextEvent = state->audio.nextEvent;
 	audio->eventDiff = state->audio.eventDiff;
 	audio->nextSample = state->audio.nextSample;
+}
+
+float GBAAudioCalculateRatio(struct GBAAudio* audio, float desiredFPS, float desiredSampleRate) {
+	return desiredSampleRate * GBA_ARM7TDMI_FREQUENCY / (VIDEO_TOTAL_LENGTH * desiredFPS * audio->sampleRate);
 }
