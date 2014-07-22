@@ -54,8 +54,9 @@ GameController::GameController(QObject* parent)
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_pauseMutex.lock();
 		if (controller->m_pauseAfterFrame) {
-			GBAThreadPause(context);
+			GBAThreadPauseFromThread(context);
 			controller->m_pauseAfterFrame = false;
+			controller->gamePaused(&controller->m_threadContext);
 		}
 		controller->m_pauseMutex.unlock();
 		controller->frameAvailable(controller->m_drawContext);
