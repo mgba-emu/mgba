@@ -4,7 +4,6 @@
 #include "gba-thread.h"
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
-#define FPS_TARGET 60.f
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
@@ -17,10 +16,11 @@ bool GBASDLInitAudio(struct GBASDLAudio* context) {
 	context->desiredSpec.freq = 44100;
 	context->desiredSpec.format = AUDIO_S16SYS;
 	context->desiredSpec.channels = 2;
-	context->desiredSpec.samples = GBA_AUDIO_SAMPLES;
+	context->desiredSpec.samples = context->samples;
 	context->desiredSpec.callback = _GBASDLAudioCallback;
 	context->desiredSpec.userdata = context;
 	context->audio = 0;
+	context->thread = 0;
 	context->drift = 0.f;
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
@@ -43,8 +43,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
-	float ratio = 280896.0f * FPS_TARGET / GBA_ARM7TDMI_FREQUENCY;
-	audioContext->ratio = audioContext->obtainedSpec.freq / ratio / (float) audioContext->audio->sampleRate;
+	audioContext->ratio = GBAAudioCalculateRatio(audioContext->audio, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
 	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {

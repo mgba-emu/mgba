@@ -79,6 +79,9 @@ int main(int argc, char** argv) {
 
 	GBAMapOptionsToContext(&opts, &context);
 
+	renderer.audio.samples = context.audioBuffers;
+	GBASDLInitAudio(&renderer.audio);
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.events.fullscreen = graphicsOpts.fullscreen;
 	renderer.window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer.viewportWidth, renderer.viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer.events.fullscreen));
@@ -145,7 +148,6 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 	}
 
 	GBASDLInitEvents(&renderer->events);
-	GBASDLInitAudio(&renderer->audio);
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT

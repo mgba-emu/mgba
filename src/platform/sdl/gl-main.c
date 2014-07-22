@@ -85,6 +85,7 @@ int main(int argc, char** argv) {
 
 	struct GBAThread context = {
 		.renderer = &renderer.d.d,
+		.audioBuffers = 512,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
 		.sync.videoFrameWait = 0,
@@ -95,6 +96,9 @@ int main(int argc, char** argv) {
 	context.debugger = createDebugger(&opts);
 
 	GBAMapOptionsToContext(&opts, &context);
+
+	renderer.audio.samples = context.audioBuffers;
+	GBASDLInitAudio(&renderer.audio);
 
 	GBAThreadStart(&context);
 
@@ -115,7 +119,6 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 	}
 
 	GBASDLInitEvents(&renderer->events);
-	GBASDLInitAudio(&renderer->audio);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -230,6 +233,7 @@ static void _GBASDLDeinit(struct GLSoftwareRenderer* renderer) {
 static void _GBASDLStart(struct GBAThread* threadContext) {
 	struct GLSoftwareRenderer* renderer = threadContext->userData;
 	renderer->audio.audio = &threadContext->gba->audio;
+	renderer->audio.thread = threadContext;
 }
 
 static void _GBASDLClean(struct GBAThread* threadContext) {

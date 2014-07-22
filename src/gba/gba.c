@@ -121,7 +121,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	GBAVideoInit(&gba->video);
 
 	gba->audio.p = gba;
-	GBAAudioInit(&gba->audio);
+	GBAAudioInit(&gba->audio, GBA_AUDIO_SAMPLES);
 
 	GBAIOInit(gba);
 

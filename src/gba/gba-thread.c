@@ -11,6 +11,8 @@
 
 #include <signal.h>
 
+static const float _defaultFPSTarget = 60.f;
+
 #ifdef USE_PTHREADS
 static pthread_key_t _contextKey;
 static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
@@ -84,6 +86,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 #else
 	TlsSetValue(_contextKey, threadContext);
 #endif
+
+	if (threadContext->audioBuffers) {
+		GBAAudioResizeBuffer(&gba.audio, threadContext->audioBuffers);
+	}
+
 	if (threadContext->renderer) {
 		GBAVideoAssociateRenderer(&gba.video, threadContext->renderer);
 	}
@@ -200,6 +207,10 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
 	} else {
 		threadContext->rewindBuffer = 0;
+	}
+
+	if (!threadContext->fpsTarget) {
+		threadContext->fpsTarget = _defaultFPSTarget;
 	}
 
 	if (threadContext->rom && !GBAIsROM(threadContext->rom)) {
@@ -543,6 +554,10 @@ void GBASyncProduceAudio(struct GBASync* sync, int wait) {
 
 void GBASyncLockAudio(struct GBASync* sync) {
 	MutexLock(&sync->audioBufferMutex);
+}
+
+void GBASyncUnlockAudio(struct GBASync* sync) {
+	MutexUnlock(&sync->audioBufferMutex);
 }
 
 void GBASyncConsumeAudio(struct GBASync* sync) {

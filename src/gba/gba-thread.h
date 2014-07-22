@@ -56,6 +56,8 @@ struct GBAThread {
 	const char* fname;
 	int activeKeys;
 	int frameskip;
+	float fpsTarget;
+	size_t audioBuffers;
 
 	// Threading state
 	Thread thread;
@@ -105,6 +107,7 @@ bool GBASyncDrawingFrame(struct GBASync* sync);
 
 void GBASyncProduceAudio(struct GBASync* sync, int wait);
 void GBASyncLockAudio(struct GBASync* sync);
+void GBASyncUnlockAudio(struct GBASync* sync);
 void GBASyncConsumeAudio(struct GBASync* sync);
 
 #endif

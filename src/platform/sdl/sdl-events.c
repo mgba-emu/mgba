@@ -248,14 +248,7 @@ static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEve
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
-		// FIXME: this isn't thread-safe
-		if (context->debugger) {
-			context->debugger->state = DEBUGGER_EXITING;
-		}
-		MutexLock(&context->stateMutex);
-		context->state = THREAD_EXITING;
-		ConditionWake(&context->stateCond);
-		MutexUnlock(&context->stateMutex);
+		GBAThreadEnd(context);
 		break;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_WINDOWEVENT:

@@ -4,8 +4,9 @@
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "gba-thread.h"
+#include "gba-video.h"
 
-const unsigned GBA_AUDIO_SAMPLES = 512;
+const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
@@ -19,9 +20,9 @@ static int32_t _updateChannel4(struct GBAAudioChannel4* ch);
 static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct GBAAudio* audio);
 
-void GBAAudioInit(struct GBAAudio* audio) {
-	CircleBufferInit(&audio->left, GBA_AUDIO_SAMPLES * sizeof(int32_t));
-	CircleBufferInit(&audio->right, GBA_AUDIO_SAMPLES * sizeof(int32_t));
+void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
+	CircleBufferInit(&audio->left, samples * sizeof(int32_t));
+	CircleBufferInit(&audio->right, samples * sizeof(int32_t));
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
 }
@@ -67,6 +68,40 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 	CircleBufferDeinit(&audio->right);
 	CircleBufferDeinit(&audio->chA.fifo);
 	CircleBufferDeinit(&audio->chB.fifo);
+}
+
+void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
+	if (samples >= GBA_AUDIO_SAMPLES) {
+		return;
+	}
+
+	GBASyncLockAudio(audio->p->sync);
+	int32_t buffer[GBA_AUDIO_SAMPLES];
+	int32_t dummy;
+	size_t read;
+	size_t i;
+
+	read = CircleBufferDump(&audio->left, buffer, sizeof(buffer));
+	CircleBufferDeinit(&audio->left);
+	CircleBufferInit(&audio->left, samples * sizeof(int32_t));
+	for (i = 0; i * sizeof(int32_t) < read; ++i) {
+		if (!CircleBufferWrite32(&audio->left, buffer[i])) {
+			CircleBufferRead32(&audio->left, &dummy);
+			CircleBufferWrite32(&audio->left, buffer[i]);
+		}
+	}
+
+	read = CircleBufferDump(&audio->right, buffer, sizeof(buffer));
+	CircleBufferDeinit(&audio->right);
+	CircleBufferInit(&audio->right, samples * sizeof(int32_t));
+	for (i = 0; i * sizeof(int32_t) < read; ++i) {
+		if (!CircleBufferWrite32(&audio->right, buffer[i])) {
+			CircleBufferRead32(&audio->right, &dummy);
+			CircleBufferWrite32(&audio->right, buffer[i]);
+		}
+	}
+
+	GBASyncUnlockAudio(audio->p->sync);
 }
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
@@ -669,7 +704,7 @@ static void _sample(struct GBAAudio* audio) {
 	CircleBufferWrite32(&audio->left, sampleLeft);
 	CircleBufferWrite32(&audio->right, sampleRight);
 	unsigned produced = CircleBufferSize(&audio->left);
-	GBASyncProduceAudio(audio->p->sync, produced >= GBA_AUDIO_SAMPLES * 3);
+	GBASyncProduceAudio(audio->p->sync, produced >= CircleBufferCapacity(&audio->left) / sizeof(int32_t) * 3);
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
@@ -750,4 +785,8 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	audio->nextEvent = state->audio.nextEvent;
 	audio->eventDiff = state->audio.eventDiff;
 	audio->nextSample = state->audio.nextSample;
+}
+
+float GBAAudioCalculateRatio(struct GBAAudio* audio, float desiredFPS, float desiredSampleRate) {
+	return desiredSampleRate * GBA_ARM7TDMI_FREQUENCY / (VIDEO_TOTAL_LENGTH * desiredFPS * audio->sampleRate);
 }
