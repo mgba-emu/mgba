@@ -71,7 +71,7 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
-	if (samples >= GBA_AUDIO_SAMPLES) {
+	if (samples > GBA_AUDIO_SAMPLES) {
 		return;
 	}
 
