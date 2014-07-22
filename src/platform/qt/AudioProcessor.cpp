@@ -8,8 +8,6 @@ extern "C" {
 #include "gba-thread.h"
 }
 
-#include <cassert>
-
 using namespace QGBA;
 
 AudioProcessor::AudioProcessor(QObject* parent)
@@ -48,11 +46,16 @@ void AudioProcessor::start() {
 
 	m_device->setInput(m_context);
 	m_device->setFormat(m_audioOutput->format());
+	m_audioOutput->setBufferSize(m_context->audioBuffers * 4);
 
-	assert(m_audioOutput->thread() == thread());
 	m_audioOutput->start(m_device);
 }
 
 void AudioProcessor::pause() {
 	m_audioOutput->stop();
+}
+
+void AudioProcessor::setBufferSamples(int samples) {
+	QAudioFormat format = m_audioOutput->format();
+	m_audioOutput->setBufferSize(samples * format.channelCount() * format.sampleSize() / 8);
 }

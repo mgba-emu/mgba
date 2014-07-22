@@ -38,9 +38,17 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void closeEvent(QCloseEvent*) override;
 
+signals:
+	void audioBufferSamplesChanged(int samples);
+
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
+
+	void setBuffers512();
+	void setBuffers1024();
+	void setBuffers2048();
+	void setBuffers4096();
 
 private:
 	void setupMenu(QMenuBar*);

@@ -166,6 +166,14 @@ void GameController::keyReleased(int key) {
 	updateKeys();
 }
 
+void GameController::setAudioBufferSamples(int samples) {
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.audioBuffers = samples;
+	GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples);
+	GBAThreadContinue(&m_threadContext);
+	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+}
+
 void GameController::updateKeys() {
 	int activeKeys = m_activeKeys;
 #ifdef BUILD_SDL

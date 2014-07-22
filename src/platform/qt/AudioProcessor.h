@@ -22,6 +22,8 @@ public slots:
 	void start();
 	void pause();
 
+	void setBufferSamples(int samples);
+
 private:
 	GBAThread* m_context;
 	QAudioOutput* m_audioOutput;
