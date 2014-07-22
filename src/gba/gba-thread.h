@@ -98,6 +98,7 @@ void GBAThreadPause(struct GBAThread* threadContext);
 void GBAThreadUnpause(struct GBAThread* threadContext);
 bool GBAThreadIsPaused(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
+void GBAThreadPauseFromThread(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 
 void GBASyncPostFrame(struct GBASync* sync);
