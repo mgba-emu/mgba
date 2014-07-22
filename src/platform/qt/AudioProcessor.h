@@ -23,6 +23,7 @@ public slots:
 	void pause();
 
 	void setBufferSamples(int samples);
+	void inputParametersChanged();
 
 private:
 	GBAThread* m_context;

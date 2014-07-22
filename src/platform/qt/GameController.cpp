@@ -181,6 +181,13 @@ void GameController::setAudioBufferSamples(int samples) {
 	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
 }
 
+void GameController::setFPSTarget(float fps) {
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.fpsTarget = fps;
+	GBAThreadContinue(&m_threadContext);
+	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
+}
+
 void GameController::updateKeys() {
 	int activeKeys = m_activeKeys;
 #ifdef BUILD_SDL

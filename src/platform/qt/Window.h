@@ -40,6 +40,7 @@ protected:
 
 signals:
 	void audioBufferSamplesChanged(int samples);
+	void fpsTargetChanged(float target);
 
 private slots:
 	void gameStarted(GBAThread*);

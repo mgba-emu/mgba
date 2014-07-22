@@ -55,6 +55,7 @@ public slots:
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void setAudioBufferSamples(int samples);
+	void setFPSTarget(float fps);
 
 #ifdef BUILD_SDL
 private slots:

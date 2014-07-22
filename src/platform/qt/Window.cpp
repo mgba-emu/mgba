@@ -29,6 +29,7 @@ Window::Window(QWidget* parent)
 	connect(this, SIGNAL(startDrawing(const uint32_t*, GBAThread*)), m_display, SLOT(startDrawing(const uint32_t*, GBAThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
+	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 
 	setupMenu(menuBar());
 }
@@ -166,6 +167,29 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
+
+	QMenu* target = emulationMenu->addMenu("FPS target");
+	QAction* setTarget = new QAction(tr("15"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(15); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("30"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(30); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("45"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(45); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("60"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(60); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("90"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(90); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("120"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(120); });
+	target->addAction(setTarget);
+	setTarget = new QAction(tr("240"), nullptr);
+	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(240); });
+	target->addAction(setTarget);
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
