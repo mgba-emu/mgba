@@ -153,21 +153,26 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
-	fileMenu->addAction(tr("Sh&utdown"), m_controller, SLOT(closeGame()));
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
+	QAction* reset = new QAction(tr("&Reset"), nullptr);
+	reset->setShortcut(tr("Ctrl+R"));
+	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
+	m_gameActions.append(reset);
+	emulationMenu->addAction(reset);
+	emulationMenu->addAction(tr("Sh&utdown"), m_controller, SLOT(closeGame()));
+	emulationMenu->addSeparator();
+
 	QAction* pause = new QAction(tr("&Pause"), nullptr);
 	pause->setChecked(false);
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
-	pause->setDisabled(true);
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
 	m_gameActions.append(pause);
 	emulationMenu->addAction(pause);
 
 	QAction* frameAdvance = new QAction(tr("&Next frame"), nullptr);
 	frameAdvance->setShortcut(tr("Ctrl+N"));
-	frameAdvance->setDisabled(true);
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
@@ -185,4 +190,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	debuggingMenu->addAction(gdbWindow);
 #endif
+
+	foreach (QAction* action, m_gameActions) {
+		action->setDisabled(true);
+	}
 }

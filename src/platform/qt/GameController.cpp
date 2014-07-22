@@ -147,6 +147,10 @@ void GameController::setPaused(bool paused) {
 	}
 }
 
+void GameController::reset() {
+	GBAThreadReset(&m_threadContext);
+}
+
 void GameController::frameAdvance() {
 	m_pauseMutex.lock();
 	m_pauseAfterFrame = true;

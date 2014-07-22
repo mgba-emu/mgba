@@ -48,6 +48,7 @@ public slots:
 	void loadGame(const QString& path);
 	void closeGame();
 	void setPaused(bool paused);
+	void reset();
 	void frameAdvance();
 	void keyPressed(int key);
 	void keyReleased(int key);
