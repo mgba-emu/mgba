@@ -160,7 +160,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
 	m_gameActions.append(reset);
 	emulationMenu->addAction(reset);
-	emulationMenu->addAction(tr("Sh&utdown"), m_controller, SLOT(closeGame()));
+
+	QAction* shutdown = new QAction(tr("Sh&utdown"), nullptr);
+	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
+	m_gameActions.append(shutdown);
+	emulationMenu->addAction(shutdown);
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), nullptr);
