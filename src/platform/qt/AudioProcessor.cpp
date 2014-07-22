@@ -52,7 +52,9 @@ void AudioProcessor::start() {
 }
 
 void AudioProcessor::pause() {
-	m_audioOutput->stop();
+	if (m_audioOutput) {
+		m_audioOutput->stop();
+	}
 }
 
 void AudioProcessor::setBufferSamples(int samples) {
