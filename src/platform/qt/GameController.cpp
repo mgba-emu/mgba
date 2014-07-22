@@ -11,7 +11,6 @@ using namespace QGBA;
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
-	, m_audioContext(nullptr)
 	, m_activeKeys(0)
 	, m_rom(nullptr)
 {

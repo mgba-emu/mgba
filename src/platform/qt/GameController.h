@@ -63,7 +63,6 @@ private:
 	void updateKeys();
 
 	uint32_t* m_drawContext;
-	AudioDevice* m_audioContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	int m_activeKeys;
