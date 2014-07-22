@@ -133,22 +133,6 @@ void Window::gameStopped() {
 	}
 }
 
-void Window::setBuffers512() {
-	emit audioBufferSamplesChanged(512);
-}
-
-void Window::setBuffers1024() {
-	emit audioBufferSamplesChanged(1024);
-}
-
-void Window::setBuffers2048() {
-	emit audioBufferSamplesChanged(2048);
-}
-
-void Window::setBuffers4096() {
-	emit audioBufferSamplesChanged(4096);
-}
-
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
@@ -185,10 +169,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
-	buffersMenu->addAction(tr("512"), this, SLOT(setBuffers512()));
-	buffersMenu->addAction(tr("1024"), this, SLOT(setBuffers1024()));
-	buffersMenu->addAction(tr("2048"), this, SLOT(setBuffers2048()));
-	buffersMenu->addAction(tr("4096"), this, SLOT(setBuffers4096()));
+	QAction* setBuffer = new QAction(tr("512"), nullptr);
+	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(512); });
+	buffersMenu->addAction(setBuffer);
+	setBuffer = new QAction(tr("1024"), nullptr);
+	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(1024); });
+	buffersMenu->addAction(setBuffer);
+	setBuffer = new QAction(tr("2048"), nullptr);
+	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(2048); });
+	buffersMenu->addAction(setBuffer);
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
 #ifdef USE_GDB_STUB

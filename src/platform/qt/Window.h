@@ -45,11 +45,6 @@ private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
 
-	void setBuffers512();
-	void setBuffers1024();
-	void setBuffers2048();
-	void setBuffers4096();
-
 private:
 	void setupMenu(QMenuBar*);
 	GameController* m_controller;
