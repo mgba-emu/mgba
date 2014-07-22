@@ -21,7 +21,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Widgets REQUIRED)
 find_package(OpenGL REQUIRED)
 
-set(SOURCE_FILES AudioDevice.cpp Display.cpp GameController.cpp Window.cpp)
+set(SOURCE_FILES AudioDevice.cpp AudioProcessor.cpp Display.cpp GameController.cpp Window.cpp)
 
 if(USE_GDB_STUB)
 	set(SOURCE_FILES ${PLATFORM_SRC} ${SOURCE_FILES} GDBController.cpp GDBWindow.cpp)

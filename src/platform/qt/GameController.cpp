@@ -1,7 +1,12 @@
 #include "GameController.h"
 
+#include "AudioProcessor.h"
+
+#include <QThread>
+
 extern "C" {
 #include "gba.h"
+#include "gba-audio.h"
 #include "renderers/video-software.h"
 #include "util/vfs.h"
 }
@@ -13,6 +18,8 @@ GameController::GameController(QObject* parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_activeKeys(0)
 	, m_rom(nullptr)
+	, m_audioThread(new QThread(this))
+	, m_audioProcessor(new AudioProcessor)
 {
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
@@ -34,6 +41,7 @@ GameController::GameController(QObject* parent)
 	};
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		controller->m_audioProcessor->setInput(context);
 		controller->gameStarted(context);
 	};
 
@@ -53,12 +61,18 @@ GameController::GameController(QObject* parent)
 		controller->frameAvailable(controller->m_drawContext);
 	};
 
+	m_audioThread->start();
+	m_audioProcessor->moveToThread(m_audioThread);
+	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
+
 #ifdef BUILD_SDL
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(testSDLEvents()));
 #endif
 }
 
 GameController::~GameController() {
+	m_audioProcessor->pause();
+	m_audioThread->quit();
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
 	}
@@ -98,6 +112,7 @@ void GameController::loadGame(const QString& path) {
 
 	m_threadContext.rom = VFileFromFD(m_rom->handle());
 	m_threadContext.fname = path.toLocal8Bit().constData();
+
 	GBAThreadStart(&m_threadContext);
 }
 
@@ -125,7 +140,9 @@ void GameController::setPaused(bool paused) {
 	}
 	if (paused) {
 		GBAThreadPause(&m_threadContext);
+		m_audioProcessor->pause();
 	} else {
+		m_audioProcessor->start();
 		GBAThreadUnpause(&m_threadContext);
 	}
 }

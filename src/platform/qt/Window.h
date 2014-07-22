@@ -12,7 +12,6 @@ extern "C" {
 
 namespace QGBA {
 
-class AudioThread;
 class GameController;
 class GDBController;
 
@@ -47,7 +46,6 @@ private:
 	void setupMenu(QMenuBar*);
 	GameController* m_controller;
 	Display* m_display;
-	AudioThread* m_audioThread;
 	QList<QAction*> m_gameActions;
 
 #ifdef USE_GDB_STUB

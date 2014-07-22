@@ -5,7 +5,6 @@
 #include <QKeySequence>
 #include <QMenuBar>
 
-#include "AudioDevice.h"
 #include "GameController.h"
 #include "GDBWindow.h"
 #include "GDBController.h"
@@ -14,7 +13,6 @@ using namespace QGBA;
 
 Window::Window(QWidget* parent)
 	: QMainWindow(parent)
-	, m_audioThread(nullptr)
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
@@ -126,21 +124,12 @@ void Window::gameStarted(GBAThread* context) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
-	if (!m_audioThread) {
-		m_audioThread = new AudioThread(this);
-		connect(this, SIGNAL(shutdown()), m_audioThread, SLOT(shutdown()));
-		m_audioThread->setInput(context);
-		m_audioThread->start(QThread::HighPriority);
-	} else {
-		m_audioThread->resume();
-	}
 }
 
 void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
-	m_audioThread->pause();
 }
 
 void Window::setupMenu(QMenuBar* menubar) {

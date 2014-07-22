@@ -8,17 +8,23 @@ extern "C" {
 
 using namespace QGBA;
 
-AudioDevice::AudioDevice(GBAThread* threadContext, QObject* parent)
+AudioDevice::AudioDevice(QObject* parent)
 	: QIODevice(parent)
-	, m_context(threadContext)
+	, m_context(nullptr)
 {
 	setOpenMode(ReadOnly);
 }
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
-	// TODO: merge where the fudge rate exists
-	float fudgeRate = 16853760.0f / GBA_ARM7TDMI_FREQUENCY;
-	m_ratio = format.sampleRate() / (float) (m_context->gba->audio.sampleRate * fudgeRate);
+	if (!GBAThreadHasStarted(m_context)) {
+		return;
+	}
+	// TODO: make this thread-safe
+	m_ratio = GBAAudioCalculateRatio(&m_context->gba->audio, 60, format.sampleRate());
+}
+
+void AudioDevice::setInput(GBAThread* input) {
+	m_context = input;
 }
 
 qint64 AudioDevice::readData(char* data, qint64 maxSize) {
@@ -35,54 +41,4 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 
 qint64 AudioDevice::writeData(const char*, qint64) {
 	return 0;
-}
-
-AudioThread::AudioThread(QObject* parent)
-	: QThread(parent)
-{
-	// Nothing to do
-}
-
-void AudioThread::setInput(GBAThread* input) {
-	m_input = input;
-}
-
-void AudioThread::shutdown() {
-	disconnect();
-	if (m_audioOutput) {
-		m_audioOutput->stop();
-		delete m_audioOutput;
-		m_audioOutput = nullptr;
-	}
-	if (m_device) {
-		delete m_device;
-		m_device = nullptr;
-	}
-	quit();
-}
-
-void AudioThread::pause() {
-	m_audioOutput->stop();
-}
-
-void AudioThread::resume() {
-	m_audioOutput->start(m_device);
-}
-
-void AudioThread::run() {
-	QAudioFormat format;
-	format.setSampleRate(44100);
-	format.setChannelCount(2);
-	format.setSampleSize(16);
-	format.setCodec("audio/pcm");
-	format.setByteOrder(QAudioFormat::LittleEndian);
-	format.setSampleType(QAudioFormat::SignedInt);
-
-	m_device = new AudioDevice(m_input);
-	m_audioOutput = new QAudioOutput(format);
-	m_audioOutput->setBufferSize(1024);
-	m_device->setFormat(m_audioOutput->format());
-	m_audioOutput->start(m_device);
-
-	exec();
 }

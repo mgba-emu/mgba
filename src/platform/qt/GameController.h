@@ -17,9 +17,11 @@ extern "C" {
 struct GBAAudio;
 struct GBAVideoSoftwareRenderer;
 
+class QThread;
+
 namespace QGBA {
 
-class AudioDevice;
+class AudioProcessor;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -69,6 +71,9 @@ private:
 
 	QFile* m_rom;
 	QFile* m_bios;
+
+	QThread* m_audioThread;
+	AudioProcessor* m_audioProcessor;
 
 	QMutex m_pauseMutex;
 	bool m_pauseAfterFrame;
