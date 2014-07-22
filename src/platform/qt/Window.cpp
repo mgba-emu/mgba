@@ -191,6 +191,34 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(240); });
 	target->addAction(setTarget);
 
+	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
+	QMenu* frameMenu = videoMenu->addMenu(tr("Frame &size"));
+	QAction* setSize = new QAction(tr("1x"), nullptr);
+	connect(setSize, &QAction::triggered, [this]() {
+		showNormal();
+		resize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	});
+	frameMenu->addAction(setSize);
+	setSize = new QAction(tr("2x"), nullptr);
+	connect(setSize, &QAction::triggered, [this]() {
+		showNormal();
+		resize(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
+	});
+	frameMenu->addAction(setSize);
+	setSize = new QAction(tr("3x"), nullptr);
+	connect(setSize, &QAction::triggered, [this]() {
+		showNormal();
+		resize(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
+	});
+	frameMenu->addAction(setSize);
+	setSize = new QAction(tr("4x"), nullptr);
+	connect(setSize, &QAction::triggered, [this]() {
+		showNormal();
+		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
+	});
+	frameMenu->addAction(setSize);
+	frameMenu->addAction(tr("Fullscreen"), this, SLOT(showFullScreen()), QKeySequence("Ctrl+F"));
+
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
 	QAction* setBuffer = new QAction(tr("512"), nullptr);
