@@ -64,6 +64,9 @@ GameController::GameController(QObject* parent)
 	m_audioThread->start();
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
+	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 
 #ifdef BUILD_SDL
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(testSDLEvents()));
@@ -71,7 +74,6 @@ GameController::GameController(QObject* parent)
 }
 
 GameController::~GameController() {
-	m_audioProcessor->pause();
 	m_audioThread->quit();
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
@@ -140,10 +142,10 @@ void GameController::setPaused(bool paused) {
 	}
 	if (paused) {
 		GBAThreadPause(&m_threadContext);
-		m_audioProcessor->pause();
+		emit gamePaused(&m_threadContext);
 	} else {
-		m_audioProcessor->start();
 		GBAThreadUnpause(&m_threadContext);
+		emit gameUnpaused(&m_threadContext);
 	}
 }
 

@@ -43,6 +43,8 @@ signals:
 	void frameAvailable(const uint32_t*);
 	void gameStarted(GBAThread*);
 	void gameStopped(GBAThread*);
+	void gamePaused(GBAThread*);
+	void gameUnpaused(GBAThread*);
 
 public slots:
 	void loadGame(const QString& path);
