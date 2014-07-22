@@ -172,6 +172,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
+	connect(m_controller, &GameController::gamePaused, [pause]() { pause->setChecked(true); });
+	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
 	emulationMenu->addAction(pause);
 
