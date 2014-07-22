@@ -33,7 +33,7 @@ static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
 }
 #endif
 
-static void _changeState(struct GBAThread* threadContext, enum ThreadState newState, int broadcast) {
+static void _changeState(struct GBAThread* threadContext, enum ThreadState newState, bool broadcast) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->state = newState;
 	if (broadcast) {
@@ -46,6 +46,43 @@ static void _waitOnInterrupt(struct GBAThread* threadContext) {
 	while (threadContext->state == THREAD_INTERRUPTED) {
 		ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
 	}
+}
+
+static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState oldState) {
+	while (threadContext->state == oldState) {
+		MutexUnlock(&threadContext->stateMutex);
+
+		MutexLock(&threadContext->sync.videoFrameMutex);
+		ConditionWake(&threadContext->sync.videoFrameRequiredCond);
+		MutexUnlock(&threadContext->sync.videoFrameMutex);
+
+		MutexLock(&threadContext->sync.audioBufferMutex);
+		ConditionWake(&threadContext->sync.audioRequiredCond);
+		MutexUnlock(&threadContext->sync.audioBufferMutex);
+
+		MutexLock(&threadContext->stateMutex);
+		ConditionWake(&threadContext->stateCond);
+	}
+}
+
+static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
+	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
+		threadContext->debugger->state = DEBUGGER_EXITING;
+	}
+	threadContext->state = THREAD_PAUSING;
+	if (!onThread) {
+		_waitUntilNotState(threadContext, THREAD_PAUSING);
+	}
+}
+
+static void _changeVideoSync(struct GBAThread* threadContext, bool frameOn) {
+	// Make sure the video thread can process events while the GBA thread is paused
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	if (frameOn != threadContext->sync.videoFrameOn) {
+		threadContext->sync.videoFrameOn = frameOn;
+		ConditionWake(&threadContext->sync.videoFrameAvailableCond);
+	}
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
 static THREAD_ENTRY _GBAThreadRun(void* context) {
@@ -119,14 +156,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		threadContext->startCallback(threadContext);
 	}
 
-	_changeState(threadContext, THREAD_RUNNING, 1);
+	_changeState(threadContext, THREAD_RUNNING, true);
 
 	while (threadContext->state < THREAD_EXITING) {
 		if (threadContext->debugger) {
 			struct ARMDebugger* debugger = threadContext->debugger;
 			ARMDebuggerRun(debugger);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
-				_changeState(threadContext, THREAD_EXITING, 0);
+				_changeState(threadContext, THREAD_EXITING, false);
 			}
 		} else {
 			while (threadContext->state == THREAD_RUNNING) {
@@ -158,7 +195,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	while (threadContext->state != THREAD_SHUTDOWN) {
-		_changeState(threadContext, THREAD_SHUTDOWN, 0);
+		_changeState(threadContext, THREAD_SHUTDOWN, false);
 	}
 
 	if (threadContext->cleanCallback) {
@@ -198,7 +235,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	// TODO: error check
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
-	threadContext->sync.videoFrameOn = 1;
+	threadContext->sync.videoFrameOn = true;
 	threadContext->sync.videoFrameSkip = 0;
 
 	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
@@ -309,6 +346,7 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
 	}
 	threadContext->state = THREAD_EXITING;
+	ConditionWake(&threadContext->stateCond);
 	MutexUnlock(&threadContext->stateMutex);
 	MutexLock(&threadContext->sync.audioBufferMutex);
 	threadContext->sync.audioWait = 0;
@@ -396,9 +434,7 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
 	}
 	ConditionWake(&threadContext->stateCond);
-	while (threadContext->state == THREAD_INTERRUPTING) {
-		ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
-	}
+	_waitUntilNotState(threadContext, THREAD_INTERRUPTING);
 	MutexUnlock(&threadContext->stateMutex);
 }
 
@@ -407,27 +443,19 @@ void GBAThreadContinue(struct GBAThread* threadContext) {
 }
 
 void GBAThreadPause(struct GBAThread* threadContext) {
-	int frameOn = 1;
+	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_RUNNING) {
-		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-			threadContext->debugger->state = DEBUGGER_EXITING;
-		}
-		threadContext->state = THREAD_PAUSING;
-		frameOn = 0;
+		_pauseThread(threadContext, false);
+		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
-	MutexLock(&threadContext->sync.videoFrameMutex);
-	if (frameOn != threadContext->sync.videoFrameOn) {
-		threadContext->sync.videoFrameOn = frameOn;
-		ConditionWake(&threadContext->sync.videoFrameAvailableCond);
-	}
-	MutexUnlock(&threadContext->sync.videoFrameMutex);
+
+	_changeVideoSync(threadContext, frameOn);
 }
 
 void GBAThreadUnpause(struct GBAThread* threadContext) {
-	int frameOn = 1;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
@@ -435,12 +463,8 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 		ConditionWake(&threadContext->stateCond);
 	}
 	MutexUnlock(&threadContext->stateMutex);
-	MutexLock(&threadContext->sync.videoFrameMutex);
-	if (frameOn != threadContext->sync.videoFrameOn) {
-		threadContext->sync.videoFrameOn = frameOn;
-		ConditionWake(&threadContext->sync.videoFrameAvailableCond);
-	}
-	MutexUnlock(&threadContext->sync.videoFrameMutex);
+
+	_changeVideoSync(threadContext, true);
 }
 
 bool GBAThreadIsPaused(struct GBAThread* threadContext) {
@@ -456,23 +480,29 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
-	if (threadContext->state == THREAD_PAUSED) {
+	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
 	} else if (threadContext->state == THREAD_RUNNING) {
-		if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-			threadContext->debugger->state = DEBUGGER_EXITING;
-		}
-		threadContext->state = THREAD_PAUSED;
+		_pauseThread(threadContext, false);
 		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
-	MutexLock(&threadContext->sync.videoFrameMutex);
-	if (frameOn != threadContext->sync.videoFrameOn) {
-		threadContext->sync.videoFrameOn = frameOn;
-		ConditionWake(&threadContext->sync.videoFrameAvailableCond);
+
+	_changeVideoSync(threadContext, frameOn);
+}
+
+void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
+	bool frameOn = true;
+	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
+	if (threadContext->state == THREAD_RUNNING) {
+		_pauseThread(threadContext, true);
+		frameOn = false;
 	}
-	MutexUnlock(&threadContext->sync.videoFrameMutex);
+	MutexUnlock(&threadContext->stateMutex);
+
+	_changeVideoSync(threadContext, frameOn);
 }
 
 #ifdef USE_PTHREADS

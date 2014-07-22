@@ -51,7 +51,7 @@ enum GBAKey GBASDLMapButtonToKey(int button) {
 
 static void _pauseAfterFrame(struct GBAThread* context) {
 	context->frameCallback = 0;
-	GBAThreadPause(context);
+	GBAThreadPauseFromThread(context);
 }
 
 static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
