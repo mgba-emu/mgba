@@ -84,8 +84,10 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		return;
 	case SDLK_ESCAPE:
 		GBAThreadInterrupt(context);
-		GBARRStopPlaying(context->gba->rr);
-		GBARRStopRecording(context->gba->rr);
+		if (context->gba->rr) {
+			GBARRStopPlaying(context->gba->rr);
+			GBARRStopRecording(context->gba->rr);
+		}
 		GBAThreadContinue(context);
 		return;
 	default:
@@ -111,22 +113,26 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBAThreadReset(context);
 					break;
 				case SDLK_t:
-					GBAThreadReset(context);
-					GBAThreadInterrupt(context);
-					GBARRContextCreate(context->gba);
-					GBARRSetStream(context->gba->rr, context->stateDir);
-					GBARRStopPlaying(context->gba->rr);
-					GBARRStartRecording(context->gba->rr);
-					GBAThreadContinue(context);
+					if (context->gba->rr) {
+						GBAThreadReset(context);
+						GBAThreadInterrupt(context);
+						GBARRContextCreate(context->gba);
+						GBARRSetStream(context->gba->rr, context->stateDir);
+						GBARRStopPlaying(context->gba->rr);
+						GBARRStartRecording(context->gba->rr);
+						GBAThreadContinue(context);
+					}
 					break;
 				case SDLK_y:
-					GBAThreadReset(context);
-					GBAThreadInterrupt(context);
-					GBARRContextCreate(context->gba);
-					GBARRSetStream(context->gba->rr, context->stateDir);
-					GBARRStopRecording(context->gba->rr);
-					GBARRStartPlaying(context->gba->rr, event->keysym.mod & KMOD_SHIFT);
-					GBAThreadContinue(context);
+					if (context->gba->rr) {
+						GBAThreadReset(context);
+						GBAThreadInterrupt(context);
+						GBARRContextCreate(context->gba);
+						GBARRSetStream(context->gba->rr, context->stateDir);
+						GBARRStopRecording(context->gba->rr);
+						GBARRStartPlaying(context->gba->rr, event->keysym.mod & KMOD_SHIFT);
+						GBAThreadContinue(context);
+					}
 					break;
 				default:
 					break;
