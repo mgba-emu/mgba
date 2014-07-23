@@ -68,11 +68,11 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioDeserialize(&gba->audio, state);
 }
 
-static struct VFile* _getStateVf(struct GBA* gba, int slot) {
+static struct VFile* _getStateVf(struct GBA* gba, int slot, bool write) {
 	char path[PATH_MAX];
 	path[PATH_MAX - 1] = '\0';
 	snprintf(path, PATH_MAX - 1, "%s.ss%d", gba->activeFile, slot);
-	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	struct VFile* vf = VFileOpen(path, write ? (O_CREAT | O_RDWR) : O_RDONLY);
 	if (vf) {
 		vf->truncate(vf, sizeof(struct GBASerializedState));
 	}
@@ -80,35 +80,27 @@ static struct VFile* _getStateVf(struct GBA* gba, int slot) {
 }
 
 bool GBASaveState(struct GBA* gba, int slot) {
-	struct VFile* vf = _getStateVf(gba, slot);
+	struct VFile* vf = _getStateVf(gba, slot, true);
 	if (!vf) {
 		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(vf);
+	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 	GBASerialize(gba, state);
-	GBAUnmapState(vf, state);
+	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 	vf->close(vf);
 	return true;
 }
 
 bool GBALoadState(struct GBA* gba, int slot) {
-	struct VFile* vf = _getStateVf(gba, slot);
+	struct VFile* vf = _getStateVf(gba, slot, false);
 	if (!vf) {
 		return false;
 	}
-	struct GBASerializedState* state = GBAMapState(vf);
+	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
 	GBADeserialize(gba, state);
-	GBAUnmapState(vf, state);
+	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 	vf->close(vf);
 	return true;
-}
-
-struct GBASerializedState* GBAMapState(struct VFile* vf) {
-	return vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
-}
-
-void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state) {
-	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

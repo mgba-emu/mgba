@@ -266,9 +266,6 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBASaveState(struct GBA* gba, int slot);
 bool GBALoadState(struct GBA* gba, int slot);
 
-struct GBASerializedState* GBAMapState(struct VFile* vf);
-void GBAUnmapState(struct VFile* vf, struct GBASerializedState* state);
-
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 
