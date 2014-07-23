@@ -12,6 +12,9 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+#define SDL_BINDING_KEY 0x53444C4B
+#define SDL_BINDING_BUTTON 0x53444C42
+
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return false;
@@ -21,6 +24,24 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
+
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_z, GBA_KEY_A);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_x, GBA_KEY_B);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 2, GBA_KEY_A);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 1, GBA_KEY_B);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 6, GBA_KEY_L);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 7, GBA_KEY_R);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 8, GBA_KEY_START);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 9, GBA_KEY_SELECT);
 	return true;
 }
 
@@ -29,64 +50,25 @@ void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 
-enum GBAKey GBASDLMapButtonToKey(int button) {
-	// Sorry, hardcoded to my gamepad for now
-	switch (button) {
-	case 2:
-		return GBA_KEY_A;
-	case 1:
-		return GBA_KEY_B;
-	case 6:
-		return GBA_KEY_L;
-	case 7:
-		return GBA_KEY_R;
-	case 8:
-		return GBA_KEY_START;
-	case 9:
-		return GBA_KEY_SELECT;
-	default:
-		return GBA_KEY_NONE;
-	}
-}
-
 static void _pauseAfterFrame(struct GBAThread* context) {
 	context->frameCallback = 0;
 	GBAThreadPauseFromThread(context);
 }
 
 static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
-	enum GBAKey key = 0;
+	enum GBAKey key = GBA_KEY_NONE;
+	if (!event->keysym.mod) {
+		key = GBAInputMapKey(&context->inputMap, SDL_BINDING_KEY, event->keysym.sym);
+	}
+	if (key != GBA_KEY_NONE) {
+		if (event->type == SDL_KEYDOWN) {
+			context->activeKeys |= 1 << key;
+		} else {
+			context->activeKeys &= ~(1 << key);
+		}
+		return;
+	}
 	switch (event->keysym.sym) {
-	case SDLK_z:
-		key = GBA_KEY_A;
-		break;
-	case SDLK_x:
-		key = GBA_KEY_B;
-		break;
-	case SDLK_a:
-		key = GBA_KEY_L;
-		break;
-	case SDLK_s:
-		key = GBA_KEY_R;
-		break;
-	case SDLK_RETURN:
-		key = GBA_KEY_START;
-		break;
-	case SDLK_BACKSPACE:
-		key = GBA_KEY_SELECT;
-		break;
-	case SDLK_UP:
-		key = GBA_KEY_UP;
-		break;
-	case SDLK_DOWN:
-		key = GBA_KEY_DOWN;
-		break;
-	case SDLK_LEFT:
-		key = GBA_KEY_LEFT;
-		break;
-	case SDLK_RIGHT:
-		key = GBA_KEY_RIGHT;
-		break;
 	case SDLK_F11:
 		if (event->type == SDL_KEYDOWN && context->debugger) {
 			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
@@ -192,17 +174,11 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		}
 		return;
 	}
-
-	if (event->type == SDL_KEYDOWN) {
-		context->activeKeys |= 1 << key;
-	} else {
-		context->activeKeys &= ~(1 << key);
-	}
 }
 
 static void _GBASDLHandleJoyButton(struct GBAThread* context, const struct SDL_JoyButtonEvent* event) {
 	enum GBAKey key = 0;
-	key = GBASDLMapButtonToKey(event->button);
+	key = GBAInputMapKey(&context->inputMap, SDL_BINDING_BUTTON, event->button);
 	if (key == GBA_KEY_NONE) {
 		return;
 	}

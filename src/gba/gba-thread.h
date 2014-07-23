@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include "gba.h"
+#include "gba-input.h"
 
 #include "util/threading.h"
 #include "platform/commandline.h"
@@ -56,6 +57,7 @@ struct GBAThread {
 	struct VFile* patch;
 	const char* fname;
 	int activeKeys;
+	struct GBAInputMap inputMap;
 
 	// Run-time options
 	int frameskip;

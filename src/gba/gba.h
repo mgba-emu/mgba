@@ -57,6 +57,7 @@ enum GBAKey {
 	GBA_KEY_DOWN = 7,
 	GBA_KEY_R = 8,
 	GBA_KEY_L = 9,
+	GBA_KEY_MAX,
 	GBA_KEY_NONE = -1
 };
 
