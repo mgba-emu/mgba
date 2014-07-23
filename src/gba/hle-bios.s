@@ -23,8 +23,18 @@ ldrb   r4, [lr, #-2]
 mov    r5, #swiTable
 ldr    r4, [r5, r4, lsl #2]
 cmp    r4, #0
+mrs    r5, spsr
+stmfd  sp!, {r5}
+and    r5, #0x80
+orr    r5, #0x1F
+msr    cpsr, r5
+stmfd  sp!, {lr}
 mov    lr, pc
 bxne   r4
+ldmfd  sp!, {lr}
+msr    cpsr, #0x93
+ldmfd  sp!, {r5}
+msr    spsr, r5
 ldmfd  sp!, {r4-r5, lr}
 movs   pc, lr
 
@@ -57,8 +67,6 @@ mov    r0, #1
 mov    r1, #1
 IntrWait:
 stmfd  sp!, {r2-r3, lr}
-mrs    r5, spsr
-msr    cpsr, #0x1F
 # Pull current interrupts enabled and add the ones we need
 mov    r4, #0x04000000
 # See if we want to return immediately
@@ -78,14 +86,10 @@ eorne  r3, r1
 strneh r3, [r4, #-8]
 strb   r2, [r4, #0x208]
 beq    0b
-msr    cpsr, #0x93
-msr    spsr, r5
 ldmfd  sp!, {r2-r3, pc}
 
 CpuSet:
 stmfd  sp!, {lr}
-mrs    r5, spsr
-msr    cpsr, #0x1F
 mov    r3, r2, lsl #12
 tst    r2, #0x01000000
 beq    0f
@@ -134,15 +138,10 @@ ldrlth r2, [r0], #2
 strlth r2, [r1], #2
 blt    2b
 3:
-msr    cpsr, #0x93
-msr    spsr, r5
 ldmfd  sp!, {pc}
 
 CpuFastSet:
-stmfd  sp!, {lr}
-mrs    r5, spsr
-msr    cpsr, #0x1F
-stmfd  sp!, {r4-r10}
+stmfd  sp!, {r4-r10, lr}
 tst    r2, #0x01000000
 mov    r3, r2, lsl #12
 add    r2, r1, r3, lsr #10
@@ -168,7 +167,4 @@ ldmltia r0!, {r3-r10}
 stmltia r1!, {r3-r10}
 blt    0b
 2:
-ldmfd  sp!, {r4-r10}
-msr    cpsr, #0x93
-msr    spsr, r5
-ldmfd  sp!, {pc}
+ldmfd  sp!, {r4-r10, pc}
