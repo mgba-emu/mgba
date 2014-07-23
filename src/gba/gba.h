@@ -65,8 +65,6 @@ struct GBARotationSource;
 struct Patch;
 struct VFile;
 
-typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
-
 struct GBA {
 	struct ARMComponent d;
 
@@ -108,7 +106,6 @@ struct GBA {
 	const char* activeFile;
 
 	int logLevel;
-	GBALogHandler logHandler;
 };
 
 struct GBACartridge {

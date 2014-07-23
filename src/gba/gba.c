@@ -537,16 +537,15 @@ void GBAHalt(struct GBA* gba) {
 }
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
-	if (!gba) {
-		struct GBAThread* threadContext = GBAThreadGetContext();
-		if (threadContext) {
+	struct GBAThread* threadContext = GBAThreadGetContext();
+	if (threadContext) {
+		if (!gba) {
 			gba = threadContext->gba;
 		}
-	}
-
-	if (gba && gba->logHandler) {
-		gba->logHandler(gba, level, format, args);
-		return;
+		if (threadContext->logHandler) {
+			threadContext->logHandler(threadContext, level, format, args);
+			return;
+		}
 	}
 
 	if (gba && !(level & gba->logLevel) && level != GBA_LOG_FATAL) {

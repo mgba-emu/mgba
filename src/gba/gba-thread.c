@@ -110,7 +110,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	pthread_sigmask(SIG_SETMASK, &signals, 0);
 #endif
 
-	gba.logHandler = threadContext->logHandler;
 	GBACreate(&gba);
 	ARMSetComponents(&cpu, &gba.d, numComponents, components);
 	ARMInit(&cpu);

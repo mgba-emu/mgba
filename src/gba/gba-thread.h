@@ -10,6 +10,7 @@
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -55,6 +56,8 @@ struct GBAThread {
 	struct VFile* patch;
 	const char* fname;
 	int activeKeys;
+
+	// Run-time options
 	int frameskip;
 	float fpsTarget;
 	size_t audioBuffers;
@@ -66,7 +69,7 @@ struct GBAThread {
 	Condition stateCond;
 	enum ThreadState savedState;
 
-	GBALogHandler logHandler;
+	LogHandler logHandler;
 	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
