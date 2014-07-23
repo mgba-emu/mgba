@@ -76,7 +76,7 @@ static void _ObjAffineSet(struct GBA* gba) {
 		sx = cpu->memory.load16(cpu, offset, 0) / 256.f;
 		sy = cpu->memory.load16(cpu, offset + 2, 0) / 256.f;
 		theta = (cpu->memory.loadU16(cpu, offset + 4, 0) >> 8) / 128.f * M_PI;
-		offset += 6;
+		offset += 8;
 		// Rotation
 		a = d = cosf(theta);
 		b = c = sinf(theta);
