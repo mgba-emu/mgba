@@ -95,6 +95,7 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
+	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;
 	struct GBARRContext* rr;

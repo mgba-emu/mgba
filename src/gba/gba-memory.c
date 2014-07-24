@@ -109,6 +109,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
+	if (cpu->currentPC == gba->busyLoop) {
+		GBAHalt(gba);
+	}
+
 	int newRegion = address >> BASE_OFFSET;
 	if (newRegion == memory->activeRegion) {
 		return;
