@@ -767,10 +767,6 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define COMPOSITE_256_NO_OBJWIN(BLEND) \
 	COMPOSITE_16_NO_OBJWIN(BLEND)
 
-
-#define COMPOSITE_16_NO_OBJWIN(BLEND) \
-	_composite ## BLEND ## NoObjwin(renderer, pixel, palette[pixelData] | flags, current);
-
 #define BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN) \
 	pixelData = tileData & 0xF; \
 	current = *pixel; \
