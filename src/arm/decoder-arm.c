@@ -103,7 +103,9 @@
 		info->affectsCPSR = S; \
 		SHIFTER; \
 		if (SKIPPED == 1) { \
-			info->operandFormat &= ~ARM_OPERAND_1; \
+			info->operandFormat >>= 8; \
+			info->op1 = info->op2; \
+			info->op2 = info->op3; \
 		} else if (SKIPPED == 2) { \
 			info->operandFormat &= ~ARM_OPERAND_2; \
 		} \
