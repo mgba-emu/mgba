@@ -1114,6 +1114,9 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			/* TODO: ensure tiles are properly aligned from this*/ \
 			end = renderer->end; \
 		} \
+		if (end == outX) { \
+			return; \
+		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \
 	} \
 	if (inX & 0x7 || (renderer->end - renderer->start) & 0x7) { \
