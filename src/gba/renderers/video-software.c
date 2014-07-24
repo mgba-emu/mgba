@@ -1094,6 +1094,17 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \
+	uint32_t* pixel = &renderer->row[outX]; \
+	if (background->mosaic && renderer->mosaic.bgH) { \
+		int mosaicH = renderer->mosaic.bgH + 1; \
+		int x; \
+		int mosaicWait = outX % mosaicH; \
+		int carryData = 0; \
+		paletteData = 0; /* Quiets compiler warning */ \
+		DRAW_BACKGROUND_MODE_0_MOSAIC_ ## BPP (BLEND, OBJWIN) \
+		return; \
+	} \
+	\
 	if (inX & 0x7) { \
 		int mod8 = inX & 0x7; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
@@ -1119,17 +1130,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		outX = renderer->start + tileX * 8 - (inX & 0x7); \
 	} \
 	\
-	uint32_t* pixel = &renderer->row[outX]; \
-	if (background->mosaic && renderer->mosaic.bgH) { \
-		int mosaicH = renderer->mosaic.bgH + 1; \
-		int x; \
-		int mosaicWait = outX % mosaicH; \
-		int carryData = 0; \
-		paletteData = 0; /* Quiets compiler warning */ \
-		DRAW_BACKGROUND_MODE_0_MOSAIC_ ## BPP (BLEND, OBJWIN) \
-		return; \
-	} \
-	\
+	pixel = &renderer->row[outX]; \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN)
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
