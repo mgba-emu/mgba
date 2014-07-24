@@ -12,6 +12,8 @@ static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 
@@ -20,6 +22,8 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.reset = GBAVideoDummyRendererReset,
 	.deinit = GBAVideoDummyRendererDeinit,
 	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
+	.writePalette = GBAVideoDummyRendererWritePalette,
+	.writeOAM = GBAVideoDummyRendererWriteOAM,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
 	.finishFrame = GBAVideoDummyRendererFinishFrame
 };
@@ -189,6 +193,19 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 	UNUSED(renderer);
 	UNUSED(address);
 	return value;
+}
+
+static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
+	UNUSED(renderer);
+	UNUSED(address);
+	UNUSED(value);
+	// Nothing to do
+}
+
+static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
+	// Nothing to do
 }
 
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
