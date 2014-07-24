@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-extern const size_t hleBiosLength;
 extern const uint8_t hleBios[];
 
 #endif
