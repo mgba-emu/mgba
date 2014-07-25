@@ -580,6 +580,7 @@ void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel leve
 
 	enum GBALogLevel gbaLevel;
 	switch (level) {
+	default: // Avoids compiler warning
 	case DEBUGGER_LOG_DEBUG:
 		gbaLevel = GBA_LOG_DEBUG;
 		break;
