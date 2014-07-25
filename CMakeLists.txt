@@ -20,6 +20,21 @@ include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+set(PGO_DIR "/tmp/gba-pgo/" CACHE PATH "Profiling-guided optimization profiles path")
+mark_as_advanced(PGO_DIR)
+set(PGO_PRE_FLAGS "-pg -fprofile-generate=${PGO_DIR}")
+set(PGO_POST_FLAGS "-fprofile-use=${PGO_DIR}")
+
+if(PGO_STAGE EQUAL 1)
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${PGO_PRE_FLAGS}")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${PGO_PRE_FLAGS}")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${PGO_PRE_FLAGS}")
+elseif(PGO_STAGE EQUAL 2)
+	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${PGO_POST_FLAGS}")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${PGO_POST_FLAGS}")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${PGO_POST_FLAGS}")
+endif()
+
 add_definitions(-DBINARY_NAME="${BINARY_NAME}" -DPROJECT_NAME="${PROJECT_NAME}")
 
 include(FindPkgConfig)
