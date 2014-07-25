@@ -85,7 +85,7 @@ endif()
 source_group("ARM debugger" FILES ${DEBUGGER_SRC})
 
 add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${VFS_SRC} ${OS_SRC})
-target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
+target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB} png)
 
 if(BUILD_SDL)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/sdl ${CMAKE_BINARY_DIR}/sdl)

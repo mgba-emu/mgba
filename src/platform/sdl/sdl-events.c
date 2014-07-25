@@ -5,6 +5,9 @@
 #include "gba-rr.h"
 #include "gba-serialize.h"
 #include "gba-video.h"
+#include "renderers/video-software.h"
+#include "util/png-io.h"
+#include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
 #define GUI_MOD KMOD_GUI
@@ -14,6 +17,8 @@
 
 #define SDL_BINDING_KEY 0x53444C4B
 #define SDL_BINDING_BUTTON 0x53444C42
+
+static void _takeScreenshot(struct GBAThread*, struct GBASDLEvents*);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
@@ -72,6 +77,13 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	case SDLK_F11:
 		if (event->type == SDL_KEYDOWN && context->debugger) {
 			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
+		}
+		return;
+	case SDLK_F12:
+		if (event->type == SDL_KEYDOWN) {
+			GBAThreadInterrupt(context);
+			_takeScreenshot(context, sdlContext);
+			GBAThreadContinue(context);
 		}
 		return;
 	case SDLK_TAB:
@@ -248,4 +260,13 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 	case SDL_JOYHATMOTION:
 		_GBASDLHandleJoyHat(context, &event->jhat);
 	}
+}
+
+static void _takeScreenshot(struct GBAThread* context, struct GBASDLEvents* sdlContext) {
+	struct VFile* vf = context->stateDir->openFile(context->stateDir, "screenshot.png", O_CREAT | O_WRONLY);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 256, sdlContext->renderer->outputBuffer);
+	PNGWriteClose(png, info);
+	vf->close(vf);
 }
