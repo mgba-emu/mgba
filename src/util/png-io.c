@@ -135,6 +135,37 @@ bool PNGIgnorePixels(png_structp png, png_infop info) {
 	return true;
 }
 
+bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+
+	uint8_t* pixelData = pixels;
+	unsigned pngHeight = png_get_image_height(png, info);
+	if (height > pngHeight) {
+		height = pngHeight;
+	}
+
+	unsigned pngWidth = png_get_image_width(png, info);
+	if (width > pngWidth) {
+		width = pngWidth;
+	}
+
+	unsigned i;
+	png_bytep row = malloc(png_get_rowbytes(png, info));
+	for (i = 0; i < height; ++i) {
+		png_read_row(png, row, 0);
+		unsigned x;
+		for (x = 0; x < width; ++x) {
+			pixelData[stride * i * 4 + x * 4] = row[x * 3];
+			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 1];
+			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 2];
+		}
+	}
+	free(row);
+	return true;
+}
+
 bool PNGReadFooter(png_structp png, png_infop end) {
 	if (setjmp(png_jmpbuf(png))) {
 		return false;

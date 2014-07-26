@@ -130,11 +130,15 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 		PNGReadClose(png, info, end);
 		return false;
 	}
+	uint32_t pixels[VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4];
+
 	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
 	PNGReadHeader(png, info);
-	PNGIgnorePixels(png, info);
+	PNGReadPixels(png, info, &pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
 	PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
+	gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
+	GBASyncPostFrame(gba->sync);
 	return true;
 }
 

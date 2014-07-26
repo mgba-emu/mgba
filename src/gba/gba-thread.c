@@ -535,6 +535,10 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 
 	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
 	if (thread->rewindBuffer) {
 		--thread->rewindBufferNext;
 		if (thread->rewindBufferNext <= 0) {
@@ -554,10 +558,12 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 
 	MutexLock(&sync->videoFrameMutex);
 	ConditionWake(&sync->videoFrameRequiredCond);
-	if (!sync->videoFrameOn) {
+	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	if (!sync->videoFramePending) {
+		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	}
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
 	return true;

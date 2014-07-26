@@ -185,6 +185,7 @@ struct GBAVideoRenderer {
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 
 	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+	void (*putPixels)(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
 
 	uint16_t* palette;
 	uint16_t* vram;

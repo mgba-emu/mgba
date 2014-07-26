@@ -23,6 +23,7 @@ bool isPNG(struct VFile* source);
 png_structp PNGReadOpen(struct VFile* source, unsigned offset);
 bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler, const char* chunkName);
 bool PNGReadHeader(png_structp png, png_infop info);
+bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width, unsigned height, unsigned stride);
 bool PNGIgnorePixels(png_structp png, png_infop info);
 bool PNGReadFooter(png_structp png, png_infop end);
 void PNGReadClose(png_structp png, png_infop info, png_infop end);
