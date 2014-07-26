@@ -5,6 +5,12 @@
 
 #include "gba-memory.h"
 
+#ifdef COLOR_16_BIT
+#define BYTES_PER_PIXEL 2
+#else
+#define BYTES_PER_PIXEL 4
+#endif
+
 enum {
 	VIDEO_CYCLES_PER_PIXEL = 4,
 
