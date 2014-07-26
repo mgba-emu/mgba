@@ -10,6 +10,14 @@ static void _pngWrite(png_structp png, png_bytep buffer, png_size_t size) {
 	}
 }
 
+static void _pngRead(png_structp png, png_bytep buffer, png_size_t size) {
+	struct VFile* vf = png_get_io_ptr(png);
+	size_t read = vf->read(vf, buffer, size);
+	if (read != size) {
+		png_error(png, "Could not read PNG");
+	}
+}
+
 png_structp PNGWriteOpen(struct VFile* source) {
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	if (!png) {
@@ -71,6 +79,70 @@ bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* d
 }
 
 void PNGWriteClose(png_structp png, png_infop info) {
-	png_write_end(png, info);
+	if (!setjmp(png_jmpbuf(png))) {
+		png_write_end(png, info);
+	}
 	png_destroy_write_struct(&png, &info);
+}
+
+bool isPNG(struct VFile* source) {
+	png_byte header[PNG_HEADER_BYTES];
+	source->read(source, header, PNG_HEADER_BYTES);
+	return !png_sig_cmp(header, 0, PNG_HEADER_BYTES);
+}
+
+png_structp PNGReadOpen(struct VFile* source, unsigned offset) {
+	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+	if (!png) {
+		return 0;
+	}
+	if (setjmp(png_jmpbuf(png))) {
+		png_destroy_read_struct(&png, 0, 0);
+		return 0;
+	}
+	png_set_read_fn(png, source, _pngRead);
+	png_set_sig_bytes(png, offset);
+	return png;
+}
+
+bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler, const char* chunkName) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+	png_set_read_user_chunk_fn(png, context, handler);
+	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_const_bytep) chunkName, 1);
+	return true;
+}
+
+bool PNGReadHeader(png_structp png, png_infop info) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+	png_read_info(png, info);
+	return true;
+}
+
+bool PNGIgnorePixels(png_structp png, png_infop info) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+
+	unsigned height = png_get_image_height(png, info);
+	unsigned i;
+	for (i = 0; i < height; ++i) {
+		png_read_row(png, 0, 0);
+	}
+	return true;
+}
+
+bool PNGReadFooter(png_structp png, png_infop end) {
+	if (setjmp(png_jmpbuf(png))) {
+		return false;
+	}
+	png_read_end(png, end);
+	return true;
+}
+
+void PNGReadClose(png_structp png, png_infop info, png_infop end) {
+	png_destroy_read_struct(&png, &info, &end);
 }

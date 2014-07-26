@@ -10,6 +10,7 @@
 #include "util/vfs.h"
 
 #include <fcntl.h>
+#include <png.h>
 #include <zlib.h>
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
@@ -110,6 +111,33 @@ static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	return state && png && info && buffer;
 }
 
+static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
+	if (strcmp((const char*) chunk->name, "gbAs") != 0) {
+		return 0;
+	}
+	struct GBASerializedState state;
+	uLongf len = sizeof(state);
+	uncompress((Bytef*) &state, &len, chunk->data, chunk->size);
+	GBADeserialize(png_get_user_chunk_ptr(png), &state);
+	return 1;
+}
+
+static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
+	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
+	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
+	PNGReadHeader(png, info);
+	PNGIgnorePixels(png, info);
+	PNGReadFooter(png, end);
+	PNGReadClose(png, info, end);
+	return true;
+}
+
 bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) {
 	struct VFile* vf = _getStateVf(gba, dir, slot, true);
 	if (!vf) {
@@ -133,9 +161,13 @@ bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot) {
 	if (!vf) {
 		return false;
 	}
-	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
-	GBADeserialize(gba, state);
-	vf->unmap(vf, state, sizeof(struct GBASerializedState));
+	if (!isPNG(vf)) {
+		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
+		GBADeserialize(gba, state);
+		vf->unmap(vf, state, sizeof(struct GBASerializedState));
+	} else {
+		_loadPNGState(gba, vf);
+	}
 	vf->close(vf);
 	return true;
 }

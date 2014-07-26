@@ -163,7 +163,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F9:
 				case SDLK_F10:
 					GBAThreadInterrupt(context);
-					GBASaveState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1, false);
+					GBASaveState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1, true);
 					GBAThreadContinue(context);
 					break;
 				default:
