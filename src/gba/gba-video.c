@@ -16,6 +16,7 @@ static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer,
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
+static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
 
 static struct GBAVideoRenderer dummyRenderer = {
 	.init = GBAVideoDummyRendererInit,
@@ -25,7 +26,8 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.writePalette = GBAVideoDummyRendererWritePalette,
 	.writeOAM = GBAVideoDummyRendererWriteOAM,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
-	.finishFrame = GBAVideoDummyRendererFinishFrame
+	.finishFrame = GBAVideoDummyRendererFinishFrame,
+	.getPixels = GBAVideoDummyRendererGetPixels
 };
 
 void GBAVideoInit(struct GBAVideo* video) {
@@ -218,6 +220,14 @@ static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) 
 	UNUSED(renderer);
 	// Nothing to do
 }
+
+static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels) {
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
+	// Nothing to do
+}
+
 
 void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);

@@ -18,7 +18,7 @@
 #define SDL_BINDING_KEY 0x53444C4B
 #define SDL_BINDING_BUTTON 0x53444C42
 
-static void _takeScreenshot(struct GBAThread*, struct GBASDLEvents*);
+static void _takeScreenshot(struct GBAThread*);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
@@ -82,7 +82,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	case SDLK_F12:
 		if (event->type == SDL_KEYDOWN) {
 			GBAThreadInterrupt(context);
-			_takeScreenshot(context, sdlContext);
+			_takeScreenshot(context);
 			GBAThreadContinue(context);
 		}
 		return;
@@ -262,11 +262,14 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 	}
 }
 
-static void _takeScreenshot(struct GBAThread* context, struct GBASDLEvents* sdlContext) {
+static void _takeScreenshot(struct GBAThread* context) {
+		unsigned stride;
+		void* pixels = 0;
 	struct VFile* vf = context->stateDir->openFile(context->stateDir, "screenshot.png", O_CREAT | O_WRONLY);
+	context->gba->video.renderer->getPixels(context->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 256, sdlContext->renderer->outputBuffer);
+	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
 	PNGWriteClose(png, info);
 	vf->close(vf);
 }

@@ -77,7 +77,6 @@ int main(int argc, char** argv) {
 	renderer.events.fullscreen = graphicsOpts.fullscreen;
 	renderer.events.windowUpdated = 0;
 #endif
-	renderer.events.renderer = &renderer.d;
 
 	if (!_GBASDLInit(&renderer)) {
 		freeOptions(&opts);
