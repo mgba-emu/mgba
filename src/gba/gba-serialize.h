@@ -258,13 +258,13 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
-struct VFile;
+struct VDir;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
 
-bool GBASaveState(struct GBA* gba, int slot);
-bool GBALoadState(struct GBA* gba, int slot);
+bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot);
+bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot);
 
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
