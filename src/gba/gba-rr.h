@@ -7,11 +7,21 @@ struct GBA;
 struct VDir;
 struct VFile;
 
+enum GBARRTag {
+	TAG_INVALID = 0x00,
+	TAG_INPUT = 0x01,
+	TAG_FRAME = 0x02,
+	TAG_LAG = 0x03,
+	TAG_BEGIN = 0x10,
+	TAG_END = 0x11,
+	TAG_PREVIOUSLY = 0x12,
+	TAG_NEXT_TIME = 0x13
+};
+
 struct GBARRContext {
 	// Playback state
 	bool isPlaying;
 	bool autorecord;
-	uint16_t nextInput;
 
 	// Recording state
 	bool isRecording;
@@ -23,7 +33,9 @@ struct GBARRContext {
 
 	// Streaming state
 	struct VDir* streamDir;
-	struct VFile* inputsStream;
+	struct VFile* movieStream;
+	uint16_t currentInput;
+	enum GBARRTag peekedTag;
 };
 
 void GBARRContextCreate(struct GBA*);
