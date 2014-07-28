@@ -122,7 +122,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					GBAThreadReset(context);
 					break;
 				case SDLK_t:
-					if (context->gba->rr) {
+					if (context->stateDir) {
 						GBAThreadReset(context);
 						GBAThreadInterrupt(context);
 						GBARRContextCreate(context->gba);
@@ -133,7 +133,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					}
 					break;
 				case SDLK_y:
-					if (context->gba->rr) {
+					if (context->stateDir) {
 						GBAThreadReset(context);
 						GBAThreadInterrupt(context);
 						GBARRContextCreate(context->gba);
