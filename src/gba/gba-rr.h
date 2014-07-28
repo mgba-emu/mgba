@@ -30,18 +30,22 @@ struct GBARRContext {
 	// Metadata
 	uint32_t frames;
 	uint32_t lagFrames;
+	uint32_t streamId;
 
 	// Streaming state
 	struct VDir* streamDir;
 	struct VFile* movieStream;
 	uint16_t currentInput;
 	enum GBARRTag peekedTag;
+	uint32_t nextTime;
 };
 
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
 
 bool GBARRSetStream(struct GBARRContext*, struct VDir*);
+bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
+uint32_t GBARRIncrementStream(struct GBARRContext*);
 
 bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);
 void GBARRStopPlaying(struct GBARRContext*);

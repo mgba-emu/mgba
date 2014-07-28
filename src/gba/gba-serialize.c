@@ -2,6 +2,7 @@
 
 #include "gba-audio.h"
 #include "gba-io.h"
+#include "gba-rr.h"
 #include "gba-thread.h"
 #include "gba-video.h"
 
@@ -35,6 +36,13 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
+
+	if (GBARRIsRecording(gba->rr)) {
+		state->associatedStreamId = gba->rr->streamId;
+		GBARRIncrementStream(gba->rr);
+	} else {
+		state->associatedStreamId = 0;
+	}
 }
 
 void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {

@@ -3,8 +3,6 @@
 #include "gba.h"
 #include "util/vfs.h"
 
-#define FILE_INPUTS "input.log"
-
 static enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf);
 static bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag);
 static bool _emitTag(struct GBARRContext* rr, struct VFile* vf, uint8_t tag);
@@ -32,7 +30,45 @@ bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
 	}
 	rr->streamDir = stream;
 	rr->movieStream = 0;
+	rr->streamId = 1;
 	return true;
+}
+
+bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
+	if (rr->movieStream && !rr->movieStream->close(rr->movieStream)) {
+		return false;
+	}
+	rr->movieStream = 0;
+	rr->streamId = streamId;
+	char buffer[14];
+	snprintf(buffer, sizeof(buffer), "%u.log", streamId);
+	if (GBARRIsRecording(rr)) {
+		rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_TRUNC | O_CREAT | O_WRONLY);
+	} else if (GBARRIsPlaying(rr)) {
+		rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
+		rr->peekedTag = TAG_INVALID;
+		if (!rr->movieStream || !_seekTag(rr, rr->movieStream, TAG_BEGIN)) {
+			GBARRStopPlaying(rr);
+		}
+	}
+	return true;
+}
+
+uint32_t GBARRIncrementStream(struct GBARRContext* rr) {
+	uint32_t newStreamId = rr->streamId + 1;
+	uint32_t oldStreamId = rr->streamId;
+	if (GBARRIsRecording(rr) && rr->movieStream) {
+		_emitTag(rr, rr->movieStream, TAG_END);
+		_emitTag(rr, rr->movieStream, TAG_NEXT_TIME);
+		rr->movieStream->write(rr->movieStream, &newStreamId, sizeof(newStreamId));
+	}
+	if (!GBARRLoadStream(rr, newStreamId)) {
+		return 0;
+	}
+	_emitTag(rr, rr->movieStream, TAG_PREVIOUSLY);
+	rr->movieStream->write(rr->movieStream, &oldStreamId, sizeof(oldStreamId));
+	_emitTag(rr, rr->movieStream, TAG_BEGIN);
+	return rr->streamId;
 }
 
 bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
@@ -40,7 +76,9 @@ bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 		return false;
 	}
 
-	rr->movieStream = rr->streamDir->openFile(rr->streamDir, FILE_INPUTS, O_RDONLY);
+	char buffer[14];
+	snprintf(buffer, sizeof(buffer), "%u.log", rr->streamId);
+	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
 	rr->autorecord = autorecord;
 	rr->peekedTag = TAG_INVALID;
 	_readTag(rr, rr->movieStream); // Discard the buffer
@@ -71,7 +109,9 @@ bool GBARRStartRecording(struct GBARRContext* rr) {
 		return false;
 	}
 
-	rr->movieStream = rr->streamDir->openFile(rr->streamDir, FILE_INPUTS, O_TRUNC | O_CREAT | O_WRONLY);
+	char buffer[14];
+	snprintf(buffer, sizeof(buffer), "%u.log", rr->streamId);
+	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_TRUNC | O_CREAT | O_WRONLY);
 	if (!_emitTag(rr, rr->movieStream, TAG_BEGIN)) {
 		rr->movieStream->close(rr->movieStream);
 		rr->movieStream = 0;
@@ -156,10 +196,14 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 	case TAG_INPUT:
 		vf->read(vf, &rr->currentInput, sizeof(uint16_t));
 		break;
+	case TAG_NEXT_TIME:
+		vf->read(vf, &rr->nextTime, sizeof(rr->nextTime));
+		break;
 	case TAG_FRAME:
 	case TAG_LAG:
 	case TAG_BEGIN:
 	case TAG_END:
+	case TAG_PREVIOUSLY:
 	case TAG_INVALID:
 		break;
 	}
@@ -176,7 +220,19 @@ bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag) {
 	enum GBARRTag readTag;
 	while ((readTag = _readTag(rr, vf)) != tag) {
 		if (readTag == TAG_END) {
-			return false;
+			if (rr->peekedTag == TAG_NEXT_TIME) {
+				while (_readTag(rr, vf) != TAG_END) {
+					if (!rr->nextTime) {
+						return false;
+					}
+				}
+				if (!rr->nextTime || !GBARRLoadStream(rr, rr->nextTime)) {
+					return false;
+				}
+				vf = rr->movieStream;
+			} else {
+				return false;
+			}
 		}
 	}
 	return true;

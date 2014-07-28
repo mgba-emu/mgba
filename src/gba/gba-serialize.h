@@ -139,7 +139,9 @@ const uint32_t GBA_SAVESTATE_MAGIC;
  *   | bit 0: Is read enabled
  *   | bit 1: Gyroscope sample is edge
  *   | bits 2 - 15: Reserved
- * 0x002C0 - 0x003FF: Reserved (leave zero)
+ * 0x002C0 - 0x002FF: Reserved (leave zero)
+ * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
+ * 0x00304 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -248,7 +250,11 @@ struct GBASerializedState {
 		unsigned reserved : 14;
 	} gpio;
 
-	uint32_t reserved[80];
+	uint32_t reservedGpio[16];
+
+	uint32_t associatedStreamId;
+
+	uint32_t reserved[63];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
