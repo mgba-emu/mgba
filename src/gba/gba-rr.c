@@ -38,6 +38,7 @@ bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
 	rr->streamDir = stream;
 	rr->movieStream = 0;
 	rr->streamId = 1;
+	rr->maxStreamId = 1;
 	return true;
 }
 
@@ -58,24 +59,31 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 			GBARRStopPlaying(rr);
 		}
 	}
+	rr->frames = 0;
+	rr->lagFrames = 0;
 	return true;
 }
 
-uint32_t GBARRIncrementStream(struct GBARRContext* rr) {
-	uint32_t newStreamId = rr->streamId + 1;
+bool GBARRIncrementStream(struct GBARRContext* rr) {
+	uint32_t newStreamId = rr->maxStreamId + 1;
 	uint32_t oldStreamId = rr->streamId;
 	if (GBARRIsRecording(rr) && rr->movieStream) {
 		_emitTag(rr, rr->movieStream, TAG_END);
+		_emitTag(rr, rr->movieStream, TAG_FRAME_COUNT);
+		rr->movieStream->write(rr->movieStream, &rr->frames, sizeof(rr->frames));
+		_emitTag(rr, rr->movieStream, TAG_LAG_COUNT);
+		rr->movieStream->write(rr->movieStream, &rr->lagFrames, sizeof(rr->lagFrames));
 		_emitTag(rr, rr->movieStream, TAG_NEXT_TIME);
 		rr->movieStream->write(rr->movieStream, &newStreamId, sizeof(newStreamId));
 	}
 	if (!GBARRLoadStream(rr, newStreamId)) {
-		return 0;
+		return false;
 	}
+	rr->maxStreamId = newStreamId;
 	_emitTag(rr, rr->movieStream, TAG_PREVIOUSLY);
 	rr->movieStream->write(rr->movieStream, &oldStreamId, sizeof(oldStreamId));
 	_emitTag(rr, rr->movieStream, TAG_BEGIN);
-	return rr->streamId;
+	return true;
 }
 
 bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {

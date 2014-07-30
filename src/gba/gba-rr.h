@@ -31,6 +31,7 @@ struct GBARRContext {
 	uint32_t frames;
 	uint32_t lagFrames;
 	uint32_t streamId;
+	uint32_t maxStreamId;
 
 	// Streaming state
 	struct VDir* streamDir;
@@ -45,7 +46,7 @@ void GBARRContextDestroy(struct GBA*);
 
 bool GBARRSetStream(struct GBARRContext*, struct VDir*);
 bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
-uint32_t GBARRIncrementStream(struct GBARRContext*);
+bool GBARRIncrementStream(struct GBARRContext*);
 
 bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);
 void GBARRStopPlaying(struct GBARRContext*);
