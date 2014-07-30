@@ -29,7 +29,9 @@ enum GBARRTag {
 
 	// User metadata tags
 	TAG_AUTHOR = 0x30,
-	TAG_COMMENT = 0x31
+	TAG_COMMENT = 0x31,
+
+	TAG_EOF = INT_MAX
 };
 
 struct GBARRContext {
