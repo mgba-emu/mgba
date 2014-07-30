@@ -263,6 +263,7 @@ bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag) {
 	enum GBARRTag readTag;
 	while ((readTag = _readTag(rr, vf)) != tag) {
 		if (readTag == TAG_END) {
+			rr->nextTime = 0;
 			while (_readTag(rr, vf) != TAG_EOF);
 			if (!rr->nextTime || !GBARRLoadStream(rr, rr->nextTime)) {
 				return false;
