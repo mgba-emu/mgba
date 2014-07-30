@@ -20,6 +20,13 @@ void GBARRContextDestroy(struct GBA* gba) {
 		return;
 	}
 
+	if (GBARRIsPlaying(gba->rr)) {
+		GBARRStopPlaying(gba->rr);
+	}
+	if (GBARRIsRecording(gba->rr)) {
+		GBARRStopRecording(gba->rr);
+	}
+
 	free(gba->rr);
 	gba->rr = 0;
 }
