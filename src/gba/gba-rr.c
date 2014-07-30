@@ -208,6 +208,10 @@ uint16_t GBARRQueryInput(struct GBARRContext* rr) {
 }
 
 enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
+	if (!rr || !vf) {
+		return TAG_EOF;
+	}
+
 	enum GBARRTag tag = rr->peekedTag;
 	switch (tag) {
 	case TAG_INPUT:
