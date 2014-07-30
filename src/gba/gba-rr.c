@@ -211,14 +211,34 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 	case TAG_INPUT:
 		vf->read(vf, &rr->currentInput, sizeof(uint16_t));
 		break;
+	case TAG_PREVIOUSLY:
+		vf->read(vf, &rr->previously, sizeof(rr->previously));
+		break;
 	case TAG_NEXT_TIME:
 		vf->read(vf, &rr->nextTime, sizeof(rr->nextTime));
 		break;
+	case TAG_MAX_STREAM:
+		vf->read(vf, &rr->maxStreamId, sizeof(rr->maxStreamId));
+		break;
+	case TAG_FRAME_COUNT:
+		vf->read(vf, &rr->frames, sizeof(rr->frames));
+		break;
+	case TAG_LAG_COUNT:
+		vf->read(vf, &rr->lagFrames, sizeof(rr->lagFrames));
+		break;
+
+	// To be spec'd
+	case TAG_RR_COUNT:
+	case TAG_INIT_TYPE:
+	case TAG_AUTHOR:
+	case TAG_COMMENT:
+		break;
+
+	// Empty markers
 	case TAG_FRAME:
 	case TAG_LAG:
 	case TAG_BEGIN:
 	case TAG_END:
-	case TAG_PREVIOUSLY:
 	case TAG_INVALID:
 		break;
 	}
