@@ -78,6 +78,14 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
+
+	if (GBARRIsRecording(gba->rr)) {
+		GBARRLoadStream(gba->rr, state->associatedStreamId);
+		GBARRIncrementStream(gba->rr);
+	} else if (GBARRIsPlaying(gba->rr)) {
+		GBARRLoadStream(gba->rr, state->associatedStreamId);
+		GBARRSkipSegment(gba->rr);
+	}
 }
 
 static struct VFile* _getStateVf(struct GBA* gba, struct VDir* dir, int slot, bool write) {
