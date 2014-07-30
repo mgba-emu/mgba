@@ -101,7 +101,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		return;
 	default:
 		if (event->type == SDL_KEYDOWN) {
-			if (event->keysym.mod & GUI_MOD) {
+			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 				case SDLK_f:
