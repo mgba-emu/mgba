@@ -94,8 +94,12 @@ bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 	}
 
 	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u.log", rr->streamId);
+	snprintf(buffer, sizeof(buffer), "%u" BINEXT, rr->streamId);
 	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
+	if (!rr->movieStream) {
+		return false;
+	}
+
 	rr->autorecord = autorecord;
 	rr->peekedTag = TAG_INVALID;
 	_readTag(rr, rr->movieStream); // Discard the buffer
@@ -127,7 +131,7 @@ bool GBARRStartRecording(struct GBARRContext* rr) {
 	}
 
 	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u.log", rr->streamId);
+	snprintf(buffer, sizeof(buffer), "%u" BINEXT, rr->streamId);
 	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_TRUNC | O_CREAT | O_WRONLY);
 	if (!_emitTag(rr, rr->movieStream, TAG_BEGIN)) {
 		rr->movieStream->close(rr->movieStream);
