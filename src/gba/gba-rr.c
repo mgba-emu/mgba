@@ -41,7 +41,7 @@ void GBARRContextDestroy(struct GBA* gba) {
 	gba->rr = 0;
 }
 
-bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
+bool GBARRInitStream(struct GBARRContext* rr, struct VDir* stream) {
 	if (rr->movieStream && !rr->movieStream->close(rr->movieStream)) {
 		return false;
 	}
@@ -54,13 +54,34 @@ bool GBARRSetStream(struct GBARRContext* rr, struct VDir* stream) {
 	rr->metadataFile = rr->streamDir->openFile(rr->streamDir, METADATA_FILENAME, O_CREAT | O_RDWR);
 	if (!_parseMetadata(rr, rr->metadataFile)) {
 		rr->metadataFile->close(rr->metadataFile);
-		rr->streamDir = 0;
 		rr->metadataFile = 0;
+		rr->maxStreamId = 1;
+	}
+	rr->streamId = 1;
+	rr->movieStream = 0;
+	return true;
+}
+
+bool GBARRReinitStream(struct GBARRContext* rr, enum GBARRInitFrom initFrom) {
+	if (!rr) {
 		return false;
 	}
-	rr->movieStream = 0;
+
+	if (rr->metadataFile) {
+		rr->metadataFile->truncate(rr->metadataFile, 0);
+	} else {
+		rr->metadataFile = rr->streamDir->openFile(rr->streamDir, METADATA_FILENAME, O_CREAT | O_TRUNC | O_RDWR);
+	}
+	_emitMagic(rr, rr->metadataFile);
+
+	rr->initFrom = initFrom;
+	rr->initFromOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
+	_emitTag(rr, rr->metadataFile, TAG_INIT | initFrom);
+
 	rr->streamId = 1;
 	rr->maxStreamId = 1;
+	rr->maxStreamIdOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
+	_emitTag(rr, rr->metadataFile, 1);
 	return true;
 }
 
@@ -315,9 +336,20 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 		vf->read(vf, &rr->lagFrames, sizeof(rr->lagFrames));
 		break;
 
+	case TAG_INIT_EX_NIHILO:
+		rr->initFrom = INIT_EX_NIHILO;
+		break;
+	case TAG_INIT_FROM_SAVEGAME:
+		rr->initFrom = INIT_FROM_SAVEGAME;
+		break;
+	case TAG_INIT_FROM_SAVESTATE:
+		rr->initFrom = INIT_FROM_SAVESTATE;
+	case TAG_INIT_FROM_BOTH:
+		rr->initFrom = INIT_FROM_BOTH;
+		break;
+
 	// To be spec'd
 	case TAG_RR_COUNT:
-	case TAG_INIT_TYPE:
 	case TAG_AUTHOR:
 	case TAG_COMMENT:
 		break;
@@ -362,9 +394,22 @@ bool _emitTag(struct GBARRContext* rr, struct VFile* vf, uint8_t tag) {
 }
 
 bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf) {
+	if (!_verifyMagic(rr, vf)) {
+		return false;
+	}
 	while (_readTag(rr, vf) != TAG_EOF) {
-		if (rr->peekedTag == TAG_MAX_STREAM) {
+		switch (rr->peekedTag) {
+		case TAG_MAX_STREAM:
 			rr->maxStreamIdOffset = vf->seek(vf, 0, SEEK_CUR);
+			break;
+		case TAG_INIT_EX_NIHILO:
+		case TAG_INIT_FROM_SAVEGAME:
+		case TAG_INIT_FROM_SAVESTATE:
+		case TAG_INIT_FROM_BOTH:
+			rr->initFromOffset = vf->seek(vf, 0, SEEK_CUR);
+			break;
+		default:
+			break;
 		}
 	}
 	rr->maxStreamIdOffset = vf->seek(vf, 0, SEEK_SET);

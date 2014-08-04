@@ -7,6 +7,13 @@ struct GBA;
 struct VDir;
 struct VFile;
 
+enum GBARRInitFrom {
+	INIT_EX_NIHILO = 0,
+	INIT_FROM_SAVEGAME = 1,
+	INIT_FROM_SAVESTATE = 2,
+	INIT_FROM_BOTH = 3,
+};
+
 enum GBARRTag {
 	// Playback tags
 	TAG_INVALID = 0x00,
@@ -25,7 +32,11 @@ enum GBARRTag {
 	TAG_FRAME_COUNT = 0x20,
 	TAG_LAG_COUNT = 0x21,
 	TAG_RR_COUNT = 0x22,
-	TAG_INIT_TYPE = 0x23,
+	TAG_INIT = 0x24,
+	TAG_INIT_EX_NIHILO = 0x24 | INIT_EX_NIHILO,
+	TAG_INIT_FROM_SAVEGAME = 0x24 | INIT_FROM_SAVEGAME,
+	TAG_INIT_FROM_SAVESTATE = 0x24 | INIT_FROM_SAVESTATE,
+	TAG_INIT_FROM_BOTH = 0x24 | INIT_FROM_BOTH,
 
 	// User metadata tags
 	TAG_AUTHOR = 0x30,
@@ -47,8 +58,12 @@ struct GBARRContext {
 	uint32_t frames;
 	uint32_t lagFrames;
 	uint32_t streamId;
+
 	uint32_t maxStreamId;
 	off_t maxStreamIdOffset;
+
+	enum GBARRInitFrom initFrom;
+	off_t initFromOffset;
 
 	// Streaming state
 	struct VDir* streamDir;
@@ -63,7 +78,8 @@ struct GBARRContext {
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
 
-bool GBARRSetStream(struct GBARRContext*, struct VDir*);
+bool GBARRInitStream(struct GBARRContext*, struct VDir*);
+bool GBARRReinitStream(struct GBARRContext*, enum GBARRInitFrom);
 bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
 bool GBARRIncrementStream(struct GBARRContext*);
 bool GBARRSkipSegment(struct GBARRContext*);
