@@ -213,6 +213,9 @@ void GBARRNextFrame(struct GBARRContext* rr) {
 
 		rr->inputThisFrame = false;
 	} else {
+		if (rr->peekedTag == TAG_INPUT) {
+			GBALog(0, GBA_LOG_WARN, "RR desync detected!");
+		}
 		if (!_seekTag(rr, rr->movieStream, TAG_FRAME)) {
 			uint32_t endStreamId = rr->streamId;
 			GBARRStopPlaying(rr);
