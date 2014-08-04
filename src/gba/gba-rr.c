@@ -41,6 +41,18 @@ void GBARRContextDestroy(struct GBA* gba) {
 	gba->rr = 0;
 }
 
+void GBARRAlterSavedata(struct GBA* gba) {
+	if (!gba || !gba->rr) {
+		return;
+	}
+
+	if (gba->rr->initFrom & INIT_FROM_SAVEGAME) {
+		// TOOD
+	} else {
+		GBASavedataMask(&gba->memory.savedata, 0);
+	}
+}
+
 bool GBARRInitStream(struct GBARRContext* rr, struct VDir* stream) {
 	if (rr->movieStream && !rr->movieStream->close(rr->movieStream)) {
 		return false;

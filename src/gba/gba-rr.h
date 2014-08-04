@@ -77,6 +77,7 @@ struct GBARRContext {
 
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
+void GBARRAlterSavedata(struct GBA*);
 
 bool GBARRInitStream(struct GBARRContext*, struct VDir*);
 bool GBARRReinitStream(struct GBARRContext*, enum GBARRInitFrom);

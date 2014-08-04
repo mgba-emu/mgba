@@ -71,6 +71,7 @@ struct GBASavedata {
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);

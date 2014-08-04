@@ -128,9 +128,10 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 						GBARRContextCreate(context->gba);
 						if (!GBARRIsRecording(context->gba->rr)) {
 							GBARRInitStream(context->gba->rr, context->stateDir);
-							GBARRReinitStream(context->gba->rr, INIT_FROM_SAVEGAME);
+							GBARRReinitStream(context->gba->rr, INIT_EX_NIHILO);
 							GBARRStopPlaying(context->gba->rr);
 							GBARRStartRecording(context->gba->rr);
+							GBARRAlterSavedata(context->gba);
 						}
 						GBAThreadContinue(context);
 					}
@@ -142,7 +143,11 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 						GBARRContextCreate(context->gba);
 						GBARRInitStream(context->gba->rr, context->stateDir);
 						GBARRStopRecording(context->gba->rr);
-						GBARRStartPlaying(context->gba->rr, event->keysym.mod & KMOD_SHIFT);
+						GBARRStartPlaying(context->gba->rr, false);
+						if (context->gba->rr->initFrom & INIT_FROM_SAVESTATE) {
+							// TODO
+						}
+						GBARRAlterSavedata(context->gba);
 						GBAThreadContinue(context);
 					}
 					break;

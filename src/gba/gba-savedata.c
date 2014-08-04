@@ -60,6 +60,11 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 	savedata->type = SAVEDATA_NONE;
 }
 
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
+	GBASavedataDeinit(savedata);
+	GBASavedataInit(savedata, vf);
+}
+
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_NONE) {
 		savedata->type = SAVEDATA_FLASH512;
