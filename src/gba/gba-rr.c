@@ -3,9 +3,12 @@
 #include "gba.h"
 #include "util/vfs.h"
 
-#define BINEXT ".dat"
-#define METADATA_FILENAME "metadata" BINEXT
+#define BINARY_EXT ".dat"
+#define BINARY_MAGIC "GBAb"
+#define METADATA_FILENAME "metadata" BINARY_EXT
 
+static bool _emitMagic(struct GBARRContext* rr, struct VFile* vf);
+static bool _verifyMagic(struct GBARRContext* rr, struct VFile* vf);
 static enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf);
 static bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag);
 static bool _emitTag(struct GBARRContext* rr, struct VFile* vf, uint8_t tag);
@@ -68,7 +71,7 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 	rr->movieStream = 0;
 	rr->streamId = streamId;
 	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u" BINEXT, streamId);
+	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, streamId);
 	if (GBARRIsRecording(rr)) {
 		int flags = O_CREAT | O_WRONLY;
 		if (streamId > rr->maxStreamId) {
@@ -80,7 +83,7 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 	} else if (GBARRIsPlaying(rr)) {
 		rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
 		rr->peekedTag = TAG_INVALID;
-		if (!rr->movieStream || !_seekTag(rr, rr->movieStream, TAG_BEGIN)) {
+		if (!rr->movieStream || !_verifyMagic(rr, rr->movieStream) || !_seekTag(rr, rr->movieStream, TAG_BEGIN)) {
 			GBARRStopPlaying(rr);
 		}
 	}
@@ -104,6 +107,7 @@ bool GBARRIncrementStream(struct GBARRContext* rr) {
 	if (!GBARRLoadStream(rr, newStreamId)) {
 		return false;
 	}
+	_emitMagic(rr, rr->movieStream);
 	rr->maxStreamId = newStreamId;
 	_emitTag(rr, rr->movieStream, TAG_PREVIOUSLY);
 	rr->movieStream->write(rr->movieStream, &oldStreamId, sizeof(oldStreamId));
@@ -120,13 +124,16 @@ bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 	}
 
 	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u" BINEXT, rr->streamId);
+	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, rr->streamId);
 	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
 	if (!rr->movieStream) {
 		return false;
 	}
 
 	rr->autorecord = autorecord;
+	if (!_verifyMagic(rr, rr->movieStream)) {
+		return false;
+	}
 	rr->peekedTag = TAG_INVALID;
 	_readTag(rr, rr->movieStream); // Discard the buffer
 	enum GBARRTag tag = _readTag(rr, rr->movieStream);
@@ -157,8 +164,12 @@ bool GBARRStartRecording(struct GBARRContext* rr) {
 	}
 
 	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u" BINEXT, rr->streamId);
+	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, rr->streamId);
 	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_TRUNC | O_CREAT | O_WRONLY);
+	if (!rr->movieStream) {
+		return false;
+	}
+	_emitMagic(rr, rr->movieStream);
 	if (!_emitTag(rr, rr->movieStream, TAG_BEGIN)) {
 		rr->movieStream->close(rr->movieStream);
 		rr->movieStream = 0;
@@ -256,6 +267,23 @@ bool GBARRSkipSegment(struct GBARRContext* rr) {
 	rr->nextTime = 0;
 	while (_readTag(rr, rr->movieStream) != TAG_EOF);
 	if (!rr->nextTime || !GBARRLoadStream(rr, rr->nextTime)) {
+		return false;
+	}
+	return true;
+}
+
+bool _emitMagic(struct GBARRContext* rr, struct VFile* vf) {
+	UNUSED(rr);
+	return vf->write(vf, BINARY_MAGIC, 4) == 4;
+}
+
+bool _verifyMagic(struct GBARRContext* rr, struct VFile* vf) {
+	UNUSED(rr);
+	char buffer[4];
+	if (vf->read(vf, buffer, sizeof(buffer)) != sizeof(buffer)) {
+		return false;
+	}
+	if (memcmp(buffer, BINARY_MAGIC, sizeof(buffer)) != 0) {
 		return false;
 	}
 	return true;
