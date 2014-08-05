@@ -18,6 +18,7 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
+	savedata->realVf = vf;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
@@ -57,12 +58,18 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 			break;
 		}
 	}
+	savedata->data = 0;
 	savedata->type = SAVEDATA_NONE;
 }
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
 	GBASavedataDeinit(savedata);
-	GBASavedataInit(savedata, vf);
+	savedata->vf = vf;
+}
+
+void GBASavedataUnmask(struct GBASavedata* savedata) {
+	GBASavedataDeinit(savedata);
+	savedata->vf = savedata->realVf;
 }
 
 void GBASavedataInitFlash(struct GBASavedata* savedata) {

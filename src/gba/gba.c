@@ -187,6 +187,9 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
+	if (!GBARRIsPlaying(gba->rr) && !GBARRIsRecording(gba->rr)) {
+		GBASavedataUnmask(&gba->memory.savedata);
+	}
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
 	GBAAudioReset(&gba->audio);
