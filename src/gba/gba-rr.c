@@ -1,6 +1,7 @@
 #include "gba-rr.h"
 
 #include "gba.h"
+#include "gba-serialize.h"
 #include "util/vfs.h"
 
 #define BINARY_EXT ".dat"
@@ -13,6 +14,9 @@ static enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf);
 static bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag);
 static bool _emitTag(struct GBARRContext* rr, struct VFile* vf, uint8_t tag);
 static bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf);
+
+static struct VFile* _openSavedata(struct GBARRContext* rr, int flags);
+static struct VFile* _openSavestate(struct GBARRContext* rr, int flags);
 
 void GBARRContextCreate(struct GBA* gba) {
 	if (gba->rr) {
@@ -36,20 +40,62 @@ void GBARRContextDestroy(struct GBA* gba) {
 	if (gba->rr->metadataFile) {
 		gba->rr->metadataFile->close(gba->rr->metadataFile);
 	}
+	if (gba->rr->savedata) {
+		gba->rr->savedata->close(gba->rr->savedata);
+	}
 
 	free(gba->rr);
 	gba->rr = 0;
 }
 
-void GBARRAlterSavedata(struct GBA* gba) {
+void GBARRSaveState(struct GBA* gba) {
 	if (!gba || !gba->rr) {
 		return;
 	}
 
 	if (gba->rr->initFrom & INIT_FROM_SAVEGAME) {
-		// TOOD
+		if (gba->rr->savedata) {
+			gba->rr->savedata->close(gba->rr->savedata);
+		}
+		gba->rr->savedata = _openSavedata(gba->rr, O_TRUNC | O_CREAT | O_WRONLY);
+		GBASavedataClone(&gba->memory.savedata, gba->rr->savedata);
+		gba->rr->savedata->close(gba->rr->savedata);
+		gba->rr->savedata = _openSavedata(gba->rr, O_RDONLY);
+		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata);
 	} else {
 		GBASavedataMask(&gba->memory.savedata, 0);
+	}
+
+	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
+		struct VFile* vf = _openSavestate(gba->rr, O_TRUNC | O_CREAT | O_RDWR);
+		GBASaveStateNamed(gba, vf, false);
+		vf->close(vf);
+	} else {
+		ARMReset(gba->cpu);
+	}
+}
+
+void GBARRLoadState(struct GBA* gba) {
+	if (!gba || !gba->rr) {
+		return;
+	}
+
+	if (gba->rr->initFrom & INIT_FROM_SAVEGAME) {
+		if (gba->rr->savedata) {
+			gba->rr->savedata->close(gba->rr->savedata);
+		}
+		gba->rr->savedata = _openSavedata(gba->rr, O_RDONLY);
+		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata);
+	} else {
+		GBASavedataMask(&gba->memory.savedata, 0);
+	}
+
+	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
+		struct VFile* vf = _openSavestate(gba->rr, O_RDONLY);
+		GBALoadStateNamed(gba, vf);
+		vf->close(vf);
+	} else {
+		ARMReset(gba->cpu);
 	}
 }
 
@@ -426,4 +472,12 @@ bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf) {
 	}
 	rr->maxStreamIdOffset = vf->seek(vf, 0, SEEK_SET);
 	return true;
+}
+
+struct VFile* _openSavedata(struct GBARRContext* rr, int flags) {
+	return rr->streamDir->openFile(rr->streamDir, "movie.sav", flags);
+}
+
+struct VFile* _openSavestate(struct GBARRContext* rr, int flags) {
+	return rr->streamDir->openFile(rr->streamDir, "movie.ssm", flags);
 }

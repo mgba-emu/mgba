@@ -65,6 +65,8 @@ struct GBARRContext {
 	enum GBARRInitFrom initFrom;
 	off_t initFromOffset;
 
+	struct VFile* savedata;
+
 	// Streaming state
 	struct VDir* streamDir;
 	struct VFile* metadataFile;
@@ -77,7 +79,8 @@ struct GBARRContext {
 
 void GBARRContextCreate(struct GBA*);
 void GBARRContextDestroy(struct GBA*);
-void GBARRAlterSavedata(struct GBA*);
+void GBARRSaveState(struct GBA*);
+void GBARRLoadState(struct GBA*);
 
 bool GBARRInitStream(struct GBARRContext*, struct VDir*);
 bool GBARRReinitStream(struct GBARRContext*, enum GBARRInitFrom);

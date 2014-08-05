@@ -72,6 +72,32 @@ void GBASavedataUnmask(struct GBASavedata* savedata) {
 	savedata->vf = savedata->realVf;
 }
 
+bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
+	if (savedata->data) {
+		switch (savedata->type) {
+		case SAVEDATA_SRAM:
+			return out->write(out, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
+		case SAVEDATA_FLASH512:
+			return out->write(out, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
+		case SAVEDATA_FLASH1M:
+			return out->write(out, savedata->data, SIZE_CART_FLASH1M) == SIZE_CART_FLASH1M;
+		case SAVEDATA_EEPROM:
+			return out->write(out, savedata->data, SIZE_CART_EEPROM) == SIZE_CART_EEPROM;
+		case SAVEDATA_NONE:
+			return true;
+		}
+	} else if (savedata->vf) {
+		off_t read = 0;
+		uint8_t buffer[2048];
+		do {
+			read = savedata->vf->read(savedata->vf, buffer, sizeof(buffer));
+			out->write(out, buffer, read);
+		} while (read == sizeof(buffer));
+		return read >= 0;
+	}
+	return true;
+}
+
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_NONE) {
 		savedata->type = SAVEDATA_FLASH512;
