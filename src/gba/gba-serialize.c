@@ -163,15 +163,7 @@ bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) 
 	if (!vf) {
 		return false;
 	}
-	bool success = true;
-	if (!screenshot) {
-		vf->truncate(vf, sizeof(struct GBASerializedState));
-		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
-		GBASerialize(gba, state);
-		vf->unmap(vf, state, sizeof(struct GBASerializedState));
-	} else {
-		_savePNGState(gba, vf);
-	}
+	bool success = GBASaveStateNamed(gba, vf, screenshot);
 	vf->close(vf);
 	return success;
 }
@@ -181,14 +173,37 @@ bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot) {
 	if (!vf) {
 		return false;
 	}
+	bool success = GBALoadStateNamed(gba, vf);
+	vf->close(vf);
+	return success;
+}
+
+bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
+	if (!screenshot) {
+		vf->truncate(vf, sizeof(struct GBASerializedState));
+		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
+		if (!state) {
+			return false;
+		}
+		GBASerialize(gba, state);
+		vf->unmap(vf, state, sizeof(struct GBASerializedState));
+	} else {
+		return _savePNGState(gba, vf);
+	}
+	return true;
+}
+
+bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
 	if (!isPNG(vf)) {
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
+		if (!state) {
+			return false;
+		}
 		GBADeserialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 	} else {
-		_loadPNGState(gba, vf);
+		return _loadPNGState(gba, vf);
 	}
-	vf->close(vf);
 	return true;
 }
 
