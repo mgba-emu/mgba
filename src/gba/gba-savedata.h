@@ -57,6 +57,8 @@ struct GBASavedata {
 	uint8_t* data;
 	enum SavedataCommand command;
 	struct VFile* vf;
+
+	int mapMode;
 	struct VFile* realVf;
 
 	int readBitsRemaining;
