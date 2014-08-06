@@ -85,7 +85,8 @@ void GBARRLoadState(struct GBA*);
 bool GBARRInitStream(struct GBARRContext*, struct VDir*);
 bool GBARRReinitStream(struct GBARRContext*, enum GBARRInitFrom);
 bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
-bool GBARRIncrementStream(struct GBARRContext*);
+bool GBARRIncrementStream(struct GBARRContext*, bool recursive);
+bool GBARRFinishSegment(struct GBARRContext*);
 bool GBARRSkipSegment(struct GBARRContext*);
 
 bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);

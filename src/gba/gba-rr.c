@@ -13,7 +13,11 @@ static bool _verifyMagic(struct GBARRContext* rr, struct VFile* vf);
 static enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf);
 static bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag);
 static bool _emitTag(struct GBARRContext* rr, struct VFile* vf, uint8_t tag);
+static bool _emitEnd(struct GBARRContext* rr, struct VFile* vf);
+
 static bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf);
+
+static bool _markStreamNext(struct GBARRContext* rr, uint32_t newStreamId, bool recursive);
 
 static struct VFile* _openSavedata(struct GBARRContext* rr, int flags);
 static struct VFile* _openSavestate(struct GBARRContext* rr, int flags);
@@ -113,7 +117,7 @@ bool GBARRInitStream(struct GBARRContext* rr, struct VDir* stream) {
 	if (!_parseMetadata(rr, rr->metadataFile)) {
 		rr->metadataFile->close(rr->metadataFile);
 		rr->metadataFile = 0;
-		rr->maxStreamId = 1;
+		rr->maxStreamId = 0;
 	}
 	rr->streamId = 1;
 	rr->movieStream = 0;
@@ -136,8 +140,8 @@ bool GBARRReinitStream(struct GBARRContext* rr, enum GBARRInitFrom initFrom) {
 	rr->initFromOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
 	_emitTag(rr, rr->metadataFile, TAG_INIT | initFrom);
 
-	rr->streamId = 1;
-	rr->maxStreamId = 1;
+	rr->streamId = 0;
+	rr->maxStreamId = 0;
 	rr->maxStreamIdOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
 	_emitTag(rr, rr->metadataFile, 1);
 	return true;
@@ -152,11 +156,9 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 	char buffer[14];
 	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, streamId);
 	if (GBARRIsRecording(rr)) {
-		int flags = O_CREAT | O_WRONLY;
+		int flags = O_CREAT | O_RDWR;
 		if (streamId > rr->maxStreamId) {
 			flags |= O_TRUNC;
-		} else {
-			flags |= O_APPEND;
 		}
 		rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, flags);
 	} else if (GBARRIsPlaying(rr)) {
@@ -171,17 +173,13 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 	return true;
 }
 
-bool GBARRIncrementStream(struct GBARRContext* rr) {
+bool GBARRIncrementStream(struct GBARRContext* rr, bool recursive) {
 	uint32_t newStreamId = rr->maxStreamId + 1;
 	uint32_t oldStreamId = rr->streamId;
 	if (GBARRIsRecording(rr) && rr->movieStream) {
-		_emitTag(rr, rr->movieStream, TAG_END);
-		_emitTag(rr, rr->movieStream, TAG_FRAME_COUNT);
-		rr->movieStream->write(rr->movieStream, &rr->frames, sizeof(rr->frames));
-		_emitTag(rr, rr->movieStream, TAG_LAG_COUNT);
-		rr->movieStream->write(rr->movieStream, &rr->lagFrames, sizeof(rr->lagFrames));
-		_emitTag(rr, rr->movieStream, TAG_NEXT_TIME);
-		rr->movieStream->write(rr->movieStream, &newStreamId, sizeof(newStreamId));
+		if (!_markStreamNext(rr, newStreamId, recursive)) {
+			return false;
+		}
 	}
 	if (!GBARRLoadStream(rr, newStreamId)) {
 		return false;
@@ -194,6 +192,7 @@ bool GBARRIncrementStream(struct GBARRContext* rr) {
 
 	rr->metadataFile->seek(rr->metadataFile, rr->maxStreamIdOffset, SEEK_SET);
 	rr->metadataFile->write(rr->movieStream, &rr->maxStreamId, sizeof(rr->maxStreamId));
+	rr->previously = oldStreamId;
 	return true;
 }
 
@@ -216,6 +215,12 @@ bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 	rr->peekedTag = TAG_INVALID;
 	_readTag(rr, rr->movieStream); // Discard the buffer
 	enum GBARRTag tag = _readTag(rr, rr->movieStream);
+	if (tag == TAG_PREVIOUSLY) {
+		if (rr->previously != 0) {
+			return false;
+		}
+		tag = _readTag(rr, rr->movieStream);
+	}
 	if (tag != TAG_BEGIN) {
 		rr->movieStream->close(rr->movieStream);
 		rr->movieStream = 0;
@@ -242,19 +247,6 @@ bool GBARRStartRecording(struct GBARRContext* rr) {
 		return false;
 	}
 
-	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, rr->streamId);
-	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_TRUNC | O_CREAT | O_WRONLY);
-	if (!rr->movieStream) {
-		return false;
-	}
-	_emitMagic(rr, rr->movieStream);
-	if (!_emitTag(rr, rr->movieStream, TAG_BEGIN)) {
-		rr->movieStream->close(rr->movieStream);
-		rr->movieStream = 0;
-		return false;
-	}
-
 	if (!rr->maxStreamIdOffset) {
 		_emitTag(rr, rr->metadataFile, TAG_MAX_STREAM);
 		rr->maxStreamIdOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
@@ -262,7 +254,7 @@ bool GBARRStartRecording(struct GBARRContext* rr) {
 	}
 
 	rr->isRecording = true;
-	return true;
+	return GBARRIncrementStream(rr, false);
 }
 
 void GBARRStopRecording(struct GBARRContext* rr) {
@@ -312,7 +304,7 @@ void GBARRNextFrame(struct GBARRContext* rr) {
 			if (rr->autorecord) {
 				rr->isRecording = true;
 				GBARRLoadStream(rr, endStreamId);
-				GBARRIncrementStream(rr);
+				GBARRIncrementStream(rr, false);
 			}
 		}
 	}
@@ -340,6 +332,15 @@ uint16_t GBARRQueryInput(struct GBARRContext* rr) {
 		_readTag(rr, rr->movieStream);
 	}
 	return rr->currentInput;
+}
+
+bool GBARRFinishSegment(struct GBARRContext* rr) {
+	if (rr->movieStream) {
+		if (!_emitEnd(rr, rr->movieStream)) {
+			return false;
+		}
+	}
+	return GBARRIncrementStream(rr, false);
 }
 
 bool GBARRSkipSegment(struct GBARRContext* rr) {
@@ -472,6 +473,59 @@ bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf) {
 	}
 	rr->maxStreamIdOffset = vf->seek(vf, 0, SEEK_SET);
 	return true;
+}
+
+bool _emitEnd(struct GBARRContext* rr, struct VFile* vf) {
+	// TODO: Error check
+	_emitTag(rr, vf, TAG_END);
+	_emitTag(rr, vf, TAG_FRAME_COUNT);
+	vf->write(vf, &rr->frames, sizeof(rr->frames));
+	_emitTag(rr, vf, TAG_LAG_COUNT);
+	vf->write(vf, &rr->lagFrames, sizeof(rr->lagFrames));
+	_emitTag(rr, vf, TAG_NEXT_TIME);
+
+	uint32_t newStreamId = 0;
+	vf->write(vf, &newStreamId, sizeof(newStreamId));
+	return true;
+}
+
+bool _markStreamNext(struct GBARRContext* rr, uint32_t newStreamId, bool recursive) {
+	if (rr->movieStream->seek(rr->movieStream, -sizeof(newStreamId) - 1, SEEK_END) < 0) {
+		return false;
+	}
+
+	uint8_t tagBuffer;
+	if (rr->movieStream->read(rr->movieStream, &tagBuffer, 1) != 1) {
+		return false;
+	}
+	if (tagBuffer != TAG_NEXT_TIME) {
+		return false;
+	}
+	if (rr->movieStream->write(rr->movieStream, &newStreamId, sizeof(newStreamId)) != sizeof(newStreamId)) {
+		return false;
+	}
+	if (recursive) {
+		if (rr->movieStream->seek(rr->movieStream, 0, SEEK_SET) < 0) {
+			return false;
+		}
+		if (!_verifyMagic(rr, rr->movieStream)) {
+			return false;
+		}
+		_readTag(rr, rr->movieStream);
+		if (_readTag(rr, rr->movieStream) != TAG_PREVIOUSLY) {
+			return false;
+		}
+		if (rr->previously == 0) {
+			return true;
+		}
+		uint32_t currentStreamId = rr->streamId;
+		if (!GBARRLoadStream(rr, rr->previously)) {
+			return false;
+		}
+		return _markStreamNext(rr, currentStreamId, rr->previously);
+	}
+	return true;
+
 }
 
 struct VFile* _openSavedata(struct GBARRContext* rr, int flags) {
