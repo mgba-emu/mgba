@@ -86,6 +86,13 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	case SDLK_TAB:
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
+	case SDLK_BACKSLASH:
+		if (event->type == SDL_KEYDOWN) {
+			GBAThreadPause(context);
+			context->frameCallback = _pauseAfterFrame;
+			GBAThreadUnpause(context);
+		}
+		return;
 	case SDLK_LEFTBRACKET:
 		GBAThreadInterrupt(context);
 		GBARewind(context, 10);
