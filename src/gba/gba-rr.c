@@ -251,7 +251,7 @@ void GBARRStopRecording(struct GBARRContext* rr) {
 	}
 	rr->isRecording = false;
 	if (rr->movieStream) {
-		_emitTag(rr, rr->movieStream, TAG_END);
+		_emitEnd(rr, rr->movieStream);
 		rr->movieStream->close(rr->movieStream);
 		rr->movieStream = 0;
 	}
