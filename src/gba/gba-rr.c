@@ -8,6 +8,10 @@
 #define BINARY_MAGIC "GBAb"
 #define METADATA_FILENAME "metadata" BINARY_EXT
 
+enum {
+	INVALID_INPUT = 0x8000
+};
+
 static bool _emitMagic(struct GBARRContext* rr, struct VFile* vf);
 static bool _verifyMagic(struct GBARRContext* rr, struct VFile* vf);
 static enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf);
@@ -114,6 +118,7 @@ bool GBARRInitStream(struct GBARRContext* rr, struct VDir* stream) {
 
 	rr->streamDir = stream;
 	rr->metadataFile = rr->streamDir->openFile(rr->streamDir, METADATA_FILENAME, O_CREAT | O_RDWR);
+	rr->currentInput = INVALID_INPUT;
 	if (!_parseMetadata(rr, rr->metadataFile)) {
 		rr->metadataFile->close(rr->metadataFile);
 		rr->metadataFile = 0;
@@ -153,6 +158,7 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 	}
 	rr->movieStream = 0;
 	rr->streamId = streamId;
+	rr->currentInput = INVALID_INPUT;
 	char buffer[14];
 	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, streamId);
 	if (GBARRIsRecording(rr)) {
@@ -168,6 +174,7 @@ bool GBARRLoadStream(struct GBARRContext* rr, uint32_t streamId) {
 			GBARRStopPlaying(rr);
 		}
 	}
+	GBALog(0, GBA_LOG_DEBUG, "[RR] Loading segment: %u", streamId);
 	rr->frames = 0;
 	rr->lagFrames = 0;
 	return true;
@@ -184,6 +191,7 @@ bool GBARRIncrementStream(struct GBARRContext* rr, bool recursive) {
 	if (!GBARRLoadStream(rr, newStreamId)) {
 		return false;
 	}
+	GBALog(0, GBA_LOG_DEBUG, "[RR] New segment: %u", newStreamId);
 	_emitMagic(rr, rr->movieStream);
 	rr->maxStreamId = newStreamId;
 	_emitTag(rr, rr->movieStream, TAG_PREVIOUSLY);
@@ -201,33 +209,12 @@ bool GBARRStartPlaying(struct GBARRContext* rr, bool autorecord) {
 		return false;
 	}
 
-	char buffer[14];
-	snprintf(buffer, sizeof(buffer), "%u" BINARY_EXT, rr->streamId);
-	rr->movieStream = rr->streamDir->openFile(rr->streamDir, buffer, O_RDONLY);
-	if (!rr->movieStream) {
-		return false;
-	}
-
-	rr->autorecord = autorecord;
-	if (!_verifyMagic(rr, rr->movieStream)) {
-		return false;
-	}
-	rr->peekedTag = TAG_INVALID;
-	_readTag(rr, rr->movieStream); // Discard the buffer
-	enum GBARRTag tag = _readTag(rr, rr->movieStream);
-	if (tag == TAG_PREVIOUSLY) {
-		if (rr->previously != 0) {
-			return false;
-		}
-		tag = _readTag(rr, rr->movieStream);
-	}
-	if (tag != TAG_BEGIN) {
-		rr->movieStream->close(rr->movieStream);
-		rr->movieStream = 0;
-		return false;
-	}
-
 	rr->isPlaying = true;
+	if (!GBARRLoadStream(rr, 1)) {
+		rr->isPlaying = false;
+		return false;
+	}
+	rr->autorecord = autorecord;
 	return true;
 }
 
@@ -282,9 +269,24 @@ void GBARRNextFrame(struct GBARRContext* rr) {
 		return;
 	}
 
+	if (GBARRIsPlaying(rr)) {
+		while (rr->peekedTag == TAG_INPUT) {
+			_readTag(rr, rr->movieStream);
+			GBALog(0, GBA_LOG_WARN, "[RR] Desync detected!");
+		}
+		if (rr->peekedTag == TAG_LAG) {
+			GBALog(0, GBA_LOG_DEBUG, "[RR] Lag frame marked in stream");
+			if (rr->inputThisFrame) {
+				GBALog(0, GBA_LOG_WARN, "[RR] Lag frame in stream does not match movie");
+			}
+		}
+	}
+
 	++rr->frames;
+	GBALog(0, GBA_LOG_DEBUG, "[RR] Frame: %u", rr->frames);
 	if (!rr->inputThisFrame) {
 		++rr->lagFrames;
+		GBALog(0, GBA_LOG_DEBUG, "[RR] Lag frame: %u", rr->lagFrames);
 	}
 
 	if (GBARRIsRecording(rr)) {
@@ -292,12 +294,8 @@ void GBARRNextFrame(struct GBARRContext* rr) {
 			_emitTag(rr, rr->movieStream, TAG_LAG);
 		}
 		_emitTag(rr, rr->movieStream, TAG_FRAME);
-
 		rr->inputThisFrame = false;
 	} else {
-		if (rr->peekedTag == TAG_INPUT) {
-			GBALog(0, GBA_LOG_WARN, "RR desync detected!");
-		}
 		if (!_seekTag(rr, rr->movieStream, TAG_FRAME)) {
 			uint32_t endStreamId = rr->streamId;
 			GBARRStopPlaying(rr);
@@ -320,6 +318,7 @@ void GBARRLogInput(struct GBARRContext* rr, uint16_t keys) {
 		rr->movieStream->write(rr->movieStream, &keys, sizeof(keys));
 		rr->currentInput = keys;
 	}
+	GBALog(0, GBA_LOG_DEBUG, "[RR] Input log: %03X", rr->currentInput);
 	rr->inputThisFrame = true;
 }
 
@@ -331,6 +330,11 @@ uint16_t GBARRQueryInput(struct GBARRContext* rr) {
 	if (rr->peekedTag == TAG_INPUT) {
 		_readTag(rr, rr->movieStream);
 	}
+	rr->inputThisFrame = true;
+	if (rr->currentInput == INVALID_INPUT) {
+		GBALog(0, GBA_LOG_WARN, "[RR] Stream did not specify input");
+	}
+	GBALog(0, GBA_LOG_DEBUG, "[RR] Input replay: %03X", rr->currentInput);
 	return rr->currentInput;
 }
 
@@ -429,18 +433,17 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 	} else {
 		rr->peekedTag = tagBuffer;
 	}
+
+	if (rr->peekedTag == TAG_END) {
+		GBARRSkipSegment(rr);
+	}
 	return tag;
 }
 
 bool _seekTag(struct GBARRContext* rr, struct VFile* vf, enum GBARRTag tag) {
 	enum GBARRTag readTag;
 	while ((readTag = _readTag(rr, vf)) != tag) {
-		if (vf == rr->movieStream && readTag == TAG_END) {
-			if (!GBARRSkipSegment(rr)) {
-				return false;
-			}
-			vf = rr->movieStream;
-		} else if (readTag == TAG_EOF) {
+		if (readTag == TAG_EOF) {
 			return false;
 		}
 	}
@@ -525,7 +528,6 @@ bool _markStreamNext(struct GBARRContext* rr, uint32_t newStreamId, bool recursi
 		return _markStreamNext(rr, currentStreamId, rr->previously);
 	}
 	return true;
-
 }
 
 struct VFile* _openSavedata(struct GBARRContext* rr, int flags) {
