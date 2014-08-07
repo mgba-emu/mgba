@@ -191,7 +191,7 @@ bool GBARRIncrementStream(struct GBARRContext* rr, bool recursive) {
 	_emitTag(rr, rr->movieStream, TAG_BEGIN);
 
 	rr->metadataFile->seek(rr->metadataFile, rr->maxStreamIdOffset, SEEK_SET);
-	rr->metadataFile->write(rr->movieStream, &rr->maxStreamId, sizeof(rr->maxStreamId));
+	rr->metadataFile->write(rr->metadataFile, &rr->maxStreamId, sizeof(rr->maxStreamId));
 	rr->previously = oldStreamId;
 	return true;
 }
