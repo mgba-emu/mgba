@@ -147,8 +147,9 @@ bool GBARRReinitStream(struct GBARRContext* rr, enum GBARRInitFrom initFrom) {
 
 	rr->streamId = 0;
 	rr->maxStreamId = 0;
+	_emitTag(rr, rr->metadataFile, TAG_MAX_STREAM);
 	rr->maxStreamIdOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
-	_emitTag(rr, rr->metadataFile, 1);
+	rr->metadataFile->write(rr->metadataFile, &rr->maxStreamId, sizeof(rr->maxStreamId));
 	return true;
 }
 
