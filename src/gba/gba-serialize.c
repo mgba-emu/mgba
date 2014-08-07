@@ -86,6 +86,7 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 		} else {
 			GBARRFinishSegment(gba->rr);
 		}
+		GBARRMarkRerecord(gba->rr);
 	} else if (GBARRIsPlaying(gba->rr)) {
 		GBARRLoadStream(gba->rr, state->associatedStreamId);
 		GBARRSkipSegment(gba->rr);

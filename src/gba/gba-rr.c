@@ -150,6 +150,11 @@ bool GBARRReinitStream(struct GBARRContext* rr, enum GBARRInitFrom initFrom) {
 	_emitTag(rr, rr->metadataFile, TAG_MAX_STREAM);
 	rr->maxStreamIdOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
 	rr->metadataFile->write(rr->metadataFile, &rr->maxStreamId, sizeof(rr->maxStreamId));
+
+	rr->rrCount = 0;
+	_emitTag(rr, rr->metadataFile, TAG_RR_COUNT);
+	rr->rrCountOffset = rr->metadataFile->seek(rr->metadataFile, 0, SEEK_CUR);
+	rr->metadataFile->write(rr->metadataFile, &rr->rrCount, sizeof(rr->rrCount));
 	return true;
 }
 
@@ -357,6 +362,13 @@ bool GBARRSkipSegment(struct GBARRContext* rr) {
 	return true;
 }
 
+bool GBARRMarkRerecord(struct GBARRContext* rr) {
+	++rr->rrCount;
+	rr->metadataFile->seek(rr->metadataFile, rr->rrCountOffset, SEEK_SET);
+	rr->metadataFile->write(rr->metadataFile, &rr->rrCount, sizeof(rr->rrCount));
+	return true;
+}
+
 bool _emitMagic(struct GBARRContext* rr, struct VFile* vf) {
 	UNUSED(rr);
 	return vf->write(vf, BINARY_MAGIC, 4) == 4;
@@ -399,6 +411,9 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 	case TAG_LAG_COUNT:
 		vf->read(vf, &rr->lagFrames, sizeof(rr->lagFrames));
 		break;
+	case TAG_RR_COUNT:
+		vf->read(vf, &rr->rrCount, sizeof(rr->rrCount));
+		break;
 
 	case TAG_INIT_EX_NIHILO:
 		rr->initFrom = INIT_EX_NIHILO;
@@ -413,7 +428,6 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 		break;
 
 	// To be spec'd
-	case TAG_RR_COUNT:
 	case TAG_AUTHOR:
 	case TAG_COMMENT:
 		break;
@@ -470,6 +484,9 @@ bool _parseMetadata(struct GBARRContext* rr, struct VFile* vf) {
 		case TAG_INIT_FROM_SAVESTATE:
 		case TAG_INIT_FROM_BOTH:
 			rr->initFromOffset = vf->seek(vf, 0, SEEK_CUR);
+			break;
+		case TAG_RR_COUNT:
+			rr->rrCountOffset = vf->seek(vf, 0, SEEK_CUR);
 			break;
 		default:
 			break;

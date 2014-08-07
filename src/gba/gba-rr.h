@@ -65,6 +65,9 @@ struct GBARRContext {
 	enum GBARRInitFrom initFrom;
 	off_t initFromOffset;
 
+	uint32_t rrCount;
+	off_t rrCountOffset;
+
 	struct VFile* savedata;
 
 	// Streaming state
@@ -88,6 +91,7 @@ bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
 bool GBARRIncrementStream(struct GBARRContext*, bool recursive);
 bool GBARRFinishSegment(struct GBARRContext*);
 bool GBARRSkipSegment(struct GBARRContext*);
+bool GBARRMarkRerecord(struct GBARRContext*);
 
 bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);
 void GBARRStopPlaying(struct GBARRContext*);
