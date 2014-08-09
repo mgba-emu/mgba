@@ -10,7 +10,7 @@ static void _ffmpegPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t rig
 bool FFmpegEncoderCreate(struct FFmpegEncoder* encoder) {
 	av_register_all();
 	AVCodec* acodec = avcodec_find_encoder(AV_CODEC_ID_FLAC);
-	AVCodec* vcodec = avcodec_find_encoder(AV_CODEC_ID_HUFFYUV);
+	AVCodec* vcodec = avcodec_find_encoder(AV_CODEC_ID_FFV1);
 	if (!acodec || !vcodec) {
 		return false;
 	}
@@ -46,7 +46,7 @@ bool FFmpegEncoderCreate(struct FFmpegEncoder* encoder) {
 	encoder->video->width = VIDEO_HORIZONTAL_PIXELS;
 	encoder->video->height = VIDEO_VERTICAL_PIXELS;
 	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
-	encoder->video->pix_fmt = AV_PIX_FMT_RGB24;
+	encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
 	encoder->video->gop_size = 15;
 	encoder->video->max_b_frames = 0;
 	avcodec_open2(encoder->video, vcodec, 0);
@@ -115,9 +115,9 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			uint32_t pixel = pixels[stride * y + x];
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3] = pixel;
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 1] = pixel >> 8;
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 2] = pixel >> 16;
+			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4] = pixel >> 16;
+			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 1] = pixel >> 8;
+			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 2] = pixel;
 		}
 	}
 
