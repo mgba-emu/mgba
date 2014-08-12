@@ -7,26 +7,65 @@
 static void _ffmpegPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _ffmpegPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
 
-bool FFmpegEncoderCreate(struct FFmpegEncoder* encoder) {
+void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	av_register_all();
-	AVCodec* acodec = avcodec_find_encoder(AV_CODEC_ID_FLAC);
-	AVCodec* vcodec = avcodec_find_encoder(AV_CODEC_ID_FFV1);
-	if (!acodec || !vcodec) {
-		return false;
-	}
 
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
 
+	FFmpegEncoderSetAudio(encoder, "flac", 0);
+	FFmpegEncoderSetVideo(encoder, "png", 0);
 	encoder->currentAudioSample = 0;
 	encoder->currentAudioFrame = 0;
 	encoder->currentVideoFrame = 0;
+}
 
-	avformat_alloc_output_context2(&encoder->context, NULL, NULL, "test.mkv");
+bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
+	if (!avcodec_find_encoder_by_name(acodec)) {
+		return false;
+	}
+	encoder->audioCodec = acodec;
+	encoder->audioBitrate = abr;
+	return true;
+}
+
+bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr) {
+	AVCodec* codec = avcodec_find_encoder_by_name(vcodec);
+	if (!codec) {
+		return false;
+	}
+
+	size_t i;
+	encoder->pixFormat = AV_PIX_FMT_NONE;
+	for (i = 0; codec->pix_fmts[i] != AV_PIX_FMT_NONE; ++i) {
+		if (codec->pix_fmts[i] == AV_PIX_FMT_RGB24) {
+			encoder->pixFormat = AV_PIX_FMT_RGB24;
+			break;
+		}
+		if (codec->pix_fmts[i] == AV_PIX_FMT_BGR0) {
+			encoder->pixFormat = AV_PIX_FMT_BGR0;
+		}
+	}
+	if (encoder->pixFormat == AV_PIX_FMT_NONE) {
+		return false;
+	}
+	encoder->videoCodec = vcodec;
+	encoder->videoBitrate = vbr;
+	return true;
+}
+
+bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
+	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
+	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
+	if (!acodec || !vcodec) {
+		return false;
+	}
+
+	avformat_alloc_output_context2(&encoder->context, 0, 0, outfile);
 
 	encoder->audioStream = avformat_new_stream(encoder->context, acodec);
 	encoder->audio = encoder->audioStream->codec;
-	encoder->audio->bit_rate = 128000;
+	encoder->audio->bit_rate = encoder->audioBitrate;
 	encoder->audio->sample_rate = 0x8000;
 	encoder->audio->channels = 2;
 	encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
@@ -42,11 +81,11 @@ bool FFmpegEncoderCreate(struct FFmpegEncoder* encoder) {
 
 	encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
 	encoder->video = encoder->videoStream->codec;
-	encoder->video->bit_rate = 4000000;
+	encoder->video->bit_rate = encoder->videoBitrate;
 	encoder->video->width = VIDEO_HORIZONTAL_PIXELS;
 	encoder->video->height = VIDEO_VERTICAL_PIXELS;
 	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
-	encoder->video->pix_fmt = AV_PIX_FMT_BGR0;
+	encoder->video->pix_fmt = encoder->pixFormat;
 	encoder->video->gop_size = 15;
 	encoder->video->max_b_frames = 0;
 	avcodec_open2(encoder->video, vcodec, 0);
@@ -62,10 +101,23 @@ bool FFmpegEncoderCreate(struct FFmpegEncoder* encoder) {
 		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
 	}
 
-	avio_open(&encoder->context->pb, "test.mkv", AVIO_FLAG_WRITE);
+	avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE);
 	avformat_write_header(encoder->context, 0);
 
 	return true;
+}
+
+void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
+	av_write_trailer(encoder->context);
+	avio_close(encoder->context->pb);
+
+	av_free(encoder->audioBuffer);
+	av_frame_free(&encoder->audioFrame);
+	avcodec_close(encoder->audio);
+
+	av_frame_free(&encoder->videoFrame);
+	avcodec_close(encoder->video);
+	avformat_free_context(encoder->context);
 }
 
 void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
@@ -112,12 +164,23 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	++encoder->currentVideoFrame;
 
 	unsigned x, y;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			uint32_t pixel = pixels[stride * y + x];
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4] = pixel >> 16;
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 1] = pixel >> 8;
-			encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 2] = pixel;
+	if (encoder->videoFrame->format == AV_PIX_FMT_BGR0) {
+		for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+				uint32_t pixel = pixels[stride * y + x];
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4] = pixel >> 16;
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 1] = pixel >> 8;
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 2] = pixel;
+			}
+		}
+	} else if (encoder->videoFrame->format == AV_PIX_FMT_RGB24) {
+		for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+				uint32_t pixel = pixels[stride * y + x];
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3] = pixel;
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 1] = pixel >> 8;
+				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 2] = pixel >> 16;
+			}
 		}
 	}
 
