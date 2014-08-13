@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.8)
-project(QGBAc)
+project(mGBA-Qt)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra --std=c++11")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra --std=c++11")
@@ -27,7 +27,7 @@ if(USE_GDB_STUB)
 	set(SOURCE_FILES ${PLATFORM_SRC} ${SOURCE_FILES} GDBController.cpp GDBWindow.cpp)
 endif()
 
-add_executable(QGBAc WIN32 MACOSX_BUNDLE main.cpp ${SOURCE_FILES})
+add_executable(mGBA WIN32 MACOSX_BUNDLE main.cpp ${SOURCE_FILES})
 
-qt5_use_modules(QGBAc Widgets Multimedia OpenGL)
-target_link_libraries(QGBAc ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME})
+qt5_use_modules(mGBA Widgets Multimedia OpenGL)
+target_link_libraries(mGBA ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME})
