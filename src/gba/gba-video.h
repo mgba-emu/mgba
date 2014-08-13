@@ -5,6 +5,12 @@
 
 #include "gba-memory.h"
 
+#ifdef COLOR_16_BIT
+#define BYTES_PER_PIXEL 2
+#else
+#define BYTES_PER_PIXEL 4
+#endif
+
 enum {
 	VIDEO_CYCLES_PER_PIXEL = 4,
 
@@ -177,6 +183,9 @@ struct GBAVideoRenderer {
 	void (*writeOAM)(struct GBAVideoRenderer* renderer, uint32_t oam);
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
+
+	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+	void (*putPixels)(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
 
 	uint16_t* palette;
 	uint16_t* vram;

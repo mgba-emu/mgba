@@ -50,7 +50,7 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 		"g"
 #endif
 	;
-	if (subparser->extraOptions) {
+	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
 	}

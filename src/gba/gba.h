@@ -57,6 +57,7 @@ enum GBAKey {
 	GBA_KEY_DOWN = 7,
 	GBA_KEY_R = 8,
 	GBA_KEY_L = 9,
+	GBA_KEY_MAX,
 	GBA_KEY_NONE = -1
 };
 
@@ -64,8 +65,6 @@ struct GBA;
 struct GBARotationSource;
 struct Patch;
 struct VFile;
-
-typedef void (*GBALogHandler)(struct GBA*, enum GBALogLevel, const char* format, va_list args);
 
 struct GBA {
 	struct ARMComponent d;
@@ -96,6 +95,7 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
+	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
 	struct GBARumble* rumble;
 	struct GBARRContext* rr;
@@ -108,7 +108,6 @@ struct GBA {
 	const char* activeFile;
 
 	int logLevel;
-	GBALogHandler logHandler;
 };
 
 struct GBACartridge {

@@ -4,12 +4,14 @@
 #include "common.h"
 
 #include "gba.h"
+#include "gba-input.h"
 
 #include "util/threading.h"
 #include "platform/commandline.h"
 
 struct GBAThread;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -37,6 +39,11 @@ struct GBASync {
 	Mutex audioBufferMutex;
 };
 
+struct GBAAVStream {
+	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+	void (*postAudioFrame)(struct GBAAVStream*, int32_t left, int32_t right);
+};
+
 struct GBAThread {
 	// Output
 	enum ThreadState state;
@@ -55,6 +62,10 @@ struct GBAThread {
 	struct VFile* patch;
 	const char* fname;
 	int activeKeys;
+	struct GBAInputMap inputMap;
+	struct GBAAVStream* stream;
+
+	// Run-time options
 	int frameskip;
 	float fpsTarget;
 	size_t audioBuffers;
@@ -66,7 +77,7 @@ struct GBAThread {
 	Condition stateCond;
 	enum ThreadState savedState;
 
-	GBALogHandler logHandler;
+	LogHandler logHandler;
 	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
@@ -100,6 +111,8 @@ bool GBAThreadIsPaused(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
 void GBAThreadPauseFromThread(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
+
+void GBAThreadTakeScreenshot(struct GBAThread* threadContext);
 
 void GBASyncPostFrame(struct GBASync* sync);
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);

@@ -99,11 +99,7 @@ int main(int argc, char** argv) {
 #endif
 
 	SDL_LockTexture(renderer.tex, 0, &renderer.d.outputBuffer, &renderer.d.outputBufferStride);
-#ifdef COLOR_16_BIT
-	renderer.d.outputBufferStride /= 2;
-#else
-	renderer.d.outputBufferStride /= 4;
-#endif
+	renderer.d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
@@ -117,11 +113,7 @@ int main(int argc, char** argv) {
 		renderer.d.outputBufferStride = surface->pitch / 4;
 #endif
 	} else {
-#ifdef COLOR_16_BIT
-		renderer.d.outputBuffer = malloc(240 * 160 * 2);
-#else
-		renderer.d.outputBuffer = malloc(240 * 160 * 4);
-#endif
+		renderer.d.outputBuffer = malloc(240 * 160 * BYTES_PER_PIXEL);
 		renderer.d.outputBufferStride = 240;
 	}
 #endif
@@ -173,11 +165,7 @@ static void _GBASDLRunloop(struct GBAThread* context, struct SoftwareRenderer* r
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->tex, 0, 0);
 			SDL_RenderPresent(renderer->sdlRenderer);
 			SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
-#ifdef COLOR_16_BIT
-			renderer->d.outputBufferStride /= 2;
-#else
-			renderer->d.outputBufferStride /= 4;
-#endif
+			renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 			switch (renderer->ratio) {
 #if defined(__ARM_NEON) && COLOR_16_BIT

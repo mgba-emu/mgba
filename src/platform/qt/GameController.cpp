@@ -21,11 +21,6 @@ GameController::GameController(QObject* parent)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(new AudioProcessor)
 {
-#ifdef BUILD_SDL
-	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
-	GBASDLInitEvents(&m_sdlEvents);
-	SDL_JoystickEventState(SDL_QUERY);
-#endif
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
@@ -39,6 +34,16 @@ GameController::GameController(QObject* parent)
 		.userData = this,
 		.rewindBufferCapacity = 0
 	};
+
+	GBAInputMapInit(&m_threadContext.inputMap);
+
+#ifdef BUILD_SDL
+	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
+	m_sdlEvents.bindings = &m_threadContext.inputMap;
+	GBASDLInitEvents(&m_sdlEvents);
+	SDL_JoystickEventState(SDL_QUERY);
+#endif
+
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
@@ -204,7 +209,7 @@ void GameController::testSDLEvents() {
 	m_activeButtons = 0;
 	int i;
 	for (i = 0; i < numButtons; ++i) {
-		GBAKey key = GBASDLMapButtonToKey(i);
+		GBAKey key = GBAInputMapKey(&m_threadContext.inputMap, SDL_BINDING_BUTTON, i);
 		if (key == GBA_KEY_NONE) {
 			continue;
 		}

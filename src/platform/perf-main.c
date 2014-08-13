@@ -7,18 +7,20 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#define PERF_OPTIONS "S:"
+#define PERF_OPTIONS "NS:"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
+	"  -N               Disable video rendering entirely" \
 	"  -S SEC           Run for SEC in-game seconds before exiting"
 
 struct PerfOpts {
+	bool noVideo;
 	int duration;
 };
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames);
 static void _GBAPerfShutdown(int signal);
-static int _parsePerfOpts(struct SubParser* parser, int option, const char* arg);
+static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg);
 
 static struct GBAThread* _thread;
 
@@ -28,7 +30,7 @@ int main(int argc, char** argv) {
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
-	struct PerfOpts perfOpts = { 0 };
+	struct PerfOpts perfOpts = { false, 0 };
 	struct SubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
@@ -46,11 +48,14 @@ int main(int argc, char** argv) {
 	renderer.outputBufferStride = 256;
 
 	struct GBAThread context = {
-		.renderer = &renderer.d,
 		.sync.videoFrameWait = 0,
 		.sync.audioWait = 0
 	};
 	_thread = &context;
+
+	if (!perfOpts.noVideo) {
+		context.renderer = &renderer.d;
+	}
 
 	context.debugger = createDebugger(&opts);
 
@@ -113,13 +118,16 @@ static void _GBAPerfShutdown(int signal) {
 	pthread_mutex_unlock(&_thread->stateMutex);
 }
 
-static int _parsePerfOpts(struct SubParser* parser, int option, const char* arg) {
+static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
 	switch (option) {
+	case 'N':
+		opts->noVideo = true;
+		return true;
 	case 'S':
 		opts->duration = strtol(arg, 0, 10);
 		return !errno;
 	default:
-		return 0;
+		return false;
 	}
 }

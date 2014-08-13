@@ -58,6 +58,9 @@ struct GBASavedata {
 	enum SavedataCommand command;
 	struct VFile* vf;
 
+	int mapMode;
+	struct VFile* realVf;
+
 	int readBitsRemaining;
 	int readAddress;
 	int writeAddress;
@@ -71,6 +74,10 @@ struct GBASavedata {
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
+
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
+void GBASavedataUnmask(struct GBASavedata* savedata);
+bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);

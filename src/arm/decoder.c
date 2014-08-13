@@ -332,6 +332,10 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 			written = _decodeRegister(info->op3.reg, buffer, blen);
 			ADVANCE(written);
 		}
+		if (info->operandFormat & ARM_OPERAND_4) {
+			strncpy(buffer, ", ", blen - 1);
+			ADVANCE(2);
+		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_4) {
 			written = snprintf(buffer, blen - 1, "#%i", info->op4.immediate);
 			ADVANCE(written);

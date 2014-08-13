@@ -7,6 +7,7 @@
 #include "debugger/debugger.h"
 
 #include "util/patch.h"
+#include "util/png-io.h"
 #include "util/vfs.h"
 
 #include <signal.h>
@@ -110,7 +111,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	pthread_sigmask(SIG_SETMASK, &signals, 0);
 #endif
 
-	gba.logHandler = threadContext->logHandler;
 	GBACreate(&gba);
 	ARMSetComponents(&cpu, &gba.d, numComponents, components);
 	ARMInit(&cpu);
@@ -391,6 +391,8 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	}
 	free(threadContext->rewindBuffer);
 
+	GBAInputMapDeinit(&threadContext->inputMap);
+
 	if (threadContext->rom) {
 		threadContext->rom->close(threadContext->rom);
 		threadContext->rom = 0;
@@ -517,6 +519,18 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
+void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
+	unsigned stride;
+	void* pixels = 0;
+	struct VFile* vf = threadContext->stateDir->openFile(threadContext->stateDir, "screenshot.png", O_CREAT | O_WRONLY);
+	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
+	PNGWriteClose(png, info);
+	vf->close(vf);
+}
+
 void GBASyncPostFrame(struct GBASync* sync) {
 	if (!sync) {
 		return;
@@ -534,12 +548,19 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 
 	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
 	if (thread->rewindBuffer) {
 		--thread->rewindBufferNext;
 		if (thread->rewindBufferNext <= 0) {
 			thread->rewindBufferNext = thread->rewindBufferInterval;
 			GBARecordFrame(thread);
 		}
+	}
+	if (thread->stream) {
+		thread->stream->postVideoFrame(thread->stream, thread->renderer);
 	}
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
@@ -553,10 +574,12 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 
 	MutexLock(&sync->videoFrameMutex);
 	ConditionWake(&sync->videoFrameRequiredCond);
-	if (!sync->videoFrameOn) {
+	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	if (!sync->videoFramePending) {
+		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	}
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
 	return true;

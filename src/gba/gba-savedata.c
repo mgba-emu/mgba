@@ -18,6 +18,8 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
+	savedata->realVf = vf;
+	savedata->mapMode = MAP_WRITE;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
@@ -57,7 +59,46 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 			break;
 		}
 	}
+	savedata->data = 0;
 	savedata->type = SAVEDATA_NONE;
+}
+
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
+	GBASavedataDeinit(savedata);
+	savedata->vf = vf;
+	savedata->mapMode = MAP_READ;
+}
+
+void GBASavedataUnmask(struct GBASavedata* savedata) {
+	GBASavedataDeinit(savedata);
+	savedata->vf = savedata->realVf;
+	savedata->mapMode = MAP_WRITE;
+}
+
+bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
+	if (savedata->data) {
+		switch (savedata->type) {
+		case SAVEDATA_SRAM:
+			return out->write(out, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
+		case SAVEDATA_FLASH512:
+			return out->write(out, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
+		case SAVEDATA_FLASH1M:
+			return out->write(out, savedata->data, SIZE_CART_FLASH1M) == SIZE_CART_FLASH1M;
+		case SAVEDATA_EEPROM:
+			return out->write(out, savedata->data, SIZE_CART_EEPROM) == SIZE_CART_EEPROM;
+		case SAVEDATA_NONE:
+			return true;
+		}
+	} else if (savedata->vf) {
+		off_t read = 0;
+		uint8_t buffer[2048];
+		do {
+			read = savedata->vf->read(savedata->vf, buffer, sizeof(buffer));
+			out->write(out, buffer, read);
+		} while (read == sizeof(buffer));
+		return read >= 0;
+	}
+	return true;
 }
 
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
@@ -77,7 +118,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		if (end < SIZE_CART_FLASH512) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, MAP_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, savedata->mapMode);
 	}
 
 	savedata->currentBank = savedata->data;
@@ -102,7 +143,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		if (end < SIZE_CART_EEPROM) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, MAP_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
 	}
 	if (end < SIZE_CART_EEPROM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
@@ -125,7 +166,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 		if (end < SIZE_CART_SRAM) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM);
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM, MAP_WRITE);
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM, savedata->mapMode);
 	}
 
 	if (end < SIZE_CART_SRAM) {

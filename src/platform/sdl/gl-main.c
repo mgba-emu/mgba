@@ -100,6 +100,9 @@ int main(int argc, char** argv) {
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio);
 
+	renderer.events.bindings = &context.inputMap;
+	GBASDLInitEvents(&renderer.events);
+
 	GBAThreadStart(&context);
 
 	_GBASDLRunloop(&context, &renderer);
@@ -118,7 +121,6 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 		return 0;
 	}
 
-	GBASDLInitEvents(&renderer->events);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

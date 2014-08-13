@@ -26,72 +26,76 @@ struct GBACartridgeOverride {
 	const char id[4];
 	enum SavedataType type;
 	int gpio;
+	uint32_t busyLoop;
 };
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Boktai: The Sun is in Your Hand
-	{ "U3IE", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
-	{ "U3IP", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
+	{ "U3IE", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
+	{ "U3IP", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 
 	// Boktai 2: Solar Boy Django
-	{ "U32E", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
-	{ "U32P", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR },
+	{ "U32E", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
+	{ "U32P", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 
 	// Drill Dozer
-	{ "V49J", SAVEDATA_SRAM, GPIO_RUMBLE },
-	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE },
+	{ "V49J", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
+	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
+
+	// Mega Man Battle Network
+	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x8000338 },
 
 	// Pokemon Ruby
-	{ "AXVJ", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVE", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVP", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVI", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVS", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVD", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXVF", SAVEDATA_FLASH1M, GPIO_RTC },
+	{ "AXVJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVS", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVD", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXVF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 
 	// Pokemon Sapphire
-	{ "AXPJ", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPE", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPP", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPI", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPS", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPD", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "AXPF", SAVEDATA_FLASH1M, GPIO_RTC },
+	{ "AXPJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPS", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPD", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "AXPF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 
 	// Pokemon Emerald
-	{ "BPEJ", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPEE", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPEP", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPEI", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPES", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPED", SAVEDATA_FLASH1M, GPIO_RTC },
-	{ "BPEF", SAVEDATA_FLASH1M, GPIO_RTC },
+	{ "BPEJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPEE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPEP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPEI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPES", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPED", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPEF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 
 	// Pokemon FireRed
-	{ "BPRJ", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "BPRE", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "BPRP", SAVEDATA_FLASH1M, GPIO_NONE },
+	{ "BPRJ", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "BPRE", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "BPRP", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 
 	// Pokemon LeafGreen
-	{ "BPGJ", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "BPGE", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "BPGP", SAVEDATA_FLASH1M, GPIO_NONE },
+	{ "BPGJ", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "BPGE", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "BPGP", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 
 	// RockMan EXE 4.5 - Real Operation
-	{ "BR4J", SAVEDATA_FLASH512, GPIO_RTC },
+	{ "BR4J", SAVEDATA_FLASH512, GPIO_RTC, -1 },
 
 	// Super Mario Advance 4
-	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE },
-	{ "AX4P", SAVEDATA_FLASH1M, GPIO_NONE },
+	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "AX4P", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 
 	// Wario Ware Twisted
-	{ "RWZJ", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO },
-	{ "RWZE", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO },
-	{ "RWZP", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO },
+	{ "RZWJ", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
+	{ "RZWE", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
+	{ "RZWP", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
 
-	{ { 0, 0, 0, 0 }, 0, 0 }
+	{ { 0, 0, 0, 0 }, 0, 0, -1 }
 };
 
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
@@ -135,6 +139,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->keySource = 0;
 	gba->rotationSource = 0;
 	gba->rumble = 0;
+	gba->rr = 0;
 
 	gba->romVf = 0;
 	gba->biosVf = 0;
@@ -182,6 +187,9 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
+	if (!GBARRIsPlaying(gba->rr) && !GBARRIsRecording(gba->rr)) {
+		GBASavedataUnmask(&gba->memory.savedata);
+	}
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
 	GBAAudioReset(&gba->audio);
@@ -537,16 +545,15 @@ void GBAHalt(struct GBA* gba) {
 }
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
-	if (!gba) {
-		struct GBAThread* threadContext = GBAThreadGetContext();
-		if (threadContext) {
+	struct GBAThread* threadContext = GBAThreadGetContext();
+	if (threadContext) {
+		if (!gba) {
 			gba = threadContext->gba;
 		}
-	}
-
-	if (gba && gba->logHandler) {
-		gba->logHandler(gba, level, format, args);
-		return;
+		if (threadContext->logHandler) {
+			threadContext->logHandler(threadContext, level, format, args);
+			return;
+		}
 	}
 
 	if (gba && !(level & gba->logLevel) && level != GBA_LOG_FATAL) {
@@ -576,6 +583,7 @@ void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel leve
 
 	enum GBALogLevel gbaLevel;
 	switch (level) {
+	default: // Avoids compiler warning
 	case DEBUGGER_LOG_DEBUG:
 		gbaLevel = GBA_LOG_DEBUG;
 		break;
@@ -626,6 +634,7 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 
 void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
+	gba->busyLoop = -1;
 	for (i = 0; _overrides[i].id[0]; ++i) {
 		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
 		if (*overrideId == id) {
@@ -656,6 +665,8 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 			if (_overrides[i].gpio & GPIO_RUMBLE) {
 				GBAGPIOInitRumble(&gba->memory.gpio);
 			}
+
+			gba->busyLoop = _overrides[i].busyLoop;
 			return;
 		}
 	}

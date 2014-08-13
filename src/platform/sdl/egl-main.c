@@ -68,16 +68,14 @@ static void _GBASDLStart(struct GBAThread* context);
 static void _GBASDLClean(struct GBAThread* context);
 
 int main(int argc, char** argv) {
-	const char* fname = "test.rom";
-	if (argc > 1) {
-		fname = argv[1];
-	}
-	int fd = open(fname, O_RDONLY);
-	if (fd < 0) {
+	struct GBAVideoEGLRenderer renderer;
+
+	struct StartupOptions opts;
+	if (!parseCommandArgs(&opts, argc, argv, 0)) {
+		usage(argv[0], 0);
+		freeOptions(&opts);
 		return 1;
 	}
-
-	struct GBAVideoEGLRenderer renderer;
 
 	if (!_GBAEGLInit(&renderer)) {
 		return 1;
@@ -85,24 +83,31 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
 	struct GBAThread context = {
-		.fd = fd,
-		.fname = fname,
-		.biosFd = -1,
-		.useDebugger = 0,
 		.renderer = &renderer.d.d,
-		.frameskip = 0,
 		.sync.videoFrameWait = 0,
-		.sync.audioWait = 0,
+		.sync.audioWait = 1,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
 		.userData = &renderer
 	};
+
+	context.debugger = createDebugger(&opts);
+
+	GBAMapOptionsToContext(&opts, &context);
+
+	renderer.audio.samples = context.audioBuffers;
+	GBASDLInitAudio(&renderer.audio);
+
+	renderer.events.bindings = &context.inputMap;
+	GBASDLInitEvents(&renderer.events);
+
 	GBAThreadStart(&context);
 
 	_GBAEGLRunloop(&context, &renderer);
 
 	GBAThreadJoin(&context);
-	close(fd);
+	freeOptions(&opts);
+	free(context.debugger);
 
 	_GBAEGLDeinit(&renderer);
 
@@ -113,9 +118,6 @@ static int _GBAEGLInit(struct GBAVideoEGLRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_JOYSTICK) < 0) {
 		return 0;
 	}
-
-	GBASDLInitEvents(&renderer->events);
-	GBASDLInitAudio(&renderer->audio);
 
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -238,7 +240,7 @@ static void _GBAEGLRunloop(struct GBAThread* context, struct GBAVideoEGLRenderer
 		GBASyncWaitFrameEnd(&context->sync);
 
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &event);
+			GBASDLHandleEvent(context, &renderer->events, &event);
 		}
 	}
 }
@@ -259,6 +261,7 @@ static void _GBAEGLDeinit(struct GBAVideoEGLRenderer* renderer) {
 static void _GBASDLStart(struct GBAThread* threadContext) {
 	struct GBAVideoEGLRenderer* renderer = threadContext->userData;
 	renderer->audio.audio = &threadContext->gba->audio;
+	renderer->audio.thread = threadContext;
 }
 
 static void _GBASDLClean(struct GBAThread* threadContext) {
