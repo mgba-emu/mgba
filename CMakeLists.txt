@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
-project(GBAc)
-set(BINARY_NAME gbac CACHE INTERNAL "Name of output binaries")
+project(mGBA)
+set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 set(CMAKE_C_FLAGS_DEBUG "-g -Wall -Wextra -std=gnu99")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall -Wextra -std=gnu99")
 set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
