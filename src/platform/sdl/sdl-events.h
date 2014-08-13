@@ -7,6 +7,9 @@
 
 #include <SDL.h>
 
+#define SDL_BINDING_KEY 0x53444C4B
+#define SDL_BINDING_BUTTON 0x53444C42
+
 struct GBAVideoSoftwareRenderer;
 
 struct GBASDLEvents {

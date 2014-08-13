@@ -14,9 +14,6 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
-#define SDL_BINDING_KEY 0x53444C4B
-#define SDL_BINDING_BUTTON 0x53444C42
-
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return false;

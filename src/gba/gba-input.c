@@ -75,6 +75,7 @@ void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKe
 				map->maps[m].type = 0;
 				map->maps[m].map = 0;
 			}
+			map->numMaps *= 2;
 			impl = &map->maps[m];
 			impl->type = type;
 			impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
