@@ -559,6 +559,9 @@ void GBASyncPostFrame(struct GBASync* sync) {
 			GBARecordFrame(thread);
 		}
 	}
+	if (thread->stream) {
+		thread->stream->postVideoFrame(thread->stream, thread->renderer);
+	}
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
 	}

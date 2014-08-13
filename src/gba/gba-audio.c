@@ -704,6 +704,10 @@ static void _sample(struct GBAAudio* audio) {
 	CircleBufferWrite32(&audio->left, sampleLeft);
 	CircleBufferWrite32(&audio->right, sampleRight);
 	unsigned produced = CircleBufferSize(&audio->left);
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (thread && thread->stream) {
+		thread->stream->postAudioFrame(thread->stream, sampleLeft, sampleRight);
+	}
 	GBASyncProduceAudio(audio->p->sync, produced >= CircleBufferCapacity(&audio->left) / sizeof(int32_t) * 3);
 }
 
