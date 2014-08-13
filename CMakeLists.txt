@@ -86,8 +86,12 @@ if(USE_GDB_STUB)
 endif()
 source_group("ARM debugger" FILES ${DEBUGGER_SRC})
 
+find_package(PNG REQUIRED)
+find_package(ZLIB REQUIRED)
+list(APPEND DEPENDENCY_LIB ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
+
 add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${VFS_SRC} ${OS_SRC})
-target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB} png)
+target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 
 if(BUILD_SDL)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/sdl ${CMAKE_BINARY_DIR}/sdl)
