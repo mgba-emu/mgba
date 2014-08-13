@@ -35,12 +35,16 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 2, GBA_KEY_A);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 1, GBA_KEY_B);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 6, GBA_KEY_L);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 7, GBA_KEY_R);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 8, GBA_KEY_START);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 9, GBA_KEY_SELECT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 10, GBA_KEY_L);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 11, GBA_KEY_R);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 3, GBA_KEY_START);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 0, GBA_KEY_SELECT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 4, GBA_KEY_UP);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
 	return true;
 }
 
