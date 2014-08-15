@@ -74,7 +74,7 @@ bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* d
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
-	png_write_chunk(png, (png_const_bytep) realName, data, size);
+	png_write_chunk(png, (const png_bytep) realName, data, size);
 	return true;
 }
 
@@ -110,7 +110,7 @@ bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler
 		return false;
 	}
 	png_set_read_user_chunk_fn(png, context, handler);
-	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_const_bytep) chunkName, 1);
+	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (const png_bytep) chunkName, 1);
 	return true;
 }
 
