@@ -156,5 +156,6 @@ void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
+void ARMRunLoop(struct ARMCore* cpu);
 
 #endif

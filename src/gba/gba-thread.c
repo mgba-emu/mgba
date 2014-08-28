@@ -167,7 +167,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		} else {
 			while (threadContext->state == THREAD_RUNNING) {
-				ARMRun(&cpu);
+				ARMRunLoop(&cpu);
 			}
 		}
 

@@ -291,3 +291,14 @@ void ARMRun(struct ARMCore* cpu) {
 		cpu->irqh.processEvents(cpu);
 	}
 }
+
+void ARMRunLoop(struct ARMCore* cpu) {
+	while (cpu->cycles < cpu->nextEvent) {
+		if (cpu->executionMode == MODE_THUMB) {
+			ThumbStep(cpu);
+		} else {
+			ARMStep(cpu);
+		}
+	}
+	cpu->irqh.processEvents(cpu);
+}
