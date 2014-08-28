@@ -10,7 +10,7 @@
 #define PERF_OPTIONS "NS:"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
-	"  -N               Disable video rendering entirely" \
+	"  -N               Disable video rendering entirely\n" \
 	"  -S SEC           Run for SEC in-game seconds before exiting"
 
 struct PerfOpts {
