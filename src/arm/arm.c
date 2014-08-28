@@ -117,7 +117,6 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->executionMode = MODE_THUMB;
 	_ARMSetMode(cpu, MODE_ARM);
 
-	cpu->currentPC = 0;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 
@@ -142,7 +141,9 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
 	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
-	cpu->gprs[ARM_PC] = BASE_IRQ + WORD_SIZE_ARM;
+	cpu->gprs[ARM_PC] = BASE_IRQ;
+	int currentCycles = 0;
+	ARM_WRITE_PC;
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
@@ -160,7 +161,9 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
 	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
-	cpu->gprs[ARM_PC] = BASE_SWI + WORD_SIZE_ARM;
+	cpu->gprs[ARM_PC] = BASE_SWI;
+	int currentCycles = 0;
+	ARM_WRITE_PC;
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
@@ -168,12 +171,11 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
-	uint32_t opcode;
-	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
-	LOAD_32(opcode, cpu->currentPC & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t opcode = cpu->prefetch;
+	LOAD_32(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
 
-	int condition = opcode >> 28;
+	unsigned condition = opcode >> 28;
 	if (condition == 0xE) {
 		ARMInstruction instruction = _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 		instruction(cpu, opcode);
@@ -273,10 +275,9 @@ static inline void ARMStep(struct ARMCore* cpu) {
 }
 
 static inline void ThumbStep(struct ARMCore* cpu) {
-	cpu->currentPC = cpu->gprs[ARM_PC] - WORD_SIZE_THUMB;
+	uint32_t opcode = cpu->prefetch;
+	LOAD_16(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
-	uint16_t opcode;
-	LOAD_16(opcode, cpu->currentPC & cpu->memory.activeMask, cpu->memory.activeRegion);
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }

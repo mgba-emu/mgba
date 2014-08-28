@@ -133,7 +133,7 @@ struct ARMCore {
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
-	uint32_t currentPC;
+	uint32_t prefetch;
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
