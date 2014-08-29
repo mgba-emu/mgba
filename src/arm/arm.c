@@ -176,11 +176,7 @@ static inline void ARMStep(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
 
 	unsigned condition = opcode >> 28;
-	if (condition == 0xE) {
-		ARMInstruction instruction = _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
-		instruction(cpu, opcode);
-		return;
-	} else {
+	if (condition != 0xE) {
 		switch (condition) {
 		case 0x0:
 			if (!ARM_COND_EQ) {
