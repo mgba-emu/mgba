@@ -42,8 +42,11 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "V49J", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
 	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
 
+	// Final Fantasy Tactics Advance
+	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000418 },
+
 	// Mega Man Battle Network
-	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x8000338 },
+	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x800032E },
 
 	// Pokemon Ruby
 	{ "AXVJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
