@@ -48,6 +48,8 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->ch3.sample = 0;
 	audio->ch4.sample = 0;
 	audio->ch4.envelope.nextStep = INT_MAX;
+	audio->chA.dmaSource = 0;
+	audio->chB.dmaSource = 0;
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
