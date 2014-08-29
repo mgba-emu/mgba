@@ -70,9 +70,15 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	gba->cpu->nextEvent = state->cpu.nextEvent;
 	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
 	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
-	gba->cpu->executionMode = gba->cpu->cpsr.t ? MODE_THUMB : MODE_ARM;
 	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	if (gba->cpu->cpsr.t) {
+		gba->cpu->executionMode = MODE_THUMB;
+		LOAD_16(gba->cpu->prefetch, (gba->cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+	} else {
+		gba->cpu->executionMode = MODE_ARM;
+		LOAD_32(gba->cpu->prefetch, (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+	}
 
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
