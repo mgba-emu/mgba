@@ -165,7 +165,7 @@ int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		if (cpu->gprs[ARM_PC] >> BASE_OFFSET == REGION_BIOS) {
+		if (memory->activeRegion == REGION_BIOS) {
 			if (address < SIZE_BIOS) {
 				LOAD_32(value, address, memory->bios);
 			} else {
@@ -239,7 +239,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		if (cpu->gprs[ARM_PC] >> BASE_OFFSET == REGION_BIOS) {
+		if (memory->activeRegion == REGION_BIOS) {
 			if (address < SIZE_BIOS) {
 				LOAD_16(value, address, memory->bios);
 			} else {
@@ -316,7 +316,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 	switch (address & ~OFFSET_MASK) {
 	case BASE_BIOS:
-		if (cpu->gprs[ARM_PC] >> BASE_OFFSET == REGION_BIOS) {
+		if (memory->activeRegion == REGION_BIOS) {
 			if (address < SIZE_BIOS) {
 				value = ((int8_t*) memory->bios)[address];
 			} else {
