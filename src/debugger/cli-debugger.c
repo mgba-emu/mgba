@@ -34,6 +34,7 @@ static void _disassembleArm(struct CLIDebugger*, struct DebugVector*);
 static void _disassembleThumb(struct CLIDebugger*, struct DebugVector*);
 static void _next(struct CLIDebugger*, struct DebugVector*);
 static void _print(struct CLIDebugger*, struct DebugVector*);
+static void _printBin(struct CLIDebugger*, struct DebugVector*);
 static void _printHex(struct CLIDebugger*, struct DebugVector*);
 static void _printStatus(struct CLIDebugger*, struct DebugVector*);
 static void _quit(struct CLIDebugger*, struct DebugVector*);
@@ -69,8 +70,10 @@ static struct {
 	{ "n", _next },
 	{ "next", _next },
 	{ "p", _print },
+	{ "p/t", _printBin },
 	{ "p/x", _printHex },
 	{ "print", _print },
+	{ "print/t", _printBin },
 	{ "print/x", _printHex },
 	{ "q", _quit },
 	{ "quit", _quit },
@@ -176,6 +179,18 @@ static void _print(struct CLIDebugger* debugger, struct DebugVector* dv) {
 	UNUSED(debugger);
 	for ( ; dv; dv = dv->next) {
 		printf(" %u", dv->intValue);
+	}
+	printf("\n");
+}
+
+static void _printBin(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	UNUSED(debugger);
+	for ( ; dv; dv = dv->next) {
+		printf(" 0b");
+		int i = 32;
+		while (i--) {
+			printf("%u", (dv->intValue >> i) & 1);
+		}
 	}
 	printf("\n");
 }
