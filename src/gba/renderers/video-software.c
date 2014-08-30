@@ -103,6 +103,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->objwin.priority = 2;
 	softwareRenderer->winout.packed = 0;
 	softwareRenderer->winout.priority = 3;
+	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic.packed = 0;
 
