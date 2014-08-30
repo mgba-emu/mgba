@@ -30,6 +30,8 @@ typedef void (DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
 static void _breakInto(struct CLIDebugger*, struct DebugVector*);
 static void _continue(struct CLIDebugger*, struct DebugVector*);
 static void _disassemble(struct CLIDebugger*, struct DebugVector*);
+static void _disassembleArm(struct CLIDebugger*, struct DebugVector*);
+static void _disassembleThumb(struct CLIDebugger*, struct DebugVector*);
 static void _next(struct CLIDebugger*, struct DebugVector*);
 static void _print(struct CLIDebugger*, struct DebugVector*);
 static void _printHex(struct CLIDebugger*, struct DebugVector*);
@@ -43,6 +45,7 @@ static void _clearBreakpoint(struct CLIDebugger*, struct DebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct DebugVector*);
 
 static void _breakIntoDefault(int signal);
+static void _disassembleMode(struct CLIDebugger*, struct DebugVector*, enum ExecutionMode mode);
 static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct {
@@ -56,7 +59,11 @@ static struct {
 	{ "d", _clearBreakpoint },
 	{ "delete", _clearBreakpoint },
 	{ "dis", _disassemble },
+	{ "dis/a", _disassembleArm },
+	{ "dis/t", _disassembleThumb },
 	{ "disasm", _disassemble },
+	{ "disasm/a", _disassembleArm },
+	{ "disasm/t", _disassembleThumb },
 	{ "i", _printStatus },
 	{ "info", _printStatus },
 	{ "n", _next },
@@ -122,10 +129,21 @@ static void _next(struct CLIDebugger* debugger, struct DebugVector* dv) {
 }
 
 static void _disassemble(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	_disassembleMode(debugger, dv, debugger->d.cpu->executionMode);
+}
+
+static void _disassembleArm(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	_disassembleMode(debugger, dv, MODE_ARM);
+}
+
+static void _disassembleThumb(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	_disassembleMode(debugger, dv, MODE_THUMB);
+}
+
+static void _disassembleMode(struct CLIDebugger* debugger, struct DebugVector* dv, enum ExecutionMode mode) {
 	uint32_t address;
 	int size;
 	int wordSize;
-	enum ExecutionMode mode = debugger->d.cpu->executionMode;
 
 	if (mode == MODE_ARM) {
 		wordSize = WORD_SIZE_ARM;
