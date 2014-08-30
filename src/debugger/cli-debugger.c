@@ -483,9 +483,8 @@ static void _commandLine(struct ARMDebugger* debugger) {
 				_parse(cliDebugger, ev.str, strlen(ev.str) - 1);
 			}
 		} else {
-			if (_parse(cliDebugger, line, count - 1)) {
-				history(cliDebugger->histate, &ev, H_ENTER, line);
-			}
+			_parse(cliDebugger, line, count - 1);
+			history(cliDebugger->histate, &ev, H_ENTER, line);
 		}
 	}
 }
