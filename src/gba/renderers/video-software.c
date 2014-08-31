@@ -976,45 +976,85 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256(BLEND, OBJWIN) \
-	/* TODO: hflip */ \
 	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
 	int end2 = end - 4; \
-	int shift = inX & 0x3; \
-	if (end2 > 0) { \
-		tileData = ((uint32_t*) vram)[charBase]; \
+	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+		int shift = inX & 0x3; \
+		if (end2 > outX) { \
+			tileData = ((uint32_t*) vram)[charBase]; \
+			tileData >>= 8 * shift; \
+			shift = 0; \
+			for (; outX < end2; ++outX) { \
+				pixel = &renderer->row[outX]; \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			} \
+		} \
+		\
+		tileData = ((uint32_t*) vram)[charBase + 1]; \
 		tileData >>= 8 * shift; \
-		shift = 0; \
-		for (; outX < end2; ++outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
+		for (; outX < end; ++outX) { \
+			pixel = &renderer->row[outX]; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
-	} \
-	\
-	tileData = ((uint32_t*) vram)[charBase + 1]; \
-	tileData >>= 8 * shift; \
-	for (; outX < end; ++outX) { \
-		uint32_t* pixel = &renderer->row[outX]; \
-		BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+	} else { \
+		int start = outX; \
+		outX = end - 1; \
+		if (end2 > start) { \
+			tileData = ((uint32_t*) vram)[charBase]; \
+			for (; outX >= end2; --outX) { \
+				pixel = &renderer->row[outX]; \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			} \
+			++charBase; \
+		} \
+		\
+		tileData = ((uint32_t*) vram)[charBase]; \
+		for (; outX >= renderer->start; --outX) { \
+			pixel = &renderer->row[outX]; \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+		} \
+		outX = end; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
-	/* TODO: hflip */ \
 	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
 	outX = renderer->end - 8 + end; \
 	int end2 = 4 - end; \
-	if (end2 > 0) { \
+	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+		if (end2 > 0) { \
+			tileData = ((uint32_t*) vram)[charBase]; \
+			for (; outX < renderer->end - end2; ++outX) { \
+				pixel = &renderer->row[outX]; \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			} \
+			++charBase; \
+		} \
+		\
 		tileData = ((uint32_t*) vram)[charBase]; \
-		for (; outX < renderer->end - end2; ++outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
+		for (; outX < renderer->end; ++outX) { \
+			pixel = &renderer->row[outX]; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
-		++charBase; \
-	} \
-	\
-	tileData = ((uint32_t*) vram)[charBase]; \
-	for (; outX < renderer->end; ++outX) { \
-		uint32_t* pixel = &renderer->row[outX]; \
-		BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+	} else { \
+		int shift = end & 0x3; \
+		int start = outX; \
+		outX = renderer->end - 1; \
+		if (end2 > 0) { \
+			tileData = ((uint32_t*) vram)[charBase]; \
+			tileData >>= 8 * shift; \
+			for (; outX >= start + 4; --outX) { \
+				pixel = &renderer->row[outX]; \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			} \
+			shift = 0; \
+		} \
+		\
+		tileData = ((uint32_t*) vram)[charBase + 1]; \
+		tileData >>= 8 * shift; \
+		for (; outX >= start; --outX) { \
+			pixel = &renderer->row[outX]; \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+		} \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILES_256(BLEND, OBJWIN) \
