@@ -279,23 +279,27 @@ static void _processVReadCommand(struct GDBStub* stub, const char* message) {
 }
 
 static void _setBreakpoint(struct GDBStub* stub, const char* message) {
+	const char* readAddress = &message[2];
+	unsigned i = 0;
+	uint32_t address = _readHex(readAddress, &i);
+	readAddress += i + 1;
+	uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
+	UNUSED(kind);
+
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
-	case '1': {
-		const char* readAddress = &message[2];
-		unsigned i = 0;
-		uint32_t address = _readHex(readAddress, &i);
-		readAddress += i + 1;
-		uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
-		UNUSED(kind);
+	case '1':
 		ARMDebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
-	}
 	case '2':
 	case '3':
-		// TODO: Watchpoints
+	case '4':
+		ARMDebuggerSetWatchpoint(&stub->d, address);
+		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+		_sendMessage(stub);
+		break;
 	default:
 		stub->outgoing[0] = '\0';
 		_sendMessage(stub);
@@ -304,23 +308,24 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 }
 
 static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
+	const char* readAddress = &message[2];
+	unsigned i = 0;
+	uint32_t address = _readHex(readAddress, &i);
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
-	case '1': {
-		const char* readAddress = &message[2];
-		unsigned i = 0;
-		uint32_t address = _readHex(readAddress, &i);
+	case '1':
 		ARMDebuggerClearBreakpoint(&stub->d, address);
-		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
-		_sendMessage(stub);
 		break;
-	}
 	case '2':
 	case '3':
-		// TODO: Watchpoints
+	case '4':
+		ARMDebuggerClearWatchpoint(&stub->d, address);
+		break;
 	default:
 		break;
 	}
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
 }
 
 size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
