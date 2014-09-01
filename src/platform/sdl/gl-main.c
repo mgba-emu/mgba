@@ -121,13 +121,6 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 		return 0;
 	}
 
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#else
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-#endif
-
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -145,9 +138,11 @@ static int _GBASDLInit(struct GLSoftwareRenderer* renderer) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer->window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->events.fullscreen));
 	SDL_GL_CreateContext(renderer->window);
+	SDL_GL_SetSwapInterval(1);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->events.window = renderer->window;
 #else
+	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
 #else
