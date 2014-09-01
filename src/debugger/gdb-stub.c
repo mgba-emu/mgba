@@ -297,6 +297,8 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	case '3':
 		// TODO: Watchpoints
 	default:
+		stub->outgoing[0] = '\0';
+		_sendMessage(stub);
 		break;
 	}
 }
