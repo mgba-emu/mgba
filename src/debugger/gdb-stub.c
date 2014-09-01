@@ -177,7 +177,7 @@ static void _continue(struct GDBStub* stub, const char* message) {
 
 static void _step(struct GDBStub* stub, const char* message) {
 	ARMRun(stub->d.cpu);
-	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
+	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
 	_sendMessage(stub);
 	// TODO: parse message
 	UNUSED(message);
