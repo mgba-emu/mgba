@@ -37,6 +37,7 @@ static void _print(struct CLIDebugger*, struct DebugVector*);
 static void _printBin(struct CLIDebugger*, struct DebugVector*);
 static void _printHex(struct CLIDebugger*, struct DebugVector*);
 static void _printStatus(struct CLIDebugger*, struct DebugVector*);
+static void _printHelp(struct CLIDebugger*, struct DebugVector*);
 static void _quit(struct CLIDebugger*, struct DebugVector*);
 static void _readByte(struct CLIDebugger*, struct DebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct DebugVector*);
@@ -52,39 +53,42 @@ static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum Exec
 static struct {
 	const char* name;
 	DebuggerCommand* command;
+	const char* summary;
 } _debuggerCommands[] = {
-	{ "b", _setBreakpoint },
-	{ "break", _setBreakpoint },
-	{ "c", _continue },
-	{ "continue", _continue },
-	{ "d", _clearBreakpoint },
-	{ "delete", _clearBreakpoint },
-	{ "dis", _disassemble },
-	{ "dis/a", _disassembleArm },
-	{ "dis/t", _disassembleThumb },
-	{ "disasm", _disassemble },
-	{ "disasm/a", _disassembleArm },
-	{ "disasm/t", _disassembleThumb },
-	{ "i", _printStatus },
-	{ "info", _printStatus },
-	{ "n", _next },
-	{ "next", _next },
-	{ "p", _print },
-	{ "p/t", _printBin },
-	{ "p/x", _printHex },
-	{ "print", _print },
-	{ "print/t", _printBin },
-	{ "print/x", _printHex },
-	{ "q", _quit },
-	{ "quit", _quit },
-	{ "rb", _readByte },
-	{ "rh", _readHalfword },
-	{ "rw", _readWord },
-	{ "status", _printStatus },
-	{ "w", _setWatchpoint },
-	{ "watch", _setWatchpoint },
-	{ "x", _breakInto },
-	{ 0, 0 }
+	{ "b", _setBreakpoint, "Set a breakpoint" },
+	{ "break", _setBreakpoint, "Set a breakpoint" },
+	{ "c", _continue, "Continue execution" },
+	{ "continue", _continue, "Continue execution" },
+	{ "d", _clearBreakpoint, "Delete a breakpoint" },
+	{ "delete", _clearBreakpoint, "Delete a breakpoint" },
+	{ "dis", _disassemble, "Disassemble instructions" },
+	{ "dis/a", _disassembleArm, "Disassemble instructions as ARM" },
+	{ "dis/t", _disassembleThumb, "Disassemble instructions as Thumb" },
+	{ "disasm", _disassemble, "Disassemble instructions" },
+	{ "disasm/a", _disassembleArm, "Disassemble instructions as ARM" },
+	{ "disasm/t", _disassembleThumb, "Disassemble instructions as Thumb" },
+	{ "h", _printHelp, "Print help" },
+	{ "help", _printHelp, "Print help" },
+	{ "i", _printStatus, "Print the current status" },
+	{ "info", _printStatus, "Print the current status" },
+	{ "n", _next, "Execute next instruction" },
+	{ "next", _next, "Execute next instruction" },
+	{ "p", _print, "Print a value" },
+	{ "p/t", _printBin, "Print a value as binary" },
+	{ "p/x", _printHex, "Print a value as hexadecimal" },
+	{ "print", _print, "Print a value" },
+	{ "print/t", _printBin, "Print a value as binary" },
+	{ "print/x", _printHex, "Print a value as hexadecimal" },
+	{ "q", _quit, "Quit the emulator" },
+	{ "quit", _quit, "Quit the emulator"  },
+	{ "rb", _readByte, "Read a byte from a specified offset" },
+	{ "rh", _readHalfword, "Read a halfword from a specified offset" },
+	{ "rw", _readWord, "Read a word from a specified offset" },
+	{ "status", _printStatus, "Print the current status" },
+	{ "w", _setWatchpoint, "Set a watchpoint" },
+	{ "watch", _setWatchpoint, "Set a watchpoint" },
+	{ "x", _breakInto, "Break into attached debugger (for developers)" },
+	{ 0, 0, 0 }
 };
 
 static inline void _printPSR(union PSR psr) {
@@ -201,6 +205,24 @@ static void _printHex(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		printf(" 0x%08X", dv->intValue);
 	}
 	printf("\n");
+}
+
+static void _printHelp(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	UNUSED(debugger);
+	UNUSED(dv);
+	if (!dv) {
+		int i;
+		for (i = 0; _debuggerCommands[i].name; ++i) {
+			printf("%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
+		}
+	} else {
+		int i;
+		for (i = 0; _debuggerCommands[i].name; ++i) {
+			if (strcmp(_debuggerCommands[i].name, dv->charValue) == 0) {
+				printf("%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
+			}
+		}
+	}
 }
 
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
