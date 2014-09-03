@@ -17,7 +17,7 @@ struct DebugVector {
 	} type;
 	union {
 		int32_t intValue;
-		const char* charValue;
+		char* charValue;
 	};
 };
 
@@ -25,7 +25,11 @@ static const char* ERROR_MISSING_ARGS = "Arguments missing";
 
 static struct CLIDebugger* _activeDebugger;
 
-typedef void (DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
+typedef void (*DebuggerCommand)(struct CLIDebugger*, struct DebugVector*);
+typedef struct DebugVector* (*DVParser)(struct CLIDebugger* debugger, const char* string, size_t length);
+
+static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* string, size_t length);
+static struct DebugVector* _DVStringParse(struct CLIDebugger* debugger, const char* string, size_t length);
 
 static void _breakInto(struct CLIDebugger*, struct DebugVector*);
 static void _continue(struct CLIDebugger*, struct DebugVector*);
@@ -52,43 +56,44 @@ static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum Exec
 
 static struct {
 	const char* name;
-	DebuggerCommand* command;
+	DebuggerCommand command;
+	DVParser parser;
 	const char* summary;
 } _debuggerCommands[] = {
-	{ "b", _setBreakpoint, "Set a breakpoint" },
-	{ "break", _setBreakpoint, "Set a breakpoint" },
-	{ "c", _continue, "Continue execution" },
-	{ "continue", _continue, "Continue execution" },
-	{ "d", _clearBreakpoint, "Delete a breakpoint" },
-	{ "delete", _clearBreakpoint, "Delete a breakpoint" },
-	{ "dis", _disassemble, "Disassemble instructions" },
-	{ "dis/a", _disassembleArm, "Disassemble instructions as ARM" },
-	{ "dis/t", _disassembleThumb, "Disassemble instructions as Thumb" },
-	{ "disasm", _disassemble, "Disassemble instructions" },
-	{ "disasm/a", _disassembleArm, "Disassemble instructions as ARM" },
-	{ "disasm/t", _disassembleThumb, "Disassemble instructions as Thumb" },
-	{ "h", _printHelp, "Print help" },
-	{ "help", _printHelp, "Print help" },
-	{ "i", _printStatus, "Print the current status" },
-	{ "info", _printStatus, "Print the current status" },
-	{ "n", _next, "Execute next instruction" },
-	{ "next", _next, "Execute next instruction" },
-	{ "p", _print, "Print a value" },
-	{ "p/t", _printBin, "Print a value as binary" },
-	{ "p/x", _printHex, "Print a value as hexadecimal" },
-	{ "print", _print, "Print a value" },
-	{ "print/t", _printBin, "Print a value as binary" },
-	{ "print/x", _printHex, "Print a value as hexadecimal" },
-	{ "q", _quit, "Quit the emulator" },
-	{ "quit", _quit, "Quit the emulator"  },
-	{ "rb", _readByte, "Read a byte from a specified offset" },
-	{ "rh", _readHalfword, "Read a halfword from a specified offset" },
-	{ "rw", _readWord, "Read a word from a specified offset" },
-	{ "status", _printStatus, "Print the current status" },
-	{ "w", _setWatchpoint, "Set a watchpoint" },
-	{ "watch", _setWatchpoint, "Set a watchpoint" },
-	{ "x", _breakInto, "Break into attached debugger (for developers)" },
-	{ 0, 0, 0 }
+	{ "b", _setBreakpoint, _DVParse, "Set a breakpoint" },
+	{ "break", _setBreakpoint, _DVParse, "Set a breakpoint" },
+	{ "c", _continue, 0, "Continue execution" },
+	{ "continue", _continue, 0, "Continue execution" },
+	{ "d", _clearBreakpoint, _DVParse, "Delete a breakpoint" },
+	{ "delete", _clearBreakpoint, _DVParse, "Delete a breakpoint" },
+	{ "dis", _disassemble, _DVParse, "Disassemble instructions" },
+	{ "dis/a", _disassembleArm, _DVParse, "Disassemble instructions as ARM" },
+	{ "dis/t", _disassembleThumb, _DVParse, "Disassemble instructions as Thumb" },
+	{ "disasm", _disassemble, _DVParse, "Disassemble instructions" },
+	{ "disasm/a", _disassembleArm, _DVParse, "Disassemble instructions as ARM" },
+	{ "disasm/t", _disassembleThumb, _DVParse, "Disassemble instructions as Thumb" },
+	{ "h", _printHelp, _DVStringParse, "Print help" },
+	{ "help", _printHelp, _DVStringParse, "Print help" },
+	{ "i", _printStatus, 0, "Print the current status" },
+	{ "info", _printStatus, 0, "Print the current status" },
+	{ "n", _next, 0, "Execute next instruction" },
+	{ "next", _next, 0, "Execute next instruction" },
+	{ "p", _print, _DVParse, "Print a value" },
+	{ "p/t", _printBin, _DVParse, "Print a value as binary" },
+	{ "p/x", _printHex, _DVParse, "Print a value as hexadecimal" },
+	{ "print", _print, _DVParse, "Print a value" },
+	{ "print/t", _printBin, _DVParse, "Print a value as binary" },
+	{ "print/x", _printHex, _DVParse, "Print a value as hexadecimal" },
+	{ "q", _quit, 0, "Quit the emulator" },
+	{ "quit", _quit, 0, "Quit the emulator"  },
+	{ "rb", _readByte, _DVParse, "Read a byte from a specified offset" },
+	{ "rh", _readHalfword, _DVParse, "Read a halfword from a specified offset" },
+	{ "rw", _readWord, _DVParse, "Read a word from a specified offset" },
+	{ "status", _printStatus, 0, "Print the current status" },
+	{ "w", _setWatchpoint, _DVParse, "Set a watchpoint" },
+	{ "watch", _setWatchpoint, _DVParse, "Set a watchpoint" },
+	{ "x", _breakInto, 0, "Break into attached debugger (for developers)" },
+	{ 0, 0, 0, 0 }
 };
 
 static inline void _printPSR(union PSR psr) {
@@ -219,7 +224,7 @@ static void _printHelp(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		int i;
 		for (i = 0; _debuggerCommands[i].name; ++i) {
 			if (strcmp(_debuggerCommands[i].name, dv->charValue) == 0) {
-				printf("%-10s %s\n", _debuggerCommands[i].name, _debuggerCommands[i].summary);
+				printf(" %s\n", _debuggerCommands[i].summary);
 			}
 		}
 	}
@@ -441,10 +446,44 @@ static struct DebugVector* _DVParse(struct CLIDebugger* debugger, const char* st
 	return dv;
 }
 
+static struct DebugVector* _DVStringParse(struct CLIDebugger* debugger, const char* string, size_t length) {
+	if (!string || length < 1) {
+		return 0;
+	}
+
+	struct DebugVector dvTemp = { .type = DV_CHAR_TYPE };
+
+	size_t adjusted;
+	const char* next = strchr(string, ' ');
+	if (next) {
+		adjusted = next - string;
+	} else {
+		adjusted = length;
+	}
+	dvTemp.charValue = malloc(adjusted);
+	strncpy(dvTemp.charValue, string, adjusted);
+
+	length -= adjusted;
+	string += adjusted;
+
+	struct DebugVector* dv = malloc(sizeof(struct DebugVector));
+	*dv = dvTemp;
+	if (string[0] == ' ') {
+		dv->next = _DVStringParse(debugger, string + 1, length - 1);
+		if (dv->next && dv->next->type == DV_ERROR_TYPE) {
+			dv->type = DV_ERROR_TYPE;
+		}
+	}
+	return dv;
+}
+
 static void _DVFree(struct DebugVector* dv) {
 	struct DebugVector* next;
 	while (dv) {
 		next = dv->next;
+		if (dv->type == DV_CHAR_TYPE) {
+			free(dv->charValue);
+		}
 		free(dv);
 		dv = next;
 	}
@@ -456,12 +495,6 @@ static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count)
 	struct DebugVector* dv = 0;
 	if (firstSpace) {
 		cmdLength = firstSpace - line;
-		dv = _DVParse(debugger, firstSpace + 1, count - cmdLength - 1);
-		if (dv && dv->type == DV_ERROR_TYPE) {
-			printf("Parse error\n");
-			_DVFree(dv);
-			return false;
-		}
 	} else {
 		cmdLength = count;
 	}
@@ -473,6 +506,20 @@ static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count)
 			continue;
 		}
 		if (strncasecmp(name, line, cmdLength) == 0) {
+			if (_debuggerCommands[i].parser) {
+				if (firstSpace) {
+					dv = _debuggerCommands[i].parser(debugger, firstSpace + 1, count - cmdLength - 1);
+					if (dv && dv->type == DV_ERROR_TYPE) {
+						printf("Parse error\n");
+						_DVFree(dv);
+						return false;
+					}
+				} else {
+					printf("Wrong number of arguments");
+				}
+			} else if (firstSpace) {
+				printf("Wrong number of arguments");
+			}
 			_debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
 			return true;
