@@ -1,5 +1,7 @@
 #include "util/png-io.h"
 
+#ifdef USE_PNG
+
 #include "vfs.h"
 
 static void _pngWrite(png_structp png, png_bytep buffer, png_size_t size) {
@@ -177,3 +179,5 @@ bool PNGReadFooter(png_structp png, png_infop end) {
 void PNGReadClose(png_structp png, png_infop info, png_infop end) {
 	png_destroy_read_struct(&png, &info, &end);
 }
+
+#endif

@@ -520,6 +520,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
+#ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
 	void* pixels = 0;
@@ -531,6 +532,7 @@ void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	PNGWriteClose(png, info);
 	vf->close(vf);
 }
+#endif
 
 void GBASyncPostFrame(struct GBASync* sync) {
 	if (!sync) {
