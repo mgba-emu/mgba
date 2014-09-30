@@ -14,7 +14,8 @@
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
-static const uint64_t GBA_ROM_MAGIC = 0x21A29A6951AEFF24;
+static const size_t GBA_ROM_MAGIC_OFFSET = 4;
+static const uint8_t GBA_ROM_MAGIC[] = { 0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21 };
 
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
@@ -607,14 +608,14 @@ void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel leve
 }
 
 bool GBAIsROM(struct VFile* vf) {
-	if (vf->seek(vf, 4, SEEK_SET) < 0) {
+	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
-	uint64_t signature;
+	uint8_t signature[sizeof(GBA_ROM_MAGIC)];
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
-	return signature == GBA_ROM_MAGIC;
+	return memcmp(signature, GBA_ROM_MAGIC, sizeof(signature)) == 0;
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
