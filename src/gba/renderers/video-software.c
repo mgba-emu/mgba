@@ -77,7 +77,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	int i;
 
-	softwareRenderer->dispcnt.packed = 0x0080;
+	softwareRenderer->dispcnt = 0x0080;
 
 	softwareRenderer->target1Obj = 0;
 	softwareRenderer->target1Bd = 0;
@@ -142,7 +142,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	switch (address) {
 	case REG_DISPCNT:
-		softwareRenderer->dispcnt.packed = value;
+		softwareRenderer->dispcnt = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
 	case REG_BG0CNT:
@@ -417,7 +417,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
-	if (softwareRenderer->dispcnt.forcedBlank) {
+	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		int x;
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = GBA_COLOR_WHITE;
@@ -435,12 +435,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	softwareRenderer->windows[0].endX = VIDEO_HORIZONTAL_PIXELS;
 	softwareRenderer->nWindows = 1;
-	if (softwareRenderer->dispcnt.win0Enable || softwareRenderer->dispcnt.win1Enable || softwareRenderer->dispcnt.objwinEnable) {
+	if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 		softwareRenderer->windows[0].control = softwareRenderer->winout;
-		if (softwareRenderer->dispcnt.win1Enable && y < softwareRenderer->winN[1].v.end && y >= softwareRenderer->winN[1].v.start) {
+		if (GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) && y < softwareRenderer->winN[1].v.end && y >= softwareRenderer->winN[1].v.start) {
 			_breakWindow(softwareRenderer, &softwareRenderer->winN[1]);
 		}
-		if (softwareRenderer->dispcnt.win0Enable && y < softwareRenderer->winN[0].v.end && y >= softwareRenderer->winN[0].v.start) {
+		if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) && y < softwareRenderer->winN[0].v.end && y >= softwareRenderer->winN[0].v.start) {
 			_breakWindow(softwareRenderer, &softwareRenderer->winN[0]);
 		}
 	} else {
@@ -524,10 +524,10 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 }
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer) {
-	renderer->bg[0].enabled = renderer->dispcnt.bg0Enable;
-	renderer->bg[1].enabled = renderer->dispcnt.bg1Enable;
-	renderer->bg[2].enabled = renderer->dispcnt.bg2Enable;
-	renderer->bg[3].enabled = renderer->dispcnt.bg3Enable;
+	renderer->bg[0].enabled = GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt);
+	renderer->bg[1].enabled = GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt);
+	renderer->bg[2].enabled = GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt);
+	renderer->bg[3].enabled = GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt);
 }
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
@@ -629,14 +629,14 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 #define TEST_LAYER_ENABLED(X) \
 	(renderer->bg[X].enabled && \
 	(renderer->currentWindow.bg ## X ## Enable || \
-	(renderer->dispcnt.objwinEnable && renderer->objwin.bg ## X ## Enable)) && \
+	(GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && renderer->objwin.bg ## X ## Enable)) && \
 	renderer->bg[X].priority == priority)
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int w;
 	renderer->end = 0;
 	int spriteLayers = 0;
-	if (renderer->dispcnt.objEnable) {
+	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt)) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}
@@ -680,14 +680,14 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
 			renderer->currentWindow = renderer->windows[w].control;
-			if (TEST_LAYER_ENABLED(0) && renderer->dispcnt.mode < 2) {
+			if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(renderer->dispcnt) < 2) {
 				_drawBackgroundMode0(renderer, &renderer->bg[0], y);
 			}
-			if (TEST_LAYER_ENABLED(1) && renderer->dispcnt.mode < 2) {
+			if (TEST_LAYER_ENABLED(1) && GBARegisterDISPCNTGetMode(renderer->dispcnt) < 2) {
 				_drawBackgroundMode0(renderer, &renderer->bg[1], y);
 			}
 			if (TEST_LAYER_ENABLED(2)) {
-				switch (renderer->dispcnt.mode) {
+				switch (GBARegisterDISPCNTGetMode(renderer->dispcnt)) {
 				case 0:
 					_drawBackgroundMode0(renderer, &renderer->bg[2], y);
 					break;
@@ -707,7 +707,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 				}
 			}
 			if (TEST_LAYER_ENABLED(3)) {
-				switch (renderer->dispcnt.mode) {
+				switch (GBARegisterDISPCNTGetMode(renderer->dispcnt)) {
 				case 0:
 					_drawBackgroundMode0(renderer, &renderer->bg[3], y);
 					break;
@@ -819,7 +819,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define PREPARE_OBJWIN \
-	int objwinSlowPath = renderer->dispcnt.objwinEnable; \
+	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt); \
 	int objwinOnly = 0; \
 	int objwinForceEnable = 0; \
 	color_t* objwinPalette; \
@@ -1377,7 +1377,7 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	uint16_t color;
 	uint32_t offset = 0;
-	if (renderer->dispcnt.frameSelect) {
+	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
 	}
 
@@ -1405,7 +1405,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	uint32_t color;
 	uint32_t offset = 0;
-	if (renderer->dispcnt.frameSelect) {
+	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
 	}
 
@@ -1481,7 +1481,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 #define SPRITE_XBASE_16(localX) unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
-#define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width >> 1 : 0x80) + (localY & 0x7) * 4;
+#define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
@@ -1498,7 +1498,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
-#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (renderer->dispcnt.objCharacterMapping ? width : 0x80) + (localY & 0x7) * 8;
+#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
@@ -1630,7 +1630,7 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 	uint32_t* pixel = renderer->row;
 	uint32_t flags = FLAG_TARGET_2 * renderer->target2Obj;
 
-	int objwinSlowPath = renderer->dispcnt.objwinEnable;
+	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
 	int objwinDisable = 0;
 	if (objwinSlowPath) {
 		objwinDisable = !renderer->objwin.objEnable;

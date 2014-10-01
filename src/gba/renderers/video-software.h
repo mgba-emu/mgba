@@ -113,7 +113,7 @@ struct GBAVideoSoftwareRenderer {
 	color_t* outputBuffer;
 	unsigned outputBufferStride;
 
-	union GBARegisterDISPCNT dispcnt;
+	GBARegisterDISPCNT dispcnt;
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];

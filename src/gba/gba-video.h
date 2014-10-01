@@ -125,25 +125,21 @@ union GBAOAM {
 #define GBA_TEXT_MAP_VFLIP(MAP) ((MAP) & 0x0800)
 #define GBA_TEXT_MAP_PALETTE(MAP) (((MAP) & 0xF000) >> 12)
 
-union GBARegisterDISPCNT {
-	struct {
-		unsigned mode : 3;
-		unsigned cgb : 1;
-		unsigned frameSelect : 1;
-		unsigned hblankIntervalFree : 1;
-		unsigned objCharacterMapping : 1;
-		unsigned forcedBlank : 1;
-		unsigned bg0Enable : 1;
-		unsigned bg1Enable : 1;
-		unsigned bg2Enable : 1;
-		unsigned bg3Enable : 1;
-		unsigned objEnable : 1;
-		unsigned win0Enable : 1;
-		unsigned win1Enable : 1;
-		unsigned objwinEnable : 1;
-	};
-	uint16_t packed;
-};
+DECL_BITFIELD(GBARegisterDISPCNT, uint16_t);
+DECL_BITS(GBARegisterDISPCNT, Mode, 0, 3);
+DECL_BIT(GBARegisterDISPCNT, Cgb, 3);
+DECL_BIT(GBARegisterDISPCNT, FrameSelect, 4);
+DECL_BIT(GBARegisterDISPCNT, HblankIntervalFree, 5);
+DECL_BIT(GBARegisterDISPCNT, ObjCharacterMapping, 6);
+DECL_BIT(GBARegisterDISPCNT, ForcedBlank, 7);
+DECL_BIT(GBARegisterDISPCNT, Bg0Enable, 8);
+DECL_BIT(GBARegisterDISPCNT, Bg1Enable, 9);
+DECL_BIT(GBARegisterDISPCNT, Bg2Enable, 10);
+DECL_BIT(GBARegisterDISPCNT, Bg3Enable, 11);
+DECL_BIT(GBARegisterDISPCNT, ObjEnable, 12);
+DECL_BIT(GBARegisterDISPCNT, Win0Enable, 13);
+DECL_BIT(GBARegisterDISPCNT, Win1Enable, 14);
+DECL_BIT(GBARegisterDISPCNT, ObjwinEnable, 15);
 
 union GBARegisterDISPSTAT {
 	struct {

@@ -61,4 +61,19 @@
 #define STORE_16(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
 #endif
 
+#define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))
+#define CHECK_BITS(SRC, START, END) ((SRC) & MAKE_MASK(START, END))
+#define EXT_BITS(SRC, START, END) (((SRC) >> (START)) & ((1 << ((END) - (START))) - 1))
+
+#define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME
+
+#define DECL_BITS(TYPE, FIELD, START, SIZE) \
+	static inline TYPE TYPE ## Is ## FIELD (TYPE src) { \
+		return CHECK_BITS(src, (START), (START) + (SIZE)); \
+	} \
+	static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
+		return EXT_BITS(src, (START), (START) + (SIZE)); \
+	}
+
+#define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)
 #endif
