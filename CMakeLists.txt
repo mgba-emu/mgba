@@ -112,6 +112,7 @@ if(USE_PNG)
 	find_package(PNG REQUIRED)
 	find_package(ZLIB REQUIRED)
 	add_definitions(-DUSE_PNG)
+	include_directories(${PNG_PNG_INCLUDE_DIR})
 	list(APPEND DEPENDENCY_LIB ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
 endif()
 
