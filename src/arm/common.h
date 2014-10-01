@@ -64,6 +64,7 @@
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))
 #define CHECK_BITS(SRC, START, END) ((SRC) & MAKE_MASK(START, END))
 #define EXT_BITS(SRC, START, END) (((SRC) >> (START)) & ((1 << ((END) - (START))) - 1))
+#define INS_BITS(SRC, START, END, BITS) (CLEAR_BITS(SRC, START, END) | (((BITS) << (START)) & MAKE_MASK(START, END)))
 #define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
 #define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
 
@@ -81,6 +82,9 @@
 	} \
 	static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
 		return FILL_BITS(src, (START), (START) + (SIZE)); \
+	} \
+	static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
+		return INS_BITS(src, (START), (START) + (SIZE), bits); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)

@@ -80,21 +80,19 @@ enum DMATiming {
 	DMA_TIMING_CUSTOM = 3
 };
 
+
+DECL_BITFIELD(GBADMARegister, uint16_t);
+DECL_BITS(GBADMARegister, DestControl, 5, 2);
+DECL_BITS(GBADMARegister, SrcControl, 7, 2);
+DECL_BIT(GBADMARegister, Repeat, 9);
+DECL_BIT(GBADMARegister, Width, 10);
+DECL_BIT(GBADMARegister, DRQ, 11);
+DECL_BITS(GBADMARegister, Timing, 12, 2);
+DECL_BIT(GBADMARegister, DoIRQ, 14);
+DECL_BIT(GBADMARegister, Enable, 15);
+
 struct GBADMA {
-	union {
-		struct {
-			int : 5;
-			enum DMAControl dstControl : 2;
-			enum DMAControl srcControl : 2;
-			unsigned repeat : 1;
-			unsigned width : 1;
-			unsigned drq : 1;
-			enum DMATiming timing : 2;
-			unsigned doIrq : 1;
-			unsigned enable : 1;
-		};
-		uint16_t packed;
-	};
+	GBADMARegister reg;
 
 	uint32_t source;
 	uint32_t dest;

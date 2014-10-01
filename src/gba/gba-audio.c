@@ -253,7 +253,7 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		GBALog(audio->p, GBA_LOG_GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
-	info->dstControl = DMA_FIXED;
+	info->reg = GBADMARegisterSetDestControl(info->reg, DMA_FIXED);
 }
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {

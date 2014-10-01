@@ -651,26 +651,26 @@ void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count) {
 uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* currentDma = &memory->dma[dma];
-	int wasEnabled = currentDma->enable;
-	currentDma->packed = control;
+	int wasEnabled = GBADMARegisterIsEnable(currentDma->reg);
+	currentDma->reg = control;
 
-	if (currentDma->drq) {
+	if (GBADMARegisterIsDRQ(currentDma->reg)) {
 		GBALog(gba, GBA_LOG_STUB, "DRQ not implemented");
 	}
 
-	if (!wasEnabled && currentDma->enable) {
+	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
 		currentDma->nextSource = currentDma->source;
 		currentDma->nextDest = currentDma->dest;
 		currentDma->nextCount = currentDma->count;
 		GBAMemoryScheduleDMA(gba, dma, currentDma);
 	}
 	// If the DMA has already occurred, this value might have changed since the function started
-	return currentDma->packed;
+	return currentDma->reg;
 };
 
 void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct ARMCore* cpu = gba->cpu;
-	switch (info->timing) {
+	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
 		info->nextEvent = cpu->cycles;
 		GBAMemoryUpdateDMAs(gba, 0);
@@ -706,7 +706,7 @@ void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (dma->enable && dma->timing == DMA_TIMING_HBLANK) {
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_HBLANK) {
 			dma->nextEvent = cycles;
 		}
 	}
@@ -719,7 +719,7 @@ void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		dma = &memory->dma[i];
-		if (dma->enable && dma->timing == DMA_TIMING_VBLANK) {
+		if (GBADMARegisterIsEnable(dma->reg) && GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_VBLANK) {
 			dma->nextEvent = cycles;
 		}
 	}
@@ -752,7 +752,7 @@ void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 		struct GBADMA* dma = &memory->dma[i];
 		if (dma->nextEvent != INT_MAX) {
 			dma->nextEvent -= cycles;
-			if (dma->enable) {
+			if (GBADMARegisterIsEnable(dma->reg)) {
 				memory->activeDMA = i;
 				memory->nextDMA = dma->nextEvent;
 			}
@@ -766,9 +766,9 @@ void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles) {
 void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct GBAMemory* memory = &gba->memory;
 	struct ARMCore* cpu = gba->cpu;
-	uint32_t width = info->width ? 4 : 2;
-	int sourceOffset = DMA_OFFSET[info->srcControl] * width;
-	int destOffset = DMA_OFFSET[info->dstControl] * width;
+	uint32_t width = GBADMARegisterGetWidth(info->reg) ? 4 : 2;
+	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
 	int32_t wordsRemaining = info->nextCount;
 	uint32_t source = info->nextSource;
 	uint32_t dest = info->nextDest;
@@ -828,20 +828,20 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 
 	if (!wordsRemaining) {
-		if (!info->repeat) {
-			info->enable = 0;
+		if (!GBADMARegisterIsRepeat(info->reg)) {
+			info->reg = GBADMARegisterClearEnable(info->reg);
 			info->nextEvent = INT_MAX;
 
 			// Clear the enable bit in memory
 			memory->io[(REG_DMA0CNT_HI + number * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
 		} else {
 			info->nextCount = info->count;
-			if (info->dstControl == DMA_INCREMENT_RELOAD) {
+			if (GBADMARegisterGetDestControl(info->reg) == DMA_INCREMENT_RELOAD) {
 				info->nextDest = info->dest;
 			}
 			GBAMemoryScheduleDMA(gba, number, info);
 		}
-		if (info->doIrq) {
+		if (GBADMARegisterIsDoIRQ(info->reg)) {
 			GBARaiseIRQ(gba, IRQ_DMA0 + number);
 		}
 	} else {

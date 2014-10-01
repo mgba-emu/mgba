@@ -482,7 +482,7 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
 		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
 		gba->memory.dma[i].nextEvent = state->dma[i].nextEvent;
-		if (gba->memory.dma[i].timing != DMA_TIMING_NOW) {
+		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
 			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
 		}
 
