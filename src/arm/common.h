@@ -23,7 +23,7 @@
 }
 
 #define LOAD_16(DEST, ADDR, ARR) { \
-	uint16_t _tmp = (ADDR); \
+	uint32_t _tmp = (ADDR); \
 	asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(_tmp), "p"(ARR)); \
 }
 
@@ -33,7 +33,7 @@
 }
 
 #define STORE_16(SRC, ADDR, ARR) { \
-	uint16_t _tmp = (ADDR); \
+	uint32_t _tmp = (ADDR); \
 	asm("sthbrx %0, %1, %2" : : "r"(SRC), "r"(_tmp), "p"(ARR)); \
 }
 #else
