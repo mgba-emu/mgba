@@ -141,19 +141,14 @@ DECL_BIT(GBARegisterDISPSTAT, HblankIRQ, 4);
 DECL_BIT(GBARegisterDISPSTAT, VcounterIRQ, 5);
 DECL_BITS(GBARegisterDISPSTAT, VcountSetting, 8, 8);
 
-union GBARegisterBGCNT {
-	struct {
-		unsigned priority : 2;
-		unsigned charBase : 2;
-		unsigned : 2;
-		unsigned mosaic : 1;
-		unsigned multipalette : 1;
-		unsigned screenBase : 5;
-		unsigned overflow : 1;
-		unsigned size : 2;
-	};
-	uint16_t packed;
-};
+DECL_BITFIELD(GBARegisterBGCNT, uint16_t);
+DECL_BITS(GBARegisterBGCNT, Priority, 0, 2);
+DECL_BITS(GBARegisterBGCNT, CharBase, 2, 2);
+DECL_BIT(GBARegisterBGCNT, Mosaic, 6);
+DECL_BIT(GBARegisterBGCNT, 256Color, 7);
+DECL_BITS(GBARegisterBGCNT, ScreenBase, 8, 5);
+DECL_BIT(GBARegisterBGCNT, Overflow, 13);
+DECL_BITS(GBARegisterBGCNT, Size, 14, 2);
 
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);

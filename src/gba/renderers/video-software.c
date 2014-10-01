@@ -532,14 +532,13 @@ static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRendere
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
 	UNUSED(renderer);
-	union GBARegisterBGCNT reg = { .packed = value };
-	bg->priority = reg.priority;
-	bg->charBase = reg.charBase << 14;
-	bg->mosaic = reg.mosaic;
-	bg->multipalette = reg.multipalette;
-	bg->screenBase = reg.screenBase << 11;
-	bg->overflow = reg.overflow;
-	bg->size = reg.size;
+	bg->priority = GBARegisterBGCNTGetPriority(value);
+	bg->charBase = GBARegisterBGCNTGetCharBase(value) << 14;
+	bg->mosaic = GBARegisterBGCNTGetMosaic(value);
+	bg->multipalette = GBARegisterBGCNTGet256Color(value);
+	bg->screenBase = GBARegisterBGCNTGetScreenBase(value) << 11;
+	bg->overflow = GBARegisterBGCNTGetOverflow(value);
+	bg->size = GBARegisterBGCNTGetSize(value);
 }
 
 static void GBAVideoSoftwareRendererWriteBGPA(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
