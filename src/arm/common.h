@@ -17,10 +17,25 @@
 #define UNUSED(V) (void)(V)
 
 #if defined(__PPC__) || defined(__POWERPC__)
-#define LOAD_32(DEST, ADDR, ARR) asm("lwbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
-#define LOAD_16(DEST, ADDR, ARR) asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(ADDR), "r"(ARR))
-#define STORE_32(SRC, ADDR, ARR) asm("stwbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
-#define STORE_16(SRC, ADDR, ARR) asm("sthbrx %0, %1, %2" : : "r"(SRC), "r"(ADDR), "r"(ARR))
+#define LOAD_32(DEST, ADDR, ARR) { \
+	uint32_t _tmp = (ADDR); \
+	asm("lwbrx %0, %1, %2" : "=r"(DEST) : "r"(_tmp), "p"(ARR)); \
+}
+
+#define LOAD_16(DEST, ADDR, ARR) { \
+	uint16_t _tmp = (ADDR); \
+	asm("lhbrx %0, %1, %2" : "=r"(DEST) : "r"(_tmp), "p"(ARR)); \
+}
+
+#define STORE_32(SRC, ADDR, ARR) { \
+	uint32_t _tmp = (ADDR); \
+	asm("stwbrx %0, %1, %2" : : "r"(SRC), "r"(_tmp), "p"(ARR)); \
+}
+
+#define STORE_16(SRC, ADDR, ARR) { \
+	uint16_t _tmp = (ADDR); \
+	asm("sthbrx %0, %1, %2" : : "r"(SRC), "r"(_tmp), "p"(ARR)); \
+}
 #else
 #define LOAD_32(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
 #define LOAD_16(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
