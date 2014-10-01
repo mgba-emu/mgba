@@ -24,12 +24,12 @@
 	"rlwimi %0, %1, 24, 16, 23\n" \
 	"rlwimi %0, %1, 8, 8, 15\n" \
 	"rlwimi %0, %1, 24, 0, 7\n" \
-	: "+r"(DEST) : "r"(VAR) : )
+	: "+r"(DEST) : "r"(VAR))
 
 #define SWAP_16(DEST, VAR) asm(\
 	"rlwinm %0, %1, 24, 24, 31\n" \
 	"rlwimi %0, %1, 8, 16, 23\n" \
-	: "+r"(DEST) : "r"(VAR) : )
+	: "+r"(DEST) : "r"(VAR))
 #endif
 
 #define LOAD_32(DEST, ADDR, ARR) { \
