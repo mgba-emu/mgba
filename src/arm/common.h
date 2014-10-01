@@ -64,6 +64,8 @@
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))
 #define CHECK_BITS(SRC, START, END) ((SRC) & MAKE_MASK(START, END))
 #define EXT_BITS(SRC, START, END) (((SRC) >> (START)) & ((1 << ((END) - (START))) - 1))
+#define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
+#define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
 
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME
 
@@ -73,6 +75,12 @@
 	} \
 	static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
 		return EXT_BITS(src, (START), (START) + (SIZE)); \
+	} \
+	static inline TYPE TYPE ## Clear ## FIELD (TYPE src) { \
+		return CLEAR_BITS(src, (START), (START) + (SIZE)); \
+	} \
+	static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
+		return FILL_BITS(src, (START), (START) + (SIZE)); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)

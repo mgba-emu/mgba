@@ -132,19 +132,14 @@ DECL_BIT(GBARegisterDISPCNT, Win0Enable, 13);
 DECL_BIT(GBARegisterDISPCNT, Win1Enable, 14);
 DECL_BIT(GBARegisterDISPCNT, ObjwinEnable, 15);
 
-union GBARegisterDISPSTAT {
-	struct {
-		unsigned inVblank : 1;
-		unsigned inHblank : 1;
-		unsigned vcounter : 1;
-		unsigned vblankIRQ : 1;
-		unsigned hblankIRQ : 1;
-		unsigned vcounterIRQ : 1;
-		unsigned : 2;
-		unsigned vcountSetting : 8;
-	};
-	uint32_t packed;
-};
+DECL_BITFIELD(GBARegisterDISPSTAT, uint16_t);
+DECL_BIT(GBARegisterDISPSTAT, InVblank, 0);
+DECL_BIT(GBARegisterDISPSTAT, InHblank, 1);
+DECL_BIT(GBARegisterDISPSTAT, Vcounter, 2);
+DECL_BIT(GBARegisterDISPSTAT, VblankIRQ, 3);
+DECL_BIT(GBARegisterDISPSTAT, HblankIRQ, 4);
+DECL_BIT(GBARegisterDISPSTAT, VcounterIRQ, 5);
+DECL_BITS(GBARegisterDISPSTAT, VcountSetting, 8, 8);
 
 union GBARegisterBGCNT {
 	struct {
@@ -183,14 +178,7 @@ struct GBAVideo {
 	struct GBA* p;
 	struct GBAVideoRenderer* renderer;
 
-	// DISPSTAT
-	int inHblank;
-	int inVblank;
-	int vcounter;
-	int vblankIRQ;
-	int hblankIRQ;
-	int vcounterIRQ;
-	int vcountSetting;
+	GBARegisterDISPSTAT dispstat;
 
 	// VCOUNT
 	int vcount;
