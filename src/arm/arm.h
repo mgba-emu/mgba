@@ -52,7 +52,7 @@ struct ARMCore;
 
 union PSR {
 	struct {
-#ifdef __POWERPC__
+#if defined(__POWERPC__) || defined(__PPC__)
 		unsigned n : 1;
 		unsigned z : 1;
 		unsigned c : 1;
