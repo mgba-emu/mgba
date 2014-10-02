@@ -1348,7 +1348,7 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
-		LOAD_16(color, (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS << 1, renderer->d.vram);
+		LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
 #ifndef COLOR_16_BIT
 		unsigned color32;
 		color32 = 0;
@@ -1413,7 +1413,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
-		LOAD_16(color, offset + (localX >> 8) + (localY >> 8) * 320, renderer->d.vram);
+		LOAD_16(color, (offset + (localX >> 8) + (localY >> 8) * 160) << 1, renderer->d.vram);
 #ifndef COLOR_16_BIT
 		unsigned color32 = 0;
 		color32 |= (color << 9) & 0xF80000;
