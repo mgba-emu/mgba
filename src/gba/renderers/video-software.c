@@ -851,8 +851,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_16(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
-	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY; \
-	LOAD_32(tileData, charBase << 2, vram); \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
+	LOAD_32(tileData, charBase, vram); \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		tileData >>= 4 * mod8; \
 		for (; outX < end; ++outX) { \
@@ -867,8 +867,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_16(BLEND, OBJWIN) \
-	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY; \
-	LOAD_32(tileData, charBase << 2, vram); \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
+	LOAD_32(tileData, charBase, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -896,13 +896,13 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_16(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY; \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 				palette = &mainPalette[paletteData]; \
-				LOAD_32(tileData, charBase << 2, vram); \
+				LOAD_32(tileData, charBase, vram); \
 				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 					tileData >>= x * 4; \
 				} else { \
@@ -930,8 +930,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 		palette = &mainPalette[paletteData]; \
-		charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) >> 2) + localY; \
-		LOAD_32(tileData, charBase << 2, vram); \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
+		LOAD_32(tileData, charBase, vram); \
 		if (tileData) { \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
@@ -975,12 +975,12 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256(BLEND, OBJWIN) \
-	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 	int end2 = end - 4; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		int shift = inX & 0x3; \
 		if (end2 > outX) { \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			tileData >>= 8 * shift; \
 			shift = 0; \
 			for (; outX < end2; ++outX) { \
@@ -989,7 +989,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			} \
 		} \
 		\
-		LOAD_32(tileData, (charBase + 1) << 2, vram); \
+		LOAD_32(tileData, charBase + 4, vram); \
 		tileData >>= 8 * shift; \
 		for (; outX < end; ++outX) { \
 			pixel = &renderer->row[outX]; \
@@ -999,15 +999,15 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		int start = outX; \
 		outX = end - 1; \
 		if (end2 > start) { \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			for (; outX >= end2; --outX) { \
 				pixel = &renderer->row[outX]; \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
-			++charBase; \
+			charBase += 4; \
 		} \
 		\
-		LOAD_32(tileData, charBase << 2, vram); \
+		LOAD_32(tileData, charBase, vram); \
 		for (; outX >= renderer->start; --outX) { \
 			pixel = &renderer->row[outX]; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
@@ -1016,20 +1016,20 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
-	charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
+	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 	outX = renderer->end - 8 + end; \
 	int end2 = 4 - end; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (end2 > 0) { \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			for (; outX < renderer->end - end2; ++outX) { \
 				pixel = &renderer->row[outX]; \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
-			++charBase; \
+			charBase += 4; \
 		} \
 		\
-		LOAD_32(tileData, charBase << 2, vram); \
+		LOAD_32(tileData, charBase, vram); \
 		for (; outX < renderer->end; ++outX) { \
 			pixel = &renderer->row[outX]; \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
@@ -1039,7 +1039,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		int start = outX; \
 		outX = renderer->end - 1; \
 		if (end2 > 0) { \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX >= start + 4; --outX) { \
 				pixel = &renderer->row[outX]; \
@@ -1048,7 +1048,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			shift = 0; \
 		} \
 		\
-		LOAD_32(tileData, (charBase + 1) << 2, vram); \
+		LOAD_32(tileData, charBase + 4, vram); \
 		tileData >>= 8 * shift; \
 		for (; outX >= start; --outX) { \
 			pixel = &renderer->row[outX]; \
@@ -1059,9 +1059,9 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define DRAW_BACKGROUND_MODE_0_TILES_256(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 					++pixel; \
@@ -1074,7 +1074,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			} else { \
 				pixel += 4; \
 			} \
-			LOAD_32(tileData, (charBase + 1) << 2, vram); \
+			LOAD_32(tileData, charBase + 4, vram); \
 			if (tileData) { \
 					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 					++pixel; \
@@ -1088,7 +1088,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 				pixel += 4; \
 			} \
 		} else { \
-			LOAD_32(tileData, (charBase + 1) << 2, vram); \
+			LOAD_32(tileData, charBase + 4, vram); \
 			if (tileData) { \
 				pixel += 3; \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
@@ -1100,7 +1100,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
 			pixel += 4; \
-			LOAD_32(tileData, charBase << 2, vram); \
+			LOAD_32(tileData, charBase, vram); \
 			if (tileData) { \
 				pixel += 3; \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
@@ -1118,24 +1118,24 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_256(BLEND, OBJWIN) \
 	for (; tileX < tileEnd; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
-		charBase = ((background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) >> 2) + (localY << 1); \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
 				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 					if (x >= 4) { \
-						LOAD_32(tileData, (charBase + 1) << 2, vram); \
+						LOAD_32(tileData, charBase + 4, vram); \
 						tileData >>= (x - 4) * 8; \
 					} else { \
-						LOAD_32(tileData, charBase << 2, vram); \
+						LOAD_32(tileData, charBase, vram); \
 						tileData >>= x * 8; \
 					} \
 				} else { \
 					if (x >= 4) { \
-						LOAD_32(tileData, charBase << 2, vram); \
+						LOAD_32(tileData, charBase, vram); \
 						tileData >>= (7 - x) * 8; \
 					} else { \
-						LOAD_32(tileData, (charBase + 1) << 2, vram); \
+						LOAD_32(tileData, charBase + 4, vram); \
 						tileData >>= (3 - x) * 8; \
 					} \
 				} \
