@@ -43,69 +43,45 @@ enum ObjShape {
 	OBJ_SHAPE_VERTICAL = 2
 };
 
+DECL_BITFIELD(GBAObjAttributes, uint32_t);
+DECL_BITS(GBAObjAttributes, Y, 0, 8);
+DECL_BIT(GBAObjAttributes, Transformed, 8);
+DECL_BIT(GBAObjAttributes, Disable, 9);
+DECL_BIT(GBAObjAttributes, DoubleSize, 9);
+DECL_BITS(GBAObjAttributes, Mode, 10, 2);
+DECL_BIT(GBAObjAttributes, Mosaic, 12);
+DECL_BIT(GBAObjAttributes, 256Color, 13);
+DECL_BITS(GBAObjAttributes, Shape, 14, 2);
+DECL_BITS(GBAObjAttributes, X, 16, 9);
+DECL_BITS(GBAObjAttributes, MatIndex, 25, 5);
+DECL_BIT(GBAObjAttributes, HFlip, 28);
+DECL_BIT(GBAObjAttributes, VFlip, 29);
+DECL_BITS(GBAObjAttributes, Size, 30, 2);
+
+DECL_BITFIELD(GBAObjExtraAttributes, uint16_t);
+DECL_BITS(GBAObjExtraAttributes, Tile, 0, 10);
+DECL_BITS(GBAObjExtraAttributes, Priority, 10, 2);
+DECL_BITS(GBAObjExtraAttributes, Palette, 12, 4);
+
 struct GBAObj {
-	unsigned y : 8;
-	unsigned transformed : 1;
-	unsigned disable : 1;
-	enum ObjMode mode : 2;
-	unsigned mosaic : 1;
-	unsigned multipalette : 1;
-	enum ObjShape shape : 2;
+	GBAObjAttributes attr;
+	GBAObjExtraAttributes attr2;
 
-	int x : 9;
-	int : 3;
-	unsigned hflip : 1;
-	unsigned vflip : 1;
-	unsigned size : 2;
-
-	unsigned tile : 10;
-	unsigned priority : 2;
-	unsigned palette : 4;
-
-	int : 16;
-};
-
-struct GBATransformedObj {
-	unsigned y : 8;
-	unsigned transformed : 1;
-	unsigned doublesize : 1;
-	enum ObjMode mode : 2;
-	unsigned mosaic : 1;
-	unsigned multipalette : 1;
-	enum ObjShape shape : 2;
-
-	int x : 9;
-	unsigned matIndex : 5;
-	unsigned size : 2;
-
-	unsigned tile : 10;
-	unsigned priority : 2;
-	unsigned palette : 4;
-
-	int : 16;
+	uint16_t d;
 };
 
 union GBAOAM {
 	struct GBAObj obj[128];
-	struct GBATransformedObj tobj[128];
 
 	struct GBAOAMMatrix {
-		int : 16;
-		int : 16;
-		int : 16;
-		int a : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int b : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int c : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int d : 16;
+		int16_t padding0[3];
+		int16_t a;
+		int16_t padding1[3];
+		int16_t b;
+		int16_t padding2[3];
+		int16_t c;
+		int16_t padding3[3];
+		int16_t d;
 	} mat[32];
 
 	uint16_t raw[512];

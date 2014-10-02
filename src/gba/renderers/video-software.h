@@ -12,10 +12,7 @@ typedef uint32_t color_t;
 #endif
 
 struct GBAVideoSoftwareSprite {
-	union {
-		struct GBAObj obj;
-		struct GBATransformedObj tobj;
-	};
+	struct GBAObj obj;
 	int y;
 	int endY;
 };
