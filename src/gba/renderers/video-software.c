@@ -1520,7 +1520,8 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	uint32_t flags = GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY;
 	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN);
-	int x = GBAObjAttributesBGetX(sprite->b);
+	int32_t x = GBAObjAttributesBGetX(sprite->b) << 23;
+	x >>= 23;
 	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
 	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
