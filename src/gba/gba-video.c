@@ -157,7 +157,8 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 }
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
-	video->dispstat = value;
+	video->dispstat &= 0x7;
+	video->dispstat |= value & 0xFFF8;
 
 	if (GBARegisterDISPSTATIsVcounterIRQ(video->dispstat)) {
 		// FIXME: this can be too late if we're in the middle of an Hblank
