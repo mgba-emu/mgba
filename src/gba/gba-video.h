@@ -43,30 +43,33 @@ enum ObjShape {
 	OBJ_SHAPE_VERTICAL = 2
 };
 
-DECL_BITFIELD(GBAObjAttributes, uint32_t);
-DECL_BITS(GBAObjAttributes, Y, 0, 8);
-DECL_BIT(GBAObjAttributes, Transformed, 8);
-DECL_BIT(GBAObjAttributes, Disable, 9);
-DECL_BIT(GBAObjAttributes, DoubleSize, 9);
-DECL_BITS(GBAObjAttributes, Mode, 10, 2);
-DECL_BIT(GBAObjAttributes, Mosaic, 12);
-DECL_BIT(GBAObjAttributes, 256Color, 13);
-DECL_BITS(GBAObjAttributes, Shape, 14, 2);
-DECL_BITS(GBAObjAttributes, X, 16, 9);
-DECL_BITS(GBAObjAttributes, MatIndex, 25, 5);
-DECL_BIT(GBAObjAttributes, HFlip, 28);
-DECL_BIT(GBAObjAttributes, VFlip, 29);
-DECL_BITS(GBAObjAttributes, Size, 30, 2);
+DECL_BITFIELD(GBAObjAttributesA, uint16_t);
+DECL_BITS(GBAObjAttributesA, Y, 0, 8);
+DECL_BIT(GBAObjAttributesA, Transformed, 8);
+DECL_BIT(GBAObjAttributesA, Disable, 9);
+DECL_BIT(GBAObjAttributesA, DoubleSize, 9);
+DECL_BITS(GBAObjAttributesA, Mode, 10, 2);
+DECL_BIT(GBAObjAttributesA, Mosaic, 12);
+DECL_BIT(GBAObjAttributesA, 256Color, 13);
+DECL_BITS(GBAObjAttributesA, Shape, 14, 2);
 
-DECL_BITFIELD(GBAObjExtraAttributes, uint16_t);
-DECL_BITS(GBAObjExtraAttributes, Tile, 0, 10);
-DECL_BITS(GBAObjExtraAttributes, Priority, 10, 2);
-DECL_BITS(GBAObjExtraAttributes, Palette, 12, 4);
+
+DECL_BITFIELD(GBAObjAttributesB, uint16_t);
+DECL_BITS(GBAObjAttributesB, X, 0, 9);
+DECL_BITS(GBAObjAttributesB, MatIndex, 9, 5);
+DECL_BIT(GBAObjAttributesB, HFlip, 12);
+DECL_BIT(GBAObjAttributesB, VFlip, 13);
+DECL_BITS(GBAObjAttributesB, Size, 14, 2);
+
+DECL_BITFIELD(GBAObjAttributesC, uint16_t);
+DECL_BITS(GBAObjAttributesC, Tile, 0, 10);
+DECL_BITS(GBAObjAttributesC, Priority, 10, 2);
+DECL_BITS(GBAObjAttributesC, Palette, 12, 4);
 
 struct GBAObj {
-	GBAObjAttributes attr;
-	GBAObjExtraAttributes attr2;
-
+	GBAObjAttributesA a;
+	GBAObjAttributesB b;
+	GBAObjAttributesC c;
 	uint16_t d;
 };
 
