@@ -51,7 +51,6 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y);
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer);
-static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y);
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority);
 
@@ -663,11 +662,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
 					continue;
 				}
-				if (GBAObjAttributesAIsTransformed(sprite->obj.a)) {
-					drawn = _preprocessTransformedSprite(renderer, &sprite->obj, localY);
-				} else {
-					drawn = _preprocessSprite(renderer, &sprite->obj, localY);
-				}
+				drawn = _preprocessSprite(renderer, &sprite->obj, localY);
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
 		}
@@ -1538,91 +1533,73 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 		palette = &renderer->variantPalette[0x100];
 	}
 
-	int outX = x >= start ? x : start;
-	int condition = x + width;
-	int mosaicH = 1;
-	if (GBAObjAttributesAIsMosaic(sprite->a)) {
-		mosaicH = renderer->mosaic.objH + 1;
-		if (condition % mosaicH) {
-			condition += mosaicH - (condition % mosaicH);
-		}
-	}
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
-	if ((int) GBAObjAttributesAGetY(sprite->a) + height - 256 >= 0) {
-		inY += 256;
-	}
-	if (GBAObjAttributesBIsVFlip(sprite->b)) {
-		inY = height - inY - 1;
-	}
-	if (end < condition) {
-		condition = end;
-	}
-	int inX = outX - x;
-	int xOffset = 1;
-	if (GBAObjAttributesBIsHFlip(sprite->b)) {
-		inX = width - inX - 1;
-		xOffset = -1;
-	}
-	if (!GBAObjAttributesAIs256Color(sprite->a)) {
-		palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
-		if (flags & FLAG_OBJWIN) {
-			SPRITE_NORMAL_LOOP(16, OBJWIN);
-		} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-			SPRITE_MOSAIC_LOOP(16, NORMAL);
-		} else {
-			SPRITE_NORMAL_LOOP(16, NORMAL);
-		}
-	} else {
-		if (flags & FLAG_OBJWIN) {
-			SPRITE_NORMAL_LOOP(256, OBJWIN);
-		} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-			SPRITE_MOSAIC_LOOP(256, NORMAL);
-		} else {
-			SPRITE_NORMAL_LOOP(256, NORMAL);
-		}
-	}
-	return 1;
-}
 
-static int _preprocessTransformedSprite(struct GBAVideoSoftwareRenderer* renderer, struct GBAObj* sprite, int y) {
-	int width = _objSizes[GBAObjAttributesAGetShape(sprite->a) * 8 + GBAObjAttributesBGetSize(sprite->b) * 2];
-	int height = _objSizes[GBAObjAttributesAGetShape(sprite->a) * 8 + GBAObjAttributesBGetSize(sprite->b) * 2 + 1];
-	int totalWidth = width << GBAObjAttributesAGetDoubleSize(sprite->a);
-	int totalHeight = height << GBAObjAttributesAGetDoubleSize(sprite->a);
-	int start = renderer->start;
-	int end = renderer->end;
-	uint32_t flags = GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY;
-	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
-	flags |= FLAG_OBJWIN * (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN);
-	int x = GBAObjAttributesBGetX(sprite->b);
-	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
-	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
-	struct GBAOAMMatrix* mat = &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)];
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
-		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
-		variant = 0;
-	}
-	color_t* palette = &renderer->normalPalette[0x100];
-	if (variant) {
-		palette = &renderer->variantPalette[0x100];
-	}
-	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
-	if (inY < 0) {
-		inY += 256;
-	}
-	if (!GBAObjAttributesAIs256Color(sprite->a)) {
-		palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
-		if (flags & FLAG_OBJWIN) {
-			SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
+	if (GBAObjAttributesAIsTransformed(sprite->a)) {
+		int totalWidth = width << GBAObjAttributesAGetDoubleSize(sprite->a);
+		int totalHeight = height << GBAObjAttributesAGetDoubleSize(sprite->a);
+		struct GBAOAMMatrix* mat = &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)];
+
+		if (inY < 0) {
+			inY += 256;
+		}
+
+		if (!GBAObjAttributesAIs256Color(sprite->a)) {
+			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
+			} else {
+				SPRITE_TRANSFORMED_LOOP(16, NORMAL);
+			}
 		} else {
-			SPRITE_TRANSFORMED_LOOP(16, NORMAL);
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
+			} else {
+				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
+			}
 		}
 	} else {
-		if (flags & FLAG_OBJWIN) {
-			SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
+		int outX = x >= start ? x : start;
+		int condition = x + width;
+		int mosaicH = 1;
+		if (GBAObjAttributesAIsMosaic(sprite->a)) {
+			mosaicH = renderer->mosaic.objH + 1;
+			if (condition % mosaicH) {
+				condition += mosaicH - (condition % mosaicH);
+			}
+		}
+		if ((int) GBAObjAttributesAGetY(sprite->a) + height - 256 >= 0) {
+			inY += 256;
+		}
+		if (GBAObjAttributesBIsVFlip(sprite->b)) {
+			inY = height - inY - 1;
+		}
+		if (end < condition) {
+			condition = end;
+		}
+		int inX = outX - x;
+		int xOffset = 1;
+		if (GBAObjAttributesBIsHFlip(sprite->b)) {
+			inX = width - inX - 1;
+			xOffset = -1;
+		}
+		if (!GBAObjAttributesAIs256Color(sprite->a)) {
+			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_NORMAL_LOOP(16, OBJWIN);
+			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
+				SPRITE_MOSAIC_LOOP(16, NORMAL);
+			} else {
+				SPRITE_NORMAL_LOOP(16, NORMAL);
+			}
 		} else {
-			SPRITE_TRANSFORMED_LOOP(256, NORMAL);
+			if (flags & FLAG_OBJWIN) {
+				SPRITE_NORMAL_LOOP(256, OBJWIN);
+			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
+				SPRITE_MOSAIC_LOOP(256, NORMAL);
+			} else {
+				SPRITE_NORMAL_LOOP(256, NORMAL);
+			}
 		}
 	}
 	return 1;
