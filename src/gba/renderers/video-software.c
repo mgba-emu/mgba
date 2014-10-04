@@ -1436,6 +1436,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 #define SPRITE_NORMAL_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
+	unsigned tileData; \
 	for (; outX < condition; ++outX, inX += xOffset) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
@@ -1446,6 +1447,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 #define SPRITE_MOSAIC_LOOP(DEPTH, TYPE) \
 	SPRITE_YBASE_ ## DEPTH(inY); \
+	unsigned tileData; \
 	if (outX % mosaicH) { \
 		inX += (mosaicH - (outX % mosaicH)) * xOffset; \
 		outX += mosaicH - (outX % mosaicH); \
@@ -1461,6 +1463,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	int outX; \
+	unsigned tileData; \
 	for (outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
@@ -1482,14 +1485,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1499,14 +1502,14 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
 		renderer->spriteLayer[outX] = palette[tileData] | flags; \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	unsigned tileData = vramBase[((yBase + charBase + xBase) & 0x7FFF) >> 1]; \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
