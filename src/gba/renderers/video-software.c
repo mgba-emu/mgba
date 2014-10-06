@@ -22,6 +22,21 @@ static const int _objSizes[32] = {
 	0, 0
 };
 
+DECL_BITFIELD(GBARegisterBLDCNT, uint16_t);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg0, 0);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg1, 1);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg2, 2);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg3, 3);
+DECL_BIT(GBARegisterBLDCNT, Target1Obj, 4);
+DECL_BIT(GBARegisterBLDCNT, Target1Bd, 5);
+DECL_BITS(GBARegisterBLDCNT, Effect, 6, 2);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg0, 8);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg1, 9);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg2, 10);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg3, 11);
+DECL_BIT(GBARegisterBLDCNT, Target2Obj, 12);
+DECL_BIT(GBARegisterBLDCNT, Target2Bd, 13);
+
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
@@ -584,43 +599,24 @@ static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackgroun
 }
 
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value) {
-	union {
-		struct {
-			unsigned target1Bg0 : 1;
-			unsigned target1Bg1 : 1;
-			unsigned target1Bg2 : 1;
-			unsigned target1Bg3 : 1;
-			unsigned target1Obj : 1;
-			unsigned target1Bd : 1;
-			enum BlendEffect effect : 2;
-			unsigned target2Bg0 : 1;
-			unsigned target2Bg1 : 1;
-			unsigned target2Bg2 : 1;
-			unsigned target2Bg3 : 1;
-			unsigned target2Obj : 1;
-			unsigned target2Bd : 1;
-		};
-		uint16_t packed;
-	} bldcnt = { .packed = value };
-
 	enum BlendEffect oldEffect = renderer->blendEffect;
 
-	renderer->bg[0].target1 = bldcnt.target1Bg0;
-	renderer->bg[1].target1 = bldcnt.target1Bg1;
-	renderer->bg[2].target1 = bldcnt.target1Bg2;
-	renderer->bg[3].target1 = bldcnt.target1Bg3;
-	renderer->bg[0].target2 = bldcnt.target2Bg0;
-	renderer->bg[1].target2 = bldcnt.target2Bg1;
-	renderer->bg[2].target2 = bldcnt.target2Bg2;
-	renderer->bg[3].target2 = bldcnt.target2Bg3;
+	renderer->bg[0].target1 = GBARegisterBLDCNTGetTarget1Bg0(value);
+	renderer->bg[1].target1 = GBARegisterBLDCNTGetTarget1Bg1(value);
+	renderer->bg[2].target1 = GBARegisterBLDCNTGetTarget1Bg2(value);
+	renderer->bg[3].target1 = GBARegisterBLDCNTGetTarget1Bg3(value);
+	renderer->bg[0].target2 = GBARegisterBLDCNTGetTarget2Bg0(value);
+	renderer->bg[1].target2 = GBARegisterBLDCNTGetTarget2Bg1(value);
+	renderer->bg[2].target2 = GBARegisterBLDCNTGetTarget2Bg2(value);
+	renderer->bg[3].target2 = GBARegisterBLDCNTGetTarget2Bg3(value);
 
-	renderer->blendEffect = bldcnt.effect;
-	renderer->target1Obj = bldcnt.target1Obj;
-	renderer->target1Bd = bldcnt.target1Bd;
-	renderer->target2Obj = bldcnt.target2Obj;
-	renderer->target2Bd = bldcnt.target2Bd;
+	renderer->blendEffect = GBARegisterBLDCNTGetEffect(value);
+	renderer->target1Obj = GBARegisterBLDCNTGetTarget1Obj(value);
+	renderer->target1Bd = GBARegisterBLDCNTGetTarget1Bd(value);
+	renderer->target2Obj = GBARegisterBLDCNTGetTarget2Obj(value);
+	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
-	renderer->anyTarget2 = bldcnt.packed & 0x3F00;
+	renderer->anyTarget2 = value & 0x3F00;
 
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
