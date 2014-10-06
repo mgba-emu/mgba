@@ -57,19 +57,19 @@
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME
 
 #define DECL_BITS(TYPE, FIELD, START, SIZE) \
-	static inline TYPE TYPE ## Is ## FIELD (TYPE src) { \
+	__attribute__((unused)) static inline TYPE TYPE ## Is ## FIELD (TYPE src) { \
 		return CHECK_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
+	__attribute__((unused)) static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
 		return EXT_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	static inline TYPE TYPE ## Clear ## FIELD (TYPE src) { \
+	__attribute__((unused)) static inline TYPE TYPE ## Clear ## FIELD (TYPE src) { \
 		return CLEAR_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
+	__attribute__((unused)) static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
 		return FILL_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
+	__attribute__((unused)) static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
 	}
 
