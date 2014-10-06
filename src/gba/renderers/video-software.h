@@ -73,27 +73,21 @@ enum {
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
-union WindowRegion {
-	struct {
-		uint8_t end;
-		uint8_t start;
-	};
-	uint16_t packed;
+struct WindowRegion {
+	uint8_t end;
+	uint8_t start;
 };
 
+DECL_BITFIELD(GBAWindowControl, uint8_t);
+DECL_BIT(GBAWindowControl, Bg0Enable, 0);
+DECL_BIT(GBAWindowControl, Bg1Enable, 1);
+DECL_BIT(GBAWindowControl, Bg2Enable, 2);
+DECL_BIT(GBAWindowControl, Bg3Enable, 3);
+DECL_BIT(GBAWindowControl, ObjEnable, 4);
+DECL_BIT(GBAWindowControl, BlendEnable, 5);
+
 struct WindowControl {
-	union {
-		struct {
-			unsigned bg0Enable : 1;
-			unsigned bg1Enable : 1;
-			unsigned bg2Enable : 1;
-			unsigned bg3Enable : 1;
-			unsigned objEnable : 1;
-			unsigned blendEnable : 1;
-			unsigned : 2;
-		};
-		uint8_t packed;
-	};
+	GBAWindowControl packed;
 	int8_t priority;
 };
 
@@ -140,8 +134,8 @@ struct GBAVideoSoftwareRenderer {
 	} mosaic;
 
 	struct WindowN {
-		union WindowRegion h;
-		union WindowRegion v;
+		struct WindowRegion h;
+		struct WindowRegion v;
 		struct WindowControl control;
 	} winN[2];
 

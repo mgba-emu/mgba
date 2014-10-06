@@ -105,18 +105,10 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->bldb = 0;
 	softwareRenderer->bldy = 0;
 
-	softwareRenderer->winN[0].h.packed = 0;
-	softwareRenderer->winN[0].v.packed = 0;
-	softwareRenderer->winN[0].control.packed = 0;
-	softwareRenderer->winN[0].control.priority = 0;
-	softwareRenderer->winN[1].h.packed = 0;
-	softwareRenderer->winN[1].v.packed = 0;
-	softwareRenderer->winN[1].control.packed = 0;
-	softwareRenderer->winN[1].control.priority = 1;
-	softwareRenderer->objwin.packed = 0;
-	softwareRenderer->objwin.priority = 2;
-	softwareRenderer->winout.packed = 0;
-	softwareRenderer->winout.priority = 3;
+	softwareRenderer->winN[0] = (struct WindowN) { .control = { .priority = 0 } };
+	softwareRenderer->winN[1] = (struct WindowN) { .control = { .priority = 1 } };
+	softwareRenderer->objwin = (struct WindowControl) { .priority = 2 };
+	softwareRenderer->winout = (struct WindowControl) { .priority = 3 };
 	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic.packed = 0;
@@ -276,7 +268,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		_updatePalettes(softwareRenderer);
 		break;
 	case REG_WIN0H:
-		softwareRenderer->winN[0].h.packed = value;
+		softwareRenderer->winN[0].h.end = value;
+		softwareRenderer->winN[0].h.start = value >> 8;
 		if (softwareRenderer->winN[0].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end) {
 			softwareRenderer->winN[0].h.start = 0;
 		}
@@ -285,7 +278,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WIN1H:
-		softwareRenderer->winN[1].h.packed = value;
+		softwareRenderer->winN[1].h.end = value;
+		softwareRenderer->winN[1].h.start = value >> 8;
 		if (softwareRenderer->winN[1].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end) {
 			softwareRenderer->winN[1].h.start = 0;
 		}
@@ -294,7 +288,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WIN0V:
-		softwareRenderer->winN[0].v.packed = value;
+		softwareRenderer->winN[0].v.end = value;
+		softwareRenderer->winN[0].v.start = value >> 8;
 		if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
 			softwareRenderer->winN[0].v.start = 0;
 		}
@@ -303,7 +298,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WIN1V:
-		softwareRenderer->winN[1].v.packed = value;
+		softwareRenderer->winN[1].v.end = value;
+		softwareRenderer->winN[1].v.start = value >> 8;
 		if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
 			softwareRenderer->winN[1].v.start = 0;
 		}
@@ -469,7 +465,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	for (w = 0; w < softwareRenderer->nWindows; ++w) {
 		// TOOD: handle objwin on backdrop
 		uint32_t backdrop = FLAG_UNWRITTEN | FLAG_PRIORITY | FLAG_IS_BACKGROUND;
-		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !softwareRenderer->windows[w].control.blendEnable) {
+		if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
 			backdrop |= softwareRenderer->normalPalette[0];
 		} else {
 			backdrop |= softwareRenderer->variantPalette[0];
@@ -486,7 +482,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
 		uint32_t backdrop = FLAG_UNWRITTEN;
-			if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !softwareRenderer->windows[w].control.blendEnable) {
+			if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
 				backdrop |= softwareRenderer->normalPalette[0];
 			} else {
 				backdrop |= softwareRenderer->variantPalette[0];
@@ -625,8 +621,8 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 
 #define TEST_LAYER_ENABLED(X) \
 	(renderer->bg[X].enabled && \
-	(renderer->currentWindow.bg ## X ## Enable || \
-	(GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && renderer->objwin.bg ## X ## Enable)) && \
+	(GBAWindowControlIsBg ## X ## Enable(renderer->currentWindow.packed) || \
+	(GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (renderer->objwin.packed))) && \
 	renderer->bg[X].priority == priority)
 
 static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
@@ -643,7 +639,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
 			renderer->currentWindow = renderer->windows[w].control;
-			if (!renderer->currentWindow.objEnable) {
+			if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed)) {
 				continue;
 			}
 			int i;
@@ -817,27 +813,27 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int objwinForceEnable = 0; \
 	color_t* objwinPalette; \
 	if (objwinSlowPath) { \
-		if (background->target1 && renderer->objwin.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN)) { \
+		if (background->target1 && GBAWindowControlIsBlendEnable(renderer->objwin.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN)) { \
 			objwinPalette = renderer->variantPalette; \
 		} else { \
 			objwinPalette = renderer->normalPalette; \
 		} \
 		switch (background->index) { \
 		case 0: \
-			objwinForceEnable = renderer->objwin.bg0Enable && renderer->currentWindow.bg0Enable; \
-			objwinOnly = !renderer->objwin.bg0Enable; \
+			objwinForceEnable = GBAWindowControlIsBg0Enable(renderer->objwin.packed) && GBAWindowControlIsBg0Enable(renderer->currentWindow.packed); \
+			objwinOnly = !GBAWindowControlIsBg0Enable(renderer->objwin.packed); \
 			break; \
 		case 1: \
-			objwinForceEnable = renderer->objwin.bg1Enable && renderer->currentWindow.bg1Enable; \
-			objwinOnly = !renderer->objwin.bg1Enable; \
+			objwinForceEnable = GBAWindowControlIsBg1Enable(renderer->objwin.packed) && GBAWindowControlIsBg1Enable(renderer->currentWindow.packed); \
+			objwinOnly = !GBAWindowControlIsBg1Enable(renderer->objwin.packed); \
 			break; \
 		case 2: \
-			objwinForceEnable = renderer->objwin.bg2Enable && renderer->currentWindow.bg2Enable; \
-			objwinOnly = !renderer->objwin.bg2Enable; \
+			objwinForceEnable = GBAWindowControlIsBg2Enable(renderer->objwin.packed) && GBAWindowControlIsBg2Enable(renderer->currentWindow.packed); \
+			objwinOnly = !GBAWindowControlIsBg2Enable(renderer->objwin.packed); \
 			break; \
 		case 3: \
-			objwinForceEnable = renderer->objwin.bg3Enable && renderer->currentWindow.bg3Enable; \
-			objwinOnly = !renderer->objwin.bg3Enable; \
+			objwinForceEnable = GBAWindowControlIsBg3Enable(renderer->objwin.packed) && GBAWindowControlIsBg3Enable(renderer->currentWindow.packed); \
+			objwinOnly = !GBAWindowControlIsBg3Enable(renderer->objwin.packed); \
 			break; \
 		} \
 	}
@@ -1215,7 +1211,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	color_t* mainPalette = renderer->normalPalette;
 	if (variant) {
 		mainPalette = renderer->variantPalette;
@@ -1274,7 +1270,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
 	flags |= FLAG_TARGET_2 * background->target2; \
-	int variant = background->target1 && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
+	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
 	color_t* palette = renderer->normalPalette; \
 	if (variant) { \
 		palette = renderer->variantPalette; \
@@ -1516,13 +1512,13 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	int start = renderer->start;
 	int end = renderer->end;
 	uint32_t flags = GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY;
-	flags |= FLAG_TARGET_1 * ((renderer->currentWindow.blendEnable && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+	flags |= FLAG_TARGET_1 * ((GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
 	flags |= FLAG_OBJWIN * (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN);
 	int32_t x = GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
 	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
-	int variant = renderer->target1Obj && renderer->currentWindow.blendEnable && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
 		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
 		variant = 0;
@@ -1620,7 +1616,7 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
 	int objwinDisable = 0;
 	if (objwinSlowPath) {
-		objwinDisable = !renderer->objwin.objEnable;
+		objwinDisable = !GBAWindowControlIsObjEnable(renderer->objwin.packed);
 	}
 	if (objwinSlowPath && objwinDisable) {
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
