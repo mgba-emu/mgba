@@ -96,7 +96,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->winout = (struct WindowControl) { .priority = 3 };
 	softwareRenderer->oamMax = 0;
 
-	softwareRenderer->mosaic.packed = 0;
+	softwareRenderer->mosaic = 0;
 
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
@@ -301,7 +301,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->objwin.packed = value >> 8;
 		break;
 	case REG_MOSAIC:
-		softwareRenderer->mosaic.packed = value;
+		softwareRenderer->mosaic = value;
 		break;
 	case REG_GREENSWP:
 		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
@@ -618,7 +618,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}
-		int mosaicV = renderer->mosaic.objV + 1;
+		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
@@ -1127,8 +1127,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \
 	uint32_t* pixel = &renderer->row[outX]; \
-	if (background->mosaic && renderer->mosaic.bgH) { \
-		int mosaicH = renderer->mosaic.bgH + 1; \
+	if (background->mosaic && GBAMosaicControlGetBgH(renderer->mosaic)) { \
+		int mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1; \
 		int x; \
 		int mosaicWait = outX % mosaicH; \
 		int carryData = 0; \
@@ -1171,7 +1171,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
 	int inX = renderer->start + background->x;
 	if (background->mosaic) {
-		int mosaicV = renderer->mosaic.bgV + 1;
+		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;
 		y -= y % mosaicV;
 	}
 	int inY = y + background->y;
@@ -1551,7 +1551,7 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 		int condition = x + width;
 		int mosaicH = 1;
 		if (GBAObjAttributesAIsMosaic(sprite->a)) {
-			mosaicH = renderer->mosaic.objH + 1;
+			mosaicH = GBAMosaicControlGetObjH(renderer->mosaic) + 1;
 			if (condition % mosaicH) {
 				condition += mosaicH - (condition % mosaicH);
 			}

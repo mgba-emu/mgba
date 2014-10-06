@@ -86,6 +86,12 @@ DECL_BIT(GBAWindowControl, Bg3Enable, 3);
 DECL_BIT(GBAWindowControl, ObjEnable, 4);
 DECL_BIT(GBAWindowControl, BlendEnable, 5);
 
+DECL_BITFIELD(GBAMosaicControl, uint16_t);
+DECL_BITS(GBAMosaicControl, BgH, 0, 4);
+DECL_BITS(GBAMosaicControl, BgV, 4, 4);
+DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
+DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
+
 struct WindowControl {
 	GBAWindowControl packed;
 	int8_t priority;
@@ -123,15 +129,7 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldb;
 	uint16_t bldy;
 
-	union {
-		struct {
-			unsigned bgH : 4;
-			unsigned bgV : 4;
-			unsigned objH : 4;
-			unsigned objV : 4;
-		};
-		uint16_t packed;
-	} mosaic;
+	GBAMosaicControl mosaic;
 
 	struct WindowN {
 		struct WindowRegion h;
