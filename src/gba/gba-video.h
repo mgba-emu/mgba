@@ -129,6 +129,21 @@ DECL_BITS(GBARegisterBGCNT, ScreenBase, 8, 5);
 DECL_BIT(GBARegisterBGCNT, Overflow, 13);
 DECL_BITS(GBARegisterBGCNT, Size, 14, 2);
 
+DECL_BITFIELD(GBARegisterBLDCNT, uint16_t);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg0, 0);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg1, 1);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg2, 2);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg3, 3);
+DECL_BIT(GBARegisterBLDCNT, Target1Obj, 4);
+DECL_BIT(GBARegisterBLDCNT, Target1Bd, 5);
+DECL_BITS(GBARegisterBLDCNT, Effect, 6, 2);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg0, 8);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg1, 9);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg2, 10);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg3, 11);
+DECL_BIT(GBARegisterBLDCNT, Target2Obj, 12);
+DECL_BIT(GBARegisterBLDCNT, Target2Bd, 13);
+
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
 	void (*reset)(struct GBAVideoRenderer* renderer);
