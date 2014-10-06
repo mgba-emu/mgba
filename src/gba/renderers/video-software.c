@@ -397,7 +397,6 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 		LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
 		LOAD_16(obj.b, 0, &renderer->d.oam->obj[i].b);
 		LOAD_16(obj.c, 0, &renderer->d.oam->obj[i].c);
-		LOAD_16(obj.d, 0, &renderer->d.oam->obj[i].d);
 		if (GBAObjAttributesAIsTransformed(obj.a) || !GBAObjAttributesAIsDisable(obj.a)) {
 			int height = _objSizes[GBAObjAttributesAGetShape(obj.a) * 8 + GBAObjAttributesBGetSize(obj.b) * 2 + 1];
 			if (GBAObjAttributesAIsTransformed(obj.a)) {
@@ -1462,15 +1461,15 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
-	int outX; \
 	unsigned tileData; \
-	for (outX = x >= start ? x : start; outX < x + totalWidth && outX < end; ++outX) { \
+	for (; outX < x + totalWidth && outX < end; ++outX, ++inX) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
 		} \
-		int inX = outX - x; \
-		int localX = ((mat->a * (inX - (totalWidth >> 1)) + mat->b * (inY - (totalHeight >> 1))) >> 8) + (width >> 1); \
-		int localY = ((mat->c * (inX - (totalWidth >> 1)) + mat->d * (inY - (totalHeight >> 1))) >> 8) + (height >> 1); \
+		xAccum += mat.a; \
+		yAccum += mat.c; \
+		int localX = (xAccum >> 8) + (width >> 1); \
+		int localY = (yAccum >> 8) + (height >> 1); \
 		\
 		if (localX < 0 || localX >= width || localY < 0 || localY >= height) { \
 			continue; \
@@ -1542,11 +1541,19 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		int totalWidth = width << GBAObjAttributesAGetDoubleSize(sprite->a);
 		int totalHeight = height << GBAObjAttributesAGetDoubleSize(sprite->a);
-		struct GBAOAMMatrix* mat = &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)];
+		struct GBAOAMMatrix mat;
+		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
+		LOAD_16(mat.b, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].b);
+		LOAD_16(mat.c, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].c);
+		LOAD_16(mat.d, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].d);
 
 		if (inY < 0) {
 			inY += 256;
 		}
+		int outX = x >= start ? x : start;
+		int inX = outX - x;
+		int xAccum = mat.a * (inX - 1 - (totalWidth >> 1)) + mat.b * (inY - (totalHeight >> 1));
+		int yAccum = mat.c * (inX - 1 - (totalWidth >> 1)) + mat.d * (inY - (totalHeight >> 1));
 
 		if (!GBAObjAttributesAIs256Color(sprite->a)) {
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
