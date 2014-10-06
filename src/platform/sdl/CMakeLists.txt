@@ -13,7 +13,12 @@ if (SDL_VERSION EQUAL "2")
 endif()
 
 if(SDL_VERSION EQUAL "1.2" OR NOT SDL2_FOUND)
-	find_package(SDL 1.2 REQUIRED)
+	find_package(SDL 1.2)
+endif()
+
+if (NOT SDL2_FOUND AND NOT SDL_FOUND)
+	set(BUILD_SDL OFF)
+	return()
 endif()
 
 file(GLOB PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-*.c)
