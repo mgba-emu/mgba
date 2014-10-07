@@ -77,6 +77,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
 		}
 		return;
+#ifdef USE_PNG
 	case SDLK_F12:
 		if (event->type == SDL_KEYDOWN) {
 			GBAThreadInterrupt(context);
@@ -84,6 +85,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 			GBAThreadContinue(context);
 		}
 		return;
+#endif
 	case SDLK_TAB:
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
