@@ -7,18 +7,22 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#define PERF_OPTIONS "NS:"
+#define PERF_OPTIONS "F:NPS:"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
+	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
+	"  -P               CSV output, useful for parsing\n" \
 	"  -S SEC           Run for SEC in-game seconds before exiting"
 
 struct PerfOpts {
 	bool noVideo;
-	int duration;
+	bool csv;
+	unsigned duration;
+	unsigned frames;
 };
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames);
+static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
 static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg);
 
@@ -30,7 +34,7 @@ int main(int argc, char** argv) {
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
-	struct PerfOpts perfOpts = { false, 0 };
+	struct PerfOpts perfOpts = { false, false, 0, 0 };
 	struct SubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
@@ -58,16 +62,24 @@ int main(int argc, char** argv) {
 	}
 
 	context.debugger = createDebugger(&opts);
+	char gameCode[5] = { 0 };
 
 	GBAMapOptionsToContext(&opts, &context);
 
 	GBAThreadStart(&context);
+	GBAGetGameCode(context.gba, gameCode);
 
-	int frames = perfOpts.duration;
-	time_t start = time(0);
-	_GBAPerfRunloop(&context, &frames);
-	time_t end = time(0);
-	int duration = end - start;
+	int frames = perfOpts.frames;
+	if (!frames) {
+		frames = perfOpts.duration * 60;
+	}
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+	uint64_t start = 1000000 * tv.tv_sec + tv.tv_usec;
+	_GBAPerfRunloop(&context, &frames, perfOpts.csv);
+	gettimeofday(&tv, 0);
+	uint64_t end = 1000000 * tv.tv_sec + tv.tv_usec;
+	uint64_t duration = end - start;
 
 	GBAThreadJoin(&context);
 	freeOptions(&opts);
@@ -75,12 +87,24 @@ int main(int argc, char** argv) {
 
 	free(renderer.outputBuffer);
 
-	printf("%u frames in %i seconds: %g fps (%gx)\n", frames, duration, frames / (float) duration, frames / (duration * 60.f));
+	float scaledFrames = frames * 1000000.f;
+	if (perfOpts.csv) {
+		puts("game_code,frames,duration,renderer");
+		const char* rendererName;
+		if (perfOpts.noVideo) {
+			rendererName = "none";
+		} else {
+			rendererName = "software";
+		}
+		printf("%s,%i,%lli,%s\n", gameCode, frames, duration, rendererName);
+	} else {
+		printf("%u frames in %lli microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
+	}
 
 	return 0;
 }
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
+static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {
 	struct timeval lastEcho;
 	gettimeofday(&lastEcho, 0);
 	int duration = *frames;
@@ -90,25 +114,29 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames) {
 		if (GBASyncWaitFrameStart(&context->sync, 0)) {
 			++*frames;
 			++lastFrames;
-			struct timeval currentTime;
-			long timeDiff;
-			gettimeofday(&currentTime, 0);
-			timeDiff = currentTime.tv_sec - lastEcho.tv_sec;
-			timeDiff *= 1000;
-			timeDiff += (currentTime.tv_usec - lastEcho.tv_usec) / 1000;
-			if (timeDiff >= 1000) {
-				printf("\033[2K\rCurrent FPS: %g (%gx)", lastFrames / (timeDiff / 1000.0f), lastFrames / (float) (60 * (timeDiff / 1000.0f)));
-				fflush(stdout);
-				lastEcho = currentTime;
-				lastFrames = 0;
+			if (!quiet) {
+				struct timeval currentTime;
+				long timeDiff;
+				gettimeofday(&currentTime, 0);
+				timeDiff = currentTime.tv_sec - lastEcho.tv_sec;
+				timeDiff *= 1000;
+				timeDiff += (currentTime.tv_usec - lastEcho.tv_usec) / 1000;
+				if (timeDiff >= 1000) {
+					printf("\033[2K\rCurrent FPS: %g (%gx)", lastFrames / (timeDiff / 1000.0f), lastFrames / (float) (60 * (timeDiff / 1000.0f)));
+					fflush(stdout);
+					lastEcho = currentTime;
+					lastFrames = 0;
+				}
 			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
-		if (*frames == duration * 60) {
+		if (*frames == duration) {
 			_GBAPerfShutdown(0);
 		}
 	}
-	printf("\033[2K\r");
+	if (!quiet) {
+		printf("\033[2K\r");
+	}
 }
 
 static void _GBAPerfShutdown(int signal) {
@@ -121,11 +149,17 @@ static void _GBAPerfShutdown(int signal) {
 static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
 	switch (option) {
+	case 'F':
+		opts->frames = strtoul(arg, 0, 10);
+		return !errno;
 	case 'N':
 		opts->noVideo = true;
 		return true;
+	case 'P':
+		opts->csv = true;
+		return true;
 	case 'S':
-		opts->duration = strtol(arg, 0, 10);
+		opts->duration = strtoul(arg, 0, 10);
 		return !errno;
 	default:
 		return false;

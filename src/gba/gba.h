@@ -148,6 +148,7 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
 bool GBAIsROM(struct VFile* vf);
+void GBAGetGameCode(struct GBA* gba, char* out);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
