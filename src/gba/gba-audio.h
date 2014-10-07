@@ -9,46 +9,64 @@ struct GBADMA;
 
 extern const unsigned GBA_AUDIO_SAMPLES;
 
+DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);
+DECL_BITS(GBAAudioRegisterEnvelope, Length, 0, 6);
+DECL_BITS(GBAAudioRegisterEnvelope, Duty, 6, 2);
+DECL_BITS(GBAAudioRegisterEnvelope, StepTime, 8, 3);
+DECL_BIT(GBAAudioRegisterEnvelope, Direction, 11);
+DECL_BITS(GBAAudioRegisterEnvelope, InitialVolume, 12, 4);
+
+DECL_BITFIELD(GBAAudioRegisterControl, uint16_t);
+DECL_BITS(GBAAudioRegisterControl, Rate, 0, 11);
+DECL_BITS(GBAAudioRegisterControl, Frequency, 0, 11);
+DECL_BIT(GBAAudioRegisterControl, Stop, 14);
+DECL_BIT(GBAAudioRegisterControl, Restart, 15);
+
+DECL_BITFIELD(GBAAudioRegisterSquareSweep, uint16_t);
+DECL_BITS(GBAAudioRegisterSquareSweep, Shift, 0, 3);
+DECL_BIT(GBAAudioRegisterSquareSweep, Direction, 3);
+DECL_BITS(GBAAudioRegisterSquareSweep, Time, 4, 3);
+
+DECL_BITFIELD(GBAAudioRegisterBank, uint16_t);
+DECL_BIT(GBAAudioRegisterBank, Size, 5);
+DECL_BIT(GBAAudioRegisterBank, Bank, 6);
+DECL_BIT(GBAAudioRegisterBank, Enable, 7);
+
+DECL_BITFIELD(GBAAudioRegisterBankWave, uint16_t);
+DECL_BITS(GBAAudioRegisterBankWave, Length, 0, 8);
+DECL_BITS(GBAAudioRegisterBankWave, Volume, 13, 3);
+
+DECL_BITFIELD(GBAAudioRegisterCh4Control, uint16_t);
+DECL_BITS(GBAAudioRegisterCh4Control, Ratio, 0, 3);
+DECL_BIT(GBAAudioRegisterCh4Control, Power, 3);
+DECL_BITS(GBAAudioRegisterCh4Control, Frequency, 4, 4);
+DECL_BIT(GBAAudioRegisterCh4Control, Stop, 14);
+DECL_BIT(GBAAudioRegisterCh4Control, Restart, 15);
+
 struct GBAAudioEnvelope {
-	union {
-		struct {
-			unsigned length : 6;
-			unsigned duty : 2;
-			unsigned stepTime : 3;
-			unsigned direction : 1;
-			unsigned initialVolume : 4;
-		};
-		uint16_t packed;
-	};
+	uint8_t length;
+	uint8_t duty;
+	uint8_t stepTime;
+	uint8_t initialVolume;
+	bool direction;
 	int currentVolume;
 	int dead;
 	int32_t nextStep;
 };
 
 struct GBAAudioSquareControl {
-	union {
-		struct {
-			unsigned frequency : 11;
-			unsigned : 3;
-			unsigned stop : 1;
-			unsigned restart : 1;
-		};
-		uint16_t packed;
-	};
+	uint16_t frequency;
+	bool stop;
 	int hi;
 	int32_t nextStep;
 	int32_t endTime;
 };
 
 struct GBAAudioChannel1 {
-	union GBAAudioSquareSweep {
-		struct {
-			unsigned shift : 3;
-			unsigned direction : 1;
-			unsigned time : 3;
-			unsigned : 9;
-		};
-		uint16_t packed;
+	struct GBAAudioSquareSweep {
+		uint8_t shift;
+		uint8_t time;
+		bool direction;
 	} sweep;
 	int32_t nextSweep;
 
@@ -64,36 +82,20 @@ struct GBAAudioChannel2 {
 };
 
 struct GBAAudioChannel3 {
-	union {
-		struct {
-			unsigned : 5;
-			unsigned size : 1;
-			unsigned bank : 1;
-			unsigned enable : 1;
-			unsigned : 7;
-		};
-		uint16_t packed;
+	struct {
+		bool size;
+		bool bank;
+		bool enable;
 	} bank;
 
-	union {
-		struct {
-			unsigned length : 8;
-			unsigned : 5;
-			unsigned volume : 3;
-		};
-		uint16_t packed;
+	struct {
+		uint8_t length;
+		uint8_t volume;
 	} wave;
 
 	struct {
-		union {
-			struct {
-				unsigned rate : 11;
-				unsigned : 3;
-				unsigned stop : 1;
-				unsigned restart : 1;
-			};
-			uint16_t packed;
-		};
+		uint16_t rate;
+		bool stop;
 		int32_t endTime;
 	} control;
 
@@ -103,18 +105,12 @@ struct GBAAudioChannel3 {
 
 struct GBAAudioChannel4 {
 	struct GBAAudioEnvelope envelope;
+
 	struct {
-		union {
-			struct {
-				unsigned ratio : 3;
-				unsigned power : 1;
-				unsigned frequency : 4;
-				unsigned : 6;
-				unsigned stop : 1;
-				unsigned restart : 1;
-			};
-			uint16_t packed;
-		};
+		uint8_t ratio;
+		uint8_t frequency;
+		bool power;
+		bool stop;
 		int32_t endTime;
 	} control;
 
