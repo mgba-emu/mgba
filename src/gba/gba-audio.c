@@ -437,9 +437,12 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", address);
 		return;
 	}
-	while (!CircleBufferWrite32(fifo, value)) {
-		int32_t dummy;
-		CircleBufferRead32(fifo, &dummy);
+	int i;
+	for (i = 0; i < 4; ++i) {
+		while (!CircleBufferWrite8(fifo, value >> (8 * i))) {
+			int8_t dummy;
+			CircleBufferRead8(fifo, &dummy);
+		}
 	}
 }
 
