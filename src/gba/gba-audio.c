@@ -44,9 +44,30 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
 	audio->soundbias = 0x200;
-	audio->soundcntLo = 0;
-	audio->soundcntHi = 0;
-	audio->soundcntX = 0;
+	audio->volumeRight = 0;
+	audio->volumeLeft = 0;
+	audio->ch1Right = false;
+	audio->ch2Right = false;
+	audio->ch3Right = false;
+	audio->ch4Right = false;
+	audio->ch1Left = false;
+	audio->ch2Left = false;
+	audio->ch3Left = false;
+	audio->ch4Left = false;
+	audio->volume = 0;
+	audio->volumeChA = false;
+	audio->volumeChB = false;
+	audio->chARight = false;
+	audio->chALeft = false;
+	audio->chATimer = false;
+	audio->chBRight = false;
+	audio->chBLeft = false;
+	audio->chBTimer = false;
+	audio->playingCh1 = false;
+	audio->playingCh2 = false;
+	audio->playingCh3 = false;
+	audio->playingCh4 = false;
+	audio->enable = false;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
 	CircleBufferClear(&audio->left);
@@ -366,15 +387,33 @@ void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUNDCNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntLo = value;
+	audio->volumeRight = GBARegisterSOUNDCNT_LOGetVolumeRight(value);
+	audio->volumeLeft = GBARegisterSOUNDCNT_LOGetVolumeLeft(value);
+	audio->ch1Right = GBARegisterSOUNDCNT_LOGetCh1Right(value);
+	audio->ch2Right = GBARegisterSOUNDCNT_LOGetCh2Right(value);
+	audio->ch3Right = GBARegisterSOUNDCNT_LOGetCh3Right(value);
+	audio->ch4Right = GBARegisterSOUNDCNT_LOGetCh4Right(value);
+	audio->ch1Left = GBARegisterSOUNDCNT_LOGetCh1Left(value);
+	audio->ch2Left = GBARegisterSOUNDCNT_LOGetCh2Left(value);
+	audio->ch3Left = GBARegisterSOUNDCNT_LOGetCh3Left(value);
+	audio->ch4Left = GBARegisterSOUNDCNT_LOGetCh4Left(value);
 }
 
 void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntHi = value;
+	audio->volume = GBARegisterSOUNDCNT_HIGetVolume(value);
+	audio->volumeChA = GBARegisterSOUNDCNT_HIGetVolumeChA(value);
+	audio->volumeChB = GBARegisterSOUNDCNT_HIGetVolumeChB(value);
+	audio->chARight = GBARegisterSOUNDCNT_HIGetChARight(value);
+	audio->chALeft = GBARegisterSOUNDCNT_HIGetChALeft(value);
+	audio->chATimer = GBARegisterSOUNDCNT_HIGetChATimer(value);
+	audio->chBRight = GBARegisterSOUNDCNT_HIGetChBRight(value);
+	audio->chBLeft = GBARegisterSOUNDCNT_HIGetChBLeft(value);
+	audio->chBTimer = GBARegisterSOUNDCNT_HIGetChBTimer(value);
+	// TODO: Implement channel reset
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntX = (value & 0x80) | (audio->soundcntX & 0x0F);
+	audio->enable = GBARegisterSOUNDCNT_XGetEnable(value);
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {

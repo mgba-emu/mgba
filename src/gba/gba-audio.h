@@ -124,6 +124,38 @@ struct GBAAudioFIFO {
 	int8_t sample;
 };
 
+DECL_BITFIELD(GBARegisterSOUNDCNT_LO, uint16_t);
+DECL_BITS(GBARegisterSOUNDCNT_LO, VolumeRight, 0, 3);
+DECL_BITS(GBARegisterSOUNDCNT_LO, VolumeLeft, 4, 3);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch1Right, 8);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch2Right, 9);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch3Right, 10);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch4Right, 11);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch1Left, 12);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch2Left, 13);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch3Left, 14);
+DECL_BIT(GBARegisterSOUNDCNT_LO, Ch4Left, 15);
+
+DECL_BITFIELD(GBARegisterSOUNDCNT_HI, uint16_t);
+DECL_BITS(GBARegisterSOUNDCNT_HI, Volume, 0, 2);
+DECL_BIT(GBARegisterSOUNDCNT_HI, VolumeChA, 2);
+DECL_BIT(GBARegisterSOUNDCNT_HI, VolumeChB, 3);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChARight, 8);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChALeft, 9);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChATimer, 10);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChAReset, 11);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChBRight, 12);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChBLeft, 13);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChBTimer, 14);
+DECL_BIT(GBARegisterSOUNDCNT_HI, ChBReset, 15);
+
+DECL_BITFIELD(GBARegisterSOUNDCNT_X, uint16_t);
+DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh1, 0);
+DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh2, 1);
+DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh3, 2);
+DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh4, 3);
+DECL_BIT(GBARegisterSOUNDCNT_X, Enable, 7);
+
 struct GBAAudio {
 	struct GBA* p;
 
@@ -138,54 +170,32 @@ struct GBAAudio {
 	struct CircleBuffer left;
 	struct CircleBuffer right;
 
-	union {
-		struct {
-			unsigned volumeRight : 3;
-			unsigned : 1;
-			unsigned volumeLeft : 3;
-			unsigned : 1;
-			unsigned ch1Right : 1;
-			unsigned ch2Right : 1;
-			unsigned ch3Right : 1;
-			unsigned ch4Right : 1;
-			unsigned ch1Left : 1;
-			unsigned ch2Left : 1;
-			unsigned ch3Left : 1;
-			unsigned ch4Left : 1;
-		};
-		uint16_t soundcntLo;
-	};
+	uint8_t volumeRight;
+	uint8_t volumeLeft;
+	bool ch1Right;
+	bool ch2Right;
+	bool ch3Right;
+	bool ch4Right;
+	bool ch1Left;
+	bool ch2Left;
+	bool ch3Left;
+	bool ch4Left;
 
-	union {
-		struct {
-			unsigned volume : 2;
-			unsigned volumeChA : 1;
-			unsigned volumeChB : 1;
-			unsigned : 4;
-			unsigned chARight : 1;
-			unsigned chALeft : 1;
-			unsigned chATimer : 1;
-			unsigned chAReset : 1;
-			unsigned chBRight : 1;
-			unsigned chBLeft : 1;
-			unsigned chBTimer : 1;
-			unsigned chBReset : 1;
-		};
-		uint16_t soundcntHi;
-	};
+	uint8_t volume;
+	bool volumeChA;
+	bool volumeChB;
+	bool chARight;
+	bool chALeft;
+	bool chATimer;
+	bool chBRight;
+	bool chBLeft;
+	bool chBTimer;
 
-	union {
-		struct {
-			unsigned playingCh1 : 1;
-			unsigned playingCh2 : 1;
-			unsigned playingCh3 : 1;
-			unsigned playingCh4 : 1;
-			unsigned : 3;
-			unsigned enable : 1;
-			unsigned : 8;
-		};
-		uint16_t soundcntX;
-	};
+	bool playingCh1;
+	bool playingCh2;
+	bool playingCh3;
+	bool playingCh4;
+	bool enable;
 
 	unsigned sampleRate;
 
