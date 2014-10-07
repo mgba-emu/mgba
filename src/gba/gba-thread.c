@@ -144,6 +144,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	if (threadContext->debugger) {
+		threadContext->debugger->log = GBADebuggerLogShim;
 		GBAAttachDebugger(&gba, threadContext->debugger);
 		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED);
 	}
@@ -167,7 +168,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			}
 		} else {
 			while (threadContext->state == THREAD_RUNNING) {
-				ARMRun(&cpu);
+				ARMRunLoop(&cpu);
 			}
 		}
 
@@ -519,6 +520,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
+#ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
 	void* pixels = 0;
@@ -530,6 +532,7 @@ void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	PNGWriteClose(png, info);
 	vf->close(vf);
 }
+#endif
 
 void GBASyncPostFrame(struct GBASync* sync) {
 	if (!sync) {
@@ -577,9 +580,7 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	if (!sync->videoFramePending) {
-		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
-	}
+	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
 	return true;

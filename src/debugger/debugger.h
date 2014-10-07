@@ -58,5 +58,6 @@ void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 
 #endif

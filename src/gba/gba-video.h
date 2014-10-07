@@ -43,78 +43,48 @@ enum ObjShape {
 	OBJ_SHAPE_VERTICAL = 2
 };
 
-union GBAColor {
-	struct {
-		unsigned r : 5;
-		unsigned g : 5;
-		unsigned b : 5;
-	};
-	uint16_t packed;
-};
+DECL_BITFIELD(GBAObjAttributesA, uint16_t);
+DECL_BITS(GBAObjAttributesA, Y, 0, 8);
+DECL_BIT(GBAObjAttributesA, Transformed, 8);
+DECL_BIT(GBAObjAttributesA, Disable, 9);
+DECL_BIT(GBAObjAttributesA, DoubleSize, 9);
+DECL_BITS(GBAObjAttributesA, Mode, 10, 2);
+DECL_BIT(GBAObjAttributesA, Mosaic, 12);
+DECL_BIT(GBAObjAttributesA, 256Color, 13);
+DECL_BITS(GBAObjAttributesA, Shape, 14, 2);
+
+
+DECL_BITFIELD(GBAObjAttributesB, uint16_t);
+DECL_BITS(GBAObjAttributesB, X, 0, 9);
+DECL_BITS(GBAObjAttributesB, MatIndex, 9, 5);
+DECL_BIT(GBAObjAttributesB, HFlip, 12);
+DECL_BIT(GBAObjAttributesB, VFlip, 13);
+DECL_BITS(GBAObjAttributesB, Size, 14, 2);
+
+DECL_BITFIELD(GBAObjAttributesC, uint16_t);
+DECL_BITS(GBAObjAttributesC, Tile, 0, 10);
+DECL_BITS(GBAObjAttributesC, Priority, 10, 2);
+DECL_BITS(GBAObjAttributesC, Palette, 12, 4);
 
 struct GBAObj {
-	unsigned y : 8;
-	unsigned transformed : 1;
-	unsigned disable : 1;
-	enum ObjMode mode : 2;
-	unsigned mosaic : 1;
-	unsigned multipalette : 1;
-	enum ObjShape shape : 2;
-
-	int x : 9;
-	int : 3;
-	unsigned hflip : 1;
-	unsigned vflip : 1;
-	unsigned size : 2;
-
-	unsigned tile : 10;
-	unsigned priority : 2;
-	unsigned palette : 4;
-
-	int : 16;
-};
-
-struct GBATransformedObj {
-	unsigned y : 8;
-	unsigned transformed : 1;
-	unsigned doublesize : 1;
-	enum ObjMode mode : 2;
-	unsigned mosaic : 1;
-	unsigned multipalette : 1;
-	enum ObjShape shape : 2;
-
-	int x : 9;
-	unsigned matIndex : 5;
-	unsigned size : 2;
-
-	unsigned tile : 10;
-	unsigned priority : 2;
-	unsigned palette : 4;
-
-	int : 16;
+	GBAObjAttributesA a;
+	GBAObjAttributesB b;
+	GBAObjAttributesC c;
+	uint16_t d;
 };
 
 union GBAOAM {
 	struct GBAObj obj[128];
-	struct GBATransformedObj tobj[128];
 
 	struct GBAOAMMatrix {
-		int : 16;
-		int : 16;
-		int : 16;
-		int a : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int b : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int c : 16;
-		int : 16;
-		int : 16;
-		int : 16;
-		int d : 16;
+		int16_t padding0[3];
+		int16_t a;
+		int16_t padding1[3];
+		int16_t b;
+		int16_t padding2[3];
+		int16_t c;
+		int16_t padding3[3];
+		int16_t d;
 	} mat[32];
 
 	uint16_t raw[512];
@@ -125,53 +95,54 @@ union GBAOAM {
 #define GBA_TEXT_MAP_VFLIP(MAP) ((MAP) & 0x0800)
 #define GBA_TEXT_MAP_PALETTE(MAP) (((MAP) & 0xF000) >> 12)
 
-union GBARegisterDISPCNT {
-	struct {
-		unsigned mode : 3;
-		unsigned cgb : 1;
-		unsigned frameSelect : 1;
-		unsigned hblankIntervalFree : 1;
-		unsigned objCharacterMapping : 1;
-		unsigned forcedBlank : 1;
-		unsigned bg0Enable : 1;
-		unsigned bg1Enable : 1;
-		unsigned bg2Enable : 1;
-		unsigned bg3Enable : 1;
-		unsigned objEnable : 1;
-		unsigned win0Enable : 1;
-		unsigned win1Enable : 1;
-		unsigned objwinEnable : 1;
-	};
-	uint16_t packed;
-};
+DECL_BITFIELD(GBARegisterDISPCNT, uint16_t);
+DECL_BITS(GBARegisterDISPCNT, Mode, 0, 3);
+DECL_BIT(GBARegisterDISPCNT, Cgb, 3);
+DECL_BIT(GBARegisterDISPCNT, FrameSelect, 4);
+DECL_BIT(GBARegisterDISPCNT, HblankIntervalFree, 5);
+DECL_BIT(GBARegisterDISPCNT, ObjCharacterMapping, 6);
+DECL_BIT(GBARegisterDISPCNT, ForcedBlank, 7);
+DECL_BIT(GBARegisterDISPCNT, Bg0Enable, 8);
+DECL_BIT(GBARegisterDISPCNT, Bg1Enable, 9);
+DECL_BIT(GBARegisterDISPCNT, Bg2Enable, 10);
+DECL_BIT(GBARegisterDISPCNT, Bg3Enable, 11);
+DECL_BIT(GBARegisterDISPCNT, ObjEnable, 12);
+DECL_BIT(GBARegisterDISPCNT, Win0Enable, 13);
+DECL_BIT(GBARegisterDISPCNT, Win1Enable, 14);
+DECL_BIT(GBARegisterDISPCNT, ObjwinEnable, 15);
 
-union GBARegisterDISPSTAT {
-	struct {
-		unsigned inVblank : 1;
-		unsigned inHblank : 1;
-		unsigned vcounter : 1;
-		unsigned vblankIRQ : 1;
-		unsigned hblankIRQ : 1;
-		unsigned vcounterIRQ : 1;
-		unsigned : 2;
-		unsigned vcountSetting : 8;
-	};
-	uint32_t packed;
-};
+DECL_BITFIELD(GBARegisterDISPSTAT, uint16_t);
+DECL_BIT(GBARegisterDISPSTAT, InVblank, 0);
+DECL_BIT(GBARegisterDISPSTAT, InHblank, 1);
+DECL_BIT(GBARegisterDISPSTAT, Vcounter, 2);
+DECL_BIT(GBARegisterDISPSTAT, VblankIRQ, 3);
+DECL_BIT(GBARegisterDISPSTAT, HblankIRQ, 4);
+DECL_BIT(GBARegisterDISPSTAT, VcounterIRQ, 5);
+DECL_BITS(GBARegisterDISPSTAT, VcountSetting, 8, 8);
 
-union GBARegisterBGCNT {
-	struct {
-		unsigned priority : 2;
-		unsigned charBase : 2;
-		unsigned : 2;
-		unsigned mosaic : 1;
-		unsigned multipalette : 1;
-		unsigned screenBase : 5;
-		unsigned overflow : 1;
-		unsigned size : 2;
-	};
-	uint16_t packed;
-};
+DECL_BITFIELD(GBARegisterBGCNT, uint16_t);
+DECL_BITS(GBARegisterBGCNT, Priority, 0, 2);
+DECL_BITS(GBARegisterBGCNT, CharBase, 2, 2);
+DECL_BIT(GBARegisterBGCNT, Mosaic, 6);
+DECL_BIT(GBARegisterBGCNT, 256Color, 7);
+DECL_BITS(GBARegisterBGCNT, ScreenBase, 8, 5);
+DECL_BIT(GBARegisterBGCNT, Overflow, 13);
+DECL_BITS(GBARegisterBGCNT, Size, 14, 2);
+
+DECL_BITFIELD(GBARegisterBLDCNT, uint16_t);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg0, 0);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg1, 1);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg2, 2);
+DECL_BIT(GBARegisterBLDCNT, Target1Bg3, 3);
+DECL_BIT(GBARegisterBLDCNT, Target1Obj, 4);
+DECL_BIT(GBARegisterBLDCNT, Target1Bd, 5);
+DECL_BITS(GBARegisterBLDCNT, Effect, 6, 2);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg0, 8);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg1, 9);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg2, 10);
+DECL_BIT(GBARegisterBLDCNT, Target2Bg3, 11);
+DECL_BIT(GBARegisterBLDCNT, Target2Obj, 12);
+DECL_BIT(GBARegisterBLDCNT, Target2Bd, 13);
 
 struct GBAVideoRenderer {
 	void (*init)(struct GBAVideoRenderer* renderer);
@@ -196,14 +167,7 @@ struct GBAVideo {
 	struct GBA* p;
 	struct GBAVideoRenderer* renderer;
 
-	// DISPSTAT
-	int inHblank;
-	int inVblank;
-	int vcounter;
-	int vblankIRQ;
-	int hblankIRQ;
-	int vcounterIRQ;
-	int vcountSetting;
+	GBARegisterDISPSTAT dispstat;
 
 	// VCOUNT
 	int vcount;

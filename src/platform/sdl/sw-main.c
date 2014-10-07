@@ -82,6 +82,9 @@ int main(int argc, char** argv) {
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio);
 
+	renderer.events.bindings = &context.inputMap;
+	GBASDLInitEvents(&renderer.events);
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.events.fullscreen = graphicsOpts.fullscreen;
 	renderer.window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer.viewportWidth, renderer.viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer.events.fullscreen));
@@ -138,8 +141,6 @@ static int _GBASDLInit(struct SoftwareRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		return 0;
 	}
-
-	GBASDLInitEvents(&renderer->events);
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
@@ -203,6 +204,7 @@ static void _GBASDLDeinit(struct SoftwareRenderer* renderer) {
 static void _GBASDLStart(struct GBAThread* threadContext) {
 	struct SoftwareRenderer* renderer = threadContext->userData;
 	renderer->audio.audio = &threadContext->gba->audio;
+	renderer->audio.thread = threadContext;
 }
 
 static void _GBASDLClean(struct GBAThread* threadContext) {

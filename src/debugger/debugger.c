@@ -115,3 +115,17 @@ void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
 	watchpoint->next = debugger->watchpoints;
 	debugger->watchpoints = watchpoint;
 }
+
+void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
+	struct DebugBreakpoint** previous = &debugger->watchpoints;
+	struct DebugBreakpoint* breakpoint;
+	for (; (breakpoint = *previous); previous = &breakpoint->next) {
+		if (breakpoint->address == address) {
+			*previous = breakpoint->next;
+			free(breakpoint);
+		}
+	}
+	if (!debugger->watchpoints) {
+		ARMDebuggerRemoveMemoryShim(debugger);
+	}
+}

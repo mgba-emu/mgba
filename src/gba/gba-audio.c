@@ -10,6 +10,7 @@ const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
+static bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value);
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAAudioEnvelope* envelope);
 static bool _updateSweep(struct GBAAudioChannel1* ch);
@@ -33,28 +34,40 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->nextCh2 = 0;
 	audio->nextCh3 = 0;
 	audio->nextCh4 = 0;
-	audio->ch1.sweep.time = 0;
-	audio->ch1.envelope.nextStep = INT_MAX;
-	audio->ch1.control.nextStep = 0;
-	audio->ch1.control.endTime = 0;
-	audio->ch1.nextSweep = INT_MAX;
-	audio->ch1.sample = 0;
-	audio->ch2.envelope.nextStep = INT_MAX;
-	audio->ch2.control.nextStep = 0;
-	audio->ch2.control.endTime = 0;
-	audio->ch2.sample = 0;
-	audio->ch3.bank.packed = 0;
-	audio->ch3.control.endTime = 0;
-	audio->ch3.sample = 0;
-	audio->ch4.sample = 0;
-	audio->ch4.envelope.nextStep = INT_MAX;
+	audio->ch1 = (struct GBAAudioChannel1) { .envelope = { .nextStep = INT_MAX }, .nextSweep = INT_MAX };
+	audio->ch2 = (struct GBAAudioChannel2) { .envelope = { .nextStep = INT_MAX } };
+	audio->ch3 = (struct GBAAudioChannel3) { .bank = { .bank = 0 } };
+	audio->ch4 = (struct GBAAudioChannel4) { .envelope = { .nextStep = INT_MAX } };
+	audio->chA.dmaSource = 0;
+	audio->chB.dmaSource = 0;
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
 	audio->soundbias = 0x200;
-	audio->soundcntLo = 0;
-	audio->soundcntHi = 0;
-	audio->soundcntX = 0;
+	audio->volumeRight = 0;
+	audio->volumeLeft = 0;
+	audio->ch1Right = false;
+	audio->ch2Right = false;
+	audio->ch3Right = false;
+	audio->ch4Right = false;
+	audio->ch1Left = false;
+	audio->ch2Left = false;
+	audio->ch3Left = false;
+	audio->ch4Left = false;
+	audio->volume = 0;
+	audio->volumeChA = false;
+	audio->volumeChB = false;
+	audio->chARight = false;
+	audio->chALeft = false;
+	audio->chATimer = false;
+	audio->chBRight = false;
+	audio->chBLeft = false;
+	audio->chBTimer = false;
+	audio->playingCh1 = false;
+	audio->playingCh2 = false;
+	audio->playingCh3 = false;
+	audio->playingCh4 = false;
+	audio->enable = false;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
 
 	CircleBufferClear(&audio->left);
@@ -251,11 +264,13 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		GBALog(audio->p, GBA_LOG_GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
-	info->dstControl = DMA_FIXED;
+	info->reg = GBADMARegisterSetDestControl(info->reg, DMA_FIXED);
 }
 
 void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch1.sweep.packed = value;
+	audio->ch1.sweep.shift = GBAAudioRegisterSquareSweepGetShift(value);
+	audio->ch1.sweep.direction = GBAAudioRegisterSquareSweepGetDirection(value);
+	audio->ch1.sweep.time = GBAAudioRegisterSquareSweepGetTime(value);
 	if (audio->ch1.sweep.time) {
 		audio->ch1.nextSweep = audio->ch1.sweep.time * SWEEP_CYCLES;
 	} else {
@@ -264,23 +279,16 @@ void GBAAudioWriteSOUND1CNT_LO(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND1CNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->ch1.envelope.packed = value;
-	audio->ch1.envelope.dead = 0;
-	if (audio->ch1.envelope.stepTime) {
-		audio->ch1.envelope.nextStep = 0;
-	} else {
-		audio->ch1.envelope.nextStep = INT_MAX;
-		if (audio->ch1.envelope.initialVolume == 0) {
-			audio->ch1.envelope.dead = 1;
-			audio->ch1.sample = 0;
-		}
+	if (!_writeEnvelope(&audio->ch1.envelope, value)) {
+		audio->ch1.sample = 0;
 	}
 }
 
 void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
-	audio->ch1.control.packed = value;
+	audio->ch1.control.frequency = GBAAudioRegisterControlGetFrequency(value);
+	audio->ch1.control.stop = GBAAudioRegisterControlGetStop(value);
 	audio->ch1.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (64 - audio->ch1.envelope.length)) >> 8;
-	if (audio->ch1.control.restart) {
+	if (GBAAudioRegisterControlIsRestart(value)) {
 		if (audio->ch1.sweep.time) {
 			audio->ch1.nextSweep = audio->ch1.sweep.time * SWEEP_CYCLES;
 		} else {
@@ -305,23 +313,16 @@ void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND2CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch2.envelope.packed = value;
-	audio->ch2.envelope.dead = 0;
-	if (audio->ch2.envelope.stepTime) {
-		audio->ch2.envelope.nextStep = 0;
-	} else {
-		audio->ch2.envelope.nextStep = INT_MAX;
-		if (audio->ch2.envelope.initialVolume == 0) {
-			audio->ch2.envelope.dead = 1;
-			audio->ch2.sample = 0;
-		}
+	if (!_writeEnvelope(&audio->ch2.envelope, value)) {
+		audio->ch2.sample = 0;
 	}
 }
 
 void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->ch2.control.packed = value;
-	audio->ch1.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (64 - audio->ch2.envelope.length)) >> 8;
-	if (audio->ch2.control.restart) {
+	audio->ch2.control.frequency = GBAAudioRegisterControlGetFrequency(value);
+	audio->ch2.control.stop = GBAAudioRegisterControlGetStop(value);
+	audio->ch2.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (64 - audio->ch2.envelope.length)) >> 8;
+	if (GBAAudioRegisterControlIsRestart(value)) {
 		audio->playingCh2 = 1;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
 		if (audio->ch2.envelope.stepTime) {
@@ -334,42 +335,41 @@ void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUND3CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch3.bank.packed = value;
+	audio->ch3.bank.size = GBAAudioRegisterBankGetSize(value);
+	audio->ch3.bank.bank = GBAAudioRegisterBankGetBank(value);
+	audio->ch3.bank.enable = GBAAudioRegisterBankGetEnable(value);
 	if (audio->ch3.control.endTime >= 0) {
 		audio->playingCh3 = audio->ch3.bank.enable;
 	}
 }
 
 void GBAAudioWriteSOUND3CNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->ch3.wave.packed = value;
+	audio->ch3.wave.length = GBAAudioRegisterBankWaveGetLength(value);
+	audio->ch3.wave.volume = GBAAudioRegisterBankWaveGetVolume(value);
 }
 
 void GBAAudioWriteSOUND3CNT_X(struct GBAAudio* audio, uint16_t value) {
-	audio->ch3.control.packed = value;
+	audio->ch3.control.rate = GBAAudioRegisterControlGetRate(value);
+	audio->ch3.control.stop = GBAAudioRegisterControlGetStop(value);
 	audio->ch3.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (256 - audio->ch3.wave.length)) >> 8;
-	if (audio->ch3.control.restart) {
+	if (GBAAudioRegisterControlIsRestart(value)) {
 		audio->playingCh3 = audio->ch3.bank.enable;
 	}
 }
 
 void GBAAudioWriteSOUND4CNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->ch4.envelope.packed = value;
-	audio->ch4.envelope.dead = 0;
-	if (audio->ch4.envelope.stepTime) {
-		audio->ch4.envelope.nextStep = 0;
-	} else {
-		audio->ch4.envelope.nextStep = INT_MAX;
-		if (audio->ch4.envelope.initialVolume == 0) {
-			audio->ch4.envelope.dead = 1;
-			audio->ch4.sample = 0;
-		}
+	if (!_writeEnvelope(&audio->ch4.envelope, value)) {
+		audio->ch4.sample = 0;
 	}
 }
 
 void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->ch4.control.packed = value;
+	audio->ch4.control.ratio = GBAAudioRegisterCh4ControlGetRatio(value);
+	audio->ch4.control.frequency = GBAAudioRegisterCh4ControlGetFrequency(value);
+	audio->ch4.control.power = GBAAudioRegisterCh4ControlGetPower(value);
+	audio->ch4.control.stop = GBAAudioRegisterCh4ControlGetStop(value);
 	audio->ch4.control.endTime = (GBA_ARM7TDMI_FREQUENCY * (64 - audio->ch4.envelope.length)) >> 8;
-	if (audio->ch4.control.restart) {
+	if (GBAAudioRegisterCh4ControlIsRestart(value)) {
 		audio->playingCh4 = 1;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
 		if (audio->ch4.envelope.stepTime) {
@@ -387,15 +387,33 @@ void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUNDCNT_LO(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntLo = value;
+	audio->volumeRight = GBARegisterSOUNDCNT_LOGetVolumeRight(value);
+	audio->volumeLeft = GBARegisterSOUNDCNT_LOGetVolumeLeft(value);
+	audio->ch1Right = GBARegisterSOUNDCNT_LOGetCh1Right(value);
+	audio->ch2Right = GBARegisterSOUNDCNT_LOGetCh2Right(value);
+	audio->ch3Right = GBARegisterSOUNDCNT_LOGetCh3Right(value);
+	audio->ch4Right = GBARegisterSOUNDCNT_LOGetCh4Right(value);
+	audio->ch1Left = GBARegisterSOUNDCNT_LOGetCh1Left(value);
+	audio->ch2Left = GBARegisterSOUNDCNT_LOGetCh2Left(value);
+	audio->ch3Left = GBARegisterSOUNDCNT_LOGetCh3Left(value);
+	audio->ch4Left = GBARegisterSOUNDCNT_LOGetCh4Left(value);
 }
 
 void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntHi = value;
+	audio->volume = GBARegisterSOUNDCNT_HIGetVolume(value);
+	audio->volumeChA = GBARegisterSOUNDCNT_HIGetVolumeChA(value);
+	audio->volumeChB = GBARegisterSOUNDCNT_HIGetVolumeChB(value);
+	audio->chARight = GBARegisterSOUNDCNT_HIGetChARight(value);
+	audio->chALeft = GBARegisterSOUNDCNT_HIGetChALeft(value);
+	audio->chATimer = GBARegisterSOUNDCNT_HIGetChATimer(value);
+	audio->chBRight = GBARegisterSOUNDCNT_HIGetChBRight(value);
+	audio->chBLeft = GBARegisterSOUNDCNT_HIGetChBLeft(value);
+	audio->chBTimer = GBARegisterSOUNDCNT_HIGetChBTimer(value);
+	// TODO: Implement channel reset
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
-	audio->soundcntX = (value & 0x80) | (audio->soundcntX & 0x0F);
+	audio->enable = GBARegisterSOUNDCNT_XGetEnable(value);
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
@@ -419,9 +437,12 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", address);
 		return;
 	}
-	while (!CircleBufferWrite32(fifo, value)) {
-		int32_t dummy;
-		CircleBufferRead32(fifo, &dummy);
+	int i;
+	for (i = 0; i < 4; ++i) {
+		while (!CircleBufferWrite8(fifo, value >> (8 * i))) {
+			int8_t dummy;
+			CircleBufferRead8(fifo, &dummy);
+		}
 	}
 }
 
@@ -501,6 +522,25 @@ unsigned GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, s
 		}
 	}
 	return totalRead;
+}
+
+bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value) {
+	envelope->length = GBAAudioRegisterEnvelopeGetLength(value);
+	envelope->duty = GBAAudioRegisterEnvelopeGetDuty(value);
+	envelope->stepTime = GBAAudioRegisterEnvelopeGetStepTime(value);
+	envelope->direction = GBAAudioRegisterEnvelopeGetDirection(value);
+	envelope->initialVolume = GBAAudioRegisterEnvelopeGetInitialVolume(value);
+	envelope->dead = 0;
+	if (envelope->stepTime) {
+		envelope->nextStep = 0;
+	} else {
+		envelope->nextStep = INT_MAX;
+		if (envelope->initialVolume == 0) {
+			envelope->dead = 1;
+			return false;
+		}
+	}
+	return true;
 }
 
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* control, int duty) {

@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#ifdef USE_PNG
+
 #include <png.h>
 
 struct VFile;
@@ -27,5 +29,7 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 bool PNGIgnorePixels(png_structp png, png_infop info);
 bool PNGReadFooter(png_structp png, png_infop end);
 void PNGReadClose(png_structp png, png_infop info, png_infop end);
+
+#endif
 
 #endif

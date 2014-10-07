@@ -7,12 +7,15 @@
 #include "gba-video.h"
 
 #include "util/memory.h"
-#include "util/png-io.h"
 #include "util/vfs.h"
 
 #include <fcntl.h>
+
+#ifdef USE_PNG
+#include "util/png-io.h"
 #include <png.h>
 #include <zlib.h>
+#endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
@@ -70,9 +73,15 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	gba->cpu->nextEvent = state->cpu.nextEvent;
 	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
 	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
-	gba->cpu->executionMode = gba->cpu->cpsr.t ? MODE_THUMB : MODE_ARM;
 	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	if (gba->cpu->cpsr.t) {
+		gba->cpu->executionMode = MODE_THUMB;
+		LOAD_16(gba->cpu->prefetch, (gba->cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+	} else {
+		gba->cpu->executionMode = MODE_ARM;
+		LOAD_32(gba->cpu->prefetch, (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+	}
 
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
@@ -107,6 +116,7 @@ static struct VFile* _getStateVf(struct GBA* gba, struct VDir* dir, int slot, bo
 	return vf;
 }
 
+#ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	unsigned stride;
 	void* pixels = 0;
@@ -162,6 +172,7 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 	GBASyncPostFrame(gba->sync);
 	return true;
 }
+#endif
 
 bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) {
 	struct VFile* vf = _getStateVf(gba, dir, slot, true);
@@ -192,23 +203,28 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		}
 		GBASerialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
-	} else {
+		return true;
+	}
+	#ifdef USE_PNG
+	else {
 		return _savePNGState(gba, vf);
 	}
-	return true;
+	#endif
+	return false;
 }
 
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
-	if (!isPNG(vf)) {
-		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
-		if (!state) {
-			return false;
-		}
-		GBADeserialize(gba, state);
-		vf->unmap(vf, state, sizeof(struct GBASerializedState));
-	} else {
+	#ifdef USE_PNG
+	if (isPNG(vf)) {
 		return _loadPNGState(gba, vf);
 	}
+	#endif
+	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
+	if (!state) {
+		return false;
+	}
+	GBADeserialize(gba, state);
+	vf->unmap(vf, state, sizeof(struct GBASerializedState));
 	return true;
 }
 

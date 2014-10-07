@@ -12,10 +12,7 @@ typedef uint32_t color_t;
 #endif
 
 struct GBAVideoSoftwareSprite {
-	union {
-		struct GBAObj obj;
-		struct GBATransformedObj tobj;
-	};
+	struct GBAObj obj;
 	int y;
 	int endY;
 };
@@ -76,27 +73,27 @@ enum {
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
 
-union WindowRegion {
-	struct {
-		uint8_t end;
-		uint8_t start;
-	};
-	uint16_t packed;
+struct WindowRegion {
+	uint8_t end;
+	uint8_t start;
 };
 
+DECL_BITFIELD(GBAWindowControl, uint8_t);
+DECL_BIT(GBAWindowControl, Bg0Enable, 0);
+DECL_BIT(GBAWindowControl, Bg1Enable, 1);
+DECL_BIT(GBAWindowControl, Bg2Enable, 2);
+DECL_BIT(GBAWindowControl, Bg3Enable, 3);
+DECL_BIT(GBAWindowControl, ObjEnable, 4);
+DECL_BIT(GBAWindowControl, BlendEnable, 5);
+
+DECL_BITFIELD(GBAMosaicControl, uint16_t);
+DECL_BITS(GBAMosaicControl, BgH, 0, 4);
+DECL_BITS(GBAMosaicControl, BgV, 4, 4);
+DECL_BITS(GBAMosaicControl, ObjH, 8, 4);
+DECL_BITS(GBAMosaicControl, ObjV, 12, 4);
+
 struct WindowControl {
-	union {
-		struct {
-			unsigned bg0Enable : 1;
-			unsigned bg1Enable : 1;
-			unsigned bg2Enable : 1;
-			unsigned bg3Enable : 1;
-			unsigned objEnable : 1;
-			unsigned blendEnable : 1;
-			unsigned : 2;
-		};
-		uint8_t packed;
-	};
+	GBAWindowControl packed;
 	int8_t priority;
 };
 
@@ -113,7 +110,7 @@ struct GBAVideoSoftwareRenderer {
 	color_t* outputBuffer;
 	unsigned outputBufferStride;
 
-	union GBARegisterDISPCNT dispcnt;
+	GBARegisterDISPCNT dispcnt;
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
@@ -132,19 +129,11 @@ struct GBAVideoSoftwareRenderer {
 	uint16_t bldb;
 	uint16_t bldy;
 
-	union {
-		struct {
-			unsigned bgH : 4;
-			unsigned bgV : 4;
-			unsigned objH : 4;
-			unsigned objV : 4;
-		};
-		uint16_t packed;
-	} mosaic;
+	GBAMosaicControl mosaic;
 
 	struct WindowN {
-		union WindowRegion h;
-		union WindowRegion v;
+		struct WindowRegion h;
+		struct WindowRegion v;
 		struct WindowControl control;
 	} winN[2];
 

@@ -112,7 +112,9 @@ void GBAThreadTogglePause(struct GBAThread* threadContext);
 void GBAThreadPauseFromThread(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 
+#ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext);
+#endif
 
 void GBASyncPostFrame(struct GBASync* sync);
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);

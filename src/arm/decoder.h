@@ -89,7 +89,7 @@ enum ARMShifterOperation {
 union ARMOperand {
 	struct {
 		uint8_t reg;
-		enum ARMShifterOperation shifterOp;
+		uint8_t shifterOp;
 		union {
 			uint8_t shifterReg;
 			uint8_t shifterImm;
@@ -110,9 +110,9 @@ enum ARMMemoryAccessType {
 
 struct ARMMemoryAccess {
 	uint8_t baseReg;
+	uint8_t width;
 	uint16_t format;
 	union ARMOperand offset;
-	enum ARMMemoryAccessType width;
 };
 
 enum ARMMnemonic {
@@ -167,25 +167,25 @@ enum {
 };
 
 struct ARMInstructionInfo {
-	enum ExecutionMode execMode;
 	uint32_t opcode;
-	enum ARMMnemonic mnemonic;
 	union ARMOperand op1;
 	union ARMOperand op2;
 	union ARMOperand op3;
 	union ARMOperand op4;
 	struct ARMMemoryAccess memory;
 	int operandFormat;
-	int branches;
-	int traps;
-	int affectsCPSR;
-	int condition;
-	int sDataCycles;
-	int nDataCycles;
-	int sInstructionCycles;
-	int nInstructionCycles;
-	int iCycles;
-	int cCycles;
+	unsigned execMode : 1;
+	bool branches : 1;
+	bool traps : 1;
+	bool affectsCPSR : 1;
+	unsigned condition : 4;
+	unsigned mnemonic : 6;
+	unsigned iCycles : 2;
+	unsigned cCycles : 4;
+	unsigned sDataCycles : 10;
+	unsigned nDataCycles : 10;
+	unsigned sInstructionCycles : 4;
+	unsigned nInstructionCycles : 4;
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);

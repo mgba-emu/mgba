@@ -69,3 +69,16 @@ void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {
 	debugger->cpu->memory.setActiveRegion = ARMDebuggerShim_setActiveRegion;
 	debugger->cpu->memory.waitMultiple = ARMDebuggerShim_waitMultiple;
 }
+
+void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger) {
+	debugger->cpu->memory.store32 = debugger->originalMemory.store32;
+	debugger->cpu->memory.store16 = debugger->originalMemory.store16;
+	debugger->cpu->memory.store8 = debugger->originalMemory.store8;
+	debugger->cpu->memory.load32 = debugger->originalMemory.load32;
+	debugger->cpu->memory.load16 = debugger->originalMemory.load16;
+	debugger->cpu->memory.loadU16 = debugger->originalMemory.loadU16;
+	debugger->cpu->memory.load8 = debugger->originalMemory.load8;
+	debugger->cpu->memory.loadU8 = debugger->originalMemory.loadU8;
+	debugger->cpu->memory.setActiveRegion = debugger->originalMemory.setActiveRegion;
+	debugger->cpu->memory.waitMultiple = debugger->originalMemory.waitMultiple;
+}

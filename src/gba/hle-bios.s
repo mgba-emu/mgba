@@ -18,24 +18,24 @@ swiBase:
 cmp    sp, #0
 moveq  sp, #0x04000000
 subeq  sp, #0x20
-stmfd  sp!, {r4-r5, lr}
-ldrb   r4, [lr, #-2]
-mov    r5, #swiTable
-ldr    r4, [r5, r4, lsl #2]
-cmp    r4, #0
-mrs    r5, spsr
-stmfd  sp!, {r5}
-and    r5, #0x80
-orr    r5, #0x1F
-msr    cpsr, r5
+stmfd  sp!, {r11-r12, lr}
+ldrb   r11, [lr, #-2]
+mov    r12, #swiTable
+ldr    r11, [r12, r11, lsl #2]
+cmp    r11, #0
+mrs    r12, spsr
+stmfd  sp!, {r12}
+and    r12, #0x80
+orr    r12, #0x1F
+msr    cpsr, r12
 stmfd  sp!, {lr}
 mov    lr, pc
-bxne   r4
+bxne   r11
 ldmfd  sp!, {lr}
 msr    cpsr, #0x93
-ldmfd  sp!, {r5}
-msr    spsr, r5
-ldmfd  sp!, {r4-r5, lr}
+ldmfd  sp!, {r12}
+msr    spsr, r12
+ldmfd  sp!, {r11-r12, lr}
 movs   pc, lr
 
 swiTable:
@@ -68,7 +68,7 @@ mov    r1, #1
 IntrWait:
 stmfd  sp!, {r2-r3, lr}
 # Pull current interrupts enabled and add the ones we need
-mov    r4, #0x04000000
+mov    r12, #0x04000000
 # See if we want to return immediately
 cmp    r0, #0
 mov    r0, #0
@@ -76,15 +76,15 @@ mov    r2, #1
 beq    1f
 # Halt
 0:
-strb   r0, [r4, #0x301]
+strb   r0, [r12, #0x301]
 1:
 # Check which interrupts were acknowledged
-strb   r0, [r4, #0x208]
-ldrh   r3, [r4, #-8]
+strb   r0, [r12, #0x208]
+ldrh   r3, [r12, #-8]
 ands   r3, r1
 eorne  r3, r1
-strneh r3, [r4, #-8]
-strb   r2, [r4, #0x208]
+strneh r3, [r12, #-8]
+strb   r2, [r12, #0x208]
 beq    0b
 ldmfd  sp!, {r2-r3, pc}
 

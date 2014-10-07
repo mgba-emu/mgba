@@ -201,13 +201,15 @@ struct ARMDebugger* createDebugger(struct StartupOptions* opts) {
 void usage(const char* arg0, const char* extraOptions) {
 	printf("usage: %s [option ...] file\n", arg0);
 	puts("\nGeneric options:");
-	puts("  -b, --bios FILE  GBA BIOS file to use");
+	puts("  -b, --bios FILE     GBA BIOS file to use");
 #ifdef USE_CLI_DEBUGGER
-	puts("  -d, --debug      Use command-line debugger");
+	puts("  -d, --debug         Use command-line debugger");
 #endif
 #ifdef USE_GDB_STUB
-	puts("  -g, --gdb        Start GDB session (default port 2345)");
+	puts("  -g, --gdb           Start GDB session (default port 2345)");
 #endif
+	puts("  -p, --patch         Apply a specified patch file when running");
+	puts("  -s, --frameskip N   Skip every N frames");
 	if (extraOptions) {
 		puts(extraOptions);
 	}

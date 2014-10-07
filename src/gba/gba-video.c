@@ -36,14 +36,7 @@ void GBAVideoInit(struct GBAVideo* video) {
 }
 
 void GBAVideoReset(struct GBAVideo* video) {
-	video->inHblank = 0;
-	video->inVblank = 0;
-	video->vcounter = 0;
-	video->vblankIRQ = 0;
-	video->hblankIRQ = 0;
-	video->vcounterIRQ = 0;
-	video->vcountSetting = 0;
-
+	video->dispstat = 0;
 	video->vcount = 0;
 
 	video->lastHblank = 0;
@@ -94,9 +87,9 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 		video->nextHblankIRQ -= video->eventDiff;
 		video->nextVcounterIRQ -= video->eventDiff;
 
-		if (video->inHblank) {
+		if (GBARegisterDISPSTATIsInHblank(video->dispstat)) {
 			// End Hblank
-			video->inHblank = 0;
+			video->dispstat = GBARegisterDISPSTATClearInHblank(video->dispstat);
 			video->nextEvent = video->nextHblank;
 
 			++video->vcount;
@@ -104,13 +97,13 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 
 			switch (video->vcount) {
 			case VIDEO_VERTICAL_PIXELS:
-				video->inVblank = 1;
+				video->dispstat = GBARegisterDISPSTATFillInVblank(video->dispstat);
 				if (GBASyncDrawingFrame(video->p->sync)) {
 					video->renderer->finishFrame(video->renderer);
 				}
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
 				GBAMemoryRunVblankDMAs(video->p, lastEvent);
-				if (video->vblankIRQ) {
+				if (GBARegisterDISPSTATIsVblankIRQ(video->dispstat)) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
 				GBASyncPostFrame(video->p->sync);
@@ -119,7 +112,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				if (video->p->rr) {
 					GBARRNextFrame(video->p->rr);
 				}
-				video->inVblank = 0;
+				video->dispstat = GBARegisterDISPSTATClearInVblank(video->dispstat);
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS:
 				video->vcount = 0;
@@ -127,14 +120,18 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				break;
 			}
 
-			video->vcounter = video->vcount == video->vcountSetting;
-			if (video->vcounter && video->vcounterIRQ) {
-				GBARaiseIRQ(video->p, IRQ_VCOUNTER);
-				video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
+			if (video->vcount == GBARegisterDISPSTATGetVcountSetting(video->dispstat)) {
+				video->dispstat = GBARegisterDISPSTATFillVcounter(video->dispstat);
+				if (GBARegisterDISPSTATIsVcounterIRQ(video->dispstat)) {
+					GBARaiseIRQ(video->p, IRQ_VCOUNTER);
+					video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
+				}
+			} else {
+				video->dispstat = GBARegisterDISPSTATClearVcounter(video->dispstat);
 			}
 		} else {
 			// Begin Hblank
-			video->inHblank = 1;
+			video->dispstat = GBARegisterDISPSTATFillInHblank(video->dispstat);
 			video->lastHblank = video->nextHblank;
 			video->nextEvent = video->lastHblank + VIDEO_HBLANK_LENGTH;
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
@@ -147,7 +144,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			if (video->vcount < VIDEO_VERTICAL_PIXELS) {
 				GBAMemoryRunHblankDMAs(video->p, lastEvent);
 			}
-			if (video->hblankIRQ) {
+			if (GBARegisterDISPSTATIsHblankIRQ(video->dispstat)) {
 				GBARaiseIRQ(video->p, IRQ_HBLANK);
 			}
 		}
@@ -155,21 +152,17 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 		video->eventDiff = 0;
 	}
 	video->p->memory.io[REG_DISPSTAT >> 1] &= 0xFFF8;
-	video->p->memory.io[REG_DISPSTAT >> 1] |= (video->inVblank) | (video->inHblank << 1) | (video->vcounter << 2);
+	video->p->memory.io[REG_DISPSTAT >> 1] |= video->dispstat & 0x7;
 	return video->nextEvent;
 }
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
-	union GBARegisterDISPSTAT dispstat;
-	dispstat.packed = value;
-	video->vblankIRQ = dispstat.vblankIRQ;
-	video->hblankIRQ = dispstat.hblankIRQ;
-	video->vcounterIRQ = dispstat.vcounterIRQ;
-	video->vcountSetting = dispstat.vcountSetting;
+	video->dispstat &= 0x7;
+	video->dispstat |= value & 0xFFF8;
 
-	if (video->vcounterIRQ) {
+	if (GBARegisterDISPSTATIsVcounterIRQ(video->dispstat)) {
 		// FIXME: this can be too late if we're in the middle of an Hblank
-		video->nextVcounterIRQ = video->nextHblank + VIDEO_HBLANK_LENGTH + (video->vcountSetting - video->vcount) * VIDEO_HORIZONTAL_LENGTH;
+		video->nextVcounterIRQ = video->nextHblank + VIDEO_HBLANK_LENGTH + (GBARegisterDISPSTATGetVcountSetting(video->dispstat) - video->vcount) * VIDEO_HORIZONTAL_LENGTH;
 		if (video->nextVcounterIRQ < video->nextEvent) {
 			video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 		}
@@ -233,15 +226,7 @@ void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state)
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	union GBARegisterDISPSTAT dispstat;
-	dispstat.inVblank = video->inVblank;
-	dispstat.inHblank = video->inHblank;
-	dispstat.vcounter = video->vcounter;
-	dispstat.vblankIRQ = video->vblankIRQ;
-	dispstat.hblankIRQ = video->hblankIRQ;
-	dispstat.vcounterIRQ = video->vcounterIRQ;
-	dispstat.vcountSetting = video->vcountSetting;
-	state->io[REG_DISPSTAT >> 1] = dispstat.packed;
+	state->io[REG_DISPSTAT >> 1] = video->dispstat;
 	state->video.nextEvent = video->nextEvent;
 	state->video.eventDiff = video->eventDiff;
 	state->video.lastHblank = video->lastHblank;
@@ -260,15 +245,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
 		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
 	}
-	union GBARegisterDISPSTAT dispstat;
-	dispstat.packed = state->io[REG_DISPSTAT >> 1];
-	video->inVblank = dispstat.inVblank;
-	video->inHblank = dispstat.inHblank;
-	video->vcounter = dispstat.vcounter;
-	video->vblankIRQ = dispstat.vblankIRQ;
-	video->hblankIRQ = dispstat.hblankIRQ;
-	video->vcounterIRQ = dispstat.vcounterIRQ;
-	video->vcountSetting = dispstat.vcountSetting;
+	video->dispstat = state->io[REG_DISPSTAT >> 1];
 	video->nextEvent = state->video.nextEvent;
 	video->eventDiff = state->video.eventDiff;
 	video->lastHblank = state->video.lastHblank;

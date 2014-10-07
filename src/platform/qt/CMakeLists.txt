@@ -18,8 +18,20 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Widgets REQUIRED)
-find_package(OpenGL REQUIRED)
+set(REQUIRES "Qt5Widgets")
+
+if(APPLE)
+	find_package(OpenGL REQUIRED)
+else()
+	list(APPEND REQUIRES "OpenGL")
+endif()
+
+find_feature(BUILD_QT ${REQUIRES})
+
+if(NOT BUILD_QT)
+	set(BUILD_QT OFF PARENT_SCOPE)
+	return()
+endif()
 
 set(SOURCE_FILES AudioDevice.cpp AudioProcessor.cpp Display.cpp GameController.cpp Window.cpp)
 

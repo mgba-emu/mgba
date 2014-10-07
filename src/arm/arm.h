@@ -52,7 +52,7 @@ struct ARMCore;
 
 union PSR {
 	struct {
-#ifdef __POWERPC__
+#if defined(__POWERPC__) || defined(__PPC__)
 		unsigned n : 1;
 		unsigned z : 1;
 		unsigned c : 1;
@@ -133,7 +133,7 @@ struct ARMCore {
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
-	uint32_t currentPC;
+	uint32_t prefetch;
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
@@ -156,5 +156,6 @@ void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
+void ARMRunLoop(struct ARMCore* cpu);
 
 #endif
