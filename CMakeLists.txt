@@ -134,7 +134,7 @@ endif()
 
 if(USE_LIBZIP)
 	include_directories(AFTER ${LIBZIP_INCLUDE_DIRS})
-	link_directories(AFTER ${LIBZIP_LIBRARY_DIRS})
+	link_directories(${LIBZIP_LIBRARY_DIRS})
 	list(APPEND DEPENDENCY_LIB ${LIBZIP_LIBRARIES})
 	add_definitions(-DENABLE_LIBZIP)
 endif()
