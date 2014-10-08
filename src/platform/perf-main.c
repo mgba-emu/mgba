@@ -96,9 +96,9 @@ int main(int argc, char** argv) {
 		} else {
 			rendererName = "software";
 		}
-		printf("%s,%i,%lli,%s\n", gameCode, frames, duration, rendererName);
+		printf("%s,%i,%llu,%s\n", gameCode, frames, duration, rendererName);
 	} else {
-		printf("%u frames in %lli microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
+		printf("%u frames in %llu microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
 	return 0;
