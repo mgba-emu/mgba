@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <inttypes.h>
 #include <sys/time.h>
 
 #define PERF_OPTIONS "F:NPS:"
@@ -96,9 +97,9 @@ int main(int argc, char** argv) {
 		} else {
 			rendererName = "software";
 		}
-		printf("%s,%i,%llu,%s\n", gameCode, frames, duration, rendererName);
+		printf("%s,%i,%" PRIu64 ",%s\n", gameCode, frames, duration, rendererName);
 	} else {
-		printf("%u frames in %llu microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
+		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
 	return 0;
