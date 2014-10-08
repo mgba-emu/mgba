@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(mGBA)
+project(mGBA C)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -Wall -Wextra -std=gnu99")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall -Wextra -std=gnu99")
