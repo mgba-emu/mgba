@@ -83,9 +83,7 @@ class Suite(object):
     def add_tests(self, rom):
         if self.wall:
             self.tests.append(WallClockTest(rom, self.wall))
-            self.tests.append(WallClockTest(rom, self.wall, renderer=None))
         if self.game:
-            self.tests.append(GameClockTest(rom, self.game))
             self.tests.append(GameClockTest(rom, self.game, renderer=None))
 
     def run(self):
@@ -103,7 +101,7 @@ class Suite(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-w', '--wall-time', type=float, default=120, metavar='TIME', help='wall-clock time')
+    parser.add_argument('-w', '--wall-time', type=float, default=60, metavar='TIME', help='wall-clock time')
     parser.add_argument('-g', '--game-frames', type=int, default=120*60, metavar='FRAMES', help='game-clock frames')
     parser.add_argument('-o', '--out', metavar='FILE', help='output file path')
     parser.add_argument('directory', help='directory containing ROM files')
