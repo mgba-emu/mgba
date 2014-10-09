@@ -149,6 +149,7 @@ static void _GBAPerfShutdown(int signal) {
 
 static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
+	errno = 0;
 	switch (option) {
 	case 'F':
 		opts->frames = strtoul(arg, 0, 10);
