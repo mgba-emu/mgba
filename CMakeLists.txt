@@ -23,6 +23,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
+include(GNUInstallDirs)
+
 # Function definitions
 include(FindPkgConfig)
 function(find_feature FEATURE_NAME FEATURE_REQUIRES)
@@ -160,6 +162,7 @@ if(BUILD_PERF)
 	add_executable(${BINARY_NAME}-perf ${PERF_SRC})
 	target_link_libraries(${BINARY_NAME}-perf ${BINARY_NAME} ${PERF_LIB})
 	install(TARGETS ${BINARY_NAME}-perf DESTINATION bin)
+	install(FILES ${CMAKE_SOURCE_DIR}/tools/perf.py DESTINATION "${CMAKE_INSTALL_LIBDIR}/${BINARY_NAME}")
 endif()
 
 # Summaries
