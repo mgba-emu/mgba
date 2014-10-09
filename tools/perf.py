@@ -29,7 +29,11 @@ class PerfTest(object):
         if self.renderer != 'software':
             args.append('-N')
         args.append(self.rom)
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=cwd, universal_newlines=True)
+        env = {}
+        if 'LD_LIBRARY_PATH' in os.environ:
+            env['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
+            env['DYLD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] # Fake it on OS X
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=cwd, universal_newlines=True, env=env)
         try:
             self.wait(proc)
             proc.wait()
