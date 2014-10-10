@@ -597,6 +597,9 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 			}
 		}
 	}
+	if (!name) {
+		return CC_ERROR;
+	}
 	if (_debuggerCommands[cmd + 1].name && strncasecmp(_debuggerCommands[cmd + 1].name, li->buffer, len - 1) == 0) {
 		return CC_ERROR;
 	}
