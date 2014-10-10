@@ -583,6 +583,10 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	UNUSED(ch);
 	const LineInfo* li = el_line(elstate);
+	if (!li->buffer[0]) {
+		return CC_ERROR;
+	}
+
 	const char* commandPtr;
 	int cmd = 0, len = 0;
 	const char* name = 0;
