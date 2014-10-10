@@ -233,16 +233,17 @@ static void _printHelp(struct CLIDebugger* debugger, struct DebugVector* dv) {
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	char disassembly[48];
 	struct ARMInstructionInfo info;
+	printf("%08X:  ", address);
 	if (mode == MODE_ARM) {
 		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
-		printf("%08X: %s\n", instruction, disassembly);
+		printf("%08X\t%s\n", instruction, disassembly);
 	} else {
 		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 		ARMDecodeThumb(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
-		printf("%04X: %s\n", instruction, disassembly);
+		printf("%04X\t%s\n", instruction, disassembly);
 	}
 }
 
