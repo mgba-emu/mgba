@@ -77,6 +77,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				break;
 			case '0':
 				state = LEX_EXPECT_PREFIX;
+				next = 0;
 				break;
 			case '$':
 				state = LEX_EXPECT_HEX;
@@ -216,8 +217,19 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				next = 0;
 				state = LEX_EXPECT_HEX;
 				break;
-			default:
-				state = LEX_ERROR;
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+				lv->token.type = TOKEN_UINT_TYPE;
+				lv->token.uintValue = next;
+				lv = _lexOperator(lv, token);
+				state = LEX_ROOT;
+				break;
+			case ')':
+				lv->token.type = TOKEN_UINT_TYPE;
+				lv->token.uintValue = next;
+				state = LEX_EXPECT_OPERATOR;
 				break;
 			}
 			break;
@@ -247,6 +259,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 	switch (state) {
 	case LEX_EXPECT_DECIMAL:
 	case LEX_EXPECT_HEX:
+	case LEX_EXPECT_PREFIX:
 		lv->token.type = TOKEN_UINT_TYPE;
 		lv->token.uintValue = next;
 		break;
