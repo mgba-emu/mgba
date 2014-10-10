@@ -604,8 +604,25 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	if (!name) {
 		return CC_ERROR;
 	}
-	if (_debuggerCommands[cmd + 1].name && strncasecmp(_debuggerCommands[cmd + 1].name, li->buffer, len - 1) == 0) {
-		return CC_ERROR;
+	if (_debuggerCommands[cmd + 1].name && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
+		--len;
+		const char* next = 0;
+		int i;
+		for (i = cmd + 1; _debuggerCommands[i].name; ++i) {
+			if (strncasecmp(name, _debuggerCommands[i].name, len)) {
+				break;
+			}
+			next = _debuggerCommands[i].name;
+		}
+
+		for (; name[len]; ++len) {
+			if (name[len] != next[len]) {
+				break;
+			}
+			char out[2] = { name[len], '\0' };
+			el_insertstr(elstate, out);
+		}
+		return CC_REDISPLAY;
 	}
 	name += len - 1;
 	el_insertstr(elstate, name);
