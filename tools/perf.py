@@ -65,11 +65,12 @@ class GameClockTest(PerfTest):
         return ['-F', str(self.frames)]
 
 class Suite(object):
-    def __init__(self, cwd, wall=None, game=None):
+    def __init__(self, cwd, wall=None, game=None, renderer='software'):
         self.cwd = cwd
         self.tests = []
         self.wall = wall
         self.game = game
+        self.renderer = renderer
 
     def collect_tests(self):
         roms = []
@@ -82,9 +83,9 @@ class Suite(object):
 
     def add_tests(self, rom):
         if self.wall:
-            self.tests.append(WallClockTest(rom, self.wall))
+            self.tests.append(WallClockTest(rom, self.wall, renderer=self.renderer))
         if self.game:
-            self.tests.append(GameClockTest(rom, self.game, renderer=None))
+            self.tests.append(GameClockTest(rom, self.game, renderer=self.renderer))
 
     def run(self):
         results = []
@@ -101,13 +102,14 @@ class Suite(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-w', '--wall-time', type=float, default=60, metavar='TIME', help='wall-clock time')
-    parser.add_argument('-g', '--game-frames', type=int, default=120*60, metavar='FRAMES', help='game-clock frames')
+    parser.add_argument('-w', '--wall-time', type=float, default=0, metavar='TIME', help='wall-clock time')
+    parser.add_argument('-g', '--game-frames', type=int, default=0, metavar='FRAMES', help='game-clock frames')
+    parser.add_argument('-N', '--disable-renderer', action='store_const', const=True, help='disable video rendering')
     parser.add_argument('-o', '--out', metavar='FILE', help='output file path')
     parser.add_argument('directory', help='directory containing ROM files')
     args = parser.parse_args()
 
-    s = Suite(args.directory, wall=args.wall_time, game=args.game_frames)
+    s = Suite(args.directory, wall=args.wall_time, game=args.game_frames, renderer=None if args.disable_renderer else 'software')
     s.collect_tests()
     results = s.run()
     fout = sys.stdout
