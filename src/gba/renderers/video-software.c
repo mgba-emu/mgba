@@ -365,7 +365,7 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 				softwareRenderer->windows[activeWindow].endX = win->h.end;
 				if (win->h.end >= oldWindow.endX) {
 					// Trim off extra windows we've overwritten
-					for (++activeWindow; win->h.end >= softwareRenderer->windows[activeWindow].endX && softwareRenderer->nWindows > activeWindow; ++activeWindow) {
+					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
 						--softwareRenderer->nWindows;
 					}
