@@ -41,6 +41,7 @@ class PerfTest(object):
             proc.kill()
             raise
         if proc.returncode < 0:
+            print('Game crashed!', file=sys.stderr)
             return
         reader = csv.DictReader(proc.stdout)
         self.results = next(reader)
