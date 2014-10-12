@@ -1,7 +1,7 @@
 #ifndef PATCH_IPS_H
 #define PATCH_IPS_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct Patch;
 

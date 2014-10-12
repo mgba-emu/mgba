@@ -1,7 +1,7 @@
 #ifndef ISA_THUMB_H
 #define ISA_THUMB_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct ARMCore;
 

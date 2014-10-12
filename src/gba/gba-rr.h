@@ -1,7 +1,7 @@
 #ifndef GBA_RR_H
 #define GBA_RR_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct GBA;
 struct VDir;

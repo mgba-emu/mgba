@@ -1,7 +1,7 @@
 #ifndef ISA_INLINES_H
 #define ISA_INLINES_H
 
-#include "common.h"
+#include "macros.h"
 
 #include "arm.h"
 

@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "common.h"
+#include "util/common.h"
 #include "debugger.h"
 
 enum LexState {

@@ -1,7 +1,7 @@
 #ifndef ISA_ARM_H
 #define ISA_ARM_H
 
-#include "common.h"
+#include "util/common.h"
 
 #define ARM_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles32)
 

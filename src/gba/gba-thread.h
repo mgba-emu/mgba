@@ -1,7 +1,7 @@
 #ifndef GBA_THREAD_H
 #define GBA_THREAD_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba.h"
 #include "gba-input.h"

@@ -1,7 +1,7 @@
 #ifndef VFS_H
 #define VFS_H
 
-#include "common.h"
+#include "util/common.h"
 
 enum {
 	MAP_READ = 1,

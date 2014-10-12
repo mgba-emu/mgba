@@ -1,7 +1,7 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include "common.h"
+#include "util/common.h"
 
 #ifdef __cplusplus
 #define restrict __restrict__

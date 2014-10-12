@@ -1,7 +1,7 @@
 #ifndef ARM_H
 #define ARM_H
 
-#include "common.h"
+#include "util/common.h"
 
 enum {
 	ARM_SP = 13,

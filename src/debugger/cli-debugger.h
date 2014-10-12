@@ -1,7 +1,7 @@
 #ifndef CLI_DEBUGGER_H
 #define CLI_DEBUGGER_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "debugger.h"
 

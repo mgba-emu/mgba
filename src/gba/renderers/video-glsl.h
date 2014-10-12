@@ -1,7 +1,7 @@
 #ifndef VIDEO_GLSL_H
 #define VIDEO_GLSL_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba-video.h"
 

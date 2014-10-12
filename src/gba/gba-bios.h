@@ -1,7 +1,7 @@
 #ifndef GBA_BIOS_H
 #define GBA_BIOS_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "arm.h"
 

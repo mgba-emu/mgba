@@ -1,7 +1,7 @@
 #ifndef GBA_IO_H
 #define GBA_IO_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba.h"
 
