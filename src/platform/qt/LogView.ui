@@ -28,7 +28,7 @@
            <string>Debug</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -38,7 +38,7 @@
            <string>Stub</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -48,7 +48,7 @@
            <string>Info</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -104,7 +104,7 @@
            <string>Game Error</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -143,22 +143,5 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>clear</sender>
-   <signal>clicked()</signal>
-   <receiver>view</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>98</x>
-     <y>376</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>299</x>
-     <y>311</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

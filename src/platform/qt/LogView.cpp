@@ -1,5 +1,8 @@
 #include "LogView.h"
 
+#include <QTextBlock>
+#include <QTextCursor>
+
 using namespace QGBA;
 
 LogView::LogView(QWidget* parent)
@@ -13,7 +16,9 @@ LogView::LogView(QWidget* parent)
 	connect(m_ui.levelError, SIGNAL(toggled(bool)), this, SLOT(setLevelError(bool)));
 	connect(m_ui.levelFatal, SIGNAL(toggled(bool)), this, SLOT(setLevelFatal(bool)));
 	connect(m_ui.levelGameError, SIGNAL(toggled(bool)), this, SLOT(setLevelGameError(bool)));
-	m_logLevel = -1;
+	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
+	m_logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_lines = 0;
 }
 
 void LogView::postLog(int level, const QString& log) {
@@ -21,6 +26,10 @@ void LogView::postLog(int level, const QString& log) {
 		return;
 	}
 	m_ui.view->appendPlainText(QString("%1:\t%2").arg(toString(level)).arg(log));
+	++m_lines;
+	if (m_lines > LINE_LIMIT) {
+		clearLine();
+	}
 }
 
 void LogView::clear() {
@@ -95,4 +104,13 @@ QString LogView::toString(int level) {
 		return tr("GAME ERROR");
 	}
 	return QString();
+}
+
+void LogView::clearLine() {
+	QTextCursor cursor(m_ui.view->document());
+	cursor.setPosition(0);
+	cursor.select(QTextCursor::BlockUnderCursor);
+	cursor.removeSelectedText();
+	cursor.deleteChar();
+	--m_lines;
 }
