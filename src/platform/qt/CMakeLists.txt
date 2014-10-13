@@ -4,10 +4,6 @@ project(mGBA-Qt)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra --std=c++11")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra --std=c++11")
 
-if(APPLE)
-	set(CMAKE_PREFIX_PATH "/usr/local/opt/qt5") # Temporary stopgap measure
-endif()
-
 if(BUILD_SDL)
 	find_package(SDL 1.2 REQUIRED)
 	set(PLATFORM_LIBRARY "${PLATFORM_LIBRARY};${SDL_LIBRARY};${SDLMAIN_LIBRARY}")
