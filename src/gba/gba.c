@@ -554,13 +554,14 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 		if (!gba) {
 			gba = threadContext->gba;
 		}
-		if (threadContext->logHandler) {
-			threadContext->logHandler(threadContext, level, format, args);
-			return;
-		}
 	}
 
 	if (gba && !(level & gba->logLevel) && level != GBA_LOG_FATAL) {
+		return;
+	}
+
+	if (threadContext && threadContext->logHandler) {
+		threadContext->logHandler(threadContext, level, format, args);
 		return;
 	}
 
