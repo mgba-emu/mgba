@@ -1,0 +1,98 @@
+#include "LogView.h"
+
+using namespace QGBA;
+
+LogView::LogView(QWidget* parent)
+	: QWidget(parent)
+{
+	m_ui.setupUi(this);
+	connect(m_ui.levelDebug, SIGNAL(toggled(bool)), this, SLOT(setLevelDebug(bool)));
+	connect(m_ui.levelStub, SIGNAL(toggled(bool)), this, SLOT(setLevelStub(bool)));
+	connect(m_ui.levelInfo, SIGNAL(toggled(bool)), this, SLOT(setLevelInfo(bool)));
+	connect(m_ui.levelWarn, SIGNAL(toggled(bool)), this, SLOT(setLevelWarn(bool)));
+	connect(m_ui.levelError, SIGNAL(toggled(bool)), this, SLOT(setLevelError(bool)));
+	connect(m_ui.levelFatal, SIGNAL(toggled(bool)), this, SLOT(setLevelFatal(bool)));
+	connect(m_ui.levelGameError, SIGNAL(toggled(bool)), this, SLOT(setLevelGameError(bool)));
+	m_logLevel = -1;
+}
+
+void LogView::postLog(int level, const QString& log) {
+	if (!(level & m_logLevel)) {
+		return;
+	}
+	m_ui.view->appendPlainText(QString("%1:\t%2").arg(toString(level)).arg(log));
+}
+
+void LogView::clear() {
+	m_ui.view->clear();
+}
+
+void LogView::setLevelDebug(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_DEBUG);
+	} else {
+		clearLevel(GBA_LOG_DEBUG);
+	}
+}
+void LogView::setLevelStub(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_STUB);
+	} else {
+		clearLevel(GBA_LOG_STUB);
+	}
+}
+void LogView::setLevelInfo(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_INFO);
+	} else {
+		clearLevel(GBA_LOG_INFO);
+	}
+}
+void LogView::setLevelWarn(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_WARN);
+	} else {
+		clearLevel(GBA_LOG_WARN);
+	}
+}
+void LogView::setLevelError(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_ERROR);
+	} else {
+		clearLevel(GBA_LOG_ERROR);
+	}
+}
+void LogView::setLevelFatal(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_FATAL);
+	} else {
+		clearLevel(GBA_LOG_FATAL);
+	}
+}
+void LogView::setLevelGameError(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_GAME_ERROR);
+	} else {
+		clearLevel(GBA_LOG_GAME_ERROR);
+	}
+}
+
+QString LogView::toString(int level) {
+	switch (level) {
+	case GBA_LOG_DEBUG:
+		return tr("DEBUG");
+	case GBA_LOG_STUB:
+		return tr("STUB");
+	case GBA_LOG_INFO:
+		return tr("INFO");
+	case GBA_LOG_WARN:
+		return tr("WARN");
+	case GBA_LOG_ERROR:
+		return tr("ERROR");
+	case GBA_LOG_FATAL:
+		return tr("FATAL");
+	case GBA_LOG_GAME_ERROR:
+		return tr("GAME ERROR");
+	}
+	return QString();
+}

@@ -14,12 +14,15 @@ namespace QGBA {
 
 class GameController;
 class GDBController;
+class LogView;
 
 class Window : public QMainWindow {
 Q_OBJECT
 
 public:
 	Window(QWidget* parent = nullptr);
+	virtual ~Window();
+
 	static GBAKey mapKey(int qtKey);
 
 signals:
@@ -51,6 +54,7 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	LogView* m_logView;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;

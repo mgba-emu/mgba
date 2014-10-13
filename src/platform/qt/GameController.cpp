@@ -32,7 +32,8 @@ GameController::GameController(QObject* parent)
 		.bios = 0,
 		.renderer = &m_renderer->d,
 		.userData = this,
-		.rewindBufferCapacity = 0
+		.rewindBufferCapacity = 0,
+		.logLevel = -1,
 	};
 
 	GBAInputMapInit(&m_threadContext.inputMap);
@@ -65,6 +66,11 @@ GameController::GameController(QObject* parent)
 		}
 		controller->m_pauseMutex.unlock();
 		controller->frameAvailable(controller->m_drawContext);
+	};
+
+	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		controller->postLog(level, QString().vsprintf(format, args));
 	};
 
 	m_audioThread->start();

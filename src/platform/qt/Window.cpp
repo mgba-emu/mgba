@@ -8,6 +8,7 @@
 #include "GameController.h"
 #include "GDBWindow.h"
 #include "GDBController.h"
+#include "LogView.h"
 
 using namespace QGBA;
 
@@ -21,17 +22,24 @@ Window::Window(QWidget* parent)
 	setMinimumSize(240, 160);
 
 	m_controller = new GameController(this);
+	m_logView = new LogView();
 	m_display = new Display();
 	setCentralWidget(m_display);
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
+	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
 	connect(this, SIGNAL(startDrawing(const uint32_t*, GBAThread*)), m_display, SLOT(startDrawing(const uint32_t*, GBAThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
+	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 
 	setupMenu(menuBar());
+}
+
+Window::~Window() {
+	delete m_logView;
 }
 
 GBAKey Window::mapKey(int qtKey) {
@@ -232,6 +240,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	buffersMenu->addAction(setBuffer);
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
+	QAction* viewLogs = new QAction(tr("View &logs..."), nullptr);
+	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
+	debuggingMenu->addAction(viewLogs);
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), nullptr);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));

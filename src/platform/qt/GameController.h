@@ -46,6 +46,8 @@ signals:
 	void gamePaused(GBAThread*);
 	void gameUnpaused(GBAThread*);
 
+	void postLog(int level, const QString& log);
+
 public slots:
 	void loadGame(const QString& path);
 	void closeGame();
