@@ -1,5 +1,7 @@
 #include "gba-memory.h"
 
+#include "macros.h"
+
 #include "gba-gpio.h"
 #include "gba-io.h"
 #include "gba-serialize.h"

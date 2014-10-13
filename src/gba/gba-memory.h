@@ -1,9 +1,10 @@
 #ifndef GBA_MEMORY_H
 #define GBA_MEMORY_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "arm.h"
+#include "macros.h"
 
 #include "gba-gpio.h"
 #include "gba-savedata.h"

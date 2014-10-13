@@ -103,17 +103,9 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 }
 
 static struct VFile* _getStateVf(struct GBA* gba, struct VDir* dir, int slot, bool write) {
-	char path[PATH_MAX];
-	path[PATH_MAX - 1] = '\0';
-	struct VFile* vf;
-	if (!dir) {
-		snprintf(path, PATH_MAX - 1, "%s.ss%d", gba->activeFile, slot);
-		vf = VFileOpen(path, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-	} else {
-		snprintf(path, PATH_MAX - 1, "savestate.ss%d", slot);
-		vf = dir->openFile(dir, path, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-	}
-	return vf;
+	char suffix[5] = { '\0' };
+	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
+	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
 
 #ifdef USE_PNG

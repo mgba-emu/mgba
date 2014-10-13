@@ -1,9 +1,10 @@
 #ifndef GBA_VIDEO_H
 #define GBA_VIDEO_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba-memory.h"
+#include "macros.h"
 
 #ifdef COLOR_16_BIT
 #define BYTES_PER_PIXEL 2

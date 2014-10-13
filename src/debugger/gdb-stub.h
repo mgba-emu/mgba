@@ -1,7 +1,7 @@
 #ifndef GDB_STUB_H
 #define GDB_STUB_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "debugger/debugger.h"
 

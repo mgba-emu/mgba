@@ -343,7 +343,9 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0) {
 		savedata->type = SAVEDATA_FLASH1M;
-		savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
+		if (savedata->vf) {
+			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
+		}
 	}
 }
 

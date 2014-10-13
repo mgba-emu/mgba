@@ -1,7 +1,7 @@
 #ifndef PNG_IO_H
 #define PNG_IO_H
 
-#include "common.h"
+#include "util/common.h"
 
 #ifdef USE_PNG
 

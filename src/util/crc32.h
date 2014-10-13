@@ -1,8 +1,7 @@
 #ifndef CRC32_H
 #define CRC32_H
 
-#include <stdint.h>
-#include <string.h>
+#include "util/common.h"
 
 struct VFile;
 

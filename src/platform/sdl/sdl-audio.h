@@ -1,7 +1,7 @@
 #ifndef SDL_AUDIO_H
 #define SDL_AUDIO_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include <SDL.h>
 

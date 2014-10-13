@@ -1,7 +1,7 @@
 #ifndef MEMORY_DEBUGGER_H
 #define MEMORY_DEBUGGER_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "arm.h"
 

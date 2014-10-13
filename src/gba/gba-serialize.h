@@ -1,7 +1,7 @@
 #ifndef GBA_SERIALIZE_H
 #define GBA_SERIALIZE_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba.h"
 

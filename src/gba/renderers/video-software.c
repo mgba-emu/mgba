@@ -365,7 +365,7 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 				softwareRenderer->windows[activeWindow].endX = win->h.end;
 				if (win->h.end >= oldWindow.endX) {
 					// Trim off extra windows we've overwritten
-					for (++activeWindow; win->h.end >= softwareRenderer->windows[activeWindow].endX && softwareRenderer->nWindows > activeWindow; ++activeWindow) {
+					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
 						--softwareRenderer->nWindows;
 					}
@@ -1193,6 +1193,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
 	flags |= FLAG_TARGET_2 * background->target2;
+	if (renderer->blda == 0x10 && renderer->bldb == 0) {
+		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
+	}
 
 	uint32_t screenBase;
 	uint32_t charBase;
@@ -1255,6 +1258,9 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
 	flags |= FLAG_TARGET_2 * background->target2; \
+	if (renderer->blda == 0x10 && renderer->bldb == 0) { \
+		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
+	} \
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
 	color_t* palette = renderer->normalPalette; \
 	if (variant) { \

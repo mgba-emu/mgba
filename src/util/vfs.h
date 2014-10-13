@@ -1,7 +1,7 @@
 #ifndef VFS_H
 #define VFS_H
 
-#include "common.h"
+#include "util/common.h"
 
 enum {
 	MAP_READ = 1,
@@ -38,5 +38,7 @@ struct VDir* VDirOpen(const char* path);
 #ifdef ENABLE_LIBZIP
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
+
+struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode);
 
 #endif

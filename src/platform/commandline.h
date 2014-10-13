@@ -1,7 +1,7 @@
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
-#include "common.h"
+#include "util/common.h"
 
 enum DebuggerType {
 	DEBUGGER_NONE = 0,

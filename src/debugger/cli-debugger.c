@@ -72,6 +72,9 @@ static struct {
 	{ "disasm", _disassemble, _DVParse, "Disassemble instructions" },
 	{ "disasm/a", _disassembleArm, _DVParse, "Disassemble instructions as ARM" },
 	{ "disasm/t", _disassembleThumb, _DVParse, "Disassemble instructions as Thumb" },
+	{ "disassemble", _disassemble, _DVParse, "Disassemble instructions" },
+	{ "disassemble/a", _disassembleArm, _DVParse, "Disassemble instructions as ARM" },
+	{ "disassemble/t", _disassembleThumb, _DVParse, "Disassemble instructions as Thumb" },
 	{ "h", _printHelp, _DVStringParse, "Print help" },
 	{ "help", _printHelp, _DVStringParse, "Print help" },
 	{ "i", _printStatus, 0, "Print the current status" },
@@ -233,16 +236,17 @@ static void _printHelp(struct CLIDebugger* debugger, struct DebugVector* dv) {
 static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	char disassembly[48];
 	struct ARMInstructionInfo info;
+	printf("%08X:  ", address);
 	if (mode == MODE_ARM) {
 		uint32_t instruction = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
-		printf("%08X: %s\n", instruction, disassembly);
+		printf("%08X\t%s\n", instruction, disassembly);
 	} else {
 		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
 		ARMDecodeThumb(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
-		printf("%04X: %s\n", instruction, disassembly);
+		printf("%04X\t%s\n", instruction, disassembly);
 	}
 }
 
@@ -579,6 +583,10 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	UNUSED(ch);
 	const LineInfo* li = el_line(elstate);
+	if (!li->buffer[0]) {
+		return CC_ERROR;
+	}
+
 	const char* commandPtr;
 	int cmd = 0, len = 0;
 	const char* name = 0;
@@ -593,8 +601,28 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 			}
 		}
 	}
-	if (_debuggerCommands[cmd + 1].name && strncasecmp(_debuggerCommands[cmd + 1].name, li->buffer, len - 1) == 0) {
+	if (!name) {
 		return CC_ERROR;
+	}
+	if (_debuggerCommands[cmd + 1].name && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
+		--len;
+		const char* next = 0;
+		int i;
+		for (i = cmd + 1; _debuggerCommands[i].name; ++i) {
+			if (strncasecmp(name, _debuggerCommands[i].name, len)) {
+				break;
+			}
+			next = _debuggerCommands[i].name;
+		}
+
+		for (; name[len]; ++len) {
+			if (name[len] != next[len]) {
+				break;
+			}
+			char out[2] = { name[len], '\0' };
+			el_insertstr(elstate, out);
+		}
+		return CC_REDISPLAY;
 	}
 	name += len - 1;
 	el_insertstr(elstate, name);

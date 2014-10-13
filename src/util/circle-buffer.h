@@ -1,7 +1,7 @@
 #ifndef CIRCLE_BUFFER_H
 #define CIRCLE_BUFFER_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct CircleBuffer {
 	void* data;

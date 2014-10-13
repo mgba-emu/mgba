@@ -1,7 +1,8 @@
 #ifndef GBA_AUDIO_H
 #define GBA_AUDIO_H
 
-#include "common.h"
+#include "util/common.h"
+#include "macros.h"
 
 #include "util/circle-buffer.h"
 

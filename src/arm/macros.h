@@ -1,20 +1,7 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef MACROS_H
+#define MACROS_H
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <math.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#define UNUSED(V) (void)(V)
+#include "util/common.h"
 
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32(DEST, ADDR, ARR) { \

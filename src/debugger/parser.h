@@ -1,13 +1,14 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "common.h"
+#include "util/common.h"
 #include "debugger.h"
 
 enum LexState {
 	LEX_ERROR = -1,
 	LEX_ROOT = 0,
 	LEX_EXPECT_IDENTIFIER,
+	LEX_EXPECT_BINARY,
 	LEX_EXPECT_DECIMAL,
 	LEX_EXPECT_HEX,
 	LEX_EXPECT_PREFIX,

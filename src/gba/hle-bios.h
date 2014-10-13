@@ -1,7 +1,7 @@
 #ifndef HLE_BIOS_H
 #define HLE_BIOS_H
 
-#include "common.h"
+#include "util/common.h"
 
 extern const uint8_t hleBios[];
 

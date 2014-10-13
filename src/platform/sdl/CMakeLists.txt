@@ -14,10 +14,11 @@ endif()
 
 if(SDL_VERSION EQUAL "1.2" OR NOT SDL2_FOUND)
 	find_package(SDL 1.2)
+	set(SDL_VERSION "1.2" PARENT_SCOPE)
 endif()
 
 if (NOT SDL2_FOUND AND NOT SDL_FOUND)
-	set(BUILD_SDL OFF)
+	set(BUILD_SDL OFF PARENT_SCOPE)
 	return()
 endif()
 

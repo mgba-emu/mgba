@@ -276,35 +276,12 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		}
 
 	}
-	if (threadContext->stateDir) {
-		threadContext->save = threadContext->stateDir->openFile(threadContext->stateDir, "sram.sav", O_RDWR | O_CREAT);
-	}
 
 	if (!threadContext->rom) {
 		return false;
 	}
 
-	if (threadContext->fname && !threadContext->save) {
-		char* savedata = 0;
-		char* dotPoint = strrchr(threadContext->fname, '.');
-		if (dotPoint > strrchr(threadContext->fname, '/') && dotPoint[1] && dotPoint[2] && dotPoint[3]) {
-			savedata = strdup(threadContext->fname);
-			dotPoint = strrchr(savedata, '.');
-			dotPoint[1] = 's';
-			dotPoint[2] = 'a';
-			dotPoint[3] = 'v';
-			dotPoint[4] = '\0';
-		} else if (dotPoint) {
-			savedata = malloc((dotPoint - threadContext->fname + 5) * sizeof(char));
-			strncpy(savedata, threadContext->fname, dotPoint - threadContext->fname + 1);
-			strcat(savedata, "sav");
-		} else {
-			savedata = malloc(strlen(threadContext->fname + 5) * sizeof(char));
-			sprintf(savedata, "%s.sav", threadContext->fname);
-		}
-		threadContext->save = VFileOpen(savedata, O_RDWR | O_CREAT);
-		free(savedata);
-	}
+	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
 
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
@@ -524,7 +501,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
 	void* pixels = 0;
-	struct VFile* vf = threadContext->stateDir->openFile(threadContext->stateDir, "screenshot.png", O_CREAT | O_WRONLY);
+	struct VFile* vf = VDirOptionalOpenFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);

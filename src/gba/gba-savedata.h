@@ -1,7 +1,7 @@
 #ifndef GBA_SAVEDATA_H
 #define GBA_SAVEDATA_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct VFile;
 

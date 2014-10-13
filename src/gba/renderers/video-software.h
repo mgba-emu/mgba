@@ -1,7 +1,7 @@
 #ifndef VIDEO_SOFTWARE_H
 #define VIDEO_SOFTWARE_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "gba-video.h"
 

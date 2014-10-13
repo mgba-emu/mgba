@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <inttypes.h>
 #include <sys/time.h>
 
 #define PERF_OPTIONS "F:NPS:"
@@ -96,9 +97,9 @@ int main(int argc, char** argv) {
 		} else {
 			rendererName = "software";
 		}
-		printf("%s,%i,%lli,%s\n", gameCode, frames, duration, rendererName);
+		printf("%s,%i,%" PRIu64 ",%s\n", gameCode, frames, duration, rendererName);
 	} else {
-		printf("%u frames in %lli microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
+		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
 	return 0;
@@ -148,6 +149,7 @@ static void _GBAPerfShutdown(int signal) {
 
 static bool _parsePerfOpts(struct SubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
+	errno = 0;
 	switch (option) {
 	case 'F':
 		opts->frames = strtoul(arg, 0, 10);

@@ -1,7 +1,7 @@
 #ifndef PATCH_H
 #define PATCH_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct VFile;
 

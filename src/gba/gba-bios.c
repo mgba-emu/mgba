@@ -283,6 +283,11 @@ static void _unLz77(struct GBA* gba, uint32_t source, uint8_t* dest) {
 	}
 }
 
+DECL_BITFIELD(HuffmanNode, uint8_t);
+DECL_BITS(HuffmanNode, Offset, 0, 6);
+DECL_BIT(HuffmanNode, RTerm, 6);
+DECL_BIT(HuffmanNode, LTerm, 7);
+
 static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest) {
 	struct ARMCore* cpu = gba->cpu;
 	source = source & 0xFFFFFFFC;
@@ -303,39 +308,32 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest) {
 	uint32_t sPointer = source + 5 + treesize;
 	uint32_t* dPointer = dest;
 	uint32_t nPointer = treeBase;
-	union HuffmanNode {
-		struct {
-			unsigned offset : 6;
-			unsigned rTerm : 1;
-			unsigned lTerm : 1;
-		};
-		uint8_t packed;
-	} node;
+	HuffmanNode node;
 	int bitsRemaining;
 	int readBits;
 	int bitsSeen = 0;
-	node.packed = cpu->memory.load8(cpu, nPointer, 0);
+	node = cpu->memory.load8(cpu, nPointer, 0);
 	while (remaining > 0) {
 		uint32_t bitstream = cpu->memory.load32(cpu, sPointer, 0);
 		sPointer += 4;
 		for (bitsRemaining = 32; bitsRemaining > 0; --bitsRemaining, bitstream <<= 1) {
-			uint32_t next = (nPointer & ~1) + node.offset * 2 + 2;
+			uint32_t next = (nPointer & ~1) + HuffmanNodeGetOffset(node) * 2 + 2;
 			if (bitstream & 0x80000000) {
 				// Go right
-				if (node.rTerm) {
+				if (HuffmanNodeIsRTerm(node)) {
 					readBits = cpu->memory.load8(cpu, next + 1, 0);
 				} else {
 					nPointer = next + 1;
-					node.packed = cpu->memory.load8(cpu, nPointer, 0);
+					node = cpu->memory.load8(cpu, nPointer, 0);
 					continue;
 				}
 			} else {
 				// Go left
-				if (node.lTerm) {
+				if (HuffmanNodeIsLTerm(node)) {
 					readBits = cpu->memory.load8(cpu, next, 0);
 				} else {
 					nPointer = next;
-					node.packed = cpu->memory.load8(cpu, nPointer, 0);
+					node = cpu->memory.load8(cpu, nPointer, 0);
 					continue;
 				}
 			}
@@ -343,7 +341,7 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest) {
 			block |= (readBits & ((1 << bits) - 1)) << bitsSeen;
 			bitsSeen += bits;
 			nPointer = treeBase;
-			node.packed = cpu->memory.load8(cpu, nPointer, 0);
+			node = cpu->memory.load8(cpu, nPointer, 0);
 			if (bitsSeen == 32) {
 				bitsSeen = 0;
 				*dPointer = block;

@@ -1,7 +1,7 @@
 #ifndef PATCH_UPS_H
 #define PATCH_UPS_H
 
-#include "common.h"
+#include "util/common.h"
 
 struct Patch;
 

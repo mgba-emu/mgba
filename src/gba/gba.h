@@ -1,7 +1,7 @@
 #ifndef GBA_H
 #define GBA_H
 
-#include "common.h"
+#include "util/common.h"
 
 #include "arm.h"
 #include "debugger/debugger.h"
