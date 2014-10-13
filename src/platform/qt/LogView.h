@@ -30,12 +30,15 @@ private slots:
 	void setLevelFatal(bool);
 	void setLevelGameError(bool);
 
+	void setMaxLines(int);
+
 private:
-	static const int LINE_LIMIT = 1000;
+	static const int DEFAULT_LINE_LIMIT = 1000;
 
 	Ui::LogView m_ui;
 	int m_logLevel;
 	int m_lines;
+	int m_lineLimit;
 
 	static QString toString(int level);
 	void setLevel(int level) { m_logLevel |= level; }

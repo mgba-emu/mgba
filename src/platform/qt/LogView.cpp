@@ -17,8 +17,10 @@ LogView::LogView(QWidget* parent)
 	connect(m_ui.levelFatal, SIGNAL(toggled(bool)), this, SLOT(setLevelFatal(bool)));
 	connect(m_ui.levelGameError, SIGNAL(toggled(bool)), this, SLOT(setLevelGameError(bool)));
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
+	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
 	m_logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	m_lines = 0;
+	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 }
 
 void LogView::postLog(int level, const QString& log) {
@@ -27,13 +29,14 @@ void LogView::postLog(int level, const QString& log) {
 	}
 	m_ui.view->appendPlainText(QString("%1:\t%2").arg(toString(level)).arg(log));
 	++m_lines;
-	if (m_lines > LINE_LIMIT) {
+	if (m_lines > m_lineLimit) {
 		clearLine();
 	}
 }
 
 void LogView::clear() {
 	m_ui.view->clear();
+	m_lines = 0;
 }
 
 void LogView::setLevelDebug(bool set) {
@@ -43,6 +46,7 @@ void LogView::setLevelDebug(bool set) {
 		clearLevel(GBA_LOG_DEBUG);
 	}
 }
+
 void LogView::setLevelStub(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_STUB);
@@ -50,6 +54,7 @@ void LogView::setLevelStub(bool set) {
 		clearLevel(GBA_LOG_STUB);
 	}
 }
+
 void LogView::setLevelInfo(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_INFO);
@@ -57,6 +62,7 @@ void LogView::setLevelInfo(bool set) {
 		clearLevel(GBA_LOG_INFO);
 	}
 }
+
 void LogView::setLevelWarn(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_WARN);
@@ -64,6 +70,7 @@ void LogView::setLevelWarn(bool set) {
 		clearLevel(GBA_LOG_WARN);
 	}
 }
+
 void LogView::setLevelError(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_ERROR);
@@ -71,6 +78,7 @@ void LogView::setLevelError(bool set) {
 		clearLevel(GBA_LOG_ERROR);
 	}
 }
+
 void LogView::setLevelFatal(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_FATAL);
@@ -78,11 +86,19 @@ void LogView::setLevelFatal(bool set) {
 		clearLevel(GBA_LOG_FATAL);
 	}
 }
+
 void LogView::setLevelGameError(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_GAME_ERROR);
 	} else {
 		clearLevel(GBA_LOG_GAME_ERROR);
+	}
+}
+
+void LogView::setMaxLines(int limit) {
+	m_lineLimit = limit;
+	while (m_lines > m_lineLimit) {
+		clearLine();
 	}
 }
 
