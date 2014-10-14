@@ -87,6 +87,7 @@ GameController::GameController(QObject* parent)
 
 GameController::~GameController() {
 	m_audioThread->quit();
+	m_audioThread->wait();
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
 	}
