@@ -5,7 +5,7 @@
 
 #include "gba.h"
 
-const uint32_t GBA_SAVESTATE_MAGIC;
+extern const uint32_t GBA_SAVESTATE_MAGIC;
 
 /* Savestate format:
  * 0x00000 - 0x00003: Version Magic (0x01000000)

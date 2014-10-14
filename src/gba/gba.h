@@ -66,6 +66,18 @@ struct GBARotationSource;
 struct Patch;
 struct VFile;
 
+struct GBATimer {
+	uint16_t reload;
+	uint16_t oldReload;
+	int32_t lastEvent;
+	int32_t nextEvent;
+	int32_t overflowInterval;
+	unsigned prescaleBits : 4;
+	unsigned countUp : 1;
+	unsigned doIrq : 1;
+	unsigned enable : 1;
+};
+
 struct GBA {
 	struct ARMComponent d;
 
@@ -80,17 +92,7 @@ struct GBA {
 	struct ARMDebugger* debugger;
 
 	int timersEnabled;
-	struct GBATimer {
-		uint16_t reload;
-		uint16_t oldReload;
-		int32_t lastEvent;
-		int32_t nextEvent;
-		int32_t overflowInterval;
-		unsigned prescaleBits : 4;
-		unsigned countUp : 1;
-		unsigned doIrq : 1;
-		unsigned enable : 1;
-	} timers[4];
+	struct GBATimer timers[4];
 
 	int springIRQ;
 	uint32_t biosChecksum;
