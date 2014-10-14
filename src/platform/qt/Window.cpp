@@ -148,19 +148,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
-	QAction* reset = new QAction(tr("&Reset"), nullptr);
+	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
 	m_gameActions.append(reset);
 	emulationMenu->addAction(reset);
 
-	QAction* shutdown = new QAction(tr("Sh&utdown"), nullptr);
+	QAction* shutdown = new QAction(tr("Sh&utdown"), emulationMenu);
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
 	emulationMenu->addAction(shutdown);
 	emulationMenu->addSeparator();
 
-	QAction* pause = new QAction(tr("&Pause"), nullptr);
+	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
 	pause->setChecked(false);
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
@@ -170,56 +170,56 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(pause);
 	emulationMenu->addAction(pause);
 
-	QAction* frameAdvance = new QAction(tr("&Next frame"), nullptr);
+	QAction* frameAdvance = new QAction(tr("&Next frame"), emulationMenu);
 	frameAdvance->setShortcut(tr("Ctrl+N"));
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
 
 	QMenu* target = emulationMenu->addMenu("FPS target");
-	QAction* setTarget = new QAction(tr("15"), nullptr);
+	QAction* setTarget = new QAction(tr("15"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(15); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("30"), nullptr);
+	setTarget = new QAction(tr("30"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(30); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("45"), nullptr);
+	setTarget = new QAction(tr("45"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(45); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("60"), nullptr);
+	setTarget = new QAction(tr("60"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(60); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("90"), nullptr);
+	setTarget = new QAction(tr("90"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(90); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("120"), nullptr);
+	setTarget = new QAction(tr("120"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(120); });
 	target->addAction(setTarget);
-	setTarget = new QAction(tr("240"), nullptr);
+	setTarget = new QAction(tr("240"), emulationMenu);
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(240); });
 	target->addAction(setTarget);
 
 	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
 	QMenu* frameMenu = videoMenu->addMenu(tr("Frame &size"));
-	QAction* setSize = new QAction(tr("1x"), nullptr);
+	QAction* setSize = new QAction(tr("1x"), videoMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("2x"), nullptr);
+	setSize = new QAction(tr("2x"), videoMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("3x"), nullptr);
+	setSize = new QAction(tr("3x"), videoMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("4x"), nullptr);
+	setSize = new QAction(tr("4x"), videoMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
@@ -229,22 +229,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
-	QAction* setBuffer = new QAction(tr("512"), nullptr);
+	QAction* setBuffer = new QAction(tr("512"), buffersMenu);
 	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(512); });
 	buffersMenu->addAction(setBuffer);
-	setBuffer = new QAction(tr("1024"), nullptr);
+	setBuffer = new QAction(tr("1024"), buffersMenu);
 	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(1024); });
 	buffersMenu->addAction(setBuffer);
-	setBuffer = new QAction(tr("2048"), nullptr);
+	setBuffer = new QAction(tr("2048"), buffersMenu);
 	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(2048); });
 	buffersMenu->addAction(setBuffer);
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
-	QAction* viewLogs = new QAction(tr("View &logs..."), nullptr);
+	QAction* viewLogs = new QAction(tr("View &logs..."), debuggingMenu);
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	debuggingMenu->addAction(viewLogs);
 #ifdef USE_GDB_STUB
-	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), nullptr);
+	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), debuggingMenu);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	debuggingMenu->addAction(gdbWindow);
 #endif
