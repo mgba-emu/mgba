@@ -102,7 +102,7 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 }
 
-static struct VFile* _getStateVf(struct GBA* gba, struct VDir* dir, int slot, bool write) {
+struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
 	char suffix[5] = { '\0' };
 	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
 	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
@@ -167,7 +167,7 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 #endif
 
 bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) {
-	struct VFile* vf = _getStateVf(gba, dir, slot, true);
+	struct VFile* vf = GBAGetState(gba, dir, slot, true);
 	if (!vf) {
 		return false;
 	}
@@ -177,7 +177,7 @@ bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) 
 }
 
 bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot) {
-	struct VFile* vf = _getStateVf(gba, dir, slot, false);
+	struct VFile* vf = GBAGetState(gba, dir, slot, false);
 	if (!vf) {
 		return false;
 	}
