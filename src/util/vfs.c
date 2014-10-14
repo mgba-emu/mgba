@@ -24,7 +24,7 @@ static bool _vfdClose(struct VFile* vf);
 static off_t _vfdSeek(struct VFile* vf, off_t offset, int whence);
 static ssize_t _vfdRead(struct VFile* vf, void* buffer, size_t size);
 static ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size);
-static ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size);
+static ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
@@ -96,7 +96,7 @@ ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
 	return buffer[bytesRead] = '\0';
 }
 
-ssize_t _vfdWrite(struct VFile* vf, void* buffer, size_t size) {
+ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	return write(vfd->fd, buffer, size);
 }

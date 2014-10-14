@@ -34,7 +34,7 @@ static bool _vfzClose(struct VFile* vf);
 static off_t _vfzSeek(struct VFile* vf, off_t offset, int whence);
 static ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size);
 static ssize_t _vfzReadline(struct VFile* vf, char* buffer, size_t size);
-static ssize_t _vfzWrite(struct VFile* vf, void* buffer, size_t size);
+static ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vfzMap(struct VFile* vf, size_t size, int flags);
 static void _vfzUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfzTruncate(struct VFile* vf, size_t size);
@@ -194,7 +194,7 @@ ssize_t _vfzReadline(struct VFile* vf, char* buffer, size_t size) {
 	return buffer[bytesRead] = '\0';
 }
 
-ssize_t _vfzWrite(struct VFile* vf, void* buffer, size_t size) {
+ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size) {
 	// TODO
 	UNUSED(vf);
 	UNUSED(buffer);
