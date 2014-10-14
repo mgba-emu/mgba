@@ -271,6 +271,7 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
 
 bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot);
 bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot);
+struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot);
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf);
