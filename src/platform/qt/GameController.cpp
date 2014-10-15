@@ -126,7 +126,7 @@ void GameController::loadGame(const QString& path) {
 	m_pauseAfterFrame = false;
 
 	m_threadContext.rom = VFileFromFD(m_rom->handle());
-	m_threadContext.fname = path.toLocal8Bit().constData();
+	m_threadContext.fname = strdup(path.toLocal8Bit().constData());
 
 	GBAThreadStart(&m_threadContext);
 }
@@ -137,6 +137,10 @@ void GameController::closeGame() {
 	}
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
+	if (m_threadContext.fname) {
+		free(const_cast<char*>(m_threadContext.fname));
+		m_threadContext.fname = nullptr;
+	}
 	if (m_rom) {
 		m_rom->close();
 		delete m_rom;
