@@ -39,12 +39,12 @@ public:
 	void setContext(GBAThread*);
 	void setBacking(const uint32_t*);
 	void setGLContext(QGLWidget*);
-	void resize(const QSize& size);
 
 public slots:
 	void draw();
 	void start();
 	void stop();
+	void resize(const QSize& size);
 
 private:
 	QTimer* m_drawTimer;

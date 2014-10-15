@@ -64,7 +64,7 @@ void Display::initializeGL() {
 
 void Display::resizeEvent(QResizeEvent* event) {
 	if (m_painter) {
-		m_painter->resize(event->size());
+		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
 	}
 }
 
@@ -86,6 +86,11 @@ void Painter::setGLContext(QGLWidget* context) {
 
 void Painter::resize(const QSize& size) {
 	m_size = size;
+	m_gl->makeCurrent();
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	m_gl->swapBuffers();
+	m_gl->doneCurrent();
 }
 
 void Painter::start() {
