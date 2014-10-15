@@ -10,7 +10,7 @@ public:
 	SavestateButton(QWidget* parent = nullptr);
 
 protected:
-	virtual void paintEvent(QPaintEvent *e) override;
+	virtual void paintEvent(QPaintEvent*) override;
 };
 
 }
