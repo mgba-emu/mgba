@@ -29,6 +29,7 @@ set(SOURCE_FILES
 	GameController.cpp
 	LoadSaveState.cpp
 	LogView.cpp
+	SavestateButton.cpp
 	Window.cpp
 	VFileDevice.cpp)
 

@@ -8,6 +8,7 @@
 namespace QGBA {
 
 class GameController;
+class SavestateButton;
 
 enum class LoadSave {
 	LOAD,
@@ -18,12 +19,14 @@ class LoadSaveState : public QWidget {
 Q_OBJECT
 
 public:
-
 	const static int NUM_SLOTS = 9;
 
 	LoadSaveState(GameController* controller, QWidget* parent = nullptr);
 
 	void setMode(LoadSave mode);
+
+protected:
+	virtual bool eventFilter(QObject*, QEvent*) override;
 
 private:
 	void loadState(int slot);
@@ -31,9 +34,10 @@ private:
 
 	Ui::LoadSaveState m_ui;
 	GameController* m_controller;
-	QPushButton* m_slots[NUM_SLOTS];
+	SavestateButton* m_slots[NUM_SLOTS];
 	LoadSave m_mode;
 
+	int m_currentFocus;
 	QPixmap m_currentImage;
 };
 

@@ -30,7 +30,7 @@
     <number>2</number>
    </property>
    <item row="1" column="0">
-    <widget class="QPushButton" name="state1">
+    <widget class="QGBA::SavestateButton" name="state1">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -58,7 +58,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="QPushButton" name="state2">
+    <widget class="QGBA::SavestateButton" name="state2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -108,7 +108,7 @@
     </widget>
    </item>
    <item row="1" column="2">
-    <widget class="QPushButton" name="state3">
+    <widget class="QGBA::SavestateButton" name="state3">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -136,7 +136,7 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QPushButton" name="state4">
+    <widget class="QGBA::SavestateButton" name="state4">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -164,7 +164,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="QPushButton" name="state5">
+    <widget class="QGBA::SavestateButton" name="state5">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -192,7 +192,7 @@
     </widget>
    </item>
    <item row="2" column="2">
-    <widget class="QPushButton" name="state6">
+    <widget class="QGBA::SavestateButton" name="state6">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -220,7 +220,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QPushButton" name="state7">
+    <widget class="QGBA::SavestateButton" name="state7">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -248,7 +248,7 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QPushButton" name="state8">
+    <widget class="QGBA::SavestateButton" name="state8">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -276,7 +276,7 @@
     </widget>
    </item>
    <item row="3" column="2">
-    <widget class="QPushButton" name="state9">
+    <widget class="QGBA::SavestateButton" name="state9">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
@@ -305,6 +305,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGBA::SavestateButton</class>
+   <extends>QPushButton</extends>
+   <header>SavestateButton.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>state1</tabstop>
   <tabstop>state2</tabstop>

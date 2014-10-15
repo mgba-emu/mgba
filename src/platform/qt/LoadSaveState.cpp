@@ -3,6 +3,8 @@
 #include "GameController.h"
 #include "VFileDevice.h"
 
+#include <QKeyEvent>
+
 extern "C" {
 #include "gba-serialize.h"
 #include "gba-video.h"
@@ -13,6 +15,7 @@ using namespace QGBA;
 LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
+	, m_currentFocus(0)
 {
 	m_ui.setupUi(this);
 
@@ -32,6 +35,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	int i;
 	for (i = 0; i < NUM_SLOTS; ++i) {
 		loadState(i);
+		m_slots[i]->installEventFilter(this);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i); });
 	}
 }
@@ -41,6 +45,35 @@ void LoadSaveState::setMode(LoadSave mode) {
 	QString text = mode == LoadSave::LOAD ? tr("Load State") : tr("SaveState");
 	setWindowTitle(text);
 	m_ui.lsLabel->setText(text);
+}
+
+bool LoadSaveState::eventFilter(QObject*, QEvent* event) {
+	if (event->type() == QEvent::KeyPress) {
+		int column = m_currentFocus % 3;
+		int row = m_currentFocus - column;
+		switch (static_cast<QKeyEvent*>(event)->key()) {
+		case Qt::Key_Up:
+			row += 6;
+			break;
+		case Qt::Key_Down:
+			row += 3;
+			break;
+		case Qt::Key_Left:
+			column += 2;
+			break;
+		case Qt::Key_Right:
+			column += 1;
+			break;
+		default:
+			return false;
+		}
+		column %= 3;
+		row %= 9;
+		m_currentFocus = column + row;
+		m_slots[m_currentFocus]->setFocus();
+		return true;
+	}
+	return false;
 }
 
 void LoadSaveState::loadState(int slot) {
