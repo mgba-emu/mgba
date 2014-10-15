@@ -44,7 +44,7 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 	doneCurrent();
 	context()->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
-	m_drawThread->start();
+	m_drawThread->start(QThread::TimeCriticalPriority);
 }
 
 void Display::stopDrawing() {

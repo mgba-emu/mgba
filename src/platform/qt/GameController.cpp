@@ -72,7 +72,7 @@ GameController::GameController(QObject* parent)
 		controller->postLog(level, QString().vsprintf(format, args));
 	};
 
-	m_audioThread->start();
+	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
