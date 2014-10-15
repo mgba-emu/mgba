@@ -90,7 +90,7 @@ bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 	}
 
 	patch->vf->seek(patch->vf, 0, SEEK_SET);
-	if (crc32(out, outSize) != goodCrc32) {
+	if (doCrc32(out, outSize) != goodCrc32) {
 		return false;
 	}
 	return true;

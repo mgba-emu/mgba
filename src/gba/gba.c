@@ -124,6 +124,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 
 	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
+	GBASavedataInit(&gba->memory.savedata, 0);
 
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
@@ -151,6 +152,8 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+
+	gba->busyLoop = -1;
 }
 
 void GBADestroy(struct GBA* gba) {
@@ -403,7 +406,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
-	gba->romCrc32 = crc32(gba->memory.rom, gba->memory.romSize);
+	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAGPIOInit(&gba->memory.gpio, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
@@ -443,7 +446,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.romSize = patchedSize;
-	gba->romCrc32 = crc32(gba->memory.rom, gba->memory.romSize);
+	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
