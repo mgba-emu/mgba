@@ -28,7 +28,8 @@ set(SOURCE_FILES
 	Display.cpp
 	GameController.cpp
 	LogView.cpp
-	Window.cpp)
+	Window.cpp
+	VFileDevice.cpp)
 
 qt5_wrap_ui(UI_FILES
 	LogView.ui)
