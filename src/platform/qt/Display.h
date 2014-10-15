@@ -38,7 +38,6 @@ public:
 
 	void setContext(GBAThread*);
 	void setBacking(const uint32_t*);
-	void setGLContext(QGLWidget*);
 
 public slots:
 	void draw();

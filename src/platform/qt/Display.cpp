@@ -38,7 +38,6 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 	}
 	m_drawThread = new QThread(this);
 	m_painter = new Painter(this);
-	m_painter->setGLContext(this);
 	m_painter->setContext(thread);
 	m_painter->setBacking(buffer);
 	m_painter->moveToThread(m_drawThread);
@@ -68,7 +67,9 @@ void Display::resizeEvent(QResizeEvent* event) {
 	}
 }
 
-Painter::Painter(Display* parent) {
+Painter::Painter(Display* parent)
+	: m_gl(parent)
+{
 	m_size = parent->size();
 }
 
@@ -78,10 +79,6 @@ void Painter::setContext(GBAThread* context) {
 
 void Painter::setBacking(const uint32_t* backing) {
 	m_backing = backing;
-}
-
-void Painter::setGLContext(QGLWidget* context) {
-	m_gl = context;
 }
 
 void Painter::resize(const QSize& size) {
