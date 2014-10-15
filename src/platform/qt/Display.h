@@ -14,7 +14,7 @@ class Display : public QGLWidget {
 Q_OBJECT
 
 public:
-	Display(QWidget* parent = nullptr);
+	Display(QGLFormat format, QWidget* parent = nullptr);
 
 public slots:
 	void startDrawing(const uint32_t* buffer, GBAThread* context);

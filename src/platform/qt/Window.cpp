@@ -24,7 +24,10 @@ Window::Window(QWidget* parent)
 
 	m_controller = new GameController(this);
 	m_logView = new LogView();
-	m_display = new Display();
+
+	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
+	format.setSwapInterval(1);
+	m_display = new Display(format);
 	setCentralWidget(m_display);
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));

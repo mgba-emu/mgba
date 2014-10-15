@@ -23,8 +23,8 @@ static const GLint _glTexCoords[] = {
 	0, 1
 };
 
-Display::Display(QWidget* parent)
-	: QGLWidget(QGLFormat(QGL::Rgba | QGL::SingleBuffer), parent)
+Display::Display(QGLFormat format, QWidget* parent)
+	: QGLWidget(format, parent)
 	, m_painter(nullptr)
 	, m_drawThread(nullptr)
 {
