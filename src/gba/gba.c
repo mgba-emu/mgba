@@ -124,6 +124,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 
 	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
+	GBASavedataInit(&gba->memory.savedata, 0);
 
 	gba->video.p = gba;
 	GBAVideoInit(&gba->video);
@@ -151,6 +152,8 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+
+	gba->busyLoop = -1;
 }
 
 void GBADestroy(struct GBA* gba) {
