@@ -90,8 +90,8 @@ GameController::~GameController() {
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
 	}
-	GBAThreadEnd(&m_threadContext);
-	GBAThreadJoin(&m_threadContext);
+	disconnect();
+	closeGame();
 	delete m_renderer;
 }
 
