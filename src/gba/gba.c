@@ -443,7 +443,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.romSize = patchedSize;
-	gba->romCrc32 = crc32(gba->memory.rom, gba->memory.romSize);
+	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 }
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
