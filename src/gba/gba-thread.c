@@ -520,10 +520,12 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	++sync->videoFramePending;
 	--sync->videoFrameSkip;
 	if (sync->videoFrameSkip < 0) {
-		ConditionWake(&sync->videoFrameAvailableCond);
-		while (sync->videoFrameWait && sync->videoFramePending) {
-			ConditionWait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
-		}
+		do {
+			ConditionWake(&sync->videoFrameAvailableCond);
+			if (sync->videoFrameWait) {
+				ConditionWait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
+			}
+		} while (sync->videoFrameWait && sync->videoFramePending);
 	}
 	MutexUnlock(&sync->videoFrameMutex);
 
