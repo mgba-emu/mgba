@@ -16,6 +16,15 @@ using namespace QGBA;
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
+	, m_threadContext {
+		.state = THREAD_INITIALIZED,
+		.debugger = 0,
+		.frameskip = 0,
+		.bios = 0,
+		.userData = this,
+		.rewindBufferCapacity = 0,
+		.logLevel = -1,
+	}
 	, m_activeKeys(0)
 	, m_rom(nullptr)
 	, m_audioThread(new QThread(this))
@@ -25,16 +34,7 @@ GameController::GameController(QObject* parent)
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
 	m_renderer->outputBufferStride = 256;
-	m_threadContext = {
-		.state = THREAD_INITIALIZED,
-		.debugger = 0,
-		.frameskip = 0,
-		.bios = 0,
-		.renderer = &m_renderer->d,
-		.userData = this,
-		.rewindBufferCapacity = 0,
-		.logLevel = -1,
-	};
+	m_threadContext.renderer = &m_renderer->d;
 
 	GBAInputMapInit(&m_threadContext.inputMap);
 
