@@ -27,11 +27,13 @@ set(SOURCE_FILES
 	AudioProcessor.cpp
 	Display.cpp
 	GameController.cpp
+	LoadSaveState.cpp
 	LogView.cpp
 	Window.cpp
 	VFileDevice.cpp)
 
 qt5_wrap_ui(UI_FILES
+	LoadSaveState.ui
 	LogView.ui)
 
 if(USE_GDB_STUB)

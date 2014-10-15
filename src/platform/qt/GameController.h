@@ -31,6 +31,7 @@ public:
 	~GameController();
 
 	const uint32_t* drawContext() const { return m_drawContext; }
+	GBAThread* thread() { return &m_threadContext; }
 
 	bool isPaused();
 

@@ -8,6 +8,7 @@
 #include "GameController.h"
 #include "GDBWindow.h"
 #include "GDBController.h"
+#include "LoadSaveState.h"
 #include "LogView.h"
 
 using namespace QGBA;
@@ -143,6 +144,14 @@ void Window::gameStopped() {
 	}
 }
 
+void Window::openStateWindow(LoadSave ls) {
+	LoadSaveState* window = new LoadSaveState(m_controller);
+	window->setAttribute(Qt::WA_DeleteOnClose);
+	connect(this, SIGNAL(shutdown()), window, SLOT(hide()));
+	window->setMode(ls);
+	window->show();
+}
+
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
@@ -159,6 +168,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
 	emulationMenu->addAction(shutdown);
+	emulationMenu->addSeparator();
+
+	QAction* loadState = new QAction(tr("&Load state"), emulationMenu);
+	loadState->setShortcut(tr("Ctrl+L"));
+	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
+	m_gameActions.append(loadState);
+	emulationMenu->addAction(loadState);
+
+	QAction* saveState = new QAction(tr("&Save state"), emulationMenu);
+	saveState->setShortcut(tr("Ctrl+S"));
+	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
+	m_gameActions.append(saveState);
+	emulationMenu->addAction(saveState);
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);

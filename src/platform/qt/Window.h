@@ -9,6 +9,7 @@ extern "C" {
 }
 
 #include "Display.h"
+#include "LoadSaveState.h"
 
 namespace QGBA {
 
@@ -51,6 +52,8 @@ private slots:
 
 private:
 	void setupMenu(QMenuBar*);
+	void openStateWindow(LoadSave);
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
