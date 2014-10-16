@@ -140,7 +140,7 @@ void LoadSaveState::showEvent(QShowEvent* event) {
 	QWidget::showEvent(event);
 }
 
-void LoadSaveState::paintEvent(QPaintEvent* event) {
+void LoadSaveState::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	QRect full(QPoint(), size());
 	painter.drawPixmap(full, m_currentImage);
