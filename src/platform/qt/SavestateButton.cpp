@@ -24,10 +24,14 @@ void SavestateButton::paintEvent(QPaintEvent*) {
 	painter.setBrush(grad);
 	painter.drawRect(frame);
 	painter.setPen(Qt::NoPen);
-	painter.drawPixmap(full, icon().pixmap(full.size()));
+	if (!icon().isNull()) {
+		painter.drawPixmap(full, icon().pixmap(full.size()));
+	}
 	if (hasFocus()) {
 		QColor highlight = palette.color(QPalette::Highlight);
 		highlight.setAlpha(128);
 		painter.fillRect(full, highlight);
 	}
+	painter.setPen(QPen(palette.text(), 0));
+	painter.drawText(full, Qt::AlignCenter, text());
 }

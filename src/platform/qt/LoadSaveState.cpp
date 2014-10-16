@@ -83,6 +83,7 @@ void LoadSaveState::loadState(int slot) {
 	GBAThread* thread = m_controller->thread();
 	VFile* vf = GBAGetState(thread->gba, thread->stateDir, slot, false);
 	if (!vf) {
+		m_slots[slot - 1]->setText(tr("Empty"));
 		return;
 	}
 	VFileDevice vdev(vf);
