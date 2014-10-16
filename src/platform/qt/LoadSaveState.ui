@@ -94,7 +94,7 @@
       </sizepolicy>
      </property>
      <property name="styleSheet">
-      <string notr="true">font-size: 30pt; font-weight: bold;</string>
+      <string notr="true">font-size: 30pt; font-weight: bold; color: white;</string>
      </property>
      <property name="text">
       <string>%1 State</string>

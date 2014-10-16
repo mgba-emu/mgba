@@ -32,6 +32,7 @@ protected:
 	virtual bool eventFilter(QObject*, QEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
 	virtual void showEvent(QShowEvent*) override;
+	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	void loadState(int slot);

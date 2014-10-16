@@ -19,8 +19,12 @@ void SavestateButton::paintEvent(QPaintEvent*) {
 	painter.setPen(Qt::black);
 	QLinearGradient grad(0, 0, 0, 1);
 	grad.setCoordinateMode(QGradient::ObjectBoundingMode);
-	grad.setColorAt(0, palette.color(QPalette::Shadow));
-	grad.setColorAt(1, palette.color(QPalette::Dark));
+	QColor shadow = palette.color(QPalette::Shadow);
+	QColor dark = palette.color(QPalette::Dark);
+	shadow.setAlpha(128);
+	dark.setAlpha(128);
+	grad.setColorAt(0, shadow);
+	grad.setColorAt(1, dark);
 	painter.setBrush(grad);
 	painter.drawRect(frame);
 	painter.setPen(Qt::NoPen);

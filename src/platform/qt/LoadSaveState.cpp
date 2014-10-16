@@ -4,6 +4,7 @@
 #include "VFileDevice.h"
 
 #include <QKeyEvent>
+#include <QPainter>
 
 extern "C" {
 #include "gba-serialize.h"
@@ -137,4 +138,11 @@ void LoadSaveState::closeEvent(QCloseEvent* event) {
 void LoadSaveState::showEvent(QShowEvent* event) {
 	m_slots[m_currentFocus]->setFocus();
 	QWidget::showEvent(event);
+}
+
+void LoadSaveState::paintEvent(QPaintEvent* event) {
+	QPainter painter(this);
+	QRect full(QPoint(), size());
+	painter.drawPixmap(full, m_currentImage);
+	painter.fillRect(full, QColor(0, 0, 0, 128));
 }
