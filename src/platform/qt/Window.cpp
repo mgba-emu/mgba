@@ -15,12 +15,13 @@ using namespace QGBA;
 
 Window::Window(QWidget* parent)
 	: QMainWindow(parent)
+	, m_logView(new LogView())
+	, m_stateWindow(nullptr)
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
 {
 	m_controller = new GameController(this);
-	m_logView = new LogView();
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
@@ -146,16 +147,20 @@ void Window::gameStopped() {
 }
 
 void Window::openStateWindow(LoadSave ls) {
+	if (m_stateWindow) {
+		return;
+	}
 	bool wasPaused = m_controller->isPaused();
-	LoadSaveState* window = new LoadSaveState(m_controller);
-	connect(this, SIGNAL(shutdown()), window, SLOT(hide()));
+	m_stateWindow = new LoadSaveState(m_controller);
+	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(hide()));
+	connect(m_stateWindow, &LoadSaveState::closed, [this]() { m_stateWindow = nullptr; });
 	if (!wasPaused) {
 		m_controller->setPaused(true);
-		connect(window, &LoadSaveState::closed, [this]() { m_controller->setPaused(false); });
+		connect(m_stateWindow, &LoadSaveState::closed, [this]() { m_controller->setPaused(false); });
 	}
-	window->setAttribute(Qt::WA_DeleteOnClose);
-	window->setMode(ls);
-	window->show();
+	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
+	m_stateWindow->setMode(ls);
+	m_stateWindow->show();
 }
 
 void Window::setupMenu(QMenuBar* menubar) {

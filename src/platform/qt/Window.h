@@ -58,6 +58,7 @@ private:
 	Display* m_display;
 	QList<QAction*> m_gameActions;
 	LogView* m_logView;
+	LoadSaveState* m_stateWindow;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;
