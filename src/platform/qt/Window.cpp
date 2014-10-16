@@ -148,11 +148,14 @@ void Window::gameStopped() {
 }
 
 void Window::openStateWindow(LoadSave ls) {
-	m_controller->setPaused(true);
+	bool wasPaused = m_controller->isPaused();
 	LoadSaveState* window = new LoadSaveState(m_controller);
-	window->setAttribute(Qt::WA_DeleteOnClose);
 	connect(this, SIGNAL(shutdown()), window, SLOT(hide()));
-	connect(window, &LoadSaveState::closed, [this]() { m_controller->setPaused(false); });
+	if (!wasPaused) {
+		m_controller->setPaused(true);
+		connect(window, &LoadSaveState::closed, [this]() { m_controller->setPaused(false); });
+	}
+	window->setAttribute(Qt::WA_DeleteOnClose);
 	window->setMode(ls);
 	window->show();
 }
