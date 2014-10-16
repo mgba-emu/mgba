@@ -64,6 +64,17 @@ bool LoadSaveState::eventFilter(QObject*, QEvent* event) {
 		case Qt::Key_Right:
 			column += 1;
 			break;
+		case Qt::Key_1:
+		case Qt::Key_2:
+		case Qt::Key_3:
+		case Qt::Key_4:
+		case Qt::Key_5:
+		case Qt::Key_6:
+		case Qt::Key_7:
+		case Qt::Key_8:
+		case Qt::Key_9:
+			triggerState(static_cast<QKeyEvent*>(event)->key() - Qt::Key_1 + 1);
+			break;
 		case Qt::Key_Escape:
 			close();
 			break;
