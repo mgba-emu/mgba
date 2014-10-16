@@ -133,3 +133,8 @@ void LoadSaveState::closeEvent(QCloseEvent* event) {
 	emit closed();
 	QWidget::closeEvent(event);
 }
+
+void LoadSaveState::showEvent(QShowEvent* event) {
+	m_slots[m_currentFocus]->setFocus();
+	QWidget::showEvent(event);
+}

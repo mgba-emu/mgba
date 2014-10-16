@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
+#include <QStackedLayout>
 
 #include "GameController.h"
 #include "GDBWindow.h"
@@ -17,6 +18,7 @@ Window::Window(QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
+	, m_screenWidget(new QWidget())
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
@@ -25,8 +27,11 @@ Window::Window(QWidget* parent)
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
+	m_screenWidget->setLayout(new QStackedLayout());
+	m_screenWidget->layout()->setContentsMargins(0, 0, 0, 0);
+	setCentralWidget(m_screenWidget);
 	m_display = new Display(format);
-	setCentralWidget(m_display);
+	attachWidget(m_display);
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
@@ -133,6 +138,16 @@ void Window::closeEvent(QCloseEvent* event) {
 	QMainWindow::closeEvent(event);
 }
 
+void Window::toggleFullScreen() {
+	if (isFullScreen()) {
+		showNormal();
+		setCursor(Qt::ArrowCursor);
+	} else {
+		showFullScreen();
+		setCursor(Qt::BlankCursor);
+	}
+}
+
 void Window::gameStarted(GBAThread* context) {
 	emit startDrawing(m_controller->drawContext(), context);
 	foreach (QAction* action, m_gameActions) {
@@ -153,14 +168,22 @@ void Window::openStateWindow(LoadSave ls) {
 	bool wasPaused = m_controller->isPaused();
 	m_stateWindow = new LoadSaveState(m_controller);
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(hide()));
-	connect(m_stateWindow, &LoadSaveState::closed, [this]() { m_stateWindow = nullptr; });
+	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
+		m_screenWidget->layout()->removeWidget(m_stateWindow);
+		m_stateWindow = nullptr;
+		setFocus();
+	});
 	if (!wasPaused) {
 		m_controller->setPaused(true);
 		connect(m_stateWindow, &LoadSaveState::closed, [this]() { m_controller->setPaused(false); });
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
-	m_stateWindow->show();
+	if (isFullScreen()) {
+		attachWidget(m_stateWindow);
+	} else {
+		m_stateWindow->show();
+	}
 }
 
 void Window::setupMenu(QMenuBar* menubar) {
@@ -277,7 +300,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
 	});
 	frameMenu->addAction(setSize);
-	frameMenu->addAction(tr("Fullscreen"), this, SLOT(showFullScreen()), QKeySequence("Ctrl+F"));
+	frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F"));
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
@@ -304,4 +327,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
+}
+
+void Window::attachWidget(QWidget* widget) {
+	m_screenWidget->layout()->addWidget(widget);
+	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }

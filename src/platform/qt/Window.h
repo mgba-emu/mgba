@@ -46,6 +46,9 @@ signals:
 	void audioBufferSamplesChanged(int samples);
 	void fpsTargetChanged(float target);
 
+public slots:
+	void toggleFullScreen();
+
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
@@ -54,11 +57,14 @@ private:
 	void setupMenu(QMenuBar*);
 	void openStateWindow(LoadSave);
 
+	void attachWidget(QWidget* widget);
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
+	QWidget* m_screenWidget;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;
