@@ -64,6 +64,9 @@ bool LoadSaveState::eventFilter(QObject*, QEvent* event) {
 		case Qt::Key_Right:
 			column += 1;
 			break;
+		case Qt::Key_Escape:
+			close();
+			break;
 		default:
 			return false;
 		}
