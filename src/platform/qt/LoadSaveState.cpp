@@ -107,3 +107,8 @@ void LoadSaveState::triggerState(int slot) {
 	GBAThreadContinue(thread);
 	close();
 }
+
+void LoadSaveState::closeEvent(QCloseEvent* event) {
+	emit closed();
+	QWidget::closeEvent(event);
+}

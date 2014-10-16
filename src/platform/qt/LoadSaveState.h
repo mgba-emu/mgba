@@ -25,8 +25,12 @@ public:
 
 	void setMode(LoadSave mode);
 
+signals:
+	void closed();
+
 protected:
 	virtual bool eventFilter(QObject*, QEvent*) override;
+	virtual void closeEvent(QCloseEvent*) override;
 
 private:
 	void loadState(int slot);
