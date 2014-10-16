@@ -43,7 +43,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 
 void LoadSaveState::setMode(LoadSave mode) {
 	m_mode = mode;
-	QString text = mode == LoadSave::LOAD ? tr("Load State") : tr("SaveState");
+	QString text = mode == LoadSave::LOAD ? tr("Load State") : tr("Save State");
 	setWindowTitle(text);
 	m_ui.lsLabel->setText(text);
 }
