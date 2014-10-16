@@ -28,7 +28,8 @@ Display::Display(QGLFormat format, QWidget* parent)
 	, m_painter(nullptr)
 	, m_drawThread(nullptr)
 {
-	setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+	setMinimumSize(240, 160);
 	setAutoBufferSwap(false);
 }
 

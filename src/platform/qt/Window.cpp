@@ -19,9 +19,6 @@ Window::Window(QWidget* parent)
 	, m_gdbController(nullptr)
 #endif
 {
-	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	setMinimumSize(240, 160);
-
 	m_controller = new GameController(this);
 	m_logView = new LogView();
 
