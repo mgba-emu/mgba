@@ -47,7 +47,7 @@ void LoadSaveState::setMode(LoadSave mode) {
 	m_ui.lsLabel->setText(text);
 }
 
-bool LoadSaveState::eventFilter(QObject*, QEvent* event) {
+bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 	if (event->type() == QEvent::KeyPress) {
 		int column = m_currentFocus % 3;
 		int row = m_currentFocus - column;
@@ -86,6 +86,16 @@ bool LoadSaveState::eventFilter(QObject*, QEvent* event) {
 		m_currentFocus = column + row;
 		m_slots[m_currentFocus]->setFocus();
 		return true;
+	}
+	if (event->type() == QEvent::Enter) {
+		int i;
+		for (i = 0; i < 9; ++i) {
+			if (m_slots[i] == object) {
+				m_currentFocus = i;
+				m_slots[m_currentFocus]->setFocus();
+				return true;
+			}
+		}
 	}
 	return false;
 }
