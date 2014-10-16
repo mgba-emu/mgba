@@ -34,9 +34,9 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 
 	int i;
 	for (i = 0; i < NUM_SLOTS; ++i) {
-		loadState(i);
+		loadState(i + 1);
 		m_slots[i]->installEventFilter(this);
-		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i); });
+		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
 }
 
@@ -91,12 +91,12 @@ void LoadSaveState::loadState(int slot) {
 	if (!stateImage.isNull()) {
 		QPixmap statePixmap;
 		statePixmap.convertFromImage(stateImage);
-		m_slots[slot]->setIcon(statePixmap);
-		m_slots[slot]->setText(QString());
+		m_slots[slot - 1]->setIcon(statePixmap);
+		m_slots[slot - 1]->setText(QString());
 	} else {
-		m_slots[slot]->setText(tr("Slot %1").arg(slot + 1));
+		m_slots[slot - 1]->setText(tr("Slot %1").arg(slot));
 	}
-	m_slots[slot]->setShortcut(QString::number(slot + 1));
+	m_slots[slot - 1]->setShortcut(QString::number(slot));
 }
 
 void LoadSaveState::triggerState(int slot) {
