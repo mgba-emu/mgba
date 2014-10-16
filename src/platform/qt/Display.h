@@ -19,6 +19,7 @@ public:
 public slots:
 	void startDrawing(const uint32_t* buffer, GBAThread* context);
 	void stopDrawing();
+	void forceDraw();
 
 protected:
 	virtual void initializeGL() override;
@@ -40,6 +41,7 @@ public:
 	void setBacking(const uint32_t*);
 
 public slots:
+	void forceDraw();
 	void draw();
 	void start();
 	void stop();

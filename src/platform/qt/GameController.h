@@ -46,6 +46,7 @@ signals:
 	void gameStopped(GBAThread*);
 	void gamePaused(GBAThread*);
 	void gameUnpaused(GBAThread*);
+	void stateLoaded(GBAThread*);
 
 	void postLog(int level, const QString& log);
 
@@ -59,6 +60,8 @@ public slots:
 	void keyReleased(int key);
 	void setAudioBufferSamples(int samples);
 	void setFPSTarget(float fps);
+	void loadState(int slot);
+	void saveState(int slot);
 
 #ifdef BUILD_SDL
 private slots:

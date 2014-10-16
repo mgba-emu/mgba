@@ -100,14 +100,11 @@ void LoadSaveState::loadState(int slot) {
 }
 
 void LoadSaveState::triggerState(int slot) {
-	GBAThread* thread = m_controller->thread();
-	GBAThreadInterrupt(thread);
 	if (m_mode == LoadSave::SAVE) {
-		GBASaveState(thread->gba, thread->stateDir, slot, true);
+		m_controller->saveState(slot);
 	} else {
-		GBALoadState(thread->gba, thread->stateDir, slot);
+		m_controller->loadState(slot);
 	}
-	GBAThreadContinue(thread);
 	close();
 }
 

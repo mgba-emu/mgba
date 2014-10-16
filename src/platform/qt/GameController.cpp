@@ -7,6 +7,7 @@
 extern "C" {
 #include "gba.h"
 #include "gba-audio.h"
+#include "gba-serialize.h"
 #include "renderers/video-software.h"
 #include "util/vfs.h"
 }
@@ -201,6 +202,20 @@ void GameController::setFPSTarget(float fps) {
 	m_threadContext.fpsTarget = fps;
 	GBAThreadContinue(&m_threadContext);
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
+}
+
+void GameController::loadState(int slot) {
+	GBAThreadInterrupt(&m_threadContext);
+	GBALoadState(m_threadContext.gba, m_threadContext.stateDir, slot);
+	GBAThreadContinue(&m_threadContext);
+	emit stateLoaded(&m_threadContext);
+	emit frameAvailable(m_drawContext);
+}
+
+void GameController::saveState(int slot) {
+	GBAThreadInterrupt(&m_threadContext);
+	GBASaveState(m_threadContext.gba, m_threadContext.stateDir, slot, true);
+	GBAThreadContinue(&m_threadContext);
 }
 
 void GameController::updateKeys() {

@@ -55,6 +55,12 @@ void Display::stopDrawing() {
 	}
 }
 
+void Display::forceDraw() {
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::BlockingQueuedConnection);
+	}
+}
+
 void Display::initializeGL() {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -127,6 +133,18 @@ void Painter::draw() {
 		}
 	}
 	GBASyncWaitFrameEnd(&m_context->sync);
+	m_gl->swapBuffers();
+	m_gl->doneCurrent();
+}
+
+void Painter::forceDraw() {
+	m_gl->makeCurrent();
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (m_context->sync.videoFrameWait) {
+		glFlush();
+	}
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
 }
