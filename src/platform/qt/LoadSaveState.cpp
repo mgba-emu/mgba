@@ -97,7 +97,6 @@ void LoadSaveState::loadState(int slot) {
 	} else {
 		m_slots[slot - 1]->setText(tr("Slot %1").arg(slot));
 	}
-	m_slots[slot - 1]->setShortcut(QString::number(slot));
 }
 
 void LoadSaveState::triggerState(int slot) {
