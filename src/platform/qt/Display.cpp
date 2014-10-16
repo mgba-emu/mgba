@@ -58,7 +58,7 @@ void Display::stopDrawing() {
 
 void Display::forceDraw() {
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::QueuedConnection);
 	}
 }
 
