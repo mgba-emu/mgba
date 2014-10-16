@@ -79,6 +79,10 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 		case Qt::Key_Escape:
 			close();
 			break;
+		case Qt::Key_Enter:
+		case Qt::Key_Return:
+			triggerState(m_currentFocus + 1);
+			break;
 		default:
 			return false;
 		}
