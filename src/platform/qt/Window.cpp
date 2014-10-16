@@ -187,6 +187,24 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
 	emulationMenu->addAction(saveState);
+
+	QMenu* quickLoadMenu = emulationMenu->addMenu(tr("Quick load"));
+	QMenu* quickSaveMenu = emulationMenu->addMenu(tr("Quick save"));
+	int i;
+	for (i = 1; i < 10; ++i) {
+		QAction* quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
+		quickLoad->setShortcut(tr("F%1").arg(i));
+		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
+		m_gameActions.append(quickLoad);
+		quickLoadMenu->addAction(quickLoad);
+
+		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
+		quickSave->setShortcut(tr("Shift+F%1").arg(i));
+		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
+		m_gameActions.append(quickSave);
+		quickSaveMenu->addAction(quickSave);
+	}
+
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
