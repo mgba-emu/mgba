@@ -157,6 +157,10 @@ DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh3, 2);
 DECL_BIT(GBARegisterSOUNDCNT_X, PlayingCh4, 3);
 DECL_BIT(GBARegisterSOUNDCNT_X, Enable, 7);
 
+DECL_BITFIELD(GBARegisterSOUNDBIAS, uint16_t);
+DECL_BITS(GBARegisterSOUNDBIAS, Bias, 0, 10);
+DECL_BITS(GBARegisterSOUNDBIAS, Resolution, 14, 2);
+
 struct GBAAudio {
 	struct GBA* p;
 
@@ -200,14 +204,7 @@ struct GBAAudio {
 
 	unsigned sampleRate;
 
-	union {
-		struct {
-			unsigned bias : 10;
-			unsigned : 4;
-			unsigned resolution : 2;
-		};
-		uint16_t soundbias;
-	};
+	GBARegisterSOUNDBIAS soundbias;
 
 	int32_t nextEvent;
 	int32_t eventDiff;
