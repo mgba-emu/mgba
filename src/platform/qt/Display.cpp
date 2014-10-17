@@ -29,7 +29,7 @@ Display::Display(QGLFormat format, QWidget* parent)
 	, m_drawThread(nullptr)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	setMinimumSize(240, 160);
+	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	setAutoBufferSwap(false);
 }
 

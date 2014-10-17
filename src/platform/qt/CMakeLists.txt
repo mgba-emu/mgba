@@ -44,7 +44,9 @@ set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
 set(MACOSX_BUNDLE_BUNDLE_VERSION ${LIB_VERSION_STRING})
 set_source_files_properties(${CMAKE_SOURCE_DIR}/res/mgba.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
-add_executable(mGBA WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${UI_FILES})
+qt5_add_resources(RESOURCES resources.qrc)
+message(STATUS ${RESOURCES})
+add_executable(mGBA WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${UI_FILES} ${RESOURCES})
 
 qt5_use_modules(mGBA Widgets Multimedia OpenGL)
 target_link_libraries(mGBA ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} Qt5::Widgets)

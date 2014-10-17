@@ -19,6 +19,7 @@ Window::Window(QWidget* parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new QLabel())
+	, m_logo(":/res/mgba-1024.png")
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
@@ -27,14 +28,20 @@ Window::Window(QWidget* parent)
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
+	m_display = new Display(format);
+
 	m_screenWidget->setLayout(new QStackedLayout());
 	m_screenWidget->layout()->setContentsMargins(0, 0, 0, 0);
-	m_screenWidget->setScaledContents(true);
-	setCentralWidget(m_screenWidget);
-	m_display = new Display(format);
+	m_screenWidget->setAlignment(Qt::AlignCenter);
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
-	attachWidget(m_display);
+	m_screenWidget->resize(m_display->minimumSize() * 2);
+	QPalette palette = m_screenWidget->palette();
+	palette.setColor(m_screenWidget->backgroundRole(), Qt::black);
+	m_screenWidget->setPalette(palette);
+	m_screenWidget->setAutoFillBackground(true);
+	setCentralWidget(m_screenWidget);
+
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
@@ -136,6 +143,10 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
+void Window::resizeEvent(QResizeEvent*) {
+	redoLogo();
+}
+
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
 	QMainWindow::closeEvent(event);
@@ -156,12 +167,24 @@ void Window::gameStarted(GBAThread* context) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
+	attachWidget(m_display);
+	m_screenWidget->setScaledContents(true);
 }
 
 void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
+	detachWidget(m_display);
+	m_screenWidget->setScaledContents(false);
+	redoLogo();
+}
+
+void Window::redoLogo() {
+	if (m_controller->isLoaded()) {
+		return;
+	}
+	m_screenWidget->setPixmap(m_logo.scaled(m_screenWidget->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
 void Window::openStateWindow(LoadSave ls) {
@@ -338,4 +361,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
+}
+
+void Window::detachWidget(QWidget* widget) {
+	m_screenWidget->layout()->removeWidget(widget);
 }

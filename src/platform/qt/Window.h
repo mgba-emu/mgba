@@ -40,6 +40,7 @@ public slots:
 protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
+	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
 
 signals:
@@ -52,12 +53,14 @@ public slots:
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
+	void redoLogo();
 
 private:
 	void setupMenu(QMenuBar*);
 	void openStateWindow(LoadSave);
 
 	void attachWidget(QWidget* widget);
+	void detachWidget(QWidget* widget);
 
 	GameController* m_controller;
 	Display* m_display;
@@ -65,6 +68,7 @@ private:
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
 	QLabel* m_screenWidget;
+	QPixmap m_logo;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;

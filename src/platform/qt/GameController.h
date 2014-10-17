@@ -34,6 +34,7 @@ public:
 	GBAThread* thread() { return &m_threadContext; }
 
 	bool isPaused();
+	bool isLoaded() { return m_rom; }
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
