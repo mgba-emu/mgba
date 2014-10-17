@@ -69,7 +69,7 @@ void Display::initializeGL() {
 }
 
 void Display::resizeEvent(QResizeEvent* event) {
-	if (m_painter) {
+	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
 	}
 }
