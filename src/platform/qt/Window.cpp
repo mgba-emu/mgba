@@ -18,7 +18,7 @@ Window::Window(QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
-	, m_screenWidget(new QWidget())
+	, m_screenWidget(new QLabel())
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
@@ -29,8 +29,11 @@ Window::Window(QWidget* parent)
 	format.setSwapInterval(1);
 	m_screenWidget->setLayout(new QStackedLayout());
 	m_screenWidget->layout()->setContentsMargins(0, 0, 0, 0);
+	m_screenWidget->setScaledContents(true);
 	setCentralWidget(m_screenWidget);
 	m_display = new Display(format);
+	m_screenWidget->setMinimumSize(m_display->minimumSize());
+	m_screenWidget->setSizePolicy(m_display->sizePolicy());
 	attachWidget(m_display);
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
@@ -179,11 +182,7 @@ void Window::openStateWindow(LoadSave ls) {
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
-	if (isFullScreen()) {
-		attachWidget(m_stateWindow);
-	} else {
-		m_stateWindow->show();
-	}
+	attachWidget(m_stateWindow);
 }
 
 void Window::setupMenu(QMenuBar* menubar) {
@@ -240,7 +239,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	pause->setCheckable(true);
 	pause->setShortcut(tr("Ctrl+P"));
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
-	connect(m_controller, &GameController::gamePaused, [pause]() { pause->setChecked(true); });
+	connect(m_controller, &GameController::gamePaused, [this, pause]() {
+		pause->setChecked(true);
+
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
+		QPixmap pixmap;
+		pixmap.convertFromImage(currentImage.rgbSwapped());
+		m_screenWidget->setPixmap(pixmap);
+	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
 	emulationMenu->addAction(pause);

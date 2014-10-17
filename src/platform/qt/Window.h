@@ -64,7 +64,7 @@ private:
 	QList<QAction*> m_gameActions;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
-	QWidget* m_screenWidget;
+	QLabel* m_screenWidget;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;

@@ -20,9 +20,6 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 {
 	m_ui.setupUi(this);
 
-	QImage currentImage(reinterpret_cast<const uchar*>(controller->drawContext()), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
-	m_currentImage.convertFromImage(currentImage.rgbSwapped());
-
 	m_slots[0] = m_ui.state1;
 	m_slots[1] = m_ui.state2;
 	m_slots[2] = m_ui.state3;
