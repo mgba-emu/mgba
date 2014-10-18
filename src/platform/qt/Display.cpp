@@ -64,6 +64,14 @@ void Display::forceDraw() {
 	}
 }
 
+#ifdef USE_PNG
+void Display::screenshot() {
+	GBAThreadInterrupt(m_context);
+	GBAThreadTakeScreenshot(m_context);
+	GBAThreadContinue(m_context);
+}
+#endif
+
 void Display::initializeGL() {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);

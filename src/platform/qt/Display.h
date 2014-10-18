@@ -20,6 +20,9 @@ public slots:
 	void startDrawing(const uint32_t* buffer, GBAThread* context);
 	void stopDrawing();
 	void forceDraw();
+#ifdef USE_PNG
+	void screenshot();
+#endif
 
 protected:
 	virtual void initializeGL() override;

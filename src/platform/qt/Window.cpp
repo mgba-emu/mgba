@@ -241,6 +241,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
+	fileMenu->addSeparator();
+
+#ifdef USE_PNG
+	QAction* screenshot = new QAction(tr("Take &screenshot"), fileMenu);
+	screenshot->setShortcut(tr("F12"));
+	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
+	m_gameActions.append(screenshot);
+	fileMenu->addAction(screenshot);
+#endif
+
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
 	fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
