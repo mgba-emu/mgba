@@ -11,6 +11,8 @@ extern "C" {
 #include "Display.h"
 #include "LoadSaveState.h"
 
+struct StartupOptions;
+
 namespace QGBA {
 
 class GameController;
@@ -25,6 +27,8 @@ public:
 	virtual ~Window();
 
 	static GBAKey mapKey(int qtKey);
+
+	void optionsPassed(StartupOptions*);
 
 signals:
 	void startDrawing(const uint32_t*, GBAThread*);

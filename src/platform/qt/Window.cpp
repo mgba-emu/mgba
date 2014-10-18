@@ -12,6 +12,10 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 
+extern "C" {
+#include "platform/commandline.h"
+}
+
 using namespace QGBA;
 
 Window::Window(QWidget* parent)
@@ -97,6 +101,25 @@ GBAKey Window::mapKey(int qtKey) {
 	default:
 		return GBA_KEY_NONE;
 	}
+}
+
+void Window::optionsPassed(StartupOptions* opts) {
+	if (opts->fname) {
+		m_controller->loadGame(opts->fname, opts->dirmode);
+	}
+
+	if (opts->logLevel) {
+		m_logView->setLevels(opts->logLevel);
+	}
+
+	// TODO:
+	// - bios
+	// - patch
+	// - frameskip;
+	// - rewindBufferCapacity
+	// - rewindBufferInterval
+	// - DebuggerType debuggerType
+	// - debugAtStart
 }
 
 void Window::selectROM() {
