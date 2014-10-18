@@ -220,6 +220,7 @@ void Window::openStateWindow(LoadSave ls) {
 	bool wasPaused = m_controller->isPaused();
 	m_stateWindow = new LoadSaveState(m_controller);
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(hide()));
+	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_stateWindow, SLOT(hide()));
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
 		m_screenWidget->layout()->removeWidget(m_stateWindow);
 		m_stateWindow = nullptr;
