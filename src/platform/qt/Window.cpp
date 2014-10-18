@@ -179,10 +179,8 @@ void Window::closeEvent(QCloseEvent* event) {
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
 		showNormal();
-		setCursor(Qt::ArrowCursor);
 	} else {
 		showFullScreen();
-		setCursor(Qt::BlankCursor);
 	}
 }
 

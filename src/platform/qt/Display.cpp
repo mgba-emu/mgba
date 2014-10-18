@@ -31,6 +31,7 @@ Display::Display(QGLFormat format, QWidget* parent)
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	setAutoBufferSwap(false);
+	setCursor(Qt::BlankCursor);
 }
 
 void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
