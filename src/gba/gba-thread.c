@@ -126,6 +126,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	if (threadContext->audioBuffers) {
 		GBAAudioResizeBuffer(&gba.audio, threadContext->audioBuffers);
+	} else {
+		threadContext->audioBuffers = GBA_AUDIO_SAMPLES;
 	}
 
 	if (threadContext->renderer) {
