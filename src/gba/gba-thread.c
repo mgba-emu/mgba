@@ -561,7 +561,9 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	if (sync->videoFrameOn) {
+		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	}
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
 	return true;
