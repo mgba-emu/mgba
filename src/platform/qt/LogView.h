@@ -19,9 +19,9 @@ public:
 
 public slots:
 	void postLog(int level, const QString& log);
+	void setLevels(int levels);
 	void clear();
 
-private slots:
 	void setLevelDebug(bool);
 	void setLevelStub(bool);
 	void setLevelInfo(bool);

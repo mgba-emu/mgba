@@ -39,6 +39,18 @@ void LogView::clear() {
 	m_lines = 0;
 }
 
+void LogView::setLevels(int levels) {
+	m_logLevel = levels;
+
+	m_ui.levelDebug->setCheckState(levels & GBA_LOG_DEBUG ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelStub->setCheckState(levels & GBA_LOG_STUB ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelInfo->setCheckState(levels & GBA_LOG_INFO ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelWarn->setCheckState(levels & GBA_LOG_WARN ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelError->setCheckState(levels & GBA_LOG_ERROR ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelFatal->setCheckState(levels & GBA_LOG_FATAL ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelGameError->setCheckState(levels & GBA_LOG_GAME_ERROR ? Qt::Checked : Qt::Unchecked);
+}
+
 void LogView::setLevelDebug(bool set) {
 	if (set) {
 		setLevel(GBA_LOG_DEBUG);
