@@ -577,7 +577,7 @@ bool GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
 }
 
-void GBASyncProduceAudio(struct GBASync* sync, int wait) {
+void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
 	if (sync->audioWait && wait) {
 		// TODO loop properly in event of spurious wakeups
 		ConditionWait(&sync->audioRequiredCond, &sync->audioBufferMutex);
