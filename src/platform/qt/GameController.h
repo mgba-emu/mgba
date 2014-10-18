@@ -34,7 +34,7 @@ public:
 	GBAThread* thread() { return &m_threadContext; }
 
 	bool isPaused();
-	bool isLoaded() { return m_rom; }
+	bool isLoaded() { return m_gameOpen; }
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
@@ -81,7 +81,7 @@ private:
 	GBAVideoSoftwareRenderer* m_renderer;
 	int m_activeKeys;
 
-	QFile* m_rom;
+	bool m_gameOpen;
 	QFile* m_bios;
 
 	QThread* m_audioThread;

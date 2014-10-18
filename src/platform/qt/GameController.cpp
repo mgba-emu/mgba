@@ -19,7 +19,7 @@ GameController::GameController(QObject* parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_threadContext()
 	, m_activeKeys(0)
-	, m_rom(nullptr)
+	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(new AudioProcessor)
 {
@@ -117,22 +117,26 @@ void GameController::loadGame(const QString& path) {
 	closeGame();
 	m_threadContext.sync.videoFrameWait = 0;
 	m_threadContext.sync.audioWait = 1;
-	m_rom = new QFile(path);
-	if (!m_rom->open(QIODevice::ReadOnly)) {
-		delete m_rom;
-		m_rom = nullptr;
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		return;
 	}
+	file.close();
+	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
 
-	m_threadContext.rom = VFileFromFD(m_rom->handle());
 	m_threadContext.fname = strdup(path.toLocal8Bit().constData());
+	m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
+#if ENABLE_LIBZIP
+	m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
+#endif
 
 	GBAThreadStart(&m_threadContext);
 }
 
 void GameController::closeGame() {
-	if (!m_rom) {
+	if (!m_gameOpen) {
 		return;
 	}
 	GBAThreadEnd(&m_threadContext);
@@ -141,11 +145,8 @@ void GameController::closeGame() {
 		free(const_cast<char*>(m_threadContext.fname));
 		m_threadContext.fname = nullptr;
 	}
-	if (m_rom) {
-		m_rom->close();
-		delete m_rom;
-		m_rom = nullptr;
-	}
+
+	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);
 }
 
