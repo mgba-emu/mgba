@@ -76,14 +76,14 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 	}
 }
 
-static void _changeVideoSync(struct GBAThread* threadContext, bool frameOn) {
+static void _changeVideoSync(struct GBASync* sync, bool frameOn) {
 	// Make sure the video thread can process events while the GBA thread is paused
-	MutexLock(&threadContext->sync.videoFrameMutex);
-	if (frameOn != threadContext->sync.videoFrameOn) {
-		threadContext->sync.videoFrameOn = frameOn;
-		ConditionWake(&threadContext->sync.videoFrameAvailableCond);
+	MutexLock(&sync->videoFrameMutex);
+	if (frameOn != sync->videoFrameOn) {
+		sync->videoFrameOn = frameOn;
+		ConditionWake(&sync->videoFrameAvailableCond);
 	}
-	MutexUnlock(&threadContext->sync.videoFrameMutex);
+	MutexUnlock(&sync->videoFrameMutex);
 }
 
 static THREAD_ENTRY _GBAThreadRun(void* context) {
@@ -434,7 +434,7 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	_changeVideoSync(threadContext, frameOn);
+	_changeVideoSync(&threadContext->sync, frameOn);
 }
 
 void GBAThreadUnpause(struct GBAThread* threadContext) {
@@ -446,7 +446,7 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	_changeVideoSync(threadContext, true);
+	_changeVideoSync(&threadContext->sync, true);
 }
 
 bool GBAThreadIsPaused(struct GBAThread* threadContext) {
@@ -471,7 +471,7 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	_changeVideoSync(threadContext, frameOn);
+	_changeVideoSync(&threadContext->sync, frameOn);
 }
 
 void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
@@ -484,7 +484,7 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	_changeVideoSync(threadContext, frameOn);
+	_changeVideoSync(&threadContext->sync, frameOn);
 }
 
 #ifdef USE_PTHREADS
@@ -561,7 +561,9 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	if (sync->videoFrameOn) {
+		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
+	}
 	sync->videoFramePending = 0;
 	sync->videoFrameSkip = frameskip;
 	return true;
@@ -577,6 +579,14 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 
 bool GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
+}
+
+void GBASyncSuspendDrawing(struct GBASync* sync) {
+	_changeVideoSync(sync, false);
+}
+
+void GBASyncResumeDrawing(struct GBASync* sync) {
+	_changeVideoSync(sync, true);
 }
 
 void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
