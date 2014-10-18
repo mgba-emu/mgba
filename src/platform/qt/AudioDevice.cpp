@@ -11,6 +11,7 @@ using namespace QGBA;
 AudioDevice::AudioDevice(QObject* parent)
 	: QIODevice(parent)
 	, m_context(nullptr)
+	, m_drift(0)
 {
 	setOpenMode(ReadOnly);
 }
