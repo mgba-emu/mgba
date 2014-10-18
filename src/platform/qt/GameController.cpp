@@ -113,24 +113,31 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 	setPaused(wasPaused);
 }
 
-void GameController::loadGame(const QString& path) {
+void GameController::loadGame(const QString& path, bool dirmode) {
 	closeGame();
 	m_threadContext.sync.videoFrameWait = 0;
 	m_threadContext.sync.audioWait = 1;
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
-		return;
+	if (!dirmode) {
+		QFile file(path);
+		if (!file.open(QIODevice::ReadOnly)) {
+			return;
+		}
+		file.close();
 	}
-	file.close();
 	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
 
 	m_threadContext.fname = strdup(path.toLocal8Bit().constData());
-	m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
+	if (dirmode) {
+		m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
+		m_threadContext.stateDir = m_threadContext.gameDir;
+	} else {
+		m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
 #if ENABLE_LIBZIP
-	m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
+		m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
 #endif
+	}
 
 	GBAThreadStart(&m_threadContext);
 }

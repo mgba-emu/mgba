@@ -52,7 +52,7 @@ signals:
 	void postLog(int level, const QString& log);
 
 public slots:
-	void loadGame(const QString& path);
+	void loadGame(const QString& path, bool dirmode = false);
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
