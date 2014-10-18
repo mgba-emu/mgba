@@ -626,6 +626,10 @@ void GBAGetGameCode(struct GBA* gba, char* out) {
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
+void GBAGetGameTitle(struct GBA* gba, char* out) {
+	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
+}
+
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	enum GBALogLevel level = GBA_LOG_FATAL;
