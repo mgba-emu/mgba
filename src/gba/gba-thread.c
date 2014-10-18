@@ -209,6 +209,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	ARMDeinit(&cpu);
 	GBADestroy(&gba);
 
+	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 
