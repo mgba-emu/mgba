@@ -40,6 +40,8 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->ch4 = (struct GBAAudioChannel4) { .envelope = { .nextStep = INT_MAX } };
 	audio->chA.dmaSource = 0;
 	audio->chB.dmaSource = 0;
+	audio->chA.sample = 0;
+	audio->chB.sample = 0;
 	audio->eventDiff = 0;
 	audio->nextSample = 0;
 	audio->sampleRate = 0x8000;
@@ -672,13 +674,13 @@ static int32_t _updateChannel4(struct GBAAudioChannel4* ch) {
 }
 
 static int _applyBias(struct GBAAudio* audio, int sample) {
-	sample += audio->bias;
+	sample += GBARegisterSOUNDBIASGetBias(audio->soundbias);
 	if (sample >= 0x400) {
 		sample = 0x3FF;
 	} else if (sample < 0) {
 		sample = 0;
 	}
-	return (sample - audio->bias) << 6;
+	return (sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) << 6;
 }
 
 static void _sample(struct GBAAudio* audio) {

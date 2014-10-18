@@ -171,9 +171,8 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F7:
 				case SDLK_F8:
 				case SDLK_F9:
-				case SDLK_F10:
 					GBAThreadInterrupt(context);
-					GBASaveState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1, true);
+					GBASaveState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1 + 1, true);
 					GBAThreadContinue(context);
 					break;
 				default:
@@ -190,9 +189,8 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F7:
 				case SDLK_F8:
 				case SDLK_F9:
-				case SDLK_F10:
 					GBAThreadInterrupt(context);
-					GBALoadState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1);
+					GBALoadState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1 + 1);
 					GBAThreadContinue(context);
 					break;
 				default:
