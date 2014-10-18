@@ -42,6 +42,7 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 	m_painter->setContext(thread);
 	m_painter->setBacking(buffer);
 	m_painter->moveToThread(m_drawThread);
+	m_context = thread;
 	doneCurrent();
 	context()->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
@@ -50,9 +51,13 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 
 void Display::stopDrawing() {
 	if (m_drawThread) {
+		GBAThreadInterrupt(m_context);
+		GBASyncSuspendDrawing(&m_context->sync);
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
+		GBASyncResumeDrawing(&m_context->sync);
+		GBAThreadContinue(m_context);
 	}
 }
 
@@ -70,7 +75,11 @@ void Display::initializeGL() {
 
 void Display::resizeEvent(QResizeEvent* event) {
 	if (m_drawThread) {
+		GBAThreadInterrupt(m_context);
+		GBASyncSuspendDrawing(&m_context->sync);
 		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
+		GBASyncResumeDrawing(&m_context->sync);
+		GBAThreadContinue(m_context);
 	}
 }
 

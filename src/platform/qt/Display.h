@@ -29,6 +29,7 @@ protected:
 private:
 	Painter* m_painter;
 	QThread* m_drawThread;
+	GBAThread* m_context;
 };
 
 class Painter : public QObject {

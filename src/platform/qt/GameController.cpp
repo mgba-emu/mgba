@@ -215,7 +215,6 @@ void GameController::setFPSTarget(float fps) {
 void GameController::loadState(int slot) {
 	GBAThreadInterrupt(&m_threadContext);
 	GBALoadState(m_threadContext.gba, m_threadContext.stateDir, slot);
-	ConditionWake(&m_threadContext.sync.videoFrameAvailableCond); // Hack: wake up the drawing thread
 	GBAThreadContinue(&m_threadContext);
 	emit stateLoaded(&m_threadContext);
 	emit frameAvailable(m_drawContext);
