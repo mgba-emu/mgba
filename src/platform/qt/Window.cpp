@@ -210,7 +210,9 @@ void Window::redoLogo() {
 	if (m_controller->isLoaded()) {
 		return;
 	}
-	m_screenWidget->setPixmap(m_logo.scaled(m_screenWidget->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+	QPixmap logo(m_logo.scaled(m_screenWidget->size() * m_screenWidget->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+	logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
+	m_screenWidget->setPixmap(logo);
 }
 
 void Window::openStateWindow(LoadSave ls) {
