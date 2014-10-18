@@ -24,6 +24,7 @@ Window::Window(QWidget* parent)
 	, m_gdbController(nullptr)
 #endif
 {
+	setWindowTitle(PROJECT_NAME);
 	m_controller = new GameController(this);
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
@@ -167,6 +168,9 @@ void Window::gameStarted(GBAThread* context) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
+	char title[13] = { '\0' };
+	GBAGetGameTitle(context->gba, title);
+	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 	attachWidget(m_display);
 	m_screenWidget->setScaledContents(true);
 }
@@ -175,6 +179,7 @@ void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
+	setWindowTitle(tr(PROJECT_NAME));
 	detachWidget(m_display);
 	m_screenWidget->setScaledContents(false);
 	redoLogo();
