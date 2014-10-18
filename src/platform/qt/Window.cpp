@@ -212,6 +212,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
+#ifndef Q_OS_MAC
+	fileMenu->addSeparator();
+	fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
+#endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
