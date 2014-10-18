@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.8)
-project(mGBA-Qt CXX)
+enable_language(CXX)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wextra --std=c++11")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -Wextra --std=c++11")
