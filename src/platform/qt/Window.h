@@ -33,9 +33,13 @@ public:
 signals:
 	void startDrawing(const uint32_t*, GBAThread*);
 	void shutdown();
+	void audioBufferSamplesChanged(int samples);
+	void fpsTargetChanged(float target);
 
 public slots:
 	void selectROM();
+	void selectBIOS();
+	void toggleFullScreen();
 
 #ifdef USE_GDB_STUB
 	void gdbOpen();
@@ -46,13 +50,6 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
-
-signals:
-	void audioBufferSamplesChanged(int samples);
-	void fpsTargetChanged(float target);
-
-public slots:
-	void toggleFullScreen();
 
 private slots:
 	void gameStarted(GBAThread*);

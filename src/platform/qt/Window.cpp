@@ -132,6 +132,13 @@ void Window::selectROM() {
 	}
 }
 
+void Window::selectBIOS() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	if (!filename.isEmpty()) {
+		m_controller->loadBIOS(filename);
+	}
+}
+
 #ifdef USE_GDB_STUB
 void Window::gdbOpen() {
 	if (!m_gdbController) {
@@ -244,6 +251,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
+	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
 	fileMenu->addSeparator();
 
 #ifdef USE_PNG
