@@ -53,6 +53,7 @@ signals:
 
 public slots:
 	void loadGame(const QString& path, bool dirmode = false);
+	void loadBIOS(const QString& path);
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
@@ -82,7 +83,7 @@ private:
 	int m_activeKeys;
 
 	bool m_gameOpen;
-	QFile* m_bios;
+	QString m_bios;
 
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;

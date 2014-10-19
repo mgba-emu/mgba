@@ -139,7 +139,15 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 #endif
 	}
 
+	if (!m_bios.isNull()) {
+		m_threadContext.bios = VFileOpen(m_bios.toLocal8Bit().constData(), O_RDONLY);
+	}
+
 	GBAThreadStart(&m_threadContext);
+}
+
+void GameController::loadBIOS(const QString& path) {
+	m_bios = path;
 }
 
 void GameController::closeGame() {

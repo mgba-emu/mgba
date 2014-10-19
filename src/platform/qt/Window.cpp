@@ -104,16 +104,19 @@ GBAKey Window::mapKey(int qtKey) {
 }
 
 void Window::optionsPassed(StartupOptions* opts) {
-	if (opts->fname) {
-		m_controller->loadGame(opts->fname, opts->dirmode);
-	}
-
 	if (opts->logLevel) {
 		m_logView->setLevels(opts->logLevel);
 	}
 
+	if (opts->bios) {
+		m_controller->loadBIOS(opts->bios);
+	}
+
+	if (opts->fname) {
+		m_controller->loadGame(opts->fname, opts->dirmode);
+	}
+
 	// TODO:
-	// - bios
 	// - patch
 	// - frameskip;
 	// - rewindBufferCapacity
