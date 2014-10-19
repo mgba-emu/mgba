@@ -252,9 +252,40 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
 	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
+
 	fileMenu->addSeparator();
 
+	QAction* loadState = new QAction(tr("&Load state"), fileMenu);
+	loadState->setShortcut(tr("Ctrl+L"));
+	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
+	m_gameActions.append(loadState);
+	fileMenu->addAction(loadState);
+
+	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
+	saveState->setShortcut(tr("Ctrl+S"));
+	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
+	m_gameActions.append(saveState);
+	fileMenu->addAction(saveState);
+
+	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
+	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
+	int i;
+	for (i = 1; i < 10; ++i) {
+		QAction* quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
+		quickLoad->setShortcut(tr("F%1").arg(i));
+		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
+		m_gameActions.append(quickLoad);
+		quickLoadMenu->addAction(quickLoad);
+
+		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
+		quickSave->setShortcut(tr("Shift+F%1").arg(i));
+		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
+		m_gameActions.append(quickSave);
+		quickSaveMenu->addAction(quickSave);
+	}
+
 #ifdef USE_PNG
+	fileMenu->addSeparator();
 	QAction* screenshot = new QAction(tr("Take &screenshot"), fileMenu);
 	screenshot->setShortcut(tr("F12"));
 	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
@@ -278,37 +309,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
 	emulationMenu->addAction(shutdown);
-	emulationMenu->addSeparator();
-
-	QAction* loadState = new QAction(tr("&Load state"), emulationMenu);
-	loadState->setShortcut(tr("Ctrl+L"));
-	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
-	m_gameActions.append(loadState);
-	emulationMenu->addAction(loadState);
-
-	QAction* saveState = new QAction(tr("&Save state"), emulationMenu);
-	saveState->setShortcut(tr("Ctrl+S"));
-	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
-	m_gameActions.append(saveState);
-	emulationMenu->addAction(saveState);
-
-	QMenu* quickLoadMenu = emulationMenu->addMenu(tr("Quick load"));
-	QMenu* quickSaveMenu = emulationMenu->addMenu(tr("Quick save"));
-	int i;
-	for (i = 1; i < 10; ++i) {
-		QAction* quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
-		quickLoad->setShortcut(tr("F%1").arg(i));
-		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
-		m_gameActions.append(quickLoad);
-		quickLoadMenu->addAction(quickLoad);
-
-		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
-		quickSave->setShortcut(tr("Shift+F%1").arg(i));
-		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
-		m_gameActions.append(quickSave);
-		quickSaveMenu->addAction(quickSave);
-	}
-
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
