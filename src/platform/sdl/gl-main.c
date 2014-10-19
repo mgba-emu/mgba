@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
 		.audioBuffers = 512,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
-		.sync.videoFrameWait = 0,
-		.sync.audioWait = 1,
+		.sync.videoFrameWait = false,
+		.sync.audioWait = true,
 		.userData = &renderer
 	};
 
