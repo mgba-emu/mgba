@@ -27,14 +27,14 @@ enum ThreadState {
 
 struct GBASync {
 	int videoFramePending;
-	int videoFrameWait;
+	bool videoFrameWait;
 	int videoFrameSkip;
 	bool videoFrameOn;
 	Mutex videoFrameMutex;
 	Condition videoFrameAvailableCond;
 	Condition videoFrameRequiredCond;
 
-	int audioWait;
+	bool audioWait;
 	Condition audioRequiredCond;
 	Mutex audioBufferMutex;
 };
