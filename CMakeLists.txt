@@ -82,6 +82,13 @@ find_feature(USE_FFMPEG "libavcodec;libavformat;libavutil")
 find_feature(USE_PNG "PNG;ZLIB")
 find_feature(USE_LIBZIP "libzip")
 
+include(CheckFunctionExists)
+check_function_exists(strndup HAVE_STRNDUP)
+
+if(HAVE_STRNDUP)
+	add_definitions(-DHAVE_STRNDUP)
+endif()
+
 # Platform support
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
@@ -100,10 +107,6 @@ if(BUILD_BBB OR BUILD_RASPI)
 	if(NOT BUILD_EGL)
 		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	endif()
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	list(APPEND OS_LIB bsd)
 endif()
 
 # Features

@@ -1,16 +1,6 @@
 #include "parser.h"
 
-static inline char* _strndup(const char* start, size_t len) {
-#ifdef HAVE_STRNDUP
-	return strndup(start, len);
-#else
-	// This is suboptimal, but anything recent should have strndup
-	char* out = malloc((len + 1) * sizeof(char));
-	strncpy(out, start, len);
-	out[len] = '\0';
-	return out;
-#endif
-}
+#include "util/string.h"
 
 static struct LexVector* _lexOperator(struct LexVector* lv, char operator) {
 	struct LexVector* lvNext = malloc(sizeof(struct LexVector));
@@ -108,13 +98,13 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			case '*':
 			case '/':
 				lv->token.type = TOKEN_IDENTIFIER_TYPE;
-				lv->token.identifierValue = _strndup(tokenStart, string - tokenStart - 1);
+				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
 			case ')':
 				lv->token.type = TOKEN_IDENTIFIER_TYPE;
-				lv->token.identifierValue = _strndup(tokenStart, string - tokenStart - 1);
+				lv->token.identifierValue = strndup(tokenStart, string - tokenStart - 1);
 				state = LEX_EXPECT_OPERATOR;
 				break;
 			default:
@@ -298,7 +288,7 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 		break;
 	case LEX_EXPECT_IDENTIFIER:
 		lv->token.type = TOKEN_IDENTIFIER_TYPE;
-		lv->token.identifierValue = _strndup(tokenStart, string - tokenStart);
+		lv->token.identifierValue = strndup(tokenStart, string - tokenStart);
 		break;
 	case LEX_EXPECT_OPERATOR:
 		lvNext = malloc(sizeof(struct LexVector));

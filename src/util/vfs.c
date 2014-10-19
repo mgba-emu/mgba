@@ -1,5 +1,7 @@
 #include "util/vfs.h"
 
+#include "util/string.h"
+
 #include <fcntl.h>
 #include <dirent.h>
 
@@ -273,14 +275,7 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 		if (dotPoint) {
 			len = (dotPoint - filename);
 		}
-		const char* separator = 0;
-		const char* nextSeparator = filename;
-		size_t strstrlen = len;
-		while ((nextSeparator = strnstr(nextSeparator, infix, strstrlen))) {
-			strstrlen -= nextSeparator - separator - 1;
-			separator = nextSeparator;
-			++nextSeparator;
-		}
+		const char* separator = strnrstr(filename, infix, len);
 		if (!separator) {
 			continue;
 		}
