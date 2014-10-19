@@ -22,6 +22,8 @@ GameController::GameController(QObject* parent)
 	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(new AudioProcessor)
+	, m_videoSync(VIDEO_SYNC)
+	, m_audioSync(AUDIO_SYNC)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -115,8 +117,8 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 
 void GameController::loadGame(const QString& path, bool dirmode) {
 	closeGame();
-	m_threadContext.sync.videoFrameWait = 0;
-	m_threadContext.sync.audioWait = 1;
+	m_threadContext.sync.videoFrameWait = m_videoSync;
+	m_threadContext.sync.audioWait = m_audioSync;
 	if (!dirmode) {
 		QFile file(path);
 		if (!file.open(QIODevice::ReadOnly)) {
@@ -231,6 +233,20 @@ void GameController::loadState(int slot) {
 void GameController::saveState(int slot) {
 	GBAThreadInterrupt(&m_threadContext);
 	GBASaveState(m_threadContext.gba, m_threadContext.stateDir, slot, true);
+	GBAThreadContinue(&m_threadContext);
+}
+
+void GameController::setVideoSync(bool set) {
+	m_videoSync = set;
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.sync.videoFrameWait = set;
+	GBAThreadContinue(&m_threadContext);
+}
+
+void GameController::setAudioSync(bool set) {
+	m_audioSync = set;
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.sync.audioWait = set;
 	GBAThreadContinue(&m_threadContext);
 }
 

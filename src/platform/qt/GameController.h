@@ -27,6 +27,9 @@ class GameController : public QObject {
 Q_OBJECT
 
 public:
+	static const bool VIDEO_SYNC = false;
+	static const bool AUDIO_SYNC = true;
+
 	GameController(QObject* parent = nullptr);
 	~GameController();
 
@@ -64,6 +67,8 @@ public slots:
 	void setFPSTarget(float fps);
 	void loadState(int slot);
 	void saveState(int slot);
+	void setVideoSync(bool);
+	void setAudioSync(bool);
 
 #ifdef BUILD_SDL
 private slots:
@@ -90,6 +95,9 @@ private:
 
 	QMutex m_pauseMutex;
 	bool m_pauseAfterFrame;
+
+	bool m_videoSync;
+	bool m_audioSync;
 };
 
 }

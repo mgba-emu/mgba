@@ -357,6 +357,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(240); });
 	target->addAction(setTarget);
 
+	emulationMenu->addSeparator();
+
+	QAction* videoSync = new QAction(tr("Sync to &video"), emulationMenu);
+	videoSync->setCheckable(true);
+	videoSync->setChecked(GameController::VIDEO_SYNC);
+	connect(videoSync, SIGNAL(triggered(bool)), m_controller, SLOT(setVideoSync(bool)));
+	emulationMenu->addAction(videoSync);
+
+	QAction* audioSync = new QAction(tr("Sync to &audio"), emulationMenu);
+	audioSync->setCheckable(true);
+	audioSync->setChecked(GameController::AUDIO_SYNC);
+	connect(audioSync, SIGNAL(triggered(bool)), m_controller, SLOT(setAudioSync(bool)));
+	emulationMenu->addAction(audioSync);
+
 	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
 	QMenu* frameMenu = videoMenu->addMenu(tr("Frame &size"));
 	QAction* setSize = new QAction(tr("1x"), videoMenu);
