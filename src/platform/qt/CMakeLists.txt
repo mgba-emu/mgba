@@ -28,6 +28,7 @@ set(SOURCE_FILES
 	AudioDevice.cpp
 	AudioProcessor.cpp
 	Display.cpp
+	GBAApp.cpp
 	GameController.cpp
 	LoadSaveState.cpp
 	LogView.cpp

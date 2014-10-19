@@ -26,6 +26,8 @@ public:
 	Window(QWidget* parent = nullptr);
 	virtual ~Window();
 
+	GameController* controller() { return m_controller; }
+
 	static GBAKey mapKey(int qtKey);
 
 	void optionsPassed(StartupOptions*);
