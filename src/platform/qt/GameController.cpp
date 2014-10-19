@@ -39,7 +39,7 @@ GameController::GameController(QObject* parent)
 	GBAInputMapInit(&m_threadContext.inputMap);
 
 #ifdef BUILD_SDL
-	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
+	SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_NOPARACHUTE);
 	m_sdlEvents.bindings = &m_threadContext.inputMap;
 	GBASDLInitEvents(&m_sdlEvents);
 	SDL_JoystickEventState(SDL_QUERY);
