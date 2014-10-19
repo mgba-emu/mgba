@@ -116,7 +116,7 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 		}
 	}
 
-	GBASyncUnlockAudio(audio->p->sync);
+	GBASyncConsumeAudio(audio->p->sync);
 }
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {

@@ -209,6 +209,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	ARMDeinit(&cpu);
 	GBADestroy(&gba);
 
+	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 
@@ -503,7 +504,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
 	void* pixels = 0;
-	struct VFile* vf = VDirOptionalOpenFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	struct VFile* vf = VDirOptionalOpenIncrementFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
@@ -561,7 +562,7 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync->videoFrameOn && !sync->videoFramePending) {
 		return false;
 	}
-	if (sync->videoFrameOn) {
+	if (sync->videoFrameOn && !sync->videoFramePending) {
 		ConditionWait(&sync->videoFrameAvailableCond, &sync->videoFrameMutex);
 	}
 	sync->videoFramePending = 0;
