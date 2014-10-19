@@ -154,6 +154,9 @@ void Window::keyPressEvent(QKeyEvent* event) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
+	if (event->key() == Qt::Key_Tab) {
+		m_controller->setTurbo(true, false);
+	}
 	GBAKey key = mapKey(event->key());
 	if (key == GBA_KEY_NONE) {
 		QWidget::keyPressEvent(event);
@@ -167,6 +170,9 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
 		QWidget::keyReleaseEvent(event);
 		return;
+	}
+	if (event->key() == Qt::Key_Tab) {
+		m_controller->setTurbo(false, false);
 	}
 	GBAKey key = mapKey(event->key());
 	if (key == GBA_KEY_NONE) {
@@ -358,6 +364,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	target->addAction(setTarget);
 
 	emulationMenu->addSeparator();
+
+	QAction* turbo = new QAction(tr("T&urbo"), emulationMenu);
+	turbo->setCheckable(true);
+	turbo->setChecked(false);
+	turbo->setShortcut(tr("Shift+Tab"));
+	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
+	emulationMenu->addAction(turbo);
 
 	QAction* videoSync = new QAction(tr("Sync to &video"), emulationMenu);
 	videoSync->setCheckable(true);

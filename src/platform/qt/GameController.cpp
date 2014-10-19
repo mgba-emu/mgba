@@ -24,6 +24,8 @@ GameController::GameController(QObject* parent)
 	, m_audioProcessor(new AudioProcessor)
 	, m_videoSync(VIDEO_SYNC)
 	, m_audioSync(AUDIO_SYNC)
+	, m_turbo(false)
+	, m_turboForced(false)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -238,15 +240,35 @@ void GameController::saveState(int slot) {
 
 void GameController::setVideoSync(bool set) {
 	m_videoSync = set;
-	GBAThreadInterrupt(&m_threadContext);
-	m_threadContext.sync.videoFrameWait = set;
-	GBAThreadContinue(&m_threadContext);
+	if (!m_turbo) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.sync.videoFrameWait = set;
+		GBAThreadContinue(&m_threadContext);
+	}
 }
 
 void GameController::setAudioSync(bool set) {
 	m_audioSync = set;
+	if (!m_turbo) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.sync.audioWait = set;
+		GBAThreadContinue(&m_threadContext);
+	}
+}
+
+void GameController::setTurbo(bool set, bool forced) {
+	if (m_turboForced && !forced) {
+		return;
+	}
+	m_turbo = set;
+	if (set) {
+		m_turboForced = forced;
+	} else {
+		m_turboForced = false;
+	}
 	GBAThreadInterrupt(&m_threadContext);
-	m_threadContext.sync.audioWait = set;
+	m_threadContext.sync.audioWait = set ? false : m_audioSync;
+	m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
 	GBAThreadContinue(&m_threadContext);
 }
 

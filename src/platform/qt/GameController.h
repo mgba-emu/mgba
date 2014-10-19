@@ -69,6 +69,7 @@ public slots:
 	void saveState(int slot);
 	void setVideoSync(bool);
 	void setAudioSync(bool);
+	void setTurbo(bool, bool forced = true);
 
 #ifdef BUILD_SDL
 private slots:
@@ -98,6 +99,8 @@ private:
 
 	bool m_videoSync;
 	bool m_audioSync;
+	bool m_turbo;
+	bool m_turboForced;
 };
 
 }
