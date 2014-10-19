@@ -427,8 +427,8 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
 	}
 	gba->biosChecksum = checksum;
-	if ((gba->cpu->gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
-		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	if (gba->memory.activeRegion == REGION_BIOS) {
+		gba->cpu->memory.activeRegion = gba->memory.bios;
 	}
 	// TODO: error check
 }
