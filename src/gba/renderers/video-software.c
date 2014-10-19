@@ -624,7 +624,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
 			renderer->currentWindow = renderer->windows[w].control;
-			if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed)) {
+			if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && !GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 				continue;
 			}
 			int i;
@@ -1605,25 +1605,39 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 	uint32_t flags = FLAG_TARGET_2 * renderer->target2Obj;
 
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
-	int objwinDisable = 0;
+	bool objwinDisable = false;
+	bool objwinOnly = false;
 	if (objwinSlowPath) {
 		objwinDisable = !GBAWindowControlIsObjEnable(renderer->objwin.packed);
+		// TODO: Fix this for current window when WIN0/1 are enabled
+		objwinOnly = !objwinDisable && !GBAWindowControlIsObjEnable(renderer->winout.packed);
 	}
-	if (objwinSlowPath && objwinDisable) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
-			uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
-			uint32_t current = *pixel;
-			if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && !(current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
-				_compositeBlendObjwin(renderer, pixel, color | flags, current);
+	if (objwinSlowPath) {
+		if (objwinDisable) {
+			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+				uint32_t current = *pixel;
+				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && !(current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+					_compositeBlendObjwin(renderer, pixel, color | flags, current);
+				}
 			}
+			return;
+		} else if (objwinOnly) {
+			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+				uint32_t current = *pixel;
+				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+					_compositeBlendObjwin(renderer, pixel, color | flags, current);
+				}
+			}
+			return;
 		}
-	} else {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
-			uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
-			uint32_t current = *pixel;
-			if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
-				_compositeBlendNoObjwin(renderer, pixel, color | flags, current);
-			}
+	}
+	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+		uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+		uint32_t current = *pixel;
+		if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+			_compositeBlendNoObjwin(renderer, pixel, color | flags, current);
 		}
 	}
 }
