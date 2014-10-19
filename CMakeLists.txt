@@ -102,6 +102,10 @@ if(BUILD_BBB OR BUILD_RASPI)
 	endif()
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	list(APPEND OS_LIB bsd)
+endif()
+
 # Features
 set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)
 
