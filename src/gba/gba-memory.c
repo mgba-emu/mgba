@@ -852,11 +852,8 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 	info->nextSource = source;
 
-	int i;
-	for (i = 0; i < 4; ++i) {
-		if (memory->dma[i].nextEvent != INT_MAX) {
-			memory->dma[i].nextEvent += cycles;
-		}
+	if (info->nextEvent != INT_MAX) {
+		info->nextEvent += cycles;
 	}
 	cpu->cycles += cycles;
 }
