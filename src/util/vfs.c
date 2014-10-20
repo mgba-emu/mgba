@@ -39,6 +39,9 @@ static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
 static const char* _vdeName(struct VDirEntry* vde);
 
 struct VFile* VFileOpen(const char* path, int flags) {
+	if (!path) {
+		return 0;
+	}
 	int fd = open(path, flags, 0666);
 	return VFileFromFD(fd);
 }
