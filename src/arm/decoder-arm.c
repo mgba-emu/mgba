@@ -110,7 +110,7 @@
 			info->operandFormat &= ~ARM_OPERAND_2; \
 		} \
 		if (info->op1.reg == ARM_PC) { \
-			info->branches = 1; \
+			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
 #define DEFINE_ALU_DECODER_ARM(NAME, SKIPPED) \
@@ -157,7 +157,7 @@
 			OTHER_AFFECTED; \
 		info->affectsCPSR = S; \
 		if (info->op1.reg == ARM_PC) { \
-			info->branches = 1; \
+			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
 #define DEFINE_LONG_MULTIPLY_DECODER_EX_ARM(NAME, MNEMONIC, S) \
@@ -174,7 +174,7 @@
 			ARM_OPERAND_REGISTER_4; \
 		info->affectsCPSR = S; \
 		if (info->op1.reg == ARM_PC) { \
-			info->branches = 1; \
+			info->branchType = ARM_BRANCH_INDIRECT; \
 		})
 
 #define DEFINE_MULTIPLY_DECODER_ARM(NAME, OTHER_AFFECTED) \
@@ -255,7 +255,9 @@
 	DEFINE_DECODER_ARM(NAME, MNEMONIC, \
 		info->memory.baseReg = (opcode >> 16) & 0xF; \
 		info->op1.immediate = opcode & 0x0000FFFF; \
-		info->branches = info->op1.immediate & (1 << ARM_PC); \
+		if (info->op1.immediate & (1 << ARM_PC)) { \
+			info->branchType = ARM_BRANCH_INDIRECT; \
+		} \
 		info->operandFormat = ARM_OPERAND_MEMORY_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_WRITEBACK | \
@@ -348,18 +350,18 @@ DEFINE_DECODER_ARM(B, B,
 	int32_t offset = opcode << 8;
 	info->op1.immediate = offset >> 6;
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH;)
 
 DEFINE_DECODER_ARM(BL, BL,
 	int32_t offset = opcode << 8;
 	info->op1.immediate = offset >> 6;
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH_LINKED;)
 
 DEFINE_DECODER_ARM(BX, BX,
 	info->op1.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH_INDIRECT;)
 
 // End branch definitions
 
@@ -441,7 +443,7 @@ static const ARMDecoder _armDecoderTable[0x1000] = {
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
 	info->execMode = MODE_ARM;
 	info->opcode = opcode;
-	info->branches = 0;
+	info->branchType = ARM_BRANCH_NONE;
 	info->traps = 0;
 	info->affectsCPSR = 0;
 	info->condition = opcode >> 28;

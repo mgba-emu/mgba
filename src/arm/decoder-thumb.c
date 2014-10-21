@@ -135,7 +135,9 @@ DEFINE_DATA_FORM_5_DECODER_THUMB(MVN, MVN, ARM_OPERAND_AFFECTED_1)
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->op1.reg = (opcode & 0x0007) | H1; \
 		info->op2.reg = ((opcode >> 3) & 0x0007) | H2; \
-		info->branches = info->op1.reg == ARM_PC; \
+		if (info->op1.reg == ARM_PC) { \
+			info->branchType = ARM_BRANCH_INDIRECT; \
+		} \
 		info->affectsCPSR = CPSR; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			AFFECTED | \
@@ -221,7 +223,9 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, STR, STORE_CYCLES, ARM_ACCESS_HALFW
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->memory.baseReg = RN; \
 		info->op1.immediate = (opcode & 0xFF) | ADDITIONAL_REG; \
-		info->branches = info->op1.immediate & (1 << ARM_PC); \
+		if (info->op1.immediate & (1 << ARM_PC)) { \
+			info->branchType = ARM_BRANCH_INDIRECT; \
+		} \
 		info->operandFormat = ARM_OPERAND_MEMORY_1; \
 		info->memory.format = ARM_MEMORY_REGISTER_BASE | \
 			ARM_MEMORY_WRITEBACK | \
@@ -237,7 +241,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STM)
 	DEFINE_THUMB_DECODER(B ## COND, B, \
 		int8_t immediate = opcode; \
 		info->op1.immediate = immediate << 1; \
-		info->branches = 1; \
+		info->branchType = ARM_BRANCH; \
 		info->condition = ARM_CONDITION_ ## COND; \
 		info->operandFormat = ARM_OPERAND_IMMEDIATE_1;)
 
@@ -279,7 +283,7 @@ DEFINE_THUMB_DECODER(B, B,
 	int16_t immediate = (opcode & 0x07FF) << 5;
 	info->op1.immediate = (((int32_t) immediate) >> 4);
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH;)
 
 DEFINE_THUMB_DECODER(BL1, BLH,
 	int16_t immediate = (opcode & 0x07FF) << 5;
@@ -289,12 +293,12 @@ DEFINE_THUMB_DECODER(BL1, BLH,
 DEFINE_THUMB_DECODER(BL2, BL,
 	info->op1.immediate = (opcode & 0x07FF) << 1;
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH_LINKED;)
 
 DEFINE_THUMB_DECODER(BX, BX,
 	info->op1.reg = (opcode >> 3) & 0xF;
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
-	info->branches = 1;)
+	info->branchType = ARM_BRANCH_INDIRECT;)
 
 DEFINE_THUMB_DECODER(SWI, SWI,
 	info->op1.immediate = opcode & 0xFF;
@@ -310,7 +314,7 @@ static const ThumbDecoder _thumbDecoderTable[0x400] = {
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
 	info->execMode = MODE_THUMB;
 	info->opcode = opcode;
-	info->branches = 0;
+	info->branchType = ARM_BRANCH_NONE;
 	info->traps = 0;
 	info->affectsCPSR = 0;
 	info->condition = ARM_CONDITION_AL;

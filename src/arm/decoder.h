@@ -108,6 +108,13 @@ enum ARMMemoryAccessType {
 	ARM_ACCESS_TRANSLATED_BYTE = 17
 };
 
+enum ARMBranchType {
+	ARM_BRANCH_NONE = 0,
+	ARM_BRANCH = 1,
+	ARM_BRANCH_INDIRECT = 2,
+	ARM_BRANCH_LINKED = 4
+};
+
 struct ARMMemoryAccess {
 	uint8_t baseReg;
 	uint8_t width;
@@ -175,17 +182,17 @@ struct ARMInstructionInfo {
 	struct ARMMemoryAccess memory;
 	int operandFormat;
 	unsigned execMode : 1;
-	bool branches : 1;
 	bool traps : 1;
 	bool affectsCPSR : 1;
+	unsigned branchType : 3;
 	unsigned condition : 4;
 	unsigned mnemonic : 6;
-	unsigned iCycles : 2;
+	unsigned iCycles : 3;
 	unsigned cCycles : 4;
-	unsigned sDataCycles : 10;
-	unsigned nDataCycles : 10;
 	unsigned sInstructionCycles : 4;
 	unsigned nInstructionCycles : 4;
+	unsigned sDataCycles : 10;
+	unsigned nDataCycles : 10;
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
