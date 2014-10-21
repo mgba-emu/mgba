@@ -48,6 +48,15 @@ enum RegisterBank {
 	BANK_UNDEFINED = 5
 };
 
+enum LSMDirection {
+	LSM_B = 1,
+	LSM_D = 2,
+	LSM_IA = 0,
+	LSM_IB = 1,
+	LSM_DA = 2,
+	LSM_DB = 3
+};
+
 struct ARMCore;
 
 union PSR {
@@ -89,6 +98,9 @@ struct ARMMemory {
 	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
 	void (*store8)(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
 
+	uint32_t (*loadMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
+	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
+
 	uint32_t* activeRegion;
 	uint32_t activeMask;
 	uint32_t activeSeqCycles32;
@@ -98,7 +110,6 @@ struct ARMMemory {
 	uint32_t activeUncachedCycles32;
 	uint32_t activeUncachedCycles16;
 	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
-	int (*waitMultiple)(struct ARMCore*, uint32_t startAddress, int count);
 };
 
 struct ARMInterruptHandler {

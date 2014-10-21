@@ -43,7 +43,6 @@ CREATE_WATCHPOINT_SHIM(loadU8, 1, uint8_t, (struct ARMCore* cpu, uint32_t addres
 CREATE_WATCHPOINT_SHIM(store32, 4, void, (struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter), address, value, cycleCounter)
 CREATE_WATCHPOINT_SHIM(store16, 2, void, (struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter), address, value, cycleCounter)
 CREATE_WATCHPOINT_SHIM(store8, 1, void, (struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter), address, value, cycleCounter)
-CREATE_SHIM(waitMultiple, int, (struct ARMCore* cpu, uint32_t startAddress, int count), startAddress, count)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
 static bool _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width) {
@@ -67,7 +66,6 @@ void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {
 	debugger->cpu->memory.load8 = ARMDebuggerShim_load8;
 	debugger->cpu->memory.loadU8 = ARMDebuggerShim_loadU8;
 	debugger->cpu->memory.setActiveRegion = ARMDebuggerShim_setActiveRegion;
-	debugger->cpu->memory.waitMultiple = ARMDebuggerShim_waitMultiple;
 }
 
 void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger) {
@@ -80,5 +78,4 @@ void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger) {
 	debugger->cpu->memory.load8 = debugger->originalMemory.load8;
 	debugger->cpu->memory.loadU8 = debugger->originalMemory.loadU8;
 	debugger->cpu->memory.setActiveRegion = debugger->originalMemory.setActiveRegion;
-	debugger->cpu->memory.waitMultiple = debugger->originalMemory.waitMultiple;
 }

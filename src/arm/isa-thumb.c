@@ -289,39 +289,30 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, cpu->memory.store32(cpu, cpu->gprs[r
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory.store8(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory.store16(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, ADDRESS, LOOP, BODY, OP, PRE_BODY, POST_BODY, WRITEBACK) \
+#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		int rn = RN; \
 		UNUSED(rn); \
 		int rs = opcode & 0xFF; \
-		int32_t address = ADDRESS; \
-		int m; \
-		int i; \
-		int total = 0; \
+		int32_t address = cpu->gprs[RN]; \
 		PRE_BODY; \
-		for LOOP { \
-			if (rs & m) { \
-				BODY; \
-				address OP 4; \
-				++total; \
-			} \
-		} \
-		POST_BODY; \
-		currentCycles += cpu->memory.waitMultiple(cpu, address, total); \
+		address = cpu->memory. LS ## Multiple(cpu, address, rs, LSM_ ## DIRECTION, &currentCycles); \
 		WRITEBACK;)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, BODY, WRITEBACK) \
-	COUNT_CALL_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, cpu->gprs[rn], (m = 0x01, i = 0; i < 8; m <<= 1, ++i), BODY, +=, , , WRITEBACK)
+#define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, LS, DIRECTION, WRITEBACK) \
+	COUNT_CALL_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, LS, DIRECTION, , WRITEBACK)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
-	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
+	load,
+	IA,
 	THUMB_LOAD_POST_BODY;
 	if (!((1 << rn) & rs)) {
 		cpu->gprs[rn] = address;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
-	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
+	store,
+	IA,
 	THUMB_STORE_POST_BODY;
 	cpu->gprs[rn] = address;)
 
@@ -352,48 +343,37 @@ DEFINE_INSTRUCTION_THUMB(ADD7, cpu->gprs[ARM_SP] += (opcode & 0x7F) << 2)
 DEFINE_INSTRUCTION_THUMB(SUB4, cpu->gprs[ARM_SP] -= (opcode & 0x7F) << 2)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP,
-	opcode & 0x00FF,
-	cpu->gprs[ARM_SP],
-	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
-	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
-	+=,
+	ARM_SP,
+	load,
+	IA,
 	,
-	THUMB_LOAD_POST_BODY;,
+	THUMB_LOAD_POST_BODY;
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR,
-	opcode & 0x00FF,
-	cpu->gprs[ARM_SP],
-	(m = 0x01, i = 0; i < 8; m <<= 1, ++i),
-	cpu->gprs[i] = cpu->memory.load32(cpu, address, 0),
-	+=,
-	,
-	cpu->gprs[ARM_PC] = cpu->memory.load32(cpu, address, 0) & 0xFFFFFFFE;
-	address += 4;
-	THUMB_LOAD_POST_BODY;,
+	ARM_SP,
+	load,
+	IA,
+	rs |= 1 << ARM_PC,
+	THUMB_LOAD_POST_BODY;
 	cpu->gprs[ARM_SP] = address;
 	THUMB_WRITE_PC;)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
-	opcode & 0x00FF,
-	cpu->gprs[ARM_SP] - 4,
-	(m = 0x80, i = 7; m; m >>= 1, --i),
-	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
-	-=,
+	ARM_SP,
+	store,
+	DB,
 	,
-	THUMB_STORE_POST_BODY,
-	cpu->gprs[ARM_SP] = address + 4)
+	THUMB_STORE_POST_BODY;
+	cpu->gprs[ARM_SP] = address)
 
 DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
-	opcode & 0x00FF,
-	cpu->gprs[ARM_SP] - 4,
-	(m = 0x80, i = 7; m; m >>= 1, --i),
-	cpu->memory.store32(cpu, address, cpu->gprs[i], 0),
-	-=,
-	cpu->memory.store32(cpu, address, cpu->gprs[ARM_LR], 0);
-	address -= 4;,
-	THUMB_STORE_POST_BODY,
-	cpu->gprs[ARM_SP] = address + 4)
+	ARM_SP,
+	store,
+	DB,
+	rs |= 1 << ARM_LR,
+	THUMB_STORE_POST_BODY;
+	cpu->gprs[ARM_SP] = address)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_ILL)
 DEFINE_INSTRUCTION_THUMB(BKPT, ARM_STUB)
