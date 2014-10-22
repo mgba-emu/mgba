@@ -14,8 +14,8 @@
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
-static const size_t GBA_ROM_MAGIC_OFFSET = 4;
-static const uint8_t GBA_ROM_MAGIC[] = { 0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21 };
+static const size_t GBA_ROM_MAGIC_OFFSET = 1;
+static const uint8_t GBA_ROM_MAGIC[] = { 0x00, 0x00, 0xEA };
 
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
