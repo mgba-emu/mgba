@@ -365,6 +365,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART_SRAM_MIRROR:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if (memory->savedata.type == SAVEDATA_NONE) {
+			GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
 			GBASavedataInitSRAM(&memory->savedata);
 		}
 		if (memory->savedata.type == SAVEDATA_SRAM) {
@@ -476,6 +477,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case REGION_CART2_EX:
 		if (memory->savedata.type == SAVEDATA_NONE) {
+			GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
 			GBASavedataInitEEPROM(&memory->savedata);
 		}
 		GBASavedataWriteEEPROM(&memory->savedata, value, 1);
@@ -532,8 +534,10 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	case REGION_CART_SRAM_MIRROR:
 		if (memory->savedata.type == SAVEDATA_NONE) {
 			if (address == SAVEDATA_FLASH_BASE) {
+				GBALog(gba, GBA_LOG_INFO, "Detected Flash savegame");
 				GBASavedataInitFlash(&memory->savedata);
 			} else {
+				GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
 				GBASavedataInitSRAM(&memory->savedata);
 			}
 		}
@@ -817,6 +821,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			--wordsRemaining;
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_NONE) {
+				GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			word = cpu->memory.load16(cpu, source, 0);

@@ -659,6 +659,7 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 	for (i = 0; _overrides[i].id[0]; ++i) {
 		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
 		if (*overrideId == id) {
+			GBALog(gba, GBA_LOG_DEBUG, "Found override for game %s!", _overrides[i].id);
 			switch (_overrides[i].type) {
 				case SAVEDATA_FLASH512:
 				case SAVEDATA_FLASH1M:
