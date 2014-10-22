@@ -651,6 +651,11 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	gba->busyLoop = -1;
+	if ((id & 0xFF) == 'F') {
+		GBALog(gba, GBA_LOG_DEBUG, "Found Classic NES Series game, using EEPROM saves");
+		GBASavedataInitEEPROM(&gba->memory.savedata);
+		return;
+	}
 	for (i = 0; _overrides[i].id[0]; ++i) {
 		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
 		if (*overrideId == id) {
