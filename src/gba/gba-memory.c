@@ -571,11 +571,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		for (i = 0; i < 16; ++i) {
-			if (mask & (1 << i)) {
-				++popcount;
-			}
-		}
+		popcount = __builtin_popcount(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -678,11 +674,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		for (i = 0; i < 16; ++i) {
-			if (mask & (1 << i)) {
-				++popcount;
-			}
-		}
+		popcount = __builtin_popcount(mask);
 		address -= (popcount << 2) - 4;
 	}
 
