@@ -282,6 +282,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	}
 
 	if (!threadContext->rom) {
+		threadContext->state = THREAD_SHUTDOWN;
 		return false;
 	}
 
