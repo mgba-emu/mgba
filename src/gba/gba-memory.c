@@ -180,8 +180,15 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_WORKING_IRAM LOAD_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
 #define LOAD_IO value = GBAIORead(gba, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gba, (address & (SIZE_IO - 1)) | 2) << 16);
-#define LOAD_PALETTE_RAM LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
-#define LOAD_VRAM LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
+
+#define LOAD_PALETTE_RAM \
+	LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette); \
+	++wait;
+
+#define LOAD_VRAM \
+	LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	++wait;
+
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
 
 #define LOAD_CART \
@@ -424,6 +431,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 #define STORE_PALETTE_RAM \
 	STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette); \
 	gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16); \
+	++wait; \
 	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 
 #define STORE_VRAM \
@@ -431,7 +439,8 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
 	} else if ((address & OFFSET_MASK) < 0x00020000) { \
 		STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
-	}
+	} \
+	++wait;
 
 #define STORE_OAM \
 	STORE_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw); \
