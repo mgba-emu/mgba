@@ -70,6 +70,9 @@ void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
+	if (savedata->mapMode != MAP_READ) {
+		return;
+	}
 	GBASavedataDeinit(savedata);
 	savedata->vf = savedata->realVf;
 	savedata->mapMode = MAP_WRITE;
