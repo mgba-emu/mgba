@@ -163,42 +163,74 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	cpu->memory.activeUncachedCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 }
 
+#define LOAD_BIOS \
+	if (memory->activeRegion == REGION_BIOS) { \
+		if (address < SIZE_BIOS) { \
+			LOAD_32(value, address, memory->bios); \
+		} else { \
+			value = 0; \
+		} \
+	} else { \
+		value = memory->biosPrefetch; \
+	}
+
+#define LOAD_WORKING_RAM \
+	LOAD_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram); \
+	wait += waitstatesRegion[REGION_WORKING_RAM];
+
+#define LOAD_WORKING_IRAM LOAD_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+#define LOAD_IO value = GBAIORead(gba, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gba, (address & (SIZE_IO - 1)) | 2) << 16);
+#define LOAD_PALETTE_RAM LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+#define LOAD_VRAM LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
+#define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
+
+#define LOAD_CART \
+	wait += waitstatesRegion[address >> BASE_OFFSET]; \
+	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
+		LOAD_32(value, address & (SIZE_CART0 - 1), memory->rom); \
+	} else { \
+		value = (address >> 1) & 0xFFFF; \
+	}
+
+#define LOAD_SRAM \
+	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address); \
+	value = 0xDEADBEEF;
+
+#define LOAD_BAD \
+	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
+	value = cpu->prefetch; \
+	if (cpu->executionMode == MODE_THUMB) { \
+		value |= value << 16; \
+	}
+
 int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value = 0;
 	int wait = 0;
+	char* waitstatesRegion = memory->waitstatesNonseq32;
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_BIOS:
-		if (memory->activeRegion == REGION_BIOS) {
-			if (address < SIZE_BIOS) {
-				LOAD_32(value, address, memory->bios);
-			} else {
-				value = 0;
-			}
-		} else {
-			value = memory->biosPrefetch;
-		}
+		LOAD_BIOS;
 		break;
 	case REGION_WORKING_RAM:
-		LOAD_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
-		wait = memory->waitstatesNonseq32[REGION_WORKING_RAM];
+		LOAD_WORKING_RAM;
 		break;
 	case REGION_WORKING_IRAM:
-		LOAD_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		LOAD_WORKING_IRAM;
 		break;
 	case REGION_IO:
-		value = GBAIORead(gba, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gba, (address & (SIZE_IO - 1)) | 2) << 16);
+		LOAD_IO;
 		break;
 	case REGION_PALETTE_RAM:
-		LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+		LOAD_PALETTE_RAM;
 		break;
 	case REGION_VRAM:
-		LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		LOAD_VRAM;
 		break;
 	case REGION_OAM:
-		LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
+		LOAD_OAM;
 		break;
 	case REGION_CART0:
 	case REGION_CART0_EX:
@@ -206,21 +238,14 @@ int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
-		wait = memory->waitstatesNonseq32[address >> BASE_OFFSET];
-		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
-			LOAD_32(value, address & (SIZE_CART0 - 1), memory->rom);
-		}
+		LOAD_CART;
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
+		LOAD_SRAM;
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
-		value = cpu->prefetch;
-		if (cpu->executionMode == MODE_THUMB) {
-			value |= value << 16;
-		}
+		LOAD_BAD;
 		break;
 	}
 
@@ -386,48 +411,81 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	return value;
 }
 
+#define STORE_WORKING_RAM \
+	STORE_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram); \
+	wait += waitstatesRegion[REGION_WORKING_RAM];
+
+#define STORE_WORKING_IRAM \
+	STORE_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+
+#define STORE_IO \
+	GBAIOWrite32(gba, address & (SIZE_IO - 1), value);
+
+#define STORE_PALETTE_RAM \
+	STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette); \
+	gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16); \
+	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
+
+#define STORE_VRAM \
+	if ((address & OFFSET_MASK) < SIZE_VRAM) { \
+		STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	} else if ((address & OFFSET_MASK) < 0x00020000) { \
+		STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
+	}
+
+#define STORE_OAM \
+	STORE_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw); \
+	gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 4)) >> 1); \
+	gba->video.renderer->writeOAM(gba->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
+
+#define STORE_CART \
+	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+
+#define STORE_SRAM \
+	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+
+#define STORE_BAD \
+	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
+
 void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int wait = 0;
+	char* waitstatesRegion = memory->waitstatesNonseq32;
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_WORKING_RAM:
-		STORE_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
-		wait = memory->waitstatesNonseq32[REGION_WORKING_RAM];
+		STORE_WORKING_RAM;
 		break;
 	case REGION_WORKING_IRAM:
-		STORE_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		STORE_WORKING_IRAM
 		break;
 	case REGION_IO:
-		GBAIOWrite32(gba, address & (SIZE_IO - 1), value);
+		STORE_IO;
 		break;
 	case REGION_PALETTE_RAM:
-		STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
-		gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16);
-		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
+		STORE_PALETTE_RAM;
 		break;
 	case REGION_VRAM:
-		if ((address & OFFSET_MASK) < SIZE_VRAM) {
-			STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
-		} else if ((address & OFFSET_MASK) < 0x00020000) {
-			STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram);
-		}
+		STORE_VRAM;
 		break;
 	case REGION_OAM:
-		STORE_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
-		gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 4)) >> 1);
-		gba->video.renderer->writeOAM(gba->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
+		STORE_OAM;
 		break;
 	case REGION_CART0:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		STORE_CART;
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+		STORE_SRAM;
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
+		STORE_BAD;
 		break;
 	}
 
@@ -558,12 +616,24 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 }
 
+#define LDM_LOOP_BEGIN \
+	for (i = 0; i < 16; ++i) { \
+		if (~mask & (1 << i)) { \
+			continue; \
+		}
+
+#define LDM_LOOP_END \
+		waitstatesRegion = memory->waitstatesSeq32; \
+		cpu->gprs[i] = value; \
+		++wait; \
+		address += 4; \
+	}
+
 uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value;
-	int wait;
-	int totalWait = 0;
+	int wait = 0;
 	char* waitstatesRegion = memory->waitstatesNonseq32;
 
 	int i;
@@ -581,73 +651,62 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 	address &= 0xFFFFFFFC;
 
-	for (i = 0; i < 16; ++i) {
-		wait = 0;
-		if (~mask & (1 << i)) {
-			continue;
-		}
-		switch (address >> BASE_OFFSET) {
-		case REGION_BIOS:
-			if (memory->activeRegion == REGION_BIOS) {
-				if (address < SIZE_BIOS) {
-					LOAD_32(value, address, memory->bios);
-				} else {
-					value = 0;
-				}
-			} else {
-				value = memory->biosPrefetch;
-			}
-			break;
-		case REGION_WORKING_RAM:
-			LOAD_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
-			wait = waitstatesRegion[REGION_WORKING_RAM];
-			break;
-		case REGION_WORKING_IRAM:
-			LOAD_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
-			break;
-		case REGION_IO:
-			value = GBAIORead(gba, (address & (SIZE_IO - 1)) & ~2) | (GBAIORead(gba, (address & (SIZE_IO - 1)) | 2) << 16);
-			break;
-		case REGION_PALETTE_RAM:
-			LOAD_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
-			break;
-		case REGION_VRAM:
-			LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
-			break;
-		case REGION_OAM:
-			LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
-			break;
-		case REGION_CART0:
-		case REGION_CART0_EX:
-		case REGION_CART1:
-		case REGION_CART1_EX:
-		case REGION_CART2:
-		case REGION_CART2_EX:
-			wait = waitstatesRegion[address >> BASE_OFFSET];
-			if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
-				LOAD_32(value, address & (SIZE_CART0 - 1), memory->rom);
-			}
-			break;
-		case REGION_CART_SRAM:
-		case REGION_CART_SRAM_MIRROR:
-			GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address);
-			break;
-		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
-			value = cpu->prefetch;
-			if (cpu->executionMode == MODE_THUMB) {
-				value |= value << 16;
-			}
-			break;
-		}
-		waitstatesRegion = memory->waitstatesSeq32;
-		cpu->gprs[i] = value;
-		totalWait += 1 + wait;
-		address += 4;
+	switch (address >> BASE_OFFSET) {
+	case REGION_WORKING_RAM:
+		LDM_LOOP_BEGIN;
+		LOAD_WORKING_RAM;
+		LDM_LOOP_END;
+		break;
+	case REGION_WORKING_IRAM:
+		LDM_LOOP_BEGIN;
+		LOAD_WORKING_IRAM;
+		LDM_LOOP_END;
+		break;
+	case REGION_IO:
+		LDM_LOOP_BEGIN;
+		LOAD_IO;
+		LDM_LOOP_END;
+		break;
+	case REGION_PALETTE_RAM:
+		LDM_LOOP_BEGIN;
+		LOAD_PALETTE_RAM;
+		LDM_LOOP_END;
+		break;
+	case REGION_VRAM:
+		LDM_LOOP_BEGIN;
+		LOAD_VRAM;
+		LDM_LOOP_END;
+		break;
+	case REGION_OAM:
+		LDM_LOOP_BEGIN;
+		LOAD_OAM;
+		LDM_LOOP_END;
+		break;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		LDM_LOOP_BEGIN;
+		LOAD_CART;
+		LDM_LOOP_END;
+		break;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		LDM_LOOP_BEGIN;
+		LOAD_SRAM;
+		LDM_LOOP_END;
+		break;
+	default:
+		LDM_LOOP_BEGIN;
+		LOAD_BAD;
+		LDM_LOOP_END;
+		break;
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += totalWait;
+		*cycleCounter += wait;
 	}
 
 	if (direction & LSM_B) {
@@ -661,12 +720,24 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	return address;
 }
 
+#define STM_LOOP_BEGIN \
+	for (i = 0; i < 16; ++i) { \
+		if (~mask & (1 << i)) { \
+			continue; \
+		} \
+		value = cpu->gprs[i];
+
+#define STM_LOOP_END \
+		waitstatesRegion = memory->waitstatesSeq32; \
+		++wait; \
+		address += 4; \
+	}
+
 uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value;
-	int wait;
-	int totalWait = 0;
+	int wait = 0;
 	char* waitstatesRegion = memory->waitstatesNonseq32;
 
 	int i;
@@ -684,58 +755,62 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 
 	address &= 0xFFFFFFFC;
 
-	for (i = 0; i < 16; ++i) {
-		wait = 0;
-		if (~mask & (1 << i)) {
-			continue;
-		}
-		value = cpu->gprs[i];
-		switch (address >> BASE_OFFSET) {
-		case REGION_WORKING_RAM:
-			STORE_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
-			wait = waitstatesRegion[REGION_WORKING_RAM];
-			break;
-		case REGION_WORKING_IRAM:
-			STORE_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
-			break;
-		case REGION_IO:
-			GBAIOWrite32(gba, address & (SIZE_IO - 1), value);
-			break;
-		case REGION_PALETTE_RAM:
-			STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
-			gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16);
-			gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
-			break;
-		case REGION_VRAM:
-			if ((address & OFFSET_MASK) < SIZE_VRAM) {
-				STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
-			} else if ((address & OFFSET_MASK) < 0x00020000) {
-				STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram);
-			}
-			break;
-		case REGION_OAM:
-			STORE_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
-			gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 4)) >> 1);
-			gba->video.renderer->writeOAM(gba->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
-			break;
-		case REGION_CART0:
-			GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
-			break;
-		case REGION_CART_SRAM:
-		case REGION_CART_SRAM_MIRROR:
-			GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
-			break;
-		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
-			break;
-		}
-		waitstatesRegion = memory->waitstatesSeq32;
-		totalWait += 1 + wait;
-		address += 4;
+	switch (address >> BASE_OFFSET) {
+	case REGION_WORKING_RAM:
+		STM_LOOP_BEGIN;
+		STORE_WORKING_RAM;
+		STM_LOOP_END;
+		break;
+	case REGION_WORKING_IRAM:
+		STM_LOOP_BEGIN;
+		STORE_WORKING_IRAM;
+		STM_LOOP_END;
+		break;
+	case REGION_IO:
+		STM_LOOP_BEGIN;
+		STORE_IO;
+		STM_LOOP_END;
+		break;
+	case REGION_PALETTE_RAM:
+		STM_LOOP_BEGIN;
+		STORE_PALETTE_RAM;
+		STM_LOOP_END;
+		break;
+	case REGION_VRAM:
+		STM_LOOP_BEGIN;
+		STORE_VRAM;
+		STM_LOOP_END;
+		break;
+	case REGION_OAM:
+		STM_LOOP_BEGIN;
+		STORE_OAM;
+		STM_LOOP_END;
+		break;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		STM_LOOP_BEGIN;
+		STORE_CART;
+		STM_LOOP_END;
+		break;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		STM_LOOP_BEGIN;
+		STORE_SRAM;
+		STM_LOOP_END;
+		break;
+	default:
+		STM_LOOP_BEGIN;
+		STORE_BAD;
+		STM_LOOP_END;
+		break;
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += totalWait;
+		*cycleCounter += wait;
 	}
 
 	if (direction & LSM_B) {
