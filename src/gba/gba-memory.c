@@ -629,7 +629,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 
 #define LDM_LOOP_BEGIN \
 	for (i = 0; i < 16; ++i) { \
-		if (~mask & (1 << i)) { \
+		if (!(mask & (1 << i))) { \
 			continue; \
 		}
 
@@ -733,7 +733,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 #define STM_LOOP_BEGIN \
 	for (i = 0; i < 16; ++i) { \
-		if (~mask & (1 << i)) { \
+		if (!(mask & (1 << i))) { \
 			continue; \
 		} \
 		value = cpu->gprs[i];
