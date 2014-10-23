@@ -116,7 +116,8 @@ static void _Div(struct ARMCore* cpu, int32_t num, int32_t denom) {
 
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_DEBUG, "SWI: %02x", immediate);
+	GBALog(gba, GBA_LOG_SWI, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
+		immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
 	if (gba->memory.fullBios) {
 		ARMRaiseSWI(cpu);
