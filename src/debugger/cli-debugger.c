@@ -201,7 +201,7 @@ static void _printBin(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		printf(" 0b");
 		int i = 32;
 		while (i--) {
-			printf("%u", (dv->intValue >> i) & 1);
+			printf(" %u", (dv->intValue >> i) & 1);
 		}
 	}
 	printf("\n");

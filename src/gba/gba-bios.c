@@ -227,7 +227,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_MidiKey2Freq(gba);
 		break;
 	default:
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
+		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
 	}
 }
 
