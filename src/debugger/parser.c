@@ -253,6 +253,21 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv->token.uintValue = next;
 				state = LEX_EXPECT_OPERATOR;
 				break;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				next = token - '0';
+				state = LEX_EXPECT_DECIMAL;
+				break;
+			default:
+				state = LEX_ERROR;
 			}
 			break;
 		case LEX_EXPECT_OPERATOR:
