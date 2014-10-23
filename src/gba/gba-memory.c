@@ -8,6 +8,8 @@
 #include "hle-bios.h"
 #include "util/memory.h"
 
+static uint32_t _popcount32(unsigned bits);
+
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
 
@@ -650,7 +652,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = __builtin_popcount(mask);
+		popcount = _popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -754,7 +756,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = __builtin_popcount(mask);
+		popcount = _popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -1142,4 +1144,10 @@ void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* sta
 void GBAMemoryDeserialize(struct GBAMemory* memory, struct GBASerializedState* state) {
 	memcpy(memory->wram, state->wram, SIZE_WORKING_RAM);
 	memcpy(memory->iwram, state->iwram, SIZE_WORKING_IRAM);
+}
+
+uint32_t _popcount32(unsigned bits) {
+	bits = bits - ((bits >> 1) & 0x55555555);
+	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
+	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
