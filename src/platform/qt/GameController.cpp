@@ -191,6 +191,8 @@ void GameController::closeGame() {
 		m_threadContext.fname = nullptr;
 	}
 
+	m_patch = QString();
+
 	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);
 }
