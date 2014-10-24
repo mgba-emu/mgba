@@ -131,6 +131,13 @@ void Window::selectBIOS() {
 	}
 }
 
+void Window::selectPatch() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), QString(), tr("Patches (*.ips *.ups)"));
+	if (!filename.isEmpty()) {
+		m_controller->loadPatch(filename);
+	}
+}
+
 #ifdef USE_GDB_STUB
 void Window::gdbOpen() {
 	if (!m_gdbController) {
@@ -250,6 +257,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
 	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
+	fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch()));
 
 	fileMenu->addSeparator();
 

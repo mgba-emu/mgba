@@ -42,6 +42,7 @@ signals:
 public slots:
 	void selectROM();
 	void selectBIOS();
+	void selectPatch();
 	void toggleFullScreen();
 
 #ifdef USE_GDB_STUB
