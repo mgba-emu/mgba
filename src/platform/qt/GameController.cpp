@@ -119,8 +119,6 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 
 void GameController::loadGame(const QString& path, bool dirmode) {
 	closeGame();
-	m_threadContext.sync.videoFrameWait = m_videoSync;
-	m_threadContext.sync.audioWait = m_audioSync;
 	if (!dirmode) {
 		QFile file(path);
 		if (!file.open(QIODevice::ReadOnly)) {
@@ -128,12 +126,22 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 		}
 		file.close();
 	}
+
+	m_fname = path;
+	m_dirmode = dirmode;
+	openGame();
+}
+
+void GameController::openGame() {
 	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
 
-	m_threadContext.fname = strdup(path.toLocal8Bit().constData());
-	if (dirmode) {
+	m_threadContext.sync.videoFrameWait = m_videoSync;
+	m_threadContext.sync.audioWait = m_audioSync;
+
+	m_threadContext.fname = m_fname.toLocal8Bit().constData();
+	if (m_dirmode) {
 		m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 		m_threadContext.stateDir = m_threadContext.gameDir;
 	} else {
@@ -151,15 +159,25 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 		m_threadContext.patch = VFileOpen(m_patch.toLocal8Bit().constData(), O_RDONLY);
 	}
 
-	GBAThreadStart(&m_threadContext);
+	if (!GBAThreadStart(&m_threadContext)) {
+		m_gameOpen = false;
+	}
 }
 
 void GameController::loadBIOS(const QString& path) {
 	m_bios = path;
+	if (m_gameOpen) {
+		closeGame();
+		openGame();
+	}
 }
 
 void GameController::loadPatch(const QString& path) {
 	m_patch = path;
+	if (m_gameOpen) {
+		closeGame();
+		openGame();
+	}
 }
 
 void GameController::closeGame() {
@@ -168,10 +186,6 @@ void GameController::closeGame() {
 	}
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
-	if (m_threadContext.fname) {
-		free(const_cast<char*>(m_threadContext.fname));
-		m_threadContext.fname = nullptr;
-	}
 
 	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);

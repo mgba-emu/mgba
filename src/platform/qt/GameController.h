@@ -58,6 +58,7 @@ public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
 	void loadPatch(const QString& path);
+	void openGame();
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
@@ -90,6 +91,9 @@ private:
 	int m_activeKeys;
 
 	bool m_gameOpen;
+	bool m_dirmode;
+
+	QString m_fname;
 	QString m_bios;
 	QString m_patch;
 
