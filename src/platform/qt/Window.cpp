@@ -22,7 +22,7 @@ Window::Window(QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
-	, m_screenWidget(new QLabel())
+	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
@@ -35,16 +35,9 @@ Window::Window(QWidget* parent)
 	format.setSwapInterval(1);
 	m_display = new Display(format);
 
-	m_screenWidget->setLayout(new QStackedLayout());
-	m_screenWidget->layout()->setContentsMargins(0, 0, 0, 0);
-	m_screenWidget->setAlignment(Qt::AlignCenter);
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
-	m_screenWidget->resize(m_display->minimumSize() * 2);
-	QPalette palette = m_screenWidget->palette();
-	palette.setColor(m_screenWidget->backgroundRole(), Qt::black);
-	m_screenWidget->setPalette(palette);
-	m_screenWidget->setAutoFillBackground(true);
+	m_screenWidget->setSizeHint(m_display->minimumSize() * 2);
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
@@ -445,4 +438,24 @@ void Window::attachWidget(QWidget* widget) {
 
 void Window::detachWidget(QWidget* widget) {
 	m_screenWidget->layout()->removeWidget(widget);
+}
+
+WindowBackground::WindowBackground(QWidget* parent)
+	: QLabel(parent)
+{
+	setLayout(new QStackedLayout());
+	layout()->setContentsMargins(0, 0, 0, 0);
+	setAlignment(Qt::AlignCenter);
+	QPalette p = palette();
+	p.setColor(backgroundRole(), Qt::black);
+	setPalette(p);
+	setAutoFillBackground(true);
+}
+
+void WindowBackground::setSizeHint(const QSize& hint) {
+	m_sizeHint = hint;
+}
+
+QSize WindowBackground::sizeHint() const {
+	return m_sizeHint;
 }

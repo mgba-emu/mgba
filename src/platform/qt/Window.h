@@ -18,6 +18,7 @@ namespace QGBA {
 class GameController;
 class GDBController;
 class LogView;
+class WindowBackground;
 
 class Window : public QMainWindow {
 Q_OBJECT
@@ -70,12 +71,25 @@ private:
 	QList<QAction*> m_gameActions;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
-	QLabel* m_screenWidget;
+	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;
 #endif
+};
+
+class WindowBackground : public QLabel {
+Q_OBJECT
+
+public:
+	WindowBackground(QWidget* parent = 0);
+
+	void setSizeHint(const QSize& size);
+	virtual QSize sizeHint() const override;
+
+private:
+	QSize m_sizeHint;
 };
 
 }
