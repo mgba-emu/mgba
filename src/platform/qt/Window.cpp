@@ -112,17 +112,16 @@ void Window::optionsPassed(StartupOptions* opts) {
 		m_controller->loadBIOS(opts->bios);
 	}
 
+	if (opts->patch) {
+		m_controller->loadPatch(opts->patch);
+	}
+
 	if (opts->fname) {
 		m_controller->loadGame(opts->fname, opts->dirmode);
 	}
 
 	// TODO:
-	// - patch
-	// - frameskip;
-	// - rewindBufferCapacity
-	// - rewindBufferInterval
-	// - DebuggerType debuggerType
-	// - debugAtStart
+	// - frameskip
 }
 
 void Window::selectROM() {
