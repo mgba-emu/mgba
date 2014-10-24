@@ -140,7 +140,7 @@ void GameController::openGame() {
 	m_threadContext.sync.videoFrameWait = m_videoSync;
 	m_threadContext.sync.audioWait = m_audioSync;
 
-	m_threadContext.fname = m_fname.toLocal8Bit().constData();
+	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
 	if (m_dirmode) {
 		m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 		m_threadContext.stateDir = m_threadContext.gameDir;
@@ -186,6 +186,10 @@ void GameController::closeGame() {
 	}
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
+	if (m_threadContext.fname) {
+		free(const_cast<char*>(m_threadContext.fname));
+		m_threadContext.fname = nullptr;
+	}
 
 	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);
