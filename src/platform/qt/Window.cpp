@@ -101,6 +101,10 @@ void Window::optionsPassed(StartupOptions* opts) {
 		m_logView->setLevels(opts->logLevel);
 	}
 
+	if (opts->frameskip) {
+		m_controller->setFrameskip(opts->frameskip);
+	}
+
 	if (opts->bios) {
 		m_controller->loadBIOS(opts->bios);
 	}
@@ -112,9 +116,6 @@ void Window::optionsPassed(StartupOptions* opts) {
 	if (opts->fname) {
 		m_controller->loadGame(opts->fname, opts->dirmode);
 	}
-
-	// TODO:
-	// - frameskip
 }
 
 void Window::selectROM() {
@@ -385,7 +386,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addAction(audioSync);
 
 	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
-	QMenu* frameMenu = videoMenu->addMenu(tr("Frame &size"));
+	QMenu* frameMenu = videoMenu->addMenu(tr("Frame size"));
 	QAction* setSize = new QAction(tr("1x"), videoMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
@@ -411,6 +412,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	frameMenu->addAction(setSize);
 	frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F"));
+
+	QMenu* skipMenu = videoMenu->addMenu(tr("Frame&skip"));
+	for (int i = 0; i <= 10; ++i) {
+		QAction* setSkip = new QAction(QString::number(i), skipMenu);
+		connect(setSkip, &QAction::triggered, [this, i]() {
+			m_controller->setFrameskip(i);
+		});
+		skipMenu->addAction(setSkip);
+	}
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));

@@ -71,6 +71,7 @@ public slots:
 	void saveState(int slot);
 	void setVideoSync(bool);
 	void setAudioSync(bool);
+	void setFrameskip(int);
 	void setTurbo(bool, bool forced = true);
 
 #ifdef BUILD_SDL

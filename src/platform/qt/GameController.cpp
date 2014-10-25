@@ -289,6 +289,10 @@ void GameController::setAudioSync(bool set) {
 	}
 }
 
+void GameController::setFrameskip(int skip) {
+	m_threadContext.frameskip = skip;
+}
+
 void GameController::setTurbo(bool set, bool forced) {
 	if (m_turboForced && !forced) {
 		return;
