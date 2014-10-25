@@ -136,7 +136,7 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 		size = fileSize;
 	}
 	vfd->hMap = CreateFileMapping((HANDLE) _get_osfhandle(vfd->fd), 0, createFlags, 0, size & 0xFFFFFFFF, 0);
-	return MapViewOfFile(hMap, mapFiles, 0, 0, size);
+	return MapViewOfFile(vfd->hMap, mapFiles, 0, 0, size);
 }
 
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
