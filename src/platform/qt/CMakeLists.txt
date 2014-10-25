@@ -49,7 +49,9 @@ set(MACOSX_BUNDLE_GUI_IDENTIFIER com.endrift.${BINARY_NAME}-qt)
 set_source_files_properties(${CMAKE_SOURCE_DIR}/res/mgba.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
 qt5_add_resources(RESOURCES resources.qrc)
-message(STATUS ${RESOURCES})
+if(WIN32)
+	list(APPEND RESOURCES ${CMAKE_SOURCE_DIR}/res/mgba.rc)
+endif()
 add_executable(mGBA WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${UI_FILES} ${RESOURCES})
 set_target_properties(mGBA PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in)
 
