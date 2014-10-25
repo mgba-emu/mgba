@@ -42,6 +42,9 @@ struct VFile* VFileOpen(const char* path, int flags) {
 	if (!path) {
 		return 0;
 	}
+#ifdef _WIN32
+	flags |= O_BINARY;
+#endif
 	int fd = open(path, flags, 0666);
 	return VFileFromFD(fd);
 }
