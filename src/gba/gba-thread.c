@@ -114,7 +114,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	GBACreate(&gba);
 	ARMSetComponents(&cpu, &gba.d, numComponents, components);
 	ARMInit(&cpu);
-	ARMReset(&cpu);
 	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
 	gba.logLevel = threadContext->logLevel;
@@ -144,6 +143,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			GBAApplyPatch(&gba, &patch);
 		}
 	}
+
+	ARMReset(&cpu);
 
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
@@ -281,6 +282,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	}
 
 	if (!threadContext->rom) {
+		threadContext->state = THREAD_SHUTDOWN;
 		return false;
 	}
 

@@ -76,10 +76,10 @@ int main(int argc, char** argv) {
 	}
 	struct timeval tv;
 	gettimeofday(&tv, 0);
-	uint64_t start = 1000000 * tv.tv_sec + tv.tv_usec;
+	uint64_t start = 1000000LL * tv.tv_sec + tv.tv_usec;
 	_GBAPerfRunloop(&context, &frames, perfOpts.csv);
 	gettimeofday(&tv, 0);
-	uint64_t end = 1000000 * tv.tv_sec + tv.tv_usec;
+	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
 
 	GBAThreadJoin(&context);

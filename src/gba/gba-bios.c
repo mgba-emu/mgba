@@ -99,13 +99,15 @@ static void _MidiKey2Freq(struct GBA* gba) {
 	cpu->gprs[0] = key / powf(2, (180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
 }
 
-static void _Div(struct ARMCore* cpu, int32_t num, int32_t denom) {
+static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
+	struct ARMCore* cpu = gba->cpu;
 	if (denom != 0) {
 		div_t result = div(num, denom);
 		cpu->gprs[0] = result.quot;
 		cpu->gprs[1] = result.rem;
 		cpu->gprs[3] = abs(result.quot);
 	} else {
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Attempting to divide %i by zero!", num);
 		// If abs(num) > 1, this should hang, but that would be painful to
 		// emulate in HLE, and no game will get into a state where it hangs...
 		cpu->gprs[0] = (num < 0) ? -1 : 1;
@@ -116,7 +118,8 @@ static void _Div(struct ARMCore* cpu, int32_t num, int32_t denom) {
 
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_DEBUG, "SWI: %02x", immediate);
+	GBALog(gba, GBA_LOG_SWI, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
+		immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
 	if (gba->memory.fullBios) {
 		ARMRaiseSWI(cpu);
@@ -137,10 +140,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		break;
 	case 0x6:
-		_Div(cpu, cpu->gprs[0], cpu->gprs[1]);
+		_Div(gba, cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0x7:
-		_Div(cpu, cpu->gprs[1], cpu->gprs[0]);
+		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case 0x8:
 		cpu->gprs[0] = sqrt(cpu->gprs[0]);
@@ -226,7 +229,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_MidiKey2Freq(gba);
 		break;
 	default:
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02x", immediate);
+		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
 	}
 }
 

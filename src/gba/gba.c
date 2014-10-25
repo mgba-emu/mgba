@@ -14,8 +14,8 @@
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
-static const size_t GBA_ROM_MAGIC_OFFSET = 4;
-static const uint8_t GBA_ROM_MAGIC[] = { 0x24, 0xFF, 0xAE, 0x51, 0x69, 0x9A, 0xA2, 0x21 };
+static const size_t GBA_ROM_MAGIC_OFFSET = 2;
+static const uint8_t GBA_ROM_MAGIC[] = { 0x00, 0xEA };
 
 enum {
 	SP_BASE_SYSTEM = 0x03FFFF00,
@@ -427,8 +427,8 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
 	}
 	gba->biosChecksum = checksum;
-	if ((gba->cpu->gprs[ARM_PC] >> BASE_OFFSET) == BASE_BIOS) {
-		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	if (gba->memory.activeRegion == REGION_BIOS) {
+		gba->cpu->memory.activeRegion = gba->memory.bios;
 	}
 	// TODO: error check
 }
@@ -651,9 +651,15 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 void _checkOverrides(struct GBA* gba, uint32_t id) {
 	int i;
 	gba->busyLoop = -1;
+	if ((id & 0xFF) == 'F') {
+		GBALog(gba, GBA_LOG_DEBUG, "Found Classic NES Series game, using EEPROM saves");
+		GBASavedataInitEEPROM(&gba->memory.savedata);
+		return;
+	}
 	for (i = 0; _overrides[i].id[0]; ++i) {
 		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
 		if (*overrideId == id) {
+			GBALog(gba, GBA_LOG_DEBUG, "Found override for game %s!", _overrides[i].id);
 			switch (_overrides[i].type) {
 				case SAVEDATA_FLASH512:
 				case SAVEDATA_FLASH1M:

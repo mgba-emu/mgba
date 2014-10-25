@@ -43,7 +43,10 @@ enum GBALogLevel {
 	GBA_LOG_DEBUG = 0x10,
 	GBA_LOG_STUB = 0x20,
 
-	GBA_LOG_GAME_ERROR = 0x100
+	GBA_LOG_GAME_ERROR = 0x100,
+	GBA_LOG_SWI = 0x200,
+
+	GBA_LOG_ALL = 0x33F
 };
 
 enum GBAKey {

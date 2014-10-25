@@ -1,5 +1,7 @@
 #include "util/vfs.h"
 
+#include "util/string.h"
+
 #include <fcntl.h>
 #include <dirent.h>
 
@@ -37,6 +39,12 @@ static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
 static const char* _vdeName(struct VDirEntry* vde);
 
 struct VFile* VFileOpen(const char* path, int flags) {
+	if (!path) {
+		return 0;
+	}
+#ifdef _WIN32
+	flags |= O_BINARY;
+#endif
 	int fd = open(path, flags, 0666);
 	return VFileFromFD(fd);
 }
@@ -131,7 +139,7 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 		size = fileSize;
 	}
 	vfd->hMap = CreateFileMapping((HANDLE) _get_osfhandle(vfd->fd), 0, createFlags, 0, size & 0xFFFFFFFF, 0);
-	return MapViewOfFile(hMap, mapFiles, 0, 0, size);
+	return MapViewOfFile(vfd->hMap, mapFiles, 0, 0, size);
 }
 
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
@@ -273,14 +281,7 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 		if (dotPoint) {
 			len = (dotPoint - filename);
 		}
-		const char* separator = 0;
-		const char* nextSeparator = filename;
-		size_t strstrlen = len;
-		while ((nextSeparator = strnstr(nextSeparator, infix, strstrlen))) {
-			strstrlen -= nextSeparator - separator - 1;
-			separator = nextSeparator;
-			++nextSeparator;
-		}
+		const char* separator = strnrstr(filename, infix, len);
 		if (!separator) {
 			continue;
 		}

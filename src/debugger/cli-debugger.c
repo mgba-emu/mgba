@@ -201,7 +201,7 @@ static void _printBin(struct CLIDebugger* debugger, struct DebugVector* dv) {
 		printf(" 0b");
 		int i = 32;
 		while (i--) {
-			printf("%u", (dv->intValue >> i) & 1);
+			printf(" %u", (dv->intValue >> i) & 1);
 		}
 	}
 	printf("\n");
@@ -518,11 +518,10 @@ static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count)
 						_DVFree(dv);
 						return false;
 					}
-				} else {
-					printf("Wrong number of arguments");
 				}
 			} else if (firstSpace) {
-				printf("Wrong number of arguments");
+				printf("Wrong number of arguments\n");
+				return false;
 			}
 			_debuggerCommands[i].command(debugger, dv);
 			_DVFree(dv);
