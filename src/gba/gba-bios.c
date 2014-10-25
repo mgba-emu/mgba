@@ -319,7 +319,7 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t* dest) {
 	while (remaining > 0) {
 		uint32_t bitstream = cpu->memory.load32(cpu, sPointer, 0);
 		sPointer += 4;
-		for (bitsRemaining = 32; bitsRemaining > 0; --bitsRemaining, bitstream <<= 1) {
+		for (bitsRemaining = 32; bitsRemaining > 0 && remaining > 0; --bitsRemaining, bitstream <<= 1) {
 			uint32_t next = (nPointer & ~1) + HuffmanNodeGetOffset(node) * 2 + 2;
 			if (bitstream & 0x80000000) {
 				// Go right
