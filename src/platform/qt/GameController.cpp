@@ -137,8 +137,13 @@ void GameController::openGame() {
 
 	m_pauseAfterFrame = false;
 
-	m_threadContext.sync.videoFrameWait = m_videoSync;
-	m_threadContext.sync.audioWait = m_audioSync;
+	if (m_turbo) {
+		m_threadContext.sync.videoFrameWait = false;
+		m_threadContext.sync.audioWait = false;
+	} else {
+		m_threadContext.sync.videoFrameWait = m_videoSync;
+		m_threadContext.sync.audioWait = m_audioSync;
+	}
 
 	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
 	if (m_dirmode) {
@@ -268,7 +273,7 @@ void GameController::saveState(int slot) {
 
 void GameController::setVideoSync(bool set) {
 	m_videoSync = set;
-	if (!m_turbo) {
+	if (!m_turbo && m_gameOpen) {
 		GBAThreadInterrupt(&m_threadContext);
 		m_threadContext.sync.videoFrameWait = set;
 		GBAThreadContinue(&m_threadContext);
@@ -277,7 +282,7 @@ void GameController::setVideoSync(bool set) {
 
 void GameController::setAudioSync(bool set) {
 	m_audioSync = set;
-	if (!m_turbo) {
+	if (!m_turbo && m_gameOpen) {
 		GBAThreadInterrupt(&m_threadContext);
 		m_threadContext.sync.audioWait = set;
 		GBAThreadContinue(&m_threadContext);
@@ -294,10 +299,12 @@ void GameController::setTurbo(bool set, bool forced) {
 	} else {
 		m_turboForced = false;
 	}
-	GBAThreadInterrupt(&m_threadContext);
-	m_threadContext.sync.audioWait = set ? false : m_audioSync;
-	m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
-	GBAThreadContinue(&m_threadContext);
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.sync.audioWait = set ? false : m_audioSync;
+		m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
+		GBAThreadContinue(&m_threadContext);
+	}
 }
 
 void GameController::updateKeys() {
