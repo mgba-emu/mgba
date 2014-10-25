@@ -7,8 +7,8 @@
 #include <QStackedLayout>
 
 #include "GameController.h"
-#include "GDBWindow.h"
 #include "GDBController.h"
+#include "GDBWindow.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
 

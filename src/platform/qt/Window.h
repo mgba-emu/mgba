@@ -8,6 +8,7 @@ extern "C" {
 #include "gba.h"
 }
 
+#include "GDBController.h"
 #include "Display.h"
 #include "LoadSaveState.h"
 
@@ -16,7 +17,6 @@ struct StartupOptions;
 namespace QGBA {
 
 class GameController;
-class GDBController;
 class LogView;
 class WindowBackground;
 
