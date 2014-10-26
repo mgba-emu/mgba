@@ -92,9 +92,6 @@ GameController::GameController(QObject* parent)
 GameController::~GameController() {
 	m_audioThread->quit();
 	m_audioThread->wait();
-	if (GBAThreadIsPaused(&m_threadContext)) {
-		GBAThreadUnpause(&m_threadContext);
-	}
 	disconnect();
 	closeGame();
 	delete m_renderer;
@@ -188,6 +185,9 @@ void GameController::loadPatch(const QString& path) {
 void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
+	}
+	if (GBAThreadIsPaused(&m_threadContext)) {
+		GBAThreadUnpause(&m_threadContext);
 	}
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
