@@ -1,6 +1,6 @@
 #include "util/memory.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 void* anonymousMemoryMap(size_t size) {
 	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);

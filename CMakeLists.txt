@@ -95,7 +95,7 @@ endif()
 # Platform support
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
-	list(APPEND OS_LIB Ws2_32)
+	list(APPEND OS_LIB ws2_32)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 else()

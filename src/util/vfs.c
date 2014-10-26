@@ -10,7 +10,7 @@
 #define PATH_SEP '/'
 #else
 #include <io.h>
-#include <Windows.h>
+#include <windows.h>
 #define PATH_SEP '\\'
 #endif
 
