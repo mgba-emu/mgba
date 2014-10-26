@@ -242,10 +242,10 @@ struct GBASerializedState {
 		uint16_t pinDirection;
 		struct GBARTC rtc;
 		uint8_t devices;
-		uint16_t gyroSample;
-		uint16_t tiltSampleX;
-		uint16_t tiltSampleY;
-		enum GPIODirection readWrite : 1;
+		unsigned gyroSample : 16;
+		unsigned tiltSampleX : 16;
+		unsigned tiltSampleY : 16;
+		unsigned readWrite : 1;
 		unsigned gyroEdge : 1;
 		unsigned reserved : 14;
 	} gpio;
