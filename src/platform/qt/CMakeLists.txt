@@ -38,11 +38,13 @@ set(SOURCE_FILES
 	LogView.cpp
 	SavestateButton.cpp
 	Window.cpp
-	VFileDevice.cpp)
+	VFileDevice.cpp
+	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
 	LoadSaveState.ui
-	LogView.ui)
+	LogView.ui
+	VideoView.ui)
 
 if(USE_GDB_STUB)
 	set(SOURCE_FILES ${PLATFORM_SRC} ${SOURCE_FILES} GDBController.cpp GDBWindow.cpp)

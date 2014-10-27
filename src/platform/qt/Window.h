@@ -18,6 +18,7 @@ namespace QGBA {
 
 class GameController;
 class LogView;
+class VideoView;
 class WindowBackground;
 
 class Window : public QMainWindow {
@@ -44,6 +45,10 @@ public slots:
 	void selectBIOS();
 	void selectPatch();
 	void toggleFullScreen();
+
+#ifdef USE_FFMPEG
+	void openVideoWindow();
+#endif
 
 #ifdef USE_GDB_STUB
 	void gdbOpen();
@@ -74,6 +79,10 @@ private:
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
+
+#ifdef USE_FFMPEG
+	VideoView* m_videoView;
+#endif
 
 #ifdef USE_GDB_STUB
 	GDBController* m_gdbController;

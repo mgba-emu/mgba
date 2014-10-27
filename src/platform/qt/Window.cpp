@@ -11,6 +11,7 @@
 #include "GDBWindow.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "VideoView.h"
 
 extern "C" {
 #include "platform/commandline.h"
@@ -24,6 +25,9 @@ Window::Window(QWidget* parent)
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
+#ifdef USE_FFMPEG
+	, m_videoView(nullptr)
+#endif
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
@@ -57,6 +61,7 @@ Window::Window(QWidget* parent)
 
 Window::~Window() {
 	delete m_logView;
+	delete m_videoView;
 }
 
 GBAKey Window::mapKey(int qtKey) {
@@ -138,6 +143,15 @@ void Window::selectPatch() {
 		m_controller->loadPatch(filename);
 	}
 }
+
+#ifdef USE_FFMPEG
+void Window::openVideoWindow() {
+	if (!m_videoView) {
+		m_videoView = new VideoView();
+	}
+	m_videoView->show();
+}
+#endif
 
 #ifdef USE_GDB_STUB
 void Window::gdbOpen() {
@@ -291,13 +305,24 @@ void Window::setupMenu(QMenuBar* menubar) {
 		quickSaveMenu->addAction(quickSave);
 	}
 
-#ifdef USE_PNG
+#if defined(USE_PNG) || defined(USE_FFMPEG)
 	fileMenu->addSeparator();
+#endif
+
+#ifdef USE_PNG
 	QAction* screenshot = new QAction(tr("Take &screenshot"), fileMenu);
 	screenshot->setShortcut(tr("F12"));
 	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
 	m_gameActions.append(screenshot);
 	fileMenu->addAction(screenshot);
+#endif
+
+#ifdef USE_FFMPEG
+	QAction* recordOutput = new QAction(tr("Record output..."), fileMenu);
+	recordOutput->setShortcut(tr("F11"));
+	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
+	m_gameActions.append(recordOutput);
+	fileMenu->addAction(recordOutput);
 #endif
 
 #ifndef Q_OS_MAC
