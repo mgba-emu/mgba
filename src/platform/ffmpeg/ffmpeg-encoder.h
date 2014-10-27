@@ -16,6 +16,8 @@ struct FFmpegEncoder {
 	unsigned videoBitrate;
 	const char* videoCodec;
 
+	const char* containerFormat;
+
 	AVCodecContext* audio;
 	uint16_t* audioBuffer;
 	size_t audioBufferSize;
@@ -34,6 +36,8 @@ struct FFmpegEncoder {
 void FFmpegEncoderInit(struct FFmpegEncoder*);
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder*, const char* acodec, unsigned abr);
 bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, unsigned vbr);
+bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
+bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
 
