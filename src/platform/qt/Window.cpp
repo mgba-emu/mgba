@@ -150,6 +150,9 @@ void Window::openVideoWindow() {
 		m_videoView = new VideoView();
 		connect(m_videoView, SIGNAL(recordingStarted(GBAAVStream*)), m_controller, SLOT(setAVStream(GBAAVStream*)));
 		connect(m_videoView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
+		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_videoView, SLOT(stopRecording()));
+		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_videoView, SLOT(close()));
+		connect(this, SIGNAL(shutdown()), m_videoView, SLOT(close()));
 	}
 	m_videoView->show();
 }
@@ -323,7 +326,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* recordOutput = new QAction(tr("Record output..."), fileMenu);
 	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
-	m_gameActions.append(recordOutput);
 	fileMenu->addAction(recordOutput);
 #endif
 
