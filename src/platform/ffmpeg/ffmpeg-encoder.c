@@ -13,11 +13,16 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
 
+	encoder->audioCodec = 0;
+	encoder->videoCodec = 0;
+	encoder->containerFormat = 0;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
+	FFmpegEncoderSetContainer(encoder, "matroska");
 	encoder->currentAudioSample = 0;
 	encoder->currentAudioFrame = 0;
 	encoder->currentVideoFrame = 0;
+	encoder->context = 0;
 }
 
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
@@ -54,14 +59,41 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 	return true;
 }
 
+bool FFmpegEncoderSetContainer(struct FFmpegEncoder* encoder, const char* container) {
+	AVOutputFormat* oformat = av_guess_format(container, 0, 0);
+	if (!oformat) {
+		return false;
+	}
+	encoder->containerFormat = container;
+	return true;
+}
+
+bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
+	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
+	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
+	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
+	if (!acodec || !vcodec || !oformat) {
+		return false;
+	}
+	if (!avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
+		return false;
+	}
+	if (!avformat_query_codec(oformat, vcodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
+		return false;
+	}
+	return true;
+}
+
 bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if (!acodec || !vcodec) {
+	if (!acodec || !vcodec || !FFmpegEncoderVerifyContainer(encoder)) {
 		return false;
 	}
 
 	avformat_alloc_output_context2(&encoder->context, 0, 0, outfile);
+
+	encoder->context->oformat = av_guess_format(encoder->containerFormat, 0, 0);
 
 	encoder->audioStream = avformat_new_stream(encoder->context, acodec);
 	encoder->audio = encoder->audioStream->codec;
@@ -108,6 +140,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 }
 
 void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
+	if (!encoder->context) {
+		return;
+	}
 	av_write_trailer(encoder->context);
 	avio_close(encoder->context->pb);
 
@@ -118,10 +153,14 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	av_frame_free(&encoder->videoFrame);
 	avcodec_close(encoder->video);
 	avformat_free_context(encoder->context);
+	encoder->context = 0;
 }
 
 void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
+	if (!encoder->context) {
+		return;
+	}
 
 	av_frame_make_writable(encoder->audioFrame);
 	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
@@ -150,6 +189,9 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 
 void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
+	if (!encoder->context) {
+		return;
+	}
 	uint32_t* pixels;
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
