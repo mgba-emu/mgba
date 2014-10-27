@@ -311,6 +311,26 @@ void GameController::setTurbo(bool set, bool forced) {
 	}
 }
 
+void GameController::setAVStream(GBAAVStream* stream) {
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.stream = stream;
+		GBAThreadContinue(&m_threadContext);
+	} else {
+		m_threadContext.stream = stream;
+	}
+}
+
+void GameController::clearAVStream() {
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.stream = nullptr;
+		GBAThreadContinue(&m_threadContext);
+	} else {
+		m_threadContext.stream = nullptr;
+	}
+}
+
 void GameController::updateKeys() {
 	int activeKeys = m_activeKeys;
 #ifdef BUILD_SDL

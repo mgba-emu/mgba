@@ -73,6 +73,8 @@ public slots:
 	void setAudioSync(bool);
 	void setFrameskip(int);
 	void setTurbo(bool, bool forced = true);
+	void setAVStream(GBAAVStream*);
+	void clearAVStream();
 
 #ifdef BUILD_SDL
 private slots:
