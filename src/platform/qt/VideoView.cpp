@@ -141,7 +141,7 @@ void VideoView::setAudioBitrate(int br) {
 }
 
 void VideoView::setVideoBitrate(int br) {
-	m_abr = br * 1000;
+	m_vbr = br * 1000;
 	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr);
 	validateSettings();
 }
