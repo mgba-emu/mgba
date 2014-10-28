@@ -5,7 +5,6 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavresample/avresample.h>
 
 struct FFmpegEncoder {
 	struct GBAAVStream d;
@@ -30,13 +29,14 @@ struct FFmpegEncoder {
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;
 	int64_t nextAudioPts;
-	AVAudioResampleContext* resampleContext;
+	struct AVAudioResampleContext* resampleContext;
 	AVStream* audioStream;
 
 	AVCodecContext* video;
 	enum AVPixelFormat pixFormat;
 	AVFrame* videoFrame;
 	int64_t currentVideoFrame;
+	struct SwsContext* scaleContext;
 	AVStream* videoStream;
 };
 

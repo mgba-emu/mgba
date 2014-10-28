@@ -5,6 +5,9 @@
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 
+#include <libavresample/avresample.h>
+#include <libswscale/swscale.h>
+
 static void _ffmpegPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _ffmpegPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
 
@@ -91,11 +94,19 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		enum AVPixelFormat format;
 		int priority;
 	} priorities[] = {
-		{ AV_PIX_FMT_RGB24, 0 },
-		{ AV_PIX_FMT_BGR0, 1 },
-		{ AV_PIX_FMT_YUV422P, 2 },
-		{ AV_PIX_FMT_YUV444P, 3 },
-		{ AV_PIX_FMT_YUV420P, 4 }
+		{ AV_PIX_FMT_RGB555, 0 },
+		{ AV_PIX_FMT_BGR555, 0 },
+		{ AV_PIX_FMT_RGB565, 1 },
+		{ AV_PIX_FMT_BGR565, 1 },
+		{ AV_PIX_FMT_RGB24, 2 },
+		{ AV_PIX_FMT_BGR24, 2 },
+		{ AV_PIX_FMT_BGR0, 3 },
+		{ AV_PIX_FMT_RGB0, 3 },
+		{ AV_PIX_FMT_0BGR, 3 },
+		{ AV_PIX_FMT_0RGB, 3 },
+		{ AV_PIX_FMT_YUV422P, 4 },
+		{ AV_PIX_FMT_YUV444P, 5 },
+		{ AV_PIX_FMT_YUV420P, 6 }
 	};
 	AVCodec* codec = avcodec_find_encoder_by_name(vcodec);
 	if (!codec) {
@@ -202,6 +213,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->width = encoder->video->width;
 	encoder->videoFrame->height = encoder->video->height;
 	encoder->videoFrame->pts = 0;
+	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, AV_PIX_FMT_0BGR32,
+		VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, encoder->video->pix_fmt,
+		0, 0, 0, 0);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
 
 	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
@@ -235,6 +249,8 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	if (encoder->resampleContext) {
 		avresample_close(encoder->resampleContext);
 	}
+
+	sws_freeContext(encoder->scaleContext);
 
 	avformat_free_context(encoder->context);
 	encoder->context = 0;
@@ -294,9 +310,10 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	if (!encoder->context) {
 		return;
 	}
-	uint32_t* pixels;
+	uint8_t* pixels;
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
+	stride *= 4;
 
 	AVPacket packet;
 
@@ -307,26 +324,7 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
 	++encoder->currentVideoFrame;
 
-	unsigned x, y;
-	if (encoder->videoFrame->format == AV_PIX_FMT_BGR0) {
-		for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-				uint32_t pixel = pixels[stride * y + x];
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4] = pixel >> 16;
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 1] = pixel >> 8;
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 4 + 2] = pixel;
-			}
-		}
-	} else if (encoder->videoFrame->format == AV_PIX_FMT_RGB24) {
-		for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-				uint32_t pixel = pixels[stride * y + x];
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3] = pixel;
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 1] = pixel >> 8;
-				encoder->videoFrame->data[0][y * encoder->videoFrame->linesize[0] + x * 3 + 2] = pixel >> 16;
-			}
-		}
-	}
+	sws_scale(encoder->scaleContext, &pixels, &stride, 0, VIDEO_VERTICAL_PIXELS, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	int gotData;
 	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
