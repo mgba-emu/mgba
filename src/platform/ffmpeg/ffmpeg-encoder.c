@@ -241,6 +241,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 
 	encoder->currentAudioSample = 0;
 	encoder->currentAudioFrame = 0;
+	encoder->nextAudioPts = 0;
 	encoder->currentVideoFrame = 0;
 }
 
@@ -272,7 +273,8 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
 	AVRational timeBase = { 1, PREFERRED_SAMPLE_RATE };
-	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame, timeBase, encoder->audioStream->time_base);
+	encoder->audioFrame->pts = encoder->nextAudioPts;
+	encoder->nextAudioPts = av_rescale_q(encoder->currentAudioFrame, timeBase, encoder->audioStream->time_base);
 
 	AVPacket packet;
 	av_init_packet(&packet);

@@ -29,6 +29,7 @@ struct FFmpegEncoder {
 	AVFrame* audioFrame;
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;
+	int64_t nextAudioPts;
 	AVAudioResampleContext* resampleContext;
 	AVStream* audioStream;
 
