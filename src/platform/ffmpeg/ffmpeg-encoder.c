@@ -27,9 +27,6 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
-	encoder->currentAudioSample = 0;
-	encoder->currentAudioFrame = 0;
-	encoder->currentVideoFrame = 0;
 	encoder->context = 0;
 }
 
@@ -165,6 +162,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		return false;
 	}
 
+	encoder->currentAudioSample = 0;
+	encoder->currentAudioFrame = 0;
+	encoder->currentVideoFrame = 0;
+	encoder->nextAudioPts = 0;
+
 	avformat_alloc_output_context2(&encoder->context, 0, 0, outfile);
 
 	encoder->context->oformat = av_guess_format(encoder->containerFormat, 0, 0);
@@ -254,11 +256,6 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 
 	avformat_free_context(encoder->context);
 	encoder->context = 0;
-
-	encoder->currentAudioSample = 0;
-	encoder->currentAudioFrame = 0;
-	encoder->nextAudioPts = 0;
-	encoder->currentVideoFrame = 0;
 }
 
 void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
