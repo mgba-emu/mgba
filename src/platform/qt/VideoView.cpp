@@ -25,7 +25,8 @@ VideoView::VideoView(QWidget* parent)
 		s_acodecMap["uncompressed"] = "pcm_s16le";
 	}
 	if (s_vcodecMap.empty()) {
-		s_vcodecMap["h264"] = "libx264rgb";
+		s_vcodecMap["h264"] = "libx264";
+		s_vcodecMap["xvid"] = "libxvid";
 	}
 	if (s_containerMap.empty()) {
 		s_containerMap["mkv"] = "matroska";

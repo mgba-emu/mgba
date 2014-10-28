@@ -68,6 +68,11 @@
         </item>
         <item>
          <property name="text">
+          <string>Xvid</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>FFV1</string>
          </property>
         </item>
