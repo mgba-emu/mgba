@@ -49,6 +49,8 @@ VideoView::VideoView(QWidget* parent)
 
 	setAudioCodec(m_ui.audio->currentText());
 	setVideoCodec(m_ui.video->currentText());
+	setAudioBitrate(m_ui.abr->value());
+	setVideoBitrate(m_ui.vbr->value());
 	setContainer(m_ui.container->currentText());
 }
 
@@ -133,13 +135,13 @@ void VideoView::setContainer(const QString& container) {
 }
 
 void VideoView::setAudioBitrate(int br) {
-	m_abr = br;
+	m_abr = br * 1000;
 	FFmpegEncoderSetAudio(&m_encoder, m_audioCodecCstr, m_abr);
 	validateSettings();
 }
 
 void VideoView::setVideoBitrate(int br) {
-	m_abr = br;
+	m_abr = br * 1000;
 	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr);
 	validateSettings();
 }
