@@ -31,6 +31,19 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 }
 
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
+	static const struct {
+		int format;
+		int priority;
+	} priorities[] = {
+		{ AV_SAMPLE_FMT_S16, 0 },
+		{ AV_SAMPLE_FMT_S16P, 1 },
+		{ AV_SAMPLE_FMT_S32, 2 },
+		{ AV_SAMPLE_FMT_S32P, 2 },
+		{ AV_SAMPLE_FMT_FLT, 3 },
+		{ AV_SAMPLE_FMT_FLTP, 3 },
+		{ AV_SAMPLE_FMT_DBL, 4 },
+		{ AV_SAMPLE_FMT_DBLP, 4 }
+	};
 	AVCodec* codec = avcodec_find_encoder_by_name(acodec);
 	if (!codec) {
 		return false;
@@ -40,11 +53,15 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		return false;
 	}
 	size_t i;
+	size_t j;
+	int priority = INT_MAX;
 	encoder->sampleFormat = AV_SAMPLE_FMT_NONE;
 	for (i = 0; codec->sample_fmts[i] != AV_SAMPLE_FMT_NONE; ++i) {
-		if (codec->sample_fmts[i] == AV_SAMPLE_FMT_S16 || codec->sample_fmts[i] == AV_SAMPLE_FMT_S16P) {
-			encoder->sampleFormat = codec->sample_fmts[i];
-			break;
+		for (j = 0; j < sizeof(priorities) / sizeof(*priorities); ++j) {
+			if (codec->sample_fmts[i] == priorities[j].format && priority > priorities[j].priority) {
+				priority = priorities[j].priority;
+				encoder->sampleFormat = codec->sample_fmts[i];
+			}
 		}
 	}
 	if (encoder->sampleFormat == AV_SAMPLE_FMT_NONE) {
@@ -70,7 +87,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 }
 
 bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, unsigned vbr) {
-	static struct {
+	static const struct {
 		enum AVPixelFormat format;
 		int priority;
 	} priorities[] = {
@@ -148,27 +165,24 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
 	encoder->audio->sample_rate = encoder->sampleRate;
 	encoder->audio->sample_fmt = encoder->sampleFormat;
-	avcodec_open2(encoder->audio, acodec, 0);
+	AVDictionary* opts = 0;
+	av_dict_set_int(&opts, "strict", FF_COMPLIANCE_EXPERIMENTAL, 0);
+	avcodec_open2(encoder->audio, acodec, &opts);
+	av_dict_free(&opts);
 	encoder->audioFrame = av_frame_alloc();
 	encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 	encoder->audioFrame->format = encoder->audio->sample_fmt;
 	encoder->audioFrame->pts = 0;
-	if (encoder->sampleRate != PREFERRED_SAMPLE_RATE) {
-		encoder->resampleContext = avresample_alloc_context();
-		av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-		av_opt_set_int(encoder->resampleContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-		av_opt_set_int(encoder->resampleContext, "in_sample_rate", PREFERRED_SAMPLE_RATE, 0);
-		av_opt_set_int(encoder->resampleContext, "out_sample_rate", encoder->sampleRate, 0);
-		av_opt_set_int(encoder->resampleContext, "in_sample_fmt", encoder->sampleFormat, 0);
-		av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
-		avresample_open(encoder->resampleContext);
-		encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
-		encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
-	} else {
-		encoder->resampleContext = 0;
-		encoder->audioBufferSize = 0;
-		encoder->audioBuffer = 0;
-	}
+	encoder->resampleContext = avresample_alloc_context();
+	av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+	av_opt_set_int(encoder->resampleContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+	av_opt_set_int(encoder->resampleContext, "in_sample_rate", PREFERRED_SAMPLE_RATE, 0);
+	av_opt_set_int(encoder->resampleContext, "out_sample_rate", encoder->sampleRate, 0);
+	av_opt_set_int(encoder->resampleContext, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+	av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
+	avresample_open(encoder->resampleContext);
+	encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
+	encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
 	encoder->postaudioBufferSize = av_samples_get_buffer_size(0, encoder->audio->channels, encoder->audio->frame_size, encoder->audio->sample_fmt, 0);
 	encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
 	avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
@@ -237,53 +251,25 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 	}
 
 	av_frame_make_writable(encoder->audioFrame);
-	uint16_t* buffers[2];
-	int stride;
-	bool planar = av_sample_fmt_is_planar(encoder->audio->sample_fmt);
-	if (encoder->resampleContext) {
-		buffers[0] = (uint16_t*) encoder->audioBuffer;
-		if (planar) {
-			stride = 1;
-			buffers[1] = &buffers[0][encoder->audioBufferSize / 4];
-		} else {
-			stride = 2;
-			buffers[1] = &buffers[0][1];
-		}
-	} else {
-		buffers[0] = (uint16_t*) encoder->postaudioBuffer;
-		if (planar) {
-			stride = 1;
-			buffers[1] = &buffers[0][encoder->postaudioBufferSize / 4];
-		} else {
-			stride = 2;
-			buffers[1] = &buffers[0][1];
-		}
-	}
-	buffers[0][encoder->currentAudioSample * stride] = left;
-	buffers[1][encoder->currentAudioSample * stride] = right;
+	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
+	encoder->audioBuffer[encoder->currentAudioSample * 2 + 1] = right;
 
 	++encoder->currentAudioFrame;
 	++encoder->currentAudioSample;
 
-	if (encoder->resampleContext) {
-		if ((encoder->currentAudioSample * 4) < encoder->audioBufferSize) {
-			return;
-		}
-		encoder->currentAudioSample = 0;
-
-		avresample_convert(encoder->resampleContext,
-			0, 0, encoder->postaudioBufferSize / 4,
-			(uint8_t**) buffers, 0, encoder->audioBufferSize / 4);
-		if ((ssize_t) avresample_available(encoder->resampleContext) < (ssize_t) encoder->postaudioBufferSize / 4) {
-			return;
-		}
-		avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / 4);
-	} else {
-		if ((encoder->currentAudioSample * 4) < encoder->postaudioBufferSize) {
-			return;
-		}
-		encoder->currentAudioSample = 0;
+	if ((encoder->currentAudioSample * 4) < encoder->audioBufferSize) {
+		return;
 	}
+	encoder->currentAudioSample = 0;
+
+	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
+	avresample_convert(encoder->resampleContext,
+		0, 0, encoder->postaudioBufferSize / channelSize,
+		(uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
+	if ((ssize_t) avresample_available(encoder->resampleContext) < (ssize_t) encoder->postaudioBufferSize / channelSize) {
+		return;
+	}
+	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
 	AVRational timeBase = { 1, PREFERRED_SAMPLE_RATE };
 	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame, timeBase, encoder->audioStream->time_base);
