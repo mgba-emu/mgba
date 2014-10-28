@@ -1,0 +1,41 @@
+#include "SavestateButton.h"
+
+#include <QApplication>
+#include <QPainter>
+
+using namespace QGBA;
+
+SavestateButton::SavestateButton(QWidget* parent)
+	: QAbstractButton(parent)
+{
+	// Nothing to do
+}
+
+void SavestateButton::paintEvent(QPaintEvent*) {
+	QPainter painter(this);
+	QRect frame(0, 0, width(), height());
+	QRect full(1, 1, width() - 2, height() - 2);
+	QPalette palette = QApplication::palette(this);
+	painter.setPen(Qt::black);
+	QLinearGradient grad(0, 0, 0, 1);
+	grad.setCoordinateMode(QGradient::ObjectBoundingMode);
+	QColor shadow = palette.color(QPalette::Shadow);
+	QColor dark = palette.color(QPalette::Dark);
+	shadow.setAlpha(128);
+	dark.setAlpha(128);
+	grad.setColorAt(0, shadow);
+	grad.setColorAt(1, dark);
+	painter.setBrush(grad);
+	painter.drawRect(frame);
+	painter.setPen(Qt::NoPen);
+	if (!icon().isNull()) {
+		painter.drawPixmap(full, icon().pixmap(full.size()));
+	}
+	if (hasFocus()) {
+		QColor highlight = palette.color(QPalette::Highlight);
+		highlight.setAlpha(128);
+		painter.fillRect(full, highlight);
+	}
+	painter.setPen(QPen(palette.text(), 0));
+	painter.drawText(full, Qt::AlignCenter, text());
+}

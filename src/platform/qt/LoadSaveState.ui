@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoadSaveState</class>
+ <widget class="QWidget" name="LoadSaveState">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>760</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>%1 State</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0,0" columnstretch="0,0,0">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <item row="1" column="0">
+    <widget class="QGBA::SavestateButton" name="state1">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>1</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QGBA::SavestateButton" name="state2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>2</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="3">
+    <widget class="QLabel" name="lsLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font-size: 30pt; font-weight: bold; color: white;</string>
+     </property>
+     <property name="text">
+      <string>%1 State</string>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QGBA::SavestateButton" name="state3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>3</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QGBA::SavestateButton" name="state4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>4</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QGBA::SavestateButton" name="state5">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>5</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QGBA::SavestateButton" name="state6">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>6</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QGBA::SavestateButton" name="state7">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>7</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QGBA::SavestateButton" name="state8">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>8</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QGBA::SavestateButton" name="state9">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>242</width>
+       <height>162</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>No Save</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>240</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="shortcut">
+      <string>9</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGBA::SavestateButton</class>
+   <extends>QPushButton</extends>
+   <header>SavestateButton.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>state1</tabstop>
+  <tabstop>state2</tabstop>
+  <tabstop>state3</tabstop>
+  <tabstop>state4</tabstop>
+  <tabstop>state5</tabstop>
+  <tabstop>state6</tabstop>
+  <tabstop>state7</tabstop>
+  <tabstop>state8</tabstop>
+  <tabstop>state9</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
