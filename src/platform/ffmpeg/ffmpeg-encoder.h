@@ -3,12 +3,11 @@
 
 #include "gba-thread.h"
 
-#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 
 struct FFmpegEncoder {
 	struct GBAAVStream d;
-	AVFormatContext* context;
+	struct AVFormatContext* context;
 
 	unsigned audioBitrate;
 	const char* audioCodec;
@@ -18,7 +17,7 @@ struct FFmpegEncoder {
 
 	const char* containerFormat;
 
-	AVCodecContext* audio;
+	struct AVCodecContext* audio;
 	enum AVSampleFormat sampleFormat;
 	int sampleRate;
 	uint16_t* audioBuffer;
@@ -30,14 +29,15 @@ struct FFmpegEncoder {
 	int64_t currentAudioFrame;
 	int64_t nextAudioPts;
 	struct AVAudioResampleContext* resampleContext;
-	AVStream* audioStream;
+	struct AVBitStreamFilterContext* absf; // Needed for AAC in MP4
+	struct AVStream* audioStream;
 
-	AVCodecContext* video;
+	struct AVCodecContext* video;
 	enum AVPixelFormat pixFormat;
-	AVFrame* videoFrame;
+	struct AVFrame* videoFrame;
 	int64_t currentVideoFrame;
 	struct SwsContext* scaleContext;
-	AVStream* videoStream;
+	struct AVStream* videoStream;
 };
 
 void FFmpegEncoderInit(struct FFmpegEncoder*);

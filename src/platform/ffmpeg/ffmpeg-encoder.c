@@ -2,6 +2,8 @@
 
 #include "gba-video.h"
 
+#include <libavcodec/avcodec.h>
+
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 
@@ -27,6 +29,8 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "png", 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
+	encoder->resampleContext = 0;
+	encoder->absf = 0;
 	encoder->context = 0;
 }
 
@@ -200,6 +204,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
 	avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
 
+	if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
+		(strcasecmp(encoder->containerFormat, "mp4") ||
+		strcasecmp(encoder->containerFormat, "m4v") ||
+		strcasecmp(encoder->containerFormat, "mov"))) {
+		// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
+		encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
+	}
+
 	encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
 	encoder->video = encoder->videoStream->codec;
 	encoder->video->bit_rate = encoder->videoBitrate;
@@ -252,6 +264,11 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		avresample_close(encoder->resampleContext);
 	}
 
+	if (encoder->absf) {
+		av_bitstream_filter_close(encoder->absf);
+		encoder->absf = 0;
+	}
+
 	sws_freeContext(encoder->scaleContext);
 
 	avformat_free_context(encoder->context);
@@ -296,6 +313,17 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 	int gotData;
 	avcodec_encode_audio2(encoder->audio, &packet, encoder->audioFrame, &gotData);
 	if (gotData) {
+		if (encoder->absf) {
+			AVPacket tempPacket = packet;
+			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
+				&tempPacket.data, &tempPacket.size,
+				packet.data, packet.size, 0);
+			if (success > 0) {
+				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
+				av_free_packet(&packet);
+			}
+			packet = tempPacket;
+		}
 		packet.stream_index = encoder->audioStream->index;
 		av_interleaved_write_frame(encoder->context, &packet);
 	}
