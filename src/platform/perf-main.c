@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 		.opts = &perfOpts
 	};
 
-	struct StartupOptions opts;
+	struct StartupOptions opts = {};
 	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
 		return 1;

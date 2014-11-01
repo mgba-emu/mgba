@@ -15,17 +15,20 @@ enum DebuggerType {
 };
 
 struct StartupOptions {
+	// Passed only
 	char* fname;
 	char* bios;
 	char* patch;
 	bool dirmode;
+
+	enum DebuggerType debuggerType;
+	bool debugAtStart;
+
+	// Configurable
 	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;
 	int rewindBufferInterval;
-
-	enum DebuggerType debuggerType;
-	int debugAtStart;
 };
 
 struct SubParser {
@@ -36,7 +39,10 @@ struct SubParser {
 };
 
 struct GraphicsOpts {
+	// Passed only
 	int multiplier;
+
+	// Configurable
 	int fullscreen;
 	int width;
 	int height;

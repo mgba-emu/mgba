@@ -8,10 +8,12 @@
 
 #include "gba-thread.h"
 #include "gba.h"
+#include "gba-config.h"
 #include "sdl-audio.h"
 #include "sdl-events.h"
 #include "renderers/video-software.h"
 #include "platform/commandline.h"
+#include "util/configuration.h"
 
 #include <SDL.h>
 #ifdef __APPLE__
@@ -23,6 +25,8 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
+
+#define PORT "sdl-gl"
 
 struct GLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
@@ -61,9 +65,18 @@ int main(int argc, char** argv) {
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
-	struct StartupOptions opts;
+	struct Configuration config;
+	ConfigurationInit(&config);
+	GBAConfigLoad(&config);
+
+	struct StartupOptions opts = { };
+	struct GraphicsOpts graphicsOpts = { };
+
 	struct SubParser subparser;
-	struct GraphicsOpts graphicsOpts;
+
+	GBAConfigMapStartupOpts(&config, PORT, &opts);
+	GBAConfigMapGraphicsOpts(&config, PORT, &graphicsOpts);
+
 	initParserForGraphics(&subparser, &graphicsOpts);
 	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);

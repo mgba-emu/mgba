@@ -10,12 +10,15 @@
 #include "debugger/gdb-stub.h"
 #endif
 
+#include "gba/gba-video.h"
+
 #include <fcntl.h>
 #include <getopt.h>
 
-#define GRAPHICS_OPTIONS "234f"
+#define GRAPHICS_OPTIONS "1234f"
 #define GRAPHICS_USAGE \
 	"\nGraphics options:\n" \
+	"  -1               1x viewport\n" \
 	"  -2               2x viewport\n" \
 	"  -3               3x viewport\n" \
 	"  -4               4x viewport\n" \
@@ -38,8 +41,6 @@ static const struct option _options[] = {
 bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg);
 
 bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser) {
-	memset(opts, 0, sizeof(*opts));
-
 	int ch;
 	char options[64] =
 		"b:Dl:p:s:"
@@ -121,10 +122,7 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	parser->opts = opts;
 	parser->parse = _parseGraphicsArg;
 	parser->extraOptions = GRAPHICS_OPTIONS;
-	opts->multiplier = 1;
-	opts->fullscreen = 0;
-	opts->width = 240;
-	opts->height = 160;
+	opts->multiplier = 0;
 }
 
 bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
@@ -134,29 +132,16 @@ bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
 	case 'f':
 		graphicsOpts->fullscreen = 1;
 		return true;
+	case '1':
 	case '2':
-		if (graphicsOpts->multiplier != 1) {
-			return false;
-		}
-		graphicsOpts->multiplier = 2;
-		graphicsOpts->width *= graphicsOpts->multiplier;
-		graphicsOpts->height *= graphicsOpts->multiplier;
-		return true;
 	case '3':
-		if (graphicsOpts->multiplier != 1) {
-			return false;
-		}
-		graphicsOpts->multiplier = 3;
-		graphicsOpts->width *= graphicsOpts->multiplier;
-		graphicsOpts->height *= graphicsOpts->multiplier;
-		return true;
 	case '4':
-		if (graphicsOpts->multiplier != 1) {
+		if (graphicsOpts->multiplier) {
 			return false;
 		}
-		graphicsOpts->multiplier = 4;
-		graphicsOpts->width *= graphicsOpts->multiplier;
-		graphicsOpts->height *= graphicsOpts->multiplier;
+		graphicsOpts->multiplier = option - '0';
+		graphicsOpts->width = VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier;
+		graphicsOpts->height = VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier;
 		return true;
 	default:
 		return false;
