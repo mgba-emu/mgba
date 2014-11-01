@@ -15,6 +15,7 @@ file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cS])
 file(GLOB VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/video-software.c)
+file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC})
@@ -22,6 +23,7 @@ source_group("Utilities" FILES ${UTIL_SRC} ${VFS_SRC}})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/third-party)
 
 include(GNUInstallDirs)
 
@@ -155,7 +157,15 @@ if(USE_LIBZIP)
 endif()
 
 # Binaries
-add_library(${BINARY_NAME} SHARED ${ARM_SRC} ${GBA_SRC} ${DEBUGGER_SRC} ${RENDERER_SRC} ${UTIL_SRC} ${VFS_SRC} ${OS_SRC})
+add_library(${BINARY_NAME} SHARED
+	${ARM_SRC}
+	${GBA_SRC}
+	${DEBUGGER_SRC}
+	${RENDERER_SRC}
+	${UTIL_SRC}
+	${VFS_SRC}
+	${OS_SRC}
+	${THIRD_PARTY_SRC})
 target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 install(TARGETS ${BINARY_NAME} DESTINATION lib)
 set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI})
