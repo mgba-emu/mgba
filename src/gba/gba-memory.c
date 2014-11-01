@@ -676,6 +676,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		address += offset;
 	}
 
+	uint32_t addressMisalign = address & 0x3;
 	address &= 0xFFFFFFFC;
 
 	switch (address >> BASE_OFFSET) {
@@ -744,7 +745,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		address -= (popcount << 2) + 4;
 	}
 
-	return address;
+	return address | addressMisalign;
 }
 
 #define STM_LOOP_BEGIN \
@@ -780,6 +781,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		address += offset;
 	}
 
+	uint32_t addressMisalign = address & 0x3;
 	address &= 0xFFFFFFFC;
 
 	switch (address >> BASE_OFFSET) {
@@ -848,7 +850,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 		address -= (popcount << 2) + 4;
 	}
 
-	return address;
+	return address | addressMisalign;
 }
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
