@@ -12,8 +12,11 @@ GBAApp::GBAApp(int& argc, char* argv[])
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
 
-	if (parseCommandArgs(&m_opts, argc, argv, 0)) {
+	if (parseCommandArgs(&m_opts, &m_gbaOpts, argc, argv, 0)) {
+		m_window.setOptions(&m_gbaOpts);
 		m_window.optionsPassed(&m_opts);
+	} else {
+		m_window.setOptions(&m_gbaOpts);
 	}
 
     m_window.show();

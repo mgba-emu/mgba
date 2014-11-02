@@ -12,6 +12,7 @@ extern "C" {
 #include "Display.h"
 #include "LoadSaveState.h"
 
+struct GBAOptions;
 struct StartupOptions;
 
 namespace QGBA {
@@ -32,6 +33,7 @@ public:
 
 	static GBAKey mapKey(int qtKey);
 
+	void setOptions(GBAOptions*);
 	void optionsPassed(StartupOptions*);
 
 signals:

@@ -102,24 +102,21 @@ GBAKey Window::mapKey(int qtKey) {
 }
 
 void Window::optionsPassed(StartupOptions* opts) {
-	if (opts->logLevel) {
-		m_logView->setLevels(opts->logLevel);
-	}
-
-	if (opts->frameskip) {
-		m_controller->setFrameskip(opts->frameskip);
-	}
-
-	if (opts->bios) {
-		m_controller->loadBIOS(opts->bios);
-	}
-
 	if (opts->patch) {
 		m_controller->loadPatch(opts->patch);
 	}
 
 	if (opts->fname) {
 		m_controller->loadGame(opts->fname, opts->dirmode);
+	}
+}
+
+void Window::setOptions(GBAOptions* opts) {
+	m_logView->setLevels(opts->logLevel);
+	m_controller->setFrameskip(opts->frameskip);
+
+	if (opts->bios) {
+		m_controller->loadBIOS(opts->bios);
 	}
 }
 

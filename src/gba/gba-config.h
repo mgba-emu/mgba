@@ -4,12 +4,23 @@
 #include "util/common.h"
 
 struct Configuration;
-struct StartupOptions;
-struct GraphicsOpts;
+
+struct GBAOptions {
+	char* bios;
+	int logLevel;
+	int frameskip;
+	int rewindBufferCapacity;
+	int rewindBufferInterval;
+
+	int fullscreen;
+	int width;
+	int height;
+};
 
 bool GBAConfigLoad(struct Configuration*);
 
-void GBAConfigMapStartupOpts(const struct Configuration*, const char* port, struct StartupOptions*);
-void GBAConfigMapGraphicsOpts(const struct Configuration*, const char* port, struct GraphicsOpts*);
+void GBAConfigMapGeneralOpts(const struct Configuration*, const char* port, struct GBAOptions*);
+void GBAConfigMapGraphicsOpts(const struct Configuration*, const char* port, struct GBAOptions*);
+void GBAConfigFreeOpts(struct GBAOptions*);
 
 #endif

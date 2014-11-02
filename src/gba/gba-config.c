@@ -45,7 +45,7 @@ bool GBAConfigLoad(struct Configuration* config) {
 	return ConfigurationRead(config, BINARY_NAME ".ini");
 }
 
-void GBAConfigMapStartupOpts(const struct Configuration* config, const char* port, struct StartupOptions* opts) {
+void GBAConfigMapGeneralOpts(const struct Configuration* config, const char* port, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", port, &opts->bios);
 	_lookupIntValue(config, "logLevel", port, &opts->logLevel);
 	_lookupIntValue(config, "frameskip", port, &opts->frameskip);
@@ -53,8 +53,13 @@ void GBAConfigMapStartupOpts(const struct Configuration* config, const char* por
 	_lookupIntValue(config, "rewindBufferInterval", port, &opts->rewindBufferInterval);
 }
 
-void GBAConfigMapGraphicsOpts(const struct Configuration* config, const char* port, struct GraphicsOpts* opts) {
+void GBAConfigMapGraphicsOpts(const struct Configuration* config, const char* port, struct GBAOptions* opts) {
 	_lookupIntValue(config, "fullscreen", port, &opts->fullscreen);
 	_lookupIntValue(config, "width", port, &opts->width);
 	_lookupIntValue(config, "height", port, &opts->height);
+}
+
+void GBAConfigFreeOpts(struct GBAOptions* opts) {
+	free(opts->bios);
+	opts->bios = 0;
 }

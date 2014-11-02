@@ -38,9 +38,9 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg);
+bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
 
-bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseCommandArgs(struct StartupOptions* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
 		"b:Dl:p:s:"
@@ -58,7 +58,10 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
 		case 'b':
-			opts->bios = strdup(optarg);
+			if (gbaOpts->bios) {
+				free(gbaOpts->bios);
+			}
+			gbaOpts->bios = strdup(optarg);
 			break;
 		case 'D':
 			opts->dirmode = true;
@@ -80,17 +83,17 @@ bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, 
 			break;
 #endif
 		case 'l':
-			opts->logLevel = atoi(optarg);
+			gbaOpts->logLevel = atoi(optarg);
 			break;
 		case 'p':
 			opts->patch = strdup(optarg);
 			break;
 		case 's':
-			opts->frameskip = atoi(optarg);
+			gbaOpts->frameskip = atoi(optarg);
 			break;
 		default:
 			if (subparser) {
-				if (!subparser->parse(subparser, ch, optarg)) {
+				if (!subparser->parse(subparser, gbaOpts, ch, optarg)) {
 					return false;
 				}
 			}
@@ -110,9 +113,6 @@ void freeOptions(struct StartupOptions* opts) {
 	free(opts->fname);
 	opts->fname = 0;
 
-	free(opts->bios);
-	opts->bios = 0;
-
 	free(opts->patch);
 	opts->patch = 0;
 }
@@ -125,12 +125,12 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	opts->multiplier = 0;
 }
 
-bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
+bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg) {
 	UNUSED(arg);
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
-		graphicsOpts->fullscreen = 1;
+		gbaOpts->fullscreen = 1;
 		return true;
 	case '1':
 	case '2':
@@ -140,8 +140,8 @@ bool _parseGraphicsArg(struct SubParser* parser, int option, const char* arg) {
 			return false;
 		}
 		graphicsOpts->multiplier = option - '0';
-		graphicsOpts->width = VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier;
-		graphicsOpts->height = VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier;
+		gbaOpts->width = VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier;
+		gbaOpts->height = VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier;
 		return true;
 	default:
 		return false;

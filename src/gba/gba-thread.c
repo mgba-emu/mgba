@@ -217,7 +217,15 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	return 0;
 }
 
-void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
+void GBAMapOptionsToContext(struct GBAOptions* opts, struct GBAThread* threadContext) {
+	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
+	threadContext->frameskip = opts->frameskip;
+	threadContext->logLevel = opts->logLevel;
+	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
+	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+}
+
+void GBAMapStartupOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
 	if (opts->dirmode) {
 		threadContext->gameDir = VDirOpen(opts->fname);
 		threadContext->stateDir = threadContext->gameDir;
@@ -228,12 +236,7 @@ void GBAMapOptionsToContext(struct StartupOptions* opts, struct GBAThread* threa
 #endif
 	}
 	threadContext->fname = opts->fname;
-	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
 	threadContext->patch = VFileOpen(opts->patch, O_RDONLY);
-	threadContext->frameskip = opts->frameskip;
-	threadContext->logLevel = opts->logLevel;
-	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
-	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
 }
 
 bool GBAThreadStart(struct GBAThread* threadContext) {

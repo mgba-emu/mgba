@@ -69,25 +69,26 @@ int main(int argc, char** argv) {
 	ConfigurationInit(&config);
 	GBAConfigLoad(&config);
 
-	struct StartupOptions opts = { };
-	struct GraphicsOpts graphicsOpts = { };
+	struct GBAOptions gbaOpts = {};
+	struct StartupOptions opts = {};
+	struct GraphicsOpts graphicsOpts = {};
 
 	struct SubParser subparser;
 
-	GBAConfigMapStartupOpts(&config, PORT, &opts);
-	GBAConfigMapGraphicsOpts(&config, PORT, &graphicsOpts);
+	GBAConfigMapGeneralOpts(&config, PORT, &gbaOpts);
+	GBAConfigMapGraphicsOpts(&config, PORT, &gbaOpts);
 
 	initParserForGraphics(&subparser, &graphicsOpts);
-	if (!parseCommandArgs(&opts, argc, argv, &subparser)) {
+	if (!parseCommandArgs(&opts, &gbaOpts, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);
 		freeOptions(&opts);
 		return 1;
 	}
 
-	renderer.viewportWidth = graphicsOpts.width;
-	renderer.viewportHeight = graphicsOpts.height;
+	renderer.viewportWidth = gbaOpts.width;
+	renderer.viewportHeight = gbaOpts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.events.fullscreen = graphicsOpts.fullscreen;
+	renderer.events.fullscreen = gbaOpts.fullscreen;
 	renderer.events.windowUpdated = 0;
 #endif
 
@@ -108,7 +109,8 @@ int main(int argc, char** argv) {
 
 	context.debugger = createDebugger(&opts);
 
-	GBAMapOptionsToContext(&opts, &context);
+	GBAMapOptionsToContext(&gbaOpts, &context);
+	GBAMapStartupOptionsToContext(&opts, &context);
 
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio);

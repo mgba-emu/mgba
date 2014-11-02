@@ -7,6 +7,7 @@
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/configuration.h"
 }
 
 namespace QGBA {
@@ -27,6 +28,8 @@ private:
 	Window m_window;
 
 	StartupOptions m_opts;
+	GBAOptions m_gbaOpts;
+	Configuration m_config;
 };
 
 }

@@ -3,6 +3,8 @@
 
 #include "util/common.h"
 
+#include "gba-config.h"
+
 enum DebuggerType {
 	DEBUGGER_NONE = 0,
 #ifdef USE_CLI_DEBUGGER
@@ -15,40 +17,26 @@ enum DebuggerType {
 };
 
 struct StartupOptions {
-	// Passed only
 	char* fname;
 	char* patch;
 	bool dirmode;
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;
-
-	// Configurable
-	char* bios;
-	int logLevel;
-	int frameskip;
-	int rewindBufferCapacity;
-	int rewindBufferInterval;
 };
 
 struct SubParser {
 	const char* usage;
-	bool (*parse)(struct SubParser* parser, int option, const char* arg);
+	bool (*parse)(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
 	const char* extraOptions;
 	void* opts;
 };
 
 struct GraphicsOpts {
-	// Passed only
 	int multiplier;
-
-	// Configurable
-	int fullscreen;
-	int width;
-	int height;
 };
 
-bool parseCommandArgs(struct StartupOptions* opts, int argc, char* const* argv, struct SubParser* subparser);
+bool parseCommandArgs(struct StartupOptions* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser);
 void freeOptions(struct StartupOptions* opts);
 
 void usage(const char* arg0, const char* extraOptions);
