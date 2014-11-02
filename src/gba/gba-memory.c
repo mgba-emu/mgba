@@ -680,6 +680,11 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	address &= 0xFFFFFFFC;
 
 	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		LDM_LOOP_BEGIN;
+		LOAD_BIOS;
+		LDM_LOOP_END;
+		break;
 	case REGION_WORKING_RAM:
 		LDM_LOOP_BEGIN;
 		LOAD_WORKING_RAM;
