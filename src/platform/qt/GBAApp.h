@@ -27,8 +27,8 @@ protected:
 private:
 	Window m_window;
 
-	StartupOptions m_opts;
-	GBAOptions m_gbaOpts;
+	GBAArguments m_args;
+	GBAOptions m_opts;
 	Configuration m_config;
 };
 

@@ -101,13 +101,13 @@ GBAKey Window::mapKey(int qtKey) {
 	}
 }
 
-void Window::optionsPassed(StartupOptions* opts) {
-	if (opts->patch) {
-		m_controller->loadPatch(opts->patch);
+void Window::argumentsPassed(GBAArguments* args) {
+	if (args->patch) {
+		m_controller->loadPatch(args->patch);
 	}
 
-	if (opts->fname) {
-		m_controller->loadGame(opts->fname, opts->dirmode);
+	if (args->fname) {
+		m_controller->loadGame(args->fname, args->dirmode);
 	}
 }
 

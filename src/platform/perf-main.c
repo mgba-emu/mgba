@@ -1,6 +1,9 @@
 #include "gba-thread.h"
+#include "gba-config.h"
 #include "gba.h"
 #include "renderers/video-software.h"
+
+#include "platform/commandline.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -43,9 +46,9 @@ int main(int argc, char** argv) {
 		.opts = &perfOpts
 	};
 
-	struct GBAOptions gbaOpts = {};
-	struct StartupOptions opts = {};
-	if (!parseCommandArgs(&opts, &gbaOpts, argc, argv, &subparser)) {
+	struct GBAOptions opts = {};
+	struct GBAArguments args = {};
+	if (!parseArguments(&args, &opts, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
 		return 1;
 	}
@@ -63,11 +66,11 @@ int main(int argc, char** argv) {
 		context.renderer = &renderer.d;
 	}
 
-	context.debugger = createDebugger(&opts);
+	context.debugger = createDebugger(&args);
 	char gameCode[5] = { 0 };
 
-	GBAMapStartupOptionsToContext(&opts, &context);
-	GBAMapOptionsToContext(&gbaOpts, &context);
+	GBAMapArgumentsToContext(&args, &context);
+	GBAMapOptionsToContext(&opts, &context);
 
 	GBAThreadStart(&context);
 	GBAGetGameCode(context.gba, gameCode);
@@ -85,7 +88,8 @@ int main(int argc, char** argv) {
 	uint64_t duration = end - start;
 
 	GBAThreadJoin(&context);
-	freeOptions(&opts);
+	GBAConfigFreeOpts(&opts);
+	freeArguments(&args);
 	free(context.debugger);
 
 	free(renderer.outputBuffer);

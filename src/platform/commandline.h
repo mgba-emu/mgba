@@ -16,7 +16,7 @@ enum DebuggerType {
 	DEBUGGER_MAX
 };
 
-struct StartupOptions {
+struct GBAArguments {
 	char* fname;
 	char* patch;
 	bool dirmode;
@@ -36,12 +36,12 @@ struct GraphicsOpts {
 	int multiplier;
 };
 
-bool parseCommandArgs(struct StartupOptions* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser);
-void freeOptions(struct StartupOptions* opts);
+bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser);
+void freeArguments(struct GBAArguments* opts);
 
 void usage(const char* arg0, const char* extraOptions);
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);
-struct ARMDebugger* createDebugger(struct StartupOptions* opts);
+struct ARMDebugger* createDebugger(struct GBAArguments* opts);
 
 #endif

@@ -2,6 +2,7 @@
 
 #include "arm.h"
 #include "gba.h"
+#include "gba-config.h"
 #include "gba-serialize.h"
 
 #include "debugger/debugger.h"
@@ -9,6 +10,8 @@
 #include "util/patch.h"
 #include "util/png-io.h"
 #include "util/vfs.h"
+
+#include "platform/commandline.h"
 
 #include <signal.h>
 
@@ -225,18 +228,18 @@ void GBAMapOptionsToContext(struct GBAOptions* opts, struct GBAThread* threadCon
 	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
 }
 
-void GBAMapStartupOptionsToContext(struct StartupOptions* opts, struct GBAThread* threadContext) {
-	if (opts->dirmode) {
-		threadContext->gameDir = VDirOpen(opts->fname);
+void GBAMapArgumentsToContext(struct GBAArguments* args, struct GBAThread* threadContext) {
+	if (args->dirmode) {
+		threadContext->gameDir = VDirOpen(args->fname);
 		threadContext->stateDir = threadContext->gameDir;
 	} else {
-		threadContext->rom = VFileOpen(opts->fname, O_RDONLY);
+		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
 #if ENABLE_LIBZIP
-		threadContext->gameDir = VDirOpenZip(opts->fname, 0);
+		threadContext->gameDir = VDirOpenZip(args->fname, 0);
 #endif
 	}
-	threadContext->fname = opts->fname;
-	threadContext->patch = VFileOpen(opts->patch, O_RDONLY);
+	threadContext->fname = args->fname;
+	threadContext->patch = VFileOpen(args->patch, O_RDONLY);
 }
 
 bool GBAThreadStart(struct GBAThread* threadContext) {

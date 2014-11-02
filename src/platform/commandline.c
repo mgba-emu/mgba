@@ -40,7 +40,7 @@ static const struct option _options[] = {
 
 bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
 
-bool parseCommandArgs(struct StartupOptions* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
 		"b:Dl:p:s:"
@@ -109,7 +109,7 @@ bool parseCommandArgs(struct StartupOptions* opts, struct GBAOptions* gbaOpts, i
 	return true;
 }
 
-void freeOptions(struct StartupOptions* opts) {
+void freeArguments(struct GBAArguments* opts) {
 	free(opts->fname);
 	opts->fname = 0;
 
@@ -148,7 +148,7 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int
 	}
 }
 
-struct ARMDebugger* createDebugger(struct StartupOptions* opts) {
+struct ARMDebugger* createDebugger(struct GBAArguments* opts) {
 	union DebugUnion {
 		struct ARMDebugger d;
 #ifdef USE_CLI_DEBUGGER

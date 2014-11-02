@@ -13,7 +13,7 @@ extern "C" {
 #include "LoadSaveState.h"
 
 struct GBAOptions;
-struct StartupOptions;
+struct GBAArguments;
 
 namespace QGBA {
 
@@ -34,7 +34,7 @@ public:
 	static GBAKey mapKey(int qtKey);
 
 	void setOptions(GBAOptions*);
-	void optionsPassed(StartupOptions*);
+	void argumentsPassed(GBAArguments*);
 
 signals:
 	void startDrawing(const uint32_t*, GBAThread*);

@@ -7,9 +7,10 @@
 #include "gba-input.h"
 
 #include "util/threading.h"
-#include "platform/commandline.h"
 
 struct GBAThread;
+struct GBAArguments;
+struct GBAOptions;
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
 typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
@@ -95,7 +96,7 @@ struct GBAThread {
 };
 
 void GBAMapOptionsToContext(struct GBAOptions*, struct GBAThread*);
-void GBAMapStartupOptionsToContext(struct StartupOptions*, struct GBAThread*);
+void GBAMapArgumentsToContext(struct GBAArguments*, struct GBAThread*);
 
 bool GBAThreadStart(struct GBAThread* threadContext);
 bool GBAThreadHasStarted(struct GBAThread* threadContext);
