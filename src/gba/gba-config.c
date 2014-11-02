@@ -18,6 +18,15 @@ static const char* _lookupValue(const struct Configuration* config, const char* 
 	return ConfigurationGetValue(config, 0, key);
 }
 
+static bool _lookupCharValue(const struct Configuration* config, const char* key, const char* port, char** out) {
+	const char* value = _lookupValue(config, key, port);
+	if (!value) {
+		return false;
+	}
+	*out = strdup(value);
+	return true;
+}
+
 static bool _lookupIntValue(const struct Configuration* config, const char* key, const char* port, int* out) {
 	const char* charValue = _lookupValue(config, key, port);
 	if (!charValue) {
@@ -37,6 +46,7 @@ bool GBAConfigLoad(struct Configuration* config) {
 }
 
 void GBAConfigMapStartupOpts(const struct Configuration* config, const char* port, struct StartupOptions* opts) {
+	_lookupCharValue(config, "bios", port, &opts->bios);
 	_lookupIntValue(config, "logLevel", port, &opts->logLevel);
 	_lookupIntValue(config, "frameskip", port, &opts->frameskip);
 	_lookupIntValue(config, "rewindBufferCapacity", port, &opts->rewindBufferCapacity);

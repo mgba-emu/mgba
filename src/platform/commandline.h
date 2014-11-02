@@ -17,7 +17,6 @@ enum DebuggerType {
 struct StartupOptions {
 	// Passed only
 	char* fname;
-	char* bios;
 	char* patch;
 	bool dirmode;
 
@@ -25,6 +24,7 @@ struct StartupOptions {
 	bool debugAtStart;
 
 	// Configurable
+	char* bios;
 	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;
