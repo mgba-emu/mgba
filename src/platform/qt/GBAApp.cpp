@@ -8,6 +8,8 @@ using namespace QGBA;
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
+	, m_args()
+	, m_opts()
 {
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
