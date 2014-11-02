@@ -41,6 +41,34 @@ static bool _lookupIntValue(const struct Configuration* config, const char* key,
 	return true;
 }
 
+static bool _lookupUIntValue(const struct Configuration* config, const char* key, const char* port, unsigned* out) {
+	const char* charValue = _lookupValue(config, key, port);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	unsigned long value = strtoul(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
+static bool _lookupFloatValue(const struct Configuration* config, const char* key, const char* port, float* out) {
+	const char* charValue = _lookupValue(config, key, port);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	float value = strtof(charValue, &end);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
 bool GBAConfigLoad(struct Configuration* config) {
 	return ConfigurationRead(config, BINARY_NAME ".ini");
 }
@@ -51,6 +79,11 @@ void GBAConfigMapGeneralOpts(const struct Configuration* config, const char* por
 	_lookupIntValue(config, "frameskip", port, &opts->frameskip);
 	_lookupIntValue(config, "rewindBufferCapacity", port, &opts->rewindBufferCapacity);
 	_lookupIntValue(config, "rewindBufferInterval", port, &opts->rewindBufferInterval);
+	_lookupFloatValue(config, "fpsTarget", port, &opts->fpsTarget);
+	unsigned audioBuffers;
+	if (_lookupUIntValue(config, "audioBuffers", port, &audioBuffers)) {
+		opts->audioBuffers = audioBuffers;
+	}
 }
 
 void GBAConfigMapGraphicsOpts(const struct Configuration* config, const char* port, struct GBAOptions* opts) {

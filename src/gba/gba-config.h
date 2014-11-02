@@ -11,6 +11,8 @@ struct GBAOptions {
 	int frameskip;
 	int rewindBufferCapacity;
 	int rewindBufferInterval;
+	float fpsTarget;
+	size_t audioBuffers;
 
 	int fullscreen;
 	int width;

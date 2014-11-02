@@ -226,6 +226,14 @@ void GBAMapOptionsToContext(struct GBAOptions* opts, struct GBAThread* threadCon
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
 	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+
+	if (opts->fpsTarget) {
+		threadContext->fpsTarget = opts->fpsTarget;
+	}
+
+	if (opts->audioBuffers) {
+		threadContext->audioBuffers = opts->audioBuffers;
+	}
 }
 
 void GBAMapArgumentsToContext(struct GBAArguments* args, struct GBAThread* threadContext) {
