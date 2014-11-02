@@ -349,7 +349,7 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
 	++encoder->currentVideoFrame;
 
-	sws_scale(encoder->scaleContext, &pixels, &stride, 0, VIDEO_VERTICAL_PIXELS, encoder->videoFrame->data, encoder->videoFrame->linesize);
+	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, VIDEO_VERTICAL_PIXELS, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	int gotData;
 	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
