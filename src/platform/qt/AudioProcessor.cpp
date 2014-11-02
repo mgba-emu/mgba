@@ -58,10 +58,14 @@ void AudioProcessor::pause() {
 }
 
 void AudioProcessor::setBufferSamples(int samples) {
-	QAudioFormat format = m_audioOutput->format();
-	m_audioOutput->setBufferSize(samples * format.channelCount() * format.sampleSize() / 8);
+	if (m_audioOutput) {
+		QAudioFormat format = m_audioOutput->format();
+		m_audioOutput->setBufferSize(samples * format.channelCount() * format.sampleSize() / 8);
+	}
 }
 
 void AudioProcessor::inputParametersChanged() {
-	m_device->setFormat(m_audioOutput->format());
+	if (m_device) {
+		m_device->setFormat(m_audioOutput->format());
+	}
 }

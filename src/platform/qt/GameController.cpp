@@ -243,17 +243,26 @@ void GameController::keyReleased(int key) {
 }
 
 void GameController::setAudioBufferSamples(int samples) {
-	GBAThreadInterrupt(&m_threadContext);
-	m_threadContext.audioBuffers = samples;
-	GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples);
-	GBAThreadContinue(&m_threadContext);
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.audioBuffers = samples;
+		GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples);
+		GBAThreadContinue(&m_threadContext);
+	} else {
+		m_threadContext.audioBuffers = samples;
+
+	}
 	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
 }
 
 void GameController::setFPSTarget(float fps) {
-	GBAThreadInterrupt(&m_threadContext);
-	m_threadContext.fpsTarget = fps;
-	GBAThreadContinue(&m_threadContext);
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+		m_threadContext.fpsTarget = fps;
+		GBAThreadContinue(&m_threadContext);
+	} else {
+		m_threadContext.fpsTarget = fps;
+	}
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 

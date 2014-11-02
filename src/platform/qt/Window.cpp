@@ -118,6 +118,14 @@ void Window::setOptions(GBAOptions* opts) {
 	if (opts->bios) {
 		m_controller->loadBIOS(opts->bios);
 	}
+
+	if (opts->fpsTarget) {
+		emit fpsTargetChanged(opts->fpsTarget);
+	}
+
+	if (opts->audioBuffers) {
+		emit audioBufferSamplesChanged(opts->audioBuffers);
+	}
 }
 
 void Window::selectROM() {
