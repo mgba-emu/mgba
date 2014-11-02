@@ -126,6 +126,10 @@ void Window::setOptions(GBAOptions* opts) {
 	if (opts->audioBuffers) {
 		emit audioBufferSamplesChanged(opts->audioBuffers);
 	}
+
+	if (opts->width && opts->height) {
+		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
+	}
 }
 
 void Window::selectROM() {

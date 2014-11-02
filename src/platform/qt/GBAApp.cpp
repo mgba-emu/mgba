@@ -22,6 +22,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	GBAConfigLoad(&config);
 
 	GBAConfigMapGeneralOpts(&config, PORT, &m_opts);
+	GBAConfigMapGraphicsOpts(&config, PORT, &m_opts);
 
 	ConfigurationDeinit(&config);
 
