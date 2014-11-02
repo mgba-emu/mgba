@@ -4,6 +4,8 @@
 
 #include <QFileOpenEvent>
 
+#define PORT "qt"
+
 using namespace QGBA;
 
 GBAApp::GBAApp(int& argc, char* argv[])
@@ -13,6 +15,15 @@ GBAApp::GBAApp(int& argc, char* argv[])
 {
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
+
+	struct Configuration config;
+
+	ConfigurationInit(&config);
+	GBAConfigLoad(&config);
+
+	GBAConfigMapGeneralOpts(&config, PORT, &m_opts);
+
+	ConfigurationDeinit(&config);
 
 	if (parseArguments(&m_args, &m_opts, argc, argv, 0)) {
 		m_window.setOptions(&m_opts);
