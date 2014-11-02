@@ -183,7 +183,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->audio->sample_rate = encoder->sampleRate;
 	encoder->audio->sample_fmt = encoder->sampleFormat;
 	AVDictionary* opts = 0;
-	av_dict_set_int(&opts, "strict", FF_COMPLIANCE_EXPERIMENTAL, 0);
+	av_dict_set(&opts, "strict", "-2", 0);
 	avcodec_open2(encoder->audio, acodec, &opts);
 	av_dict_free(&opts);
 	encoder->audioFrame = av_frame_alloc();
