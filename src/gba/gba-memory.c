@@ -209,9 +209,13 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_BAD \
 	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
-	value = cpu->prefetch; \
-	if (cpu->executionMode == MODE_THUMB) { \
-		value |= value << 16; \
+	if (cpu->cycles >= cpu->nextEvent) { \
+		value = gba->bus; \
+	} else { \
+		value = cpu->prefetch; \
+		if (cpu->executionMode == MODE_THUMB) { \
+			value |= value << 16; \
+		} \
 	}
 
 int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
@@ -339,7 +343,11 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-		value = cpu->prefetch;
+		if (cpu->cycles >= cpu->nextEvent) {
+			value = gba->bus;
+		} else {
+			value = cpu->prefetch;
+		}
 		break;
 	}
 
@@ -424,7 +432,11 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
-		value = cpu->prefetch & 0xFF;
+		if (cpu->cycles >= cpu->nextEvent) {
+			value = gba->bus;
+		} else {
+			value = cpu->prefetch;
+		}
 		break;
 	}
 
@@ -1096,17 +1108,18 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 	}
 
+	int32_t word;
 	if (width == 4) {
-		int32_t word;
 		word = cpu->memory.load32(cpu, source, 0);
+		gba->bus = word;
 		cpu->memory.store32(cpu, dest, word, 0);
 		source += sourceOffset;
 		dest += destOffset;
 		--wordsRemaining;
 	} else {
-		uint16_t word;
 		if (sourceRegion == REGION_CART2_EX && memory->savedata.type == SAVEDATA_EEPROM) {
 			word = GBASavedataReadEEPROM(&memory->savedata);
+			gba->bus = word | (word << 16);
 			cpu->memory.store16(cpu, dest, word, 0);
 			source += sourceOffset;
 			dest += destOffset;
@@ -1117,12 +1130,14 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			word = cpu->memory.load16(cpu, source, 0);
+			gba->bus = word | (word << 16);
 			GBASavedataWriteEEPROM(&memory->savedata, word, wordsRemaining);
 			source += sourceOffset;
 			dest += destOffset;
 			--wordsRemaining;
 		} else {
 			word = cpu->memory.load16(cpu, source, 0);
+			gba->bus = word | (word << 16);
 			cpu->memory.store16(cpu, dest, word, 0);
 			source += sourceOffset;
 			dest += destOffset;

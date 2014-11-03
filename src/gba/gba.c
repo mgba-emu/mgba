@@ -210,6 +210,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
 
+		gba->bus = cpu->prefetch;
+		if (cpu->executionMode == MODE_THUMB) {
+			gba->bus |= cpu->prefetch << 16;
+		}
+
 		if (gba->springIRQ) {
 			ARMRaiseIRQ(cpu);
 			gba->springIRQ = 0;
