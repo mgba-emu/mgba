@@ -3,6 +3,8 @@
 
 #include "gba.h"
 
+struct Configuration;
+
 struct GBAInputMap {
 	struct GBAInputMapImpl* maps;
 	size_t numMaps;
@@ -13,5 +15,7 @@ void GBAInputMapDeinit(struct GBAInputMap*);
 
 enum GBAKey GBAInputMapKey(struct GBAInputMap*, uint32_t type, int key);
 void GBAInputBindKey(struct GBAInputMap*, uint32_t type, int key, enum GBAKey input);
+
+void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 
 #endif

@@ -1,9 +1,34 @@
 #include "gba-input.h"
 
+#include "util/configuration.h"
+
+#define SECTION_NAME_MAX 128
+#define KEY_NAME_MAX 32
+
 struct GBAInputMapImpl {
 	int* map;
 	uint32_t type;
 };
+
+static void _loadKey(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, enum GBAKey key, const char* keyName) {
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+
+	char keyKey[KEY_NAME_MAX];
+	snprintf(keyKey, KEY_NAME_MAX, "key%s", keyName);
+
+	const char* value = ConfigurationGetValue(config, sectionName, keyKey);
+	if (!value) {
+		return;
+	}
+	char* end;
+	long intValue = strtol(value, &end, 10);
+	if (*end) {
+		return;
+	}
+	GBAInputBindKey(map, type, intValue, key);
+}
 
 void GBAInputMapInit(struct GBAInputMap* map) {
 	map->maps = 0;
@@ -82,4 +107,17 @@ void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKe
 		}
 	}
 	impl->map[input] = key;
+}
+
+void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config) {
+	_loadKey(map, type, config, GBA_KEY_A, "A");
+	_loadKey(map, type, config, GBA_KEY_B, "B");
+	_loadKey(map, type, config, GBA_KEY_L, "L");
+	_loadKey(map, type, config, GBA_KEY_R, "R");
+	_loadKey(map, type, config, GBA_KEY_START, "Start");
+	_loadKey(map, type, config, GBA_KEY_SELECT, "Select");
+	_loadKey(map, type, config, GBA_KEY_UP, "Up");
+	_loadKey(map, type, config, GBA_KEY_DOWN, "Down");
+	_loadKey(map, type, config, GBA_KEY_LEFT, "Left");
+	_loadKey(map, type, config, GBA_KEY_RIGHT, "Right");
 }
