@@ -95,8 +95,8 @@ struct GBAThread {
 	int rewindBufferWriteOffset;
 };
 
-void GBAMapOptionsToContext(struct GBAOptions*, struct GBAThread*);
-void GBAMapArgumentsToContext(struct GBAArguments*, struct GBAThread*);
+void GBAMapOptionsToContext(const struct GBAOptions*, struct GBAThread*);
+void GBAMapArgumentsToContext(const struct GBAArguments*, struct GBAThread*);
 
 bool GBAThreadStart(struct GBAThread* threadContext);
 bool GBAThreadHasStarted(struct GBAThread* threadContext);

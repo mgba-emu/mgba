@@ -220,7 +220,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	return 0;
 }
 
-void GBAMapOptionsToContext(struct GBAOptions* opts, struct GBAThread* threadContext) {
+void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* threadContext) {
 	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
@@ -238,7 +238,7 @@ void GBAMapOptionsToContext(struct GBAOptions* opts, struct GBAThread* threadCon
 	}
 }
 
-void GBAMapArgumentsToContext(struct GBAArguments* args, struct GBAThread* threadContext) {
+void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {
 	if (args->dirmode) {
 		threadContext->gameDir = VDirOpen(args->fname);
 		threadContext->stateDir = threadContext->gameDir;
