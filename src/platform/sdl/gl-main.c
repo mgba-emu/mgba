@@ -119,6 +119,7 @@ int main(int argc, char** argv) {
 
 	renderer.events.bindings = &context.inputMap;
 	GBASDLInitEvents(&renderer.events);
+	GBASDLEventsLoadConfig(&renderer.events, &config);
 
 	GBAThreadStart(&context);
 

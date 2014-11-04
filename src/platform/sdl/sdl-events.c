@@ -45,7 +45,13 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
 	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
 	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
+
 	return true;
+}
+
+void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
+	GBAInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
+	GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 }
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
