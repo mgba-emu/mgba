@@ -17,6 +17,9 @@ struct GBAOptions {
 	int fullscreen;
 	int width;
 	int height;
+
+	bool videoSync;
+	bool audioSync;
 };
 
 bool GBAConfigLoad(struct Configuration*);

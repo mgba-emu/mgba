@@ -56,10 +56,7 @@ int main(int argc, char** argv) {
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
 
-	struct GBAThread context = {
-		.sync.videoFrameWait = 0,
-		.sync.audioWait = 0
-	};
+	struct GBAThread context = { };
 	_thread = &context;
 
 	if (!perfOpts.noVideo) {
@@ -71,6 +68,9 @@ int main(int argc, char** argv) {
 
 	GBAMapArgumentsToContext(&args, &context);
 	GBAMapOptionsToContext(&opts, &context);
+
+	context.sync.audioWait = false;
+	context.sync.videoFrameWait = false;
 
 	GBAThreadStart(&context);
 	GBAGetGameCode(context.gba, gameCode);

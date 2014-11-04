@@ -39,6 +39,9 @@ public:
 	bool isPaused();
 	bool isLoaded() { return m_gameOpen; }
 
+	bool audioSync() const { return m_audioSync; }
+	bool videoSync() const { return m_videoSync; }
+
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
 	void setDebugger(ARMDebugger*);

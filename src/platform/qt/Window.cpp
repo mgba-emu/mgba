@@ -113,7 +113,10 @@ void Window::argumentsPassed(GBAArguments* args) {
 
 void Window::setOptions(GBAOptions* opts) {
 	m_logView->setLevels(opts->logLevel);
+	// TODO: Have these show up as modified in the menu
 	m_controller->setFrameskip(opts->frameskip);
+	m_controller->setAudioSync(opts->audioSync);
+	m_controller->setVideoSync(opts->videoSync);
 
 	if (opts->bios) {
 		m_controller->loadBIOS(opts->bios);
@@ -413,13 +416,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QAction* videoSync = new QAction(tr("Sync to &video"), emulationMenu);
 	videoSync->setCheckable(true);
-	videoSync->setChecked(GameController::VIDEO_SYNC);
+	videoSync->setChecked(m_controller->videoSync());
 	connect(videoSync, SIGNAL(triggered(bool)), m_controller, SLOT(setVideoSync(bool)));
 	emulationMenu->addAction(videoSync);
 
 	QAction* audioSync = new QAction(tr("Sync to &audio"), emulationMenu);
 	audioSync->setCheckable(true);
-	audioSync->setChecked(GameController::AUDIO_SYNC);
+	audioSync->setChecked(m_controller->audioSync());
 	connect(audioSync, SIGNAL(triggered(bool)), m_controller, SLOT(setAudioSync(bool)));
 	emulationMenu->addAction(audioSync);
 

@@ -69,7 +69,11 @@ int main(int argc, char** argv) {
 	ConfigurationInit(&config);
 	GBAConfigLoad(&config);
 
-	struct GBAOptions opts = {};
+	struct GBAOptions opts = {
+		.audioBuffers = 512,
+		.videoSync = false,
+		.audioSync = true,
+	};
 	struct GBAArguments args = {};
 	struct GraphicsOpts graphicsOpts = {};
 
@@ -101,11 +105,8 @@ int main(int argc, char** argv) {
 
 	struct GBAThread context = {
 		.renderer = &renderer.d.d,
-		.audioBuffers = 512,
 		.startCallback = _GBASDLStart,
 		.cleanCallback = _GBASDLClean,
-		.sync.videoFrameWait = false,
-		.sync.audioWait = true,
 		.userData = &renderer
 	};
 

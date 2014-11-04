@@ -21,6 +21,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	ConfigurationInit(&config);
 	GBAConfigLoad(&config);
 
+	m_opts.audioSync = GameController::AUDIO_SYNC;
+	m_opts.videoSync = GameController::VIDEO_SYNC;
+
 	GBAConfigMapGeneralOpts(&config, PORT, &m_opts);
 	GBAConfigMapGraphicsOpts(&config, PORT, &m_opts);
 

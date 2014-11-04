@@ -84,6 +84,14 @@ void GBAConfigMapGeneralOpts(const struct Configuration* config, const char* por
 	if (_lookupUIntValue(config, "audioBuffers", port, &audioBuffers)) {
 		opts->audioBuffers = audioBuffers;
 	}
+
+	int fakeBool;
+	if (_lookupIntValue(config, "audioSync", port, &fakeBool)) {
+		opts->audioSync = fakeBool;
+	}
+	if (_lookupIntValue(config, "videoSync", port, &fakeBool)) {
+		opts->videoSync = fakeBool;
+	}
 }
 
 void GBAConfigMapGraphicsOpts(const struct Configuration* config, const char* port, struct GBAOptions* opts) {
