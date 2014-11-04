@@ -2,7 +2,7 @@
 
 #include "util/vfs.h"
 
-#include "inih/ini.h"
+#include "third-party/inih/ini.h"
 
 static void _sectionDeinit(void* string) {
 	free(string);
