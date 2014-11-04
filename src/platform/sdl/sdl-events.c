@@ -24,8 +24,8 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
 
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_A);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_B);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
