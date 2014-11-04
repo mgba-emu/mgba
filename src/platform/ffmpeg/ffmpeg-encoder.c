@@ -184,6 +184,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->audio->sample_fmt = encoder->sampleFormat;
 	AVDictionary* opts = 0;
 	av_dict_set(&opts, "strict", "-2", 0);
+	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
+		encoder->audio->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	}
 	avcodec_open2(encoder->audio, acodec, &opts);
 	av_dict_free(&opts);
 	encoder->audioFrame = av_frame_alloc();
@@ -221,6 +224,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->video->pix_fmt = encoder->pixFormat;
 	encoder->video->gop_size = 15;
 	encoder->video->max_b_frames = 0;
+	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
+		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	}
 	avcodec_open2(encoder->video, vcodec, 0);
 	encoder->videoFrame = av_frame_alloc();
 	encoder->videoFrame->format = encoder->video->pix_fmt;
@@ -231,11 +237,6 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, encoder->video->pix_fmt,
 		0, 0, 0, 0);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
-
-	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
-		encoder->audio->flags |= CODEC_FLAG_GLOBAL_HEADER;
-		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
-	}
 
 	avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE);
 	avformat_write_header(encoder->context, 0);
