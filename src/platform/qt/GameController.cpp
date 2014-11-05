@@ -95,6 +95,7 @@ GameController::~GameController() {
 	disconnect();
 	closeGame();
 	delete m_renderer;
+	delete[] m_drawContext;
 }
 
 ARMDebugger* GameController::debugger() {
