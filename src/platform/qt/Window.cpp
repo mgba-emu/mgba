@@ -230,6 +230,8 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 
 void Window::resizeEvent(QResizeEvent*) {
 	redoLogo();
+	m_config->setOption("height", m_screenWidget->height());
+	m_config->setOption("width", m_screenWidget->width());
 }
 
 void Window::closeEvent(QCloseEvent* event) {
