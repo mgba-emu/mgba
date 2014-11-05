@@ -102,7 +102,7 @@ bool ConfigurationWrite(const struct Configuration* configuration, const char* p
 }
 
 bool ConfigurationWriteSection(const struct Configuration* configuration, const char* path, const char* section) {
-	struct Table* currentSection = &configuration->root;
+	const struct Table* currentSection = &configuration->root;
 	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	if (fd < 0) {
 		return false;
