@@ -40,13 +40,17 @@ void ConfigurationSetValue(struct Configuration* configuration, const char* sect
 	struct Table* currentSection = &configuration->root;
 	if (section) {
 		currentSection = HashTableLookup(&configuration->sections, section);
-		if (!currentSection) {
+		if (!currentSection && value) {
 			currentSection = malloc(sizeof(*currentSection));
 			HashTableInit(currentSection, 0, _sectionDeinit);
 			HashTableInsert(&configuration->sections, section, currentSection);
 		}
 	}
-	HashTableInsert(currentSection, key, strdup(value));
+	if (value) {
+		HashTableInsert(currentSection, key, strdup(value));
+	} else {
+		HashTableRemove(currentSection, key);
+	}
 }
 
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {
