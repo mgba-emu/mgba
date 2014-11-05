@@ -24,6 +24,7 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
@@ -34,6 +35,18 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
 	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
+#else
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+#endif
 
 	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
 	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
@@ -67,7 +80,11 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 		key = GBAInputMapKey(&context->inputMap, SDL_BINDING_KEY, event->keysym.scancode);
+#else
+		key = GBAInputMapKey(&context->inputMap, SDL_BINDING_KEY, event->keysym.sym);
+#endif
 	}
 	if (key != GBA_KEY_NONE) {
 		if (event->type == SDL_KEYDOWN) {
