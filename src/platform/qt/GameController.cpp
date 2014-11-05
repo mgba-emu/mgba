@@ -94,6 +94,7 @@ GameController::~GameController() {
 	m_audioThread->wait();
 	disconnect();
 	closeGame();
+	GBAInputMapDeinit(&m_threadContext.inputMap);
 	delete m_renderer;
 	delete[] m_drawContext;
 }
