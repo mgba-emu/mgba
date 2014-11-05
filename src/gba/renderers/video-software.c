@@ -1631,6 +1631,15 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 				}
 			}
 			return;
+		} else {
+			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
+				uint32_t current = *pixel;
+				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
+					_compositeBlendObjwin(renderer, pixel, color | flags, current);
+				}
+			}
+			return;
 		}
 	}
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
