@@ -7,7 +7,7 @@ void _neon2x(void* dest, void* src, int width, int height);
 void _neon4x(void* dest, void* src, int width, int height);
 #endif
 
-void GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
@@ -49,6 +49,8 @@ void GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 		renderer->d.outputBufferStride = 240;
 	}
 #endif
+
+	return true;
 }
 
 void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
@@ -91,4 +93,8 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			GBASDLHandleEvent(context, &renderer->events, &event);
 		}
 	}
+}
+
+void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+	UNUSED(renderer);
 }

@@ -22,7 +22,7 @@
 
 #define PORT "sdl"
 
-static int _GBASDLInit(struct SDLSoftwareRenderer* renderer);
+static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer);
 static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
 static void _GBASDLStart(struct GBAThread* context);
 static void _GBASDLClean(struct GBAThread* context);
@@ -107,14 +107,12 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-static int _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		return 0;
+		return false;
 	}
 
-	GBASDLInit(renderer);
-
-	return 1;
+	return GBASDLInit(renderer);
 }
 
 static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
@@ -125,7 +123,11 @@ static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_DestroyWindow(renderer->window);
 #endif
+
+	GBASDLDeinit(renderer);
+
 	SDL_Quit();
+
 }
 
 static void _GBASDLStart(struct GBAThread* threadContext) {

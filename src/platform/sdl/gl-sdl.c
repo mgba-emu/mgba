@@ -24,7 +24,7 @@ static const GLint _glTexCoords[] = {
 };
 #endif
 
-void GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -67,6 +67,8 @@ void GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #endif
 
 	glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+
+	return true;
 }
 
 void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
@@ -116,4 +118,8 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 #endif
 		}
 	}
+}
+
+void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+	UNUSED(renderer);
 }

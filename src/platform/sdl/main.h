@@ -14,6 +14,18 @@
 #endif
 #endif
 
+#ifdef BUILD_RASPI
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#include <SDL/SDL.h>
+#include <GLES2/gl2.h>
+#include <EGL/egl.h>
+
+#include <bcm_host.h>
+#pragma GCC diagnostic pop
+#endif
+
 struct SDLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
@@ -34,9 +46,24 @@ struct SDLSoftwareRenderer {
 #ifdef BUILD_GL
 	GLuint tex;
 #endif
+
+#ifdef BUILD_RASPI
+	EGLDisplay display;
+	EGLSurface surface;
+	EGLContext context;
+	EGL_DISPMANX_WINDOW_T window;
+	GLuint tex;
+	GLuint fragmentShader;
+	GLuint vertexShader;
+	GLuint program;
+	GLuint bufferObject;
+	GLuint texLocation;
+	GLuint positionLocation;
+#endif
 };
 
-void GBASDLInit(struct SDLSoftwareRenderer* renderer);
+bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
+void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
 void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
 
 #endif
