@@ -16,24 +16,19 @@ GBAApp::GBAApp(int& argc, char* argv[])
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
 
-	struct Configuration config;
-
-	ConfigurationInit(&config);
-	GBAConfigLoad(&config);
+	GBAConfigInit(&m_config, PORT);
+	GBAConfigLoad(&m_config);
 
 	m_opts.audioSync = GameController::AUDIO_SYNC;
 	m_opts.videoSync = GameController::VIDEO_SYNC;
+	GBAConfigLoadDefaults(&m_config, &m_opts);
 
-	GBAConfigMapGeneralOpts(&config, PORT, &m_opts);
-	GBAConfigMapGraphicsOpts(&config, PORT, &m_opts);
+	bool parsed = parseArguments(&m_args, &m_config, argc, argv, 0);
+	GBAConfigMap(&m_config, &m_opts);
+	m_window.setOptions(&m_opts);
 
-	ConfigurationDeinit(&config);
-
-	if (parseArguments(&m_args, &m_opts, argc, argv, 0)) {
-		m_window.setOptions(&m_opts);
+	if (parsed) {
 		m_window.argumentsPassed(&m_args);
-	} else {
-		m_window.setOptions(&m_opts);
 	}
 
     m_window.show();
@@ -42,6 +37,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 GBAApp::~GBAApp() {
 	freeArguments(&m_args);
 	GBAConfigFreeOpts(&m_opts);
+	GBAConfigDeinit(&m_config);
 }
 
 bool GBAApp::event(QEvent* event) {

@@ -29,7 +29,7 @@ private:
 
 	GBAArguments m_args;
 	GBAOptions m_opts;
-	Configuration m_config;
+	GBAConfig m_config;
 };
 
 }

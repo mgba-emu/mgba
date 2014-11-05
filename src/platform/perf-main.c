@@ -28,7 +28,7 @@ struct PerfOpts {
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
+static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
 static struct GBAThread* _thread;
 
@@ -46,10 +46,16 @@ int main(int argc, char** argv) {
 		.opts = &perfOpts
 	};
 
+	struct GBAConfig config;
+	GBAConfigInit(&config, 0);
+
 	struct GBAOptions opts = {};
 	struct GBAArguments args = {};
-	if (!parseArguments(&args, &opts, argc, argv, &subparser)) {
+	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
 		return 1;
 	}
 
@@ -66,11 +72,11 @@ int main(int argc, char** argv) {
 	context.debugger = createDebugger(&args);
 	char gameCode[5] = { 0 };
 
+	GBAConfigMap(&config, &opts);
+	opts.audioSync = false;
+	opts.videoSync = false;
 	GBAMapArgumentsToContext(&args, &context);
 	GBAMapOptionsToContext(&opts, &context);
-
-	context.sync.audioWait = false;
-	context.sync.videoFrameWait = false;
 
 	GBAThreadStart(&context);
 	GBAGetGameCode(context.gba, gameCode);
@@ -90,6 +96,7 @@ int main(int argc, char** argv) {
 	GBAThreadJoin(&context);
 	GBAConfigFreeOpts(&opts);
 	freeArguments(&args);
+	GBAConfigDeinit(&config);
 	free(context.debugger);
 
 	free(renderer.outputBuffer);
@@ -153,8 +160,8 @@ static void _GBAPerfShutdown(int signal) {
 	pthread_mutex_unlock(&_thread->stateMutex);
 }
 
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg) {
-	UNUSED(gbaOpts);
+static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
+	UNUSED(config);
 	struct PerfOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {

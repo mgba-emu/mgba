@@ -38,9 +38,9 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
+bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
-bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
 		"b:Dl:p:s:"
@@ -58,10 +58,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int a
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
 		case 'b':
-			if (gbaOpts->bios) {
-				free(gbaOpts->bios);
-			}
-			gbaOpts->bios = strdup(optarg);
+			GBAConfigSetDefaultValue(config, "bios", optarg);
 			break;
 		case 'D':
 			opts->dirmode = true;
@@ -83,17 +80,17 @@ bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int a
 			break;
 #endif
 		case 'l':
-			gbaOpts->logLevel = atoi(optarg);
+			GBAConfigSetDefaultValue(config, "logLevel", optarg);
 			break;
 		case 'p':
 			opts->patch = strdup(optarg);
 			break;
 		case 's':
-			gbaOpts->frameskip = atoi(optarg);
+			GBAConfigSetDefaultValue(config, "frameskip", optarg);
 			break;
 		default:
 			if (subparser) {
-				if (!subparser->parse(subparser, gbaOpts, ch, optarg)) {
+				if (!subparser->parse(subparser, config, ch, optarg)) {
 					return false;
 				}
 			}
@@ -125,12 +122,12 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	opts->multiplier = 0;
 }
 
-bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg) {
+bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
 	UNUSED(arg);
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
-		gbaOpts->fullscreen = 1;
+		GBAConfigSetDefaultIntValue(config, "fullscreen", 1);
 		return true;
 	case '1':
 	case '2':
@@ -140,8 +137,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAOptions* gbaOpts, int
 			return false;
 		}
 		graphicsOpts->multiplier = option - '0';
-		gbaOpts->width = VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier;
-		gbaOpts->height = VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier;
+		GBAConfigSetDefaultIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
+		GBAConfigSetDefaultIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
 		return true;
 	default:
 		return false;

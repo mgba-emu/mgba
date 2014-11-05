@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
 	struct GLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
-	struct Configuration config;
-	ConfigurationInit(&config);
+	struct GBAConfig config;
+	GBAConfigInit(&config, PORT);
 	GBAConfigLoad(&config);
 
 	struct GBAOptions opts = {
@@ -74,19 +74,21 @@ int main(int argc, char** argv) {
 		.videoSync = false,
 		.audioSync = true,
 	};
+	GBAConfigLoadDefaults(&config, &opts);
+
 	struct GBAArguments args = {};
 	struct GraphicsOpts graphicsOpts = {};
 
 	struct SubParser subparser;
 
-	GBAConfigMapGeneralOpts(&config, PORT, &opts);
-	GBAConfigMapGraphicsOpts(&config, PORT, &opts);
+	GBAConfigMap(&config, &opts);
 
 	initParserForGraphics(&subparser, &graphicsOpts);
-	if (!parseArguments(&args, &opts, argc, argv, &subparser)) {
+	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
 		return 1;
 	}
 
@@ -100,6 +102,7 @@ int main(int argc, char** argv) {
 	if (!_GBASDLInit(&renderer)) {
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
 		return 1;
 	}
 
@@ -120,7 +123,7 @@ int main(int argc, char** argv) {
 
 	renderer.events.bindings = &context.inputMap;
 	GBASDLInitEvents(&renderer.events);
-	GBASDLEventsLoadConfig(&renderer.events, &config);
+	GBASDLEventsLoadConfig(&renderer.events, &config.configTable); // TODO: Don't use this directly
 
 	GBAThreadStart(&context);
 
@@ -129,6 +132,7 @@ int main(int argc, char** argv) {
 	GBAThreadJoin(&context);
 	freeArguments(&args);
 	GBAConfigFreeOpts(&opts);
+	GBAConfigDeinit(&config);
 	free(context.debugger);
 
 	_GBASDLDeinit(&renderer);

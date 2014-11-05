@@ -27,7 +27,7 @@ struct GBAArguments {
 
 struct SubParser {
 	const char* usage;
-	bool (*parse)(struct SubParser* parser, struct GBAOptions* gbaOpts, int option, const char* arg);
+	bool (*parse)(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 	const char* extraOptions;
 	void* opts;
 };
@@ -36,7 +36,7 @@ struct GraphicsOpts {
 	int multiplier;
 };
 
-bool parseArguments(struct GBAArguments* opts, struct GBAOptions* gbaOpts, int argc, char* const* argv, struct SubParser* subparser);
+bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser);
 void freeArguments(struct GBAArguments* opts);
 
 void usage(const char* arg0, const char* extraOptions);
