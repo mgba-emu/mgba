@@ -6,6 +6,11 @@
 
 #include <float.h>
 
+static void _tableDeinit(void* table) {
+	TableDeinit(table);
+	free(table);
+}
+
 static void _sectionDeinit(void* string) {
 	free(string);
 }
@@ -29,7 +34,7 @@ static void _sectionHandler(const char* key, void* section, void* user) {
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
-	HashTableInit(&configuration->sections, 0, (void (*)(void *)) TableDeinit);
+	HashTableInit(&configuration->sections, 0, _tableDeinit);
 	HashTableInit(&configuration->root, 0, _sectionDeinit);
 }
 
