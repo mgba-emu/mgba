@@ -4,6 +4,8 @@
 
 #include "third-party/inih/ini.h"
 
+#include <float.h>
+
 static void _sectionDeinit(void* string) {
 	free(string);
 }
@@ -51,6 +53,24 @@ void ConfigurationSetValue(struct Configuration* configuration, const char* sect
 	} else {
 		HashTableRemove(currentSection, key);
 	}
+}
+
+void ConfigurationSetIntValue(struct Configuration* configuration, const char* section, const char* key, int value) {
+	char charValue[12];
+	sprintf(charValue, "%i", value);
+	ConfigurationSetValue(configuration, section, key, charValue);
+}
+
+void ConfigurationSetUIntValue(struct Configuration* configuration, const char* section, const char* key, unsigned value) {
+	char charValue[12];
+	sprintf(charValue, "%u", value);
+	ConfigurationSetValue(configuration, section, key, charValue);
+}
+
+void ConfigurationSetFloatValue(struct Configuration* configuration, const char* section, const char* key, float value) {
+	char charValue[FLT_DIG + 7];
+	sprintf(charValue, "%.*g", FLT_DIG, value);
+	ConfigurationSetValue(configuration, section, key, charValue);
 }
 
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {
