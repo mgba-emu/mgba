@@ -27,7 +27,7 @@ class Window : public QMainWindow {
 Q_OBJECT
 
 public:
-	Window(QWidget* parent = nullptr);
+	Window(ConfigController* config, QWidget* parent = nullptr);
 	virtual ~Window();
 
 	GameController* controller() { return m_controller; }

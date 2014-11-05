@@ -12,12 +12,12 @@ using namespace QGBA;
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
+	, m_window(&m_configController)
 {
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
 
 	GBAArguments args = {};
-    m_window.setConfig(&m_configController);
     if (m_configController.parseArguments(&args, argc, argv)) {
     	m_window.argumentsPassed(&args);
     } else {

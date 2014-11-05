@@ -20,8 +20,8 @@ protected:
 	bool event(QEvent*);
 
 private:
-	Window m_window;
 	ConfigController m_configController;
+	Window m_window;
 };
 
 }

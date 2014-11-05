@@ -20,12 +20,13 @@ extern "C" {
 
 using namespace QGBA;
 
-Window::Window(QWidget* parent)
+Window::Window(ConfigController* config, QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
+	, m_config(config)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -396,27 +397,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addAction(frameAdvance);
 
 	QMenu* target = emulationMenu->addMenu("FPS target");
-	QAction* setTarget = new QAction(tr("15"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(15); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("30"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(30); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("45"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(45); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("60"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(60); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("90"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(90); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("120"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(120); });
-	target->addAction(setTarget);
-	setTarget = new QAction(tr("240"), emulationMenu);
-	connect(setTarget, &QAction::triggered, [this]() { emit fpsTargetChanged(240); });
-	target->addAction(setTarget);
+	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
+	fpsTargetOption->connect([this](const QVariant& value) { emit fpsTargetChanged(value.toInt()); });
+	fpsTargetOption->addValue(tr("15"), 15, target);
+	fpsTargetOption->addValue(tr("30"), 30, target);
+	fpsTargetOption->addValue(tr("45"), 45, target);
+	fpsTargetOption->addValue(tr("60"), 60, target);
+	fpsTargetOption->addValue(tr("90"), 90, target);
+	fpsTargetOption->addValue(tr("120"), 120, target);
+	fpsTargetOption->addValue(tr("240"), 240, target);
+	m_config->updateOption("fpsTarget");
 
 	emulationMenu->addSeparator();
 
@@ -427,17 +417,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
 	emulationMenu->addAction(turbo);
 
-	QAction* videoSync = new QAction(tr("Sync to &video"), emulationMenu);
-	videoSync->setCheckable(true);
-	videoSync->setChecked(m_controller->videoSync());
-	connect(videoSync, SIGNAL(triggered(bool)), m_controller, SLOT(setVideoSync(bool)));
-	emulationMenu->addAction(videoSync);
+	ConfigOption* videoSync = m_config->addOption("videoSync");
+	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
+	videoSync->connect([this](const QVariant& value) { m_controller->setVideoSync(value.toBool()); });
+	m_config->updateOption("videoSync");
 
-	QAction* audioSync = new QAction(tr("Sync to &audio"), emulationMenu);
-	audioSync->setCheckable(true);
-	audioSync->setChecked(m_controller->audioSync());
-	connect(audioSync, SIGNAL(triggered(bool)), m_controller, SLOT(setAudioSync(bool)));
-	emulationMenu->addAction(audioSync);
+	ConfigOption* audioSync = m_config->addOption("audioSync");
+	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
+	audioSync->connect([this](const QVariant& value) { m_controller->setAudioSync(value.toBool()); });
+	m_config->updateOption("audioSync");
 
 	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
 	QMenu* frameMenu = videoMenu->addMenu(tr("Frame size"));
@@ -468,25 +456,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 	frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F"));
 
 	QMenu* skipMenu = videoMenu->addMenu(tr("Frame&skip"));
+	ConfigOption* skip = m_config->addOption("frameskip");
+	skip->connect([this](const QVariant& value) { m_controller->setFrameskip(value.toInt()); });
 	for (int i = 0; i <= 10; ++i) {
-		QAction* setSkip = new QAction(QString::number(i), skipMenu);
-		connect(setSkip, &QAction::triggered, [this, i]() {
-			m_controller->setFrameskip(i);
-		});
-		skipMenu->addAction(setSkip);
+		skip->addValue(QString::number(i), i, skipMenu);
 	}
+	m_config->updateOption("frameskip");
 
 	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
 	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
-	QAction* setBuffer = new QAction(tr("512"), buffersMenu);
-	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(512); });
-	buffersMenu->addAction(setBuffer);
-	setBuffer = new QAction(tr("1024"), buffersMenu);
-	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(1024); });
-	buffersMenu->addAction(setBuffer);
-	setBuffer = new QAction(tr("2048"), buffersMenu);
-	connect(setBuffer, &QAction::triggered, [this]() { emit audioBufferSamplesChanged(2048); });
-	buffersMenu->addAction(setBuffer);
+	ConfigOption* buffers = m_config->addOption("audioBuffers");
+	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
+	buffers->addValue(tr("512"), 512, buffersMenu);
+	buffers->addValue(tr("768"), 768, buffersMenu);
+	buffers->addValue(tr("1024"), 1024, buffersMenu);
+	buffers->addValue(tr("2048"), 2048, buffersMenu);
+	buffers->addValue(tr("4096"), 4096, buffersMenu);
+	m_config->updateOption("audioBuffers");
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
 	QAction* viewLogs = new QAction(tr("View &logs..."), debuggingMenu);
