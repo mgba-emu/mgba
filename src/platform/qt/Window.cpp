@@ -123,7 +123,7 @@ void Window::loadConfig() {
 	const GBAOptions* opts = m_config->options();
 
 	m_logView->setLevels(opts->logLevel);
-	// TODO: Have these show up as modified in the menu
+
 	m_controller->setFrameskip(opts->frameskip);
 	m_controller->setAudioSync(opts->audioSync);
 	m_controller->setVideoSync(opts->videoSync);
