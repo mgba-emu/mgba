@@ -31,6 +31,7 @@ endif()
 set(SOURCE_FILES
 	AudioDevice.cpp
 	AudioProcessor.cpp
+	ConfigController.cpp
 	Display.cpp
 	GBAApp.cpp
 	GameController.cpp

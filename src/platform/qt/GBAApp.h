@@ -3,12 +3,8 @@
 
 #include <QApplication>
 
+#include "ConfigController.h"
 #include "Window.h"
-
-extern "C" {
-#include "platform/commandline.h"
-#include "util/configuration.h"
-}
 
 namespace QGBA {
 
@@ -19,17 +15,13 @@ Q_OBJECT
 
 public:
 	GBAApp(int& argc, char* argv[]);
-	virtual ~GBAApp();
 
 protected:
 	bool event(QEvent*);
 
 private:
 	Window m_window;
-
-	GBAArguments m_args;
-	GBAOptions m_opts;
-	GBAConfig m_config;
+	ConfigController m_configController;
 };
 
 }

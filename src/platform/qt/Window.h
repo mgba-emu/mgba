@@ -17,6 +17,7 @@ struct GBAArguments;
 
 namespace QGBA {
 
+class ConfigController;
 class GameController;
 class LogView;
 class VideoView;
@@ -33,7 +34,7 @@ public:
 
 	static GBAKey mapKey(int qtKey);
 
-	void setOptions(GBAOptions*);
+	void setConfig(ConfigController*);
 	void argumentsPassed(GBAArguments*);
 
 signals:
@@ -47,6 +48,8 @@ public slots:
 	void selectBIOS();
 	void selectPatch();
 	void toggleFullScreen();
+	void loadConfig();
+	void saveConfig();
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -81,6 +84,7 @@ private:
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
+	ConfigController* m_config;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;

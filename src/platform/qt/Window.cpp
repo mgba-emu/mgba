@@ -6,6 +6,7 @@
 #include <QMenuBar>
 #include <QStackedLayout>
 
+#include "ConfigController.h"
 #include "GameController.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
@@ -102,6 +103,8 @@ GBAKey Window::mapKey(int qtKey) {
 }
 
 void Window::argumentsPassed(GBAArguments* args) {
+	loadConfig();
+
 	if (args->patch) {
 		m_controller->loadPatch(args->patch);
 	}
@@ -111,7 +114,13 @@ void Window::argumentsPassed(GBAArguments* args) {
 	}
 }
 
-void Window::setOptions(GBAOptions* opts) {
+void Window::setConfig(ConfigController* config) {
+	m_config = config;
+}
+
+void Window::loadConfig() {
+	const GBAOptions* opts = m_config->options();
+
 	m_logView->setLevels(opts->logLevel);
 	// TODO: Have these show up as modified in the menu
 	m_controller->setFrameskip(opts->frameskip);
@@ -133,6 +142,10 @@ void Window::setOptions(GBAOptions* opts) {
 	if (opts->width && opts->height) {
 		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
 	}
+}
+
+void Window::saveConfig() {
+	m_config->write();
 }
 
 void Window::selectROM() {
