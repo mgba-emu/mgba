@@ -34,6 +34,8 @@ void GBAConfigDeinit(struct GBAConfig*);
 bool GBAConfigLoad(struct GBAConfig*);
 bool GBAConfigSave(const struct GBAConfig*);
 
+const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);
+
 void GBAConfigSetValue(struct GBAConfig*, const char* key, const char* value);
 void GBAConfigSetIntValue(struct GBAConfig*, const char* key, int value);
 void GBAConfigSetUIntValue(struct GBAConfig*, const char* key, unsigned value);

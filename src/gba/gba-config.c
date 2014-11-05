@@ -100,6 +100,10 @@ bool GBAConfigSave(const struct GBAConfig* config) {
 	return ConfigurationWrite(&config->configTable, BINARY_NAME ".ini");
 }
 
+const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
+	return _lookupValue(config, key);
+}
+
 void GBAConfigSetValue(struct GBAConfig* config, const char* key, const char* value) {
 	ConfigurationSetValue(&config->configTable, config->port, key, value);
 }
