@@ -25,12 +25,11 @@ struct SDLSoftwareRenderer {
 	SDL_Texture* tex;
 	SDL_Renderer* sdlRenderer;
 #endif
-#else
-	int ratio;
 #endif
 
 	int viewportWidth;
 	int viewportHeight;
+	int ratio;
 
 #ifdef BUILD_GL
 	GLuint tex;

@@ -37,7 +37,6 @@ void GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
 
-	renderer->ratio = graphicsOpts.multiplier;
 	if (renderer->ratio == 1) {
 		renderer->d.outputBuffer = surface->pixels;
 #ifdef COLOR_16_BIT

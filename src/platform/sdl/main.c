@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
 	renderer.events.fullscreen = opts.fullscreen;
 	renderer.events.windowUpdated = 0;
 #endif
+	renderer.ratio = graphicsOpts.multiplier;
 
 	if (!_GBASDLInit(&renderer)) {
 		freeArguments(&args);
