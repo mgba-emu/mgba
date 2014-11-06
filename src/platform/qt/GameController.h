@@ -22,6 +22,7 @@ class QThread;
 namespace QGBA {
 
 class AudioProcessor;
+class InputController;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -41,6 +42,8 @@ public:
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
+
+	void setInputController(InputController* controller) { m_inputController = controller; }
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
@@ -113,6 +116,8 @@ private:
 	bool m_audioSync;
 	bool m_turbo;
 	bool m_turboForced;
+
+	InputController* m_inputController;
 };
 
 }

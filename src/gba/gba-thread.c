@@ -390,8 +390,6 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	}
 	free(threadContext->rewindBuffer);
 
-	GBAInputMapDeinit(&threadContext->inputMap);
-
 	if (threadContext->rom) {
 		threadContext->rom->close(threadContext->rom);
 		threadContext->rom = 0;

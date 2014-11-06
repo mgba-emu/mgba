@@ -14,52 +14,56 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+static int _openContexts = 0;
+
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+	if (!_openContexts && SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return false;
 	}
+	++_openContexts;
 	SDL_JoystickEventState(SDL_ENABLE);
 	context->joystick = SDL_JoystickOpen(0);
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
+	return true;
+}
 
+void GBASDLInitindings(struct GBAInputMap* inputMap) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_BACKSPACE, GBA_KEY_SELECT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_BACKSPACE, GBA_KEY_SELECT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
 #else
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_x, GBA_KEY_A);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_z, GBA_KEY_B);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_a, GBA_KEY_L);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_s, GBA_KEY_R);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RETURN, GBA_KEY_START);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_BACKSPACE, GBA_KEY_SELECT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #endif
 
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 10, GBA_KEY_L);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 11, GBA_KEY_R);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 3, GBA_KEY_START);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 0, GBA_KEY_SELECT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 4, GBA_KEY_UP);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
-	GBAInputBindKey(context->bindings, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
-
-	return true;
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 10, GBA_KEY_L);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 11, GBA_KEY_R);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 3, GBA_KEY_START);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 0, GBA_KEY_SELECT);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 4, GBA_KEY_UP);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
+	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
 }
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
@@ -69,7 +73,11 @@ void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configura
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	SDL_JoystickClose(context->joystick);
-	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+
+	--_openContexts;
+	if (!_openContexts) {
+		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+	}
 }
 
 static void _pauseAfterFrame(struct GBAThread* context) {
@@ -81,9 +89,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		key = GBAInputMapKey(&context->inputMap, SDL_BINDING_KEY, event->keysym.scancode);
+		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
 #else
-		key = GBAInputMapKey(&context->inputMap, SDL_BINDING_KEY, event->keysym.sym);
+		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
 #endif
 	}
 	if (key != GBA_KEY_NONE) {
@@ -225,9 +233,9 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	}
 }
 
-static void _GBASDLHandleJoyButton(struct GBAThread* context, const struct SDL_JoyButtonEvent* event) {
+static void _GBASDLHandleJoyButton(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	enum GBAKey key = 0;
-	key = GBAInputMapKey(&context->inputMap, SDL_BINDING_BUTTON, event->button);
+	key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
 	if (key == GBA_KEY_NONE) {
 		return;
 	}
@@ -286,7 +294,7 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		_GBASDLHandleJoyButton(context, &event->jbutton);
+		_GBASDLHandleJoyButton(context, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
 		_GBASDLHandleJoyHat(context, &event->jhat);

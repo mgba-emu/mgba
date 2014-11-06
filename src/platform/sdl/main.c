@@ -31,6 +31,9 @@ int main(int argc, char** argv) {
 	struct SDLSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer.d);
 
+	struct GBAInputMap inputMap;
+	GBAInputMapInit(&inputMap);
+
 	struct GBAConfig config;
 	GBAConfigInit(&config, PORT);
 	GBAConfigLoad(&config);
@@ -88,7 +91,8 @@ int main(int argc, char** argv) {
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio);
 
-	renderer.events.bindings = &context.inputMap;
+	renderer.events.bindings = &inputMap;
+	GBASDLInitindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
 	GBASDLEventsLoadConfig(&renderer.events, &config.configTable); // TODO: Don't use this directly
 
@@ -101,6 +105,7 @@ int main(int argc, char** argv) {
 	GBAConfigFreeOpts(&opts);
 	GBAConfigDeinit(&config);
 	free(context.debugger);
+	GBAInputMapDeinit(&inputMap);
 
 	_GBASDLDeinit(&renderer);
 

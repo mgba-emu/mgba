@@ -14,6 +14,10 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
 	, m_window(&m_configController)
 {
+#ifdef BUILD_SDL
+	SDL_Init(SDL_INIT_NOPARACHUTE);
+#endif
+
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
 

@@ -63,7 +63,6 @@ struct GBAThread {
 	struct VFile* patch;
 	const char* fname;
 	int activeKeys;
-	struct GBAInputMap inputMap;
 	struct GBAAVStream* stream;
 
 	// Run-time options

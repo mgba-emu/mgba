@@ -45,9 +45,9 @@ void GBAInputMapDeinit(struct GBAInputMap* map) {
 	map->numMaps = 0;
 }
 
-enum GBAKey GBAInputMapKey(struct GBAInputMap* map, uint32_t type, int key) {
+enum GBAKey GBAInputMapKey(const struct GBAInputMap* map, uint32_t type, int key) {
 	size_t m;
-	struct GBAInputMapImpl* impl = 0;
+	const struct GBAInputMapImpl* impl = 0;
 	for (m = 0; m < map->numMaps; ++m) {
 		if (map->maps[m].type == type) {
 			impl = &map->maps[m];

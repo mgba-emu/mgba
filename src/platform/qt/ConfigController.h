@@ -57,6 +57,9 @@ public:
 	const GBAOptions* options() const { return &m_opts; }
 	bool parseArguments(GBAArguments* args, int argc, char* argv[]);
 
+	const Configuration* configuration() const { return &m_config.configTable; }
+	const Configuration* defaults() const { return &m_config.defaultsTable; }
+
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 

@@ -10,6 +10,7 @@ extern "C" {
 
 #include "GDBController.h"
 #include "Display.h"
+#include "InputController.h"
 #include "LoadSaveState.h"
 
 struct GBAOptions;
@@ -31,8 +32,6 @@ public:
 	virtual ~Window();
 
 	GameController* controller() { return m_controller; }
-
-	static GBAKey mapKey(int qtKey);
 
 	void setConfig(ConfigController*);
 	void argumentsPassed(GBAArguments*);
@@ -85,6 +84,7 @@ private:
 	WindowBackground* m_screenWidget;
 	QPixmap m_logo;
 	ConfigController* m_config;
+	InputController m_inputController;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;

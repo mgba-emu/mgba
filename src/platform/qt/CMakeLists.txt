@@ -35,6 +35,7 @@ set(SOURCE_FILES
 	Display.cpp
 	GBAApp.cpp
 	GameController.cpp
+	InputController.cpp
 	LoadSaveState.cpp
 	LogView.cpp
 	SavestateButton.cpp

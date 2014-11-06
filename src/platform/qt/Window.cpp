@@ -36,6 +36,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 {
 	setWindowTitle(PROJECT_NAME);
 	m_controller = new GameController(this);
+	m_controller->setInputController(&m_inputController);
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
@@ -64,43 +65,6 @@ Window::Window(ConfigController* config, QWidget* parent)
 Window::~Window() {
 	delete m_logView;
 	delete m_videoView;
-}
-
-GBAKey Window::mapKey(int qtKey) {
-	switch (qtKey) {
-	case Qt::Key_Z:
-		return GBA_KEY_A;
-		break;
-	case Qt::Key_X:
-		return GBA_KEY_B;
-		break;
-	case Qt::Key_A:
-		return GBA_KEY_L;
-		break;
-	case Qt::Key_S:
-		return GBA_KEY_R;
-		break;
-	case Qt::Key_Return:
-		return GBA_KEY_START;
-		break;
-	case Qt::Key_Backspace:
-		return GBA_KEY_SELECT;
-		break;
-	case Qt::Key_Up:
-		return GBA_KEY_UP;
-		break;
-	case Qt::Key_Down:
-		return GBA_KEY_DOWN;
-		break;
-	case Qt::Key_Left:
-		return GBA_KEY_LEFT;
-		break;
-	case Qt::Key_Right:
-		return GBA_KEY_RIGHT;
-		break;
-	default:
-		return GBA_KEY_NONE;
-	}
 }
 
 void Window::argumentsPassed(GBAArguments* args) {
@@ -143,6 +107,8 @@ void Window::loadConfig() {
 	if (opts->width && opts->height) {
 		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
 	}
+
+	m_inputController.loadDefaultConfiguration(m_config->configuration());
 }
 
 void Window::saveConfig() {
@@ -202,7 +168,7 @@ void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->key() == Qt::Key_Tab) {
 		m_controller->setTurbo(true, false);
 	}
-	GBAKey key = mapKey(event->key());
+	GBAKey key = m_inputController.mapKeyboard(event->key());
 	if (key == GBA_KEY_NONE) {
 		QWidget::keyPressEvent(event);
 		return;
@@ -219,7 +185,7 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	if (event->key() == Qt::Key_Tab) {
 		m_controller->setTurbo(false, false);
 	}
-	GBAKey key = mapKey(event->key());
+	GBAKey key = m_inputController.mapKeyboard(event->key());
 	if (key == GBA_KEY_NONE) {
 		QWidget::keyPressEvent(event);
 		return;
