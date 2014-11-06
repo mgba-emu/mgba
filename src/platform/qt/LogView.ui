@@ -99,6 +99,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="levelSWI">
+          <property name="text">
+           <string>SW Interrupt</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
