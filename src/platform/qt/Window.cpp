@@ -8,6 +8,7 @@
 
 #include "ConfigController.h"
 #include "GameController.h"
+#include "GBAKeyEditor.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "LoadSaveState.h"
@@ -134,6 +135,13 @@ void Window::selectPatch() {
 	if (!filename.isEmpty()) {
 		m_controller->loadPatch(filename);
 	}
+}
+
+void Window::openKeymapWindow() {
+	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, InputController::KEYBOARD);
+	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
+	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
+	keyEditor->show();
 }
 
 #ifdef USE_FFMPEG
@@ -394,6 +402,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
 	audioSync->connect([this](const QVariant& value) { m_controller->setAudioSync(value.toBool()); });
 	m_config->updateOption("audioSync");
+
+	emulationMenu->addSeparator();
+	QAction* keymap = new QAction(tr("Remap keyboard..."), emulationMenu);
+	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
+	emulationMenu->addAction(keymap);
 
 	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
 	QMenu* frameMenu = videoMenu->addMenu(tr("Frame size"));

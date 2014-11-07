@@ -109,6 +109,27 @@ void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKe
 	impl->map[input] = key;
 }
 
+int GBAInputQueryBinding(const struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
+	if (input >= GBA_KEY_MAX) {
+		return 0;
+	}
+
+	size_t m;
+	const struct GBAInputMapImpl* impl = 0;
+	for (m = 0; m < map->numMaps; ++m) {
+		if (map->maps[m].type == type) {
+			impl = &map->maps[m];
+			break;
+		}
+	}
+	if (!impl || !impl->map) {
+		return 0;
+	}
+
+	return impl->map[input];
+}
+
+
 void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config) {
 	_loadKey(map, type, config, GBA_KEY_A, "A");
 	_loadKey(map, type, config, GBA_KEY_B, "B");

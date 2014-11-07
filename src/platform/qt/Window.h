@@ -50,6 +50,8 @@ public slots:
 	void loadConfig();
 	void saveConfig();
 
+	void openKeymapWindow();
+
 #ifdef USE_FFMPEG
 	void openVideoWindow();
 #endif

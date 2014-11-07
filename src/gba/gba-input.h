@@ -15,6 +15,7 @@ void GBAInputMapDeinit(struct GBAInputMap*);
 
 enum GBAKey GBAInputMapKey(const struct GBAInputMap*, uint32_t type, int key);
 void GBAInputBindKey(struct GBAInputMap*, uint32_t type, int key, enum GBAKey input);
+int GBAInputQueryBinding(const struct GBAInputMap*, uint32_t type, enum GBAKey input);
 
 void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 

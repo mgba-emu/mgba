@@ -52,6 +52,10 @@ GBAKey InputController::mapKeyboard(int key) const {
 	return GBAInputMapKey(&m_inputMap, KEYBOARD, key);
 }
 
+void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
+	return GBAInputBindKey(&m_inputMap, type, key, gbaKey);
+}
+
 #ifdef BUILD_SDL
 int InputController::testSDLEvents() {
 	SDL_Joystick* joystick = m_sdlEvents.joystick;

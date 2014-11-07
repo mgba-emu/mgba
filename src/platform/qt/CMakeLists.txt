@@ -34,8 +34,10 @@ set(SOURCE_FILES
 	ConfigController.cpp
 	Display.cpp
 	GBAApp.cpp
+	GBAKeyEditor.cpp
 	GameController.cpp
 	InputController.cpp
+	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogView.cpp
 	SavestateButton.cpp

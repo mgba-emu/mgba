@@ -25,6 +25,10 @@ public:
 
 	GBAKey mapKeyboard(int key) const;
 
+	void bindKey(uint32_t type, int key, GBAKey);
+
+	const GBAInputMap* map() const { return &m_inputMap; }
+
 #ifdef BUILD_SDL
 	int testSDLEvents();
 #endif
