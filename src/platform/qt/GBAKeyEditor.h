@@ -2,7 +2,7 @@
 #define QGBA_GBA_KEY_EDITOR
 
 #include <QList>
-#include <QPixmap>
+#include <QPicture>
 #include <QWidget>
 
 class QPushButton;
@@ -51,7 +51,7 @@ private:
 
 	InputController* m_controller;
 
-	QPixmap m_background;
+	QPicture m_background;
 };
 
 }

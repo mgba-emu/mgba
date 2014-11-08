@@ -2,7 +2,6 @@
 
 #include <QPaintEvent>
 #include <QPainter>
-#include <QPicture>
 #include <QPushButton>
 
 #include "InputController.h"
@@ -21,9 +20,7 @@ const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* parent)
 	: QWidget(parent)
-	, m_background(QString(":/res/keymap.png"))
 {
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
 
@@ -118,9 +115,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 
 	m_currentKey = m_keyOrder.end();
 
-	QPixmap background(":/res/keymap.png");
-	m_background = background.scaled(QSize(300, 300) * devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	m_background.setDevicePixelRatio(devicePixelRatio());
+	m_background.load(":/res/keymap.qpic");
 }
 
 void GBAKeyEditor::setAll() {
@@ -144,7 +139,8 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 
 void GBAKeyEditor::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
-	painter.drawPixmap(0, 0, m_background);
+	painter.scale(width() / 480.0, height() / 480.0);
+	painter.drawPicture(0, 0, m_background);
 }
 
 void GBAKeyEditor::setNext() {
