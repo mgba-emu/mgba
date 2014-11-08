@@ -427,6 +427,9 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->savedState = threadContext->state;
+	if (threadContext->sync.audioWait) {
+		ConditionWake(&threadContext->sync.audioRequiredCond);
+	}
 	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_INTERRUPTING;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
