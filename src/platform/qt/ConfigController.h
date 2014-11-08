@@ -6,6 +6,8 @@
 #include <QScopedPointer>
 #include <QVariant>
 
+#include <functional>
+
 extern "C" {
 #include "gba-config.h"
 #include "util/configuration.h"
