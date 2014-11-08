@@ -313,6 +313,8 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	MutexInit(&threadContext->sync.audioBufferMutex);
 	ConditionInit(&threadContext->sync.audioRequiredCond);
 
+	threadContext->interruptDepth = 0;
+
 #ifndef _WIN32
 	sigset_t signals;
 	sigemptyset(&signals);
@@ -426,10 +428,12 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 
 void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	threadContext->savedState = threadContext->state;
-	if (threadContext->sync.audioWait) {
-		ConditionWake(&threadContext->sync.audioRequiredCond);
+	++threadContext->interruptDepth;
+	if (threadContext->interruptDepth > 1) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
 	}
+	threadContext->savedState = threadContext->state;
 	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_INTERRUPTING;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
@@ -441,7 +445,13 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 }
 
 void GBAThreadContinue(struct GBAThread* threadContext) {
-	_changeState(threadContext, threadContext->savedState, 1);
+	MutexLock(&threadContext->stateMutex);
+	--threadContext->interruptDepth;
+	if (threadContext->interruptDepth < 1) {
+		threadContext->state = threadContext->savedState;
+		ConditionWake(&threadContext->stateCond);
+	}
+	MutexUnlock(&threadContext->stateMutex);
 }
 
 void GBAThreadPause(struct GBAThread* threadContext) {

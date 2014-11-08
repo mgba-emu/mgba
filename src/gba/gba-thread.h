@@ -76,6 +76,7 @@ struct GBAThread {
 	Mutex stateMutex;
 	Condition stateCond;
 	enum ThreadState savedState;
+	int interruptDepth;
 
 	LogHandler logHandler;
 	int logLevel;
