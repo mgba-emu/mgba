@@ -57,9 +57,6 @@ public:
 	const GBAOptions* options() const { return &m_opts; }
 	bool parseArguments(GBAArguments* args, int argc, char* argv[]);
 
-	const Configuration* configuration() const { return &m_config.configTable; }
-	const Configuration* defaults() const { return &m_config.defaultsTable; }
-
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
@@ -73,6 +70,11 @@ public slots:
 	void write();
 
 private:
+	Configuration* configuration() { return &m_config.configTable; }
+	Configuration* defaults() { return &m_config.defaultsTable; }
+
+	friend class InputController; // TODO: Do this without friends
+
 	GBAConfig m_config;
 	GBAOptions m_opts;
 

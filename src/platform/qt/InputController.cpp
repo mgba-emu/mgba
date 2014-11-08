@@ -1,6 +1,6 @@
 #include "InputController.h"
 
-#include <Qt>
+#include "ConfigController.h"
 
 extern "C" {
 #include "util/configuration.h"
@@ -37,15 +37,21 @@ InputController::~InputController() {
 #endif
 }
 
-void InputController::loadDefaultConfiguration(const Configuration* config) {
-	loadConfiguration(KEYBOARD, config);
+void InputController::setConfiguration(ConfigController* config) {
+	m_config = config;
+	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
-	loadConfiguration(SDL_BINDING_BUTTON, config);
+	loadConfiguration(SDL_BINDING_BUTTON);
 #endif
 }
 
-void InputController::loadConfiguration(uint32_t type, const Configuration* config) {
-	GBAInputMapLoad(&m_inputMap, type, config);
+void InputController::loadConfiguration(uint32_t type) {
+	GBAInputMapLoad(&m_inputMap, type, m_config->configuration());
+}
+
+void InputController::saveConfiguration(uint32_t type) {
+	GBAInputMapSave(&m_inputMap, type, m_config->configuration());
+	m_config->write();
 }
 
 GBAKey InputController::mapKeyboard(int key) const {

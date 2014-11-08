@@ -109,7 +109,7 @@ void Window::loadConfig() {
 		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
 	}
 
-	m_inputController.loadDefaultConfiguration(m_config->configuration());
+	m_inputController.setConfiguration(m_config);
 }
 
 void Window::saveConfig() {

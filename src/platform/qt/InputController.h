@@ -9,9 +9,9 @@ extern "C" {
 #endif
 }
 
-struct Configuration;
-
 namespace QGBA {
+
+class ConfigController;
 
 class InputController {
 public:
@@ -20,8 +20,9 @@ public:
 	InputController();
 	~InputController();
 
-	void loadDefaultConfiguration(const Configuration* config);
-	void loadConfiguration(uint32_t type, const Configuration* config);
+	void setConfiguration(ConfigController* config);
+	void loadConfiguration(uint32_t type);
+	void saveConfiguration(uint32_t type = KEYBOARD);
 
 	GBAKey mapKeyboard(int key) const;
 
@@ -35,6 +36,7 @@ public:
 
 private:
 	GBAInputMap m_inputMap;
+	ConfigController* m_config;
 
 #ifdef BUILD_SDL
 	GBASDLEvents m_sdlEvents;

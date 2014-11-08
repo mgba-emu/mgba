@@ -3,6 +3,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
+#include <QVBoxLayout>
 
 #include "InputController.h"
 #include "KeyEditor.h"
@@ -20,6 +21,8 @@ const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* parent)
 	: QWidget(parent)
+	, m_type(type)
+	, m_controller(controller)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
@@ -47,58 +50,29 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_keyL->setValue(GBAInputQueryBinding(map, type, GBA_KEY_L));
 	m_keyR->setValue(GBAInputQueryBinding(map, type, GBA_KEY_R));
 
-	connect(m_keyDU, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_UP);
-		setNext();
-	});
+	connect(m_keyDU, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyDD, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyDL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyDR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keySelect, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyStart, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyA, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyB, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+	connect(m_keyR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 
-	connect(m_keyDD, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_DOWN);
-		setNext();
-	});
+	m_buttons = new QWidget(this);
+	QVBoxLayout* layout = new QVBoxLayout;
+	m_buttons->setLayout(layout);
 
-	connect(m_keyDL, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_LEFT);
-		setNext();
-	});
+	QPushButton* setAll = new QPushButton(tr("Set all"));
+	connect(setAll, SIGNAL(pressed()), this, SLOT(setAll()));
+	layout->addWidget(setAll);
 
-	connect(m_keyDR, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_RIGHT);
-		setNext();
-	});
-
-	connect(m_keySelect, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_SELECT);
-		setNext();
-	});
-
-	connect(m_keyStart, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_START);
-		setNext();
-	});
-
-	connect(m_keyA, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_A);
-		setNext();
-	});
-
-	connect(m_keyB, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_B);
-		setNext();
-	});
-
-	connect(m_keyL, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_L);
-		setNext();
-	});
-
-	connect(m_keyR, &KeyEditor::valueChanged, [this, type, controller](int key) {
-		controller->bindKey(type, key, GBA_KEY_R);
-		setNext();
-	});
-
-	m_setAll = new QPushButton(tr("Set all"), this);
-	connect(m_setAll, SIGNAL(pressed()), this, SLOT(setAll()));
+	QPushButton* save = new QPushButton(tr("Save"));
+	connect(save, SIGNAL(pressed()), this, SLOT(save()));
+	layout->addWidget(save);
+	layout->setSpacing(6);
 
 	m_keyOrder = QList<KeyEditor*>{
 		m_keyDU,
@@ -116,6 +90,8 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_currentKey = m_keyOrder.end();
 
 	m_background.load(":/res/keymap.qpic");
+
+	setAll->setFocus();
 }
 
 void GBAKeyEditor::setAll() {
@@ -124,7 +100,7 @@ void GBAKeyEditor::setAll() {
 }
 
 void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
-	setLocation(m_setAll, 0.5, 0.2);
+	setLocation(m_buttons, 0.5, 0.2);
 	setLocation(m_keyDU, DPAD_CENTER_X, DPAD_CENTER_Y - DPAD_HEIGHT);
 	setLocation(m_keyDD, DPAD_CENTER_X, DPAD_CENTER_Y + DPAD_HEIGHT);
 	setLocation(m_keyDL, DPAD_CENTER_X - DPAD_WIDTH, DPAD_CENTER_Y);
@@ -158,6 +134,20 @@ void GBAKeyEditor::setNext() {
 	} else {
 		(*(m_currentKey - 1))->clearFocus();
 	}
+}
+
+void GBAKeyEditor::save() {
+	m_controller->bindKey(m_type, m_keyDU->value(), GBA_KEY_UP);
+	m_controller->bindKey(m_type, m_keyDD->value(), GBA_KEY_DOWN);
+	m_controller->bindKey(m_type, m_keyDL->value(), GBA_KEY_LEFT);
+	m_controller->bindKey(m_type, m_keyDR->value(), GBA_KEY_RIGHT);
+	m_controller->bindKey(m_type, m_keySelect->value(), GBA_KEY_SELECT);
+	m_controller->bindKey(m_type, m_keyStart->value(), GBA_KEY_START);
+	m_controller->bindKey(m_type, m_keyA->value(), GBA_KEY_A);
+	m_controller->bindKey(m_type, m_keyB->value(), GBA_KEY_B);
+	m_controller->bindKey(m_type, m_keyL->value(), GBA_KEY_L);
+	m_controller->bindKey(m_type, m_keyR->value(), GBA_KEY_R);
+	m_controller->saveConfiguration(m_type);
 }
 
 void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {

@@ -5,8 +5,6 @@
 #include <QPicture>
 #include <QWidget>
 
-class QPushButton;
-
 namespace QGBA {
 
 class InputController;
@@ -25,17 +23,19 @@ protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
 
+private slots:
+	void setNext();
+	void save();
+
 private:
 	static const qreal DPAD_CENTER_X;
 	static const qreal DPAD_CENTER_Y;
 	static const qreal DPAD_WIDTH;
 	static const qreal DPAD_HEIGHT;
 
-	void setNext();
-
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
-	QPushButton* m_setAll;
+	QWidget* m_buttons;
 	KeyEditor* m_keyDU;
 	KeyEditor* m_keyDD;
 	KeyEditor* m_keyDL;
@@ -49,6 +49,7 @@ private:
 	QList<KeyEditor*> m_keyOrder;
 	QList<KeyEditor*>::iterator m_currentKey;
 
+	uint32_t m_type;
 	InputController* m_controller;
 
 	QPicture m_background;

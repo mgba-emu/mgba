@@ -2,8 +2,11 @@
 
 #include "util/configuration.h"
 
+#include <inttypes.h>
+
 #define SECTION_NAME_MAX 128
 #define KEY_NAME_MAX 32
+#define KEY_VALUE_MAX 16
 
 struct GBAInputMapImpl {
 	int* map;
@@ -17,6 +20,7 @@ static void _loadKey(struct GBAInputMap* map, uint32_t type, const struct Config
 
 	char keyKey[KEY_NAME_MAX];
 	snprintf(keyKey, KEY_NAME_MAX, "key%s", keyName);
+	keyKey[KEY_NAME_MAX - 1] = '\0';
 
 	const char* value = ConfigurationGetValue(config, sectionName, keyKey);
 	if (!value) {
@@ -28,6 +32,22 @@ static void _loadKey(struct GBAInputMap* map, uint32_t type, const struct Config
 		return;
 	}
 	GBAInputBindKey(map, type, intValue, key);
+}
+
+static void _saveKey(const struct GBAInputMap* map, uint32_t type, struct Configuration* config, enum GBAKey key, const char* keyName) {
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+
+	char keyKey[KEY_NAME_MAX];
+	snprintf(keyKey, KEY_NAME_MAX, "key%s", keyName);
+	keyKey[KEY_NAME_MAX - 1] = '\0';
+
+	int value = GBAInputQueryBinding(map, type, key);
+	char keyValue[KEY_VALUE_MAX];
+	snprintf(keyValue, KEY_VALUE_MAX, "%" PRIi32, value);
+
+	ConfigurationSetValue(config, sectionName, keyKey, keyValue);
 }
 
 void GBAInputMapInit(struct GBAInputMap* map) {
@@ -129,7 +149,6 @@ int GBAInputQueryBinding(const struct GBAInputMap* map, uint32_t type, enum GBAK
 	return impl->map[input];
 }
 
-
 void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config) {
 	_loadKey(map, type, config, GBA_KEY_A, "A");
 	_loadKey(map, type, config, GBA_KEY_B, "B");
@@ -141,4 +160,17 @@ void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Config
 	_loadKey(map, type, config, GBA_KEY_DOWN, "Down");
 	_loadKey(map, type, config, GBA_KEY_LEFT, "Left");
 	_loadKey(map, type, config, GBA_KEY_RIGHT, "Right");
+}
+
+void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Configuration* config) {
+	_saveKey(map, type, config, GBA_KEY_A, "A");
+	_saveKey(map, type, config, GBA_KEY_B, "B");
+	_saveKey(map, type, config, GBA_KEY_L, "L");
+	_saveKey(map, type, config, GBA_KEY_R, "R");
+	_saveKey(map, type, config, GBA_KEY_START, "Start");
+	_saveKey(map, type, config, GBA_KEY_SELECT, "Select");
+	_saveKey(map, type, config, GBA_KEY_UP, "Up");
+	_saveKey(map, type, config, GBA_KEY_DOWN, "Down");
+	_saveKey(map, type, config, GBA_KEY_LEFT, "Left");
+	_saveKey(map, type, config, GBA_KEY_RIGHT, "Right");
 }
