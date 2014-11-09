@@ -53,8 +53,6 @@ int main(int argc, char** argv) {
 
 	struct SubParser subparser;
 
-	GBAConfigMap(&config, &opts);
-
 	initParserForGraphics(&subparser, &graphicsOpts);
 	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], subparser.usage);
@@ -63,6 +61,8 @@ int main(int argc, char** argv) {
 		GBAConfigDeinit(&config);
 		return 1;
 	}
+
+	GBAConfigMap(&config, &opts);
 
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
