@@ -11,6 +11,7 @@
 #include "gba-thread.h"
 #include "gba.h"
 #include "gba-config.h"
+#include "gba-video.h"
 #include "platform/commandline.h"
 #include "util/configuration.h"
 
@@ -39,6 +40,8 @@ int main(int argc, char** argv) {
 	GBAConfigLoad(&config);
 
 	struct GBAOptions opts = {
+		.width = VIDEO_HORIZONTAL_PIXELS,
+		.height = VIDEO_VERTICAL_PIXELS,
 		.audioBuffers = 512,
 		.videoSync = false,
 		.audioSync = true,
