@@ -14,6 +14,7 @@ InputController::InputController() {
 #ifdef BUILD_SDL
 	m_sdlEvents.bindings = &m_inputMap;
 	GBASDLInitEvents(&m_sdlEvents);
+	GBASDLInitBindings(&m_inputMap);
 	SDL_JoystickEventState(SDL_QUERY);
 #endif
 
