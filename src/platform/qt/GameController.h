@@ -28,7 +28,7 @@ class GameController : public QObject {
 Q_OBJECT
 
 public:
-	static const bool VIDEO_SYNC = false;
+	static const bool VIDEO_SYNC = true;
 	static const bool AUDIO_SYNC = true;
 
 	GameController(QObject* parent = nullptr);
