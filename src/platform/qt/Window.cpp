@@ -284,13 +284,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 
 	QAction* loadState = new QAction(tr("&Load state"), fileMenu);
-	loadState->setShortcut(tr("Ctrl+L"));
+	loadState->setShortcut(tr("F10"));
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
 	m_gameActions.append(loadState);
 	fileMenu->addAction(loadState);
 
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
-	saveState->setShortcut(tr("Ctrl+S"));
+	saveState->setShortcut(tr("Shift+F10"));
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
 	fileMenu->addAction(saveState);
@@ -311,25 +311,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_gameActions.append(quickSave);
 		quickSaveMenu->addAction(quickSave);
 	}
-
-#if defined(USE_PNG) || defined(USE_FFMPEG)
-	fileMenu->addSeparator();
-#endif
-
-#ifdef USE_PNG
-	QAction* screenshot = new QAction(tr("Take &screenshot"), fileMenu);
-	screenshot->setShortcut(tr("F12"));
-	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
-	m_gameActions.append(screenshot);
-	fileMenu->addAction(screenshot);
-#endif
-
-#ifdef USE_FFMPEG
-	QAction* recordOutput = new QAction(tr("Record output..."), fileMenu);
-	recordOutput->setShortcut(tr("F11"));
-	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
-	fileMenu->addAction(recordOutput);
-#endif
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
@@ -408,27 +389,27 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
 	emulationMenu->addAction(keymap);
 
-	QMenu* videoMenu = menubar->addMenu(tr("&Video"));
-	QMenu* frameMenu = videoMenu->addMenu(tr("Frame size"));
-	QAction* setSize = new QAction(tr("1x"), videoMenu);
+	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
+	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
+	QAction* setSize = new QAction(tr("1x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("2x"), videoMenu);
+	setSize = new QAction(tr("2x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("3x"), videoMenu);
+	setSize = new QAction(tr("3x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
 	});
 	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("4x"), videoMenu);
+	setSize = new QAction(tr("4x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
 		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
@@ -436,7 +417,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	frameMenu->addAction(setSize);
 	frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F"));
 
-	QMenu* skipMenu = videoMenu->addMenu(tr("Frame&skip"));
+	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");
 	skip->connect([this](const QVariant& value) { m_controller->setFrameskip(value.toInt()); });
 	for (int i = 0; i <= 10; ++i) {
@@ -444,8 +425,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("frameskip");
 
-	QMenu* soundMenu = menubar->addMenu(tr("&Sound"));
-	QMenu* buffersMenu = soundMenu->addMenu(tr("Buffer &size"));
+	avMenu->addSeparator();
+
+	QMenu* buffersMenu = avMenu->addMenu(tr("Buffer &size"));
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
 	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
 	buffers->addValue(tr("512"), 512, buffersMenu);
@@ -454,6 +436,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	buffers->addValue(tr("2048"), 2048, buffersMenu);
 	buffers->addValue(tr("4096"), 4096, buffersMenu);
 	m_config->updateOption("audioBuffers");
+
+#if defined(USE_PNG) || defined(USE_FFMPEG)
+	avMenu->addSeparator();
+#endif
+
+#ifdef USE_PNG
+	QAction* screenshot = new QAction(tr("Take &screenshot"), avMenu);
+	screenshot->setShortcut(tr("F12"));
+	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
+	m_gameActions.append(screenshot);
+	avMenu->addAction(screenshot);
+#endif
+
+#ifdef USE_FFMPEG
+	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
+	recordOutput->setShortcut(tr("F11"));
+	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
+	avMenu->addAction(recordOutput);
+#endif
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
 	QAction* viewLogs = new QAction(tr("View &logs..."), debuggingMenu);
