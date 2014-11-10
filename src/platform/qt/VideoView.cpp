@@ -47,6 +47,9 @@ VideoView::VideoView(QWidget* parent)
 	connect(m_ui.audio, SIGNAL(activated(const QString&)), this, SLOT(setAudioCodec(const QString&)));
 	connect(m_ui.video, SIGNAL(activated(const QString&)), this, SLOT(setVideoCodec(const QString&)));
 	connect(m_ui.container, SIGNAL(activated(const QString&)), this, SLOT(setContainer(const QString&)));
+	connect(m_ui.audio, SIGNAL(editTextChanged(const QString&)), this, SLOT(setAudioCodec(const QString&)));
+	connect(m_ui.video, SIGNAL(editTextChanged(const QString&)), this, SLOT(setVideoCodec(const QString&)));
+	connect(m_ui.container, SIGNAL(editTextChanged(const QString&)), this, SLOT(setContainer(const QString&)));
 
 	connect(m_ui.abr, SIGNAL(valueChanged(int)), this, SLOT(setAudioBitrate(int)));
 	connect(m_ui.vbr, SIGNAL(valueChanged(int)), this, SLOT(setVideoBitrate(int)));
