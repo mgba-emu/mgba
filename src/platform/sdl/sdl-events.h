@@ -26,7 +26,7 @@ struct GBASDLEvents {
 bool GBASDLInitEvents(struct GBASDLEvents*);
 void GBASDLDeinitEvents(struct GBASDLEvents*);
 
-void GBASDLInitindings(struct GBAInputMap* inputMap);
+void GBASDLInitBindings(struct GBAInputMap* inputMap);
 void GBASDLEventsLoadConfig(struct GBASDLEvents*, const struct Configuration*);
 
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event);

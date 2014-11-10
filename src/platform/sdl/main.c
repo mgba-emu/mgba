@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 	}
 
 	renderer.events.bindings = &inputMap;
-	GBASDLInitindings(&inputMap);
+	GBASDLInitBindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
 	GBASDLEventsLoadConfig(&renderer.events, &config.configTable); // TODO: Don't use this directly
 

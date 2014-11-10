@@ -29,7 +29,7 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	return true;
 }
 
-void GBASDLInitindings(struct GBAInputMap* inputMap) {
+void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
