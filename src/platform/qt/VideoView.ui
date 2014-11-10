@@ -41,6 +41,11 @@
         </item>
         <item>
          <property name="text">
+          <string>WebM</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>AVI</string>
          </property>
         </item>
@@ -64,6 +69,11 @@
         <item>
          <property name="text">
           <string>h.264</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>VP8</string>
          </property>
         </item>
         <item>

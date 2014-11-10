@@ -25,7 +25,12 @@ VideoView::VideoView(QWidget* parent)
 		s_acodecMap["uncompressed"] = "pcm_s16le";
 	}
 	if (s_vcodecMap.empty()) {
+		s_vcodecMap["dirac"] = "libschroedinger";
 		s_vcodecMap["h264"] = "libx264";
+		s_vcodecMap["hevc"] = "libx265";
+		s_vcodecMap["theora"] = "libtheora";
+		s_vcodecMap["vp8"] = "libvpx";
+		s_vcodecMap["vp9"] = "libvpx-vp9";
 		s_vcodecMap["xvid"] = "libxvid";
 	}
 	if (s_containerMap.empty()) {
