@@ -2,6 +2,8 @@
 
 #include "platform/commandline.h"
 
+#include <sys/stat.h>
+
 #define SECTION_NAME_MAX 128
 
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
@@ -93,11 +95,22 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 }
 
 bool GBAConfigLoad(struct GBAConfig* config) {
-	return ConfigurationRead(&config->configTable, BINARY_NAME ".ini");
+	char path[PATH_MAX];
+	char* home = getenv("HOME");
+	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
+	return ConfigurationRead(&config->configTable, path);
 }
 
 bool GBAConfigSave(const struct GBAConfig* config) {
-	return ConfigurationWrite(&config->configTable, BINARY_NAME ".ini");
+	// TODO: Support Windows; move to common code
+	char path[PATH_MAX];
+	char* home = getenv("HOME");
+	snprintf(path, PATH_MAX, "%s/.config", home);
+	mkdir(path, 0755);
+	snprintf(path, PATH_MAX, "%s/.config/%s", home, BINARY_NAME);
+	mkdir(path, 0755);
+	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
+	return ConfigurationWrite(&config->configTable, path);
 }
 
 const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
