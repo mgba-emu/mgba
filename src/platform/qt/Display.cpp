@@ -52,9 +52,13 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 
 void Display::stopDrawing() {
 	if (m_drawThread) {
+		GBAThreadInterrupt(m_context);
+		GBASyncSuspendDrawing(&m_context->sync);
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
+		GBASyncResumeDrawing(&m_context->sync);
+		GBAThreadContinue(m_context);
 	}
 }
 
