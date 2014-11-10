@@ -426,10 +426,14 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 	}
 }
 
+bool GBAThreadIsActive(struct GBAThread* threadContext) {
+	return threadContext->state >= THREAD_RUNNING && threadContext->state < THREAD_EXITING;
+}
+
 void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	++threadContext->interruptDepth;
-	if (threadContext->interruptDepth > 1) {
+	if (threadContext->interruptDepth > 1 || !GBAThreadIsActive(threadContext)) {
 		MutexUnlock(&threadContext->stateMutex);
 		return;
 	}
@@ -447,7 +451,7 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 void GBAThreadContinue(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	--threadContext->interruptDepth;
-	if (threadContext->interruptDepth < 1) {
+	if (threadContext->interruptDepth < 1 && GBAThreadIsActive(threadContext)) {
 		threadContext->state = threadContext->savedState;
 		ConditionWake(&threadContext->stateCond);
 	}

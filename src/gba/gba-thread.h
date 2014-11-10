@@ -104,6 +104,7 @@ void GBAThreadEnd(struct GBAThread* threadContext);
 void GBAThreadReset(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);
 
+bool GBAThreadIsActive(struct GBAThread* threadContext);
 void GBAThreadInterrupt(struct GBAThread* threadContext);
 void GBAThreadContinue(struct GBAThread* threadContext);
 

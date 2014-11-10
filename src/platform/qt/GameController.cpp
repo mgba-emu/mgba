@@ -250,13 +250,9 @@ void GameController::setAudioBufferSamples(int samples) {
 }
 
 void GameController::setFPSTarget(float fps) {
-	if (m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
-		m_threadContext.fpsTarget = fps;
-		GBAThreadContinue(&m_threadContext);
-	} else {
-		m_threadContext.fpsTarget = fps;
-	}
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.fpsTarget = fps;
+	GBAThreadContinue(&m_threadContext);
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 
@@ -315,23 +311,15 @@ void GameController::setTurbo(bool set, bool forced) {
 }
 
 void GameController::setAVStream(GBAAVStream* stream) {
-	if (m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
-		m_threadContext.stream = stream;
-		GBAThreadContinue(&m_threadContext);
-	} else {
-		m_threadContext.stream = stream;
-	}
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.stream = stream;
+	GBAThreadContinue(&m_threadContext);
 }
 
 void GameController::clearAVStream() {
-	if (m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
-		m_threadContext.stream = nullptr;
-		GBAThreadContinue(&m_threadContext);
-	} else {
-		m_threadContext.stream = nullptr;
-	}
+	GBAThreadInterrupt(&m_threadContext);
+	m_threadContext.stream = nullptr;
+	GBAThreadContinue(&m_threadContext);
 }
 
 void GameController::updateKeys() {
