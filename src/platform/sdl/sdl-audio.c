@@ -26,6 +26,7 @@ bool GBASDLInitAudio(struct GBASDLAudio* context) {
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
 		return false;
 	}
+	context->samples = context->obtainedSpec.samples;
 	SDL_PauseAudio(0);
 	return true;
 }

@@ -93,6 +93,9 @@ int main(int argc, char** argv) {
 
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio);
+	if (renderer.audio.samples > context.audioBuffers) {
+		context.audioBuffers = renderer.audio.samples * 2;
+	}
 
 	renderer.events.bindings = &inputMap;
 	GBASDLInitindings(&inputMap);
