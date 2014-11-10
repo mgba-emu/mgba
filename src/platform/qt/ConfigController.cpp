@@ -42,7 +42,7 @@ QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
 		emit valueChanged(action->isChecked());
 	});
 	parent->addAction(action);
-	m_actions.append(qMakePair(action, true));
+	m_actions.append(qMakePair(action, 1));
 	return action;
 }
 
@@ -126,7 +126,7 @@ void ConfigController::updateOption(const char* key) {
 }
 
 void ConfigController::setOption(const char* key, bool value) {
-	setOption(key, (int) value);
+	GBAConfigSetIntValue(&m_config, key, value);
 	ConfigOption* option = m_optionSet[QString(key)];
 	if (option) {
 		option->setValue(value);
@@ -158,6 +158,10 @@ void ConfigController::setOption(const char* key, const char* value) {
 }
 
 void ConfigController::setOption(const char* key, const QVariant& value) {
+	if (value.type() == QVariant::Bool) {
+		setOption(key, value.toBool());
+		return;
+	}
 	QString stringValue(value.toString());
 	setOption(key, stringValue.toLocal8Bit().constData());
 }
