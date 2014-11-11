@@ -24,13 +24,13 @@ static int _iniRead(void* configuration, const char* section, const char* key, c
 }
 
 static void _keyHandler(const char* key, void* value, void* user) {
-	dprintf((int) user, "%s=%s\n", key, value);
+	fprintf(user, "%s=%s\n", key, (const char*) value);
 }
 
 static void _sectionHandler(const char* key, void* section, void* user) {
-	dprintf((int) user, "[%s]\n", key);
+	fprintf(user, "[%s]\n", key);
 	HashTableEnumerate(section, _keyHandler, user);
-	dprintf((int) user, "\n");
+	fprintf(user, "\n");
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
@@ -96,29 +96,29 @@ bool ConfigurationRead(struct Configuration* configuration, const char* path) {
 }
 
 bool ConfigurationWrite(const struct Configuration* configuration, const char* path) {
-	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (fd < 0) {
+	FILE* file = fopen(path, "w");
+	if (!file) {
 		return false;
 	}
-	HashTableEnumerate(&configuration->root, _keyHandler, (void*) fd);
-	HashTableEnumerate(&configuration->sections, _sectionHandler, (void*) fd);
-	close(fd);
+	HashTableEnumerate(&configuration->root, _keyHandler, file);
+	HashTableEnumerate(&configuration->sections, _sectionHandler, file);
+	fclose(file);
 	return true;
 }
 
 bool ConfigurationWriteSection(const struct Configuration* configuration, const char* path, const char* section) {
 	const struct Table* currentSection = &configuration->root;
-	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (fd < 0) {
+	FILE* file = fopen(path, "w");
+	if (!file) {
 		return false;
 	}
 	if (section) {
 		currentSection = HashTableLookup(&configuration->sections, section);
-		dprintf(fd, "[%s]\n", section);
+		fprintf(file, "[%s]\n", section);
 	}
 	if (currentSection) {
-		HashTableEnumerate(currentSection, _sectionHandler, (void*) fd);
+		HashTableEnumerate(currentSection, _sectionHandler, file);
 	}
-	close(fd);
+	fclose(file);
 	return true;
 }
