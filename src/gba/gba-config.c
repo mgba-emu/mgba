@@ -102,8 +102,14 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 
 bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
+#ifndef _WIN32
 	char* home = getenv("HOME");
 	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
+#else
+	char home[MAX_PATH];
+	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
+	snprintf(path, PATH_MAX, "%s/%s/config.ini", home, PROJECT_NAME);
+#endif
 	return ConfigurationRead(&config->configTable, path);
 }
 
