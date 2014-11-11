@@ -217,6 +217,18 @@ void GameController::reset() {
 	GBAThreadReset(&m_threadContext);
 }
 
+void GameController::threadInterrupt() {
+	if (m_gameOpen) {
+		GBAThreadInterrupt(&m_threadContext);
+	}
+}
+
+void GameController::threadContinue() {
+	if (m_gameOpen) {
+		GBAThreadContinue(&m_threadContext);
+	}
+}
+
 void GameController::frameAdvance() {
 	m_pauseMutex.lock();
 	m_pauseAfterFrame = true;
@@ -238,10 +250,10 @@ void GameController::keyReleased(int key) {
 
 void GameController::setAudioBufferSamples(int samples) {
 	if (m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
+		threadInterrupt();
 		m_threadContext.audioBuffers = samples;
 		GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples);
-		GBAThreadContinue(&m_threadContext);
+		threadContinue();
 	} else {
 		m_threadContext.audioBuffers = samples;
 
@@ -250,41 +262,41 @@ void GameController::setAudioBufferSamples(int samples) {
 }
 
 void GameController::setFPSTarget(float fps) {
-	GBAThreadInterrupt(&m_threadContext);
+	threadInterrupt();
 	m_threadContext.fpsTarget = fps;
-	GBAThreadContinue(&m_threadContext);
+	threadContinue();
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 
 void GameController::loadState(int slot) {
-	GBAThreadInterrupt(&m_threadContext);
+	threadInterrupt();
 	GBALoadState(m_threadContext.gba, m_threadContext.stateDir, slot);
-	GBAThreadContinue(&m_threadContext);
+	threadContinue();
 	emit stateLoaded(&m_threadContext);
 	emit frameAvailable(m_drawContext);
 }
 
 void GameController::saveState(int slot) {
-	GBAThreadInterrupt(&m_threadContext);
+	threadInterrupt();
 	GBASaveState(m_threadContext.gba, m_threadContext.stateDir, slot, true);
-	GBAThreadContinue(&m_threadContext);
+	threadContinue();
 }
 
 void GameController::setVideoSync(bool set) {
 	m_videoSync = set;
-	if (!m_turbo && m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
+	if (!m_turbo) {
+		threadInterrupt();
 		m_threadContext.sync.videoFrameWait = set;
-		GBAThreadContinue(&m_threadContext);
+		threadContinue();
 	}
 }
 
 void GameController::setAudioSync(bool set) {
 	m_audioSync = set;
-	if (!m_turbo && m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
+	if (!m_turbo) {
+		threadInterrupt();
 		m_threadContext.sync.audioWait = set;
-		GBAThreadContinue(&m_threadContext);
+		threadContinue();
 	}
 }
 
@@ -302,24 +314,22 @@ void GameController::setTurbo(bool set, bool forced) {
 	} else {
 		m_turboForced = false;
 	}
-	if (m_gameOpen) {
-		GBAThreadInterrupt(&m_threadContext);
-		m_threadContext.sync.audioWait = set ? false : m_audioSync;
-		m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
-		GBAThreadContinue(&m_threadContext);
-	}
+	threadInterrupt();
+	m_threadContext.sync.audioWait = set ? false : m_audioSync;
+	m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
+	threadContinue();
 }
 
 void GameController::setAVStream(GBAAVStream* stream) {
-	GBAThreadInterrupt(&m_threadContext);
+	threadInterrupt();
 	m_threadContext.stream = stream;
-	GBAThreadContinue(&m_threadContext);
+	threadContinue();
 }
 
 void GameController::clearAVStream() {
-	GBAThreadInterrupt(&m_threadContext);
+	threadInterrupt();
 	m_threadContext.stream = nullptr;
-	GBAThreadContinue(&m_threadContext);
+	threadContinue();
 }
 
 void GameController::updateKeys() {

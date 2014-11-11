@@ -37,6 +37,9 @@ public:
 	const uint32_t* drawContext() const { return m_drawContext; }
 	GBAThread* thread() { return &m_threadContext; }
 
+	void threadInterrupt();
+	void threadContinue();
+
 	bool isPaused();
 	bool isLoaded() { return m_gameOpen; }
 
