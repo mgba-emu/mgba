@@ -65,7 +65,10 @@ Window::Window(ConfigController* config, QWidget* parent)
 
 Window::~Window() {
 	delete m_logView;
+
+#ifdef USE_FFMPEG
 	delete m_videoView;
+#endif
 }
 
 void Window::argumentsPassed(GBAArguments* args) {
