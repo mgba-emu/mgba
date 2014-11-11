@@ -4,6 +4,12 @@
 
 #include <sys/stat.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shlobj.h>
+#include <strsafe.h>
+#endif
+
 #define SECTION_NAME_MAX 128
 
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
@@ -85,7 +91,7 @@ void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
 	config->port = malloc(strlen("ports.") + strlen(port) + 1);
-	sprintf(config->port, "ports.%s", port);
+	snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
 }
 
 void GBAConfigDeinit(struct GBAConfig* config) {
@@ -102,14 +108,21 @@ bool GBAConfigLoad(struct GBAConfig* config) {
 }
 
 bool GBAConfigSave(const struct GBAConfig* config) {
-	// TODO: Support Windows; move to common code
 	char path[PATH_MAX];
+#ifndef _WIN32
 	char* home = getenv("HOME");
 	snprintf(path, PATH_MAX, "%s/.config", home);
 	mkdir(path, 0755);
 	snprintf(path, PATH_MAX, "%s/.config/%s", home, BINARY_NAME);
 	mkdir(path, 0755);
 	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
+#else
+	char home[MAX_PATH];
+	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
+	snprintf(path, PATH_MAX, "%s/%s", home, PROJECT_NAME);
+	CreateDirectoryA(path, NULL);
+	snprintf(path, PATH_MAX, "%s/%s/config.ini", home, PROJECT_NAME);
+#endif
 	return ConfigurationWrite(&config->configTable, path);
 }
 
