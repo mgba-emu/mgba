@@ -54,6 +54,8 @@ private slots:
 
 	void setWidth(int, bool manual = true);
 	void setHeight(int, bool manual = true);
+	void setAspectWidth(int, bool manual = true);
+	void setAspectHeight(int, bool manual = true);
 
 	void showAdvanced(bool);
 
@@ -61,6 +63,7 @@ private slots:
 
 private:
 	bool validateSettings();
+	void updateAspectRatio(int width, int height, bool force = false);
 	static QString sanitizeCodec(const QString&, const QMap<QString, QString>& mapping);
 	static void safelyCheck(QAbstractButton*, bool set = true);
 	static void safelySet(QSpinBox*, int value);

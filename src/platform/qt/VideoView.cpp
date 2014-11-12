@@ -82,6 +82,9 @@ VideoView::VideoView(QWidget* parent)
 	connect(m_ui.width, SIGNAL(valueChanged(int)), this, SLOT(setWidth(int)));
 	connect(m_ui.height, SIGNAL(valueChanged(int)), this, SLOT(setHeight(int)));
 
+	connect(m_ui.wratio, SIGNAL(valueChanged(int)), this, SLOT(setAspectWidth(int)));
+	connect(m_ui.hratio, SIGNAL(valueChanged(int)), this, SLOT(setAspectHeight(int)));
+
 	connect(m_ui.showAdvanced, SIGNAL(clicked(bool)), this, SLOT(showAdvanced(bool)));
 
 	FFmpegEncoderInit(&m_encoder);
@@ -253,8 +256,8 @@ void VideoView::setVideoBitrate(int br, bool manual) {
 
 void VideoView::setWidth(int width, bool manual) {
 	m_width = width;
+	updateAspectRatio(width, 0);
 	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
-	validateSettings();
 	if (manual) {
 		uncheckIncompatible();
 	}
@@ -262,8 +265,24 @@ void VideoView::setWidth(int width, bool manual) {
 
 void VideoView::setHeight(int height, bool manual) {
 	m_height = height;
+	updateAspectRatio(0, height);
 	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
-	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
+}
+
+void VideoView::setAspectWidth(int, bool manual) {
+	updateAspectRatio(0, m_height, true);
+	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
+	if (manual) {
+		uncheckIncompatible();
+	}
+}
+
+void VideoView::setAspectHeight(int, bool manual) {
+	updateAspectRatio(m_width, 0, true);
+	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
 	if (manual) {
 		uncheckIncompatible();
 	}
@@ -305,6 +324,35 @@ bool VideoView::validateSettings() {
 	m_ui.start->setEnabled(valid);
 
 	return valid;
+}
+
+void VideoView::updateAspectRatio(int width, int height, bool force) {
+	if (m_ui.lockRatio->isChecked() || force) {
+		if (width) {
+			height = m_ui.hratio->value() * width / m_ui.wratio->value();
+		} else if (height) {
+			width = m_ui.wratio->value() * height / m_ui.hratio->value();
+		}
+
+		m_width = width;
+		m_height = height;
+		safelySet(m_ui.width, m_width);
+		safelySet(m_ui.height, m_height);
+	} else {
+		int w = m_width;
+		int h = m_height;
+		// Get greatest common divisor
+		while (w != 0) {
+			int temp = h % w;
+			h = w;
+			w = temp;
+		}
+		int gcd = h;
+		w = m_width / gcd;
+		h = m_height / gcd;
+		safelySet(m_ui.wratio, w);
+		safelySet(m_ui.hratio, h);
+	}
 }
 
 void VideoView::uncheckIncompatible() {
