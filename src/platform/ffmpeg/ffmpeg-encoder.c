@@ -282,6 +282,10 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	encoder->context = 0;
 }
 
+bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
+	return !!encoder->context;
+}
+
 void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context) {

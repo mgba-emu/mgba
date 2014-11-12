@@ -274,7 +274,7 @@ void VideoView::showAdvanced(bool show) {
 }
 
 bool VideoView::validateSettings() {
-	bool valid = true;
+	bool valid = !m_filename.isNull() && !FFmpegEncoderIsOpen(&m_encoder);
 	if (!m_audioCodecCstr) {
 		valid = false;
 		m_ui.audio->setStyleSheet("QComboBox { color: red; }");
@@ -302,7 +302,7 @@ bool VideoView::validateSettings() {
 		valid = false;
 	}
 
-	m_ui.start->setEnabled(valid && !m_filename.isNull());
+	m_ui.start->setEnabled(valid);
 
 	return valid;
 }

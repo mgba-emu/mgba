@@ -50,5 +50,6 @@ void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);
+bool FFmpegEncoderIsOpen(struct FFmpegEncoder*);
 
 #endif
