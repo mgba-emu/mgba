@@ -152,9 +152,6 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QRadioButton" name="preset1080">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>1080p</string>
           </property>
@@ -165,9 +162,6 @@
         </item>
         <item>
          <widget class="QRadioButton" name="preset720">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>720p</string>
           </property>
@@ -178,9 +172,6 @@
         </item>
         <item>
          <widget class="QRadioButton" name="preset480">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>480p</string>
           </property>
@@ -191,9 +182,6 @@
         </item>
         <item>
          <widget class="QRadioButton" name="preset160">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>GBA (240x160)</string>
           </property>
@@ -423,9 +411,6 @@
          </item>
          <item row="0" column="3">
           <widget class="QSpinBox" name="height">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
            <property name="minimum">
             <number>160</number>
            </property>
@@ -436,9 +421,6 @@
          </item>
          <item row="0" column="1">
           <widget class="QSpinBox" name="width">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
            <property name="minimum">
             <number>240</number>
            </property>

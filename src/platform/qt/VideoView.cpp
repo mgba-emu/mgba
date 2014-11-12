@@ -79,6 +79,9 @@ VideoView::VideoView(QWidget* parent)
 	connect(m_ui.abr, SIGNAL(valueChanged(int)), this, SLOT(setAudioBitrate(int)));
 	connect(m_ui.vbr, SIGNAL(valueChanged(int)), this, SLOT(setVideoBitrate(int)));
 
+	connect(m_ui.width, SIGNAL(valueChanged(int)), this, SLOT(setWidth(int)));
+	connect(m_ui.height, SIGNAL(valueChanged(int)), this, SLOT(setHeight(int)));
+
 	connect(m_ui.showAdvanced, SIGNAL(clicked(bool)), this, SLOT(showAdvanced(bool)));
 
 	FFmpegEncoderInit(&m_encoder);
@@ -107,7 +110,7 @@ VideoView::VideoView(QWidget* parent)
 		.container = "MP4",
 		.vcodec = "h.264",
 		.acodec = "AAC",
-		.vbr = 6000,
+		.vbr = 5000,
 		.abr = 384,
 		.width = 1620,
 		.height = 1080
@@ -144,6 +147,8 @@ VideoView::VideoView(QWidget* parent)
 	setAudioBitrate(m_ui.abr->value());
 	setVideoBitrate(m_ui.vbr->value());
 	setContainer(m_ui.container->currentText());
+	setWidth(m_ui.width->value());
+	setHeight(m_ui.height->value());
 
 	showAdvanced(false);
 }
@@ -246,6 +251,24 @@ void VideoView::setVideoBitrate(int br, bool manual) {
 	}
 }
 
+void VideoView::setWidth(int width, bool manual) {
+	m_width = width;
+	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
+	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
+}
+
+void VideoView::setHeight(int height, bool manual) {
+	m_height = height;
+	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
+	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
+}
+
 void VideoView::showAdvanced(bool show) {
 	m_ui.advancedBox->setVisible(show);
 }
@@ -290,7 +313,9 @@ void VideoView::uncheckIncompatible() {
 		.acodec = m_audioCodec,
 		.vcodec = m_videoCodec,
 		.abr = m_abr / 1000,
-		.vbr = m_vbr / 1000
+		.vbr = m_vbr / 1000,
+		.width = m_width,
+		.height = m_height
 	};
 
 	for (auto iterator = m_presets.constBegin(); iterator != m_presets.constEnd(); ++iterator) {
@@ -370,6 +395,14 @@ void VideoView::setPreset(const Preset& preset) {
 	if (preset.vbr) {
 		setVideoBitrate(preset.vbr, false);
 		safelySet(m_ui.vbr, preset.vbr);
+	}
+	if (preset.width) {
+		setWidth(preset.width, false);
+		safelySet(m_ui.width, preset.width);
+	}
+	if (preset.height) {
+		setHeight(preset.height, false);
+		safelySet(m_ui.height, preset.height);
 	}
 
 	uncheckIncompatible();

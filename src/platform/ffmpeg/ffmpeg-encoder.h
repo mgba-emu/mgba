@@ -35,6 +35,8 @@ struct FFmpegEncoder {
 	struct AVCodecContext* video;
 	enum AVPixelFormat pixFormat;
 	struct AVFrame* videoFrame;
+	int width;
+	int height;
 	int64_t currentVideoFrame;
 	struct SwsContext* scaleContext;
 	struct AVStream* videoStream;
@@ -44,6 +46,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder*);
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder*, const char* acodec, unsigned abr);
 bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, unsigned vbr);
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
+void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
 void FFmpegEncoderClose(struct FFmpegEncoder*);

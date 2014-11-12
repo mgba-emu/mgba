@@ -52,6 +52,9 @@ private slots:
 	void setAudioBitrate(int, bool manual = true);
 	void setVideoBitrate(int, bool manual = true);
 
+	void setWidth(int, bool manual = true);
+	void setHeight(int, bool manual = true);
+
 	void showAdvanced(bool);
 
 	void uncheckIncompatible();
@@ -80,6 +83,9 @@ private:
 
 	int m_abr;
 	int m_vbr;
+
+	int m_width;
+	int m_height;
 
 	QMap<QAbstractButton*, Preset> m_presets;
 
