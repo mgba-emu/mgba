@@ -318,6 +318,8 @@ void VideoView::uncheckIncompatible() {
 		.height = m_height
 	};
 
+	m_ui.presets->setExclusive(false);
+	m_ui.resolutions->setExclusive(false);
 	for (auto iterator = m_presets.constBegin(); iterator != m_presets.constEnd(); ++iterator) {
 		Preset next = *iterator;
 		next.container = sanitizeCodec(next.container, s_containerMap);
@@ -327,6 +329,9 @@ void VideoView::uncheckIncompatible() {
 			safelyCheck(iterator.key(), false);
 		}
 	}
+	m_ui.presets->setExclusive(true);
+	m_ui.resolutions->setExclusive(true);
+
 	if (current.compatible(m_presets[m_ui.preset160])) {
 		safelyCheck(m_ui.preset160);
 	}
@@ -352,7 +357,10 @@ QString VideoView::sanitizeCodec(const QString& codec, const QMap<QString, QStri
 
 void VideoView::safelyCheck(QAbstractButton* button, bool set) {
 	bool signalsBlocked = button->blockSignals(true);
+	bool autoExclusive = button->autoExclusive();
+	button->setAutoExclusive(false);
 	button->setChecked(set);
+	button->setAutoExclusive(autoExclusive);
 	button->blockSignals(signalsBlocked);
 }
 
