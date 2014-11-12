@@ -17,6 +17,18 @@ class VideoView : public QWidget {
 Q_OBJECT
 
 public:
+	struct Preset {
+		QString container;
+		QString vcodec;
+		QString acodec;
+		int vbr;
+		int abr;
+		int width;
+		int height;
+
+		bool compatible(const Preset&) const;
+	};
+
 	VideoView(QWidget* parent = nullptr);
 	virtual ~VideoView();
 
@@ -33,16 +45,26 @@ signals:
 private slots:
 	void selectFile();
 	void setFilename(const QString&);
-	void setAudioCodec(const QString&);
-	void setVideoCodec(const QString&);
-	void setContainer(const QString&);
+	void setAudioCodec(const QString&, bool manual = true);
+	void setVideoCodec(const QString&, bool manual = true);
+	void setContainer(const QString&, bool manual = true);
 
-	void setAudioBitrate(int);
-	void setVideoBitrate(int);
+	void setAudioBitrate(int, bool manual = true);
+	void setVideoBitrate(int, bool manual = true);
+
+	void showAdvanced(bool);
+
+	void uncheckIncompatible();
 
 private:
 	bool validateSettings();
-	static QString sanitizeCodec(const QString&);
+	static QString sanitizeCodec(const QString&, const QMap<QString, QString>& mapping);
+	static void safelyCheck(QAbstractButton*, bool set = true);
+	static void safelySet(QSpinBox*, int value);
+	static void safelySet(QComboBox*, const QString& value);
+
+	void addPreset(QAbstractButton*, const Preset&);
+	void setPreset(const Preset&);
 
 	Ui::VideoView m_ui;
 
@@ -58,6 +80,8 @@ private:
 
 	int m_abr;
 	int m_vbr;
+
+	QMap<QAbstractButton*, Preset> m_presets;
 
 	static QMap<QString, QString> s_acodecMap;
 	static QMap<QString, QString> s_vcodecMap;

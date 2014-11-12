@@ -11,6 +11,31 @@ QMap<QString, QString> VideoView::s_acodecMap;
 QMap<QString, QString> VideoView::s_vcodecMap;
 QMap<QString, QString> VideoView::s_containerMap;
 
+bool VideoView::Preset::compatible(const Preset& other) const {
+	if (!other.container.isNull() && !container.isNull() && other.container != container) {
+		return false;
+	}
+	if (!other.acodec.isNull() && !acodec.isNull() && other.acodec != acodec) {
+		return false;
+	}
+	if (!other.vcodec.isNull() && !vcodec.isNull() && other.vcodec != vcodec) {
+		return false;
+	}
+	if (other.abr && abr && other.abr != abr) {
+		return false;
+	}
+	if (other.vbr && vbr && other.vbr != vbr) {
+		return false;
+	}
+	if (other.width && width && other.width != width) {
+		return false;
+	}
+	if (other.height && height && other.height != height) {
+		return false;
+	}
+	return true;
+}
+
 VideoView::VideoView(QWidget* parent)
 	: QWidget(parent)
 	, m_audioCodecCstr(nullptr)
@@ -54,13 +79,73 @@ VideoView::VideoView(QWidget* parent)
 	connect(m_ui.abr, SIGNAL(valueChanged(int)), this, SLOT(setAudioBitrate(int)));
 	connect(m_ui.vbr, SIGNAL(valueChanged(int)), this, SLOT(setVideoBitrate(int)));
 
+	connect(m_ui.showAdvanced, SIGNAL(clicked(bool)), this, SLOT(showAdvanced(bool)));
+
 	FFmpegEncoderInit(&m_encoder);
+
+	addPreset(m_ui.preset1080, (Preset) {
+		.width = 1620,
+		.height = 1080
+	});
+
+	addPreset(m_ui.preset720, (Preset) {
+		.width = 1080,
+		.height = 720
+	});
+
+	addPreset(m_ui.preset480, (Preset) {
+		.width = 720,
+		.height = 480
+	});
+
+	addPreset(m_ui.preset160, (Preset) {
+		.width = 240,
+		.height = 160
+	});
+
+	addPreset(m_ui.presetHQ, (Preset) {
+		.container = "MP4",
+		.vcodec = "h.264",
+		.acodec = "AAC",
+		.vbr = 6000,
+		.abr = 384,
+		.width = 1620,
+		.height = 1080
+	});
+
+	addPreset(m_ui.presetYoutube, (Preset) {
+		.container = "MP4",
+		.vcodec = "h.264",
+		.acodec = "AAC",
+		.vbr = 3000,
+		.abr = 256,
+		.width = 1080,
+		.height = 720
+	});
+
+	addPreset(m_ui.presetWebM, (Preset) {
+		.container = "WebM",
+		.vcodec = "VP8",
+		.acodec = "Vorbis",
+		.vbr = 800,
+		.abr = 128
+	});
+
+	addPreset(m_ui.presetLossless, (Preset) {
+		.container = "MKV",
+		.vcodec = "PNG",
+		.acodec = "FLAC",
+		.width = 240,
+		.height = 160,
+	});
 
 	setAudioCodec(m_ui.audio->currentText());
 	setVideoCodec(m_ui.video->currentText());
 	setAudioBitrate(m_ui.abr->value());
 	setVideoBitrate(m_ui.vbr->value());
 	setContainer(m_ui.container->currentText());
+
+	showAdvanced(false);
 }
 
 VideoView::~VideoView() {
@@ -101,58 +186,68 @@ void VideoView::setFilename(const QString& fname) {
 	validateSettings();
 }
 
-void VideoView::setAudioCodec(const QString& codec) {
+void VideoView::setAudioCodec(const QString& codec, bool manual) {
 	free(m_audioCodecCstr);
-	m_audioCodec = sanitizeCodec(codec);
-	if (s_acodecMap.contains(m_audioCodec)) {
-		m_audioCodec = s_acodecMap[m_audioCodec];
-	}
+	m_audioCodec = sanitizeCodec(codec, s_acodecMap);
 	m_audioCodecCstr = strdup(m_audioCodec.toLocal8Bit().constData());
 	if (!FFmpegEncoderSetAudio(&m_encoder, m_audioCodecCstr, m_abr)) {
 		free(m_audioCodecCstr);
 		m_audioCodecCstr = nullptr;
 	}
 	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
 }
 
-void VideoView::setVideoCodec(const QString& codec) {
+void VideoView::setVideoCodec(const QString& codec, bool manual) {
 	free(m_videoCodecCstr);
-	m_videoCodec = sanitizeCodec(codec);
-	if (s_vcodecMap.contains(m_videoCodec)) {
-		m_videoCodec = s_vcodecMap[m_videoCodec];
-	}
+	m_videoCodec = sanitizeCodec(codec, s_vcodecMap);
 	m_videoCodecCstr = strdup(m_videoCodec.toLocal8Bit().constData());
 	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr)) {
 		free(m_videoCodecCstr);
 		m_videoCodecCstr = nullptr;
 	}
 	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
 }
 
-void VideoView::setContainer(const QString& container) {
+void VideoView::setContainer(const QString& container, bool manual) {
 	free(m_containerCstr);
-	m_container = sanitizeCodec(container);
-	if (s_containerMap.contains(m_container)) {
-		m_container = s_containerMap[m_container];
-	}
+	m_container = sanitizeCodec(container, s_containerMap);
 	m_containerCstr = strdup(m_container.toLocal8Bit().constData());
 	if (!FFmpegEncoderSetContainer(&m_encoder, m_containerCstr)) {
 		free(m_containerCstr);
 		m_containerCstr = nullptr;
 	}
 	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
 }
 
-void VideoView::setAudioBitrate(int br) {
+void VideoView::setAudioBitrate(int br, bool manual) {
 	m_abr = br * 1000;
 	FFmpegEncoderSetAudio(&m_encoder, m_audioCodecCstr, m_abr);
 	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
 }
 
-void VideoView::setVideoBitrate(int br) {
+void VideoView::setVideoBitrate(int br, bool manual) {
 	m_vbr = br * 1000;
 	FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr);
 	validateSettings();
+	if (manual) {
+		uncheckIncompatible();
+	}
+}
+
+void VideoView::showAdvanced(bool show) {
+	m_ui.advancedBox->setVisible(show);
 }
 
 bool VideoView::validateSettings() {
@@ -185,12 +280,100 @@ bool VideoView::validateSettings() {
 	}
 
 	m_ui.start->setEnabled(valid && !m_filename.isNull());
+
 	return valid;
 }
 
-QString VideoView::sanitizeCodec(const QString& codec) {
+void VideoView::uncheckIncompatible() {
+	Preset current = {
+		.container = m_container,
+		.acodec = m_audioCodec,
+		.vcodec = m_videoCodec,
+		.abr = m_abr / 1000,
+		.vbr = m_vbr / 1000
+	};
+
+	for (auto iterator = m_presets.constBegin(); iterator != m_presets.constEnd(); ++iterator) {
+		Preset next = *iterator;
+		next.container = sanitizeCodec(next.container, s_containerMap);
+		next.acodec = sanitizeCodec(next.acodec, s_acodecMap);
+		next.vcodec = sanitizeCodec(next.vcodec, s_vcodecMap);
+		if (!current.compatible(next)) {
+			safelyCheck(iterator.key(), false);
+		}
+	}
+	if (current.compatible(m_presets[m_ui.preset160])) {
+		safelyCheck(m_ui.preset160);
+	}
+	if (current.compatible(m_presets[m_ui.preset480])) {
+		safelyCheck(m_ui.preset480);
+	}
+	if (current.compatible(m_presets[m_ui.preset720])) {
+		safelyCheck(m_ui.preset720);
+	}
+	if (current.compatible(m_presets[m_ui.preset1080])) {
+		safelyCheck(m_ui.preset1080);
+	}
+}
+
+QString VideoView::sanitizeCodec(const QString& codec, const QMap<QString, QString>& mapping) {
 	QString sanitized = codec.toLower();
-	return sanitized.remove(QChar('.'));
+	sanitized = sanitized.remove(QChar('.'));
+	if (mapping.contains(sanitized)) {
+		sanitized = mapping[sanitized];
+	}
+	return sanitized;
+}
+
+void VideoView::safelyCheck(QAbstractButton* button, bool set) {
+	bool signalsBlocked = button->blockSignals(true);
+	button->setChecked(set);
+	button->blockSignals(signalsBlocked);
+}
+
+void VideoView::safelySet(QSpinBox* box, int value) {
+	bool signalsBlocked = box->blockSignals(true);
+	box->setValue(value);
+	box->blockSignals(signalsBlocked);
+}
+
+void VideoView::safelySet(QComboBox* box, const QString& value) {
+	bool signalsBlocked = box->blockSignals(true);
+	box->lineEdit()->setText(value);
+	box->blockSignals(signalsBlocked);
+}
+
+void VideoView::addPreset(QAbstractButton* button, const Preset& preset) {
+	m_presets[button] = preset;
+	connect(button, &QAbstractButton::pressed, [this, preset]() {
+		setPreset(preset);
+	});
+}
+
+void VideoView::setPreset(const Preset& preset) {
+	if (!preset.container.isNull()) {
+		setContainer(preset.container, false);
+		safelySet(m_ui.container, preset.container);
+	}
+	if (!preset.acodec.isNull()) {
+		setAudioCodec(preset.acodec, false);
+		safelySet(m_ui.audio, preset.acodec);
+	}
+	if (!preset.vcodec.isNull()) {
+		setVideoCodec(preset.vcodec, false);
+		safelySet(m_ui.video, preset.vcodec);
+	}
+	if (preset.abr) {
+		setAudioBitrate(preset.abr, false);
+		safelySet(m_ui.abr, preset.abr);
+	}
+	if (preset.vbr) {
+		setVideoBitrate(preset.vbr, false);
+		safelySet(m_ui.vbr, preset.vbr);
+	}
+
+	uncheckIncompatible();
+	validateSettings();
 }
 
 #endif
