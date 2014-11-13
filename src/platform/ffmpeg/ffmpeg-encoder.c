@@ -228,10 +228,13 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->video->height = encoder->height;
 	encoder->video->time_base = (AVRational) { VIDEO_TOTAL_LENGTH, GBA_ARM7TDMI_FREQUENCY };
 	encoder->video->pix_fmt = encoder->pixFormat;
-	encoder->video->gop_size = 15;
-	encoder->video->max_b_frames = 0;
+	encoder->video->gop_size = 60;
+	encoder->video->max_b_frames = 3;
 	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
 		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	}
+	if (strcmp(vcodec->name, "libx264") == 0) {
+		av_opt_set(encoder->video, "tune", "zerolatency", 0);
 	}
 	avcodec_open2(encoder->video, vcodec, 0);
 	encoder->videoFrame = av_frame_alloc();
