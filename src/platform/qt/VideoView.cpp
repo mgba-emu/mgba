@@ -113,7 +113,7 @@ VideoView::VideoView(QWidget* parent)
 		.container = "MP4",
 		.vcodec = "h.264",
 		.acodec = "AAC",
-		.vbr = 5000,
+		.vbr = 8000,
 		.abr = 384,
 		.width = 1620,
 		.height = 1080
@@ -123,7 +123,7 @@ VideoView::VideoView(QWidget* parent)
 		.container = "MP4",
 		.vcodec = "h.264",
 		.acodec = "AAC",
-		.vbr = 3000,
+		.vbr = 5000,
 		.abr = 256,
 		.width = 1080,
 		.height = 720
