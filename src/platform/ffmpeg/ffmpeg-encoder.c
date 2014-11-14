@@ -234,6 +234,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->video->flags |= CODEC_FLAG_GLOBAL_HEADER;
 	}
 	if (strcmp(vcodec->name, "libx264") == 0) {
+		// Try to adaptively figure out when you can use a slower encoder
+		if (encoder->width * encoder->height > 1000000) {
+			av_opt_set(encoder->video->priv_data, "preset", "superfast", 0);
+		} else if (encoder->width * encoder->height > 500000) {
+			av_opt_set(encoder->video->priv_data, "preset", "veryfast", 0);
+		} else {
+			av_opt_set(encoder->video->priv_data, "preset", "faster", 0);
+		}
 		av_opt_set(encoder->video->priv_data, "tune", "zerolatency", 0);
 	}
 	avcodec_open2(encoder->video, vcodec, 0);
