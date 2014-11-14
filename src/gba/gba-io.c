@@ -62,9 +62,9 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 1, 0, 0,
+	0, 0, 0, 1, 0, 0, 0, 0,
+	0, 1, 0, 0, 0, 0, 0, 1,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Timers
@@ -478,6 +478,7 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	gba->timersEnabled = 0;
 	memcpy(gba->timers, state->timers, sizeof(gba->timers));
 	for (i = 0; i < 4; ++i) {
+		gba->memory.dma[i].reg = state->io[(REG_DMA0CNT_HI + i * 12) >> 1];
 		gba->memory.dma[i].nextSource = state->dma[i].nextSource;
 		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
 		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
