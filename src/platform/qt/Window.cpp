@@ -356,18 +356,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
 
-	QMenu* target = emulationMenu->addMenu("FPS target");
-	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
-	fpsTargetOption->connect([this](const QVariant& value) { emit fpsTargetChanged(value.toInt()); });
-	fpsTargetOption->addValue(tr("15"), 15, target);
-	fpsTargetOption->addValue(tr("30"), 30, target);
-	fpsTargetOption->addValue(tr("45"), 45, target);
-	fpsTargetOption->addValue(tr("60"), 60, target);
-	fpsTargetOption->addValue(tr("90"), 90, target);
-	fpsTargetOption->addValue(tr("120"), 120, target);
-	fpsTargetOption->addValue(tr("240"), 240, target);
-	m_config->updateOption("fpsTarget");
-
 	emulationMenu->addSeparator();
 
 	QAction* turbo = new QAction(tr("T&urbo"), emulationMenu);
@@ -439,6 +427,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	buffers->addValue(tr("2048"), 2048, buffersMenu);
 	buffers->addValue(tr("4096"), 4096, buffersMenu);
 	m_config->updateOption("audioBuffers");
+
+	avMenu->addSeparator();
+
+	QMenu* target = avMenu->addMenu("FPS target");
+	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
+	fpsTargetOption->connect([this](const QVariant& value) { emit fpsTargetChanged(value.toInt()); });
+	fpsTargetOption->addValue(tr("15"), 15, target);
+	fpsTargetOption->addValue(tr("30"), 30, target);
+	fpsTargetOption->addValue(tr("45"), 45, target);
+	fpsTargetOption->addValue(tr("60"), 60, target);
+	fpsTargetOption->addValue(tr("90"), 90, target);
+	fpsTargetOption->addValue(tr("120"), 120, target);
+	fpsTargetOption->addValue(tr("240"), 240, target);
+	m_config->updateOption("fpsTarget");
 
 #if defined(USE_PNG) || defined(USE_FFMPEG)
 	avMenu->addSeparator();
