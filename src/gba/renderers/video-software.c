@@ -1249,9 +1249,17 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 }
 
 #define BACKGROUND_BITMAP_INIT \
-	UNUSED(unused); \
 	int32_t x = background->sx + (renderer->start - 1) * background->dx; \
 	int32_t y = background->sy + (renderer->start - 1) * background->dy; \
+	int mosaicH = 0; \
+	int mosaicWait = 0; \
+	if (background->mosaic) { \
+		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1; \
+		y -= (inY % mosaicV) * background->dmy; \
+		x -= (inY % mosaicV) * background->dmx; \
+		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic); \
+		mosaicWait = renderer->start % (mosaicH + 1); \
+	} \
 	int32_t localX; \
 	int32_t localY; \
 	\
@@ -1279,7 +1287,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 		localY = y; \
 	}
 
-static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	int sizeAdjusted = 0x8000 << background->size;
 
 	BACKGROUND_BITMAP_INIT;
@@ -1287,7 +1295,7 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	uint32_t screenBase = background->screenBase;
 	uint32_t charBase = background->charBase;
 	uint8_t mapData;
-	uint8_t tileData;
+	uint8_t tileData = 0;
 
 	int outX;
 	uint32_t* pixel;
@@ -1295,17 +1303,23 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 		x += background->dx;
 		y += background->dy;
 
-		if (background->overflow) {
-			localX = x & (sizeAdjusted - 1);
-			localY = y & (sizeAdjusted - 1);
-		} else if ((x | y) & ~(sizeAdjusted - 1)) {
-			continue;
+		if (!mosaicWait) {
+			if (background->overflow) {
+				localX = x & (sizeAdjusted - 1);
+				localY = y & (sizeAdjusted - 1);
+			} else if ((x | y) & ~(sizeAdjusted - 1)) {
+				continue;
+			} else {
+				localX = x;
+				localY = y;
+			}
+			mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)];
+			tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
+
+			mosaicWait = mosaicH;
 		} else {
-			localX = x;
-			localY = y;
+			--mosaicWait;
 		}
-		mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)];
-		tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
 		uint32_t current = *pixel;
 		if (tileData && IS_WRITABLE(current)) {
@@ -1319,25 +1333,30 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 }
 
-static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint32_t color;
+	uint32_t color = renderer->normalPalette[0];
 
 	int outX;
 	uint32_t* pixel;
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
-		LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
+		if (!mosaicWait) {
+			LOAD_16(color, ((localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS) << 1, renderer->d.vram);
 #ifndef COLOR_16_BIT
-		unsigned color32;
-		color32 = 0;
-		color32 |= (color << 3) & 0xF8;
-		color32 |= (color << 6) & 0xF800;
-		color32 |= (color << 9) & 0xF80000;
-		color = color32;
+			unsigned color32;
+			color32 = 0;
+			color32 |= (color << 3) & 0xF8;
+			color32 |= (color << 6) & 0xF800;
+			color32 |= (color << 9) & 0xF80000;
+			color = color32;
 #endif
+			mosaicWait = mosaicH;
+		} else {
+			--mosaicWait;
+		}
 
 		uint32_t current = *pixel;
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) {
@@ -1352,10 +1371,10 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 }
 
-static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint16_t color;
+	uint16_t color = renderer->normalPalette[0];
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
@@ -1366,7 +1385,13 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 
-		color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+		if (!mosaicWait) {
+			color = ((uint8_t*)renderer->d.vram)[offset + (localX >> 8) + (localY >> 8) * VIDEO_HORIZONTAL_PIXELS];
+
+			mosaicWait = mosaicH;
+		} else {
+			--mosaicWait;
+		}
 
 		uint32_t current = *pixel;
 		if (color && IS_WRITABLE(current)) {
@@ -1380,10 +1405,10 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 }
 
-static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int unused) {
+static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	BACKGROUND_BITMAP_INIT;
 
-	uint32_t color;
+	uint32_t color = renderer->normalPalette[0];
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
@@ -1394,14 +1419,19 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
-		LOAD_16(color, (offset + (localX >> 8) + (localY >> 8) * 160) << 1, renderer->d.vram);
+		if (!mosaicWait) {
+			LOAD_16(color, (offset + (localX >> 8) + (localY >> 8) * 160) << 1, renderer->d.vram);
 #ifndef COLOR_16_BIT
-		unsigned color32 = 0;
-		color32 |= (color << 9) & 0xF80000;
-		color32 |= (color << 3) & 0xF8;
-		color32 |= (color << 6) & 0xF800;
-		color = color32;
+			unsigned color32 = 0;
+			color32 |= (color << 9) & 0xF80000;
+			color32 |= (color << 3) & 0xF8;
+			color32 |= (color << 6) & 0xF800;
+			color = color32;
 #endif
+			mosaicWait = mosaicH;
+		} else {
+			--mosaicWait;
+		}
 
 		uint32_t current = *pixel;
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) {
