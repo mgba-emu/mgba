@@ -19,6 +19,8 @@ public:
 public slots:
 	void startDrawing(const uint32_t* buffer, GBAThread* context);
 	void stopDrawing();
+	void pauseDrawing();
+	void unpauseDrawing();
 	void forceDraw();
 #ifdef USE_PNG
 	void screenshot();
@@ -49,6 +51,8 @@ public slots:
 	void draw();
 	void start();
 	void stop();
+	void pause();
+	void unpause();
 	void resize(const QSize& size);
 
 private:

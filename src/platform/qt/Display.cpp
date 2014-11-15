@@ -66,6 +66,34 @@ void Display::stopDrawing() {
 	}
 }
 
+void Display::pauseDrawing() {
+	if (m_drawThread) {
+		if (GBAThreadIsActive(m_context)) {
+			GBAThreadInterrupt(m_context);
+			GBASyncSuspendDrawing(&m_context->sync);
+		}
+		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
+		if (GBAThreadIsActive(m_context)) {
+			GBASyncResumeDrawing(&m_context->sync);
+			GBAThreadContinue(m_context);
+		}
+	}
+}
+
+void Display::unpauseDrawing() {
+	if (m_drawThread) {
+		if (GBAThreadIsActive(m_context)) {
+			GBAThreadInterrupt(m_context);
+			GBASyncSuspendDrawing(&m_context->sync);
+		}
+		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
+		if (GBAThreadIsActive(m_context)) {
+			GBASyncResumeDrawing(&m_context->sync);
+			GBAThreadContinue(m_context);
+		}
+	}
+}
+
 void Display::forceDraw() {
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::QueuedConnection);
@@ -181,4 +209,15 @@ void Painter::stop() {
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
 	m_gl->context()->moveToThread(QApplication::instance()->thread());
+}
+
+void Painter::pause() {
+	m_drawTimer->stop();
+	// Make sure both buffers are filled
+	forceDraw();
+	forceDraw();
+}
+
+void Painter::unpause() {
+	m_drawTimer->start();
 }
