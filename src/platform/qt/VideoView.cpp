@@ -90,21 +90,41 @@ VideoView::VideoView(QWidget* parent)
 	FFmpegEncoderInit(&m_encoder);
 
 	addPreset(m_ui.preset1080, (Preset) {
+		.container = QString(),
+		.vcodec = QString(),
+		.acodec = QString(),
+		.vbr = 0,
+		.abr = 0,
 		.width = 1620,
 		.height = 1080
 	});
 
 	addPreset(m_ui.preset720, (Preset) {
+		.container = QString(),
+		.vcodec = QString(),
+		.acodec = QString(),
+		.vbr = 0,
+		.abr = 0,
 		.width = 1080,
 		.height = 720
 	});
 
 	addPreset(m_ui.preset480, (Preset) {
+		.container = QString(),
+		.vcodec = QString(),
+		.acodec = QString(),
+		.vbr = 0,
+		.abr = 0,
 		.width = 720,
 		.height = 480
 	});
 
 	addPreset(m_ui.preset160, (Preset) {
+		.container = QString(),
+		.vcodec = QString(),
+		.acodec = QString(),
+		.vbr = 0,
+		.abr = 0,
 		.width = 240,
 		.height = 160
 	});
@@ -141,6 +161,8 @@ VideoView::VideoView(QWidget* parent)
 		.container = "MKV",
 		.vcodec = "PNG",
 		.acodec = "FLAC",
+		.vbr = 0,
+		.abr = 0,
 		.width = 240,
 		.height = 160,
 	});
@@ -358,10 +380,10 @@ void VideoView::updateAspectRatio(int width, int height, bool force) {
 void VideoView::uncheckIncompatible() {
 	Preset current = {
 		.container = m_container,
-		.acodec = m_audioCodec,
 		.vcodec = m_videoCodec,
-		.abr = m_abr / 1000,
+		.acodec = m_audioCodec,
 		.vbr = m_vbr / 1000,
+		.abr = m_abr / 1000,
 		.width = m_width,
 		.height = m_height
 	};
