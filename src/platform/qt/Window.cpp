@@ -221,8 +221,12 @@ void Window::closeEvent(QCloseEvent* event) {
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
 		showNormal();
+		menuBar()->show();
 	} else {
 		showFullScreen();
+#ifndef Q_OS_MAC
+		menuBar()->hide();
+#endif
 	}
 }
 
@@ -282,7 +286,7 @@ void Window::openStateWindow(LoadSave ls) {
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open);
+	addAction(fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open));
 	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
 	fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch()));
 
@@ -292,12 +296,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	loadState->setShortcut(tr("F10"));
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
 	m_gameActions.append(loadState);
+	addAction(loadState);
 	fileMenu->addAction(loadState);
 
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
 	saveState->setShortcut(tr("Shift+F10"));
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
+	addAction(saveState);
 	fileMenu->addAction(saveState);
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
@@ -308,12 +314,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 		quickLoad->setShortcut(tr("F%1").arg(i));
 		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
 		m_gameActions.append(quickLoad);
+		addAction(quickLoad);
 		quickLoadMenu->addAction(quickLoad);
 
 		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
 		quickSave->setShortcut(tr("Shift+F%1").arg(i));
 		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
 		m_gameActions.append(quickSave);
+		addAction(quickSave);
 		quickSaveMenu->addAction(quickSave);
 	}
 
@@ -327,6 +335,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
 	m_gameActions.append(reset);
+	addAction(reset);
 	emulationMenu->addAction(reset);
 
 	QAction* shutdown = new QAction(tr("Sh&utdown"), emulationMenu);
@@ -350,12 +359,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
+	addAction(pause);
 	emulationMenu->addAction(pause);
 
 	QAction* frameAdvance = new QAction(tr("&Next frame"), emulationMenu);
 	frameAdvance->setShortcut(tr("Ctrl+N"));
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
+	addAction(frameAdvance);
 	emulationMenu->addAction(frameAdvance);
 
 	emulationMenu->addSeparator();
@@ -365,6 +376,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	turbo->setChecked(false);
 	turbo->setShortcut(tr("Shift+Tab"));
 	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
+	addAction(turbo);
 	emulationMenu->addAction(turbo);
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
@@ -408,7 +420,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
 	});
 	frameMenu->addAction(setSize);
-	frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F"));
+	addAction(frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")));
 
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");
@@ -453,6 +465,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	screenshot->setShortcut(tr("F12"));
 	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
 	m_gameActions.append(screenshot);
+	addAction(screenshot);
 	avMenu->addAction(screenshot);
 #endif
 
@@ -460,6 +473,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
 	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
+	addAction(recordOutput);
 	avMenu->addAction(recordOutput);
 #endif
 
