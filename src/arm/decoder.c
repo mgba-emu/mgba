@@ -255,7 +255,7 @@ static const char* _armDirectionStrings[] = {
 	"da",
 	"ia",
 	"db",
-	"da"
+	"ib"
 };
 
 static const char* _armAccessTypeStrings[] = {
@@ -341,6 +341,10 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		ADVANCE(2);
 		written = _decodeRegisterList(info->op1.immediate, buffer, blen);
 		ADVANCE(written);
+		if (info->memory.format & ARM_MEMORY_SPSR_SWAP) {
+			strncpy(buffer, "^", blen - 1);
+			ADVANCE(1);
+		}
 		break;
 	case ARM_MN_B:
 		written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
