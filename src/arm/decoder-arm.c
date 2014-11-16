@@ -22,7 +22,7 @@
 #define ADDR_MODE_1_LSL \
 	ADDR_MODE_1_SHIFT(LSL) \
 	if (!info->op3.shifterImm) { \
-		info->operandFormat &= ~ARM_OPERAND_SHIFT_REGISTER_3; \
+		info->operandFormat &= ~ARM_OPERAND_SHIFT_IMMEDIATE_3; \
 		info->op3.shifterOp = ARM_SHIFT_NONE; \
 	}
 
