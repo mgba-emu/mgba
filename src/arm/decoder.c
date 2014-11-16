@@ -153,7 +153,10 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 		written = _decodeRegister(memory.offset.reg, buffer, blen);
 		ADVANCE(written);
 	}
-	// TODO: shifted registers
+	if (memory.format & ARM_MEMORY_SHIFTED_OFFSET) {
+		written = _decodeShift(memory.offset, false, buffer, blen);
+		ADVANCE(written);
+	}
 
 	if (!(memory.format & ARM_MEMORY_POST_INCREMENT)) {
 		strncpy(buffer, "]", blen - 1);
