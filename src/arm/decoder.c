@@ -278,7 +278,7 @@ static const char* _armAccessTypeStrings[] = {
 	"",
 
 	"",
-	"tb",
+	"bt",
 	"",
 	"",
 	"t",
