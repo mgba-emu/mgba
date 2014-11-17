@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	};
 
 	struct GBAConfig config;
-	GBAConfigInit(&config, 0);
+	GBAConfigInit(&config, "perf");
 
 	struct GBAOptions opts = {};
 	struct GBAArguments args = {};
