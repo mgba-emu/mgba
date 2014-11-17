@@ -177,93 +177,56 @@ static inline void ARMStep(struct ARMCore* cpu) {
 
 	unsigned condition = opcode >> 28;
 	if (condition != 0xE) {
+		bool conditionMet = false;
 		switch (condition) {
 		case 0x0:
-			if (!ARM_COND_EQ) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_EQ;
 			break;
 		case 0x1:
-			if (!ARM_COND_NE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_NE;
 			break;
 		case 0x2:
-			if (!ARM_COND_CS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_CS;
 			break;
 		case 0x3:
-			if (!ARM_COND_CC) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_CC;
 			break;
 		case 0x4:
-			if (!ARM_COND_MI) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_MI;
 			break;
 		case 0x5:
-			if (!ARM_COND_PL) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_PL;
 			break;
 		case 0x6:
-			if (!ARM_COND_VS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_VS;
 			break;
 		case 0x7:
-			if (!ARM_COND_VC) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_VC;
 			break;
 		case 0x8:
-			if (!ARM_COND_HI) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_HI;
 			break;
 		case 0x9:
-			if (!ARM_COND_LS) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_LS;
 			break;
 		case 0xA:
-			if (!ARM_COND_GE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_GE;
 			break;
 		case 0xB:
-			if (!ARM_COND_LT) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_LT;
 			break;
 		case 0xC:
-			if (!ARM_COND_GT) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_GT;
 			break;
 		case 0xD:
-			if (!ARM_COND_LE) {
-				cpu->cycles += ARM_PREFETCH_CYCLES;
-				return;
-			}
+			conditionMet = ARM_COND_LE;
 			break;
 		default:
 			break;
+		}
+		if (!conditionMet) {
+			cpu->cycles += ARM_PREFETCH_CYCLES;
+			return;
 		}
 	}
 	ARMInstruction instruction = _armTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
