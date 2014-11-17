@@ -290,10 +290,12 @@ void ARMRun(struct ARMCore* cpu) {
 }
 
 void ARMRunLoop(struct ARMCore* cpu) {
-	while (cpu->cycles < cpu->nextEvent) {
-		if (cpu->executionMode == MODE_THUMB) {
+	if (cpu->executionMode == MODE_THUMB) {
+		while (cpu->cycles < cpu->nextEvent) {
 			ThumbStep(cpu);
-		} else {
+		}
+	} else {
+		while (cpu->cycles < cpu->nextEvent) {
 			ARMStep(cpu);
 		}
 	}
