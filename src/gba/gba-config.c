@@ -90,8 +90,12 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
-	config->port = malloc(strlen("ports.") + strlen(port) + 1);
-	snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
+	if (port) {
+		config->port = malloc(strlen("ports.") + strlen(port) + 1);
+		snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
+	} else {
+		config->port = 0;
+	}
 }
 
 void GBAConfigDeinit(struct GBAConfig* config) {
