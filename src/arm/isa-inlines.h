@@ -31,13 +31,13 @@
 
 #define ARM_WAIT_MUL(R) \
 	if ((R & 0xFFFFFF00) == 0xFFFFFF00 || !(R & 0xFFFFFF00)) { \
-		cpu->cycles += 1; \
+		currentCycles += 1; \
 	} else if ((R & 0xFFFF0000) == 0xFFFF0000 || !(R & 0xFFFF0000)) { \
-		cpu->cycles += 2; \
+		currentCycles += 2; \
 	} else if ((R & 0xFF000000) == 0xFF000000 || !(R & 0xFF000000)) { \
-		cpu->cycles += 3; \
+		currentCycles += 3; \
 	} else { \
-		cpu->cycles += 4; \
+		currentCycles += 4; \
 	}
 
 #define ARM_STUB cpu->irqh.hitStub(cpu, opcode)
