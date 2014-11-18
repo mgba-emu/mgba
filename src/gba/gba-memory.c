@@ -669,11 +669,32 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 }
 
 #define LDM_LOOP(LDM) \
-	for (i = 0; i < 16; ++i) { \
-		if (mask & (1 << i)) { \
+	for (i = 0; i < 16; i += 4) { \
+		if (UNLIKELY(mask & (1 << i))) { \
 			LDM; \
 			waitstatesRegion = memory->waitstatesSeq32; \
 			cpu->gprs[i] = value; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (2 << i))) { \
+			LDM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			cpu->gprs[i + 1] = value; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (4 << i))) { \
+			LDM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			cpu->gprs[i + 2] = value; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (8 << i))) { \
+			LDM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			cpu->gprs[i + 3] = value; \
 			++wait; \
 			address += 4; \
 		} \
@@ -757,9 +778,30 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 }
 
 #define STM_LOOP(STM) \
-	for (i = 0; i < 16; ++i) { \
-		if (mask & (1 << i)) { \
+	for (i = 0; i < 16; i += 4) { \
+		if (UNLIKELY(mask & (1 << i))) { \
 			value = cpu->gprs[i]; \
+			STM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (2 << i))) { \
+			value = cpu->gprs[i + 1]; \
+			STM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (4 << i))) { \
+			value = cpu->gprs[i + 2]; \
+			STM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			++wait; \
+			address += 4; \
+		} \
+		if (UNLIKELY(mask & (8 << i))) { \
+			value = cpu->gprs[i + 3]; \
 			STM; \
 			waitstatesRegion = memory->waitstatesSeq32; \
 			++wait; \
