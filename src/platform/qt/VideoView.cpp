@@ -167,6 +167,16 @@ VideoView::VideoView(QWidget* parent)
 		.height = 160,
 	});
 
+	addPreset(m_ui.presetGIF, (Preset) {
+		.container = "GIF",
+		.vcodec = "GIF",
+		.acodec = "None",
+		.vbr = 0,
+		.abr = 0,
+		.width = 240,
+		.height = 160,
+	});
+
 	setAudioCodec(m_ui.audio->currentText());
 	setVideoCodec(m_ui.video->currentText());
 	setAudioBitrate(m_ui.abr->value());
@@ -219,10 +229,15 @@ void VideoView::setFilename(const QString& fname) {
 void VideoView::setAudioCodec(const QString& codec, bool manual) {
 	free(m_audioCodecCstr);
 	m_audioCodec = sanitizeCodec(codec, s_acodecMap);
-	m_audioCodecCstr = strdup(m_audioCodec.toLocal8Bit().constData());
+	if (m_audioCodec == "none") {
+		m_audioCodecCstr = nullptr;
+	} else {
+		m_audioCodecCstr = strdup(m_audioCodec.toLocal8Bit().constData());
+	}
 	if (!FFmpegEncoderSetAudio(&m_encoder, m_audioCodecCstr, m_abr)) {
 		free(m_audioCodecCstr);
 		m_audioCodecCstr = nullptr;
+		m_audioCodec = QString();
 	}
 	validateSettings();
 	if (manual) {
@@ -237,6 +252,7 @@ void VideoView::setVideoCodec(const QString& codec, bool manual) {
 	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr)) {
 		free(m_videoCodecCstr);
 		m_videoCodecCstr = nullptr;
+		m_videoCodec = QString();
 	}
 	validateSettings();
 	if (manual) {
@@ -251,6 +267,7 @@ void VideoView::setContainer(const QString& container, bool manual) {
 	if (!FFmpegEncoderSetContainer(&m_encoder, m_containerCstr)) {
 		free(m_containerCstr);
 		m_containerCstr = nullptr;
+		m_container = QString();
 	}
 	validateSettings();
 	if (manual) {
@@ -316,21 +333,21 @@ void VideoView::showAdvanced(bool show) {
 
 bool VideoView::validateSettings() {
 	bool valid = !m_filename.isNull() && !FFmpegEncoderIsOpen(&m_encoder);
-	if (!m_audioCodecCstr) {
+	if (m_audioCodec.isNull()) {
 		valid = false;
 		m_ui.audio->setStyleSheet("QComboBox { color: red; }");
 	} else {
 		m_ui.audio->setStyleSheet("");
 	}
 
-	if (!m_videoCodecCstr) {
+	if (m_videoCodec.isNull()) {
 		valid = false;
 		m_ui.video->setStyleSheet("QComboBox { color: red; }");
 	} else {
 		m_ui.video->setStyleSheet("");
 	}
 
-	if (!m_containerCstr) {
+	if (m_container.isNull()) {
 		valid = false;
 		m_ui.container->setStyleSheet("QComboBox { color: red; }");
 	} else {

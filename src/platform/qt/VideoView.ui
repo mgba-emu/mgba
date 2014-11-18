@@ -146,6 +146,16 @@
           </attribute>
          </widget>
         </item>
+        <item>
+         <widget class="QRadioButton" name="presetGIF">
+          <property name="text">
+           <string>GIF</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">presets</string>
+          </attribute>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

@@ -49,6 +49,12 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		{ AV_SAMPLE_FMT_DBL, 4 },
 		{ AV_SAMPLE_FMT_DBLP, 4 }
 	};
+
+	if (!acodec) {
+		encoder->audioCodec = 0;
+		return true;
+	}
+
 	AVCodec* codec = avcodec_find_encoder_by_name(acodec);
 	if (!codec) {
 		return false;
@@ -106,6 +112,8 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		{ AV_PIX_FMT_RGB0, 3 },
 		{ AV_PIX_FMT_0BGR, 3 },
 		{ AV_PIX_FMT_0RGB, 3 },
+		{ AV_PIX_FMT_RGB8, 3 },
+		{ AV_PIX_FMT_BGR8, 3 },
 		{ AV_PIX_FMT_YUV422P, 4 },
 		{ AV_PIX_FMT_YUV444P, 5 },
 		{ AV_PIX_FMT_YUV420P, 6 }
@@ -153,10 +161,10 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if (!acodec || !vcodec || !oformat) {
+	if ((encoder->audioCodec && !acodec) || !vcodec || !oformat) {
 		return false;
 	}
-	if (!avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
+	if (encoder->audioCodec && !avformat_query_codec(oformat, acodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
 		return false;
 	}
 	if (!avformat_query_codec(oformat, vcodec->id, FF_COMPLIANCE_EXPERIMENTAL)) {
@@ -168,7 +176,7 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
 	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
-	if (!acodec || !vcodec || !FFmpegEncoderVerifyContainer(encoder)) {
+	if ((encoder->audioCodec && !acodec) || !vcodec || !FFmpegEncoderVerifyContainer(encoder)) {
 		return false;
 	}
 
@@ -181,44 +189,46 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 
 	encoder->context->oformat = av_guess_format(encoder->containerFormat, 0, 0);
 
-	encoder->audioStream = avformat_new_stream(encoder->context, acodec);
-	encoder->audio = encoder->audioStream->codec;
-	encoder->audio->bit_rate = encoder->audioBitrate;
-	encoder->audio->channels = 2;
-	encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
-	encoder->audio->sample_rate = encoder->sampleRate;
-	encoder->audio->sample_fmt = encoder->sampleFormat;
-	AVDictionary* opts = 0;
-	av_dict_set(&opts, "strict", "-2", 0);
-	if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
-		encoder->audio->flags |= CODEC_FLAG_GLOBAL_HEADER;
-	}
-	avcodec_open2(encoder->audio, acodec, &opts);
-	av_dict_free(&opts);
-	encoder->audioFrame = av_frame_alloc();
-	encoder->audioFrame->nb_samples = encoder->audio->frame_size;
-	encoder->audioFrame->format = encoder->audio->sample_fmt;
-	encoder->audioFrame->pts = 0;
-	encoder->resampleContext = avresample_alloc_context();
-	av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-	av_opt_set_int(encoder->resampleContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-	av_opt_set_int(encoder->resampleContext, "in_sample_rate", PREFERRED_SAMPLE_RATE, 0);
-	av_opt_set_int(encoder->resampleContext, "out_sample_rate", encoder->sampleRate, 0);
-	av_opt_set_int(encoder->resampleContext, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
-	av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
-	avresample_open(encoder->resampleContext);
-	encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
-	encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
-	encoder->postaudioBufferSize = av_samples_get_buffer_size(0, encoder->audio->channels, encoder->audio->frame_size, encoder->audio->sample_fmt, 0);
-	encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
-	avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
+	if (acodec) {
+		encoder->audioStream = avformat_new_stream(encoder->context, acodec);
+		encoder->audio = encoder->audioStream->codec;
+		encoder->audio->bit_rate = encoder->audioBitrate;
+		encoder->audio->channels = 2;
+		encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
+		encoder->audio->sample_rate = encoder->sampleRate;
+		encoder->audio->sample_fmt = encoder->sampleFormat;
+		AVDictionary* opts = 0;
+		av_dict_set(&opts, "strict", "-2", 0);
+		if (encoder->context->oformat->flags & AVFMT_GLOBALHEADER) {
+			encoder->audio->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		}
+		avcodec_open2(encoder->audio, acodec, &opts);
+		av_dict_free(&opts);
+		encoder->audioFrame = av_frame_alloc();
+		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
+		encoder->audioFrame->format = encoder->audio->sample_fmt;
+		encoder->audioFrame->pts = 0;
+		encoder->resampleContext = avresample_alloc_context();
+		av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+		av_opt_set_int(encoder->resampleContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+		av_opt_set_int(encoder->resampleContext, "in_sample_rate", PREFERRED_SAMPLE_RATE, 0);
+		av_opt_set_int(encoder->resampleContext, "out_sample_rate", encoder->sampleRate, 0);
+		av_opt_set_int(encoder->resampleContext, "in_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+		av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
+		avresample_open(encoder->resampleContext);
+		encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
+		encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
+		encoder->postaudioBufferSize = av_samples_get_buffer_size(0, encoder->audio->channels, encoder->audio->frame_size, encoder->audio->sample_fmt, 0);
+		encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
+		avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
 
-	if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
-		(strcasecmp(encoder->containerFormat, "mp4") ||
-		strcasecmp(encoder->containerFormat, "m4v") ||
-		strcasecmp(encoder->containerFormat, "mov"))) {
-		// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
-		encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
+		if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
+			(strcasecmp(encoder->containerFormat, "mp4") ||
+			strcasecmp(encoder->containerFormat, "m4v") ||
+			strcasecmp(encoder->containerFormat, "mov"))) {
+			// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
+			encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
+		}
 	}
 
 	encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
@@ -268,24 +278,26 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	av_write_trailer(encoder->context);
 	avio_close(encoder->context->pb);
 
-	av_free(encoder->postaudioBuffer);
-	if (encoder->audioBuffer) {
-		av_free(encoder->audioBuffer);
+	if (encoder->audioCodec) {
+		av_free(encoder->postaudioBuffer);
+		if (encoder->audioBuffer) {
+			av_free(encoder->audioBuffer);
+		}
+		av_frame_free(&encoder->audioFrame);
+		avcodec_close(encoder->audio);
+
+		if (encoder->resampleContext) {
+			avresample_close(encoder->resampleContext);
+		}
+
+		if (encoder->absf) {
+			av_bitstream_filter_close(encoder->absf);
+			encoder->absf = 0;
+		}
 	}
-	av_frame_free(&encoder->audioFrame);
-	avcodec_close(encoder->audio);
 
 	av_frame_free(&encoder->videoFrame);
 	avcodec_close(encoder->video);
-
-	if (encoder->resampleContext) {
-		avresample_close(encoder->resampleContext);
-	}
-
-	if (encoder->absf) {
-		av_bitstream_filter_close(encoder->absf);
-		encoder->absf = 0;
-	}
 
 	sws_freeContext(encoder->scaleContext);
 
@@ -299,7 +311,7 @@ bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
 
 void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
-	if (!encoder->context) {
+	if (!encoder->context || !encoder->audioCodec) {
 		return;
 	}
 
