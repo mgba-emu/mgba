@@ -668,17 +668,15 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 }
 
-#define LDM_LOOP_BEGIN \
+#define LDM_LOOP(LDM) \
 	for (i = 0; i < 16; ++i) { \
-		if (!(mask & (1 << i))) { \
-			continue; \
-		}
-
-#define LDM_LOOP_END \
-		waitstatesRegion = memory->waitstatesSeq32; \
-		cpu->gprs[i] = value; \
-		++wait; \
-		address += 4; \
+		if (mask & (1 << i)) { \
+			LDM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			cpu->gprs[i] = value; \
+			++wait; \
+			address += 4; \
+		} \
 	}
 
 uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
@@ -706,39 +704,25 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_BIOS:
-		LDM_LOOP_BEGIN;
-		LOAD_BIOS;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_BIOS);
 		break;
 	case REGION_WORKING_RAM:
-		LDM_LOOP_BEGIN;
-		LOAD_WORKING_RAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_WORKING_RAM);
 		break;
 	case REGION_WORKING_IRAM:
-		LDM_LOOP_BEGIN;
-		LOAD_WORKING_IRAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_WORKING_IRAM);
 		break;
 	case REGION_IO:
-		LDM_LOOP_BEGIN;
-		LOAD_IO;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_IO);
 		break;
 	case REGION_PALETTE_RAM:
-		LDM_LOOP_BEGIN;
-		LOAD_PALETTE_RAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_PALETTE_RAM);
 		break;
 	case REGION_VRAM:
-		LDM_LOOP_BEGIN;
-		LOAD_VRAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_VRAM);
 		break;
 	case REGION_OAM:
-		LDM_LOOP_BEGIN;
-		LOAD_OAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_OAM);
 		break;
 	case REGION_CART0:
 	case REGION_CART0_EX:
@@ -746,20 +730,14 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
-		LDM_LOOP_BEGIN;
-		LOAD_CART;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_CART);
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		LDM_LOOP_BEGIN;
-		LOAD_SRAM;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_SRAM);
 		break;
 	default:
-		LDM_LOOP_BEGIN;
-		LOAD_BAD;
-		LDM_LOOP_END;
+		LDM_LOOP(LOAD_BAD);
 		break;
 	}
 
@@ -778,17 +756,15 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	return address | addressMisalign;
 }
 
-#define STM_LOOP_BEGIN \
+#define STM_LOOP(STM) \
 	for (i = 0; i < 16; ++i) { \
-		if (!(mask & (1 << i))) { \
-			continue; \
+		if (mask & (1 << i)) { \
+			value = cpu->gprs[i]; \
+			STM; \
+			waitstatesRegion = memory->waitstatesSeq32; \
+			++wait; \
+			address += 4; \
 		} \
-		value = cpu->gprs[i];
-
-#define STM_LOOP_END \
-		waitstatesRegion = memory->waitstatesSeq32; \
-		++wait; \
-		address += 4; \
 	}
 
 uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
@@ -816,34 +792,22 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_WORKING_RAM:
-		STM_LOOP_BEGIN;
-		STORE_WORKING_RAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_WORKING_RAM);
 		break;
 	case REGION_WORKING_IRAM:
-		STM_LOOP_BEGIN;
-		STORE_WORKING_IRAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_WORKING_IRAM);
 		break;
 	case REGION_IO:
-		STM_LOOP_BEGIN;
-		STORE_IO;
-		STM_LOOP_END;
+		STM_LOOP(STORE_IO);
 		break;
 	case REGION_PALETTE_RAM:
-		STM_LOOP_BEGIN;
-		STORE_PALETTE_RAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_PALETTE_RAM);
 		break;
 	case REGION_VRAM:
-		STM_LOOP_BEGIN;
-		STORE_VRAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_VRAM);
 		break;
 	case REGION_OAM:
-		STM_LOOP_BEGIN;
-		STORE_OAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_OAM);
 		break;
 	case REGION_CART0:
 	case REGION_CART0_EX:
@@ -851,20 +815,14 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
-		STM_LOOP_BEGIN;
-		STORE_CART;
-		STM_LOOP_END;
+		STM_LOOP(STORE_CART);
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		STM_LOOP_BEGIN;
-		STORE_SRAM;
-		STM_LOOP_END;
+		STM_LOOP(STORE_SRAM);
 		break;
 	default:
-		STM_LOOP_BEGIN;
-		STORE_BAD;
-		STM_LOOP_END;
+		STM_LOOP(STORE_BAD);
 		break;
 	}
 
