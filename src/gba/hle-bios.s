@@ -67,7 +67,6 @@ mov    r0, #1
 mov    r1, #1
 IntrWait:
 stmfd  sp!, {r2-r3, lr}
-# Pull current interrupts enabled and add the ones we need
 mov    r12, #0x04000000
 # See if we want to return immediately
 cmp    r0, #0
