@@ -646,14 +646,14 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 
 	int priority;
 	for (priority = 0; priority < 4; ++priority) {
-		if (spriteLayers & (1 << priority)) {
-			_postprocessSprite(renderer, priority);
-		}
 		renderer->end = 0;
 		for (w = 0; w < renderer->nWindows; ++w) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
 			renderer->currentWindow = renderer->windows[w].control;
+			if (spriteLayers & (1 << priority)) {
+				_postprocessSprite(renderer, priority);
+			}
 			if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(renderer->dispcnt) < 2) {
 				_drawBackgroundMode0(renderer, &renderer->bg[0], y);
 			}
@@ -1639,12 +1639,10 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 	bool objwinOnly = false;
 	if (objwinSlowPath) {
 		objwinDisable = !GBAWindowControlIsObjEnable(renderer->objwin.packed);
-		// TODO: Fix this for current window when WIN0/1 are enabled
-		objwinOnly = !objwinDisable && !GBAWindowControlIsObjEnable(renderer->winout.packed);
-	}
-	if (objwinSlowPath) {
+		objwinOnly = !objwinDisable && !GBAWindowControlIsObjEnable(renderer->currentWindow.packed);
+
 		if (objwinDisable) {
-			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
 				uint32_t current = *pixel;
 				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && !(current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
@@ -1653,7 +1651,7 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 			}
 			return;
 		} else if (objwinOnly) {
-			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
 				uint32_t current = *pixel;
 				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (current & FLAG_OBJWIN) && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
@@ -1662,7 +1660,7 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 			}
 			return;
 		} else {
-			for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 				uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
 				uint32_t current = *pixel;
 				if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
@@ -1672,7 +1670,7 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 			return;
 		}
 	}
-	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x, ++pixel) {
+	for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 		uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;
 		uint32_t current = *pixel;
 		if ((color & FLAG_UNWRITTEN) != FLAG_UNWRITTEN && (color & FLAG_PRIORITY) >> OFFSET_PRIORITY == priority) {
