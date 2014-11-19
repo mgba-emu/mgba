@@ -35,6 +35,7 @@ set(SOURCE_FILES
 	Display.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
+	GIFView.cpp
 	GameController.cpp
 	InputController.cpp
 	KeyEditor.cpp
@@ -46,6 +47,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	GIFView.ui
 	LoadSaveState.ui
 	LogView.ui
 	VideoView.ui)

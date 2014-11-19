@@ -167,16 +167,6 @@ VideoView::VideoView(QWidget* parent)
 		.height = 160,
 	});
 
-	addPreset(m_ui.presetGIF, (Preset) {
-		.container = "GIF",
-		.vcodec = "GIF",
-		.acodec = "None",
-		.vbr = 0,
-		.abr = 0,
-		.width = 240,
-		.height = 160,
-	});
-
 	setAudioCodec(m_ui.audio->currentText());
 	setVideoCodec(m_ui.video->currentText());
 	setAudioBitrate(m_ui.abr->value());

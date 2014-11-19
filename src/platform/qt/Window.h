@@ -20,6 +20,7 @@ namespace QGBA {
 
 class ConfigController;
 class GameController;
+class GIFView;
 class LogView;
 class VideoView;
 class WindowBackground;
@@ -56,6 +57,10 @@ public slots:
 	void openVideoWindow();
 #endif
 
+#ifdef USE_MAGICK
+	void openGIFWindow();
+#endif
+
 #ifdef USE_GDB_STUB
 	void gdbOpen();
 #endif
@@ -90,6 +95,10 @@ private:
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
+#endif
+
+#ifdef USE_MAGICK
+	GIFView* m_gifView;
 #endif
 
 #ifdef USE_GDB_STUB

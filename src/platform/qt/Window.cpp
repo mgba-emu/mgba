@@ -11,6 +11,7 @@
 #include "GBAKeyEditor.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
+#include "GIFView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "VideoView.h"
@@ -30,6 +31,9 @@ Window::Window(ConfigController* config, QWidget* parent)
 	, m_config(config)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
+#endif
+#ifdef USE_MAGICK
+	, m_gifView(nullptr)
 #endif
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
@@ -70,6 +74,10 @@ Window::~Window() {
 
 #ifdef USE_FFMPEG
 	delete m_videoView;
+#endif
+
+#ifdef USE_MAGICK
+	delete m_gifView;
 #endif
 }
 
@@ -160,6 +168,20 @@ void Window::openVideoWindow() {
 		connect(this, SIGNAL(shutdown()), m_videoView, SLOT(close()));
 	}
 	m_videoView->show();
+}
+#endif
+
+#ifdef USE_MAGICK
+void Window::openGIFWindow() {
+	if (!m_gifView) {
+		m_gifView = new GIFView();
+		connect(m_gifView, SIGNAL(recordingStarted(GBAAVStream*)), m_controller, SLOT(setAVStream(GBAAVStream*)));
+		connect(m_gifView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
+		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_gifView, SLOT(stopRecording()));
+		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_gifView, SLOT(close()));
+		connect(this, SIGNAL(shutdown()), m_gifView, SLOT(close()));
+	}
+	m_gifView->show();
 }
 #endif
 
@@ -456,7 +478,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fpsTargetOption->addValue(tr("240"), 240, target);
 	m_config->updateOption("fpsTarget");
 
-#if defined(USE_PNG) || defined(USE_FFMPEG)
+#if defined(USE_PNG) || defined(USE_FFMPEG) || defined(USE_MAGICK)
 	avMenu->addSeparator();
 #endif
 
@@ -475,6 +497,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
 	addAction(recordOutput);
 	avMenu->addAction(recordOutput);
+#endif
+
+#ifdef USE_MAGICK
+	QAction* recordGIF = new QAction(tr("Record GIF..."), avMenu);
+	recordGIF->setShortcut(tr("Shift+F11"));
+	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
+	addAction(recordGIF);
+	avMenu->addAction(recordGIF);
 #endif
 
 	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
