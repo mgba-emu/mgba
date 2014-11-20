@@ -53,11 +53,15 @@ void GBASDLResumeAudio(struct GBASDLAudio* context) {
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBASDLAudio* audioContext = context;
-	if (!context || !audioContext->thread) {
+	if (!context || !audioContext->thread || !audioContext->thread->gba) {
 		memset(data, 0, len);
 		return;
 	}
 	audioContext->ratio = GBAAudioCalculateRatio(&audioContext->thread->gba->audio, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
+	if (audioContext->ratio == INFINITY) {
+		memset(data, 0, len);
+		return;
+	}
 	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {

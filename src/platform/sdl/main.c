@@ -25,8 +25,6 @@
 
 static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer);
 static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
-static void _GBASDLStart(struct GBAThread* context);
-static void _GBASDLClean(struct GBAThread* context);
 
 int main(int argc, char** argv) {
 	struct SDLSoftwareRenderer renderer;

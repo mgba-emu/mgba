@@ -117,8 +117,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	GBACreate(&gba);
 	ARMSetComponents(&cpu, &gba.d, numComponents, components);
 	ARMInit(&cpu);
-	threadContext->gba = &gba;
 	gba.sync = &threadContext->sync;
+	threadContext->gba = &gba;
 	gba.logLevel = threadContext->logLevel;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
