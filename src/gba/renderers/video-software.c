@@ -1631,7 +1631,7 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 
 static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsigned priority) {
 	int x;
-	uint32_t* pixel = renderer->row;
+	uint32_t* pixel = &renderer->row[renderer->start];
 	uint32_t flags = FLAG_TARGET_2 * renderer->target2Obj;
 
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
