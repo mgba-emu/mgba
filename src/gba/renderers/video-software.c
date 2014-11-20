@@ -830,8 +830,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	LOAD_32(tileData, charBase, vram); \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		tileData >>= 4 * mod8; \
-		for (; outX < end; ++outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
+		for (; outX < end; ++outX, ++pixel) { \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
 		} \
 	} else { \
@@ -846,26 +845,30 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	LOAD_32(tileData, charBase, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 	palette = &mainPalette[paletteData]; \
+	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-		outX = renderer->end - mod8; \
 		if (outX < renderer->start) { \
 			tileData >>= 4 * (renderer->start - outX); \
 			outX = renderer->start; \
+			pixel = &renderer->row[outX]; \
 		} \
-		for (; outX < renderer->end; ++outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
+		for (; outX < renderer->end; ++outX, ++pixel) { \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
 		} \
 	} else { \
 		tileData >>= 4 * (0x8 - mod8); \
-		int end2 = renderer->end - 8; \
-		if (end2 < -1) { \
-			end2 = -1; \
+		int end = renderer->end - 8; \
+		if (end < -1) { \
+			end = -1; \
 		} \
-		for (outX = renderer->end - 1; outX > end2; --outX) { \
-			uint32_t* pixel = &renderer->row[outX]; \
+		outX = renderer->end - 1; \
+		pixel = &renderer->row[outX]; \
+		for (; outX > end; --outX, --pixel) { \
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
 		} \
+		/* Needed for consistency checks */ \
+		outX = renderer->end; \
+		pixel = &renderer->row[outX]; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_16(BLEND, OBJWIN) \
@@ -958,66 +961,62 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			LOAD_32(tileData, charBase, vram); \
 			tileData >>= 8 * shift; \
 			shift = 0; \
-			for (; outX < end2; ++outX) { \
-				pixel = &renderer->row[outX]; \
+			for (; outX < end2; ++outX, ++pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
 		} \
 		\
 		LOAD_32(tileData, charBase + 4, vram); \
 		tileData >>= 8 * shift; \
-		for (; outX < end; ++outX) { \
-			pixel = &renderer->row[outX]; \
+		for (; outX < end; ++outX, ++pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
 	} else { \
 		int start = outX; \
 		outX = end - 1; \
+		pixel = &renderer->row[outX]; \
 		if (end2 > start) { \
 			LOAD_32(tileData, charBase, vram); \
-			for (; outX >= end2; --outX) { \
-				pixel = &renderer->row[outX]; \
+			for (; outX >= end2; --outX, --pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
 			charBase += 4; \
 		} \
 		\
 		LOAD_32(tileData, charBase, vram); \
-		for (; outX >= renderer->start; --outX) { \
-			pixel = &renderer->row[outX]; \
+		for (; outX >= renderer->start; --outX, --pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
 		outX = end; \
+		pixel = &renderer->row[outX]; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_PREFIX_256(BLEND, OBJWIN) \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
-	outX = renderer->end - 8 + end; \
-	int end2 = 4 - end; \
+	int end = mod8 - 4; \
+	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-		if (end2 > 0) { \
+		if (end > 0) { \
 			LOAD_32(tileData, charBase, vram); \
-			for (; outX < renderer->end - end2; ++outX) { \
-				pixel = &renderer->row[outX]; \
+			for (; outX < renderer->end - end; ++outX, ++pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
 			charBase += 4; \
 		} \
 		\
 		LOAD_32(tileData, charBase, vram); \
-		for (; outX < renderer->end; ++outX) { \
-			pixel = &renderer->row[outX]; \
+		for (; outX < renderer->end; ++outX, ++pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
 	} else { \
-		int shift = end & 0x3; \
+		int shift = (8 - mod8) & 0x3; \
 		int start = outX; \
 		outX = renderer->end - 1; \
-		if (end2 > 0) { \
+		pixel = &renderer->row[outX]; \
+		if (end > 0) { \
 			LOAD_32(tileData, charBase, vram); \
 			tileData >>= 8 * shift; \
-			for (; outX >= start + 4; --outX) { \
-				pixel = &renderer->row[outX]; \
+			for (; outX >= start + 4; --outX, --pixel) { \
 				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 			} \
 			shift = 0; \
@@ -1025,10 +1024,12 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		\
 		LOAD_32(tileData, charBase + 4, vram); \
 		tileData >>= 8 * shift; \
-		for (; outX >= start; --outX) { \
-			pixel = &renderer->row[outX]; \
+		for (; outX >= start; --outX, --pixel) { \
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
+		/* Needed for consistency checks */ \
+		outX = renderer->end; \
+		pixel = &renderer->row[outX]; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILES_256(BLEND, OBJWIN) \
@@ -1138,38 +1139,59 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	} \
 	\
 	if (inX & 0x7) { \
-		int mod8 = inX & 0x7; \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		\
+		int mod8 = inX & 0x7; \
 		int end = outX + 0x8 - mod8; \
 		if (end > renderer->end) { \
-			/* TODO: ensure tiles are properly aligned from this*/ \
 			end = renderer->end; \
 		} \
-		if (end == outX) { \
+		if (UNLIKELY(end == outX)) { \
+			return; \
+		} \
+		if (UNLIKELY(end < outX)) { \
+			GBALog(0, GBA_LOG_DANGER, "Out of bounds background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \
+		outX = end; \
+		if (tileX < tileEnd) { \
+			++tileX; \
+		} else if (UNLIKELY(tileX > tileEnd)) { \
+			GBALog(0, GBA_LOG_DANGER, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
+			return; \
+		} \
+		length -= end - renderer->start; \
 	} \
-	if (inX & 0x7 || (renderer->end - renderer->start) & 0x7) { \
-		tileX = tileEnd; \
-		int pixelData; \
-		int mod8 = (inX + renderer->end - renderer->start) & 0x7; \
+	/*! TODO: Make sure these lines can be removed */ \
+	/*!*/ pixel = &renderer->row[outX]; \
+	outX += (tileEnd - tileX) * 8; \
+	/*!*/ if (UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+	/*!*/	GBALog(0, GBA_LOG_DANGER, "Out of bounds background draw would occur!"); \
+	/*!*/	return; \
+	/*!*/ } \
+	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
+	if (length & 0x7) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		\
-		int end = 0x8 - mod8; \
-		UNUSED(end); \
+		int mod8 = length & 0x7; \
+		if (UNLIKELY(outX + mod8 != renderer->end)) { \
+			GBALog(0, GBA_LOG_DANGER, "Invariant doesn't hold in background draw!"); \
+			return; \
+		} \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
-		\
-		tileX = (inX & 0x7) != 0; \
-		outX = renderer->start + tileX * 8 - (inX & 0x7); \
 	} \
-	\
-	pixel = &renderer->row[outX]; \
-	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN)
+	if (UNLIKELY(&renderer->row[outX] != pixel)) { \
+		GBALog(0, GBA_LOG_DANGER, "Background draw ended in the wrong place! Diff: %lx", &renderer->row[outX] - pixel); \
+	} \
+	if (UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+		GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw occurred!"); \
+		return; \
+	}
 
 static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int y) {
 	int inX = renderer->start + background->x;
+	int length = renderer->end - renderer->start;
 	if (background->mosaic) {
 		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;
 		y -= y % mosaicV;
@@ -1214,7 +1236,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int pixelData;
 	int paletteData;
 	int tileX = 0;
-	int tileEnd = (renderer->end - renderer->start + (inX & 0x7)) >> 3;
+	int tileEnd = ((length + inX) >> 3) - (inX >> 3);
 	uint16_t* vram = renderer->d.vram;
 
 	if (!objwinSlowPath) {
