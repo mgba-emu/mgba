@@ -81,8 +81,6 @@ int main(int argc, char** argv) {
 
 	struct GBAThread context = {
 		.renderer = &renderer.d.d,
-		.startCallback = _GBASDLStart,
-		.cleanCallback = _GBASDLClean,
 		.userData = &renderer
 	};
 
@@ -92,10 +90,7 @@ int main(int argc, char** argv) {
 	GBAMapArgumentsToContext(&args, &context);
 
 	renderer.audio.samples = context.audioBuffers;
-	GBASDLInitAudio(&renderer.audio);
-	if (renderer.audio.samples > context.audioBuffers) {
-		context.audioBuffers = renderer.audio.samples * 2;
-	}
+	GBASDLInitAudio(&renderer.audio, &context);
 
 	renderer.events.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
@@ -139,15 +134,4 @@ static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
 
 	SDL_Quit();
 
-}
-
-static void _GBASDLStart(struct GBAThread* threadContext) {
-	struct SDLSoftwareRenderer* renderer = threadContext->userData;
-	renderer->audio.audio = &threadContext->gba->audio;
-	renderer->audio.thread = threadContext;
-}
-
-static void _GBASDLClean(struct GBAThread* threadContext) {
-	struct SDLSoftwareRenderer* renderer = threadContext->userData;
-	renderer->audio.audio = 0;
 }

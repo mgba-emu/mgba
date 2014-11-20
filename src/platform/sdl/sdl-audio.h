@@ -15,11 +15,12 @@ struct GBASDLAudio {
 	float drift;
 	float ratio;
 
-	struct GBAAudio* audio;
 	struct GBAThread* thread;
 };
 
-bool GBASDLInitAudio(struct GBASDLAudio* context);
+bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContext);
 void GBASDLDeinitAudio(struct GBASDLAudio* context);
+void GBASDLPauseAudio(struct GBASDLAudio* context);
+void GBASDLResumeAudio(struct GBASDLAudio* context);
 
 #endif

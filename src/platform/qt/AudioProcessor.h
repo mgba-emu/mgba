@@ -4,31 +4,28 @@
 
 struct GBAThread;
 
-class QAudioOutput;
-
 namespace QGBA {
-
-class AudioDevice;
 
 class AudioProcessor : public QObject {
 Q_OBJECT
 
 public:
+	static AudioProcessor* create();
 	AudioProcessor(QObject* parent = nullptr);
 
-	void setInput(GBAThread* input);
+	virtual void setInput(GBAThread* input);
 
 public slots:
-	void start();
-	void pause();
+	virtual void start() = 0;
+	virtual void pause() = 0;
 
-	void setBufferSamples(int samples);
-	void inputParametersChanged();
+	virtual void setBufferSamples(int samples) = 0;
+	virtual void inputParametersChanged() = 0;
 
+protected:
+	GBAThread* input() { return m_context; }
 private:
 	GBAThread* m_context;
-	QAudioOutput* m_audioOutput;
-	AudioDevice* m_device;
 };
 
 }
