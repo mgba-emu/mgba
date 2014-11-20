@@ -46,7 +46,13 @@ enum GBALogLevel {
 	GBA_LOG_GAME_ERROR = 0x100,
 	GBA_LOG_SWI = 0x200,
 
-	GBA_LOG_ALL = 0x33F
+	GBA_LOG_ALL = 0x33F,
+
+#ifdef NDEBUG
+	GBA_LOG_DANGER = GBA_LOG_ERROR
+#else
+	GBA_LOG_DANGER = GBA_LOG_FATAL
+#endif
 };
 
 enum GBAKey {
