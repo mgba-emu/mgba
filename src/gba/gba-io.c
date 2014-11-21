@@ -455,6 +455,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 
 	for (i = 0; i < 4; ++i) {
+		state->io[(REG_DMA0CNT_LO + i * 12) >> 1] = gba->memory.io[(REG_DMA0CNT_LO + i * 12) >> 1];
 		state->dma[i].nextSource = gba->memory.dma[i].nextSource;
 		state->dma[i].nextDest = gba->memory.dma[i].nextDest;
 		state->dma[i].nextCount = gba->memory.dma[i].nextCount;
