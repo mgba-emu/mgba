@@ -201,6 +201,12 @@ void GBAReset(struct ARMCore* cpu) {
 	GBAVideoReset(&gba->video);
 	GBAAudioReset(&gba->audio);
 	GBAIOInit(gba);
+
+	GBASIODeinit(&gba->sio);
+	GBASIOInit(&gba->sio);
+
+	gba->timersEnabled = 0;
+	memset(gba->timers, 0, sizeof(gba->timers));
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {
