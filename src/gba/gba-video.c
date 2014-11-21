@@ -61,6 +61,9 @@ void GBAVideoReset(struct GBAVideo* video) {
 		video->oam.raw[i * 4 + 2] = 0x0000;
 		video->oam.raw[i * 4 + 3] = 0x0000;
 	}
+
+	video->renderer->deinit(video->renderer);
+	video->renderer->init(video->renderer);
 }
 
 void GBAVideoDeinit(struct GBAVideo* video) {
