@@ -3,6 +3,9 @@
 
 #include "gba-thread.h"
 
+#define MAGICKCORE_HDRI_ENABLE 0
+#define MAGICKCORE_QUANTUM_DEPTH 8
+
 #include <wand/MagickWand.h>
 
 struct ImageMagickGIFEncoder {
