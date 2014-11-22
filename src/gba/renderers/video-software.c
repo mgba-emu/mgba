@@ -1192,7 +1192,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
-		GBALog(0, GBA_LOG_FATAL, "Background draw ended in the wrong place! Diff: %lx", &renderer->row[outX] - pixel); \
+		GBALog(0, GBA_LOG_FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
 		GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw occurred!"); \
