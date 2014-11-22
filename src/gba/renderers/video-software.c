@@ -3,6 +3,12 @@
 #include "gba.h"
 #include "gba-io.h"
 
+#ifdef NDEBUG
+#define VIDEO_CHECKS false
+#else
+#define VIDEO_CHECKS true
+#endif
+
 static const int _objSizes[32] = {
 	8, 8,
 	16, 16,
@@ -867,8 +873,10 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
 		} \
 		/* Needed for consistency checks */ \
-		outX = renderer->end; \
-		pixel = &renderer->row[outX]; \
+		if (VIDEO_CHECKS) { \
+			outX = renderer->end; \
+			pixel = &renderer->row[outX]; \
+		} \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_16(BLEND, OBJWIN) \
@@ -1028,8 +1036,10 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
 		} \
 		/* Needed for consistency checks */ \
-		outX = renderer->end; \
-		pixel = &renderer->row[outX]; \
+		if (VIDEO_CHECKS) { \
+			outX = renderer->end; \
+			pixel = &renderer->row[outX]; \
+		} \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILES_256(BLEND, OBJWIN) \
@@ -1157,8 +1167,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		outX = end; \
 		if (tileX < tileEnd) { \
 			++tileX; \
-		} else if (UNLIKELY(tileX > tileEnd)) { \
-			GBALog(0, GBA_LOG_DANGER, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
+		} else if (VIDEO_CHECKS && UNLIKELY(tileX > tileEnd)) { \
+			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
 			return; \
 		} \
 		length -= end - renderer->start; \
@@ -1166,8 +1176,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	/*! TODO: Make sure these lines can be removed */ \
 	/*!*/ pixel = &renderer->row[outX]; \
 	outX += (tileEnd - tileX) * 8; \
-	/*!*/ if (UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
-	/*!*/	GBALog(0, GBA_LOG_DANGER, "Out of bounds background draw would occur!"); \
+	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+	/*!*/	GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw would occur!"); \
 	/*!*/	return; \
 	/*!*/ } \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
@@ -1175,16 +1185,16 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		\
 		int mod8 = length & 0x7; \
-		if (UNLIKELY(outX + mod8 != renderer->end)) { \
-			GBALog(0, GBA_LOG_DANGER, "Invariant doesn't hold in background draw!"); \
+		if (VIDEO_CHECKS && UNLIKELY(outX + mod8 != renderer->end)) { \
+			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
 	} \
-	if (UNLIKELY(&renderer->row[outX] != pixel)) { \
-		GBALog(0, GBA_LOG_DANGER, "Background draw ended in the wrong place! Diff: %lx", &renderer->row[outX] - pixel); \
+	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
+		GBALog(0, GBA_LOG_FATAL, "Background draw ended in the wrong place! Diff: %lx", &renderer->row[outX] - pixel); \
 	} \
-	if (UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
+	if (VIDEO_CHECKS && UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
 		GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw occurred!"); \
 		return; \
 	}
