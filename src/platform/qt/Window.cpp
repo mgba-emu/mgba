@@ -57,6 +57,14 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
 	connect(m_controller, SIGNAL(stateLoaded(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), m_display, SLOT(pauseDrawing()));
+#ifndef Q_OS_MAC
+	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), menuBar(), SLOT(show()));
+	connect(m_controller, &GameController::gameUnpaused, [this]() {
+		if(isFullScreen()) {
+			menuBar()->hide();
+		}
+	});
+#endif
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
 	connect(this, SIGNAL(startDrawing(const uint32_t*, GBAThread*)), m_display, SLOT(startDrawing(const uint32_t*, GBAThread*)), Qt::QueuedConnection);
@@ -247,7 +255,9 @@ void Window::toggleFullScreen() {
 	} else {
 		showFullScreen();
 #ifndef Q_OS_MAC
-		menuBar()->hide();
+		if (!m_controller->isPaused()) {
+			menuBar()->hide();
+		}
 #endif
 	}
 }
