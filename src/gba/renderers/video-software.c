@@ -65,6 +65,9 @@ static inline unsigned _brighten(unsigned color, int y);
 static inline unsigned _darken(unsigned color, int y);
 static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB);
 
+static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
+static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
+
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
 	renderer->d.reset = GBAVideoSoftwareRendererInit;
@@ -264,7 +267,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->winN[0].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end) {
 			softwareRenderer->winN[0].h.start = 0;
 		}
-		if (softwareRenderer->winN[0].h.start > softwareRenderer->winN[0].h.end || softwareRenderer->winN[0].h.end > VIDEO_HORIZONTAL_PIXELS) {
+		if (softwareRenderer->winN[0].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
@@ -274,7 +277,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->winN[1].h.start > VIDEO_HORIZONTAL_PIXELS && softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end) {
 			softwareRenderer->winN[1].h.start = 0;
 		}
-		if (softwareRenderer->winN[1].h.start > softwareRenderer->winN[1].h.end || softwareRenderer->winN[1].h.end > VIDEO_HORIZONTAL_PIXELS) {
+		if (softwareRenderer->winN[1].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].h.end = VIDEO_HORIZONTAL_PIXELS;
 		}
 		break;
@@ -284,7 +287,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end) {
 			softwareRenderer->winN[0].v.start = 0;
 		}
-		if (softwareRenderer->winN[0].v.start > softwareRenderer->winN[0].v.end || softwareRenderer->winN[0].v.end > VIDEO_HORIZONTAL_PIXELS) {
+		if (softwareRenderer->winN[0].v.end > VIDEO_VERTICAL_PIXELS) {
 			softwareRenderer->winN[0].v.end = VIDEO_VERTICAL_PIXELS;
 		}
 		break;
@@ -294,7 +297,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS && softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end) {
 			softwareRenderer->winN[1].v.start = 0;
 		}
-		if (softwareRenderer->winN[1].v.start > softwareRenderer->winN[1].v.end || softwareRenderer->winN[1].v.end > VIDEO_HORIZONTAL_PIXELS) {
+		if (softwareRenderer->winN[1].v.end > VIDEO_VERTICAL_PIXELS) {
 			softwareRenderer->winN[1].v.end = VIDEO_VERTICAL_PIXELS;
 		}
 		break;
@@ -350,6 +353,18 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 }
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win) {
+	if (win->h.end > VIDEO_HORIZONTAL_PIXELS || win->h.end < win->h.start) {
+		struct WindowN splits[2] = { *win, *win };
+		splits[0].h.start = 0;
+		splits[1].h.end = VIDEO_HORIZONTAL_PIXELS;
+		_breakWindowInner(softwareRenderer, &splits[0]);
+		_breakWindowInner(softwareRenderer, &splits[1]);
+	} else {
+		_breakWindowInner(softwareRenderer, win);
+	}
+}
+
+static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win) {
 	int activeWindow;
 	int startX = 0;
 	if (win->h.end > 0) {
@@ -372,6 +387,12 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 				if (win->h.end >= oldWindow.endX) {
 					// Trim off extra windows we've overwritten
 					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
+#ifdef DEBUG
+						if (activeWindow >= MAX_WINDOW) {
+							GBALog(0, GBA_LOG_DANGER, "Out of bounds window write will occur");
+							return;
+						}
+#endif
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
 						--softwareRenderer->nWindows;
 					}
@@ -389,6 +410,11 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 			startX = softwareRenderer->windows[activeWindow].endX;
 		}
 	}
+#ifdef DEBUG
+	if (softwareRenderer->nWindows > MAX_WINDOW) {
+		GBALog(0, GBA_LOG_ABORT, "Out of bounds window write occurred!");
+	}
+#endif
 }
 
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
