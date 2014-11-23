@@ -655,9 +655,9 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 		ch->wavedata[i] |= bitsCarry >> 20;
 		bitsCarry = bits;
 	}
-	ch->sample = (bitsCarry >> 20);
-	ch->sample >>= 2;
-	ch->sample *= volume;
+	ch->sample = bitsCarry >> 24;
+	ch->sample -= 8;
+	ch->sample *= volume * 4;
 	return 8 * (2048 - ch->control.rate);
 }
 
