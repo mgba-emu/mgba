@@ -81,7 +81,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 240, 160, 0, 0, 1);
+	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
 	while (context->state < THREAD_EXITING) {
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
