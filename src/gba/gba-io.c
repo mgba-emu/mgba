@@ -407,6 +407,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_WININ:
 	case REG_WINOUT:
 	case REG_BLDCNT:
+	case REG_BLDALPHA:
 	case REG_SOUND1CNT_LO:
 	case REG_SOUND1CNT_HI:
 	case REG_SOUND1CNT_X:
