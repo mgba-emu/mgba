@@ -269,6 +269,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		if (softwareRenderer->winN[0].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[0].h.end = VIDEO_HORIZONTAL_PIXELS;
+			if (softwareRenderer->winN[0].h.start > VIDEO_HORIZONTAL_PIXELS) {
+				softwareRenderer->winN[0].h.start = VIDEO_HORIZONTAL_PIXELS;
+			}
 		}
 		break;
 	case REG_WIN1H:
@@ -279,6 +282,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		if (softwareRenderer->winN[1].h.end > VIDEO_HORIZONTAL_PIXELS) {
 			softwareRenderer->winN[1].h.end = VIDEO_HORIZONTAL_PIXELS;
+			if (softwareRenderer->winN[1].h.start > VIDEO_HORIZONTAL_PIXELS) {
+				softwareRenderer->winN[1].h.start = VIDEO_HORIZONTAL_PIXELS;
+			}
 		}
 		break;
 	case REG_WIN0V:
@@ -289,6 +295,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		if (softwareRenderer->winN[0].v.end > VIDEO_VERTICAL_PIXELS) {
 			softwareRenderer->winN[0].v.end = VIDEO_VERTICAL_PIXELS;
+			if (softwareRenderer->winN[0].v.start > VIDEO_VERTICAL_PIXELS) {
+				softwareRenderer->winN[0].v.start = VIDEO_VERTICAL_PIXELS;
+			}
 		}
 		break;
 	case REG_WIN1V:
@@ -299,6 +308,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		if (softwareRenderer->winN[1].v.end > VIDEO_VERTICAL_PIXELS) {
 			softwareRenderer->winN[1].v.end = VIDEO_VERTICAL_PIXELS;
+			if (softwareRenderer->winN[1].v.start > VIDEO_VERTICAL_PIXELS) {
+				softwareRenderer->winN[1].v.start = VIDEO_VERTICAL_PIXELS;
+			}
 		}
 		break;
 	case REG_WININ:
