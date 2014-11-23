@@ -65,7 +65,7 @@ static inline unsigned _brighten(unsigned color, int y);
 static inline unsigned _darken(unsigned color, int y);
 static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB);
 
-static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
+static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y);
 static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
@@ -352,7 +352,17 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	}
 }
 
-static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win) {
+static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y) {
+	if (win->v.end >= win->v.start) {
+		if (y >= win->v.end) {
+			return;
+		}
+		if (y < win->v.start) {
+			return;
+		}
+	} else if (y >= win->v.end && y < win->v.start) {
+		return;
+	}
 	if (win->h.end > VIDEO_HORIZONTAL_PIXELS || win->h.end < win->h.start) {
 		struct WindowN splits[2] = { *win, *win };
 		splits[0].h.start = 0;
@@ -467,11 +477,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	softwareRenderer->nWindows = 1;
 	if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 		softwareRenderer->windows[0].control = softwareRenderer->winout;
-		if (GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) && y < softwareRenderer->winN[1].v.end && y >= softwareRenderer->winN[1].v.start) {
-			_breakWindow(softwareRenderer, &softwareRenderer->winN[1]);
+		if (GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt)) {
+			_breakWindow(softwareRenderer, &softwareRenderer->winN[1], y);
 		}
-		if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) && y < softwareRenderer->winN[0].v.end && y >= softwareRenderer->winN[0].v.start) {
-			_breakWindow(softwareRenderer, &softwareRenderer->winN[0]);
+		if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt)) {
+			_breakWindow(softwareRenderer, &softwareRenderer->winN[0], y);
 		}
 	} else {
 		softwareRenderer->windows[0].control.packed = 0xFF;
