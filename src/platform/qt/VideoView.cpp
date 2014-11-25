@@ -45,7 +45,6 @@ VideoView::VideoView(QWidget* parent)
 	m_ui.setupUi(this);
 
 	if (s_acodecMap.empty()) {
-		s_acodecMap["aac"] = "libfaac";
 		s_acodecMap["mp3"] = "libmp3lame";
 		s_acodecMap["uncompressed"] = "pcm_s16le";
 	}
