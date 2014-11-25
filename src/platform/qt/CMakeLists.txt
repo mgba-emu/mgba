@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.11)
 enable_language(CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
@@ -79,8 +79,8 @@ endif()
 add_executable(mGBA WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${UI_FILES} ${RESOURCES})
 set_target_properties(mGBA PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in)
 
-qt5_use_modules(mGBA Widgets OpenGL)
+set(QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
 if(Qt5Multimedia_FOUND)
-	qt5_use_modules(mGBA Multimedia)
+	list(APPEND QT_LIBRARIES Qt5::Multimedia)
 endif()
-target_link_libraries(mGBA ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} Qt5::Widgets)
+target_link_libraries(mGBA ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
