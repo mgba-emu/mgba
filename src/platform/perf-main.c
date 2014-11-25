@@ -155,9 +155,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 
 static void _GBAPerfShutdown(int signal) {
 	UNUSED(signal);
-	pthread_mutex_lock(&_thread->stateMutex);
-	_thread->state = THREAD_EXITING;
-	pthread_mutex_unlock(&_thread->stateMutex);
+	GBAThreadEnd(_thread);
 }
 
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
