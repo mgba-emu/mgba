@@ -73,6 +73,9 @@ cmp    r0, #0
 mov    r0, #0
 mov    r2, #1
 beq    1f
+ldrh   r3, [r12, #-8]
+bic    r3, r1
+strh   r3, [r12, #-8]
 # Halt
 0:
 strb   r0, [r12, #0x301]
