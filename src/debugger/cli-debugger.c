@@ -44,6 +44,7 @@ static void _printStatus(struct CLIDebugger*, struct DebugVector*);
 static void _printHelp(struct CLIDebugger*, struct DebugVector*);
 static void _quit(struct CLIDebugger*, struct DebugVector*);
 static void _readByte(struct CLIDebugger*, struct DebugVector*);
+static void _reset(struct CLIDebugger*, struct DebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct DebugVector*);
 static void _readWord(struct CLIDebugger*, struct DebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct DebugVector*);
@@ -90,6 +91,7 @@ static struct {
 	{ "q", _quit, 0, "Quit the emulator" },
 	{ "quit", _quit, 0, "Quit the emulator"  },
 	{ "rb", _readByte, _DVParse, "Read a byte from a specified offset" },
+	{ "reset", _reset, 0, "Reset the emulation" },
 	{ "rh", _readHalfword, _DVParse, "Read a halfword from a specified offset" },
 	{ "rw", _readWord, _DVParse, "Read a word from a specified offset" },
 	{ "status", _printStatus, 0, "Print the current status" },
@@ -284,6 +286,12 @@ static void _readByte(struct CLIDebugger* debugger, struct DebugVector* dv) {
 	uint32_t address = dv->intValue;
 	uint8_t value = debugger->d.cpu->memory.loadU8(debugger->d.cpu, address, 0);
 	printf(" 0x%02X\n", value);
+}
+
+static void _reset(struct CLIDebugger* debugger, struct DebugVector* dv) {
+	UNUSED(dv);
+	ARMReset(debugger->d.cpu);
+	_printStatus(debugger, 0);
 }
 
 static void _readHalfword(struct CLIDebugger* debugger, struct DebugVector* dv) {
