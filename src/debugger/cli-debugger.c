@@ -8,7 +8,7 @@
 #include <pthread.h>
 #endif
 
-static const char* ERROR_MISSING_ARGS = "Arguments missing";
+static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 
 static struct CLIDebugger* _activeDebugger;
 
@@ -500,43 +500,56 @@ static void _DVFree(struct CLIDebugVector* dv) {
 	}
 }
 
-static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
-	const char* firstSpace = strchr(line, ' ');
-	size_t cmdLength;
+static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandSummary* commands, const char* command, size_t commandLen, const char* args, size_t argsLen) {
 	struct CLIDebugVector* dv = 0;
-	if (firstSpace) {
-		cmdLength = firstSpace - line;
-	} else {
-		cmdLength = count;
-	}
-
 	int i;
 	const char* name;
-	for (i = 0; (name = _debuggerCommands[i].name); ++i) {
-		if (strlen(name) != cmdLength) {
+	for (i = 0; (name = commands[i].name); ++i) {
+		if (strlen(name) != commandLen) {
 			continue;
 		}
-		if (strncasecmp(name, line, cmdLength) == 0) {
-			if (_debuggerCommands[i].parser) {
-				if (firstSpace) {
-					dv = _debuggerCommands[i].parser(debugger, firstSpace + 1, count - cmdLength - 1);
+		if (strncasecmp(name, command, commandLen) == 0) {
+			if (commands[i].parser) {
+				if (args) {
+					dv = commands[i].parser(debugger, args, argsLen);
 					if (dv && dv->type == CLIDV_ERROR_TYPE) {
 						printf("Parse error\n");
 						_DVFree(dv);
 						return false;
 					}
 				}
-			} else if (firstSpace) {
+			} else if (args) {
 				printf("Wrong number of arguments\n");
 				return false;
 			}
-			_debuggerCommands[i].command(debugger, dv);
+			commands[i].command(debugger, dv);
 			_DVFree(dv);
 			return true;
 		}
 	}
-	_DVFree(dv);
-	printf("Command not found\n");
+	return -1;
+}
+
+static bool _parse(struct CLIDebugger* debugger, const char* line, size_t count) {
+	const char* firstSpace = strchr(line, ' ');
+	size_t cmdLength;
+	if (firstSpace) {
+		cmdLength = firstSpace - line;
+	} else {
+		cmdLength = count;
+	}
+
+	const char* args = 0;
+	if (firstSpace) {
+		args = firstSpace + 1;
+	}
+	int result = _tryCommands(debugger, _debuggerCommands, line, cmdLength, args, count - cmdLength - 1);
+	if (result < 0 && debugger->system) {
+		result = _tryCommands(debugger, debugger->system->commands, line, cmdLength, args, count - cmdLength - 1);
+	}
+	if (result < 0) {
+		printf("Command not found\n");
+	}
 	return false;
 }
 
