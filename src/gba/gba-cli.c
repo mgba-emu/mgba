@@ -1,13 +1,21 @@
 #include "gba-cli.h"
 
 #include "gba-io.h"
+#include "gba-serialize.h"
 #include "gba-thread.h"
+
+static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static void _GBACLIDebuggerDeinit(struct CLIDebuggerSystem*);
 static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 
+static void _load(struct CLIDebugger*, struct CLIDebugVector*);
+static void _save(struct CLIDebugger*, struct CLIDebugVector*);
+
 struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
+	{ "load", _load, CLIDVParse, "Load a savestate" },
+	{ "save", _save, CLIDVParse, "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -44,5 +52,37 @@ static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem* debugg
 	}
 	dv->type = CLIDV_ERROR_TYPE;
 	return 0;
+}
+
+static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+
+	int state = dv->intValue;
+	if (state < 1 || state > 9) {
+		printf("State %u out of range", state);
+	}
+
+	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
+
+	GBALoadState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue);
+}
+
+static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+
+	int state = dv->intValue;
+	if (state < 1 || state > 9) {
+		printf("State %u out of range", state);
+	}
+
+	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
+
+	GBASaveState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue, true);
 }
 
