@@ -146,6 +146,8 @@ enum GBAIORegisters {
 	REG_HALTCNT = 0x301
 };
 
+extern const char* GBAIORegisterNames[];
+
 void GBAIOInit(struct GBA* gba);
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
 void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value);
