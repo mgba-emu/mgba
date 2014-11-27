@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 		.userData = &renderer
 	};
 
-	context.debugger = createDebugger(&args);
+	context.debugger = createDebugger(&args, &context);
 
 	GBAMapOptionsToContext(&opts, &context);
 	GBAMapArgumentsToContext(&args, &context);

@@ -7,13 +7,56 @@
 
 #include <histedit.h>
 
+struct CLIDebugger;
+
+struct CLIDebugVector {
+	struct CLIDebugVector* next;
+	enum CLIDVType {
+		CLIDV_ERROR_TYPE,
+		CLIDV_INT_TYPE,
+		CLIDV_CHAR_TYPE
+	} type;
+	union {
+		int32_t intValue;
+		char* charValue;
+	};
+};
+
+typedef void (*CLIDebuggerCommand)(struct CLIDebugger*, struct CLIDebugVector*);
+typedef struct CLIDebugVector* (*CLIDVParser)(struct CLIDebugger* debugger, const char* string, size_t length);
+
+struct CLIDebuggerCommandSummary {
+	const char* name;
+	CLIDebuggerCommand command;
+	CLIDVParser parser;
+	const char* summary;
+};
+
+struct CLIDebuggerSystem {
+	struct CLIDebugger* p;
+
+	void (*init)(struct CLIDebuggerSystem*);
+	void (*deinit)(struct CLIDebuggerSystem*);
+
+	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
+
+	struct CLIDebuggerCommandSummary* commands;
+	const char* name;
+};
+
 struct CLIDebugger {
 	struct ARMDebugger d;
+
+	struct CLIDebuggerSystem* system;
 
 	EditLine* elstate;
 	History* histate;
 };
 
+struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length);
+struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char* string, size_t length);
+
 void CLIDebuggerCreate(struct CLIDebugger*);
+void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);
 
 #endif

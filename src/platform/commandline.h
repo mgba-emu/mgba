@@ -36,12 +36,14 @@ struct GraphicsOpts {
 	int multiplier;
 };
 
+struct GBAThread;
+
 bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser);
 void freeArguments(struct GBAArguments* opts);
 
 void usage(const char* arg0, const char* extraOptions);
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);
-struct ARMDebugger* createDebugger(struct GBAArguments* opts);
+struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context);
 
 #endif

@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 		context.renderer = &renderer.d;
 	}
 
-	context.debugger = createDebugger(&args);
+	context.debugger = createDebugger(&args, &context);
 	char gameCode[5] = { 0 };
 
 	GBAConfigMap(&config, &opts);

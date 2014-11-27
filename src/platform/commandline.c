@@ -145,7 +145,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 	}
 }
 
-struct ARMDebugger* createDebugger(struct GBAArguments* opts) {
+struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context) {
+	UNUSED(context);
 	union DebugUnion {
 		struct ARMDebugger d;
 #ifdef USE_CLI_DEBUGGER
