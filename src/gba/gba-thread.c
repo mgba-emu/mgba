@@ -180,20 +180,22 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 		int resetScheduled = 0;
 		MutexLock(&threadContext->stateMutex);
-		if (threadContext->state == THREAD_PAUSING) {
-			threadContext->state = THREAD_PAUSED;
-			ConditionWake(&threadContext->stateCond);
-		}
-		if (threadContext->state == THREAD_INTERRUPTING) {
-			threadContext->state = THREAD_INTERRUPTED;
-			ConditionWake(&threadContext->stateCond);
-		}
-		if (threadContext->state == THREAD_RESETING) {
-			threadContext->state = THREAD_RUNNING;
-			resetScheduled = 1;
-		}
-		while (threadContext->state == THREAD_PAUSED) {
-			ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
+		while (threadContext->state > THREAD_RUNNING && threadContext->state < THREAD_EXITING) {
+			if (threadContext->state == THREAD_PAUSING) {
+				threadContext->state = THREAD_PAUSED;
+				ConditionWake(&threadContext->stateCond);
+			}
+			if (threadContext->state == THREAD_INTERRUPTING) {
+				threadContext->state = THREAD_INTERRUPTED;
+				ConditionWake(&threadContext->stateCond);
+			}
+			if (threadContext->state == THREAD_RESETING) {
+				threadContext->state = THREAD_RUNNING;
+				resetScheduled = 1;
+			}
+			while (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_INTERRUPTED) {
+				ConditionWait(&threadContext->stateCond, &threadContext->stateMutex);
+			}
 		}
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
