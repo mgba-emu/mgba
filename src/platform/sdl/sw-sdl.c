@@ -60,6 +60,10 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 #endif
 
 	while (context->state < THREAD_EXITING) {
+		while (SDL_PollEvent(&event)) {
+			GBASDLHandleEvent(context, &renderer->events, &event);
+		}
+
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			SDL_UnlockTexture(renderer->tex);
@@ -88,10 +92,6 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 #endif
 		}
 		GBASyncWaitFrameEnd(&context->sync);
-
-		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->events, &event);
-		}
 	}
 }
 

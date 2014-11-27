@@ -83,6 +83,18 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	glLoadIdentity();
 	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
 	while (context->state < THREAD_EXITING) {
+		while (SDL_PollEvent(&event)) {
+			GBASDLHandleEvent(context, &renderer->events, &event);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			// Event handling can change the size of the screen
+			if (renderer->events.windowUpdated) {
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+				renderer->events.windowUpdated = 0;
+			}
+#endif
+		}
+
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
 #ifdef COLOR_16_BIT
@@ -105,18 +117,6 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 #else
 		SDL_GL_SwapBuffers();
 #endif
-
-		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->events, &event);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			// Event handling can change the size of the screen
-			if (renderer->events.windowUpdated) {
-				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
-				renderer->events.windowUpdated = 0;
-			}
-#endif
-		}
 	}
 }
 

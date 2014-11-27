@@ -130,6 +130,10 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	SDL_Event event;
 
 	while (context->state < THREAD_EXITING) {
+		while (SDL_PollEvent(&event)) {
+			GBASDLHandleEvent(context, &renderer->events, &event);
+		}
+
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			glViewport(0, 0, 240, 160);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -145,10 +149,6 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			eglSwapBuffers(renderer->display, renderer->surface);
 		}
 		GBASyncWaitFrameEnd(&context->sync);
-
-		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->events, &event);
-		}
 	}
 }
 
