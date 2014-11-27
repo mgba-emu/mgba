@@ -17,6 +17,11 @@ Q_OBJECT
 public:
 	LogView(QWidget* parent = nullptr);
 
+signals:
+	void levelsSet(int levels);
+	void levelsEnabled(int levels);
+	void levelsDisabled(int levels);
+
 public slots:
 	void postLog(int level, const QString& log);
 	void setLevels(int levels);
@@ -42,8 +47,8 @@ private:
 	int m_lineLimit;
 
 	static QString toString(int level);
-	void setLevel(int level) { m_logLevel |= level; }
-	void clearLevel(int level) { m_logLevel &= ~level; }
+	void setLevel(int level);
+	void clearLevel(int level);
 
 	void clearLine();
 };

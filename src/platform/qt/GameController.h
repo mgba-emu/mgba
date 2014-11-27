@@ -85,6 +85,10 @@ public slots:
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 
+	void setLogLevel(int);
+	void enableLogLevel(int);
+	void disableLogLevel(int);
+
 #ifdef BUILD_SDL
 private slots:
 	void testSDLEvents();
@@ -101,6 +105,7 @@ private:
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	int m_activeKeys;
+	int m_logLevels;
 
 	bool m_gameOpen;
 	bool m_dirmode;

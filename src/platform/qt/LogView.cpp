@@ -19,7 +19,7 @@ LogView::LogView(QWidget* parent)
 	connect(m_ui.levelSWI, SIGNAL(toggled(bool)), this, SLOT(setLevelSWI(bool)));
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
-	m_logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_logLevel = 0;
 	m_lines = 0;
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 }
@@ -51,6 +51,8 @@ void LogView::setLevels(int levels) {
 	m_ui.levelFatal->setCheckState(levels & GBA_LOG_FATAL ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelGameError->setCheckState(levels & GBA_LOG_GAME_ERROR ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelSWI->setCheckState(levels & GBA_LOG_SWI ? Qt::Checked : Qt::Unchecked);
+
+	emit levelsSet(levels);
 }
 
 void LogView::setLevelDebug(bool set) {
@@ -144,6 +146,16 @@ QString LogView::toString(int level) {
 		return tr("SWI");
 	}
 	return QString();
+}
+
+void LogView::setLevel(int level) {
+	m_logLevel |= level;
+	emit levelsEnabled(level);
+}
+
+void LogView::clearLevel(int level) {
+	m_logLevel &= ~level;
+	emit levelsDisabled(level);
 }
 
 void LogView::clearLine() {

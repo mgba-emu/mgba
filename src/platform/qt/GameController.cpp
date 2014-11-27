@@ -20,6 +20,7 @@ GameController::GameController(QObject* parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_threadContext()
 	, m_activeKeys(0)
+	, m_logLevels(0)
 	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
@@ -67,6 +68,9 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		if (!(controller->m_logLevels & level)) {
+			return;
+		}
 		controller->postLog(level, QString().vsprintf(format, args));
 	};
 
@@ -338,6 +342,24 @@ void GameController::updateKeys() {
 	activeKeys |= m_activeButtons;
 #endif
 	m_threadContext.activeKeys = activeKeys;
+}
+
+void GameController::setLogLevel(int levels) {
+	threadInterrupt();
+	m_logLevels = levels;
+	threadContinue();
+}
+
+void GameController::enableLogLevel(int levels) {
+	threadInterrupt();
+	m_logLevels |= levels;
+	threadContinue();
+}
+
+void GameController::disableLogLevel(int levels) {
+	threadInterrupt();
+	m_logLevels &= ~levels;
+	threadContinue();
 }
 
 #ifdef BUILD_SDL
