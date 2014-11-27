@@ -76,6 +76,12 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "BPED", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 	{ "BPEF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 
+	// Pokemon Mystery Dungeon
+	{ "B24J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "B24E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "B24P", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+	{ "B24U", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
+
 	// Pokemon FireRed
 	{ "BPRJ", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 	{ "BPRE", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
