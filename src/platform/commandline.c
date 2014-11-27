@@ -4,6 +4,7 @@
 
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
+#include "gba/gba-cli.h"
 #endif
 
 #ifdef USE_GDB_STUB
@@ -146,7 +147,9 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 }
 
 struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context) {
+#ifndef USE_CLI_DEBUGGER
 	UNUSED(context);
+#endif
 	union DebugUnion {
 		struct ARMDebugger d;
 #ifdef USE_CLI_DEBUGGER
@@ -163,6 +166,8 @@ struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* 
 #ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		CLIDebuggerCreate(&debugger->cli);
+		struct GBACLIDebugger* gbaDebugger = GBACLIDebuggerCreate(context);
+		CLIDebuggerAttachSystem(&debugger->cli, &gbaDebugger->d);
 		break;
 #endif
 #ifdef USE_GDB_STUB
