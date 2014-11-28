@@ -67,6 +67,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 #endif
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
+	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -76,8 +77,10 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
+	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 
 	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL);
+	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
 	setupMenu(menuBar());
 }
@@ -277,6 +280,8 @@ void Window::gameStarted(GBAThread* context) {
 	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 	attachWidget(m_display);
 	m_screenWidget->setScaledContents(true);
+
+	m_fpsTimer.start();
 }
 
 void Window::gameStopped() {
@@ -287,6 +292,8 @@ void Window::gameStopped() {
 	detachWidget(m_display);
 	m_screenWidget->setScaledContents(false);
 	redoLogo();
+
+	m_fpsTimer.stop();
 }
 
 void Window::redoLogo() {
@@ -296,6 +303,22 @@ void Window::redoLogo() {
 	QPixmap logo(m_logo.scaled(m_screenWidget->size() * m_screenWidget->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 	logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_screenWidget->setPixmap(logo);
+}
+
+void Window::recordFrame() {
+	m_frameList.append(QDateTime::currentDateTime());
+	while (m_frameList.count() > FRAME_LIST_SIZE) {
+		m_frameList.removeFirst();
+	}
+}
+
+void Window::showFPS() {
+	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
+	float fps = (m_frameList.count() - 1) * 10000.f / interval;
+	fps = round(fps) / 10.f;
+	char title[13] = { '\0' };
+	GBAGetGameTitle(m_controller->thread()->gba, title);
+	setWindowTitle(tr(PROJECT_NAME " - %1 (%2 fps)").arg(title).arg(fps));
 }
 
 void Window::openStateWindow(LoadSave ls) {

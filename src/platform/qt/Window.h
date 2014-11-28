@@ -2,7 +2,10 @@
 #define QGBA_WINDOW
 
 #include <QAudioOutput>
+#include <QDateTime>
+#include <QList>
 #include <QMainWindow>
+#include <QTimer>
 
 extern "C" {
 #include "gba.h"
@@ -76,7 +79,13 @@ private slots:
 	void gameStopped();
 	void redoLogo();
 
+	void recordFrame();
+	void showFPS();
+
 private:
+	static const int FPS_TIMER_INTERVAL = 2000;
+	static const int FRAME_LIST_SIZE = 120;
+
 	void setupMenu(QMenuBar*);
 	void openStateWindow(LoadSave);
 
@@ -92,6 +101,8 @@ private:
 	QPixmap m_logo;
 	ConfigController* m_config;
 	InputController m_inputController;
+	QList<QDateTime> m_frameList;
+	QTimer m_fpsTimer;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
