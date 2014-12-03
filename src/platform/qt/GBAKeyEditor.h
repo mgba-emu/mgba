@@ -26,6 +26,9 @@ protected:
 private slots:
 	void setNext();
 	void save();
+#ifdef BUILD_SDL
+	void testGamepad();
+#endif
 
 private:
 	static const qreal DPAD_CENTER_X;
@@ -34,6 +37,11 @@ private:
 	static const qreal DPAD_HEIGHT;
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
+
+
+#ifdef BUILD_SDL
+	QTimer* m_gamepadTimer;
+#endif
 
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;

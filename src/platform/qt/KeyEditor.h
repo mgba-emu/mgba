@@ -14,6 +14,8 @@ public:
 	void setValue(int key);
 	int value() const { return m_key; }
 
+	void setNumeric(bool numeric) { m_numeric = numeric; }
+
 	virtual QSize sizeHint() const override;
 
 signals:
@@ -24,6 +26,7 @@ protected:
 
 private:
 	int m_key;
+	bool m_numeric;
 };
 
 }

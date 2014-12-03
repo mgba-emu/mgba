@@ -56,6 +56,10 @@ public slots:
 
 	void openKeymapWindow();
 
+#ifdef BUILD_SDL
+	void openGamepadWindow();
+#endif
+
 #ifdef USE_FFMPEG
 	void openVideoWindow();
 #endif

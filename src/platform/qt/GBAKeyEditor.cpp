@@ -3,6 +3,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
+#include <QTimer>
 #include <QVBoxLayout>
 
 #include "InputController.h"
@@ -39,6 +40,22 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_keyB = new KeyEditor(this);
 	m_keyL = new KeyEditor(this);
 	m_keyR = new KeyEditor(this);
+
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+		m_keyDU->setNumeric(true);
+		m_keyDD->setNumeric(true);
+		m_keyDL->setNumeric(true);
+		m_keyDR->setNumeric(true);
+		m_keySelect->setNumeric(true);
+		m_keyStart->setNumeric(true);
+		m_keyA->setNumeric(true);
+		m_keyB->setNumeric(true);
+		m_keyL->setNumeric(true);
+		m_keyR->setNumeric(true);
+	}
+#endif
+
 	m_keyDU->setValue(GBAInputQueryBinding(map, type, GBA_KEY_UP));
 	m_keyDD->setValue(GBAInputQueryBinding(map, type, GBA_KEY_DOWN));
 	m_keyDL->setValue(GBAInputQueryBinding(map, type, GBA_KEY_LEFT));
@@ -92,6 +109,15 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_background.load(":/res/keymap.qpic");
 
 	setAll->setFocus();
+
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+		m_gamepadTimer = new QTimer(this);
+		connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
+		m_gamepadTimer->setInterval(100);
+		m_gamepadTimer->start();
+	}
+#endif
 }
 
 void GBAKeyEditor::setAll() {
@@ -149,6 +175,21 @@ void GBAKeyEditor::save() {
 	m_controller->bindKey(m_type, m_keyR->value(), GBA_KEY_R);
 	m_controller->saveConfiguration(m_type);
 }
+
+#ifdef BUILD_SDL
+void GBAKeyEditor::testGamepad() {
+	QSet<int> activeKeys = m_controller->activeGamepadButtons();
+	if (activeKeys.empty()) {
+		return;
+	}
+	for (KeyEditor* key : m_keyOrder) {
+		if (!key->hasFocus()) {
+			continue;
+		}
+		key->setValue(*activeKeys.begin());
+	}
+}
+#endif
 
 void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 	QSize s = size();

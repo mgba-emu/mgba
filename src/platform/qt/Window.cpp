@@ -173,6 +173,15 @@ void Window::openKeymapWindow() {
 	keyEditor->show();
 }
 
+#ifdef BUILD_SDL
+void Window::openGamepadWindow() {
+	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON);
+	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
+	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
+	keyEditor->show();
+}
+#endif
+
 #ifdef USE_FFMPEG
 void Window::openVideoWindow() {
 	if (!m_videoView) {
@@ -453,6 +462,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* keymap = new QAction(tr("Remap keyboard..."), emulationMenu);
 	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
 	emulationMenu->addAction(keymap);
+
+#ifdef BUILD_SDL
+	QAction* gamepad = new QAction(tr("Remap gamepad..."), emulationMenu);
+	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
+	emulationMenu->addAction(gamepad);
+#endif
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));

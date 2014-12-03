@@ -9,6 +9,8 @@ extern "C" {
 #endif
 }
 
+#include <QSet>
+
 namespace QGBA {
 
 class ConfigController;
@@ -32,6 +34,7 @@ public:
 
 #ifdef BUILD_SDL
 	int testSDLEvents();
+	QSet<int> activeGamepadButtons();
 #endif
 
 private:

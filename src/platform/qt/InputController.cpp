@@ -97,4 +97,18 @@ int InputController::testSDLEvents() {
 	}
 	return activeButtons;
 }
+
+QSet<int> InputController::activeGamepadButtons() {
+	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_JoystickUpdate();
+	int numButtons = SDL_JoystickNumButtons(joystick);
+	QSet<int> activeButtons;
+	int i;
+	for (i = 0; i < numButtons; ++i) {
+		if (SDL_JoystickGetButton(joystick, i)) {
+			activeButtons.insert(i);
+		}
+	}
+	return activeButtons;
+}
 #endif
