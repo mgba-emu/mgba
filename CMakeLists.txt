@@ -109,6 +109,11 @@ else()
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
 
+if(APPLE)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
 if(BUILD_BBB OR BUILD_RASPI)
 	enable_language(ASM)
 	if(NOT BUILD_EGL)
