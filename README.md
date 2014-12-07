@@ -55,7 +55,7 @@ Compiling requires using CMake 2.8.11 or newer. To use CMake to build on a Unix-
 
 	mkdir build
 	cd build
-	cmake .. -DCMAKE_BUILD_TYPE=Release
+	cmake ..
 	make
 	make install
 
