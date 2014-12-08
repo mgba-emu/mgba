@@ -9,6 +9,8 @@
 #include "gba-serialize.h"
 #include "gba-thread.h"
 
+#ifdef USE_CLI_DEBUGGER
+
 static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
@@ -23,9 +25,11 @@ struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
 	{ "save", _save, CLIDVParse, "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
+#endif
 
 struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	struct GBACLIDebugger* debugger = malloc(sizeof(struct GBACLIDebugger));
+#ifdef USE_CLI_DEBUGGER
 	debugger->d.init = _GBACLIDebuggerInit;
 	debugger->d.deinit = _GBACLIDebuggerDeinit;
 	debugger->d.lookupIdentifier = _GBACLIDebuggerLookupIdentifier;
@@ -34,10 +38,12 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	debugger->d.commands = _GBACLIDebuggerCommands;
 
 	debugger->context = context;
+#endif
 
 	return debugger;
 }
 
+#ifdef USE_CLI_DEBUGGER
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem* debugger) {
 	UNUSED(debugger);
 }
@@ -90,4 +96,4 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	GBASaveState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue, true);
 }
-
+#endif

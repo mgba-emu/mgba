@@ -10,6 +10,7 @@
 
 #include "debugger.h"
 
+#ifdef USE_CLI_DEBUGGER
 #include <histedit.h>
 
 struct CLIDebugger;
@@ -63,5 +64,6 @@ struct CLIDebugVector* CLIDVStringParse(struct CLIDebugger* debugger, const char
 
 void CLIDebuggerCreate(struct CLIDebugger*);
 void CLIDebuggerAttachSystem(struct CLIDebugger*, struct CLIDebuggerSystem*);
+#endif
 
 #endif
