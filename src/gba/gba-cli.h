@@ -11,9 +11,11 @@
 struct GBAThread;
 
 struct GBACLIDebugger {
+#ifdef USE_CLI_DEBUGGER
 	struct CLIDebuggerSystem d;
 
 	struct GBAThread* context;
+#endif
 };
 
 struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread*);
