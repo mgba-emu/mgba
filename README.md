@@ -19,7 +19,7 @@ Features
 - Video and GIF recording.
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP files.
-- IPS and UPS support.
+- IPS and UPS patch support.
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
 
 ### Planned features
@@ -69,7 +69,7 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - SDL: for a more basic frontend and gamepad support in the Qt frontend. SDL 2 is recommended, but 1.2 is supported.
 - zlib and libpng: for screenshot support and savestate-in-PNG support.
 - libedit: for command-line debugger support.
-- ffmpeg: or libav for video recording. Libav is untested.
+- ffmpeg or libav: for video recording. Libav is untested.
 - libzip: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
 
