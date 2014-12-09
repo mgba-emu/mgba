@@ -84,6 +84,7 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 		_waitUntilNotState(threadContext, THREAD_PAUSING);
 	}
 }
+#endif
 
 static void _changeVideoSync(struct GBASync* sync, bool frameOn) {
 	// Make sure the video thread can process events while the GBA thread is paused
@@ -95,6 +96,7 @@ static void _changeVideoSync(struct GBASync* sync, bool frameOn) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
+#ifndef DISABLE_THREADING
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
@@ -534,7 +536,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 	pthread_once(&_contextOnce, _createTLS);
 	return pthread_getspecific(_contextKey);
 }
-#else
+#elif _WIN32
 struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
@@ -552,6 +554,12 @@ void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
 	PNGWriteClose(png, info);
 	vf->close(vf);
+}
+#endif
+
+#else
+struct GBAThread* GBAThreadGetContext(void) {
+	return 0;
 }
 #endif
 
@@ -651,4 +659,3 @@ void GBASyncConsumeAudio(struct GBASync* sync) {
 	ConditionWake(&sync->audioRequiredCond);
 	MutexUnlock(&sync->audioBufferMutex);
 }
-#endif
