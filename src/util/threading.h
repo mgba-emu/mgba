@@ -58,7 +58,7 @@ static inline int ThreadJoin(Thread thread) {
 	return pthread_join(thread, 0);
 }
 
-#else
+#elif _WIN32
 #define _WIN32_WINNT 0x0600
 #include <windows.h>
 #define THREAD_ENTRY DWORD WINAPI
@@ -121,6 +121,11 @@ static inline int ThreadJoin(Thread thread) {
 	}
 	return 0;
 }
+#else
+#define DISABLE_THREADING
+typedef void* Thread;
+typedef void* Mutex;
+typedef void* Condition;
 #endif
 
 #endif

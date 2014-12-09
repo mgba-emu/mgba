@@ -29,7 +29,7 @@ static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
 static void _createTLS(void) {
 	pthread_key_create(&_contextKey, 0);
 }
-#else
+#elif _WIN32
 static DWORD _contextKey;
 static INIT_ONCE _contextOnce = INIT_ONCE_STATIC_INIT;
 
@@ -42,6 +42,7 @@ static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
 }
 #endif
 
+#ifndef DISABLE_THREADING
 static void _changeState(struct GBAThread* threadContext, enum ThreadState newState, bool broadcast) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->state = newState;
@@ -650,3 +651,4 @@ void GBASyncConsumeAudio(struct GBASync* sync) {
 	ConditionWake(&sync->audioRequiredCond);
 	MutexUnlock(&sync->audioBufferMutex);
 }
+#endif
