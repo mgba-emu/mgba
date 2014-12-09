@@ -10,8 +10,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "3ds-vfs.h"
 
-#include "util/vfs.h"
-
 #include "util/memory.h"
 
 struct VFile3DS {
