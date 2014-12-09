@@ -217,8 +217,9 @@ if(BUILD_PERF)
 endif()
 
 if(3DS)
-	add_executable(${BINARY_NAME}-elf ${CMAKE_SOURCE_DIR}/src/platform/3ds/main.c)
-	target_link_libraries(${BINARY_NAME}-elf ${BINARY_NAME} m ${OS_LIB})
+	add_executable(${BINARY_NAME}.elf ${CMAKE_SOURCE_DIR}/src/platform/3ds/main.c)
+	target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} m ${OS_LIB})
+	add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx)
 endif()
 
 # Packaging
