@@ -10,13 +10,15 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-#ifndef _WIN32
-#include <sys/mman.h>
-#define PATH_SEP '/'
-#else
+#ifdef _WIN32
 #include <io.h>
 #include <windows.h>
 #define PATH_SEP '\\'
+#elif defined(__3DS)
+#define PATH_SEP '/'
+#else
+#include <sys/mman.h>
+#define PATH_SEP '/'
 #endif
 
 struct VFileFD {
@@ -114,21 +116,7 @@ ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size) {
 	return write(vfd->fd, buffer, size);
 }
 
-#ifndef _WIN32
-static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
-	struct VFileFD* vfd = (struct VFileFD*) vf;
-	int mmapFlags = MAP_PRIVATE;
-	if (flags & MAP_WRITE) {
-		mmapFlags = MAP_SHARED;
-	}
-	return mmap(0, size, PROT_READ | PROT_WRITE, mmapFlags, vfd->fd, 0);
-}
-
-static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
-	UNUSED(vf);
-	munmap(memory, size);
-}
-#else
+#ifdef _WIN32
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	int createFlags = PAGE_WRITECOPY;
@@ -153,6 +141,21 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	UnmapViewOfFile(memory);
 	CloseHandle(vfd->hMap);
 	vfd->hMap = 0;
+}
+#elif defined(__3DS)
+#else
+static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
+	struct VFileFD* vfd = (struct VFileFD*) vf;
+	int mmapFlags = MAP_PRIVATE;
+	if (flags & MAP_WRITE) {
+		mmapFlags = MAP_SHARED;
+	}
+	return mmap(0, size, PROT_READ | PROT_WRITE, mmapFlags, vfd->fd, 0);
+}
+
+static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
+	UNUSED(vf);
+	munmap(memory, size);
 }
 #endif
 
