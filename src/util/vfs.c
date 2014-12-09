@@ -15,6 +15,7 @@
 #include <windows.h>
 #define PATH_SEP '\\'
 #elif defined(_3DS)
+#include "util/memory.h"
 #define PATH_SEP '/'
 #else
 #include <sys/mman.h>
@@ -143,6 +144,18 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	vfd->hMap = 0;
 }
 #elif defined(_3DS)
+static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
+	UNUSED(flags);
+	void* buffer = anonymousMemoryMap(size);
+	vf->read(vf, buffer, size);
+	vf->seek(vf, -(off_t) size, SEEK_CUR);
+	return buffer;
+}
+
+static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
+	UNUSED(vf);
+	mappedMemoryFree(memory, size);
+}
 #else
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
