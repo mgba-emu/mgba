@@ -101,19 +101,19 @@ if(HAVE_STRNDUP)
 endif()
 
 # Platform support
+set(BINARY_TYPE SHARED)
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	list(APPEND OS_LIB ws2_32)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
-elseif(3DS)
-	add_definitions(-D__3DS)
-	list(APPEND OS_LIB ctru)
-else()
+elseif(UNIX)
 	add_definitions(-DUSE_PTHREADS)
 	list(APPEND OS_LIB pthread)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
+else()
+	set(BINARY_TYPE STATIC)
 endif()
 
 if(APPLE)
@@ -179,7 +179,7 @@ if(USE_LIBZIP)
 endif()
 
 # Binaries
-add_library(${BINARY_NAME} SHARED
+add_library(${BINARY_NAME} ${BINARY_TYPE}
 	${ARM_SRC}
 	${GBA_SRC}
 	${DEBUGGER_SRC}
@@ -211,6 +211,11 @@ if(BUILD_PERF)
 	target_link_libraries(${BINARY_NAME}-perf ${BINARY_NAME} ${PERF_LIB})
 	install(TARGETS ${BINARY_NAME}-perf DESTINATION bin)
 	install(FILES ${CMAKE_SOURCE_DIR}/tools/perf.py DESTINATION "${CMAKE_INSTALL_LIBDIR}/${BINARY_NAME}")
+endif()
+
+if(3DS)
+	add_executable(${BINARY_NAME}-elf ${CMAKE_SOURCE_DIR}/src/platform/3ds/main.c)
+	target_link_libraries(${BINARY_NAME}-elf ${BINARY_NAME} -lctru)
 endif()
 
 # Packaging
