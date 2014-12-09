@@ -126,6 +126,47 @@ static inline int ThreadJoin(Thread thread) {
 typedef void* Thread;
 typedef void* Mutex;
 typedef void* Condition;
+
+static inline int MutexInit(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int MutexDeinit(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int MutexLock(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int MutexUnlock(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int ConditionInit(Condition* cond) {
+	UNUSED(cond);
+	return 0;
+}
+
+static inline int ConditionDeinit(Condition* cond) {
+	UNUSED(cond);
+	return 0;
+}
+
+static inline int ConditionWait(Condition* cond, Mutex* mutex) {
+	UNUSED(cond);
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int ConditionWake(Condition* cond) {
+	UNUSED(cond);
+	return 0;
+}
 #endif
 
 #endif
