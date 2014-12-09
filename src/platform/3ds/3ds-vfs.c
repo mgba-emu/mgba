@@ -33,19 +33,9 @@ struct VFile* VFileOpen3DS(FS_archive archive, const char* path, int flags) {
 		return 0;
 	}
 
-	int newFlags = 0;
-	if (flags & O_RDONLY) {
-		newFlags |= FS_OPEN_READ;
-	}
-	if (flags & O_WRONLY) {
-		newFlags |= FS_OPEN_WRITE;		
-	}
-	if (flags & O_CREAT) {
-		newFlags |= FS_OPEN_CREATE;
-	}
-
-	FS_path lowPath = FS_makePath(PATH_CHAR, path);
-	if (FSUSER_OpenFileDirectly(0, &vf3d->handle, archive, lowPath, newFlags, FS_ATTRIBUTE_NONE)) {
+	FS_path newPath = FS_makePath(PATH_CHAR, path);
+	Result res = FSUSER_OpenFile(0, &vf3d->handle, archive, newPath, flags, FS_ATTRIBUTE_NONE);
+	if (res & 0xFFFC03FF) {
 		free(vf3d);
 		return 0;
 	}

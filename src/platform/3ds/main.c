@@ -41,9 +41,10 @@ int main() {
 		(FS_path) { PATH_EMPTY, 1, (u8*)"" },
 		0, 0
 	};
-    
-    struct VFile* rom = VFileOpen3DS(sdmcArchive, "/rom.gba", O_RDONLY);
-    struct VFile* save = VFileOpen3DS(sdmcArchive, "/rom.sav", O_RDWR | O_CREAT);
+	FSUSER_OpenArchive(0, &sdmcArchive);
+
+	struct VFile* rom = VFileOpen3DS(sdmcArchive, "/rom.gba", FS_OPEN_READ);
+	struct VFile* save = VFileOpen3DS(sdmcArchive, "/rom.sav", FS_OPEN_WRITE | FS_OPEN_CREATE);
 
 	GBACreate(gba);
 	ARMSetComponents(cpu, &gba->d, 0, 0);
