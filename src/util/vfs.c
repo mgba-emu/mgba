@@ -14,7 +14,7 @@
 #include <io.h>
 #include <windows.h>
 #define PATH_SEP '\\'
-#elif defined(__3DS)
+#elif defined(_3DS)
 #define PATH_SEP '/'
 #else
 #include <sys/mman.h>
@@ -142,7 +142,7 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 	CloseHandle(vfd->hMap);
 	vfd->hMap = 0;
 }
-#elif defined(__3DS)
+#elif defined(_3DS)
 #else
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
