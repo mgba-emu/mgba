@@ -112,7 +112,10 @@ elseif(UNIX)
 	list(APPEND OS_LIB pthread)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
-else()
+elseif(3DS)
+	list(APPEND OS_LIB ctru)
+	list(APPEND OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/3ds/memory.c)
+	source_group("3DS-specific code" FILES ${OS_SRC})
 	set(BINARY_TYPE STATIC)
 endif()
 
@@ -215,7 +218,7 @@ endif()
 
 if(3DS)
 	add_executable(${BINARY_NAME}-elf ${CMAKE_SOURCE_DIR}/src/platform/3ds/main.c)
-	target_link_libraries(${BINARY_NAME}-elf ${BINARY_NAME} -lctru)
+	target_link_libraries(${BINARY_NAME}-elf ${BINARY_NAME} m ${OS_LIB})
 endif()
 
 # Packaging
