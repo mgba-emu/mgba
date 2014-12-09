@@ -628,18 +628,34 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 }
 
 bool GBASyncDrawingFrame(struct GBASync* sync) {
+	if (!sync) {
+		return true;
+	}
+
 	return sync->videoFrameSkip <= 0;
 }
 
 void GBASyncSuspendDrawing(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
 	_changeVideoSync(sync, false);
 }
 
 void GBASyncResumeDrawing(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
 	_changeVideoSync(sync, true);
 }
 
 void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
+	if (!sync) {
+		return;
+	}
+
 	if (sync->audioWait && wait) {
 		// TODO loop properly in event of spurious wakeups
 		ConditionWait(&sync->audioRequiredCond, &sync->audioBufferMutex);
@@ -648,14 +664,26 @@ void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
 }
 
 void GBASyncLockAudio(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
 	MutexLock(&sync->audioBufferMutex);
 }
 
 void GBASyncUnlockAudio(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
 	MutexUnlock(&sync->audioBufferMutex);
 }
 
 void GBASyncConsumeAudio(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
 	ConditionWake(&sync->audioRequiredCond);
 	MutexUnlock(&sync->audioBufferMutex);
 }
