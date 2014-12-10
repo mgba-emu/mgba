@@ -121,6 +121,91 @@ static inline int ThreadJoin(Thread thread) {
 	}
 	return 0;
 }
+#elif defined(_3DS)
+// Threading primitives are implemented, but untested. Turn them off for now.
+#define DISABLE_THREADING
+
+#include <3ds.h>
+#include <malloc.h>
+
+#define THREAD_ENTRY void
+typedef ThreadFunc ThreadEntry;
+
+typedef struct {
+	Handle handle;
+	void* stack;
+} Thread;
+typedef Handle Mutex;
+typedef struct {
+	Mutex mutex;
+	Handle semaphore;
+	u32 waiting;
+} Condition;
+
+static inline int MutexInit(Mutex* mutex) {
+	return svcCreateMutex(mutex, false);
+}
+
+static inline int MutexDeinit(Mutex* mutex) {
+	return svcCloseHandle(*mutex);
+}
+
+static inline int MutexLock(Mutex* mutex) {
+	return svcWaitSynchronization(*mutex, U64_MAX);
+}
+
+static inline int MutexUnlock(Mutex* mutex) {
+	return svcReleaseMutex(*mutex);
+}
+
+static inline int ConditionInit(Condition* cond) {
+	Result res = svcCreateMutex(&cond->mutex, false);
+	if (res) {
+		return res;
+	}
+	res = svcCreateSemaphore(&cond->semaphore, 0, 1);
+	if (res) {
+		svcCloseHandle(cond->mutex);
+	}
+	cond->waiting = 0;
+	return res;
+}
+
+static inline int ConditionDeinit(Condition* cond) {
+	svcCloseHandle(cond->mutex);
+	return svcCloseHandle(cond->semaphore);
+}
+
+static inline int ConditionWait(Condition* cond, Mutex* mutex) {
+	MutexLock(&cond->mutex);
+	++cond->waiting;
+	MutexUnlock(mutex);
+	MutexUnlock(&cond->mutex);
+	svcWaitSynchronization(cond->semaphore, U64_MAX);
+	MutexLock(mutex);
+	return 0;
+}
+
+static inline int ConditionWake(Condition* cond) {
+	MutexLock(&cond->mutex);
+	if (cond->waiting) {
+		--cond->waiting;
+		s32 count = 0;
+		svcReleaseSemaphore(&count, cond->semaphore, 1);
+	}
+	MutexUnlock(&cond->mutex);
+	return 0;
+}
+
+static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
+	thread->stack = memalign(8, 0x800000);
+	return svcCreateThread(&thread->handle, entry, (u32) context, thread->stack, 0x1F, 0);
+}
+
+static inline int ThreadJoin(Thread thread) {
+	return svcWaitSynchronization(thread.handle, U64_MAX);
+}
+
 #else
 #define DISABLE_THREADING
 typedef void* Thread;
