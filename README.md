@@ -81,6 +81,8 @@ Footnotes
 - OBJ window for modes 3, 4 and 5 ([Bug #5](https://endrift.com/mgba/bugs/show_bug.cgi?id=5))
 - Mosaic for transformed OBJs ([Bug #9](https://endrift.com/mgba/bugs/show_bug.cgi?id=9))
 - Cartridges with light sensors (Boktai: The Sun is in Your Hand and Boktai 2: Solar Boy Django) ([Bug #46](https://endrift.com/mgba/bugs/show_bug.cgi?id=46))
+- BIOS call RegisterRamReset is currently stubbed out ([Bug #141](https://endrift.com/mgba/bugs/show_bug.cgi?id=141))
+- Audio channel reset flags ([Bug #142](https://endrift.com/mgba/bugs/show_bug.cgi?id=142))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases, and may require overrides, which are not yet user configurable. Filing a bug is recommended if such a case is encountered.
 
@@ -93,3 +95,5 @@ Copyright
 ---------
 
 mGBA is Copyright © 2013 – 2014 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+
+mGBA contains [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
