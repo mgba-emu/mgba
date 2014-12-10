@@ -35,7 +35,6 @@ int main() {
 
 	size_t stride = VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL;
 	color_t* videoBuffer = anonymousMemoryMap(stride * VIDEO_VERTICAL_PIXELS);
-	memset(videoBuffer, 0xFF, stride * VIDEO_VERTICAL_PIXELS);
 	struct GBA* gba = anonymousMemoryMap(sizeof(struct GBA));
 	struct ARMCore* cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	int activeKeys = 0;
@@ -73,12 +72,10 @@ int main() {
 
 		if (!inVblank) {
 			if (GBARegisterDISPSTATIsInVblank(gba->video.dispstat)) {
-				u16 width, height;
-				u8* screen = gfxGetFramebuffer(GFX_BOTTOM, GFX_BOTTOM, &width, &height);
-				memcpy(screen, videoBuffer, stride * VIDEO_VERTICAL_PIXELS);
+				GX_RequestDma(0, (u32*) videoBuffer, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_BOTTOM, 0, 0), stride * VIDEO_VERTICAL_PIXELS);
 				gfxFlushBuffers();
 				gfxSwapBuffersGpu();
-				gspWaitForEvent(GSPEVENT_VBlank0, false);
+				gspWaitForVBlank();
 				hidScanInput();
 			}
 		}
