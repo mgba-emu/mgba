@@ -42,9 +42,6 @@ int main() {
 	renderer.outputBuffer = videoBuffer;
 	renderer.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
-	gba->keySource = &activeKeys;
-	gba->sync = 0;
-
 	FS_archive sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
 		(FS_path) { PATH_EMPTY, 1, (u8*)"" },
@@ -59,6 +56,9 @@ int main() {
 	GBACreate(gba);
 	ARMSetComponents(cpu, &gba->d, 0, 0);
 	ARMInit(cpu);
+
+	gba->keySource = &activeKeys;
+	gba->sync = 0;
 
 	GBAVideoAssociateRenderer(&gba->video, &renderer.d);
 
@@ -77,6 +77,7 @@ int main() {
 				gfxSwapBuffersGpu();
 				gspWaitForVBlank();
 				hidScanInput();
+				activeKeys = hidKeysHeld() & 0x3FF;
 			}
 		}
 		inVblank = GBARegisterDISPSTATGetInVblank(gba->video.dispstat);
