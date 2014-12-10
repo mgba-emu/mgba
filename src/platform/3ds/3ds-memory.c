@@ -5,10 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/memory.h"
 
+#include <3ds.h>
+
 void* anonymousMemoryMap(size_t size) {
-	return malloc(size);
+	return linearAlloc(size);
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
-	free(memory);
+	UNUSED(size);
+	linearFree(memory);
 }
