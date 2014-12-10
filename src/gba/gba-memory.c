@@ -1106,7 +1106,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	uint32_t dest = info->nextDest;
 	uint32_t sourceRegion = source >> BASE_OFFSET;
 	uint32_t destRegion = dest >> BASE_OFFSET;
-	int32_t cycles = 0;
+	int32_t cycles = 2;
 
 	if (source == info->source) {
 		// TODO: support 4 cycles for ROM access
