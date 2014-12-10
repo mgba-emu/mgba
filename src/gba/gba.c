@@ -424,7 +424,10 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
 	vf->seek(vf, 0, SEEK_SET);
-	gba->pristineRom = vf->map(vf, SIZE_CART0, MAP_READ);
+	if (gba->pristineRomSize > SIZE_CART0) {
+		gba->pristineRomSize = SIZE_CART0;
+	}
+	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
