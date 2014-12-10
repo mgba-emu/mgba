@@ -1164,7 +1164,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 
 	if (!wordsRemaining) {
-		if (!GBADMARegisterIsRepeat(info->reg)) {
+		if (!GBADMARegisterIsRepeat(info->reg) || GBADMARegisterGetTiming(info->reg) == DMA_TIMING_NOW) {
 			info->reg = GBADMARegisterClearEnable(info->reg);
 			info->nextEvent = INT_MAX;
 
