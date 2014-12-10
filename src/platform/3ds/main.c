@@ -7,6 +7,7 @@
 #include "gba-video.h"
 
 #include "renderers/video-software.h"
+#include "util/memory.h"
 
 #include "3ds-vfs.h"
 
@@ -19,19 +20,28 @@ int main() {
 	gfxInit();
 	fsInit();
 
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
+#else
+	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB5_A1_OES);
+#endif
+#else
 	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGBA8_OES);
+#endif
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
-	size_t stride = sizeof(color_t) * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL;
-	color_t* videoBuffer = malloc(stride * VIDEO_VERTICAL_PIXELS);
-	struct GBA* gba = malloc(sizeof(struct GBA));
-	struct ARMCore* cpu = malloc(sizeof(struct ARMCore));
+	size_t stride = VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL;
+	color_t* videoBuffer = anonymousMemoryMap(stride * VIDEO_VERTICAL_PIXELS);
+	memset(videoBuffer, 0xFF, stride * VIDEO_VERTICAL_PIXELS);
+	struct GBA* gba = anonymousMemoryMap(sizeof(struct GBA));
+	struct ARMCore* cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	int activeKeys = 0;
 
 	renderer.outputBuffer = videoBuffer;
-	renderer.outputBufferStride = stride;
+	renderer.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	gba->keySource = &activeKeys;
 	gba->sync = 0;
@@ -44,6 +54,7 @@ int main() {
 	FSUSER_OpenArchive(0, &sdmcArchive);
 
 	struct VFile* rom = VFileOpen3DS(sdmcArchive, "/rom.gba", FS_OPEN_READ);
+
 	struct VFile* save = VFileOpen3DS(sdmcArchive, "/rom.sav", FS_OPEN_WRITE | FS_OPEN_CREATE);
 
 	GBACreate(gba);
@@ -52,43 +63,38 @@ int main() {
 
 	GBAVideoAssociateRenderer(&gba->video, &renderer.d);
 
-	GBALoadROM(gba, rom, save, "rom.gba");
+	GBALoadROM(gba, rom, save, 0);
 
 	ARMReset(cpu);
 
-	bool seenVblank = false;
+	bool inVblank = false;
 	while (aptMainLoop()) {
-		hidScanInput();
-
 		ARMRunLoop(cpu);
 
-		if (!seenVblank) {
+		if (!inVblank) {
 			if (GBARegisterDISPSTATIsInVblank(gba->video.dispstat)) {
 				u16 width, height;
 				u8* screen = gfxGetFramebuffer(GFX_BOTTOM, GFX_BOTTOM, &width, &height);
-				int y;
-				for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-					u8* row = &screen[(width - VIDEO_HORIZONTAL_PIXELS) * BYTES_PER_PIXEL / 2];
-					row = &row[width * BYTES_PER_PIXEL * (((height - VIDEO_VERTICAL_PIXELS) / 2) + y)];
-					memcpy(row, &videoBuffer[stride * y], stride);
-				}
-
+				memcpy(screen, videoBuffer, stride * VIDEO_VERTICAL_PIXELS);
+				gfxFlushBuffers();
 				gfxSwapBuffersGpu();
 				gspWaitForEvent(GSPEVENT_VBlank0, false);
+				hidScanInput();
 			}
 		}
-
-		seenVblank = GBARegisterDISPSTATIsInVblank(gba->video.dispstat);
+		inVblank = GBARegisterDISPSTATGetInVblank(gba->video.dispstat);
 	}
 
 	ARMDeinit(cpu);
 	GBADestroy(gba);
 
-	free(gba);
-	free(cpu);
-
 	rom->close(rom);
 	save->close(save);
+
+	mappedMemoryFree(gba, 0);
+	mappedMemoryFree(cpu, 0);
+
+	mappedMemoryFree(videoBuffer, 0);
 
 	fsExit();
 	gfxExit();
