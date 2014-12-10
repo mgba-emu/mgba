@@ -20,15 +20,7 @@ int main() {
 	gfxInit();
 	fsInit();
 
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
 	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
-#else
-	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB5_A1_OES);
-#endif
-#else
-	gfxSetScreenFormat(GFX_BOTTOM, GSP_RGBA8_OES);
-#endif
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -72,7 +64,16 @@ int main() {
 
 		if (!inVblank) {
 			if (GBARegisterDISPSTATIsInVblank(gba->video.dispstat)) {
-				GX_RequestDma(0, (u32*) videoBuffer, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_BOTTOM, 0, 0), stride * VIDEO_VERTICAL_PIXELS);
+				u16 width, height;
+				u16* screen = (u16*) gfxGetFramebuffer(GFX_BOTTOM, GFX_BOTTOM, &height, &width);
+				u32 startX = (width - VIDEO_HORIZONTAL_PIXELS) / 2;
+				u32 startY = (height + VIDEO_VERTICAL_PIXELS) / 2 - 1;
+				u32 x, y;
+				for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+					for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+						screen[startY - y + (startX + x) * height] = videoBuffer[y * VIDEO_HORIZONTAL_PIXELS + x];
+					}
+				}
 				gfxFlushBuffers();
 				gfxSwapBuffersGpu();
 				gspWaitForVBlank();
