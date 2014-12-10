@@ -102,12 +102,14 @@ ssize_t _vf3dWrite(struct VFile* vf, const void* buffer, size_t size) {
 	return sizeWritten;
 }
 
-// TODO: Move these to a generic implementation
 static void* _vf3dMap(struct VFile* vf, size_t size, int flags) {
+	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	UNUSED(flags);
 	void* buffer = anonymousMemoryMap(size);
-	vf->read(vf, buffer, size);
-	vf->seek(vf, -(off_t) size, SEEK_CUR);
+	if (buffer) {
+		u32 sizeRead;
+		FSFILE_Read(vf3d->handle, &sizeRead, 0, buffer, size);
+	}
 	return buffer;
 }
 
