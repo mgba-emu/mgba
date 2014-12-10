@@ -12,9 +12,9 @@ endif()
 
 set(toolchain_bin_dir ${DEVKITARM}/bin)
 set(cross_prefix ${toolchain_bin_dir}/arm-none-eabi-)
-set(inc_flags -I${DEVKITPRO}/libcrtu/include)
+set(inc_flags -I${DEVKITPRO}/libctru/include)
 set(arch_flags "-march=armv6k -mtune=mpcore -mfpu=vfp -mfloat-abi=softfp")
-set(link_flags "-L${DEVKITPRO}/libcrtu/lib -lctru -lm -specs=3dsx.specs ${arch_flags}")
+set(link_flags "-L${DEVKITPRO}/libctru/lib -lctru -lm -specs=3dsx.specs ${arch_flags}")
 
 set(CMAKE_SYSTEM_NAME Unknown CACHE INTERNAL "system name")
 set(CMAKE_SYSTEM_PROCESSOR arm CACHE INTERNAL "processor")
