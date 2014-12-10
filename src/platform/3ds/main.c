@@ -79,6 +79,9 @@ int main() {
 				gspWaitForVBlank();
 				hidScanInput();
 				activeKeys = hidKeysHeld() & 0x3FF;
+				if (hidKeysDown() & KEY_X) {
+					break;
+				}
 			}
 		}
 		inVblank = GBARegisterDISPSTATGetInVblank(gba->video.dispstat);
