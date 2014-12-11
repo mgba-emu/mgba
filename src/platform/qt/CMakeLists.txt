@@ -52,12 +52,15 @@ qt5_wrap_ui(UI_FILES
 	LogView.ui
 	VideoView.ui)
 
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5" PARENT_SCOPE)
 if(BUILD_SDL)
 	list(APPEND SOURCE_FILES AudioProcessorSDL.cpp)
 elseif(Qt5Multimedia_FOUND)
 	list(APPEND SOURCE_FILES
 	AudioProcessorQt.cpp
 	AudioDevice.cpp)
+	list(APPEND QT_LIBRARIES Qt5::Multimedia)
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5" PARENT_SCOPE)
 else()
 	message(WARNING "No supported audio modules found")
 	set(BUILD_QT OFF PARENT_SCOPE)
@@ -81,9 +84,6 @@ add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in)
 
 set(QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
-if(Qt5Multimedia_FOUND)
-	list(APPEND QT_LIBRARIES Qt5::Multimedia)
-endif()
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
 
 install(TARGETS ${BINARY_NAME}-qt RUNTIME DESTINATION bin BUNDLE DESTINATION /Applications)
