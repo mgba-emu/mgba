@@ -5,15 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AudioProcessor.h"
 
-#include "AudioDevice.h"
-
 #ifdef BUILD_SDL
 #include "AudioProcessorSDL.h"
 #else
 #include "AudioProcessorQt.h"
 #endif
-
-#include <QAudioOutput>
 
 extern "C" {
 #include "gba-thread.h"
