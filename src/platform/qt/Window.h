@@ -6,7 +6,6 @@
 #ifndef QGBA_WINDOW
 #define QGBA_WINDOW
 
-#include <QAudioOutput>
 #include <QDateTime>
 #include <QList>
 #include <QMainWindow>

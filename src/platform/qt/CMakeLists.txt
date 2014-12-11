@@ -30,7 +30,6 @@ if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
 endif()
 
 set(SOURCE_FILES
-	AudioDevice.cpp
 	AudioProcessor.cpp
 	ConfigController.cpp
 	Display.cpp
@@ -56,7 +55,9 @@ qt5_wrap_ui(UI_FILES
 if(BUILD_SDL)
 	list(APPEND SOURCE_FILES AudioProcessorSDL.cpp)
 elseif(Qt5Multimedia_FOUND)
-	list(APPEND SOURCE_FILES AudioProcessorQt.cpp)
+	list(APPEND SOURCE_FILES
+	AudioProcessorQt.cpp
+	AudioDevice.cpp)
 else()
 	message(WARNING "No supported audio modules found")
 	set(BUILD_QT OFF PARENT_SCOPE)
