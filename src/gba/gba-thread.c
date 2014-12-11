@@ -363,6 +363,12 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 	threadContext->sync.audioWait = 0;
 	ConditionWake(&threadContext->sync.audioRequiredCond);
 	MutexUnlock(&threadContext->sync.audioBufferMutex);
+
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	threadContext->sync.videoFrameWait = false;
+	threadContext->sync.videoFrameOn = false;
+	ConditionWake(&threadContext->sync.videoFrameRequiredCond);
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
 void GBAThreadReset(struct GBAThread* threadContext) {
@@ -374,11 +380,6 @@ void GBAThreadReset(struct GBAThread* threadContext) {
 }
 
 void GBAThreadJoin(struct GBAThread* threadContext) {
-	MutexLock(&threadContext->sync.videoFrameMutex);
-	threadContext->sync.videoFrameWait = 0;
-	ConditionWake(&threadContext->sync.videoFrameRequiredCond);
-	MutexUnlock(&threadContext->sync.videoFrameMutex);
-
 	ThreadJoin(threadContext->thread);
 
 	MutexDeinit(&threadContext->stateMutex);
