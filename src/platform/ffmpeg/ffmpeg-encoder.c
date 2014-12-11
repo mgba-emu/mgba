@@ -7,9 +7,15 @@
 
 #include "gba-video.h"
 
+#include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
 
+#include <libavutil/version.h>
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+#include <libavutil/buffer.h>
+#endif
 #include <libavutil/imgutils.h>
+#include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
 
 #include <libavresample/avresample.h>
@@ -113,12 +119,12 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, un
 		{ AV_PIX_FMT_BGR565, 1 },
 		{ AV_PIX_FMT_RGB24, 2 },
 		{ AV_PIX_FMT_BGR24, 2 },
+#ifndef USE_LIBAV
 		{ AV_PIX_FMT_BGR0, 3 },
 		{ AV_PIX_FMT_RGB0, 3 },
 		{ AV_PIX_FMT_0BGR, 3 },
 		{ AV_PIX_FMT_0RGB, 3 },
-		{ AV_PIX_FMT_RGB8, 3 },
-		{ AV_PIX_FMT_BGR8, 3 },
+#endif
 		{ AV_PIX_FMT_YUV422P, 4 },
 		{ AV_PIX_FMT_YUV444P, 5 },
 		{ AV_PIX_FMT_YUV420P, 6 }
@@ -190,7 +196,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->currentVideoFrame = 0;
 	encoder->nextAudioPts = 0;
 
+#ifndef USE_LIBAV
 	avformat_alloc_output_context2(&encoder->context, 0, 0, outfile);
+#else
+	encoder->context = avformat_alloc_context();
+	strncpy(encoder->context->filename, outfile, sizeof(encoder->context->filename));
+#endif
 
 	encoder->context->oformat = av_guess_format(encoder->containerFormat, 0, 0);
 
@@ -209,7 +220,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		}
 		avcodec_open2(encoder->audio, acodec, &opts);
 		av_dict_free(&opts);
+#if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->audioFrame = av_frame_alloc();
+#else
+		encoder->audioFrame = avcodec_alloc_frame();
+#endif
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;
@@ -260,12 +275,21 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		av_opt_set(encoder->video->priv_data, "tune", "zerolatency", 0);
 	}
 	avcodec_open2(encoder->video, vcodec, 0);
+#if LIBAVCODEC_VERSION_MAJOR >= 55
 	encoder->videoFrame = av_frame_alloc();
+#else
+	encoder->videoFrame = avcodec_alloc_frame();
+#endif
 	encoder->videoFrame->format = encoder->video->pix_fmt;
 	encoder->videoFrame->width = encoder->video->width;
 	encoder->videoFrame->height = encoder->video->height;
 	encoder->videoFrame->pts = 0;
-	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, AV_PIX_FMT_0BGR32,
+	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
+#ifndef USE_LIBAV
+		AV_PIX_FMT_0BGR32,
+#else
+		AV_PIX_FMT_BGR32,
+#endif
 		encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
 		SWS_POINT, 0, 0, 0);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
@@ -288,7 +312,11 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		if (encoder->audioBuffer) {
 			av_free(encoder->audioBuffer);
 		}
+#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->audioFrame);
+#else
+		avcodec_free_frame(&encoder->audioFrame);
+#endif
 		avcodec_close(encoder->audio);
 
 		if (encoder->resampleContext) {
@@ -301,7 +329,11 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		}
 	}
 
+#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_free(&encoder->videoFrame);
+#else
+	avcodec_free_frame(&encoder->videoFrame);
+#endif
 	avcodec_close(encoder->video);
 
 	sws_freeContext(encoder->scaleContext);
@@ -320,7 +352,6 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 		return;
 	}
 
-	av_frame_make_writable(encoder->audioFrame);
 	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
 	encoder->audioBuffer[encoder->currentAudioSample * 2 + 1] = right;
 
@@ -339,6 +370,9 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 	if ((ssize_t) avresample_available(encoder->resampleContext) < (ssize_t) encoder->postaudioBufferSize / channelSize) {
 		return;
 	}
+#if LIBAVCODEC_VERSION_MAJOR >= 55
+	av_frame_make_writable(encoder->audioFrame);
+#endif
 	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
 	AVRational timeBase = { 1, PREFERRED_SAMPLE_RATE };
@@ -358,7 +392,9 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 				&tempPacket.data, &tempPacket.size,
 				packet.data, packet.size, 0);
 			if (success > 0) {
+#if LIBAVUTIL_VERSION_MAJOR >= 53
 				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
+#endif
 				av_free_packet(&packet);
 			}
 			packet = tempPacket;
@@ -384,7 +420,9 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	av_init_packet(&packet);
 	packet.data = 0;
 	packet.size = 0;
+#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
+#endif
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
 	++encoder->currentVideoFrame;
 
