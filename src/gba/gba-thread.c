@@ -368,6 +368,7 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 	threadContext->sync.videoFrameWait = false;
 	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameRequiredCond);
+	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
