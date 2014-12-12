@@ -36,6 +36,7 @@ static void _GBAPerfShutdown(int signal);
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
 static struct GBAThread* _thread;
+static bool _dispatchExiting = false;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAPerfShutdown);
@@ -152,6 +153,9 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 		if (*frames == duration) {
 			_GBAPerfShutdown(0);
 		}
+		if (_dispatchExiting) {
+			GBAThreadEnd(context);
+		}
 	}
 	if (!quiet) {
 		printf("\033[2K\r");
@@ -160,7 +164,9 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 
 static void _GBAPerfShutdown(int signal) {
 	UNUSED(signal);
-	GBAThreadEnd(_thread);
+	// This will come in ON the GBA thread, so we have to handle it carefully
+	_dispatchExiting = true;
+	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
