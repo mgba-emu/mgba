@@ -100,6 +100,7 @@ GameController::~GameController() {
 	delete[] m_drawContext;
 }
 
+#ifdef USE_GDB_STUB
 ARMDebugger* GameController::debugger() {
 	return m_threadContext.debugger;
 }
@@ -116,6 +117,7 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 	}
 	setPaused(wasPaused);
 }
+#endif
 
 void GameController::loadGame(const QString& path, bool dirmode) {
 	closeGame();
