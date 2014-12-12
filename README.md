@@ -20,7 +20,7 @@ Features
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP files.
 - IPS and UPS patch support.
-- Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
+- Game debugging via a command-line interface (not available with Qt port).
 
 ### Planned features
 
