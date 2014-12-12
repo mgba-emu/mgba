@@ -86,7 +86,7 @@ const char* GBAIORegisterNames[] = {
 	0,
 	0,
 	0,
-	"WAVE_RAM0_LO"
+	"WAVE_RAM0_LO",
 	"WAVE_RAM0_HI",
 	"WAVE_RAM1_LO",
 	"WAVE_RAM1_HI",
@@ -141,7 +141,6 @@ const char* GBAIORegisterNames[] = {
 	"TM2CNT_HI",
 	"TM3CNT_LO",
 	"TM3CNT_HI",
-	0,
 
 	0, 0, 0, 0, 0, 0, 0, 0,
 
