@@ -43,6 +43,10 @@ Supported Platforms
 
 Other Unix-like platforms work as well, but are untested.
 
+### System requirements
+
+Requirements are minimal. Any computer that can run Windows Vista or newer should be able to handle emulation. Support for OpenGL 1.1 or newer is also required.
+
 Downloads
 ---------
 
