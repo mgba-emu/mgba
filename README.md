@@ -1,7 +1,9 @@
 mGBA
 ====
 
-mGBA is a new emulator for running Game Boy Advance games.
+mGBA is a new emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
+
+Up-to-date news and downloads can be found at [endrift.com/mgba](https://endrift.com/mgba/).
 
 Features
 --------
@@ -51,6 +53,18 @@ Downloads
 ---------
 
 Downloads can be found on the official website, in the [Downloads][downloads] section. The source code can be found on [GitHub][source].
+
+Controls
+--------
+
+Controls are configurable in the menu. The default gamepad controls are mapped so as to work with a DualShock 3. The default keyboard controls are as follows:
+
+- **A**: X
+- **B**: Z
+- **L**: A
+- **R**: S
+- **Start**: Enter
+- **Select**: Backspace
 
 Compiling
 ---------
