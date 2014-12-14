@@ -7,6 +7,8 @@
 #define QGBA_AUDIO_PROCESSOR_QT
 #include "AudioProcessor.h"
 
+ class QAudioOutput;
+
 namespace QGBA {
 
 class AudioDevice;
