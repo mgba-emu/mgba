@@ -67,6 +67,7 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 		impl = &map->maps[0];
 		impl->type = type;
 		impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
+		TableInit(&impl->axes, 2, free);
 	} else {
 		impl = _lookupMap(map, type);
 	}
@@ -92,8 +93,8 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 			impl->type = type;
 			impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
 		}
+		TableInit(&impl->axes, 2, free);
 	}
-	TableInit(&impl->axes, 2, free);
 	return impl;
 }
 
@@ -129,23 +130,27 @@ static void _loadAxis(struct GBAInputMap* map, uint32_t type, const struct Confi
 	snprintf(axisKey, KEY_NAME_MAX, "axis%sAxis", axisName);
 	axisKey[KEY_NAME_MAX - 1] = '\0';
 	int axis;
-	if (!_getIntValue(config, sectionName, axisKey, &axis)) {
+	const char* strValue = ConfigurationGetValue(config, sectionName, axisKey);
+	if (!strValue || !strValue[0]) {
+		return;
+	}
+	char* end;
+	axis = strtoul(&strValue[1], &end, 10);
+	if (*end) {
 		return;
 	}
 
 	const struct GBAAxis* description = GBAInputQueryAxis(map, type, axis);
-	struct GBAAxis realDescription;
-	if (!description) {
-		realDescription = (struct GBAAxis) { direction, GBA_KEY_NONE, value, 0 };
-	} else {
+	struct GBAAxis realDescription = { GBA_KEY_NONE, GBA_KEY_NONE, 0, 0 };
+	if (description) {
 		realDescription = *description;
-		if (value >= realDescription.lowDirection) {
-			realDescription.deadHigh = value;
-			realDescription.highDirection = direction;
-		} else if (value <= realDescription.highDirection) {
-			realDescription.deadLow = value;
-			realDescription.lowDirection = direction;
-		}
+	}
+	if (strValue[0] == '+') {
+		realDescription.deadHigh = value;
+		realDescription.highDirection = direction;
+	} else if (strValue[0] == '-') {
+		realDescription.deadLow = value;
+		realDescription.lowDirection = direction;
 	}
 	GBAInputBindAxis(map, type, axis, &realDescription);
 }
@@ -300,6 +305,11 @@ void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Config
 	_loadKey(map, type, config, GBA_KEY_DOWN, "Down");
 	_loadKey(map, type, config, GBA_KEY_LEFT, "Left");
 	_loadKey(map, type, config, GBA_KEY_RIGHT, "Right");
+
+	_loadAxis(map, type, config, GBA_KEY_UP, "Up");
+	_loadAxis(map, type, config, GBA_KEY_DOWN, "Down");
+	_loadAxis(map, type, config, GBA_KEY_LEFT, "Left");
+	_loadAxis(map, type, config, GBA_KEY_RIGHT, "Right");
 }
 
 void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Configuration* config) {
