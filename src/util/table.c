@@ -144,13 +144,13 @@ void TableClear(struct Table* table) {
 	}
 }
 
-void TableEnumerate(const struct Table* table, void (handler(void* value, void* user)), void* user) {
+void TableEnumerate(const struct Table* table, void (handler(uint32_t key, void* value, void* user)), void* user) {
 	size_t i;
 	for (i = 0; i < table->tableSize; ++i) {
 		const struct TableList* list = &table->table[i];
 		size_t j;
 		for (j = 0; j < list->nEntries; ++j) {
-			handler(list->list[j].value, user);
+			handler(list->list[j].key, list->list[j].value, user);
 		}
 	}
 }
