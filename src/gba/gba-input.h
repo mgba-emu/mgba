@@ -22,6 +22,8 @@ struct GBAAxis {
 	int32_t deadLow;
 };
 
+extern const char* GBAKeyNames[];
+
 void GBAInputMapInit(struct GBAInputMap*);
 void GBAInputMapDeinit(struct GBAInputMap*);
 

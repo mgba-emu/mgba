@@ -21,6 +21,19 @@ struct GBAInputMapImpl {
 	struct Table axes;
 };
 
+const char* GBAKeyNames[] = {
+	"A",
+	"B",
+	"Select",
+	"Start",
+	"Right",
+	"Left",
+	"Up",
+	"Down",
+	"R",
+	"L"
+};
+
 static bool _getIntValue(const struct Configuration* config, const char* section, const char* key, int* value) {
 	const char* strValue = ConfigurationGetValue(config, section, key);
 	if (!strValue) {
