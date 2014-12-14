@@ -15,12 +15,27 @@ struct GBAInputMap {
 	size_t numMaps;
 };
 
+struct GBAAxis {
+	enum GBAKey highDirection;
+	enum GBAKey lowDirection;
+	int32_t deadHigh;
+	int32_t deadLow;
+};
+
 void GBAInputMapInit(struct GBAInputMap*);
 void GBAInputMapDeinit(struct GBAInputMap*);
 
 enum GBAKey GBAInputMapKey(const struct GBAInputMap*, uint32_t type, int key);
 void GBAInputBindKey(struct GBAInputMap*, uint32_t type, int key, enum GBAKey input);
+void GBAInputUnbindKey(struct GBAInputMap*, uint32_t type, int key);
 int GBAInputQueryBinding(const struct GBAInputMap*, uint32_t type, enum GBAKey input);
+
+enum GBAKey GBAInputMapAxis(const struct GBAInputMap*, uint32_t type, int axis, int value);
+int GBAInputClearAxis(const struct GBAInputMap*, uint32_t type, int axis, int keys);
+void GBAInputBindAxis(struct GBAInputMap*, uint32_t type, int axis, const struct GBAAxis* description);
+void GBAInputUnbindAxis(struct GBAInputMap*, uint32_t type, int axis);
+void GBAInputUnbindAllAxes(struct GBAInputMap*, uint32_t type);
+const struct GBAAxis* GBAInputQueryAxis(const struct GBAInputMap*, uint32_t type, int axis);
 
 void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 void GBAInputMapSave(const struct GBAInputMap*, uint32_t type, struct Configuration*);

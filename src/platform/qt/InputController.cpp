@@ -100,6 +100,17 @@ int InputController::testSDLEvents() {
 			activeButtons |= 1 << GBA_KEY_RIGHT;
 		}
 	}
+
+	int numAxes = SDL_JoystickNumAxes(joystick);
+	for (i = 0; i < numAxes; ++i) {
+		int value = SDL_JoystickGetAxis(joystick, i);
+
+		activeButtons = GBAInputClearAxis(&m_inputMap, SDL_BINDING_BUTTON, i, activeButtons);
+		enum GBAKey key = GBAInputMapAxis(&m_inputMap, SDL_BINDING_BUTTON, i, value);
+		if (key != GBA_KEY_NONE) {
+			activeButtons |= 1 << key;
+		}
+	}
 	return activeButtons;
 }
 

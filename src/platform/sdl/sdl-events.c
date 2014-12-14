@@ -69,6 +69,11 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
+
+	struct GBAAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
+	GBAInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
+	description = (struct GBAAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
+	GBAInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 }
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
@@ -272,6 +277,18 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
+static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_JoyAxisEvent* event) {
+	int keys = context->activeKeys;
+
+	keys = GBAInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, keys);
+	enum GBAKey key = GBAInputMapAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, event->value);
+	if (key != GBA_KEY_NONE) {
+		keys |= 1 << key;
+	}
+
+	context->activeKeys = keys;
+}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
 	UNUSED(context);
@@ -303,5 +320,9 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 		break;
 	case SDL_JOYHATMOTION:
 		_GBASDLHandleJoyHat(context, &event->jhat);
+		break;
+	case SDL_JOYAXISMOTION:
+		_GBASDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+		break;
 	}
 }
