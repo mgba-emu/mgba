@@ -13,12 +13,18 @@
 #define SECTION_NAME_MAX 128
 #define KEY_NAME_MAX 32
 #define KEY_VALUE_MAX 16
+#define AXIS_INFO_MAX 12
 
 struct GBAInputMapImpl {
 	int* map;
 	uint32_t type;
 
 	struct Table axes;
+};
+
+struct GBAAxisSave {
+	struct Configuration* config;
+	uint32_t type;
 };
 
 const char* GBAKeyNames[] = {
@@ -184,6 +190,49 @@ static void _saveKey(const struct GBAInputMap* map, uint32_t type, struct Config
 	ConfigurationSetValue(config, sectionName, keyKey, keyValue);
 }
 
+static void _saveAxis(uint32_t axis, void* dp, void* up) {
+	struct GBAAxisSave* user = up;
+	const struct GBAAxis* description = dp;
+
+	uint32_t type = user->type;
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+
+	if (description->lowDirection != GBA_KEY_NONE) {
+		const char* keyName = GBAKeyNames[description->lowDirection];
+
+		char axisKey[KEY_NAME_MAX];
+		snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", keyName);
+		axisKey[KEY_NAME_MAX - 1] = '\0';
+		ConfigurationSetIntValue(user->config, sectionName, axisKey, description->deadLow);
+
+		snprintf(axisKey, KEY_NAME_MAX, "axis%sAxis", keyName);
+		axisKey[KEY_NAME_MAX - 1] = '\0';
+
+		char axisInfo[AXIS_INFO_MAX];
+		snprintf(axisInfo, AXIS_INFO_MAX, "-%u", axis);
+		axisInfo[AXIS_INFO_MAX - 1] = '\0';
+		ConfigurationSetValue(user->config, sectionName, axisKey, axisInfo);
+	}
+	if (description->highDirection != GBA_KEY_NONE) {
+		const char* keyName = GBAKeyNames[description->highDirection];
+
+		char axisKey[KEY_NAME_MAX];
+		snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", keyName);
+		axisKey[KEY_NAME_MAX - 1] = '\0';
+		ConfigurationSetIntValue(user->config, sectionName, axisKey, description->deadHigh);
+
+		snprintf(axisKey, KEY_NAME_MAX, "axis%sAxis", keyName);
+		axisKey[KEY_NAME_MAX - 1] = '\0';
+
+		char axisInfo[AXIS_INFO_MAX];
+		snprintf(axisInfo, AXIS_INFO_MAX, "+%u", axis);
+		axisInfo[AXIS_INFO_MAX - 1] = '\0';
+		ConfigurationSetValue(user->config, sectionName, axisKey, axisInfo);
+	}
+}
+
 void GBAInputMapInit(struct GBAInputMap* map) {
 	map->maps = 0;
 	map->numMaps = 0;
@@ -336,4 +385,14 @@ void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Config
 	_saveKey(map, type, config, GBA_KEY_DOWN, "Down");
 	_saveKey(map, type, config, GBA_KEY_LEFT, "Left");
 	_saveKey(map, type, config, GBA_KEY_RIGHT, "Right");
+
+	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return;
+	}
+	struct GBAAxisSave save = {
+		config,
+		type
+	};
+	TableEnumerate(&impl->axes, _saveAxis, &save);
 }
