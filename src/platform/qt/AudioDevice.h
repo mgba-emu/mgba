@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef QGBA_AUDIO_DEVICE
 #define QGBA_AUDIO_DEVICE
+
 #include <QAudioFormat>
 #include <QIODevice>
 
