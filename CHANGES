@@ -1,2 +1,5 @@
+0.2.0: (Future)
+ - Support for gamepad axes, e.g. analog sticks or triggers
+
 0.1.0: (2014-12-13)
  - Initial release
