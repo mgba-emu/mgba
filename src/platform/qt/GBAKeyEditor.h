@@ -10,6 +10,10 @@
 #include <QPicture>
 #include <QWidget>
 
+extern "C" {
+#include "gba-input.h"
+}
+
 namespace QGBA {
 
 class InputController;
@@ -43,10 +47,14 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
+	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
+	void bindKey(const KeyEditor*, GBAKey);
 
 #ifdef BUILD_SDL
-	QTimer* m_gamepadTimer;
+	void lookupAxes(const GBAInputMap*);
 #endif
+
+	KeyEditor* keyById(GBAKey);
 
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;

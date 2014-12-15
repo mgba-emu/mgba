@@ -11,19 +11,37 @@ using namespace QGBA;
 
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
-	, m_numeric(false)
+	, m_direction(InputController::NEUTRAL)
 {
 	setAlignment(Qt::AlignCenter);
 }
 
 void KeyEditor::setValue(int key) {
-	if (m_numeric) {
+	if (m_button) {
 		setText(QString::number(key));
 	} else {
 		setText(QKeySequence(key).toString(QKeySequence::NativeText));
 	}
 	m_key = key;
 	emit valueChanged(key);
+}
+
+void KeyEditor::setValueKey(int key) {
+	m_button = false;
+	setValue(key);
+}
+
+void KeyEditor::setValueButton(int button) {
+	m_button = true;
+	setValue(button);
+}
+
+void KeyEditor::setValueAxis(int axis, int32_t value) {
+	m_button = true;
+	m_key = axis;
+	m_direction = value < 0 ? InputController::NEGATIVE : InputController::POSITIVE;
+	setText((value < 0 ? "-" : "+") + QString::number(axis));
+	emit axisChanged(axis, m_direction);
 }
 
 QSize KeyEditor::sizeHint() const {
@@ -33,7 +51,7 @@ QSize KeyEditor::sizeHint() const {
 }
 
 void KeyEditor::keyPressEvent(QKeyEvent* event) {
-	if (!m_numeric) {
+	if (!m_button) {
 		setValue(event->key());
 	}
 	event->accept();

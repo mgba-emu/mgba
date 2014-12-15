@@ -38,8 +38,18 @@ public:
 	const GBAInputMap* map() const { return &m_inputMap; }
 
 #ifdef BUILD_SDL
+	static const int32_t AXIS_THRESHOLD = 0x3000;
+	enum Direction {
+		NEUTRAL = 0,
+		POSITIVE = 1,
+		NEGATIVE = -1
+	};
+
 	int testSDLEvents();
 	QSet<int> activeGamepadButtons();
+	QSet<QPair<int, int32_t>> activeGamepadAxes();
+
+	void bindAxis(uint32_t type, int axis, Direction, GBAKey);
 #endif
 
 private:

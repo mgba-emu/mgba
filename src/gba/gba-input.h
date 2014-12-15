@@ -22,6 +22,8 @@ struct GBAAxis {
 	int32_t deadLow;
 };
 
+#define GBA_NO_MAPPING -1
+
 extern const char* GBAKeyNames[];
 
 void GBAInputMapInit(struct GBAInputMap*);
@@ -38,6 +40,7 @@ void GBAInputBindAxis(struct GBAInputMap*, uint32_t type, int axis, const struct
 void GBAInputUnbindAxis(struct GBAInputMap*, uint32_t type, int axis);
 void GBAInputUnbindAllAxes(struct GBAInputMap*, uint32_t type);
 const struct GBAAxis* GBAInputQueryAxis(const struct GBAInputMap*, uint32_t type, int axis);
+void GBAInputEnumerateAxes(const struct GBAInputMap*, uint32_t type, void (handler(int axis, const struct GBAAxis* description, void* user)), void* user);
 
 void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 void GBAInputMapSave(const struct GBAInputMap*, uint32_t type, struct Configuration*);

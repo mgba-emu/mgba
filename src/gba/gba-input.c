@@ -27,6 +27,11 @@ struct GBAAxisSave {
 	uint32_t type;
 };
 
+struct GBAAxisEnumerate {
+	void (*handler)(int axis, const struct GBAAxis* description, void* user);
+	void* user;
+};
+
 const char* GBAKeyNames[] = {
 	"A",
 	"B",
@@ -233,6 +238,12 @@ static void _saveAxis(uint32_t axis, void* dp, void* up) {
 	}
 }
 
+void _enumerateAxis(uint32_t axis, void* dp, void* ep) {
+	struct GBAAxisEnumerate* enumUser = ep;
+	const struct GBAAxis* description = dp;
+	enumUser->handler(axis, description, enumUser->user);
+}
+
 void GBAInputMapInit(struct GBAInputMap* map) {
 	map->maps = 0;
 	map->numMaps = 0;
@@ -274,7 +285,7 @@ void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKe
 void GBAInputUnbindKey(struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
 	struct GBAInputMapImpl* impl = _lookupMap(map, type);
 	if (impl) {
-		impl->map[input] = -1;
+		impl->map[input] = GBA_NO_MAPPING;
 	}
 }
 
@@ -354,6 +365,18 @@ const struct GBAAxis* GBAInputQueryAxis(const struct GBAInputMap* map, uint32_t 
 		return 0;
 	}
 	return TableLookup(&impl->axes, axis);
+}
+
+void GBAInputEnumerateAxes(const struct GBAInputMap* map, uint32_t type, void (handler(int axis, const struct GBAAxis* description, void* user)), void* user) {
+	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return;
+	}
+	struct GBAAxisEnumerate enumUser = {
+		handler,
+		user
+	};
+	TableEnumerate(&impl->axes, _enumerateAxis, &enumUser);
 }
 
 void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config) {

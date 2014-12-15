@@ -126,4 +126,40 @@ QSet<int> InputController::activeGamepadButtons() {
 	}
 	return activeButtons;
 }
+
+QSet<QPair<int, int32_t>> InputController::activeGamepadAxes() {
+	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_JoystickUpdate();
+	int numButtons = SDL_JoystickNumAxes(joystick);
+	QSet<QPair<int, int32_t>> activeAxes;
+	int i;
+	for (i = 0; i < numButtons; ++i) {
+		int32_t axis = SDL_JoystickGetAxis(joystick, i);
+		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
+			activeAxes.insert(qMakePair(i, axis));
+		}
+	}
+	return activeAxes;
+}
+
+void InputController::bindAxis(uint32_t type, int axis, Direction direction, GBAKey key) {
+	const GBAAxis* old = GBAInputQueryAxis(&m_inputMap, SDL_BINDING_BUTTON, axis);
+	GBAAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
+	if (old) {
+		description = *old;
+	}
+	switch (direction) {
+	case NEGATIVE:
+		description.lowDirection = key;
+		description.deadLow = -AXIS_THRESHOLD;
+		break;
+	case POSITIVE:
+		description.highDirection = key;
+		description.deadHigh = AXIS_THRESHOLD;
+		break;
+	default:
+		return;
+	}
+	GBAInputBindAxis(&m_inputMap, SDL_BINDING_BUTTON, axis, &description);
+}
 #endif
