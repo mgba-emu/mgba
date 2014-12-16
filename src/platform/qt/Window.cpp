@@ -114,6 +114,13 @@ void Window::argumentsPassed(GBAArguments* args) {
 	}
 }
 
+void Window::resizeFrame(int width, int height) {
+	QSize newSize(width, height);
+	newSize -= m_screenWidget->size();
+	newSize += size();
+	resize(newSize);
+}
+
 void Window::setConfig(ConfigController* config) {
 	m_config = config;
 }
@@ -479,25 +486,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* setSize = new QAction(tr("1x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
-		resize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		resizeFrame(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	});
 	frameMenu->addAction(setSize);
 	setSize = new QAction(tr("2x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
-		resize(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
+		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
 	});
 	frameMenu->addAction(setSize);
 	setSize = new QAction(tr("3x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
-		resize(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
+		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
 	});
 	frameMenu->addAction(setSize);
 	setSize = new QAction(tr("4x"), avMenu);
 	connect(setSize, &QAction::triggered, [this]() {
 		showNormal();
-		resize(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
+		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
 	});
 	frameMenu->addAction(setSize);
 	addAction(frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")));
