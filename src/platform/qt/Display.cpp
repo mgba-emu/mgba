@@ -53,6 +53,8 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 	context()->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
 	m_drawThread->start(QThread::TimeCriticalPriority);
+
+	lockAspectRatio(m_lockAspectRatio);
 }
 
 void Display::stopDrawing() {
@@ -105,6 +107,13 @@ void Display::forceDraw() {
 	}
 }
 
+void Display::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Qt::QueuedConnection, Q_ARG(bool, lock));
+	}
+}
+
 #ifdef USE_PNG
 void Display::screenshot() {
 	GBAThreadInterrupt(m_context);
@@ -131,6 +140,7 @@ void Display::resizeEvent(QResizeEvent* event) {
 
 Painter::Painter(Display* parent)
 	: m_gl(parent)
+	, m_lockAspectRatio(false)
 {
 	m_size = parent->size();
 }
@@ -145,11 +155,12 @@ void Painter::setBacking(const uint32_t* backing) {
 
 void Painter::resize(const QSize& size) {
 	m_size = size;
-	m_gl->makeCurrent();
-	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	m_gl->swapBuffers();
-	m_gl->doneCurrent();
+	forceDraw();
+}
+
+void Painter::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	forceDraw();
 }
 
 void Painter::start() {
@@ -181,12 +192,7 @@ void Painter::start() {
 void Painter::draw() {
 	m_gl->makeCurrent();
 	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
-		glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		if (m_context->sync.videoFrameWait) {
-			glFlush();
-		}
+		performDraw();
 	}
 	GBASyncWaitFrameEnd(&m_context->sync);
 	m_gl->swapBuffers();
@@ -195,12 +201,7 @@ void Painter::draw() {
 
 void Painter::forceDraw() {
 	m_gl->makeCurrent();
-	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	if (m_context->sync.videoFrameWait) {
-		glFlush();
-	}
+	performDraw();
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
 }
@@ -225,4 +226,26 @@ void Painter::pause() {
 
 void Painter::unpause() {
 	m_drawTimer->start();
+}
+
+void Painter::performDraw() {
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glClear(GL_COLOR_BUFFER_BIT);
+	int w = m_size.width() * m_gl->devicePixelRatio();
+	int h = m_size.height() * m_gl->devicePixelRatio();
+	int drawW = w;
+	int drawH = h;
+	if (m_lockAspectRatio) {
+		if (w * 2 > h * 3) {
+			drawW = h * 3 / 2;
+		} else if (w * 2 < h * 3) {
+			drawH = w * 2 / 3;
+		}
+	}
+	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (m_context->sync.videoFrameWait) {
+		glFlush();
+	}
 }

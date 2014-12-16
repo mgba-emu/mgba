@@ -133,6 +133,7 @@ void Window::loadConfig() {
 	m_controller->setFrameskip(opts->frameskip);
 	m_controller->setAudioSync(opts->audioSync);
 	m_controller->setVideoSync(opts->videoSync);
+	m_display->lockAspectRatio(opts->lockAspectRatio);
 
 	if (opts->bios) {
 		m_controller->loadBIOS(opts->bios);
@@ -508,6 +509,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	frameMenu->addAction(setSize);
 	addAction(frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")));
+
+	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
+	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
+	lockAspectRatio->connect([this](const QVariant& value) { m_display->lockAspectRatio(value.toBool()); });
+	m_config->updateOption("lockAspectRatio");
 
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");

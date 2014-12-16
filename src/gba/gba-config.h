@@ -28,6 +28,7 @@ struct GBAOptions {
 	int fullscreen;
 	int width;
 	int height;
+	bool lockAspectRatio;
 
 	bool videoSync;
 	bool audioSync;

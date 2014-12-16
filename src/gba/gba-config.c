@@ -196,6 +196,9 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	if (_lookupIntValue(config, "videoSync", &fakeBool)) {
 		opts->videoSync = fakeBool;
 	}
+	if (_lookupIntValue(config, "lockAspectRatio", &fakeBool)) {
+		opts->lockAspectRatio = fakeBool;
+	}
 
 	_lookupIntValue(config, "fullscreen", &opts->fullscreen);
 	_lookupIntValue(config, "width", &opts->width);
@@ -215,6 +218,7 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "fullscreen", opts->fullscreen);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "width", opts->width);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "height", opts->height);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 }
 
 void GBAConfigFreeOpts(struct GBAOptions* opts) {
