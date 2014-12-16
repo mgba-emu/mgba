@@ -1,6 +1,8 @@
 0.1.1: (Future)
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
+Misc:
+ - Qt: Disable sync to video by default
 
 0.1.0: (2014-12-13)
  - Initial release
