@@ -217,11 +217,11 @@ void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 
 #ifdef BUILD_SDL
 void GBAKeyEditor::testGamepad() {
-	KeyEditor* focused = *m_currentKey;
-	if (!focused) {
+	if (m_currentKey == m_keyOrder.end() || !*m_currentKey) {
 		QTimer::singleShot(50, this, SLOT(testGamepad()));
 		return;
 	}
+	KeyEditor* focused = *m_currentKey;
 
 	QSet<QPair<int, int32_t>> activeAxes = m_controller->activeGamepadAxes();
 	if (!activeAxes.empty()) {
