@@ -44,6 +44,8 @@ public:
 	void setConfig(ConfigController*);
 	void argumentsPassed(GBAArguments*);
 
+	void resizeFrame(int width, int height);
+
 signals:
 	void startDrawing(const uint32_t*, GBAThread*);
 	void shutdown();
