@@ -490,30 +490,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
-	QAction* setSize = new QAction(tr("1x"), avMenu);
-	connect(setSize, &QAction::triggered, [this]() {
-		showNormal();
-		resizeFrame(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	});
-	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("2x"), avMenu);
-	connect(setSize, &QAction::triggered, [this]() {
-		showNormal();
-		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 2, VIDEO_VERTICAL_PIXELS * 2);
-	});
-	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("3x"), avMenu);
-	connect(setSize, &QAction::triggered, [this]() {
-		showNormal();
-		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 3, VIDEO_VERTICAL_PIXELS * 3);
-	});
-	frameMenu->addAction(setSize);
-	setSize = new QAction(tr("4x"), avMenu);
-	connect(setSize, &QAction::triggered, [this]() {
-		showNormal();
-		resizeFrame(VIDEO_HORIZONTAL_PIXELS * 4, VIDEO_VERTICAL_PIXELS * 4);
-	});
-	frameMenu->addAction(setSize);
+	for (int i = 1; i <= 6; ++i) {
+		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
+		connect(setSize, &QAction::triggered, [this, i]() {
+			showNormal();
+			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
+		});
+		frameMenu->addAction(setSize);
+	}
 	addAction(frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")));
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");

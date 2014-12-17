@@ -1,6 +1,7 @@
 0.2.0: (Future)
 Features:
  - Support for gamepad axes, e.g. analog sticks or triggers
+ - Add scale presets for up to 6x
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
