@@ -3,6 +3,7 @@ Features:
  - Support for gamepad axes, e.g. analog sticks or triggers
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
+ - Qt: Fix emulator crashing when full screen if a game is not running
 
 0.1.0: (2014-12-13)
  - Initial release
