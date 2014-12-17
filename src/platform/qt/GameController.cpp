@@ -208,6 +208,9 @@ void GameController::closeGame() {
 }
 
 bool GameController::isPaused() {
+	if (!m_gameOpen) {
+		return false;
+	}
 	return GBAThreadIsPaused(&m_threadContext);
 }
 

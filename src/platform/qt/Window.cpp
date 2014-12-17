@@ -284,7 +284,7 @@ void Window::toggleFullScreen() {
 	} else {
 		showFullScreen();
 #ifndef Q_OS_MAC
-		if (!m_controller->isPaused()) {
+		if (m_controller->isLoaded() && !m_controller->isPaused()) {
 			menuBar()->hide();
 		}
 #endif
@@ -301,6 +301,12 @@ void Window::gameStarted(GBAThread* context) {
 	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 	attachWidget(m_display);
 	m_screenWidget->setScaledContents(true);
+
+#ifndef Q_OS_MAC
+	if(isFullScreen()) {
+		menuBar()->hide();
+	}
+#endif
 
 	m_fpsTimer.start();
 }
