@@ -21,13 +21,15 @@
 #include <fcntl.h>
 #include <getopt.h>
 
-#define GRAPHICS_OPTIONS "1234f"
+#define GRAPHICS_OPTIONS "123456f"
 #define GRAPHICS_USAGE \
 	"\nGraphics options:\n" \
 	"  -1               1x viewport\n" \
 	"  -2               2x viewport\n" \
 	"  -3               3x viewport\n" \
 	"  -4               4x viewport\n" \
+	"  -5               5x viewport\n" \
+	"  -6               6x viewport\n" \
 	"  -f               Start full-screen"
 
 static const struct option _options[] = {
@@ -139,6 +141,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 	case '2':
 	case '3':
 	case '4':
+	case '5':
+	case '6':
 		if (graphicsOpts->multiplier) {
 			return false;
 		}
