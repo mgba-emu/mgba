@@ -354,6 +354,7 @@ void GBAThreadEnd(struct GBAThread* threadContext) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
 	}
 	threadContext->state = THREAD_EXITING;
+	threadContext->gba->cpu->halted = false;
 	ConditionWake(&threadContext->stateCond);
 	MutexUnlock(&threadContext->stateMutex);
 	MutexLock(&threadContext->sync.audioBufferMutex);

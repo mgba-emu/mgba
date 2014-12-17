@@ -2,6 +2,7 @@
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
+ - GBA Thread: Allow halted games to exit cleanly
 Misc:
  - Qt: Disable sync to video by default
 
