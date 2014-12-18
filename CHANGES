@@ -7,6 +7,7 @@ Bugfixes:
  - Qt: Fix emulator crashing when full screen if a game is not running
  - GBA Thread: Allow halted games to exit cleanly
  - GBA BIOS: Fix HLE Lz77 and RL functions to properly account for width and invalid addresses
+ - ARM7: Fix LDM writeback to a register already written
 Misc:
  - Qt: Disable sync to video by default
 
