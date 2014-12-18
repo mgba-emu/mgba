@@ -25,6 +25,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	: QWidget(parent)
 	, m_type(type)
 	, m_controller(controller)
+	, m_gamepadTimer(nullptr)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
@@ -112,8 +113,11 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	setAll->setFocus();
 
 #ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {\
-		QTimer::singleShot(50, this, SLOT(testGamepad()));
+	if (type == SDL_BINDING_BUTTON) {
+		m_gamepadTimer = new QTimer(this);
+		connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
+		m_gamepadTimer->setInterval(50);
+		m_gamepadTimer->start();
 	}
 #endif
 }
@@ -217,29 +221,29 @@ void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 
 #ifdef BUILD_SDL
 void GBAKeyEditor::testGamepad() {
+	m_gamepadTimer->setInterval(50);
 	if (m_currentKey == m_keyOrder.end() || !*m_currentKey) {
-		QTimer::singleShot(50, this, SLOT(testGamepad()));
 		return;
 	}
 	KeyEditor* focused = *m_currentKey;
 
-	QSet<QPair<int, int32_t>> activeAxes = m_controller->activeGamepadAxes();
+	auto activeAxes = m_controller->activeGamepadAxes();
+	auto oldAxes = m_activeAxes;
+	m_activeAxes = activeAxes;
+	activeAxes.subtract(oldAxes);
 	if (!activeAxes.empty()) {
 		focused->setValueAxis(activeAxes.begin()->first, activeAxes.begin()->second);
-
-		QTimer::singleShot(200, this, SLOT(testGamepad()));
 		return;
 	}
 
-	QSet<int> activeKeys = m_controller->activeGamepadButtons();
-	if (!activeKeys.empty()) {
-		focused->setValueButton(*activeKeys.begin());
-
-		QTimer::singleShot(200, this, SLOT(testGamepad()));
+	auto activeButtons = m_controller->activeGamepadButtons();
+	auto oldButtons = m_activeButtons;
+	m_activeButtons = activeButtons;
+	activeButtons.subtract(oldButtons);
+	if (!activeButtons.empty()) {
+		focused->setValueButton(*activeButtons.begin());
 		return;
 	}
-
-	QTimer::singleShot(50, this, SLOT(testGamepad()));
 }
 #endif
 

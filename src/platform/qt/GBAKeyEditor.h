@@ -8,11 +8,14 @@
 
 #include <QList>
 #include <QPicture>
+#include <QSet>
 #include <QWidget>
 
 extern "C" {
 #include "gba-input.h"
 }
+
+class QTimer;
 
 namespace QGBA {
 
@@ -69,6 +72,12 @@ private:
 	KeyEditor* m_keyR;
 	QList<KeyEditor*> m_keyOrder;
 	QList<KeyEditor*>::iterator m_currentKey;
+
+#ifdef BUILD_SDL
+	QSet<int> m_activeButtons;
+	QSet<QPair<int, int32_t>> m_activeAxes;
+	QTimer* m_gamepadTimer;
+#endif
 
 	uint32_t m_type;
 	InputController* m_controller;
