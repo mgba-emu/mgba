@@ -136,7 +136,7 @@ QSet<QPair<int, int32_t>> InputController::activeGamepadAxes() {
 	for (i = 0; i < numButtons; ++i) {
 		int32_t axis = SDL_JoystickGetAxis(joystick, i);
 		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
-			activeAxes.insert(qMakePair(i, axis));
+			activeAxes.insert(qMakePair(i, axis > 0 ? 1 : -1));
 		}
 	}
 	return activeAxes;
