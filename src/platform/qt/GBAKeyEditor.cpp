@@ -219,10 +219,24 @@ void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 	}
 }
 
+bool GBAKeyEditor::findFocus() {
+	if (m_currentKey != m_keyOrder.end() && (*m_currentKey)->hasFocus()) {
+		return true;
+	}
+
+	for (auto key = m_keyOrder.begin(); key != m_keyOrder.end(); ++key) {
+		if ((*key)->hasFocus()) {
+			m_currentKey = key;
+			return true;
+		}
+	}
+	return false;
+}
+
 #ifdef BUILD_SDL
 void GBAKeyEditor::testGamepad() {
 	m_gamepadTimer->setInterval(50);
-	if (m_currentKey == m_keyOrder.end() || !*m_currentKey) {
+	if (!findFocus()) {
 		return;
 	}
 	KeyEditor* focused = *m_currentKey;

@@ -53,6 +53,8 @@ private:
 	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
 	void bindKey(const KeyEditor*, GBAKey);
 
+	bool findFocus();
+
 #ifdef BUILD_SDL
 	void lookupAxes(const GBAInputMap*);
 #endif
