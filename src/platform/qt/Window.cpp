@@ -9,6 +9,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QStackedLayout>
 
 #include "ConfigController.h"
@@ -74,6 +75,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
+	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -323,6 +325,14 @@ void Window::gameStopped() {
 	redoLogo();
 
 	m_fpsTimer.stop();
+}
+
+void Window::gameCrashed(const QString& errorMessage) {
+	QMessageBox* crash = new QMessageBox(QMessageBox::Critical, tr("Crash"),
+		tr("The game has crashed with the following error:\n\n%1").arg(errorMessage),
+		QMessageBox::Ok, this,  Qt::Sheet);
+	crash->setAttribute(Qt::WA_DeleteOnClose);
+	crash->show();
 }
 
 void Window::redoLogo() {

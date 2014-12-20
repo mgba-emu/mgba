@@ -64,6 +64,7 @@ signals:
 	void gameStopped(GBAThread*);
 	void gamePaused(GBAThread*);
 	void gameUnpaused(GBAThread*);
+	void gameCrashed(const QString& errorMessage);
 	void stateLoaded(GBAThread*);
 
 	void postLog(int level, const QString& log);
@@ -94,8 +95,10 @@ public slots:
 	void enableLogLevel(int);
 	void disableLogLevel(int);
 
-#ifdef BUILD_SDL
 private slots:
+	void crashGame(const QString& crashMessage);
+
+#ifdef BUILD_SDL
 	void testSDLEvents();
 
 private:

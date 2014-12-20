@@ -12,6 +12,7 @@ Bugfixes:
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
+ - Qt: Handle a game crash without crashing
 
 0.1.0: (2014-12-13)
  - Initial release
