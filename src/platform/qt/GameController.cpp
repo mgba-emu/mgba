@@ -73,7 +73,12 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (!(controller->m_logLevels & level)) {
+		if (level == GBA_LOG_FATAL) {
+			MutexLock(&controller->m_threadContext.stateMutex);
+			controller->m_threadContext.state = THREAD_EXITING;
+			MutexUnlock(&controller->m_threadContext.stateMutex);
+			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
+		} else if (!(controller->m_logLevels & level)) {
 			return;
 		}
 		controller->postLog(level, QString().vsprintf(format, args));
@@ -205,6 +210,11 @@ void GameController::closeGame() {
 
 	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);
+}
+
+void GameController::crashGame(const QString& crashMessage) {
+	closeGame();
+	emit gameCrashed(crashMessage);
 }
 
 bool GameController::isPaused() {

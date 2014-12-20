@@ -87,6 +87,7 @@ protected:
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
+	void gameCrashed(const QString&);
 	void redoLogo();
 
 	void recordFrame();
