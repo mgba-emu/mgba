@@ -36,14 +36,6 @@ struct GBACartridgeOverride {
 };
 
 static const struct GBACartridgeOverride _overrides[] = {
-	// Boktai: The Sun is in Your Hand
-	{ "U3IE", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-	{ "U3IP", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-
-	// Boktai 2: Solar Boy Django
-	{ "U32E", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-	{ "U32P", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-
 	// Drill Dozer
 	{ "V49J", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
 	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
