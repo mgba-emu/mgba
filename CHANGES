@@ -12,6 +12,7 @@ Bugfixes:
  - GBA Memory: Don't call into GPIO write calls if GPIO devices are absent
  - ARM7: Extend prefetch by one stage
  - GBA BIOS: Fix BIOS prefetch after returning from a SWI
+ - Debugger: Negative PC-relative loads now properly subtract the offset
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
