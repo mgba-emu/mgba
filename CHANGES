@@ -11,6 +11,7 @@ Bugfixes:
  - ARM7: Fix LDM writeback to a register already written
  - GBA Memory: Don't call into GPIO write calls if GPIO devices are absent
  - ARM7: Extend prefetch by one stage
+ - GBA BIOS: Fix BIOS prefetch after returning from a SWI
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
