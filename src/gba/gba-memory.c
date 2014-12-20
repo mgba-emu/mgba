@@ -446,7 +446,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBASavedataReadFlash(&memory->savedata, address);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
-			value = 7;
+			value = 0xFF;
 		}
 		break;
 	default:
