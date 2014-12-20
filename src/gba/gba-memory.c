@@ -581,7 +581,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
 		break;
 	case REGION_CART0:
-		if (IS_GPIO_REGISTER(address & 0xFFFFFF)) {
+		if (memory->gpio.gpioDevices != GPIO_NONE && IS_GPIO_REGISTER(address & 0xFFFFFF)) {
 			uint32_t reg = address & 0xFFFFFF;
 			GBAGPIOWrite(&memory->gpio, reg, value);
 		} else {
