@@ -127,7 +127,7 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 	int written;
 	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
 		if (memory.baseReg == ARM_PC && memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
-			written = _decodePCRelative(memory.offset.immediate, pc, buffer, blen);
+			written = _decodePCRelative(memory.format & ARM_MEMORY_OFFSET_SUBTRACT ? -memory.offset.immediate : memory.offset.immediate, pc, buffer, blen);
 			ADVANCE(written);
 		} else {
 			written = _decodeRegister(memory.baseReg, buffer, blen);
