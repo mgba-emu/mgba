@@ -14,6 +14,7 @@
 #include "util/memory.h"
 
 static uint32_t _popcount32(unsigned bits);
+static uint32_t _deadbeef = 0xDEADBEEF;
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
@@ -157,7 +158,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = SIZE_CART0 - 1;
 		break;
 	default:
-		cpu->memory.activeRegion = 0;
+		cpu->memory.activeRegion = &_deadbeef;
 		cpu->memory.activeMask = 0;
 		GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
 		break;

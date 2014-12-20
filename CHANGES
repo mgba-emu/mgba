@@ -8,6 +8,7 @@ Bugfixes:
  - GBA Memory: Don't call into GPIO write calls if GPIO devices are absent
 Misc:
  - Qt: Disable sync to video by default
+ - GBA: Exit cleanly on FATAL if the port supports it
 
 0.1.0: (2014-12-13)
  - Initial release
