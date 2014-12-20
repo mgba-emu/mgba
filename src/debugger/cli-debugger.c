@@ -684,10 +684,22 @@ static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
 	}
 }
 
+static void _cliDebuggerCustom(struct ARMDebugger* debugger) {
+	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	bool retain = false;
+	if (cliDebugger->system) {
+		retain = cliDebugger->system->custom(cliDebugger->system);
+	}
+	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
+		debugger->state = DEBUGGER_RUNNING;
+	}
+}
+
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	ARMDebuggerCreate(&debugger->d);
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
+	debugger->d.custom = _cliDebuggerCustom;
 	debugger->d.paused = _commandLine;
 	debugger->d.entered = _reportEntry;
 

@@ -15,6 +15,9 @@ struct GBACLIDebugger {
 	struct CLIDebuggerSystem d;
 
 	struct GBAThread* context;
+
+	bool frameAdvance;
+	bool inVblank;
 #endif
 };
 

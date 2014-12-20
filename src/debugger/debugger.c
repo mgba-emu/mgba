@@ -61,7 +61,7 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	while (debugger->state < DEBUGGER_EXITING) {
 		if (!debugger->breakpoints) {
 			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRun(debugger->cpu);
+				ARMRunLoop(debugger->cpu);
 			}
 		} else {
 			while (debugger->state == DEBUGGER_RUNNING) {
@@ -71,6 +71,13 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		}
 		switch (debugger->state) {
 		case DEBUGGER_RUNNING:
+			break;
+		case DEBUGGER_CUSTOM:
+			while (debugger->state == DEBUGGER_CUSTOM) {
+				ARMRun(debugger->cpu);
+				_checkBreakpoints(debugger);
+				debugger->custom(debugger);
+			}
 			break;
 		case DEBUGGER_PAUSED:
 			if (debugger->paused) {

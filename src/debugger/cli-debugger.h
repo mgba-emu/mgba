@@ -43,6 +43,7 @@ struct CLIDebuggerSystem {
 
 	void (*init)(struct CLIDebuggerSystem*);
 	void (*deinit)(struct CLIDebuggerSystem*);
+	bool (*custom)(struct CLIDebuggerSystem*);
 
 	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 

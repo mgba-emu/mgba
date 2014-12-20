@@ -15,6 +15,7 @@ extern const uint32_t ARM_DEBUGGER_ID;
 enum DebuggerState {
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
+	DEBUGGER_CUSTOM,
 	DEBUGGER_EXITING,
 	DEBUGGER_SHUTDOWN
 };
@@ -52,6 +53,7 @@ struct ARMDebugger {
 	void (*deinit)(struct ARMDebugger*);
 	void (*paused)(struct ARMDebugger*);
 	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
+	void (*custom)(struct ARMDebugger*);
 
 	__attribute__((format (printf, 3, 4)))
 	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
