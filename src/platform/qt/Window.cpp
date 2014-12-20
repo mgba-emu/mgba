@@ -46,6 +46,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 #endif
 {
 	setWindowTitle(PROJECT_NAME);
+	setFocusPolicy(Qt::StrongFocus);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 
