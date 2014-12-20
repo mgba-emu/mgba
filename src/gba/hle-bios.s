@@ -42,6 +42,7 @@ ldmfd  sp!, {r12}
 msr    spsr, r12
 ldmfd  sp!, {r11-r12, lr}
 movs   pc, lr
+.word 0x0000C301
 
 swiTable:
 .word SoftReset
