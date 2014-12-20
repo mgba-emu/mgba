@@ -176,9 +176,10 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
-	uint32_t opcode = cpu->prefetch;
-	LOAD_32(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t opcode = cpu->prefetch[0];
+	cpu->prefetch[0] = cpu->prefetch[1];
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
+	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 
 	unsigned condition = opcode >> 28;
 	if (condition != 0xE) {
@@ -239,9 +240,10 @@ static inline void ARMStep(struct ARMCore* cpu) {
 }
 
 static inline void ThumbStep(struct ARMCore* cpu) {
-	uint32_t opcode = cpu->prefetch;
-	LOAD_16(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t opcode = cpu->prefetch[0];
+	cpu->prefetch[0] = cpu->prefetch[1];
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }

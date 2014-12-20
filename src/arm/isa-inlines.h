@@ -52,15 +52,17 @@
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM); \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]); \
-	LOAD_32(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
+	LOAD_32(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM; \
+	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	currentCycles += 2 + cpu->memory.activeUncachedCycles32 + cpu->memory.activeSeqCycles32;
 
 #define THUMB_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB); \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]); \
-	LOAD_16(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
+	LOAD_16(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB; \
+	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	currentCycles += 2 + cpu->memory.activeUncachedCycles16 + cpu->memory.activeSeqCycles16;
 
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {

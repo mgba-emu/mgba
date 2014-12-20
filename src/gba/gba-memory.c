@@ -14,7 +14,7 @@
 #include "util/memory.h"
 
 static uint32_t _popcount32(unsigned bits);
-static uint32_t _deadbeef = 0xDEADBEEF;
+static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
@@ -128,7 +128,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		return;
 	}
 	if (memory->activeRegion == REGION_BIOS) {
-		memory->biosPrefetch = cpu->prefetch;
+		memory->biosPrefetch = cpu->prefetch[0];
 	}
 	memory->activeRegion = newRegion;
 	switch (address & ~OFFSET_MASK) {
@@ -158,7 +158,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = SIZE_CART0 - 1;
 		break;
 	default:
-		cpu->memory.activeRegion = &_deadbeef;
+		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
 		GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
 		break;
@@ -176,7 +176,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if (cpu->cycles >= cpu->nextEvent) { \
 		value = gba->bus; \
 	} else { \
-		value = cpu->prefetch; \
+		value = cpu->prefetch[0]; \
 		if (cpu->executionMode == MODE_THUMB) { \
 			value |= value << 16; \
 		} \
@@ -303,7 +303,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (cpu->cycles >= cpu->nextEvent) {
 				value = gba->bus;
 			} else {
-				value = cpu->prefetch;
+				value = cpu->prefetch[0];
 			}
 		}
 		break;
@@ -359,7 +359,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (cpu->cycles >= cpu->nextEvent) {
 			value = gba->bus;
 		} else {
-			value = cpu->prefetch;
+			value = cpu->prefetch[0];
 		}
 		break;
 	}
@@ -396,7 +396,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (cpu->cycles >= cpu->nextEvent) {
 				value = gba->bus;
 			} else {
-				value = cpu->prefetch;
+				value = cpu->prefetch[0];
 			}
 		}
 		break;
@@ -454,7 +454,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (cpu->cycles >= cpu->nextEvent) {
 			value = gba->bus;
 		} else {
-			value = cpu->prefetch;
+			value = cpu->prefetch[0];
 		}
 		break;
 	}
