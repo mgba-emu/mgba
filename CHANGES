@@ -16,6 +16,7 @@ Bugfixes:
  - Debugger: Negative PC-relative loads now properly subtract the offset
  - Qt: Fix window focus issues
  - GBA Audio: Support 16-bit writes to FIFO audio
+ - GBA Memory: Properly initialize 1 Mb flash, and add debug logging
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
