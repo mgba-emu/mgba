@@ -8,6 +8,11 @@
 #include "gba.h"
 #include "gba-thread.h"
 
+#ifdef USE_FFMPEG
+#include "platform/ffmpeg/ffmpeg-resample.h"
+#include <libavresample/avresample.h>
+#endif
+
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
@@ -24,7 +29,9 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 	context->desiredSpec.samples = context->samples;
 	context->desiredSpec.callback = _GBASDLAudioCallback;
 	context->desiredSpec.userdata = context;
+#ifndef USE_FFMPEG
 	context->drift = 0.f;
+#endif
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
 		return false;
@@ -35,6 +42,10 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		threadContext->audioBuffers = context->samples * 2;
 	}
 
+#ifdef USE_FFMPEG
+	context->avr = 0;
+#endif
+
 	SDL_PauseAudio(0);
 	return true;
 }
@@ -44,6 +55,9 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+#ifdef USE_FFMPEG
+	avresample_free(&context->avr);
+#endif
 }
 
 void GBASDLPauseAudio(struct GBASDLAudio* context) {
@@ -62,6 +76,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
+#ifndef USE_FFMPEG
 	audioContext->ratio = GBAAudioCalculateRatio(&audioContext->thread->gba->audio, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
 	if (audioContext->ratio == INFINITY) {
 		memset(data, 0, len);
@@ -72,4 +87,16 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	if (audioContext->obtainedSpec.channels == 2) {
 		GBAAudioResampleNN(&audioContext->thread->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
+#else
+	if (!audioContext->avr) {
+		if (!audioContext->thread->gba->audio.sampleRate) {
+			memset(data, 0, len);
+			return;
+		}
+		audioContext->avr = GBAAudioOpenLAVR(&audioContext->thread->gba->audio, audioContext->obtainedSpec.freq);
+	}
+	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
+	len /= 2 * audioContext->obtainedSpec.channels;
+	GBAAudioResampleLAVR(&audioContext->thread->gba->audio, audioContext->avr, ssamples, len);
+#endif
 }

@@ -17,8 +17,12 @@ struct GBASDLAudio {
 	// State
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
+#ifndef USE_FFMPEG
 	float drift;
 	float ratio;
+#else
+	struct AVAudioResampleContext* avr;
+#endif
 
 	struct GBAThread* thread;
 };
