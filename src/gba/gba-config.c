@@ -13,6 +13,9 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <strsafe.h>
+#define PATH_SEP "\\"
+#else
+#define PATH_SEP "/"
 #endif
 
 #define SECTION_NAME_MAX 128
@@ -111,34 +114,31 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 
 bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
-#ifndef _WIN32
-	char* home = getenv("HOME");
-	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
-#else
-	char home[MAX_PATH];
-	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(path, PATH_MAX, "%s/%s/config.ini", home, PROJECT_NAME);
-#endif
+	GBAConfigDirectory(path, PATH_MAX);
+	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
 	return ConfigurationRead(&config->configTable, path);
 }
 
 bool GBAConfigSave(const struct GBAConfig* config) {
 	char path[PATH_MAX];
+	GBAConfigDirectory(path, PATH_MAX);
+	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
+	return ConfigurationWrite(&config->configTable, path);
+}
+
+void GBAConfigDirectory(char* out, size_t outLength) {
 #ifndef _WIN32
 	char* home = getenv("HOME");
-	snprintf(path, PATH_MAX, "%s/.config", home);
-	mkdir(path, 0755);
-	snprintf(path, PATH_MAX, "%s/.config/%s", home, BINARY_NAME);
-	mkdir(path, 0755);
-	snprintf(path, PATH_MAX, "%s/.config/%s/config.ini", home, BINARY_NAME);
+	snprintf(out, outLength, "%s/.config", home);
+	mkdir(out, 0755);
+	snprintf(out, outLength, "%s/.config/%s", home, BINARY_NAME);
+	mkdir(out, 0755);
 #else
 	char home[MAX_PATH];
 	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(path, PATH_MAX, "%s/%s", home, PROJECT_NAME);
-	CreateDirectoryA(path, NULL);
-	snprintf(path, PATH_MAX, "%s/%s/config.ini", home, PROJECT_NAME);
+	snprintf(out, outLength, "%s\\%s", home, PROJECT_NAME);
+	CreateDirectoryA(out, NULL);
 #endif
-	return ConfigurationWrite(&config->configTable, path);
 }
 
 const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
