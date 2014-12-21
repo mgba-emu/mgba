@@ -117,6 +117,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
+	size_t flashSize = SIZE_CART_FLASH512;
 	off_t end;
 	if (!savedata->vf) {
 		end = 0;
@@ -125,13 +126,14 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
 		if (end < SIZE_CART_FLASH512) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
+			flashSize = SIZE_CART_FLASH1M;
 		}
 		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, savedata->mapMode);
 	}
 
 	savedata->currentBank = savedata->data;
 	if (end < SIZE_CART_FLASH512) {
-		memset(&savedata->data[end], 0xFF, SIZE_CART_FLASH512 - end);
+		memset(&savedata->data[end], 0xFF, flashSize - end);
 	}
 }
 
@@ -348,27 +350,31 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 }
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
+	GBALog(0, GBA_LOG_DEBUG, "Performing flash bank switch to bank %i", bank);
 	savedata->currentBank = &savedata->data[bank << 16];
-	if (bank > 0) {
+	if (bank > 0 && savedata->type == SAVEDATA_FLASH512) {
 		savedata->type = SAVEDATA_FLASH1M;
 		if (savedata->vf) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
+			memset(&savedata->data[SIZE_CART_FLASH512], 0xFF, SIZE_CART_FLASH512);
 		}
 	}
 }
 
 void _flashErase(struct GBASavedata* savedata) {
-	size_t size = 0x10000;
+	GBALog(0, GBA_LOG_DEBUG, "Performing flash chip erase");
+	size_t size = SIZE_CART_FLASH512;
 	if (savedata->type == SAVEDATA_FLASH1M) {
-		size = 0x20000;
+		size = SIZE_CART_FLASH1M;
 	}
 	memset(savedata->data, 0xFF, size);
 }
 
 void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
+	GBALog(0, GBA_LOG_DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
-		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at %#04x", sectorStart);
+		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
 	}
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }
