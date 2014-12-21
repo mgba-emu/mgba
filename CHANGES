@@ -15,6 +15,7 @@ Bugfixes:
  - GBA BIOS: Fix BIOS prefetch after returning from a SWI
  - Debugger: Negative PC-relative loads now properly subtract the offset
  - Qt: Fix window focus issues
+ - GBA Audio: Support 16-bit writes to FIFO audio
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
