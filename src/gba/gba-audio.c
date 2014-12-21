@@ -27,8 +27,8 @@ static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
-	CircleBufferInit(&audio->left, samples * sizeof(int32_t));
-	CircleBufferInit(&audio->right, samples * sizeof(int32_t));
+	CircleBufferInit(&audio->left, samples * sizeof(int16_t));
+	CircleBufferInit(&audio->right, samples * sizeof(int16_t));
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
 }
@@ -96,28 +96,28 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 	}
 
 	GBASyncLockAudio(audio->p->sync);
-	int32_t buffer[GBA_AUDIO_SAMPLES];
-	int32_t dummy;
+	int16_t buffer[GBA_AUDIO_SAMPLES];
+	int16_t dummy;
 	size_t read;
 	size_t i;
 
 	read = CircleBufferDump(&audio->left, buffer, sizeof(buffer));
 	CircleBufferDeinit(&audio->left);
-	CircleBufferInit(&audio->left, samples * sizeof(int32_t));
-	for (i = 0; i * sizeof(int32_t) < read; ++i) {
-		if (!CircleBufferWrite32(&audio->left, buffer[i])) {
-			CircleBufferRead32(&audio->left, &dummy);
-			CircleBufferWrite32(&audio->left, buffer[i]);
+	CircleBufferInit(&audio->left, samples * sizeof(int16_t));
+	for (i = 0; i * sizeof(int16_t) < read; ++i) {
+		if (!CircleBufferWrite16(&audio->left, buffer[i])) {
+			CircleBufferRead16(&audio->left, &dummy);
+			CircleBufferWrite16(&audio->left, buffer[i]);
 		}
 	}
 
 	read = CircleBufferDump(&audio->right, buffer, sizeof(buffer));
 	CircleBufferDeinit(&audio->right);
-	CircleBufferInit(&audio->right, samples * sizeof(int32_t));
-	for (i = 0; i * sizeof(int32_t) < read; ++i) {
-		if (!CircleBufferWrite32(&audio->right, buffer[i])) {
-			CircleBufferRead32(&audio->right, &dummy);
-			CircleBufferWrite32(&audio->right, buffer[i]);
+	CircleBufferInit(&audio->right, samples * sizeof(int16_t));
+	for (i = 0; i * sizeof(int16_t) < read; ++i) {
+		if (!CircleBufferWrite16(&audio->right, buffer[i])) {
+			CircleBufferRead16(&audio->right, &dummy);
+			CircleBufferWrite16(&audio->right, buffer[i]);
 		}
 	}
 
@@ -476,16 +476,16 @@ unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned 
 	GBASyncLockAudio(audio->p->sync);
 	unsigned read = 0;
 	if (left) {
-		unsigned readL = CircleBufferRead(&audio->left, left, nSamples * sizeof(int32_t)) >> 2;
+		unsigned readL = CircleBufferRead(&audio->left, left, nSamples * sizeof(int16_t)) >> 1;
 		if (readL < nSamples) {
-			memset((int32_t*) left + readL, 0, nSamples - readL);
+			memset((int16_t*) left + readL, 0, nSamples - readL);
 		}
 		read = readL;
 	}
 	if (right) {
-		unsigned readR = CircleBufferRead(&audio->right, right, nSamples * sizeof(int32_t)) >> 2;
+		unsigned readR = CircleBufferRead(&audio->right, right, nSamples * sizeof(int16_t)) >> 1;
 		if (readR < nSamples) {
-			memset((int32_t*) right + readR, 0, nSamples - readR);
+			memset((int16_t*) right + readR, 0, nSamples - readR);
 		}
 		read = read >= readR ? read : readR;
 	}
@@ -494,8 +494,8 @@ unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned 
 }
 
 unsigned GBAAudioResampleNN(struct GBAAudio* audio, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples) {
-	int32_t left[GBA_AUDIO_SAMPLES];
-	int32_t right[GBA_AUDIO_SAMPLES];
+	int16_t left[GBA_AUDIO_SAMPLES];
+	int16_t right[GBA_AUDIO_SAMPLES];
 
 	// toRead is in GBA samples
 	// TODO: Do this with fixed-point math
@@ -685,12 +685,12 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 	} else if (sample < 0) {
 		sample = 0;
 	}
-	return (sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) << 6;
+	return (sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) << 5;
 }
 
 static void _sample(struct GBAAudio* audio) {
-	int32_t sampleLeft = 0;
-	int32_t sampleRight = 0;
+	int16_t sampleLeft = 0;
+	int16_t sampleRight = 0;
 	int psgShift = 6 - audio->volume;
 
 	if (audio->ch1Left) {
@@ -748,8 +748,8 @@ static void _sample(struct GBAAudio* audio) {
 	sampleRight = _applyBias(audio, sampleRight);
 
 	GBASyncLockAudio(audio->p->sync);
-	CircleBufferWrite32(&audio->left, sampleLeft);
-	CircleBufferWrite32(&audio->right, sampleRight);
+	CircleBufferWrite16(&audio->left, sampleLeft);
+	CircleBufferWrite16(&audio->right, sampleRight);
 	unsigned produced = CircleBufferSize(&audio->left);
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (thread && thread->stream) {
