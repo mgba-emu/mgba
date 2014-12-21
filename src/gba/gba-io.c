@@ -356,8 +356,6 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_WAVE_RAM1_LO:
 		case REG_WAVE_RAM2_LO:
 		case REG_WAVE_RAM3_LO:
-		case REG_FIFO_A_LO:
-		case REG_FIFO_B_LO:
 			GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
 			break;
 
@@ -365,9 +363,14 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_WAVE_RAM1_HI:
 		case REG_WAVE_RAM2_HI:
 		case REG_WAVE_RAM3_HI:
+			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
+			break;
+
+		case REG_FIFO_A_LO:
+		case REG_FIFO_B_LO:
 		case REG_FIFO_A_HI:
 		case REG_FIFO_B_HI:
-			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
+			GBAAudioWriteFIFO16(&gba->audio, address, value);
 			break;
 
 		// DMA
