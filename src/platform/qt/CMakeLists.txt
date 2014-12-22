@@ -44,6 +44,7 @@ set(SOURCE_FILES
 	LoadSaveState.cpp
 	LogView.cpp
 	SavestateButton.cpp
+	SettingsView.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -52,6 +53,7 @@ qt5_wrap_ui(UI_FILES
 	GIFView.ui
 	LoadSaveState.ui
 	LogView.ui
+	SettingsView.ui
 	VideoView.ui)
 
 set(QT_LIBRARIES)

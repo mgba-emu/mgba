@@ -61,6 +61,7 @@ public slots:
 	void saveConfig();
 
 	void openKeymapWindow();
+	void openSettingsWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();

@@ -130,6 +130,10 @@ void ConfigController::updateOption(const char* key) {
 	m_optionSet[optionName]->setValue(GBAConfigGetValue(&m_config, key));
 }
 
+QString ConfigController::getOption(const char* key) {
+	return QString(GBAConfigGetValue(&m_config, key));
+}
+
 void ConfigController::setOption(const char* key, bool value) {
 	GBAConfigSetIntValue(&m_config, key, value);
 	QString optionName(key);

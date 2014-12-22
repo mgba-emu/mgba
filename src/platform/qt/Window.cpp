@@ -20,6 +20,7 @@
 #include "GIFView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "SettingsView.h"
 #include "VideoView.h"
 
 extern "C" {
@@ -171,6 +172,8 @@ void Window::selectROM() {
 void Window::selectBIOS() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
+		m_config->setOption("bios", filename);
+		m_config->updateOption("bios");
 		m_controller->loadBIOS(filename);
 	}
 }
@@ -187,6 +190,14 @@ void Window::openKeymapWindow() {
 	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
 	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
 	keyEditor->show();
+}
+
+void Window::openSettingsWindow() {
+	SettingsView* settingsWindow = new SettingsView(m_config);
+	connect(this, SIGNAL(shutdown()), settingsWindow, SLOT(close()));
+	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
+	settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
+	settingsWindow->show();
 }
 
 #ifdef BUILD_SDL
@@ -426,6 +437,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
+#endif
+      fileMenu->addAction(tr("Settings"), this, SLOT(openSettingsWindow()));
+
+#ifndef Q_OS_MAC
+      fileMenu->addSeparator();
 	fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 #endif
 
@@ -526,7 +542,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 
-	QMenu* buffersMenu = avMenu->addMenu(tr("Buffer &size"));
+	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
 	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
 	buffers->addValue(tr("512"), 512, buffersMenu);

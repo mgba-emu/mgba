@@ -177,6 +177,9 @@ void GameController::openGame() {
 }
 
 void GameController::loadBIOS(const QString& path) {
+	if (m_bios == path) {
+		return;
+	}
 	m_bios = path;
 	if (m_gameOpen) {
 		closeGame();

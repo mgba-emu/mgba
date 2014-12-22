@@ -67,6 +67,8 @@ public:
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
+	QString getOption(const char* key);
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);
