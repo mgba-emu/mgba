@@ -25,6 +25,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("resampleVideo", m_ui.resampleVideo);
 
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
@@ -46,6 +47,7 @@ void SettingsView::updateConfig() {
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	saveSetting("resampleVideo", m_ui.resampleVideo);
 	m_controller->write();
 
 	emit biosLoaded(m_ui.bios->text());

@@ -75,6 +75,9 @@ int main(int argc, char** argv) {
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
 
+	renderer.lockAspectRatio = opts.lockAspectRatio;
+	renderer.filter = opts.resampleVideo;
+
 	if (!_GBASDLInit(&renderer)) {
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);

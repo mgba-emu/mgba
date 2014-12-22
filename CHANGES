@@ -5,6 +5,7 @@ Features:
  - Debugger: Add CLI "frame", frame advance command
  - Better audio resampling via FFmpeg
  - Settings window
+ - Bilinear resampling option
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running

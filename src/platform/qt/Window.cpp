@@ -138,6 +138,7 @@ void Window::loadConfig() {
 	m_controller->setAudioSync(opts->audioSync);
 	m_controller->setVideoSync(opts->videoSync);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
+	m_display->filter(opts->resampleVideo);
 
 	if (opts->bios) {
 		m_controller->loadBIOS(opts->bios);
@@ -531,6 +532,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
 	lockAspectRatio->connect([this](const QVariant& value) { m_display->lockAspectRatio(value.toBool()); });
 	m_config->updateOption("lockAspectRatio");
+
+	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
+	resampleVideo->addBoolean(tr("Resample video"), avMenu);
+	resampleVideo->connect([this](const QVariant& value) { m_display->filter(value.toBool()); });
+	m_config->updateOption("resampleVideo");
 
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");

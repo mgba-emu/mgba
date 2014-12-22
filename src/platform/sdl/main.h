@@ -48,6 +48,9 @@ struct SDLSoftwareRenderer {
 	int viewportHeight;
 	int ratio;
 
+	bool lockAspectRatio;
+	bool filter;
+
 #ifdef BUILD_GL
 	GLuint tex;
 #endif

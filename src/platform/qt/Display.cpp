@@ -55,6 +55,7 @@ void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
 	m_drawThread->start(QThread::TimeCriticalPriority);
 
 	lockAspectRatio(m_lockAspectRatio);
+	filter(m_filter);
 }
 
 void Display::stopDrawing() {
@@ -114,6 +115,13 @@ void Display::lockAspectRatio(bool lock) {
 	}
 }
 
+void Display::filter(bool filter) {
+	m_filter = filter;
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "filter", Qt::QueuedConnection, Q_ARG(bool, filter));
+	}
+}
+
 #ifdef USE_PNG
 void Display::screenshot() {
 	GBAThreadInterrupt(m_context);
@@ -163,6 +171,18 @@ void Painter::lockAspectRatio(bool lock) {
 	forceDraw();
 }
 
+void Painter::filter(bool filter) {
+	m_filter = filter;
+	m_gl->makeCurrent();
+	if (m_filter) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
+	m_gl->doneCurrent();
+	forceDraw();
+}
+
 void Painter::start() {
 	m_gl->makeCurrent();
 	glEnable(GL_TEXTURE_2D);
@@ -170,7 +190,11 @@ void Painter::start() {
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (m_filter) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_INT, 0, _glVertices);
