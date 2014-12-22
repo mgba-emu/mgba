@@ -26,7 +26,7 @@ void AudioDevice::setFormat(const QAudioFormat& format) {
 		return;
 	}
 	GBAThreadInterrupt(m_context);
-	m_ratio = GBAAudioCalculateRatio(&m_context->gba->audio, m_context->fpsTarget, format.sampleRate());
+	m_ratio = GBAAudioCalculateRatio(m_context->gba->audio.sampleRate, m_context->fpsTarget, format.sampleRate());
 	GBAThreadContinue(m_context);
 }
 

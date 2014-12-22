@@ -278,11 +278,13 @@ void GameController::keyReleased(int key) {
 void GameController::setAudioBufferSamples(int samples) {
 	if (m_gameOpen) {
 		threadInterrupt();
-		m_threadContext.audioBuffers = samples;
-		GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples);
+		float ratio = GBAAudioCalculateRatio(m_threadContext.gba->audio.sampleRate, m_threadContext.fpsTarget, 44100);
+		m_threadContext.audioBuffers = samples / ratio;
+		GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples / ratio);
 		threadContinue();
 	} else {
-		m_threadContext.audioBuffers = samples;
+		float ratio = GBAAudioCalculateRatio(0x8000, m_threadContext.fpsTarget, 44100);
+		m_threadContext.audioBuffers = samples / ratio;
 
 	}
 	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));

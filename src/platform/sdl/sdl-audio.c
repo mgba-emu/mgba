@@ -38,6 +38,8 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 	}
 	context->thread = threadContext;
 	context->samples = context->obtainedSpec.samples;
+	float ratio = GBAAudioCalculateRatio(0x8000, threadContext->fpsTarget, 44100);
+	threadContext->audioBuffers = context->samples / ratio;
 	if (context->samples > threadContext->audioBuffers) {
 		threadContext->audioBuffers = context->samples * 2;
 	}
@@ -77,7 +79,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		return;
 	}
 #ifndef USE_FFMPEG
-	audioContext->ratio = GBAAudioCalculateRatio(&audioContext->thread->gba->audio, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
+	audioContext->ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
 	if (audioContext->ratio == INFINITY) {
 		memset(data, 0, len);
 		return;
@@ -88,12 +90,17 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		GBAAudioResampleNN(&audioContext->thread->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
 #else
+	float ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->thread->gba->audio.sampleRate);
 	if (!audioContext->avr) {
 		if (!audioContext->thread->gba->audio.sampleRate) {
 			memset(data, 0, len);
 			return;
 		}
-		audioContext->avr = GBAAudioOpenLAVR(&audioContext->thread->gba->audio, audioContext->obtainedSpec.freq);
+		audioContext->ratio = ratio;
+		audioContext->avr = GBAAudioOpenLAVR(audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
+	} else if (ratio != audioContext->ratio) {
+		audioContext->ratio = ratio;
+		audioContext->avr = GBAAudioReopenLAVR(audioContext->avr, audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
 	}
 	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;

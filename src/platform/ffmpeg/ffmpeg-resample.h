@@ -10,7 +10,8 @@ struct AVAudioResampleContext;
 struct GBAAudio;
 struct GBAStereoSample;
 
-struct AVAudioResampleContext* GBAAudioOpenLAVR(struct GBAAudio* audio, unsigned outputRate);
+struct AVAudioResampleContext* GBAAudioOpenLAVR(unsigned inputRate, unsigned outputRate);
+struct AVAudioResampleContext* GBAAudioReopenLAVR(struct AVAudioResampleContext* avr, unsigned inputRate, unsigned outputRate);
 unsigned GBAAudioResampleLAVR(struct GBAAudio* audio, struct AVAudioResampleContext* avr, struct GBAStereoSample* output, unsigned nSamples);
 
 #endif

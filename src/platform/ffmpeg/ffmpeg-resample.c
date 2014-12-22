@@ -10,14 +10,25 @@
 #include <libavresample/avresample.h>
 #include <libavutil/opt.h>
 
-struct AVAudioResampleContext* GBAAudioOpenLAVR(struct GBAAudio* audio, unsigned outputRate) {
+struct AVAudioResampleContext* GBAAudioOpenLAVR(unsigned inputRate, unsigned outputRate) {
 	AVAudioResampleContext *avr = avresample_alloc_context();
 	av_opt_set_int(avr, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
 	av_opt_set_int(avr, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-	av_opt_set_int(avr, "in_sample_rate", audio->sampleRate, 0);
+	av_opt_set_int(avr, "in_sample_rate", inputRate, 0);
 	av_opt_set_int(avr, "out_sample_rate", outputRate, 0);
 	av_opt_set_int(avr, "in_sample_fmt", AV_SAMPLE_FMT_S16P, 0);
 	av_opt_set_int(avr, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+	if (avresample_open(avr)) {
+		avresample_free(&avr);
+		return 0;
+	}
+	return avr;
+}
+
+struct AVAudioResampleContext* GBAAudioReopenLAVR(struct AVAudioResampleContext* avr, unsigned inputRate, unsigned outputRate) {
+	avresample_close(avr);
+	av_opt_set_int(avr, "in_sample_rate", inputRate, 0);
+	av_opt_set_int(avr, "out_sample_rate", outputRate, 0);
 	if (avresample_open(avr)) {
 		avresample_free(&avr);
 		return 0;
