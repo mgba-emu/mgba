@@ -26,6 +26,7 @@ Misc:
  - GBA: Exit cleanly on FATAL if the port supports it
  - Qt: Handle a game crash without crashing
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
+ - Qt: Set default log level to FATAL, ERROR and WARN
 
 0.1.0: (2014-12-13)
  - Initial release
