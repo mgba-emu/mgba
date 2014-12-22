@@ -91,17 +91,14 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
-	if (samples > GBA_AUDIO_SAMPLES) {
-		return;
-	}
-
 	GBASyncLockAudio(audio->p->sync);
-	int32_t buffer[GBA_AUDIO_SAMPLES];
+	size_t oldCapacity = audio->left.capacity;
+	int32_t* buffer = malloc(oldCapacity);
 	int32_t dummy;
 	size_t read;
 	size_t i;
 
-	read = CircleBufferDump(&audio->left, buffer, sizeof(buffer));
+	read = CircleBufferDump(&audio->left, buffer, oldCapacity);
 	CircleBufferDeinit(&audio->left);
 	CircleBufferInit(&audio->left, samples * sizeof(int32_t));
 	for (i = 0; i * sizeof(int32_t) < read; ++i) {
@@ -111,7 +108,7 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 		}
 	}
 
-	read = CircleBufferDump(&audio->right, buffer, sizeof(buffer));
+	read = CircleBufferDump(&audio->right, buffer, oldCapacity);
 	CircleBufferDeinit(&audio->right);
 	CircleBufferInit(&audio->right, samples * sizeof(int32_t));
 	for (i = 0; i * sizeof(int32_t) < read; ++i) {
@@ -120,6 +117,8 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 			CircleBufferWrite32(&audio->right, buffer[i]);
 		}
 	}
+
+	free(buffer);
 
 	GBASyncConsumeAudio(audio->p->sync);
 }
@@ -755,7 +754,7 @@ static void _sample(struct GBAAudio* audio) {
 	if (thread && thread->stream) {
 		thread->stream->postAudioFrame(thread->stream, sampleLeft, sampleRight);
 	}
-	GBASyncProduceAudio(audio->p->sync, produced >= CircleBufferCapacity(&audio->left) / sizeof(int32_t) * 3);
+	GBASyncProduceAudio(audio->p->sync, produced >= CircleBufferCapacity(&audio->left));
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
