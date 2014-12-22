@@ -488,7 +488,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
-	QAction* turbo = new QAction(tr("T&urbo"), emulationMenu);
+	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
 	turbo->setCheckable(true);
 	turbo->setChecked(false);
 	turbo->setShortcut(tr("Shift+Tab"));
