@@ -132,33 +132,33 @@ void ConfigController::updateOption(const char* key) {
 
 void ConfigController::setOption(const char* key, bool value) {
 	GBAConfigSetIntValue(&m_config, key, value);
-	ConfigOption* option = m_optionSet[QString(key)];
-	if (option) {
-		option->setValue(value);
+	QString optionName(key);
+	if (m_optionSet.contains(optionName)) {
+		m_optionSet[optionName]->setValue(value);
 	}
 }
 
 void ConfigController::setOption(const char* key, int value) {
 	GBAConfigSetIntValue(&m_config, key, value);
-	ConfigOption* option = m_optionSet[QString(key)];
-	if (option) {
-		option->setValue(value);
+	QString optionName(key);
+	if (m_optionSet.contains(optionName)) {
+		m_optionSet[optionName]->setValue(value);
 	}
 }
 
 void ConfigController::setOption(const char* key, unsigned value) {
 	GBAConfigSetUIntValue(&m_config, key, value);
-	ConfigOption* option = m_optionSet[QString(key)];
-	if (option) {
-		option->setValue(value);
+	QString optionName(key);
+	if (m_optionSet.contains(optionName)) {
+		m_optionSet[optionName]->setValue(value);
 	}
 }
 
 void ConfigController::setOption(const char* key, const char* value) {
 	GBAConfigSetValue(&m_config, key, value);
-	ConfigOption* option = m_optionSet[QString(key)];
-	if (option) {
-		option->setValue(value);
+	QString optionName(key);
+	if (m_optionSet.contains(optionName)) {
+		m_optionSet[optionName]->setValue(value);
 	}
 }
 
