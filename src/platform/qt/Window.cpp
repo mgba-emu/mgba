@@ -469,7 +469,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
-	QAction* turbo = new QAction(tr("T&urbo"), emulationMenu);
+	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
 	turbo->setCheckable(true);
 	turbo->setChecked(false);
 	turbo->setShortcut(tr("Shift+Tab"));
@@ -536,7 +536,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 
-	QMenu* buffersMenu = avMenu->addMenu(tr("Buffer &size"));
+	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
 	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
 	buffers->addValue(tr("512"), 512, buffersMenu);
