@@ -156,6 +156,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	ARMReset(&cpu);
+	if (threadContext->skipBios) {
+		GBASkipBIOS(&cpu);
+	}
 
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
@@ -208,6 +211,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			ARMReset(&cpu);
+			if (threadContext->skipBios) {
+				GBASkipBIOS(&cpu);
+			}
 		}
 	}
 
@@ -236,6 +242,7 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 	threadContext->logLevel = opts->logLevel;
 	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
 	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+	threadContext->skipBios = opts->skipBios;
 	threadContext->sync.audioWait = opts->audioSync;
 	threadContext->sync.videoFrameWait = opts->videoSync;
 

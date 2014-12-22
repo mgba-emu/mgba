@@ -49,9 +49,6 @@
      </item>
      <item row="1" column="1">
       <widget class="QCheckBox" name="skipBios">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>Skip BIOS intro</string>
        </property>

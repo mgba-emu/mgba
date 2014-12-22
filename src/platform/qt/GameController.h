@@ -72,6 +72,7 @@ signals:
 public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
+	void setSkipBIOS(bool);
 	void loadPatch(const QString& path);
 	void openGame();
 	void closeGame();

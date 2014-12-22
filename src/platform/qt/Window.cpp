@@ -137,6 +137,7 @@ void Window::loadConfig() {
 	m_controller->setFrameskip(opts->frameskip);
 	m_controller->setAudioSync(opts->audioSync);
 	m_controller->setVideoSync(opts->videoSync);
+	m_controller->setSkipBIOS(opts->skipBios);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 
@@ -610,6 +611,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	debuggingMenu->addAction(gdbWindow);
 #endif
+
+	ConfigOption* skipBios = m_config->addOption("skipBios");
+	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);

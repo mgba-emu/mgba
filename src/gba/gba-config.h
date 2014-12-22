@@ -18,6 +18,7 @@ struct GBAConfig {
 
 struct GBAOptions {
 	char* bios;
+	bool skipBios;
 	int logLevel;
 	int frameskip;
 	int rewindBufferCapacity;

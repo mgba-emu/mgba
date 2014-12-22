@@ -98,6 +98,8 @@ struct GBAThread {
 	int rewindBufferNext;
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
+
+	bool skipBios;
 };
 
 void GBAMapOptionsToContext(const struct GBAOptions*, struct GBAThread*);

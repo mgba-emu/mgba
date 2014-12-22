@@ -295,6 +295,12 @@ void GameController::setFPSTarget(float fps) {
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 
+void GameController::setSkipBIOS(bool set) {
+	threadInterrupt();
+	m_threadContext.skipBios = set;
+	threadContinue();
+}
+
 void GameController::loadState(int slot) {
 	threadInterrupt();
 	GBALoadState(m_threadContext.gba, m_threadContext.stateDir, slot);

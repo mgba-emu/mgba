@@ -11,6 +11,8 @@
 #include "gba-sio.h"
 #include "gba-thread.h"
 
+#include "isa-inlines.h"
+
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/patch.h"
@@ -218,6 +220,14 @@ void GBAReset(struct ARMCore* cpu) {
 
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
+}
+
+void GBASkipBIOS(struct ARMCore* cpu) {
+	if (cpu->gprs[ARM_PC] == BASE_RESET + WORD_SIZE_ARM) {
+		cpu->gprs[ARM_PC] = BASE_CART0;
+		int currentCycles = 0;
+		ARM_WRITE_PC;
+	}
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {

@@ -147,6 +147,7 @@ void GBACreate(struct GBA* gba);
 void GBADestroy(struct GBA* gba);
 
 void GBAReset(struct ARMCore* cpu);
+void GBASkipBIOS(struct ARMCore* cpu);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
