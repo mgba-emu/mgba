@@ -87,6 +87,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.videoSync = GameController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
+	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);
