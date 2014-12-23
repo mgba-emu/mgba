@@ -23,6 +23,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("videoSync", m_ui.videoSync);
 	loadSetting("audioSync", m_ui.audioSync);
 	loadSetting("frameskip", m_ui.frameskip);
+	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
@@ -46,6 +47,7 @@ void SettingsView::updateConfig() {
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
+	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
