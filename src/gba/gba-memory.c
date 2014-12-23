@@ -128,7 +128,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		return;
 	}
 	if (memory->activeRegion == REGION_BIOS) {
-		memory->biosPrefetch = cpu->prefetch[0];
+		memory->biosPrefetch = cpu->prefetch[1];
 	}
 	memory->activeRegion = newRegion;
 	switch (address & ~OFFSET_MASK) {
@@ -176,7 +176,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if (cpu->cycles >= cpu->nextEvent) { \
 		value = gba->bus; \
 	} else { \
-		value = cpu->prefetch[0]; \
+		value = cpu->prefetch[1]; \
 		if (cpu->executionMode == MODE_THUMB) { \
 			value |= value << 16; \
 		} \
@@ -305,7 +305,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (cpu->cycles >= cpu->nextEvent) {
 				value = gba->bus;
 			} else {
-				value = cpu->prefetch[0];
+				value = cpu->prefetch[1];
 			}
 		}
 		break;
@@ -363,7 +363,7 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (cpu->cycles >= cpu->nextEvent) {
 			value = gba->bus;
 		} else {
-			value = cpu->prefetch[0];
+			value = cpu->prefetch[1];
 		}
 		break;
 	}
@@ -400,7 +400,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (cpu->cycles >= cpu->nextEvent) {
 				value = gba->bus;
 			} else {
-				value = cpu->prefetch[0];
+				value = cpu->prefetch[1];
 			}
 		}
 		break;
@@ -458,7 +458,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (cpu->cycles >= cpu->nextEvent) {
 			value = gba->bus;
 		} else {
-			value = cpu->prefetch[0];
+			value = cpu->prefetch[1];
 		}
 		break;
 	}
