@@ -164,10 +164,12 @@ void Painter::setBacking(const uint32_t* backing) {
 void Painter::resize(const QSize& size) {
 	m_size = size;
 	forceDraw();
+	forceDraw();
 }
 
 void Painter::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
+	forceDraw();
 	forceDraw();
 }
 
@@ -225,6 +227,8 @@ void Painter::draw() {
 
 void Painter::forceDraw() {
 	m_gl->makeCurrent();
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glClear(GL_COLOR_BUFFER_BIT);
 	performDraw();
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
@@ -253,10 +257,14 @@ void Painter::unpause() {
 }
 
 void Painter::performDraw() {
-	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glClear(GL_COLOR_BUFFER_BIT);
 	int w = m_size.width() * m_gl->devicePixelRatio();
 	int h = m_size.height() * m_gl->devicePixelRatio();
+#ifndef Q_OS_MAC
+	// TODO: This seems to cause framerates to drag down to 120 FPS on OS X,
+	// even if the emulator can go faster. Look into why.
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glClear(GL_COLOR_BUFFER_BIT);
+#endif
 	int drawW = w;
 	int drawH = h;
 	if (m_lockAspectRatio) {
