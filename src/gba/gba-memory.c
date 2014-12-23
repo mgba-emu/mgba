@@ -222,8 +222,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 #define LOAD_SRAM \
-	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load32: 0x%08X", address); \
-	value = 0xFFFFFFFF;
+	wait = memory->waitstatesNonseq16[address >> BASE_OFFSET]; \
+	value = GBALoad8(cpu, address, 0); \
+	value |= value << 8; \
+	value |= value << 16;
 
 int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
@@ -352,8 +354,9 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load16: 0x%08X", address);
-		value = 0xFFFF;
+		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
+		value = GBALoad8(cpu, address, 0);
+		value |= value << 8;
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);

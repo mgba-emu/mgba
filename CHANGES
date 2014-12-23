@@ -19,6 +19,7 @@ Misc:
  - Qt: Handle a game crash without crashing
  - Qt: Set default log level to FATAL, ERROR and WARN
  - Qt: Clarify some phrasing in the menus
+ - GBA Memory: Implement 16- and 32-bit loads from SRAM
 
 0.1.0: (2014-12-13)
  - Initial release
