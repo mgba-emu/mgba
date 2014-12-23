@@ -57,6 +57,7 @@ Q_OBJECT
 
 public:
 	constexpr static const char* const PORT = "qt";
+	static const int MRU_LIST_SIZE = 10;
 
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
@@ -67,7 +68,10 @@ public:
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
-	QString getOption(const char* key);
+	QString getOption(const char* key) const;
+
+	QList<QString> getMRU() const;
+	void setMRU(const QList<QString>& mru);
 
 public slots:
 	void setOption(const char* key, bool value);

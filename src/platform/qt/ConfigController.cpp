@@ -131,7 +131,7 @@ void ConfigController::updateOption(const char* key) {
 	m_optionSet[optionName]->setValue(GBAConfigGetValue(&m_config, key));
 }
 
-QString ConfigController::getOption(const char* key) {
+QString ConfigController::getOption(const char* key) const {
 	return QString(GBAConfigGetValue(&m_config, key));
 }
 
@@ -174,6 +174,35 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 	}
 	QString stringValue(value.toString());
 	setOption(key, stringValue.toLocal8Bit().constData());
+}
+
+QList<QString> ConfigController::getMRU() const {
+	QList<QString> mru;
+	for (int i = 0; i < MRU_LIST_SIZE; ++i) {
+		char mruName[7];
+		snprintf(mruName, sizeof(mruName) - 1, "mru.%i", i);
+		mruName[sizeof(mruName) - 1] = '\0';
+		QString item = getOption(mruName);
+		if (item.isNull()) {
+			continue;
+		}
+		mru.append(item);
+	}
+	return mru;
+}
+
+void ConfigController::setMRU(const QList<QString>& mru) {
+	int i = 0;
+	for (const QString& item : mru) {
+		char mruName[7];
+		snprintf(mruName, sizeof(mruName) - 1, "mru.%i", i);
+		mruName[sizeof(mruName) - 1] = '\0';
+		setOption(mruName, item);
+		++i;
+		if (i >= MRU_LIST_SIZE) {
+			break;
+		}
+	}
 }
 
 void ConfigController::write() {

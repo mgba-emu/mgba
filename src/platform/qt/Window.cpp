@@ -45,6 +45,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 #ifdef USE_GDB_STUB
 	, m_gdbController(nullptr)
 #endif
+	, m_mruMenu(nullptr)
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
@@ -156,6 +157,9 @@ void Window::loadConfig() {
 	if (opts->width && opts->height) {
 		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
 	}
+
+	m_mruFiles = m_config->getMRU();
+	updateMRU();
 
 	m_inputController.setConfiguration(m_config);
 }
@@ -313,6 +317,7 @@ void Window::gameStarted(GBAThread* context) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
+	appendMRU(context->fname);
 	char title[13] = { '\0' };
 	GBAGetGameTitle(context->gba, title);
 	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
@@ -401,6 +406,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addAction(fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open));
 	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
 	fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch()));
+
+	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 
 	fileMenu->addSeparator();
 
@@ -627,6 +634,36 @@ void Window::attachWidget(QWidget* widget) {
 
 void Window::detachWidget(QWidget* widget) {
 	m_screenWidget->layout()->removeWidget(widget);
+}
+
+void Window::appendMRU(const QString& fname) {
+	int index = m_mruFiles.indexOf(fname);
+	if (index >= 0) {
+		m_mruFiles.removeAt(index);
+	}
+	m_mruFiles.prepend(fname);
+	while (m_mruFiles.size() > ConfigController::MRU_LIST_SIZE) {
+		m_mruFiles.removeLast();
+	}
+	updateMRU();
+}
+
+void Window::updateMRU() {
+	if (!m_mruMenu) {
+		return;
+	}
+	m_mruMenu->clear();
+	int i = 0;
+	for (const QString& file : m_mruFiles) {
+		QAction* item = new QAction(file, m_mruMenu);
+		item->setShortcut(QString("Ctrl+%1").arg(i));
+		connect(item, &QAction::triggered, [this, file]() { m_controller->loadGame(file); });
+		m_mruMenu->addAction(item);
+		++i;
+	}
+	m_config->setMRU(m_mruFiles);
+	m_config->write();
+	m_mruMenu->setEnabled(i > 0);
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

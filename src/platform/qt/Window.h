@@ -104,6 +104,9 @@ private:
 	void attachWidget(QWidget* widget);
 	void detachWidget(QWidget* widget);
 
+	void appendMRU(const QString& fname);
+	void updateMRU();
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
@@ -115,6 +118,8 @@ private:
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;
+	QList<QString> m_mruFiles;
+	QMenu* m_mruMenu;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
