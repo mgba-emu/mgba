@@ -276,23 +276,16 @@ void GameController::keyReleased(int key) {
 }
 
 void GameController::setAudioBufferSamples(int samples) {
-	if (m_gameOpen) {
-		threadInterrupt();
-		float ratio = GBAAudioCalculateRatio(m_threadContext.gba->audio.sampleRate, m_threadContext.fpsTarget, 44100);
-		m_threadContext.audioBuffers = samples / ratio;
-		GBAAudioResizeBuffer(&m_threadContext.gba->audio, samples / ratio);
-		threadContinue();
-	} else {
-		float ratio = GBAAudioCalculateRatio(0x8000, m_threadContext.fpsTarget, 44100);
-		m_threadContext.audioBuffers = samples / ratio;
-
-	}
+	threadInterrupt();
+	redoSamples(samples);
+	threadContinue();
 	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
 }
 
 void GameController::setFPSTarget(float fps) {
 	threadInterrupt();
 	m_threadContext.fpsTarget = fps;
+	redoSamples(m_audioProcessor->getBufferSamples());
 	threadContinue();
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
@@ -373,6 +366,19 @@ void GameController::updateKeys() {
 	activeKeys |= m_activeButtons;
 #endif
 	m_threadContext.activeKeys = activeKeys;
+}
+
+void GameController::redoSamples(int samples) {
+	float sampleRate = 0x8000;
+	float ratio;
+	if (m_threadContext.gba) {
+		sampleRate = m_threadContext.gba->audio.sampleRate;
+	}
+	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, 44100);
+	m_threadContext.audioBuffers = ceil(samples / ratio);
+	if (m_threadContext.gba) {
+		GBAAudioResizeBuffer(&m_threadContext.gba->audio, m_threadContext.audioBuffers);
+	}
 }
 
 void GameController::setLogLevel(int levels) {

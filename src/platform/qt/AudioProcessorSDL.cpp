@@ -25,7 +25,9 @@ void AudioProcessorSDL::start() {
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
 	} else {
-		m_audio.samples = input()->audioBuffers;
+		if (!m_audio.samples) {
+			m_audio.samples = input()->audioBuffers;
+		}
 		GBASDLInitAudio(&m_audio, input());
 	}
 }
@@ -35,9 +37,10 @@ void AudioProcessorSDL::pause() {
 }
 
 void AudioProcessorSDL::setBufferSamples(int samples) {
+	AudioProcessor::setBufferSamples(samples);
+	m_audio.samples = samples;
 	if (m_audio.thread) {
 		GBASDLDeinitAudio(&m_audio);
-		m_audio.samples = samples;
 		GBASDLInitAudio(&m_audio, input());
 	}
 }

@@ -63,6 +63,7 @@ void AudioProcessorQt::pause() {
 }
 
 void AudioProcessorQt::setBufferSamples(int samples) {
+	AudioProcessor::setBufferSamples(samples);
 	if (m_audioOutput) {
 		m_audioOutput->stop();
 		m_audioOutput->setBufferSize(samples * 4);

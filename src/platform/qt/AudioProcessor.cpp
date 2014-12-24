@@ -33,3 +33,7 @@ AudioProcessor::AudioProcessor(QObject* parent)
 void AudioProcessor::setInput(GBAThread* input) {
 	m_context = input;
 }
+
+void AudioProcessor::setBufferSamples(int samples) {
+	m_samples = samples;
+}

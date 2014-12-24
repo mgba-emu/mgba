@@ -109,6 +109,7 @@ private:
 
 private:
 	void updateKeys();
+	void redoSamples(int samples);
 
 	uint32_t* m_drawContext;
 	GBAThread m_threadContext;
