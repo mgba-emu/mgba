@@ -225,6 +225,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #else
 		encoder->audioFrame = avcodec_alloc_frame();
 #endif
+		if (!encoder->audio->frame_size) {
+			encoder->audio->frame_size = 1024;
+		}
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;

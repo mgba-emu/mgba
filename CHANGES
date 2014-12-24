@@ -25,6 +25,7 @@ Bugfixes:
  - GBA Audio: Make larger buffer sizes than 2048 actually work properly
  - GBA Audio: Audio buffer sizes are now correct sizes for both sample rates
  - GBA Video: Fix blend issues with obscured middle layers
+ - Video: Ensure FFmpeg encoder has audio frames
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
