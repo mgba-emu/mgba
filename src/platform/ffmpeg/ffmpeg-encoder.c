@@ -226,7 +226,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audioFrame = avcodec_alloc_frame();
 #endif
 		if (!encoder->audio->frame_size) {
-			encoder->audio->frame_size = 1024;
+			encoder->audio->frame_size = 1;
 		}
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
@@ -368,9 +368,9 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t rig
 
 	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	avresample_convert(encoder->resampleContext,
-		0, 0, encoder->postaudioBufferSize / channelSize,
+		0, 0, 0,
 		(uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
-	if ((ssize_t) avresample_available(encoder->resampleContext) < (ssize_t) encoder->postaudioBufferSize / channelSize) {
+	if (avresample_available(encoder->resampleContext) < encoder->audioFrame->nb_samples) {
 		return;
 	}
 #if LIBAVCODEC_VERSION_MAJOR >= 55
