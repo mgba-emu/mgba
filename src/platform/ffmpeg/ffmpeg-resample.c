@@ -50,15 +50,15 @@ unsigned GBAAudioResampleLAVR(struct GBAAudio* audio, struct AVAudioResampleCont
 	}
 	while (nSamples) {
 		unsigned read = GBAAudioCopy(audio, left, right, GBA_AUDIO_SAMPLES);
+		if (read == 0) {
+			memset(output, 0, nSamples * sizeof(struct GBAStereoSample));
+			break;
+		}
 
 		size_t currentRead = avresample_convert(avr, (uint8_t**) &output, nSamples * sizeof(struct GBAStereoSample), nSamples, (uint8_t**) samples, sizeof(left), read);
 		nSamples -= currentRead;
 		output += currentRead;
 		totalRead += currentRead;
-		if (read < GBA_AUDIO_SAMPLES && nSamples) {
-			memset(output, 0, nSamples * sizeof(struct GBAStereoSample));
-			break;
-		}
 	}
 	return totalRead;
 }
