@@ -8,6 +8,8 @@
 
 #include <QObject>
 
+#ifdef USE_GDB_STUB
+
 extern "C" {
 #include "debugger/gdb-stub.h"
 }
@@ -46,4 +48,7 @@ private:
 };
 
 }
+
+#endif
+
 #endif
