@@ -149,6 +149,7 @@ void Display::resizeEvent(QResizeEvent* event) {
 Painter::Painter(Display* parent)
 	: m_gl(parent)
 	, m_lockAspectRatio(false)
+	, m_filter(false)
 {
 	m_size = parent->size();
 }
