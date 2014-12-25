@@ -24,6 +24,8 @@ static void _gyroReadPins(struct GBACartridgeGPIO* gpio);
 
 static void _rumbleReadPins(struct GBACartridgeGPIO* gpio);
 
+static void _lightReadPins(struct GBACartridgeGPIO* gpio);
+
 static const int RTC_BYTES[8] = {
 	0, // Force reset
 	0, // Empty
@@ -46,7 +48,13 @@ void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* base) {
 void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t value) {
 	switch (address) {
 	case GPIO_REG_DATA:
-		gpio->pinState = value;
+		gpio->pinState &= ~gpio->direction;
+		gpio->pinState |= value;
+		if (gpio->readWrite) {
+			uint16_t old = gpio->gpioBase[0];
+			old &= ~gpio->direction;
+			gpio->gpioBase[0] = old | gpio->pinState;
+		}
 		_readPins(gpio);
 		break;
 	case GPIO_REG_DIRECTION:
@@ -57,12 +65,6 @@ void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t valu
 		break;
 	default:
 		GBALog(gpio->p, GBA_LOG_WARN, "Invalid GPIO address");
-	}
-
-	if (gpio->readWrite) {
-		uint16_t old = gpio->gpioBase[0];
-		old &= ~gpio->direction;
-		gpio->gpioBase[0] = old | (value & gpio->direction);
 	}
 }
 
@@ -92,13 +94,18 @@ void _readPins(struct GBACartridgeGPIO* gpio) {
 	if (gpio->gpioDevices & GPIO_RUMBLE) {
 		_rumbleReadPins(gpio);
 	}
+
+	if (gpio->gpioDevices & GPIO_LIGHT_SENSOR) {
+		_lightReadPins(gpio);
+	}
 }
 
 void _outputPins(struct GBACartridgeGPIO* gpio, unsigned pins) {
 	if (gpio->readWrite) {
 		uint16_t old = gpio->gpioBase[0];
 		old &= gpio->direction;
-		gpio->gpioBase[0] = old | (pins & ~gpio->direction & 0xF);
+		gpio->pinState = old | (pins & ~gpio->direction & 0xF);
+		gpio->gpioBase[0] = gpio->pinState;
 	}
 }
 
@@ -307,6 +314,33 @@ void _rumbleReadPins(struct GBACartridgeGPIO* gpio) {
 	}
 
 	rumble->setRumble(rumble, gpio->p3);
+}
+
+// == Light sensor
+
+void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio) {
+	gpio->gpioDevices |= GPIO_LIGHT_SENSOR;
+	gpio->lightCounter = 0;
+	gpio->lightEdge = false;
+}
+
+void _lightReadPins(struct GBACartridgeGPIO* gpio) {
+	if (gpio->p2) {
+		// Boktai chip select
+		return;
+	}
+	if (gpio->p1) {
+		GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Got reset");
+		gpio->lightCounter = 0;
+	}
+	if (gpio->p0 && gpio->lightEdge) {
+		++gpio->lightCounter;
+	}
+	gpio->lightEdge = !gpio->p0;
+
+	bool sendBit = gpio->lightCounter >= 0x80;
+	_outputPins(gpio, sendBit << 3);
+	GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", gpio->lightCounter, gpio->pinState);
 }
 
 // == Serialization

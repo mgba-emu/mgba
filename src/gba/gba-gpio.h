@@ -103,6 +103,9 @@ struct GBACartridgeGPIO {
 
 	uint16_t gyroSample;
 	bool gyroEdge;
+
+	int lightCounter : 12;
+	bool lightEdge;
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
@@ -113,6 +116,8 @@ void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
 void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
 
 void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
+
+void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio);
 
 struct GBASerializedState;
 void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);
