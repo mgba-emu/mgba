@@ -59,7 +59,11 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		debugger->state = DEBUGGER_RUNNING;
 	}
 	while (debugger->state < DEBUGGER_EXITING) {
-		if (!debugger->breakpoints) {
+		if (!debugger->breakpoints && !debugger->watchpoints) {
+			while (debugger->state == DEBUGGER_RUNNING) {
+				ARMRun(debugger->cpu);
+			}
+		} else if (!debugger->breakpoints) {
 			while (debugger->state == DEBUGGER_RUNNING) {
 				ARMRun(debugger->cpu);
 			}
