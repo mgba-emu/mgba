@@ -50,11 +50,6 @@ void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t valu
 	case GPIO_REG_DATA:
 		gpio->pinState &= ~gpio->direction;
 		gpio->pinState |= value;
-		if (gpio->readWrite) {
-			uint16_t old = gpio->gpioBase[0];
-			old &= ~gpio->direction;
-			gpio->gpioBase[0] = old | gpio->pinState;
-		}
 		_readPins(gpio);
 		break;
 	case GPIO_REG_DIRECTION:
@@ -65,6 +60,13 @@ void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t valu
 		break;
 	default:
 		GBALog(gpio->p, GBA_LOG_WARN, "Invalid GPIO address");
+	}
+	if (gpio->readWrite) {
+		uint16_t old = gpio->gpioBase[0];
+		old &= ~gpio->direction;
+		gpio->gpioBase[0] = old | gpio->pinState;
+	} else {
+		gpio->gpioBase[0] = 0;
 	}
 }
 
