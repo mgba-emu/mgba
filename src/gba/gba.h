@@ -115,7 +115,9 @@ struct GBA {
 	int* keySource;
 	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
+	struct GBALuminanceSource* luminanceSource;
 	struct GBARumble* rumble;
+
 	struct GBARRContext* rr;
 	void* pristineRom;
 	size_t pristineRomSize;

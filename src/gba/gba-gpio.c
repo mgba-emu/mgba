@@ -322,6 +322,7 @@ void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio) {
 	gpio->gpioDevices |= GPIO_LIGHT_SENSOR;
 	gpio->lightCounter = 0;
 	gpio->lightEdge = false;
+	gpio->lightSample = 0xFF;
 }
 
 void _lightReadPins(struct GBACartridgeGPIO* gpio) {
@@ -330,15 +331,22 @@ void _lightReadPins(struct GBACartridgeGPIO* gpio) {
 		return;
 	}
 	if (gpio->p1) {
+		struct GBALuminanceSource* lux = gpio->p->luminanceSource;
 		GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Got reset");
 		gpio->lightCounter = 0;
+		if (lux) {
+			lux->sample(lux);
+			gpio->lightSample = lux->readLuminance(lux);
+		} else {
+			gpio->lightSample = 0xFF;
+		}
 	}
 	if (gpio->p0 && gpio->lightEdge) {
 		++gpio->lightCounter;
 	}
 	gpio->lightEdge = !gpio->p0;
 
-	bool sendBit = gpio->lightCounter >= 0x80;
+	bool sendBit = gpio->lightCounter >= gpio->lightSample;
 	_outputPins(gpio, sendBit << 3);
 	GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", gpio->lightCounter, gpio->pinState);
 }

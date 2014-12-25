@@ -17,4 +17,10 @@ struct GBARotationSource {
 	int32_t (*readGyroZ)(struct GBARotationSource*);
 };
 
+struct GBALuminanceSource {
+	void (*sample)(struct GBALuminanceSource*);
+
+	uint8_t (*readLuminance)(struct GBALuminanceSource*);
+};
+
 #endif

@@ -104,7 +104,8 @@ struct GBACartridgeGPIO {
 	uint16_t gyroSample;
 	bool gyroEdge;
 
-	int lightCounter : 12;
+	unsigned lightCounter : 12;
+	uint8_t lightSample;
 	bool lightEdge;
 };
 

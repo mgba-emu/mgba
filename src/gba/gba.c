@@ -732,6 +732,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 				GBAGPIOInitRumble(&gba->memory.gpio);
 			}
 
+			if (_overrides[i].gpio & GPIO_LIGHT_SENSOR) {
+				GBAGPIOInitLightSensor(&gba->memory.gpio);
+			}
+
 			gba->busyLoop = _overrides[i].busyLoop;
 			return;
 		}
