@@ -1276,7 +1276,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	unsigned xBase;
 
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA);
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
 	flags |= FLAG_TARGET_2 * background->target2;
 	if (renderer->blda == 0x10 && renderer->bldb == 0) {
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
@@ -1349,7 +1349,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int32_t localY; \
 	\
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA); \
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed)); \
 	flags |= FLAG_TARGET_2 * background->target2; \
 	if (renderer->blda == 0x10 && renderer->bldb == 0) { \
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
