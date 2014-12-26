@@ -156,6 +156,8 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->springIRQ = 0;
 	gba->keySource = 0;
 	gba->rotationSource = 0;
+	gba->luminanceSource = 0;
+	gba->rtcSource = 0;
 	gba->rumble = 0;
 	gba->rr = 0;
 

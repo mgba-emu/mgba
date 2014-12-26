@@ -242,7 +242,14 @@ unsigned _rtcOutput(struct GBACartridgeGPIO* gpio) {
 }
 
 void _rtcUpdateClock(struct GBACartridgeGPIO* gpio) {
-	time_t t = time(0);
+	time_t t;
+	struct GBARTCSource* rtc = gpio->p->rtcSource;
+	if (rtc) {
+		rtc->sample(rtc);
+		t = rtc->unixTime(rtc);
+	} else {
+		t = time(0);
+	}
 	struct tm date;
 #ifdef _WIN32
 	date = *localtime(&t);

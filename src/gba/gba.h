@@ -116,6 +116,7 @@ struct GBA {
 	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
+	struct GBARTCSource* rtcSource;
 	struct GBARumble* rumble;
 
 	struct GBARRContext* rr;

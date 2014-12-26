@@ -23,4 +23,10 @@ struct GBALuminanceSource {
 	uint8_t (*readLuminance)(struct GBALuminanceSource*);
 };
 
+struct GBARTCSource {
+	void (*sample)(struct GBARTCSource*);
+
+	time_t (*unixTime)(struct GBARTCSource*);
+};
+
 #endif
