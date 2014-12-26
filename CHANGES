@@ -8,6 +8,7 @@ Features:
  - Bilinear resampling option
  - Add option to skip BIOS start screen
  - List of recently opened games
+ - Support for games using the Solar Sensor
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
