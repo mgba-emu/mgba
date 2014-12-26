@@ -14,6 +14,7 @@
 #endif
 
 static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
+static const char* ERROR_OVERFLOW = "Arguments overflow";
 
 static struct CLIDebugger* _activeDebugger;
 
@@ -36,6 +37,9 @@ static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 
 static void _breakIntoDefault(int signal);
 static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum ExecutionMode mode);
@@ -78,6 +82,9 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "status", _printStatus, 0, "Print the current status" },
 	{ "w", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
 	{ "watch", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
+	{ "wb", _writeByte, CLIDVParse, "Write a byte at a specified offset" },
+	{ "wh", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
+	{ "ww", _writeWord, CLIDVParse, "Write a word at a specified offset" },
 	{ "x", _breakInto, 0, "Break into attached debugger (for developers)" },
 	{ 0, 0, 0, 0 }
 };
@@ -308,6 +315,56 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	uint32_t address = dv->intValue;
 	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
 	printf(" 0x%08X\n", value);
+}
+
+static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (value > 0xFF) {
+		printf("%s\n", ERROR_OVERFLOW);
+		return;
+	}
+	debugger->d.cpu->memory.store8(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (value > 0xFFFF) {
+		printf("%s\n", ERROR_OVERFLOW);
+		return;
+	}
+	debugger->d.cpu->memory.store16(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	debugger->d.cpu->memory.store32(debugger->d.cpu, address, value, 0);
 }
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
