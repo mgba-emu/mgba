@@ -60,26 +60,25 @@ def parseOtoolLine(line, execPath, root):
 	newExecPath = ['@executable_path', '..', 'Frameworks']
 	newPath = execPath[:-1]
 	newPath.append('Frameworks')
-	if split[0] == '/':
-		split[:1] = root
+	if split[:3] == ['/', 'usr', 'lib'] or split[:2] == ['/', 'System']:
+		return None, None, None, None
 	if split[0] == '@executable_path':
 		split[:1] = execPath
-	if split[:3] == ['/', 'usr', 'lib'] or split[:2] == ['/', 'System']:
-		newPath = None
-		newExecPath = None
-	else:
-		isFramework = False
-		if not split[-1].endswith('.dylib'):
-			isFramework = True
-			split, framework = findFramework(split)
-		newPath.append(split[-1])
-		newExecPath.append(split[-1])
-		if isFramework:
-			newPath.extend(framework)
-			newExecPath.extend(framework)
-			split.extend(framework)
-		newPath = joinPath(newPath)
-		newExecPath = joinPath(newExecPath)
+	if split[0] == '/' and not os.access(joinPath(split), os.F_OK):
+		print(split)
+		split[:1] = root
+	isFramework = False
+	if not split[-1].endswith('.dylib'):
+		isFramework = True
+		split, framework = findFramework(split)
+	newPath.append(split[-1])
+	newExecPath.append(split[-1])
+	if isFramework:
+		newPath.extend(framework)
+		newExecPath.extend(framework)
+		split.extend(framework)
+	newPath = joinPath(newPath)
+	newExecPath = joinPath(newExecPath)
 	return joinPath(split), newPath, path, newExecPath
 
 def updateMachO(bin, execPath, root):
@@ -133,7 +132,7 @@ if __name__ == '__main__':
 		if executable.endswith('.dSYM'):
 			continue
 		fullPath = os.path.join(args.bundle, 'Contents/MacOS/', executable)
-		updateMachO(fullPath, splitPath(os.path.join(args.bundle, 'Contents/MacOS')), args.root)
+		updateMachO(fullPath, splitPath(os.path.join(args.bundle, 'Contents/MacOS')), splitPath(args.root))
 	if args.qt_plugins:
 		try:
 			shutil.rmtree(os.path.join(args.bundle, 'Contents/PlugIns/'))
@@ -152,4 +151,4 @@ if __name__ == '__main__':
 			makedirs(newDir)
 			newPath = os.path.join(newDir, plug)
 			shutil.copy2(os.path.join(qtPath, 'plugins', plugin), newPath)
-			updateMachO(newPath, splitPath(os.path.join(args.bundle, 'Contents/MacOS')), args.root)
+			updateMachO(newPath, splitPath(os.path.join(args.bundle, 'Contents/MacOS')), splitPath(args.root))
