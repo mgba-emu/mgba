@@ -98,7 +98,6 @@ Footnotes
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](https://endrift.com/mgba/bugs/show_bug.cgi?id=5))
 - Mosaic for transformed OBJs ([Bug #9](https://endrift.com/mgba/bugs/show_bug.cgi?id=9))
-- Cartridges with light sensors (Boktai: The Sun is in Your Hand and Boktai 2: Solar Boy Django) ([Bug #46](https://endrift.com/mgba/bugs/show_bug.cgi?id=46))
 - BIOS call RegisterRamReset is currently stubbed out ([Bug #141](https://endrift.com/mgba/bugs/show_bug.cgi?id=141))
 - Audio channel reset flags ([Bug #142](https://endrift.com/mgba/bugs/show_bug.cgi?id=142))
 - Cartridges with tilt sensors (Yoshi's Universal Gravitation/Yoshi's Topsy-Turvy) ([Bug #143](https://endrift.com/mgba/bugs/show_bug.cgi?id=143))
