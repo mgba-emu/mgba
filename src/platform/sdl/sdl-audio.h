@@ -10,6 +10,8 @@
 
 #include <SDL.h>
 
+#include "gba-audio.h"
+
 struct GBASDLAudio {
 	// Input
 	size_t samples;
@@ -17,11 +19,11 @@ struct GBASDLAudio {
 	// State
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
+#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 	float ratio;
-#ifndef USE_FFMPEG
+#endif
+#if RESAMPLE_LIBRARY == RESAMPLE_NN
 	float drift;
-#else
-	struct AVAudioResampleContext* avr;
 #endif
 
 	struct GBAThread* thread;

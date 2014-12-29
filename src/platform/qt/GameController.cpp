@@ -369,6 +369,7 @@ void GameController::updateKeys() {
 }
 
 void GameController::redoSamples(int samples) {
+#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 	float sampleRate = 0x8000;
 	float ratio;
 	if (m_threadContext.gba) {
@@ -376,6 +377,9 @@ void GameController::redoSamples(int samples) {
 	}
 	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, 44100);
 	m_threadContext.audioBuffers = ceil(samples / ratio);
+#else
+	m_threadContext.audioBuffers = samples;
+#endif
 	if (m_threadContext.gba) {
 		GBAAudioResizeBuffer(&m_threadContext.gba->audio, m_threadContext.audioBuffers);
 	}

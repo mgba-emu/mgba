@@ -8,9 +8,8 @@
 #include "gba.h"
 #include "gba-thread.h"
 
-#ifdef USE_FFMPEG
-#include "platform/ffmpeg/ffmpeg-resample.h"
-#include <libavresample/avresample.h>
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+#include "third-party/blip_buf/blip_buf.h"
 #endif
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
@@ -29,7 +28,7 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 	context->desiredSpec.samples = context->samples;
 	context->desiredSpec.callback = _GBASDLAudioCallback;
 	context->desiredSpec.userdata = context;
-#ifndef USE_FFMPEG
+#if RESAMPLE_LIBRARY == RESAMPLE_NN
 	context->drift = 0.f;
 #endif
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
@@ -44,10 +43,6 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		threadContext->audioBuffers = context->samples * 2;
 	}
 
-#ifdef USE_FFMPEG
-	context->avr = 0;
-#endif
-
 	SDL_PauseAudio(0);
 	return true;
 }
@@ -57,9 +52,6 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-#ifdef USE_FFMPEG
-	avresample_free(&context->avr);
-#endif
 }
 
 void GBASDLPauseAudio(struct GBASDLAudio* context) {
@@ -78,7 +70,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
-#ifndef USE_FFMPEG
+#if RESAMPLE_LIBRARY == RESAMPLE_NN
 	audioContext->ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
 	if (audioContext->ratio == INFINITY) {
 		memset(data, 0, len);
@@ -89,21 +81,23 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	if (audioContext->obtainedSpec.channels == 2) {
 		GBAAudioResampleNN(&audioContext->thread->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
-#else
-	float ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->thread->gba->audio.sampleRate);
-	if (!audioContext->avr) {
-		if (!audioContext->thread->gba->audio.sampleRate) {
-			memset(data, 0, len);
-			return;
-		}
-		audioContext->ratio = ratio;
-		audioContext->avr = GBAAudioOpenLAVR(audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
-	} else if (ratio != audioContext->ratio) {
-		audioContext->ratio = ratio;
-		audioContext->avr = GBAAudioReopenLAVR(audioContext->avr, audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
-	}
-	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
+#elif RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+	double fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
+	GBASyncLockAudio(&audioContext->thread->sync);
+	blip_set_rates(audioContext->thread->gba->audio.left, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
+	blip_set_rates(audioContext->thread->gba->audio.right, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
 	len /= 2 * audioContext->obtainedSpec.channels;
-	GBAAudioResampleLAVR(&audioContext->thread->gba->audio, audioContext->avr, ssamples, len);
+	int available = blip_samples_avail(audioContext->thread->gba->audio.left);
+	if (available > len) {
+		available = len;
+	}
+	blip_read_samples(audioContext->thread->gba->audio.left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
+	if (audioContext->obtainedSpec.channels == 2) {
+		blip_read_samples(audioContext->thread->gba->audio.right, ((short*) data) + 1, available, 1);
+	}
+	GBASyncConsumeAudio(&audioContext->thread->sync);
+	if (available < len) {
+		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, len - available);
+	}
 #endif
 }
