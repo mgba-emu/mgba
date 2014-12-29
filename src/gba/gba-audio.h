@@ -20,7 +20,6 @@ struct GBADMA;
 extern const unsigned GBA_AUDIO_SAMPLES;
 
 #define RESAMPLE_NN 0
-#define RESAMPLE_FFMPEG 1
 #define RESAMPLE_BLIP_BUF 2
 
 DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);

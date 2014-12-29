@@ -24,8 +24,6 @@ struct GBASDLAudio {
 #endif
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
 	float drift;
-#elif RESAMPLE_LIBRARY == RESAMPLE_FFMPEG
-	struct AVAudioResampleContext* avr;
 #endif
 
 	struct GBAThread* thread;

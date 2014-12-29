@@ -8,10 +8,7 @@
 #include "gba.h"
 #include "gba-thread.h"
 
-#if RESAMPLE_LIBRARY == RESAMPLE_FFMPEG
-#include "platform/ffmpeg/ffmpeg-resample.h"
-#include <libavresample/avresample.h>
-#elif RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 #include "third-party/blip_buf/blip_buf.h"
 #endif
 
@@ -46,10 +43,6 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		threadContext->audioBuffers = context->samples * 2;
 	}
 
-#if RESAMPLE_LIBRARY == RESAMPLE_FFMPEG
-	context->avr = 0;
-#endif
-
 	SDL_PauseAudio(0);
 	return true;
 }
@@ -59,9 +52,6 @@ void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-#if RESAMPLE_LIBRARY == RESAMPLE_FFMPEG
-	avresample_free(&context->avr);
-#endif
 }
 
 void GBASDLPauseAudio(struct GBASDLAudio* context) {
@@ -91,22 +81,6 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	if (audioContext->obtainedSpec.channels == 2) {
 		GBAAudioResampleNN(&audioContext->thread->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
-#elif RESAMPLE_LIBRARY == RESAMPLE_FFMPEG
-	float ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->thread->gba->audio.sampleRate);
-	if (!audioContext->avr) {
-		if (!audioContext->thread->gba->audio.sampleRate) {
-			memset(data, 0, len);
-			return;
-		}
-		audioContext->ratio = ratio;
-		audioContext->avr = GBAAudioOpenLAVR(audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
-	} else if (ratio != audioContext->ratio) {
-		audioContext->ratio = ratio;
-		audioContext->avr = GBAAudioReopenLAVR(audioContext->avr, audioContext->thread->gba->audio.sampleRate / ratio, audioContext->obtainedSpec.freq);
-	}
-	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
-	len /= 2 * audioContext->obtainedSpec.channels;
-	GBAAudioResampleLAVR(&audioContext->thread->gba->audio, audioContext->avr, ssamples, len);
 #elif RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
 	GBASyncLockAudio(&audioContext->thread->sync);
