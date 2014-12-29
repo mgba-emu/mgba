@@ -11,9 +11,17 @@
 
 #include "util/circle-buffer.h"
 
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+#include "third-party/blip_buf/blip_buf.h"
+#endif
+
 struct GBADMA;
 
 extern const unsigned GBA_AUDIO_SAMPLES;
+
+#define RESAMPLE_NN 0
+#define RESAMPLE_FFMPEG 1
+#define RESAMPLE_BLIP_BUF 2
 
 DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);
 DECL_BITS(GBAAudioRegisterEnvelope, Length, 0, 6);
@@ -177,8 +185,16 @@ struct GBAAudio {
 	struct GBAAudioFIFO chA;
 	struct GBAAudioFIFO chB;
 
+#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 	struct CircleBuffer left;
 	struct CircleBuffer right;
+#else
+	blip_t* left;
+	blip_t* right;
+	int16_t lastLeft;
+	int16_t lastRight;
+	int clock;
+#endif
 
 	uint8_t volumeRight;
 	uint8_t volumeLeft;
@@ -207,6 +223,7 @@ struct GBAAudio {
 	bool playingCh4;
 	bool enable;
 
+	size_t samples;
 	unsigned sampleRate;
 
 	GBARegisterSOUNDBIAS soundbias;
@@ -256,8 +273,10 @@ void GBAAudioWriteFIFO16(struct GBAAudio* audio, int address, uint16_t value);
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 
+#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples);
 unsigned GBAAudioResampleNN(struct GBAAudio*, float ratio, float* drift, struct GBAStereoSample* output, unsigned nSamples);
+#endif
 
 struct GBASerializedState;
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);

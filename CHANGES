@@ -10,6 +10,7 @@ Features:
  - List of recently opened games
  - Support for games using the Solar Sensor
  - Debugger: Add CLI functions for writing to memory
+ - Better audio resampling via blip-buf
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
