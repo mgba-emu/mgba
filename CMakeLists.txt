@@ -115,7 +115,6 @@ endif()
 
 if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7 -stdlib=libc++")
 endif()
 
 if(BUILD_BBB OR BUILD_RASPI)
