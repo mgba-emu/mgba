@@ -18,6 +18,7 @@ Bugfixes:
  - GBA Video: Fix windows not disabling target 1 appropriately (fixes #161)
  - Debugger: Align PC-relative loads in Thumb
  - Debugger: Fix watchpoints triggering too late
+ - GBA Video: Fix sprite mis-ordering behavior in some cases (fixes #168)
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it

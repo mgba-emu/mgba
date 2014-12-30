@@ -1584,8 +1584,13 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
 	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
-	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
-		renderer->spriteLayer[outX] = palette[tileData] | flags; \
+	current = renderer->spriteLayer[outX]; \
+	if ((current & FLAG_ORDER_MASK) > flags) { \
+		if (tileData) { \
+			renderer->spriteLayer[outX] = palette[tileData] | flags; \
+		} else if (current != FLAG_UNWRITTEN) { \
+			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+		} \
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
@@ -1601,8 +1606,13 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
-	if (tileData && (renderer->spriteLayer[outX] & FLAG_ORDER_MASK) > flags) { \
-		renderer->spriteLayer[outX] = palette[tileData] | flags; \
+	current = renderer->spriteLayer[outX]; \
+	if ((current & FLAG_ORDER_MASK) > flags) { \
+		if (tileData) { \
+			renderer->spriteLayer[outX] = palette[tileData] | flags; \
+		} else if (current != FLAG_UNWRITTEN) { \
+			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+		} \
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
@@ -1636,6 +1646,7 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
 
+	uint32_t current;
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		int totalWidth = width << GBAObjAttributesAGetDoubleSize(sprite->a);
 		int totalHeight = height << GBAObjAttributesAGetDoubleSize(sprite->a);
