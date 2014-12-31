@@ -107,6 +107,10 @@ struct GBACartridgeGPIO {
 	unsigned lightCounter : 12;
 	uint8_t lightSample;
 	bool lightEdge;
+
+	uint16_t tiltX;
+	uint16_t tiltY;
+	int tiltState;
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
@@ -117,6 +121,9 @@ void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
 void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
 void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio);
 void GBAGPIOInitTilt(struct GBACartridgeGPIO* gpio);
+
+void GBAGPIOTiltWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint8_t value);
+uint8_t GBAGPIOTiltRead(struct GBACartridgeGPIO* gpio, uint32_t address);
 
 struct GBASerializedState;
 void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);

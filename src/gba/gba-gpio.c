@@ -364,6 +364,60 @@ void _lightReadPins(struct GBACartridgeGPIO* gpio) {
 
 void GBAGPIOInitTilt(struct GBACartridgeGPIO* gpio) {
 	gpio->gpioDevices |= GPIO_TILT;
+	gpio->tiltX = 0xFFF;
+	gpio->tiltY = 0xFFF;
+	gpio->tiltState = 0;
+}
+
+void GBAGPIOTiltWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint8_t value) {
+	switch (address) {
+	case 0x8000:
+		if (value == 0x55) {
+			gpio->tiltState = 1;
+		} else {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+		}
+		break;
+	case 0x8100:
+		if (value == 0xAA && gpio->tiltState == 1) {
+			gpio->tiltState = 0;
+			struct GBARotationSource* rotationSource = gpio->p->rotationSource;
+			if (!rotationSource || !rotationSource->readTiltX || !rotationSource->readTiltY) {
+				return;
+			}
+			if (rotationSource->sample) {
+				rotationSource->sample(rotationSource);
+			}
+			int32_t x = rotationSource->readTiltX(rotationSource);
+			int32_t y = rotationSource->readTiltY(rotationSource);
+			// Normalize to ~12 bits, focused on 0x3A0
+			gpio->tiltX = (x >> 21) + 0x3A0; // Crop off an extra bit so that we can't go negative
+			gpio->tiltY = (y >> 21) + 0x3A0;
+		} else {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+		}
+		break;
+	default:
+		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid tilt sensor write to %04x: %02x", address, value);
+		break;
+	}
+}
+
+uint8_t GBAGPIOTiltRead(struct GBACartridgeGPIO* gpio, uint32_t address) {
+	switch (address) {
+	case 0x8200:
+		return gpio->tiltX & 0xFF;
+	case 0x8300:
+		return ((gpio->tiltX >> 8) & 0xF) | 0x80;
+	case 0x8400:
+		return gpio->tiltY & 0xFF;
+	case 0x8500:
+		return (gpio->tiltY >> 8) & 0xF;
+	default:
+		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid tilt sensor read from %04x", address);
+		break;
+	}
+	return 0xFF;
 }
 
 // == Serialization
