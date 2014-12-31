@@ -8,6 +8,7 @@ import shutil
 import subprocess
 
 qtPath = None
+verbose = False
 
 def splitPath(path):
 	folders = []
@@ -81,6 +82,7 @@ def parseOtoolLine(line, execPath, root):
 	return joinPath(split), newPath, path, newExecPath
 
 def updateMachO(bin, execPath, root):
+	global qtPath
 	otoolOutput = subprocess.check_output([otool, '-L', bin])
 	toUpdate = []
 	for line in otoolOutput.split('\n'):
@@ -88,25 +90,29 @@ def updateMachO(bin, execPath, root):
 		if not newPath:
 			continue
 		if os.access(newPath, os.F_OK):
-			print('Skipping copying {}, already done.'.format(oldPath))
+			if verbose:
+				print('Skipping copying {}, already done.'.format(oldPath))
 		elif os.path.abspath(oldPath) != os.path.abspath(newPath):
-			print('Copying {} to {}...'.format(oldPath, newPath))
+			if verbose:
+				print('Copying {} to {}...'.format(oldPath, newPath))
 			parent, child = os.path.split(newPath)
 			makedirs(parent)
 			shutil.copy2(oldPath, newPath)
 			os.chmod(newPath, 0o644)
 		toUpdate.append((newPath, oldExecPath, newExecPath))
 		if not qtPath and 'Qt' in oldPath:
-			global qtPath
 			qtPath = findQtPath(oldPath)
-			print('Found Qt path at {}.'.format(qtPath))
+			if verbose:
+				print('Found Qt path at {}.'.format(qtPath))
 	for path, oldExecPath, newExecPath in toUpdate:
 		if path != bin:
 			updateMachO(path, execPath, root)
-			print('Updating Mach-O load from {} to {}...'.format(oldExecPath, newExecPath))
+			if verbose:
+				print('Updating Mach-O load from {} to {}...'.format(oldExecPath, newExecPath))
 			subprocess.check_call([installNameTool, '-change', oldExecPath, newExecPath, bin])
 		else:
-			print('Updating Mach-O id from {} to {}...'.format(oldExecPath, newExecPath))
+			if verbose:
+				print('Updating Mach-O id from {} to {}...'.format(oldExecPath, newExecPath))
 			subprocess.check_call([installNameTool, '-id', newExecPath, bin])
 
 if __name__ == '__main__':
@@ -115,11 +121,13 @@ if __name__ == '__main__':
 	parser.add_argument('-I', '--install-name-tool', metavar='INSTALL_NAME_TOOL', default='install_name_tool', help='path to install_name_tool')
 	parser.add_argument('-O', '--otool', metavar='OTOOL', default='otool', help='path to otool')
 	parser.add_argument('-p', '--qt-plugins', metavar='PLUGINS', default='', help='Qt plugins to include (comma-separated)')
+	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='output more information')
 	parser.add_argument('bundle', help='application bundle to deploy')
 	args = parser.parse_args()
 
 	otool = args.otool
 	installNameTool = args.install_name_tool
+	verbose = args.verbose
 
 	try:
 		shutil.rmtree(os.path.join(args.bundle, 'Contents/Frameworks/'))
