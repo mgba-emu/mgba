@@ -150,7 +150,7 @@ void Window::loadConfig() {
 	}
 
 	if (opts->width && opts->height) {
-		m_screenWidget->setSizeHint(QSize(opts->width, opts->height));
+		resizeFrame(opts->width, opts->height);
 	}
 
 	m_inputController.setConfiguration(m_config);
