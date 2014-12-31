@@ -97,7 +97,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	}
 	GBASyncConsumeAudio(&audioContext->thread->sync);
 	if (available < len) {
-		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, len - available);
+		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, (len - available) * audioContext->obtainedSpec.channels * sizeof(short));
 	}
 #endif
 }
