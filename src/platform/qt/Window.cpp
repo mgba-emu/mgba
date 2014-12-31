@@ -18,6 +18,7 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#include "GamePakView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "SettingsView.h"
@@ -204,6 +205,13 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
 	settingsWindow->show();
+}
+
+void Window::openGamePakWindow() {
+	GamePakView* gamePakWindow = new GamePakView(m_controller);
+	connect(this, SIGNAL(shutdown()), gamePakWindow, SLOT(close()));
+	gamePakWindow->setAttribute(Qt::WA_DeleteOnClose);
+	gamePakWindow->show();
 }
 
 #ifdef BUILD_SDL
@@ -609,14 +617,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	avMenu->addAction(recordGIF);
 #endif
 
-	QMenu* debuggingMenu = menubar->addMenu(tr("&Debugging"));
-	QAction* viewLogs = new QAction(tr("View &logs..."), debuggingMenu);
+	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
+	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
-	debuggingMenu->addAction(viewLogs);
+	toolsMenu->addAction(viewLogs);
+
+	QAction* gamePak = new QAction(tr("Game &Pak overrides..."), toolsMenu);
+	connect(gamePak, SIGNAL(triggered()), this, SLOT(openGamePakWindow()));
+	toolsMenu->addAction(gamePak);
+
 #ifdef USE_GDB_STUB
-	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), debuggingMenu);
+	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
-	debuggingMenu->addAction(gdbWindow);
+	toolsMenu->addAction(gdbWindow);
 #endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");

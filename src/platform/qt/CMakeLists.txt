@@ -43,6 +43,7 @@ set(SOURCE_FILES
 	GBAKeyEditor.cpp
 	GIFView.cpp
 	GameController.cpp
+	GamePakView.cpp
 	InputController.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
@@ -55,6 +56,7 @@ set(SOURCE_FILES
 
 qt5_wrap_ui(UI_FILES
 	GIFView.ui
+	GamePakView.ui
 	LoadSaveState.ui
 	LogView.ui
 	SettingsView.ui
