@@ -109,6 +109,25 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+	switch (type) {
+	case SAVEDATA_FLASH512:
+	case SAVEDATA_FLASH1M:
+		savedata->type = type;
+		GBASavedataInitFlash(savedata);
+		break;
+	case SAVEDATA_EEPROM:
+		GBASavedataInitEEPROM(savedata);
+		break;
+	case SAVEDATA_SRAM:
+		GBASavedataInitSRAM(savedata);
+		break;
+	case SAVEDATA_NONE:
+		// TODO: Force none
+		break;
+	}
+}
+
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_NONE) {
 		savedata->type = SAVEDATA_FLASH512;
