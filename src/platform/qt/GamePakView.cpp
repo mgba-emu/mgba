@@ -21,6 +21,8 @@ GamePakView::GamePakView(GameController* controller, QWidget* parent)
 
 	connect(controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
+	connect(m_ui.lightSpin, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
+	connect(m_ui.lightSlide, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
 
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
@@ -60,4 +62,19 @@ void GamePakView::gameStopped() {
 	m_ui.sensorRTC->setChecked(false);
 	m_ui.sensorGyro->setChecked(false);
 	m_ui.sensorLight->setChecked(false);
+}
+
+void GamePakView::setLuminanceValue(int value) {
+	bool oldState;
+	value = std::max(0, std::min(value, 255));
+
+	oldState = m_ui.lightSpin->blockSignals(true);
+	m_ui.lightSpin->setValue(value);
+	m_ui.lightSpin->blockSignals(oldState);
+
+	oldState = m_ui.lightSlide->blockSignals(true);
+	m_ui.lightSlide->setValue(value);
+	m_ui.lightSlide->blockSignals(oldState);
+
+	m_controller->setLuminanceValue(value);
 }

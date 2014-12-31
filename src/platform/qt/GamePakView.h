@@ -25,6 +25,7 @@ public:
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
+	void setLuminanceValue(int);
 
 private:
 	Ui::GamePakView m_ui;

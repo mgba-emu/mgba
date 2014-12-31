@@ -13,6 +13,7 @@
 #include <QString>
 
 extern "C" {
+#include "gba-sensors.h"
 #include "gba-thread.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"
@@ -91,6 +92,7 @@ public slots:
 	void setTurbo(bool, bool forced = true);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
+	void setLuminanceValue(uint8_t value) { m_luxValue = value; }
 
 	void setLogLevel(int);
 	void enableLogLevel(int);
@@ -136,6 +138,12 @@ private:
 	bool m_turboForced;
 
 	InputController* m_inputController;
+
+	struct GameControllerLux : GBALuminanceSource {
+		GameController* p;
+		uint8_t value;
+	} m_lux;
+	uint8_t m_luxValue;
 };
 
 }

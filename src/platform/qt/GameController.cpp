@@ -48,9 +48,21 @@ GameController::GameController(QObject* parent)
 	m_threadContext.rewindBufferCapacity = 0;
 	m_threadContext.logLevel = -1;
 
+	m_lux.p = this;
+	m_lux.sample = [] (GBALuminanceSource* context) {
+		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
+		lux->value = 0xFF - lux->p->m_luxValue;
+	};
+
+	m_lux.readLuminance = [] (GBALuminanceSource* context) {
+		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
+		return lux->value;
+	};
+
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
+		context->gba->luminanceSource = &controller->m_lux;
 		controller->gameStarted(context);
 	};
 
