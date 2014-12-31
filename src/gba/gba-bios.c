@@ -237,7 +237,7 @@ static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width) 
 	struct ARMCore* cpu = gba->cpu;
 	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
-	int blockheader;
+	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
 	uint32_t sPointer = source + 4;
 	uint32_t dPointer = dest;
 	int blocksRemaining = 0;
@@ -380,7 +380,7 @@ static void _unRl(struct GBA* gba, uint32_t source, uint32_t dest, int width) {
 	int block;
 	uint32_t sPointer = source + 4;
 	uint32_t dPointer = dest;
-	int halfword;
+	int halfword = 0;
 	while (remaining > 0) {
 		blockheader = cpu->memory.loadU8(cpu, sPointer++, 0);
 		if (blockheader & 0x80) {

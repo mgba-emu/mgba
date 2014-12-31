@@ -42,6 +42,8 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	debugger->d.commands = _GBACLIDebuggerCommands;
 
 	debugger->context = context;
+#else
+	UNUSED(context);
 #endif
 
 	return debugger;
