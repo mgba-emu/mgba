@@ -452,13 +452,6 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 	audio->soundbias = value;
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	unsigned newSampleRate = 0x8000 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
-	if (audio->sampleRate != newSampleRate) {
-		audio->sampleRate = newSampleRate;
-		audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / audio->sampleRate;
-	}
-#endif
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
