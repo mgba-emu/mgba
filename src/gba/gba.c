@@ -53,6 +53,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Final Fantasy Tactics Advance
 	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000418 },
 
+	// Koro Koro Puzzle - Happy Panechu!
+	{ "KHPJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
+
 	// Mega Man Battle Network
 	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x800032E },
 
@@ -111,6 +114,11 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "RZWJ", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
 	{ "RZWE", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
 	{ "RZWP", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
+
+	// Yoshi's Universal Gravitation
+	{ "KYGJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
+	{ "KYGE", SAVEDATA_EEPROM, GPIO_TILT, -1 },
+	{ "KYGP", SAVEDATA_EEPROM, GPIO_TILT, -1 },
 
 	{ { 0, 0, 0, 0 }, 0, 0, -1 }
 };
@@ -722,6 +730,10 @@ void _checkOverrides(struct GBA* gba, uint32_t id) {
 
 			if (_overrides[i].gpio & GPIO_LIGHT_SENSOR) {
 				GBAGPIOInitLightSensor(&gba->memory.gpio);
+			}
+
+			if (_overrides[i].gpio & GPIO_TILT) {
+				GBAGPIOInitTilt(&gba->memory.gpio);
 			}
 
 			gba->busyLoop = _overrides[i].busyLoop;

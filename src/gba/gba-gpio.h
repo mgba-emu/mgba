@@ -113,12 +113,10 @@ void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
 void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t value);
 
 void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
-
 void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
-
 void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
-
 void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio);
+void GBAGPIOInitTilt(struct GBACartridgeGPIO* gpio);
 
 struct GBASerializedState;
 void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);

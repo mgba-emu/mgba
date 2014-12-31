@@ -360,6 +360,12 @@ void _lightReadPins(struct GBACartridgeGPIO* gpio) {
 	GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", gpio->lightCounter, gpio->pinState);
 }
 
+// == Tilt (not technically GPIO)
+
+void GBAGPIOInitTilt(struct GBACartridgeGPIO* gpio) {
+	gpio->gpioDevices |= GPIO_TILT;
+}
+
 // == Serialization
 
 void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state) {

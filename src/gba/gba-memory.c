@@ -448,6 +448,9 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = memory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 		} else if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
 			value = GBASavedataReadFlash(&memory->savedata, address);
+		} else if (memory->gpio.gpioDevices & GPIO_TILT) {
+			GBALog(gba, GBA_LOG_STUB, "Unimplemented tilt sensor read: 0x%08X", address);
+			value = 0xFF;
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
@@ -663,6 +666,8 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM) {
 			memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+		} else if (memory->gpio.gpioDevices & GPIO_TILT) {
+			GBALog(gba, GBA_LOG_STUB, "Unimplemented tilt sensor write: 0x%08X", address);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
