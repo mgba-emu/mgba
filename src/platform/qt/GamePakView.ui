@@ -195,9 +195,6 @@
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="1">
         <widget class="QSpinBox" name="lightSpin">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
          <property name="maximum">
           <number>255</number>
          </property>
@@ -212,9 +209,6 @@
        </item>
        <item row="1" column="0" colspan="2">
         <widget class="QSlider" name="lightSlide">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
          <property name="maximum">
           <number>255</number>
          </property>
