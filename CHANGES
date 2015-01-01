@@ -11,6 +11,7 @@ Features:
  - Debugger: Add CLI functions for writing to memory
  - Better audio resampling via blip-buf
  - Game Pak overrides dialog for setting savetype and sensor values
+ - Support for games using the tilt sensor
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
