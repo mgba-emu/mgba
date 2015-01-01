@@ -1578,14 +1578,22 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	SPRITE_YBASE_ ## DEPTH(inY); \
 	unsigned tileData; \
 	if (outX % mosaicH) { \
-		inX += (mosaicH - (outX % mosaicH)) * xOffset; \
-		outX += mosaicH - (outX % mosaicH); \
+		if (!inX && xOffset > 0) { \
+			inX = mosaicH - (outX % mosaicH); \
+			outX += mosaicH - (outX % mosaicH); \
+		} else if (inX == width - xOffset) { \
+			inX = mosaicH + (outX % mosaicH); \
+			outX += mosaicH - (outX % mosaicH); \
+		} \
 	} \
 	for (; outX < condition; ++outX, inX += xOffset) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
 		} \
 		int localX = inX - xOffset * (outX % mosaicH); \
+		if (localX < 0 || localX > width - 1) { \
+			continue; \
+		} \
 		SPRITE_XBASE_ ## DEPTH(localX); \
 		SPRITE_DRAW_PIXEL_ ## DEPTH ## _ ## TYPE(localX); \
 	}
