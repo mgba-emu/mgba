@@ -24,6 +24,17 @@ GamePakView::GamePakView(GameController* controller, QWidget* parent)
 	connect(m_ui.lightSpin, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
 	connect(m_ui.lightSlide, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
 
+	connect(m_ui.timeNoOverride, SIGNAL(clicked()), controller, SLOT(setRealTime()));
+	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
+		controller->setFixedTime(m_ui.time->dateTime());
+	});
+	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
+		controller->setFakeEpoch(m_ui.time->dateTime());
+	});
+	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [controller, this] (const QDateTime&) {
+		m_ui.timeButtons->checkedButton()->clicked();
+	});
+
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
 	}

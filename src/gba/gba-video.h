@@ -190,6 +190,8 @@ struct GBAVideo {
 	uint16_t palette[SIZE_PALETTE_RAM >> 1];
 	uint16_t* vram;
 	union GBAOAM oam;
+
+	int32_t frameCounter;
 };
 
 void GBAVideoInit(struct GBAVideo* video);

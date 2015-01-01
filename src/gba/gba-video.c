@@ -53,6 +53,8 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->nextVblankIRQ = 0;
 	video->nextVcounterIRQ = 0;
 
+	video->frameCounter = 0;
+
 	if (video->vram) {
 		mappedMemoryFree(video->vram, SIZE_VRAM);
 	}
@@ -115,6 +117,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
 				GBASyncPostFrame(video->p->sync);
+				++video->frameCounter;
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
 				if (video->p->rr) {

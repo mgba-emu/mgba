@@ -94,6 +94,10 @@ public slots:
 	void clearAVStream();
 	void setLuminanceValue(uint8_t value) { m_luxValue = value; }
 
+	void setRealTime();
+	void setFixedTime(const QDateTime& time);
+	void setFakeEpoch(const QDateTime& time);
+
 	void setLogLevel(int);
 	void enableLogLevel(int);
 	void disableLogLevel(int);
@@ -144,6 +148,16 @@ private:
 		uint8_t value;
 	} m_lux;
 	uint8_t m_luxValue;
+
+	struct GameControllerRTC : GBARTCSource {
+		GameController* p;
+		enum {
+			NO_OVERRIDE,
+			FIXED,
+			FAKE_EPOCH
+		} override;
+		int64_t value;
+	} m_rtc;
 };
 
 }

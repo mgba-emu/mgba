@@ -151,38 +151,65 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QRadioButton" name="radioButton">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QRadioButton" name="timeNoOverride">
          <property name="text">
           <string>System time</string>
          </property>
          <property name="checked">
           <bool>true</bool>
          </property>
+         <attribute name="buttonGroup">
+          <string notr="true">timeButtons</string>
+         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="radioButton_2">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QRadioButton" name="timeFixed">
          <property name="text">
-          <string>Manual time</string>
+          <string>Fixed time</string>
          </property>
+         <attribute name="buttonGroup">
+          <string notr="true">timeButtons</string>
+         </attribute>
         </widget>
        </item>
        <item>
-        <widget class="QDateTimeEdit" name="dateTimeEdit">
-         <property name="enabled">
-          <bool>false</bool>
+        <widget class="QRadioButton" name="timeFakeEpoch">
+         <property name="text">
+          <string>Start time at</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">timeButtons</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDateTimeEdit" name="time">
+         <property name="wrapping">
+          <bool>true</bool>
+         </property>
+         <property name="maximumDate">
+          <date>
+           <year>2099</year>
+           <month>12</month>
+           <day>31</day>
+          </date>
+         </property>
+         <property name="minimumDate">
+          <date>
+           <year>2000</year>
+           <month>1</month>
+           <day>1</day>
+          </date>
+         </property>
+         <property name="currentSection">
+          <enum>QDateTimeEdit::MonthSection</enum>
          </property>
          <property name="displayFormat">
-          <string>M/d/yyyy h:mm AP</string>
+          <string>MM/dd/yy hh:mm:ss AP</string>
          </property>
-         <property name="calendarPopup">
-          <bool>false</bool>
+         <property name="timeSpec">
+          <enum>Qt::UTC</enum>
          </property>
         </widget>
        </item>
@@ -231,4 +258,7 @@
  </widget>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="timeButtons"/>
+ </buttongroups>
 </ui>

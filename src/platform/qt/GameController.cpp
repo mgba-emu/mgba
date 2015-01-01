@@ -8,6 +8,7 @@
 #include "AudioProcessor.h"
 #include "InputController.h"
 
+#include <QDateTime>
 #include <QThread>
 
 extern "C" {
@@ -59,10 +60,27 @@ GameController::GameController(QObject* parent)
 		return lux->value;
 	};
 
+	m_rtc.p = this;
+	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
+	m_rtc.sample = [] (GBARTCSource* context) { };
+	m_rtc.unixTime = [] (GBARTCSource* context) -> time_t {
+		GameControllerRTC* rtc = static_cast<GameControllerRTC*>(context);
+		switch (rtc->override) {
+		case GameControllerRTC::NO_OVERRIDE:
+		default:
+			return time(nullptr);
+		case GameControllerRTC::FIXED:
+			return rtc->value;
+		case GameControllerRTC::FAKE_EPOCH:
+			return rtc->value + rtc->p->m_threadContext.gba->video.frameCounter * VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
+		}
+	};
+
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
 		context->gba->luminanceSource = &controller->m_lux;
+		context->gba->rtcSource = &controller->m_rtc;
 		controller->gameStarted(context);
 	};
 
@@ -370,6 +388,20 @@ void GameController::clearAVStream() {
 	threadInterrupt();
 	m_threadContext.stream = nullptr;
 	threadContinue();
+}
+
+void GameController::setRealTime() {
+	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
+}
+
+void GameController::setFixedTime(const QDateTime& time) {
+	m_rtc.override = GameControllerRTC::FIXED;
+	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
+}
+
+void GameController::setFakeEpoch(const QDateTime& time) {
+	m_rtc.override = GameControllerRTC::FAKE_EPOCH;
+	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
 }
 
 void GameController::updateKeys() {
