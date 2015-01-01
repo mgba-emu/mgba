@@ -933,11 +933,42 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define DRAW_BACKGROUND_MODE_0_MOSAIC_16(BLEND, OBJWIN) \
-	for (; tileX < tileEnd; ++tileX) { \
+	x = inX & 7; \
+	if (mosaicWait) { \
+		int baseX = x - (mosaicH - mosaicWait); \
+		if (baseX < 0) { \
+			int disturbX = (16 + baseX) >> 3; \
+			inX -= disturbX << 3; \
+			BACKGROUND_TEXT_SELECT_CHARACTER; \
+			baseX -= disturbX << 3; \
+			inX += disturbX << 3; \
+		} else { \
+			BACKGROUND_TEXT_SELECT_CHARACTER; \
+		} \
+		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
+		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
+		palette = &mainPalette[paletteData]; \
+		LOAD_32(tileData, charBase, vram); \
+		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+			tileData >>= 4 * baseX; \
+		} else { \
+			tileData >>= 4 * (7 - baseX); \
+		} \
+		tileData &= 0xF; \
+		tileData |= tileData << 4; \
+		tileData |= tileData << 8; \
+		tileData |= tileData << 12; \
+		tileData |= tileData << 16; \
+		tileData |= tileData << 20; \
+		tileData |= tileData << 24; \
+		tileData |= tileData << 28; \
+		carryData = tileData; \
+	} \
+	for (; length; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		tileData = carryData; \
-		for (x = 0; x < 8; ++x) { \
+		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
 				palette = &mainPalette[paletteData]; \
@@ -962,6 +993,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
 			++pixel; \
 		} \
+		x = 0; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILES_16(BLEND, OBJWIN) \
@@ -1194,7 +1226,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	if (background->mosaic && GBAMosaicControlGetBgH(renderer->mosaic)) { \
 		int mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1; \
 		int x; \
-		int mosaicWait = outX % mosaicH; \
+		int mosaicWait = (mosaicH - outX + VIDEO_HORIZONTAL_PIXELS * mosaicH) % mosaicH; \
 		int carryData = 0; \
 		paletteData = 0; /* Quiets compiler warning */ \
 		DRAW_BACKGROUND_MODE_0_MOSAIC_ ## BPP (BLEND, OBJWIN) \
