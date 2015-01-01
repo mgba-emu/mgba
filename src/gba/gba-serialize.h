@@ -77,7 +77,7 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x001F0 - 0x001F3: Next hblank IRQ
  * | 0x001F4 - 0x001F7: Next vblank IRQ
  * | 0x001F8 - 0x001FB: Next vcounter IRQ
- * | 0x001FC - 0x001FF: Reserved
+ * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
  * | 0x00200 - 0x00201: Reload value
  * | 0x00202 - 0x00203: Old reload value
@@ -126,25 +126,31 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x00284 - 0x00287: DMA next destination
  * | 0x00288 - 0x0028B: DMA next count
  * | 0x0028C - 0x0028F: DMA next event
- * 0x00290 - 0x002BF: GPIO state
+ * 0x00290 - 0x002C3: GPIO state
  * | 0x00290 - 0x00291: Pin state
  * | 0x00292 - 0x00293: Direction state
  * | 0x00294 - 0x002B6: RTC state (see gba-gpio.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
  *   | bit 1: Has rumble value (reserved)
- *   | bit 2: Has light sensor value (reserved)
+ *   | bit 2: Has light sensor value
  *   | bit 3: Has gyroscope value
- *   | bit 4: Has tilt values (reserved)
+ *   | bit 4: Has tilt values
  *   | bits 5 - 7: Reserved
  * | 0x002B8 - 0x002B9: Gyroscope sample
- * | 0x002BA - 0x002BB: Tilt x sample (reserved)
- * | 0x002BC - 0x002BD: Tilt y sample (reserved)
+ * | 0x002BA - 0x002BB: Tilt x sample
+ * | 0x002BC - 0x002BD: Tilt y sample
  * | 0x002BE - 0x002BF: Flags
  *   | bit 0: Is read enabled
  *   | bit 1: Gyroscope sample is edge
- *   | bits 2 - 15: Reserved
- * 0x002C0 - 0x002FF: Reserved (leave zero)
+ *   | bit 2: Light sample is edge
+ *   | bit 3: Reserved
+ *   | bits 4 - 15: Light counter
+ * | 0x002C0 - 0x002C0: Light sample
+ * | 0x002C1 - 0x002C3: Flags
+ *   | bits 0 - 1: Tilt state machine
+ *   | bits 2 - 31: Reserved
+ * 0x002C4 - 0x002FF: Reserved (leave zero)
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
  * 0x00304 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
@@ -230,7 +236,7 @@ struct GBASerializedState {
 		int32_t nextHblankIRQ;
 		int32_t nextVblankIRQ;
 		int32_t nextVcounterIRQ;
-		int32_t : 32;
+		int32_t frameCounter;
 	} video;
 
 	struct GBATimer timers[4];
@@ -247,15 +253,21 @@ struct GBASerializedState {
 		uint16_t pinDirection;
 		struct GBARTC rtc;
 		uint8_t devices;
+		// Do not change these to uint16_t, this breaks bincompat with some older compilers
 		unsigned gyroSample : 16;
 		unsigned tiltSampleX : 16;
 		unsigned tiltSampleY : 16;
 		unsigned readWrite : 1;
 		unsigned gyroEdge : 1;
-		unsigned reserved : 14;
+		unsigned lightEdge : 1;
+		unsigned : 1;
+		unsigned lightCounter : 12;
+		unsigned lightSample : 8;
+		unsigned tiltState : 2;
+		unsigned : 22;
 	} gpio;
 
-	uint32_t reservedGpio[16];
+	uint32_t reservedGpio[15];
 
 	uint32_t associatedStreamId;
 

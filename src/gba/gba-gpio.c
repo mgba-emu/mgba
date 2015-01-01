@@ -430,6 +430,12 @@ void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* 
 	state->gpio.rtc = gpio->rtc;
 	state->gpio.gyroSample = gpio->gyroSample;
 	state->gpio.gyroEdge = gpio->gyroEdge;
+	state->gpio.tiltSampleX = gpio->tiltX;
+	state->gpio.tiltSampleY = gpio->tiltY;
+	state->gpio.tiltState = gpio->tiltState;
+	state->gpio.lightCounter = gpio->lightCounter;
+	state->gpio.lightSample = gpio->lightSample;
+	state->gpio.lightEdge = gpio->lightEdge;
 }
 
 void GBAGPIODeserialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state) {
@@ -440,4 +446,10 @@ void GBAGPIODeserialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState
 	gpio->rtc = state->gpio.rtc;
 	gpio->gyroSample = state->gpio.gyroSample;
 	gpio->gyroEdge = state->gpio.gyroEdge;
+	gpio->tiltX = state->gpio.tiltSampleX;
+	gpio->tiltY = state->gpio.tiltSampleY;
+	gpio->tiltState = state->gpio.tiltState;
+	gpio->lightCounter = state->gpio.lightCounter;
+	gpio->lightSample = state->gpio.lightSample;
+	gpio->lightEdge = state->gpio.lightEdge;
 }

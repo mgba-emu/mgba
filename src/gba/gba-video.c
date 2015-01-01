@@ -245,6 +245,7 @@ void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state)
 	state->video.nextHblankIRQ = video->nextHblankIRQ;
 	state->video.nextVblankIRQ = video->nextVblankIRQ;
 	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
+	state->video.frameCounter = video->frameCounter;
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* state) {
@@ -264,5 +265,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* stat
 	video->nextHblankIRQ = state->video.nextHblankIRQ;
 	video->nextVblankIRQ = state->video.nextVblankIRQ;
 	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
+	video->frameCounter = state->video.frameCounter;
 	video->vcount = state->io[REG_VCOUNT >> 1];
 }
