@@ -53,6 +53,7 @@ void GamePakView::gameStarted(GBAThread* thread) {
 	m_ui.sensorRTC->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RTC);
 	m_ui.sensorGyro->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_GYRO);
 	m_ui.sensorLight->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_LIGHT_SENSOR);
+	m_ui.sensorTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
 }
 
 void GamePakView::gameStopped() {	
@@ -62,6 +63,7 @@ void GamePakView::gameStopped() {
 	m_ui.sensorRTC->setChecked(false);
 	m_ui.sensorGyro->setChecked(false);
 	m_ui.sensorLight->setChecked(false);
+	m_ui.sensorTilt->setChecked(false);
 }
 
 void GamePakView::setLuminanceValue(int value) {
