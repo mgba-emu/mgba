@@ -196,14 +196,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->currentVideoFrame = 0;
 	encoder->nextAudioPts = 0;
 
+	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 #ifndef USE_LIBAV
-	avformat_alloc_output_context2(&encoder->context, 0, 0, outfile);
+	avformat_alloc_output_context2(&encoder->context, oformat, 0, outfile);
 #else
 	encoder->context = avformat_alloc_context();
 	strncpy(encoder->context->filename, outfile, sizeof(encoder->context->filename));
+	encoder->context->oformat = oformat;
 #endif
-
-	encoder->context->oformat = av_guess_format(encoder->containerFormat, 0, 0);
 
 	if (acodec) {
 		encoder->audioStream = avformat_new_stream(encoder->context, acodec);
