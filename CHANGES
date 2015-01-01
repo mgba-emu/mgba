@@ -35,6 +35,7 @@ Bugfixes:
  - Debugger: Fix watchpoints triggering too late
  - GBA Video: Fix sprite mis-ordering behavior in some cases (fixes #168)
  - GBA Video: Fix window interactions with 16-color mode 0 mosaic
+ - GBA Video: Fix sprite boundary conditions with mosaic
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
