@@ -11,6 +11,8 @@
 #include <QDateTime>
 #include <QThread>
 
+#include <ctime>
+
 extern "C" {
 #include "gba.h"
 #include "gba-audio.h"
@@ -20,6 +22,7 @@ extern "C" {
 }
 
 using namespace QGBA;
+using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
