@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>247</width>
-    <height>345</height>
+    <width>259</width>
+    <height>373</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -149,8 +149,18 @@
       <attribute name="title">
        <string>RTC</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="2" column="0">
+        <widget class="QRadioButton" name="timeFakeEpoch">
+         <property name="text">
+          <string>Start time at</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">timeButtons</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="0" column="0">
         <widget class="QRadioButton" name="timeNoOverride">
          <property name="text">
           <string>System time</string>
@@ -163,7 +173,7 @@
          </attribute>
         </widget>
        </item>
-       <item>
+       <item row="1" column="0">
         <widget class="QRadioButton" name="timeFixed">
          <property name="text">
           <string>Fixed time</string>
@@ -173,17 +183,7 @@
          </attribute>
         </widget>
        </item>
-       <item>
-        <widget class="QRadioButton" name="timeFakeEpoch">
-         <property name="text">
-          <string>Start time at</string>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">timeButtons</string>
-         </attribute>
-        </widget>
-       </item>
-       <item>
+       <item row="3" column="0" colspan="2">
         <widget class="QDateTimeEdit" name="time">
          <property name="wrapping">
           <bool>true</bool>
@@ -210,6 +210,13 @@
          </property>
          <property name="timeSpec">
           <enum>Qt::UTC</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" rowspan="3" alignment="Qt::AlignBottom">
+        <widget class="QPushButton" name="timeNow">
+         <property name="text">
+          <string>Now</string>
          </property>
         </widget>
        </item>

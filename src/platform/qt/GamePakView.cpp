@@ -34,6 +34,9 @@ GamePakView::GamePakView(GameController* controller, QWidget* parent)
 	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [controller, this] (const QDateTime&) {
 		m_ui.timeButtons->checkedButton()->clicked();
 	});
+	connect(m_ui.timeNow, &QPushButton::clicked, [controller, this] () {
+		m_ui.time->setDateTime(QDateTime::currentDateTime());
+	});
 
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
