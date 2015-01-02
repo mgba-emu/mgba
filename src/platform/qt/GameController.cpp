@@ -82,6 +82,8 @@ GameController::GameController(QObject* parent)
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
+		// Override the GBA object's log level to prevent stdout spew
+		context->gba->logLevel = GBA_LOG_FATAL;
 		context->gba->luminanceSource = &controller->m_lux;
 		context->gba->rtcSource = &controller->m_rtc;
 		controller->gameStarted(context);
