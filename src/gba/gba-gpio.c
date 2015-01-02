@@ -341,7 +341,7 @@ void _lightReadPins(struct GBACartridgeGPIO* gpio) {
 	}
 	if (gpio->p1) {
 		struct GBALuminanceSource* lux = gpio->p->luminanceSource;
-		GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Got reset");
+		GBALog(gpio->p, GBA_LOG_DEBUG, "[SOLAR] Got reset");
 		gpio->lightCounter = 0;
 		if (lux) {
 			lux->sample(lux);
@@ -357,7 +357,7 @@ void _lightReadPins(struct GBACartridgeGPIO* gpio) {
 
 	bool sendBit = gpio->lightCounter >= gpio->lightSample;
 	_outputPins(gpio, sendBit << 3);
-	GBALog(0, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", gpio->lightCounter, gpio->pinState);
+	GBALog(gpio->p, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", gpio->lightCounter, gpio->pinState);
 }
 
 // == Tilt (not technically GPIO)
@@ -375,7 +375,7 @@ void GBAGPIOTiltWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint8_t v
 		if (value == 0x55) {
 			gpio->tiltState = 1;
 		} else {
-			GBALog(0, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+			GBALog(gpio->p, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
 		}
 		break;
 	case 0x8100:
@@ -394,11 +394,11 @@ void GBAGPIOTiltWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint8_t v
 			gpio->tiltX = (x >> 21) + 0x3A0; // Crop off an extra bit so that we can't go negative
 			gpio->tiltY = (y >> 21) + 0x3A0;
 		} else {
-			GBALog(0, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+			GBALog(gpio->p, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
 		}
 		break;
 	default:
-		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid tilt sensor write to %04x: %02x", address, value);
+		GBALog(gpio->p, GBA_LOG_GAME_ERROR, "Invalid tilt sensor write to %04x: %02x", address, value);
 		break;
 	}
 }
@@ -414,7 +414,7 @@ uint8_t GBAGPIOTiltRead(struct GBACartridgeGPIO* gpio, uint32_t address) {
 	case 0x8500:
 		return (gpio->tiltY >> 8) & 0xF;
 	default:
-		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid tilt sensor read from %04x", address);
+		GBALog(gpio->p, GBA_LOG_GAME_ERROR, "Invalid tilt sensor read from %04x", address);
 		break;
 	}
 	return 0xFF;
