@@ -83,6 +83,7 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void focusOutEvent(QFocusEvent*) override;
 
 private slots:
 	void gameStarted(GBAThread*);

@@ -280,6 +280,11 @@ void Window::closeEvent(QCloseEvent* event) {
 	QMainWindow::closeEvent(event);
 }
 
+void Window::focusOutEvent(QFocusEvent*) {
+	m_controller->setTurbo(false, false);
+	m_controller->clearKeys();
+}
+
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
 		showNormal();

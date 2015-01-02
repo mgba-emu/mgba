@@ -80,6 +80,7 @@ public slots:
 	void frameAdvance();
 	void keyPressed(int key);
 	void keyReleased(int key);
+	void clearKeys();
 	void setAudioBufferSamples(int samples);
 	void setFPSTarget(float fps);
 	void loadState(int slot);
