@@ -310,6 +310,11 @@ void GameController::keyReleased(int key) {
 	updateKeys();
 }
 
+void GameController::clearKeys() {
+	m_activeKeys = 0;
+	updateKeys();
+}
+
 void GameController::setAudioBufferSamples(int samples) {
 	threadInterrupt();
 	redoSamples(samples);
