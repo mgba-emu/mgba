@@ -75,7 +75,7 @@ GameController::GameController(QObject* parent)
 		case GameControllerRTC::FIXED:
 			return rtc->value;
 		case GameControllerRTC::FAKE_EPOCH:
-			return rtc->value + rtc->p->m_threadContext.gba->video.frameCounter * VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
+			return rtc->value + rtc->p->m_threadContext.gba->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
 		}
 	};
 
