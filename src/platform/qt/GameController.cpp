@@ -377,11 +377,7 @@ void GameController::setTurbo(bool set, bool forced) {
 		return;
 	}
 	m_turbo = set;
-	if (set) {
-		m_turboForced = forced;
-	} else {
-		m_turboForced = false;
-	}
+	m_turboForced = set && forced;
 	threadInterrupt();
 	m_threadContext.sync.audioWait = set ? false : m_audioSync;
 	m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
