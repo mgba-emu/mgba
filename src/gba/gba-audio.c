@@ -690,7 +690,7 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 static void _sample(struct GBAAudio* audio) {
 	int32_t sampleLeft = 0;
 	int32_t sampleRight = 0;
-	int psgShift = 6 - audio->volume;
+	int psgShift = 5 - audio->volume;
 
 	if (audio->ch1Left) {
 		sampleLeft += audio->ch1.sample;

@@ -22,6 +22,7 @@ Bugfixes:
  - GBA Video: Fix window interactions with 16-color mode 0 mosaic
  - GBA Video: Fix sprite boundary conditions with mosaic
  - Video: Fix FFmpeg crashing when the file extension is wrong
+ - GBA Audio: Fix GB audio channels being too quiet (fixes #159)
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
