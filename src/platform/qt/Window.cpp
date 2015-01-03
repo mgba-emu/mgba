@@ -459,11 +459,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
-#endif
-      fileMenu->addAction(tr("Settings"), this, SLOT(openSettingsWindow()));
-
-#ifndef Q_OS_MAC
-      fileMenu->addSeparator();
 	fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 #endif
 
@@ -525,17 +520,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
 	audioSync->connect([this](const QVariant& value) { m_controller->setAudioSync(value.toBool()); });
 	m_config->updateOption("audioSync");
-
-	emulationMenu->addSeparator();
-	QAction* keymap = new QAction(tr("Remap keyboard..."), emulationMenu);
-	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
-	emulationMenu->addAction(keymap);
-
-#ifdef BUILD_SDL
-	QAction* gamepad = new QAction(tr("Remap gamepad..."), emulationMenu);
-	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
-	emulationMenu->addAction(gamepad);
-#endif
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
@@ -635,6 +619,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	toolsMenu->addAction(gdbWindow);
+#endif
+
+	toolsMenu->addSeparator();
+	toolsMenu->addAction(tr("Settings"), this, SLOT(openSettingsWindow()));
+
+	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
+	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
+	toolsMenu->addAction(keymap);
+
+#ifdef BUILD_SDL
+	QAction* gamepad = new QAction(tr("Remap gamepad..."), toolsMenu);
+	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
+	toolsMenu->addAction(gamepad);
 #endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
