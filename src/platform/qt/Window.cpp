@@ -533,13 +533,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
+	m_shortcutController->addMenu(frameMenu, avMenu);
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		connect(setSize, &QAction::triggered, [this, i]() {
 			showNormal();
 			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
 		});
-		frameMenu->addAction(setSize);
+		addControlledAction(frameMenu, setSize, tr("frame%1x").arg(QString::number(i)));
 	}
 	addControlledAction(frameMenu, frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")), "fullscreen");
 
