@@ -20,6 +20,7 @@ class QTimer;
 namespace QGBA {
 
 class InputController;
+class GamepadMonitor;
 class KeyEditor;
 
 class GBAKeyEditor : public QWidget {
@@ -39,7 +40,8 @@ private slots:
 	void setNext();
 	void save();
 #ifdef BUILD_SDL
-	void testGamepad();
+	void setAxisValue(int axis, int32_t value);
+	void setButton(int button);
 #endif
 
 private:
@@ -75,11 +77,7 @@ private:
 	QList<KeyEditor*> m_keyOrder;
 	QList<KeyEditor*>::iterator m_currentKey;
 
-#ifdef BUILD_SDL
-	QSet<int> m_activeButtons;
-	QSet<QPair<int, int32_t>> m_activeAxes;
-	QTimer* m_gamepadTimer;
-#endif
+	GamepadMonitor* m_gamepadMonitor;
 
 	uint32_t m_type;
 	InputController* m_controller;

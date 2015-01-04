@@ -8,10 +8,10 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
-#include <QTimer>
 #include <QVBoxLayout>
 
 #include "InputController.h"
+#include "GamepadMonitor.h"
 #include "KeyEditor.h"
 
 using namespace QGBA;
@@ -25,7 +25,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	: QWidget(parent)
 	, m_type(type)
 	, m_controller(controller)
-	, m_gamepadTimer(nullptr)
+	, m_gamepadMonitor(nullptr)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
@@ -114,10 +114,9 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		m_gamepadTimer = new QTimer(this);
-		connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
-		m_gamepadTimer->setInterval(50);
-		m_gamepadTimer->start();
+		m_gamepadMonitor = new GamepadMonitor(m_controller, this);
+		connect(m_gamepadMonitor, SIGNAL(buttonPressed(int)), this, SLOT(setButton(int)));
+		connect(m_gamepadMonitor, SIGNAL(axisChanged(int, int32_t)), this, SLOT(setAxisValue(int, int32_t)));
 	}
 #endif
 }
@@ -234,30 +233,20 @@ bool GBAKeyEditor::findFocus() {
 }
 
 #ifdef BUILD_SDL
-void GBAKeyEditor::testGamepad() {
-	m_gamepadTimer->setInterval(50);
+void GBAKeyEditor::setAxisValue(int axis, int32_t value) {
 	if (!findFocus()) {
 		return;
 	}
 	KeyEditor* focused = *m_currentKey;
+	focused->setValueAxis(axis, value);
+}
 
-	auto activeAxes = m_controller->activeGamepadAxes();
-	auto oldAxes = m_activeAxes;
-	m_activeAxes = activeAxes;
-	activeAxes.subtract(oldAxes);
-	if (!activeAxes.empty()) {
-		focused->setValueAxis(activeAxes.begin()->first, activeAxes.begin()->second);
+void GBAKeyEditor::setButton(int button) {
+	if (!findFocus()) {
 		return;
 	}
-
-	auto activeButtons = m_controller->activeGamepadButtons();
-	auto oldButtons = m_activeButtons;
-	m_activeButtons = activeButtons;
-	activeButtons.subtract(oldButtons);
-	if (!activeButtons.empty()) {
-		focused->setValueButton(*activeButtons.begin());
-		return;
-	}
+	KeyEditor* focused = *m_currentKey;
+	focused->setValueButton(button);
 }
 #endif
 
