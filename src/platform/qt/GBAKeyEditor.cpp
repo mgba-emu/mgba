@@ -112,7 +112,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		connect(m_controller, SIGNAL(buttonPressed(int)), this, SLOT(setButton(int)));
 		connect(m_controller, SIGNAL(axisChanged(int, int32_t)), this, SLOT(setAxisValue(int, int32_t)));
 	}
 #endif
@@ -236,14 +235,6 @@ void GBAKeyEditor::setAxisValue(int axis, int32_t value) {
 	}
 	KeyEditor* focused = *m_currentKey;
 	focused->setValueAxis(axis, value);
-}
-
-void GBAKeyEditor::setButton(int button) {
-	if (!findFocus()) {
-		return;
-	}
-	KeyEditor* focused = *m_currentKey;
-	focused->setValueButton(button);
 }
 #endif
 

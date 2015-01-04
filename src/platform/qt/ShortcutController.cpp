@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ShortcutController.h"
 
+#include "GamepadButtonEvent.h"
+
 #include <QAction>
 #include <QMenu>
 
@@ -166,16 +168,20 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	emit dataChanged(createIndex(index.row(), 0, index.internalId()), createIndex(index.row(), 2, index.internalId()));
 }
 
-void ShortcutController::pressButton(int button) {
-	auto item = m_buttons.find(button);
-	if (item == m_buttons.end()) {
-		return;
+bool ShortcutController::eventFilter(QObject*, QEvent* event) {
+	if (event->type() == GamepadButtonEvent::Down()) {
+		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
+		if (item == m_buttons.end()) {
+			return false;
+		}
+		QAction* action = item.value()->action();
+		if (action->isEnabled()) {
+			action->trigger();
+		}
+		event->accept();
+		return true;
 	}
-	QAction* action = item.value()->action();
-	if (!action->isEnabled()) {
-		return;
-	}
-	action->trigger();
+	return false;
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& name)

@@ -40,7 +40,6 @@ private slots:
 	void save();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
-	void setButton(int button);
 #endif
 
 private:

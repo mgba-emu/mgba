@@ -44,6 +44,7 @@ set(SOURCE_FILES
 	GIFView.cpp
 	GameController.cpp
 	GamePakView.cpp
+	GamepadButtonEvent.cpp
 	InputController.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp

@@ -6,8 +6,11 @@
 #include "InputController.h"
 
 #include "ConfigController.h"
+#include "GamepadButtonEvent.h"
 
+#include <QApplication>
 #include <QTimer>
+#include <QWidget>
 
 extern "C" {
 #include "util/configuration.h"
@@ -89,6 +92,9 @@ int InputController::testSDLEvents() {
 	for (i = 0; i < numButtons; ++i) {
 		GBAKey key = GBAInputMapKey(&m_inputMap, SDL_BINDING_BUTTON, i);
 		if (key == GBA_KEY_NONE) {
+			continue;
+		}
+		if (hasPendingEvent(key)) {
 			continue;
 		}
 		if (SDL_JoystickGetButton(joystick, i)) {
@@ -191,10 +197,29 @@ void InputController::testGamepad() {
 	activeButtons.subtract(oldButtons);
 	oldButtons.subtract(m_activeButtons);
 	for (int button : activeButtons) {
-		emit buttonPressed(button);
+		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, this);
+		postPendingEvent(event->gbaKey());
+		QApplication::sendEvent(QApplication::focusWidget(), event);
+		if (!event->isAccepted()) {
+			clearPendingEvent(event->gbaKey());
+		}
 	}
 	for (int button : oldButtons) {
-		emit buttonReleased(button);
+		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, this);
+		clearPendingEvent(event->gbaKey());
+		QApplication::sendEvent(QApplication::focusWidget(), event);
 	}
 #endif
+}
+
+void InputController::postPendingEvent(GBAKey key) {
+	m_pendingEvents.insert(key);
+}
+
+void InputController::clearPendingEvent(GBAKey key) {
+	m_pendingEvents.remove(key);
+}
+
+bool InputController::hasPendingEvent(GBAKey key) const {
+	return m_pendingEvents.contains(key);
 }

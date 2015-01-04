@@ -25,12 +25,18 @@ public:
 	void setController(ShortcutController* controller);
 	void setInputController(InputController* controller);
 
+protected:
+	virtual bool event(QEvent* event) override;
+
 private slots:
-	void loadKey(const QModelIndex&);
+	void load(const QModelIndex&);
 	void updateKey();
 	void updateButton(int button);
 
 private:
+	void loadKey(const QAction*);
+	void loadButton();
+
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller;

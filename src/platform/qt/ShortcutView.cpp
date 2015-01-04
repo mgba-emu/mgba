@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ShortcutView.h"
 
+#include "GamepadButtonEvent.h"
 #include "ShortcutController.h"
 
 using namespace QGBA;
@@ -15,10 +16,11 @@ ShortcutView::ShortcutView(QWidget* parent)
 	, m_inputController(nullptr)
 {
 	m_ui.setupUi(this);
+	m_ui.keyEdit->setValueButton(-1);
 
 	connect(m_ui.keySequenceEdit, SIGNAL(editingFinished()), this, SLOT(updateKey()));
 	connect(m_ui.keyEdit, SIGNAL(valueChanged(int)), this, SLOT(updateButton(int)));
-	connect(m_ui.shortcutTable, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(loadKey(const QModelIndex&)));
+	connect(m_ui.shortcutTable, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(load(const QModelIndex&)));
 }
 
 void ShortcutView::setController(ShortcutController* controller) {
@@ -28,11 +30,19 @@ void ShortcutView::setController(ShortcutController* controller) {
 
 void ShortcutView::setInputController(InputController* controller) {
 	m_inputController = controller;
-	connect(controller, SIGNAL(buttonPressed(int)), m_ui.keyEdit, SLOT(setValueButton(int)));
 	connect(controller, SIGNAL(axisChanged(int, int32_t)), m_ui.keyEdit, SLOT(setValueAxis(int, int32_t)));
 }
 
-void ShortcutView::loadKey(const QModelIndex& index) {
+bool ShortcutView::event(QEvent* event) {
+	if (event->type() == GamepadButtonEvent::Down()) {
+		updateButton(static_cast<GamepadButtonEvent*>(event)->value());
+		event->accept();
+		return true;
+	}
+	return QWidget::event(event);
+}
+
+void ShortcutView::load(const QModelIndex& index) {
 	if (!m_controller) {
 		return;
 	}
@@ -40,8 +50,11 @@ void ShortcutView::loadKey(const QModelIndex& index) {
 	if (!action) {
 		return;
 	}
-	m_ui.keySequenceEdit->setFocus();
-	m_ui.keySequenceEdit->setKeySequence(action->shortcut());
+	if (m_ui.gamepadButton->isChecked()) {
+		loadButton();
+	} else {
+		loadKey(action);
+	}
 }
 
 void ShortcutView::updateKey() {
@@ -58,4 +71,13 @@ void ShortcutView::updateButton(int button) {
 	}
 	m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
 
+}
+void ShortcutView::loadKey(const QAction* action) {
+	m_ui.keySequenceEdit->setFocus();
+	m_ui.keySequenceEdit->setKeySequence(action->shortcut());
+}
+
+void ShortcutView::loadButton() {
+	m_ui.keyEdit->setFocus();
+	m_ui.keyEdit->setValueButton(-1); // TODO: Real value
 }

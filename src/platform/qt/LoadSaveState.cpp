@@ -6,6 +6,7 @@
 #include "LoadSaveState.h"
 
 #include "GameController.h"
+#include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
 
 #include <QKeyEvent>
@@ -103,6 +104,40 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 				return true;
 			}
 		}
+	}
+	if (event->type() == GamepadButtonEvent::Down()) {
+		int column = m_currentFocus % 3;
+		int row = m_currentFocus - column;
+		switch (static_cast<GamepadButtonEvent*>(event)->gbaKey()) {
+		case GBA_KEY_UP:
+			row += 6;
+			break;
+		case GBA_KEY_DOWN:
+			row += 3;
+			break;
+		case GBA_KEY_LEFT:
+			column += 2;
+			break;
+		case GBA_KEY_RIGHT:
+			column += 1;
+			break;
+		case GBA_KEY_B:
+			close();
+			break;
+		case GBA_KEY_A:
+		case GBA_KEY_START:
+			event->accept();
+			triggerState(m_currentFocus + 1);
+			return true;
+		default:
+			return false;
+		}
+		column %= 3;
+		row %= 9;
+		m_currentFocus = column + row;
+		m_slots[m_currentFocus]->setFocus();
+		event->accept();
+		return true;
 	}
 	return false;
 }

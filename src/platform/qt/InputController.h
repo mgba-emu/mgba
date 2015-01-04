@@ -59,13 +59,15 @@ public:
 
 signals:
 	void axisChanged(int axis, int32_t value);
-	void buttonPressed(int button);
-	void buttonReleased(int button);
 
 public slots:
 	void testGamepad();
 
 private:
+	void postPendingEvent(GBAKey);
+	void clearPendingEvent(GBAKey);
+	bool hasPendingEvent(GBAKey) const;
+
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
 
@@ -76,6 +78,8 @@ private:
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, int32_t>> m_activeAxes;
 	QTimer* m_gamepadTimer;
+
+	QSet<GBAKey> m_pendingEvents;
 };
 
 }

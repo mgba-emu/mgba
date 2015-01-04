@@ -35,6 +35,7 @@ signals:
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
+	virtual bool event(QEvent* event) override;
 
 private:
 	int m_key;

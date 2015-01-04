@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "KeyEditor.h"
 
+#include "GamepadButtonEvent.h"
+
 #include <QKeyEvent>
 
 using namespace QGBA;
@@ -55,4 +57,16 @@ void KeyEditor::keyPressEvent(QKeyEvent* event) {
 		setValue(event->key());
 	}
 	event->accept();
+}
+
+bool KeyEditor::event(QEvent* event) {
+	if (!m_button) {
+		return QWidget::event(event);
+	}
+	if (event->type() == GamepadButtonEvent::Down()) {
+		setValueButton(static_cast<GamepadButtonEvent*>(event)->value());
+		event->accept();
+		return true;
+	}
+	return QWidget::event(event);
 }

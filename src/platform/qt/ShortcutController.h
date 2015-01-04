@@ -36,8 +36,8 @@ public:
 	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
 	void updateButton(const QModelIndex& index, int button);
 
-private slots:
-	void pressButton(int button);
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
 
 private:
 	class ShortcutItem {

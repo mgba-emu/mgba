@@ -93,8 +93,6 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 
-	connect(&m_inputController, SIGNAL(buttonPressed(int)), m_shortcutController, SLOT(pressButton(int)));
-
 	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
@@ -431,6 +429,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	m_shortcutController->addMenu(fileMenu);
+	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open), "loadROM");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
