@@ -11,7 +11,6 @@
 #include <QVBoxLayout>
 
 #include "InputController.h"
-#include "GamepadMonitor.h"
 #include "KeyEditor.h"
 
 using namespace QGBA;
@@ -25,7 +24,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	: QWidget(parent)
 	, m_type(type)
 	, m_controller(controller)
-	, m_gamepadMonitor(nullptr)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
@@ -114,9 +112,8 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		m_gamepadMonitor = new GamepadMonitor(m_controller, this);
-		connect(m_gamepadMonitor, SIGNAL(buttonPressed(int)), this, SLOT(setButton(int)));
-		connect(m_gamepadMonitor, SIGNAL(axisChanged(int, int32_t)), this, SLOT(setAxisValue(int, int32_t)));
+		connect(m_controller, SIGNAL(buttonPressed(int)), this, SLOT(setButton(int)));
+		connect(m_controller, SIGNAL(axisChanged(int, int32_t)), this, SLOT(setAxisValue(int, int32_t)));
 	}
 #endif
 }

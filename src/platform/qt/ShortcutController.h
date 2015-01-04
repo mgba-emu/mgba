@@ -15,6 +15,8 @@ class QString;
 namespace QGBA {
 
 class ShortcutController : public QAbstractItemModel {
+Q_OBJECT
+
 public:
 	ShortcutController(QObject* parent = nullptr);
 
@@ -32,6 +34,10 @@ public:
 
 	const QAction* actionAt(const QModelIndex& index) const;
 	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
+	void updateButton(const QModelIndex& index, int button);
+
+private slots:
+	void pressButton(int button);
 
 private:
 	class ShortcutItem {
@@ -42,11 +48,14 @@ private:
 		const QAction* action() const { return m_action; }
 		const QString& visibleName() const { return m_visibleName; }
 		const QString& name() const { return m_name; }
+		int button() const { return m_button; }
+		void setButton(int button) { m_button = button; }
 
 	private:
 		QAction* m_action;
 		QString m_name;
 		QString m_visibleName;
+		int m_button;
 	};
 
 	class ShortcutMenu {
@@ -67,6 +76,7 @@ private:
 	};
 
 	QList<ShortcutMenu> m_menus;
+	QMap<int, ShortcutItem*> m_buttons;
 };
 
 }

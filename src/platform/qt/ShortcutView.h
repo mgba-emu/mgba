@@ -12,8 +12,10 @@
 
 namespace QGBA {
 
+class InputController;
 class ShortcutController;
 
+// TODO: suspend shortcuts (keyboard and gamepad) while window is open
 class ShortcutView : public QWidget {
 Q_OBJECT
 
@@ -21,15 +23,18 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 
 	void setController(ShortcutController* controller);
+	void setInputController(InputController* controller);
 
 private slots:
 	void loadKey(const QModelIndex&);
 	void updateKey();
+	void updateButton(int button);
 
 private:
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller;
+	InputController* m_inputController;
 };
 
 }

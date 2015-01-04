@@ -17,15 +17,17 @@ Q_OBJECT
 public:
 	KeyEditor(QWidget* parent = nullptr);
 
-	void setValue(int key);
 	int value() const { return m_key; }
 
-	void setValueKey(int key);
-	void setValueButton(int button);
-	void setValueAxis(int axis, int32_t value);
 	InputController::Direction direction() const { return m_direction; }
 
 	virtual QSize sizeHint() const override;
+
+public slots:
+	void setValue(int key);
+	void setValueKey(int key);
+	void setValueButton(int button);
+	void setValueAxis(int axis, int32_t value);
 
 signals:
 	void valueChanged(int key);

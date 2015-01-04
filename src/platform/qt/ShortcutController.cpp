@@ -28,6 +28,11 @@ QVariant ShortcutController::data(const QModelIndex& index, int role) const {
 			return item.visibleName();
 		case 1:
 			return item.action()->shortcut().toString(QKeySequence::NativeText);
+		case 2:
+			if (item.button() >= 0) {
+				return item.button();
+			}
+			return QVariant();
 		}
 	} else if (index.column() == 0) {
 		return m_menus[index.row()].visibleName();
@@ -44,7 +49,9 @@ QVariant ShortcutController::headerData(int section, Qt::Orientation orientation
 		case 0:
 			return tr("Action");
 		case 1:
-			return tr("Shortcut");
+			return tr("Keyboard");
+		case 2:
+			return tr("Gamepad");
 		}
 	}
 	return section;
@@ -68,7 +75,7 @@ QModelIndex ShortcutController::parent(const QModelIndex& index) const {
 }
 
 int ShortcutController::columnCount(const QModelIndex& index) const {
-	return 2;
+	return 3;
 }
 
 int ShortcutController::rowCount(const QModelIndex& index) const {
@@ -97,7 +104,7 @@ void ShortcutController::addAction(QMenu* menu, QAction* action, const QString& 
 	beginInsertRows(parent, smenu->shortcuts().count(), smenu->shortcuts().count());
 	smenu->addAction(action, name);
 	endInsertRows();
-	emit dataChanged(createIndex(smenu->shortcuts().count() - 1, 0, row), createIndex(smenu->shortcuts().count() - 1, 1, row));
+	emit dataChanged(createIndex(smenu->shortcuts().count() - 1, 0, row), createIndex(smenu->shortcuts().count() - 1, 2, row));
 }
 
 void ShortcutController::addMenu(QMenu* menu) {
@@ -137,12 +144,44 @@ void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence&
 	ShortcutMenu& menu = m_menus[parent.row()];
 	ShortcutItem& item = menu.shortcuts()[index.row()];
 	item.action()->setShortcut(keySequence);
-	emit dataChanged(createIndex(index.row(), 0, index.internalId()), createIndex(index.row(), 1, index.internalId()));
+	emit dataChanged(createIndex(index.row(), 0, index.internalId()), createIndex(index.row(), 2, index.internalId()));
+}
+
+void ShortcutController::updateButton(const QModelIndex& index, int button) {
+	if (!index.isValid()) {
+		return;
+	}
+	const QModelIndex& parent = index.parent();
+	if (!parent.isValid()) {
+		return;
+	}
+	ShortcutMenu& menu = m_menus[parent.row()];
+	ShortcutItem& item = menu.shortcuts()[index.row()];
+	int oldButton = item.button();
+	item.setButton(button);
+	if (oldButton >= 0) {
+		m_buttons.take(oldButton);
+	}
+	m_buttons[button] = &item;
+	emit dataChanged(createIndex(index.row(), 0, index.internalId()), createIndex(index.row(), 2, index.internalId()));
+}
+
+void ShortcutController::pressButton(int button) {
+	auto item = m_buttons.find(button);
+	if (item == m_buttons.end()) {
+		return;
+	}
+	QAction* action = item.value()->action();
+	if (!action->isEnabled()) {
+		return;
+	}
+	action->trigger();
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& name)
 	: m_action(action)
 	, m_name(name)
+	, m_button(-1)
 {
 	m_visibleName = action->text()
 		.remove(QRegExp("&(?!&)"))

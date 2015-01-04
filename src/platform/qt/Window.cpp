@@ -93,6 +93,8 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 
+	connect(&m_inputController, SIGNAL(buttonPressed(int)), m_shortcutController, SLOT(pressButton(int)));
+
 	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
@@ -213,6 +215,7 @@ void Window::openSettingsWindow() {
 void Window::openShortcutWindow() {
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
+	shortcutView->setInputController(&m_inputController);
 	connect(this, SIGNAL(shutdown()), shortcutView, SLOT(close()));
 	shortcutView->setAttribute(Qt::WA_DeleteOnClose);
 	shortcutView->show();

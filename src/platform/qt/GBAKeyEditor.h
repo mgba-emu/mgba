@@ -20,7 +20,6 @@ class QTimer;
 namespace QGBA {
 
 class InputController;
-class GamepadMonitor;
 class KeyEditor;
 
 class GBAKeyEditor : public QWidget {
@@ -76,8 +75,6 @@ private:
 	KeyEditor* m_keyR;
 	QList<KeyEditor*> m_keyOrder;
 	QList<KeyEditor*>::iterator m_currentKey;
-
-	GamepadMonitor* m_gamepadMonitor;
 
 	uint32_t m_type;
 	InputController* m_controller;

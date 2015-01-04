@@ -7,13 +7,19 @@
 
 #include "ConfigController.h"
 
+#include <QTimer>
+
 extern "C" {
 #include "util/configuration.h"
 }
 
 using namespace QGBA;
 
-InputController::InputController() {
+InputController::InputController(QObject* parent)
+	: QObject(parent)
+	, m_config(nullptr)
+	, m_gamepadTimer(nullptr)
+{
 	GBAInputMapInit(&m_inputMap);
 
 #ifdef BUILD_SDL
@@ -21,6 +27,11 @@ InputController::InputController() {
 	GBASDLInitEvents(&m_sdlEvents);
 	GBASDLInitBindings(&m_inputMap);
 	SDL_JoystickEventState(SDL_QUERY);
+
+	m_gamepadTimer = new QTimer(this);
+	connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
+	m_gamepadTimer->setInterval(50);
+	m_gamepadTimer->start();
 #endif
 
 	GBAInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
@@ -163,3 +174,27 @@ void InputController::bindAxis(uint32_t type, int axis, Direction direction, GBA
 	GBAInputBindAxis(&m_inputMap, SDL_BINDING_BUTTON, axis, &description);
 }
 #endif
+
+void InputController::testGamepad() {
+#ifdef BUILD_SDL
+	auto activeAxes = activeGamepadAxes();
+	auto oldAxes = m_activeAxes;
+	m_activeAxes = activeAxes;
+	activeAxes.subtract(oldAxes);
+	if (!activeAxes.empty()) {
+		emit axisChanged(activeAxes.begin()->first, activeAxes.begin()->second);
+	}
+
+	auto activeButtons = activeGamepadButtons();
+	auto oldButtons = m_activeButtons;
+	m_activeButtons = activeButtons;
+	activeButtons.subtract(oldButtons);
+	oldButtons.subtract(m_activeButtons);
+	for (int button : activeButtons) {
+		emit buttonPressed(button);
+	}
+	for (int button : oldButtons) {
+		emit buttonReleased(button);
+	}
+#endif
+}

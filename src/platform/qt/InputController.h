@@ -6,6 +6,11 @@
 #ifndef QGBA_INPUT_CONTROLLER_H
 #define QGBA_INPUT_CONTROLLER_H
 
+#include <QObject>
+#include <QSet>
+
+class QTimer;
+
 extern "C" {
 #include "gba-input.h"
 
@@ -14,17 +19,17 @@ extern "C" {
 #endif
 }
 
-#include <QSet>
-
 namespace QGBA {
 
 class ConfigController;
 
-class InputController {
+class InputController : public QObject {
+Q_OBJECT
+
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController();
+	InputController(QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
@@ -52,6 +57,14 @@ public:
 	void bindAxis(uint32_t type, int axis, Direction, GBAKey);
 #endif
 
+signals:
+	void axisChanged(int axis, int32_t value);
+	void buttonPressed(int button);
+	void buttonReleased(int button);
+
+public slots:
+	void testGamepad();
+
 private:
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
@@ -59,6 +72,10 @@ private:
 #ifdef BUILD_SDL
 	GBASDLEvents m_sdlEvents;
 #endif
+
+	QSet<int> m_activeButtons;
+	QSet<QPair<int, int32_t>> m_activeAxes;
+	QTimer* m_gamepadTimer;
 };
 
 }
