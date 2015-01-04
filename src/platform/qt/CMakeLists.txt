@@ -50,6 +50,8 @@ set(SOURCE_FILES
 	LogView.cpp
 	SavestateButton.cpp
 	SettingsView.cpp
+	ShortcutController.cpp
+	ShortcutView.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -60,6 +62,7 @@ qt5_wrap_ui(UI_FILES
 	LoadSaveState.ui
 	LogView.ui
 	SettingsView.ui
+	ShortcutView.ui
 	VideoView.ui)
 
 set(QT_LIBRARIES)

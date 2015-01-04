@@ -22,6 +22,8 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "SettingsView.h"
+#include "ShortcutController.h"
+#include "ShortcutView.h"
 #include "VideoView.h"
 
 extern "C" {
@@ -47,6 +49,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	, m_gdbController(nullptr)
 #endif
 	, m_mruMenu(nullptr)
+	, m_shortcutController(new ShortcutController(this))
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
@@ -205,6 +208,14 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
 	settingsWindow->show();
+}
+
+void Window::openShortcutWindow() {
+	ShortcutView* shortcutView = new ShortcutView();
+	shortcutView->setController(m_shortcutController);
+	connect(this, SIGNAL(shutdown()), shortcutView, SLOT(close()));
+	shortcutView->setAttribute(Qt::WA_DeleteOnClose);
+	shortcutView->show();
 }
 
 void Window::openGamePakWindow() {
@@ -416,9 +427,10 @@ void Window::openStateWindow(LoadSave ls) {
 void Window::setupMenu(QMenuBar* menubar) {
 	menubar->clear();
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
-	addAction(fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open));
-	fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS()));
-	fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch()));
+	m_shortcutController->addMenu(fileMenu);
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open), "loadROM");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 
@@ -428,15 +440,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	loadState->setShortcut(tr("F10"));
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
 	m_gameActions.append(loadState);
-	addAction(loadState);
-	fileMenu->addAction(loadState);
+	addControlledAction(fileMenu, loadState, "loadState");
 
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
 	saveState->setShortcut(tr("Shift+F10"));
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
-	addAction(saveState);
-	fileMenu->addAction(saveState);
+	addControlledAction(fileMenu, saveState, "saveState");
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
@@ -459,21 +469,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifndef Q_OS_MAC
 	fileMenu->addSeparator();
-	fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
+	addControlledAction(fileMenu, fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit), "quit");
 #endif
 
 	QMenu* emulationMenu = menubar->addMenu(tr("&Emulation"));
+	m_shortcutController->addMenu(emulationMenu);
 	QAction* reset = new QAction(tr("&Reset"), emulationMenu);
 	reset->setShortcut(tr("Ctrl+R"));
 	connect(reset, SIGNAL(triggered()), m_controller, SLOT(reset()));
 	m_gameActions.append(reset);
-	addAction(reset);
-	emulationMenu->addAction(reset);
+	addControlledAction(emulationMenu, reset, "reset");
 
 	QAction* shutdown = new QAction(tr("Sh&utdown"), emulationMenu);
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
-	emulationMenu->addAction(shutdown);
+	addControlledAction(emulationMenu, shutdown, "shutdown");
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
@@ -491,15 +501,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
-	addAction(pause);
-	emulationMenu->addAction(pause);
+	addControlledAction(emulationMenu, pause, "pause");
 
 	QAction* frameAdvance = new QAction(tr("&Next frame"), emulationMenu);
 	frameAdvance->setShortcut(tr("Ctrl+N"));
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
-	addAction(frameAdvance);
-	emulationMenu->addAction(frameAdvance);
+	addControlledAction(emulationMenu, frameAdvance, "frameAdvance");
 
 	emulationMenu->addSeparator();
 
@@ -508,8 +516,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	turbo->setChecked(false);
 	turbo->setShortcut(tr("Shift+Tab"));
 	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
-	addAction(turbo);
-	emulationMenu->addAction(turbo);
+	addControlledAction(emulationMenu, turbo, "fastForward");
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
@@ -522,6 +529,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("audioSync");
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
+	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
@@ -531,7 +539,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		});
 		frameMenu->addAction(setSize);
 	}
-	addAction(frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")));
+	addControlledAction(frameMenu, frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")), "fullscreen");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
@@ -586,52 +594,51 @@ void Window::setupMenu(QMenuBar* menubar) {
 	screenshot->setShortcut(tr("F12"));
 	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
 	m_gameActions.append(screenshot);
-	addAction(screenshot);
-	avMenu->addAction(screenshot);
+	addControlledAction(avMenu, screenshot, "screenshot");
 #endif
 
 #ifdef USE_FFMPEG
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
 	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
-	addAction(recordOutput);
-	avMenu->addAction(recordOutput);
+	addControlledAction(avMenu, recordOutput, "recordOutput");
 #endif
 
 #ifdef USE_MAGICK
 	QAction* recordGIF = new QAction(tr("Record GIF..."), avMenu);
 	recordGIF->setShortcut(tr("Shift+F11"));
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
-	addAction(recordGIF);
-	avMenu->addAction(recordGIF);
+	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
+	m_shortcutController->addMenu(toolsMenu);
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
-	toolsMenu->addAction(viewLogs);
+	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
 	QAction* gamePak = new QAction(tr("Game &Pak overrides..."), toolsMenu);
 	connect(gamePak, SIGNAL(triggered()), this, SLOT(openGamePakWindow()));
-	toolsMenu->addAction(gamePak);
+	addControlledAction(toolsMenu, gamePak, "gamePakOverrides");
 
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
-	toolsMenu->addAction(gdbWindow);
+	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
 
 	toolsMenu->addSeparator();
-	toolsMenu->addAction(tr("Settings"), this, SLOT(openSettingsWindow()));
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())), "shortcuts");
 
 	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
 	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
-	toolsMenu->addAction(keymap);
+	addControlledAction(toolsMenu, keymap, "remapKeyboard");
 
 #ifdef BUILD_SDL
 	QAction* gamepad = new QAction(tr("Remap gamepad..."), toolsMenu);
 	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
-	toolsMenu->addAction(gamepad);
+	addControlledAction(toolsMenu, gamepad, "remapGamepad");
 #endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
@@ -679,6 +686,13 @@ void Window::updateMRU() {
 	m_config->setMRU(m_mruFiles);
 	m_config->write();
 	m_mruMenu->setEnabled(i > 0);
+}
+
+QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString& name) {
+	m_shortcutController->addAction(menu, action, name);
+	menu->addAction(action);
+	addAction(action);
+	return action;
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

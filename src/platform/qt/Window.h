@@ -29,6 +29,7 @@ class ConfigController;
 class GameController;
 class GIFView;
 class LogView;
+class ShortcutController;
 class VideoView;
 class WindowBackground;
 
@@ -62,6 +63,7 @@ public slots:
 
 	void openKeymapWindow();
 	void openSettingsWindow();
+	void openShortcutWindow();
 
 	void openGamePakWindow();
 
@@ -110,6 +112,8 @@ private:
 	void appendMRU(const QString& fname);
 	void updateMRU();
 
+	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
@@ -123,6 +127,7 @@ private:
 	QTimer m_fpsTimer;
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
+	ShortcutController* m_shortcutController;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
