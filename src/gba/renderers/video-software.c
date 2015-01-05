@@ -807,7 +807,11 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define COMPOSITE_16_OBJWIN(BLEND) \
 	if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[paletteData | pixelData] : palette[pixelData]; \
-		_composite ## BLEND ## Objwin(renderer, pixel, color | flags, current); \
+		unsigned mergedFlags = flags; \
+		if (current & FLAG_OBJWIN) { \
+			mergedFlags ^= objwinFlags; \
+		} \
+		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
 	}
 
 #define COMPOSITE_16_NO_OBJWIN(BLEND) \
@@ -816,7 +820,11 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 #define COMPOSITE_256_OBJWIN(BLEND) \
 	if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[pixelData] : palette[pixelData]; \
-		_composite ## BLEND ## Objwin(renderer, pixel, color | flags, current); \
+		unsigned mergedFlags = flags; \
+		if (current & FLAG_OBJWIN) { \
+			mergedFlags ^= objwinFlags; \
+		} \
+		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
 	}
 
 #define COMPOSITE_256_NO_OBJWIN(BLEND) \
@@ -1310,6 +1318,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
 	flags |= FLAG_TARGET_2 * background->target2;
+	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed));
+	objwinFlags ^= flags;
 	if (renderer->blda == 0x10 && renderer->bldb == 0) {
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
 	}
@@ -1383,6 +1393,8 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed)); \
 	flags |= FLAG_TARGET_2 * background->target2; \
+	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed)); \
+	objwinFlags ^= flags; \
 	if (renderer->blda == 0x10 && renderer->bldb == 0) { \
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
 	} \
