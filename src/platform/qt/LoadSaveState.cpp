@@ -122,8 +122,9 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 			column += 1;
 			break;
 		case GBA_KEY_B:
+			event->accept();
 			close();
-			break;
+			return true;
 		case GBA_KEY_A:
 		case GBA_KEY_START:
 			event->accept();
