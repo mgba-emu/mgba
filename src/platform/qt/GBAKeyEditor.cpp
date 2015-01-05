@@ -179,6 +179,20 @@ void GBAKeyEditor::save() {
 	m_controller->saveConfiguration(m_type);
 }
 
+bool GBAKeyEditor::findFocus() {
+	if (m_currentKey != m_keyOrder.end() && (*m_currentKey)->hasFocus()) {
+		return true;
+	}
+
+	for (auto key = m_keyOrder.begin(); key != m_keyOrder.end(); ++key) {
+		if ((*key)->hasFocus()) {
+			m_currentKey = key;
+			return true;
+		}
+	}
+	return false;
+}
+
 #ifdef BUILD_SDL
 void GBAKeyEditor::testGamepad() {
 	QSet<int> activeKeys = m_controller->activeGamepadButtons();

@@ -31,6 +31,7 @@ protected:
 private slots:
 	void setNext();
 	void save();
+	bool findFocus();
 #ifdef BUILD_SDL
 	void testGamepad();
 #endif
