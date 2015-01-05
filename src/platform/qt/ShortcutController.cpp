@@ -171,6 +171,14 @@ const QAction* ShortcutController::actionAt(const QModelIndex& index) const {
 	return item->action();
 }
 
+bool ShortcutController::isMenuAt(const QModelIndex& index) const {
+	const ShortcutItem* item = itemAt(index);
+	if (!item) {
+		return false;
+	}
+	return item->menu();
+}
+
 void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence& keySequence) {
 	if (!index.isValid()) {
 		return;

@@ -86,9 +86,8 @@ public:
 	void addFunctions(QMenu* menu, std::function<void ()> press, std::function<void()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
 
-	ShortcutItem* itemAt(const QModelIndex& index);
-	const ShortcutItem* itemAt(const QModelIndex& index) const;
 	const QAction* actionAt(const QModelIndex& index) const;
+	bool isMenuAt(const QModelIndex& index) const;
 
 	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
 	void updateButton(const QModelIndex& index, int button);
@@ -99,6 +98,8 @@ protected:
 private:
 	static QKeySequence keyEventToSequence(const QKeyEvent*);
 
+	ShortcutItem* itemAt(const QModelIndex& index);
+	const ShortcutItem* itemAt(const QModelIndex& index) const;
 	void loadShortcuts(ShortcutItem*);
 
 	ShortcutItem m_rootMenu;

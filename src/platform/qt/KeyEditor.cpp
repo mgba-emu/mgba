@@ -20,7 +20,11 @@ KeyEditor::KeyEditor(QWidget* parent)
 
 void KeyEditor::setValue(int key) {
 	if (m_button) {
-		setText(QString::number(key));
+		if (key < 0) {
+			clear();
+		} else {
+			setText(QString::number(key));
+		}
 	} else {
 		setText(QKeySequence(key).toString(QKeySequence::NativeText));
 	}
