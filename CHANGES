@@ -24,6 +24,7 @@ Bugfixes:
  - Video: Fix FFmpeg crashing when the file extension is wrong
  - GBA Audio: Fix GB audio channels being too quiet (fixes #159)
  - Qt: Fix a race condition when a game crashes immediately
+ - Qt: Fix some cases where key mapping can break if focus is adjusted
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it

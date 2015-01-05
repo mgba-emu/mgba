@@ -151,12 +151,10 @@ void GBAKeyEditor::paintEvent(QPaintEvent* event) {
 }
 
 void GBAKeyEditor::setNext() {
+	findFocus();
+
 	if (m_currentKey == m_keyOrder.end()) {
 		return;
-	}
-
-	if (!(*m_currentKey)->hasFocus()) {
-		m_currentKey = m_keyOrder.end();
 	}
 
 	++m_currentKey;
