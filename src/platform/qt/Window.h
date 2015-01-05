@@ -11,6 +11,8 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include <functional>
+
 extern "C" {
 #include "gba.h"
 }

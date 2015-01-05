@@ -7,8 +7,12 @@
 #define QGBA_SHORTCUT_MODEL
 
 #include <QAbstractItemModel>
+#include <QKeySequence>
+
+#include <functional>
 
 class QAction;
+class QKeyEvent;
 class QMenu;
 class QString;
 
@@ -20,11 +24,16 @@ Q_OBJECT
 private:
 	class ShortcutItem {
 	public:
+		typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
+
 		ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent = nullptr);
+		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name, ShortcutItem* parent = nullptr);
 		ShortcutItem(QMenu* action, ShortcutItem* parent = nullptr);
 
 		QAction* action() { return m_action; }
 		const QAction* action() const { return m_action; }
+		const QKeySequence& shortcut() const { return m_shortcut; }
+		Functions functions() const { return m_functions; }
 		QMenu* menu() { return m_menu; }
 		const QMenu* menu() const { return m_menu; }
 		const QString& visibleName() const { return m_visibleName; }
@@ -34,15 +43,19 @@ private:
 		ShortcutItem* parent() { return m_parent; }
 		const ShortcutItem* parent() const { return m_parent; }
 		void addAction(QAction* action, const QString& name);
+		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 		void addSubmenu(QMenu* menu);
 		int button() const { return m_button; }
+		void setShortcut(const QKeySequence& sequence);
 		void setButton(int button) { m_button = button; }
 
 		bool operator==(const ShortcutItem& other) const { return m_menu == other.m_menu && m_action == other.m_action; }
 
 	private:
 		QAction* m_action;
+		QKeySequence m_shortcut;
 		QMenu* m_menu;
+		Functions m_functions;
 		QString m_name;
 		QString m_visibleName;
 		int m_button;
@@ -63,6 +76,7 @@ public:
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	void addAction(QMenu* menu, QAction* action, const QString& name);
+	void addFunctions(QMenu* menu, std::function<void ()> press, std::function<void()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
 
 	ShortcutItem* itemAt(const QModelIndex& index);
@@ -76,9 +90,11 @@ protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
 private:
+	static QKeySequence keyEventToSequence(const QKeyEvent*);
 	ShortcutItem m_rootMenu;
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
 	QMap<int, ShortcutItem*> m_buttons;
+	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
 };
 
 }

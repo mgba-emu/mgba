@@ -15,7 +15,6 @@ namespace QGBA {
 class InputController;
 class ShortcutController;
 
-// TODO: suspend shortcuts (keyboard and gamepad) while window is open
 class ShortcutView : public QWidget {
 Q_OBJECT
 

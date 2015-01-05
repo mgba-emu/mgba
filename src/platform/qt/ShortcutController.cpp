@@ -8,6 +8,7 @@
 #include "GamepadButtonEvent.h"
 
 #include <QAction>
+#include <QKeyEvent>
 #include <QMenu>
 
 using namespace QGBA;
@@ -28,10 +29,7 @@ QVariant ShortcutController::data(const QModelIndex& index, int role) const {
 	case 0:
 		return item->visibleName();
 	case 1:
-		if (item->action()) {
-			return item->action()->shortcut().toString(QKeySequence::NativeText);
-		}
-		break;
+		return item->shortcut().toString(QKeySequence::NativeText);
 	case 2:
 		if (item->button() >= 0) {
 			return item->button();
@@ -104,6 +102,22 @@ void ShortcutController::addAction(QMenu* menu, QAction* action, const QString& 
 	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
 }
 
+void ShortcutController::addFunctions(QMenu* menu, std::function<void ()> press, std::function<void ()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name) {
+	ShortcutItem* smenu = m_menuMap[menu];
+	if (!smenu) {
+		return;
+	}
+	ShortcutItem* pmenu = smenu->parent();
+	int row = pmenu->items().indexOf(*smenu);
+	QModelIndex parent = createIndex(row, 0, smenu);
+	beginInsertRows(parent, smenu->items().count(), smenu->items().count());
+	smenu->addFunctions(qMakePair(press, release), shortcut, visibleName, name);
+	endInsertRows();
+	ShortcutItem* item = &smenu->items().last();
+	m_heldKeys[shortcut] = item;
+	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
+}
+
 void ShortcutController::addMenu(QMenu* menu, QMenu* parentMenu) {
 	ShortcutItem* smenu = m_menuMap[parentMenu];
 	if (!smenu) {
@@ -154,7 +168,14 @@ void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence&
 		return;
 	}
 	ShortcutItem* item = itemAt(index);
-	item->action()->setShortcut(keySequence);
+	if (item->functions().first) {
+		QKeySequence oldShortcut = item->shortcut();
+		if (!oldShortcut.isEmpty()) {
+			m_heldKeys.take(oldShortcut);
+		}
+		m_heldKeys[keySequence] = item;
+	}
+	item->setShortcut(keySequence);
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
 }
 
@@ -177,14 +198,52 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 }
 
 bool ShortcutController::eventFilter(QObject*, QEvent* event) {
+	if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		if (keyEvent->isAutoRepeat()) {
+			return false;
+		}
+		auto item = m_heldKeys.find(keyEventToSequence(keyEvent));
+		if (item == m_heldKeys.end()) {
+			return false;
+		}
+		ShortcutItem::Functions pair = item.value()->functions();
+		if (event->type() == QEvent::KeyPress) {
+			if (pair.first) {
+				pair.first();
+			}
+		} else {
+			if (pair.second) {
+				pair.second();
+			}
+		}
+		event->accept();
+		return true;
+	}
 	if (event->type() == GamepadButtonEvent::Down()) {
 		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
 		if (item == m_buttons.end()) {
 			return false;
 		}
 		QAction* action = item.value()->action();
-		if (action->isEnabled()) {
+		if (action && action->isEnabled()) {
 			action->trigger();
+		}
+		ShortcutItem::Functions pair = item.value()->functions();
+		if (pair.first) {
+			pair.first();
+		}
+		event->accept();
+		return true;
+	}
+	if (event->type() == GamepadButtonEvent::Up()) {
+		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
+		if (item == m_buttons.end()) {
+			return false;
+		}
+		ShortcutItem::Functions pair = item.value()->functions();
+		if (pair.second) {
+			pair.second();
 		}
 		event->accept();
 		return true;
@@ -192,8 +251,29 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 	return false;
 }
 
+QKeySequence ShortcutController::keyEventToSequence(const QKeyEvent* event) {
+	QString modifier = QString::null;
+
+	if (event->modifiers() & Qt::ShiftModifier) {
+		modifier += "Shift+";
+	}
+	if (event->modifiers() & Qt::ControlModifier) {
+		modifier += "Ctrl+";
+	}
+	if (event->modifiers() & Qt::AltModifier) {
+		modifier += "Alt+";
+	}
+	if (event->modifiers() & Qt::MetaModifier) {
+		modifier += "Meta+";
+	}
+
+	QString key = QKeySequence(event->key()).toString();
+	return QKeySequence(modifier + key);
+}
+
 ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent)
 	: m_action(action)
+	, m_shortcut(action->shortcut())
 	, m_menu(nullptr)
 	, m_name(name)
 	, m_button(-1)
@@ -202,6 +282,18 @@ ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& n
 	m_visibleName = action->text()
 		.remove(QRegExp("&(?!&)"))
 		.remove("...");
+}
+
+ShortcutController::ShortcutItem::ShortcutItem(ShortcutController::ShortcutItem::Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name, ShortcutItem* parent)
+	: m_action(nullptr)
+	, m_shortcut(shortcut)
+	, m_functions(functions)
+	, m_menu(nullptr)
+	, m_name(name)
+	, m_visibleName(visibleName)
+	, m_button(-1)
+	, m_parent(parent)
+{
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(QMenu* menu, ShortcutItem* parent)
@@ -221,6 +313,17 @@ void ShortcutController::ShortcutItem::addAction(QAction* action, const QString&
 	m_items.append(ShortcutItem(action, name, this));
 }
 
+void ShortcutController::ShortcutItem::addFunctions(ShortcutController::ShortcutItem::Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name) {
+	m_items.append(ShortcutItem(functions, shortcut, visibleName, name, this));
+}
+
 void ShortcutController::ShortcutItem::addSubmenu(QMenu* menu) {
 	m_items.append(ShortcutItem(menu, this));
+}
+
+void ShortcutController::ShortcutItem::setShortcut(const QKeySequence& shortcut) {
+	m_shortcut = shortcut;
+	if (m_action) {
+		m_action->setShortcut(shortcut);
+	}
 }

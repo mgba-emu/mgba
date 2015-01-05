@@ -278,9 +278,6 @@ void Window::keyPressEvent(QKeyEvent* event) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
-	if (event->key() == Qt::Key_Tab) {
-		m_controller->setTurbo(true, false);
-	}
 	GBAKey key = m_inputController.mapKeyboard(event->key());
 	if (key == GBA_KEY_NONE) {
 		QWidget::keyPressEvent(event);
@@ -294,9 +291,6 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
 		QWidget::keyReleaseEvent(event);
 		return;
-	}
-	if (event->key() == Qt::Key_Tab) {
-		m_controller->setTurbo(false, false);
 	}
 	GBAKey key = m_inputController.mapKeyboard(event->key());
 	if (key == GBA_KEY_NONE) {
@@ -646,6 +640,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
+
+	QMenu* other = new QMenu(tr("Other"), this);
+	m_shortcutController->addMenu(other);
+	m_shortcutController->addFunctions(other, [this]() {
+		m_controller->setTurbo(true, false);
+	}, [this]() {
+		m_controller->setTurbo(false, false);
+	}, QKeySequence(Qt::Key_Tab), tr("Fast Forward (held)"), "holdFastForward");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
