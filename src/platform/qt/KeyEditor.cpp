@@ -35,6 +35,7 @@ void KeyEditor::setValueKey(int key) {
 
 void KeyEditor::setValueButton(int button) {
 	m_button = true;
+	m_direction = InputController::NEUTRAL;
 	setValue(button);
 }
 
