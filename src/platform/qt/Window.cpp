@@ -96,6 +96,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
+	m_shortcutController->setConfigController(m_config);
 	setupMenu(menuBar());
 }
 

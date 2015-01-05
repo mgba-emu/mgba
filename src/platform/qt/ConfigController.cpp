@@ -143,6 +143,17 @@ QString ConfigController::getOption(const char* key) const {
 	return QString(GBAConfigGetValue(&m_config, key));
 }
 
+QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {
+	if (!group.isNull()) {
+		m_settings->beginGroup(group);
+	}
+	QVariant value = m_settings->value(key);
+	if (!group.isNull()) {
+		m_settings->endGroup();
+	}
+	return value;
+}
+
 void ConfigController::setOption(const char* key, bool value) {
 	GBAConfigSetIntValue(&m_config, key, value);
 	QString optionName(key);
@@ -182,6 +193,16 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 	}
 	QString stringValue(value.toString());
 	setOption(key, stringValue.toLocal8Bit().constData());
+}
+
+void ConfigController::setQtOption(const QString& key, const QVariant& value, const QString& group) {
+	if (!group.isNull()) {
+		m_settings->beginGroup(group);
+	}
+	m_settings->setValue(key, value);
+	if (!group.isNull()) {
+		m_settings->endGroup();
+	}
 }
 
 QList<QString> ConfigController::getMRU() const {

@@ -70,6 +70,8 @@ public:
 
 	QString getOption(const char* key) const;
 
+	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
+
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
@@ -79,6 +81,7 @@ public slots:
 	void setOption(const char* key, unsigned value);
 	void setOption(const char* key, const char* value);
 	void setOption(const char* key, const QVariant& value);
+	void setQtOption(const QString& key, const QVariant& value, const QString& group = QString());
 
 	void write();
 

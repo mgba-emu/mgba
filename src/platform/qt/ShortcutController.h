@@ -18,10 +18,15 @@ class QString;
 
 namespace QGBA {
 
+class ConfigController;
+
 class ShortcutController : public QAbstractItemModel {
 Q_OBJECT
 
 private:
+	constexpr static const char* const KEY_SECTION = "shortcutKey";
+	constexpr static const char* const BUTTON_SECTION = "shortcutButton";
+
 	class ShortcutItem {
 	public:
 		typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
@@ -66,6 +71,8 @@ private:
 public:
 	ShortcutController(QObject* parent = nullptr);
 
+	void setConfigController(ConfigController* controller);
+
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
@@ -91,10 +98,14 @@ protected:
 
 private:
 	static QKeySequence keyEventToSequence(const QKeyEvent*);
+
+	void loadShortcuts(ShortcutItem*);
+
 	ShortcutItem m_rootMenu;
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
 	QMap<int, ShortcutItem*> m_buttons;
 	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
+	ConfigController* m_config;
 };
 
 }

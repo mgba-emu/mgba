@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ShortcutController.h"
 
+#include "ConfigController.h"
 #include "GamepadButtonEvent.h"
 
 #include <QAction>
@@ -16,7 +17,12 @@ using namespace QGBA;
 ShortcutController::ShortcutController(QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_rootMenu(nullptr)
+	, m_config(nullptr)
 {
+}
+
+void ShortcutController::setConfigController(ConfigController* controller) {
+	m_config = controller;
 }
 
 QVariant ShortcutController::data(const QModelIndex& index, int role) const {
@@ -99,6 +105,9 @@ void ShortcutController::addAction(QMenu* menu, QAction* action, const QString& 
 	smenu->addAction(action, name);
 	endInsertRows();
 	ShortcutItem* item = &smenu->items().last();
+	if (m_config) {
+		loadShortcuts(item);
+	}
 	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
 }
 
@@ -114,6 +123,9 @@ void ShortcutController::addFunctions(QMenu* menu, std::function<void ()> press,
 	smenu->addFunctions(qMakePair(press, release), shortcut, visibleName, name);
 	endInsertRows();
 	ShortcutItem* item = &smenu->items().last();
+	if (m_config) {
+		loadShortcuts(item);
+	}
 	m_heldKeys[shortcut] = item;
 	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
 }
@@ -176,6 +188,9 @@ void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence&
 		m_heldKeys[keySequence] = item;
 	}
 	item->setShortcut(keySequence);
+	if (m_config) {
+		m_config->setQtOption(item->name(), keySequence.toString(), KEY_SECTION);
+	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
 }
 
@@ -194,6 +209,9 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 		m_buttons.take(oldButton);
 	}
 	m_buttons[button] = item;
+	if (m_config) {
+		m_config->setQtOption(item->name(), button, BUTTON_SECTION);
+	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
 }
 
@@ -249,6 +267,30 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		return true;
 	}
 	return false;
+}
+
+void ShortcutController::loadShortcuts(ShortcutItem* item) {
+	QVariant shortcut = m_config->getQtOption(item->name(), KEY_SECTION);
+	if (!shortcut.isNull()) {
+		QKeySequence keySequence(shortcut.toString());
+		if (item->functions().first) {
+			QKeySequence oldShortcut = item->shortcut();
+			if (!oldShortcut.isEmpty()) {
+				m_heldKeys.take(oldShortcut);
+			}
+			m_heldKeys[keySequence] = item;
+		}
+		item->setShortcut(keySequence);
+	}
+	QVariant button = m_config->getQtOption(item->name(), BUTTON_SECTION);
+	if (!button.isNull()) {
+		int oldButton = item->button();
+		item->setButton(button.toInt());
+		if (oldButton >= 0) {
+			m_buttons.take(oldButton);
+		}
+		m_buttons[button.toInt()] = item;
+	}
 }
 
 QKeySequence ShortcutController::keyEventToSequence(const QKeyEvent* event) {
