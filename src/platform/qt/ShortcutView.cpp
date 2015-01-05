@@ -47,16 +47,21 @@ void ShortcutView::load(const QModelIndex& index) {
 	if (!m_controller) {
 		return;
 	}
-	const QAction* action = m_controller->actionAt(index);
-	if (!action || m_controller->isMenuAt(index)) {
+	if (m_controller->isMenuAt(index)) {
 		return;
+	}
+	QKeySequence sequence = m_controller->shortcutAt(index);
+	if (index.column() == 1) {
+		m_ui.keyboardButton->click();
+	} else if (index.column() == 2) {
+		m_ui.gamepadButton->click();
 	}
 	if (m_ui.gamepadButton->isChecked()) {
 		m_ui.keyEdit->setFocus();
 		m_ui.keyEdit->setValueButton(-1); // There are no default bindings
 	} else {
 		m_ui.keySequenceEdit->setFocus();
-		m_ui.keySequenceEdit->setKeySequence(action->shortcut());
+		m_ui.keySequenceEdit->setKeySequence(sequence);
 	}
 }
 
@@ -65,8 +70,7 @@ void ShortcutView::clear() {
 		return;
 	}
 	QModelIndex index = m_ui.shortcutTable->selectionModel()->currentIndex();
-	const QAction* action = m_controller->actionAt(index);
-	if (!action || m_controller->isMenuAt(index)) {
+	if (m_controller->isMenuAt(index)) {
 		return;
 	}
 	if (m_ui.gamepadButton->isChecked()) {

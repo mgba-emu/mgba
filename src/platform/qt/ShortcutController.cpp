@@ -163,12 +163,12 @@ const ShortcutController::ShortcutItem* ShortcutController::itemAt(const QModelI
 	return static_cast<const ShortcutItem*>(index.internalPointer());
 }
 
-const QAction* ShortcutController::actionAt(const QModelIndex& index) const {
+QKeySequence ShortcutController::shortcutAt(const QModelIndex& index) const {
 	const ShortcutItem* item = itemAt(index);
 	if (!item) {
-		return nullptr;
+		return QKeySequence();
 	}
-	return item->action();
+	return item->shortcut();
 }
 
 bool ShortcutController::isMenuAt(const QModelIndex& index) const {
