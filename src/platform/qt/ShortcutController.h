@@ -92,6 +92,9 @@ public:
 	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
 	void updateButton(const QModelIndex& index, int button);
 
+	void clearKey(const QModelIndex& index);
+	void clearButton(const QModelIndex& index);
+
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 

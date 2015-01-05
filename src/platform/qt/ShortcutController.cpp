@@ -193,7 +193,9 @@ void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence&
 		if (!oldShortcut.isEmpty()) {
 			m_heldKeys.take(oldShortcut);
 		}
-		m_heldKeys[keySequence] = item;
+		if (!keySequence.isEmpty()) {
+			m_heldKeys[keySequence] = item;
+		}
 	}
 	item->setShortcut(keySequence);
 	if (m_config) {
@@ -216,11 +218,21 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	if (oldButton >= 0) {
 		m_buttons.take(oldButton);
 	}
-	m_buttons[button] = item;
+	if (button >= 0) {
+		m_buttons[button] = item;
+	}
 	if (m_config) {
 		m_config->setQtOption(item->name(), button, BUTTON_SECTION);
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
+}
+
+void ShortcutController::clearKey(const QModelIndex& index) {
+	updateKey(index, QKeySequence());
+}
+
+void ShortcutController::clearButton(const QModelIndex& index) {
+	updateButton(index, -1);
 }
 
 bool ShortcutController::eventFilter(QObject*, QEvent* event) {

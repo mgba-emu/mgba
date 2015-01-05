@@ -29,6 +29,7 @@ protected:
 
 private slots:
 	void load(const QModelIndex&);
+	void clear();
 	void updateKey();
 	void updateButton(int button);
 
