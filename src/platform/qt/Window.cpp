@@ -332,13 +332,20 @@ void Window::toggleFullScreen() {
 }
 
 void Window::gameStarted(GBAThread* context) {
-	emit startDrawing(m_controller->drawContext(), context);
+	char title[13] = { '\0' };
+	MutexLock(&context->stateMutex);
+	if (context->state < THREAD_EXITING) {
+		emit startDrawing(m_controller->drawContext(), context);
+		GBAGetGameTitle(context->gba, title);
+	} else {
+		MutexUnlock(&context->stateMutex);
+		return;
+	}
+	MutexUnlock(&context->stateMutex);
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
 	appendMRU(context->fname);
-	char title[13] = { '\0' };
-	GBAGetGameTitle(context->gba, title);
 	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 	attachWidget(m_display);
 	m_screenWidget->setScaledContents(true);
