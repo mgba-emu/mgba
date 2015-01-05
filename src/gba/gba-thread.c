@@ -146,7 +146,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	if (threadContext->rom) {
 		GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
-		if (threadContext->bios) {
+		if (threadContext->bios && GBAIsBIOS(threadContext->bios)) {
 			GBALoadBIOS(&gba, threadContext->bios);
 		}
 

@@ -680,6 +680,23 @@ bool GBAIsROM(struct VFile* vf) {
 	return memcmp(signature, GBA_ROM_MAGIC, sizeof(signature)) == 0;
 }
 
+bool GBAIsBIOS(struct VFile* vf) {
+	if (vf->seek(vf, 0, SEEK_SET) < 0) {
+		return false;
+	}
+	uint32_t interruptTable[7];
+	if (vf->read(vf, &interruptTable, sizeof(interruptTable)) != sizeof(interruptTable)) {
+		return false;
+	}
+	int i;
+	for (i = 0; i < 7; ++i) {
+		if ((interruptTable[i] & 0xFFFF0000) != 0xEA000000) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void GBAGetGameCode(struct GBA* gba, char* out) {
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }

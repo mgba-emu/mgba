@@ -170,6 +170,7 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
 bool GBAIsROM(struct VFile* vf);
+bool GBAIsBIOS(struct VFile* vf);
 void GBAGetGameCode(struct GBA* gba, char* out);
 void GBAGetGameTitle(struct GBA* gba, char* out);
 
