@@ -26,17 +26,15 @@ public:
 
 protected:
 	virtual bool event(QEvent* event) override;
+	virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
 	void load(const QModelIndex&);
 	void clear();
-	void updateKey();
+	void updateKey(const QKeySequence&);
 	void updateButton(int button);
 
 private:
-	void loadKey(const QAction*);
-	void loadButton();
-
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller;

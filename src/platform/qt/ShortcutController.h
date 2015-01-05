@@ -95,12 +95,12 @@ public:
 	void clearKey(const QModelIndex& index);
 	void clearButton(const QModelIndex& index);
 
+	static QKeySequence keyEventToSequence(const QKeyEvent*);
+
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
 private:
-	static QKeySequence keyEventToSequence(const QKeyEvent*);
-
 	ShortcutItem* itemAt(const QModelIndex& index);
 	const ShortcutItem* itemAt(const QModelIndex& index) const;
 	void loadShortcuts(ShortcutItem*);

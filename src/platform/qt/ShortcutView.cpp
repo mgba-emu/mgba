@@ -8,6 +8,8 @@
 #include "GamepadButtonEvent.h"
 #include "ShortcutController.h"
 
+#include <QKeyEvent>
+
 using namespace QGBA;
 
 ShortcutView::ShortcutView(QWidget* parent)
@@ -17,8 +19,9 @@ ShortcutView::ShortcutView(QWidget* parent)
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueButton(-1);
+	m_ui.keySequenceEdit->installEventFilter(this);
 
-	connect(m_ui.keySequenceEdit, SIGNAL(editingFinished()), this, SLOT(updateKey()));
+	connect(m_ui.keySequenceEdit, SIGNAL(keySequenceChanged(const QKeySequence&)), this, SLOT(updateKey(const QKeySequence&)));
 	connect(m_ui.keyEdit, SIGNAL(valueChanged(int)), this, SLOT(updateButton(int)));
 	connect(m_ui.shortcutTable, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(load(const QModelIndex&)));
 	connect(m_ui.clearButton, SIGNAL(clicked()), this, SLOT(clear()));
@@ -41,6 +44,21 @@ bool ShortcutView::event(QEvent* event) {
 		return true;
 	}
 	return QWidget::event(event);
+}
+
+bool ShortcutView::eventFilter(QObject*, QEvent* event) {
+	if (event->type() == QEvent::KeyPress) {
+		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		if (keyEvent->key() != Qt::Key_Tab && keyEvent->key() != Qt::Key_Backtab) {
+			return false;
+		}
+		if (!(keyEvent->modifiers() & ~Qt::ShiftModifier)) {
+			m_ui.keySequenceEdit->setKeySequence(ShortcutController::keyEventToSequence(keyEvent));
+			keyEvent->accept();
+			return true;
+		}
+	}
+	return false;
 }
 
 void ShortcutView::load(const QModelIndex& index) {
@@ -82,19 +100,17 @@ void ShortcutView::clear() {
 	}
 }
 
-void ShortcutView::updateKey() {
+void ShortcutView::updateKey(const QKeySequence& shortcut) {
 	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
 		return;
 	}
-	m_ui.keySequenceEdit->clearFocus();
-	m_controller->updateKey(m_ui.shortcutTable->selectionModel()->currentIndex(), m_ui.keySequenceEdit->keySequence());
+	m_controller->updateKey(m_ui.shortcutTable->selectionModel()->currentIndex(), shortcut);
 }
 
 void ShortcutView::updateButton(int button) {
 	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
 		return;
 	}
-	m_ui.keyEdit->clearFocus();
 	m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
 
 }
