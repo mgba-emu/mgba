@@ -8,7 +8,7 @@
 
 #include <QMap>
 #include <QObject>
-#include <QScopedPointer>
+#include <QSettings>
 #include <QVariant>
 
 #include <functional>
@@ -92,6 +92,7 @@ private:
 	GBAOptions m_opts;
 
 	QMap<QString, ConfigOption*> m_optionSet;
+	QSettings* m_settings;
 };
 
 }

@@ -8,6 +8,7 @@
 #include "GameController.h"
 
 #include <QAction>
+#include <QDir>
 #include <QMenu>
 
 extern "C" {
@@ -81,6 +82,13 @@ ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
 	, m_opts()
 {
+	char path[PATH_MAX];
+	GBAConfigDirectory(path, sizeof(path));
+	QString fileName(path);
+	fileName.append(QDir::separator());
+	fileName.append("qt.ini");
+	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
+
 	GBAConfigInit(&m_config, PORT);
 
 	m_opts.audioSync = GameController::AUDIO_SYNC;
@@ -178,33 +186,32 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 
 QList<QString> ConfigController::getMRU() const {
 	QList<QString> mru;
+	m_settings->beginGroup("mru");
 	for (int i = 0; i < MRU_LIST_SIZE; ++i) {
-		char mruName[7];
-		snprintf(mruName, sizeof(mruName) - 1, "mru.%i", i);
-		mruName[sizeof(mruName) - 1] = '\0';
-		QString item = getOption(mruName);
+		QString item = m_settings->value(QString::number(i)).toString();
 		if (item.isNull()) {
 			continue;
 		}
 		mru.append(item);
 	}
+	m_settings->endGroup();
 	return mru;
 }
 
 void ConfigController::setMRU(const QList<QString>& mru) {
 	int i = 0;
+	m_settings->beginGroup("mru");
 	for (const QString& item : mru) {
-		char mruName[7];
-		snprintf(mruName, sizeof(mruName) - 1, "mru.%i", i);
-		mruName[sizeof(mruName) - 1] = '\0';
-		setOption(mruName, item);
+		m_settings->setValue(QString::number(i), item);
 		++i;
 		if (i >= MRU_LIST_SIZE) {
 			break;
 		}
 	}
+	m_settings->endGroup();
 }
 
 void ConfigController::write() {
 	GBAConfigSave(&m_config);
+	m_settings->sync();
 }
