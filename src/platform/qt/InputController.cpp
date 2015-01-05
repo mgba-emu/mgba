@@ -194,6 +194,9 @@ void InputController::testGamepad() {
 	auto activeButtons = activeGamepadButtons();
 	auto oldButtons = m_activeButtons;
 	m_activeButtons = activeButtons;
+	if (!QApplication::focusWidget()) {
+		return;
+	}
 	activeButtons.subtract(oldButtons);
 	oldButtons.subtract(m_activeButtons);
 	for (int button : activeButtons) {
