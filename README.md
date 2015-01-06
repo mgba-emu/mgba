@@ -23,6 +23,7 @@ Features
 - Loading from ZIP files.
 - IPS and UPS patch support.
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
+- Configurable emulation rewinding.
 
 ### Planned features
 

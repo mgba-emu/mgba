@@ -244,9 +244,6 @@
      </item>
      <item row="13" column="1">
       <widget class="QCheckBox" name="rewind">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
        <property name="text">
         <string>Enable rewind</string>
        </property>

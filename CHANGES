@@ -13,6 +13,7 @@ Features:
  - Game Pak overrides dialog for setting savetype and sensor values
  - Support for games using the tilt sensor
  - Remappable shortcuts for keyboard and gamepad
+ - Rewinding of emulation
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running

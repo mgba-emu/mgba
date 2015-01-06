@@ -144,6 +144,7 @@ void Window::loadConfig() {
 	m_controller->setAudioSync(opts->audioSync);
 	m_controller->setVideoSync(opts->videoSync);
 	m_controller->setSkipBIOS(opts->skipBios);
+	m_controller->setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 
@@ -522,6 +523,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
 	addControlledAction(emulationMenu, turbo, "fastForward");
 
+	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
+	rewind->setShortcut(tr("`"));
+	connect(rewind, SIGNAL(triggered()), m_controller, SLOT(rewind()));
+	m_gameActions.append(rewind);
+	addControlledAction(emulationMenu, rewind, "rewind");
+
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
 	videoSync->connect([this](const QVariant& value) { m_controller->setVideoSync(value.toBool()); });
@@ -648,6 +655,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
+
+	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
+	rewindEnable->connect([this](const QVariant& value) { m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+
+	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
+	rewindBufferCapacity->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt()); });
 
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);

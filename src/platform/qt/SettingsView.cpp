@@ -25,6 +25,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
@@ -49,6 +50,7 @@ void SettingsView::updateConfig() {
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);

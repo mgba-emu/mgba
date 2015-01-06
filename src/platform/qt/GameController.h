@@ -80,6 +80,8 @@ public slots:
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
+	void setRewind(bool enable, int capacity, int interval);
+	void rewind(int states = 0);
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void clearKeys();

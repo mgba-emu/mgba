@@ -298,6 +298,32 @@ void GameController::frameAdvance() {
 	m_pauseMutex.unlock();
 }
 
+void GameController::setRewind(bool enable, int capacity, int interval) {
+	if (m_gameOpen) {
+		threadInterrupt();
+		GBARewindSettingsChanged(&m_threadContext, enable ? capacity : 0, enable ? interval : 0);
+		threadContinue();
+	} else {
+		if (enable) {
+			m_threadContext.rewindBufferInterval = interval;
+			m_threadContext.rewindBufferCapacity = capacity;
+		} else {
+			m_threadContext.rewindBufferInterval = 0;
+			m_threadContext.rewindBufferCapacity = 0;
+		}
+	}
+}
+
+void GameController::rewind(int states) {
+	threadInterrupt();
+	if (!states) {
+		GBARewindAll(&m_threadContext);
+	} else {
+		GBARewind(&m_threadContext, states);
+	}
+	threadContinue();
+}
+
 void GameController::keyPressed(int key) {
 	int mappedKey = 1 << key;
 	m_activeKeys |= mappedKey;
