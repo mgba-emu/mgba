@@ -21,6 +21,7 @@ struct GBAOptions {
 	bool skipBios;
 	int logLevel;
 	int frameskip;
+	bool rewindEnable;
 	int rewindBufferCapacity;
 	int rewindBufferInterval;
 	float fpsTarget;

@@ -249,6 +249,28 @@ void GBARecordFrame(struct GBAThread* thread) {
 	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
 }
 
+void GBARewindSettingsChanged(struct GBAThread* threadContext, int newCapacity, int newInterval) {
+	if (newCapacity == threadContext->rewindBufferCapacity && newInterval == threadContext->rewindBufferInterval) {
+		return;
+	}
+	threadContext->rewindBufferInterval = newInterval;
+	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
+	threadContext->rewindBufferSize = 0;
+	if (threadContext->rewindBuffer) {
+		int i;
+		for (i = 0; i < threadContext->rewindBufferCapacity; ++i) {
+			GBADeallocateState(threadContext->rewindBuffer[i]);
+		}
+		free(threadContext->rewindBuffer);
+	}
+	threadContext->rewindBufferCapacity = newCapacity;
+	if (threadContext->rewindBufferCapacity > 0) {
+		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(struct GBASerializedState*));
+	} else {
+		threadContext->rewindBuffer = 0;
+	}
+}
+
 void GBARewind(struct GBAThread* thread, int nStates) {
 	if (nStates > thread->rewindBufferSize || nStates < 0) {
 		nStates = thread->rewindBufferSize;
@@ -267,4 +289,8 @@ void GBARewind(struct GBAThread* thread, int nStates) {
 	thread->rewindBufferSize -= nStates - 1;
 	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
 	GBADeserialize(thread->gba, state);
+}
+
+void GBARewindAll(struct GBAThread* thread) {
+	GBARewind(thread, thread->rewindBufferSize);
 }

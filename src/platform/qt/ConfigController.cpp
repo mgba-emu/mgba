@@ -96,6 +96,9 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
 	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_opts.rewindEnable = false;
+	m_opts.rewindBufferInterval = 0;
+	m_opts.rewindBufferCapacity = 0;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);

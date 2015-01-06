@@ -240,8 +240,12 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
-	threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
-	threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+	if (opts->rewindEnable) {
+		threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;
+		threadContext->rewindBufferInterval = opts->rewindBufferInterval;
+	} else {
+		threadContext->rewindBufferCapacity = 0;
+	}
 	threadContext->skipBios = opts->skipBios;
 	threadContext->sync.audioWait = opts->audioSync;
 	threadContext->sync.videoFrameWait = opts->videoSync;
@@ -276,13 +280,12 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->sync.videoFrameOn = true;
 	threadContext->sync.videoFrameSkip = 0;
 
-	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
-	threadContext->rewindBufferSize = 0;
-	if (threadContext->rewindBufferCapacity) {
-		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(void*));
-	} else {
-		threadContext->rewindBuffer = 0;
-	}
+	threadContext->rewindBuffer = 0;
+	int newCapacity = threadContext->rewindBufferCapacity;
+	int newInterval = threadContext->rewindBufferInterval;
+	threadContext->rewindBufferCapacity = 0;
+	threadContext->rewindBufferInterval = 0;
+	GBARewindSettingsChanged(threadContext, newCapacity, newInterval);
 
 	if (!threadContext->fpsTarget) {
 		threadContext->fpsTarget = _defaultFPSTarget;

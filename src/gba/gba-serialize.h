@@ -298,6 +298,8 @@ void GBADeallocateState(struct GBASerializedState* state);
 
 struct GBAThread;
 void GBARecordFrame(struct GBAThread* thread);
+void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int newInterval);
 void GBARewind(struct GBAThread* thread, int nStates);
+void GBARewindAll(struct GBAThread* thread);
 
 #endif

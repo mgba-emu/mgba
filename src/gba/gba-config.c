@@ -205,6 +205,9 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	if (_lookupIntValue(config, "skipBios", &fakeBool)) {
 		opts->skipBios = fakeBool;
 	}
+	if (_lookupIntValue(config, "rewindEnable", &fakeBool)) {
+		opts->rewindEnable = fakeBool;
+	}
 
 	_lookupIntValue(config, "fullscreen", &opts->fullscreen);
 	_lookupIntValue(config, "width", &opts->width);
@@ -216,6 +219,7 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "logLevel", opts->logLevel);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "frameskip", opts->frameskip);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindEnable", opts->rewindEnable);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferCapacity", opts->rewindBufferCapacity);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferInterval", opts->rewindBufferInterval);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
