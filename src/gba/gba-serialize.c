@@ -264,7 +264,7 @@ void GBARewind(struct GBAThread* thread, int nStates) {
 	if (!state) {
 		return;
 	}
-	thread->rewindBufferSize -= nStates;
-	thread->rewindBufferWriteOffset = (offset + thread->rewindBufferCapacity - nStates) % thread->rewindBufferCapacity;
+	thread->rewindBufferSize -= nStates - 1;
+	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
 	GBADeserialize(thread->gba, state);
 }
