@@ -809,7 +809,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[paletteData | pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
-			mergedFlags ^= objwinFlags; \
+			mergedFlags = objwinFlags; \
 		} \
 		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
 	}
@@ -822,7 +822,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
-			mergedFlags ^= objwinFlags; \
+			mergedFlags = objwinFlags; \
 		} \
 		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
 	}
@@ -1316,12 +1316,13 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	unsigned xBase;
 
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
 	flags |= FLAG_TARGET_2 * background->target2;
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed));
-	objwinFlags ^= flags;
+	objwinFlags |= flags;
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
 	if (renderer->blda == 0x10 && renderer->bldb == 0) {
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
+		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
 	}
 
 	uint32_t screenBase;
@@ -1391,12 +1392,13 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	int32_t localY; \
 	\
 	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed)); \
 	flags |= FLAG_TARGET_2 * background->target2; \
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed)); \
-	objwinFlags ^= flags; \
+	objwinFlags |= flags; \
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed)); \
 	if (renderer->blda == 0x10 && renderer->bldb == 0) { \
 		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
+		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
 	} \
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN); \
 	color_t* palette = renderer->normalPalette; \
@@ -1456,7 +1458,11 @@ static void _drawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, stru
 				_compositeBlendNoObjwin(renderer, pixel, palette[tileData] | flags, current);
 			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
-				_compositeBlendObjwin(renderer, pixel, currentPalette[tileData] | flags, current);
+				unsigned mergedFlags = flags;
+				if (current & FLAG_OBJWIN) {
+					mergedFlags = objwinFlags;
+				}
+				_compositeBlendObjwin(renderer, pixel, currentPalette[tileData] | mergedFlags, current);
 			}
 		}
 	}
@@ -1489,12 +1495,16 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		uint32_t current = *pixel;
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) {
+			unsigned mergedFlags = flags;
+			if (current & FLAG_OBJWIN) {
+				mergedFlags = objwinFlags;
+			}
 			if (!variant) {
-				_compositeBlendObjwin(renderer, pixel, color | flags, current);
+				_compositeBlendObjwin(renderer, pixel, color | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | flags, current);
+				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | flags, current);
+				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | mergedFlags, current);
 			}
 		}
 	}
@@ -1528,7 +1538,11 @@ static void _drawBackgroundMode4(struct GBAVideoSoftwareRenderer* renderer, stru
 				_compositeBlendNoObjwin(renderer, pixel, palette[color] | flags, current);
 			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
-				_compositeBlendObjwin(renderer, pixel, currentPalette[color] | flags, current);
+				unsigned mergedFlags = flags;
+				if (current & FLAG_OBJWIN) {
+					mergedFlags = objwinFlags;
+				}
+				_compositeBlendObjwin(renderer, pixel, currentPalette[color] | mergedFlags, current);
 			}
 		}
 	}
@@ -1564,12 +1578,16 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 
 		uint32_t current = *pixel;
 		if (!objwinSlowPath || !(current & FLAG_OBJWIN) != objwinOnly) {
+			unsigned mergedFlags = flags;
+			if (current & FLAG_OBJWIN) {
+				mergedFlags = objwinFlags;
+			}
 			if (!variant) {
-				_compositeBlendObjwin(renderer, pixel, color | flags, current);
+				_compositeBlendObjwin(renderer, pixel, color | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_BRIGHTEN) {
-				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | flags, current);
+				_compositeBlendObjwin(renderer, pixel, _brighten(color, renderer->bldy) | mergedFlags, current);
 			} else if (renderer->blendEffect == BLEND_DARKEN) {
-				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | flags, current);
+				_compositeBlendObjwin(renderer, pixel, _darken(color, renderer->bldy) | mergedFlags, current);
 			}
 		}
 	}
