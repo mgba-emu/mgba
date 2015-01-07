@@ -205,7 +205,7 @@ void usage(const char* arg0, const char* extraOptions) {
 #ifdef USE_GDB_STUB
 	puts("  -g, --gdb           Start GDB session (default port 2345)");
 #endif
-	puts("  -p, --patch         Apply a specified patch file when running");
+	puts("  -p, --patch FILE    Apply a specified patch file when running");
 	puts("  -s, --frameskip N   Skip every N frames");
 	if (extraOptions) {
 		puts(extraOptions);
