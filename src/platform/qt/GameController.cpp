@@ -146,8 +146,7 @@ ARMDebugger* GameController::debugger() {
 }
 
 void GameController::setDebugger(ARMDebugger* debugger) {
-	bool wasPaused = isPaused();
-	setPaused(true);
+	threadInterrupt();
 	if (m_threadContext.debugger && GBAThreadHasStarted(&m_threadContext)) {
 		GBADetachDebugger(m_threadContext.gba);
 	}
@@ -155,7 +154,7 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 	if (m_threadContext.debugger && GBAThreadHasStarted(&m_threadContext)) {
 		GBAAttachDebugger(m_threadContext.gba, m_threadContext.debugger);
 	}
-	setPaused(wasPaused);
+	threadContinue();
 }
 #endif
 

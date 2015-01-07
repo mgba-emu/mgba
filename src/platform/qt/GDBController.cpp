@@ -49,28 +49,25 @@ void GDBController::detach() {
 	if (!isAttached()) {
 		return;
 	}
-	bool wasPaused = m_gameController->isPaused();
 	disconnect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
-	m_gameController->setPaused(true);
+	m_gameController->threadInterrupt();
 	GDBStubShutdown(&m_gdbStub);
 	m_gameController->setDebugger(nullptr);
-	m_gameController->setPaused(wasPaused);
+	m_gameController->threadContinue();
 }
 
 void GDBController::listen() {
+	m_gameController->threadInterrupt();
 	if (!isAttached()) {
 		attach();
 	}
-	bool wasPaused = m_gameController->isPaused();
 	connect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
-	m_gameController->setPaused(true);
 	GDBStubListen(&m_gdbStub, m_port, m_bindAddress);
-	m_gameController->setPaused(wasPaused);
+	m_gameController->threadContinue();
 }
 
 void GDBController::updateGDB() {
-	bool wasPaused = m_gameController->isPaused();
-	m_gameController->setPaused(true);
+	m_gameController->threadInterrupt();
 	GDBStubUpdate(&m_gdbStub);
-	m_gameController->setPaused(wasPaused);
+	m_gameController->threadContinue();
 }
