@@ -35,11 +35,6 @@ enum GBAIRQ {
 	IRQ_GAMEPAK = 0xD
 };
 
-enum GBAError {
-	GBA_NO_ERROR = 0,
-	GBA_OUT_OF_MEMORY = -1
-};
-
 enum GBALogLevel {
 	GBA_LOG_FATAL = 0x01,
 	GBA_LOG_ERROR = 0x02,
