@@ -75,6 +75,11 @@ enum GBAKey {
 	GBA_KEY_NONE = -1
 };
 
+enum GBAComponent {
+	GBA_COMPONENT_DEBUGGER,
+	GBA_COMPONENT_MAX
+};
+
 struct GBA;
 struct GBARotationSource;
 struct Patch;

@@ -108,13 +108,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct ARMCore cpu;
 	struct Patch patch;
 	struct GBAThread* threadContext = context;
-	struct ARMComponent* components[1] = {};
-	int numComponents = 0;
-
-	if (threadContext->debugger) {
-		components[numComponents] = &threadContext->debugger->d;
-		++numComponents;
-	}
+	struct ARMComponent* components[GBA_COMPONENT_MAX] = {};
+	int numComponents = GBA_COMPONENT_MAX;
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;

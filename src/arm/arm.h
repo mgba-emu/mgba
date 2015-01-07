@@ -165,6 +165,8 @@ struct ARMCore {
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);
 void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
+void ARMHotplugAttach(struct ARMCore* cpu, int slot);
+void ARMHotplugDetach(struct ARMCore* cpu, int slot);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);

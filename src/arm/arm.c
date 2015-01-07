@@ -73,7 +73,9 @@ void ARMInit(struct ARMCore* cpu) {
 	cpu->master->init(cpu, cpu->master);
 	int i;
 	for (i = 0; i < cpu->numComponents; ++i) {
-		cpu->components[i]->init(cpu, cpu->components[i]);
+		if (cpu->components[i] && cpu->components[i]->init) {
+			cpu->components[i]->init(cpu, cpu->components[i]);
+		}
 	}
 }
 
@@ -83,7 +85,7 @@ void ARMDeinit(struct ARMCore* cpu) {
 	}
 	int i;
 	for (i = 0; i < cpu->numComponents; ++i) {
-		if (cpu->components[i]->deinit) {
+		if (cpu->components[i] && cpu->components[i]->deinit) {
 			cpu->components[i]->deinit(cpu->components[i]);
 		}
 	}
@@ -95,6 +97,19 @@ void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extr
 	cpu->components = extras;
 }
 
+void ARMHotplugAttach(struct ARMCore* cpu, int slot) {
+	if (slot >= cpu->numComponents) {
+		return;
+	}
+	cpu->components[slot]->init(cpu, cpu->components[slot]);
+}
+
+void ARMHotplugDetach(struct ARMCore* cpu, int slot) {
+	if (slot >= cpu->numComponents) {
+		return;
+	}
+	cpu->components[slot]->init(cpu, cpu->components[slot]);
+}
 
 void ARMReset(struct ARMCore* cpu) {
 	int i;

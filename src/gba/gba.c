@@ -434,10 +434,14 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
 	gba->debugger = debugger;
+	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = &debugger->d;
+	ARMHotplugAttach(gba->cpu, GBA_COMPONENT_DEBUGGER);
 }
 
 void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = 0;
+	ARMHotplugDetach(gba->cpu, GBA_COMPONENT_DEBUGGER);
+	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = 0;
 }
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
