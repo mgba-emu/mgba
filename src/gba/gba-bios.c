@@ -15,6 +15,7 @@ const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width);
 static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest);
 static void _unRl(struct GBA* gba, uint32_t source, uint32_t dest, int width);
+static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwidth, int outwidth);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
@@ -209,6 +210,22 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
 				_unRl(gba, cpu->gprs[0], cpu->gprs[1], immediate == 0x14 ? 1 : 2);
+				break;
+		}
+		break;
+	case 0x16:
+	case 0x17:
+	case 0x18:
+		if (cpu->gprs[0] < BASE_WORKING_RAM) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter source");
+		}
+		switch (cpu->gprs[1] >> BASE_OFFSET) {
+			default:
+				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+			case REGION_WORKING_RAM:
+			case REGION_WORKING_IRAM:
+			case REGION_VRAM:
+				_unFilter(gba, cpu->gprs[0], cpu->gprs[1], immediate == 0x18 ? 2 : 1, immediate == 0x16 ? 1 : 2);
 				break;
 		}
 		break;
@@ -436,5 +453,38 @@ static void _unRl(struct GBA* gba, uint32_t source, uint32_t dest, int width) {
 			cpu->memory.store8(cpu, dPointer, 0, 0);
 			++dPointer;
 		}
+	}
+}
+
+static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwidth, int outwidth) {
+	struct ARMCore* cpu = gba->cpu;
+	source = source & 0xFFFFFFFC;
+	uint32_t header = cpu->memory.load32(cpu, source, 0);
+	int remaining = header >> 8;
+	// We assume the signature nybble (0x8) is correct
+	uint16_t halfword = 0;
+	uint16_t old = 0;
+	source += 4;
+	while (remaining > 0) {
+		if (inwidth == 1) {
+			halfword = cpu->memory.loadU8(cpu, source, 0);
+		} else {
+			halfword = cpu->memory.loadU16(cpu, source, 0);
+		}
+		halfword += old;
+		if (outwidth > inwidth) {
+			GBALog(gba, GBA_LOG_STUB, "Unimplemented Diff8bitUnFilterVram");
+		} else {
+			if (outwidth == 1) {
+				halfword &= 0xFF;
+				cpu->memory.store8(cpu, dest, halfword, 0);
+			} else {
+				cpu->memory.store16(cpu, dest, halfword, 0);
+			}
+			old = halfword;
+			dest += outwidth;
+		}
+		source += inwidth;
+		--remaining;
 	}
 }
