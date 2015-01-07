@@ -50,11 +50,10 @@ static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 		return sock;
 	}
 
-	struct sockaddr_in bindInfo = {
-		.sin_family = AF_INET,
-		.sin_port = htons(port),
-		.sin_addr = { 0 }
-	};
+	struct sockaddr_in bindInfo;
+	memset(&bindInfo, 0, sizeof(bindInfo));
+	bindInfo.sin_family = AF_INET;
+	bindInfo.sin_port = htons(port);
 	bindInfo.sin_addr.s_addr = htonl(bindAddress);
 	int err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
 	if (err) {
@@ -70,11 +69,10 @@ static inline Socket SocketConnectTCP(int port, uint32_t destinationAddress) {
 		return sock;
 	}
 
-	struct sockaddr_in bindInfo = {
-		.sin_family = AF_INET,
-		.sin_port = htons(port),
-		.sin_addr = { 0 }
-	};
+	struct sockaddr_in bindInfo;
+	memset(&bindInfo, 0, sizeof(bindInfo));
+	bindInfo.sin_family = AF_INET;
+	bindInfo.sin_port = htons(port);
 	bindInfo.sin_addr.s_addr = htonl(destinationAddress);
 	int err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
 	if (err) {
