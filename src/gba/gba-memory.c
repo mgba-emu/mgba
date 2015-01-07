@@ -972,12 +972,12 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 
 void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	memory->dma[dma].source = address & 0xFFFFFFFE;
+	memory->dma[dma].source = address & 0x0FFFFFFE;
 }
 
 void GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	memory->dma[dma].dest = address & 0xFFFFFFFE;
+	memory->dma[dma].dest = address & 0x0FFFFFFE;
 }
 
 void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count) {
