@@ -51,6 +51,7 @@ static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 	}
 
 	struct sockaddr_in bindInfo = {
+		.sin_len = 0,
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
 		.sin_addr = { 0 }
@@ -71,6 +72,7 @@ static inline Socket SocketConnectTCP(int port, uint32_t destinationAddress) {
 	}
 
 	struct sockaddr_in bindInfo = {
+		.sin_len = 0,
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
 		.sin_addr = { 0 }
