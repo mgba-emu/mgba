@@ -19,8 +19,32 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
-	UNUSED(registers);
-	GBALog(gba, GBA_LOG_STUB, "RegisterRamReset unimplemented");
+	struct ARMCore* cpu = gba->cpu;
+	cpu->memory.store16(cpu, BASE_IO | REG_DISPCNT, 0x0080, 0);
+	if (registers & 0x01) {
+		memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
+	}
+	if (registers & 0x02) {
+		memset(gba->memory.iwram, 0, SIZE_WORKING_IRAM - 0x200);
+	}
+	if (registers & 0x04) {
+		memset(gba->video.palette, 0, SIZE_PALETTE_RAM);
+	}
+	if (registers & 0x08) {
+		memset(gba->video.renderer->vram, 0, SIZE_VRAM);
+	}
+	if (registers & 0x10) {
+		memset(gba->video.oam.raw, 0, SIZE_OAM);
+	}
+	if (registers & 0x20) {
+		GBALog(gba, GBA_LOG_STUB, "RegisterRamReset on SIO unimplemented");
+	}
+	if (registers & 0x40) {
+		GBALog(gba, GBA_LOG_STUB, "RegisterRamReset on Audio unimplemented");
+	}
+	if (registers & 0x80) {
+		GBALog(gba, GBA_LOG_STUB, "RegisterRamReset on IO unimplemented");
+	}
 }
 
 static void _BgAffineSet(struct GBA* gba) {
