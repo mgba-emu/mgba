@@ -477,26 +477,32 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 	uint16_t old = 0;
 	source += 4;
 	while (remaining > 0) {
+		uint16_t new;
 		if (inwidth == 1) {
-			halfword = cpu->memory.loadU8(cpu, source, 0);
+			new = cpu->memory.loadU8(cpu, source, 0);
 		} else {
-			halfword = cpu->memory.loadU16(cpu, source, 0);
+			new = cpu->memory.loadU16(cpu, source, 0);
 		}
-		halfword += old;
+		new += old;
 		if (outwidth > inwidth) {
-			GBALog(gba, GBA_LOG_STUB, "Unimplemented Diff8bitUnFilterVram");
-		} else {
-			if (outwidth == 1) {
-				halfword &= 0xFF;
-				cpu->memory.store8(cpu, dest, halfword, 0);
-			} else {
+			halfword >>= 8;
+			halfword |= (new << 8);
+			if (source & 1) {
 				cpu->memory.store16(cpu, dest, halfword, 0);
+				dest += outwidth;
+				remaining -= outwidth;
 			}
-			old = halfword;
+		} else if (outwidth == 1) {
+			cpu->memory.store8(cpu, dest, new, 0);
 			dest += outwidth;
+			remaining -= outwidth;
+		} else {
+			cpu->memory.store16(cpu, dest, new, 0);
+			dest += outwidth;
+			remaining -= outwidth;
 		}
+		old = new;
 		source += inwidth;
-		remaining -= outwidth;
 	}
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
