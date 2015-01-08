@@ -215,7 +215,6 @@ void Window::openSettingsWindow() {
 void Window::openShortcutWindow() {
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
-	shortcutView->setInputController(&m_inputController);
 	connect(this, SIGNAL(shutdown()), shortcutView, SLOT(close()));
 	shortcutView->setAttribute(Qt::WA_DeleteOnClose);
 	shortcutView->show();

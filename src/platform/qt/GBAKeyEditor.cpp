@@ -109,12 +109,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_background.load(":/res/keymap.qpic");
 
 	setAll->setFocus();
-
-#ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
-		connect(m_controller, SIGNAL(axisChanged(int, int32_t)), this, SLOT(setAxisValue(int, int32_t)));
-	}
-#endif
 }
 
 void GBAKeyEditor::setAll() {
@@ -205,7 +199,7 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 #endif
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
-	if (keyEditor->direction() != InputController::NEUTRAL) {
+	if (keyEditor->direction() != GamepadAxisEvent::NEUTRAL) {
 		m_controller->bindAxis(m_type, keyEditor->value(), keyEditor->direction(), key);
 	} else {
 		m_controller->bindKey(m_type, keyEditor->value(), key);

@@ -6,7 +6,7 @@
 #ifndef QGBA_KEY_EDITOR
 #define QGBA_KEY_EDITOR
 
-#include "InputController.h"
+#include "GamepadAxisEvent.h"
 #include <QLineEdit>
 
 namespace QGBA {
@@ -19,7 +19,7 @@ public:
 
 	int value() const { return m_key; }
 
-	InputController::Direction direction() const { return m_direction; }
+	GamepadAxisEvent::Direction direction() const { return m_direction; }
 
 	virtual QSize sizeHint() const override;
 
@@ -40,7 +40,7 @@ protected:
 private:
 	int m_key;
 	bool m_button;
-	InputController::Direction m_direction;
+	GamepadAxisEvent::Direction m_direction;
 };
 
 }

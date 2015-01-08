@@ -6,6 +6,7 @@
 #include "InputController.h"
 
 #include "ConfigController.h"
+#include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 
 #include <QApplication>
@@ -144,33 +145,33 @@ QSet<int> InputController::activeGamepadButtons() {
 	return activeButtons;
 }
 
-QSet<QPair<int, int32_t>> InputController::activeGamepadAxes() {
+QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes() {
 	SDL_Joystick* joystick = m_sdlEvents.joystick;
 	SDL_JoystickUpdate();
 	int numButtons = SDL_JoystickNumAxes(joystick);
-	QSet<QPair<int, int32_t>> activeAxes;
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
 	int i;
 	for (i = 0; i < numButtons; ++i) {
 		int32_t axis = SDL_JoystickGetAxis(joystick, i);
 		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
-			activeAxes.insert(qMakePair(i, axis > 0 ? 1 : -1));
+			activeAxes.insert(qMakePair(i, axis > 0 ? GamepadAxisEvent::POSITIVE : GamepadAxisEvent::NEGATIVE));
 		}
 	}
 	return activeAxes;
 }
 
-void InputController::bindAxis(uint32_t type, int axis, Direction direction, GBAKey key) {
+void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, GBAKey key) {
 	const GBAAxis* old = GBAInputQueryAxis(&m_inputMap, SDL_BINDING_BUTTON, axis);
 	GBAAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
 	if (old) {
 		description = *old;
 	}
 	switch (direction) {
-	case NEGATIVE:
+	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
 		description.deadLow = -AXIS_THRESHOLD;
 		break;
-	case POSITIVE:
+	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
 		description.deadHigh = AXIS_THRESHOLD;
 		break;
@@ -186,19 +187,35 @@ void InputController::testGamepad() {
 	auto activeAxes = activeGamepadAxes();
 	auto oldAxes = m_activeAxes;
 	m_activeAxes = activeAxes;
-	activeAxes.subtract(oldAxes);
-	if (!activeAxes.empty()) {
-		emit axisChanged(activeAxes.begin()->first, activeAxes.begin()->second);
-	}
 
 	auto activeButtons = activeGamepadButtons();
 	auto oldButtons = m_activeButtons;
 	m_activeButtons = activeButtons;
+
 	if (!QApplication::focusWidget()) {
 		return;
 	}
+
+	activeAxes.subtract(oldAxes);
+	oldAxes.subtract(m_activeAxes);
+
+	for (auto& axis : m_activeAxes) {
+		bool newlyAboveThreshold = activeAxes.contains(axis);
+		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
+		if (newlyAboveThreshold) {
+			postPendingEvent(event->gbaKey());
+			if (!event->isAccepted()) {
+				clearPendingEvent(event->gbaKey());
+			}
+		} else if (oldAxes.contains(axis)) {
+			clearPendingEvent(event->gbaKey());
+		}
+		QApplication::sendEvent(QApplication::focusWidget(), event);
+	}
+
 	activeButtons.subtract(oldButtons);
 	oldButtons.subtract(m_activeButtons);
+
 	for (int button : activeButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, this);
 		postPendingEvent(event->gbaKey());

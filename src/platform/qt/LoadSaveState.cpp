@@ -6,6 +6,7 @@
 #include "LoadSaveState.h"
 
 #include "GameController.h"
+#include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
 
@@ -105,10 +106,21 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 			}
 		}
 	}
-	if (event->type() == GamepadButtonEvent::Down()) {
+	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadAxisEvent::Type()) {
 		int column = m_currentFocus % 3;
 		int row = m_currentFocus - column;
-		switch (static_cast<GamepadButtonEvent*>(event)->gbaKey()) {
+		GBAKey key = GBA_KEY_NONE;
+		if (event->type() == GamepadButtonEvent::Down()) {
+			key = static_cast<GamepadButtonEvent*>(event)->gbaKey();
+		} else if (event->type() == GamepadAxisEvent::Type()) {
+			GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
+			if (gae->isNew()) {
+				key = gae->gbaKey();
+			} else {
+				return false;
+			}
+		}
+		switch (key) {
 		case GBA_KEY_UP:
 			row += 6;
 			break;

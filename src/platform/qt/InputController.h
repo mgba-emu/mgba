@@ -6,6 +6,8 @@
 #ifndef QGBA_INPUT_CONTROLLER_H
 #define QGBA_INPUT_CONTROLLER_H
 
+#include "GamepadAxisEvent.h"
+
 #include <QObject>
 #include <QSet>
 
@@ -44,21 +46,13 @@ public:
 
 #ifdef BUILD_SDL
 	static const int32_t AXIS_THRESHOLD = 0x3000;
-	enum Direction {
-		NEUTRAL = 0,
-		POSITIVE = 1,
-		NEGATIVE = -1
-	};
 
 	int testSDLEvents();
 	QSet<int> activeGamepadButtons();
-	QSet<QPair<int, int32_t>> activeGamepadAxes();
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
 
-	void bindAxis(uint32_t type, int axis, Direction, GBAKey);
+	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 #endif
-
-signals:
-	void axisChanged(int axis, int32_t value);
 
 public slots:
 	void testGamepad();
@@ -76,7 +70,7 @@ private:
 #endif
 
 	QSet<int> m_activeButtons;
-	QSet<QPair<int, int32_t>> m_activeAxes;
+	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
 	QTimer* m_gamepadTimer;
 
 	QSet<GBAKey> m_pendingEvents;

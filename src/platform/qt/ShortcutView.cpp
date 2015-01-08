@@ -15,7 +15,6 @@ using namespace QGBA;
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
 	, m_controller(nullptr)
-	, m_inputController(nullptr)
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueButton(-1);
@@ -30,11 +29,6 @@ ShortcutView::ShortcutView(QWidget* parent)
 void ShortcutView::setController(ShortcutController* controller) {
 	m_controller = controller;
 	m_ui.shortcutTable->setModel(controller);
-}
-
-void ShortcutView::setInputController(InputController* controller) {
-	m_inputController = controller;
-	connect(controller, SIGNAL(axisChanged(int, int32_t)), m_ui.keyEdit, SLOT(setValueAxis(int, int32_t)));
 }
 
 bool ShortcutView::event(QEvent* event) {

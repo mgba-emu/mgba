@@ -12,7 +12,6 @@
 
 namespace QGBA {
 
-class InputController;
 class ShortcutController;
 
 class ShortcutView : public QWidget {
@@ -22,7 +21,6 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 
 	void setController(ShortcutController* controller);
-	void setInputController(InputController* controller);
 
 protected:
 	virtual bool event(QEvent* event) override;
@@ -38,7 +36,6 @@ private:
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller;
-	InputController* m_inputController;
 };
 
 }
