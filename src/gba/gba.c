@@ -53,6 +53,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Mega Man Battle Network
 	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x800032E },
 
+	// Metal Slug Advance
+	{ "BSME", SAVEDATA_EEPROM, GPIO_NONE, 0x8000290 },
+
 	// Pokemon Ruby
 	{ "AXVJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 	{ "AXVE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
