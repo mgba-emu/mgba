@@ -485,6 +485,6 @@ static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwid
 			dest += outwidth;
 		}
 		source += inwidth;
-		--remaining;
+		remaining -= outwidth;
 	}
 }
