@@ -30,6 +30,8 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
