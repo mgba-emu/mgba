@@ -12,10 +12,10 @@
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
-static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width);
-static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest);
-static void _unRl(struct GBA* gba, uint32_t source, uint32_t dest, int width);
-static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwidth, int outwidth);
+static void _unLz77(struct GBA* gba, int width);
+static void _unHuffman(struct GBA* gba);
+static void _unRl(struct GBA* gba, int width);
+static void _unFilter(struct GBA* gba, int inwidth, int outwidth);
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
@@ -180,7 +180,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
-				_unLz77(gba, cpu->gprs[0], cpu->gprs[1], immediate == 0x11 ? 1 : 2);
+				_unLz77(gba, immediate == 0x11 ? 1 : 2);
 				break;
 		}
 		break;
@@ -194,7 +194,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
-				_unHuffman(gba, cpu->gprs[0], cpu->gprs[1]);
+				_unHuffman(gba);
 				break;
 		}
 		break;
@@ -209,7 +209,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
-				_unRl(gba, cpu->gprs[0], cpu->gprs[1], immediate == 0x14 ? 1 : 2);
+				_unRl(gba, immediate == 0x14 ? 1 : 2);
 				break;
 		}
 		break;
@@ -225,7 +225,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
-				_unFilter(gba, cpu->gprs[0], cpu->gprs[1], immediate == 0x18 ? 2 : 1, immediate == 0x16 ? 1 : 2);
+				_unFilter(gba, immediate == 0x18 ? 2 : 1, immediate == 0x16 ? 1 : 2);
 				break;
 		}
 		break;
@@ -250,13 +250,14 @@ uint32_t GBAChecksum(uint32_t* memory, size_t size) {
 	return sum;
 }
 
-static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width) {
+static void _unLz77(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
+	uint32_t source = cpu->gprs[0];
+	uint32_t dest = cpu->gprs[1];
 	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
-	uint32_t sPointer = source + 4;
-	uint32_t dPointer = dest;
+	source += 4;
 	int blocksRemaining = 0;
 	int block;
 	uint32_t disp;
@@ -267,51 +268,54 @@ static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width) 
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
 				// Compressed
-				block = cpu->memory.loadU8(cpu, sPointer, 0) | (cpu->memory.loadU8(cpu, sPointer + 1, 0) << 8);
-				sPointer += 2;
-				disp = dPointer - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
+				block = cpu->memory.loadU8(cpu, source, 0) | (cpu->memory.loadU8(cpu, source + 1, 0) << 8);
+				source += 2;
+				disp = dest - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
 				bytes = ((block & 0x00F0) >> 4) + 3;
 				while (bytes-- && remaining) {
 					--remaining;
 					byte = cpu->memory.loadU8(cpu, disp, 0);
 					++disp;
 					if (width == 2) {
-						if (dPointer & 1) {
+						if (dest & 1) {
 							halfword |= byte << 8;
-							cpu->memory.store16(cpu, dPointer ^ 1, halfword, 0);
+							cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 						} else {
 							halfword = byte;
 						}
 					} else {
-						cpu->memory.store8(cpu, dPointer, byte, 0);
+						cpu->memory.store8(cpu, dest, byte, 0);
 					}
-					++dPointer;
+					++dest;
 				}
 			} else {
 				// Uncompressed
-				byte = cpu->memory.loadU8(cpu, sPointer, 0);
-				++sPointer;
+				byte = cpu->memory.loadU8(cpu, source, 0);
+				++source;
 				if (width == 2) {
-					if (dPointer & 1) {
+					if (dest & 1) {
 						halfword |= byte << 8;
-						cpu->memory.store16(cpu, dPointer ^ 1, halfword, 0);
+						cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 					} else {
 						halfword = byte;
 					}
 				} else {
-					cpu->memory.store8(cpu, dPointer, byte, 0);
+					cpu->memory.store8(cpu, dest, byte, 0);
 				}
-				++dPointer;
+				++dest;
 				--remaining;
 			}
 			blockheader <<= 1;
 			--blocksRemaining;
 		} else {
-			blockheader = cpu->memory.loadU8(cpu, sPointer, 0);
-			++sPointer;
+			blockheader = cpu->memory.loadU8(cpu, source, 0);
+			++source;
 			blocksRemaining = 8;
 		}
 	}
+	cpu->gprs[0] = source;
+	cpu->gprs[1] = dest;
+	cpu->gprs[3] = 0;
 }
 
 DECL_BITFIELD(HuffmanNode, uint8_t);
@@ -319,9 +323,10 @@ DECL_BITS(HuffmanNode, Offset, 0, 6);
 DECL_BIT(HuffmanNode, RTerm, 6);
 DECL_BIT(HuffmanNode, LTerm, 7);
 
-static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
+static void _unHuffman(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
-	source = source & 0xFFFFFFFC;
+	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
+	uint32_t dest = cpu->gprs[1];
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	int bits = header & 0xF;
@@ -335,8 +340,7 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 	int treesize = (cpu->memory.loadU8(cpu, source + 4, 0) << 1) + 1;
 	int block = 0;
 	uint32_t treeBase = source + 5;
-	uint32_t sPointer = source + 5 + treesize;
-	uint32_t dPointer = dest;
+	source += 5 + treesize;
 	uint32_t nPointer = treeBase;
 	HuffmanNode node;
 	int bitsRemaining;
@@ -344,8 +348,8 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 	int bitsSeen = 0;
 	node = cpu->memory.load8(cpu, nPointer, 0);
 	while (remaining > 0) {
-		uint32_t bitstream = cpu->memory.load32(cpu, sPointer, 0);
-		sPointer += 4;
+		uint32_t bitstream = cpu->memory.load32(cpu, source, 0);
+		source += 4;
 		for (bitsRemaining = 32; bitsRemaining > 0 && remaining > 0; --bitsRemaining, bitstream <<= 1) {
 			uint32_t next = (nPointer & ~1) + HuffmanNodeGetOffset(node) * 2 + 2;
 			if (bitstream & 0x80000000) {
@@ -374,8 +378,8 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 			node = cpu->memory.load8(cpu, nPointer, 0);
 			if (bitsSeen == 32) {
 				bitsSeen = 0;
-				cpu->memory.store32(cpu, dPointer, block, 0);
-				dPointer += 4;
+				cpu->memory.store32(cpu, dest, block, 0);
+				dest += 4;
 				remaining -= 4;
 				block = 0;
 			}
@@ -383,82 +387,89 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 
 	}
 	if (padding) {
-		cpu->memory.store32(cpu, dPointer, block, 0);
+		cpu->memory.store32(cpu, dest, block, 0);
 	}
+	cpu->gprs[0] = source;
+	cpu->gprs[1] = dest;
 }
 
-static void _unRl(struct GBA* gba, uint32_t source, uint32_t dest, int width) {
+static void _unRl(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
-	source = source & 0xFFFFFFFC;
+	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
 	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
 	int padding = (4 - remaining) & 0x3;
 	// We assume the signature byte (0x30) is correct
 	int blockheader;
 	int block;
-	uint32_t sPointer = source + 4;
-	uint32_t dPointer = dest;
+	source += 4;
+	uint32_t dest = cpu->gprs[1];
 	int halfword = 0;
 	while (remaining > 0) {
-		blockheader = cpu->memory.loadU8(cpu, sPointer++, 0);
+		blockheader = cpu->memory.loadU8(cpu, source, 0);
+		++source;
 		if (blockheader & 0x80) {
 			// Compressed
 			blockheader &= 0x7F;
 			blockheader += 3;
-			block = cpu->memory.loadU8(cpu, sPointer++, 0);
+			block = cpu->memory.loadU8(cpu, source, 0);
+			++source;
 			while (blockheader-- && remaining) {
 				--remaining;
 				if (width == 2) {
-					if (dPointer & 1) {
+					if (dest & 1) {
 						halfword |= block << 8;
-						cpu->memory.store16(cpu, dPointer ^ 1, halfword, 0);
+						cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 					} else {
 						halfword = block;
 					}
 				} else {
-					cpu->memory.store8(cpu, dPointer, block, 0);
+					cpu->memory.store8(cpu, dest, block, 0);
 				}
-				++dPointer;
+				++dest;
 			}
 		} else {
 			// Uncompressed
 			blockheader++;
 			while (blockheader-- && remaining) {
 				--remaining;
-				int byte = cpu->memory.loadU8(cpu, sPointer, 0);
-				++sPointer;
+				int byte = cpu->memory.loadU8(cpu, source, 0);
+				++source;
 				if (width == 2) {
-					if (dPointer & 1) {
+					if (dest & 1) {
 						halfword |= byte << 8;
-						cpu->memory.store16(cpu, dPointer ^ 1, halfword, 0);
+						cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 					} else {
 						halfword = byte;
 					}
 				} else {
-					cpu->memory.store8(cpu, dPointer, byte, 0);
+					cpu->memory.store8(cpu, dest, byte, 0);
 				}
-				++dPointer;
+				++dest;
 			}
 		}
 	}
 	if (width == 2) {
-		if (dPointer & 1) {
+		if (dest & 1) {
 			--padding;
-			++dPointer;
+			++dest;
 		}
-		for (; padding > 0; padding -= 2, dPointer += 2) {
-			cpu->memory.store16(cpu, dPointer, 0, 0);
+		for (; padding > 0; padding -= 2, dest += 2) {
+			cpu->memory.store16(cpu, dest, 0, 0);
 		}
 	} else {
 		while (padding--) {
-			cpu->memory.store8(cpu, dPointer, 0, 0);
-			++dPointer;
+			cpu->memory.store8(cpu, dest, 0, 0);
+			++dest;
 		}
 	}
+	cpu->gprs[0] = source;
+	cpu->gprs[1] = dest;
 }
 
-static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwidth, int outwidth) {
+static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 	struct ARMCore* cpu = gba->cpu;
-	source = source & 0xFFFFFFFC;
+	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
+	uint32_t dest = cpu->gprs[1];
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	// We assume the signature nybble (0x8) is correct
@@ -487,4 +498,6 @@ static void _unFilter(struct GBA* gba, uint32_t source, uint32_t dest, int inwid
 		source += inwidth;
 		remaining -= outwidth;
 	}
+	cpu->gprs[0] = source;
+	cpu->gprs[1] = dest;
 }
