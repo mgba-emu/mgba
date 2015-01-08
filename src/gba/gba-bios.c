@@ -8,6 +8,7 @@
 #include "gba.h"
 #include "gba-io.h"
 #include "gba-memory.h"
+#include "isa-inlines.h"
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
@@ -16,6 +17,31 @@ static void _unLz77(struct GBA* gba, int width);
 static void _unHuffman(struct GBA* gba);
 static void _unRl(struct GBA* gba, int width);
 static void _unFilter(struct GBA* gba, int inwidth, int outwidth);
+
+static void _SoftReset(struct GBA* gba) {
+	struct ARMCore* cpu = gba->cpu;
+	ARMSetPrivilegeMode(cpu, MODE_IRQ);
+	cpu->spsr.packed = 0;
+	cpu->gprs[ARM_LR] = 0;
+	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
+	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
+	cpu->spsr.packed = 0;
+	cpu->gprs[ARM_LR] = 0;
+	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
+	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
+	cpu->gprs[ARM_LR] = 0;
+	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+	int8_t flag = ((int8_t*) gba->memory.iwram)[0x7FFA];
+	memset(((int8_t*) gba->memory.iwram) + SIZE_WORKING_IRAM - 0x200, 0, 0x200);
+	if (flag) {
+		cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+	} else {
+		cpu->gprs[ARM_PC] = BASE_CART0;
+	}
+	_ARMSetMode(cpu, MODE_ARM);
+	int currentCycles = 0;
+	ARM_WRITE_PC;
+}
 
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
@@ -156,6 +182,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		return;
 	}
 	switch (immediate) {
+	case 0x0:
+		_SoftReset(gba);
+		break;
 	case 0x1:
 		_RegisterRamReset(gba);
 		break;

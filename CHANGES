@@ -14,7 +14,7 @@ Features:
  - Support for games using the tilt sensor
  - Remappable shortcuts for keyboard and gamepad
  - Rewinding of emulation
- - Implemented BIOS routines RegisterRamReset, Diff8bitUnFilterWram, Diff8bitUnFilterVram, and Diff16bitUnFilter
+ - Implemented BIOS routines SoftReset, RegisterRamReset, Diff8bitUnFilterWram, Diff8bitUnFilterVram, and Diff16bitUnFilter
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running

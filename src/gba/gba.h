@@ -75,6 +75,12 @@ enum GBAComponent {
 	GBA_COMPONENT_MAX
 };
 
+enum {
+	SP_BASE_SYSTEM = 0x03007F00,
+	SP_BASE_IRQ = 0x03007FA0,
+	SP_BASE_SUPERVISOR = 0x03007FE0
+};
+
 struct GBA;
 struct GBARotationSource;
 struct Patch;
