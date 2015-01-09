@@ -20,11 +20,13 @@ static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const
 
 static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
 static void _load(struct CLIDebugger*, struct CLIDebugVector*);
+static void _rewind(struct CLIDebugger*, struct CLIDebugVector*);
 static void _save(struct CLIDebugger*, struct CLIDebugVector*);
 
 struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
 	{ "frame", _frame, 0, "Frame advance" },
 	{ "load", _load, CLIDVParse, "Load a savestate" },
+	{ "rewind", _rewind, CLIDVParse, "Rewind the emulation a number of recorded intervals" },
 	{ "save", _save, CLIDVParse, "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
@@ -111,6 +113,17 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
 	GBALoadState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue);
+}
+
+static void _rewind(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
+	if (!dv) {
+		GBARewindAll(gbaDebugger->context);
+	} else if (dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+	} else {
+		GBARewind(gbaDebugger->context, dv->intValue);
+	}
 }
 
 static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
