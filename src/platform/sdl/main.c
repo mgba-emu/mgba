@@ -109,6 +109,9 @@ int main(int argc, char** argv) {
 	GBASDLRunloop(&context, &renderer);
 
 	GBAThreadJoin(&context);
+	if (GBAThreadHasCrashed(&context)) {
+		printf("The game crashed!\n");
+	}
 	freeArguments(&args);
 	GBAConfigFreeOpts(&opts);
 	GBAConfigDeinit(&config);
@@ -122,6 +125,7 @@ int main(int argc, char** argv) {
 
 static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("Could not initialize video: %s\n", SDL_GetError());
 		return false;
 	}
 
