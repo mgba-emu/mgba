@@ -33,7 +33,7 @@ struct GDBStub {
 };
 
 void GDBStubCreate(struct GDBStub*);
-int GDBStubListen(struct GDBStub*, int port, uint32_t bindAddress);
+int GDBStubListen(struct GDBStub*, int port, const struct Address* bindAddress);
 
 void GDBStubHangup(struct GDBStub*);
 void GDBStubShutdown(struct GDBStub*);

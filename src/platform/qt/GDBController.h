@@ -26,7 +26,6 @@ public:
 
 public:
 	ushort port();
-	uint32_t bindAddress();
 	bool isAttached();
 
 public slots:
@@ -44,7 +43,7 @@ private:
 	GameController* m_gameController;
 
 	ushort m_port;
-	uint32_t m_bindAddress;
+	Address m_bindAddress;
 };
 
 }

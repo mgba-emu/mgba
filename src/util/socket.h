@@ -29,6 +29,18 @@ typedef SOCKET Socket;
 typedef int Socket;
 #endif
 
+enum IP {
+	IPV4,
+	IPV6
+};
+
+struct Address {
+	enum IP version;
+	union {
+		uint32_t ipv4;
+		uint8_t ipv6[16];
+	};
+};
 
 static inline void SocketSubsystemInitialize() {
 #ifdef _WIN32
@@ -44,18 +56,35 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 	return read(socket, buffer, size);
 }
 
-static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
+static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
 
-	struct sockaddr_in bindInfo;
-	memset(&bindInfo, 0, sizeof(bindInfo));
-	bindInfo.sin_family = AF_INET;
-	bindInfo.sin_port = htons(port);
-	bindInfo.sin_addr.s_addr = htonl(bindAddress);
-	int err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
+	int err;
+	if (!bindAddress) {
+		struct sockaddr_in bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin_family = AF_INET;
+		bindInfo.sin_port = htons(port);
+		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+	} else if (bindAddress->version == IPV4) {
+		struct sockaddr_in bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin_family = AF_INET;
+		bindInfo.sin_port = htons(port);
+		bindInfo.sin_addr.s_addr = bindAddress->ipv4;
+		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+	} else {
+		struct sockaddr_in6 bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin6_family = AF_INET6;
+		bindInfo.sin6_port = htons(port);
+		memcpy(bindInfo.sin6_addr.s6_addr, bindAddress->ipv6, sizeof(bindInfo.sin6_addr.s6_addr));
+		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+
+	}
 	if (err) {
 		close(sock);
 		return -1;
@@ -63,18 +92,35 @@ static inline Socket SocketOpenTCP(int port, uint32_t bindAddress) {
 	return sock;
 }
 
-static inline Socket SocketConnectTCP(int port, uint32_t destinationAddress) {
+static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
 
-	struct sockaddr_in bindInfo;
-	memset(&bindInfo, 0, sizeof(bindInfo));
-	bindInfo.sin_family = AF_INET;
-	bindInfo.sin_port = htons(port);
-	bindInfo.sin_addr.s_addr = htonl(destinationAddress);
-	int err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(struct sockaddr_in));
+	int err;
+	if (!destinationAddress) {
+		struct sockaddr_in bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin_family = AF_INET;
+		bindInfo.sin_port = htons(port);
+		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+	} else if (destinationAddress->version == IPV4) {
+		struct sockaddr_in bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin_family = AF_INET;
+		bindInfo.sin_port = htons(port);
+		bindInfo.sin_addr.s_addr = destinationAddress->ipv4;
+		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+	} else {
+		struct sockaddr_in6 bindInfo;
+		memset(&bindInfo, 0, sizeof(bindInfo));
+		bindInfo.sin6_family = AF_INET6;
+		bindInfo.sin6_port = htons(port);
+		memcpy(bindInfo.sin6_addr.s6_addr, destinationAddress->ipv6, sizeof(bindInfo.sin6_addr.s6_addr));
+		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+	}
+
 	if (err) {
 		close(sock);
 		return -1;
@@ -86,8 +132,25 @@ static inline Socket SocketListen(Socket socket, int queueLength) {
 	return listen(socket, queueLength);
 }
 
-static inline Socket SocketAccept(Socket socket, struct sockaddr* restrict address, socklen_t* restrict addressLength) {
-	return accept(socket, address, addressLength);
+static inline Socket SocketAccept(Socket socket, struct Address* address) {
+	if (!address) {
+		return accept(socket, 0, 0);
+	}
+	if (address->version == IPV4) {
+		struct sockaddr_in addrInfo;
+		memset(&addrInfo, 0, sizeof(addrInfo));
+		addrInfo.sin_family = AF_INET;
+		addrInfo.sin_addr.s_addr = address->ipv4;
+		socklen_t len = sizeof(addrInfo);
+		return accept(socket, (struct sockaddr*) &addrInfo, &len);
+	} else {
+		struct sockaddr_in6 addrInfo;
+		memset(&addrInfo, 0, sizeof(addrInfo));
+		addrInfo.sin6_family = AF_INET6;
+		memcpy(addrInfo.sin6_addr.s6_addr, address->ipv6, sizeof(addrInfo.sin6_addr.s6_addr));
+		socklen_t len = sizeof(addrInfo);
+		return accept(socket, (struct sockaddr*) &addrInfo, &len);
+	}
 }
 
 static inline int SocketClose(Socket socket) {
