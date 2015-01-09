@@ -28,7 +28,8 @@ enum ThreadState {
 	THREAD_PAUSING,
 	THREAD_RESETING,
 	THREAD_EXITING,
-	THREAD_SHUTDOWN
+	THREAD_SHUTDOWN,
+	THREAD_CRASHED
 };
 
 struct GBASync {
@@ -107,6 +108,8 @@ void GBAMapArgumentsToContext(const struct GBAArguments*, struct GBAThread*);
 
 bool GBAThreadStart(struct GBAThread* threadContext);
 bool GBAThreadHasStarted(struct GBAThread* threadContext);
+bool GBAThreadHasExited(struct GBAThread* threadContext);
+bool GBAThreadHasCrashed(struct GBAThread* threadContext);
 void GBAThreadEnd(struct GBAThread* threadContext);
 void GBAThreadReset(struct GBAThread* threadContext);
 void GBAThreadJoin(struct GBAThread* threadContext);

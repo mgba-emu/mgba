@@ -212,7 +212,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 	}
 
-	while (threadContext->state != THREAD_SHUTDOWN) {
+	while (threadContext->state < THREAD_SHUTDOWN) {
 		_changeState(threadContext, THREAD_SHUTDOWN, false);
 	}
 
@@ -354,6 +354,22 @@ bool GBAThreadHasStarted(struct GBAThread* threadContext) {
 	hasStarted = threadContext->state > THREAD_INITIALIZED;
 	MutexUnlock(&threadContext->stateMutex);
 	return hasStarted;
+}
+
+bool GBAThreadHasExited(struct GBAThread* threadContext) {
+	bool hasExited;
+	MutexLock(&threadContext->stateMutex);
+	hasExited = threadContext->state > THREAD_EXITING;
+	MutexUnlock(&threadContext->stateMutex);
+	return hasExited;
+}
+
+bool GBAThreadHasCrashed(struct GBAThread* threadContext) {
+	bool hasExited;
+	MutexLock(&threadContext->stateMutex);
+	hasExited = threadContext->state == THREAD_CRASHED;
+	MutexUnlock(&threadContext->stateMutex);
+	return hasExited;
 }
 
 void GBAThreadEnd(struct GBAThread* threadContext) {

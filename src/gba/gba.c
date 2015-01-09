@@ -619,15 +619,23 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 		return;
 	}
 
-	if (threadContext && threadContext->logHandler) {
-		threadContext->logHandler(threadContext, level, format, args);
-		return;
+	gba->cpu->nextEvent = 0;
+	if (threadContext) {
+		if (level == GBA_LOG_FATAL) {
+			MutexLock(&threadContext->stateMutex);
+			threadContext->state = THREAD_CRASHED;
+			MutexUnlock(&threadContext->stateMutex);
+		}
+		if (threadContext->logHandler) {
+			threadContext->logHandler(threadContext, level, format, args);
+			return;
+		}
 	}
 
 	vprintf(format, args);
 	printf("\n");
 
-	if (level == GBA_LOG_FATAL) {
+	if (level == GBA_LOG_FATAL && !threadContext) {
 		abort();
 	}
 }
