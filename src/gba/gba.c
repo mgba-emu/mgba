@@ -613,13 +613,17 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 
 	if (threadContext) {
 		logLevel = threadContext->logLevel;
+		gba = threadContext->gba;
 	}
 
 	if (!(level & logLevel) && level != GBA_LOG_FATAL) {
 		return;
 	}
 
-	gba->cpu->nextEvent = 0;
+	if (level == GBA_LOG_FATAL && gba) {
+		gba->cpu->nextEvent = 0;
+	}
+
 	if (threadContext) {
 		if (level == GBA_LOG_FATAL) {
 			MutexLock(&threadContext->stateMutex);
