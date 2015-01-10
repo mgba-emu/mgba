@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
-	return 0;
+	return GBAThreadHasCrashed(&context);
 }
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {
