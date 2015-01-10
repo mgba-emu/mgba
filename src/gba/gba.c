@@ -105,6 +105,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// RockMan EXE 4.5 - Real Operation
 	{ "BR4J", SAVEDATA_FLASH512, GPIO_RTC, -1 },
 
+	// Super Mario Advance 2
+	{ "AA2E", SAVEDATA_EEPROM, GPIO_NONE, 0x800052E },
+
 	// Super Mario Advance 4
 	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
