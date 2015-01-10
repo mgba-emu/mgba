@@ -27,8 +27,8 @@
 #define ARM_COND_AL 1
 
 #define ARM_SIGN(I) ((I) >> 31)
-#define ARM_ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
-
+#define ARM_SXT_8(I) (((int8_t) (I) << 24) >> 24)
+#define ARM_SXT_16(I) (((int16_t) (I) << 16) >> 16)
 
 #define ARM_CARRY_FROM(M, N, D) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
 #define ARM_BORROW_FROM(M, N, D) (((uint32_t) (M)) >= ((uint32_t) (N)))

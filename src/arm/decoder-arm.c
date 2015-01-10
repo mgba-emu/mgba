@@ -47,7 +47,7 @@
 #define ADDR_MODE_1_IMM \
 	int rotate = (opcode & 0x00000F00) >> 7; \
 	int immediate = opcode & 0x000000FF; \
-	info->op3.immediate = ARM_ROR(immediate, rotate); \
+	info->op3.immediate = ROR(immediate, rotate); \
 	info->operandFormat |= ARM_OPERAND_IMMEDIATE_3;
 
 #define ADDR_MODE_2_SHIFT(OP) \
@@ -416,7 +416,7 @@ DEFINE_DECODER_ARM(MRSR, MRS, info->affectsCPSR = 1;
 
 DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
 	info->op2.immediate = operand;
@@ -426,7 +426,7 @@ DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
 
 DEFINE_DECODER_ARM(MSRRI, MSR, info->affectsCPSR = 1;
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_SPSR;
 	info->op2.immediate = operand;

@@ -56,6 +56,7 @@ Misc:
  - Qt: Clarify some phrasing in the menus
  - GBA Memory: Implement 16- and 32-bit loads from SRAM
  - Qt: Clear active buttons when focus is lost
+ - GBA Memory: Simplify memory API and use fixed bus width
 
 0.1.0: (2014-12-13)
  - Initial release

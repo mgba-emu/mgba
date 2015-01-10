@@ -248,7 +248,7 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		printf("%08X\t%s\n", instruction, disassembly);
 	} else {
-		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
+		uint16_t instruction = debugger->d.cpu->memory.load16(debugger->d.cpu, address, 0);
 		ARMDecodeThumb(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
 		printf("%04X\t%s\n", instruction, disassembly);
@@ -287,7 +287,7 @@ static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.cpu->memory.loadU8(debugger->d.cpu, address, 0);
+	uint8_t value = debugger->d.cpu->memory.load8(debugger->d.cpu, address, 0);
 	printf(" 0x%02X\n", value);
 }
 
@@ -303,7 +303,7 @@ static void _readHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
+	uint16_t value = debugger->d.cpu->memory.load16(debugger->d.cpu, address & ~1, 0);
 	printf(" 0x%04X\n", value);
 }
 
@@ -313,7 +313,7 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
+	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address & ~3, 0);
 	printf(" 0x%08X\n", value);
 }
 
