@@ -292,14 +292,14 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				value = memory->biosPrefetch;
+				value = memory->biosPrefetch & 0xFFFF;
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus;
+				value = gba->bus & 0xFFFF;
 			} else {
-				value = cpu->prefetch[1];
+				value = cpu->prefetch[1] & 0xFFFF;
 			}
 		}
 		break;
