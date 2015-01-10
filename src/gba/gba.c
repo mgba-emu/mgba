@@ -79,7 +79,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Pokemon Emerald
 	{ "BPEJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPEE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
+	{ "BPEE", SAVEDATA_FLASH1M, GPIO_RTC, 0x80008C6 },
 	{ "BPEP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 	{ "BPEI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
 	{ "BPES", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
