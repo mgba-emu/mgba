@@ -108,6 +108,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Super Mario Advance 2
 	{ "AA2E", SAVEDATA_EEPROM, GPIO_NONE, 0x800052E },
 
+	// Super Mario Advance 3
+	{ "A3AE", SAVEDATA_EEPROM, GPIO_NONE, 0x8002B9C },
+
 	// Super Mario Advance 4
 	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
