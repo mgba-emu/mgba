@@ -119,7 +119,6 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
-	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
 	struct GBARTCSource* rtcSource;
@@ -135,6 +134,12 @@ struct GBA {
 	const char* activeFile;
 
 	int logLevel;
+
+	uint32_t busyLoop;
+	uint32_t lastJump;
+	int idleDetectionStep;
+	int32_t cachedRegisters[16];
+	bool taintedRegisters[16];
 };
 
 struct GBACartridge {
