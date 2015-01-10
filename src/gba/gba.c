@@ -47,6 +47,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Final Fantasy Tactics Advance
 	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000418 },
 
+	// Golden Sun: The Lost Age
+	{ "AGFE", SAVEDATA_FLASH512, GPIO_NONE, 0x801353A },
+
 	// Koro Koro Puzzle - Happy Panechu!
 	{ "KHPJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
 
