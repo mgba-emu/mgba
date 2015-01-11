@@ -33,10 +33,12 @@ struct GBACartridgeOverride {
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Boktai: The Sun is in Your Hand
+	{ "U3IJ", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 	{ "U3IE", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 	{ "U3IP", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 
 	// Boktai 2: Solar Boy Django
+	{ "U32J", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 	{ "U32E", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 	{ "U32P", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 
@@ -98,6 +100,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// RockMan EXE 4.5 - Real Operation
 	{ "BR4J", SAVEDATA_FLASH512, GPIO_RTC, -1 },
+
+	// Shin Bokura no Taiyou: Gyakushuu no Sabata
+	{ "U33J", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
 
 	// Super Mario Advance 4
 	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
