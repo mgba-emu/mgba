@@ -96,6 +96,7 @@ private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
 	void gameCrashed(const QString&);
+	void gameFailed();
 	void redoLogo();
 
 	void recordFrame();

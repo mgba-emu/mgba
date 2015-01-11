@@ -204,6 +204,7 @@ void GameController::openGame() {
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
+		emit gameFailed();
 	}
 }
 

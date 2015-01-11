@@ -66,6 +66,7 @@ signals:
 	void gamePaused(GBAThread*);
 	void gameUnpaused(GBAThread*);
 	void gameCrashed(const QString& errorMessage);
+	void gameFailed();
 	void stateLoaded(GBAThread*);
 
 	void postLog(int level, const QString& log);
