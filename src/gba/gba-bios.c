@@ -241,7 +241,6 @@ static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width) 
 	uint32_t sPointer = source + 4;
 	uint32_t dPointer = dest;
 	int blocksRemaining = 0;
-	int block;
 	uint32_t disp;
 	int bytes;
 	int byte;
@@ -250,25 +249,28 @@ static void _unLz77(struct GBA* gba, uint32_t source, uint32_t dest, int width) 
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
 				// Compressed
-				block = cpu->memory.loadU8(cpu, sPointer, 0) | (cpu->memory.loadU8(cpu, sPointer + 1, 0) << 8);
+				int block = cpu->memory.loadU8(cpu, sPointer, 0) | (cpu->memory.loadU8(cpu, sPointer + 1, 0) << 8);
 				sPointer += 2;
 				disp = dPointer - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
 				bytes = ((block & 0x00F0) >> 4) + 3;
 				while (bytes-- && remaining) {
 					--remaining;
-					byte = cpu->memory.loadU8(cpu, disp, 0);
-					++disp;
 					if (width == 2) {
+						byte = cpu->memory.loadU16(cpu, disp & ~1, 0);
 						if (dPointer & 1) {
+							byte >>= (disp & 1) * 8;
 							halfword |= byte << 8;
 							cpu->memory.store16(cpu, dPointer ^ 1, halfword, 0);
 						} else {
-							halfword = byte;
+							byte >>= (disp & 1) * 8;
+							halfword = byte & 0xFF;
 						}
 					} else {
+						byte = cpu->memory.loadU8(cpu, disp, 0);
 						cpu->memory.store8(cpu, dPointer, byte, 0);
 					}
 					++dPointer;
+					++disp;
 				}
 			} else {
 				// Uncompressed
