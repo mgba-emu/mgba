@@ -31,7 +31,7 @@ bool loadPatchUPS(struct Patch* patch) {
 		return false;
 	}
 
-	size_t filesize = patch->vf->seek(patch->vf, 0, SEEK_END);
+	size_t filesize = patch->vf->size(patch->vf);
 
 	uint32_t goodCrc32;
 	patch->vf->seek(patch->vf, PATCH_CHECKSUM, SEEK_END);
@@ -61,7 +61,7 @@ size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
 bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 	// TODO: Input checksum
 
-	size_t filesize = patch->vf->seek(patch->vf, 0, SEEK_END);
+	size_t filesize = patch->vf->size(patch->vf);
 	patch->vf->seek(patch->vf, 4, SEEK_SET);
 	_UPSDecodeLength(patch->vf); // Discard input size
 	if (_UPSDecodeLength(patch->vf) != outSize) {

@@ -445,7 +445,7 @@ void GBADetachDebugger(struct GBA* gba) {
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
 	gba->romVf = vf;
-	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
+	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	if (gba->pristineRomSize > SIZE_CART0) {
 		gba->pristineRomSize = SIZE_CART0;

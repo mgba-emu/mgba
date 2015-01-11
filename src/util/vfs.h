@@ -22,6 +22,7 @@ struct VFile {
 	void* (*map)(struct VFile* vf, size_t size, int flags);
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
+	ssize_t (*size)(struct VFile* vf);
 };
 
 struct VDirEntry {

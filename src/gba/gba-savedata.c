@@ -142,7 +142,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
-		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
+		end = savedata->vf->size(savedata->vf);
 		if (end < SIZE_CART_FLASH512) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 			flashSize = SIZE_CART_FLASH1M;
@@ -168,7 +168,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
-		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
+		end = savedata->vf->size(savedata->vf);
 		if (end < SIZE_CART_EEPROM) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_EEPROM);
 		}
@@ -191,7 +191,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM);
 	} else {
-		end = savedata->vf->seek(savedata->vf, 0, SEEK_END);
+		end = savedata->vf->size(savedata->vf);
 		if (end < SIZE_CART_SRAM) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM);
 		}
