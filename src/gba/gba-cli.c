@@ -112,7 +112,7 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	GBALoadState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue);
+	GBALoadState(gbaDebugger->context, gbaDebugger->context->stateDir, dv->intValue);
 }
 
 static void _rewind(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -139,6 +139,6 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	GBASaveState(gbaDebugger->context->gba, gbaDebugger->context->stateDir, dv->intValue, true);
+	GBASaveState(gbaDebugger->context, gbaDebugger->context->stateDir, dv->intValue, true);
 }
 #endif
