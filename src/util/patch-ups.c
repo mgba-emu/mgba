@@ -110,7 +110,18 @@ bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 }
 
 bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
-	// TODO: Input checksum
+	patch->vf->seek(patch->vf, IN_CHECKSUM, SEEK_END);
+	uint32_t expectedInChecksum;
+	uint32_t expectedOutChecksum;
+	patch->vf->read(patch->vf, &expectedInChecksum, sizeof(expectedInChecksum));
+	patch->vf->read(patch->vf, &expectedOutChecksum, sizeof(expectedOutChecksum));
+
+	uint32_t inputChecksum = doCrc32(in, inSize);
+	uint32_t outputChecksum = 0;
+
+	if (inputChecksum != expectedInChecksum) {
+		return false;
+	}
 
 	ssize_t filesize = patch->vf->size(patch->vf);
 	patch->vf->seek(patch->vf, 4, SEEK_SET);
@@ -137,6 +148,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 		case 0x0:
 			// SourceRead
 			memmove(&writeBuffer[writeLocation], &readBuffer[writeLocation], length);
+			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			break;
 		case 0x1:
@@ -144,6 +156,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 			if (patch->vf->read(patch->vf, &writeBuffer[writeLocation], length) != length) {
 				return false;
 			}
+			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			break;
 		case 0x2:
@@ -158,6 +171,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 				return false;
 			}
 			memmove(&writeBuffer[writeLocation], &readBuffer[readSourceLocation], length);
+			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
 			writeLocation += length;
 			readSourceLocation += length;
 			break;
@@ -178,8 +192,12 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 				++writeLocation;
 				++readTargetLocation;
 			}
+			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation - length], length);
 			break;
 		}
+	}
+	if (expectedOutChecksum != outputChecksum) {
+		return false;
 	}
 	return true;
 }
