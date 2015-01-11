@@ -16,6 +16,7 @@ Features:
  - Rewinding of emulation
  - Implemented BIOS routines SoftReset, RegisterRamReset, Diff8bitUnFilterWram, Diff8bitUnFilterVram, and Diff16bitUnFilter
  - Support IPv6
+ - Save directory of last loaded file
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running

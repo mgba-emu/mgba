@@ -6,6 +6,7 @@
 #include "Window.h"
 
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
@@ -175,15 +176,17 @@ void Window::saveConfig() {
 }
 
 void Window::selectROM() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString());
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadGame(filename);
 	}
 }
 
 void Window::selectBIOS() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"), m_config->getQtOption("lastDirectory").toString());
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
 		m_config->updateOption("bios");
 		m_controller->loadBIOS(filename);
@@ -191,8 +194,9 @@ void Window::selectBIOS() {
 }
 
 void Window::selectPatch() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), QString(), tr("Patches (*.ips *.ups)"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), m_config->getQtOption("lastDirectory").toString(), tr("Patches (*.ips *.ups)"));
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadPatch(filename);
 	}
 }
