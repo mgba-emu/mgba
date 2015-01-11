@@ -16,8 +16,11 @@ enum {
 };
 
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
-static bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize);
-static size_t _UPSDecodeLength(struct VFile* vf);
+
+static bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
+static bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
+
+static size_t _decodeLength(struct VFile* vf);
 
 bool loadPatchUPS(struct Patch* patch) {
 	patch->vf->seek(patch->vf, 0, SEEK_SET);
@@ -27,7 +30,11 @@ bool loadPatchUPS(struct Patch* patch) {
 		return false;
 	}
 
-	if (memcmp(buffer, "UPS1", 4) != 0) {
+	if (memcmp(buffer, "UPS1", 4) == 0) {
+		patch->applyPatch = _UPSApplyPatch;
+	} else if (memcmp(buffer, "BPS1", 4) == 0) {
+		patch->applyPatch = _BPSApplyPatch;
+	} else {
 		return false;
 	}
 
@@ -45,34 +52,35 @@ bool loadPatchUPS(struct Patch* patch) {
 	}
 
 	patch->outputSize = _UPSOutputSize;
-	patch->applyPatch = _UPSApplyPatch;
 	return true;
 }
 
 size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
 	UNUSED(inSize);
 	patch->vf->seek(patch->vf, 4, SEEK_SET);
-	if (_UPSDecodeLength(patch->vf) != inSize) {
+	if (_decodeLength(patch->vf) != inSize) {
 		return 0;
 	}
-	return _UPSDecodeLength(patch->vf);
+	return _decodeLength(patch->vf);
 }
 
-bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
+bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
 	// TODO: Input checksum
 
 	size_t filesize = patch->vf->size(patch->vf);
 	patch->vf->seek(patch->vf, 4, SEEK_SET);
-	_UPSDecodeLength(patch->vf); // Discard input size
-	if (_UPSDecodeLength(patch->vf) != outSize) {
+	_decodeLength(patch->vf); // Discard input size
+	if (_decodeLength(patch->vf) != outSize) {
 		return false;
 	}
+
+	memcpy(out, in, inSize > outSize ? outSize : inSize);
 
 	size_t offset = 0;
 	size_t alreadyRead = 0;
 	uint8_t* buf = out;
 	while (alreadyRead < filesize + IN_CHECKSUM) {
-		offset += _UPSDecodeLength(patch->vf);
+		offset += _decodeLength(patch->vf);
 		uint8_t byte;
 
 		while (true) {
@@ -101,7 +109,82 @@ bool _UPSApplyPatch(struct Patch* patch, void* out, size_t outSize) {
 	return true;
 }
 
-size_t _UPSDecodeLength(struct VFile* vf) {
+bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
+	// TODO: Input checksum
+
+	ssize_t filesize = patch->vf->size(patch->vf);
+	patch->vf->seek(patch->vf, 4, SEEK_SET);
+	_decodeLength(patch->vf); // Discard input size
+	if (_decodeLength(patch->vf) != outSize) {
+		return false;
+	}
+	size_t metadataLength = _decodeLength(patch->vf);
+	patch->vf->seek(patch->vf, metadataLength, SEEK_CUR); // Skip metadata
+	size_t writeLocation = 0;
+	ssize_t readSourceLocation = 0;
+	ssize_t readTargetLocation = 0;
+	size_t readOffset;
+	uint8_t* writeBuffer = out;
+	uint8_t* readBuffer = in;
+	while (patch->vf->seek(patch->vf, 0, SEEK_CUR) < filesize + IN_CHECKSUM) {
+		size_t command = _decodeLength(patch->vf);
+		size_t length = (command >> 2) + 1;
+		if (writeLocation + length > outSize) {
+			return false;
+		}
+		size_t i;
+		switch (command & 0x3) {
+		case 0x0:
+			// SourceRead
+			memmove(&writeBuffer[writeLocation], &readBuffer[writeLocation], length);
+			writeLocation += length;
+			break;
+		case 0x1:
+			// TargetRead
+			if (patch->vf->read(patch->vf, &writeBuffer[writeLocation], length) != length) {
+				return false;
+			}
+			writeLocation += length;
+			break;
+		case 0x2:
+			// SourceCopy
+			readOffset = _decodeLength(patch->vf);
+			if (readOffset & 1) {
+				readSourceLocation -= readOffset >> 1;
+			} else {
+				readSourceLocation += readOffset >> 1;
+			}
+			if (readSourceLocation < 0 || readSourceLocation > inSize) {
+				return false;
+			}
+			memmove(&writeBuffer[writeLocation], &readBuffer[readSourceLocation], length);
+			writeLocation += length;
+			readSourceLocation += length;
+			break;
+		case 0x3:
+			// TargetCopy
+			readOffset = _decodeLength(patch->vf);
+			if (readOffset & 1) {
+				readTargetLocation -= readOffset >> 1;
+			} else {
+				readTargetLocation += readOffset >> 1;
+			}
+			if (readTargetLocation < 0 || readTargetLocation > outSize) {
+				return false;
+			}
+			for (i = 0; i < length; ++i) {
+				// This needs to be bytewise as it can overlap
+				writeBuffer[writeLocation] = writeBuffer[readTargetLocation];
+				++writeLocation;
+				++readTargetLocation;
+			}
+			break;
+		}
+	}
+	return true;
+}
+
+size_t _decodeLength(struct VFile* vf) {
 	size_t shift = 1;
 	size_t value = 0;
 	uint8_t byte;

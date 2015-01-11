@@ -496,8 +496,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.rom = anonymousMemoryMap(patchedSize);
-	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize > patchedSize ? patchedSize : gba->memory.romSize);
-	if (!patch->applyPatch(patch, gba->memory.rom, patchedSize)) {
+	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
 		return;
