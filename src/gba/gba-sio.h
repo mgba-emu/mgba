@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#define MAX_GBAS 4
+
+extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
+
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,
 	SIO_NORMAL_32 = 1,
