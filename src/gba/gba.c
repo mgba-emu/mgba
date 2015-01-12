@@ -109,6 +109,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 	{ "AX4P", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
 
+	// Top Gun - Combat Zones
+	{ "A2YE", SAVEDATA_FORCE_NONE, GPIO_NONE, -1 },
+
 	// Wario Ware Twisted
 	{ "RZWJ", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
 	{ "RZWE", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },

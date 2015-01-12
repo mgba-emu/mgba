@@ -18,7 +18,7 @@ static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
-	savedata->type = SAVEDATA_NONE;
+	savedata->type = SAVEDATA_AUTODETECT;
 	savedata->data = 0;
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
@@ -42,7 +42,8 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 		case SAVEDATA_EEPROM:
 			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_EEPROM);
 			break;
-		case SAVEDATA_NONE:
+		case SAVEDATA_FORCE_NONE:
+		case SAVEDATA_AUTODETECT:
 			break;
 		}
 		savedata->vf = 0;
@@ -60,12 +61,13 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 		case SAVEDATA_EEPROM:
 			mappedMemoryFree(savedata->data, SIZE_CART_EEPROM);
 			break;
-		case SAVEDATA_NONE:
+		case SAVEDATA_FORCE_NONE:
+		case SAVEDATA_AUTODETECT:
 			break;
 		}
 	}
 	savedata->data = 0;
-	savedata->type = SAVEDATA_NONE;
+	savedata->type = SAVEDATA_AUTODETECT;
 }
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
@@ -94,7 +96,8 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 			return out->write(out, savedata->data, SIZE_CART_FLASH1M) == SIZE_CART_FLASH1M;
 		case SAVEDATA_EEPROM:
 			return out->write(out, savedata->data, SIZE_CART_EEPROM) == SIZE_CART_EEPROM;
-		case SAVEDATA_NONE:
+		case SAVEDATA_AUTODETECT:
+		case SAVEDATA_FORCE_NONE:
 			return true;
 		}
 	} else if (savedata->vf) {
@@ -122,14 +125,16 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 	case SAVEDATA_SRAM:
 		GBASavedataInitSRAM(savedata);
 		break;
-	case SAVEDATA_NONE:
-		// TODO: Force none
+	case SAVEDATA_FORCE_NONE:
+		savedata->type = SAVEDATA_FORCE_NONE;
+		break;
+	case SAVEDATA_AUTODETECT:
 		break;
 	}
 }
 
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
-	if (savedata->type == SAVEDATA_NONE) {
+	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_FLASH512;
 	}
 	if (savedata->type != SAVEDATA_FLASH512 && savedata->type != SAVEDATA_FLASH1M) {
@@ -157,7 +162,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 }
 
 void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
-	if (savedata->type == SAVEDATA_NONE) {
+	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_EEPROM;
 	} else {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
@@ -180,7 +185,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 }
 
 void GBASavedataInitSRAM(struct GBASavedata* savedata) {
-	if (savedata->type == SAVEDATA_NONE) {
+	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_SRAM;
 	} else {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
