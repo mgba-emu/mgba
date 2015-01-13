@@ -71,6 +71,7 @@ struct GBAThread {
 	int activeKeys;
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
+	enum GBAIdleLoopOptimization idleOptimization;
 
 	// Run-time options
 	int frameskip;

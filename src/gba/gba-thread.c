@@ -173,6 +173,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
 
 	gba.keySource = &threadContext->activeKeys;
+	gba.idleOptimization = threadContext->idleOptimization;
 
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
@@ -261,6 +262,8 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 	if (opts->audioBuffers) {
 		threadContext->audioBuffers = opts->audioBuffers;
 	}
+
+	threadContext->idleOptimization = opts->idleOptimization;
 }
 
 void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {

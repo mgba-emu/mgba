@@ -173,7 +173,7 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 				break;
 			case ARM_BRANCH:
 				if ((uint32_t) info.op1.immediate + nextAddress + WORD_SIZE_THUMB * 2 == address) {
-					gba->busyLoop = address;
+					gba->idleLoop = address;
 				}
 				gba->idleDetectionStep = -1;
 				return;
@@ -191,32 +191,36 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
-	if (address == gba->lastJump && address == gba->busyLoop && memory->activeRegion != REGION_BIOS) {
-		GBAHalt(gba);
-	}
-
 	int newRegion = address >> BASE_OFFSET;
-	if (newRegion == memory->activeRegion) {
-		if (address == gba->lastJump) {
-			switch (gba->idleDetectionStep) {
-			case 0:
-				memcpy(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters));
-				++gba->idleDetectionStep;
-				break;
-			case 1:
-				if (memcmp(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters))) {
-					gba->idleDetectionStep = -1;
+	if (gba->idleOptimization >= IDLE_LOOP_REMOVE) {
+		if (address == gba->lastJump && address == gba->idleLoop && memory->activeRegion != REGION_BIOS) {
+			GBAHalt(gba);
+		} else if (gba->idleOptimization >= IDLE_LOOP_DETECT && newRegion == memory->activeRegion) {
+			if (address == gba->lastJump) {
+				switch (gba->idleDetectionStep) {
+				case 0:
+					memcpy(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters));
+					++gba->idleDetectionStep;
+					break;
+				case 1:
+					if (memcmp(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters))) {
+						gba->idleDetectionStep = -1;
+						break;
+					}
+					_analyzeForIdleLoop(gba, cpu, address);
 					break;
 				}
-				_analyzeForIdleLoop(gba, cpu, address);
-				break;
+			} else {
+				gba->idleDetectionStep = 0;
 			}
-		} else {
-			gba->lastJump = address;
-			gba->idleDetectionStep = 0;
 		}
+	}
+
+	gba->lastJump = address;
+	if (newRegion == memory->activeRegion) {
 		return;
 	}
+
 	if (memory->activeRegion == REGION_BIOS) {
 		memory->biosPrefetch = cpu->prefetch[1];
 	}

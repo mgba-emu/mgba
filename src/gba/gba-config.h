@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "gba.h"
+
 #include "util/configuration.h"
 
 struct GBAConfig {
@@ -35,6 +37,8 @@ struct GBAOptions {
 
 	bool videoSync;
 	bool audioSync;
+
+	enum GBAIdleLoopOptimization idleOptimization;
 };
 
 void GBAConfigInit(struct GBAConfig*, const char* port);

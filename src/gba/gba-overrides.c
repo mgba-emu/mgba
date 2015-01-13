@@ -195,5 +195,5 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		GBAGPIOInitTilt(&gba->memory.gpio);
 	}
 
-	gba->busyLoop = override->idleLoop;
+	gba->idleLoop = override->idleLoop;
 }
