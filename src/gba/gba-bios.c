@@ -312,7 +312,6 @@ static void _unLz77(struct GBA* gba, int width) {
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
 	source += 4;
 	int blocksRemaining = 0;
-	int block;
 	uint32_t disp;
 	int bytes;
 	int byte;
@@ -321,24 +320,27 @@ static void _unLz77(struct GBA* gba, int width) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
 				// Compressed
-				block = cpu->memory.load8(cpu, source, 0) | (cpu->memory.load8(cpu, source + 1, 0) << 8);
+				int block = cpu->memory.load8(cpu, source + 1, 0) | (cpu->memory.load8(cpu, source, 0) << 8);
 				source += 2;
-				disp = dest - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
-				bytes = ((block & 0x00F0) >> 4) + 3;
+				disp = dest - (block & 0x0FFF) - 1;
+				bytes = (block >> 12) + 3;
 				while (bytes-- && remaining) {
 					--remaining;
-					byte = cpu->memory.load8(cpu, disp, 0);
-					++disp;
 					if (width == 2) {
+						byte = cpu->memory.load16(cpu, disp & ~1, 0);
 						if (dest & 1) {
+							byte >>= (disp & 1) * 8;
 							halfword |= byte << 8;
 							cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 						} else {
-							halfword = byte;
+							byte >>= (disp & 1) * 8;
+							halfword = byte & 0xFF;
 						}
 					} else {
+						byte = cpu->memory.load8(cpu, disp, 0);
 						cpu->memory.store8(cpu, dest, byte, 0);
 					}
+					++disp;
 					++dest;
 				}
 			} else {

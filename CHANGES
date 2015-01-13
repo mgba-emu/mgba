@@ -16,6 +16,8 @@ Features:
  - Rewinding of emulation
  - Implemented BIOS routines SoftReset, RegisterRamReset, Diff8bitUnFilterWram, Diff8bitUnFilterVram, and Diff16bitUnFilter
  - Support IPv6
+ - Save directory of last loaded file
+ - Support BPS patches
  - Automatically detect and optimize out idle loops
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
@@ -48,6 +50,7 @@ Bugfixes:
  - Qt: Fix some cases where key mapping can break if focus is adjusted
  - GBA Memory: Filter out top nybble of DMA addresses
  - Debugger: Fix binary print putting spaces between digits
+ - GBA BIOS: Fix LZ77UnCompVram to use 16-bit loads from decompressed memory
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it

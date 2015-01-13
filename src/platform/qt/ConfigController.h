@@ -75,6 +75,8 @@ public:
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
+	Configuration* overrides() { return &m_config.configTable; } // TODO: Make this not return the whole table
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);

@@ -50,7 +50,7 @@ void GamePakView::gameStarted(GBAThread* thread) {
 	}
 	SavedataType savetype = thread->gba->memory.savedata.type;
 	if (m_ui.savetype->currentIndex() > 0) {
-		if (savetype > SAVEDATA_NONE) {
+		if (savetype > SAVEDATA_FORCE_NONE) {
 			VFile* vf = thread->gba->memory.savedata.vf;
 			GBASavedataDeinit(&thread->gba->memory.savedata);
 			GBASavedataInit(&thread->gba->memory.savedata, vf);
@@ -59,7 +59,7 @@ void GamePakView::gameStarted(GBAThread* thread) {
 		GBASavedataForceType(&thread->gba->memory.savedata, savetype);
 	}
 
-	if (savetype > SAVEDATA_NONE) {
+	if (savetype > SAVEDATA_AUTODETECT) {
 		m_ui.savetype->setCurrentIndex(savetype + 1);
 	}
 	m_ui.savetype->setEnabled(false);

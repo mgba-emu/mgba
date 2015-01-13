@@ -175,22 +175,23 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 }
 #endif
 
-bool GBASaveState(struct GBA* gba, struct VDir* dir, int slot, bool screenshot) {
-	struct VFile* vf = GBAGetState(gba, dir, slot, true);
+bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, bool screenshot) {
+	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
 	if (!vf) {
 		return false;
 	}
-	bool success = GBASaveStateNamed(gba, vf, screenshot);
+	bool success = GBASaveStateNamed(threadContext->gba, vf, screenshot);
 	vf->close(vf);
 	return success;
 }
 
-bool GBALoadState(struct GBA* gba, struct VDir* dir, int slot) {
-	struct VFile* vf = GBAGetState(gba, dir, slot, false);
+bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
+	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, false);
 	if (!vf) {
 		return false;
 	}
-	bool success = GBALoadStateNamed(gba, vf);
+	threadContext->rewindBufferSize = 0;
+	bool success = GBALoadStateNamed(threadContext->gba, vf);
 	vf->close(vf);
 	return success;
 }

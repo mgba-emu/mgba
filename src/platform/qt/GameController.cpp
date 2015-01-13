@@ -204,6 +204,7 @@ void GameController::openGame() {
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
+		emit gameFailed();
 	}
 }
 
@@ -360,7 +361,7 @@ void GameController::setSkipBIOS(bool set) {
 
 void GameController::loadState(int slot) {
 	threadInterrupt();
-	GBALoadState(m_threadContext.gba, m_threadContext.stateDir, slot);
+	GBALoadState(&m_threadContext, m_threadContext.stateDir, slot);
 	threadContinue();
 	emit stateLoaded(&m_threadContext);
 	emit frameAvailable(m_drawContext);
@@ -368,7 +369,7 @@ void GameController::loadState(int slot) {
 
 void GameController::saveState(int slot) {
 	threadInterrupt();
-	GBASaveState(m_threadContext.gba, m_threadContext.stateDir, slot, true);
+	GBASaveState(&m_threadContext, m_threadContext.stateDir, slot, true);
 	threadContinue();
 }
 
