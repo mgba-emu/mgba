@@ -22,6 +22,7 @@ extern "C" {
 
 struct GBAAudio;
 struct GBAVideoSoftwareRenderer;
+struct Configuration;
 
 class QThread;
 
@@ -53,6 +54,7 @@ public:
 	bool videoSync() const { return m_videoSync; }
 
 	void setInputController(InputController* controller) { m_inputController = controller; }
+	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
@@ -66,6 +68,7 @@ signals:
 	void gamePaused(GBAThread*);
 	void gameUnpaused(GBAThread*);
 	void gameCrashed(const QString& errorMessage);
+	void gameFailed();
 	void stateLoaded(GBAThread*);
 
 	void postLog(int level, const QString& log);

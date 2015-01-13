@@ -6,6 +6,7 @@
 #include "Window.h"
 
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
@@ -55,6 +56,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	setFocusPolicy(Qt::StrongFocus);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
+	m_controller->setOverrides(m_config->overrides());
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
@@ -82,6 +84,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
+	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -175,15 +178,17 @@ void Window::saveConfig() {
 }
 
 void Window::selectROM() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString(), tr("Game Boy Advance ROMs (*.gba *.zip *.rom *.bin)"));
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadGame(filename);
 	}
 }
 
 void Window::selectBIOS() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"), m_config->getQtOption("lastDirectory").toString());
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
 		m_config->updateOption("bios");
 		m_controller->loadBIOS(filename);
@@ -191,8 +196,9 @@ void Window::selectBIOS() {
 }
 
 void Window::selectPatch() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), QString(), tr("Patches (*.ips *.ups)"));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), m_config->getQtOption("lastDirectory").toString(), tr("Patches (*.ips *.ups)"));
 	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadPatch(filename);
 	}
 }
@@ -378,6 +384,14 @@ void Window::gameCrashed(const QString& errorMessage) {
 		QMessageBox::Ok, this,  Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
+}
+
+void Window::gameFailed() {
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
+		tr("Could not load game. Are you sure it's in the correct format?"),
+		QMessageBox::Ok, this,  Qt::Sheet);
+	fail->setAttribute(Qt::WA_DeleteOnClose);
+	fail->show();
 }
 
 void Window::redoLogo() {

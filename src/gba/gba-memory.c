@@ -31,9 +31,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
 	cpu->memory.load32 = GBALoad32;
 	cpu->memory.load16 = GBALoad16;
-	cpu->memory.loadU16 = GBALoadU16;
 	cpu->memory.load8 = GBALoad8;
-	cpu->memory.loadU8 = GBALoadU8;
 	cpu->memory.loadMultiple = GBALoadMultiple;
 	cpu->memory.store32 = GBAStore32;
 	cpu->memory.store16 = GBAStore16;
@@ -227,7 +225,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	value |= value << 8; \
 	value |= value << 16;
 
-int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
+uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value = 0;
@@ -278,17 +276,13 @@ int32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
 	int rotate = (address & 3) << 3;
-	return (value >> rotate) | (value << (32 - rotate));
+	return ROR(value, rotate);
 }
 
-uint16_t GBALoadU16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
-	return GBALoad16(cpu, address, cycleCounter);
-}
-
-int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
+uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
-	uint16_t value = 0;
+	uint32_t value = 0;
 	int wait = 0;
 
 	switch (address >> BASE_OFFSET) {
@@ -298,14 +292,14 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				value = memory->biosPrefetch;
+				value = memory->biosPrefetch & 0xFFFF;
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus;
+				value = gba->bus & 0xFFFF;
 			} else {
-				value = cpu->prefetch[1];
+				value = cpu->prefetch[1] & 0xFFFF;
 			}
 		}
 		break;
@@ -373,17 +367,13 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 	// Unaligned 16-bit loads are "unpredictable", but the GBA rotates them, so we have to, too.
 	int rotate = (address & 1) << 3;
-	return (value >> rotate) | (value << (16 - rotate));
+	return ROR(value, rotate);
 }
 
-uint8_t GBALoadU8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
-	return GBALoad8(cpu, address, cycleCounter);
-}
-
-int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
+uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
-	int8_t value = 0;
+	uint8_t value = 0;
 	int wait = 0;
 
 	switch (address >> BASE_OFFSET) {
@@ -440,7 +430,7 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-		if (memory->savedata.type == SAVEDATA_NONE) {
+		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
 			GBASavedataInitSRAM(&memory->savedata);
 		}
@@ -596,7 +586,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		break;
 	case REGION_CART2_EX:
-		if (memory->savedata.type == SAVEDATA_NONE) {
+		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
 			GBASavedataInitEEPROM(&memory->savedata);
 		}
@@ -652,7 +642,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		if (memory->savedata.type == SAVEDATA_NONE) {
+		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			if (address == SAVEDATA_FLASH_BASE) {
 				GBALog(gba, GBA_LOG_INFO, "Detected Flash savegame");
 				GBASavedataInitFlash(&memory->savedata);
@@ -1152,7 +1142,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			dest += destOffset;
 			--wordsRemaining;
 		} else if (destRegion == REGION_CART2_EX) {
-			if (memory->savedata.type == SAVEDATA_NONE) {
+			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}

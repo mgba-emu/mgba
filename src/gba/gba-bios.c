@@ -94,7 +94,7 @@ static void _BgAffineSet(struct GBA* gba) {
 		cy = cpu->memory.load16(cpu, offset + 10, 0);
 		sx = cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
 		sy = cpu->memory.load16(cpu, offset + 14, 0) / 256.f;
-		theta = (cpu->memory.loadU16(cpu, offset + 16, 0) >> 8) / 128.f * M_PI;
+		theta = (cpu->memory.load16(cpu, offset + 16, 0) >> 8) / 128.f * M_PI;
 		offset += 20;
 		// Rotation
 		a = d = cosf(theta);
@@ -131,7 +131,7 @@ static void _ObjAffineSet(struct GBA* gba) {
 		// [  0  sy ] * [ sin(theta)   cos(theta) ] = [ C D ]
 		sx = cpu->memory.load16(cpu, offset, 0) / 256.f;
 		sy = cpu->memory.load16(cpu, offset + 2, 0) / 256.f;
-		theta = (cpu->memory.loadU16(cpu, offset + 4, 0) >> 8) / 128.f * M_PI;
+		theta = (cpu->memory.load16(cpu, offset + 4, 0) >> 8) / 128.f * M_PI;
 		offset += 8;
 		// Rotation
 		a = d = cosf(theta);
@@ -312,7 +312,6 @@ static void _unLz77(struct GBA* gba, int width) {
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
 	source += 4;
 	int blocksRemaining = 0;
-	int block;
 	uint32_t disp;
 	int bytes;
 	int byte;
@@ -321,29 +320,32 @@ static void _unLz77(struct GBA* gba, int width) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
 				// Compressed
-				block = cpu->memory.loadU8(cpu, source, 0) | (cpu->memory.loadU8(cpu, source + 1, 0) << 8);
+				int block = cpu->memory.load8(cpu, source + 1, 0) | (cpu->memory.load8(cpu, source, 0) << 8);
 				source += 2;
-				disp = dest - (((block & 0x000F) << 8) | ((block & 0xFF00) >> 8)) - 1;
-				bytes = ((block & 0x00F0) >> 4) + 3;
+				disp = dest - (block & 0x0FFF) - 1;
+				bytes = (block >> 12) + 3;
 				while (bytes-- && remaining) {
 					--remaining;
-					byte = cpu->memory.loadU8(cpu, disp, 0);
-					++disp;
 					if (width == 2) {
+						byte = cpu->memory.load16(cpu, disp & ~1, 0);
 						if (dest & 1) {
+							byte >>= (disp & 1) * 8;
 							halfword |= byte << 8;
 							cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
 						} else {
-							halfword = byte;
+							byte >>= (disp & 1) * 8;
+							halfword = byte & 0xFF;
 						}
 					} else {
+						byte = cpu->memory.load8(cpu, disp, 0);
 						cpu->memory.store8(cpu, dest, byte, 0);
 					}
+					++disp;
 					++dest;
 				}
 			} else {
 				// Uncompressed
-				byte = cpu->memory.loadU8(cpu, source, 0);
+				byte = cpu->memory.load8(cpu, source, 0);
 				++source;
 				if (width == 2) {
 					if (dest & 1) {
@@ -361,7 +363,7 @@ static void _unLz77(struct GBA* gba, int width) {
 			blockheader <<= 1;
 			--blocksRemaining;
 		} else {
-			blockheader = cpu->memory.loadU8(cpu, source, 0);
+			blockheader = cpu->memory.load8(cpu, source, 0);
 			++source;
 			blocksRemaining = 8;
 		}
@@ -390,7 +392,7 @@ static void _unHuffman(struct GBA* gba) {
 	int padding = (4 - remaining) & 0x3;
 	remaining &= 0xFFFFFFFC;
 	// We assume the signature byte (0x20) is correct
-	int treesize = (cpu->memory.loadU8(cpu, source + 4, 0) << 1) + 1;
+	int treesize = (cpu->memory.load8(cpu, source + 4, 0) << 1) + 1;
 	int block = 0;
 	uint32_t treeBase = source + 5;
 	source += 5 + treesize;
@@ -458,13 +460,13 @@ static void _unRl(struct GBA* gba, int width) {
 	uint32_t dest = cpu->gprs[1];
 	int halfword = 0;
 	while (remaining > 0) {
-		blockheader = cpu->memory.loadU8(cpu, source, 0);
+		blockheader = cpu->memory.load8(cpu, source, 0);
 		++source;
 		if (blockheader & 0x80) {
 			// Compressed
 			blockheader &= 0x7F;
 			blockheader += 3;
-			block = cpu->memory.loadU8(cpu, source, 0);
+			block = cpu->memory.load8(cpu, source, 0);
 			++source;
 			while (blockheader-- && remaining) {
 				--remaining;
@@ -485,7 +487,7 @@ static void _unRl(struct GBA* gba, int width) {
 			blockheader++;
 			while (blockheader-- && remaining) {
 				--remaining;
-				int byte = cpu->memory.loadU8(cpu, source, 0);
+				int byte = cpu->memory.load8(cpu, source, 0);
 				++source;
 				if (width == 2) {
 					if (dest & 1) {
@@ -532,9 +534,9 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 	while (remaining > 0) {
 		uint16_t new;
 		if (inwidth == 1) {
-			new = cpu->memory.loadU8(cpu, source, 0);
+			new = cpu->memory.load8(cpu, source, 0);
 		} else {
-			new = cpu->memory.loadU16(cpu, source, 0);
+			new = cpu->memory.load16(cpu, source, 0);
 		}
 		new += old;
 		if (outwidth > inwidth) {

@@ -446,11 +446,10 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.log = 0;
 }
 
-int GDBStubListen(struct GDBStub* stub, int port, uint32_t bindAddress) {
+int GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
-	// TODO: support IPv6
 	stub->socket = SocketOpenTCP(port, bindAddress);
 	if (SOCKET_FAILED(stub->socket)) {
 		if (stub->d.log) {
@@ -500,7 +499,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 		return;
 	}
 	if (stub->connection == INVALID_SOCKET) {
-		stub->connection = SocketAccept(stub->socket, 0, 0);
+		stub->connection = SocketAccept(stub->socket, 0);
 		if (!SOCKET_FAILED(stub->connection)) {
 			if (!SocketSetBlocking(stub->connection, 0)) {
 				goto connectionLost;

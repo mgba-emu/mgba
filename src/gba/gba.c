@@ -24,119 +24,12 @@ const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 static const size_t GBA_ROM_MAGIC_OFFSET = 2;
 static const uint8_t GBA_ROM_MAGIC[] = { 0x00, 0xEA };
 
-struct GBACartridgeOverride {
-	const char id[4];
-	enum SavedataType type;
-	int gpio;
-	uint32_t busyLoop;
-};
-
-static const struct GBACartridgeOverride _overrides[] = {
-	// Boktai: The Sun is in Your Hand
-	{ "U3IE", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-	{ "U3IP", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-
-	// Boktai 2: Solar Boy Django
-	{ "U32E", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-	{ "U32P", SAVEDATA_EEPROM, GPIO_RTC | GPIO_LIGHT_SENSOR, -1 },
-
-	// Drill Dozer
-	{ "V49J", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
-	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
-
-	// Final Fantasy Tactics Advance
-	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000418 },
-
-	// Golden Sun: The Lost Age
-	{ "AGFE", SAVEDATA_FLASH512, GPIO_NONE, 0x801353A },
-
-	// Koro Koro Puzzle - Happy Panechu!
-	{ "KHPJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
-
-	// Mega Man Battle Network
-	{ "AREE", SAVEDATA_SRAM, GPIO_NONE, 0x800032E },
-
-	// Metal Slug Advance
-	{ "BSME", SAVEDATA_EEPROM, GPIO_NONE, 0x8000290 },
-
-	// Pokemon Ruby
-	{ "AXVJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVS", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVD", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXVF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-
-	// Pokemon Sapphire
-	{ "AXPJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPE", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPS", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPD", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "AXPF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-
-	// Pokemon Emerald
-	{ "BPEJ", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPEE", SAVEDATA_FLASH1M, GPIO_RTC, 0x80008C6 },
-	{ "BPEP", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPEI", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPES", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPED", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-	{ "BPEF", SAVEDATA_FLASH1M, GPIO_RTC, -1 },
-
-	// Pokemon Mystery Dungeon
-	{ "B24J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "B24E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "B24P", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "B24U", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-
-	// Pokemon FireRed
-	{ "BPRJ", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "BPRE", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "BPRP", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-
-	// Pokemon LeafGreen
-	{ "BPGJ", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "BPGE", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "BPGP", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-
-	// RockMan EXE 4.5 - Real Operation
-	{ "BR4J", SAVEDATA_FLASH512, GPIO_RTC, -1 },
-
-	// Super Mario Advance 2
-	{ "AA2E", SAVEDATA_EEPROM, GPIO_NONE, 0x800052E },
-
-	// Super Mario Advance 3
-	{ "A3AE", SAVEDATA_EEPROM, GPIO_NONE, 0x8002B9C },
-
-	// Super Mario Advance 4
-	{ "AX4J", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "AX4E", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-	{ "AX4P", SAVEDATA_FLASH1M, GPIO_NONE, -1 },
-
-	// Wario Ware Twisted
-	{ "RZWJ", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
-	{ "RZWE", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
-	{ "RZWP", SAVEDATA_SRAM, GPIO_RUMBLE | GPIO_GYRO, -1 },
-
-	// Yoshi's Universal Gravitation
-	{ "KYGJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
-	{ "KYGE", SAVEDATA_EEPROM, GPIO_TILT, -1 },
-	{ "KYGP", SAVEDATA_EEPROM, GPIO_TILT, -1 },
-
-	{ { 0, 0, 0, 0 }, 0, 0, -1 }
-};
-
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
-
-static void _checkOverrides(struct GBA* gba, uint32_t code);
 
 void GBACreate(struct GBA* gba) {
 	gba->d.id = GBA_COMPONENT_MAGIC;
@@ -452,7 +345,7 @@ void GBADetachDebugger(struct GBA* gba) {
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
 	gba->romVf = vf;
-	gba->pristineRomSize = vf->seek(vf, 0, SEEK_END);
+	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	if (gba->pristineRomSize > SIZE_CART0) {
 		gba->pristineRomSize = SIZE_CART0;
@@ -468,7 +361,6 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAGPIOInit(&gba->memory.gpio, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	_checkOverrides(gba, ((struct GBACartridge*) gba->memory.rom)->id);
 	// TODO: error check
 }
 
@@ -503,8 +395,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.rom = anonymousMemoryMap(patchedSize);
-	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize > patchedSize ? patchedSize : gba->memory.romSize);
-	if (!patch->applyPatch(patch, gba->memory.rom, patchedSize)) {
+	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
 		return;
@@ -742,45 +633,5 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 	if (gba->debugger) {
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
-	}
-}
-
-void _checkOverrides(struct GBA* gba, uint32_t id) {
-	int i;
-	gba->busyLoop = -1;
-	if ((id & 0xFF) == 'F') {
-		GBALog(gba, GBA_LOG_DEBUG, "Found Classic NES Series game, using EEPROM saves");
-		GBASavedataInitEEPROM(&gba->memory.savedata);
-		return;
-	}
-	for (i = 0; _overrides[i].id[0]; ++i) {
-		const uint32_t* overrideId = (const uint32_t*) _overrides[i].id;
-		if (*overrideId == id) {
-			GBALog(gba, GBA_LOG_DEBUG, "Found override for game %s!", _overrides[i].id);
-			GBASavedataForceType(&gba->memory.savedata, _overrides[i].type);
-
-			if (_overrides[i].gpio & GPIO_RTC) {
-				GBAGPIOInitRTC(&gba->memory.gpio);
-			}
-
-			if (_overrides[i].gpio & GPIO_GYRO) {
-				GBAGPIOInitGyro(&gba->memory.gpio);
-			}
-
-			if (_overrides[i].gpio & GPIO_RUMBLE) {
-				GBAGPIOInitRumble(&gba->memory.gpio);
-			}
-
-			if (_overrides[i].gpio & GPIO_LIGHT_SENSOR) {
-				GBAGPIOInitLightSensor(&gba->memory.gpio);
-			}
-
-			if (_overrides[i].gpio & GPIO_TILT) {
-				GBAGPIOInitTilt(&gba->memory.gpio);
-			}
-
-			gba->busyLoop = _overrides[i].busyLoop;
-			return;
-		}
 	}
 }

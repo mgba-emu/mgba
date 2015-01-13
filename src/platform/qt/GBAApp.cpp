@@ -26,15 +26,15 @@ GBAApp::GBAApp(int& argc, char* argv[])
     QApplication::setApplicationName(PROJECT_NAME);
     QApplication::setApplicationVersion(PROJECT_VERSION);
 
+    m_window.show();
+
 	GBAArguments args = {};
     if (m_configController.parseArguments(&args, argc, argv)) {
-    	m_window.argumentsPassed(&args);
+		m_window.argumentsPassed(&args);
     } else {
-    	m_window.loadConfig();
+		m_window.loadConfig();
     }
 	freeArguments(&args);
-
-    m_window.show();
 }
 
 bool GBAApp::event(QEvent* event) {
