@@ -8,6 +8,7 @@
 #include "arm.h"
 #include "gba.h"
 #include "gba-config.h"
+#include "gba-overrides.h"
 #include "gba-serialize.h"
 
 #include "debugger/debugger.h"
@@ -141,6 +142,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	if (threadContext->rom) {
 		GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
+
+		struct GBACartridgeOverride override;
+		const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
+		memcpy(override.id, &cart->id, sizeof(override.id));
+		if (GBAOverrideFind(threadContext->overrides, &override)) {
+			GBAOverrideApply(&gba, &override);
+		}
+
 		if (threadContext->bios && GBAIsBIOS(threadContext->bios)) {
 			GBALoadBIOS(&gba, threadContext->bios);
 		}
