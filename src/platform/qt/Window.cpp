@@ -56,6 +56,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	setFocusPolicy(Qt::StrongFocus);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
+	m_controller->setOverrides(m_config->overrides());
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);

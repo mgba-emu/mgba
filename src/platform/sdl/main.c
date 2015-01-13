@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
 	GBASDLInitBindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
 	GBASDLEventsLoadConfig(&renderer.events, &config.configTable); // TODO: Don't use this directly
+	context.overrides = &config.configTable;
 
 	GBAThreadStart(&context);
 

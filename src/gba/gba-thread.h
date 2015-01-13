@@ -70,6 +70,7 @@ struct GBAThread {
 	const char* fname;
 	int activeKeys;
 	struct GBAAVStream* stream;
+	struct Configuration* overrides;
 
 	// Run-time options
 	int frameskip;
