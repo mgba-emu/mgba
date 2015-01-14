@@ -385,6 +385,10 @@ static void _unHuffman(struct GBA* gba) {
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	int bits = header & 0xF;
+	if (bits == 0) {
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Invalid Huffman bits");
+		bits = 8;
+	}
 	if (32 % bits) {
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
 		return;
