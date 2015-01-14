@@ -102,9 +102,10 @@ void GBAMemoryReset(struct GBA* gba) {
 	memset(gba->memory.dma, 0, sizeof(gba->memory.dma));
 	int i;
 	for (i = 0; i < 4; ++i) {
-		gba->memory.dma[i].count = 0x10000;
+		gba->memory.dma[i].count = 0x4000;
 		gba->memory.dma[i].nextEvent = INT_MAX;
 	}
+	gba->memory.dma[3].count = 0x10000;
 	gba->memory.activeDMA = -1;
 	gba->memory.nextDMA = INT_MAX;
 	gba->memory.eventDiff = 0;
