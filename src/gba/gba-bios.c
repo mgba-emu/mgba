@@ -291,6 +291,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	default:
 		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
 	}
+	gba->memory.biosPrefetch = 0xE3A02004;
 }
 
 void GBASwi32(struct ARMCore* cpu, int immediate) {
