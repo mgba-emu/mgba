@@ -42,7 +42,7 @@ void GBAVideoInit(struct GBAVideo* video) {
 
 void GBAVideoReset(struct GBAVideo* video) {
 	video->dispstat = 0;
-	video->vcount = 0;
+	video->vcount = VIDEO_VERTICAL_TOTAL_PIXELS - 1;
 
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;

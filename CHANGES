@@ -65,6 +65,7 @@ Misc:
  - GBA Memory: Implement 16- and 32-bit loads from SRAM
  - Qt: Clear active buttons when focus is lost
  - GBA Memory: Simplify memory API and use fixed bus width
+ - GBA Video: Start video at the last scanline instead of the first
 
 0.1.0: (2014-12-13)
  - Initial release
