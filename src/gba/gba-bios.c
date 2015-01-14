@@ -317,7 +317,7 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Invalid Huffman bits");
 		bits = 8;
 	}
-	if (32 % bits) {
+	if (32 % bits || bits == 1) {
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
