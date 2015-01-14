@@ -215,7 +215,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		break;
 	case 0xD:
-		cpu->gprs[0] = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+		cpu->gprs[0] = GBA_BIOS_CHECKSUM;
+		cpu->gprs[1] = 1;
+		cpu->gprs[3] = SIZE_BIOS;
+		break;
 	case 0xE:
 		_BgAffineSet(gba);
 		break;

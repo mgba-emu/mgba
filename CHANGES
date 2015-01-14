@@ -52,6 +52,7 @@ Bugfixes:
  - Debugger: Fix binary print putting spaces between digits
  - GBA BIOS: Fix LZ77UnCompVram to use 16-bit loads from decompressed memory
  - GBA BIOS: Fix HuffUnComp to work when games pass an invalid bit length
+ - GBA BIOS: Fix GetBiosChecksum to return the value of a real GBA, regardless of used BIOS
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
