@@ -206,7 +206,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	++wait;
 
 #define LOAD_VRAM \
-	LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
+		LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	} else { \
+		LOAD_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
+	} \
 	++wait;
 
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
@@ -323,7 +327,11 @@ int16_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_16(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
 		break;
 	case REGION_VRAM:
-		LOAD_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			LOAD_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else {
+			LOAD_16(value, address & 0x00017FFF, gba->video.renderer->vram);
+		}
 		break;
 	case REGION_OAM:
 		LOAD_16(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
@@ -418,7 +426,11 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		value = ((int8_t*) gba->video.palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case REGION_VRAM:
-		value = ((int8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			value = ((int8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+		} else {
+			value = ((int8_t*) gba->video.renderer->vram)[address & 0x00017FFF];
+		}
 		break;
 	case REGION_OAM:
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
@@ -486,9 +498,9 @@ int8_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 
 #define STORE_VRAM \
-	if ((address & OFFSET_MASK) < SIZE_VRAM) { \
+	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
 		STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
-	} else if ((address & OFFSET_MASK) < 0x00020000) { \
+	} else { \
 		STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
 	} \
 	++wait;
@@ -575,9 +587,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 		break;
 	case REGION_VRAM:
-		if ((address & OFFSET_MASK) < SIZE_VRAM) {
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
 			STORE_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
-		} else if ((address & OFFSET_MASK) < 0x00020000) {
+		} else {
 			STORE_16(value, address & 0x00017FFF, gba->video.renderer->vram);
 		}
 		break;
