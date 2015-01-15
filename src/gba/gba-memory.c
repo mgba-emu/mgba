@@ -297,14 +297,14 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				value = memory->biosPrefetch & 0xFFFF;
+				LOAD_16(value, address & 2, &memory->biosPrefetch);
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus & 0xFFFF;
+				LOAD_16(value, address & 2, &gba->bus);
 			} else {
-				value = cpu->prefetch[1] & 0xFFFF;
+				LOAD_16(value, address & 2, &cpu->prefetch[1]);
 			}
 		}
 		break;
@@ -364,9 +364,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 		if (cpu->cycles >= cpu->nextEvent) {
-			value = gba->bus;
+			LOAD_16(value, address & 2, &gba->bus);
 		} else {
-			value = cpu->prefetch[1];
+			LOAD_16(value, address & 2, &cpu->prefetch[1]);
 		}
 		break;
 	}
@@ -392,14 +392,14 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				value = ((int8_t*) memory->bios)[address];
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
-				value = memory->biosPrefetch;
+				value = ((uint8_t*) &memory->biosPrefetch)[address & 3];
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus;
+				value = ((uint8_t*) &gba->bus)[address & 3];
 			} else {
-				value = cpu->prefetch[1];
+				value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
 			}
 		}
 		break;
@@ -461,9 +461,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 		if (cpu->cycles >= cpu->nextEvent) {
-			value = gba->bus;
+			value = ((uint8_t*) &gba->bus)[address & 3];
 		} else {
-			value = cpu->prefetch[1];
+			value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
 		}
 		break;
 	}
