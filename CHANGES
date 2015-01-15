@@ -56,6 +56,7 @@ Bugfixes:
  - GBA Memory: Properly bounds-check VRAM accesses
  - GBA Memory: Fix initial DMA state
  - GBA BIOS: Fix BIOS prefetch after returning from an IRQ
+ - GBA BIOS: Fix BIOS prefetch after reset
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
