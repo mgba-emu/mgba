@@ -129,6 +129,9 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 	if (_decodeLength(patch->vf) != outSize) {
 		return false;
 	}
+	if (inSize > SSIZE_MAX || outSize > SSIZE_MAX) {
+		return false;
+	}
 	size_t metadataLength = _decodeLength(patch->vf);
 	patch->vf->seek(patch->vf, metadataLength, SEEK_CUR); // Skip metadata
 	size_t writeLocation = 0;
@@ -153,7 +156,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 			break;
 		case 0x1:
 			// TargetRead
-			if (patch->vf->read(patch->vf, &writeBuffer[writeLocation], length) != length) {
+			if (patch->vf->read(patch->vf, &writeBuffer[writeLocation], length) != (ssize_t) length) {
 				return false;
 			}
 			outputChecksum = updateCrc32(outputChecksum, &writeBuffer[writeLocation], length);
@@ -167,7 +170,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 			} else {
 				readSourceLocation += readOffset >> 1;
 			}
-			if (readSourceLocation < 0 || readSourceLocation > inSize) {
+			if (readSourceLocation < 0 || readSourceLocation > (ssize_t) inSize) {
 				return false;
 			}
 			memmove(&writeBuffer[writeLocation], &readBuffer[readSourceLocation], length);
@@ -183,7 +186,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 			} else {
 				readTargetLocation += readOffset >> 1;
 			}
-			if (readTargetLocation < 0 || readTargetLocation > outSize) {
+			if (readTargetLocation < 0 || readTargetLocation > (ssize_t) outSize) {
 				return false;
 			}
 			for (i = 0; i < length; ++i) {
