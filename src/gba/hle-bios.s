@@ -68,6 +68,8 @@ add    lr, pc, #0
 ldr    pc, [r0, #-4]
 ldmfd  sp!, {r0-r3, r12, lr}
 subs   pc, lr, #4
+.word 0
+.word 0xE55EC002
 
 VBlankIntrWait:
 mov    r0, #1
