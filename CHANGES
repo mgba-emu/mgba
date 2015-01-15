@@ -59,6 +59,7 @@ Bugfixes:
  - GBA BIOS: Fix BIOS prefetch after reset
  - GBA Memory: Fix alignment of open bus 8- and 16-bit loads
  - GBA BIOS: Fix HuffUnComp boundary conditions
+ - GBA Video: Fix mode 0 being able to read tiles above appropriate tile range
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
