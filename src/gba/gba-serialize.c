@@ -40,6 +40,10 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	memcpy(state->cpu.bankedRegisters, gba->cpu->bankedRegisters, 6 * 7 * sizeof(int32_t));
 	memcpy(state->cpu.bankedSPSRs, gba->cpu->bankedSPSRs, 6 * sizeof(int32_t));
 
+	state->biosPrefetch = gba->memory.biosPrefetch;
+	state->cpuPrefetch[0] = gba->cpu->prefetch[0];
+	state->cpuPrefetch[1] = gba->cpu->prefetch[1];
+
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
@@ -80,14 +84,29 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
 	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
+	if (state->biosPrefetch) {
+		gba->memory.biosPrefetch = state->biosPrefetch;
+	}
 	if (gba->cpu->cpsr.t) {
 		gba->cpu->executionMode = MODE_THUMB;
-		LOAD_16(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
-		LOAD_16(gba->cpu->prefetch[1], (gba->cpu->gprs[ARM_PC]) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
+			gba->cpu->prefetch[0] = state->cpuPrefetch[0] & 0xFFFF;
+			gba->cpu->prefetch[1] = state->cpuPrefetch[1] & 0xFFFF;
+		} else {
+			// Maintain backwards compat
+			LOAD_16(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+			LOAD_16(gba->cpu->prefetch[1], (gba->cpu->gprs[ARM_PC]) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+		}
 	} else {
 		gba->cpu->executionMode = MODE_ARM;
-		LOAD_32(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
-		LOAD_32(gba->cpu->prefetch[1], (gba->cpu->gprs[ARM_PC]) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
+			gba->cpu->prefetch[0] = state->cpuPrefetch[0];
+			gba->cpu->prefetch[1] = state->cpuPrefetch[1];
+		} else {
+			// Maintain backwards compat
+			LOAD_32(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+			LOAD_32(gba->cpu->prefetch[1], (gba->cpu->gprs[ARM_PC]) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
+		}
 	}
 
 	GBAMemoryDeserialize(&gba->memory, state);
