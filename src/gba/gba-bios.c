@@ -322,8 +322,6 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
-	int padding = (4 - remaining) & 0x3;
-	remaining &= 0xFFFFFFFC;
 	// We assume the signature byte (0x20) is correct
 	int treesize = (cpu->memory.loadU8(cpu, source + 4, 0) << 1) + 1;
 	int block = 0;
@@ -373,10 +371,6 @@ static void _unHuffman(struct GBA* gba, uint32_t source, uint32_t dest) {
 				block = 0;
 			}
 		}
-
-	}
-	if (padding) {
-		cpu->memory.store32(cpu, dPointer, block, 0);
 	}
 }
 
