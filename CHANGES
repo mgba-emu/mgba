@@ -34,6 +34,7 @@ Bugfixes:
  - GBA Memory: Fix initial DMA state
  - GBA BIOS: Fix HuffUnComp boundary conditions
  - GBA Video: Fix mode 0 being able to read tiles above appropriate tile range
+ - GBA Audio: Properly initialize audio FIFO channels
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it

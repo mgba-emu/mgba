@@ -43,8 +43,8 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->ch2 = (struct GBAAudioChannel2) { .envelope = { .nextStep = INT_MAX } };
 	audio->ch3 = (struct GBAAudioChannel3) { .bank = { .bank = 0 } };
 	audio->ch4 = (struct GBAAudioChannel4) { .envelope = { .nextStep = INT_MAX } };
-	audio->chA.dmaSource = 0;
-	audio->chB.dmaSource = 0;
+	audio->chA.dmaSource = 1;
+	audio->chB.dmaSource = 2;
 	audio->chA.sample = 0;
 	audio->chB.sample = 0;
 	audio->eventDiff = 0;
