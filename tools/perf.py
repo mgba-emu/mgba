@@ -76,7 +76,7 @@ class Suite(object):
     def collect_tests(self):
         roms = []
         for f in os.listdir(self.cwd):
-            if f.endswith('.gba'):
+            if f.endswith('.gba') or f.endswith('.zip'):
                 roms.append(f)
         roms.sort()
         for rom in roms:

@@ -215,7 +215,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		ARMRaiseSWI(cpu);
 		break;
 	case 0xD:
-		cpu->gprs[0] = GBAChecksum(gba->memory.bios, SIZE_BIOS);
+		cpu->gprs[0] = GBA_BIOS_CHECKSUM;
+		cpu->gprs[1] = 1;
+		cpu->gprs[3] = SIZE_BIOS;
+		break;
 	case 0xE:
 		_BgAffineSet(gba);
 		break;
@@ -288,6 +291,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	default:
 		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
 	}
+	gba->memory.biosPrefetch = 0xE3A02004;
 }
 
 void GBASwi32(struct ARMCore* cpu, int immediate) {
@@ -385,12 +389,14 @@ static void _unHuffman(struct GBA* gba) {
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	int bits = header & 0xF;
-	if (32 % bits) {
+	if (bits == 0) {
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Invalid Huffman bits");
+		bits = 8;
+	}
+	if (32 % bits || bits == 1) {
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
-	int padding = (4 - remaining) & 0x3;
-	remaining &= 0xFFFFFFFC;
 	// We assume the signature byte (0x20) is correct
 	int treesize = (cpu->memory.load8(cpu, source + 4, 0) << 1) + 1;
 	int block = 0;
@@ -440,9 +446,6 @@ static void _unHuffman(struct GBA* gba) {
 			}
 		}
 
-	}
-	if (padding) {
-		cpu->memory.store32(cpu, dest, block, 0);
 	}
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;

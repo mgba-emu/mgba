@@ -16,7 +16,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#define SOCKET_FAILED(s) (s) == INVALID_SOCKET
+#define SOCKET_FAILED(s) ((s) == INVALID_SOCKET)
 typedef SOCKET Socket;
 #else
 #include <fcntl.h>
@@ -25,7 +25,7 @@ typedef SOCKET Socket;
 #include <sys/socket.h>
 
 #define INVALID_SOCKET (-1)
-#define SOCKET_FAILED(s) (s) < 0
+#define SOCKET_FAILED(s) ((s) < 0)
 typedef int Socket;
 #endif
 
@@ -157,7 +157,7 @@ static inline int SocketClose(Socket socket) {
 	return close(socket) >= 0;
 }
 
-static inline int SocketSetBlocking(Socket socket, int blocking) {
+static inline int SocketSetBlocking(Socket socket, bool blocking) {
 #ifdef _WIN32
 	u_long unblocking = !blocking;
 	return ioctlsocket(socket, FIONBIO, &unblocking) == NO_ERROR;

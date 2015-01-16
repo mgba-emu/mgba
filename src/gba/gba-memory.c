@@ -101,9 +101,10 @@ void GBAMemoryReset(struct GBA* gba) {
 	memset(gba->memory.dma, 0, sizeof(gba->memory.dma));
 	int i;
 	for (i = 0; i < 4; ++i) {
-		gba->memory.dma[i].count = 0x10000;
+		gba->memory.dma[i].count = 0x4000;
 		gba->memory.dma[i].nextEvent = INT_MAX;
 	}
+	gba->memory.dma[3].count = 0x10000;
 	gba->memory.activeDMA = -1;
 	gba->memory.nextDMA = INT_MAX;
 	gba->memory.eventDiff = 0;
@@ -300,7 +301,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	++wait;
 
 #define LOAD_VRAM \
-	LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
+		LOAD_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
+	} else { \
+		LOAD_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
+	} \
 	++wait;
 
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
@@ -388,14 +393,14 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				value = memory->biosPrefetch & 0xFFFF;
+				LOAD_16(value, address & 2, &memory->biosPrefetch);
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus & 0xFFFF;
+				LOAD_16(value, address & 2, &gba->bus);
 			} else {
-				value = cpu->prefetch[1] & 0xFFFF;
+				LOAD_16(value, address & 2, &cpu->prefetch[1]);
 			}
 		}
 		break;
@@ -413,7 +418,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_16(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
 		break;
 	case REGION_VRAM:
-		LOAD_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			LOAD_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else {
+			LOAD_16(value, address & 0x00017FFF, gba->video.renderer->vram);
+		}
 		break;
 	case REGION_OAM:
 		LOAD_16(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
@@ -451,9 +460,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 		if (cpu->cycles >= cpu->nextEvent) {
-			value = gba->bus;
+			LOAD_16(value, address & 2, &gba->bus);
 		} else {
-			value = cpu->prefetch[1];
+			LOAD_16(value, address & 2, &cpu->prefetch[1]);
 		}
 		break;
 	}
@@ -479,14 +488,14 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				value = ((int8_t*) memory->bios)[address];
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
-				value = memory->biosPrefetch;
+				value = ((uint8_t*) &memory->biosPrefetch)[address & 3];
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 			if (cpu->cycles >= cpu->nextEvent) {
-				value = gba->bus;
+				value = ((uint8_t*) &gba->bus)[address & 3];
 			} else {
-				value = cpu->prefetch[1];
+				value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
 			}
 		}
 		break;
@@ -504,7 +513,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		value = ((int8_t*) gba->video.palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case REGION_VRAM:
-		value = ((int8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			value = ((int8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+		} else {
+			value = ((int8_t*) gba->video.renderer->vram)[address & 0x00017FFF];
+		}
 		break;
 	case REGION_OAM:
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
@@ -544,9 +557,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 		if (cpu->cycles >= cpu->nextEvent) {
-			value = gba->bus;
+			value = ((uint8_t*) &gba->bus)[address & 3];
 		} else {
-			value = cpu->prefetch[1];
+			value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
 		}
 		break;
 	}
@@ -574,9 +587,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 
 #define STORE_VRAM \
-	if ((address & OFFSET_MASK) < SIZE_VRAM) { \
+	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
 		STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram); \
-	} else if ((address & OFFSET_MASK) < 0x00020000) { \
+	} else { \
 		STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram); \
 	} \
 	++wait;
@@ -663,9 +676,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
 		break;
 	case REGION_VRAM:
-		if ((address & OFFSET_MASK) < SIZE_VRAM) {
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
 			STORE_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
-		} else if ((address & OFFSET_MASK) < 0x00020000) {
+		} else {
 			STORE_16(value, address & 0x00017FFF, gba->video.renderer->vram);
 		}
 		break;

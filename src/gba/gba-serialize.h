@@ -150,7 +150,11 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002C1 - 0x002C3: Flags
  *   | bits 0 - 1: Tilt state machine
  *   | bits 2 - 31: Reserved
- * 0x002C4 - 0x002FF: Reserved (leave zero)
+ * 0x002C4 - 0x002F3: Reserved (leave zero)
+ * 0x002F4 - 0x002FF: Prefetch
+ * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
+ * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
+ * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
  * 0x00304 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
@@ -267,7 +271,10 @@ struct GBASerializedState {
 		unsigned : 22;
 	} gpio;
 
-	uint32_t reservedGpio[15];
+	uint32_t reservedGpio[12];
+
+	uint32_t biosPrefetch;
+	uint32_t cpuPrefetch[2];
 
 	uint32_t associatedStreamId;
 

@@ -112,46 +112,43 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		}
 		return;
 	}
-	switch (event->keysym.sym) {
-	case SDLK_F11:
-		if (event->type == SDL_KEYDOWN && context->debugger) {
-			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
-		}
+	if (event->keysym.sym == SDLK_TAB) {
+		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
+	}
+	if (event->type == SDL_KEYDOWN) {
+		switch (event->keysym.sym) {
+		case SDLK_F11:
+			if (context->debugger) {
+				ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
+			}
+			return;
 #ifdef USE_PNG
-	case SDLK_F12:
-		if (event->type == SDL_KEYDOWN) {
+		case SDLK_F12:
 			GBAThreadInterrupt(context);
 			GBAThreadTakeScreenshot(context);
 			GBAThreadContinue(context);
-		}
-		return;
+			return;
 #endif
-	case SDLK_TAB:
-		context->sync.audioWait = event->type != SDL_KEYDOWN;
-		return;
-	case SDLK_BACKSLASH:
-		if (event->type == SDL_KEYDOWN) {
+		case SDLK_BACKSLASH:
 			GBAThreadPause(context);
 			context->frameCallback = _pauseAfterFrame;
 			GBAThreadUnpause(context);
-		}
-		return;
-	case SDLK_LEFTBRACKET:
-		GBAThreadInterrupt(context);
-		GBARewind(context, 10);
-		GBAThreadContinue(context);
-		return;
-	case SDLK_ESCAPE:
-		GBAThreadInterrupt(context);
-		if (context->gba->rr) {
-			GBARRStopPlaying(context->gba->rr);
-			GBARRStopRecording(context->gba->rr);
-		}
-		GBAThreadContinue(context);
-		return;
-	default:
-		if (event->type == SDL_KEYDOWN) {
+			return;
+		case SDLK_BACKQUOTE:
+			GBAThreadInterrupt(context);
+			GBARewind(context, 10);
+			GBAThreadContinue(context);
+			return;
+		case SDLK_ESCAPE:
+			GBAThreadInterrupt(context);
+			if (context->gba->rr) {
+				GBARRStopPlaying(context->gba->rr);
+				GBARRStopRecording(context->gba->rr);
+			}
+			GBAThreadContinue(context);
+			return;
+		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -238,8 +235,8 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					break;
 				}
 			}
+			return;
 		}
-		return;
 	}
 }
 

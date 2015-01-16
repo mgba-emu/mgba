@@ -19,6 +19,7 @@ Features:
  - Save directory of last loaded file
  - Support BPS patches
  - Automatically detect and optimize out idle loops
+ - Configurable game overrides
 Bugfixes:
  - Qt: Fix issue with set frame sizes being the wrong height
  - Qt: Fix emulator crashing when full screen if a game is not running
@@ -51,6 +52,17 @@ Bugfixes:
  - GBA Memory: Filter out top nybble of DMA addresses
  - Debugger: Fix binary print putting spaces between digits
  - GBA BIOS: Fix LZ77UnCompVram to use 16-bit loads from decompressed memory
+ - GBA BIOS: Fix HuffUnComp to work when games pass an invalid bit length
+ - GBA BIOS: Fix GetBiosChecksum to return the value of a real GBA, regardless of used BIOS
+ - GBA Memory: Properly bounds-check VRAM accesses
+ - GBA Memory: Fix initial DMA state
+ - GBA BIOS: Fix BIOS prefetch after returning from an IRQ
+ - GBA BIOS: Fix BIOS prefetch after reset
+ - GBA Memory: Fix alignment of open bus 8- and 16-bit loads
+ - GBA BIOS: Fix HuffUnComp boundary conditions
+ - GBA Video: Fix mode 0 being able to read tiles above appropriate tile range
+ - GBA Audio: Properly initialize audio FIFO channels
+ - Util: Fix SOCKET_FAILED macro
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
@@ -61,6 +73,10 @@ Misc:
  - GBA Memory: Implement 16- and 32-bit loads from SRAM
  - Qt: Clear active buttons when focus is lost
  - GBA Memory: Simplify memory API and use fixed bus width
+ - GBA Video: Start video at the last scanline instead of the first
+ - Debugger: Watchpoints now work on STM/LDM instructions
+ - GBA: Improve accuracy of event timing
+ - Debugger: Clean up GDB stub network interfacing
 
 0.1.0: (2014-12-13)
  - Initial release
