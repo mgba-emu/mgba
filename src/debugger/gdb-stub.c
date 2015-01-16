@@ -53,7 +53,7 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 
 static void _gdbStubPoll(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	while (stub->d.state == DEBUGGER_PAUSED) {
+	do {
 		if (!SOCKET_FAILED(stub->connection)) {
 			if (!SocketSetBlocking(stub->connection, 1)) {
 				GDBStubHangup(stub);
@@ -61,7 +61,7 @@ static void _gdbStubPoll(struct ARMDebugger* debugger) {
 			}
 		}
 		GDBStubUpdate(stub);
-	}
+	} while (stub->d.state == DEBUGGER_PAUSED);
 }
 
 static void _ack(struct GDBStub* stub) {
@@ -169,7 +169,7 @@ static void _writeHostInfo(struct GDBStub* stub) {
 }
 
 static void _continue(struct GDBStub* stub, const char* message) {
-	stub->d.state = DEBUGGER_RUNNING;
+	stub->d.state = DEBUGGER_CUSTOM;
 	if (!SOCKET_FAILED(stub->connection)) {
 		if (!SocketSetBlocking(stub->connection, 0)) {
 			GDBStubHangup(stub);
@@ -443,6 +443,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.deinit = _gdbStubDeinit;
 	stub->d.paused = _gdbStubPoll;
 	stub->d.entered = _gdbStubEntered;
+	stub->d.custom = _gdbStubPoll;
 	stub->d.log = 0;
 }
 
