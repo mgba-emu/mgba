@@ -142,7 +142,7 @@ void GBASkipBIOS(struct ARMCore* cpu) {
 static void GBAProcessEvents(struct ARMCore* cpu) {
 	do {
 		struct GBA* gba = (struct GBA*) cpu->master;
-		int32_t cycles = cpu->cycles;
+		int32_t cycles = cpu->nextEvent;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
 
