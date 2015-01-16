@@ -75,6 +75,7 @@ Misc:
  - GBA Video: Start video at the last scanline instead of the first
  - Debugger: Watchpoints now work on STM/LDM instructions
  - GBA: Improve accuracy of event timing
+ - Debugger: Clean up GDB stub network interfacing
 
 0.1.0: (2014-12-13)
  - Initial release

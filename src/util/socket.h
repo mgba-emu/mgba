@@ -157,7 +157,7 @@ static inline int SocketClose(Socket socket) {
 	return close(socket) >= 0;
 }
 
-static inline int SocketSetBlocking(Socket socket, int blocking) {
+static inline int SocketSetBlocking(Socket socket, bool blocking) {
 #ifdef _WIN32
 	u_long unblocking = !blocking;
 	return ioctlsocket(socket, FIONBIO, &unblocking) == NO_ERROR;
