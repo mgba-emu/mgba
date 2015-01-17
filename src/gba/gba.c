@@ -76,6 +76,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
 	gba->busyLoop = -1;
+	gba->performingDMA = false;
 }
 
 void GBADestroy(struct GBA* gba) {
