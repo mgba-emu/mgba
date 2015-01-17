@@ -349,7 +349,6 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
@@ -381,7 +380,6 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;

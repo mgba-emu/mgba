@@ -36,6 +36,7 @@ Bugfixes:
  - GBA Video: Fix mode 0 being able to read tiles above appropriate tile range
  - GBA Audio: Properly initialize audio FIFO channels
  - Util: Fix SOCKET_FAILED macro
+ - GBA: Fix timers 2 and 3 updating incorrectly
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
