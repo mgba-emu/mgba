@@ -77,6 +77,7 @@ Misc:
  - Debugger: Watchpoints now work on STM/LDM instructions
  - GBA: Improve accuracy of event timing
  - Debugger: Clean up GDB stub network interfacing
+ - Debugger: Simplify debugger state machine to play nicer with the GBA thread loop
 
 0.1.0: (2014-12-13)
  - Initial release

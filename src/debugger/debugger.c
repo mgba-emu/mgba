@@ -55,45 +55,32 @@ void ARMDebuggerDeinit(struct ARMComponent* component) {
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
-	if (debugger->state == DEBUGGER_EXITING) {
+	switch (debugger->state) {
+	case DEBUGGER_EXITING:
 		debugger->state = DEBUGGER_RUNNING;
-	}
-	while (debugger->state < DEBUGGER_EXITING) {
+		// Fall through
+	case DEBUGGER_RUNNING:
 		if (!debugger->breakpoints && !debugger->watchpoints) {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRunLoop(debugger->cpu);
-			}
-		} else if (!debugger->breakpoints) {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRun(debugger->cpu);
-			}
+			ARMRunLoop(debugger->cpu);
 		} else {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRun(debugger->cpu);
-				_checkBreakpoints(debugger);
-			}
+			ARMRun(debugger->cpu);
+			_checkBreakpoints(debugger);
 		}
-		switch (debugger->state) {
-		case DEBUGGER_RUNNING:
-			break;
-		case DEBUGGER_CUSTOM:
-			while (debugger->state == DEBUGGER_CUSTOM) {
-				ARMRun(debugger->cpu);
-				_checkBreakpoints(debugger);
-				debugger->custom(debugger);
-			}
-			break;
-		case DEBUGGER_PAUSED:
-			if (debugger->paused) {
-				debugger->paused(debugger);
-			} else {
-				debugger->state = DEBUGGER_RUNNING;
-			}
-			break;
-		case DEBUGGER_EXITING:
-		case DEBUGGER_SHUTDOWN:
-			return;
+		break;
+	case DEBUGGER_CUSTOM:
+		ARMRun(debugger->cpu);
+		_checkBreakpoints(debugger);
+		debugger->custom(debugger);
+		break;
+	case DEBUGGER_PAUSED:
+		if (debugger->paused) {
+			debugger->paused(debugger);
+		} else {
+			debugger->state = DEBUGGER_RUNNING;
 		}
+		break;
+	case DEBUGGER_SHUTDOWN:
+		return;
 	}
 }
 
