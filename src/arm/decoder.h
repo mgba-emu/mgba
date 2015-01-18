@@ -138,7 +138,6 @@ enum ARMMnemonic {
 	ARM_MN_BIC,
 	ARM_MN_BKPT,
 	ARM_MN_BL,
-	ARM_MN_BLH,
 	ARM_MN_BX,
 	ARM_MN_CMN,
 	ARM_MN_CMP,
@@ -203,6 +202,7 @@ struct ARMInstructionInfo {
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
+bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2, struct ARMInstructionInfo* out);
 int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
 
 #endif

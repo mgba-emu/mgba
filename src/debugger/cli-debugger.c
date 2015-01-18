@@ -43,7 +43,7 @@ static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 
 static void _breakIntoDefault(int signal);
 static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum ExecutionMode mode);
-static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
+static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
@@ -172,8 +172,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 	int i;
 	for (i = 0; i < size; ++i) {
-		_printLine(debugger, address, mode);
-		address += wordSize;
+		address += _printLine(debugger, address, mode);;
 	}
 }
 
@@ -238,7 +237,7 @@ static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	}
 }
 
-static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	char disassembly[48];
 	struct ARMInstructionInfo info;
 	printf("%08X:  ", address);
@@ -247,11 +246,23 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		printf("%08X\t%s\n", instruction, disassembly);
+		return WORD_SIZE_ARM;
 	} else {
+		struct ARMInstructionInfo info2;
+		struct ARMInstructionInfo combined;
 		uint16_t instruction = debugger->d.cpu->memory.load16(debugger->d.cpu, address, 0);
+		uint16_t instruction2 = debugger->d.cpu->memory.load16(debugger->d.cpu, address + WORD_SIZE_THUMB, 0);
 		ARMDecodeThumb(instruction, &info);
-		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
-		printf("%04X\t%s\n", instruction, disassembly);
+		ARMDecodeThumb(instruction2, &info2);
+		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
+			ARMDisassemble(&combined, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X %04X\t%s\n", instruction, instruction2, disassembly);
+			return WORD_SIZE_THUMB * 2;
+		} else {
+			ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X     \t%s\n", instruction, disassembly);
+			return WORD_SIZE_THUMB;
+		}
 	}
 }
 

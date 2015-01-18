@@ -223,7 +223,6 @@ static const char* _armMnemonicStrings[] = {
 	"bic",
 	"bkpt",
 	"bl",
-	"blh",
 	"bx",
 	"cmn",
 	"cmp",
@@ -355,8 +354,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		}
 		break;
 	case ARM_MN_B:
-		written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
-		ADVANCE(written);
+	case ARM_MN_BL:
+		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
+			written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
+			ADVANCE(written);
+		}
 		break;
 	default:
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {

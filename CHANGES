@@ -78,6 +78,7 @@ Misc:
  - GBA: Improve accuracy of event timing
  - Debugger: Clean up GDB stub network interfacing
  - Debugger: Simplify debugger state machine to play nicer with the GBA thread loop
+ - Debugger: Merge Thumb BL instructions when disassembling
 
 0.1.0: (2014-12-13)
  - Initial release

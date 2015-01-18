@@ -290,14 +290,21 @@ DEFINE_THUMB_DECODER(B, B,
 	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
 	info->branchType = ARM_BRANCH;)
 
-DEFINE_THUMB_DECODER(BL1, BLH,
+DEFINE_THUMB_DECODER(BL1, BL,
 	int16_t immediate = (opcode & 0x07FF) << 5;
-	info->op1.immediate = (((int32_t) immediate) << 7);
-	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;)
+	info->op1.reg = ARM_LR;
+	info->op2.reg = ARM_PC;
+	info->op3.immediate = (((int32_t) immediate) << 7);
+	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_AFFECTED_1 |
+		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_AFFECTED_2 |
+		ARM_OPERAND_IMMEDIATE_3;)
 
 DEFINE_THUMB_DECODER(BL2, BL,
-	info->op1.immediate = (opcode & 0x07FF) << 1;
-	info->operandFormat = ARM_OPERAND_IMMEDIATE_1;
+	info->op1.reg = ARM_PC;
+	info->op2.reg = ARM_LR;
+	info->op3.immediate = (opcode & 0x07FF) << 1;
+	info->operandFormat = ARM_OPERAND_REGISTER_1 | ARM_OPERAND_AFFECTED_1 |
+		ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3;
 	info->branchType = ARM_BRANCH_LINKED;)
 
 DEFINE_THUMB_DECODER(BX, BX,
@@ -331,4 +338,34 @@ void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
 	info->cCycles = 0;
 	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 6];
 	decoder(opcode, info);
+}
+
+bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2, struct ARMInstructionInfo* out) {
+	if (info1->execMode != MODE_THUMB || info1->mnemonic != ARM_MN_BL) {
+		return false;
+	}
+	if (info2->execMode != MODE_THUMB || info2->mnemonic != ARM_MN_BL) {
+		return false;
+	}
+	if (info1->op1.reg != ARM_LR || info1->op2.reg != ARM_PC) {
+		return false;
+	}
+	if (info2->op1.reg != ARM_PC || info2->op2.reg != ARM_LR) {
+		return false;
+	}
+	out->op1.immediate = info1->op3.immediate | info2->op3.immediate;
+	out->operandFormat = ARM_OPERAND_IMMEDIATE_1;
+	out->execMode = MODE_THUMB;
+	out->mnemonic = ARM_MN_BL;
+	out->branchType = ARM_BRANCH_LINKED;
+	out->traps = 0;
+	out->affectsCPSR = 0;
+	out->condition = ARM_CONDITION_AL;
+	out->sDataCycles = 0;
+	out->nDataCycles = 0;
+	out->sInstructionCycles = 2;
+	out->nInstructionCycles = 0;
+	out->iCycles = 0;
+	out->cCycles = 0;
+	return true;
 }
