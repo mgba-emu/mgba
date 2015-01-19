@@ -363,11 +363,15 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
+	char title[13] = { '\0' };
+	GBAGetGameTitle(m_controller->thread()->gba, title);
+	if (m_frameList.isEmpty()) {
+		setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
+		return;
+	}
 	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
 	float fps = (m_frameList.count() - 1) * 10000.f / interval;
 	fps = round(fps) / 10.f;
-	char title[13] = { '\0' };
-	GBAGetGameTitle(m_controller->thread()->gba, title);
 	setWindowTitle(tr(PROJECT_NAME " - %1 (%2 fps)").arg(title).arg(fps));
 }
 
