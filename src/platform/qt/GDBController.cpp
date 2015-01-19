@@ -47,8 +47,6 @@ void GDBController::detach() {
 	if (!isAttached()) {
 		return;
 	}
-	SocketSetBlocking(m_gdbStub.socket, false);
-	SocketSetBlocking(m_gdbStub.connection, false);
 	m_gameController->threadInterrupt();
 	GDBStubShutdown(&m_gdbStub);
 	m_gameController->setDebugger(nullptr);
