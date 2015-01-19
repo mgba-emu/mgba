@@ -12,6 +12,8 @@
 #define SIGTRAP 5 /* Win32 Signals do not include SIGTRAP */
 #endif
 
+#define SOCKET_TIMEOUT 50
+
 enum GDBError {
 	GDB_NO_ERROR = 0x00,
 	GDB_BAD_ARGUMENTS = 0x06,
@@ -58,33 +60,13 @@ static void _gdbStubPoll(struct ARMDebugger* debugger) {
 		return;
 	}
 	stub->untilPoll = GDB_STUB_INTERVAL;
-	if (stub->shouldBlock) {
-		stub->shouldBlock = false;
-		if (!SocketSetBlocking(stub->socket, false)) {
-			GDBStubHangup(stub);
-			return;
-		}
-		if (!SOCKET_FAILED(stub->connection) && !SocketSetBlocking(stub->connection, false)) {
-			GDBStubHangup(stub);
-			return;
-		}
-	}
+	stub->shouldBlock = false;
 	GDBStubUpdate(stub);
 }
 
 static void _gdbStubWait(struct ARMDebugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	if (!stub->shouldBlock) {
-		stub->shouldBlock = true;
-		if (!SocketSetBlocking(stub->socket, true)) {
-			GDBStubHangup(stub);
-			return;
-		}
-		if (!SOCKET_FAILED(stub->connection) && !SocketSetBlocking(stub->connection, true)) {
-			GDBStubHangup(stub);
-			return;
-		}
-	}
+	stub->shouldBlock = true;
 	GDBStubUpdate(stub);
 }
 
@@ -195,12 +177,6 @@ static void _writeHostInfo(struct GDBStub* stub) {
 static void _continue(struct GDBStub* stub, const char* message) {
 	stub->d.state = DEBUGGER_CUSTOM;
 	stub->untilPoll = GDB_STUB_INTERVAL;
-	if (!SOCKET_FAILED(stub->connection)) {
-		if (!SocketSetBlocking(stub->connection, 0)) {
-			GDBStubHangup(stub);
-			return;
-		}
-	}
 	// TODO: parse message
 	UNUSED(message);
 }
@@ -484,6 +460,9 @@ int GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddr
 		}
 		return 0;
 	}
+	if (!SocketSetBlocking(stub->socket, false)) {
+		goto cleanup;
+	}
 	int err = SocketListen(stub->socket, 1);
 	if (err) {
 		goto cleanup;
@@ -496,14 +475,14 @@ cleanup:
 		stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't listen on port");
 	}
 	SocketClose(stub->socket);
-	stub->socket = -1;
+	stub->socket = INVALID_SOCKET;
 	return 0;
 }
 
 void GDBStubHangup(struct GDBStub* stub) {
 	if (!SOCKET_FAILED(stub->connection)) {
 		SocketClose(stub->connection);
-		stub->connection = -1;
+		stub->connection = INVALID_SOCKET;
 	}
 	if (stub->d.state == DEBUGGER_PAUSED) {
 		stub->d.state = DEBUGGER_RUNNING;
@@ -514,17 +493,27 @@ void GDBStubShutdown(struct GDBStub* stub) {
 	GDBStubHangup(stub);
 	if (!SOCKET_FAILED(stub->socket)) {
 		SocketClose(stub->socket);
-		stub->socket = -1;
+		stub->socket = INVALID_SOCKET;
 	}
 }
 
 void GDBStubUpdate(struct GDBStub* stub) {
 	if (stub->socket == INVALID_SOCKET) {
+		if (stub->d.state == DEBUGGER_PAUSED) {
+			stub->d.state = DEBUGGER_RUNNING;
+		}
 		return;
 	}
 	if (stub->connection == INVALID_SOCKET) {
+		if (stub->shouldBlock) {
+			Socket reads = stub->socket;
+			SocketPoll(1, &reads, 0, 0, SOCKET_TIMEOUT);
+		}
 		stub->connection = SocketAccept(stub->socket, 0);
 		if (!SOCKET_FAILED(stub->connection)) {
+			if (!SocketSetBlocking(stub->connection, false)) {
+				goto connectionLost;
+			}
 			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED);
 		} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			return;
@@ -533,6 +522,10 @@ void GDBStubUpdate(struct GDBStub* stub) {
 		}
 	}
 	while (true) {
+		if (stub->shouldBlock) {
+			Socket reads = stub->connection;
+			SocketPoll(1, &reads, 0, 0, SOCKET_TIMEOUT);
+		}
 		ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
 		if (messageLen == 0) {
 			goto connectionLost;
