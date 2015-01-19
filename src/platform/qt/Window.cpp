@@ -276,6 +276,8 @@ void Window::gdbOpen() {
 		m_gdbController = new GDBController(m_controller, this);
 	}
 	GDBWindow* window = new GDBWindow(m_gdbController);
+	connect(this, SIGNAL(shutdown()), window, SLOT(close()));
+	window->setAttribute(Qt::WA_DeleteOnClose);
 	window->show();
 }
 #endif
