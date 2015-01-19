@@ -35,9 +35,6 @@ public slots:
 	void detach();
 	void listen();
 
-private slots:
-	void updateGDB();
-
 private:
 	GDBStub m_gdbStub;
 	GameController* m_gameController;
