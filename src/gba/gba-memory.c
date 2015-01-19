@@ -304,7 +304,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (gba->performingDMA) {
 				LOAD_16(value, address & 2, &gba->bus);
 			} else {
-				LOAD_16(value, address & 2, &cpu->prefetch[1]);
+				uint32_t prefetch = cpu->prefetch[1];
+				if (cpu->executionMode == MODE_THUMB) {
+					prefetch |= prefetch << 16;
+				}
+				LOAD_16(value, address & 2, &prefetch);
 			}
 		}
 		break;
@@ -366,7 +370,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (gba->performingDMA) {
 			LOAD_16(value, address & 2, &gba->bus);
 		} else {
-			LOAD_16(value, address & 2, &cpu->prefetch[1]);
+			uint32_t prefetch = cpu->prefetch[1];
+			if (cpu->executionMode == MODE_THUMB) {
+				prefetch |= prefetch << 16;
+			}
+			LOAD_16(value, address & 2, &prefetch);
 		}
 		break;
 	}
@@ -399,7 +407,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (gba->performingDMA) {
 				value = ((uint8_t*) &gba->bus)[address & 3];
 			} else {
-				value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
+				uint32_t prefetch = cpu->prefetch[1];
+				if (cpu->executionMode == MODE_THUMB) {
+					prefetch |= prefetch << 16;
+				}
+				value = ((uint8_t*) &prefetch)[address & 3];
 			}
 		}
 		break;
@@ -463,7 +475,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if (gba->performingDMA) {
 			value = ((uint8_t*) &gba->bus)[address & 3];
 		} else {
-			value = ((uint8_t*) &cpu->prefetch[1])[address & 3];
+			uint32_t prefetch = cpu->prefetch[1];
+			if (cpu->executionMode == MODE_THUMB) {
+				prefetch |= prefetch << 16;
+			}
+			value = ((uint8_t*) &prefetch)[address & 3];
 		}
 		break;
 	}
