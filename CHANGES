@@ -63,6 +63,7 @@ Bugfixes:
  - GBA Audio: Properly initialize audio FIFO channels
  - Util: Fix SOCKET_FAILED macro
  - GBA: Fix timers 2 and 3 updating incorrectly
+ - Qt: Fix crash if a game pauses before any frames are shown
 Misc:
  - Qt: Disable sync to video by default
  - GBA: Exit cleanly on FATAL if the port supports it
