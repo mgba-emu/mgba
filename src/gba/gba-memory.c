@@ -14,6 +14,8 @@
 #include "hle-bios.h"
 #include "util/memory.h"
 
+#define IDLE_LOOP_THRESHOLD 200
+
 static uint32_t _popcount32(unsigned bits);
 static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
 
@@ -175,6 +177,7 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 			case ARM_BRANCH:
 				if ((uint32_t) info.op1.immediate + nextAddress + WORD_SIZE_THUMB * 2 == address) {
 					gba->idleLoop = address;
+					gba->idleOptimization = IDLE_LOOP_REMOVE;
 				}
 				gba->idleDetectionStep = -1;
 				return;
@@ -206,6 +209,10 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 				case 1:
 					if (memcmp(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters))) {
 						gba->idleDetectionStep = -1;
+						++gba->idleDetectionFailures;
+						if (gba->idleDetectionFailures > IDLE_LOOP_THRESHOLD) {
+							gba->idleOptimization = IDLE_LOOP_IGNORE;
+						}
 						break;
 					}
 					_analyzeForIdleLoop(gba, cpu, address);

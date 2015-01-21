@@ -145,6 +145,7 @@ struct GBA {
 	uint32_t idleLoop;
 	uint32_t lastJump;
 	int idleDetectionStep;
+	int idleDetectionFailures;
 	int32_t cachedRegisters[16];
 	bool taintedRegisters[16];
 };

@@ -79,6 +79,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleLoop = -1;
 	gba->lastJump = 0;
 	gba->idleDetectionStep = 0;
+	gba->idleDetectionFailures = 0;
 }
 
 void GBADestroy(struct GBA* gba) {
