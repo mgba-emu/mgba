@@ -24,6 +24,8 @@ extern "C" {
 using namespace QGBA;
 using namespace std;
 
+const int GameController::LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
+
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
@@ -62,6 +64,7 @@ GameController::GameController(QObject* parent)
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
 		return lux->value;
 	};
+	setLuminanceLevel(0);
 
 	m_rtc.p = this;
 	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
@@ -417,6 +420,27 @@ void GameController::clearAVStream() {
 	threadInterrupt();
 	m_threadContext.stream = nullptr;
 	threadContinue();
+}
+
+void GameController::setLuminanceValue(uint8_t value) {
+	m_luxValue = value;
+	value = std::max<int>(value - 0x16, 0);
+	m_luxLevel = 10;
+	for (int i = 0; i < 10; ++i) {
+		if (value < LUX_LEVELS[i]) {
+			m_luxLevel = i;
+			break;
+		}
+	}
+}
+
+void GameController::setLuminanceLevel(int level) {
+	int value = 0x16;
+	level = std::max(0, std::min(10, level));
+	if (level > 0) {
+		value += LUX_LEVELS[level - 1];
+	}
+	setLuminanceValue(value);
 }
 
 void GameController::setRealTime() {

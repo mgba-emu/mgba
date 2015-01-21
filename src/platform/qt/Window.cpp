@@ -659,6 +659,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	toolsMenu->addSeparator();
+	QAction* solarIncrease = new QAction(tr("Increase solar level"), toolsMenu);
+	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
+	addControlledAction(toolsMenu, solarIncrease, "increaseLuminanceLevel");
+
+	QAction* solarDecrease = new QAction(tr("Decrease solar level"), toolsMenu);
+	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
+	addControlledAction(toolsMenu, solarDecrease, "decreaseLuminanceLevel");
+
+	QAction* maxSolar = new QAction(tr("Brightest solar level"), toolsMenu);
+	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
+	addControlledAction(toolsMenu, maxSolar, "maxLuminanceLevel");
+
+	QAction* minSolar = new QAction(tr("Darkest solar level"), toolsMenu);
+	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
+	addControlledAction(toolsMenu, minSolar, "minLuminanceLevel");
+
+	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())), "shortcuts");
 

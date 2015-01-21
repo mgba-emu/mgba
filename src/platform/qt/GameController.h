@@ -98,7 +98,11 @@ public slots:
 	void setTurbo(bool, bool forced = true);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
-	void setLuminanceValue(uint8_t value) { m_luxValue = value; }
+
+	void setLuminanceValue(uint8_t value);
+	void setLuminanceLevel(int level);
+	void increaseLuminanceLevel() { setLuminanceLevel(m_luxLevel + 1); }
+	void decreaseLuminanceLevel() { setLuminanceLevel(m_luxLevel - 1); }
 
 	void setRealTime();
 	void setFixedTime(const QDateTime& time);
@@ -154,6 +158,9 @@ private:
 		uint8_t value;
 	} m_lux;
 	uint8_t m_luxValue;
+	int m_luxLevel;
+
+	static const int LUX_LEVELS[10];
 
 	struct GameControllerRTC : GBARTCSource {
 		GameController* p;
