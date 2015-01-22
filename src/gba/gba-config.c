@@ -213,7 +213,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupIntValue(config, "width", &opts->width);
 	_lookupIntValue(config, "height", &opts->height);
 
-	char* idleOptimization;
+	char* idleOptimization = 0;
 	if (_lookupCharValue(config, "idleOptimization", &idleOptimization)) {
 		if (strcasecmp(idleOptimization, "ignore") == 0) {
 			opts->idleOptimization = IDLE_LOOP_IGNORE;
