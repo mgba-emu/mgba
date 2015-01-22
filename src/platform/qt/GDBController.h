@@ -35,6 +35,10 @@ public slots:
 	void detach();
 	void listen();
 
+signals:
+	void listening();
+	void listenFailed();
+
 private:
 	GDBStub m_gdbStub;
 	GameController* m_gameController;

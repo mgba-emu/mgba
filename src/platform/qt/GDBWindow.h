@@ -28,6 +28,8 @@ private slots:
 	void started();
 	void stopped();
 
+	void failed();
+
 private:
 	GDBController* m_gdbController;
 

@@ -58,6 +58,11 @@ void GDBController::listen() {
 	if (!isAttached()) {
 		attach();
 	}
-	GDBStubListen(&m_gdbStub, m_port, &m_bindAddress);
+	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress)) {
+		emit listening();
+	} else {
+		detach();
+		emit listenFailed();
+	}
 	m_gameController->threadContinue();
 }

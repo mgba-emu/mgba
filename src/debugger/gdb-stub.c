@@ -449,7 +449,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->untilPoll = GDB_STUB_INTERVAL;
 }
 
-int GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {
+bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
@@ -458,7 +458,7 @@ int GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddr
 		if (stub->d.log) {
 			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
 		}
-		return 0;
+		return false;
 	}
 	if (!SocketSetBlocking(stub->socket, false)) {
 		goto cleanup;
@@ -468,7 +468,7 @@ int GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddr
 		goto cleanup;
 	}
 
-	return 1;
+	return true;
 
 cleanup:
 	if (stub->d.log) {
@@ -476,7 +476,7 @@ cleanup:
 	}
 	SocketClose(stub->socket);
 	stub->socket = INVALID_SOCKET;
-	return 0;
+	return false;
 }
 
 void GDBStubHangup(struct GDBStub* stub) {
