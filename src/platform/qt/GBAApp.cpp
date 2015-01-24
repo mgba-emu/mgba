@@ -23,18 +23,24 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
-    QApplication::setApplicationName(PROJECT_NAME);
-    QApplication::setApplicationVersion(PROJECT_VERSION);
+	QApplication::setApplicationName(PROJECT_NAME);
+	QApplication::setApplicationVersion(PROJECT_VERSION);
 
-    m_window.show();
+#ifndef Q_OS_MAC
+	m_window.show();
+#endif
 
 	GBAArguments args = {};
-    if (m_configController.parseArguments(&args, argc, argv)) {
+	if (m_configController.parseArguments(&args, argc, argv)) {
 		m_window.argumentsPassed(&args);
-    } else {
+	} else {
 		m_window.loadConfig();
-    }
+	}
 	freeArguments(&args);
+
+#ifdef Q_OS_MAC
+	m_window.show();
+#endif
 }
 
 bool GBAApp::event(QEvent* event) {
