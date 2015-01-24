@@ -124,6 +124,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.sync = &threadContext->sync;
 	threadContext->gba = &gba;
 	gba.logLevel = threadContext->logLevel;
+	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
 #else
@@ -173,7 +174,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
 
 	gba.keySource = &threadContext->activeKeys;
-	gba.idleOptimization = threadContext->idleOptimization;
 
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
