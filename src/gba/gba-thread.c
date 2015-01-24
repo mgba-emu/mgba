@@ -616,25 +616,6 @@ void GBASyncPostFrame(struct GBASync* sync) {
 		} while (sync->videoFrameWait && sync->videoFramePending);
 	}
 	MutexUnlock(&sync->videoFrameMutex);
-
-	struct GBAThread* thread = GBAThreadGetContext();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->rewindBuffer) {
-		--thread->rewindBufferNext;
-		if (thread->rewindBufferNext <= 0) {
-			thread->rewindBufferNext = thread->rewindBufferInterval;
-			GBARecordFrame(thread);
-		}
-	}
-	if (thread->stream) {
-		thread->stream->postVideoFrame(thread->stream, thread->renderer);
-	}
-	if (thread->frameCallback) {
-		thread->frameCallback(thread);
-	}
 }
 
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {

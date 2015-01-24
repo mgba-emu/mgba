@@ -173,8 +173,6 @@ struct GBAVideo {
 	struct GBA* p;
 	struct GBAVideoRenderer* renderer;
 
-	GBARegisterDISPSTAT dispstat;
-
 	// VCOUNT
 	int vcount;
 

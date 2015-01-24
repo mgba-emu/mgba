@@ -8,6 +8,7 @@
 #include "gba-bios.h"
 #include "gba-io.h"
 #include "gba-rr.h"
+#include "gba-serialize.h"
 #include "gba-sio.h"
 #include "gba-thread.h"
 
@@ -632,5 +633,41 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 	if (gba->debugger) {
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
+	}
+}
+
+void GBAFrameStarted(struct GBA* gba) {
+	UNUSED(gba);
+
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
+	if (thread->rewindBuffer) {
+		--thread->rewindBufferNext;
+		if (thread->rewindBufferNext <= 0) {
+			thread->rewindBufferNext = thread->rewindBufferInterval;
+			GBARecordFrame(thread);
+		}
+	}
+}
+
+void GBAFrameEnded(struct GBA* gba) {
+	if (gba->rr) {
+		GBARRNextFrame(gba->rr);
+	}
+
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
+	if (thread->stream) {
+		thread->stream->postVideoFrame(thread->stream, thread->renderer);
+	}
+
+	if (thread->frameCallback) {
+		thread->frameCallback(thread);
 	}
 }
