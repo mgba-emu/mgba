@@ -196,4 +196,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 	}
 
 	gba->idleLoop = override->idleLoop;
+	if (override->idleLoop != 0xFFFFFFFF && gba->idleOptimization == IDLE_LOOP_DETECT) {
+		gba->idleOptimization = IDLE_LOOP_REMOVE;
+	}
 }
