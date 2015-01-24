@@ -14,7 +14,7 @@
 #include "hle-bios.h"
 #include "util/memory.h"
 
-#define IDLE_LOOP_THRESHOLD 200
+#define IDLE_LOOP_THRESHOLD 10000
 
 static uint32_t _popcount32(unsigned bits);
 static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
