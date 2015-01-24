@@ -485,6 +485,7 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	threadContext->savedState = threadContext->state;
 	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_INTERRUPTING;
+	threadContext->gba->cpu->nextEvent = 0;
 	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
 		threadContext->debugger->state = DEBUGGER_EXITING;
 	}
