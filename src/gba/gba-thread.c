@@ -315,6 +315,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			struct Patch patchTemp;
 			struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
 			if (!vf) {
+				dirent = threadContext->gameDir->listNext(threadContext->gameDir);
 				continue;
 			}
 			if (!threadContext->rom && GBAIsROM(vf)) {
