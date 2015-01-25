@@ -56,9 +56,6 @@ void ARMDebuggerDeinit(struct ARMComponent* component) {
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	switch (debugger->state) {
-	case DEBUGGER_EXITING:
-		debugger->state = DEBUGGER_RUNNING;
-		// Fall through
 	case DEBUGGER_RUNNING:
 		if (!debugger->breakpoints && !debugger->watchpoints) {
 			ARMRunLoop(debugger->cpu);

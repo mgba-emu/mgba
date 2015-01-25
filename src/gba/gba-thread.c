@@ -77,9 +77,6 @@ static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState
 }
 
 static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
 	threadContext->state = THREAD_PAUSING;
 	if (!onThread) {
 		_waitUntilNotState(threadContext, THREAD_PAUSING);
@@ -392,9 +389,7 @@ bool GBAThreadHasCrashed(struct GBAThread* threadContext) {
 
 void GBAThreadEnd(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
+	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_EXITING;
 	if (threadContext->gba) {
 		threadContext->gba->cpu->halted = false;
@@ -495,9 +490,6 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_INTERRUPTING;
 	threadContext->gba->cpu->nextEvent = 0;
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
 	ConditionWake(&threadContext->stateCond);
 	_waitUntilNotState(threadContext, THREAD_INTERRUPTING);
 	MutexUnlock(&threadContext->stateMutex);
