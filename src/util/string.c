@@ -154,7 +154,7 @@ int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t u
 
 char* utf16to8(const uint16_t* utf16, size_t length) {
 	char* utf8 = 0;
-	char* offset;
+	char* offset = 0;
 	char buffer[4];
 	size_t utf8TotalBytes = 0;
 	size_t utf8Length = 0;

@@ -148,9 +148,6 @@ off_t _vf7zSeek(struct VFile* vf, off_t offset, int whence) {
 	}
 
 	if (position <= vf7z->size) {
-		if (read < 0) {
-			return -1;
-		}
 		return vf7z->offset;
 	}
 
