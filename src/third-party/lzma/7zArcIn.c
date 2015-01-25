@@ -1409,7 +1409,7 @@ static SRes SzReadHeader2(
           if (folderIndex >= p->db.NumFolders)
             return SZ_ERROR_ARCHIVE;
           p->FolderStartFileIndex[folderIndex] = i;
-          if (curNumSubStreams == (UInt32)(Int32)-1);
+          if (curNumSubStreams == (UInt32)(Int32)-1)
           {
             curNumSubStreams = 1;
             if (ssi.sdNumSubStreams.Data != 0)
