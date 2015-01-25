@@ -11,6 +11,7 @@
 #include <QKeySequence>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QStackedLayout>
 
 #include "ConfigController.h"
@@ -54,6 +55,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
+	setAcceptDrops(true);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setOverrides(m_config->overrides());
@@ -324,6 +326,28 @@ void Window::closeEvent(QCloseEvent* event) {
 void Window::focusOutEvent(QFocusEvent*) {
 	m_controller->setTurbo(false, false);
 	m_controller->clearKeys();
+}
+
+void Window::dragEnterEvent(QDragEnterEvent* event) {
+	if (event->mimeData()->hasFormat("text/uri-list")) {
+		event->acceptProposedAction();
+	}
+}
+
+void Window::dropEvent(QDropEvent* event) {
+	QString uris = event->mimeData()->data("text/uri-list");
+	uris = uris.trimmed();
+	if (uris.contains("\n")) {
+		// Only one file please
+		return;
+	}
+	QUrl url(uris);
+	if (!url.isLocalFile()) {
+		// No remote loading
+		return;
+	}
+	event->accept();
+	m_controller->loadGame(url.path());
 }
 
 void Window::toggleFullScreen() {
