@@ -186,6 +186,7 @@ void GameController::openGame() {
 		m_threadContext.sync.audioWait = m_audioSync;
 	}
 
+	m_threadContext.gameDir = 0;
 	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
 	if (m_dirmode) {
 		m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
@@ -193,7 +194,14 @@ void GameController::openGame() {
 	} else {
 		m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
 #if ENABLE_LIBZIP
-		m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
+		if (!m_threadContext.gameDir) {
+			m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
+		}
+#endif
+#if ENABLE_LZMA
+		if (!m_threadContext.gameDir) {
+			m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
+		}
 #endif
 	}
 

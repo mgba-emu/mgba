@@ -269,8 +269,16 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 		threadContext->stateDir = threadContext->gameDir;
 	} else {
 		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
+		threadContext->gameDir = 0;
 #if ENABLE_LIBZIP
-		threadContext->gameDir = VDirOpenZip(args->fname, 0);
+		if (!threadContext->gameDir) {
+			threadContext->gameDir = VDirOpenZip(args->fname, 0);
+		}
+#endif
+#if ENABLE_LZMA
+		if (!threadContext->gameDir) {
+			threadContext->gameDir = VDirOpen7z(args->fname, 0);
+		}
 #endif
 	}
 	threadContext->fname = args->fname;
