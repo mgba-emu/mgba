@@ -28,6 +28,7 @@ Bugfixes:
  - GBA BIOS: Fix BIOS prefetch after reset
  - GBA Memory: Fix alignment of open bus 8- and 16-bit loads
  - GBA Thread: Fix possible hang when loading an archive
+ - Perf: Fix crash when the GBA thread fails to start
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
