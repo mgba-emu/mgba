@@ -38,8 +38,58 @@ GamePakView::GamePakView(GameController* controller, QWidget* parent)
 		m_ui.time->setDateTime(QDateTime::currentDateTime());
 	});
 
+	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
+		m_ui.hwRTC->setEnabled(!enabled);
+		m_ui.hwGyro->setEnabled(!enabled);
+		m_ui.hwLight->setEnabled(!enabled);
+		m_ui.hwTilt->setEnabled(!enabled);
+		m_ui.hwRumble->setEnabled(!enabled);
+	});
+
+	connect(m_ui.savetype, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOverrides()));
+	connect(m_ui.hwAutodetect, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwRTC, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwGyro, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwLight, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwTilt, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwRumble, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
+	}
+}
+
+void GamePakView::updateOverrides() {
+	GBACartridgeOverride override = {
+		"",
+		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
+		GPIO_NO_OVERRIDE,
+		0xFFFFFFFF
+	};
+
+	if (!m_ui.hwAutodetect->isChecked()) {
+		override.hardware = GPIO_NONE;
+		if (m_ui.hwRTC->isChecked()) {
+			override.hardware |= GPIO_RTC;
+		}
+		if (m_ui.hwGyro->isChecked()) {
+			override.hardware |= GPIO_GYRO;
+		}
+		if (m_ui.hwLight->isChecked()) {
+			override.hardware |= GPIO_LIGHT_SENSOR;
+		}
+		if (m_ui.hwTilt->isChecked()) {
+			override.hardware |= GPIO_TILT;
+		}
+		if (m_ui.hwRumble->isChecked()) {
+			override.hardware |= GPIO_RUMBLE;
+		}
+	}
+
+	if (override.savetype != SAVEDATA_AUTODETECT || override.hardware != GPIO_NO_OVERRIDE) {
+		m_controller->setOverride(override);
+	} else {
+		m_controller->clearOverride();
 	}
 }
 
@@ -48,36 +98,39 @@ void GamePakView::gameStarted(GBAThread* thread) {
 		gameStopped();
 		return;
 	}
-	SavedataType savetype = thread->gba->memory.savedata.type;
-	if (m_ui.savetype->currentIndex() > 0) {
-		if (savetype > SAVEDATA_FORCE_NONE) {
-			VFile* vf = thread->gba->memory.savedata.vf;
-			GBASavedataDeinit(&thread->gba->memory.savedata);
-			GBASavedataInit(&thread->gba->memory.savedata, vf);
-		}
-		savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
-		GBASavedataForceType(&thread->gba->memory.savedata, savetype);
-	}
-
-	if (savetype > SAVEDATA_AUTODETECT) {
-		m_ui.savetype->setCurrentIndex(savetype + 1);
-	}
+	m_ui.savetype->setCurrentIndex(thread->gba->memory.savedata.type + 1);
 	m_ui.savetype->setEnabled(false);
 
-	m_ui.sensorRTC->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RTC);
-	m_ui.sensorGyro->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_GYRO);
-	m_ui.sensorLight->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_LIGHT_SENSOR);
-	m_ui.sensorTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
+	m_ui.hwAutodetect->setEnabled(false);
+	m_ui.hwRTC->setEnabled(false);
+	m_ui.hwGyro->setEnabled(false);
+	m_ui.hwLight->setEnabled(false);
+	m_ui.hwTilt->setEnabled(false);
+	m_ui.hwRumble->setEnabled(false);
+
+	m_ui.hwRTC->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RTC);
+	m_ui.hwGyro->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_GYRO);
+	m_ui.hwLight->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_LIGHT_SENSOR);
+	m_ui.hwTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
+	m_ui.hwRumble->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RUMBLE);
 }
 
 void GamePakView::gameStopped() {	
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.savetype->setEnabled(true);
 
-	m_ui.sensorRTC->setChecked(false);
-	m_ui.sensorGyro->setChecked(false);
-	m_ui.sensorLight->setChecked(false);
-	m_ui.sensorTilt->setChecked(false);
+	m_ui.hwAutodetect->setEnabled(true);
+	m_ui.hwRTC->setEnabled(!m_ui.hwAutodetect->isChecked());
+	m_ui.hwGyro->setEnabled(!m_ui.hwAutodetect->isChecked());
+	m_ui.hwLight->setEnabled(!m_ui.hwAutodetect->isChecked());
+	m_ui.hwTilt->setEnabled(!m_ui.hwAutodetect->isChecked());
+	m_ui.hwRumble->setEnabled(!m_ui.hwAutodetect->isChecked());
+
+	m_ui.hwRTC->setChecked(false);
+	m_ui.hwGyro->setChecked(false);
+	m_ui.hwLight->setChecked(false);
+	m_ui.hwTilt->setChecked(false);
+	m_ui.hwRumble->setChecked(false);
 }
 
 void GamePakView::setLuminanceValue(int value) {

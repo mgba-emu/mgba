@@ -140,6 +140,11 @@ GameController::~GameController() {
 	delete[] m_drawContext;
 }
 
+void GameController::setOverride(const GBACartridgeOverride& override) {
+	m_threadContext.override = override;
+	m_threadContext.hasOverride = true;
+}
+
 #ifdef USE_GDB_STUB
 ARMDebugger* GameController::debugger() {
 	return m_threadContext.debugger;

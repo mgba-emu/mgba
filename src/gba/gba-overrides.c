@@ -173,27 +173,35 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 }
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
-	GBASavedataForceType(&gba->memory.savedata, override->savetype);
-
-	if (override->hardware & GPIO_RTC) {
-		GBAGPIOInitRTC(&gba->memory.gpio);
+	if (override->savetype != SAVEDATA_AUTODETECT) {
+		GBASavedataForceType(&gba->memory.savedata, override->savetype);
 	}
 
-	if (override->hardware & GPIO_GYRO) {
-		GBAGPIOInitGyro(&gba->memory.gpio);
+	if (override->hardware != GPIO_NO_OVERRIDE) {
+		GBAGPIOClear(&gba->memory.gpio);
+
+		if (override->hardware & GPIO_RTC) {
+			GBAGPIOInitRTC(&gba->memory.gpio);
+		}
+
+		if (override->hardware & GPIO_GYRO) {
+			GBAGPIOInitGyro(&gba->memory.gpio);
+		}
+
+		if (override->hardware & GPIO_RUMBLE) {
+			GBAGPIOInitRumble(&gba->memory.gpio);
+		}
+
+		if (override->hardware & GPIO_LIGHT_SENSOR) {
+			GBAGPIOInitLightSensor(&gba->memory.gpio);
+		}
+
+		if (override->hardware & GPIO_TILT) {
+			GBAGPIOInitTilt(&gba->memory.gpio);
+		}
 	}
 
-	if (override->hardware & GPIO_RUMBLE) {
-		GBAGPIOInitRumble(&gba->memory.gpio);
+	if (override->idleLoop != 0xFFFFFFFF) {
+		gba->busyLoop = override->idleLoop;
 	}
-
-	if (override->hardware & GPIO_LIGHT_SENSOR) {
-		GBAGPIOInitLightSensor(&gba->memory.gpio);
-	}
-
-	if (override->hardware & GPIO_TILT) {
-		GBAGPIOInitTilt(&gba->memory.gpio);
-	}
-
-	gba->busyLoop = override->idleLoop;
 }

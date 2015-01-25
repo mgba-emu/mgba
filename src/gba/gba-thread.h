@@ -10,6 +10,7 @@
 
 #include "gba.h"
 #include "gba-input.h"
+#include "gba-overrides.h"
 
 #include "util/threading.h"
 
@@ -71,6 +72,9 @@ struct GBAThread {
 	int activeKeys;
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
+
+	bool hasOverride;
+	struct GBACartridgeOverride override;
 
 	// Run-time options
 	int frameskip;

@@ -23,6 +23,7 @@ public:
 	GamePakView(GameController* controller, QWidget* parent = nullptr);
 
 private slots:
+	void updateOverrides();
 	void gameStarted(GBAThread*);
 	void gameStopped();
 	void setLuminanceValue(int);

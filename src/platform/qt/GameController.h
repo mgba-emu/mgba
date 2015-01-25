@@ -56,6 +56,9 @@ public:
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
+	void setOverride(const GBACartridgeOverride& override);
+	void clearOverride() { m_threadContext.hasOverride = false; }
+
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
 	void setDebugger(ARMDebugger*);
