@@ -312,6 +312,9 @@ void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKe
 
 void GBAInputUnbindKey(struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
 	struct GBAInputMapImpl* impl = _lookupMap(map, type);
+	if (input < 0 || input >= GBA_KEY_MAX) {
+		return;
+	}
 	if (impl) {
 		impl->map[input] = GBA_NO_MAPPING;
 	}
