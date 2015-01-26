@@ -172,6 +172,44 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	return found;
 }
 
+void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOverride* override) {
+	char sectionName[16];
+	snprintf(sectionName, sizeof(sectionName), "override.%c%c%c%c", override->id[0], override->id[1], override->id[2], override->id[3]);
+	const char* savetype = 0;
+	switch (override->savetype) {
+	case SAVEDATA_SRAM:
+		savetype = "SRAM";
+		break;
+	case SAVEDATA_EEPROM:
+		savetype = "EEPROM";
+		break;
+	case SAVEDATA_FLASH512:
+		savetype = "FLASH512";
+		break;
+	case SAVEDATA_FLASH1M:
+		savetype = "FLASH1M";
+		break;
+	case SAVEDATA_FORCE_NONE:
+		savetype = "NONE";
+		break;
+	case SAVEDATA_AUTODETECT:
+		break;
+	}
+	ConfigurationSetValue(config, sectionName, "savetype", savetype);
+
+	if (override->hardware != GPIO_NO_OVERRIDE) {
+		ConfigurationSetIntValue(config, sectionName, "hardware", override->hardware);
+	} else {
+		ConfigurationClearValue(config, sectionName, "hardware");
+	}
+
+	if (override->idleLoop != 0xFFFFFFFF) {
+		ConfigurationSetUIntValue(config, sectionName, "idleLoop", override->idleLoop);
+	} else {
+		ConfigurationClearValue(config, sectionName, "idleLoop");
+	}
+}
+
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
 	if (override->savetype != SAVEDATA_AUTODETECT) {
 		GBASavedataForceType(&gba->memory.savedata, override->savetype);

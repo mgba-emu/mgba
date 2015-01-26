@@ -12,6 +12,7 @@
 #include <QMenu>
 
 extern "C" {
+#include "gba-overrides.h"
 #include "platform/commandline.h"
 }
 
@@ -155,6 +156,11 @@ QVariant ConfigController::getQtOption(const QString& key, const QString& group)
 		m_settings->endGroup();
 	}
 	return value;
+}
+
+void ConfigController::saveOverride(const GBACartridgeOverride& override) {
+	GBAOverrideSave(overrides(), &override);
+	write();
 }
 
 void ConfigController::setOption(const char* key, bool value) {

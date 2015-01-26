@@ -229,7 +229,7 @@ void Window::openShortcutWindow() {
 }
 
 void Window::openGamePakWindow() {
-	GamePakView* gamePakWindow = new GamePakView(m_controller);
+	GamePakView* gamePakWindow = new GamePakView(m_controller, m_config);
 	connect(this, SIGNAL(shutdown()), gamePakWindow, SLOT(close()));
 	gamePakWindow->setAttribute(Qt::WA_DeleteOnClose);
 	gamePakWindow->show();

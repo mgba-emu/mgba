@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GamePakView.h"
 
+#include "ConfigController.h"
 #include "GameController.h"
 
 extern "C" {
@@ -13,9 +14,10 @@ extern "C" {
 
 using namespace QGBA;
 
-GamePakView::GamePakView(GameController* controller, QWidget* parent)
+GamePakView::GamePakView(GameController* controller, ConfigController* config, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
+	, m_config(config)
 {
 	m_ui.setupUi(this);
 
@@ -54,13 +56,22 @@ GamePakView::GamePakView(GameController* controller, QWidget* parent)
 	connect(m_ui.hwTilt, SIGNAL(clicked()), this, SLOT(updateOverrides()));
 	connect(m_ui.hwRumble, SIGNAL(clicked()), this, SLOT(updateOverrides()));
 
+	connect(m_ui.save, SIGNAL(clicked()), this, SLOT(saveOverride()));
+
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
 	}
 }
 
+void GamePakView::saveOverride() {
+	if (!m_config) {
+		return;
+	}
+	m_config->saveOverride(m_override);
+}
+
 void GamePakView::updateOverrides() {
-	GBACartridgeOverride override = {
+	m_override = (GBACartridgeOverride) {
 		"",
 		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
 		GPIO_NO_OVERRIDE,
@@ -68,26 +79,26 @@ void GamePakView::updateOverrides() {
 	};
 
 	if (!m_ui.hwAutodetect->isChecked()) {
-		override.hardware = GPIO_NONE;
+		m_override.hardware = GPIO_NONE;
 		if (m_ui.hwRTC->isChecked()) {
-			override.hardware |= GPIO_RTC;
+			m_override.hardware |= GPIO_RTC;
 		}
 		if (m_ui.hwGyro->isChecked()) {
-			override.hardware |= GPIO_GYRO;
+			m_override.hardware |= GPIO_GYRO;
 		}
 		if (m_ui.hwLight->isChecked()) {
-			override.hardware |= GPIO_LIGHT_SENSOR;
+			m_override.hardware |= GPIO_LIGHT_SENSOR;
 		}
 		if (m_ui.hwTilt->isChecked()) {
-			override.hardware |= GPIO_TILT;
+			m_override.hardware |= GPIO_TILT;
 		}
 		if (m_ui.hwRumble->isChecked()) {
-			override.hardware |= GPIO_RUMBLE;
+			m_override.hardware |= GPIO_RUMBLE;
 		}
 	}
 
-	if (override.savetype != SAVEDATA_AUTODETECT || override.hardware != GPIO_NO_OVERRIDE) {
-		m_controller->setOverride(override);
+	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != GPIO_NO_OVERRIDE) {
+		m_controller->setOverride(m_override);
 	} else {
 		m_controller->clearOverride();
 	}
@@ -113,6 +124,12 @@ void GamePakView::gameStarted(GBAThread* thread) {
 	m_ui.hwLight->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_LIGHT_SENSOR);
 	m_ui.hwTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
 	m_ui.hwRumble->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RUMBLE);
+
+	GBAGetGameCode(thread->gba, m_override.id);
+	m_override.hardware = thread->gba->memory.gpio.gpioDevices;
+	m_override.savetype = thread->gba->memory.savedata.type;
+
+	m_ui.save->setEnabled(m_config);
 }
 
 void GamePakView::gameStopped() {	
@@ -131,6 +148,8 @@ void GamePakView::gameStopped() {
 	m_ui.hwLight->setChecked(false);
 	m_ui.hwTilt->setChecked(false);
 	m_ui.hwRumble->setChecked(false);
+
+	m_ui.save->setEnabled(false);
 }
 
 void GamePakView::setLuminanceValue(int value) {

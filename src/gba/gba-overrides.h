@@ -19,7 +19,7 @@ struct GBACartridgeOverride {
 
 struct Configuration;
 bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
-bool GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
+void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
 
 struct GBA;
 void GBAOverrideApply(struct GBA*, const struct GBACartridgeOverride*);
