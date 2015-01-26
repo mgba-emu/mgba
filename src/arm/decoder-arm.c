@@ -400,7 +400,7 @@ DEFINE_DECODER_ARM(MSRR, MSR,
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MRS, MRS, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MRS, MRS,
 	info->affectsCPSR = 1;
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_CPSR;
@@ -409,8 +409,7 @@ DEFINE_DECODER_ARM(MRS, MRS, info->affectsCPSR = 1;
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MRSR, MRS, info->affectsCPSR = 1;
-	info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MRSR, MRS,
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_SPSR;
 	info->op2.psrBits = 0;
@@ -418,7 +417,7 @@ DEFINE_DECODER_ARM(MRSR, MRS, info->affectsCPSR = 1;
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MSRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
@@ -429,10 +428,9 @@ DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_IMMEDIATE_2;)
 
-DEFINE_DECODER_ARM(MSRRI, MSR, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MSRRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
-	info->affectsCPSR = 1;
 	info->op1.reg = ARM_SPSR;
 	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
