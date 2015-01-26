@@ -62,6 +62,12 @@
 #define ARM_MEMORY_INCREMENT_BEFORE  0x0300
 #define ARM_MEMORY_SPSR_SWAP         0x0400
 
+#define ARM_PSR_C 1
+#define ARM_PSR_X 2
+#define ARM_PSR_S 4
+#define ARM_PSR_F 8
+#define ARM_PSR_MASK 0xF
+
 #define MEMORY_FORMAT_TO_DIRECTION(F) (((F) >> 8) & 0x3)
 
 enum ARMCondition {
@@ -99,6 +105,7 @@ union ARMOperand {
 		union {
 			uint8_t shifterReg;
 			uint8_t shifterImm;
+			uint8_t psrBits;
 		};
 	};
 	int32_t immediate;

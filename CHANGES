@@ -31,6 +31,7 @@ Bugfixes:
  - GBA Thread: Fix possible hang when loading an archive
  - Perf: Fix crash when the GBA thread fails to start
  - SDL: Properly clean up if a game doesn't launch
+ - Debugger: Disassembly now lists PSR bitmasks (fixes #191)
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width

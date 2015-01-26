@@ -386,6 +386,7 @@ DEFINE_DECODER_ARM(ILL, ILL, info->operandFormat = ARM_OPERAND_NONE;) // Illegal
 DEFINE_DECODER_ARM(MSR, MSR,
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
@@ -393,6 +394,7 @@ DEFINE_DECODER_ARM(MSR, MSR,
 
 DEFINE_DECODER_ARM(MSRR, MSR,
 	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
@@ -402,6 +404,7 @@ DEFINE_DECODER_ARM(MRS, MRS, info->affectsCPSR = 1;
 	info->affectsCPSR = 1;
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_CPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
@@ -410,6 +413,7 @@ DEFINE_DECODER_ARM(MRSR, MRS, info->affectsCPSR = 1;
 	info->affectsCPSR = 1;
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_SPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
@@ -419,6 +423,7 @@ DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
@@ -429,6 +434,7 @@ DEFINE_DECODER_ARM(MSRRI, MSR, info->affectsCPSR = 1;
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
