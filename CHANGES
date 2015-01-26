@@ -41,6 +41,7 @@ Misc:
  - Debugger: Simplify debugger state machine to play nicer with the GBA thread loop
  - Debugger: Merge Thumb BL instructions when disassembling
  - Debugger: Clean up debugger interface, removing obsolete state (fixes #67)
+ - Debugger: Watchpoints now report address watched (fixes #68)
 
 0.1.1: (2015-01-24)
 Bugfixes:

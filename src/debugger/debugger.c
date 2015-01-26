@@ -22,7 +22,10 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	}
 	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
 		if (breakpoint->address + instructionLength == (uint32_t) debugger->cpu->gprs[ARM_PC]) {
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT);
+			struct DebuggerEntryInfo info = {
+				.address = breakpoint->address
+			};
+			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 			break;
 		}
 	}
@@ -81,10 +84,10 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	}
 }
 
-void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
 	if (debugger->entered) {
-		debugger->entered(debugger, reason);
+		debugger->entered(debugger, reason, info);
 	}
 }
 
@@ -110,15 +113,15 @@ void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
 	if (!debugger->watchpoints) {
 		ARMDebuggerInstallMemoryShim(debugger);
 	}
-	struct DebugBreakpoint* watchpoint = malloc(sizeof(struct DebugBreakpoint));
+	struct DebugWatchpoint* watchpoint = malloc(sizeof(struct DebugWatchpoint));
 	watchpoint->address = address;
 	watchpoint->next = debugger->watchpoints;
 	debugger->watchpoints = watchpoint;
 }
 
 void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	struct DebugBreakpoint** previous = &debugger->watchpoints;
-	struct DebugBreakpoint* breakpoint;
+	struct DebugWatchpoint** previous = &debugger->watchpoints;
+	struct DebugWatchpoint* breakpoint;
 	for (; (breakpoint = *previous); previous = &breakpoint->next) {
 		if (breakpoint->address == address) {
 			*previous = breakpoint->next;

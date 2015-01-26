@@ -623,7 +623,11 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	enum GBALogLevel level = GBA_LOG_FATAL;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
+		struct DebuggerEntryInfo info = {
+			.address = cpu->gprs[ARM_PC],
+			.opcode = opcode
+		};
+		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
 	GBALog(gba, level, "Stub opcode: %08x", opcode);
 }
@@ -632,7 +636,11 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 	if (gba->debugger) {
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
+		struct DebuggerEntryInfo info = {
+			.address = cpu->gprs[ARM_PC],
+			.opcode = opcode
+		};
+		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
 }
 

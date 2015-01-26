@@ -34,15 +34,33 @@ static void _gdbStubDeinit(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-	case DEBUGGER_ENTER_WATCHPOINT: // TODO: Make watchpoints raise with address
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
+		break;
+	case DEBUGGER_ENTER_WATCHPOINT: // TODO: Make watchpoints raise with address
+		if (info) {
+			const char* type = 0;
+			switch (info->watchType) {
+			case WATCHPOINT_WRITE:
+				type = "watch";
+				break;
+			case WATCHPOINT_READ:
+				type = "rwatch";
+				break;
+			case WATCHPOINT_RW:
+				type = "awatch";
+				break;
+			}
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%s:%08X", SIGTRAP, type, info->address);
+		} else {
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
+		}
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGILL);
@@ -279,7 +297,7 @@ static void _processVReadCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	if (!strncmp("Attach", message, 6)) {
 		strncpy(stub->outgoing, "1", GDB_STUB_MAX_LINE - 4);
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL);
+		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 	}
 	_sendMessage(stub);
 }
@@ -348,7 +366,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		++message;
 		break;
 	case '\x03':
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL);
+		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 		return parsed;
 	default:
 		_nak(stub);
@@ -514,7 +532,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			if (!SocketSetBlocking(stub->connection, false)) {
 				goto connectionLost;
 			}
-			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED);
+			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
 		} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			return;
 		} else {

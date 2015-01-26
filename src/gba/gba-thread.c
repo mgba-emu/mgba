@@ -166,7 +166,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
 		GBAAttachDebugger(&gba, threadContext->debugger);
-		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED);
+		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	}
 
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);

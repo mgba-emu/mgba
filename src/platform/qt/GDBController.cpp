@@ -40,7 +40,7 @@ void GDBController::attach() {
 		return;
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);
-	ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED);
+	ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 }
 
 void GDBController::detach() {

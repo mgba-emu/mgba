@@ -407,7 +407,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL);
+	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct CLIDebugVector* dv) {
@@ -653,20 +653,32 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-		printf("Hit breakpoint\n");
+		if (info) {
+			printf("Hit breakpoint at 0x%08X\n", info->address);
+		} else {
+			printf("Hit breakpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
-		printf("Hit watchpoint\n");
+		if (info) {
+			printf("Hit watchpoint at 0x%08X: (old value = 0x%08X)\n", info->address, info->oldValue);
+		} else {
+			printf("Hit watchpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
-		printf("Hit illegal opcode\n");
+		if (info) {
+			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
+		} else {
+			printf("Hit illegal opcode\n");
+		}
 		break;
 	}
 }
