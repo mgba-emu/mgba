@@ -169,7 +169,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 	video->p->memory.io[REG_DISPSTAT >> 1] &= 0x7;
-	video->p->memory.io[REG_DISPSTAT >> 1] |= value & 0xFFF8;
+	video->p->memory.io[REG_DISPSTAT >> 1] |= value;
 
 	uint16_t dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
 
