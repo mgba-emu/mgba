@@ -83,6 +83,17 @@ void ConfigurationSetFloatValue(struct Configuration* configuration, const char*
 	ConfigurationSetValue(configuration, section, key, charValue);
 }
 
+void ConfigurationClearValue(struct Configuration* configuration, const char* section, const char* key) {
+	struct Table* currentSection = &configuration->root;
+	if (section) {
+		currentSection = HashTableLookup(&configuration->sections, section);
+		if (!currentSection) {
+			return;
+		}
+	}
+	HashTableRemove(currentSection, key);
+}
+
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {
 	const struct Table* currentSection = &configuration->root;
 	if (section) {

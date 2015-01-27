@@ -16,7 +16,6 @@ enum DebuggerState {
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
 	DEBUGGER_CUSTOM,
-	DEBUGGER_EXITING,
 	DEBUGGER_SHUTDOWN
 };
 
@@ -25,12 +24,38 @@ struct DebugBreakpoint {
 	uint32_t address;
 };
 
+enum WatchpointType {
+	WATCHPOINT_WRITE = 1,
+	WATCHPOINT_READ = 2,
+	WATCHPOINT_RW = 3
+};
+
+struct DebugWatchpoint {
+	struct DebugWatchpoint* next;
+	uint32_t address;
+	enum WatchpointType type;
+};
+
 enum DebuggerEntryReason {
 	DEBUGGER_ENTER_MANUAL,
 	DEBUGGER_ENTER_ATTACHED,
 	DEBUGGER_ENTER_BREAKPOINT,
 	DEBUGGER_ENTER_WATCHPOINT,
 	DEBUGGER_ENTER_ILLEGAL_OP
+};
+
+struct DebuggerEntryInfo {
+	uint32_t address;
+	union {
+		struct {
+			uint32_t oldValue;
+			enum WatchpointType watchType;
+		};
+
+		struct {
+			uint32_t opcode;
+		};
+	};
 };
 
 enum DebuggerLogLevel {
@@ -46,13 +71,13 @@ struct ARMDebugger {
 	struct ARMCore* cpu;
 
 	struct DebugBreakpoint* breakpoints;
-	struct DebugBreakpoint* watchpoints;
+	struct DebugWatchpoint* watchpoints;
 	struct ARMMemory originalMemory;
 
 	void (*init)(struct ARMDebugger*);
 	void (*deinit)(struct ARMDebugger*);
 	void (*paused)(struct ARMDebugger*);
-	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason);
+	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason, struct DebuggerEntryInfo*);
 	void (*custom)(struct ARMDebugger*);
 
 	__attribute__((format (printf, 3, 4)))
@@ -61,7 +86,7 @@ struct ARMDebugger {
 
 void ARMDebuggerCreate(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
-void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason);
+void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason, struct DebuggerEntryInfo*);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);

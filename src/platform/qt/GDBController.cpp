@@ -40,13 +40,13 @@ void GDBController::attach() {
 		return;
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);
+	ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 }
 
 void GDBController::detach() {
 	if (!isAttached()) {
 		return;
 	}
-	disconnect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
 	m_gameController->threadInterrupt();
 	GDBStubShutdown(&m_gdbStub);
 	m_gameController->setDebugger(nullptr);
@@ -58,13 +58,11 @@ void GDBController::listen() {
 	if (!isAttached()) {
 		attach();
 	}
-	connect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
-	GDBStubListen(&m_gdbStub, m_port, &m_bindAddress);
-	m_gameController->threadContinue();
-}
-
-void GDBController::updateGDB() {
-	m_gameController->threadInterrupt();
-	GDBStubUpdate(&m_gdbStub);
+	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress)) {
+		emit listening();
+	} else {
+		detach();
+		emit listenFailed();
+	}
 	m_gameController->threadContinue();
 }

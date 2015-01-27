@@ -25,6 +25,8 @@ void ConfigurationSetFloatValue(struct Configuration*, const char* section, cons
 
 const char* ConfigurationGetValue(const struct Configuration*, const char* section, const char* key);
 
+void ConfigurationClearValue(struct Configuration*, const char* section, const char* key);
+
 bool ConfigurationRead(struct Configuration*, const char* path);
 bool ConfigurationWrite(const struct Configuration*, const char* path);
 bool ConfigurationWriteSection(const struct Configuration*, const char* path, const char* section);

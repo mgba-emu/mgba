@@ -8,6 +8,7 @@
 #include "gba-bios.h"
 #include "gba-io.h"
 #include "gba-rr.h"
+#include "gba-serialize.h"
 #include "gba-sio.h"
 #include "gba-thread.h"
 
@@ -80,6 +81,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->lastJump = 0;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
+	gba->performingDMA = false;
 }
 
 void GBADestroy(struct GBA* gba) {
@@ -280,7 +282,6 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
@@ -312,7 +313,6 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			nextEvent = timer->nextEvent;
 			if (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
@@ -627,7 +627,11 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	enum GBALogLevel level = GBA_LOG_FATAL;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
+		struct DebuggerEntryInfo info = {
+			.address = cpu->gprs[ARM_PC],
+			.opcode = opcode
+		};
+		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
 	GBALog(gba, level, "Stub opcode: %08x", opcode);
 }
@@ -636,6 +640,46 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
 	if (gba->debugger) {
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP);
+		struct DebuggerEntryInfo info = {
+			.address = cpu->gprs[ARM_PC],
+			.opcode = opcode
+		};
+		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	}
+}
+
+void GBAFrameStarted(struct GBA* gba) {
+	UNUSED(gba);
+
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
+	if (thread->rewindBuffer) {
+		--thread->rewindBufferNext;
+		if (thread->rewindBufferNext <= 0) {
+			thread->rewindBufferNext = thread->rewindBufferInterval;
+			GBARecordFrame(thread);
+		}
+	}
+}
+
+void GBAFrameEnded(struct GBA* gba) {
+	if (gba->rr) {
+		GBARRNextFrame(gba->rr);
+	}
+
+	struct GBAThread* thread = GBAThreadGetContext();
+	if (!thread) {
+		return;
+	}
+
+	if (thread->stream) {
+		thread->stream->postVideoFrame(thread->stream, thread->renderer);
+	}
+
+	if (thread->frameCallback) {
+		thread->frameCallback(thread);
 	}
 }

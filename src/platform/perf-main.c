@@ -90,7 +90,11 @@ int main(int argc, char** argv) {
 	GBAMapArgumentsToContext(&args, &context);
 	GBAMapOptionsToContext(&opts, &context);
 
-	GBAThreadStart(&context);
+	int didStart = GBAThreadStart(&context);
+
+	if (!didStart) {
+		goto cleanup;
+	}
 	GBAGetGameCode(context.gba, gameCode);
 
 	int frames = perfOpts.frames;
@@ -106,12 +110,6 @@ int main(int argc, char** argv) {
 	uint64_t duration = end - start;
 
 	GBAThreadJoin(&context);
-	GBAConfigFreeOpts(&opts);
-	freeArguments(&args);
-	GBAConfigDeinit(&config);
-	free(context.debugger);
-
-	free(renderer.outputBuffer);
 
 	float scaledFrames = frames * 1000000.f;
 	if (perfOpts.csv) {
@@ -127,7 +125,14 @@ int main(int argc, char** argv) {
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
-	return GBAThreadHasCrashed(&context);
+cleanup:
+	GBAConfigFreeOpts(&opts);
+	freeArguments(&args);
+	GBAConfigDeinit(&config);
+	free(context.debugger);
+	free(renderer.outputBuffer);
+
+	return !didStart || GBAThreadHasCrashed(&context);
 }
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {

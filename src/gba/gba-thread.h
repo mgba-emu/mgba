@@ -10,6 +10,7 @@
 
 #include "gba.h"
 #include "gba-input.h"
+#include "gba-overrides.h"
 
 #include "util/threading.h"
 
@@ -72,6 +73,9 @@ struct GBAThread {
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
 	enum GBAIdleLoopOptimization idleOptimization;
+
+	bool hasOverride;
+	struct GBACartridgeOverride override;
 
 	// Run-time options
 	int frameskip;

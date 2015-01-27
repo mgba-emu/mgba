@@ -22,6 +22,7 @@ class QAction;
 class QMenu;
 
 struct GBAArguments;
+struct GBACartridgeOverride;
 
 namespace QGBA {
 
@@ -76,6 +77,7 @@ public:
 	void setMRU(const QList<QString>& mru);
 
 	Configuration* overrides() { return &m_config.configTable; } // TODO: Make this not return the whole table
+	void saveOverride(const GBACartridgeOverride&);
 
 public slots:
 	void setOption(const char* key, bool value);

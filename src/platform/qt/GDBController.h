@@ -35,8 +35,9 @@ public slots:
 	void detach();
 	void listen();
 
-private slots:
-	void updateGDB();
+signals:
+	void listening();
+	void listenFailed();
 
 private:
 	GDBStub m_gdbStub;

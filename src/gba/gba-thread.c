@@ -8,7 +8,6 @@
 #include "arm.h"
 #include "gba.h"
 #include "gba-config.h"
-#include "gba-overrides.h"
 #include "gba-serialize.h"
 
 #include "debugger/debugger.h"
@@ -77,9 +76,6 @@ static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState
 }
 
 static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
 	threadContext->state = THREAD_PAUSING;
 	if (!onThread) {
 		_waitUntilNotState(threadContext, THREAD_PAUSING);
@@ -150,6 +146,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		if (GBAOverrideFind(threadContext->overrides, &override)) {
 			GBAOverrideApply(&gba, &override);
 		}
+		if (threadContext->hasOverride) {
+			GBAOverrideApply(&gba, &threadContext->override);
+		}
 
 		if (threadContext->bios && GBAIsBIOS(threadContext->bios)) {
 			GBALoadBIOS(&gba, threadContext->bios);
@@ -168,7 +167,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
 		GBAAttachDebugger(&gba, threadContext->debugger);
-		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED);
+		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	}
 
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
@@ -272,8 +271,16 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 		threadContext->stateDir = threadContext->gameDir;
 	} else {
 		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
+		threadContext->gameDir = 0;
 #if ENABLE_LIBZIP
-		threadContext->gameDir = VDirOpenZip(args->fname, 0);
+		if (!threadContext->gameDir) {
+			threadContext->gameDir = VDirOpenZip(args->fname, 0);
+		}
+#endif
+#if ENABLE_LZMA
+		if (!threadContext->gameDir) {
+			threadContext->gameDir = VDirOpen7z(args->fname, 0);
+		}
 #endif
 	}
 	threadContext->fname = args->fname;
@@ -310,6 +317,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 			struct Patch patchTemp;
 			struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
 			if (!vf) {
+				dirent = threadContext->gameDir->listNext(threadContext->gameDir);
 				continue;
 			}
 			if (!threadContext->rom && GBAIsROM(vf)) {
@@ -386,9 +394,7 @@ bool GBAThreadHasCrashed(struct GBAThread* threadContext) {
 
 void GBAThreadEnd(struct GBAThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
+	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_EXITING;
 	if (threadContext->gba) {
 		threadContext->gba->cpu->halted = false;
@@ -488,9 +494,7 @@ void GBAThreadInterrupt(struct GBAThread* threadContext) {
 	threadContext->savedState = threadContext->state;
 	_waitOnInterrupt(threadContext);
 	threadContext->state = THREAD_INTERRUPTING;
-	if (threadContext->debugger && threadContext->debugger->state == DEBUGGER_RUNNING) {
-		threadContext->debugger->state = DEBUGGER_EXITING;
-	}
+	threadContext->gba->cpu->nextEvent = 0;
 	ConditionWake(&threadContext->stateCond);
 	_waitUntilNotState(threadContext, THREAD_INTERRUPTING);
 	MutexUnlock(&threadContext->stateMutex);
@@ -618,25 +622,6 @@ void GBASyncPostFrame(struct GBASync* sync) {
 		} while (sync->videoFrameWait && sync->videoFramePending);
 	}
 	MutexUnlock(&sync->videoFrameMutex);
-
-	struct GBAThread* thread = GBAThreadGetContext();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->rewindBuffer) {
-		--thread->rewindBufferNext;
-		if (thread->rewindBufferNext <= 0) {
-			thread->rewindBufferNext = thread->rewindBufferInterval;
-			GBARecordFrame(thread);
-		}
-	}
-	if (thread->stream) {
-		thread->stream->postVideoFrame(thread->stream, thread->renderer);
-	}
-	if (thread->frameCallback) {
-		thread->frameCallback(thread);
-	}
 }
 
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {

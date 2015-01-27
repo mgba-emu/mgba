@@ -59,8 +59,8 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #endif
 #endif
 
-	renderer->d.outputBuffer = malloc(256 * 256 * 4);
-	renderer->d.outputBufferStride = 256;
+	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 	glGenTextures(1, &renderer->tex);
 	glBindTexture(GL_TEXTURE_2D, renderer->tex);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -75,6 +75,17 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
+
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+#endif
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+#endif
+
 
 	glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
 
@@ -109,12 +120,12 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			glBindTexture(GL_TEXTURE_2D, renderer->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, renderer->d.outputBuffer);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, renderer->d.outputBuffer);
 #else
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, renderer->d.outputBuffer);
 #endif
 #else
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
 #endif
 			if (context->sync.videoFrameWait) {
 				glFlush();

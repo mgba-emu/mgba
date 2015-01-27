@@ -38,9 +38,13 @@ static const int RTC_BYTES[8] = {
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* base) {
+	gpio->gpioBase = base;
+	GBAGPIOClear(gpio);
+}
+
+void GBAGPIOClear(struct GBACartridgeGPIO* gpio) {
 	gpio->gpioDevices = GPIO_NONE;
 	gpio->direction = GPIO_WRITE_ONLY;
-	gpio->gpioBase = base;
 	gpio->pinState = 0;
 	gpio->direction = 0;
 }

@@ -11,6 +11,7 @@
 #include <QKeySequence>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QStackedLayout>
 
 #include "ConfigController.h"
@@ -54,6 +55,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
+	setAcceptDrops(true);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setOverrides(m_config->overrides());
@@ -227,7 +229,7 @@ void Window::openShortcutWindow() {
 }
 
 void Window::openGamePakWindow() {
-	GamePakView* gamePakWindow = new GamePakView(m_controller);
+	GamePakView* gamePakWindow = new GamePakView(m_controller, m_config);
 	connect(this, SIGNAL(shutdown()), gamePakWindow, SLOT(close()));
 	gamePakWindow->setAttribute(Qt::WA_DeleteOnClose);
 	gamePakWindow->show();
@@ -276,6 +278,8 @@ void Window::gdbOpen() {
 		m_gdbController = new GDBController(m_controller, this);
 	}
 	GDBWindow* window = new GDBWindow(m_gdbController);
+	connect(this, SIGNAL(shutdown()), window, SLOT(close()));
+	window->setAttribute(Qt::WA_DeleteOnClose);
 	window->show();
 }
 #endif
@@ -322,6 +326,28 @@ void Window::closeEvent(QCloseEvent* event) {
 void Window::focusOutEvent(QFocusEvent*) {
 	m_controller->setTurbo(false, false);
 	m_controller->clearKeys();
+}
+
+void Window::dragEnterEvent(QDragEnterEvent* event) {
+	if (event->mimeData()->hasFormat("text/uri-list")) {
+		event->acceptProposedAction();
+	}
+}
+
+void Window::dropEvent(QDropEvent* event) {
+	QString uris = event->mimeData()->data("text/uri-list");
+	uris = uris.trimmed();
+	if (uris.contains("\n")) {
+		// Only one file please
+		return;
+	}
+	QUrl url(uris);
+	if (!url.isLocalFile()) {
+		// No remote loading
+		return;
+	}
+	event->accept();
+	m_controller->loadGame(url.path());
 }
 
 void Window::toggleFullScreen() {
@@ -411,11 +437,15 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
+	char title[13] = { '\0' };
+	GBAGetGameTitle(m_controller->thread()->gba, title);
+	if (m_frameList.isEmpty()) {
+		setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
+		return;
+	}
 	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
 	float fps = (m_frameList.count() - 1) * 10000.f / interval;
 	fps = round(fps) / 10.f;
-	char title[13] = { '\0' };
-	GBAGetGameTitle(m_controller->thread()->gba, title);
 	setWindowTitle(tr(PROJECT_NAME " - %1 (%2 fps)").arg(title).arg(fps));
 }
 
@@ -651,6 +681,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
+
+	toolsMenu->addSeparator();
+	QAction* solarIncrease = new QAction(tr("Increase solar level"), toolsMenu);
+	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
+	addControlledAction(toolsMenu, solarIncrease, "increaseLuminanceLevel");
+
+	QAction* solarDecrease = new QAction(tr("Decrease solar level"), toolsMenu);
+	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
+	addControlledAction(toolsMenu, solarDecrease, "decreaseLuminanceLevel");
+
+	QAction* maxSolar = new QAction(tr("Brightest solar level"), toolsMenu);
+	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
+	addControlledAction(toolsMenu, maxSolar, "maxLuminanceLevel");
+
+	QAction* minSolar = new QAction(tr("Darkest solar level"), toolsMenu);
+	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
+	addControlledAction(toolsMenu, minSolar, "minLuminanceLevel");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");

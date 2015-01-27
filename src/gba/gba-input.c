@@ -195,6 +195,21 @@ static void _saveKey(const struct GBAInputMap* map, uint32_t type, struct Config
 	ConfigurationSetValue(config, sectionName, keyKey, keyValue);
 }
 
+static void _clearAxis(uint32_t type, struct Configuration* config, const char* axisName) {
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+
+	char axisKey[KEY_NAME_MAX];
+	snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", axisName);
+	axisKey[KEY_NAME_MAX - 1] = '\0';
+	ConfigurationClearValue(config, sectionName, axisKey);
+
+	snprintf(axisKey, KEY_NAME_MAX, "axis%sAxis", axisName);
+	axisKey[KEY_NAME_MAX - 1] = '\0';
+	ConfigurationClearValue(config, sectionName, axisKey);
+}
+
 static void _saveAxis(uint32_t axis, void* dp, void* up) {
 	struct GBAAxisSave* user = up;
 	const struct GBAAxis* description = dp;
@@ -244,6 +259,18 @@ void _enumerateAxis(uint32_t axis, void* dp, void* ep) {
 	enumUser->handler(axis, description, enumUser->user);
 }
 
+void _unbindAxis(uint32_t axis, void* dp, void* user) {
+	UNUSED(axis);
+	enum GBAKey* key = user;
+	struct GBAAxis* description = dp;
+	if (description->highDirection == *key) {
+		description->highDirection = GBA_KEY_NONE;
+	}
+	if (description->lowDirection == *key) {
+		description->lowDirection = GBA_KEY_NONE;
+	}
+}
+
 void GBAInputMapInit(struct GBAInputMap* map) {
 	map->maps = 0;
 	map->numMaps = 0;
@@ -279,14 +306,19 @@ enum GBAKey GBAInputMapKey(const struct GBAInputMap* map, uint32_t type, int key
 
 void GBAInputBindKey(struct GBAInputMap* map, uint32_t type, int key, enum GBAKey input) {
 	struct GBAInputMapImpl* impl = _guaranteeMap(map, type);
+	GBAInputUnbindKey(map, type, input);
 	impl->map[input] = key;
 }
 
 void GBAInputUnbindKey(struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
 	struct GBAInputMapImpl* impl = _lookupMap(map, type);
+	if (input < 0 || input >= GBA_KEY_MAX) {
+		return;
+	}
 	if (impl) {
 		impl->map[input] = GBA_NO_MAPPING;
 	}
+	TableEnumerate(&impl->axes, _unbindAxis, &input);
 }
 
 int GBAInputQueryBinding(const struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
@@ -341,6 +373,8 @@ int GBAInputClearAxis(const struct GBAInputMap* map, uint32_t type, int axis, in
 void GBAInputBindAxis(struct GBAInputMap* map, uint32_t type, int axis, const struct GBAAxis* description) {
 	struct GBAInputMapImpl* impl = _guaranteeMap(map, type);
 	struct GBAAxis* dup = malloc(sizeof(struct GBAAxis));
+	GBAInputUnbindKey(map, type, description->lowDirection);
+	GBAInputUnbindKey(map, type, description->highDirection);
 	*dup = *description;
 	TableInsert(&impl->axes, axis, dup);
 }
@@ -391,6 +425,12 @@ void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Config
 	_loadKey(map, type, config, GBA_KEY_LEFT, "Left");
 	_loadKey(map, type, config, GBA_KEY_RIGHT, "Right");
 
+	_loadAxis(map, type, config, GBA_KEY_A, "A");
+	_loadAxis(map, type, config, GBA_KEY_B, "B");
+	_loadAxis(map, type, config, GBA_KEY_L, "L");
+	_loadAxis(map, type, config, GBA_KEY_R, "R");
+	_loadAxis(map, type, config, GBA_KEY_START, "Start");
+	_loadAxis(map, type, config, GBA_KEY_SELECT, "Select");
 	_loadAxis(map, type, config, GBA_KEY_UP, "Up");
 	_loadAxis(map, type, config, GBA_KEY_DOWN, "Down");
 	_loadAxis(map, type, config, GBA_KEY_LEFT, "Left");
@@ -408,6 +448,17 @@ void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Config
 	_saveKey(map, type, config, GBA_KEY_DOWN, "Down");
 	_saveKey(map, type, config, GBA_KEY_LEFT, "Left");
 	_saveKey(map, type, config, GBA_KEY_RIGHT, "Right");
+
+	_clearAxis(type, config, "A");
+	_clearAxis(type, config, "B");
+	_clearAxis(type, config, "L");
+	_clearAxis(type, config, "R");
+	_clearAxis(type, config, "Start");
+	_clearAxis(type, config, "Select");
+	_clearAxis(type, config, "Up");
+	_clearAxis(type, config, "Down");
+	_clearAxis(type, config, "Left");
+	_clearAxis(type, config, "Right");
 
 	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
 	if (!impl) {

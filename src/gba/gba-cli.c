@@ -66,12 +66,12 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
 
 	if (gbaDebugger->frameAdvance) {
-		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(gbaDebugger->context->gba->video.dispstat)) {
-			ARMDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_BREAKPOINT);
+		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1])) {
+			ARMDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}
-		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->video.dispstat);
+		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1]);
 		return true;
 	}
 	return false;
@@ -96,7 +96,7 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	gbaDebugger->frameAdvance = true;
-	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->video.dispstat);
+	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1]);
 }
 
 static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

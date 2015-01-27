@@ -113,6 +113,11 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 }
 
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+	if (savedata->type != SAVEDATA_AUTODETECT) {
+		struct VFile* vf = savedata->vf;
+		GBASavedataDeinit(savedata);
+		GBASavedataInit(savedata, vf);
+	}
 	switch (type) {
 	case SAVEDATA_FLASH512:
 	case SAVEDATA_FLASH1M:

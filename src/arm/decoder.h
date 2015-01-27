@@ -62,6 +62,12 @@
 #define ARM_MEMORY_INCREMENT_BEFORE  0x0300
 #define ARM_MEMORY_SPSR_SWAP         0x0400
 
+#define ARM_PSR_C 1
+#define ARM_PSR_X 2
+#define ARM_PSR_S 4
+#define ARM_PSR_F 8
+#define ARM_PSR_MASK 0xF
+
 #define MEMORY_FORMAT_TO_DIRECTION(F) (((F) >> 8) & 0x3)
 
 enum ARMCondition {
@@ -99,6 +105,7 @@ union ARMOperand {
 		union {
 			uint8_t shifterReg;
 			uint8_t shifterImm;
+			uint8_t psrBits;
 		};
 	};
 	int32_t immediate;
@@ -138,7 +145,6 @@ enum ARMMnemonic {
 	ARM_MN_BIC,
 	ARM_MN_BKPT,
 	ARM_MN_BL,
-	ARM_MN_BLH,
 	ARM_MN_BX,
 	ARM_MN_CMN,
 	ARM_MN_CMP,
@@ -203,6 +209,7 @@ struct ARMInstructionInfo {
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
+bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2, struct ARMInstructionInfo* out);
 int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
 
 #endif

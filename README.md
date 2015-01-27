@@ -20,8 +20,8 @@ Features
 - 9 savestate slots. Savestates are also viewable as screenshots.
 - Video and GIF recording.
 - Remappable controls for both keyboards and gamepads.
-- Loading from ZIP files.
-- IPS and UPS patch support.
+- Loading from ZIP and 7z files.
+- IPS, UPS and BPS patch support.
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
 - Configurable emulation rewinding.
 
@@ -99,7 +99,7 @@ Footnotes
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](https://endrift.com/mgba/bugs/show_bug.cgi?id=5))
 - Mosaic for transformed OBJs ([Bug #9](https://endrift.com/mgba/bugs/show_bug.cgi?id=9))
-- BIOS call RegisterRamReset is currently stubbed out ([Bug #141](https://endrift.com/mgba/bugs/show_bug.cgi?id=141))
+- BIOS call RegisterRamReset is partially stubbed out ([Bug #141](https://endrift.com/mgba/bugs/show_bug.cgi?id=141))
 - Audio channel reset flags ([Bug #142](https://endrift.com/mgba/bugs/show_bug.cgi?id=142))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases, and may require overrides, which are not yet user configurable. Filing a bug is recommended if such a case is encountered.
@@ -112,6 +112,6 @@ Footnotes
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2014 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+mGBA is Copyright © 2013 – 2015 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 mGBA contains [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license; and [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.

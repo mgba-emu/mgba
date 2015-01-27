@@ -9,7 +9,8 @@
 
 #include <string.h>
 
-static bool _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width);
+static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, int width);
+
 static uint32_t _popcount32(unsigned bits) {
 	bits = bits - ((bits >> 1) & 0x55555555);
 	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
@@ -39,8 +40,9 @@ static uint32_t _popcount32(unsigned bits) {
 	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		if (_checkWatchpoints(debugger->watchpoints, address, WIDTH)) { \
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT); \
+		struct DebuggerEntryInfo info = { }; \
+		if (_checkWatchpoints(debugger, address, &info, WIDTH)) { \
+			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, ARGS); \
 	}
@@ -61,8 +63,9 @@ static uint32_t _popcount32(unsigned bits) {
 		} \
 		unsigned i; \
 		for (i = 0; i < popcount; ++i) { \
-			if (_checkWatchpoints(debugger->watchpoints, base + 4 * i, 4)) { \
-				ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT); \
+			struct DebuggerEntryInfo info = { }; \
+			if (_checkWatchpoints(debugger, base + 4 * i, &info, 4)) { \
+				ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 			} \
 		} \
 		return debugger->originalMemory.NAME(cpu, address, mask, direction, cycleCounter); \
@@ -78,10 +81,24 @@ CREATE_MULTIPLE_WATCHPOINT_SHIM(loadMultiple)
 CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
-static bool _checkWatchpoints(struct DebugBreakpoint* watchpoints, uint32_t address, int width) {
-	width -= 1;
-	for (; watchpoints; watchpoints = watchpoints->next) {
+static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, int width) {
+	--width;
+	struct DebugWatchpoint* watchpoints;
+	for (watchpoints = debugger->watchpoints; watchpoints; watchpoints = watchpoints->next) {
 		if (!((watchpoints->address ^ address) & ~width)) {
+			switch (width + 1) {
+			case 1:
+				info->oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
+				break;
+			case 2:
+				info->oldValue = debugger->originalMemory.load16(debugger->cpu, address, 0);
+				break;
+			case 4:
+				info->oldValue = debugger->originalMemory.load32(debugger->cpu, address, 0);
+				break;
+			}
+			info->address = address;
+			info->watchType = watchpoints->type;
 			return true;
 		}
 	}

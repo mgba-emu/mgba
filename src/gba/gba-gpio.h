@@ -11,6 +11,7 @@
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
 enum GPIODevice {
+	GPIO_NO_OVERRIDE = 0x8000,
 	GPIO_NONE = 0,
 	GPIO_RTC = 1,
 	GPIO_RUMBLE = 2,
@@ -114,6 +115,7 @@ struct GBACartridgeGPIO {
 };
 
 void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
+void GBAGPIOClear(struct GBACartridgeGPIO* gpio);
 void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t value);
 
 void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);

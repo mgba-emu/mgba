@@ -179,4 +179,73 @@ static inline int SocketSetTCPPush(Socket socket, int push) {
 	return setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*) &push, sizeof(int)) >= 0;
 }
 
+static inline int SocketPoll(int nSockets, Socket* reads, Socket* writes, Socket* errors, int64_t timeoutMillis) {
+	fd_set rset;
+	fd_set wset;
+	fd_set eset;
+	FD_ZERO(&rset);
+	FD_ZERO(&wset);
+	FD_ZERO(&eset);
+	int i;
+	int maxFd = 0;
+	if (reads) {
+		for (i = 0; i < nSockets; ++i) {
+			if (SOCKET_FAILED(reads[i])) {
+				break;
+			}
+			if (reads[i] > maxFd) {
+				maxFd = reads[i];
+			}
+			FD_SET(reads[i], &rset);
+			reads[i] = INVALID_SOCKET;
+		}
+	}
+	if (writes) {
+		for (i = 0; i < nSockets; ++i) {
+			if (SOCKET_FAILED(writes[i])) {
+				break;
+			}
+			if (writes[i] > maxFd) {
+				maxFd = writes[i];
+			}
+			FD_SET(writes[i], &wset);
+			writes[i] = INVALID_SOCKET;
+		}
+	}
+	if (errors) {
+		for (i = 0; i < nSockets; ++i) {
+			if (SOCKET_FAILED(errors[i])) {
+				break;
+			}
+			if (errors[i] > maxFd) {
+				maxFd = errors[i];
+			}
+			FD_SET(errors[i], &eset);
+			errors[i] = INVALID_SOCKET;
+		}
+	}
+	struct timeval tv;
+	tv.tv_sec = timeoutMillis / 1000;
+	tv.tv_usec = (timeoutMillis % 1000) * 1000;
+	int result = select(maxFd, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
+	int r = 0;
+	int w = 0;
+	int e = 0;
+	for (i = 0; i < maxFd; ++i) {
+		if (reads && FD_ISSET(i, &rset)) {
+			reads[r] = i;
+			++r;
+		}
+		if (writes && FD_ISSET(i, &wset)) {
+			writes[w] = i;
+			++w;
+		}
+		if (errors && FD_ISSET(i, &eset)) {
+			errors[e] = i;
+			++e;
+		}
+	}
+	return result;
+}
+
 #endif

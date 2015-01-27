@@ -22,7 +22,10 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	}
 	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
 		if (breakpoint->address + instructionLength == (uint32_t) debugger->cpu->gprs[ARM_PC]) {
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT);
+			struct DebuggerEntryInfo info = {
+				.address = breakpoint->address
+			};
+			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 			break;
 		}
 	}
@@ -55,52 +58,36 @@ void ARMDebuggerDeinit(struct ARMComponent* component) {
 }
 
 void ARMDebuggerRun(struct ARMDebugger* debugger) {
-	if (debugger->state == DEBUGGER_EXITING) {
-		debugger->state = DEBUGGER_RUNNING;
-	}
-	while (debugger->state < DEBUGGER_EXITING) {
+	switch (debugger->state) {
+	case DEBUGGER_RUNNING:
 		if (!debugger->breakpoints && !debugger->watchpoints) {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRunLoop(debugger->cpu);
-			}
-		} else if (!debugger->breakpoints) {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRun(debugger->cpu);
-			}
+			ARMRunLoop(debugger->cpu);
 		} else {
-			while (debugger->state == DEBUGGER_RUNNING) {
-				ARMRun(debugger->cpu);
-				_checkBreakpoints(debugger);
-			}
+			ARMRun(debugger->cpu);
+			_checkBreakpoints(debugger);
 		}
-		switch (debugger->state) {
-		case DEBUGGER_RUNNING:
-			break;
-		case DEBUGGER_CUSTOM:
-			while (debugger->state == DEBUGGER_CUSTOM) {
-				ARMRun(debugger->cpu);
-				_checkBreakpoints(debugger);
-				debugger->custom(debugger);
-			}
-			break;
-		case DEBUGGER_PAUSED:
-			if (debugger->paused) {
-				debugger->paused(debugger);
-			} else {
-				debugger->state = DEBUGGER_RUNNING;
-			}
-			break;
-		case DEBUGGER_EXITING:
-		case DEBUGGER_SHUTDOWN:
-			return;
+		break;
+	case DEBUGGER_CUSTOM:
+		ARMRun(debugger->cpu);
+		_checkBreakpoints(debugger);
+		debugger->custom(debugger);
+		break;
+	case DEBUGGER_PAUSED:
+		if (debugger->paused) {
+			debugger->paused(debugger);
+		} else {
+			debugger->state = DEBUGGER_RUNNING;
 		}
+		break;
+	case DEBUGGER_SHUTDOWN:
+		return;
 	}
 }
 
-void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
 	if (debugger->entered) {
-		debugger->entered(debugger, reason);
+		debugger->entered(debugger, reason, info);
 	}
 }
 
@@ -126,15 +113,15 @@ void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
 	if (!debugger->watchpoints) {
 		ARMDebuggerInstallMemoryShim(debugger);
 	}
-	struct DebugBreakpoint* watchpoint = malloc(sizeof(struct DebugBreakpoint));
+	struct DebugWatchpoint* watchpoint = malloc(sizeof(struct DebugWatchpoint));
 	watchpoint->address = address;
 	watchpoint->next = debugger->watchpoints;
 	debugger->watchpoints = watchpoint;
 }
 
 void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	struct DebugBreakpoint** previous = &debugger->watchpoints;
-	struct DebugBreakpoint* breakpoint;
+	struct DebugWatchpoint** previous = &debugger->watchpoints;
+	struct DebugWatchpoint* breakpoint;
 	for (; (breakpoint = *previous); previous = &breakpoint->next) {
 		if (breakpoint->address == address) {
 			*previous = breakpoint->next;

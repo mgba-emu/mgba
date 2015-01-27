@@ -120,7 +120,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		switch (event->keysym.sym) {
 		case SDLK_F11:
 			if (context->debugger) {
-				ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
+				ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL, 0);
 			}
 			return;
 #ifdef USE_PNG

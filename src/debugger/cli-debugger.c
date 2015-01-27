@@ -43,7 +43,7 @@ static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 
 static void _breakIntoDefault(int signal);
 static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum ExecutionMode mode);
-static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
+static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
@@ -172,8 +172,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 	int i;
 	for (i = 0; i < size; ++i) {
-		_printLine(debugger, address, mode);
-		address += wordSize;
+		address += _printLine(debugger, address, mode);;
 	}
 }
 
@@ -238,7 +237,7 @@ static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	}
 }
 
-static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	char disassembly[48];
 	struct ARMInstructionInfo info;
 	printf("%08X:  ", address);
@@ -247,11 +246,23 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		printf("%08X\t%s\n", instruction, disassembly);
+		return WORD_SIZE_ARM;
 	} else {
+		struct ARMInstructionInfo info2;
+		struct ARMInstructionInfo combined;
 		uint16_t instruction = debugger->d.cpu->memory.load16(debugger->d.cpu, address, 0);
+		uint16_t instruction2 = debugger->d.cpu->memory.load16(debugger->d.cpu, address + WORD_SIZE_THUMB, 0);
 		ARMDecodeThumb(instruction, &info);
-		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
-		printf("%04X\t%s\n", instruction, disassembly);
+		ARMDecodeThumb(instruction2, &info2);
+		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
+			ARMDisassemble(&combined, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X %04X\t%s\n", instruction, instruction2, disassembly);
+			return WORD_SIZE_THUMB * 2;
+		} else {
+			ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X     \t%s\n", instruction, disassembly);
+			return WORD_SIZE_THUMB;
+		}
 	}
 }
 
@@ -396,7 +407,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL);
+	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct CLIDebugVector* dv) {
@@ -629,7 +640,6 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	while (debugger->state == DEBUGGER_PAUSED) {
 		line = el_gets(cliDebugger->elstate, &count);
 		if (!line) {
-			debugger->state = DEBUGGER_EXITING;
 			return;
 		}
 		if (line[0] == '\n') {
@@ -643,20 +653,32 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-		printf("Hit breakpoint\n");
+		if (info) {
+			printf("Hit breakpoint at 0x%08X\n", info->address);
+		} else {
+			printf("Hit breakpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
-		printf("Hit watchpoint\n");
+		if (info) {
+			printf("Hit watchpoint at 0x%08X: (old value = 0x%08X)\n", info->address, info->oldValue);
+		} else {
+			printf("Hit watchpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
-		printf("Hit illegal opcode\n");
+		if (info) {
+			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
+		} else {
+			printf("Hit illegal opcode\n");
+		}
 		break;
 	}
 }

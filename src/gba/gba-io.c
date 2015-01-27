@@ -366,11 +366,23 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
 			break;
 
+		// TODO: Confirm this behavior on real hardware
 		case REG_FIFO_A_LO:
 		case REG_FIFO_B_LO:
+			if (gba->performingDMA) {
+				GBAAudioWriteFIFO16(&gba->audio, address, value);
+			} else {
+				GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
+			}
+			break;
+
 		case REG_FIFO_A_HI:
 		case REG_FIFO_B_HI:
-			GBAAudioWriteFIFO16(&gba->audio, address, value);
+			if (gba->performingDMA) {
+				GBAAudioWriteFIFO16(&gba->audio, address, value);
+			} else {
+				GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
+			}
 			break;
 
 		// DMA

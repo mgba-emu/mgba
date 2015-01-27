@@ -10,19 +10,28 @@
 
 #include "ui_GamePakView.h"
 
+extern "C" {
+#include "gba-overrides.h"
+}
+
 struct GBAThread;
 
 namespace QGBA {
 
+class ConfigController;
 class GameController;
 
 class GamePakView : public QWidget {
 Q_OBJECT
 
 public:
-	GamePakView(GameController* controller, QWidget* parent = nullptr);
+	GamePakView(GameController* controller, ConfigController* config, QWidget* parent = nullptr);
+
+public slots:
+	void saveOverride();
 
 private slots:
+	void updateOverrides();
 	void gameStarted(GBAThread*);
 	void gameStopped();
 	void setLuminanceValue(int);
@@ -31,6 +40,8 @@ private:
 	Ui::GamePakView m_ui;
 
 	GameController* m_controller;
+	ConfigController* m_config;
+	GBACartridgeOverride m_override;
 };
 
 }

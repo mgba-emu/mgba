@@ -9,6 +9,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -46,6 +47,9 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 
 	m_startStopButton = new QPushButton;
 	mainSegment->addWidget(m_startStopButton);
+	connect(m_gdbController, SIGNAL(listening()), this, SLOT(started()));
+	connect(m_gdbController, SIGNAL(listenFailed()), this, SLOT(failed()));
+
 	if (m_gdbController->isAttached()) {
 		started();
 	} else {
@@ -88,7 +92,6 @@ void GDBWindow::started() {
 	m_bindAddressEdit->setEnabled(false);
 	m_startStopButton->setText(tr("Stop"));
 	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
-	disconnect(m_startStopButton, SIGNAL(clicked()), this, SLOT(started()));
 	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
 	connect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
 }
@@ -100,5 +103,12 @@ void GDBWindow::stopped() {
 	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
 	disconnect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
 	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
-	connect(m_startStopButton, SIGNAL(clicked()), this, SLOT(started()));
+}
+
+void GDBWindow::failed() {
+	QMessageBox* failure = new QMessageBox(QMessageBox::Warning, tr("Crash"),
+		tr("Could not start GDB server"),
+		QMessageBox::Ok, this,  Qt::Sheet);
+	failure->setAttribute(Qt::WA_DeleteOnClose);
+	failure->show();
 }

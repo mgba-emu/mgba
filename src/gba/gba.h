@@ -118,6 +118,7 @@ struct GBA {
 	struct ARMDebugger* debugger;
 
 	uint32_t bus;
+	bool performingDMA;
 
 	int timersEnabled;
 	struct GBATimer timers[4];
@@ -192,6 +193,9 @@ bool GBAIsROM(struct VFile* vf);
 bool GBAIsBIOS(struct VFile* vf);
 void GBAGetGameCode(struct GBA* gba, char* out);
 void GBAGetGameTitle(struct GBA* gba, char* out);
+
+void GBAFrameStarted(struct GBA* gba);
+void GBAFrameEnded(struct GBA* gba);
 
 __attribute__((format (printf, 3, 4)))
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);

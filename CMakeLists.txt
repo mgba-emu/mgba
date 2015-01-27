@@ -9,6 +9,7 @@ set(USE_PNG ON CACHE BOOL "Whether or not to enable PNG support")
 set(USE_LIBZIP ON CACHE BOOL "Whether or not to enable ZIP support")
 set(USE_MAGICK ON CACHE BOOL "Whether or not to enable ImageMagick support")
 set(USE_BLIP ON CACHE BOOL "Whether or not to enable blip_buf support")
+set(USE_LZMA ON CACHE BOOL "Whether or not to enable 7-Zip support")
 set(BUILD_QT ON CACHE BOOL "Build Qt frontend")
 set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
@@ -204,6 +205,32 @@ if(USE_LIBZIP)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libzip2")
 endif()
 
+if (USE_LZMA)
+	include_directories(AFTER ${CMAKE_SOURCE_DIR}/third-party/lzma)
+	add_definitions(-D_7ZIP_PPMD_SUPPPORT)
+	set(LZMA_SRC
+		${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-lzma.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zAlloc.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zArcIn.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zBuf.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zBuf2.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zCrc.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zCrcOpt.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zDec.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/CpuArch.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/LzmaDec.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Lzma2Dec.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bra.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bra86.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bcj2.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Ppmd7.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Ppmd7Dec.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zFile.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zStream.c)
+	list(APPEND UTIL_SRC ${LZMA_SRC})
+	add_definitions(-DENABLE_LZMA)
+endif()
+
 # Binaries
 add_library(${BINARY_NAME} SHARED
 	${ARM_SRC}
@@ -263,6 +290,7 @@ message(STATUS "	Video recording: ${USE_FFMPEG}")
 message(STATUS "	GIF recording: ${USE_MAGICK}")
 message(STATUS "	Screenshot/advanced savestate support: ${USE_PNG}")
 message(STATUS "	ZIP support: ${USE_LIBZIP}")
+message(STATUS "	7-Zip support: ${USE_LZMA}")
 message(STATUS "	Better audio resampling: ${USE_BLIP}")
 message(STATUS "Frontend summary:")
 message(STATUS "	Qt: ${BUILD_QT}")
