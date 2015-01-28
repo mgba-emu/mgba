@@ -212,6 +212,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0xB:
 	case 0xC:
+		if (cpu->gprs[0] >> BASE_OFFSET == REGION_BIOS) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot CpuSet from BIOS");
+			return;
+		}
 		ARMRaiseSWI(cpu);
 		break;
 	case 0xD:
