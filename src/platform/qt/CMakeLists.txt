@@ -51,6 +51,7 @@ set(SOURCE_FILES
 	LoadSaveState.cpp
 	LogView.cpp
 	SavestateButton.cpp
+	SensorView.cpp
 	SettingsView.cpp
 	ShortcutController.cpp
 	ShortcutView.cpp
@@ -63,6 +64,7 @@ qt5_wrap_ui(UI_FILES
 	GamePakView.ui
 	LoadSaveState.ui
 	LogView.ui
+	SensorView.ui
 	SettingsView.ui
 	ShortcutView.ui
 	VideoView.ui)

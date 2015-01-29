@@ -34,7 +34,6 @@ private slots:
 	void updateOverrides();
 	void gameStarted(GBAThread*);
 	void gameStopped();
-	void setLuminanceValue(int);
 
 private:
 	Ui::GamePakView m_ui;

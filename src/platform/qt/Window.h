@@ -68,6 +68,7 @@ public slots:
 	void openShortcutWindow();
 
 	void openGamePakWindow();
+	void openSensorWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();

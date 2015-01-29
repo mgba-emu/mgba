@@ -23,6 +23,7 @@
 #include "GamePakView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "SensorView.h"
 #include "SettingsView.h"
 #include "ShortcutController.h"
 #include "ShortcutView.h"
@@ -233,6 +234,12 @@ void Window::openGamePakWindow() {
 	connect(this, SIGNAL(shutdown()), gamePakWindow, SLOT(close()));
 	gamePakWindow->setAttribute(Qt::WA_DeleteOnClose);
 	gamePakWindow->show();
+}
+void Window::openSensorWindow() {
+	SensorView* sensorWindow = new SensorView(m_controller);
+	connect(this, SIGNAL(shutdown()), sensorWindow, SLOT(close()));
+	sensorWindow->setAttribute(Qt::WA_DeleteOnClose);
+	sensorWindow->show();
 }
 
 #ifdef BUILD_SDL
@@ -675,6 +682,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* gamePak = new QAction(tr("Game &Pak overrides..."), toolsMenu);
 	connect(gamePak, SIGNAL(triggered()), this, SLOT(openGamePakWindow()));
 	addControlledAction(toolsMenu, gamePak, "gamePakOverrides");
+
+	QAction* gamePakSensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
+	connect(gamePakSensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
+	addControlledAction(toolsMenu, gamePakSensors, "gamePakSensors");
 
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);

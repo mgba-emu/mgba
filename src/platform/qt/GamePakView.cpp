@@ -23,22 +23,6 @@ GamePakView::GamePakView(GameController* controller, ConfigController* config, Q
 
 	connect(controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
-	connect(m_ui.lightSpin, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
-	connect(m_ui.lightSlide, SIGNAL(valueChanged(int)), this, SLOT(setLuminanceValue(int)));
-
-	connect(m_ui.timeNoOverride, SIGNAL(clicked()), controller, SLOT(setRealTime()));
-	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
-		controller->setFixedTime(m_ui.time->dateTime());
-	});
-	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
-		controller->setFakeEpoch(m_ui.time->dateTime());
-	});
-	connect(m_ui.time, &QDateTimeEdit::dateTimeChanged, [controller, this] (const QDateTime&) {
-		m_ui.timeButtons->checkedButton()->clicked();
-	});
-	connect(m_ui.timeNow, &QPushButton::clicked, [controller, this] () {
-		m_ui.time->setDateTime(QDateTime::currentDateTime());
-	});
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
 		m_ui.hwRTC->setEnabled(!enabled);
@@ -150,19 +134,4 @@ void GamePakView::gameStopped() {
 	m_ui.hwRumble->setChecked(false);
 
 	m_ui.save->setEnabled(false);
-}
-
-void GamePakView::setLuminanceValue(int value) {
-	bool oldState;
-	value = std::max(0, std::min(value, 255));
-
-	oldState = m_ui.lightSpin->blockSignals(true);
-	m_ui.lightSpin->setValue(value);
-	m_ui.lightSpin->blockSignals(oldState);
-
-	oldState = m_ui.lightSlide->blockSignals(true);
-	m_ui.lightSlide->setValue(value);
-	m_ui.lightSlide->blockSignals(oldState);
-
-	m_controller->setLuminanceValue(value);
 }
