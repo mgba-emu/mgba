@@ -146,11 +146,7 @@ void Window::loadConfig() {
 
 	m_logView->setLevels(opts->logLevel);
 
-	m_controller->setFrameskip(opts->frameskip);
-	m_controller->setAudioSync(opts->audioSync);
-	m_controller->setVideoSync(opts->videoSync);
-	m_controller->setSkipBIOS(opts->skipBios);
-	m_controller->setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
+	m_controller->setOptions(opts);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 

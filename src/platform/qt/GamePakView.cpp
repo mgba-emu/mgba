@@ -81,7 +81,13 @@ void GamePakView::updateOverrides() {
 		}
 	}
 
-	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != GPIO_NO_OVERRIDE) {
+	bool ok;
+	uint32_t parsedIdleLoop = m_ui.idleLoop->text().toInt(&ok, 16);
+	if (ok) {
+		m_override.idleLoop = parsedIdleLoop;
+	}
+
+	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != GPIO_NO_OVERRIDE || m_override.idleLoop != IDLE_LOOP_NONE) {
 		m_controller->setOverride(m_override);
 	} else {
 		m_controller->clearOverride();
@@ -109,9 +115,19 @@ void GamePakView::gameStarted(GBAThread* thread) {
 	m_ui.hwTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
 	m_ui.hwRumble->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RUMBLE);
 
+	if (thread->gba->idleLoop != IDLE_LOOP_NONE) {
+		m_ui.idleLoop->setText(QString::number(thread->gba->idleLoop, 16));
+	} else {
+		m_ui.idleLoop->clear();
+
+	}
+
 	GBAGetGameCode(thread->gba, m_override.id);
 	m_override.hardware = thread->gba->memory.gpio.gpioDevices;
 	m_override.savetype = thread->gba->memory.savedata.type;
+	m_override.idleLoop = thread->gba->idleLoop;
+
+	m_ui.idleLoop->setEnabled(false);
 
 	m_ui.save->setEnabled(m_config);
 }
@@ -133,5 +149,8 @@ void GamePakView::gameStopped() {
 	m_ui.hwTilt->setChecked(false);
 	m_ui.hwRumble->setChecked(false);
 
+	m_ui.idleLoop->setEnabled(true);
+
+	m_ui.clear->setEnabled(false);
 	m_ui.save->setEnabled(false);
 }

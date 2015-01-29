@@ -30,6 +30,15 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 
+	QString idleOptimization = loadSetting("idleOptimization");
+	if (idleOptimization == "ignore") {
+		m_ui.idleOptimization->setCurrentIndex(0);
+	} else if (idleOptimization == "remove") {
+		m_ui.idleOptimization->setCurrentIndex(1);
+	} else if (idleOptimization == "detect") {
+		m_ui.idleOptimization->setCurrentIndex(2);
+	}
+
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
 }
@@ -54,6 +63,19 @@ void SettingsView::updateConfig() {
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
+
+	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
+	case IDLE_LOOP_IGNORE:
+		saveSetting("idleOptimization", "ignore");
+		break;
+	case IDLE_LOOP_REMOVE:
+		saveSetting("idleOptimization", "remove");
+		break;
+	case IDLE_LOOP_DETECT:
+		saveSetting("idleOptimization", "detect");
+		break;
+	}
+
 	m_controller->write();
 
 	emit biosLoaded(m_ui.bios->text());
@@ -69,17 +91,20 @@ void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 }
 
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
-	m_controller->setOption(key, field->text());
-	m_controller->updateOption(key);
+	saveSetting(key, field->text());
 }
 
 void SettingsView::saveSetting(const char* key, const QSpinBox* field) {
-	m_controller->setOption(key, field->cleanText());
+	saveSetting(key, field->cleanText());
+}
+
+void SettingsView::saveSetting(const char* key, const QString& field) {
+	m_controller->setOption(key, field);
 	m_controller->updateOption(key);
 }
 
 void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
-	QString option = m_controller->getOption(key);
+	QString option = loadSetting(key);
 	field->setChecked(option != "0");
 }
 
@@ -88,11 +113,15 @@ void SettingsView::loadSetting(const char* key, QComboBox* field) {
 }
 
 void SettingsView::loadSetting(const char* key, QLineEdit* field) {
-	QString option = m_controller->getOption(key);
+	QString option = loadSetting(key);
 	field->setText(option);
 }
 
 void SettingsView::loadSetting(const char* key, QSpinBox* field) {
-	QString option = m_controller->getOption(key);
+	QString option = loadSetting(key);
 	field->setValue(option.toInt());
+}
+
+QString SettingsView::loadSetting(const char* key) {
+	return m_controller->getOption(key);
 }

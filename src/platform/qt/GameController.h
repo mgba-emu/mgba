@@ -21,6 +21,7 @@ extern "C" {
 }
 
 struct GBAAudio;
+struct GBAOptions;
 struct GBAVideoSoftwareRenderer;
 struct Configuration;
 
@@ -58,6 +59,8 @@ public:
 
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
+
+	void setOptions(const GBAOptions*);
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();

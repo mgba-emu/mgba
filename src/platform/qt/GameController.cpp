@@ -16,6 +16,7 @@
 extern "C" {
 #include "gba.h"
 #include "gba-audio.h"
+#include "gba-config.h"
 #include "gba-serialize.h"
 #include "renderers/video-software.h"
 #include "util/vfs.h"
@@ -143,6 +144,18 @@ GameController::~GameController() {
 void GameController::setOverride(const GBACartridgeOverride& override) {
 	m_threadContext.override = override;
 	m_threadContext.hasOverride = true;
+}
+
+void GameController::setOptions(const GBAOptions* opts) {
+	setFrameskip(opts->frameskip);
+	setAudioSync(opts->audioSync);
+	setVideoSync(opts->videoSync);
+	setSkipBIOS(opts->skipBios);
+	setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
+
+	threadInterrupt();
+	m_threadContext.idleOptimization = opts->idleOptimization;
+	threadContinue();
 }
 
 #ifdef USE_GDB_STUB
