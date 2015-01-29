@@ -23,7 +23,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>RTC</string>
+      <string>Realtime clock</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="2" column="0">
