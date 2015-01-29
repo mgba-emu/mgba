@@ -77,7 +77,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
-	gba->idleLoop = -1;
+	gba->idleLoop = IDLE_LOOP_NONE;
 	gba->lastJump = 0;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;

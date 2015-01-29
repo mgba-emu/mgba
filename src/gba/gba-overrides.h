@@ -10,6 +10,8 @@
 
 #include "gba-savedata.h"
 
+#define IDLE_LOOP_NONE 0xFFFFFFFF
+
 struct GBACartridgeOverride {
 	char id[4];
 	enum SavedataType savetype;

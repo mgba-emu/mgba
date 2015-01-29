@@ -59,7 +59,7 @@ void GamePakView::updateOverrides() {
 		"",
 		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
 		GPIO_NO_OVERRIDE,
-		0xFFFFFFFF
+		IDLE_LOOP_NONE
 	};
 
 	if (!m_ui.hwAutodetect->isChecked()) {
