@@ -56,7 +56,11 @@ int main(int argc, char** argv) {
 	GBAConfigInit(&config, "perf");
 	GBAConfigLoad(&config);
 
-	struct GBAOptions opts = {};
+	struct GBAOptions opts = {
+		.idleOptimization = IDLE_LOOP_DETECT
+	};
+	GBAConfigLoadDefaults(&config, &opts);
+
 	struct GBAArguments args = {};
 	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
@@ -69,7 +73,7 @@ int main(int argc, char** argv) {
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
 
-	struct GBAThread context = { };
+	struct GBAThread context = {};
 	_thread = &context;
 
 	if (!perfOpts.noVideo) {

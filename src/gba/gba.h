@@ -75,6 +75,12 @@ enum GBAComponent {
 	GBA_COMPONENT_MAX
 };
 
+enum GBAIdleLoopOptimization {
+	IDLE_LOOP_IGNORE = -1,
+	IDLE_LOOP_REMOVE = 0,
+	IDLE_LOOP_DETECT
+};
+
 enum {
 	SP_BASE_SYSTEM = 0x03007F00,
 	SP_BASE_IRQ = 0x03007FA0,
@@ -120,7 +126,6 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
-	uint32_t busyLoop;
 	struct GBARotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
 	struct GBARTCSource* rtcSource;
@@ -136,6 +141,14 @@ struct GBA {
 	const char* activeFile;
 
 	int logLevel;
+
+	enum GBAIdleLoopOptimization idleOptimization;
+	uint32_t idleLoop;
+	uint32_t lastJump;
+	int idleDetectionStep;
+	int idleDetectionFailures;
+	int32_t cachedRegisters[16];
+	bool taintedRegisters[16];
 };
 
 struct GBACartridge {

@@ -26,7 +26,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "V49E", SAVEDATA_SRAM, GPIO_RUMBLE, -1 },
 
 	// Final Fantasy Tactics Advance
-	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000418 },
+	{ "AFXE", SAVEDATA_FLASH512, GPIO_NONE, 0x8000428 },
 
 	// Koro Koro Puzzle - Happy Panechu!
 	{ "KHPJ", SAVEDATA_EEPROM, GPIO_TILT, -1 },
@@ -240,6 +240,9 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 	}
 
 	if (override->idleLoop != 0xFFFFFFFF) {
-		gba->busyLoop = override->idleLoop;
+		gba->idleLoop = override->idleLoop;
+		if (gba->idleOptimization == IDLE_LOOP_DETECT) {
+			gba->idleOptimization = IDLE_LOOP_REMOVE;
+		}
 	}
 }

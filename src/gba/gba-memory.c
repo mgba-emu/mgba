@@ -7,11 +7,14 @@
 
 #include "macros.h"
 
+#include "decoder.h"
 #include "gba-gpio.h"
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "hle-bios.h"
 #include "util/memory.h"
+
+#define IDLE_LOOP_THRESHOLD 10000
 
 static uint32_t _popcount32(unsigned bits);
 static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
@@ -114,18 +117,118 @@ void GBAMemoryReset(struct GBA* gba) {
 	}
 }
 
+static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t address) {
+	struct ARMInstructionInfo info;
+	uint32_t nextAddress = address;
+	memset(gba->taintedRegisters, 0, sizeof(gba->taintedRegisters));
+	if (cpu->executionMode == MODE_THUMB) {
+		while (true) {
+			uint16_t opcode;
+			LOAD_16(opcode, nextAddress & cpu->memory.activeMask, cpu->memory.activeRegion);
+			ARMDecodeThumb(opcode, &info);
+			switch (info.branchType) {
+			case ARM_BRANCH_NONE:
+				if (info.operandFormat & ARM_OPERAND_MEMORY_2) {
+					if (info.mnemonic == ARM_MN_STR || gba->taintedRegisters[info.memory.baseReg]) {
+						gba->idleDetectionStep = -1;
+						return;
+					}
+					uint32_t loadAddress = gba->cachedRegisters[info.memory.baseReg];
+					uint32_t offset = 0;
+					if (info.memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
+						offset = info.memory.offset.immediate;
+					} else if (info.memory.format & ARM_MEMORY_REGISTER_OFFSET) {
+						int reg = info.memory.offset.reg;
+						if (gba->cachedRegisters[reg]) {
+							gba->idleDetectionStep = -1;
+							return;
+						}
+						offset = gba->cachedRegisters[reg];
+					}
+					if (info.memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
+						loadAddress -= offset;
+					} else {
+						loadAddress += offset;
+					}
+					if ((loadAddress >> BASE_OFFSET) == REGION_IO) {
+						gba->idleDetectionStep = -1;
+						return;
+					}
+					if ((loadAddress >> BASE_OFFSET) < REGION_CART0 || (loadAddress >> BASE_OFFSET) > REGION_CART2_EX) {
+						gba->taintedRegisters[info.op1.reg] = true;
+					} else {
+						switch (info.memory.width) {
+						case 1:
+							gba->cachedRegisters[info.op1.reg] = GBALoad8(cpu, loadAddress, 0);
+							break;
+						case 2:
+							gba->cachedRegisters[info.op1.reg] = GBALoad16(cpu, loadAddress, 0);
+							break;
+						case 4:
+							gba->cachedRegisters[info.op1.reg] = GBALoad32(cpu, loadAddress, 0);
+							break;
+						}
+					}
+				} else if (info.operandFormat & ARM_OPERAND_AFFECTED_1) {
+					gba->taintedRegisters[info.op1.reg] = true;
+				}
+				nextAddress += WORD_SIZE_THUMB;
+				break;
+			case ARM_BRANCH:
+				if ((uint32_t) info.op1.immediate + nextAddress + WORD_SIZE_THUMB * 2 == address) {
+					gba->idleLoop = address;
+					gba->idleOptimization = IDLE_LOOP_REMOVE;
+				}
+				gba->idleDetectionStep = -1;
+				return;
+			default:
+				gba->idleDetectionStep = -1;
+				return;
+			}
+		}
+	} else {
+		gba->idleDetectionStep = -1;
+	}
+}
+
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
-	if (address == gba->busyLoop && memory->activeRegion != REGION_BIOS) {
-		GBAHalt(gba);
+	int newRegion = address >> BASE_OFFSET;
+	if (gba->idleOptimization >= IDLE_LOOP_REMOVE && memory->activeRegion != REGION_BIOS) {
+		if (address == gba->lastJump && address == gba->idleLoop) {
+			GBAHalt(gba);
+		} else if (gba->idleOptimization >= IDLE_LOOP_DETECT && newRegion == memory->activeRegion) {
+			if (address == gba->lastJump) {
+				switch (gba->idleDetectionStep) {
+				case 0:
+					memcpy(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters));
+					++gba->idleDetectionStep;
+					break;
+				case 1:
+					if (memcmp(gba->cachedRegisters, cpu->gprs, sizeof(gba->cachedRegisters))) {
+						gba->idleDetectionStep = -1;
+						++gba->idleDetectionFailures;
+						if (gba->idleDetectionFailures > IDLE_LOOP_THRESHOLD) {
+							gba->idleOptimization = IDLE_LOOP_IGNORE;
+						}
+						break;
+					}
+					_analyzeForIdleLoop(gba, cpu, address);
+					break;
+				}
+			} else {
+				gba->idleDetectionStep = 0;
+			}
+		}
 	}
 
-	int newRegion = address >> BASE_OFFSET;
+	gba->lastJump = address;
 	if (newRegion == memory->activeRegion) {
 		return;
 	}
+
 	if (memory->activeRegion == REGION_BIOS) {
 		memory->biosPrefetch = cpu->prefetch[1];
 	}

@@ -18,6 +18,7 @@ Features:
  - Support IPv6
  - Save directory of last loaded file
  - Support BPS patches
+ - Automatically detect and optimize out idle loops
  - Configurable game overrides
  - Support loading 7-Zip files
  - Drag and drop game loading

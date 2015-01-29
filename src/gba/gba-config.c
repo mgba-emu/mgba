@@ -212,6 +212,18 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupIntValue(config, "fullscreen", &opts->fullscreen);
 	_lookupIntValue(config, "width", &opts->width);
 	_lookupIntValue(config, "height", &opts->height);
+
+	char* idleOptimization = 0;
+	if (_lookupCharValue(config, "idleOptimization", &idleOptimization)) {
+		if (strcasecmp(idleOptimization, "ignore") == 0) {
+			opts->idleOptimization = IDLE_LOOP_IGNORE;
+		} else if (strcasecmp(idleOptimization, "remove") == 0) {
+			opts->idleOptimization = IDLE_LOOP_REMOVE;
+		} else if (strcasecmp(idleOptimization, "detect") == 0) {
+			opts->idleOptimization = IDLE_LOOP_DETECT;
+		}
+		free(idleOptimization);
+	}
 }
 
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts) {
@@ -231,6 +243,18 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "height", opts->height);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
+
+	switch (opts->idleOptimization) {
+	case IDLE_LOOP_IGNORE:
+		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "ignore");
+		break;
+	case IDLE_LOOP_REMOVE:
+		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "remove");
+		break;
+	case IDLE_LOOP_DETECT:
+		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "detect");
+		break;
+	}
 }
 
 void GBAConfigFreeOpts(struct GBAOptions* opts) {

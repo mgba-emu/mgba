@@ -120,6 +120,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.sync = &threadContext->sync;
 	threadContext->gba = &gba;
 	gba.logLevel = threadContext->logLevel;
+	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
 #else
@@ -260,6 +261,8 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 	if (opts->audioBuffers) {
 		threadContext->audioBuffers = opts->audioBuffers;
 	}
+
+	threadContext->idleOptimization = opts->idleOptimization;
 }
 
 void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {

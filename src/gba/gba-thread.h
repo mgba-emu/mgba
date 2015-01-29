@@ -72,6 +72,7 @@ struct GBAThread {
 	int activeKeys;
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
+	enum GBAIdleLoopOptimization idleOptimization;
 
 	bool hasOverride;
 	struct GBACartridgeOverride override;
