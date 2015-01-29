@@ -1,9 +1,9 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "GamePakView.h"
+#include "OverrideView.h"
 
 #include "ConfigController.h"
 #include "GameController.h"
@@ -14,7 +14,7 @@ extern "C" {
 
 using namespace QGBA;
 
-GamePakView::GamePakView(GameController* controller, ConfigController* config, QWidget* parent)
+OverrideView::OverrideView(GameController* controller, ConfigController* config, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 	, m_config(config)
@@ -47,14 +47,14 @@ GamePakView::GamePakView(GameController* controller, ConfigController* config, Q
 	}
 }
 
-void GamePakView::saveOverride() {
+void OverrideView::saveOverride() {
 	if (!m_config) {
 		return;
 	}
 	m_config->saveOverride(m_override);
 }
 
-void GamePakView::updateOverrides() {
+void OverrideView::updateOverrides() {
 	m_override = (GBACartridgeOverride) {
 		"",
 		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
@@ -94,7 +94,7 @@ void GamePakView::updateOverrides() {
 	}
 }
 
-void GamePakView::gameStarted(GBAThread* thread) {
+void OverrideView::gameStarted(GBAThread* thread) {
 	if (!thread->gba) {
 		gameStopped();
 		return;
@@ -132,7 +132,7 @@ void GamePakView::gameStarted(GBAThread* thread) {
 	m_ui.save->setEnabled(m_config);
 }
 
-void GamePakView::gameStopped() {	
+void OverrideView::gameStopped() {
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.savetype->setEnabled(true);
 

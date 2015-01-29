@@ -1,14 +1,14 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef QGBA_GAMEPAK_VIEW
-#define QGBA_GAMEPAK_VIEW
+#ifndef QGBA_OVERRIDE_VIEW
+#define QGBA_OVERRIDE_VIEW
 
 #include <QWidget>
 
-#include "ui_GamePakView.h"
+#include "ui_OverrideView.h"
 
 extern "C" {
 #include "gba-overrides.h"
@@ -21,11 +21,11 @@ namespace QGBA {
 class ConfigController;
 class GameController;
 
-class GamePakView : public QWidget {
+class OverrideView : public QWidget {
 Q_OBJECT
 
 public:
-	GamePakView(GameController* controller, ConfigController* config, QWidget* parent = nullptr);
+	OverrideView(GameController* controller, ConfigController* config, QWidget* parent = nullptr);
 
 public slots:
 	void saveOverride();
@@ -36,7 +36,7 @@ private slots:
 	void gameStopped();
 
 private:
-	Ui::GamePakView m_ui;
+	Ui::OverrideView m_ui;
 
 	GameController* m_controller;
 	ConfigController* m_config;

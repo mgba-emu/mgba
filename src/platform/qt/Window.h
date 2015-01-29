@@ -67,7 +67,7 @@ public slots:
 	void openSettingsWindow();
 	void openShortcutWindow();
 
-	void openGamePakWindow();
+	void openOverrideWindow();
 	void openSensorWindow();
 
 #ifdef BUILD_SDL

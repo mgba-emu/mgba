@@ -20,9 +20,9 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
-#include "GamePakView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "OverrideView.h"
 #include "SensorView.h"
 #include "SettingsView.h"
 #include "ShortcutController.h"
@@ -225,11 +225,11 @@ void Window::openShortcutWindow() {
 	shortcutView->show();
 }
 
-void Window::openGamePakWindow() {
-	GamePakView* gamePakWindow = new GamePakView(m_controller, m_config);
-	connect(this, SIGNAL(shutdown()), gamePakWindow, SLOT(close()));
-	gamePakWindow->setAttribute(Qt::WA_DeleteOnClose);
-	gamePakWindow->show();
+void Window::openOverrideWindow() {
+	OverrideView* overrideWindow = new OverrideView(m_controller, m_config);
+	connect(this, SIGNAL(shutdown()), overrideWindow, SLOT(close()));
+	overrideWindow->setAttribute(Qt::WA_DeleteOnClose);
+	overrideWindow->show();
 }
 void Window::openSensorWindow() {
 	SensorView* sensorWindow = new SensorView(m_controller);
@@ -675,13 +675,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
-	QAction* gamePak = new QAction(tr("Game &Pak overrides..."), toolsMenu);
-	connect(gamePak, SIGNAL(triggered()), this, SLOT(openGamePakWindow()));
-	addControlledAction(toolsMenu, gamePak, "gamePakOverrides");
+	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
+	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
+	addControlledAction(toolsMenu, overrides, "overrideWindow");
 
-	QAction* gamePakSensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
-	connect(gamePakSensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
-	addControlledAction(toolsMenu, gamePakSensors, "gamePakSensors");
+	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
+	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
+	addControlledAction(toolsMenu, sensors, "sensorWindow");
 
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);
