@@ -64,6 +64,9 @@ void GBAConfigSetDefaultFloatValue(struct GBAConfig*, const char* key, float val
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts);
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts);
 
+struct Configuration* GBAConfigGetInput(struct GBAConfig*);
+struct Configuration* GBAConfigGetOverrides(struct GBAConfig*);
+
 void GBAConfigFreeOpts(struct GBAOptions* opts);
 
 #endif

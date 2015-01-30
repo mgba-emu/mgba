@@ -76,7 +76,7 @@ public:
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
-	Configuration* overrides() { return &m_config.configTable; } // TODO: Make this not return the whole table
+	Configuration* overrides() { return GBAConfigGetOverrides(&m_config); }
 	void saveOverride(const GBACartridgeOverride&);
 
 public slots:

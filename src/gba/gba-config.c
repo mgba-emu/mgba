@@ -257,6 +257,15 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	}
 }
 
+// These two are basically placeholders in case the internal layout changes, e.g. for loading separate files
+struct Configuration* GBAConfigGetInput(struct GBAConfig* config) {
+	return &config->configTable;
+}
+
+struct Configuration* GBAConfigGetOverrides(struct GBAConfig* config) {
+	return &config->configTable;
+}
+
 void GBAConfigFreeOpts(struct GBAOptions* opts) {
 	free(opts->bios);
 	opts->bios = 0;

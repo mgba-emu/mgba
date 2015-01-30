@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
 	renderer.events.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
-	GBASDLEventsLoadConfig(&renderer.events, &config.configTable); // TODO: Don't use this directly
-	context.overrides = &config.configTable;
+	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
+	context.overrides = GBAConfigGetOverrides(&config);
 
 	int didFail = 0;
 	if (GBAThreadStart(&context)) {

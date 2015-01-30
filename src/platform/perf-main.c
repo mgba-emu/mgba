@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 	}
 
 	context.debugger = createDebugger(&args, &context);
-	context.overrides = &config.configTable;
+	context.overrides = GBAConfigGetOverrides(&config);
 	char gameCode[5] = { 0 };
 
 	GBAConfigMap(&config, &opts);
