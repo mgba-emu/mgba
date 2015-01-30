@@ -89,7 +89,11 @@ endif()
 add_definitions(-DBINARY_NAME="${BINARY_NAME}" -DPROJECT_NAME="${PROJECT_NAME}" -DPROJECT_VERSION="${LIB_VERSION_STRING}")
 
 # Feature dependencies
-find_feature(USE_CLI_DEBUGGER "libedit")
+if(CMAKE_SYSTEM_NAME MATCHES .*BSD)
+	set(LIBEDIT_LIBRARIES -ledit)
+else()
+	find_feature(USE_CLI_DEBUGGER "libedit")
+endif()
 find_feature(USE_FFMPEG "libavcodec;libavformat;libavresample;libavutil;libswscale")
 find_feature(USE_PNG "ZLIB;PNG")
 find_feature(USE_LIBZIP "libzip")
