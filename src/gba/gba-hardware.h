@@ -1,23 +1,44 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef GBA_GPIO_H
-#define GBA_GPIO_H
+#ifndef GBA_HARDWARE_H
+#define GBA_HARDWARE_H
 
 #include "util/common.h"
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
-enum GPIODevice {
-	GPIO_NO_OVERRIDE = 0x8000,
-	GPIO_NONE = 0,
-	GPIO_RTC = 1,
-	GPIO_RUMBLE = 2,
-	GPIO_LIGHT_SENSOR = 4,
-	GPIO_GYRO = 8,
-	GPIO_TILT = 16
+struct GBARotationSource {
+	void (*sample)(struct GBARotationSource*);
+
+	int32_t (*readTiltX)(struct GBARotationSource*);
+	int32_t (*readTiltY)(struct GBARotationSource*);
+
+	int32_t (*readGyroZ)(struct GBARotationSource*);
+};
+
+struct GBALuminanceSource {
+	void (*sample)(struct GBALuminanceSource*);
+
+	uint8_t (*readLuminance)(struct GBALuminanceSource*);
+};
+
+struct GBARTCSource {
+	void (*sample)(struct GBARTCSource*);
+
+	time_t (*unixTime)(struct GBARTCSource*);
+};
+
+enum GBAHardwareDevice {
+	HW_NO_OVERRIDE = 0x8000,
+	HW_NONE = 0,
+	HW_RTC = 1,
+	HW_RUMBLE = 2,
+	HW_LIGHT_SENSOR = 4,
+	HW_GYRO = 8,
+	HW_TILT = 16
 };
 
 enum GPIORegister {
@@ -74,9 +95,9 @@ struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
 };
 
-struct GBACartridgeGPIO {
+struct GBACartridgeHardware {
 	struct GBA* p;
-	int gpioDevices;
+	int devices;
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 
@@ -114,21 +135,21 @@ struct GBACartridgeGPIO {
 	int tiltState;
 };
 
-void GBAGPIOInit(struct GBACartridgeGPIO* gpio, uint16_t* gpioBase);
-void GBAGPIOClear(struct GBACartridgeGPIO* gpio);
-void GBAGPIOWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint16_t value);
+void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
+void GBAHardwareClear(struct GBACartridgeHardware* gpio);
 
-void GBAGPIOInitRTC(struct GBACartridgeGPIO* gpio);
-void GBAGPIOInitGyro(struct GBACartridgeGPIO* gpio);
-void GBAGPIOInitRumble(struct GBACartridgeGPIO* gpio);
-void GBAGPIOInitLightSensor(struct GBACartridgeGPIO* gpio);
-void GBAGPIOInitTilt(struct GBACartridgeGPIO* gpio);
+void GBAHardwareInitRTC(struct GBACartridgeHardware* gpio);
+void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);
+void GBAHardwareInitRumble(struct GBACartridgeHardware* gpio);
+void GBAHardwareInitLight(struct GBACartridgeHardware* gpio);
+void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
 
-void GBAGPIOTiltWrite(struct GBACartridgeGPIO* gpio, uint32_t address, uint8_t value);
-uint8_t GBAGPIOTiltRead(struct GBACartridgeGPIO* gpio, uint32_t address);
+void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
+void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
+uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
 
 struct GBASerializedState;
-void GBAGPIOSerialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);
-void GBAGPIODeserialize(struct GBACartridgeGPIO* gpio, struct GBASerializedState* state);
+void GBAHardwareSerialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
+void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
 
 #endif

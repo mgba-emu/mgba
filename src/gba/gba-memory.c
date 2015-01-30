@@ -8,7 +8,7 @@
 #include "macros.h"
 
 #include "decoder.h"
-#include "gba-gpio.h"
+#include "gba-hardware.h"
 #include "gba-io.h"
 #include "gba-serialize.h"
 #include "hle-bios.h"
@@ -46,7 +46,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.wram = 0;
 	gba->memory.iwram = 0;
 	gba->memory.rom = 0;
-	gba->memory.gpio.p = gba;
+	gba->memory.hw.p = gba;
 
 	int i;
 	for (i = 0; i < 16; ++i) {
@@ -566,8 +566,8 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = memory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 		} else if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
 			value = GBASavedataReadFlash(&memory->savedata, address);
-		} else if (memory->gpio.gpioDevices & GPIO_TILT) {
-			value = GBAGPIOTiltRead(&memory->gpio, address & OFFSET_MASK);
+		} else if (memory->hw.devices & HW_TILT) {
+			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
@@ -710,9 +710,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
 		break;
 	case REGION_CART0:
-		if (memory->gpio.gpioDevices != GPIO_NONE && IS_GPIO_REGISTER(address & 0xFFFFFF)) {
+		if (memory->hw.devices != HW_NONE && IS_GPIO_REGISTER(address & 0xFFFFFF)) {
 			uint32_t reg = address & 0xFFFFFF;
-			GBAGPIOWrite(&memory->gpio, reg, value);
+			GBAHardwareGPIOWrite(&memory->hw, reg, value);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		}
@@ -787,8 +787,8 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM) {
 			memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
-		} else if (memory->gpio.gpioDevices & GPIO_TILT) {
-			GBAGPIOTiltWrite(&memory->gpio, address & OFFSET_MASK, value);
+		} else if (memory->hw.devices & HW_TILT) {
+			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}

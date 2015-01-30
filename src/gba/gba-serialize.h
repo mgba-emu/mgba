@@ -129,7 +129,7 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * 0x00290 - 0x002C3: GPIO state
  * | 0x00290 - 0x00291: Pin state
  * | 0x00292 - 0x00293: Direction state
- * | 0x00294 - 0x002B6: RTC state (see gba-gpio.h for format)
+ * | 0x00294 - 0x002B6: RTC state (see gba-hardware.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
  *   | bit 1: Has rumble value (reserved)
@@ -269,9 +269,9 @@ struct GBASerializedState {
 		unsigned lightSample : 8;
 		unsigned tiltState : 2;
 		unsigned : 22;
-	} gpio;
+	} hw;
 
-	uint32_t reservedGpio[12];
+	uint32_t reservedHardware[12];
 
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];

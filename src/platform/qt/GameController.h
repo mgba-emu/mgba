@@ -13,7 +13,7 @@
 #include <QString>
 
 extern "C" {
-#include "gba-sensors.h"
+#include "gba-hardware.h"
 #include "gba-thread.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"

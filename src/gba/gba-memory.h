@@ -11,7 +11,7 @@
 #include "arm.h"
 #include "macros.h"
 
-#include "gba-gpio.h"
+#include "gba-hardware.h"
 #include "gba-savedata.h"
 
 enum GBAMemoryRegion {
@@ -116,7 +116,7 @@ struct GBAMemory {
 	uint32_t* rom;
 	uint16_t io[SIZE_IO >> 1];
 
-	struct GBACartridgeGPIO gpio;
+	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
 	size_t romSize;
 	uint16_t romID;

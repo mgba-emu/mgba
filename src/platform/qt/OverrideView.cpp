@@ -58,26 +58,26 @@ void OverrideView::updateOverrides() {
 	m_override = (GBACartridgeOverride) {
 		"",
 		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
-		GPIO_NO_OVERRIDE,
+		HW_NO_OVERRIDE,
 		IDLE_LOOP_NONE
 	};
 
 	if (!m_ui.hwAutodetect->isChecked()) {
-		m_override.hardware = GPIO_NONE;
+		m_override.hardware = HW_NONE;
 		if (m_ui.hwRTC->isChecked()) {
-			m_override.hardware |= GPIO_RTC;
+			m_override.hardware |= HW_RTC;
 		}
 		if (m_ui.hwGyro->isChecked()) {
-			m_override.hardware |= GPIO_GYRO;
+			m_override.hardware |= HW_GYRO;
 		}
 		if (m_ui.hwLight->isChecked()) {
-			m_override.hardware |= GPIO_LIGHT_SENSOR;
+			m_override.hardware |= HW_LIGHT_SENSOR;
 		}
 		if (m_ui.hwTilt->isChecked()) {
-			m_override.hardware |= GPIO_TILT;
+			m_override.hardware |= HW_TILT;
 		}
 		if (m_ui.hwRumble->isChecked()) {
-			m_override.hardware |= GPIO_RUMBLE;
+			m_override.hardware |= HW_RUMBLE;
 		}
 	}
 
@@ -87,7 +87,7 @@ void OverrideView::updateOverrides() {
 		m_override.idleLoop = parsedIdleLoop;
 	}
 
-	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != GPIO_NO_OVERRIDE || m_override.idleLoop != IDLE_LOOP_NONE) {
+	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != HW_NO_OVERRIDE || m_override.idleLoop != IDLE_LOOP_NONE) {
 		m_controller->setOverride(m_override);
 	} else {
 		m_controller->clearOverride();
@@ -109,11 +109,11 @@ void OverrideView::gameStarted(GBAThread* thread) {
 	m_ui.hwTilt->setEnabled(false);
 	m_ui.hwRumble->setEnabled(false);
 
-	m_ui.hwRTC->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RTC);
-	m_ui.hwGyro->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_GYRO);
-	m_ui.hwLight->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_LIGHT_SENSOR);
-	m_ui.hwTilt->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_TILT);
-	m_ui.hwRumble->setChecked(thread->gba->memory.gpio.gpioDevices & GPIO_RUMBLE);
+	m_ui.hwRTC->setChecked(thread->gba->memory.hw.devices & HW_RTC);
+	m_ui.hwGyro->setChecked(thread->gba->memory.hw.devices & HW_GYRO);
+	m_ui.hwLight->setChecked(thread->gba->memory.hw.devices & HW_LIGHT_SENSOR);
+	m_ui.hwTilt->setChecked(thread->gba->memory.hw.devices & HW_TILT);
+	m_ui.hwRumble->setChecked(thread->gba->memory.hw.devices & HW_RUMBLE);
 
 	if (thread->gba->idleLoop != IDLE_LOOP_NONE) {
 		m_ui.idleLoop->setText(QString::number(thread->gba->idleLoop, 16));
@@ -123,7 +123,7 @@ void OverrideView::gameStarted(GBAThread* thread) {
 	}
 
 	GBAGetGameCode(thread->gba, m_override.id);
-	m_override.hardware = thread->gba->memory.gpio.gpioDevices;
+	m_override.hardware = thread->gba->memory.hw.devices;
 	m_override.savetype = thread->gba->memory.savedata.type;
 	m_override.idleLoop = thread->gba->idleLoop;
 

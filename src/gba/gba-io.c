@@ -672,7 +672,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 
 	memcpy(state->timers, gba->timers, sizeof(state->timers));
-	GBAGPIOSerialize(&gba->memory.gpio, state);
+	GBAHardwareSerialize(&gba->memory.hw, state);
 }
 
 void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -701,5 +701,5 @@ void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
 			gba->timersEnabled |= 1 << i;
 		}
 	}
-	GBAGPIODeserialize(&gba->memory.gpio, state);
+	GBAHardwareDeserialize(&gba->memory.hw, state);
 }
