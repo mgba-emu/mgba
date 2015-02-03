@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@
 #include <functional>
 
 extern "C" {
-#include "gba-config.h"
+#include "gba/supervisor/config.h"
 #include "util/configuration.h"
 }
 

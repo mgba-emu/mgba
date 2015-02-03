@@ -1,17 +1,17 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba-memory.h"
+#include "memory.h"
 
 #include "macros.h"
 
 #include "decoder.h"
-#include "gba-hardware.h"
-#include "gba-io.h"
-#include "gba-serialize.h"
-#include "hle-bios.h"
+#include "gba/hardware.h"
+#include "gba/io.h"
+#include "gba/serialize.h"
+#include "gba/hle-bios.h"
 #include "util/memory.h"
 
 #define IDLE_LOOP_THRESHOLD 10000

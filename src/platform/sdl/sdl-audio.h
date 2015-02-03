@@ -10,7 +10,7 @@
 
 #include <SDL.h>
 
-#include "gba-audio.h"
+#include "gba/audio.h"
 
 struct GBASDLAudio {
 	// Input

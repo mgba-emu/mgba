@@ -6,11 +6,11 @@
 #include "sdl-events.h"
 
 #include "debugger/debugger.h"
-#include "gba-io.h"
-#include "gba-rr.h"
-#include "gba-serialize.h"
-#include "gba-video.h"
-#include "renderers/video-software.h"
+#include "gba/io.h"
+#include "gba/supervisor/rr.h"
+#include "gba/serialize.h"
+#include "gba/video.h"
+#include "gba/renderers/video-software.h"
 #include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)

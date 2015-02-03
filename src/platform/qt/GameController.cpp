@@ -14,11 +14,11 @@
 #include <ctime>
 
 extern "C" {
-#include "gba.h"
-#include "gba-audio.h"
-#include "gba-config.h"
-#include "gba-serialize.h"
-#include "renderers/video-software.h"
+#include "gba/audio.h"
+#include "gba/gba.h"
+#include "gba/serialize.h"
+#include "gba/renderers/video-software.h"
+#include "gba/supervisor/config.h"
 #include "util/vfs.h"
 }
 

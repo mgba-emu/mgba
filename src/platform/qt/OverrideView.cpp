@@ -9,7 +9,7 @@
 #include "GameController.h"
 
 extern "C" {
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 }
 
 using namespace QGBA;

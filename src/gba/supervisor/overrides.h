@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba-savedata.h"
+#include "gba/savedata.h"
 
 #define IDLE_LOOP_NONE 0xFFFFFFFF
 

@@ -47,6 +47,7 @@ Misc:
  - Debugger: Watchpoints now report address watched (fixes #68)
  - GBA: Add API for getting Configuration structs for overrides and input
  - GBA: Refactor gba-sensors and gba-gpio into gba-hardware
+ - GBA: Refactor gba directory, dropping gba- prefix and making supervisor directory
 
 0.1.1: (2015-01-24)
 Bugfixes:

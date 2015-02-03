@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 
 #include <SDL.h>
 

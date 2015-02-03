@@ -15,6 +15,7 @@ set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
 file(GLOB VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/video-software.c)
@@ -22,9 +23,9 @@ file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC})
+source_group("GBA supervisor" FILES ${GBA_SV_SRC})
 source_group("Utilities" FILES ${UTIL_SRC} ${VFS_SRC}})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
-include_directories(${CMAKE_SOURCE_DIR}/src/gba)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -138,7 +139,7 @@ if(USE_CLI_DEBUGGER)
 	add_definitions(-DUSE_CLI_DEBUGGER)
 	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/cli-debugger.c)
 	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/parser.c)
-	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/gba/gba-cli.c)
+	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/cli.c)
 	include_directories(AFTER ${LIBEDIT_INCLUDE_DIRS})
 	link_directories(${LIBEDIT_LIBRARY_DIRS})
 	set(DEBUGGER_LIB ${LIBEDIT_LIBRARIES})
@@ -239,6 +240,7 @@ endif()
 add_library(${BINARY_NAME} SHARED
 	${ARM_SRC}
 	${GBA_SRC}
+	${GBA_SV_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
 	${UTIL_SRC}

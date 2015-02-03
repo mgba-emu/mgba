@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,8 +11,8 @@
 #include "arm.h"
 #include "macros.h"
 
-#include "gba-hardware.h"
-#include "gba-savedata.h"
+#include "gba/hardware.h"
+#include "gba/savedata.h"
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,

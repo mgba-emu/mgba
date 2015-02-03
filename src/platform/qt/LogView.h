@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@
 #include "ui_LogView.h"
 
 extern "C" {
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 }
 
 namespace QGBA {

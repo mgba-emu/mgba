@@ -1,11 +1,11 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba-sio.h"
+#include "sio.h"
 
-#include "gba-io.h"
+#include "gba/io.h"
 
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 31457, 62914, 94371, 125829 },

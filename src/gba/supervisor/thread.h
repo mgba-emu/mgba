@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,9 @@
 
 #include "util/common.h"
 
-#include "gba.h"
-#include "gba-input.h"
-#include "gba-overrides.h"
+#include "gba/gba.h"
+#include "gba/input.h"
+#include "gba/supervisor/overrides.h"
 
 #include "util/threading.h"
 
