@@ -35,6 +35,8 @@ static void _reset(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setBreakpointARM(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setBreakpointThumb(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
@@ -47,6 +49,8 @@ static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum 
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
+	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
+	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "break", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
 	{ "c", _continue, 0, "Continue execution" },
 	{ "continue", _continue, 0, "Continue execution" },
@@ -129,6 +133,12 @@ static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
+	if (debugger->d.currentBreakpoint) {
+		if (debugger->d.currentBreakpoint->isSw && debugger->d.setSoftwareBreakpoint) {
+			debugger->d.setSoftwareBreakpoint(&debugger->d, debugger->d.currentBreakpoint->address, debugger->d.currentBreakpoint->sw.mode, &debugger->d.currentBreakpoint->sw.opcode);
+		}
+		debugger->d.currentBreakpoint = 0;
+	}
 	ARMRun(debugger->d.cpu);
 	_printStatus(debugger, 0);
 }
@@ -385,6 +395,24 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerSetBreakpoint(&debugger->d, address);
+}
+
+static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_ARM);
+}
+
+static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

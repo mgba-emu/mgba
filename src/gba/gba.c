@@ -31,6 +31,10 @@ static void GBAProcessEvents(struct ARMCore* cpu);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
+static void GBABreakpoint(struct ARMCore* cpu, int immediate);
+
+static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 void GBACreate(struct GBA* gba) {
 	gba->d.id = GBA_COMPONENT_MAGIC;
@@ -111,6 +115,8 @@ void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->hitIllegal = GBAIllegal;
 	irqh->readCPSR = GBATestIRQ;
 	irqh->hitStub = GBAHitStub;
+	irqh->bkpt16 = GBABreakpoint;
+	irqh->bkpt32 = GBABreakpoint;
 }
 
 void GBAReset(struct ARMCore* cpu) {
@@ -336,6 +342,8 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 }
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
+	debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
+	debugger->clearSoftwareBreakpoint = _clearSoftwareBreakpoint;
 	gba->debugger = debugger;
 	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = &debugger->d;
 	ARMHotplugAttach(gba->cpu, GBA_COMPONENT_DEBUGGER);
@@ -648,6 +656,25 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	}
 }
 
+void GBABreakpoint(struct ARMCore* cpu, int immediate) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	if (immediate >= GBA_COMPONENT_MAX) {
+		return;
+	}
+	switch (immediate) {
+	case GBA_COMPONENT_DEBUGGER:
+		if (gba->debugger) {
+			struct DebuggerEntryInfo info = {
+				.address = _ARMPCAddress(cpu)
+			};
+			ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
@@ -682,4 +709,69 @@ void GBAFrameEnded(struct GBA* gba) {
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
 	}
+}
+
+static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+	struct GBA* gba = (struct GBA*) debugger->cpu->master;
+
+	int immediate = GBA_COMPONENT_DEBUGGER;
+	uint32_t value;
+	if (mode == MODE_ARM) {
+		value = 0xE1200070;
+		value |= immediate & 0xF;
+		value |= (immediate & 0xFFF0) << 4;
+	} else {
+		value = 0xBE00;
+		value |= immediate & 0xFF;
+	}
+	uint32_t old;
+
+	switch (address >> BASE_OFFSET) {
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+			if (mode == MODE_ARM) {
+				LOAD_32(old, address & (SIZE_CART0 - 1), gba->memory.rom);
+				STORE_32(value, address & (SIZE_CART0 - 1), gba->memory.rom);
+			} else {
+				LOAD_16(old, address & (SIZE_CART0 - 1), gba->memory.rom);
+				STORE_16(value, address & (SIZE_CART0 - 1), gba->memory.rom);
+			}
+			*opcode = old;
+			return true;
+		}
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
+static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
+	struct GBA* gba = (struct GBA*) debugger->cpu->master;
+
+	switch (address >> BASE_OFFSET) {
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+			if (mode == MODE_ARM) {
+				STORE_32(opcode, address & (SIZE_CART0 - 1), gba->memory.rom);
+			} else {
+				STORE_16(opcode, address & (SIZE_CART0 - 1), gba->memory.rom);
+			}
+			return true;
+		}
+		break;
+	default:
+		break;
+	}
+	return false;
 }

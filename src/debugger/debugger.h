@@ -22,6 +22,11 @@ enum DebuggerState {
 struct DebugBreakpoint {
 	struct DebugBreakpoint* next;
 	uint32_t address;
+	bool isSw;
+	struct {
+		uint32_t opcode;
+		enum ExecutionMode mode;
+	} sw;
 };
 
 enum WatchpointType {
@@ -71,14 +76,20 @@ struct ARMDebugger {
 	struct ARMCore* cpu;
 
 	struct DebugBreakpoint* breakpoints;
+	struct DebugBreakpoint* swBreakpoints;
 	struct DebugWatchpoint* watchpoints;
 	struct ARMMemory originalMemory;
+
+	struct DebugBreakpoint* currentBreakpoint;
 
 	void (*init)(struct ARMDebugger*);
 	void (*deinit)(struct ARMDebugger*);
 	void (*paused)(struct ARMDebugger*);
 	void (*entered)(struct ARMDebugger*, enum DebuggerEntryReason, struct DebuggerEntryInfo*);
 	void (*custom)(struct ARMDebugger*);
+
+	bool (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+	bool (*clearSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 	__attribute__((format (printf, 3, 4)))
 	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
@@ -88,6 +99,7 @@ void ARMDebuggerCreate(struct ARMDebugger*);
 void ARMDebuggerRun(struct ARMDebugger*);
 void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason, struct DebuggerEntryInfo*);
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
+bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address);

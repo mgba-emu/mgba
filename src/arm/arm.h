@@ -121,6 +121,8 @@ struct ARMInterruptHandler {
 	void (*swi16)(struct ARMCore* cpu, int immediate);
 	void (*swi32)(struct ARMCore* cpu, int immediate);
 	void (*hitIllegal)(struct ARMCore* cpu, uint32_t opcode);
+	void (*bkpt16)(struct ARMCore* cpu, int immediate);
+	void (*bkpt32)(struct ARMCore* cpu, int immediate);
 	void (*readCPSR)(struct ARMCore* cpu);
 
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);

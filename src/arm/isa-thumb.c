@@ -381,7 +381,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_ILL)
-DEFINE_INSTRUCTION_THUMB(BKPT, ARM_STUB)
+DEFINE_INSTRUCTION_THUMB(BKPT, cpu->irqh.bkpt16(cpu, opcode & 0xFF);)
 DEFINE_INSTRUCTION_THUMB(B,
 	int16_t immediate = (opcode & 0x07FF) << 5;
 	cpu->gprs[ARM_PC] += (((int32_t) immediate) >> 4);

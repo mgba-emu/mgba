@@ -6,13 +6,22 @@
 #include "debugger.h"
 
 #include "arm.h"
+#include "isa-inlines.h"
 
 #include "memory-debugger.h"
 
 const uint32_t ARM_DEBUGGER_ID = 0xDEADBEEF;
 
+static struct DebugBreakpoint* _lookupBreakpoint(struct DebugBreakpoint* breakpoints, uint32_t address) {
+	for (; breakpoints; breakpoints = breakpoints->next) {
+		if (breakpoints->address == address) {
+			return breakpoints;
+		}
+	}
+	return 0;
+}
+
 static void _checkBreakpoints(struct ARMDebugger* debugger) {
-	struct DebugBreakpoint* breakpoint;
 	int instructionLength;
 	enum ExecutionMode mode = debugger->cpu->cpsr.t;
 	if (mode == MODE_ARM) {
@@ -20,15 +29,14 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	} else {
 		instructionLength = WORD_SIZE_THUMB;
 	}
-	for (breakpoint = debugger->breakpoints; breakpoint; breakpoint = breakpoint->next) {
-		if (breakpoint->address + instructionLength == (uint32_t) debugger->cpu->gprs[ARM_PC]) {
-			struct DebuggerEntryInfo info = {
-				.address = breakpoint->address
-			};
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
-			break;
-		}
+	struct DebugBreakpoint* breakpoint = _lookupBreakpoint(debugger->breakpoints, debugger->cpu->gprs[ARM_PC] - instructionLength);
+	if (!breakpoint) {
+		return;
 	}
+	struct DebuggerEntryInfo info = {
+		.address = breakpoint->address
+	};
+	ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
 
 static void ARMDebuggerInit(struct ARMCore*, struct ARMComponent*);
@@ -47,6 +55,7 @@ void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	debugger->breakpoints = 0;
 	debugger->originalMemory = cpu->memory;
 	debugger->watchpoints = 0;
+	debugger->currentBreakpoint = 0;
 	if (debugger->init) {
 		debugger->init(debugger);
 	}
@@ -78,6 +87,12 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		} else {
 			debugger->state = DEBUGGER_RUNNING;
 		}
+		if (debugger->state != DEBUGGER_PAUSED && debugger->currentBreakpoint) {
+			if (debugger->currentBreakpoint->isSw && debugger->setSoftwareBreakpoint) {
+				debugger->setSoftwareBreakpoint(debugger, debugger->currentBreakpoint->address, debugger->currentBreakpoint->sw.mode, &debugger->currentBreakpoint->sw.opcode);
+			}
+			debugger->currentBreakpoint = 0;
+		}
 		break;
 	case DEBUGGER_SHUTDOWN:
 		return;
@@ -86,6 +101,27 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 
 void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
+	struct ARMCore* cpu = debugger->cpu;
+	cpu->nextEvent = 0;
+	if (reason == DEBUGGER_ENTER_BREAKPOINT) {
+		struct DebugBreakpoint* breakpoint = _lookupBreakpoint(debugger->swBreakpoints, _ARMPCAddress(cpu));
+		debugger->currentBreakpoint = breakpoint;
+		if (breakpoint && breakpoint->isSw) {
+			info->address = breakpoint->address;
+			if (debugger->clearSoftwareBreakpoint) {
+				debugger->clearSoftwareBreakpoint(debugger, breakpoint->address, breakpoint->sw.mode, breakpoint->sw.opcode);
+			}
+
+			// Roll back CPU state
+			if (breakpoint->sw.mode == MODE_ARM) {
+				cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
+			} else {
+				cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;
+			}
+			cpu->prefetch[1] = cpu->prefetch[0];
+			cpu->prefetch[0] = breakpoint->sw.opcode;
+		}
+	}
 	if (debugger->entered) {
 		debugger->entered(debugger, reason, info);
 	}
@@ -95,7 +131,25 @@ void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
 	struct DebugBreakpoint* breakpoint = malloc(sizeof(struct DebugBreakpoint));
 	breakpoint->address = address;
 	breakpoint->next = debugger->breakpoints;
+	breakpoint->isSw = false;
 	debugger->breakpoints = breakpoint;
+}
+
+bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+	uint32_t opcode;
+	if (!debugger->setSoftwareBreakpoint || !debugger->setSoftwareBreakpoint(debugger, address, mode, &opcode)) {
+		return false;
+	}
+
+	struct DebugBreakpoint* breakpoint = malloc(sizeof(struct DebugBreakpoint));
+	breakpoint->address = address;
+	breakpoint->next = debugger->swBreakpoints;
+	breakpoint->isSw = true;
+	breakpoint->sw.opcode = opcode;
+	breakpoint->sw.mode = mode;
+	debugger->swBreakpoints = breakpoint;
+
+	return true;
 }
 
 void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
