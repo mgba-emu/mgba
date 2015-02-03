@@ -46,6 +46,7 @@ Misc:
  - Debugger: Clean up debugger interface, removing obsolete state (fixes #67)
  - Debugger: Watchpoints now report address watched (fixes #68)
  - GBA: Add API for getting Configuration structs for overrides and input
+ - GBA: Refactor gba-sensors and gba-gpio into gba-hardware
 
 0.1.1: (2015-01-24)
 Bugfixes:
