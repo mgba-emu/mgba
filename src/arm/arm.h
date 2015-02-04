@@ -158,15 +158,15 @@ struct ARMCore {
 
 	struct ARMComponent* master;
 
-	int numComponents;
+	size_t numComponents;
 	struct ARMComponent** components;
 };
 
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);
 void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
-void ARMHotplugAttach(struct ARMCore* cpu, int slot);
-void ARMHotplugDetach(struct ARMCore* cpu, int slot);
+void ARMHotplugAttach(struct ARMCore* cpu, size_t slot);
+void ARMHotplugDetach(struct ARMCore* cpu, size_t slot);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);

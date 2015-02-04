@@ -71,7 +71,7 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 
 void ARMInit(struct ARMCore* cpu) {
 	cpu->master->init(cpu, cpu->master);
-	int i;
+	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
 		if (cpu->components[i] && cpu->components[i]->init) {
 			cpu->components[i]->init(cpu, cpu->components[i]);
@@ -83,7 +83,7 @@ void ARMDeinit(struct ARMCore* cpu) {
 	if (cpu->master->deinit) {
 		cpu->master->deinit(cpu->master);
 	}
-	int i;
+	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
 		if (cpu->components[i] && cpu->components[i]->deinit) {
 			cpu->components[i]->deinit(cpu->components[i]);
@@ -97,14 +97,14 @@ void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extr
 	cpu->components = extras;
 }
 
-void ARMHotplugAttach(struct ARMCore* cpu, int slot) {
+void ARMHotplugAttach(struct ARMCore* cpu, size_t slot) {
 	if (slot >= cpu->numComponents) {
 		return;
 	}
 	cpu->components[slot]->init(cpu, cpu->components[slot]);
 }
 
-void ARMHotplugDetach(struct ARMCore* cpu, int slot) {
+void ARMHotplugDetach(struct ARMCore* cpu, size_t slot) {
 	if (slot >= cpu->numComponents) {
 		return;
 	}

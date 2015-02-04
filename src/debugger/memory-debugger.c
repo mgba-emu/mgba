@@ -20,7 +20,7 @@ static uint32_t _popcount32(unsigned bits) {
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
 		DEBUGGER = 0; \
-		int i; \
+		size_t i; \
 		for (i = 0; i < CPU->numComponents; ++i) { \
 			if (CPU->components[i]->id == ARM_DEBUGGER_ID) { \
 				DEBUGGER = (struct ARMDebugger*) cpu->components[i]; \
