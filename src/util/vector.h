@@ -17,6 +17,7 @@
 	void NAME ## Init(struct NAME* vector, size_t capacity); \
 	void NAME ## Deinit(struct NAME* vector); \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location); \
+	TYPE* NAME ## Append(struct NAME* vector); \
 	void NAME ## Resize(struct NAME* vector, ssize_t change); \
 	void NAME ## Shift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference); \
@@ -39,6 +40,10 @@
 	} \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location) { \
 		return &vector->vector[location]; \
+	} \
+	TYPE* NAME ## Append(struct NAME* vector) { \
+		NAME ## Resize(vector, 1); \
+		return &vector->vector[vector->size - 1]; \
 	} \
 	void NAME ## Resize(struct NAME* vector, ssize_t change) { \
 		if (change > 0) { \
