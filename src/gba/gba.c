@@ -712,66 +712,31 @@ void GBAFrameEnded(struct GBA* gba) {
 }
 
 static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
-	struct GBA* gba = (struct GBA*) debugger->cpu->master;
-
 	int immediate = GBA_COMPONENT_DEBUGGER;
-	uint32_t value;
 	if (mode == MODE_ARM) {
+		int32_t value;
+		int32_t old;
 		value = 0xE1200070;
 		value |= immediate & 0xF;
 		value |= (immediate & 0xFFF0) << 4;
+		GBAPatch32(debugger->cpu, address, value, &old);
+		*opcode = old;
 	} else {
+		int16_t value;
+		int16_t old;
 		value = 0xBE00;
 		value |= immediate & 0xFF;
+		GBAPatch16(debugger->cpu, address, value, &old);
+		*opcode = old;
 	}
-	uint32_t old;
-
-	switch (address >> BASE_OFFSET) {
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
-		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
-			if (mode == MODE_ARM) {
-				LOAD_32(old, address & (SIZE_CART0 - 1), gba->memory.rom);
-				STORE_32(value, address & (SIZE_CART0 - 1), gba->memory.rom);
-			} else {
-				LOAD_16(old, address & (SIZE_CART0 - 1), gba->memory.rom);
-				STORE_16(value, address & (SIZE_CART0 - 1), gba->memory.rom);
-			}
-			*opcode = old;
-			return true;
-		}
-		break;
-	default:
-		break;
-	}
-	return false;
+	return true;
 }
 
 static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
-	struct GBA* gba = (struct GBA*) debugger->cpu->master;
-
-	switch (address >> BASE_OFFSET) {
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
-		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
-			if (mode == MODE_ARM) {
-				STORE_32(opcode, address & (SIZE_CART0 - 1), gba->memory.rom);
-			} else {
-				STORE_16(opcode, address & (SIZE_CART0 - 1), gba->memory.rom);
-			}
-			return true;
-		}
-		break;
-	default:
-		break;
+	if (mode == MODE_ARM) {
+		GBAPatch32(debugger->cpu, address, opcode, 0);
+	} else {
+		GBAPatch16(debugger->cpu, address, opcode, 0);
 	}
-	return false;
+	return true;
 }

@@ -804,6 +804,142 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 }
 
+void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* old) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	struct GBAMemory* memory = &gba->memory;
+	int32_t oldValue = -1;
+
+	switch (address >> BASE_OFFSET) {
+	case REGION_WORKING_RAM:
+		LOAD_32(oldValue, address & (SIZE_WORKING_RAM - 1), memory->wram);
+		STORE_32(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
+		break;
+	case REGION_WORKING_IRAM:
+		LOAD_32(oldValue, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		STORE_32(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		break;
+	case REGION_IO:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch32: 0x%08X", address);
+		break;
+	case REGION_PALETTE_RAM:
+		LOAD_32(oldValue, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+		STORE_32(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
+		gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 1)) + 2, value >> 16);
+		break;
+	case REGION_VRAM:
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			LOAD_32(oldValue, address & 0x0001FFFF, gba->video.renderer->vram);
+			STORE_32(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else {
+			LOAD_32(oldValue, address & 0x00017FFF, gba->video.renderer->vram);
+			STORE_32(value, address & 0x00017FFF, gba->video.renderer->vram);
+		}
+		break;
+	case REGION_OAM:
+		LOAD_32(oldValue, address & (SIZE_OAM - 1), gba->video.oam.raw);
+		STORE_32(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
+		gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
+		gba->video.renderer->writeOAM(gba->video.renderer, ((address & (SIZE_OAM - 1)) + 2) >> 1);
+		break;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+			LOAD_32(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
+			STORE_32(value, address & (SIZE_CART0 - 1), gba->memory.rom);
+		} else {
+			GBALog(gba, GBA_LOG_WARN, "Bad memory Patch32: 0x%08X", address);
+		}
+		break;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		if (memory->savedata.type == SAVEDATA_SRAM) {
+			LOAD_32(oldValue, address & (SIZE_CART_SRAM - 1), memory->savedata.data);
+			STORE_32(value, address & (SIZE_CART_SRAM - 1), memory->savedata.data);
+		} else {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+		}
+		break;
+	default:
+		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+		break;
+	}
+	if (old) {
+		*old = oldValue;
+	}
+}
+
+void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* old) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	struct GBAMemory* memory = &gba->memory;
+	int16_t oldValue = -1;
+
+	switch (address >> BASE_OFFSET) {
+	case REGION_WORKING_RAM:
+		LOAD_16(oldValue, address & (SIZE_WORKING_RAM - 1), memory->wram);
+		STORE_16(value, address & (SIZE_WORKING_RAM - 1), memory->wram);
+		break;
+	case REGION_WORKING_IRAM:
+		LOAD_16(oldValue, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		STORE_16(value, address & (SIZE_WORKING_IRAM - 1), memory->iwram);
+		break;
+	case REGION_IO:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch16: 0x%08X", address);
+		break;
+	case REGION_PALETTE_RAM:
+		LOAD_16(oldValue, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+		STORE_16(value, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
+		gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 1), value);
+		break;
+	case REGION_VRAM:
+		if ((address & 0x0001FFFF) < SIZE_VRAM) {
+			LOAD_16(oldValue, address & 0x0001FFFF, gba->video.renderer->vram);
+			STORE_16(value, address & 0x0001FFFF, gba->video.renderer->vram);
+		} else {
+			LOAD_16(oldValue, address & 0x00017FFF, gba->video.renderer->vram);
+			STORE_16(value, address & 0x00017FFF, gba->video.renderer->vram);
+		}
+		break;
+	case REGION_OAM:
+		LOAD_16(oldValue, address & (SIZE_OAM - 1), gba->video.oam.raw);
+		STORE_16(value, address & (SIZE_OAM - 1), gba->video.oam.raw);
+		gba->video.renderer->writeOAM(gba->video.renderer, (address & (SIZE_OAM - 1)) >> 1);
+		break;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+			LOAD_16(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
+			STORE_16(value, address & (SIZE_CART0 - 1), gba->memory.rom);
+		} else {
+			GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+		}
+		break;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		if (memory->savedata.type == SAVEDATA_SRAM) {
+			LOAD_16(oldValue, address & (SIZE_CART_SRAM - 1), memory->savedata.data);
+			STORE_16(value, address & (SIZE_CART_SRAM - 1), memory->savedata.data);
+		} else {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+		}
+		break;
+	default:
+		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+		break;
+	}
+	if (old) {
+		*old = oldValue;
+	}
+}
+
 #define LDM_LOOP(LDM) \
 	for (i = 0; i < 16; i += 4) { \
 		if (UNLIKELY(mask & (1 << i))) { \
