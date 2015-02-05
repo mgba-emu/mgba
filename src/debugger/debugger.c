@@ -112,14 +112,7 @@ void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason rea
 				debugger->clearSoftwareBreakpoint(debugger, breakpoint->address, breakpoint->sw.mode, breakpoint->sw.opcode);
 			}
 
-			// Roll back CPU state
-			if (breakpoint->sw.mode == MODE_ARM) {
-				cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
-			} else {
-				cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;
-			}
-			cpu->prefetch[1] = cpu->prefetch[0];
-			cpu->prefetch[0] = breakpoint->sw.opcode;
+			ARMRunFake(cpu, breakpoint->sw.opcode);
 		}
 	}
 	if (debugger->entered) {

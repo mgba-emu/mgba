@@ -286,3 +286,13 @@ void ARMRunLoop(struct ARMCore* cpu) {
 	}
 	cpu->irqh.processEvents(cpu);
 }
+
+void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
+	if (cpu->executionMode== MODE_ARM) {
+		cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
+	} else {
+		cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;
+	}
+	cpu->prefetch[1] = cpu->prefetch[0];
+	cpu->prefetch[0] = opcode;
+}
