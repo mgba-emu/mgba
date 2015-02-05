@@ -104,12 +104,13 @@ ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
 		size_t newRead = read(vfd->fd, &buffer[bytesRead], 1);
-		bytesRead += newRead;
 		if (!newRead || buffer[bytesRead] == '\n') {
 			break;
 		}
+		bytesRead += newRead;
 	}
-	return buffer[bytesRead] = '\0';
+	buffer[bytesRead] = '\0';
+	return bytesRead;
 }
 
 ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size) {
