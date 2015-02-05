@@ -22,6 +22,7 @@ Features:
  - Configurable game overrides
  - Support loading 7-Zip files
  - Drag and drop game loading
+ - Cheat code support
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio

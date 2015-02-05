@@ -72,6 +72,7 @@ enum GBAKey {
 
 enum GBAComponent {
 	GBA_COMPONENT_DEBUGGER,
+	GBA_COMPONENT_CHEAT_DEVICE,
 	GBA_COMPONENT_MAX
 };
 
@@ -184,6 +185,9 @@ void GBAHalt(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
+
+void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);

@@ -6,6 +6,7 @@
 #include "gba.h"
 
 #include "gba/bios.h"
+#include "gba/cheats.h"
 #include "gba/io.h"
 #include "gba/supervisor/rr.h"
 #include "gba/supervisor/thread.h"
@@ -670,6 +671,15 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 			ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
 		break;
+	case GBA_COMPONENT_CHEAT_DEVICE:
+		if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
+			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+			if (device->cheats) {
+				GBACheatRefresh(device);
+				ARMRunFake(cpu, device->cheats->patchedOpcode);
+			}
+		}
+		break;
 	default:
 		break;
 	}
@@ -711,32 +721,48 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 }
 
-static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
-	int immediate = GBA_COMPONENT_DEBUGGER;
+void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+	size_t immediate;
+	for (immediate = 0; immediate < gba->cpu->numComponents; ++immediate) {
+		if (gba->cpu->components[immediate] == component) {
+			break;
+		}
+	}
+	if (immediate == gba->cpu->numComponents) {
+		return;
+	}
 	if (mode == MODE_ARM) {
 		int32_t value;
 		int32_t old;
 		value = 0xE1200070;
 		value |= immediate & 0xF;
 		value |= (immediate & 0xFFF0) << 4;
-		GBAPatch32(debugger->cpu, address, value, &old);
+		GBAPatch32(gba->cpu, address, value, &old);
 		*opcode = old;
 	} else {
 		int16_t value;
 		int16_t old;
 		value = 0xBE00;
 		value |= immediate & 0xFF;
-		GBAPatch16(debugger->cpu, address, value, &old);
-		*opcode = old;
+		GBAPatch16(gba->cpu, address, value, &old);
+		*opcode = (uint16_t) old;
 	}
+}
+
+void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
+	if (mode == MODE_ARM) {
+		GBAPatch32(gba->cpu, address, opcode, 0);
+	} else {
+		GBAPatch16(gba->cpu, address, opcode, 0);
+	}
+}
+
+static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d, address, mode, opcode);
 	return true;
 }
 
 static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
-	if (mode == MODE_ARM) {
-		GBAPatch32(debugger->cpu, address, opcode, 0);
-	} else {
-		GBAPatch16(debugger->cpu, address, opcode, 0);
-	}
+	GBAClearBreakpoint((struct GBA*) debugger->cpu->master, address, mode, opcode);
 	return true;
 }

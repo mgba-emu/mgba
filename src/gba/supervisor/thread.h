@@ -16,7 +16,9 @@
 
 struct GBAThread;
 struct GBAArguments;
+struct GBACheatSet;
 struct GBAOptions;
+
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
 typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
@@ -68,6 +70,7 @@ struct GBAThread {
 	struct VFile* save;
 	struct VFile* bios;
 	struct VFile* patch;
+	struct VFile* cheatsFile;
 	const char* fname;
 	int activeKeys;
 	struct GBAAVStream* stream;
@@ -81,6 +84,7 @@ struct GBAThread {
 	int frameskip;
 	float fpsTarget;
 	size_t audioBuffers;
+	bool skipBios;
 
 	// Threading state
 	Thread thread;
@@ -106,7 +110,7 @@ struct GBAThread {
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
 
-	bool skipBios;
+	struct GBACheatSet* cheats;
 };
 
 void GBAMapOptionsToContext(const struct GBAOptions*, struct GBAThread*);

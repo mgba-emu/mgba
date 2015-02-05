@@ -24,6 +24,7 @@ enum DebuggerType {
 struct GBAArguments {
 	char* fname;
 	char* patch;
+	char* cheatsFile;
 	bool dirmode;
 
 	enum DebuggerType debuggerType;
