@@ -12,7 +12,7 @@ const uint32_t GBA_CHEAT_DEVICE_ID = 0xABADC0DE;
 
 DEFINE_VECTOR(GBACheatList, struct GBACheat);
 
-static int32_t _read(struct ARMCore* cpu, uint32_t address, int width) {
+static int32_t _readMem(struct ARMCore* cpu, uint32_t address, int width) {
 	switch (width) {
 	case 1:
 		return cpu->memory.load8(cpu, address, 0);
@@ -24,7 +24,7 @@ static int32_t _read(struct ARMCore* cpu, uint32_t address, int width) {
 	return 0;
 }
 
-static void _write(struct ARMCore* cpu, uint32_t address, int width, int32_t value) {
+static void _writeMem(struct ARMCore* cpu, uint32_t address, int width, int32_t value) {
 	switch (width) {
 	case 1:
 		cpu->memory.store8(cpu, address, value, 0);
@@ -306,41 +306,41 @@ void GBACheatRefresh(struct GBACheatDevice* device) {
 				performAssignment = true;
 				break;
 			case CHEAT_AND:
-				value = _read(device->p->cpu, address, cheat->width) & operand;
+				value = _readMem(device->p->cpu, address, cheat->width) & operand;
 				performAssignment = true;
 				break;
 			case CHEAT_ADD:
-				value = _read(device->p->cpu, address, cheat->width) + operand;
+				value = _readMem(device->p->cpu, address, cheat->width) + operand;
 				performAssignment = true;
 				break;
 			case CHEAT_OR:
-				value = _read(device->p->cpu, address, cheat->width) | operand;
+				value = _readMem(device->p->cpu, address, cheat->width) | operand;
 				performAssignment = true;
 				break;
 			case CHEAT_IF_EQ:
-				condition = _read(device->p->cpu, address, cheat->width) == operand;
+				condition = _readMem(device->p->cpu, address, cheat->width) == operand;
 				conditionRemaining = cheat->repeat;
 				break;
 			case CHEAT_IF_NE:
-				condition = _read(device->p->cpu, address, cheat->width) != operand;
+				condition = _readMem(device->p->cpu, address, cheat->width) != operand;
 				conditionRemaining = cheat->repeat;
 				break;
 			case CHEAT_IF_LT:
-				condition = _read(device->p->cpu, address, cheat->width) < operand;
+				condition = _readMem(device->p->cpu, address, cheat->width) < operand;
 				conditionRemaining = cheat->repeat;
 				break;
 			case CHEAT_IF_GT:
-				condition = _read(device->p->cpu, address, cheat->width) > operand;
+				condition = _readMem(device->p->cpu, address, cheat->width) > operand;
 				conditionRemaining = cheat->repeat;
 				break;
 			case CHEAT_IF_AND:
-				condition = _read(device->p->cpu, address, cheat->width) & operand;
+				condition = _readMem(device->p->cpu, address, cheat->width) & operand;
 				conditionRemaining = cheat->repeat;
 				break;
 			}
 
 			if (performAssignment) {
-				_write(device->p->cpu, address, cheat->width, value);
+				_writeMem(device->p->cpu, address, cheat->width, value);
 			}
 
 			address += cheat->addressOffset;
