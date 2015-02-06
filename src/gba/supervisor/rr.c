@@ -424,6 +424,7 @@ enum GBARRTag _readTag(struct GBARRContext* rr, struct VFile* vf) {
 		break;
 	case TAG_INIT_FROM_SAVESTATE:
 		rr->initFrom = INIT_FROM_SAVESTATE;
+		break;
 	case TAG_INIT_FROM_BOTH:
 		rr->initFrom = INIT_FROM_BOTH;
 		break;
