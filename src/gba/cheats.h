@@ -11,6 +11,8 @@
 #include "arm.h"
 #include "util/vector.h"
 
+#define MAX_ROM_PATCHES 4
+
 enum GBACheatType {
 	CHEAT_ASSIGN,
 	CHEAT_AND,
@@ -42,6 +44,18 @@ enum GBACodeBreakerType {
 	CB_IF_AND = 0xF,
 };
 
+enum GBAGameSharkType {
+	GSA_ASSIGN_1 = 0x0,
+	GSA_ASSIGN_2 = 0x1,
+	GSA_ASSIGN_4 = 0x2,
+	GSA_ASSIGN_LIST = 0x3,
+	GSA_PATCH = 0x6,
+	GSA_BUTTON = 0x8,
+	GSA_IF_EQ = 0xD,
+	GSA_IF_EQ_RANGE = 0xE,
+	GSA_HOOK = 0xF
+};
+
 struct GBACheat {
 	enum GBACheatType type;
 	int width;
@@ -62,6 +76,18 @@ struct GBACheatSet {
 
 	struct GBACheat* incompleteCheat;
 	uint32_t patchedOpcode;
+
+	struct GBACheatPatch {
+		uint32_t address;
+		int16_t newValue;
+		int16_t oldValue;
+		bool applied;
+	} romPatches[MAX_ROM_PATCHES];
+	int nRomPatches;
+
+	int gsaVersion;
+	uint32_t gsaSeeds[4];
+	int remainingAddresses;
 };
 
 struct GBACheatDevice {
@@ -81,6 +107,11 @@ void GBACheatInstallSet(struct GBACheatDevice*, struct GBACheatSet*);
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet*, uint32_t op1, uint16_t op2);
 bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);
+
+bool GBACheatAddGameShark(struct GBACheatSet*, uint32_t op1, uint32_t op2);
+bool GBACheatAddGameSharkLine(struct GBACheatSet*, const char* line);
+
+bool GBACheatAddLine(struct GBACheatSet*, const char* line);
 
 void GBACheatRefresh(struct GBACheatDevice*);
 

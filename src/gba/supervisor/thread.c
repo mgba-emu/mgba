@@ -179,7 +179,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			if (!bytesRead) {
 				break;
 			}
-			GBACheatAddCodeBreakerLine(threadContext->cheats, cheat);
+			GBACheatAddLine(threadContext->cheats, cheat);
 		}
 	}
 	GBACheatInstallSet(&cheatDevice, threadContext->cheats);
