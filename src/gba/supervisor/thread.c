@@ -106,7 +106,6 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct ARMCore cpu;
 	struct Patch patch;
 	struct GBACheatDevice cheatDevice;
-	struct GBACheatSet cheats;
 	struct GBAThread* threadContext = context;
 	struct ARMComponent* components[GBA_COMPONENT_MAX] = {};
 	int numComponents = GBA_COMPONENT_MAX;
@@ -167,23 +166,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBASkipBIOS(&cpu);
 	}
 
-	GBACheatDeviceCreate(&cheatDevice);
-	GBACheatSetInit(&cheats);
 	if (!threadContext->cheats) {
-		threadContext->cheats = &cheats;
+		GBACheatDeviceCreate(&cheatDevice);
+		threadContext->cheats = &cheatDevice;
 	}
 	if (threadContext->cheatsFile) {
-		char cheat[32];
-		while (true) {
-			size_t bytesRead = threadContext->cheatsFile->readline(threadContext->cheatsFile, cheat, sizeof(cheat));
-			if (!bytesRead) {
-				break;
-			}
-			GBACheatAddLine(threadContext->cheats, cheat);
-		}
+		GBACheatParseFile(threadContext->cheats, threadContext->cheatsFile);
 	}
-	GBACheatInstallSet(&cheatDevice, threadContext->cheats);
-	GBACheatAttachDevice(&gba, &cheatDevice);
+	GBACheatAttachDevice(&gba, threadContext->cheats);
 
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
@@ -253,7 +243,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	threadContext->gba = 0;
 	ARMDeinit(&cpu);
 	GBADestroy(&gba);
-	GBACheatSetDeinit(&cheats);
+	if (&cheatDevice == threadContext->cheats) {
+		GBACheatDeviceDestroy(&cheatDevice);
+	}
 
 	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);

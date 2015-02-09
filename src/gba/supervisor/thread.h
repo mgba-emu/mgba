@@ -110,7 +110,7 @@ struct GBAThread {
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
 
-	struct GBACheatSet* cheats;
+	struct GBACheatDevice* cheats;
 };
 
 void GBAMapOptionsToContext(const struct GBAOptions*, struct GBAThread*);

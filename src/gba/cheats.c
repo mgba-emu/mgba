@@ -7,10 +7,14 @@
 
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "util/vfs.h"
+
+#define MAX_LINE_LENGTH 128
 
 const uint32_t GBA_CHEAT_DEVICE_ID = 0xABADC0DE;
 
 DEFINE_VECTOR(GBACheatList, struct GBACheat);
+DEFINE_VECTOR(GBACheatSets, struct GBACheatSet*);
 
 static const uint32_t _gsa1S[4] = { 0x09F4FBBD, 0x9681884A, 0x352027E9, 0xF3DEE5A7 };
 static const uint32_t _par3S[4] = { 0x7AA9648F, 0x7FAE6994, 0xC0EFAAD5, 0x42712C57 };
@@ -292,18 +296,21 @@ static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 		cheat->repeat = (op1 >> 16) & 0xFF;
 		return true;
 	case GSA_HOOK:
-		if (cheats->hookAddress) {
+		if (cheats->hook) {
 			return false;
 		}
-		cheats->hookAddress = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
-		cheats->hookMode = MODE_THUMB;
+		cheats->hook = malloc(sizeof(*cheats->hook));
+		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->mode = MODE_THUMB;
+		cheats->hook->refs = 1;
+		cheats->hook->reentries = 0;
 		return true;
 	default:
 		return false;
 	}
 	cheat->operand = op2;
 	cheat->repeat = 1;
-	return false;
+	return true;
 }
 
 static bool _addGSA3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
@@ -314,45 +321,53 @@ static bool _addGSA3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	return false;
 }
 
-static void _addBreakpoint(struct GBACheatDevice* device) {
-	if (!device->cheats || !device->p) {
+static void _addBreakpoint(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	if (!device->p || !cheats->hook) {
 		return;
 	}
-	GBASetBreakpoint(device->p, &device->d, device->cheats->hookAddress, device->cheats->hookMode, &device->cheats->patchedOpcode);
-}
-
-static void _removeBreakpoint(struct GBACheatDevice* device) {
-	if (!device->cheats || !device->p) {
+	++cheats->hook->reentries;
+	if (cheats->hook->reentries > 1) {
 		return;
 	}
-	GBAClearBreakpoint(device->p, device->cheats->hookAddress, device->cheats->hookMode, device->cheats->patchedOpcode);
+	GBASetBreakpoint(device->p, &device->d, cheats->hook->address, cheats->hook->mode, &cheats->hook->patchedOpcode);
 }
 
-static void _patchROM(struct GBACheatDevice* device) {
-	if (!device->cheats || !device->p) {
+static void _removeBreakpoint(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	if (!device->p || !cheats->hook) {
+		return;
+	}
+	--cheats->hook->reentries;
+	if (cheats->hook->reentries > 0) {
+		return;
+	}
+	GBAClearBreakpoint(device->p, cheats->hook->address, cheats->hook->mode, cheats->hook->patchedOpcode);
+}
+
+static void _patchROM(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	if (!device->p) {
 		return;
 	}
 	int i;
 	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!device->cheats->romPatches[i].exists || device->cheats->romPatches[i].applied) {
+		if (!cheats->romPatches[i].exists || cheats->romPatches[i].applied) {
 			continue;
 		}
-		GBAPatch16(device->p->cpu, device->cheats->romPatches[i].address, device->cheats->romPatches[i].newValue, &device->cheats->romPatches[i].oldValue);
-		device->cheats->romPatches[i].applied = true;
+		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].newValue, &cheats->romPatches[i].oldValue);
+		cheats->romPatches[i].applied = true;
 	}
 }
 
-static void _unpatchROM(struct GBACheatDevice* device) {
-	if (!device->cheats || !device->p) {
+static void _unpatchROM(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	if (!device->p) {
 		return;
 	}
 	int i;
 	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
-		if (!device->cheats->romPatches[i].exists || !device->cheats->romPatches[i].applied) {
+		if (!cheats->romPatches[i].exists || !cheats->romPatches[i].applied) {
 			continue;
 		}
-		GBAPatch16(device->p->cpu, device->cheats->romPatches[i].address, device->cheats->romPatches[i].oldValue, 0);
-		device->cheats->romPatches[i].applied = false;
+		GBAPatch16(device->p->cpu, cheats->romPatches[i].address, cheats->romPatches[i].oldValue, 0);
+		cheats->romPatches[i].applied = false;
 	}
 }
 
@@ -363,24 +378,47 @@ void GBACheatDeviceCreate(struct GBACheatDevice* device) {
 	device->d.id = GBA_CHEAT_DEVICE_ID;
 	device->d.init = GBACheatDeviceInit;
 	device->d.deinit = GBACheatDeviceDeinit;
+	GBACheatSetsInit(&device->cheats, 4);
 }
 
-void GBACheatSetInit(struct GBACheatSet* set) {
-	set->hookAddress = 0;
-	set->hookMode = MODE_THUMB;
+void GBACheatDeviceDestroy(struct GBACheatDevice* device) {
+	size_t i;
+	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+		struct GBACheatSet* set = *GBACheatSetsGetPointer(&device->cheats, i);
+		GBACheatSetDeinit(set);
+		free(set);
+	}
+	GBACheatSetsDeinit(&device->cheats);
+}
+
+void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 	GBACheatListInit(&set->list, 4);
 	set->incompleteCheat = 0;
-	set->patchedOpcode = 0;
 	set->gsaVersion = 0;
 	set->remainingAddresses = 0;
+	set->hook = 0;
 	int i;
 	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
 		set->romPatches[i].exists = false;
+	}
+	if (name) {
+		set->name = strdup(name);
+	} else {
+		set->name = 0;
 	}
 }
 
 void GBACheatSetDeinit(struct GBACheatSet* set) {
 	GBACheatListDeinit(&set->list);
+	if (set->name) {
+		free(set->name);
+	}
+	if (set->hook) {
+		--set->hook->refs;
+		if (set->hook->refs == 0) {
+			free(set->hook);
+		}
+	}
 }
 
 void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice* device) {
@@ -391,12 +429,10 @@ void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice* device) {
 	ARMHotplugAttach(gba->cpu, GBA_COMPONENT_CHEAT_DEVICE);
 }
 
-void GBACheatInstallSet(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
-	_removeBreakpoint(device);
-	_unpatchROM(device);
-	device->cheats = cheats;
-	_addBreakpoint(device);
-	_patchROM(device);
+void GBACheatAddSet(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	*GBACheatSetsAppend(&device->cheats) = cheats;
+	_patchROM(device, cheats);
+	_addBreakpoint(device, cheats);
 }
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t op2) {
@@ -416,11 +452,14 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		// TODO: Run checksum
 		return true;
 	case CB_HOOK:
-		if (cheats->hookAddress) {
+		if (cheats->hook) {
 			return false;
 		}
-		cheats->hookAddress = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
-		cheats->hookMode = MODE_THUMB;
+		cheats->hook = malloc(sizeof(*cheats->hook));
+		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->mode = MODE_THUMB;
+		cheats->hook->refs = 1;
+		cheats->hook->reentries = 0;
 		return true;
 	case CB_OR_2:
 		cheat = GBACheatListAppend(&cheats->list);
@@ -571,6 +610,51 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
 	return GBACheatAddGameShark(cheats, op1, op2);
 }
 
+bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
+	char cheat[MAX_LINE_LENGTH];
+	struct GBACheatSet* set = 0;
+	struct GBACheatSet* newSet;
+	while (true) {
+		size_t i;
+		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
+		if (bytesRead == 0) {
+			break;
+		}
+		if (bytesRead < 0) {
+			return false;
+		}
+		switch (cheat[0]) {
+		case '#':
+			i = 1;
+			while (isspace(cheat[i])) {
+				++i;
+			}
+			newSet = malloc(sizeof(*set));
+			GBACheatSetInit(newSet, &cheat[i]);
+			if (set) {
+				GBACheatAddSet(device, set);
+				newSet->gsaVersion = set->gsaVersion;
+				memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
+				newSet->hook = set->hook;
+				++newSet->hook->refs;
+			}
+			set = newSet;
+			break;
+		default:
+			if (!set) {
+				set = malloc(sizeof(*set));
+				GBACheatSetInit(set, 0);
+			}
+			GBACheatAddLine(set, cheat);
+			break;
+		}
+	}
+	if (set) {
+		GBACheatAddSet(device, set);
+	}
+	return true;
+}
+
 bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	uint32_t op1;
 	uint16_t op2;
@@ -599,12 +683,12 @@ bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	return GBACheatAddGameShark(cheats, op1, realOp2);
 }
 
-void GBACheatRefresh(struct GBACheatDevice* device) {
+void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
 	bool condition = true;
 	int conditionRemaining = 0;
-	_patchROM(device);
+	_patchROM(device, cheats);
 
-	size_t nCodes = GBACheatListSize(&device->cheats->list);
+	size_t nCodes = GBACheatListSize(&cheats->list);
 	size_t i;
 	for (i = 0; i < nCodes; ++i) {
 		if (conditionRemaining > 0) {
@@ -615,7 +699,7 @@ void GBACheatRefresh(struct GBACheatDevice* device) {
 		} else {
 			condition = true;
 		}
-		struct GBACheat* cheat = GBACheatListGetPointer(&device->cheats->list, i);
+		struct GBACheat* cheat = GBACheatListGetPointer(&cheats->list, i);
 		int32_t value = 0;
 		int32_t operand = cheat->operand;
 		uint32_t operationsRemaining = cheat->repeat;
@@ -686,10 +770,20 @@ void GBACheatRefresh(struct GBACheatDevice* device) {
 void GBACheatDeviceInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	struct GBACheatDevice* device = (struct GBACheatDevice*) component;
 	device->p = (struct GBA*) cpu->master;
-	_addBreakpoint(device);
+	size_t i;
+	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+		struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+		_addBreakpoint(device, cheats);
+		_patchROM(device, cheats);
+	}
 }
 
 void GBACheatDeviceDeinit(struct ARMComponent* component) {
 	struct GBACheatDevice* device = (struct GBACheatDevice*) component;
-	_removeBreakpoint(device);
+	size_t i;
+	for (i = GBACheatSetsSize(&device->cheats); i--;) {
+		struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+		_unpatchROM(device, cheats);
+		_removeBreakpoint(device, cheats);
+	}
 }

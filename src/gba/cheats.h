@@ -133,15 +133,21 @@ struct GBACheat {
 	int32_t operandOffset;
 };
 
+struct GBACheatHook {
+	uint32_t address;
+	enum ExecutionMode mode;
+	uint32_t patchedOpcode;
+	size_t refs;
+	size_t reentries;
+};
+
 DECLARE_VECTOR(GBACheatList, struct GBACheat);
 
 struct GBACheatSet {
-	uint32_t hookAddress;
-	enum ExecutionMode hookMode;
+	struct GBACheatHook* hook;
 	struct GBACheatList list;
 
 	struct GBACheat* incompleteCheat;
-	uint32_t patchedOpcode;
 
 	struct GBACheatPatch {
 		uint32_t address;
@@ -154,22 +160,31 @@ struct GBACheatSet {
 	int gsaVersion;
 	uint32_t gsaSeeds[4];
 	int remainingAddresses;
+
+	char* name;
 };
+
+DECLARE_VECTOR(GBACheatSets, struct GBACheatSet*);
 
 struct GBACheatDevice {
 	struct ARMComponent d;
 	struct GBA* p;
 
-	struct GBACheatSet* cheats;
+	struct GBACheatSets cheats;
 };
 
-void GBACheatDeviceCreate(struct GBACheatDevice*);
+struct VFile;
 
-void GBACheatSetInit(struct GBACheatSet*);
+void GBACheatDeviceCreate(struct GBACheatDevice*);
+void GBACheatDeviceDestroy(struct GBACheatDevice*);
+
+void GBACheatSetInit(struct GBACheatSet*, const char* name);
 void GBACheatSetDeinit(struct GBACheatSet*);
 
 void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice*);
-void GBACheatInstallSet(struct GBACheatDevice*, struct GBACheatSet*);
+
+void GBACheatAddSet(struct GBACheatDevice*, struct GBACheatSet*);
+void GBACheatRemoveSet(struct GBACheatDevice*, struct GBACheatSet*);
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet*, uint32_t op1, uint16_t op2);
 bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);
@@ -177,8 +192,9 @@ bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);
 bool GBACheatAddGameShark(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddGameSharkLine(struct GBACheatSet*, const char* line);
 
+bool GBACheatParseFile(struct GBACheatDevice*, struct VFile*);
 bool GBACheatAddLine(struct GBACheatSet*, const char* line);
 
-void GBACheatRefresh(struct GBACheatDevice*);
+void GBACheatRefresh(struct GBACheatDevice*, struct GBACheatSet*);
 
 #endif

@@ -674,9 +674,17 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	case GBA_COMPONENT_CHEAT_DEVICE:
 		if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
 			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
-			if (device->cheats) {
-				GBACheatRefresh(device);
-				ARMRunFake(cpu, device->cheats->patchedOpcode);
+			struct GBACheatHook* hook = 0;
+			size_t i;
+			for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+				struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+				if (cheats->hook && cheats->hook->address == _ARMPCAddress(cpu)) {
+					GBACheatRefresh(device, cheats);
+					hook = cheats->hook;
+				}
+			}
+			if (hook) {
+				ARMRunFake(cpu, hook->patchedOpcode);
 			}
 		}
 		break;
