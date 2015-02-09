@@ -82,8 +82,8 @@ struct GBACheatSet {
 		int16_t newValue;
 		int16_t oldValue;
 		bool applied;
+		bool exists;
 	} romPatches[MAX_ROM_PATCHES];
-	int nRomPatches;
 
 	int gsaVersion;
 	uint32_t gsaSeeds[4];

@@ -227,13 +227,10 @@ static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 		cheats->incompleteCheat = cheat;
 		break;
 	case GSA_PATCH:
-		if (cheats->nRomPatches >= MAX_ROM_PATCHES) {
-			return false;
-		}
-		cheats->romPatches[cheats->nRomPatches].address = (op1 & 0xFFFFFF) << 1;
-		cheats->romPatches[cheats->nRomPatches].newValue = op2;
-		cheats->romPatches[cheats->nRomPatches].applied = false;
-		++cheats->nRomPatches;
+		cheats->romPatches[0].address = (op1 & 0xFFFFFF) << 1;
+		cheats->romPatches[0].newValue = op2;
+		cheats->romPatches[0].applied = false;
+		cheats->romPatches[0].exists = true;
 		return true;
 	case GSA_BUTTON:
 		// TODO: Implement button
@@ -298,8 +295,8 @@ static void _patchROM(struct GBACheatDevice* device) {
 		return;
 	}
 	int i;
-	for (i = 0; i < device->cheats->nRomPatches; ++i) {
-		if (device->cheats->romPatches[i].applied) {
+	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
+		if (!device->cheats->romPatches[i].exists || device->cheats->romPatches[i].applied) {
 			continue;
 		}
 		GBAPatch16(device->p->cpu, device->cheats->romPatches[i].address, device->cheats->romPatches[i].newValue, &device->cheats->romPatches[i].oldValue);
@@ -312,8 +309,8 @@ static void _unpatchROM(struct GBACheatDevice* device) {
 		return;
 	}
 	int i;
-	for (i = 0; i < device->cheats->nRomPatches; ++i) {
-		if (!device->cheats->romPatches[i].applied) {
+	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
+		if (!device->cheats->romPatches[i].exists || !device->cheats->romPatches[i].applied) {
 			continue;
 		}
 		GBAPatch16(device->p->cpu, device->cheats->romPatches[i].address, device->cheats->romPatches[i].oldValue, 0);
@@ -338,6 +335,10 @@ void GBACheatSetInit(struct GBACheatSet* set) {
 	set->patchedOpcode = 0;
 	set->gsaVersion = 0;
 	set->remainingAddresses = 0;
+	int i;
+	for (i = 0; i < MAX_ROM_PATCHES; ++i) {
+		set->romPatches[i].exists = false;
+	}
 }
 
 void GBACheatSetDeinit(struct GBACheatSet* set) {
