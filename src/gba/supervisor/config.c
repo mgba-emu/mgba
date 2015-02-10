@@ -85,7 +85,9 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 		return false;
 	}
 	char* end;
-	float value = strtof(charValue, &end);
+	locale_t l = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+	float value = strtof_l(charValue, &end, l);
+	freelocale(l);
 	if (*end) {
 		return false;
 	}

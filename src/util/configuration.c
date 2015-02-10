@@ -78,8 +78,10 @@ void ConfigurationSetUIntValue(struct Configuration* configuration, const char* 
 }
 
 void ConfigurationSetFloatValue(struct Configuration* configuration, const char* section, const char* key, float value) {
-	char charValue[FLT_DIG + 7];
-	sprintf(charValue, "%.*g", FLT_DIG, value);
+	char charValue[16];
+	locale_t l = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+	snprintf_l(charValue, sizeof(charValue), l, "%.*g", FLT_DIG, value);
+	freelocale(l);
 	ConfigurationSetValue(configuration, section, key, charValue);
 }
 
