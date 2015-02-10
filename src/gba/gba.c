@@ -715,6 +715,18 @@ void GBAFrameEnded(struct GBA* gba) {
 		GBARRNextFrame(gba->rr);
 	}
 
+	if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
+		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+		size_t i;
+		for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+			struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+			if (!cheats->hook) {
+				GBACheatRefresh(device, cheats);
+			}
+		}
+	}
+
+
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
 		return;

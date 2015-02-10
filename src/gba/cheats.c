@@ -635,8 +635,10 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 				GBACheatAddSet(device, set);
 				newSet->gsaVersion = set->gsaVersion;
 				memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
-				newSet->hook = set->hook;
-				++newSet->hook->refs;
+				if (set->hook) {
+					newSet->hook = set->hook;
+					++newSet->hook->refs;
+				}
 			}
 			set = newSet;
 			break;
