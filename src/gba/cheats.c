@@ -670,7 +670,7 @@ bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	if (!line) {
 		return false;
 	}
-	if (isspace(line[0])) {
+	if (!line[0] || isspace(line[0])) {
 		return GBACheatAddCodeBreaker(cheats, op1, op2);
 	}
 	line = _hex16(line, &op3);
