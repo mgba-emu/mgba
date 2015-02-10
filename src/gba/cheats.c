@@ -212,6 +212,18 @@ static void _reseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1
 	}
 }
 
+static void _setGameSharkVersion(struct GBACheatSet* cheats, int version) {
+	cheats->gsaVersion = 1;
+	switch (version) {
+	case 1:
+		memcpy(cheats->gsaSeeds, _gsa1S, 4 * sizeof(uint32_t));
+		break;
+	case 3:
+		memcpy(cheats->gsaSeeds, _par3S, 4 * sizeof(uint32_t));
+		break;
+	}
+}
+
 static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	enum GBAGameSharkType type = op1 >> 28;
 	struct GBACheat* cheat = 0;
@@ -570,16 +582,14 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 		// Try to detect GameShark version
 		_decryptGameShark(&o1, &o2, _gsa1S);
 		if ((o1 & 0xF0000000) == 0xF0000000 && !(o2 & 0xFFFFFCFE)) {
-			set->gsaVersion = 1;
-			memcpy(set->gsaSeeds, _gsa1S, 4 * sizeof(uint32_t));
+			_setGameSharkVersion(set, 1);
 			return _addGSA1(set, o1, o2);
 		}
 		o1 = op1;
 		o2 = op2;
 		_decryptGameShark(&o1, &o2, _par3S);
 		if ((o1 & 0xFE000000) == 0xC4000000 && !(o2 & 0xFFFF0000)) {
-			set->gsaVersion = 3;
-			memcpy(set->gsaSeeds, _par3S, 4 * sizeof(uint32_t));
+			_setGameSharkVersion(set, 3);
 			return _addGSA3(set, o1, o2);
 		}
 		break;
@@ -614,8 +624,9 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 	char cheat[MAX_LINE_LENGTH];
 	struct GBACheatSet* set = 0;
 	struct GBACheatSet* newSet;
+	int gsaVersion = 0;
 	while (true) {
-		size_t i;
+		size_t i = 0;
 		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
 		if (bytesRead == 0) {
 			break;
@@ -623,12 +634,14 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 		if (bytesRead < 0) {
 			return false;
 		}
-		switch (cheat[0]) {
+		while (isspace(cheat[i])) {
+			++i;
+		}
+		switch (cheat[i]) {
 		case '#':
-			i = 1;
-			while (isspace(cheat[i])) {
+			do {
 				++i;
-			}
+			} while (isspace(cheat[i]));
 			newSet = malloc(sizeof(*set));
 			GBACheatSetInit(newSet, &cheat[i]);
 			if (set) {
@@ -639,13 +652,25 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 					newSet->hook = set->hook;
 					++newSet->hook->refs;
 				}
+			} else {
+				_setGameSharkVersion(newSet, gsaVersion);
 			}
 			set = newSet;
+			break;
+		case '!':
+			do {
+				++i;
+			} while (isspace(cheat[i]));
+			if (strncasecmp(&cheat[i], "GSAv", 4) == 0 || strncasecmp(&cheat[i], "PARv", 4) == 0) {
+				i += 4;
+				gsaVersion = atoi(&cheat[i]);
+			}
 			break;
 		default:
 			if (!set) {
 				set = malloc(sizeof(*set));
 				GBACheatSetInit(set, 0);
+				_setGameSharkVersion(set, gsaVersion);
 			}
 			GBACheatAddLine(set, cheat);
 			break;
