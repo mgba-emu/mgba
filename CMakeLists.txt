@@ -100,13 +100,6 @@ find_feature(USE_PNG "ZLIB;PNG")
 find_feature(USE_LIBZIP "libzip")
 find_feature(USE_MAGICK "MagickWand")
 
-include(CheckFunctionExists)
-check_function_exists(strndup HAVE_STRNDUP)
-
-if(HAVE_STRNDUP)
-	add_definitions(-DHAVE_STRNDUP)
-endif()
-
 # Platform support
 if(WIN32)
 	add_definitions(-D_WIN32_WINNT=0x0600)
@@ -114,7 +107,7 @@ if(WIN32)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 else()
-	add_definitions(-DUSE_PTHREADS)
+	add_definitions(-DUSE_PTHREADS -D_GNU_SOURCE)
 	list(APPEND OS_LIB pthread)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
@@ -130,6 +123,29 @@ if(BUILD_BBB OR BUILD_RASPI)
 		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	endif()
 endif()
+
+include(CheckFunctionExists)
+check_function_exists(strndup HAVE_STRNDUP)
+check_function_exists(snprintf_l HAVE_SNPRINTF_L)
+check_function_exists(strtof_l HAVE_STRTOF_L)
+check_function_exists(newlocale HAVE_NEWLOCALE)
+check_function_exists(freelocale HAVE_FREELOCALE)
+check_function_exists(uselocale HAVE_USELOCALE)
+
+if(HAVE_STRNDUP)
+	add_definitions(-DHAVE_STRNDUP)
+endif()
+
+if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE)
+	add_definitions(-DHAVE_LOCALE)
+	if (HAVE_STRTOF_L)
+		add_definitions(-DHAVE_STRTOF_L)
+	endif()
+	if (HAVE_SNPRINTF_L)
+		add_definitions(-DHAVE_SNPRINTF_L)
+	endif()
+endif()
+
 
 # Features
 set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)

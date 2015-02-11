@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "config.h"
 
+#include "util/formatting.h"
+
 #include <sys/stat.h>
 
 #ifdef _WIN32
@@ -85,15 +87,7 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 		return false;
 	}
 	char* end;
-#ifndef _WIN32
-	locale_t l = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
-	float value = strtof_l(charValue, &end, l);
-	freelocale(l);
-#else
-	const char* oldlocale = setlocale(LC_NUMERIC, "C");
-	float value = strtof(charValue, &end);
-	setlocale(LC_NUMERIC, oldlocale);
-#endif
+	float value = strtof_u(charValue, &end);
 	if (*end) {
 		return false;
 	}

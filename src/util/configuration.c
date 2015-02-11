@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "configuration.h"
 
+#include "util/formatting.h"
 #include "util/vfs.h"
 
 #include "third-party/inih/ini.h"
@@ -79,15 +80,7 @@ void ConfigurationSetUIntValue(struct Configuration* configuration, const char* 
 
 void ConfigurationSetFloatValue(struct Configuration* configuration, const char* section, const char* key, float value) {
 	char charValue[16];
-#ifndef _WIN32
-	locale_t l = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
-	snprintf_l(charValue, sizeof(charValue), l, "%.*g", FLT_DIG, value);
-	freelocale(l);
-#else
-	const char* oldlocale = setlocale(LC_NUMERIC, "C");
-	snprintf(charValue, sizeof(charValue), "%.*g", FLT_DIG, value);
-	setlocale(LC_NUMERIC, oldlocale);
-#endif
+	ftostr_u(charValue, sizeof(charValue), value);
 	ConfigurationSetValue(configuration, section, key, charValue);
 }
 
