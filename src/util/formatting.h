@@ -10,7 +10,7 @@
 
 #include "locale.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #include "xlocale.h"
 #endif
 
