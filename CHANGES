@@ -53,6 +53,7 @@ Misc:
  - Debugger: Add support for soft breakpoints
  - Util: Use proper locale for reading and writing float values
  - Debugger: Make I/O register names be addresses instead of values
+ - Debugger: Rename read/write commands
 
 0.1.1: (2015-01-24)
 Bugfixes:
