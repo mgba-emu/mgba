@@ -78,12 +78,12 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 }
 
 static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
+	UNUSED(debugger);
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
 		const char* reg = GBAIORegisterNames[i >> 1];
 		if (reg && strcasecmp(reg, name) == 0) {
-			return GBALoad16(gbaDebugger->context->gba->cpu, BASE_IO | i, 0);
+			return BASE_IO | i;
 		}
 	}
 	dv->type = CLIDV_ERROR_TYPE;
