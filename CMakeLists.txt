@@ -13,6 +13,8 @@ set(USE_LZMA ON CACHE BOOL "Whether or not to enable 7-Zip support")
 set(BUILD_QT ON CACHE BOOL "Build Qt frontend")
 set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
+set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
+set(BUILD_SHARED ON CACHE BOOL "Build a shared library")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
@@ -253,7 +255,7 @@ if (USE_LZMA)
 endif()
 
 # Binaries
-add_library(${BINARY_NAME}-static STATIC
+set(SRC
 	${ARM_SRC}
 	${GBA_SRC}
 	${GBA_SV_SRC}
@@ -263,13 +265,24 @@ add_library(${BINARY_NAME}-static STATIC
 	${VFS_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
-set_target_properties(${BINARY_NAME}-static PROPERTIES OUTPUT_NAME ${BINARY_NAME})
-get_property(STATIC_BINARY TARGET ${BINARY_NAME}-static PROPERTY LOCATION)
 
-add_library(${BINARY_NAME} SHARED)
-target_link_libraries(${BINARY_NAME} ${BINARY_NAME}-static m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
-install(TARGETS ${BINARY_NAME} ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
-set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} LINKER_LANGUAGE C LINK_FLAGS "-Wl,-force_load,${STATIC_BINARY}")
+if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
+	set(BUILD_SHARED ON)
+endif()
+
+if(BUILD_SHARED)
+	add_library(${BINARY_NAME} SHARED ${SRC})
+	if(BUILD_STATIC)
+		add_library(${BINARY_NAME}-static STATIC ${SRC})
+		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
+	endif()
+else()
+	add_library(${BINARY_NAME} STATIC ${SRC})
+endif()
+
+target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
+install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
+set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI})
 
 if(BUILD_SDL)
 	add_definitions(-DBUILD_SDL)
@@ -323,3 +336,6 @@ message(STATUS "Frontend summary:")
 message(STATUS "	Qt: ${BUILD_QT}")
 message(STATUS "	SDL (${SDL_VERSION}): ${BUILD_SDL}")
 message(STATUS "	Profiling: ${BUILD_PERF}")
+message(STATUS "Library summary:")
+message(STATUS "	Static: ${BUILD_STATIC}")
+message(STATUS "	Shared: ${BUILD_SHARED}")
