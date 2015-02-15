@@ -60,11 +60,13 @@ void CheatsView::addSet() {
 void CheatsView::removeSet() {
 	GBACheatSet* set;
 	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
-	if (selection.count() != 1) {
+	if (selection.count() < 1) {
 		return;
 	}
 	m_controller->threadInterrupt();
-	m_model.removeAt(selection[0]);
+	for (const QModelIndex& index : selection) {
+		m_model.removeAt(selection[0]);
+	}
 	m_controller->threadContinue();
 }
 
@@ -81,7 +83,9 @@ void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callb
 	m_controller->threadInterrupt();
 	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
 	for (const QString& string : cheats) {
+		m_model.beginAppendRow(selection[0]);
 		callback(set, string.toLocal8Bit().constData());
+		m_model.endAppendRow();
 	}
 	m_controller->threadContinue();
 	m_ui.codeEntry->clear();

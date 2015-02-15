@@ -32,6 +32,9 @@ public:
 	GBACheatSet* itemAt(const QModelIndex& index);
 	void removeAt(const QModelIndex& index);
 
+	void beginAppendRow(const QModelIndex& index);
+	void endAppendRow();
+
 	void loadFile(const QString& path);
 	void addSet(GBACheatSet* set);
 

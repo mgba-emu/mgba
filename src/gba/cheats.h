@@ -142,6 +142,7 @@ struct GBACheatHook {
 };
 
 DECLARE_VECTOR(GBACheatList, struct GBACheat);
+DECLARE_VECTOR(StringList, char*);
 
 struct GBACheatSet {
 	struct GBACheatHook* hook;
@@ -162,6 +163,7 @@ struct GBACheatSet {
 	int remainingAddresses;
 
 	char* name;
+	struct StringList lines;
 };
 
 DECLARE_VECTOR(GBACheatSets, struct GBACheatSet*);

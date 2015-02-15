@@ -15,6 +15,7 @@ const uint32_t GBA_CHEAT_DEVICE_ID = 0xABADC0DE;
 
 DEFINE_VECTOR(GBACheatList, struct GBACheat);
 DEFINE_VECTOR(GBACheatSets, struct GBACheatSet*);
+DEFINE_VECTOR(StringList, char*);
 
 static const uint32_t _gsa1S[4] = { 0x09F4FBBD, 0x9681884A, 0x352027E9, 0xF3DEE5A7 };
 static const uint32_t _par3S[4] = { 0x7AA9648F, 0x7FAE6994, 0xC0EFAAD5, 0x42712C57 };
@@ -186,6 +187,10 @@ static const char* _hex16(const char* line, uint16_t* out) {
 	}
 	*out = value;
 	return line;
+}
+
+static void _registerLine(struct GBACheatSet* cheats, const char* line) {
+	*StringListAppend(&cheats->lines) = strdup(line);
 }
 
 // http://en.wikipedia.org/wiki/Tiny_Encryption_Algorithm
@@ -405,6 +410,7 @@ void GBACheatDeviceDestroy(struct GBACheatDevice* device) {
 
 void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 	GBACheatListInit(&set->list, 4);
+	StringListInit(&set->lines, 4);
 	set->incompleteCheat = 0;
 	set->gsaVersion = 0;
 	set->remainingAddresses = 0;
@@ -422,6 +428,10 @@ void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 
 void GBACheatSetDeinit(struct GBACheatSet* set) {
 	GBACheatListDeinit(&set->list);
+	size_t i;
+	for (i = 0; i < StringListSize(&set->lines); ++i) {
+		free(*StringListGetPointer(&set->lines, i));
+	}
 	if (set->name) {
 		free(set->name);
 	}
@@ -463,6 +473,10 @@ void GBACheatRemoveSet(struct GBACheatDevice* device, struct GBACheatSet* cheats
 }
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t op2) {
+	char line[14] = "XXXXXXXX XXXX";
+	snprintf(line, sizeof(line), "%08X %04X", op1, op2);
+	_registerLine(cheats, line);
+
 	enum GBACodeBreakerType type = op1 >> 28;
 	struct GBACheat* cheat = 0;
 
@@ -592,6 +606,10 @@ bool GBACheatAddCodeBreakerLine(struct GBACheatSet* cheats, const char* line) {
 bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	uint32_t o1 = op1;
 	uint32_t o2 = op2;
+	char line[18] = "XXXXXXXX XXXXXXXX";
+	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
+	_registerLine(set, line);
+
 	switch (set->gsaVersion) {
 	case 0:
 		_setGameSharkVersion(set, 1);
@@ -623,6 +641,10 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
 bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	uint32_t o1 = op1;
 	uint32_t o2 = op2;
+	char line[18] = "XXXXXXXX XXXXXXXX";
+	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
+	_registerLine(set, line);
+
 	switch (set->gsaVersion) {
 	case 0:
 		// Try to detect GameShark version

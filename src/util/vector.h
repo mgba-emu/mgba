@@ -23,7 +23,7 @@
 	void NAME ## Shift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## EnsureCapacity(struct NAME* vector, size_t capacity); \
-	size_t NAME ## Size(struct NAME* vector); \
+	size_t NAME ## Size(const struct NAME* vector); \
 
 #define DEFINE_VECTOR(NAME, TYPE) \
 	void NAME ## Init(struct NAME* vector, size_t capacity) { \
@@ -72,7 +72,7 @@
 		NAME ## Resize(vector, difference); \
 		memmove(&vector->vector[location + difference], &vector->vector[location], (vector->size - location - difference) * sizeof(TYPE)); \
 	} \
-	size_t NAME ## Size(struct NAME* vector) { \
+	size_t NAME ## Size(const struct NAME* vector) { \
 		return vector->size; \
 	} \
 
