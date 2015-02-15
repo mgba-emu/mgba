@@ -579,6 +579,37 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	uint32_t o2 = op2;
 	switch (set->gsaVersion) {
 	case 0:
+		_setGameSharkVersion(set, 1);
+		// Fall through
+	case 1:
+		_decryptGameShark(&o1, &o2, set->gsaSeeds);
+		return _addGSA1(set, o1, o2);
+	}
+	return false;
+}
+
+bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
+	uint32_t op1;
+	uint32_t op2;
+	line = _hex32(line, &op1);
+	if (!line) {
+		return false;
+	}
+	while (*line == ' ') {
+		++line;
+	}
+	line = _hex32(line, &op2);
+	if (!line) {
+		return false;
+	}
+	return GBACheatAddGameShark(cheats, op1, op2);
+}
+
+bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
+	uint32_t o1 = op1;
+	uint32_t o2 = op2;
+	switch (set->gsaVersion) {
+	case 0:
 		// Try to detect GameShark version
 		_decryptGameShark(&o1, &o2, _gsa1S);
 		if ((o1 & 0xF0000000) == 0xF0000000 && !(o2 & 0xFFFFFCFE)) {
@@ -603,7 +634,7 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	return false;
 }
 
-bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
+bool GBACheatAutodetectLine(struct GBACheatSet* cheats, const char* line) {
 	uint32_t op1;
 	uint32_t op2;
 	line = _hex32(line, &op1);
@@ -617,7 +648,7 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
 	if (!line) {
 		return false;
 	}
-	return GBACheatAddGameShark(cheats, op1, op2);
+	return GBACheatAddAutodetect(cheats, op1, op2);
 }
 
 bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
@@ -707,7 +738,7 @@ bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	uint32_t realOp2 = op2;
 	realOp2 <<= 16;
 	realOp2 |= op3;
-	return GBACheatAddGameShark(cheats, op1, realOp2);
+	return GBACheatAddAutodetect(cheats, op1, realOp2);
 }
 
 void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
