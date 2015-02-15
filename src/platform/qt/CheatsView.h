@@ -28,6 +28,7 @@ public:
 
 private slots:
 	void load();
+	void save();
 	void addSet();
 	void removeSet();
 

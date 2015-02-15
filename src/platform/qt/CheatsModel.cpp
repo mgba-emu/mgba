@@ -176,6 +176,15 @@ void CheatsModel::loadFile(const QString& path) {
 	vf->close(vf);
 }
 
+void CheatsModel::saveFile(const QString& path) {
+	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_TRUNC | O_CREAT | O_WRONLY);
+	if (!vf) {
+		return;
+	}
+	GBACheatSaveFile(m_device, vf);
+	vf->close(vf);
+}
+
 void CheatsModel::addSet(GBACheatSet* set) {
 	beginInsertRows(QModelIndex(), GBACheatSetsSize(&m_device->cheats), GBACheatSetsSize(&m_device->cheats));
 	GBACheatAddSet(m_device, set);

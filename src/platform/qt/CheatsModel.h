@@ -36,6 +36,8 @@ public:
 	void endAppendRow();
 
 	void loadFile(const QString& path);
+	void saveFile(const QString& path);
+
 	void addSet(GBACheatSet* set);
 
 public slots:

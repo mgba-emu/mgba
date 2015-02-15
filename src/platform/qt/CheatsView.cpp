@@ -25,6 +25,7 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	m_ui.cheatList->setModel(&m_model);
 
 	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(load()));
+	connect(m_ui.save, SIGNAL(clicked()), this, SLOT(save()));
 	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
 	connect(m_ui.remove, SIGNAL(clicked()), this, SLOT(removeSet()));
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), &m_model, SLOT(invalidated()));
@@ -46,6 +47,13 @@ void CheatsView::load() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Select cheats file"));
 	if (!filename.isEmpty()) {
 		m_model.loadFile(filename);
+	}
+}
+
+void CheatsView::save() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Select cheats file"));
+	if (!filename.isEmpty()) {
+		m_model.saveFile(filename);
 	}
 }
 

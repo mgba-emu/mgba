@@ -199,6 +199,8 @@ bool GBACheatAddAutodetect(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddAutodetectLine(struct GBACheatSet*, const char* line);
 
 bool GBACheatParseFile(struct GBACheatDevice*, struct VFile*);
+bool GBACheatSaveFile(struct GBACheatDevice*, struct VFile*);
+
 bool GBACheatAddLine(struct GBACheatSet*, const char* line);
 
 void GBACheatRefresh(struct GBACheatDevice*, struct GBACheatSet*);

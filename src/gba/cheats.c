@@ -695,6 +695,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 	struct GBACheatSet* newSet;
 	int gsaVersion = 0;
 	bool nextDisabled = false;
+	bool reset = false;
 	while (true) {
 		size_t i = 0;
 		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
@@ -718,6 +719,8 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			nextDisabled = false;
 			if (set) {
 				GBACheatAddSet(device, set);
+			}
+			if (set && !reset) {
 				newSet->gsaVersion = set->gsaVersion;
 				memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
 				if (set->hook) {
@@ -727,6 +730,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			} else {
 				_setGameSharkVersion(newSet, gsaVersion);
 			}
+			reset = false;
 			set = newSet;
 			break;
 		case '!':
@@ -740,6 +744,10 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			}
 			if (strcasecmp(&cheat[i], "disabled") == 0) {
 				nextDisabled = true;
+				break;
+			}
+			if (strcasecmp(&cheat[i], "reset") == 0) {
+				reset = true;
 				break;
 			}
 			break;
@@ -757,6 +765,54 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 	}
 	if (set) {
 		GBACheatAddSet(device, set);
+	}
+	return true;
+}
+
+bool GBACheatSaveFile(struct GBACheatDevice* device, struct VFile* vf) {
+	static const char lineStart[3] = "# ";
+	static const char lineEnd = '\n';
+
+	struct GBACheatHook* lastHook = 0;
+
+	size_t i;
+	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+		struct GBACheatSet* set = *GBACheatSetsGetPointer(&device->cheats, i);
+		if (lastHook && set->hook != lastHook) {
+			static const char* resetDirective = "!reset\n";
+			vf->write(vf, resetDirective, strlen(resetDirective));
+		}
+		switch (set->gsaVersion) {
+		case 1: {
+			static const char* versionDirective = "!GSAv1\n";
+			vf->write(vf, versionDirective, strlen(versionDirective));
+			break;
+		}
+		case 3: {
+			static const char* versionDirective = "!PARv3\n";
+			vf->write(vf, versionDirective, strlen(versionDirective));
+			break;
+		}
+		default:
+			break;
+		}
+		lastHook = set->hook;
+		if (!set->enabled) {
+			static const char* disabledDirective = "!disabled\n";
+			vf->write(vf, disabledDirective, strlen(disabledDirective));
+		}
+
+		vf->write(vf, lineStart, 2);
+		if (set->name) {
+			vf->write(vf, set->name, strlen(set->name));
+		}
+		vf->write(vf, &lineEnd, 1);
+		size_t c;
+		for (c = 0; c < StringListSize(&set->lines); ++c) {
+			const char* line = *StringListGetPointer(&set->lines, c);
+			vf->write(vf, line, strlen(line));
+			vf->write(vf, &lineEnd, 1);
+		}
 	}
 	return true;
 }
