@@ -26,9 +26,6 @@
    </item>
    <item row="0" column="1" colspan="2">
     <widget class="QPushButton" name="addSet">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Add New Set</string>
      </property>
@@ -36,9 +33,6 @@
    </item>
    <item row="7" column="1" colspan="2">
     <widget class="QPushButton" name="addGSA">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Add GameShark</string>
      </property>
@@ -56,9 +50,6 @@
    </item>
    <item row="9" column="1" colspan="2">
     <widget class="QPushButton" name="addCB">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Add CodeBreaker</string>
      </property>
@@ -73,9 +64,6 @@
    </item>
    <item row="6" column="1" colspan="2">
     <widget class="QPushButton" name="add">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Add</string>
      </property>
@@ -115,10 +103,7 @@
     </widget>
    </item>
    <item row="4" column="1" rowspan="2" colspan="2">
-    <widget class="QTextEdit" name="codeEntry">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
+    <widget class="QPlainTextEdit" name="codeEntry">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -130,6 +115,11 @@
        <width>180</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Courier New</family>
+      </font>
      </property>
     </widget>
    </item>

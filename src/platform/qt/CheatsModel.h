@@ -9,6 +9,7 @@
 #include <QAbstractItemModel>
 
 struct GBACheatDevice;
+struct GBACheatSet;
 
 namespace QGBA {
 
@@ -19,14 +20,19 @@ public:
 	CheatsModel(GBACheatDevice* m_device, QObject* parent = nullptr);
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
 	virtual QModelIndex index(int row, int column, const QModelIndex& parent) const override;
 	virtual QModelIndex parent(const QModelIndex& index) const override;
 
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+	virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+	GBACheatSet* itemAt(const QModelIndex& index);
 
 	void loadFile(const QString& path);
+	void addSet(GBACheatSet* set);
 
 private:
 	GBACheatDevice* m_device;

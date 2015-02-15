@@ -8,6 +8,8 @@
 
 #include <QWidget>
 
+#include <functional>
+
 #include "CheatsModel.h"
 
 #include "ui_CheatsView.h"
@@ -24,8 +26,11 @@ public:
 
 private slots:
 	void load();
+	void addSet();
 
 private:
+	void enterCheat(std::function<bool(GBACheatSet*, const char*)> callback);
+
 	Ui::CheatsView m_ui;
 	CheatsModel m_model;
 };
