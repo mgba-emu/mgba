@@ -163,6 +163,7 @@ struct GBACheatSet {
 	int remainingAddresses;
 
 	char* name;
+	bool enabled;
 	struct StringList lines;
 };
 

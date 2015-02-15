@@ -424,6 +424,7 @@ void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 	} else {
 		set->name = 0;
 	}
+	set->enabled = true;
 }
 
 void GBACheatSetDeinit(struct GBACheatSet* set) {
@@ -693,6 +694,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 	struct GBACheatSet* set = 0;
 	struct GBACheatSet* newSet;
 	int gsaVersion = 0;
+	bool nextDisabled = false;
 	while (true) {
 		size_t i = 0;
 		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
@@ -712,6 +714,8 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			} while (isspace(cheat[i]));
 			newSet = malloc(sizeof(*set));
 			GBACheatSetInit(newSet, &cheat[i]);
+			newSet->enabled = !nextDisabled;
+			nextDisabled = false;
 			if (set) {
 				GBACheatAddSet(device, set);
 				newSet->gsaVersion = set->gsaVersion;
@@ -732,12 +736,19 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			if (strncasecmp(&cheat[i], "GSAv", 4) == 0 || strncasecmp(&cheat[i], "PARv", 4) == 0) {
 				i += 4;
 				gsaVersion = atoi(&cheat[i]);
+				break;
+			}
+			if (strcasecmp(&cheat[i], "disabled") == 0) {
+				nextDisabled = true;
+				break;
 			}
 			break;
 		default:
 			if (!set) {
 				set = malloc(sizeof(*set));
 				GBACheatSetInit(set, 0);
+				set->enabled = !nextDisabled;
+				nextDisabled = false;
 				_setGameSharkVersion(set, gsaVersion);
 			}
 			GBACheatAddLine(set, cheat);
@@ -779,6 +790,9 @@ bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 }
 
 void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	if (!cheats->enabled) {
+		return;
+	}
 	bool condition = true;
 	int conditionRemaining = 0;
 	_patchROM(device, cheats);

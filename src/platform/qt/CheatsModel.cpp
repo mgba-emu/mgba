@@ -46,7 +46,7 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 	case Qt::EditRole:
 		return cheats->name ? cheats->name : tr("(untitled)");
 	case Qt::CheckStateRole:
-		return Qt::Checked;
+		return cheats->enabled ? Qt::Checked : Qt::Unchecked;
 	default:
 		return QVariant();
 	}
@@ -67,9 +67,12 @@ bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int r
 			cheats->name = nullptr;
 		}
 		cheats->name = strdup(value.toString().toLocal8Bit().constData());
+		emit dataChanged(index, index);
 		return true;
 	case Qt::CheckStateRole:
-		return false;
+		cheats->enabled = value == Qt::Checked;
+		emit dataChanged(index, index);
+		return true;
 	default:
 		return false;
 	}
@@ -108,7 +111,7 @@ Qt::ItemFlags CheatsModel::flags(const QModelIndex &index) const {
 		return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	}
 
-	return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	return Qt::ItemIsUserCheckable | Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 int CheatsModel::columnCount(const QModelIndex& parent) const {
