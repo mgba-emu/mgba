@@ -30,6 +30,7 @@ public:
 	virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 	GBACheatSet* itemAt(const QModelIndex& index);
+	void removeAt(const QModelIndex& index);
 
 	void loadFile(const QString& path);
 	void addSet(GBACheatSet* set);

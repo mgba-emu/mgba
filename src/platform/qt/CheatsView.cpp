@@ -17,6 +17,7 @@ using namespace QGBA;
 
 CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	: QWidget(parent)
+	, m_controller(controller)
 	, m_model(controller->cheatDevice())
 {
 	m_ui.setupUi(this);
@@ -25,6 +26,7 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 
 	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(load()));
 	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
+	connect(m_ui.remove, SIGNAL(clicked()), this, SLOT(removeSet()));
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), &m_model, SLOT(invalidated()));
 
 	connect(m_ui.add, &QPushButton::clicked, [this]() {
@@ -50,7 +52,20 @@ void CheatsView::load() {
 void CheatsView::addSet() {
 	GBACheatSet* set = new GBACheatSet;
 	GBACheatSetInit(set, nullptr);
+	m_controller->threadInterrupt();
 	m_model.addSet(set);
+	m_controller->threadContinue();
+}
+
+void CheatsView::removeSet() {
+	GBACheatSet* set;
+	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
+	if (selection.count() != 1) {
+		return;
+	}
+	m_controller->threadInterrupt();
+	m_model.removeAt(selection[0]);
+	m_controller->threadContinue();
 }
 
 void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callback) {
@@ -60,9 +75,14 @@ void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callb
 		return;
 	}
 	set = m_model.itemAt(selection[0]);
+	if (!set) {
+		return;
+	}
+	m_controller->threadInterrupt();
 	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
 	for (const QString& string : cheats) {
 		callback(set, string.toLocal8Bit().constData());
 	}
+	m_controller->threadContinue();
 	m_ui.codeEntry->clear();
 }

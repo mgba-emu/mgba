@@ -16,9 +16,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="1" colspan="2">
     <widget class="QPushButton" name="remove">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Remove</string>
      </property>
@@ -129,6 +126,8 @@
   <tabstop>cheatList</tabstop>
   <tabstop>addSet</tabstop>
   <tabstop>load</tabstop>
+  <tabstop>save</tabstop>
+  <tabstop>remove</tabstop>
   <tabstop>codeEntry</tabstop>
   <tabstop>add</tabstop>
   <tabstop>addGSA</tabstop>

@@ -93,6 +93,20 @@ GBACheatSet* CheatsModel::itemAt(const QModelIndex& index) {
 	return static_cast<GBACheatSet*>(index.internalPointer());
 }
 
+void CheatsModel::removeAt(const QModelIndex& index) {
+	if (!index.isValid()) {
+		return;
+	}
+	int row = index.row();
+	GBACheatSet* set = static_cast<GBACheatSet*>(index.internalPointer());
+	beginRemoveRows(QModelIndex(), row, row);
+	GBACheatRemoveSet(m_device, set);
+	GBACheatSetDeinit(set);
+	delete set;
+	endInsertRows();
+
+}
+
 void CheatsModel::loadFile(const QString& path) {
 	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
 	if (!vf) {
@@ -106,7 +120,7 @@ void CheatsModel::loadFile(const QString& path) {
 
 void CheatsModel::addSet(GBACheatSet* set) {
 	beginInsertRows(QModelIndex(), GBACheatSetsSize(&m_device->cheats), GBACheatSetsSize(&m_device->cheats) + 1);
-	*GBACheatSetsAppend(&m_device->cheats) = set;
+	GBACheatAddSet(m_device, set);
 	endInsertRows();
 }
 

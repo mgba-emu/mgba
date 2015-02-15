@@ -29,11 +29,13 @@ public:
 private slots:
 	void load();
 	void addSet();
+	void removeSet();
 
 private:
 	void enterCheat(std::function<bool(GBACheatSet*, const char*)> callback);
 
 	Ui::CheatsView m_ui;
+	GameController* m_controller;
 	CheatsModel m_model;
 };
 

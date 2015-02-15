@@ -443,8 +443,23 @@ void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice* device) {
 
 void GBACheatAddSet(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
 	*GBACheatSetsAppend(&device->cheats) = cheats;
-	_patchROM(device, cheats);
 	_addBreakpoint(device, cheats);
+	_patchROM(device, cheats);
+}
+
+void GBACheatRemoveSet(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
+	size_t i;
+	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
+		if (*GBACheatSetsGetPointer(&device->cheats, i) == cheats) {
+			break;
+		}
+	}
+	if (i == GBACheatSetsSize(&device->cheats)) {
+		return;
+	}
+	GBACheatSetsShift(&device->cheats, i, 1);
+	_unpatchROM(device, cheats);
+	_removeBreakpoint(device, cheats);
 }
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t op2) {
