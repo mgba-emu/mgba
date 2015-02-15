@@ -179,14 +179,14 @@ static inline int SocketSetTCPPush(Socket socket, int push) {
 	return setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*) &push, sizeof(int)) >= 0;
 }
 
-static inline int SocketPoll(int nSockets, Socket* reads, Socket* writes, Socket* errors, int64_t timeoutMillis) {
+static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Socket* errors, int64_t timeoutMillis) {
 	fd_set rset;
 	fd_set wset;
 	fd_set eset;
 	FD_ZERO(&rset);
 	FD_ZERO(&wset);
 	FD_ZERO(&eset);
-	Socket i;
+	size_t i;
 	Socket maxFd = 0;
 	if (reads) {
 		for (i = 0; i < nSockets; ++i) {
@@ -231,17 +231,18 @@ static inline int SocketPoll(int nSockets, Socket* reads, Socket* writes, Socket
 	int r = 0;
 	int w = 0;
 	int e = 0;
-	for (i = 0; i < maxFd; ++i) {
-		if (reads && FD_ISSET(i, &rset)) {
-			reads[r] = i;
+	Socket j;
+	for (j = 0; j < maxFd; ++j) {
+		if (reads && FD_ISSET(j, &rset)) {
+			reads[r] = j;
 			++r;
 		}
-		if (writes && FD_ISSET(i, &wset)) {
-			writes[w] = i;
+		if (writes && FD_ISSET(j, &wset)) {
+			writes[w] = j;
 			++w;
 		}
-		if (errors && FD_ISSET(i, &eset)) {
-			errors[e] = i;
+		if (errors && FD_ISSET(j, &eset)) {
+			errors[e] = j;
 			++e;
 		}
 	}
