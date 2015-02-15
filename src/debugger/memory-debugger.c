@@ -40,7 +40,7 @@ static uint32_t _popcount32(unsigned bits) {
 	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		struct DebuggerEntryInfo info = { }; \
+		struct DebuggerEntryInfo info; \
 		if (_checkWatchpoints(debugger, address, &info, WIDTH)) { \
 			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
@@ -63,7 +63,7 @@ static uint32_t _popcount32(unsigned bits) {
 		} \
 		unsigned i; \
 		for (i = 0; i < popcount; ++i) { \
-			struct DebuggerEntryInfo info = { }; \
+			struct DebuggerEntryInfo info; \
 			if (_checkWatchpoints(debugger, base + 4 * i, &info, 4)) { \
 				ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 			} \

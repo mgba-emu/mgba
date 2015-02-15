@@ -186,7 +186,7 @@ static inline int SocketPoll(int nSockets, Socket* reads, Socket* writes, Socket
 	FD_ZERO(&rset);
 	FD_ZERO(&wset);
 	FD_ZERO(&eset);
-	int i;
+	Socket i;
 	Socket maxFd = 0;
 	if (reads) {
 		for (i = 0; i < nSockets; ++i) {
