@@ -18,11 +18,13 @@ struct GBACheatDevice;
 
 namespace QGBA {
 
+class GameController;
+
 class CheatsView : public QWidget {
 Q_OBJECT
 
 public:
-	CheatsView(GBACheatDevice* device, QWidget* parent = nullptr);
+	CheatsView(GameController* controller, QWidget* parent = nullptr);
 
 private slots:
 	void load();

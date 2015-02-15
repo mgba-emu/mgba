@@ -241,7 +241,7 @@ void Window::openSensorWindow() {
 }
 
 void Window::openCheatsWindow() {
-	CheatsView* cheatsWindow = new CheatsView(m_controller->cheatDevice());
+	CheatsView* cheatsWindow = new CheatsView(m_controller);
 	connect(this, SIGNAL(shutdown()), cheatsWindow, SLOT(close()));
 	cheatsWindow->setAttribute(Qt::WA_DeleteOnClose);
 	cheatsWindow->show();

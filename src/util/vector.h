@@ -18,6 +18,7 @@
 	void NAME ## Deinit(struct NAME* vector); \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location); \
 	TYPE* NAME ## Append(struct NAME* vector); \
+	void NAME ## Clear(struct NAME* vector); \
 	void NAME ## Resize(struct NAME* vector, ssize_t change); \
 	void NAME ## Shift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference); \
@@ -50,6 +51,9 @@
 			NAME ## EnsureCapacity(vector, vector->size + change); \
 		} \
 		vector->size += change; \
+	} \
+	void NAME ## Clear(struct NAME* vector) { \
+		vector->size = 0; \
 	} \
 	void NAME ## EnsureCapacity(struct NAME* vector, size_t capacity) { \
 		if (capacity <= vector->capacity) { \

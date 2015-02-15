@@ -34,6 +34,9 @@ public:
 	void loadFile(const QString& path);
 	void addSet(GBACheatSet* set);
 
+public slots:
+	void invalidated();
+
 private:
 	GBACheatDevice* m_device;
 };

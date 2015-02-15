@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsView.h"
 
+#include "GameController.h"
+
 #include <QFileDialog>
 
 extern "C" {
@@ -13,9 +15,9 @@ extern "C" {
 
 using namespace QGBA;
 
-CheatsView::CheatsView(GBACheatDevice* device, QWidget* parent)
+CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_model(device)
+	, m_model(controller->cheatDevice())
 {
 	m_ui.setupUi(this);
 
@@ -23,6 +25,7 @@ CheatsView::CheatsView(GBACheatDevice* device, QWidget* parent)
 
 	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(load()));
 	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
+	connect(controller, SIGNAL(gameStopped(GBAThread*)), &m_model, SLOT(invalidated()));
 
 	connect(m_ui.add, &QPushButton::clicked, [this]() {
 		enterCheat(GBACheatAddLine);

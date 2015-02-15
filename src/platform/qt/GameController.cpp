@@ -141,6 +141,7 @@ GameController::~GameController() {
 	m_audioThread->wait();
 	disconnect();
 	closeGame();
+	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
 }
@@ -275,6 +276,13 @@ void GameController::closeGame() {
 	}
 
 	m_patch = QString();
+
+	for (size_t i = 0; i < GBACheatSetsSize(&m_cheatDevice.cheats); ++i) {
+		GBACheatSet* set = *GBACheatSetsGetPointer(&m_cheatDevice.cheats, i);
+		GBACheatSetDeinit(set);
+		delete set;
+	}
+	GBACheatSetsClear(&m_cheatDevice.cheats);
 
 	m_gameOpen = false;
 	emit gameStopped(&m_threadContext);

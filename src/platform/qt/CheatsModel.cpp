@@ -109,3 +109,8 @@ void CheatsModel::addSet(GBACheatSet* set) {
 	*GBACheatSetsAppend(&m_device->cheats) = set;
 	endInsertRows();
 }
+
+void CheatsModel::invalidated() {
+	beginResetModel();
+	endResetModel();
+}
