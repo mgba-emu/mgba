@@ -14,6 +14,7 @@
 #include <QMimeData>
 #include <QStackedLayout>
 
+#include "CheatsView.h"
 #include "ConfigController.h"
 #include "GameController.h"
 #include "GBAKeyEditor.h"
@@ -231,11 +232,19 @@ void Window::openOverrideWindow() {
 	overrideWindow->setAttribute(Qt::WA_DeleteOnClose);
 	overrideWindow->show();
 }
+
 void Window::openSensorWindow() {
 	SensorView* sensorWindow = new SensorView(m_controller);
 	connect(this, SIGNAL(shutdown()), sensorWindow, SLOT(close()));
 	sensorWindow->setAttribute(Qt::WA_DeleteOnClose);
 	sensorWindow->show();
+}
+
+void Window::openCheatsWindow() {
+	CheatsView* cheatsWindow = new CheatsView(m_controller->cheatDevice());
+	connect(this, SIGNAL(shutdown()), cheatsWindow, SLOT(close()));
+	cheatsWindow->setAttribute(Qt::WA_DeleteOnClose);
+	cheatsWindow->show();
 }
 
 #ifdef BUILD_SDL
@@ -682,6 +691,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
 	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
 	addControlledAction(toolsMenu, sensors, "sensorWindow");
+
+	QAction* cheats = new QAction(tr("&Cheats..."), toolsMenu);
+	connect(cheats, SIGNAL(triggered()), this, SLOT(openCheatsWindow()));
+	addControlledAction(toolsMenu, cheats, "cheatsWindow");
 
 #ifdef USE_GDB_STUB
 	QAction* gdbWindow = new QAction(tr("Start &GDB server..."), toolsMenu);

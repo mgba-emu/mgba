@@ -46,6 +46,9 @@ GameController::GameController(QObject* parent)
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
 	m_renderer->outputBufferStride = 256;
+
+	GBACheatDeviceCreate(&m_cheatDevice);
+
 	m_threadContext.state = THREAD_INITIALIZED;
 	m_threadContext.debugger = 0;
 	m_threadContext.frameskip = 0;
@@ -53,6 +56,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.renderer = &m_renderer->d;
 	m_threadContext.userData = this;
 	m_threadContext.rewindBufferCapacity = 0;
+	m_threadContext.cheats = &m_cheatDevice;
 	m_threadContext.logLevel = -1;
 
 	m_lux.p = this;

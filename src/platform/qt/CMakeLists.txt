@@ -37,6 +37,8 @@ endif()
 
 set(SOURCE_FILES
 	AudioProcessor.cpp
+	CheatsModel.cpp
+	CheatsView.cpp
 	ConfigController.cpp
 	Display.cpp
 	GBAApp.cpp
@@ -60,6 +62,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	CheatsView.ui
 	GIFView.ui
 	LoadSaveState.ui
 	LogView.ui

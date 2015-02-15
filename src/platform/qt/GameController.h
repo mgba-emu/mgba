@@ -13,6 +13,7 @@
 #include <QString>
 
 extern "C" {
+#include "gba/cheats.h"
 #include "gba/hardware.h"
 #include "gba/supervisor/thread.h"
 #ifdef BUILD_SDL
@@ -44,6 +45,7 @@ public:
 
 	const uint32_t* drawContext() const { return m_drawContext; }
 	GBAThread* thread() { return &m_threadContext; }
+	GBACheatDevice* cheatDevice() { return &m_cheatDevice; }
 
 	void threadInterrupt();
 	void threadContinue();
@@ -136,6 +138,7 @@ private:
 	uint32_t* m_drawContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
+	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
 	int m_logLevels;
 
