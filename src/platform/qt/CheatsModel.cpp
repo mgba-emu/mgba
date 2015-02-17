@@ -6,6 +6,7 @@
 #include "CheatsModel.h"
 
 #include <QFont>
+#include <QSet>
 
 extern "C" {
 #include "gba/cheats.h"
@@ -151,6 +152,40 @@ void CheatsModel::removeAt(const QModelIndex& index) {
 	delete set;
 	endInsertRows();
 
+}
+
+QString CheatsModel::toString(const QModelIndexList& indices) const {
+	QMap<int, GBACheatSet*> setOrder;
+	QMap<GBACheatSet*, QSet<size_t>> setIndices;
+	for (const QModelIndex& index : indices) {
+		GBACheatSet* set = static_cast<GBACheatSet*>(index.internalPointer());
+		if (!set) {
+			set = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+			setOrder[index.row()] = set;
+			QSet<size_t> range;
+			for (size_t i = 0; i < StringListSize(&set->lines); ++i) {
+				range.insert(i);
+			}
+			setIndices[set] = range;
+		} else {
+			setOrder[index.parent().row()] = set;
+			setIndices[set].insert(index.row());
+		}
+	}
+
+	QStringList strings;
+	QList<int> order = setOrder.keys();
+	std::sort(order.begin(), order.end());
+	for (int i : order) {
+		GBACheatSet* set = setOrder[i];
+		QList<size_t> indexOrdex = setIndices[set].toList();
+		std::sort(indexOrdex.begin(), indexOrdex.end());
+		for (size_t j : indexOrdex) {
+			strings.append(*StringListGetPointer(&set->lines, j));
+		}
+	}
+
+	return strings.join('\n');
 }
 
 void CheatsModel::beginAppendRow(const QModelIndex& index) {

@@ -26,6 +26,8 @@ Q_OBJECT
 public:
 	CheatsView(GameController* controller, QWidget* parent = nullptr);
 
+	virtual bool eventFilter(QObject*, QEvent*) override;
+
 private slots:
 	void load();
 	void save();

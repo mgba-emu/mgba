@@ -31,6 +31,7 @@ public:
 
 	GBACheatSet* itemAt(const QModelIndex& index);
 	void removeAt(const QModelIndex& index);
+	QString toString(const QModelIndexList& indices) const;
 
 	void beginAppendRow(const QModelIndex& index);
 	void endAppendRow();

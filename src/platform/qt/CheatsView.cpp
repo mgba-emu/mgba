@@ -7,6 +7,7 @@
 
 #include "GameController.h"
 
+#include <QClipboard>
 #include <QFileDialog>
 
 extern "C" {
@@ -22,6 +23,7 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 {
 	m_ui.setupUi(this);
 
+	m_ui.cheatList->installEventFilter(this);
 	m_ui.cheatList->setModel(&m_model);
 
 	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(load()));
@@ -41,6 +43,20 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	connect(m_ui.addCB, &QPushButton::clicked, [this]() {
 		enterCheat(GBACheatAddCodeBreakerLine);
 	});
+}
+
+bool CheatsView::eventFilter(QObject* object, QEvent* event) {
+	if (object != m_ui.cheatList) {
+		return false;
+	}
+	if (event->type() != QEvent::KeyPress) {
+		return false;
+	}
+	if (static_cast<QKeyEvent*>(event) == QKeySequence::Copy) {
+		QApplication::clipboard()->setText(m_model.toString(m_ui.cheatList->selectionModel()->selectedIndexes()));
+		return true;
+	}
+	return false;
 }
 
 void CheatsView::load() {
