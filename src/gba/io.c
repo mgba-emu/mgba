@@ -241,7 +241,7 @@ static const int _isValidRegister[REG_MAX >> 1] = {
 
 static const int _isSpecialRegister[REG_MAX >> 1] = {
 	// Video
-	0, 0, 0, 1, 0, 0, 0, 0,
+	0, 0, 1, 1, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -278,7 +278,7 @@ static const int _isSpecialRegister[REG_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Interrupts
-	1, 1, 1, 0, 1
+	1, 1, 0, 0, 1
 };
 
 void GBAIOInit(struct GBA* gba) {
