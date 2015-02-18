@@ -66,9 +66,14 @@ Window::Window(ConfigController* config, QWidget* parent)
 	format.setSwapInterval(1);
 	m_display = new Display(format);
 
+	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
+	m_logo = m_logo; // Free memory left over in old pixmap
+
 	m_screenWidget->setMinimumSize(m_display->minimumSize());
 	m_screenWidget->setSizePolicy(m_display->sizePolicy());
 	m_screenWidget->setSizeHint(m_display->minimumSize() * 2);
+	m_screenWidget->setPixmap(m_logo);
+	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
 
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
@@ -325,7 +330,6 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void Window::resizeEvent(QResizeEvent*) {
-	redoLogo();
 	m_config->setOption("height", m_screenWidget->height());
 	m_config->setOption("width", m_screenWidget->width());
 }
@@ -393,7 +397,6 @@ void Window::gameStarted(GBAThread* context) {
 	appendMRU(context->fname);
 	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 	attachWidget(m_display);
-	m_screenWidget->setScaledContents(true);
 
 #ifndef Q_OS_MAC
 	if(isFullScreen()) {
@@ -410,8 +413,8 @@ void Window::gameStopped() {
 	}
 	setWindowTitle(tr(PROJECT_NAME));
 	detachWidget(m_display);
-	m_screenWidget->setScaledContents(false);
-	redoLogo();
+	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
+	m_screenWidget->setPixmap(m_logo);
 
 	m_fpsTimer.stop();
 }
@@ -430,15 +433,6 @@ void Window::gameFailed() {
 		QMessageBox::Ok, this,  Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
-}
-
-void Window::redoLogo() {
-	if (m_controller->isLoaded()) {
-		return;
-	}
-	QPixmap logo(m_logo.scaled(m_screenWidget->size() * m_screenWidget->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-	logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
-	m_screenWidget->setPixmap(logo);
 }
 
 void Window::recordFrame() {
@@ -558,6 +552,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage.rgbSwapped());
 		m_screenWidget->setPixmap(pixmap);
+		m_screenWidget->setLockAspectRatio(3, 2);
 	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
@@ -810,10 +805,6 @@ WindowBackground::WindowBackground(QWidget* parent)
 	setLayout(new QStackedLayout());
 	layout()->setContentsMargins(0, 0, 0, 0);
 	setAlignment(Qt::AlignCenter);
-	QPalette p = palette();
-	p.setColor(backgroundRole(), Qt::black);
-	setPalette(p);
-	setAutoFillBackground(true);
 }
 
 void WindowBackground::setSizeHint(const QSize& hint) {
@@ -822,4 +813,29 @@ void WindowBackground::setSizeHint(const QSize& hint) {
 
 QSize WindowBackground::sizeHint() const {
 	return m_sizeHint;
+}
+
+void WindowBackground::setLockAspectRatio(int width, int height) {
+	m_aspectWidth = width;
+	m_aspectHeight = height;
+}
+
+void WindowBackground::paintEvent(QPaintEvent*) {
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform);
+	const QPixmap* logo = pixmap();
+	painter.fillRect(QRect(QPoint(), size()), Qt::black);
+	if (!logo) {
+		return;
+	}
+	QSize s = size();
+	QSize ds = s;
+	if (s.width() * m_aspectHeight > s.height() * m_aspectWidth) {
+		ds.setWidth(s.height() * m_aspectWidth / m_aspectHeight);
+	} else if (s.width() * m_aspectHeight < s.height() * m_aspectWidth) {
+		ds.setHeight(s.width() * m_aspectHeight / m_aspectWidth);
+	}
+	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
+	QRect full(origin, ds);
+	painter.drawPixmap(full, *logo);
 }

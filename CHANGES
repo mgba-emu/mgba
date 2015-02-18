@@ -55,6 +55,7 @@ Misc:
  - Util: Use proper locale for reading and writing float values
  - Debugger: Make I/O register names be addresses instead of values
  - Debugger: Rename read/write commands
+ - Qt: Optimize logo drawing
 
 0.1.1: (2015-01-24)
 Bugfixes:
