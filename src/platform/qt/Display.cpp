@@ -31,7 +31,7 @@ static const GLint _glTexCoords[] = {
 Display::Display(QGLFormat format, QWidget* parent)
 	: QGLWidget(format, parent)
 	, m_painter(nullptr)
-	, m_drawThread(nullptr)
+	, m_started(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
@@ -40,33 +40,29 @@ Display::Display(QGLFormat format, QWidget* parent)
 }
 
 void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
-	if (m_drawThread) {
+	if (m_started) {
 		return;
 	}
-	m_drawThread = new QThread(this);
 	m_painter = new Painter(this);
 	m_painter->setContext(thread);
 	m_painter->setBacking(buffer);
-	m_painter->moveToThread(m_drawThread);
 	m_context = thread;
 	doneCurrent();
-	context()->moveToThread(m_drawThread);
-	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
-	m_drawThread->start(QThread::TimeCriticalPriority);
+	m_painter->start();
+	m_started = true;
 
 	lockAspectRatio(m_lockAspectRatio);
 	filter(m_filter);
 }
 
 void Display::stopDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
-		m_drawThread->exit();
-		m_drawThread = nullptr;
+		m_painter->stop();
+		m_started = false;
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -75,12 +71,12 @@ void Display::stopDrawing() {
 }
 
 void Display::pauseDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
+		m_painter->pause();
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -89,12 +85,12 @@ void Display::pauseDrawing() {
 }
 
 void Display::unpauseDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
+		m_painter->unpause();
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -103,22 +99,22 @@ void Display::unpauseDrawing() {
 }
 
 void Display::forceDraw() {
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::QueuedConnection);
+	if (m_started) {
+		m_painter->forceDraw();
 	}
 }
 
 void Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Qt::QueuedConnection, Q_ARG(bool, lock));
+	if (m_started) {
+		m_painter->lockAspectRatio(lock);
 	}
 }
 
 void Display::filter(bool filter) {
 	m_filter = filter;
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "filter", Qt::QueuedConnection, Q_ARG(bool, filter));
+	if (m_started) {
+		m_painter->filter(filter);
 	}
 }
 
@@ -137,10 +133,10 @@ void Display::initializeGL() {
 }
 
 void Display::resizeEvent(QResizeEvent* event) {
-	if (m_drawThread) {
+	if (m_started) {
 		GBAThreadInterrupt(m_context);
 		GBASyncSuspendDrawing(&m_context->sync);
-		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
+		m_painter->resize(event->size());
 		GBASyncResumeDrawing(&m_context->sync);
 		GBAThreadContinue(m_context);
 	}

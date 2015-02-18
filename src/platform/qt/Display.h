@@ -40,7 +40,7 @@ protected:
 
 private:
 	Painter* m_painter;
-	QThread* m_drawThread;
+	bool m_started;
 	GBAThread* m_context;
 	bool m_lockAspectRatio;
 	bool m_filter;
