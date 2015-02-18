@@ -60,6 +60,11 @@ static void _waitOnInterrupt(struct GBAThread* threadContext) {
 }
 
 static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState oldState) {
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	bool videoFrameWait = threadContext->sync.videoFrameWait;
+	threadContext->sync.videoFrameWait = false;
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
+
 	while (threadContext->state == oldState) {
 		MutexUnlock(&threadContext->stateMutex);
 
@@ -74,6 +79,10 @@ static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState
 		MutexLock(&threadContext->stateMutex);
 		ConditionWake(&threadContext->stateCond);
 	}
+
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	threadContext->sync.videoFrameWait = videoFrameWait;
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
 static void _pauseThread(struct GBAThread* threadContext, bool onThread) {

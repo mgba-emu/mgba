@@ -37,6 +37,7 @@ Bugfixes:
  - Debugger: Disassembly now lists PSR bitmasks (fixes #191)
  - GBA BIOS: Prevent CpuSet and CpuFastSet from using BIOS addresses as a source (fixes #184)
  - GBA RR: Fix fallthrough error when reading tags from a movie
+ - GBA Thread: Fix possible deadlock in video sync
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
