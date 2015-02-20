@@ -40,7 +40,14 @@ void GDBController::attach() {
 		return;
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);
-	ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+	if (m_gameController->isLoaded()) {
+		ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+	} else {
+		connect(m_gameController, &GameController::gameStarted, [this] () {
+			disconnect(m_gameController);
+			ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+		});
+	}
 }
 
 void GDBController::detach() {

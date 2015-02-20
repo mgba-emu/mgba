@@ -39,6 +39,7 @@ Bugfixes:
  - GBA RR: Fix fallthrough error when reading tags from a movie
  - GBA Thread: Fix possible deadlock in video sync
  - GBA: Fix savestate loading of DISPSTAT and WAITCNT registers
+ - Qt: Fix crash starting a GDB stub if a game isn't loaded
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
