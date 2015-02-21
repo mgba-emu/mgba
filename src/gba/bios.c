@@ -90,10 +90,10 @@ static void _BgAffineSet(struct GBA* gba) {
 		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
 		ox = cpu->memory.load32(cpu, offset, 0) / 256.f;
 		oy = cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
-		cx = cpu->memory.load16(cpu, offset + 8, 0);
-		cy = cpu->memory.load16(cpu, offset + 10, 0);
-		sx = cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
-		sy = cpu->memory.load16(cpu, offset + 14, 0) / 256.f;
+		cx = (int16_t) cpu->memory.load16(cpu, offset + 8, 0);
+		cy = (int16_t) cpu->memory.load16(cpu, offset + 10, 0);
+		sx = (int16_t) cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
+		sy = (int16_t) cpu->memory.load16(cpu, offset + 14, 0) / 256.f;
 		theta = (cpu->memory.load16(cpu, offset + 16, 0) >> 8) / 128.f * M_PI;
 		offset += 20;
 		// Rotation
