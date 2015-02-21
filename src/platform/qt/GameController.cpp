@@ -170,11 +170,11 @@ ARMDebugger* GameController::debugger() {
 
 void GameController::setDebugger(ARMDebugger* debugger) {
 	threadInterrupt();
-	if (m_threadContext.debugger && GBAThreadHasStarted(&m_threadContext)) {
+	if (m_threadContext.debugger && GBAThreadIsActive(&m_threadContext)) {
 		GBADetachDebugger(m_threadContext.gba);
 	}
 	m_threadContext.debugger = debugger;
-	if (m_threadContext.debugger && GBAThreadHasStarted(&m_threadContext)) {
+	if (m_threadContext.debugger && GBAThreadIsActive(&m_threadContext)) {
 		GBAAttachDebugger(m_threadContext.gba, m_threadContext.debugger);
 	}
 	threadContinue();
