@@ -129,8 +129,8 @@ static void _ObjAffineSet(struct GBA* gba) {
 	while (i--) {
 		// [ sx   0 ]   [ cos(theta)  -sin(theta) ]   [ A B ]
 		// [  0  sy ] * [ sin(theta)   cos(theta) ] = [ C D ]
-		sx = cpu->memory.load16(cpu, offset, 0) / 256.f;
-		sy = cpu->memory.load16(cpu, offset + 2, 0) / 256.f;
+		sx = (int16_t) cpu->memory.load16(cpu, offset, 0) / 256.f;
+		sy = (int16_t) cpu->memory.load16(cpu, offset + 2, 0) / 256.f;
 		theta = (cpu->memory.load16(cpu, offset + 4, 0) >> 8) / 128.f * M_PI;
 		offset += 8;
 		// Rotation
@@ -335,7 +335,7 @@ static void _unLz77(struct GBA* gba, int width) {
 				while (bytes-- && remaining) {
 					--remaining;
 					if (width == 2) {
-						byte = cpu->memory.load16(cpu, disp & ~1, 0);
+						byte = (int16_t) cpu->memory.load16(cpu, disp & ~1, 0);
 						if (dest & 1) {
 							byte >>= (disp & 1) * 8;
 							halfword |= byte << 8;
