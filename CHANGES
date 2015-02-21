@@ -60,6 +60,7 @@ Misc:
  - Debugger: Rename read/write commands
  - Qt: Optimize logo drawing
  - Qt: Move frame upload back onto main thread
+ - All: Enable link-time optimization
 
 0.1.1: (2015-01-24)
 Bugfixes:
