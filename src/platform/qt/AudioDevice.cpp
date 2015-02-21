@@ -22,7 +22,7 @@ AudioDevice::AudioDevice(QObject* parent)
 }
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
-	if (!GBAThreadHasStarted(m_context)) {
+	if (!GBAThreadIsActive(m_context)) {
 		return;
 	}
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
