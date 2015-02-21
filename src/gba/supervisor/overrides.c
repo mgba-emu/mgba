@@ -28,11 +28,17 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Final Fantasy Tactics Advance
 	{ "AFXE", SAVEDATA_FLASH512, HW_NONE, 0x8000428 },
 
+	// Golden Sun: The Lost Age
+	{ "AGFE", SAVEDATA_FLASH512, HW_NONE, 0x801353A },
+
 	// Koro Koro Puzzle - Happy Panechu!
 	{ "KHPJ", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE },
 
 	// Mega Man Battle Network
 	{ "AREE", SAVEDATA_SRAM, HW_NONE, 0x800032E },
+
+	// Metal Slug Advance
+	{ "BSME", SAVEDATA_EEPROM, HW_NONE, 0x8000290 },
 
 	// Pokemon Ruby
 	{ "AXVJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
@@ -54,7 +60,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Pokemon Emerald
 	{ "BPEJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
-	{ "BPEE", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
+	{ "BPEE", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
 	{ "BPEP", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
 	{ "BPEI", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
 	{ "BPES", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
@@ -82,6 +88,12 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Shin Bokura no Taiyou: Gyakushuu no Sabata
 	{ "U33J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
+
+	// Super Mario Advance 2
+	{ "AA2E", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
+
+	// Super Mario Advance 3
+	{ "A3AE", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
 
 	// Super Mario Advance 4
 	{ "AX4J", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
