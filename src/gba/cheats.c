@@ -175,6 +175,7 @@ static const char* _hex32(const char* line, uint32_t* out) {
 
 static const char* _hex16(const char* line, uint16_t* out) {
 	uint16_t value = 0;
+	*out = 0;
 	int i;
 	for (i = 0; i < 4; ++i, ++line) {
 		char digit = *line;
@@ -330,11 +331,13 @@ static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	return true;
 }
 
-static bool _addGSA3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
+static bool _addPAR3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	// TODO
 	UNUSED(cheats);
 	UNUSED(op1);
 	UNUSED(op2);
+	UNUSED(_par3T1);
+	UNUSED(_par3T2);
 	return false;
 }
 
@@ -659,7 +662,7 @@ bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_t op2) 
 		_decryptGameShark(&o1, &o2, _par3S);
 		if ((o1 & 0xFE000000) == 0xC4000000 && !(o2 & 0xFFFF0000)) {
 			_setGameSharkVersion(set, 3);
-			return _addGSA3(set, o1, o2);
+			return _addPAR3(set, o1, o2);
 		}
 		break;
 	case 1:
@@ -667,7 +670,7 @@ bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_t op2) 
 		return _addGSA1(set, o1, o2);
 	case 3:
 		_decryptGameShark(&o1, &o2, set->gsaSeeds);
-		return _addGSA3(set, o1, o2);
+		return _addPAR3(set, o1, o2);
 	}
 	return false;
 }
