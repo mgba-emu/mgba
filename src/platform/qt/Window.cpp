@@ -219,6 +219,7 @@ void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config);
 	connect(this, SIGNAL(shutdown()), settingsWindow, SLOT(close()));
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
+	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
 	settingsWindow->show();
 }

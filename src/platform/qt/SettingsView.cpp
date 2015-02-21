@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "SettingsView.h"
 
+#include "AudioProcessor.h"
 #include "ConfigController.h"
 
 #include <QFileDialog>
@@ -38,6 +39,21 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	} else if (idleOptimization == "detect") {
 		m_ui.idleOptimization->setCurrentIndex(2);
 	}
+
+	int audioDriver = m_controller->getQtOption("audioDriver").toInt();
+#ifdef BUILD_QT_MULTIMEDIA
+	m_ui.audioDriver->addItem(tr("Qt Multimedia"), static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA));
+	if (audioDriver == static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA)) {
+		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
+	}
+#endif
+
+#ifdef BUILD_SDL
+	m_ui.audioDriver->addItem(tr("SDL"), static_cast<int>(AudioProcessor::Driver::SDL));
+	if (audioDriver == static_cast<int>(AudioProcessor::Driver::SDL)) {
+		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
+	}
+#endif
 
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
@@ -74,6 +90,13 @@ void SettingsView::updateConfig() {
 	case IDLE_LOOP_DETECT:
 		saveSetting("idleOptimization", "detect");
 		break;
+	}
+
+	QVariant audioDriver = m_ui.audioDriver->itemData(m_ui.audioDriver->currentIndex());
+	if (audioDriver != m_controller->getQtOption("audioDriver")) {
+		m_controller->setQtOption("audioDriver", audioDriver);
+		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(audioDriver.toInt()));
+		emit audioDriverChanged();
 	}
 
 	m_controller->write();

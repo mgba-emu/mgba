@@ -106,6 +106,7 @@ public slots:
 	void setTurbo(bool, bool forced = true);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
+	void reloadAudioDriver();
 
 	void setLuminanceValue(uint8_t value);
 	void setLuminanceLevel(int level);

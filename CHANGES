@@ -24,6 +24,7 @@ Features:
  - Drag and drop game loading
  - Cheat code support
  - Debugger: Add CLI functions for examining memory regions
+ - Runtime configurable audio driver
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio

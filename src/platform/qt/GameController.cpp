@@ -460,6 +460,21 @@ void GameController::clearAVStream() {
 	threadContinue();
 }
 
+void GameController::reloadAudioDriver() {
+	m_audioProcessor->pause();
+	delete m_audioProcessor;
+	m_audioProcessor = AudioProcessor::create();
+	m_audioProcessor->moveToThread(m_audioThread);
+	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
+	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
+	if (isLoaded()) {
+		m_audioProcessor->setInput(&m_threadContext);
+		QMetaObject::invokeMethod(m_audioProcessor, "start");
+	}
+}
+
 void GameController::setLuminanceValue(uint8_t value) {
 	m_luxValue = value;
 	value = std::max<int>(value - 0x16, 0);

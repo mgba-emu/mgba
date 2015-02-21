@@ -22,6 +22,7 @@ public:
 
 signals:
 	void biosLoaded(const QString&);
+	void audioDriverChanged();
 
 private slots:
 	void selectBios();

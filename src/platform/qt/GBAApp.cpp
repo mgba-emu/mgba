@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GBAApp.h"
 
+#include "AudioProcessor.h"
 #include "GameController.h"
 
 #include <QFileOpenEvent>
@@ -37,6 +38,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		m_window.loadConfig();
 	}
 	freeArguments(&args);
+
+	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
+	m_window.controller()->reloadAudioDriver();
 
 #ifdef Q_OS_MAC
 	m_window.show();
