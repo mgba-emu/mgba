@@ -254,10 +254,12 @@ void GameController::loadBIOS(const QString& path) {
 }
 
 void GameController::loadPatch(const QString& path) {
-	m_patch = path;
 	if (m_gameOpen) {
 		closeGame();
+		m_patch = path;
 		openGame();
+	} else {
+		m_patch = path;
 	}
 }
 

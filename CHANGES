@@ -43,6 +43,7 @@ Bugfixes:
  - Qt: Fix crash starting a GDB stub if a game isn't loaded
  - Qt: Fix crash when adjusting settings after closing a game
  - Qt: Fix crash when starting GDB stub after closing a game
+ - Qt: Fix patch loading while a game is running
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
