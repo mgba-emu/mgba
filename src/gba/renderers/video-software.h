@@ -113,7 +113,7 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
 	color_t* outputBuffer;
-	unsigned outputBufferStride;
+	int outputBufferStride;
 
 	GBARegisterDISPCNT dispcnt;
 
