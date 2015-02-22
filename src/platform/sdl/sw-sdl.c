@@ -32,7 +32,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	renderer->tex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 
-	SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+	SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 	renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 	SDL_Surface* surface = SDL_GetVideoSurface();
@@ -70,7 +70,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			SDL_UnlockTexture(renderer->tex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->tex, 0, 0);
 			SDL_RenderPresent(renderer->sdlRenderer);
-			SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+			SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 			renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 			switch (renderer->ratio) {
