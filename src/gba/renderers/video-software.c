@@ -8,6 +8,8 @@
 #include "gba/gba.h"
 #include "gba/io.h"
 
+#include "util/arm-algo.h"
+
 #ifdef NDEBUG
 #define VIDEO_CHECKS false
 #else

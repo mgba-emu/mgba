@@ -6,11 +6,7 @@
 #include "main.h"
 
 #include "gba/supervisor/thread.h"
-
-#if defined(__ARM_NEON)
-void _neon2x(void* dest, void* src, int width, int height);
-void _neon4x(void* dest, void* src, int width, int height);
-#endif
+#include "util/arm-algo.h"
 
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
