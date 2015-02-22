@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 	};
 	GBAConfigLoadDefaults(&config, &opts);
 
-	struct GBAArguments args = {};
+	struct GBAArguments args;
 	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);

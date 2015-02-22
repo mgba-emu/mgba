@@ -60,6 +60,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 		"g"
 #endif
 	;
+	memset(opts, 0, sizeof(*opts));
 	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);

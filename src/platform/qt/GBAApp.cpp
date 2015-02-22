@@ -31,7 +31,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	m_window.show();
 #endif
 
-	GBAArguments args = {};
+	GBAArguments args;
 	if (m_configController.parseArguments(&args, argc, argv)) {
 		m_window.argumentsPassed(&args);
 	} else {

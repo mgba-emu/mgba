@@ -52,8 +52,8 @@ int main(int argc, char** argv) {
 	};
 	GBAConfigLoadDefaults(&config, &opts);
 
-	struct GBAArguments args = {};
-	struct GraphicsOpts graphicsOpts = {};
+	struct GBAArguments args;
+	struct GraphicsOpts graphicsOpts;
 
 	struct SubParser subparser;
 
