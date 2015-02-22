@@ -149,21 +149,21 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 
 	uint8_t* pixelData = pixels;
 	unsigned pngHeight = png_get_image_height(png, info);
-	if (height > pngHeight) {
-		height = pngHeight;
+	if (height < pngHeight) {
+		pngHeight = height;
 	}
 
 	unsigned pngWidth = png_get_image_width(png, info);
-	if (width > pngWidth) {
-		width = pngWidth;
+	if (width < pngWidth) {
+		pngWidth = width;
 	}
 
 	unsigned i;
 	png_bytep row = malloc(png_get_rowbytes(png, info));
-	for (i = 0; i < height; ++i) {
+	for (i = 0; i < pngHeight; ++i) {
 		png_read_row(png, row, 0);
 		unsigned x;
-		for (x = 0; x < width; ++x) {
+		for (x = 0; x < pngWidth; ++x) {
 			pixelData[stride * i * 4 + x * 4] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 1];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 2];
