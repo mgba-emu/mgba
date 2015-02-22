@@ -19,6 +19,7 @@ Features
 - Turbo/fast-forward support by holding Tab.
 - Frameskip, configurable up to 9.
 - Screenshot support.
+- Cheat code support.
 - 9 savestate slots. Savestates are also viewable as screenshots.
 - Video and GIF recording.
 - Remappable controls for both keyboards and gamepads.
@@ -31,7 +32,6 @@ Features
 
 - Local and networked multiplayer link cable support ([Bug #1](https://endrift.com/mgba/bugs/show_bug.cgi?id=1)).
 - Dolphin/JOY bus link cable support ([Bug #73](https://endrift.com/mgba/bugs/show_bug.cgi?id=73)).
-- Cheat codes ([Bug #58](https://endrift.com/mgba/bugs/show_bug.cgi?id=58)).
 - Re-recording support for tool-assist runs. ([Bugzilla keyword "TASBlocker"](https://endrift.com/mgba/bugs/buglist.cgi?quicksearch=TASBlocker))
 - Lua support for scripting ([Bug #62](https://endrift.com/mgba/bugs/show_bug.cgi?id=62)).
 - A comprehensive debug suite ([Bug #132](https://endrift.com/mgba/bugs/show_bug.cgi?id=132)).
@@ -103,6 +103,8 @@ Footnotes
 - Mosaic for transformed OBJs ([Bug #9](https://endrift.com/mgba/bugs/show_bug.cgi?id=9))
 - BIOS call RegisterRamReset is partially stubbed out ([Bug #141](https://endrift.com/mgba/bugs/show_bug.cgi?id=141))
 - Audio channel reset flags ([Bug #142](https://endrift.com/mgba/bugs/show_bug.cgi?id=142))
+- Game Pak prefetch ([Bug #195](https://endrift.com/mgba/bugs/show_bug.cgi?id=195))
+- BIOS call Stop, for entering sleep mode ([Bug #199](https://endrift.com/mgba/bugs/show_bug.cgi?id=199))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases, and may require overrides, which are not yet user configurable. Filing a bug is recommended if such a case is encountered.
 
@@ -116,4 +118,8 @@ Copyright
 
 mGBA is Copyright © 2013 – 2015 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
-mGBA contains [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license; and [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
+mGBA contains the following third-party libraries:
+
+- [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
+- [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
+- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public doman.
