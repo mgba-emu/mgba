@@ -859,16 +859,17 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		localY = 7 - localY; \
 	}
 
+// TODO: Remove UNUSEDs after implementing OBJWIN for modes 3 - 5
 #define PREPARE_OBJWIN \
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt); \
 	int objwinOnly = 0; \
 	int objwinForceEnable = 0; \
-	color_t* objwinPalette; \
+	UNUSED(objwinForceEnable); \
+	color_t* objwinPalette = renderer->normalPalette; \
+	UNUSED(objwinPalette); \
 	if (objwinSlowPath) { \
 		if (background->target1 && GBAWindowControlIsBlendEnable(renderer->objwin.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN)) { \
 			objwinPalette = renderer->variantPalette; \
-		} else { \
-			objwinPalette = renderer->normalPalette; \
 		} \
 		switch (background->index) { \
 		case 0: \
@@ -1424,6 +1425,7 @@ static void _drawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer, stru
 	if (variant) { \
 		palette = renderer->variantPalette; \
 	} \
+	UNUSED(palette); \
 	PREPARE_OBJWIN;
 
 #define BACKGROUND_BITMAP_ITERATE(W, H) \
