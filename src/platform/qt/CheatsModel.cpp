@@ -222,6 +222,10 @@ void CheatsModel::saveFile(const QString& path) {
 
 void CheatsModel::addSet(GBACheatSet* set) {
 	beginInsertRows(QModelIndex(), GBACheatSetsSize(&m_device->cheats), GBACheatSetsSize(&m_device->cheats));
+	size_t size = GBACheatSetsSize(&m_device->cheats);
+	if (size) {
+		GBACheatSetCopyProperties(set, *GBACheatSetsGetPointer(&m_device->cheats, size - 1));
+	}
 	GBACheatAddSet(m_device, set);
 	endInsertRows();
 }

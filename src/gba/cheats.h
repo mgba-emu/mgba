@@ -188,6 +188,7 @@ void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice*);
 
 void GBACheatAddSet(struct GBACheatDevice*, struct GBACheatSet*);
 void GBACheatRemoveSet(struct GBACheatDevice*, struct GBACheatSet*);
+void GBACheatSetCopyProperties(struct GBACheatSet* newSet, struct GBACheatSet* set);
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet*, uint32_t op1, uint16_t op2);
 bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);

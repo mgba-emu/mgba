@@ -724,12 +724,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 				GBACheatAddSet(device, set);
 			}
 			if (set && !reset) {
-				newSet->gsaVersion = set->gsaVersion;
-				memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
-				if (set->hook) {
-					newSet->hook = set->hook;
-					++newSet->hook->refs;
-				}
+				GBACheatSetCopyProperties(newSet, set);
 			} else {
 				_setGameSharkVersion(newSet, gsaVersion);
 			}
@@ -932,6 +927,21 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 			address += cheat->addressOffset;
 			operand += cheat->operandOffset;
 		}
+	}
+}
+
+void GBACheatSetCopyProperties(struct GBACheatSet* newSet, struct GBACheatSet* set) {
+	newSet->gsaVersion = set->gsaVersion;
+	memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
+	if (set->hook) {
+		if (newSet->hook) {
+			--newSet->hook->refs;
+			if (newSet->hook->refs == 0) {
+				free(newSet->hook);
+			}
+		}
+		newSet->hook = set->hook;
+		++newSet->hook->refs;
 	}
 }
 
