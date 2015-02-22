@@ -76,11 +76,11 @@ Compiling requires using CMake 2.8.11 or newer. To use CMake to build on a Unix-
 
 	mkdir build
 	cd build
-	cmake ..
+	cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
 	make
-	make install
+	sudo make install
 
-Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown at the end of the `cmake` command.
+This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
 
 ### Dependencies
 
