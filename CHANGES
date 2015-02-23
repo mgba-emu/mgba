@@ -25,6 +25,7 @@ Features:
  - Cheat code support
  - Debugger: Add CLI functions for examining memory regions
  - Runtime configurable audio driver
+ - Debugger: Add CLI function for writing a register
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio

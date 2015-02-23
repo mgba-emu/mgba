@@ -42,6 +42,7 @@ static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeRegister(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
@@ -92,6 +93,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "w/1", _writeByte, CLIDVParse, "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
 	{ "w/4", _writeWord, CLIDVParse, "Write a word at a specified offset" },
+	{ "w/r", _writeRegister, CLIDVParse, "Write a register" },
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
@@ -392,6 +394,23 @@ static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
 	debugger->d.cpu->memory.store32(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t regid = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (regid >= ARM_PC) {
+		return;
+	}
+	debugger->d.cpu->gprs[regid] = value;
 }
 
 static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
