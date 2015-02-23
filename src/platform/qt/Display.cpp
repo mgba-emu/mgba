@@ -214,9 +214,8 @@ void Painter::start() {
 
 void Painter::draw() {
 	m_gl->makeCurrent();
-	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
-		performDraw();
-	}
+	GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip);
+	performDraw();
 	GBASyncWaitFrameEnd(&m_context->sync);
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
