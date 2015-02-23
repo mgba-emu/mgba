@@ -464,8 +464,10 @@ void GameController::clearAVStream() {
 
 void GameController::reloadAudioDriver() {
 	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
+	int samples = m_audioProcessor->getBufferSamples();
 	delete m_audioProcessor;
 	m_audioProcessor = AudioProcessor::create();
+	m_audioProcessor->setBufferSamples(samples);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
