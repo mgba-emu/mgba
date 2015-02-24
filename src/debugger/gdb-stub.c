@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gdb-stub.h"
 
-#include <errno.h>
 #include <signal.h>
 
 #ifndef SIGTRAP

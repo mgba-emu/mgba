@@ -19,6 +19,7 @@
 #define SOCKET_FAILED(s) ((s) == INVALID_SOCKET)
 typedef SOCKET Socket;
 #else
+#include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
