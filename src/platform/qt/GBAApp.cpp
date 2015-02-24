@@ -12,6 +12,7 @@
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/socket.h"
 }
 
 using namespace QGBA;

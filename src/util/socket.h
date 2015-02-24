@@ -67,11 +67,19 @@ static inline bool SocketWouldBlock() {
 }
 
 static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size) {
-	return send(socket, buffer, size, 0);
+#ifdef _WIN32
+	return send(socket, (const char*) buffer, size, 0);
+#else
+	return write(socket, buffer, size);
+#endif
 }
 
 static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
-	return recv(socket, buffer, size, 0);
+#ifdef _WIN32
+	return recv(socket, (char*) buffer, size, 0);
+#else
+	return read(socket, buffer, size);
+#endif
 }
 
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
