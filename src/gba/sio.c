@@ -8,10 +8,10 @@
 #include "gba/io.h"
 
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
-	{ 31457, 62914, 94371, 125829 },
-	{ 7864, 15728, 23592, 31457 },
-	{ 5242, 10485, 15728, 20971 },
-	{ 2621, 5242, 7864, 10485 }
+	{ 38326, 73003, 107680, 142356 },
+	{ 9582, 18251, 26920, 35589 },
+	{ 6388, 12167, 17947, 23726 },
+	{ 3194, 6075, 8973, 11863 }
 };
 
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
