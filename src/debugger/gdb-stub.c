@@ -533,7 +533,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 				goto connectionLost;
 			}
 			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
-		} else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+		} else if (SocketWouldBlock()) {
 			return;
 		} else {
 			goto connectionLost;
@@ -549,7 +549,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 		if (messageLen == -1) {
-			if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			if (SocketWouldBlock()) {
 				return;
 			}
 			goto connectionLost;
