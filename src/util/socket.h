@@ -42,18 +42,35 @@ struct Address {
 	};
 };
 
-static inline void SocketSubsystemInitialize() {
+static inline void SocketSubsystemInit() {
 #ifdef _WIN32
-	WSAStartup(MAKEWORD(2, 2), 0);
+	WSADATA data;
+	WSAStartup(MAKEWORD(2, 2), &data);
+#endif
+}
+
+static inline int SocketError() {
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
+}
+
+static inline bool SocketWouldBlock() {
+#ifdef _WIN32
+	return SocketError() == WSAEWOULDBLOCK;
+#else
+	return SocketError() == EWOULDBLOCK || SocketError() == EAGAIN;
 #endif
 }
 
 static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size) {
-	return write(socket, buffer, size);
+	return send(socket, buffer, size, 0);
 }
 
 static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
-	return read(socket, buffer, size);
+	return recv(socket, buffer, size, 0);
 }
 
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
@@ -87,7 +104,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 	}
 	if (err) {
 		close(sock);
-		return -1;
+		return INVALID_SOCKET;
 	}
 	return sock;
 }
@@ -123,7 +140,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 
 	if (err) {
 		close(sock);
-		return -1;
+		return INVALID_SOCKET;
 	}
 	return sock;
 }

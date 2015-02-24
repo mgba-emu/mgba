@@ -24,6 +24,8 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
+	SocketSubsystemInit();
+
 	QApplication::setApplicationName(PROJECT_NAME);
 	QApplication::setApplicationVersion(PROJECT_VERSION);
 
