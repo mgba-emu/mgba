@@ -21,10 +21,12 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->players[3] = 0;
 	lockstep->attached = 0;
 	ConditionInit(&lockstep->barrier);
+	MutexInit(&lockstep->mutex);
 }
 
 void GBASIOLockstepDeinit(struct GBASIOLockstep* lockstep) {
 	ConditionDeinit(&lockstep->barrier);
+	MutexDeinit(&lockstep->mutex);
 }
 
 void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
@@ -43,6 +45,23 @@ bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 	lockstep->players[lockstep->attached] = node;
 	++lockstep->attached;
 	return true;
+}
+
+void GBASIOLockstepDetachNode(struct GBASIOLockstep* lockstep, struct GBASIOLockstepNode* node) {
+	if (lockstep->attached == 0) {
+		return;
+	}
+	int i;
+	for (i = 0; i < lockstep->attached; ++i) {
+		if (lockstep->players[i] != node) {
+			continue;
+		}
+		for (++i; i < lockstep->attached; ++i) {
+			lockstep->players[i - 1] = lockstep->players[i];
+		}
+		--lockstep->attached;
+		break;
+	}
 }
 
 bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {

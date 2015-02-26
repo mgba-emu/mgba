@@ -15,6 +15,7 @@ struct GBASIOLockstep {
 	int attached;
 
 	uint16_t data[MAX_GBAS];
+	Mutex mutex;
 	Condition barrier;
 };
 
@@ -27,6 +28,8 @@ void GBASIOLockstepInit(struct GBASIOLockstep*);
 void GBASIOLockstepDeinit(struct GBASIOLockstep*);
 
 void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode*);
+
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
+void GBASIOLockstepDetachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
 
 #endif
