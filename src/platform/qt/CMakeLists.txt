@@ -51,6 +51,7 @@ set(SOURCE_FILES
 	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogView.cpp
+	MultiplayerController.cpp
 	OverrideView.cpp
 	SavestateButton.cpp
 	SensorView.cpp
