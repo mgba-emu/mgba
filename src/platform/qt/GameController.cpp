@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "InputController.h"
+#include "MultiplayerController.h"
 
 #include <QDateTime>
 #include <QThread>
@@ -41,6 +42,7 @@ GameController::GameController(QObject* parent)
 	, m_turbo(false)
 	, m_turboForced(false)
 	, m_inputController(nullptr)
+	, m_multiplayer(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -140,10 +142,28 @@ GameController::~GameController() {
 	m_audioThread->quit();
 	m_audioThread->wait();
 	disconnect();
+	clearMultiplayerController();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
+}
+
+void GameController::setMultiplayerController(std::shared_ptr<MultiplayerController> controller) {
+	if (controller == m_multiplayer) {
+		return;
+	}
+	clearMultiplayerController();
+	m_multiplayer = controller;
+	controller->attachGame(this);
+}
+
+void GameController::clearMultiplayerController() {
+	if (!m_multiplayer) {
+		return;
+	}
+	m_multiplayer->detachGame(this);
+	m_multiplayer.reset();
 }
 
 void GameController::setOverride(const GBACartridgeOverride& override) {

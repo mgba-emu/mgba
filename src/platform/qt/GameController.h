@@ -12,6 +12,8 @@
 #include <QMutex>
 #include <QString>
 
+#include <memory>
+
 extern "C" {
 #include "gba/cheats.h"
 #include "gba/hardware.h"
@@ -32,6 +34,7 @@ namespace QGBA {
 
 class AudioProcessor;
 class InputController;
+class MultiplayerController;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -58,6 +61,9 @@ public:
 
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
+
+	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
+	void clearMultiplayerController();
 
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
@@ -162,6 +168,7 @@ private:
 	bool m_turboForced;
 
 	InputController* m_inputController;
+	std::shared_ptr<MultiplayerController> m_multiplayer;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

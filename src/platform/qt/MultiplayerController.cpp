@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "MultiplayerController.h"
 
+#include "GameController.h"
+
 using namespace QGBA;
 
 MultiplayerController::MultiplayerController() {
@@ -16,5 +18,46 @@ MultiplayerController::~MultiplayerController() {
 }
 
 bool MultiplayerController::attachGame(GameController* controller) {
-	return false;
+	MutexLock(&m_lockstep.mutex);
+	if (m_lockstep.attached == MAX_GBAS) {
+		MutexUnlock(&m_lockstep.mutex);
+		return false;
+	}
+	GBASIOLockstepNode* node = new GBASIOLockstepNode;
+	GBASIOLockstepNodeCreate(node);
+	GBASIOLockstepAttachNode(&m_lockstep, node);
+	MutexUnlock(&m_lockstep.mutex);
+
+	controller->threadInterrupt();
+	GBAThread* thread = controller->thread();
+	if (controller->isLoaded()) {
+		GBASIOSetDriver(&thread->gba->sio, &node->d, SIO_MULTI);
+	}
+	thread->sioDrivers.multiplayer = &node->d;
+	controller->threadContinue();
+	return true;
+}
+
+void MultiplayerController::detachGame(GameController* controller) {
+	controller->threadInterrupt();
+	MutexLock(&m_lockstep.mutex);
+	GBAThread* thread = nullptr;
+	for (int i = 0; i < m_lockstep.attached; ++i) {
+		thread = controller->thread();
+		if (thread->sioDrivers.multiplayer == &m_lockstep.players[i]->d) {
+			break;
+		}
+		thread = nullptr;
+	}
+	if (thread) {
+		GBASIOLockstepNode* node = reinterpret_cast<GBASIOLockstepNode*>(thread->sioDrivers.multiplayer);
+		if (controller->isLoaded()) {
+			GBASIOSetDriver(&thread->gba->sio, nullptr, SIO_MULTI);
+		}
+		thread->sioDrivers.multiplayer = nullptr;
+		GBASIOLockstepDetachNode(&m_lockstep, node);
+		delete node;
+	}
+	MutexUnlock(&m_lockstep.mutex);
+	controller->threadContinue();
 }

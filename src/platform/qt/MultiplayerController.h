@@ -20,6 +20,7 @@ public:
 	~MultiplayerController();
 
 	bool attachGame(GameController*);
+	void detachGame(GameController*);
 
 private:
 	GBASIOLockstep m_lockstep;
