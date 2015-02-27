@@ -105,6 +105,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAMemoryDeinit(gba);
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
+	GBASIODeinit(&gba->sio);
 	GBARRContextDestroy(gba);
 }
 

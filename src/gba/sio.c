@@ -59,6 +59,9 @@ void GBASIOInit(struct GBASIO* sio) {
 }
 
 void GBASIODeinit(struct GBASIO* sio) {
+	if (sio->activeDriver && sio->activeDriver->unload) {
+		sio->activeDriver->unload(sio->activeDriver);
+	}
 	if (sio->drivers.multiplayer && sio->drivers.multiplayer->deinit) {
 		sio->drivers.multiplayer->deinit(sio->drivers.multiplayer);
 	}
