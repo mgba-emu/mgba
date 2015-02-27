@@ -63,6 +63,7 @@ public:
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
 	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
+	std::shared_ptr<MultiplayerController> multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
 	void setOverride(const GBACartridgeOverride& override);
