@@ -10,11 +10,23 @@
 
 #include "util/threading.h"
 
+enum LockstepState {
+	LOCKSTEP_IDLE = 0,
+	LOCKSTEP_STARTED = 1,
+	LOCKSTEP_FINISHED = 2
+};
+
 struct GBASIOLockstep {
 	struct GBASIOLockstepNode* players[MAX_GBAS];
 	int attached;
+	int loaded;
 
-	uint16_t data[MAX_GBAS];
+	uint16_t multiRecv[MAX_GBAS];
+	bool transferActive;
+	int32_t transferCycles;
+	int32_t nextEvent;
+
+	int waiting;
 	Mutex mutex;
 	Condition barrier;
 };
@@ -22,6 +34,11 @@ struct GBASIOLockstep {
 struct GBASIOLockstepNode {
 	struct GBASIODriver d;
 	struct GBASIOLockstep* p;
+
+	int32_t nextEvent;
+	uint16_t multiSend;
+	enum LockstepState state;
+	int id;
 };
 
 void GBASIOLockstepInit(struct GBASIOLockstep*);

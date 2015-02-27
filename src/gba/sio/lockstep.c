@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "lockstep.h"
 
+#include "gba/gba.h"
+#include "gba/io.h"
+
 #define LOCKSTEP_INCREMENT 2048
 
 static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
@@ -19,7 +22,15 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->players[1] = 0;
 	lockstep->players[2] = 0;
 	lockstep->players[3] = 0;
+	lockstep->multiRecv[0] = 0xFFFF;
+	lockstep->multiRecv[1] = 0xFFFF;
+	lockstep->multiRecv[2] = 0xFFFF;
+	lockstep->multiRecv[3] = 0xFFFF;
 	lockstep->attached = 0;
+	lockstep->loaded = 0;
+	lockstep->transferActive = false;
+	lockstep->waiting = 0;
+	lockstep->nextEvent = LOCKSTEP_INCREMENT;
 	ConditionInit(&lockstep->barrier);
 	MutexInit(&lockstep->mutex);
 }
@@ -43,6 +54,8 @@ bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 		return false;
 	}
 	lockstep->players[lockstep->attached] = node;
+	node->p = lockstep;
+	node->id = lockstep->attached;
 	++lockstep->attached;
 	return true;
 }
@@ -58,6 +71,7 @@ void GBASIOLockstepDetachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 		}
 		for (++i; i < lockstep->attached; ++i) {
 			lockstep->players[i - 1] = lockstep->players[i];
+			lockstep->players[i - 1]->id = i - 1;
 		}
 		--lockstep->attached;
 		break;
@@ -65,7 +79,9 @@ void GBASIOLockstepDetachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 }
 
 bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {
-	UNUSED(driver);
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	node->nextEvent = LOCKSTEP_INCREMENT;
+	node->d.p->multiplayerControl.slave = node->id > 0;
 	return true;
 }
 
@@ -74,19 +90,96 @@ void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver) {
 }
 
 bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
-	UNUSED(driver);
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	node->state = LOCKSTEP_IDLE;
+	MutexLock(&node->p->mutex);
+	++node->p->loaded;
+	MutexUnlock(&node->p->mutex);
 	return true;
 }
 
 bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
-	UNUSED(driver);
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	MutexLock(&node->p->mutex);
+	--node->p->loaded;
+	MutexUnlock(&node->p->mutex);
 	return true;
 }
 
 static uint16_t GBASIOLockstepNodeWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	if (address == REG_SIOCNT) {
+		if (value & 0x0080) {
+			if (!node->id) {
+				MutexLock(&node->p->mutex);
+				node->p->transferActive = true;
+				node->p->transferCycles = GBASIOCyclesPerTransfer[node->d.p->multiplayerControl.baud][node->p->attached - 1];
+				MutexUnlock(&node->p->mutex);
+			} else {
+				value &= ~0x0080;
+				value |= driver->p->siocnt & 0x0080;
+			}
+		}
+		value &= 0xFF03;
+		value |= driver->p->siocnt & 0x00F8;
+	}
 	return value;
 }
 
 static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
-	return INT_MAX;
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	node->nextEvent -= cycles;
+	while (node->nextEvent <= 0) {
+		MutexLock(&node->p->mutex);
+		++node->p->waiting;
+		if (node->p->waiting < node->p->loaded) {
+			ConditionWait(&node->p->barrier, &node->p->mutex);
+		} else {
+			if (node->p->transferActive) {
+				node->p->transferCycles -= node->p->nextEvent;
+				if (node->p->transferCycles) {
+					node->p->nextEvent = LOCKSTEP_INCREMENT;
+					if (node->p->transferCycles < LOCKSTEP_INCREMENT) {
+						node->p->nextEvent = node->p->transferCycles;
+					}
+				} else {
+					node->p->transferActive = false;
+					int i;
+					for (i = 0; i < node->p->attached; ++i) {
+						node->p->multiRecv[i] = node->p->players[i]->multiSend;
+						node->p->players[i]->state = LOCKSTEP_FINISHED;
+					}
+					for (; i < MAX_GBAS; ++i) {
+						node->p->multiRecv[i] = 0xFFFF;
+					}
+				}
+			}
+			ConditionWake(&node->p->barrier);
+		}
+		--node->p->waiting;
+		if (node->state == LOCKSTEP_FINISHED) {
+			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = node->p->multiRecv[0];
+			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = node->p->multiRecv[1];
+			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = node->p->multiRecv[2];
+			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = node->p->multiRecv[3];
+			node->state = LOCKSTEP_IDLE;
+			if (node->d.p->multiplayerControl.irq) {
+				GBARaiseIRQ(node->d.p->p, IRQ_SIO);
+			}
+			node->d.p->multiplayerControl.id = node->id;
+			node->d.p->multiplayerControl.busy = 0;
+		} else if (node->state == LOCKSTEP_IDLE && node->p->transferActive) {
+			node->state = LOCKSTEP_STARTED;
+			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
+			node->multiSend = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
+			node->d.p->multiplayerControl.busy = 1;
+		}
+		node->d.p->multiplayerControl.ready = node->p->loaded == node->p->attached;
+		node->nextEvent += node->p->nextEvent;
+		MutexUnlock(&node->p->mutex);
+	}
+	return node->nextEvent;
 }
