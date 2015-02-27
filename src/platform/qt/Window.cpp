@@ -23,6 +23,7 @@
 #include "GIFView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "MultiplayerController.h"
 #include "OverrideView.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -522,8 +523,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 		quickSaveMenu->addAction(quickSave);
 	}
 
-#ifndef Q_OS_MAC
 	fileMenu->addSeparator();
+	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
+	connect(multiWindow, &QAction::triggered, [this]() {
+		std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
+		if (!multiplayer) {
+			multiplayer = std::make_shared<MultiplayerController>();
+			m_controller->setMultiplayerController(multiplayer);
+		}
+		Window* w2 = new Window(m_config);
+		w2->setAttribute(Qt::WA_DeleteOnClose);
+		w2->loadConfig();
+		w2->controller()->setMultiplayerController(multiplayer);
+		w2->show();
+	});
+	addControlledAction(fileMenu, multiWindow, "multiWindow");
+
+#ifndef Q_OS_MAC
 	addControlledAction(fileMenu, fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit), "quit");
 #endif
 
