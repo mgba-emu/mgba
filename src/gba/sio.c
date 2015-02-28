@@ -122,7 +122,8 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 }
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
-	sio->rcnt = value;
+	sio->rcnt &= 0xF;
+	sio->rcnt |= value & ~0xF;
 	_switchMode(sio);
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
 		sio->activeDriver->writeRegister(sio->activeDriver, REG_RCNT, value);
