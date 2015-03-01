@@ -158,9 +158,9 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 					}
 				}
 			}
+			node->p->waiting = 0;
 			ConditionWake(&node->p->barrier);
 		}
-		--node->p->waiting;
 		if (node->state == LOCKSTEP_FINISHED) {
 			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = node->p->multiRecv[0];
 			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = node->p->multiRecv[1];
