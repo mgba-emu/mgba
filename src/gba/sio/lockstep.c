@@ -97,6 +97,7 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 	node->d.p->rcnt |= 3;
 	if (node->id) {
 		node->d.p->rcnt |= 4;
+		node->d.p->multiplayerControl.slave = 1;
 	}
 	MutexUnlock(&node->p->mutex);
 	return true;
@@ -124,7 +125,7 @@ static uint16_t GBASIOLockstepNodeWriteRegister(struct GBASIODriver* driver, uin
 			}
 		}
 		value &= 0xFF03;
-		value |= driver->p->siocnt & 0x0078;
+		value |= driver->p->siocnt & 0x007C;
 	}
 	return value;
 }
