@@ -604,6 +604,10 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		return gba->sio.siocnt;
 	case REG_RCNT:
 		return gba->sio.rcnt;
+	case REG_JOY_RECV_LO:
+	case REG_JOY_RECV_HI:
+		gba->memory.io[REG_JOYSTAT >> 1] &= ~2;
+		break;
 
 	case REG_DMA0CNT_LO:
 	case REG_DMA1CNT_LO:
@@ -644,8 +648,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SIOMULTI3:
 	case REG_SIOMLT_SEND:
 	case REG_JOYCNT:
-	case REG_JOY_RECV_LO:
-	case REG_JOY_RECV_HI:
 	case REG_JOY_TRANS_LO:
 	case REG_JOY_TRANS_HI:
 	case REG_JOYSTAT:
