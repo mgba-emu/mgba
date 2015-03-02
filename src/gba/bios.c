@@ -70,8 +70,8 @@ static void _RegisterRamReset(struct GBA* gba) {
 		cpu->memory.store16(cpu, BASE_IO | REG_RCNT, RCNT_INITIAL, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_SIOMLT_SEND, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_JOYCNT, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV_LO, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS_LO, 0, 0);
 	}
 	if (registers & 0x40) {
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUND1CNT_LO, 0, 0);
