@@ -172,7 +172,7 @@ const char* GBAIORegisterNames[] = {
 	"JOY_RECV_LO",
 	"JOY_RECV_HI",
 	"JOY_TRANS_LO",
-	"JOY_RECV_HI",
+	"JOY_TRANS_HI",
 	"JOYSTAT",
 	0,
 	0,
