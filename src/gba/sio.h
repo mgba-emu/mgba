@@ -30,11 +30,11 @@ struct GBASIO;
 struct GBASIODriver {
 	struct GBASIO* p;
 
-	int (*init)(struct GBASIODriver* driver);
+	bool (*init)(struct GBASIODriver* driver);
 	void (*deinit)(struct GBASIODriver* driver);
-	int (*load)(struct GBASIODriver* driver);
-	int (*unload)(struct GBASIODriver* driver);
-	int (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+	bool (*load)(struct GBASIODriver* driver);
+	bool (*unload)(struct GBASIODriver* driver);
+	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 	int32_t (*processEvents)(struct GBASIODriver* driver, int32_t cycles);
 };
 
@@ -91,7 +91,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
-void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value);
+uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
 
 int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles);
 
