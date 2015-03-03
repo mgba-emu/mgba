@@ -20,6 +20,7 @@ struct GBASIODolphin {
 	Socket clock;
 
 	int32_t nextEvent;
+	int32_t clockSlice;
 };
 
 void GBASIODolphinCreate(struct GBASIODolphin*);
