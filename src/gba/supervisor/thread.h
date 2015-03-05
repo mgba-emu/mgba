@@ -72,6 +72,7 @@ struct GBAThread {
 	struct VFile* patch;
 	struct VFile* cheatsFile;
 	const char* fname;
+	const char* movie;
 	int activeKeys;
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;

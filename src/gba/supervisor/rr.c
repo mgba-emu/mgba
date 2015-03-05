@@ -7,7 +7,7 @@
 
 #include "util/vfs.h"
 
-void GBARRSaveState(struct GBA* gba) {
+void GBARRInitRecord(struct GBA* gba) {
 	if (!gba || !gba->rr) {
 		return;
 	}
@@ -34,7 +34,7 @@ void GBARRSaveState(struct GBA* gba) {
 	}
 }
 
-void GBARRLoadState(struct GBA* gba) {
+void GBARRInitPlay(struct GBA* gba) {
 	if (!gba || !gba->rr) {
 		return;
 	}
@@ -56,4 +56,18 @@ void GBARRLoadState(struct GBA* gba) {
 	} else {
 		ARMReset(gba->cpu);
 	}
+}
+
+void GBARRDestroy(struct GBARRContext* rr) {
+	if (rr->isPlaying(rr)) {
+		rr->stopPlaying(rr);
+	}
+	if (rr->isRecording(rr)) {
+		rr->stopRecording(rr);
+	}
+	if (rr->savedata) {
+		rr->savedata->close(rr->savedata);
+		rr->savedata = 0;
+	}
+	rr->destroy(rr);
 }

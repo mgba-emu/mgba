@@ -10,6 +10,7 @@
 #include "gba/cheats.h"
 #include "gba/serialize.h"
 #include "gba/supervisor/config.h"
+#include "gba/rr/mgm.h"
 
 #include "debugger/debugger.h"
 
@@ -117,6 +118,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct GBACheatDevice cheatDevice;
 	struct GBAThread* threadContext = context;
 	struct ARMComponent* components[GBA_COMPONENT_MAX] = {};
+	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
@@ -170,7 +172,32 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 	}
 
+	if (threadContext->movie) {
+		struct VDir* movieDir = VDirOpen(threadContext->movie);
+#ifdef ENABLE_LIBZIP
+		if (!movieDir) {
+			movieDir = VDirOpenZip(threadContext->movie, 0);
+		}
+#endif
+		if (movieDir) {
+			struct GBAMGMContext* mgm = malloc(sizeof(*mgm));
+			GBAMGMContextCreate(mgm);
+			if (!GBAMGMSetStream(mgm, movieDir)) {
+				mgm->d.destroy(&mgm->d);
+			} else {
+				movie = &mgm->d;
+			}
+		}
+	}
+
 	ARMReset(&cpu);
+
+	if (movie) {
+		gba.rr = movie;
+		movie->startPlaying(movie, false);
+		GBARRInitPlay(&gba);
+	}
+
 	if (threadContext->skipBios) {
 		GBASkipBIOS(&cpu);
 	}
@@ -256,6 +283,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBACheatDeviceDestroy(&cheatDevice);
 	}
 
+	if (movie) {
+		movie->destroy(movie);
+		free(movie);
+	}
+
 	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
@@ -309,6 +341,7 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 	threadContext->fname = args->fname;
 	threadContext->patch = VFileOpen(args->patch, O_RDONLY);
 	threadContext->cheatsFile = VFileOpen(args->cheatsFile, O_RDONLY);
+	threadContext->movie = args->movie;
 }
 
 bool GBAThreadStart(struct GBAThread* threadContext) {

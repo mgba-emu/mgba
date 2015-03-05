@@ -20,6 +20,8 @@ enum GBARRInitFrom {
 };
 
 struct GBARRContext {
+	void (*destroy)(struct GBARRContext*);
+
 	bool (*startPlaying)(struct GBARRContext*, bool autorecord);
 	void (*stopPlaying)(struct GBARRContext*);
 	bool (*startRecording)(struct GBARRContext*);
@@ -46,5 +48,10 @@ struct GBARRContext {
 
 	struct VFile* savedata;
 };
+
+void GBARRDestroy(struct GBARRContext*);
+
+void GBARRInitRecord(struct GBA*);
+void GBARRInitPlay(struct GBA*);
 
 #endif

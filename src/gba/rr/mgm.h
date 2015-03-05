@@ -75,7 +75,6 @@ struct GBAMGMContext {
 };
 
 void GBAMGMContextCreate(struct GBAMGMContext*);
-void GBAMGMContextDestroy(struct GBAMGMContext*);
 
 bool GBAMGMSetStream(struct GBAMGMContext* mgm, struct VDir* stream);
 bool GBAMGMCreateStream(struct GBAMGMContext* mgm, enum GBARRInitFrom initFrom);

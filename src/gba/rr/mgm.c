@@ -17,6 +17,8 @@ enum {
 	INVALID_INPUT = 0x8000
 };
 
+static void GBAMGMContextDestroy(struct GBARRContext*);
+
 static bool GBAMGMStartPlaying(struct GBARRContext*, bool autorecord);
 static void GBAMGMStopPlaying(struct GBARRContext*);
 static bool GBAMGMStartRecording(struct GBARRContext*);
@@ -56,6 +58,8 @@ static struct VFile* GBAMGMOpenSavestate(struct GBARRContext*, int flags);
 void GBAMGMContextCreate(struct GBAMGMContext* mgm) {
 	memset(mgm, 0, sizeof(*mgm));
 
+	mgm->d.destroy = GBAMGMContextDestroy;
+
 	mgm->d.startPlaying = GBAMGMStartPlaying;
 	mgm->d.stopPlaying = GBAMGMStopPlaying;
 	mgm->d.startRecording = GBAMGMStartRecording;
@@ -75,19 +79,10 @@ void GBAMGMContextCreate(struct GBAMGMContext* mgm) {
 	mgm->d.openSavestate = GBAMGMOpenSavestate;
 }
 
-void GBAMGMContextDestroy(struct GBAMGMContext* mgm) {
-	if (mgm->d.isPlaying(&mgm->d)) {
-		mgm->d.stopPlaying(&mgm->d);
-	}
-	if (mgm->d.isRecording(&mgm->d)) {
-		mgm->d.stopRecording(&mgm->d);
-	}
+void GBAMGMContextDestroy(struct GBARRContext* rr) {
+	struct GBAMGMContext* mgm = (struct GBAMGMContext*) rr;
 	if (mgm->metadataFile) {
 		mgm->metadataFile->close(mgm->metadataFile);
-	}
-	if (mgm->d.savedata) {
-		mgm->d.savedata->close(mgm->d.savedata);
-		mgm->d.savedata = 0;
 	}
 }
 
