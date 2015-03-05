@@ -17,6 +17,7 @@ set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
 set(BUILD_SHARED ON CACHE BOOL "Build a shared library")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
 file(GLOB VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/*.c)
@@ -25,7 +26,7 @@ file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC})
-source_group("GBA supervisor" FILES ${GBA_SV_SRC})
+source_group("GBA supervisor" FILES ${GBA_SV_SRC} ${GBA_RR_SRC})
 source_group("Utilities" FILES ${UTIL_SRC} ${VFS_SRC}})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -272,6 +273,7 @@ endif()
 set(SRC
 	${ARM_SRC}
 	${GBA_SRC}
+	${GBA_RR_SRC}
 	${GBA_SV_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}

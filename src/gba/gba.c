@@ -106,7 +106,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 	GBASIODeinit(&gba->sio);
-	GBARRContextDestroy(gba);
+	gba->rr = 0;
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -130,7 +130,7 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
-	if (!GBARRIsPlaying(gba->rr) && !GBARRIsRecording(gba->rr)) {
+	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
 	GBAMemoryReset(gba);
@@ -713,7 +713,7 @@ void GBAFrameStarted(struct GBA* gba) {
 
 void GBAFrameEnded(struct GBA* gba) {
 	if (gba->rr) {
-		GBARRNextFrame(gba->rr);
+		gba->rr->nextFrame(gba->rr);
 	}
 
 	if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {

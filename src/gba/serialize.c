@@ -49,11 +49,9 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
 
-	if (GBARRIsRecording(gba->rr)) {
-		state->associatedStreamId = gba->rr->streamId;
-		GBARRFinishSegment(gba->rr);
-	} else {
-		state->associatedStreamId = 0;
+	state->associatedStreamId = 0;
+	if (gba->rr) {
+		gba->rr->stateSaved(gba->rr, state);
 	}
 }
 
@@ -114,17 +112,8 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
 
-	if (GBARRIsRecording(gba->rr)) {
-		if (state->associatedStreamId != gba->rr->streamId) {
-			GBARRLoadStream(gba->rr, state->associatedStreamId);
-			GBARRIncrementStream(gba->rr, true);
-		} else {
-			GBARRFinishSegment(gba->rr);
-		}
-		GBARRMarkRerecord(gba->rr);
-	} else if (GBARRIsPlaying(gba->rr)) {
-		GBARRLoadStream(gba->rr, state->associatedStreamId);
-		GBARRSkipSegment(gba->rr);
+	if (gba->rr) {
+		gba->rr->stateLoaded(gba->rr, state);
 	}
 }
 
