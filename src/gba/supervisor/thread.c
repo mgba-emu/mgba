@@ -11,6 +11,7 @@
 #include "gba/serialize.h"
 #include "gba/supervisor/config.h"
 #include "gba/rr/mgm.h"
+#include "gba/rr/vbm.h"
 
 #include "debugger/debugger.h"
 
@@ -186,6 +187,17 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 				mgm->d.destroy(&mgm->d);
 			} else {
 				movie = &mgm->d;
+			}
+		} else {
+			struct VFile* movieFile = VFileOpen(threadContext->movie, O_RDONLY);
+			if (movieFile) {
+				struct GBAVBMContext* vbm = malloc(sizeof(*vbm));
+				GBAVBMContextCreate(vbm);
+				if (!GBAVBMSetStream(vbm, movieFile)) {
+					vbm->d.destroy(&vbm->d);
+				} else {
+					movie = &vbm->d;
+				}
 			}
 		}
 	}
