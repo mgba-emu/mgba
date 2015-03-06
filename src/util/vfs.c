@@ -378,3 +378,15 @@ const char* _vdeName(struct VDirEntry* vde) {
 	}
 	return 0;
 }
+
+ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
+	size_t bytesRead = 0;
+	while (bytesRead < size - 1) {
+		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		bytesRead += newRead;
+		if (!newRead || buffer[bytesRead] == '\n') {
+			break;
+		}
+	}
+	return buffer[bytesRead] = '\0';
+}

@@ -51,7 +51,6 @@ struct VFile7z {
 static bool _vf7zClose(struct VFile* vf);
 static off_t _vf7zSeek(struct VFile* vf, off_t offset, int whence);
 static ssize_t _vf7zRead(struct VFile* vf, void* buffer, size_t size);
-static ssize_t _vf7zReadline(struct VFile* vf, char* buffer, size_t size);
 static ssize_t _vf7zWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vf7zMap(struct VFile* vf, size_t size, int flags);
 static void _vf7zUnmap(struct VFile* vf, void* memory, size_t size);
@@ -142,16 +141,12 @@ off_t _vf7zSeek(struct VFile* vf, off_t offset, int whence) {
 		return -1;
 	}
 
-	if (position <= vf7z->offset) {
-		vf7z->offset = position;
-		return position;
+	if (position > vf7z->size) {
+		return -1;
 	}
 
-	if (position <= vf7z->size) {
-		return vf7z->offset;
-	}
-
-	return -1;
+	vf7z->offset = position;
+	return position;
 }
 
 ssize_t _vf7zRead(struct VFile* vf, void* buffer, size_t size) {
@@ -162,19 +157,8 @@ ssize_t _vf7zRead(struct VFile* vf, void* buffer, size_t size) {
 	}
 
 	memcpy(buffer, vf7z->outBuffer + vf7z->offset + vf7z->bufferOffset, size);
+	vf7z->offset += size;
 	return size;
-}
-
-ssize_t _vf7zReadline(struct VFile* vf, char* buffer, size_t size) {
-	size_t bytesRead = 0;
-	while (bytesRead < size - 1) {
-		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
-		bytesRead += newRead;
-		if (!newRead || buffer[bytesRead] == '\n') {
-			break;
-		}
-	}
-	return buffer[bytesRead] = '\0';
 }
 
 ssize_t _vf7zWrite(struct VFile* vf, const void* buffer, size_t size) {
@@ -301,7 +285,7 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	vf->d.close = _vf7zClose;
 	vf->d.seek = _vf7zSeek;
 	vf->d.read = _vf7zRead;
-	vf->d.readline = _vf7zReadline;
+	vf->d.readline = VFileReadline;
 	vf->d.write = _vf7zWrite;
 	vf->d.map = _vf7zMap;
 	vf->d.unmap = _vf7zUnmap;
