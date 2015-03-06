@@ -547,10 +547,10 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 			threadContext->state = THREAD_CRASHED;
 			MutexUnlock(&threadContext->stateMutex);
 		}
-		if (threadContext->logHandler) {
-			threadContext->logHandler(threadContext, level, format, args);
-			return;
-		}
+	}
+	if (gba->logHandler) {
+		gba->logHandler(threadContext, level, format, args);
+		return;
 	}
 
 	vprintf(format, args);

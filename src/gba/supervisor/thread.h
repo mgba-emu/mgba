@@ -20,7 +20,6 @@ struct GBACheatSet;
 struct GBAOptions;
 
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
-typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -95,7 +94,7 @@ struct GBAThread {
 	enum ThreadState savedState;
 	int interruptDepth;
 
-	LogHandler logHandler;
+	GBALogHandler logHandler;
 	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;

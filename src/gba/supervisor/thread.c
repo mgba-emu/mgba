@@ -134,6 +134,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.sync = &threadContext->sync;
 	threadContext->gba = &gba;
 	gba.logLevel = threadContext->logLevel;
+	gba.logHandler = threadContext->logHandler;
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);

@@ -90,8 +90,11 @@ enum {
 
 struct GBA;
 struct GBARotationSource;
+struct GBAThread;
 struct Patch;
 struct VFile;
+
+typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 struct GBATimer {
 	uint16_t reload;
@@ -141,7 +144,8 @@ struct GBA {
 
 	const char* activeFile;
 
-	int logLevel;
+	GBALogHandler logHandler;
+	enum GBALogLevel logLevel;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;
