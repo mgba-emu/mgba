@@ -38,6 +38,7 @@ struct VDir {
 
 struct VFile* VFileOpen(const char* path, int flags);
 struct VFile* VFileFromFD(int fd);
+struct VFile* VFileFromMemory(void* mem, size_t size);
 
 struct VDir* VDirOpen(const char* path);
 
