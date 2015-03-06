@@ -55,7 +55,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 }
 
-void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
+void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (state->versionMagic != GBA_SAVESTATE_MAGIC) {
 		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate");
 		return;

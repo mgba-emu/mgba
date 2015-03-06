@@ -149,7 +149,7 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, u
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
 
 struct GBASerializedState;
-void GBAHardwareSerialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
-void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
+void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
+void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, const struct GBASerializedState* state);
 
 #endif

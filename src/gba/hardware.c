@@ -424,7 +424,7 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* hw, uint32_t address) {
 
 // == Serialization
 
-void GBAHardwareSerialize(struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
+void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
 	state->hw.readWrite = hw->readWrite;
 	state->hw.pinState = hw->pinState;
 	state->hw.pinDirection = hw->direction;
@@ -440,7 +440,7 @@ void GBAHardwareSerialize(struct GBACartridgeHardware* hw, struct GBASerializedS
 	state->hw.lightEdge = hw->lightEdge;
 }
 
-void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
+void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {
 	hw->readWrite = state->hw.readWrite;
 	hw->pinState = state->hw.pinState;
 	hw->direction = state->hw.pinDirection;

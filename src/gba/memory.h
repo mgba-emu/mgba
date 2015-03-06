@@ -172,7 +172,7 @@ void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles);
 int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles);
 
 struct GBASerializedState;
-void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state);
-void GBAMemoryDeserialize(struct GBAMemory* memory, struct GBASerializedState* state);
+void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);
+void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state);
 
 #endif

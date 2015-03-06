@@ -675,7 +675,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAHardwareSerialize(&gba->memory.hw, state);
 }
 
-void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state) {
+void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
 		if (_isSpecialRegister[i >> 1]) {
