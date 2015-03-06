@@ -716,7 +716,7 @@ void GBAFrameEnded(struct GBA* gba) {
 		gba->rr->nextFrame(gba->rr);
 	}
 
-	if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
+	if (gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
 		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
 		size_t i;
 		for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
