@@ -47,6 +47,7 @@ Bugfixes:
  - Qt: Fix patch loading while a game is running
  - Util: Fix sockets on Windows
  - Qt: Fix crash when loading a game after stopping GDB server
+ - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
