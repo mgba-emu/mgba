@@ -182,7 +182,12 @@ bool retro_load_game(const struct retro_game_info* game) {
 }
 
 void retro_unload_game(void) {
-	// TODO
+	rom->close(rom);
+	rom = 0;
+	save->close(save);
+	save = 0;
+	free(savedata);
+	savedata = 0;
 }
 
 size_t retro_serialize_size(void) {
