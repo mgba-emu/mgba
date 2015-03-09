@@ -8,11 +8,15 @@
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
+static retro_audio_sample_t audioCallback;
 static retro_input_poll_t inputPollCallback;
 static retro_input_state_t inputCallback;
 static retro_log_printf_t logCallback;
 
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
+
+static void _postAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
+static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 
 static struct GBA gba;
 static struct ARMCore cpu;
@@ -20,6 +24,7 @@ static struct GBAVideoSoftwareRenderer renderer;
 static struct VFile* rom;
 static struct VFile* save;
 static void* savedata;
+static struct GBAAVStream stream;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -34,7 +39,7 @@ void retro_set_video_refresh(retro_video_refresh_t video) {
 }
 
 void retro_set_audio_sample(retro_audio_sample_t audio) {
-	UNUSED(audio);
+	audioCallback = audio;
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t audioBatch) {
@@ -103,11 +108,15 @@ void retro_init(void) {
 		logCallback = 0;
 	}
 
+	stream.postAudioFrame = _postAudioFrame;
+	stream.postVideoFrame = _postVideoFrame;
+
 	GBACreate(&gba);
 	ARMSetComponents(&cpu, &gba.d, 0, 0);
 	ARMInit(&cpu);
 	gba.logLevel = 0; // TODO: Settings
 	gba.logHandler = GBARetroLog;
+	gba.stream = &stream;
 	gba.idleOptimization = IDLE_LOOP_REMOVE; // TODO: Settings
 	rom = 0;
 
@@ -264,4 +273,17 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 		break;
 	}
 	logCallback(retroLevel, "%s\n", message);
+}
+
+static void _postAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
+	UNUSED(stream);
+	audioCallback(left, right);
+}
+
+static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
+	UNUSED(stream);
+	void* pixels;
+	unsigned stride;
+	renderer->getPixels(renderer, &stride, &pixels);
+	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);
 }
