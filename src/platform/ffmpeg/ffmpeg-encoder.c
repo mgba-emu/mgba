@@ -288,10 +288,18 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->height = encoder->video->height;
 	encoder->videoFrame->pts = 0;
 	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+		AV_PIX_FMT_RGB565,
+#else
+		AV_PIX_FMT_BGR555,
+#endif
+#else
 #ifndef USE_LIBAV
 		AV_PIX_FMT_0BGR32,
 #else
 		AV_PIX_FMT_BGR32,
+#endif
 #endif
 		encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
 		SWS_POINT, 0, 0, 0);
@@ -416,7 +424,7 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	uint8_t* pixels;
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
-	stride *= 4;
+	stride *= BYTES_PER_PIXEL;
 
 	AVPacket packet;
 
