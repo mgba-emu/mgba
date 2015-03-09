@@ -77,9 +77,11 @@ void retro_init(void) {
 #ifdef COLOR_5_6_5
 	fmt = RETRO_PIXEL_FORMAT_RGB565;
 #else
+#warning This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
 	fmt = RETRO_PIXEL_FORMAT_0RGB1555;
 #endif
 #else
+#warning This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
 	fmt = RETRO_PIXEL_FORMAT_XRGB8888;
 #endif
 	environCallback(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt);
