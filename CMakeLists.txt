@@ -301,6 +301,13 @@ target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LI
 install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
 set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI})
 
+if(BUILD_LIBRETRO)
+	add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
+	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
+	add_library(${BINARY_NAME}-libretro SHARED ${RETRO_SRC})
+	target_link_libraries(${BINARY_NAME}-libretro ${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
+endif()
+
 if(BUILD_SDL)
 	add_definitions(-DBUILD_SDL)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/sdl ${CMAKE_BINARY_DIR}/sdl)
@@ -308,12 +315,6 @@ endif()
 
 if(BUILD_QT)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/qt ${CMAKE_BINARY_DIR}/qt)
-endif()
-
-if(BUILD_LIBRETRO)
-	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
-	add_library(${BINARY_NAME}-libretro SHARED ${RETRO_SRC})
-	target_link_libraries(${BINARY_NAME}-libretro ${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 endif()
 
 if(BUILD_PERF)
