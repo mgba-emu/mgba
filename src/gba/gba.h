@@ -96,6 +96,11 @@ struct VFile;
 
 typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
+struct GBAAVStream {
+	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+	void (*postAudioFrame)(struct GBAAVStream*, int16_t left, int16_t right);
+};
+
 struct GBATimer {
 	uint16_t reload;
 	uint16_t oldReload;
@@ -146,6 +151,7 @@ struct GBA {
 
 	GBALogHandler logHandler;
 	enum GBALogLevel logLevel;
+	struct GBAAVStream* stream;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

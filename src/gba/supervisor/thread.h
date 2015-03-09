@@ -48,11 +48,6 @@ struct GBASync {
 	Mutex audioBufferMutex;
 };
 
-struct GBAAVStream {
-	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-	void (*postAudioFrame)(struct GBAAVStream*, int32_t left, int32_t right);
-};
-
 struct GBAThread {
 	// Output
 	enum ThreadState state;

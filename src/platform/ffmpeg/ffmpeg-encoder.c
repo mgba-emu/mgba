@@ -22,7 +22,7 @@
 #include <libswscale/swscale.h>
 
 static void _ffmpegPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _ffmpegPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
+static void _ffmpegPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
 
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
@@ -357,7 +357,7 @@ bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
 	return !!encoder->context;
 }
 
-void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
+void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context || !encoder->audioCodec) {
 		return;
