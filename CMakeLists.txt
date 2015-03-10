@@ -76,10 +76,11 @@ set(LIB_VERSION_ABI 0.2)
 set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
 
 # Advanced settings
-set(BUILD_PGO CACHE BOOL "Build with profiling-guided optimization")
+set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
+set(BUILD_PGO OFF CACHE BOOL "Build with profiling-guided optimization")
 set(PGO_STAGE_2 CACHE BOOL "Rebuild for profiling-guided optimization after profiles have been generated")
 set(PGO_DIR "/tmp/gba-pgo/" CACHE PATH "Profiling-guided optimization profiles path")
-mark_as_advanced(BUILD_PGO PGO_STAGE_2 PGO_DIR)
+mark_as_advanced(BUILD_LTO BUILD_PGO PGO_STAGE_2 PGO_DIR)
 set(PGO_PRE_FLAGS "-pg -fprofile-generate=${PGO_DIR} -fprofile-arcs")
 set(PGO_POST_FLAGS "-fprofile-use=${PGO_DIR} -fbranch-probabilities")
 
@@ -125,7 +126,7 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(APPLE OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+if(APPLE OR CMAKE_C_COMPILER_ID STREQUAL "GNU" AND BUILD_LTO)
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 endif()
