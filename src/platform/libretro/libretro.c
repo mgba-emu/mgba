@@ -281,6 +281,7 @@ size_t retro_get_memory_size(unsigned id) {
 	case SAVEDATA_FORCE_NONE:
 		return 0;
 	}
+	return 0;
 }
 
 void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
