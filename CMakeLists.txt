@@ -304,8 +304,9 @@ set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SO
 if(BUILD_LIBRETRO)
 	add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
-	add_library(${BINARY_NAME}-libretro SHARED ${RETRO_SRC})
-	target_link_libraries(${BINARY_NAME}-libretro ${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
+	add_library(${BINARY_NAME}_libretro SHARED ${RETRO_SRC})
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "")
+	target_link_libraries(${BINARY_NAME}_libretro ${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 endif()
 
 if(BUILD_SDL)
