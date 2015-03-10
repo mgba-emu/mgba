@@ -550,7 +550,7 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 			MutexUnlock(&threadContext->stateMutex);
 		}
 	}
-	if (gba->logHandler) {
+	if (gba && gba->logHandler) {
 		gba->logHandler(threadContext, level, format, args);
 		return;
 	}
