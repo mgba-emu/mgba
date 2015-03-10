@@ -1,8 +1,14 @@
+/* Copyright (c) 2013-2015 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "libretro.h"
 
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
+#include "gba/supervisor/overrides.h"
 #include "gba/video.h"
 #include "util/vfs.h"
 
@@ -177,6 +183,14 @@ bool retro_load_game(const struct retro_game_info* game) {
 	save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	GBALoadROM(&gba, rom, save, game->path);
+
+	struct GBACartridgeOverride override;
+	const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
+	memcpy(override.id, &cart->id, sizeof(override.id));
+	if (GBAOverrideFind(0, &override)) {
+		GBAOverrideApply(&gba, &override);
+	}
+
 	ARMReset(&cpu);
 	return true;
 }
