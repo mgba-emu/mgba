@@ -47,6 +47,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	struct GBA* gba = (struct GBA*) component;
 	gba->cpu = cpu;
 	gba->debugger = 0;
+	gba->sync = 0;
 
 	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
