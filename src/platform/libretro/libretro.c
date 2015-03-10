@@ -28,6 +28,7 @@ static struct GBA gba;
 static struct ARMCore cpu;
 static struct GBAVideoSoftwareRenderer renderer;
 static struct VFile* rom;
+static void* data;
 static struct VFile* save;
 static void* savedata;
 static struct GBAAVStream stream;
@@ -168,8 +169,11 @@ void retro_reset(void) {
 
 bool retro_load_game(const struct retro_game_info* game) {
 	if (game->data) {
-		rom = VFileFromMemory((void*) game->data, game->size); // TODO: readonly VFileMem
+		data = malloc(game->size);
+		memcpy(data, game->data, game->size);
+		rom = VFileFromMemory(data, game->size);
 	} else {
+		data = 0;
 		rom = VFileOpen(game->path, O_RDONLY);
 	}
 	if (!rom) {
@@ -198,6 +202,8 @@ bool retro_load_game(const struct retro_game_info* game) {
 void retro_unload_game(void) {
 	rom->close(rom);
 	rom = 0;
+	free(data);
+	data = 0;
 	save->close(save);
 	save = 0;
 	free(savedata);
