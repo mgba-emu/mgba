@@ -42,11 +42,11 @@ struct VFile* VFileFromMemory(void* mem, size_t size);
 
 struct VDir* VDirOpen(const char* path);
 
-#ifdef ENABLE_LIBZIP
+#ifdef USE_LIBZIP
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
 
-#ifdef ENABLE_LZMA
+#ifdef USE_LZMA
 struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 

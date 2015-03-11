@@ -177,7 +177,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	if (threadContext->movie) {
 		struct VDir* movieDir = VDirOpen(threadContext->movie);
-#ifdef ENABLE_LIBZIP
+#ifdef USE_LIBZIP
 		if (!movieDir) {
 			movieDir = VDirOpenZip(threadContext->movie, 0);
 		}
@@ -341,12 +341,12 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 	} else {
 		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
 		threadContext->gameDir = 0;
-#if ENABLE_LIBZIP
+#if USE_LIBZIP
 		if (!threadContext->gameDir) {
 			threadContext->gameDir = VDirOpenZip(args->fname, 0);
 		}
 #endif
-#if ENABLE_LZMA
+#if USE_LZMA
 		if (!threadContext->gameDir) {
 			threadContext->gameDir = VDirOpen7z(args->fname, 0);
 		}

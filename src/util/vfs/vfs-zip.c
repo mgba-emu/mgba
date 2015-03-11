@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/vfs.h"
 
-#ifdef ENABLE_LIBZIP
+#ifdef USE_LIBZIP
 #include <zip.h>
 
 

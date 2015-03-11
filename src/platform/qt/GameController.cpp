@@ -216,12 +216,12 @@ void GameController::openGame() {
 		m_threadContext.stateDir = m_threadContext.gameDir;
 	} else {
 		m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
-#if ENABLE_LIBZIP
+#if USE_LIBZIP
 		if (!m_threadContext.gameDir) {
 			m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
 		}
 #endif
-#if ENABLE_LZMA
+#if USE_LZMA
 		if (!m_threadContext.gameDir) {
 			m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
 		}
