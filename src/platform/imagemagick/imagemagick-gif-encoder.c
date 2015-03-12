@@ -15,6 +15,7 @@ void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 
 	encoder->d.postVideoFrame = _magickPostVideoFrame;
 	encoder->d.postAudioFrame = _magickPostAudioFrame;
+	encoder->d.postAudioBuffer = 0;
 
 	encoder->frameskip = 2;
 }

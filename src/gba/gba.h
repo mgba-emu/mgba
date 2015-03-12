@@ -99,6 +99,7 @@ typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* f
 struct GBAAVStream {
 	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 	void (*postAudioFrame)(struct GBAAVStream*, int16_t left, int16_t right);
+	void (*postAudioBuffer)(struct GBAAVStream*, struct GBAAudio*);
 };
 
 struct GBATimer {

@@ -33,6 +33,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
+	encoder->d.postAudioBuffer = 0;
 
 	encoder->audioCodec = 0;
 	encoder->videoCodec = 0;
