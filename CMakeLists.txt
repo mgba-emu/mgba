@@ -214,7 +214,7 @@ if(USE_FFMPEG)
 endif()
 
 if(USE_BLIP)
-	list(APPEND FEATURE_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
+	list(APPEND THIRD_PARTY_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
 	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_BLIP_BUF)
 else()
 	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_NN)
