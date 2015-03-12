@@ -12,16 +12,18 @@
 #include "gba/video.h"
 #include "util/vfs.h"
 
+#define SAMPLES 1024
+
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
-static retro_audio_sample_t audioCallback;
+static retro_audio_sample_batch_t audioCallback;
 static retro_input_poll_t inputPollCallback;
 static retro_input_state_t inputCallback;
 static retro_log_printf_t logCallback;
 
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
-static void _postAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
+static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 
 static struct GBA gba;
@@ -46,11 +48,11 @@ void retro_set_video_refresh(retro_video_refresh_t video) {
 }
 
 void retro_set_audio_sample(retro_audio_sample_t audio) {
-	audioCallback = audio;
+	UNUSED(audio);
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t audioBatch) {
-	UNUSED(audioBatch);
+	audioCallback = audioBatch;
 }
 
 void retro_set_input_poll(retro_input_poll_t inputPoll) {
@@ -117,7 +119,8 @@ void retro_init(void) {
 		logCallback = 0;
 	}
 
-	stream.postAudioFrame = _postAudioFrame;
+	stream.postAudioFrame = 0;
+	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = _postVideoFrame;
 
 	GBACreate(&gba);
@@ -133,6 +136,13 @@ void retro_init(void) {
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
 	GBAVideoAssociateRenderer(&gba.video, &renderer.d);
+
+	GBAAudioResizeBuffer(&gba.audio, SAMPLES);
+
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
+#endif
 }
 
 void retro_deinit(void) {
@@ -316,9 +326,22 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 	logCallback(retroLevel, "%s\n", message);
 }
 
-static void _postAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
+static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
-	audioCallback(left, right);
+	int16_t samples[SAMPLES * 2];
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+	blip_read_samples(audio->left, samples, SAMPLES, true);
+	blip_read_samples(audio->right, samples + 1, SAMPLES, true);
+#else
+	int16_t samplesR[SAMPLES];
+	GBAAudioCopy(audio, &samples[SAMPLES], samplesR, SAMPLES);
+	size_t i;
+	for (i = 0; i < SAMPLES; ++i) {
+		samples[i * 2] = samples[SAMPLES + i];
+		samples[i * 2 + 1] = samplesR[i];
+	}
+#endif
+	audioCallback(samples, SAMPLES);
 }
 
 static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
