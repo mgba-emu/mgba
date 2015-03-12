@@ -71,9 +71,11 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 
 void ARMInit(struct ARMCore* cpu) {
 	cpu->master->init(cpu, cpu->master);
-	int i;
+	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
-		cpu->components[i]->init(cpu, cpu->components[i]);
+		if (cpu->components[i] && cpu->components[i]->init) {
+			cpu->components[i]->init(cpu, cpu->components[i]);
+		}
 	}
 }
 
@@ -81,9 +83,9 @@ void ARMDeinit(struct ARMCore* cpu) {
 	if (cpu->master->deinit) {
 		cpu->master->deinit(cpu->master);
 	}
-	int i;
+	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
-		if (cpu->components[i]->deinit) {
+		if (cpu->components[i] && cpu->components[i]->deinit) {
 			cpu->components[i]->deinit(cpu->components[i]);
 		}
 	}
@@ -95,6 +97,19 @@ void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extr
 	cpu->components = extras;
 }
 
+void ARMHotplugAttach(struct ARMCore* cpu, size_t slot) {
+	if (slot >= cpu->numComponents) {
+		return;
+	}
+	cpu->components[slot]->init(cpu, cpu->components[slot]);
+}
+
+void ARMHotplugDetach(struct ARMCore* cpu, size_t slot) {
+	if (slot >= cpu->numComponents) {
+		return;
+	}
+	cpu->components[slot]->init(cpu, cpu->components[slot]);
+}
 
 void ARMReset(struct ARMCore* cpu) {
 	int i;
@@ -176,9 +191,10 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
-	uint32_t opcode = cpu->prefetch;
-	LOAD_32(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t opcode = cpu->prefetch[0];
+	cpu->prefetch[0] = cpu->prefetch[1];
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
+	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 
 	unsigned condition = opcode >> 28;
 	if (condition != 0xE) {
@@ -239,9 +255,10 @@ static inline void ARMStep(struct ARMCore* cpu) {
 }
 
 static inline void ThumbStep(struct ARMCore* cpu) {
-	uint32_t opcode = cpu->prefetch;
-	LOAD_16(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t opcode = cpu->prefetch[0];
+	cpu->prefetch[0] = cpu->prefetch[1];
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
 	ThumbInstruction instruction = _thumbTable[opcode >> 6];
 	instruction(cpu, opcode);
 }
@@ -268,4 +285,14 @@ void ARMRunLoop(struct ARMCore* cpu) {
 		}
 	}
 	cpu->irqh.processEvents(cpu);
+}
+
+void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
+	if (cpu->executionMode== MODE_ARM) {
+		cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
+	} else {
+		cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;
+	}
+	cpu->prefetch[1] = cpu->prefetch[0];
+	cpu->prefetch[0] = opcode;
 }

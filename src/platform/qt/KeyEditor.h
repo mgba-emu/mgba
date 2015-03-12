@@ -6,6 +6,7 @@
 #ifndef QGBA_KEY_EDITOR
 #define QGBA_KEY_EDITOR
 
+#include "GamepadAxisEvent.h"
 #include <QLineEdit>
 
 namespace QGBA {
@@ -16,22 +17,30 @@ Q_OBJECT
 public:
 	KeyEditor(QWidget* parent = nullptr);
 
-	void setValue(int key);
 	int value() const { return m_key; }
 
-	void setNumeric(bool numeric) { m_numeric = numeric; }
+	GamepadAxisEvent::Direction direction() const { return m_direction; }
 
 	virtual QSize sizeHint() const override;
 
+public slots:
+	void setValue(int key);
+	void setValueKey(int key);
+	void setValueButton(int button);
+	void setValueAxis(int axis, int32_t value);
+
 signals:
 	void valueChanged(int key);
+	void axisChanged(int key, int direction);
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
+	virtual bool event(QEvent* event) override;
 
 private:
 	int m_key;
-	bool m_numeric;
+	bool m_button;
+	GamepadAxisEvent::Direction m_direction;
 };
 
 }

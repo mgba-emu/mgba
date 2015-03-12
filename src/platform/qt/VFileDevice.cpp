@@ -27,9 +27,5 @@ qint64 VFileDevice::writeData(const char* data, qint64 maxSize) {
 }
 
 qint64 VFileDevice::size() const {
-	// TODO: Add size method to VFile so this can be actually const
-	ssize_t pos = m_vf->seek(m_vf, 0, SEEK_CUR);
-	qint64 size = m_vf->seek(m_vf, 0, SEEK_END);
-	m_vf->seek(m_vf, pos, SEEK_SET);
-	return size;
+	return m_vf->size(m_vf);
 }

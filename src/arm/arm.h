@@ -93,11 +93,9 @@ union PSR {
 };
 
 struct ARMMemory {
-	int32_t (*load32)(struct ARMCore*, uint32_t address, int* cycleCounter);
-	int16_t (*load16)(struct ARMCore*, uint32_t address, int* cycleCounter);
-	uint16_t (*loadU16)(struct ARMCore*, uint32_t address, int* cycleCounter);
-	int8_t (*load8)(struct ARMCore*, uint32_t address, int* cycleCounter);
-	uint8_t (*loadU8)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint32_t (*load32)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint32_t (*load16)(struct ARMCore*, uint32_t address, int* cycleCounter);
+	uint32_t (*load8)(struct ARMCore*, uint32_t address, int* cycleCounter);
 
 	void (*store32)(struct ARMCore*, uint32_t address, int32_t value, int* cycleCounter);
 	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
@@ -123,6 +121,8 @@ struct ARMInterruptHandler {
 	void (*swi16)(struct ARMCore* cpu, int immediate);
 	void (*swi32)(struct ARMCore* cpu, int immediate);
 	void (*hitIllegal)(struct ARMCore* cpu, uint32_t opcode);
+	void (*bkpt16)(struct ARMCore* cpu, int immediate);
+	void (*bkpt32)(struct ARMCore* cpu, int immediate);
 	void (*readCPSR)(struct ARMCore* cpu);
 
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
@@ -149,7 +149,7 @@ struct ARMCore {
 	int32_t shifterOperand;
 	int32_t shifterCarryOut;
 
-	uint32_t prefetch;
+	uint32_t prefetch[2];
 	enum ExecutionMode executionMode;
 	enum PrivilegeMode privilegeMode;
 
@@ -158,13 +158,15 @@ struct ARMCore {
 
 	struct ARMComponent* master;
 
-	int numComponents;
+	size_t numComponents;
 	struct ARMComponent** components;
 };
 
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);
 void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
+void ARMHotplugAttach(struct ARMCore* cpu, size_t slot);
+void ARMHotplugDetach(struct ARMCore* cpu, size_t slot);
 
 void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
@@ -173,5 +175,6 @@ void ARMRaiseSWI(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
 void ARMRunLoop(struct ARMCore* cpu);
+void ARMRunFake(struct ARMCore* cpu, uint32_t opcode);
 
 #endif

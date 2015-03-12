@@ -21,15 +21,16 @@ static ssize_t _vf3dWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vf3dMap(struct VFile* vf, size_t size, int flags);
 static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf3dTruncate(struct VFile* vf, size_t size);
+static ssize_t _vf3dSize(struct VFile* vf);
 
-struct VFile* VFileOpen3DS(FS_archive archive, const char* path, int flags) {
+struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	struct VFile3DS* vf3d = malloc(sizeof(struct VFile3DS));
 	if (!vf3d) {
 		return 0;
 	}
 
 	FS_path newPath = FS_makePath(PATH_CHAR, path);
-	Result res = FSUSER_OpenFile(0, &vf3d->handle, archive, newPath, flags, FS_ATTRIBUTE_NONE);
+	Result res = FSUSER_OpenFile(0, &vf3d->handle, *archive, newPath, flags, FS_ATTRIBUTE_NONE);
 	if (res & 0xFFFC03FF) {
 		free(vf3d);
 		return 0;
@@ -45,6 +46,7 @@ struct VFile* VFileOpen3DS(FS_archive archive, const char* path, int flags) {
 	vf3d->d.map = _vf3dMap;
 	vf3d->d.unmap = _vf3dUnmap;
 	vf3d->d.truncate = _vf3dTruncate;
+	vf3d->d.size = _vf3dSize;
 
 	return &vf3d->d;
 }
@@ -116,4 +118,11 @@ static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size) {
 static void _vf3dTruncate(struct VFile* vf, size_t size) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	FSFILE_SetSize(vf3d->handle, size);
+}
+
+ssize_t _vf3dSize(struct VFile* vf) {
+	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
+	u64 size;
+	FSFILE_GetSize(vf3d->handle, &size);
+	return size;
 }

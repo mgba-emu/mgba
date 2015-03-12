@@ -1,16 +1,12 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-#include "gba-thread.h"
-
-#if defined(__ARM_NEON)
-void _neon2x(void* dest, void* src, int width, int height);
-void _neon4x(void* dest, void* src, int width, int height);
-#endif
+#include "gba/supervisor/thread.h"
+#include "util/arm-algo.h"
 
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
@@ -36,7 +32,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	renderer->tex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 
-	SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+	SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 	renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 	SDL_Surface* surface = SDL_GetVideoSurface();
@@ -74,7 +70,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			SDL_UnlockTexture(renderer->tex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->tex, 0, 0);
 			SDL_RenderPresent(renderer->sdlRenderer);
-			SDL_LockTexture(renderer->tex, 0, &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+			SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 			renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 			switch (renderer->ratio) {

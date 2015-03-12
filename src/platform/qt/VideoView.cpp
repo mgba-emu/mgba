@@ -172,13 +172,15 @@ VideoView::VideoView(QWidget* parent)
 		.height = 160,
 	});
 
-	setAudioCodec(m_ui.audio->currentText());
-	setVideoCodec(m_ui.video->currentText());
-	setAudioBitrate(m_ui.abr->value());
-	setVideoBitrate(m_ui.vbr->value());
-	setContainer(m_ui.container->currentText());
-	setWidth(m_ui.width->value());
-	setHeight(m_ui.height->value());
+	setPreset((Preset) {
+		.container = "MKV",
+		.vcodec = "PNG",
+		.acodec = "FLAC",
+		.vbr = 0,
+		.abr = 0,
+		.width = 240,
+		.height = 160,
+	});
 
 	showAdvanced(false);
 }

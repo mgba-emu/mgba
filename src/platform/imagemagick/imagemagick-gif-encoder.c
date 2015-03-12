@@ -1,14 +1,14 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "imagemagick-gif-encoder.h"
 
-#include "gba-video.h"
+#include "gba/video.h"
 
 static void _magickPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _magickPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
+static void _magickPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->wand = 0;
@@ -70,7 +70,7 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	++encoder->currentFrame;
 }
 
-static void _magickPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
+static void _magickPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
 	UNUSED(stream);
 	UNUSED(left);
 	UNUSED(right);

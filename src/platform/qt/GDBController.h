@@ -8,6 +8,8 @@
 
 #include <QObject>
 
+#ifdef USE_GDB_STUB
+
 extern "C" {
 #include "debugger/gdb-stub.h"
 }
@@ -24,7 +26,6 @@ public:
 
 public:
 	ushort port();
-	uint32_t bindAddress();
 	bool isAttached();
 
 public slots:
@@ -34,16 +35,22 @@ public slots:
 	void detach();
 	void listen();
 
-private slots:
-	void updateGDB();
+signals:
+	void listening();
+	void listenFailed();
 
 private:
 	GDBStub m_gdbStub;
 	GameController* m_gameController;
 
 	ushort m_port;
-	uint32_t m_bindAddress;
+	Address m_bindAddress;
+
+	QMetaObject::Connection m_autoattach;
 };
 
 }
+
+#endif
+
 #endif

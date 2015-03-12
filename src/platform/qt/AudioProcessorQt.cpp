@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 #include <QAudioOutput>
 
 extern "C" {
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 }
 
 using namespace QGBA;
@@ -47,6 +47,7 @@ void AudioProcessorQt::start() {
 		format.setSampleType(QAudioFormat::SignedInt);
 
 		m_audioOutput = new QAudioOutput(format, this);
+		m_audioOutput->setCategory("game");
 	}
 
 	m_device->setInput(input());
@@ -63,6 +64,7 @@ void AudioProcessorQt::pause() {
 }
 
 void AudioProcessorQt::setBufferSamples(int samples) {
+	AudioProcessor::setBufferSamples(samples);
 	if (m_audioOutput) {
 		m_audioOutput->stop();
 		m_audioOutput->setBufferSize(samples * 4);

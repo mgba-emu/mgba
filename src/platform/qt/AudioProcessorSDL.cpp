@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,7 +6,7 @@
 #include "AudioProcessorSDL.h"
 
 extern "C" {
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 }
 
 using namespace QGBA;
@@ -25,7 +25,9 @@ void AudioProcessorSDL::start() {
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
 	} else {
-		m_audio.samples = input()->audioBuffers;
+		if (!m_audio.samples) {
+			m_audio.samples = input()->audioBuffers;
+		}
 		GBASDLInitAudio(&m_audio, input());
 	}
 }
@@ -35,9 +37,10 @@ void AudioProcessorSDL::pause() {
 }
 
 void AudioProcessorSDL::setBufferSamples(int samples) {
+	AudioProcessor::setBufferSamples(samples);
+	m_audio.samples = samples;
 	if (m_audio.thread) {
 		GBASDLDeinitAudio(&m_audio);
-		m_audio.samples = samples;
 		GBASDLInitAudio(&m_audio, input());
 	}
 }

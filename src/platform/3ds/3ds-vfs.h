@@ -7,4 +7,4 @@
 
 #include <3ds.h>
 
-struct VFile* VFileOpen3DS(FS_archive archive, const char* path, int flags);
+struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,7 +6,7 @@
 #ifndef SDL_MAIN_H
 #define SDL_MAIN_H
 
-#include "renderers/video-software.h"
+#include "gba/renderers/video-software.h"
 
 #include "sdl-audio.h"
 #include "sdl-events.h"
@@ -47,6 +47,9 @@ struct SDLSoftwareRenderer {
 	int viewportWidth;
 	int viewportHeight;
 	int ratio;
+
+	bool lockAspectRatio;
+	bool filter;
 
 #ifdef BUILD_GL
 	GLuint tex;

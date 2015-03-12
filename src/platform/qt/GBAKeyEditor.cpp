@@ -8,15 +8,10 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
-#include <QTimer>
 #include <QVBoxLayout>
 
 #include "InputController.h"
 #include "KeyEditor.h"
-
-extern "C" {
-#include "gba-input.h"
-}
 
 using namespace QGBA;
 
@@ -46,31 +41,20 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_keyL = new KeyEditor(this);
 	m_keyR = new KeyEditor(this);
 
-#ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
-		m_keyDU->setNumeric(true);
-		m_keyDD->setNumeric(true);
-		m_keyDL->setNumeric(true);
-		m_keyDR->setNumeric(true);
-		m_keySelect->setNumeric(true);
-		m_keyStart->setNumeric(true);
-		m_keyA->setNumeric(true);
-		m_keyB->setNumeric(true);
-		m_keyL->setNumeric(true);
-		m_keyR->setNumeric(true);
-	}
-#endif
+	lookupBinding(map, m_keyDU, GBA_KEY_UP);
+	lookupBinding(map, m_keyDD, GBA_KEY_DOWN);
+	lookupBinding(map, m_keyDL, GBA_KEY_LEFT);
+	lookupBinding(map, m_keyDR, GBA_KEY_RIGHT);
+	lookupBinding(map, m_keySelect, GBA_KEY_SELECT);
+	lookupBinding(map, m_keyStart, GBA_KEY_START);
+	lookupBinding(map, m_keyA, GBA_KEY_A);
+	lookupBinding(map, m_keyB, GBA_KEY_B);
+	lookupBinding(map, m_keyL, GBA_KEY_L);
+	lookupBinding(map, m_keyR, GBA_KEY_R);
 
-	m_keyDU->setValue(GBAInputQueryBinding(map, type, GBA_KEY_UP));
-	m_keyDD->setValue(GBAInputQueryBinding(map, type, GBA_KEY_DOWN));
-	m_keyDL->setValue(GBAInputQueryBinding(map, type, GBA_KEY_LEFT));
-	m_keyDR->setValue(GBAInputQueryBinding(map, type, GBA_KEY_RIGHT));
-	m_keySelect->setValue(GBAInputQueryBinding(map, type, GBA_KEY_SELECT));
-	m_keyStart->setValue(GBAInputQueryBinding(map, type, GBA_KEY_START));
-	m_keyA->setValue(GBAInputQueryBinding(map, type, GBA_KEY_A));
-	m_keyB->setValue(GBAInputQueryBinding(map, type, GBA_KEY_B));
-	m_keyL->setValue(GBAInputQueryBinding(map, type, GBA_KEY_L));
-	m_keyR->setValue(GBAInputQueryBinding(map, type, GBA_KEY_R));
+#ifdef BUILD_SDL
+	lookupAxes(map);
+#endif
 
 	connect(m_keyDU, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 	connect(m_keyDD, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
@@ -82,6 +66,17 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	connect(m_keyB, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 	connect(m_keyL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 	connect(m_keyR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+
+	connect(m_keyDU, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyDD, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyDL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyDR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keySelect, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyStart, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyA, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyB, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	connect(m_keyR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
 
 	m_buttons = new QWidget(this);
 	QVBoxLayout* layout = new QVBoxLayout;
@@ -114,15 +109,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_background.load(":/res/keymap.qpic");
 
 	setAll->setFocus();
-
-#ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
-		m_gamepadTimer = new QTimer(this);
-		connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
-		m_gamepadTimer->setInterval(100);
-		m_gamepadTimer->start();
-	}
-#endif
 }
 
 void GBAKeyEditor::setAll() {
@@ -151,12 +137,10 @@ void GBAKeyEditor::paintEvent(QPaintEvent* event) {
 }
 
 void GBAKeyEditor::setNext() {
+	findFocus();
+
 	if (m_currentKey == m_keyOrder.end()) {
 		return;
-	}
-
-	if (!(*m_currentKey)->hasFocus()) {
-		m_currentKey = m_keyOrder.end();
 	}
 
 	++m_currentKey;
@@ -168,33 +152,111 @@ void GBAKeyEditor::setNext() {
 }
 
 void GBAKeyEditor::save() {
-	m_controller->bindKey(m_type, m_keyDU->value(), GBA_KEY_UP);
-	m_controller->bindKey(m_type, m_keyDD->value(), GBA_KEY_DOWN);
-	m_controller->bindKey(m_type, m_keyDL->value(), GBA_KEY_LEFT);
-	m_controller->bindKey(m_type, m_keyDR->value(), GBA_KEY_RIGHT);
-	m_controller->bindKey(m_type, m_keySelect->value(), GBA_KEY_SELECT);
-	m_controller->bindKey(m_type, m_keyStart->value(), GBA_KEY_START);
-	m_controller->bindKey(m_type, m_keyA->value(), GBA_KEY_A);
-	m_controller->bindKey(m_type, m_keyB->value(), GBA_KEY_B);
-	m_controller->bindKey(m_type, m_keyL->value(), GBA_KEY_L);
-	m_controller->bindKey(m_type, m_keyR->value(), GBA_KEY_R);
+	bindKey(m_keyDU, GBA_KEY_UP);
+	bindKey(m_keyDD, GBA_KEY_DOWN);
+	bindKey(m_keyDL, GBA_KEY_LEFT);
+	bindKey(m_keyDR, GBA_KEY_RIGHT);
+	bindKey(m_keySelect, GBA_KEY_SELECT);
+	bindKey(m_keyStart, GBA_KEY_START);
+	bindKey(m_keyA, GBA_KEY_A);
+	bindKey(m_keyB, GBA_KEY_B);
+	bindKey(m_keyL, GBA_KEY_L);
+	bindKey(m_keyR, GBA_KEY_R);
 	m_controller->saveConfiguration(m_type);
 }
 
-#ifdef BUILD_SDL
-void GBAKeyEditor::testGamepad() {
-	QSet<int> activeKeys = m_controller->activeGamepadButtons();
-	if (activeKeys.empty()) {
+void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {
+	#ifdef BUILD_SDL
+	if (m_type == SDL_BINDING_BUTTON) {
+		int value = GBAInputQueryBinding(map, m_type, key);
+		if (value != GBA_NO_MAPPING) {
+			keyEditor->setValueButton(value);
+		}
 		return;
 	}
-	for (KeyEditor* key : m_keyOrder) {
-		if (!key->hasFocus()) {
-			continue;
+	#endif
+	keyEditor->setValueKey(GBAInputQueryBinding(map, m_type, key));
+}
+
+#ifdef BUILD_SDL
+void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
+	GBAInputEnumerateAxes(map, m_type, [](int axis, const GBAAxis* description, void* user) {
+		GBAKeyEditor* self = static_cast<GBAKeyEditor*>(user);
+		if (description->highDirection != GBA_KEY_NONE) {
+			KeyEditor* key = self->keyById(description->highDirection);
+			if (key) {
+				key->setValueAxis(axis, description->deadHigh);
+			}
 		}
-		key->setValue(*activeKeys.begin());
-	}
+		if (description->lowDirection != GBA_KEY_NONE) {
+			KeyEditor* key = self->keyById(description->lowDirection);
+			if (key) {
+				key->setValueAxis(axis, description->deadLow);
+			}
+		}
+	}, this);
 }
 #endif
+
+void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
+	if (keyEditor->direction() != GamepadAxisEvent::NEUTRAL) {
+		m_controller->bindAxis(m_type, keyEditor->value(), keyEditor->direction(), key);
+	} else {
+		m_controller->bindKey(m_type, keyEditor->value(), key);
+	}
+}
+
+bool GBAKeyEditor::findFocus() {
+	if (m_currentKey != m_keyOrder.end() && (*m_currentKey)->hasFocus()) {
+		return true;
+	}
+
+	for (auto key = m_keyOrder.begin(); key != m_keyOrder.end(); ++key) {
+		if ((*key)->hasFocus()) {
+			m_currentKey = key;
+			return true;
+		}
+	}
+	return false;
+}
+
+#ifdef BUILD_SDL
+void GBAKeyEditor::setAxisValue(int axis, int32_t value) {
+	if (!findFocus()) {
+		return;
+	}
+	KeyEditor* focused = *m_currentKey;
+	focused->setValueAxis(axis, value);
+}
+#endif
+
+KeyEditor* GBAKeyEditor::keyById(GBAKey key) {
+	switch (key) {
+	case GBA_KEY_UP:
+		return m_keyDU;
+	case GBA_KEY_DOWN:
+		return m_keyDD;
+	case GBA_KEY_LEFT:
+		return m_keyDL;
+	case GBA_KEY_RIGHT:
+		return m_keyDR;
+	case GBA_KEY_A:
+		return m_keyA;
+	case GBA_KEY_B:
+		return m_keyB;
+	case GBA_KEY_L:
+		return m_keyL;
+	case GBA_KEY_R:
+		return m_keyR;
+	case GBA_KEY_SELECT:
+		return m_keySelect;
+	case GBA_KEY_START:
+		return m_keyStart;
+	default:
+		break;
+	}
+	return nullptr;
+}
 
 void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 	QSize s = size();

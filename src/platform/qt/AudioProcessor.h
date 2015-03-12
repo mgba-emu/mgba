@@ -15,10 +15,22 @@ class AudioProcessor : public QObject {
 Q_OBJECT
 
 public:
+	enum class Driver {
+#ifdef BUILD_QT_MULTIMEDIA
+		QT_MULTIMEDIA = 0,
+#endif
+#ifdef BUILD_SDL
+		SDL = 1,
+#endif
+	};
+
 	static AudioProcessor* create();
+	static void setDriver(Driver driver) { s_driver = driver; }
+
 	AudioProcessor(QObject* parent = nullptr);
 
 	virtual void setInput(GBAThread* input);
+	int getBufferSamples() const { return m_samples; }
 
 public slots:
 	virtual void start() = 0;
@@ -29,8 +41,11 @@ public slots:
 
 protected:
 	GBAThread* input() { return m_context; }
+
 private:
 	GBAThread* m_context;
+	int m_samples;
+	static Driver s_driver;
 };
 
 }

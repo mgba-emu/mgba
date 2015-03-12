@@ -6,11 +6,11 @@
 #include "sdl-events.h"
 
 #include "debugger/debugger.h"
-#include "gba-io.h"
-#include "gba-rr.h"
-#include "gba-serialize.h"
-#include "gba-video.h"
-#include "renderers/video-software.h"
+#include "gba/io.h"
+#include "gba/supervisor/rr.h"
+#include "gba/serialize.h"
+#include "gba/video.h"
+#include "gba/renderers/video-software.h"
 #include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
@@ -69,6 +69,11 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
 	GBAInputBindKey(inputMap, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
+
+	struct GBAAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
+	GBAInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
+	description = (struct GBAAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
+	GBAInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 }
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
@@ -107,46 +112,35 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 		}
 		return;
 	}
-	switch (event->keysym.sym) {
-	case SDLK_F11:
-		if (event->type == SDL_KEYDOWN && context->debugger) {
-			ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL);
-		}
+	if (event->keysym.sym == SDLK_TAB) {
+		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
+	}
+	if (event->type == SDL_KEYDOWN) {
+		switch (event->keysym.sym) {
+		case SDLK_F11:
+			if (context->debugger) {
+				ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL, 0);
+			}
+			return;
 #ifdef USE_PNG
-	case SDLK_F12:
-		if (event->type == SDL_KEYDOWN) {
+		case SDLK_F12:
 			GBAThreadInterrupt(context);
 			GBAThreadTakeScreenshot(context);
 			GBAThreadContinue(context);
-		}
-		return;
+			return;
 #endif
-	case SDLK_TAB:
-		context->sync.audioWait = event->type != SDL_KEYDOWN;
-		return;
-	case SDLK_BACKSLASH:
-		if (event->type == SDL_KEYDOWN) {
+		case SDLK_BACKSLASH:
 			GBAThreadPause(context);
 			context->frameCallback = _pauseAfterFrame;
 			GBAThreadUnpause(context);
-		}
-		return;
-	case SDLK_LEFTBRACKET:
-		GBAThreadInterrupt(context);
-		GBARewind(context, 10);
-		GBAThreadContinue(context);
-		return;
-	case SDLK_ESCAPE:
-		GBAThreadInterrupt(context);
-		if (context->gba->rr) {
-			GBARRStopPlaying(context->gba->rr);
-			GBARRStopRecording(context->gba->rr);
-		}
-		GBAThreadContinue(context);
-		return;
-	default:
-		if (event->type == SDL_KEYDOWN) {
+			return;
+		case SDLK_BACKQUOTE:
+			GBAThreadInterrupt(context);
+			GBARewind(context, 10);
+			GBAThreadContinue(context);
+			return;
+		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -167,31 +161,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_r:
 					GBAThreadReset(context);
 					break;
-				case SDLK_t:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						if (!GBARRIsRecording(context->gba->rr)) {
-							GBARRStopPlaying(context->gba->rr);
-							GBARRInitStream(context->gba->rr, context->stateDir);
-							GBARRReinitStream(context->gba->rr, INIT_EX_NIHILO);
-							GBARRStartRecording(context->gba->rr);
-							GBARRSaveState(context->gba);
-						}
-						GBAThreadContinue(context);
-					}
-					break;
-				case SDLK_y:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						GBARRStopRecording(context->gba->rr);
-						GBARRInitStream(context->gba->rr, context->stateDir);
-						GBARRStartPlaying(context->gba->rr, false);
-						GBARRLoadState(context->gba);
-						GBAThreadContinue(context);
-					}
-					break;
 				default:
 					break;
 				}
@@ -208,7 +177,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F8:
 				case SDLK_F9:
 					GBAThreadInterrupt(context);
-					GBASaveState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1 + 1, true);
+					GBASaveState(context, context->stateDir, event->keysym.sym - SDLK_F1 + 1, true);
 					GBAThreadContinue(context);
 					break;
 				default:
@@ -226,15 +195,15 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 				case SDLK_F8:
 				case SDLK_F9:
 					GBAThreadInterrupt(context);
-					GBALoadState(context->gba, context->stateDir, event->keysym.sym - SDLK_F1 + 1);
+					GBALoadState(context, context->stateDir, event->keysym.sym - SDLK_F1 + 1);
 					GBAThreadContinue(context);
 					break;
 				default:
 					break;
 				}
 			}
+			return;
 		}
-		return;
 	}
 }
 
@@ -272,6 +241,18 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
+static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_JoyAxisEvent* event) {
+	int keys = context->activeKeys;
+
+	keys = GBAInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, keys);
+	enum GBAKey key = GBAInputMapAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, event->value);
+	if (key != GBA_KEY_NONE) {
+		keys |= 1 << key;
+	}
+
+	context->activeKeys = keys;
+}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
 	UNUSED(context);
@@ -303,5 +284,9 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContex
 		break;
 	case SDL_JOYHATMOTION:
 		_GBASDLHandleJoyHat(context, &event->jhat);
+		break;
+	case SDL_JOYAXISMOTION:
+		_GBASDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+		break;
 	}
 }

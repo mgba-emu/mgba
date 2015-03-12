@@ -27,8 +27,8 @@
 #define ARM_COND_AL 1
 
 #define ARM_SIGN(I) ((I) >> 31)
-#define ARM_ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
-
+#define ARM_SXT_8(I) (((int8_t) (I) << 24) >> 24)
+#define ARM_SXT_16(I) (((int16_t) (I) << 16) >> 16)
 
 #define ARM_CARRY_FROM(M, N, D) (((uint32_t) (M) >> 31) + ((uint32_t) (N) >> 31) > ((uint32_t) (D) >> 31))
 #define ARM_BORROW_FROM(M, N, D) (((uint32_t) (M)) >= ((uint32_t) (N)))
@@ -52,15 +52,17 @@
 #define ARM_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM); \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]); \
-	LOAD_32(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
+	LOAD_32(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM; \
+	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	currentCycles += 2 + cpu->memory.activeUncachedCycles32 + cpu->memory.activeSeqCycles32;
 
 #define THUMB_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB); \
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]); \
-	LOAD_16(cpu->prefetch, cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
+	LOAD_16(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB; \
+	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	currentCycles += 2 + cpu->memory.activeUncachedCycles16 + cpu->memory.activeSeqCycles16;
 
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {
@@ -87,6 +89,17 @@ static inline void _ARMReadCPSR(struct ARMCore* cpu) {
 	_ARMSetMode(cpu, cpu->cpsr.t);
 	ARMSetPrivilegeMode(cpu, cpu->cpsr.priv);
 	cpu->irqh.readCPSR(cpu);
+}
+
+static inline uint32_t _ARMPCAddress(struct ARMCore* cpu) {
+	int instructionLength;
+	enum ExecutionMode mode = cpu->cpsr.t;
+	if (mode == MODE_ARM) {
+		instructionLength = WORD_SIZE_ARM;
+	} else {
+		instructionLength = WORD_SIZE_THUMB;
+	}
+	return cpu->gprs[ARM_PC] - instructionLength * 2;
 }
 
 #endif

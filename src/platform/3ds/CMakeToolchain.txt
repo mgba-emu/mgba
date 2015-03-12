@@ -13,7 +13,7 @@ endif()
 set(toolchain_bin_dir ${DEVKITARM}/bin)
 set(cross_prefix ${toolchain_bin_dir}/arm-none-eabi-)
 set(inc_flags -I${DEVKITPRO}/libctru/include)
-set(arch_flags "-march=armv6k -mtune=mpcore -mfpu=vfp -mfloat-abi=softfp")
+set(arch_flags "-march=armv6k -mtune=mpcore -mfpu=vfp -mfloat-abi=hard")
 set(link_flags "-L${DEVKITPRO}/libctru/lib -lctru -lm -specs=3dsx.specs ${arch_flags}")
 
 set(CMAKE_SYSTEM_NAME Generic CACHE INTERNAL "system name")

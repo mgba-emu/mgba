@@ -14,6 +14,7 @@
 #endif
 
 static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
+static const char* ERROR_OVERFLOW = "Arguments overflow";
 
 static struct CLIDebugger* _activeDebugger;
 
@@ -34,15 +35,26 @@ static void _reset(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setBreakpointARM(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setBreakpointThumb(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeHalfword(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
+static void _writeRegister(struct CLIDebugger*, struct CLIDebugVector*);
+static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
+static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
+static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
 
 static void _breakIntoDefault(int signal);
 static void _disassembleMode(struct CLIDebugger*, struct CLIDebugVector*, enum ExecutionMode mode);
-static void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
+static uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
+	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
+	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "break", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
 	{ "c", _continue, 0, "Continue execution" },
 	{ "continue", _continue, 0, "Continue execution" },
@@ -71,14 +83,21 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "print/x", _printHex, CLIDVParse, "Print a value as hexadecimal" },
 	{ "q", _quit, 0, "Quit the emulator" },
 	{ "quit", _quit, 0, "Quit the emulator"  },
-	{ "rb", _readByte, CLIDVParse, "Read a byte from a specified offset" },
 	{ "reset", _reset, 0, "Reset the emulation" },
-	{ "rh", _readHalfword, CLIDVParse, "Read a halfword from a specified offset" },
-	{ "rw", _readWord, CLIDVParse, "Read a word from a specified offset" },
+	{ "r/1", _readByte, CLIDVParse, "Read a byte from a specified offset" },
+	{ "r/2", _readHalfword, CLIDVParse, "Read a halfword from a specified offset" },
+	{ "r/4", _readWord, CLIDVParse, "Read a word from a specified offset" },
 	{ "status", _printStatus, 0, "Print the current status" },
 	{ "w", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
 	{ "watch", _setWatchpoint, CLIDVParse, "Set a watchpoint" },
-	{ "x", _breakInto, 0, "Break into attached debugger (for developers)" },
+	{ "w/1", _writeByte, CLIDVParse, "Write a byte at a specified offset" },
+	{ "w/2", _writeHalfword, CLIDVParse, "Write a halfword at a specified offset" },
+	{ "w/4", _writeWord, CLIDVParse, "Write a word at a specified offset" },
+	{ "w/r", _writeRegister, CLIDVParse, "Write a register" },
+	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
+	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
+	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
+	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -122,6 +141,12 @@ static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _next(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
+	if (debugger->d.currentBreakpoint) {
+		if (debugger->d.currentBreakpoint->isSw && debugger->d.setSoftwareBreakpoint) {
+			debugger->d.setSoftwareBreakpoint(&debugger->d, debugger->d.currentBreakpoint->address, debugger->d.currentBreakpoint->sw.mode, &debugger->d.currentBreakpoint->sw.opcode);
+		}
+		debugger->d.currentBreakpoint = 0;
+	}
 	ARMRun(debugger->d.cpu);
 	_printStatus(debugger, 0);
 }
@@ -165,8 +190,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 	int i;
 	for (i = 0; i < size; ++i) {
-		_printLine(debugger, address, mode);
-		address += wordSize;
+		address += _printLine(debugger, address, mode);;
 	}
 }
 
@@ -184,7 +208,7 @@ static void _printBin(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		printf(" 0b");
 		int i = 32;
 		while (i--) {
-			printf(" %u", (dv->intValue >> i) & 1);
+			printf("%u", (dv->intValue >> i) & 1);
 		}
 	}
 	printf("\n");
@@ -231,7 +255,7 @@ static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	}
 }
 
-static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	char disassembly[48];
 	struct ARMInstructionInfo info;
 	printf("%08X:  ", address);
@@ -240,11 +264,23 @@ static inline void _printLine(struct CLIDebugger* debugger, uint32_t address, en
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		printf("%08X\t%s\n", instruction, disassembly);
+		return WORD_SIZE_ARM;
 	} else {
-		uint16_t instruction = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
+		struct ARMInstructionInfo info2;
+		struct ARMInstructionInfo combined;
+		uint16_t instruction = debugger->d.cpu->memory.load16(debugger->d.cpu, address, 0);
+		uint16_t instruction2 = debugger->d.cpu->memory.load16(debugger->d.cpu, address + WORD_SIZE_THUMB, 0);
 		ARMDecodeThumb(instruction, &info);
-		ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
-		printf("%04X\t%s\n", instruction, disassembly);
+		ARMDecodeThumb(instruction2, &info2);
+		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
+			ARMDisassemble(&combined, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X %04X\t%s\n", instruction, instruction2, disassembly);
+			return WORD_SIZE_THUMB * 2;
+		} else {
+			ARMDisassemble(&info, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			printf("%04X     \t%s\n", instruction, disassembly);
+			return WORD_SIZE_THUMB;
+		}
 	}
 }
 
@@ -280,7 +316,7 @@ static void _readByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint8_t value = debugger->d.cpu->memory.loadU8(debugger->d.cpu, address, 0);
+	uint8_t value = debugger->d.cpu->memory.load8(debugger->d.cpu, address, 0);
 	printf(" 0x%02X\n", value);
 }
 
@@ -296,7 +332,7 @@ static void _readHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* d
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint16_t value = debugger->d.cpu->memory.loadU16(debugger->d.cpu, address, 0);
+	uint16_t value = debugger->d.cpu->memory.load16(debugger->d.cpu, address & ~1, 0);
 	printf(" 0x%04X\n", value);
 }
 
@@ -306,8 +342,147 @@ static void _readWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		return;
 	}
 	uint32_t address = dv->intValue;
-	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
+	uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address & ~3, 0);
 	printf(" 0x%08X\n", value);
+}
+
+static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (value > 0xFF) {
+		printf("%s\n", ERROR_OVERFLOW);
+		return;
+	}
+	debugger->d.cpu->memory.store8(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (value > 0xFFFF) {
+		printf("%s\n", ERROR_OVERFLOW);
+		return;
+	}
+	debugger->d.cpu->memory.store16(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	debugger->d.cpu->memory.store32(debugger->d.cpu, address, value, 0);
+}
+
+static void _writeRegister(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t regid = dv->intValue;
+	uint32_t value = dv->next->intValue;
+	if (regid >= ARM_PC) {
+		return;
+	}
+	debugger->d.cpu->gprs[regid] = value;
+}
+
+static void _dumpByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t words = 16;
+	if (dv->next && dv->next->type == CLIDV_INT_TYPE) {
+		words = dv->next->intValue;
+	}
+	while (words) {
+		uint32_t line = 16;
+		if (line > words) {
+			line = words;
+		}
+		printf("0x%08X:", address);
+		for (; line > 0; --line, ++address, --words) {
+			uint32_t value = debugger->d.cpu->memory.load8(debugger->d.cpu, address, 0);
+			printf(" %02X", value);
+		}
+		printf("\n");
+	}
+}
+
+static void _dumpHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t words = 8;
+	if (dv->next && dv->next->type == CLIDV_INT_TYPE) {
+		words = dv->next->intValue;
+	}
+	while (words) {
+		uint32_t line = 8;
+		if (line > words) {
+			line = words;
+		}
+		printf("0x%08X:", address);
+		for (; line > 0; --line, address += 2, --words) {
+			uint32_t value = debugger->d.cpu->memory.load16(debugger->d.cpu, address, 0);
+			printf(" %04X", value);
+		}
+		printf("\n");
+	}
+}
+
+static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	uint32_t words = 4;
+	if (dv->next && dv->next->type == CLIDV_INT_TYPE) {
+		words = dv->next->intValue;
+	}
+	while (words) {
+		uint32_t line = 4;
+		if (line > words) {
+			line = words;
+		}
+		printf("0x%08X:", address);
+		for (; line > 0; --line, address += 4, --words) {
+			uint32_t value = debugger->d.cpu->memory.load32(debugger->d.cpu, address, 0);
+			printf(" %08X", value);
+		}
+		printf("\n");
+	}
 }
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -317,6 +492,24 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerSetBreakpoint(&debugger->d, address);
+}
+
+static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_ARM);
+}
+
+static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint32_t address = dv->intValue;
+	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -339,7 +532,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL);
+	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct CLIDebugVector* dv) {
@@ -572,7 +765,6 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	while (debugger->state == DEBUGGER_PAUSED) {
 		line = el_gets(cliDebugger->elstate, &count);
 		if (!line) {
-			debugger->state = DEBUGGER_EXITING;
 			return;
 		}
 		if (line[0] == '\n') {
@@ -586,20 +778,32 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason) {
+static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-		printf("Hit breakpoint\n");
+		if (info) {
+			printf("Hit breakpoint at 0x%08X\n", info->address);
+		} else {
+			printf("Hit breakpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
-		printf("Hit watchpoint\n");
+		if (info) {
+			printf("Hit watchpoint at 0x%08X: (old value = 0x%08X)\n", info->address, info->oldValue);
+		} else {
+			printf("Hit watchpoint\n");
+		}
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
-		printf("Hit illegal opcode\n");
+		if (info) {
+			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
+		} else {
+			printf("Hit illegal opcode\n");
+		}
 		break;
 	}
 }
@@ -684,10 +888,22 @@ static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
 	}
 }
 
+static void _cliDebuggerCustom(struct ARMDebugger* debugger) {
+	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	bool retain = false;
+	if (cliDebugger->system) {
+		retain = cliDebugger->system->custom(cliDebugger->system);
+	}
+	if (!retain && debugger->state == DEBUGGER_CUSTOM) {
+		debugger->state = DEBUGGER_RUNNING;
+	}
+}
+
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	ARMDebuggerCreate(&debugger->d);
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
+	debugger->d.custom = _cliDebuggerCustom;
 	debugger->d.paused = _commandLine;
 	debugger->d.entered = _reportEntry;
 

@@ -10,6 +10,7 @@
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
+#include <sys/time.h>
 
 #define THREAD_ENTRY void*
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
@@ -44,6 +45,21 @@ static inline int ConditionDeinit(Condition* cond) {
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
 	return pthread_cond_wait(cond, mutex);
+}
+
+static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
+	struct timespec ts;
+	struct timeval tv;
+
+	gettimeofday(&tv, 0);
+	ts.tv_sec = tv.tv_sec;
+	ts.tv_nsec = (tv.tv_usec + timeoutMs * 1000L) * 1000L;
+	if (ts.tv_nsec >= 1000000000L) {
+		ts.tv_nsec -= 1000000000L;
+		++ts.tv_sec;
+	}
+
+	return pthread_cond_timedwait(cond, mutex, &ts);
 }
 
 static inline int ConditionWake(Condition* cond) {
@@ -101,6 +117,11 @@ static inline int ConditionDeinit(Condition* cond) {
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
 	SleepConditionVariableCS(cond, mutex, INFINITE);
+	return GetLastError();
+}
+
+static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
+	SleepConditionVariableCS(cond, mutex, timeoutMs);
 	return GetLastError();
 }
 
@@ -186,6 +207,16 @@ static inline int ConditionWait(Condition* cond, Mutex* mutex) {
 	return 0;
 }
 
+static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
+	MutexLock(&cond->mutex);
+	++cond->waiting;
+	MutexUnlock(mutex);
+	MutexUnlock(&cond->mutex);
+	svcWaitSynchronization(cond->semaphore, timeoutMs * 10000000LL);
+	MutexLock(mutex);
+	return 0;
+}
+
 static inline int ConditionWake(Condition* cond) {
 	MutexLock(&cond->mutex);
 	if (cond->waiting) {
@@ -245,6 +276,13 @@ static inline int ConditionDeinit(Condition* cond) {
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
 	UNUSED(cond);
 	UNUSED(mutex);
+	return 0;
+}
+
+static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
+	UNUSED(cond);
+	UNUSED(mutex);
+	UNUSED(timeoutMs);
 	return 0;
 }
 

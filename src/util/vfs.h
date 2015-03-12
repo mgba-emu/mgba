@@ -22,6 +22,7 @@ struct VFile {
 	void* (*map)(struct VFile* vf, size_t size, int flags);
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
+	ssize_t (*size)(struct VFile* vf);
 };
 
 struct VDirEntry {
@@ -37,14 +38,21 @@ struct VDir {
 
 struct VFile* VFileOpen(const char* path, int flags);
 struct VFile* VFileFromFD(int fd);
+struct VFile* VFileFromMemory(void* mem, size_t size);
 
 struct VDir* VDirOpen(const char* path);
 
-#ifdef ENABLE_LIBZIP
+#ifdef USE_LIBZIP
 struct VDir* VDirOpenZip(const char* path, int flags);
+#endif
+
+#ifdef USE_LZMA
+struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 
 struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode);
 struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode);
+
+ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 
 #endif

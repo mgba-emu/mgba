@@ -22,4 +22,8 @@
 
 #define UNUSED(V) (void)(V)
 
+#ifdef _3DS
+#define SSIZE_MAX (SIZE_MAX >> 1)
+#endif
+
 #endif

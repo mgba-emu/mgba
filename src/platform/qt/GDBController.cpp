@@ -13,17 +13,13 @@ GDBController::GDBController(GameController* controller, QObject* parent)
 	: QObject(parent)
 	, m_gameController(controller)
 	, m_port(2345)
-	, m_bindAddress(0)
+	, m_bindAddress({ IPV4, 0 })
 {
 	GDBStubCreate(&m_gdbStub);
 }
 
 ushort GDBController::port() {
 	return m_port;
-}
-
-uint32_t GDBController::bindAddress() {
-	return m_bindAddress;
 }
 
 bool GDBController::isAttached() {
@@ -35,7 +31,8 @@ void GDBController::setPort(ushort port) {
 }
 
 void GDBController::setBindAddress(uint32_t bindAddress) {
-	m_bindAddress = bindAddress;
+	m_bindAddress.version = IPV4;
+	m_bindAddress.ipv4 = htonl(bindAddress);
 }
 
 void GDBController::attach() {
@@ -43,34 +40,38 @@ void GDBController::attach() {
 		return;
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);
+	if (m_gameController->isLoaded()) {
+		ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+	} else {
+		QObject::disconnect(m_autoattach);
+		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this] () {
+			QObject::disconnect(m_autoattach);
+			ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+		});
+	}
 }
 
 void GDBController::detach() {
+	QObject::disconnect(m_autoattach);
 	if (!isAttached()) {
 		return;
 	}
-	bool wasPaused = m_gameController->isPaused();
-	disconnect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
-	m_gameController->setPaused(true);
+	m_gameController->threadInterrupt();
 	GDBStubShutdown(&m_gdbStub);
 	m_gameController->setDebugger(nullptr);
-	m_gameController->setPaused(wasPaused);
+	m_gameController->threadContinue();
 }
 
 void GDBController::listen() {
+	m_gameController->threadInterrupt();
 	if (!isAttached()) {
 		attach();
 	}
-	bool wasPaused = m_gameController->isPaused();
-	connect(m_gameController, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateGDB()));
-	m_gameController->setPaused(true);
-	GDBStubListen(&m_gdbStub, m_port, m_bindAddress);
-	m_gameController->setPaused(wasPaused);
-}
-
-void GDBController::updateGDB() {
-	bool wasPaused = m_gameController->isPaused();
-	m_gameController->setPaused(true);
-	GDBStubUpdate(&m_gdbStub);
-	m_gameController->setPaused(wasPaused);
+	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress)) {
+		emit listening();
+	} else {
+		detach();
+		emit listenFailed();
+	}
+	m_gameController->threadContinue();
 }

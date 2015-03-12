@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #include <QResizeEvent>
 
 extern "C" {
-#include "gba-thread.h"
+#include "gba/supervisor/thread.h"
 }
 
 using namespace QGBA;
@@ -31,7 +31,7 @@ static const GLint _glTexCoords[] = {
 Display::Display(QGLFormat format, QWidget* parent)
 	: QGLWidget(format, parent)
 	, m_painter(nullptr)
-	, m_drawThread(nullptr)
+	, m_started(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
@@ -40,30 +40,29 @@ Display::Display(QGLFormat format, QWidget* parent)
 }
 
 void Display::startDrawing(const uint32_t* buffer, GBAThread* thread) {
-	if (m_drawThread) {
+	if (m_started) {
 		return;
 	}
-	m_drawThread = new QThread(this);
 	m_painter = new Painter(this);
 	m_painter->setContext(thread);
 	m_painter->setBacking(buffer);
-	m_painter->moveToThread(m_drawThread);
 	m_context = thread;
 	doneCurrent();
-	context()->moveToThread(m_drawThread);
-	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
-	m_drawThread->start(QThread::TimeCriticalPriority);
+	m_painter->start();
+	m_started = true;
+
+	lockAspectRatio(m_lockAspectRatio);
+	filter(m_filter);
 }
 
 void Display::stopDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
-		m_drawThread->exit();
-		m_drawThread = nullptr;
+		m_painter->stop();
+		m_started = false;
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -72,12 +71,12 @@ void Display::stopDrawing() {
 }
 
 void Display::pauseDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
+		m_painter->pause();
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -86,12 +85,12 @@ void Display::pauseDrawing() {
 }
 
 void Display::unpauseDrawing() {
-	if (m_drawThread) {
+	if (m_started) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
+		m_painter->unpause();
 		if (GBAThreadIsActive(m_context)) {
 			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
@@ -100,8 +99,22 @@ void Display::unpauseDrawing() {
 }
 
 void Display::forceDraw() {
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "forceDraw", Qt::QueuedConnection);
+	if (m_started) {
+		m_painter->forceDraw();
+	}
+}
+
+void Display::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	if (m_started) {
+		m_painter->lockAspectRatio(lock);
+	}
+}
+
+void Display::filter(bool filter) {
+	m_filter = filter;
+	if (m_started) {
+		m_painter->filter(filter);
 	}
 }
 
@@ -120,10 +133,10 @@ void Display::initializeGL() {
 }
 
 void Display::resizeEvent(QResizeEvent* event) {
-	if (m_drawThread) {
+	if (m_started) {
 		GBAThreadInterrupt(m_context);
 		GBASyncSuspendDrawing(&m_context->sync);
-		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
+		m_painter->resize(event->size());
 		GBASyncResumeDrawing(&m_context->sync);
 		GBAThreadContinue(m_context);
 	}
@@ -131,6 +144,8 @@ void Display::resizeEvent(QResizeEvent* event) {
 
 Painter::Painter(Display* parent)
 	: m_gl(parent)
+	, m_lockAspectRatio(false)
+	, m_filter(false)
 {
 	m_size = parent->size();
 }
@@ -145,11 +160,26 @@ void Painter::setBacking(const uint32_t* backing) {
 
 void Painter::resize(const QSize& size) {
 	m_size = size;
+	forceDraw();
+	forceDraw();
+}
+
+void Painter::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	forceDraw();
+	forceDraw();
+}
+
+void Painter::filter(bool filter) {
+	m_filter = filter;
 	m_gl->makeCurrent();
-	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	m_gl->swapBuffers();
+	if (m_filter) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
 	m_gl->doneCurrent();
+	forceDraw();
 }
 
 void Painter::start() {
@@ -159,7 +189,11 @@ void Painter::start() {
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (m_filter) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	} else {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	}
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_INT, 0, _glVertices);
@@ -180,14 +214,8 @@ void Painter::start() {
 
 void Painter::draw() {
 	m_gl->makeCurrent();
-	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
-		glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		if (m_context->sync.videoFrameWait) {
-			glFlush();
-		}
-	}
+	GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip);
+	performDraw();
 	GBASyncWaitFrameEnd(&m_context->sync);
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
@@ -196,11 +224,8 @@ void Painter::draw() {
 void Painter::forceDraw() {
 	m_gl->makeCurrent();
 	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	if (m_context->sync.videoFrameWait) {
-		glFlush();
-	}
+	glClear(GL_COLOR_BUFFER_BIT);
+	performDraw();
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
 }
@@ -225,4 +250,38 @@ void Painter::pause() {
 
 void Painter::unpause() {
 	m_drawTimer->start();
+}
+
+void Painter::performDraw() {
+	int w = m_size.width() * m_gl->devicePixelRatio();
+	int h = m_size.height() * m_gl->devicePixelRatio();
+#ifndef Q_OS_MAC
+	// TODO: This seems to cause framerates to drag down to 120 FPS on OS X,
+	// even if the emulator can go faster. Look into why.
+	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glClear(GL_COLOR_BUFFER_BIT);
+#endif
+	int drawW = w;
+	int drawH = h;
+	if (m_lockAspectRatio) {
+		if (w * 2 > h * 3) {
+			drawW = h * 3 / 2;
+		} else if (w * 2 < h * 3) {
+			drawH = w * 2 / 3;
+		}
+	}
+	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, m_backing);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, m_backing);
+#endif
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
+#endif
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (m_context->sync.videoFrameWait) {
+		glFlush();
+	}
 }

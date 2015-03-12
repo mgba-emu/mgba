@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/vfs.h"
 
-#ifdef ENABLE_LIBZIP
+#ifdef USE_LIBZIP
 #include <zip.h>
 
 
@@ -38,11 +38,11 @@ struct VFileZip {
 static bool _vfzClose(struct VFile* vf);
 static off_t _vfzSeek(struct VFile* vf, off_t offset, int whence);
 static ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size);
-static ssize_t _vfzReadline(struct VFile* vf, char* buffer, size_t size);
 static ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vfzMap(struct VFile* vf, size_t size, int flags);
 static void _vfzUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfzTruncate(struct VFile* vf, size_t size);
+static ssize_t _vfzSize(struct VFile* vf);
 
 static bool _vdzClose(struct VDir* vd);
 static void _vdzRewind(struct VDir* vd);
@@ -187,18 +187,6 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 	return bytesRead;
 }
 
-ssize_t _vfzReadline(struct VFile* vf, char* buffer, size_t size) {
-	size_t bytesRead = 0;
-	while (bytesRead < size - 1) {
-		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
-		bytesRead += newRead;
-		if (!newRead || buffer[bytesRead] == '\n') {
-			break;
-		}
-	}
-	return buffer[bytesRead] = '\0';
-}
-
 ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size) {
 	// TODO
 	UNUSED(vf);
@@ -227,6 +215,11 @@ void _vfzTruncate(struct VFile* vf, size_t size) {
 	// TODO
 	UNUSED(vf);
 	UNUSED(size);
+}
+
+ssize_t _vfzSize(struct VFile* vf) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+	return vfz->fileSize;
 }
 
 bool _vdzClose(struct VDir* vd) {
@@ -290,11 +283,12 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	vfz->d.close = _vfzClose;
 	vfz->d.seek = _vfzSeek;
 	vfz->d.read = _vfzRead;
-	vfz->d.readline = _vfzReadline;
+	vfz->d.readline = VFileReadline;
 	vfz->d.write = _vfzWrite;
 	vfz->d.map = _vfzMap;
 	vfz->d.unmap = _vfzUnmap;
 	vfz->d.truncate = _vfzTruncate;
+	vfz->d.size = _vfzSize;
 
 	return &vfz->d;
 }

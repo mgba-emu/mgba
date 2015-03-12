@@ -13,6 +13,7 @@
 #include "util/socket.h"
 
 #define GDB_STUB_MAX_LINE 1200
+#define GDB_STUB_INTERVAL 32
 
 enum GDBStubAckState {
 	GDB_ACK_PENDING = 0,
@@ -30,10 +31,13 @@ struct GDBStub {
 
 	Socket socket;
 	Socket connection;
+
+	bool shouldBlock;
+	int untilPoll;
 };
 
 void GDBStubCreate(struct GDBStub*);
-int GDBStubListen(struct GDBStub*, int port, uint32_t bindAddress);
+bool GDBStubListen(struct GDBStub*, int port, const struct Address* bindAddress);
 
 void GDBStubHangup(struct GDBStub*);
 void GDBStubShutdown(struct GDBStub*);

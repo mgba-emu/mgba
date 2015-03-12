@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,14 +6,15 @@
 #ifndef QGBA_WINDOW
 #define QGBA_WINDOW
 
-#include <QAudioOutput>
 #include <QDateTime>
 #include <QList>
 #include <QMainWindow>
 #include <QTimer>
 
+#include <functional>
+
 extern "C" {
-#include "gba.h"
+#include "gba/gba.h"
 }
 
 #include "GDBController.h"
@@ -30,6 +31,7 @@ class ConfigController;
 class GameController;
 class GIFView;
 class LogView;
+class ShortcutController;
 class VideoView;
 class WindowBackground;
 
@@ -44,6 +46,8 @@ public:
 
 	void setConfig(ConfigController*);
 	void argumentsPassed(GBAArguments*);
+
+	void resizeFrame(int width, int height);
 
 signals:
 	void startDrawing(const uint32_t*, GBAThread*);
@@ -60,6 +64,12 @@ public slots:
 	void saveConfig();
 
 	void openKeymapWindow();
+	void openSettingsWindow();
+	void openShortcutWindow();
+
+	void openOverrideWindow();
+	void openSensorWindow();
+	void openCheatsWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -82,11 +92,15 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void focusOutEvent(QFocusEvent*) override;
+	virtual void dragEnterEvent(QDragEnterEvent*) override;
+	virtual void dropEvent(QDropEvent*) override;
 
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
-	void redoLogo();
+	void gameCrashed(const QString&);
+	void gameFailed();
 
 	void recordFrame();
 	void showFPS();
@@ -101,6 +115,11 @@ private:
 	void attachWidget(QWidget* widget);
 	void detachWidget(QWidget* widget);
 
+	void appendMRU(const QString& fname);
+	void updateMRU();
+
+	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
@@ -112,6 +131,9 @@ private:
 	InputController m_inputController;
 	QList<QDateTime> m_frameList;
 	QTimer m_fpsTimer;
+	QList<QString> m_mruFiles;
+	QMenu* m_mruMenu;
+	ShortcutController* m_shortcutController;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
@@ -134,9 +156,15 @@ public:
 
 	void setSizeHint(const QSize& size);
 	virtual QSize sizeHint() const override;
+	void setLockAspectRatio(int width, int height);
+
+protected:
+	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	QSize m_sizeHint;
+	int m_aspectWidth;
+	int m_aspectHeight;
 };
 
 }

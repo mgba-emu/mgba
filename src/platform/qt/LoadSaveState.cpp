@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,14 +6,16 @@
 #include "LoadSaveState.h"
 
 #include "GameController.h"
+#include "GamepadAxisEvent.h"
+#include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
 
 #include <QKeyEvent>
 #include <QPainter>
 
 extern "C" {
-#include "gba-serialize.h"
-#include "gba-video.h"
+#include "gba/serialize.h"
+#include "gba/video.h"
 }
 
 using namespace QGBA;
@@ -103,6 +105,52 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 				return true;
 			}
 		}
+	}
+	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadAxisEvent::Type()) {
+		int column = m_currentFocus % 3;
+		int row = m_currentFocus - column;
+		GBAKey key = GBA_KEY_NONE;
+		if (event->type() == GamepadButtonEvent::Down()) {
+			key = static_cast<GamepadButtonEvent*>(event)->gbaKey();
+		} else if (event->type() == GamepadAxisEvent::Type()) {
+			GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
+			if (gae->isNew()) {
+				key = gae->gbaKey();
+			} else {
+				return false;
+			}
+		}
+		switch (key) {
+		case GBA_KEY_UP:
+			row += 6;
+			break;
+		case GBA_KEY_DOWN:
+			row += 3;
+			break;
+		case GBA_KEY_LEFT:
+			column += 2;
+			break;
+		case GBA_KEY_RIGHT:
+			column += 1;
+			break;
+		case GBA_KEY_B:
+			event->accept();
+			close();
+			return true;
+		case GBA_KEY_A:
+		case GBA_KEY_START:
+			event->accept();
+			triggerState(m_currentFocus + 1);
+			return true;
+		default:
+			return false;
+		}
+		column %= 3;
+		row %= 9;
+		m_currentFocus = column + row;
+		m_slots[m_currentFocus]->setFocus();
+		event->accept();
+		return true;
 	}
 	return false;
 }

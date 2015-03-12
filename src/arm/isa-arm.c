@@ -138,7 +138,7 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
 	int immediate = (opcode & 0x00000F80) >> 7;
 	if (immediate) {
-		cpu->shifterOperand = ARM_ROR(cpu->gprs[rm], immediate);
+		cpu->shifterOperand = ROR(cpu->gprs[rm], immediate);
 		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
 	} else {
 		// RRX
@@ -165,7 +165,7 @@ static inline void _shiftRORR(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->shifterOperand = shiftVal;
 		cpu->shifterCarryOut = cpu->cpsr.c;
 	} else if (rotate) {
-		cpu->shifterOperand = ARM_ROR(shiftVal, rotate);
+		cpu->shifterOperand = ROR(shiftVal, rotate);
 		cpu->shifterCarryOut = (shiftVal >> (rotate - 1)) & 1;
 	} else {
 		cpu->shifterOperand = shiftVal;
@@ -180,7 +180,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->shifterOperand = immediate;
 		cpu->shifterCarryOut = cpu->cpsr.c;
 	} else {
-		cpu->shifterOperand = ARM_ROR(immediate, rotate);
+		cpu->shifterOperand = ROR(immediate, rotate);
 		cpu->shifterCarryOut = ARM_SIGN(cpu->shifterOperand);
 	}
 }
@@ -237,7 +237,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_2_LSL (cpu->gprs[rm] << ADDR_MODE_2_I)
 #define ADDR_MODE_2_LSR (ADDR_MODE_2_I_TEST ? ((uint32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : 0)
 #define ADDR_MODE_2_ASR (ADDR_MODE_2_I_TEST ? ((int32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : ((int32_t) cpu->gprs[rm]) >> 31)
-#define ADDR_MODE_2_ROR (ADDR_MODE_2_I_TEST ? ARM_ROR(cpu->gprs[rm], ADDR_MODE_2_I) : (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1))
+#define ADDR_MODE_2_ROR (ADDR_MODE_2_I_TEST ? ROR(cpu->gprs[rm], ADDR_MODE_2_I) : (cpu->cpsr.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1))
 
 #define ADDR_MODE_3_ADDRESS ADDR_MODE_2_ADDRESS
 #define ADDR_MODE_3_RN ADDR_MODE_2_RN
@@ -246,7 +246,12 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_3_INDEX(U_OP, M) ADDR_MODE_2_INDEX(U_OP, M)
 #define ADDR_MODE_3_WRITEBACK(ADDR) ADDR_MODE_2_WRITEBACK(ADDR)
 
-#define ADDR_MODE_4_WRITEBACK cpu->gprs[rn] = address
+#define ADDR_MODE_4_WRITEBACK_LDM \
+		if (!((1 << rn) & rs)) { \
+			cpu->gprs[rn] = address; \
+		}
+
+#define ADDR_MODE_4_WRITEBACK_STM cpu->gprs[rn] = address;
 
 #define ARM_LOAD_POST_BODY \
 	++currentCycles; \
@@ -405,22 +410,22 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 
 
 #define DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(NAME, LS, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                      ,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK,           ,            , DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                      ,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK,           ,            , DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                      ,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK,           ,            , IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                      ,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK,           ,            , IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                      , ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK, ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                      , ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK, ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                      , ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK, ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                      , ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY) \
-	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK, ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY)
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DA,   LS,                               ,           ,            , DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DB,   LS,                               ,           ,            , DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## DBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IA,   LS,                               ,           ,            , IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IAW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IB,   LS,                               ,           ,            , IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## IBW,  LS, ADDR_MODE_4_WRITEBACK_ ## NAME,           ,            , IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SDBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, DB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIA,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIAW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IA, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIB,  LS,                               , ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY) \
+	DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_EX_ARM(NAME ## SIBW, LS, ADDR_MODE_4_WRITEBACK_ ## NAME, ARM_MS_PRE, ARM_MS_POST, IB, POST_BODY)
 
 // Begin ALU definitions
 
@@ -519,10 +524,10 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
 // Begin load/store definitions
 
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.loadU8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.loadU16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = ARM_SXT_16(cpu->memory.load16(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
@@ -530,7 +535,7 @@ DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address,
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory.loadU8(cpu, address, &currentCycles);
+	cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_LOAD_POST_BODY;)
 
@@ -578,7 +583,7 @@ DEFINE_INSTRUCTION_ARM(SWPB,
 	int rm = opcode & 0xF;
 	int rd = (opcode >> 12) & 0xF;
 	int rn = (opcode >> 16) & 0xF;
-	int32_t d = cpu->memory.loadU8(cpu, cpu->gprs[rn], &currentCycles);
+	int32_t d = cpu->memory.load8(cpu, cpu->gprs[rn], &currentCycles);
 	cpu->memory.store8(cpu, cpu->gprs[rn], cpu->gprs[rm], &currentCycles);
 	cpu->gprs[rd] = d;)
 
@@ -620,7 +625,7 @@ DEFINE_INSTRUCTION_ARM(MRC, ARM_STUB)
 
 // Begin miscellaneous definitions
 
-DEFINE_INSTRUCTION_ARM(BKPT, ARM_STUB) // Not strictly in ARMv4T, but here for convenience
+DEFINE_INSTRUCTION_ARM(BKPT, cpu->irqh.bkpt32(cpu, ((opcode >> 4) & 0xFFF0) | (opcode & 0xF))); // Not strictly in ARMv4T, but here for convenience
 DEFINE_INSTRUCTION_ARM(ILL, ARM_ILL) // Illegal opcode
 
 DEFINE_INSTRUCTION_ARM(MSR,
@@ -657,7 +662,7 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
@@ -672,7 +677,7 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 	int c = opcode & 0x00010000;
 	int f = opcode & 0x00080000;
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)

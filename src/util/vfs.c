@@ -9,6 +9,7 @@
 
 #include <fcntl.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -38,6 +39,7 @@ static ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size);
 static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
+static ssize_t _vfdSize(struct VFile* vf);
 
 static bool _vdClose(struct VDir* vd);
 static void _vdRewind(struct VDir* vd);
@@ -76,6 +78,7 @@ struct VFile* VFileFromFD(int fd) {
 	vfd->d.map = _vfdMap;
 	vfd->d.unmap = _vfdUnmap;
 	vfd->d.truncate = _vfdTruncate;
+	vfd->d.size = _vfdSize;
 
 	return &vfd->d;
 }
@@ -104,12 +107,13 @@ ssize_t _vfdReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
 		size_t newRead = read(vfd->fd, &buffer[bytesRead], 1);
-		bytesRead += newRead;
 		if (!newRead || buffer[bytesRead] == '\n') {
 			break;
 		}
+		bytesRead += newRead;
 	}
-	return buffer[bytesRead] = '\0';
+	buffer[bytesRead] = '\0';
+	return bytesRead;
 }
 
 ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size) {
@@ -126,9 +130,12 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 		createFlags = PAGE_READWRITE;
 		mapFiles = FILE_MAP_WRITE;
 	}
-	size_t location = lseek(vfd->fd, 0, SEEK_CUR);
-	size_t fileSize = lseek(vfd->fd, 0, SEEK_END);
-	lseek(vfd->fd, location, SEEK_SET);
+	size_t fileSize;
+	struct stat stat;
+	if (fstat(vfd->fd, &stat) < 0) {
+		return 0;
+	}
+	fileSize = stat.st_size;
 	if (size > fileSize) {
 		size = fileSize;
 	}
@@ -175,6 +182,15 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 static void _vfdTruncate(struct VFile* vf, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 	ftruncate(vfd->fd, size);
+}
+
+static ssize_t _vfdSize(struct VFile* vf) {
+	struct VFileFD* vfd = (struct VFileFD*) vf;
+	struct stat stat;
+	if (fstat(vfd->fd, &stat) < 0) {
+		return -1;
+	}
+	return stat.st_size;
 }
 
 struct VDirEntryDE {
@@ -377,4 +393,16 @@ const char* _vdeName(struct VDirEntry* vde) {
 		return vdede->ent->d_name;
 	}
 	return 0;
+}
+
+ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
+	size_t bytesRead = 0;
+	while (bytesRead < size - 1) {
+		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		bytesRead += newRead;
+		if (!newRead || buffer[bytesRead] == '\n') {
+			break;
+		}
+	}
+	return buffer[bytesRead] = '\0';
 }

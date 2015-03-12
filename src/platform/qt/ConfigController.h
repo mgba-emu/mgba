@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,13 +8,13 @@
 
 #include <QMap>
 #include <QObject>
-#include <QScopedPointer>
+#include <QSettings>
 #include <QVariant>
 
 #include <functional>
 
 extern "C" {
-#include "gba-config.h"
+#include "gba/supervisor/config.h"
 #include "util/configuration.h"
 }
 
@@ -22,6 +22,7 @@ class QAction;
 class QMenu;
 
 struct GBAArguments;
+struct GBACartridgeOverride;
 
 namespace QGBA {
 
@@ -57,6 +58,7 @@ Q_OBJECT
 
 public:
 	constexpr static const char* const PORT = "qt";
+	static const int MRU_LIST_SIZE = 10;
 
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
@@ -67,12 +69,23 @@ public:
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
 
+	QString getOption(const char* key) const;
+
+	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
+
+	QList<QString> getMRU() const;
+	void setMRU(const QList<QString>& mru);
+
+	Configuration* overrides() { return GBAConfigGetOverrides(&m_config); }
+	void saveOverride(const GBACartridgeOverride&);
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);
 	void setOption(const char* key, unsigned value);
 	void setOption(const char* key, const char* value);
 	void setOption(const char* key, const QVariant& value);
+	void setQtOption(const QString& key, const QVariant& value, const QString& group = QString());
 
 	void write();
 
@@ -86,6 +99,7 @@ private:
 	GBAOptions m_opts;
 
 	QMap<QString, ConfigOption*> m_optionSet;
+	QSettings* m_settings;
 };
 
 }

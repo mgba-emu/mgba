@@ -27,6 +27,8 @@ public slots:
 	void pauseDrawing();
 	void unpauseDrawing();
 	void forceDraw();
+	void lockAspectRatio(bool lock);
+	void filter(bool filter);
 #ifdef USE_PNG
 	void screenshot();
 #endif
@@ -38,8 +40,10 @@ protected:
 
 private:
 	Painter* m_painter;
-	QThread* m_drawThread;
+	bool m_started;
 	GBAThread* m_context;
+	bool m_lockAspectRatio;
+	bool m_filter;
 };
 
 class Painter : public QObject {
@@ -59,14 +63,20 @@ public slots:
 	void pause();
 	void unpause();
 	void resize(const QSize& size);
+	void lockAspectRatio(bool lock);
+	void filter(bool filter);
 
 private:
+	void performDraw();
+
 	QTimer* m_drawTimer;
 	GBAThread* m_context;
 	const uint32_t* m_backing;
 	GLuint m_tex;
 	QGLWidget* m_gl;
 	QSize m_size;
+	bool m_lockAspectRatio;
+	bool m_filter;
 };
 
 }

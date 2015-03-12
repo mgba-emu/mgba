@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba-config.h"
+#include "gba/supervisor/config.h"
 
 enum DebuggerType {
 	DEBUGGER_NONE = 0,
@@ -24,7 +24,9 @@ enum DebuggerType {
 struct GBAArguments {
 	char* fname;
 	char* patch;
+	char* cheatsFile;
 	bool dirmode;
+	char* movie;
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;

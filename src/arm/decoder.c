@@ -18,6 +18,7 @@
 
 static int _decodeRegister(int reg, char* buffer, int blen);
 static int _decodeRegisterList(int list, char* buffer, int blen);
+static int _decodePSR(int bits, char* buffer, int blen);
 static int _decodePCRelative(uint32_t address, uint32_t pc, char* buffer, int blen);
 static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, int blen);
 static int _decodeShift(union ARMOperand operand, bool reg, char* buffer, int blen);
@@ -113,6 +114,32 @@ static int _decodeRegisterList(int list, char* buffer, int blen) {
 	return total;
 }
 
+static int _decodePSR(int psrBits, char* buffer, int blen) {
+	if (!psrBits) {
+		return 0;
+	}
+	int total = 0;
+	strncpy(buffer, "_", blen - 1);
+	ADVANCE(1);
+	if (psrBits & ARM_PSR_C) {
+		strncpy(buffer, "c", blen - 1);
+		ADVANCE(1);
+	}
+	if (psrBits & ARM_PSR_X) {
+		strncpy(buffer, "x", blen - 1);
+		ADVANCE(1);
+	}
+	if (psrBits & ARM_PSR_S) {
+		strncpy(buffer, "s", blen - 1);
+		ADVANCE(1);
+	}
+	if (psrBits & ARM_PSR_F) {
+		strncpy(buffer, "f", blen - 1);
+		ADVANCE(1);
+	}
+	return total;
+}
+
 static int _decodePCRelative(uint32_t address, uint32_t pc, char* buffer, int blen) {
 	return snprintf(buffer, blen - 1, "$%08X", address + pc);
 }
@@ -127,7 +154,7 @@ static int _decodeMemory(struct ARMMemoryAccess memory, int pc, char* buffer, in
 	int written;
 	if (memory.format & ARM_MEMORY_REGISTER_BASE) {
 		if (memory.baseReg == ARM_PC && memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
-			written = _decodePCRelative(memory.offset.immediate, pc, buffer, blen);
+			written = _decodePCRelative(memory.format & ARM_MEMORY_OFFSET_SUBTRACT ? -memory.offset.immediate : memory.offset.immediate, pc & 0xFFFFFFFC, buffer, blen);
 			ADVANCE(written);
 		} else {
 			written = _decodeRegister(memory.baseReg, buffer, blen);
@@ -223,7 +250,6 @@ static const char* _armMnemonicStrings[] = {
 	"bic",
 	"bkpt",
 	"bl",
-	"blh",
 	"bx",
 	"cmn",
 	"cmp",
@@ -355,8 +381,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		}
 		break;
 	case ARM_MN_B:
-		written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
-		ADVANCE(written);
+	case ARM_MN_BL:
+		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
+			written = _decodePCRelative(info->op1.immediate, pc, buffer, blen);
+			ADVANCE(written);
+		}
 		break;
 	default:
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
@@ -368,6 +397,10 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_1) {
 			written = _decodeRegister(info->op1.reg, buffer, blen);
 			ADVANCE(written);
+			if (info->op1.reg > ARM_PC) {
+				written = _decodePSR(info->op1.psrBits, buffer, blen);
+				ADVANCE(written);
+			}
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_1) {
 			written = _decodeShift(info->op1, true, buffer, blen);

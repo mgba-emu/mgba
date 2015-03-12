@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "configuration.h"
 
+#include "util/formatting.h"
 #include "util/vfs.h"
 
 #include "third-party/inih/ini.h"
@@ -78,9 +79,20 @@ void ConfigurationSetUIntValue(struct Configuration* configuration, const char* 
 }
 
 void ConfigurationSetFloatValue(struct Configuration* configuration, const char* section, const char* key, float value) {
-	char charValue[FLT_DIG + 7];
-	sprintf(charValue, "%.*g", FLT_DIG, value);
+	char charValue[16];
+	ftostr_u(charValue, sizeof(charValue), value);
 	ConfigurationSetValue(configuration, section, key, charValue);
+}
+
+void ConfigurationClearValue(struct Configuration* configuration, const char* section, const char* key) {
+	struct Table* currentSection = &configuration->root;
+	if (section) {
+		currentSection = HashTableLookup(&configuration->sections, section);
+		if (!currentSection) {
+			return;
+		}
+	}
+	HashTableRemove(currentSection, key);
 }
 
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {

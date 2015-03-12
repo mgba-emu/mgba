@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba-video.h"
+#include "gba/video.h"
 
 #ifdef COLOR_16_BIT
 typedef uint16_t color_t;
@@ -113,7 +113,7 @@ struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
 	color_t* outputBuffer;
-	unsigned outputBufferStride;
+	int outputBufferStride;
 
 	GBARegisterDISPCNT dispcnt;
 

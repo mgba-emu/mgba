@@ -47,7 +47,7 @@
 #define ADDR_MODE_1_IMM \
 	int rotate = (opcode & 0x00000F00) >> 7; \
 	int immediate = opcode & 0x000000FF; \
-	info->op3.immediate = ARM_ROR(immediate, rotate); \
+	info->op3.immediate = ROR(immediate, rotate); \
 	info->operandFormat |= ARM_OPERAND_IMMEDIATE_3;
 
 #define ADDR_MODE_2_SHIFT(OP) \
@@ -213,7 +213,6 @@
 		ARM_MEMORY_WRITEBACK, \
 		ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME ## P, MNEMONIC, \
-		ARM_MEMORY_PRE_INCREMENT | \
 		ARM_MEMORY_OFFSET_SUBTRACT, \
 		ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME ## PW, MNEMONIC, \
@@ -222,10 +221,9 @@
 		ARM_MEMORY_OFFSET_SUBTRACT, \
 		ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME ## PU, MNEMONIC, \
-		ARM_MEMORY_PRE_INCREMENT, \
+		0, \
 		ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME ## PUW, MNEMONIC, \
-		ARM_MEMORY_PRE_INCREMENT | \
 		ARM_MEMORY_WRITEBACK, \
 		ADDRESSING_MODE, CYCLES, TYPE)
 
@@ -243,10 +241,12 @@
 #define DEFINE_LOAD_STORE_T_DECODER_SET_ARM(NAME, MNEMONIC, ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME, MNEMONIC, \
 		ARM_MEMORY_POST_INCREMENT | \
+		ARM_MEMORY_WRITEBACK | \
 		ARM_MEMORY_OFFSET_SUBTRACT, \
 		ADDRESSING_MODE, CYCLES, TYPE) \
 	DEFINE_LOAD_STORE_DECODER_EX_ARM(NAME ## U, MNEMONIC, \
-		ARM_MEMORY_POST_INCREMENT, \
+		ARM_MEMORY_POST_INCREMENT | \
+		ARM_MEMORY_WRITEBACK, \
 		ADDRESSING_MODE, CYCLES, TYPE)
 
 #define DEFINE_LOAD_STORE_T_DECODER_ARM(NAME, MNEMONIC, CYCLES, TYPE) \
@@ -386,6 +386,7 @@ DEFINE_DECODER_ARM(ILL, ILL, info->operandFormat = ARM_OPERAND_NONE;) // Illegal
 DEFINE_DECODER_ARM(MSR, MSR,
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
@@ -393,42 +394,45 @@ DEFINE_DECODER_ARM(MSR, MSR,
 
 DEFINE_DECODER_ARM(MSRR, MSR,
 	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.reg = opcode & 0x0000000F;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MRS, MRS, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MRS, MRS,
 	info->affectsCPSR = 1;
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_CPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MRSR, MRS, info->affectsCPSR = 1;
-	info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MRSR, MRS,
 	info->op1.reg = (opcode >> 12) & 0xF;
 	info->op2.reg = ARM_SPSR;
+	info->op2.psrBits = 0;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_REGISTER_2;)
 
-DEFINE_DECODER_ARM(MSRI, MSR, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MSRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |
 		ARM_OPERAND_IMMEDIATE_2;)
 
-DEFINE_DECODER_ARM(MSRRI, MSR, info->affectsCPSR = 1;
+DEFINE_DECODER_ARM(MSRRI, MSR,
 	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ARM_ROR(opcode & 0x000000FF, rotate);
-	info->affectsCPSR = 1;
+	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	info->op1.reg = ARM_SPSR;
+	info->op1.psrBits = (opcode >> 16) & ARM_PSR_MASK;
 	info->op2.immediate = operand;
 	info->operandFormat = ARM_OPERAND_REGISTER_1 |
 		ARM_OPERAND_AFFECTED_1 |

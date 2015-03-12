@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,14 @@
 
 #include <QList>
 #include <QPicture>
+#include <QSet>
 #include <QWidget>
+
+extern "C" {
+#include "gba/input.h"
+}
+
+class QTimer;
 
 namespace QGBA {
 
@@ -32,7 +39,7 @@ private slots:
 	void setNext();
 	void save();
 #ifdef BUILD_SDL
-	void testGamepad();
+	void setAxisValue(int axis, int32_t value);
 #endif
 
 private:
@@ -43,10 +50,16 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
+	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
+	void bindKey(const KeyEditor*, GBAKey);
+
+	bool findFocus();
 
 #ifdef BUILD_SDL
-	QTimer* m_gamepadTimer;
+	void lookupAxes(const GBAInputMap*);
 #endif
+
+	KeyEditor* keyById(GBAKey);
 
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;

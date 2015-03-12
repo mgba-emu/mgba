@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,30 +9,33 @@
 
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
-#include "gba/gba-cli.h"
+#include "gba/supervisor/cli.h"
 #endif
 
 #ifdef USE_GDB_STUB
 #include "debugger/gdb-stub.h"
 #endif
 
-#include "gba/gba-video.h"
+#include "gba/video.h"
 
 #include <fcntl.h>
 #include <getopt.h>
 
-#define GRAPHICS_OPTIONS "1234f"
+#define GRAPHICS_OPTIONS "123456f"
 #define GRAPHICS_USAGE \
 	"\nGraphics options:\n" \
 	"  -1               1x viewport\n" \
 	"  -2               2x viewport\n" \
 	"  -3               3x viewport\n" \
 	"  -4               4x viewport\n" \
+	"  -5               5x viewport\n" \
+	"  -6               6x viewport\n" \
 	"  -f               Start full-screen"
 
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
-	{ "dirmode",      required_argument, 0, 'D' },
+	{ "cheats",    required_argument, 0, 'c' },
+	{ "dirmode",   required_argument, 0, 'D' },
 	{ "frameskip", required_argument, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
 	{ "debug",     no_argument, 0, 'd' },
@@ -40,6 +43,7 @@ static const struct option _options[] = {
 #ifdef USE_GDB_STUB
 	{ "gdb",       no_argument, 0, 'g' },
 #endif
+	{ "movie",     required_argument, 0, 'v' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ 0, 0, 0, 0 }
 };
@@ -49,7 +53,7 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
-		"b:Dl:p:s:"
+		"b:c:Dl:p:s:v:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -57,6 +61,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 		"g"
 #endif
 	;
+	memset(opts, 0, sizeof(*opts));
 	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
@@ -65,6 +70,9 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 		switch (ch) {
 		case 'b':
 			GBAConfigSetDefaultValue(config, "bios", optarg);
+			break;
+		case 'c':
+			opts->cheatsFile = strdup(optarg);
 			break;
 		case 'D':
 			opts->dirmode = true;
@@ -94,6 +102,9 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 		case 's':
 			GBAConfigSetDefaultValue(config, "frameskip", optarg);
 			break;
+		case 'v':
+			opts->movie = strdup(optarg);
+			break;
 		default:
 			if (subparser) {
 				if (!subparser->parse(subparser, config, ch, optarg)) {
@@ -118,6 +129,9 @@ void freeArguments(struct GBAArguments* opts) {
 
 	free(opts->patch);
 	opts->patch = 0;
+
+	free(opts->movie);
+	opts->movie = 0;
 }
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) {
@@ -139,6 +153,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 	case '2':
 	case '3':
 	case '4':
+	case '5':
+	case '6':
 		if (graphicsOpts->multiplier) {
 			return false;
 		}
@@ -195,13 +211,15 @@ void usage(const char* arg0, const char* extraOptions) {
 	printf("usage: %s [option ...] file\n", arg0);
 	puts("\nGeneric options:");
 	puts("  -b, --bios FILE     GBA BIOS file to use");
+	puts("  -c, --cheats FILE   Apply cheat codes from a file");
 #ifdef USE_CLI_DEBUGGER
 	puts("  -d, --debug         Use command-line debugger");
 #endif
 #ifdef USE_GDB_STUB
 	puts("  -g, --gdb           Start GDB session (default port 2345)");
 #endif
-	puts("  -p, --patch         Apply a specified patch file when running");
+	puts("  -v, --movie FILE    Play back a movie of recorded input");
+	puts("  -p, --patch FILE    Apply a specified patch file when running");
 	puts("  -s, --frameskip N   Skip every N frames");
 	if (extraOptions) {
 		puts(extraOptions);

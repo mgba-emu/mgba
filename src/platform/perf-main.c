@@ -1,12 +1,12 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba-thread.h"
-#include "gba-config.h"
-#include "gba.h"
-#include "renderers/video-software.h"
+#include "gba/supervisor/thread.h"
+#include "gba/supervisor/config.h"
+#include "gba/gba.h"
+#include "gba/renderers/video-software.h"
 
 #include "platform/commandline.h"
 
@@ -36,6 +36,7 @@ static void _GBAPerfShutdown(int signal);
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
 static struct GBAThread* _thread;
+static bool _dispatchExiting = false;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAPerfShutdown);
@@ -53,9 +54,14 @@ int main(int argc, char** argv) {
 
 	struct GBAConfig config;
 	GBAConfigInit(&config, "perf");
+	GBAConfigLoad(&config);
 
-	struct GBAOptions opts = {};
-	struct GBAArguments args = {};
+	struct GBAOptions opts = {
+		.idleOptimization = IDLE_LOOP_DETECT
+	};
+	GBAConfigLoadDefaults(&config, &opts);
+
+	struct GBAArguments args;
 	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
@@ -67,7 +73,7 @@ int main(int argc, char** argv) {
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
 
-	struct GBAThread context = { };
+	struct GBAThread context = {};
 	_thread = &context;
 
 	if (!perfOpts.noVideo) {
@@ -75,6 +81,7 @@ int main(int argc, char** argv) {
 	}
 
 	context.debugger = createDebugger(&args, &context);
+	context.overrides = GBAConfigGetOverrides(&config);
 	char gameCode[5] = { 0 };
 
 	GBAConfigMap(&config, &opts);
@@ -83,7 +90,11 @@ int main(int argc, char** argv) {
 	GBAMapArgumentsToContext(&args, &context);
 	GBAMapOptionsToContext(&opts, &context);
 
-	GBAThreadStart(&context);
+	int didStart = GBAThreadStart(&context);
+
+	if (!didStart) {
+		goto cleanup;
+	}
 	GBAGetGameCode(context.gba, gameCode);
 
 	int frames = perfOpts.frames;
@@ -99,12 +110,6 @@ int main(int argc, char** argv) {
 	uint64_t duration = end - start;
 
 	GBAThreadJoin(&context);
-	GBAConfigFreeOpts(&opts);
-	freeArguments(&args);
-	GBAConfigDeinit(&config);
-	free(context.debugger);
-
-	free(renderer.outputBuffer);
 
 	float scaledFrames = frames * 1000000.f;
 	if (perfOpts.csv) {
@@ -120,7 +125,14 @@ int main(int argc, char** argv) {
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
-	return 0;
+cleanup:
+	GBAConfigFreeOpts(&opts);
+	freeArguments(&args);
+	GBAConfigDeinit(&config);
+	free(context.debugger);
+	free(renderer.outputBuffer);
+
+	return !didStart || GBAThreadHasCrashed(&context);
 }
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {
@@ -152,6 +164,9 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 		if (*frames == duration) {
 			_GBAPerfShutdown(0);
 		}
+		if (_dispatchExiting) {
+			GBAThreadEnd(context);
+		}
 	}
 	if (!quiet) {
 		printf("\033[2K\r");
@@ -160,7 +175,9 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 
 static void _GBAPerfShutdown(int signal) {
 	UNUSED(signal);
-	GBAThreadEnd(_thread);
+	// This will come in ON the GBA thread, so we have to handle it carefully
+	_dispatchExiting = true;
+	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
