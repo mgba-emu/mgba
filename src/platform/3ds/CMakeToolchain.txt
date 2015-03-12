@@ -4,7 +4,7 @@ else()
 	message(FATAL_ERROR "Could not find DEVKITPRO in environment")
 endif()
 
-if(ENV{DEVKITARM)
+if(DEFINED ENV{DEVKITARM})
 	set(DEVKITARM $ENV{DEVKITARM})
 else()
 	set(DEVKITARM ${DEVKITPRO}/devkitARM)
