@@ -154,4 +154,6 @@ void OverrideView::gameStopped() {
 	m_ui.idleLoop->clear();
 
 	m_ui.save->setEnabled(false);
+
+	updateOverrides();
 }
