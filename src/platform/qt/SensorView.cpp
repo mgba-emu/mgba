@@ -31,12 +31,17 @@ SensorView::SensorView(GameController* controller, QWidget* parent)
 	connect(m_ui.timeNow, &QPushButton::clicked, [controller, this] () {
 		m_ui.time->setDateTime(QDateTime::currentDateTime());
 	});
+
+	connect(m_controller, SIGNAL(luminanceValueChanged(int)), this, SLOT(luminanceValueChanged(int)));
  }
 
 void SensorView::setLuminanceValue(int value) {
-	bool oldState;
 	value = std::max(0, std::min(value, 255));
+	m_controller->setLuminanceValue(value);
+}
 
+void SensorView::luminanceValueChanged(int value) {
+	bool oldState;
 	oldState = m_ui.lightSpin->blockSignals(true);
 	m_ui.lightSpin->setValue(value);
 	m_ui.lightSpin->blockSignals(oldState);
@@ -44,6 +49,4 @@ void SensorView::setLuminanceValue(int value) {
 	oldState = m_ui.lightSlide->blockSignals(true);
 	m_ui.lightSlide->setValue(value);
 	m_ui.lightSlide->blockSignals(oldState);
-
-	m_controller->setLuminanceValue(value);
 }

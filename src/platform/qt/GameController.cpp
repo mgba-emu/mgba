@@ -489,6 +489,7 @@ void GameController::setLuminanceValue(uint8_t value) {
 			break;
 		}
 	}
+	emit luminanceValueChanged(m_luxValue);
 }
 
 void GameController::setLuminanceLevel(int level) {
