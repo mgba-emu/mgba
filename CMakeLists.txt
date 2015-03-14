@@ -138,7 +138,7 @@ if(BUILD_BBB OR BUILD_RASPI)
 	endif()
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
 
