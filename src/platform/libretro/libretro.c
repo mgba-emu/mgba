@@ -39,8 +39,8 @@ unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
 }
 
-void retro_set_environment(retro_environment_t environ) {
-	environCallback = environ;
+void retro_set_environment(retro_environment_t env) {
+	environCallback = env;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
