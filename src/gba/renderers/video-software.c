@@ -560,7 +560,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 #ifdef COLOR_16_BIT
-#ifdef __arm__
+#ifdef __ARM_NEON
 	_to16Bit(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS);
 #else
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {

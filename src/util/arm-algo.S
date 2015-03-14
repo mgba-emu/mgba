@@ -1,8 +1,9 @@
-# Copyright (c) 2013-2014 Jeffrey Pfau
+# Copyright (c) 2013-2015 Jeffrey Pfau
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#ifdef __ARM_NEON
 # r0: Destination
 # r1: Source
 # r2: Number of words to copy as halfwords
@@ -13,28 +14,22 @@ mov r8, r0
 mov r9, r1
 mov r10, r2
 .L0:
-tst r10, #7
+tst r10, #15
 beq .L1
 ldr r0, [r9], #4
 strh r0, [r8], #2
 sub r10, #1
 b .L0
 .L1:
-ldmia r9!, {r0-r7}
-strh r0, [r8], #2
-strh r1, [r8], #2
-strh r2, [r8], #2
-strh r3, [r8], #2
-strh r4, [r8], #2
-strh r5, [r8], #2
-strh r6, [r8], #2
-strh r7, [r8], #2
-subs r10, #8
+vld4.16 {d0, d1, d2, d3}, [r9]!
+vld4.16 {d4, d5, d6, d7}, [r9]!
+vst2.16 {d0, d2}, [r8]!
+vst2.16 {d4, d6}, [r8]!
+subs r10, #16
 bne .L1
 pop {r4-r10}
 bx lr
 
-#ifdef __ARM_NEON
 # r0: Destination
 # r1: Source
 # r2: Width
