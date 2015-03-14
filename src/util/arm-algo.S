@@ -92,3 +92,5 @@ bne .n40
 pop {r4-r7}
 bx lr
 #endif
+
+.section	.note.GNU-stack,"",%progbits
