@@ -139,13 +139,13 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		}
 		break;
 	case 2:
-		if (!hw->p0) {
+		if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
-			hw->rtc.bits |= hw->p1 << hw->rtc.bitsRead;
+			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
 		} else {
-			if (hw->p2) {
+			if (hw->pinState & 4) {
 				// GPIO direction should always != reading
-				if (hw->dir1) {
+				if (hw->direction & 2) {
 					if (RTCCommandDataIsReading(hw->rtc.command)) {
 						GBALog(hw->p, GBA_LOG_GAME_ERROR, "Attempting to write to RTC while in read mode");
 					}
@@ -292,7 +292,7 @@ void _gyroReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	if (hw->p0) {
+	if (hw->pinState & 1) {
 		if (gyro->sample) {
 			gyro->sample(gyro);
 		}
@@ -302,14 +302,14 @@ void _gyroReadPins(struct GBACartridgeHardware* hw) {
 		hw->gyroSample = (sample >> 21) + 0x6C0; // Crop off an extra bit so that we can't go negative
 	}
 
-	if (hw->gyroEdge && !hw->p1) {
+	if (hw->gyroEdge && !(hw->pinState & 2)) {
 		// Write bit on falling edge
 		unsigned bit = hw->gyroSample >> 15;
 		hw->gyroSample <<= 1;
 		_outputPins(hw, bit << 2);
 	}
 
-	hw->gyroEdge = hw->p1;
+	hw->gyroEdge = !!(hw->pinState & 2);
 }
 
 // == Rumble
@@ -324,7 +324,7 @@ void _rumbleReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	rumble->setRumble(rumble, hw->p3);
+	rumble->setRumble(rumble, !!(hw->pinState & 8));
 }
 
 // == Light sensor
@@ -337,11 +337,11 @@ void GBAHardwareInitLight(struct GBACartridgeHardware* hw) {
 }
 
 void _lightReadPins(struct GBACartridgeHardware* hw) {
-	if (hw->p2) {
+	if (hw->pinState & 4) {
 		// Boktai chip select
 		return;
 	}
-	if (hw->p1) {
+	if (hw->pinState & 2) {
 		struct GBALuminanceSource* lux = hw->p->luminanceSource;
 		GBALog(hw->p, GBA_LOG_DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
@@ -352,10 +352,10 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 			hw->lightSample = 0xFF;
 		}
 	}
-	if (hw->p0 && hw->lightEdge) {
+	if ((hw->pinState & 1) && hw->lightEdge) {
 		++hw->lightCounter;
 	}
-	hw->lightEdge = !hw->p0;
+	hw->lightEdge = !(hw->pinState & 1);
 
 	bool sendBit = hw->lightCounter >= hw->lightSample;
 	_outputPins(hw, sendBit << 3);

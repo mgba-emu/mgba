@@ -87,31 +87,16 @@ struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
 };
 
+DECL_BITFIELD(GPIOPin, uint16_t);
+
 struct GBACartridgeHardware {
 	struct GBA* p;
 	int devices;
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 
-	union {
-		struct {
-			unsigned p0 : 1;
-			unsigned p1 : 1;
-			unsigned p2 : 1;
-			unsigned p3 : 1;
-		};
-		uint16_t pinState;
-	};
-
-	union {
-		struct {
-			unsigned dir0 : 1;
-			unsigned dir1 : 1;
-			unsigned dir2 : 1;
-			unsigned dir3 : 1;			
-		};
-		uint16_t direction;
-	};
+	uint16_t pinState;
+	uint16_t direction;
 
 	struct GBARTC rtc;
 
