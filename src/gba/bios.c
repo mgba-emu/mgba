@@ -88,8 +88,8 @@ static void _BgAffineSet(struct GBA* gba) {
 		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
 		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
 		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
-		ox = cpu->memory.load32(cpu, offset, 0) / 256.f;
-		oy = cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
+		ox = (int32_t) cpu->memory.load32(cpu, offset, 0) / 256.f;
+		oy = (int32_t) cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
 		cx = (int16_t) cpu->memory.load16(cpu, offset + 8, 0);
 		cy = (int16_t) cpu->memory.load16(cpu, offset + 10, 0);
 		sx = (int16_t) cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
