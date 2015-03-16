@@ -29,6 +29,26 @@ static const GLint _glTexCoords[] = {
 };
 #endif
 
+static void _doViewport(int w, int h, struct SDLSoftwareRenderer* renderer) {
+	int drawW = w;
+	int drawH = h;
+	if (renderer->lockAspectRatio) {
+		if (w * 2 > h * 3) {
+			drawW = h * 3 / 2;
+		} else if (w * 2 < h * 3) {
+			drawH = w * 2 / 3;
+		}
+	}
+	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+	glClear(GL_COLOR_BUFFER_BIT);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_SwapWindow(renderer->window);
+#else
+	SDL_GL_SwapBuffers();
+#endif
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -86,9 +106,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
-
-	glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
-
+	_doViewport(renderer->viewportWidth, renderer->viewportHeight, renderer);
 	return true;
 }
 
@@ -110,7 +128,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			// Event handling can change the size of the screen
 			if (renderer->events.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
+				_doViewport(renderer->viewportWidth, renderer->viewportHeight, renderer);
 				renderer->events.windowUpdated = 0;
 			}
 #endif
