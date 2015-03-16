@@ -106,7 +106,8 @@ set_source_files_properties(${CMAKE_SOURCE_DIR}/res/mgba.icns PROPERTIES MACOSX_
 
 qt5_add_resources(RESOURCES resources.qrc)
 if(WIN32)
-	list(APPEND RESOURCES ${CMAKE_SOURCE_DIR}/res/mgba.rc)
+	configure_file(${CMAKE_SOURCE_DIR}/res/mgba.rc.in ${CMAKE_BINARY_DIR}/res/mgba.rc)
+	list(APPEND RESOURCES ${CMAKE_BINARY_DIR}/res/mgba.rc)
 endif()
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
