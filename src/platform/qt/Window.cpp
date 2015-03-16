@@ -255,7 +255,8 @@ void Window::openCheatsWindow() {
 
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON);
+	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
+	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
 	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
 	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
 	keyEditor->show();

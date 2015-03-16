@@ -26,7 +26,7 @@ class GBAKeyEditor : public QWidget {
 Q_OBJECT
 
 public:
-	GBAKeyEditor(InputController* controller, int type, QWidget* parent = nullptr);
+	GBAKeyEditor(InputController* controller, int type, const char* profile = nullptr, QWidget* parent = nullptr);
 
 public slots:
 	void setAll();
@@ -76,6 +76,7 @@ private:
 	QList<KeyEditor*>::iterator m_currentKey;
 
 	uint32_t m_type;
+	const char* m_profile;
 	InputController* m_controller;
 
 	QPicture m_background;

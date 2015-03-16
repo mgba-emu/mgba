@@ -78,7 +78,14 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
 	GBAInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
-	GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+	if (context->joystick) {
+		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(context->joystick));
+#else
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
+#endif
+	}
 }
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {

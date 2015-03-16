@@ -63,6 +63,7 @@ void InputController::setConfiguration(ConfigController* config) {
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
 	loadConfiguration(SDL_BINDING_BUTTON);
+	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 #endif
 }
 
@@ -70,9 +71,32 @@ void InputController::loadConfiguration(uint32_t type) {
 	GBAInputMapLoad(&m_inputMap, type, m_config->configuration());
 }
 
+void InputController::loadProfile(uint32_t type, const char* profile) {
+	GBAInputProfileLoad(&m_inputMap, type, m_config->configuration(), profile);
+}
+
 void InputController::saveConfiguration(uint32_t type) {
 	GBAInputMapSave(&m_inputMap, type, m_config->configuration());
 	m_config->write();
+}
+
+void InputController::saveProfile(uint32_t type, const char* profile) {
+	GBAInputProfileSave(&m_inputMap, type, m_config->configuration(), profile);
+	m_config->write();
+}
+
+const char* InputController::profileForType(uint32_t type) {
+	UNUSED(type);
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		return SDL_JoystickName(m_sdlEvents.joystick);
+#else
+		return SDL_JoystickName(SDL_JoystickIndex(m_sdlEvents.joystick));
+#endif
+	}
+#endif
+	return 0;
 }
 
 GBAKey InputController::mapKeyboard(int key) const {

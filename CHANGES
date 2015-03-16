@@ -27,6 +27,7 @@ Features:
  - Runtime configurable audio driver
  - Debugger: Add CLI function for writing a register
  - Libretro core for use with RetroArch and other front-ends
+ - Controller profiles for setting different bindings for different controllers
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio
