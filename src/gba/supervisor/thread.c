@@ -10,6 +10,8 @@
 #include "gba/cheats.h"
 #include "gba/serialize.h"
 #include "gba/supervisor/config.h"
+#include "gba/rr/mgm.h"
+#include "gba/rr/vbm.h"
 
 #include "debugger/debugger.h"
 
@@ -117,6 +119,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct GBACheatDevice cheatDevice;
 	struct GBAThread* threadContext = context;
 	struct ARMComponent* components[GBA_COMPONENT_MAX] = {};
+	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
@@ -131,6 +134,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.sync = &threadContext->sync;
 	threadContext->gba = &gba;
 	gba.logLevel = threadContext->logLevel;
+	gba.logHandler = threadContext->logHandler;
+	gba.stream = threadContext->stream;
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
@@ -170,7 +175,43 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		}
 	}
 
+	if (threadContext->movie) {
+		struct VDir* movieDir = VDirOpen(threadContext->movie);
+#ifdef USE_LIBZIP
+		if (!movieDir) {
+			movieDir = VDirOpenZip(threadContext->movie, 0);
+		}
+#endif
+		if (movieDir) {
+			struct GBAMGMContext* mgm = malloc(sizeof(*mgm));
+			GBAMGMContextCreate(mgm);
+			if (!GBAMGMSetStream(mgm, movieDir)) {
+				mgm->d.destroy(&mgm->d);
+			} else {
+				movie = &mgm->d;
+			}
+		} else {
+			struct VFile* movieFile = VFileOpen(threadContext->movie, O_RDONLY);
+			if (movieFile) {
+				struct GBAVBMContext* vbm = malloc(sizeof(*vbm));
+				GBAVBMContextCreate(vbm);
+				if (!GBAVBMSetStream(vbm, movieFile)) {
+					vbm->d.destroy(&vbm->d);
+				} else {
+					movie = &vbm->d;
+				}
+			}
+		}
+	}
+
 	ARMReset(&cpu);
+
+	if (movie) {
+		gba.rr = movie;
+		movie->startPlaying(movie, false);
+		GBARRInitPlay(&gba);
+	}
+
 	if (threadContext->skipBios) {
 		GBASkipBIOS(&cpu);
 	}
@@ -256,6 +297,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBACheatDeviceDestroy(&cheatDevice);
 	}
 
+	if (movie) {
+		movie->destroy(movie);
+		free(movie);
+	}
+
 	threadContext->sync.videoFrameOn = false;
 	ConditionWake(&threadContext->sync.videoFrameAvailableCond);
 	ConditionWake(&threadContext->sync.audioRequiredCond);
@@ -295,12 +341,12 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 	} else {
 		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
 		threadContext->gameDir = 0;
-#if ENABLE_LIBZIP
+#if USE_LIBZIP
 		if (!threadContext->gameDir) {
 			threadContext->gameDir = VDirOpenZip(args->fname, 0);
 		}
 #endif
-#if ENABLE_LZMA
+#if USE_LZMA
 		if (!threadContext->gameDir) {
 			threadContext->gameDir = VDirOpen7z(args->fname, 0);
 		}
@@ -309,6 +355,7 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 	threadContext->fname = args->fname;
 	threadContext->patch = VFileOpen(args->patch, O_RDONLY);
 	threadContext->cheatsFile = VFileOpen(args->cheatsFile, O_RDONLY);
+	threadContext->movie = args->movie;
 }
 
 bool GBAThreadStart(struct GBAThread* threadContext) {

@@ -26,6 +26,7 @@ struct GBAArguments {
 	char* patch;
 	char* cheatsFile;
 	bool dirmode;
+	char* movie;
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;

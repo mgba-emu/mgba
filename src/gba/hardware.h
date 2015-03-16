@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "macros.h"
+
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
 struct GBARotationSource {
@@ -52,16 +54,10 @@ enum GPIODirection {
 	GPIO_READ_WRITE = 1
 };
 
-union RTCControl {
-	struct {
-		unsigned : 3;
-		unsigned minIRQ : 1;
-		unsigned : 2;
-		unsigned hour24 : 1;
-		unsigned poweroff : 1;
-	};
-	uint8_t packed;
-};
+DECL_BITFIELD(RTCControl, uint8_t);
+DECL_BIT(RTCControl, MinIRQ, 3);
+DECL_BIT(RTCControl, Hour24, 6);
+DECL_BIT(RTCControl, Poweroff, 7);
 
 enum RTCCommand {
 	RTC_RESET = 0,
@@ -71,14 +67,10 @@ enum RTCCommand {
 	RTC_TIME = 6
 };
 
-union RTCCommandData {
-	struct {
-		unsigned magic : 4;
-		enum RTCCommand command : 3;
-		unsigned reading : 1;
-	};
-	uint8_t packed;
-};
+DECL_BITFIELD(RTCCommandData, uint8_t);
+DECL_BITS(RTCCommandData, Magic, 0, 4);
+DECL_BITS(RTCCommandData, Command, 4, 3);
+DECL_BIT(RTCCommandData, Reading, 7);
 
 struct GBARTC {
 	int bytesRemaining;
@@ -86,8 +78,8 @@ struct GBARTC {
 	int bitsRead;
 	int bits;
 	int commandActive;
-	union RTCCommandData command;
-	union RTCControl control;
+	RTCCommandData command;
+	RTCControl control;
 	uint8_t time[7];
 } __attribute__((packed));
 
@@ -95,31 +87,16 @@ struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
 };
 
+DECL_BITFIELD(GPIOPin, uint16_t);
+
 struct GBACartridgeHardware {
 	struct GBA* p;
 	int devices;
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 
-	union {
-		struct {
-			unsigned p0 : 1;
-			unsigned p1 : 1;
-			unsigned p2 : 1;
-			unsigned p3 : 1;
-		};
-		uint16_t pinState;
-	};
-
-	union {
-		struct {
-			unsigned dir0 : 1;
-			unsigned dir1 : 1;
-			unsigned dir2 : 1;
-			unsigned dir3 : 1;			
-		};
-		uint16_t direction;
-	};
+	uint16_t pinState;
+	uint16_t direction;
 
 	struct GBARTC rtc;
 
@@ -149,7 +126,7 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, u
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
 
 struct GBASerializedState;
-void GBAHardwareSerialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
-void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
+void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
+void GBAHardwareDeserialize(struct GBACartridgeHardware* gpio, const struct GBASerializedState* state);
 
 #endif

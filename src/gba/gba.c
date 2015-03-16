@@ -47,6 +47,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	struct GBA* gba = (struct GBA*) component;
 	gba->cpu = cpu;
 	gba->debugger = 0;
+	gba->sync = 0;
 
 	GBAInterruptHandlerInit(&cpu->irqh);
 	GBAMemoryInit(gba);
@@ -77,7 +78,9 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->romVf = 0;
 	gba->biosVf = 0;
 
+	gba->logHandler = 0;
 	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	gba->stream = 0;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -106,7 +109,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 	GBASIODeinit(&gba->sio);
-	GBARRContextDestroy(gba);
+	gba->rr = 0;
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -130,7 +133,7 @@ void GBAReset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
-	if (!GBARRIsPlaying(gba->rr) && !GBARRIsRecording(gba->rr)) {
+	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
 	GBAMemoryReset(gba);
@@ -547,10 +550,10 @@ static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format
 			threadContext->state = THREAD_CRASHED;
 			MutexUnlock(&threadContext->stateMutex);
 		}
-		if (threadContext->logHandler) {
-			threadContext->logHandler(threadContext, level, format, args);
-			return;
-		}
+	}
+	if (gba && gba->logHandler) {
+		gba->logHandler(threadContext, level, format, args);
+		return;
 	}
 
 	vprintf(format, args);
@@ -713,10 +716,10 @@ void GBAFrameStarted(struct GBA* gba) {
 
 void GBAFrameEnded(struct GBA* gba) {
 	if (gba->rr) {
-		GBARRNextFrame(gba->rr);
+		gba->rr->nextFrame(gba->rr);
 	}
 
-	if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
+	if (gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
 		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
 		size_t i;
 		for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
@@ -733,8 +736,8 @@ void GBAFrameEnded(struct GBA* gba) {
 		return;
 	}
 
-	if (thread->stream) {
-		thread->stream->postVideoFrame(thread->stream, thread->renderer);
+	if (gba->stream) {
+		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
 	if (thread->frameCallback) {

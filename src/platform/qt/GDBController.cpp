@@ -43,14 +43,16 @@ void GDBController::attach() {
 	if (m_gameController->isLoaded()) {
 		ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
-		connect(m_gameController, &GameController::gameStarted, [this] () {
-			disconnect(m_gameController);
+		QObject::disconnect(m_autoattach);
+		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this] () {
+			QObject::disconnect(m_autoattach);
 			ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 		});
 	}
 }
 
 void GDBController::detach() {
+	QObject::disconnect(m_autoattach);
 	if (!isAttached()) {
 		return;
 	}

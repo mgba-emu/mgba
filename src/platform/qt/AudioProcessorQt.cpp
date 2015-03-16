@@ -47,6 +47,7 @@ void AudioProcessorQt::start() {
 		format.setSampleType(QAudioFormat::SignedInt);
 
 		m_audioOutput = new QAudioOutput(format, this);
+		m_audioOutput->setCategory("game");
 	}
 
 	m_device->setInput(input());

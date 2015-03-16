@@ -292,7 +292,7 @@ struct VDir;
 struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
-void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
+void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);

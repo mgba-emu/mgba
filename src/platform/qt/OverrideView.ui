@@ -36,16 +36,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="clear">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Clear</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="save">
        <property name="enabled">
         <bool>false</bool>

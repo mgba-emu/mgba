@@ -59,7 +59,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #endif
 #endif
 
-	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 	glGenTextures(1, &renderer->tex);
 	glBindTexture(GL_TEXTURE_2D, renderer->tex);

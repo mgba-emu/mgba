@@ -20,7 +20,6 @@ struct GBACheatSet;
 struct GBAOptions;
 
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
-typedef void (*LogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -49,11 +48,6 @@ struct GBASync {
 	Mutex audioBufferMutex;
 };
 
-struct GBAAVStream {
-	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-	void (*postAudioFrame)(struct GBAAVStream*, int32_t left, int32_t right);
-};
-
 struct GBAThread {
 	// Output
 	enum ThreadState state;
@@ -72,6 +66,7 @@ struct GBAThread {
 	struct VFile* patch;
 	struct VFile* cheatsFile;
 	const char* fname;
+	const char* movie;
 	int activeKeys;
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
@@ -94,7 +89,7 @@ struct GBAThread {
 	enum ThreadState savedState;
 	int interruptDepth;
 
-	LogHandler logHandler;
+	GBALogHandler logHandler;
 	int logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;

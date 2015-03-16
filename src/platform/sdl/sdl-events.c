@@ -78,7 +78,14 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
 	GBAInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
-	GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+	if (context->joystick) {
+		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(context->joystick));
+#else
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
+#endif
+	}
 }
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
@@ -140,14 +147,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 			GBARewind(context, 10);
 			GBAThreadContinue(context);
 			return;
-		case SDLK_ESCAPE:
-			GBAThreadInterrupt(context);
-			if (context->gba->rr) {
-				GBARRStopPlaying(context->gba->rr);
-				GBARRStopRecording(context->gba->rr);
-			}
-			GBAThreadContinue(context);
-			return;
 		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
@@ -168,31 +167,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					break;
 				case SDLK_r:
 					GBAThreadReset(context);
-					break;
-				case SDLK_t:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						if (!GBARRIsRecording(context->gba->rr)) {
-							GBARRStopPlaying(context->gba->rr);
-							GBARRInitStream(context->gba->rr, context->stateDir);
-							GBARRReinitStream(context->gba->rr, INIT_EX_NIHILO);
-							GBARRStartRecording(context->gba->rr);
-							GBARRSaveState(context->gba);
-						}
-						GBAThreadContinue(context);
-					}
-					break;
-				case SDLK_y:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						GBARRStopRecording(context->gba->rr);
-						GBARRInitStream(context->gba->rr, context->stateDir);
-						GBARRStartPlaying(context->gba->rr, false);
-						GBARRLoadState(context->gba);
-						GBAThreadContinue(context);
-					}
 					break;
 				default:
 					break;

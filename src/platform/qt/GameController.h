@@ -86,6 +86,8 @@ signals:
 	void gameFailed();
 	void stateLoaded(GBAThread*);
 
+	void luminanceValueChanged(int);
+
 	void postLog(int level, const QString& log);
 
 public slots:
@@ -116,6 +118,7 @@ public slots:
 	void reloadAudioDriver();
 
 	void setLuminanceValue(uint8_t value);
+	uint8_t luminanceValue() const { return m_luxValue; }
 	void setLuminanceLevel(int level);
 	void increaseLuminanceLevel() { setLuminanceLevel(m_luxLevel + 1); }
 	void decreaseLuminanceLevel() { setLuminanceLevel(m_luxLevel - 1); }

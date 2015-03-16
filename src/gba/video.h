@@ -201,7 +201,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles);
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
 
 struct GBASerializedState;
-void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state);
-void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* state);
+void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);
+void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
 
 #endif

@@ -36,7 +36,10 @@ public:
 
 	void setConfiguration(ConfigController* config);
 	void loadConfiguration(uint32_t type);
+	void loadProfile(uint32_t type, const char* profile);
 	void saveConfiguration(uint32_t type = KEYBOARD);
+	void saveProfile(uint32_t type, const char* profile);
+	const char* profileForType(uint32_t type);
 
 	GBAKey mapKeyboard(int key) const;
 

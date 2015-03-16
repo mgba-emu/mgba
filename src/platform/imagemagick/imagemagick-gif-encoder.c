@@ -8,13 +8,14 @@
 #include "gba/video.h"
 
 static void _magickPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _magickPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
+static void _magickPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->wand = 0;
 
 	encoder->d.postVideoFrame = _magickPostVideoFrame;
 	encoder->d.postAudioFrame = _magickPostAudioFrame;
+	encoder->d.postAudioBuffer = 0;
 
 	encoder->frameskip = 2;
 }
@@ -70,7 +71,7 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	++encoder->currentFrame;
 }
 
-static void _magickPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
+static void _magickPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
 	UNUSED(stream);
 	UNUSED(left);
 	UNUSED(right);

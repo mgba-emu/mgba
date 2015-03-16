@@ -45,6 +45,8 @@ private:
 
 	ushort m_port;
 	Address m_bindAddress;
+
+	QMetaObject::Connection m_autoattach;
 };
 
 }

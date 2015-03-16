@@ -20,9 +20,10 @@ const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.431;
 const qreal GBAKeyEditor::DPAD_WIDTH = 0.1;
 const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
 
-GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* parent)
+GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const char* profile, QWidget* parent)
 	: QWidget(parent)
 	, m_type(type)
+	, m_profile(profile)
 	, m_controller(controller)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
@@ -163,6 +164,10 @@ void GBAKeyEditor::save() {
 	bindKey(m_keyL, GBA_KEY_L);
 	bindKey(m_keyR, GBA_KEY_R);
 	m_controller->saveConfiguration(m_type);
+
+	if (m_profile) {
+		m_controller->saveProfile(m_type, m_profile);
+	}
 }
 
 void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {

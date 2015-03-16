@@ -53,6 +53,7 @@ void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_RUNNING;
 	debugger->breakpoints = 0;
+	debugger->swBreakpoints = 0;
 	debugger->originalMemory = cpu->memory;
 	debugger->watchpoints = 0;
 	debugger->currentBreakpoint = 0;

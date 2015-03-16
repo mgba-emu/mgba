@@ -1461,12 +1461,12 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	cpu->cycles += cycles;
 }
 
-void GBAMemorySerialize(struct GBAMemory* memory, struct GBASerializedState* state) {
+void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state) {
 	memcpy(state->wram, memory->wram, SIZE_WORKING_RAM);
 	memcpy(state->iwram, memory->iwram, SIZE_WORKING_IRAM);
 }
 
-void GBAMemoryDeserialize(struct GBAMemory* memory, struct GBASerializedState* state) {
+void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state) {
 	memcpy(memory->wram, state->wram, SIZE_WORKING_RAM);
 	memcpy(memory->iwram, state->iwram, SIZE_WORKING_IRAM);
 }

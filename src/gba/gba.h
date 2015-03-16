@@ -90,8 +90,17 @@ enum {
 
 struct GBA;
 struct GBARotationSource;
+struct GBAThread;
 struct Patch;
 struct VFile;
+
+typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
+
+struct GBAAVStream {
+	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+	void (*postAudioFrame)(struct GBAAVStream*, int16_t left, int16_t right);
+	void (*postAudioBuffer)(struct GBAAVStream*, struct GBAAudio*);
+};
 
 struct GBATimer {
 	uint16_t reload;
@@ -141,7 +150,9 @@ struct GBA {
 
 	const char* activeFile;
 
-	int logLevel;
+	GBALogHandler logHandler;
+	enum GBALogLevel logLevel;
+	struct GBAAVStream* stream;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

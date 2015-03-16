@@ -256,7 +256,8 @@ void Window::openCheatsWindow() {
 
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON);
+	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
+	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
 	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
 	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
 	keyEditor->show();
@@ -714,22 +715,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
 
-	toolsMenu->addSeparator();
-	QAction* solarIncrease = new QAction(tr("Increase solar level"), toolsMenu);
+	QMenu* solarMenu = toolsMenu->addMenu(tr("Solar sensor"));
+	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
-	addControlledAction(toolsMenu, solarIncrease, "increaseLuminanceLevel");
+	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
 
-	QAction* solarDecrease = new QAction(tr("Decrease solar level"), toolsMenu);
+	QAction* solarDecrease = new QAction(tr("Decrease solar level"), solarMenu);
 	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
-	addControlledAction(toolsMenu, solarDecrease, "decreaseLuminanceLevel");
+	addControlledAction(solarMenu, solarDecrease, "decreaseLuminanceLevel");
 
-	QAction* maxSolar = new QAction(tr("Brightest solar level"), toolsMenu);
+	QAction* maxSolar = new QAction(tr("Brightest solar level"), solarMenu);
 	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
-	addControlledAction(toolsMenu, maxSolar, "maxLuminanceLevel");
+	addControlledAction(solarMenu, maxSolar, "maxLuminanceLevel");
 
-	QAction* minSolar = new QAction(tr("Darkest solar level"), toolsMenu);
+	QAction* minSolar = new QAction(tr("Darkest solar level"), solarMenu);
 	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
-	addControlledAction(toolsMenu, minSolar, "minLuminanceLevel");
+	addControlledAction(solarMenu, minSolar, "minLuminanceLevel");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
