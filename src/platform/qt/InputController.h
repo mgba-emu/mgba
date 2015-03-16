@@ -31,7 +31,7 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(QObject* parent = nullptr);
+	InputController(int playerId = 0, QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
@@ -67,6 +67,7 @@ private:
 
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
+	int m_playerId;
 
 #ifdef BUILD_SDL
 	GBASDLEvents m_sdlEvents;

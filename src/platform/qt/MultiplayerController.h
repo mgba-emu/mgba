@@ -22,6 +22,8 @@ public:
 	bool attachGame(GameController*);
 	void detachGame(GameController*);
 
+	int attached();
+
 private:
 	GBASIOLockstep m_lockstep;
 };

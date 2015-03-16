@@ -61,3 +61,11 @@ void MultiplayerController::detachGame(GameController* controller) {
 	MutexUnlock(&m_lockstep.mutex);
 	controller->threadContinue();
 }
+
+int MultiplayerController::attached() {
+	int num;
+	MutexLock(&m_lockstep.mutex);
+	num = m_lockstep.attached;
+	MutexUnlock(&m_lockstep.mutex);
+	return num;
+}

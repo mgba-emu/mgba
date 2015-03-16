@@ -28,7 +28,7 @@ struct GBASDLEvents {
 #endif
 };
 
-bool GBASDLInitEvents(struct GBASDLEvents*);
+bool GBASDLInitEvents(struct GBASDLEvents*, int playerId);
 void GBASDLDeinitEvents(struct GBASDLEvents*);
 
 void GBASDLInitBindings(struct GBAInputMap* inputMap);

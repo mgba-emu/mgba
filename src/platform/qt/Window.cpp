@@ -37,13 +37,14 @@ extern "C" {
 
 using namespace QGBA;
 
-Window::Window(ConfigController* config, QWidget* parent)
+Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
+	, m_inputController(playerId)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -55,6 +56,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 #endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
+	, m_playerId(playerId)
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
@@ -532,7 +534,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			multiplayer = std::make_shared<MultiplayerController>();
 			m_controller->setMultiplayerController(multiplayer);
 		}
-		Window* w2 = new Window(m_config);
+		Window* w2 = new Window(m_config, multiplayer->attached());
 		w2->setAttribute(Qt::WA_DeleteOnClose);
 		w2->loadConfig();
 		w2->controller()->setMultiplayerController(multiplayer);

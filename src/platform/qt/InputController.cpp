@@ -19,8 +19,9 @@ extern "C" {
 
 using namespace QGBA;
 
-InputController::InputController(QObject* parent)
+InputController::InputController(int playerId, QObject* parent)
 	: QObject(parent)
+	, m_playerId(playerId)
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
 {
@@ -28,9 +29,8 @@ InputController::InputController(QObject* parent)
 
 #ifdef BUILD_SDL
 	m_sdlEvents.bindings = &m_inputMap;
-	GBASDLInitEvents(&m_sdlEvents);
+	GBASDLInitEvents(&m_sdlEvents, playerId);
 	GBASDLInitBindings(&m_inputMap);
-	SDL_JoystickEventState(SDL_QUERY);
 
 	m_gamepadTimer = new QTimer(this);
 	connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));

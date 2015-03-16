@@ -21,13 +21,13 @@
 
 static int _openContexts = 0;
 
-bool GBASDLInitEvents(struct GBASDLEvents* context) {
+bool GBASDLInitEvents(struct GBASDLEvents* context, int playerId) {
 	if (!_openContexts && SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return false;
 	}
 	++_openContexts;
 	SDL_JoystickEventState(SDL_ENABLE);
-	context->joystick = SDL_JoystickOpen(0);
+	context->joystick = SDL_JoystickOpen(playerId);
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif

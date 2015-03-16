@@ -39,7 +39,7 @@ class Window : public QMainWindow {
 Q_OBJECT
 
 public:
-	Window(ConfigController* config, QWidget* parent = nullptr);
+	Window(ConfigController* config, int playerId = 0, QWidget* parent = nullptr);
 	virtual ~Window();
 
 	GameController* controller() { return m_controller; }
@@ -134,6 +134,7 @@ private:
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
+	int m_playerId;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;
