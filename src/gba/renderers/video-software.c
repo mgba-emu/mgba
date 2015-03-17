@@ -1526,6 +1526,12 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 			color32 |= (color << 6) & 0xF800;
 			color32 |= (color << 9) & 0xF80000;
 			color = color32;
+#elif COLOR_5_6_5
+			uint16_t color16 = 0;
+			color16 |= (color & 0x001F) << 11;
+			color16 |= (color & 0x03E0) << 1;
+			color16 |= (color & 0x7C00) >> 10;
+			color = color16;
 #endif
 			mosaicWait = mosaicH;
 		} else {
@@ -1609,6 +1615,12 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
 			color = color32;
+#elif COLOR_5_6_5
+			uint16_t color16 = 0;
+			color16 |= (color & 0x001F) << 11;
+			color16 |= (color & 0x03E0) << 1;
+			color16 |= (color & 0x7C00) >> 10;
+			color = color16;
 #endif
 			mosaicWait = mosaicH;
 		} else {
