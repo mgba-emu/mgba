@@ -156,6 +156,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setAudioSync(opts->audioSync);
 	setVideoSync(opts->videoSync);
 	setSkipBIOS(opts->skipBios);
+	setUseBIOS(opts->useBios);
 	setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
 
 	threadInterrupt();
@@ -228,8 +229,10 @@ void GameController::openGame() {
 #endif
 	}
 
-	if (!m_bios.isNull()) {
+	if (!m_bios.isNull() &&m_useBios) {
 		m_threadContext.bios = VFileOpen(m_bios.toLocal8Bit().constData(), O_RDONLY);
+	} else {
+		m_threadContext.bios = nullptr;
 	}
 
 	if (!m_patch.isNull()) {
@@ -399,6 +402,12 @@ void GameController::setFPSTarget(float fps) {
 void GameController::setSkipBIOS(bool set) {
 	threadInterrupt();
 	m_threadContext.skipBios = set;
+	threadContinue();
+}
+
+void GameController::setUseBIOS(bool use) {
+	threadInterrupt();
+	m_useBios = use;
 	threadContinue();
 }
 

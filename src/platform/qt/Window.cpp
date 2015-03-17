@@ -196,6 +196,8 @@ void Window::selectBIOS() {
 		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
 		m_config->updateOption("bios");
+		m_config->setOption("useBios", true);
+		m_config->updateOption("useBios");
 		m_controller->loadBIOS(filename);
 	}
 }
@@ -732,6 +734,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
+
+	ConfigOption* useBios = m_config->addOption("useBios");
+	useBios->connect([this](const QVariant& value) { m_controller->setUseBIOS(value.toBool()); });
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
 	rewindEnable->connect([this](const QVariant& value) { m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt()); });

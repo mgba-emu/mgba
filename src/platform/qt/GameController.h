@@ -87,6 +87,7 @@ public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
 	void setSkipBIOS(bool);
+	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
 	void openGame();
 	void closeGame();
@@ -151,6 +152,7 @@ private:
 
 	QString m_fname;
 	QString m_bios;
+	bool m_useBios;
 	QString m_patch;
 
 	QThread* m_audioThread;

@@ -190,6 +190,9 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 
 	int fakeBool;
+	if (_lookupIntValue(config, "useSync", &fakeBool)) {
+		opts->useBios = fakeBool;
+	}
 	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
 		opts->audioSync = fakeBool;
 	}
@@ -229,6 +232,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts) {
 	ConfigurationSetValue(&config->defaultsTable, 0, "bios", opts->bios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "useBios", opts->useBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "logLevel", opts->logLevel);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "frameskip", opts->frameskip);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindEnable", opts->rewindEnable);

@@ -310,7 +310,11 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 }
 
 void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* threadContext) {
-	threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
+	if (opts->useBios) {
+		threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
+	} else {
+		threadContext->bios = 0;
+	}
 	threadContext->frameskip = opts->frameskip;
 	threadContext->logLevel = opts->logLevel;
 	if (opts->rewindEnable) {

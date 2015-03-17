@@ -19,6 +19,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	m_ui.setupUi(this);
 
 	loadSetting("bios", m_ui.bios);
+	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
 	loadSetting("videoSync", m_ui.videoSync);
@@ -68,6 +69,7 @@ void SettingsView::selectBios() {
 
 void SettingsView::updateConfig() {
 	saveSetting("bios", m_ui.bios);
+	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
 	saveSetting("videoSync", m_ui.videoSync);

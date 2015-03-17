@@ -100,6 +100,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
+	m_opts.useBios = true;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);

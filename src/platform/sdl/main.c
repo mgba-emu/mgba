@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
 	struct GBAOptions opts = {
 		.width = VIDEO_HORIZONTAL_PIXELS,
 		.height = VIDEO_VERTICAL_PIXELS,
+		.useBios = true,
 		.rewindEnable = true,
 		.audioBuffers = 512,
 		.videoSync = false,
