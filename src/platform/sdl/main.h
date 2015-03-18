@@ -31,6 +31,10 @@
 #pragma GCC diagnostic pop
 #endif
 
+#ifdef USE_PIXMAN
+#include <pixman.h>
+#endif
+
 struct SDLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
@@ -53,6 +57,11 @@ struct SDLSoftwareRenderer {
 
 #ifdef BUILD_GL
 	GLuint tex;
+#endif
+
+#ifdef USE_PIXMAN
+	pixman_image_t* pix;
+	pixman_image_t* screenpix;
 #endif
 
 #ifdef BUILD_RASPI
