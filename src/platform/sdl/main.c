@@ -76,6 +76,9 @@ int main(int argc, char** argv) {
 	renderer.events.windowUpdated = 0;
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
+	if (renderer.ratio == 0) {
+		renderer.ratio = 1;
+	}
 
 	renderer.lockAspectRatio = opts.lockAspectRatio;
 	renderer.filter = opts.resampleVideo;
