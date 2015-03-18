@@ -35,7 +35,18 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 }
 
 void GBASDLInitBindings(struct GBAInputMap* inputMap) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#ifdef BUILD_PANDORA
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_PAGEDOWN, GBA_KEY_A);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_END, GBA_KEY_B);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RSHIFT, GBA_KEY_L);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RCTRL, GBA_KEY_R);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LALT, GBA_KEY_START);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LCTRL, GBA_KEY_SELECT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
@@ -105,7 +116,7 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if !defined(BUILD_PANORA) && SDL_VERSION_ATLEAST(2, 0, 0)
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
 #else
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
