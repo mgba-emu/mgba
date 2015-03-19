@@ -77,6 +77,12 @@ struct SDLSoftwareRenderer {
 	GLuint texLocation;
 	GLuint positionLocation;
 #endif
+
+#ifdef BUILD_PANDORA
+	int fb;
+	int odd;
+	void* base[2];
+#endif
 };
 
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
