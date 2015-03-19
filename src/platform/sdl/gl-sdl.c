@@ -160,5 +160,5 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 }
 
 void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	UNUSED(renderer);
+	free(renderer->d.outputBuffer);
 }

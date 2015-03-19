@@ -123,7 +123,9 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 }
 
 void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	UNUSED(renderer);
+	if (renderer->ratio > 1) {
+		free(renderer->d.outputBuffer);
+	}
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_UnlockSurface(surface);

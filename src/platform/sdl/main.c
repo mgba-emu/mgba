@@ -143,8 +143,6 @@ static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 }
 
 static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	free(renderer->d.outputBuffer);
-
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
