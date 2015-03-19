@@ -116,7 +116,7 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
-#if !defined(BUILD_PANORA) && SDL_VERSION_ATLEAST(2, 0, 0)
+#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
 #else
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
