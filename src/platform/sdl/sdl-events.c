@@ -158,6 +158,11 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 			GBARewind(context, 10);
 			GBAThreadContinue(context);
 			return;
+#ifdef BUILD_PANDORA
+		case SDLK_ESCAPE:
+			GBAThreadEnd(context);
+			return;
+#endif
 		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
