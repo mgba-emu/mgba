@@ -601,12 +601,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
-	videoSync->connect([this](const QVariant& value) { m_controller->setVideoSync(value.toBool()); });
+	videoSync->connect([this](const QVariant& value) {
+		m_controller->setVideoSync(value.toBool());
+	}, this);
 	m_config->updateOption("videoSync");
 
 	ConfigOption* audioSync = m_config->addOption("audioSync");
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
-	audioSync->connect([this](const QVariant& value) { m_controller->setAudioSync(value.toBool()); });
+	audioSync->connect([this](const QVariant& value) {
+		m_controller->setAudioSync(value.toBool());
+	}, this);
 	m_config->updateOption("audioSync");
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
@@ -625,17 +629,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
-	lockAspectRatio->connect([this](const QVariant& value) { m_display->lockAspectRatio(value.toBool()); });
+	lockAspectRatio->connect([this](const QVariant& value) {
+		m_display->lockAspectRatio(value.toBool());
+	}, this);
 	m_config->updateOption("lockAspectRatio");
 
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Resample video"), avMenu);
-	resampleVideo->connect([this](const QVariant& value) { m_display->filter(value.toBool()); });
+	resampleVideo->connect([this](const QVariant& value) {
+		m_display->filter(value.toBool());
+	}, this);
 	m_config->updateOption("resampleVideo");
 
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");
-	skip->connect([this](const QVariant& value) { m_controller->setFrameskip(value.toInt()); });
+	skip->connect([this](const QVariant& value) {
+		m_controller->setFrameskip(value.toInt());
+	}, this);
 	for (int i = 0; i <= 10; ++i) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
@@ -645,7 +655,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
-	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
+	buffers->connect([this](const QVariant& value) {
+		emit audioBufferSamplesChanged(value.toInt());
+	}, this);
 	buffers->addValue(tr("512"), 512, buffersMenu);
 	buffers->addValue(tr("768"), 768, buffersMenu);
 	buffers->addValue(tr("1024"), 1024, buffersMenu);
@@ -657,7 +669,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* target = avMenu->addMenu("FPS target");
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
-	fpsTargetOption->connect([this](const QVariant& value) { emit fpsTargetChanged(value.toInt()); });
+	fpsTargetOption->connect([this](const QVariant& value) {
+		emit fpsTargetChanged(value.toInt());
+	}, this);
 	fpsTargetOption->addValue(tr("15"), 15, target);
 	fpsTargetOption->addValue(tr("30"), 30, target);
 	fpsTargetOption->addValue(tr("45"), 45, target);
@@ -749,16 +763,24 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
-	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
+	skipBios->connect([this](const QVariant& value) {
+		m_controller->setSkipBIOS(value.toBool());
+	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
-	rewindEnable->connect([this](const QVariant& value) { m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+	rewindEnable->connect([this](const QVariant& value) {
+		m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt());
+	}, this);
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
-	rewindBufferCapacity->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+	rewindBufferCapacity->connect([this](const QVariant& value) {
+		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt());
+	}, this);
 
 	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
-	rewindBufferInterval->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt()); });
+	rewindBufferInterval->connect([this](const QVariant& value) {
+		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt());
+	}, this);
 
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);

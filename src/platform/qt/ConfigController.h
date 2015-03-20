@@ -32,11 +32,11 @@ Q_OBJECT
 public:
 	ConfigOption(QObject* parent = nullptr);
 
-	void connect(std::function<void(const QVariant&)>);
+	void connect(std::function<void(const QVariant&)>, QObject* parent = nullptr);
 
-	QAction* addValue(const QString& text, const QVariant& value, QMenu* parent = 0);
-	QAction* addValue(const QString& text, const char* value, QMenu* parent = 0);
-	QAction* addBoolean(const QString& text, QMenu* parent = 0);
+	QAction* addValue(const QString& text, const QVariant& value, QMenu* parent = nullptr);
+	QAction* addValue(const QString& text, const char* value, QMenu* parent = nullptr);
+	QAction* addBoolean(const QString& text, QMenu* parent = nullptr);
 
 public slots:
 	void setValue(bool value);
@@ -49,7 +49,7 @@ signals:
 	void valueChanged(const QVariant& value);
 
 private:
-	std::function<void(const QVariant&)> m_slot;
+	QMap<QObject*, std::function<void(const QVariant&)>> m_slots;
 	QList<QPair<QAction*, QVariant>> m_actions;
 };
 
