@@ -323,10 +323,8 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 		savedata->command <<= 1;
 		savedata->command |= value & 0x1;
 		if (savedata->command == EEPROM_COMMAND_WRITE) {
-			savedata->addressBits = writeSize - 64 - 2;
 			savedata->writeAddress = 0;
 		} else {
-			savedata->addressBits = writeSize - 2;
 			savedata->readAddress = 0;
 		}
 		break;
@@ -338,7 +336,6 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			savedata->writeAddress |= (value & 0x1) << 6;
 		} else if (writeSize == 1) {
 			savedata->command = EEPROM_COMMAND_NULL;
-			savedata->writePending = 1;
 		} else {
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));

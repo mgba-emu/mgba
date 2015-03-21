@@ -70,8 +70,6 @@ struct GBASavedata {
 	int readBitsRemaining;
 	int readAddress;
 	int writeAddress;
-	int writePending;
-	int addressBits;
 
 	uint8_t* currentBank;
 
