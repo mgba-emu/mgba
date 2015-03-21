@@ -75,6 +75,7 @@ Misc:
  - All: Enable link-time optimization
  - GBA Thread: Make GBASyncWaitFrameStart time out
  - GBA: Move A/V stream interface into core
+ - GBA: Savestates now take into account savedata state machines (fixes #109)
 
 0.1.1: (2015-01-24)
 Bugfixes:

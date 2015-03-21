@@ -48,6 +48,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
+	GBASavedataSerialize(&gba->memory.savedata, state, false);
 
 	state->associatedStreamId = 0;
 	if (gba->rr) {
@@ -111,6 +112,7 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
+	GBASavedataDeserialize(&gba->memory.savedata, state, false);
 
 	if (gba->rr) {
 		gba->rr->stateLoaded(gba->rr, state);

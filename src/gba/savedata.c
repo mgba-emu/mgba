@@ -6,6 +6,7 @@
 #include "savedata.h"
 
 #include "gba/gba.h"
+#include "gba/serialize.h"
 
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -373,6 +374,37 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		return data & 0x1;
 	}
 	return 0;
+}
+
+void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
+	state->savedata.type = savedata->type;
+	state->savedata.command = savedata->command;
+	state->savedata.flashState = savedata->flashState;
+	state->savedata.flashBank = savedata->currentBank == &savedata->data[0x10000];
+	state->savedata.readBitsRemaining = savedata->readBitsRemaining;
+	state->savedata.readAddress = savedata->readAddress;
+	state->savedata.writeAddress = savedata->writeAddress;
+
+	UNUSED(includeData); // TODO
+}
+
+void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state, bool includeData) {
+	if (state->savedata.type == SAVEDATA_FORCE_NONE) {
+		return;
+	}
+	if (savedata->type != state->savedata.type) {
+		GBASavedataForceType(savedata, state->savedata.type);
+	}
+	savedata->command = state->savedata.command;
+	savedata->flashState = state->savedata.flashState;
+	savedata->readBitsRemaining = state->savedata.readBitsRemaining;
+	savedata->readAddress = state->savedata.readAddress;
+	savedata->writeAddress = state->savedata.writeAddress;
+	if (savedata->type == SAVEDATA_FLASH1M) {
+		_flashSwitchBank(savedata, state->savedata.flashBank);
+	}
+
+	UNUSED(includeData); // TODO
 }
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
