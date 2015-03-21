@@ -136,7 +136,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->events, &event);
+			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {

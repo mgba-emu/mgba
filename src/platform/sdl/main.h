@@ -39,6 +39,7 @@ struct SDLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
+	struct GBASDLPlayer player;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;

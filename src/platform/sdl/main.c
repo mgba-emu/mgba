@@ -72,8 +72,8 @@ int main(int argc, char** argv) {
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.events.fullscreen = opts.fullscreen;
-	renderer.events.windowUpdated = 0;
+	renderer.player.fullscreen = opts.fullscreen;
+	renderer.player.windowUpdated = 0;
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
@@ -103,10 +103,12 @@ int main(int argc, char** argv) {
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio, &context);
 
-	renderer.events.bindings = &inputMap;
+	renderer.player.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
-	GBASDLInitEvents(&renderer.events, 0);
+	GBASDLInitEvents(&renderer.events);
 	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
+	GBASDLAttachPlayer(&renderer.events, &renderer.player);
+	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
 	context.overrides = GBAConfigGetOverrides(&config);
 
 	int didFail = 0;

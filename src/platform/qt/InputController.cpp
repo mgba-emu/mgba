@@ -19,6 +19,9 @@ extern "C" {
 
 using namespace QGBA;
 
+int InputController::s_sdlInited = 0;
+GBASDLEvents InputController::s_sdlEvents;
+
 InputController::InputController(int playerId, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
@@ -28,8 +31,11 @@ InputController::InputController(int playerId, QObject* parent)
 	GBAInputMapInit(&m_inputMap);
 
 #ifdef BUILD_SDL
-	m_sdlEvents.bindings = &m_inputMap;
-	GBASDLInitEvents(&m_sdlEvents, playerId);
+	if (s_sdlInited == 0) {
+		GBASDLInitEvents(&s_sdlEvents);
+	}
+	++s_sdlInited;
+	m_sdlPlayer.bindings = &m_inputMap;
 	GBASDLInitBindings(&m_inputMap);
 
 	m_gamepadTimer = new QTimer(this);
@@ -54,7 +60,10 @@ InputController::~InputController() {
 	GBAInputMapDeinit(&m_inputMap);
 
 #ifdef BUILD_SDL
-	GBASDLDeinitEvents(&m_sdlEvents);
+	--s_sdlInited;
+	if (s_sdlInited == 0) {
+		GBASDLDeinitEvents(&s_sdlEvents);
+	}
 #endif
 }
 
@@ -62,26 +71,31 @@ void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
+	GBASDLEventsLoadConfig(&s_sdlEvents, config->input());
+	if (!m_playerAttached) {
+		GBASDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
+		m_playerAttached = true;
+	}
 	loadConfiguration(SDL_BINDING_BUTTON);
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 #endif
 }
 
 void InputController::loadConfiguration(uint32_t type) {
-	GBAInputMapLoad(&m_inputMap, type, m_config->configuration());
+	GBAInputMapLoad(&m_inputMap, type, m_config->input());
 }
 
 void InputController::loadProfile(uint32_t type, const char* profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->configuration(), profile);
+	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile);
 }
 
 void InputController::saveConfiguration(uint32_t type) {
-	GBAInputMapSave(&m_inputMap, type, m_config->configuration());
+	GBAInputMapSave(&m_inputMap, type, m_config->input());
 	m_config->write();
 }
 
 void InputController::saveProfile(uint32_t type, const char* profile) {
-	GBAInputProfileSave(&m_inputMap, type, m_config->configuration(), profile);
+	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile);
 	m_config->write();
 }
 
@@ -90,9 +104,9 @@ const char* InputController::profileForType(uint32_t type) {
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		return SDL_JoystickName(m_sdlEvents.joystick);
+		return SDL_JoystickName(m_sdlPlayer.joystick);
 #else
-		return SDL_JoystickName(SDL_JoystickIndex(m_sdlEvents.joystick));
+		return SDL_JoystickName(SDL_JoystickIndex(m_sdlPlayer.joystick));
 #endif
 	}
 #endif
@@ -109,7 +123,7 @@ void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
 
 #ifdef BUILD_SDL
 int InputController::testSDLEvents() {
-	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
 	int numButtons = SDL_JoystickNumButtons(joystick);
 	int activeButtons = 0;
@@ -156,7 +170,7 @@ int InputController::testSDLEvents() {
 }
 
 QSet<int> InputController::activeGamepadButtons() {
-	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
 	int numButtons = SDL_JoystickNumButtons(joystick);
 	QSet<int> activeButtons;
@@ -170,7 +184,7 @@ QSet<int> InputController::activeGamepadButtons() {
 }
 
 QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes() {
-	SDL_Joystick* joystick = m_sdlEvents.joystick;
+	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
 	int numButtons = SDL_JoystickNumAxes(joystick);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;

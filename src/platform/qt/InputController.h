@@ -70,7 +70,10 @@ private:
 	int m_playerId;
 
 #ifdef BUILD_SDL
-	GBASDLEvents m_sdlEvents;
+	static int s_sdlInited;
+	static GBASDLEvents s_sdlEvents;
+	GBASDLPlayer m_sdlPlayer;
+	bool m_playerAttached;
 #endif
 
 	QSet<int> m_activeButtons;

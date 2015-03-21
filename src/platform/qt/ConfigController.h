@@ -79,6 +79,8 @@ public:
 	Configuration* overrides() { return GBAConfigGetOverrides(&m_config); }
 	void saveOverride(const GBACartridgeOverride&);
 
+	Configuration* input() { return GBAConfigGetInput(&m_config); }
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);
@@ -90,10 +92,7 @@ public slots:
 	void write();
 
 private:
-	Configuration* configuration() { return &m_config.configTable; }
 	Configuration* defaults() { return &m_config.defaultsTable; }
-
-	friend class InputController; // TODO: Do this without friends
 
 	GBAConfig m_config;
 	GBAOptions m_opts;
