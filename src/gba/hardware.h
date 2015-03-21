@@ -54,7 +54,7 @@ enum GPIODirection {
 	GPIO_READ_WRITE = 1
 };
 
-DECL_BITFIELD(RTCControl, uint8_t);
+DECL_BITFIELD(RTCControl, uint32_t);
 DECL_BIT(RTCControl, MinIRQ, 3);
 DECL_BIT(RTCControl, Hour24, 6);
 DECL_BIT(RTCControl, Poweroff, 7);
@@ -67,7 +67,7 @@ enum RTCCommand {
 	RTC_TIME = 6
 };
 
-DECL_BITFIELD(RTCCommandData, uint8_t);
+DECL_BITFIELD(RTCCommandData, uint32_t);
 DECL_BITS(RTCCommandData, Magic, 0, 4);
 DECL_BITS(RTCCommandData, Command, 4, 3);
 DECL_BIT(RTCCommandData, Reading, 7);
