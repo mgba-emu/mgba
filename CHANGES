@@ -29,6 +29,8 @@ Features:
  - Libretro core for use with RetroArch and other front-ends
  - Controller profiles for setting different bindings for different controllers
  - Ability to lock aspect ratio
+ - Local link cable support
+ - Ability to switch which game controller is in use per instance
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio
