@@ -27,6 +27,7 @@ InputController::InputController(int playerId, QObject* parent)
 	, m_playerId(playerId)
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
+	, m_playerAttached(false)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -102,7 +103,7 @@ void InputController::saveProfile(uint32_t type, const QString& profile) {
 const char* InputController::profileForType(uint32_t type) {
 	UNUSED(type);
 #ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
+	if (type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		return SDL_JoystickName(m_sdlPlayer.joystick);
 #else
