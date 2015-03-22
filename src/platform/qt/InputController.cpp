@@ -85,8 +85,8 @@ void InputController::loadConfiguration(uint32_t type) {
 	GBAInputMapLoad(&m_inputMap, type, m_config->input());
 }
 
-void InputController::loadProfile(uint32_t type, const char* profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile);
+void InputController::loadProfile(uint32_t type, const QString& profile) {
+	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
 }
 
 void InputController::saveConfiguration(uint32_t type) {
@@ -94,8 +94,8 @@ void InputController::saveConfiguration(uint32_t type) {
 	m_config->write();
 }
 
-void InputController::saveProfile(uint32_t type, const char* profile) {
-	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile);
+void InputController::saveProfile(uint32_t type, const QString& profile) {
+	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
 	m_config->write();
 }
 
@@ -112,6 +112,38 @@ const char* InputController::profileForType(uint32_t type) {
 #endif
 	return 0;
 }
+
+#ifdef BUILD_SDL
+QStringList InputController::connectedGamepads(uint32_t type) const {
+	UNUSED(type);
+	if (type != SDL_BINDING_BUTTON) {
+		return QStringList();
+	}
+
+	QStringList pads;
+	for (size_t i = 0; i < s_sdlEvents.nJoysticks; ++i) {
+		const char* name;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		name = SDL_JoystickName(s_sdlEvents.joysticks[i]);
+#else
+		name = SDL_JoystickName(SDL_JoystickIndex(s_sdlEvents.joysticks[i]));
+#endif
+		if (name) {
+			pads.append(QString(name));
+		} else {
+			pads.append(QString());
+		}
+	}
+	return pads;
+}
+
+void InputController::setPreferredGamepad(uint32_t type, const QString& device) {
+	if (!m_config) {
+		return;
+	}
+	GBAInputSetPreferredDevice(m_config->input(), type, m_sdlPlayer.playerId, device.toLocal8Bit().constData());
+}
+#endif
 
 GBAKey InputController::mapKeyboard(int key) const {
 	return GBAInputMapKey(&m_inputMap, KEYBOARD, key);

@@ -15,6 +15,7 @@ extern "C" {
 #include "gba/input.h"
 }
 
+class QComboBox;
 class QTimer;
 
 namespace QGBA {
@@ -26,7 +27,7 @@ class GBAKeyEditor : public QWidget {
 Q_OBJECT
 
 public:
-	GBAKeyEditor(InputController* controller, int type, const char* profile = nullptr, QWidget* parent = nullptr);
+	GBAKeyEditor(InputController* controller, int type, const QString& profile = QString(), QWidget* parent = nullptr);
 
 public slots:
 	void setAll();
@@ -38,6 +39,7 @@ protected:
 private slots:
 	void setNext();
 	void save();
+	void refresh();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
 #endif
@@ -61,6 +63,7 @@ private:
 
 	KeyEditor* keyById(GBAKey);
 
+	QComboBox* m_profileSelect;
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;
 	KeyEditor* m_keyDD;
@@ -76,7 +79,7 @@ private:
 	QList<KeyEditor*>::iterator m_currentKey;
 
 	uint32_t m_type;
-	const char* m_profile;
+	QString m_profile;
 	InputController* m_controller;
 
 	QPicture m_background;

@@ -482,3 +482,21 @@ void GBAInputProfileSave(const struct GBAInputMap* map, uint32_t type, struct Co
 	sectionName[SECTION_NAME_MAX - 1] = '\0';
 	_saveAll(map, type, sectionName, config);
 }
+
+const char* GBAInputGetPreferredDevice(const struct Configuration* config, uint32_t type, int playerId) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
+	return ConfigurationGetValue(config, sectionName, deviceId);
+}
+
+void GBAInputSetPreferredDevice(struct Configuration* config, uint32_t type, int playerId, const char* deviceName) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
+	return ConfigurationSetValue(config, sectionName, deviceId, deviceName);
+}

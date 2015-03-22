@@ -63,12 +63,10 @@ void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 }
 
 void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
-	char sectionName[16];
-	snprintf(sectionName, sizeof(sectionName), "input.%c%c%c%c", SDL_BINDING_BUTTON >> 24, SDL_BINDING_BUTTON >> 16, SDL_BINDING_BUTTON >> 8, SDL_BINDING_BUTTON);
-	context->preferredJoysticks[0] = ConfigurationGetValue(config, sectionName, "device0");
-	context->preferredJoysticks[1] = ConfigurationGetValue(config, sectionName, "device1");
-	context->preferredJoysticks[2] = ConfigurationGetValue(config, sectionName, "device2");
-	context->preferredJoysticks[3] = ConfigurationGetValue(config, sectionName, "device3");
+	context->preferredJoysticks[0] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 0);
+	context->preferredJoysticks[1] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 1);
+	context->preferredJoysticks[2] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 2);
+	context->preferredJoysticks[3] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 3);
 }
 
 void GBASDLInitBindings(struct GBAInputMap* inputMap) {
@@ -132,7 +130,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 		return false;
 	}
 
-	int playerId = events->playersAttached;
+	player->playerId = events->playersAttached;
 	size_t firstUnclaimed = SIZE_MAX;
 
 	size_t i;
@@ -160,7 +158,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 #else
 		joystickName = SDL_JoystickName(SDL_JoystickIndex(events->joysticks[i]));
 #endif
-		if (events->preferredJoysticks[playerId] && strcmp(events->preferredJoysticks[playerId], joystickName) == 0) {
+		if (events->preferredJoysticks[player->playerId] && strcmp(events->preferredJoysticks[player->playerId], joystickName) == 0) {
 			player->joystickIndex = i;
 			break;
 		}
@@ -172,7 +170,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 
 	if (player->joystickIndex != SIZE_MAX) {
 		player->joystick = events->joysticks[player->joystickIndex];
-		events->joysticksClaimed[playerId] = player->joystickIndex;
+		events->joysticksClaimed[player->playerId] = player->joystickIndex;
 	}
 
 	++events->playersAttached;
@@ -189,6 +187,15 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
 #endif
 	}
+}
+
+void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
+	if (player->playerId > MAX_PLAYERS || index >= events->nJoysticks) {
+		return;
+	}
+	events->joysticksClaimed[player->playerId] = index;
+	player->joystickIndex = index;
+	player->joystick = events->joysticks[index];
 }
 
 static void _pauseAfterFrame(struct GBAThread* context) {

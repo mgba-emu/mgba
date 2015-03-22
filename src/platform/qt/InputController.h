@@ -36,9 +36,9 @@ public:
 
 	void setConfiguration(ConfigController* config);
 	void loadConfiguration(uint32_t type);
-	void loadProfile(uint32_t type, const char* profile);
+	void loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type = KEYBOARD);
-	void saveProfile(uint32_t type, const char* profile);
+	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
 
 	GBAKey mapKeyboard(int key) const;
@@ -55,6 +55,11 @@ public:
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
+
+	QStringList connectedGamepads(uint32_t type) const;
+	int gamepad(uint32_t type) const { return m_sdlPlayer.joystickIndex; }
+	void setGamepad(uint32_t type, int index) { GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index); }
+	void setPreferredGamepad(uint32_t type, const QString& device);
 #endif
 
 public slots:

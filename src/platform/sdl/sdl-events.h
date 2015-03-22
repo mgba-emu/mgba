@@ -29,6 +29,7 @@ struct GBASDLEvents {
 };
 
 struct GBASDLPlayer {
+	size_t playerId;
 	struct GBAInputMap* bindings;
 	SDL_Joystick* joystick;
 	size_t joystickIndex;
