@@ -770,7 +770,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 
 	ConfigOption* useBios = m_config->addOption("useBios");
-	useBios->connect([this](const QVariant& value) { m_controller->setUseBIOS(value.toBool()); });
+	useBios->connect([this](const QVariant& value) {
+		m_controller->setUseBIOS(value.toBool());
+	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
 	rewindEnable->connect([this](const QVariant& value) {
