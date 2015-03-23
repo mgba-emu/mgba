@@ -567,7 +567,7 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 }
 
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
-	gba->lastJump = -1; // IO reads need to invalidate detected idle loops
+	gba->haltPending = false; // IO reads need to invalidate detected idle loops
 	switch (address) {
 	case REG_TM0CNT_LO:
 		GBATimerUpdateRegister(gba, 0);

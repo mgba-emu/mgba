@@ -198,7 +198,12 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	int newRegion = address >> BASE_OFFSET;
 	if (gba->idleOptimization >= IDLE_LOOP_REMOVE && memory->activeRegion != REGION_BIOS) {
 		if (address == gba->idleLoop) {
-			GBAHalt(gba);
+			if (gba->haltPending) {
+				gba->haltPending = false;
+				GBAHalt(gba);
+			} else {
+				gba->haltPending = true;
+			}
 		} else if (gba->idleOptimization >= IDLE_LOOP_DETECT && newRegion == memory->activeRegion) {
 			if (address == gba->lastJump) {
 				switch (gba->idleDetectionStep) {
