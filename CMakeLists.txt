@@ -120,16 +120,21 @@ if(WIN32)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 else()
-	add_definitions(-DUSE_PTHREADS -D_BSD_SOURCE -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L)
+	add_definitions(-DUSE_PTHREADS)
 
+	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+		add_definitions(-D_BSD_SOURCE -D_POSIX_SOURCE -D_POSIX_C_SOURCE=200809L)
+	endif()
 	if(NOT APPLE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif()
+
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
 
 if(APPLE)
+	add_definitions(-D_DARWIN_C_SOURCE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
