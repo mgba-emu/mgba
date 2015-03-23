@@ -10,6 +10,8 @@
 
 #include "macros.h"
 
+#include <time.h>
+
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
 struct GBARotationSource {

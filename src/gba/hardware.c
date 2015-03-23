@@ -7,8 +7,6 @@
 
 #include "gba/serialize.h"
 
-#include <time.h>
-
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
