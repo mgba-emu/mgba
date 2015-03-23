@@ -33,6 +33,7 @@ GameController::GameController(QObject* parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_threadContext()
 	, m_activeKeys(0)
+	, m_inactiveKeys(0)
 	, m_logLevels(0)
 	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
@@ -390,17 +391,38 @@ void GameController::rewind(int states) {
 void GameController::keyPressed(int key) {
 	int mappedKey = 1 << key;
 	m_activeKeys |= mappedKey;
+	if (!m_inputController->allowOpposing()) {
+		if ((m_activeKeys & 0x30) == 0x30) {
+			m_inactiveKeys |= mappedKey ^ 0x30;
+			m_activeKeys ^= mappedKey ^ 0x30;
+		}
+		if ((m_activeKeys & 0xC0) == 0xC0) {
+			m_inactiveKeys |= mappedKey ^ 0xC0;
+			m_activeKeys ^= mappedKey ^ 0xC0;
+		}
+	}
 	updateKeys();
 }
 
 void GameController::keyReleased(int key) {
 	int mappedKey = 1 << key;
 	m_activeKeys &= ~mappedKey;
+	if (!m_inputController->allowOpposing()) {
+		if (mappedKey & 0x30) {
+			m_activeKeys |= m_inactiveKeys & (0x30 ^ mappedKey);
+			m_inactiveKeys &= ~0x30;
+		}
+		if (mappedKey & 0xC0) {
+			m_activeKeys |= m_inactiveKeys & (0xC0 ^ mappedKey);
+			m_inactiveKeys &= ~0xC0;
+		}
+	}
 	updateKeys();
 }
 
 void GameController::clearKeys() {
 	m_activeKeys = 0;
+	m_inactiveKeys = 0;
 	updateKeys();
 }
 
@@ -549,6 +571,7 @@ void GameController::updateKeys() {
 #ifdef BUILD_SDL
 	activeKeys |= m_activeButtons;
 #endif
+	activeKeys &= ~m_inactiveKeys;
 	m_threadContext.activeKeys = activeKeys;
 }
 

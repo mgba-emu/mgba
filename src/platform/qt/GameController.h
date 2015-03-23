@@ -152,6 +152,7 @@ private:
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
+	int m_inactiveKeys;
 	int m_logLevels;
 
 	bool m_gameOpen;

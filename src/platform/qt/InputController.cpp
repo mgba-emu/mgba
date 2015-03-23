@@ -28,6 +28,7 @@ InputController::InputController(int playerId, QObject* parent)
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
 	, m_playerAttached(false)
+	, m_allowOpposing(false)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -70,6 +71,7 @@ InputController::~InputController() {
 
 void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
+	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
 	GBASDLEventsLoadConfig(&s_sdlEvents, config->input());

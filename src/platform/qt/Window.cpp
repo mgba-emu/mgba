@@ -789,6 +789,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt());
 	}, this);
 
+	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
+	allowOpposingDirections->connect([this](const QVariant& value) {
+		m_inputController.setAllowOpposing(value.toBool());
+	}, this);
+
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);
 	m_shortcutController->addFunctions(other, [this]() {

@@ -41,6 +41,9 @@ public:
 	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
 
+	bool allowOpposing() const { return m_allowOpposing; }
+	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
+
 	GBAKey mapKeyboard(int key) const;
 
 	void bindKey(uint32_t type, int key, GBAKey);
@@ -73,6 +76,7 @@ private:
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
 	int m_playerId;
+	bool m_allowOpposing;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;

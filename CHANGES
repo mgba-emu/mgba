@@ -31,6 +31,7 @@ Features:
  - Ability to lock aspect ratio
  - Local link cable support
  - Ability to switch which game controller is in use per instance
+ - Ability to prevent opposing directional input
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio
