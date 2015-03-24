@@ -118,7 +118,14 @@ GameController::GameController(QObject* parent)
 	};
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
+		static const char* stubMessage = "Stub software interrupt";
 		GameController* controller = static_cast<GameController*>(context->userData);
+		if (level == GBA_LOG_STUB && strncmp(stubMessage, format, strlen(stubMessage)) == 0) {
+			va_list argc;
+			va_copy(argc, args);
+			int immediate = va_arg(argc, int);
+			controller->unimplementedBiosCall(immediate);
+		}
 		if (level == GBA_LOG_FATAL) {
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		} else if (!(controller->m_logLevels & level)) {

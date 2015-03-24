@@ -32,6 +32,7 @@ Features:
  - Local link cable support
  - Ability to switch which game controller is in use per instance
  - Ability to prevent opposing directional input
+ - Warning dialog if an unimplemented BIOS feature is called
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio

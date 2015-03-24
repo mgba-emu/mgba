@@ -101,6 +101,7 @@ private slots:
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();
+	void unimplementedBiosCall(int);
 
 	void recordFrame();
 	void showFPS();
@@ -135,6 +136,8 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	int m_playerId;
+
+	bool m_hitUnimplementedBiosCall;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;

@@ -97,6 +97,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
+	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -411,6 +412,7 @@ void Window::gameStarted(GBAThread* context) {
 	}
 #endif
 
+	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 }
 
@@ -437,6 +439,19 @@ void Window::gameCrashed(const QString& errorMessage) {
 void Window::gameFailed() {
 	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
 		tr("Could not load game. Are you sure it's in the correct format?"),
+		QMessageBox::Ok, this,  Qt::Sheet);
+	fail->setAttribute(Qt::WA_DeleteOnClose);
+	fail->show();
+}
+
+void Window::unimplementedBiosCall(int call) {
+	if (m_hitUnimplementedBiosCall) {
+		return;
+	}
+	m_hitUnimplementedBiosCall = true;
+
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Unimplemented BIOS call"),
+		tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
 		QMessageBox::Ok, this,  Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
