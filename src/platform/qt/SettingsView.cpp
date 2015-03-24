@@ -42,17 +42,17 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 		m_ui.idleOptimization->setCurrentIndex(2);
 	}
 
-	int audioDriver = m_controller->getQtOption("audioDriver").toInt();
+	QVariant audioDriver = m_controller->getQtOption("audioDriver");
 #ifdef BUILD_QT_MULTIMEDIA
 	m_ui.audioDriver->addItem(tr("Qt Multimedia"), static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA));
-	if (audioDriver == static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA)) {
+	if (!audioDriver.isNull() && audioDriver.toInt() == static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA)) {
 		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
 	}
 #endif
 
 #ifdef BUILD_SDL
 	m_ui.audioDriver->addItem(tr("SDL"), static_cast<int>(AudioProcessor::Driver::SDL));
-	if (audioDriver == static_cast<int>(AudioProcessor::Driver::SDL)) {
+	if (audioDriver.isNull() || audioDriver.toInt() == static_cast<int>(AudioProcessor::Driver::SDL)) {
 		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
 	}
 #endif
