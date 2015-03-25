@@ -374,6 +374,14 @@ void Window::dropEvent(QDropEvent* event) {
 	m_controller->loadGame(url.path());
 }
 
+void Window::exitFullScreen() {
+	if (!isFullScreen()) {
+		return;
+	}
+	showNormal();
+	menuBar()->show();
+}
+
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
 		showNormal();
@@ -816,6 +824,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, [this]() {
 		m_controller->setTurbo(false, false);
 	}, QKeySequence(Qt::Key_Tab), tr("Fast Forward (held)"), "holdFastForward");
+
+	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullscreen");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
