@@ -19,15 +19,19 @@ extern "C" {
 
 using namespace QGBA;
 
+#ifdef BUILD_SDL
 int InputController::s_sdlInited = 0;
 GBASDLEvents InputController::s_sdlEvents;
+#endif
 
 InputController::InputController(int playerId, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
+#ifdef BUILD_SDL
 	, m_playerAttached(false)
+#endif
 	, m_allowOpposing(false)
 {
 	GBAInputMapInit(&m_inputMap);

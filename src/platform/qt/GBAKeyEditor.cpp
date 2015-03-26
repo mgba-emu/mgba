@@ -237,11 +237,15 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 #endif
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
+#ifdef BUILD_SDL
 	if (keyEditor->direction() != GamepadAxisEvent::NEUTRAL) {
 		m_controller->bindAxis(m_type, keyEditor->value(), keyEditor->direction(), key);
 	} else {
+#endif
 		m_controller->bindKey(m_type, keyEditor->value(), key);
+#ifdef BUILD_SDL
 	}
+#endif
 }
 
 bool GBAKeyEditor::findFocus() {
