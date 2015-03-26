@@ -163,6 +163,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address);
 
 struct GBASerializedState;
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state);
-void GBAIODeserialize(struct GBA* gba, struct GBASerializedState* state);
+void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 #endif

@@ -6,6 +6,7 @@
 #include "savedata.h"
 
 #include "gba/gba.h"
+#include "gba/serialize.h"
 
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -323,10 +324,8 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 		savedata->command <<= 1;
 		savedata->command |= value & 0x1;
 		if (savedata->command == EEPROM_COMMAND_WRITE) {
-			savedata->addressBits = writeSize - 64 - 2;
 			savedata->writeAddress = 0;
 		} else {
-			savedata->addressBits = writeSize - 2;
 			savedata->readAddress = 0;
 		}
 		break;
@@ -338,7 +337,6 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			savedata->writeAddress |= (value & 0x1) << 6;
 		} else if (writeSize == 1) {
 			savedata->command = EEPROM_COMMAND_NULL;
-			savedata->writePending = 1;
 		} else {
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
@@ -376,6 +374,37 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		return data & 0x1;
 	}
 	return 0;
+}
+
+void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
+	state->savedata.type = savedata->type;
+	state->savedata.command = savedata->command;
+	state->savedata.flashState = savedata->flashState;
+	state->savedata.flashBank = savedata->currentBank == &savedata->data[0x10000];
+	state->savedata.readBitsRemaining = savedata->readBitsRemaining;
+	state->savedata.readAddress = savedata->readAddress;
+	state->savedata.writeAddress = savedata->writeAddress;
+
+	UNUSED(includeData); // TODO
+}
+
+void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state, bool includeData) {
+	if (state->savedata.type == SAVEDATA_FORCE_NONE) {
+		return;
+	}
+	if (savedata->type != state->savedata.type) {
+		GBASavedataForceType(savedata, state->savedata.type);
+	}
+	savedata->command = state->savedata.command;
+	savedata->flashState = state->savedata.flashState;
+	savedata->readBitsRemaining = state->savedata.readBitsRemaining;
+	savedata->readAddress = state->savedata.readAddress;
+	savedata->writeAddress = state->savedata.writeAddress;
+	if (savedata->type == SAVEDATA_FLASH1M) {
+		_flashSwitchBank(savedata, state->savedata.flashBank);
+	}
+
+	UNUSED(includeData); // TODO
 }
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {

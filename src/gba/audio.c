@@ -822,11 +822,15 @@ static void _sample(struct GBAAudio* audio) {
 	}
 	produced = blip_samples_avail(audio->left);
 #endif
-	struct GBAThread* thread = GBAThreadGetContext();
-	if (thread && thread->stream) {
-		thread->stream->postAudioFrame(thread->stream, sampleLeft, sampleRight);
+	if (audio->p->stream && audio->p->stream->postAudioFrame) {
+		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
 	}
-	GBASyncProduceAudio(audio->p->sync, produced >= audio->samples);
+	bool wait = produced >= audio->samples;
+	GBASyncProduceAudio(audio->p->sync, wait);
+
+	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
+		audio->p->stream->postAudioBuffer(audio->p->stream, audio);
+	}
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {

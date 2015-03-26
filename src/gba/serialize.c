@@ -48,16 +48,15 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
+	GBASavedataSerialize(&gba->memory.savedata, state, false);
 
-	if (GBARRIsRecording(gba->rr)) {
-		state->associatedStreamId = gba->rr->streamId;
-		GBARRFinishSegment(gba->rr);
-	} else {
-		state->associatedStreamId = 0;
+	state->associatedStreamId = 0;
+	if (gba->rr) {
+		gba->rr->stateSaved(gba->rr, state);
 	}
 }
 
-void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
+void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (state->versionMagic != GBA_SAVESTATE_MAGIC) {
 		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate");
 		return;
@@ -113,18 +112,10 @@ void GBADeserialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
+	GBASavedataDeserialize(&gba->memory.savedata, state, false);
 
-	if (GBARRIsRecording(gba->rr)) {
-		if (state->associatedStreamId != gba->rr->streamId) {
-			GBARRLoadStream(gba->rr, state->associatedStreamId);
-			GBARRIncrementStream(gba->rr, true);
-		} else {
-			GBARRFinishSegment(gba->rr);
-		}
-		GBARRMarkRerecord(gba->rr);
-	} else if (GBARRIsPlaying(gba->rr)) {
-		GBARRLoadStream(gba->rr, state->associatedStreamId);
-		GBARRSkipSegment(gba->rr);
+	if (gba->rr) {
+		gba->rr->stateLoaded(gba->rr, state);
 	}
 }
 

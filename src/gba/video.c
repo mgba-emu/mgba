@@ -235,7 +235,7 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, un
 }
 
 
-void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state) {
+void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
@@ -249,7 +249,7 @@ void GBAVideoSerialize(struct GBAVideo* video, struct GBASerializedState* state)
 	state->video.frameCounter = video->frameCounter;
 }
 
-void GBAVideoDeserialize(struct GBAVideo* video, struct GBASerializedState* state) {
+void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {

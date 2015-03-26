@@ -31,10 +31,15 @@
 #pragma GCC diagnostic pop
 #endif
 
+#ifdef USE_PIXMAN
+#include <pixman.h>
+#endif
+
 struct SDLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
+	struct GBASDLPlayer player;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
@@ -55,6 +60,11 @@ struct SDLSoftwareRenderer {
 	GLuint tex;
 #endif
 
+#ifdef USE_PIXMAN
+	pixman_image_t* pix;
+	pixman_image_t* screenpix;
+#endif
+
 #ifdef BUILD_RASPI
 	EGLDisplay display;
 	EGLSurface surface;
@@ -67,6 +77,12 @@ struct SDLSoftwareRenderer {
 	GLuint bufferObject;
 	GLuint texLocation;
 	GLuint positionLocation;
+#endif
+
+#ifdef BUILD_PANDORA
+	int fb;
+	int odd;
+	void* base[2];
 #endif
 };
 

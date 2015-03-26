@@ -26,6 +26,13 @@ Features:
  - Debugger: Add CLI functions for examining memory regions
  - Runtime configurable audio driver
  - Debugger: Add CLI function for writing a register
+ - Libretro core for use with RetroArch and other front-ends
+ - Controller profiles for setting different bindings for different controllers
+ - Ability to lock aspect ratio
+ - Local link cable support
+ - Ability to switch which game controller is in use per instance
+ - Ability to prevent opposing directional input
+ - Warning dialog if an unimplemented BIOS feature is called
 Bugfixes:
  - ARM7: Extend prefetch by one stage
  - GBA Audio: Support 16-bit writes to FIFO audio
@@ -47,6 +54,8 @@ Bugfixes:
  - Qt: Fix patch loading while a game is running
  - Util: Fix sockets on Windows
  - Qt: Fix crash when loading a game after stopping GDB server
+ - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
+ - GBA: Initialize gba.sync to null
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
@@ -69,6 +78,8 @@ Misc:
  - Qt: Move frame upload back onto main thread
  - All: Enable link-time optimization
  - GBA Thread: Make GBASyncWaitFrameStart time out
+ - GBA: Move A/V stream interface into core
+ - GBA: Savestates now take into account savedata state machines (fixes #109)
 
 0.1.1: (2015-01-24)
 Bugfixes:

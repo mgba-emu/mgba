@@ -23,6 +23,7 @@
 #include "GIFView.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
+#include "MultiplayerController.h"
 #include "OverrideView.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -36,13 +37,14 @@ extern "C" {
 
 using namespace QGBA;
 
-Window::Window(ConfigController* config, QWidget* parent)
+Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
+	, m_inputController(playerId)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -54,6 +56,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 #endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
+	, m_playerId(playerId)
 {
 	setWindowTitle(PROJECT_NAME);
 	setFocusPolicy(Qt::StrongFocus);
@@ -94,6 +97,7 @@ Window::Window(ConfigController* config, QWidget* parent)
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
+	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -196,6 +200,8 @@ void Window::selectBIOS() {
 		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
 		m_config->updateOption("bios");
+		m_config->setOption("useBios", true);
+		m_config->updateOption("useBios");
 		m_controller->loadBIOS(filename);
 	}
 }
@@ -255,7 +261,8 @@ void Window::openCheatsWindow() {
 
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON);
+	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
+	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
 	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
 	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
 	keyEditor->show();
@@ -367,6 +374,14 @@ void Window::dropEvent(QDropEvent* event) {
 	m_controller->loadGame(url.path());
 }
 
+void Window::exitFullScreen() {
+	if (!isFullScreen()) {
+		return;
+	}
+	showNormal();
+	menuBar()->show();
+}
+
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
 		showNormal();
@@ -405,6 +420,7 @@ void Window::gameStarted(GBAThread* context) {
 	}
 #endif
 
+	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
 }
 
@@ -431,6 +447,19 @@ void Window::gameCrashed(const QString& errorMessage) {
 void Window::gameFailed() {
 	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
 		tr("Could not load game. Are you sure it's in the correct format?"),
+		QMessageBox::Ok, this,  Qt::Sheet);
+	fail->setAttribute(Qt::WA_DeleteOnClose);
+	fail->show();
+}
+
+void Window::unimplementedBiosCall(int call) {
+	if (m_hitUnimplementedBiosCall) {
+		return;
+	}
+	m_hitUnimplementedBiosCall = true;
+
+	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Unimplemented BIOS call"),
+		tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
 		QMessageBox::Ok, this,  Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
@@ -522,8 +551,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 		quickSaveMenu->addAction(quickSave);
 	}
 
-#ifndef Q_OS_MAC
 	fileMenu->addSeparator();
+	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
+	connect(multiWindow, &QAction::triggered, [this]() {
+		std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
+		if (!multiplayer) {
+			multiplayer = std::make_shared<MultiplayerController>();
+			m_controller->setMultiplayerController(multiplayer);
+		}
+		Window* w2 = new Window(m_config, multiplayer->attached());
+		w2->setAttribute(Qt::WA_DeleteOnClose);
+		w2->loadConfig();
+		w2->controller()->setMultiplayerController(multiplayer);
+		w2->show();
+	});
+	addControlledAction(fileMenu, multiWindow, "multiWindow");
+
+#ifndef Q_OS_MAC
 	addControlledAction(fileMenu, fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit), "quit");
 #endif
 
@@ -582,12 +626,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
-	videoSync->connect([this](const QVariant& value) { m_controller->setVideoSync(value.toBool()); });
+	videoSync->connect([this](const QVariant& value) {
+		m_controller->setVideoSync(value.toBool());
+	}, this);
 	m_config->updateOption("videoSync");
 
 	ConfigOption* audioSync = m_config->addOption("audioSync");
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
-	audioSync->connect([this](const QVariant& value) { m_controller->setAudioSync(value.toBool()); });
+	audioSync->connect([this](const QVariant& value) {
+		m_controller->setAudioSync(value.toBool());
+	}, this);
 	m_config->updateOption("audioSync");
 
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
@@ -606,17 +654,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
-	lockAspectRatio->connect([this](const QVariant& value) { m_display->lockAspectRatio(value.toBool()); });
+	lockAspectRatio->connect([this](const QVariant& value) {
+		m_display->lockAspectRatio(value.toBool());
+	}, this);
 	m_config->updateOption("lockAspectRatio");
 
 	ConfigOption* resampleVideo = m_config->addOption("resampleVideo");
 	resampleVideo->addBoolean(tr("Resample video"), avMenu);
-	resampleVideo->connect([this](const QVariant& value) { m_display->filter(value.toBool()); });
+	resampleVideo->connect([this](const QVariant& value) {
+		m_display->filter(value.toBool());
+	}, this);
 	m_config->updateOption("resampleVideo");
 
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");
-	skip->connect([this](const QVariant& value) { m_controller->setFrameskip(value.toInt()); });
+	skip->connect([this](const QVariant& value) {
+		m_controller->setFrameskip(value.toInt());
+	}, this);
 	for (int i = 0; i <= 10; ++i) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
@@ -626,7 +680,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
-	buffers->connect([this](const QVariant& value) { emit audioBufferSamplesChanged(value.toInt()); });
+	buffers->connect([this](const QVariant& value) {
+		emit audioBufferSamplesChanged(value.toInt());
+	}, this);
 	buffers->addValue(tr("512"), 512, buffersMenu);
 	buffers->addValue(tr("768"), 768, buffersMenu);
 	buffers->addValue(tr("1024"), 1024, buffersMenu);
@@ -638,7 +694,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* target = avMenu->addMenu("FPS target");
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
-	fpsTargetOption->connect([this](const QVariant& value) { emit fpsTargetChanged(value.toInt()); });
+	fpsTargetOption->connect([this](const QVariant& value) {
+		emit fpsTargetChanged(value.toInt());
+	}, this);
 	fpsTargetOption->addValue(tr("15"), 15, target);
 	fpsTargetOption->addValue(tr("30"), 30, target);
 	fpsTargetOption->addValue(tr("45"), 45, target);
@@ -698,22 +756,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
 
-	toolsMenu->addSeparator();
-	QAction* solarIncrease = new QAction(tr("Increase solar level"), toolsMenu);
+	QMenu* solarMenu = toolsMenu->addMenu(tr("Solar sensor"));
+	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
-	addControlledAction(toolsMenu, solarIncrease, "increaseLuminanceLevel");
+	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
 
-	QAction* solarDecrease = new QAction(tr("Decrease solar level"), toolsMenu);
+	QAction* solarDecrease = new QAction(tr("Decrease solar level"), solarMenu);
 	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
-	addControlledAction(toolsMenu, solarDecrease, "decreaseLuminanceLevel");
+	addControlledAction(solarMenu, solarDecrease, "decreaseLuminanceLevel");
 
-	QAction* maxSolar = new QAction(tr("Brightest solar level"), toolsMenu);
+	QAction* maxSolar = new QAction(tr("Brightest solar level"), solarMenu);
 	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
-	addControlledAction(toolsMenu, maxSolar, "maxLuminanceLevel");
+	addControlledAction(solarMenu, maxSolar, "maxLuminanceLevel");
 
-	QAction* minSolar = new QAction(tr("Darkest solar level"), toolsMenu);
+	QAction* minSolar = new QAction(tr("Darkest solar level"), solarMenu);
 	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
-	addControlledAction(toolsMenu, minSolar, "minLuminanceLevel");
+	addControlledAction(solarMenu, minSolar, "minLuminanceLevel");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
@@ -730,16 +788,34 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
-	skipBios->connect([this](const QVariant& value) { m_controller->setSkipBIOS(value.toBool()); });
+	skipBios->connect([this](const QVariant& value) {
+		m_controller->setSkipBIOS(value.toBool());
+	}, this);
+
+	ConfigOption* useBios = m_config->addOption("useBios");
+	useBios->connect([this](const QVariant& value) {
+		m_controller->setUseBIOS(value.toBool());
+	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
-	rewindEnable->connect([this](const QVariant& value) { m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+	rewindEnable->connect([this](const QVariant& value) {
+		m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt());
+	}, this);
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
-	rewindBufferCapacity->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt()); });
+	rewindBufferCapacity->connect([this](const QVariant& value) {
+		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt());
+	}, this);
 
 	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
-	rewindBufferInterval->connect([this](const QVariant& value) { m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt()); });
+	rewindBufferInterval->connect([this](const QVariant& value) {
+		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt());
+	}, this);
+
+	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
+	allowOpposingDirections->connect([this](const QVariant& value) {
+		m_inputController.setAllowOpposing(value.toBool());
+	}, this);
 
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);
@@ -748,6 +824,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, [this]() {
 		m_controller->setTurbo(false, false);
 	}, QKeySequence(Qt::Key_Tab), tr("Fast Forward (held)"), "holdFastForward");
+
+	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullscreen");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);

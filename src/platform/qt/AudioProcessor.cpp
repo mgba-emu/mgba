@@ -19,7 +19,7 @@ extern "C" {
 
 using namespace QGBA;
 
-#ifdef BUILD_QT_MULTIMEDIA
+#ifndef BUILD_SDL
 AudioProcessor::Driver AudioProcessor::s_driver = AudioProcessor::Driver::QT_MULTIMEDIA;
 #else
 AudioProcessor::Driver AudioProcessor::s_driver = AudioProcessor::Driver::SDL;

@@ -12,6 +12,8 @@
 #include <QMutex>
 #include <QString>
 
+#include <memory>
+
 extern "C" {
 #include "gba/cheats.h"
 #include "gba/hardware.h"
@@ -32,6 +34,7 @@ namespace QGBA {
 
 class AudioProcessor;
 class InputController;
+class MultiplayerController;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -59,6 +62,10 @@ public:
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
+	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
+	std::shared_ptr<MultiplayerController> multiplayerController() { return m_multiplayer; }
+	void clearMultiplayerController();
+
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
 
@@ -78,6 +85,9 @@ signals:
 	void gameCrashed(const QString& errorMessage);
 	void gameFailed();
 	void stateLoaded(GBAThread*);
+	void unimplementedBiosCall(int);
+
+	void luminanceValueChanged(int);
 
 	void postLog(int level, const QString& log);
 
@@ -85,6 +95,7 @@ public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
 	void setSkipBIOS(bool);
+	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
 	void openGame();
 	void closeGame();
@@ -109,6 +120,7 @@ public slots:
 	void reloadAudioDriver();
 
 	void setLuminanceValue(uint8_t value);
+	uint8_t luminanceValue() const { return m_luxValue; }
 	void setLuminanceLevel(int level);
 	void increaseLuminanceLevel() { setLuminanceLevel(m_luxLevel + 1); }
 	void decreaseLuminanceLevel() { setLuminanceLevel(m_luxLevel - 1); }
@@ -141,6 +153,7 @@ private:
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
+	int m_inactiveKeys;
 	int m_logLevels;
 
 	bool m_gameOpen;
@@ -148,6 +161,7 @@ private:
 
 	QString m_fname;
 	QString m_bios;
+	bool m_useBios;
 	QString m_patch;
 
 	QThread* m_audioThread;
@@ -162,6 +176,7 @@ private:
 	bool m_turboForced;
 
 	InputController* m_inputController;
+	std::shared_ptr<MultiplayerController> m_multiplayer;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

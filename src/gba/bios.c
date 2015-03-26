@@ -10,6 +10,10 @@
 #include "gba/memory.h"
 #include "isa-inlines.h"
 
+#ifndef M_PI
+#define M_PI 3.141592654f
+#endif
+
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
@@ -88,8 +92,8 @@ static void _BgAffineSet(struct GBA* gba) {
 		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
 		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
 		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
-		ox = cpu->memory.load32(cpu, offset, 0) / 256.f;
-		oy = cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
+		ox = (int32_t) cpu->memory.load32(cpu, offset, 0) / 256.f;
+		oy = (int32_t) cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
 		cx = (int16_t) cpu->memory.load16(cpu, offset + 8, 0);
 		cy = (int16_t) cpu->memory.load16(cpu, offset + 10, 0);
 		sx = (int16_t) cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
@@ -233,6 +237,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x12:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 source");
+			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
@@ -247,6 +252,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x13:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman source");
+			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
@@ -262,6 +268,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x15:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL source");
+			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
@@ -278,6 +285,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x18:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter source");
+			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:

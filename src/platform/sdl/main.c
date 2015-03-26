@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
 	struct GBAOptions opts = {
 		.width = VIDEO_HORIZONTAL_PIXELS,
 		.height = VIDEO_VERTICAL_PIXELS,
+		.useBios = true,
 		.rewindEnable = true,
 		.audioBuffers = 512,
 		.videoSync = false,
@@ -71,10 +72,13 @@ int main(int argc, char** argv) {
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.events.fullscreen = opts.fullscreen;
-	renderer.events.windowUpdated = 0;
+	renderer.player.fullscreen = opts.fullscreen;
+	renderer.player.windowUpdated = 0;
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
+	if (renderer.ratio == 0) {
+		renderer.ratio = 1;
+	}
 
 	renderer.lockAspectRatio = opts.lockAspectRatio;
 	renderer.filter = opts.resampleVideo;
@@ -99,10 +103,12 @@ int main(int argc, char** argv) {
 	renderer.audio.samples = context.audioBuffers;
 	GBASDLInitAudio(&renderer.audio, &context);
 
-	renderer.events.bindings = &inputMap;
+	renderer.player.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
 	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
+	GBASDLAttachPlayer(&renderer.events, &renderer.player);
+	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
 	context.overrides = GBAConfigGetOverrides(&config);
 
 	int didFail = 0;
@@ -139,8 +145,6 @@ static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 }
 
 static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	free(renderer->d.outputBuffer);
-
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)

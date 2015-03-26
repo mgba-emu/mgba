@@ -271,7 +271,15 @@ void Painter::performDraw() {
 		}
 	}
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, m_backing);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, m_backing);
+#endif
+#else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_backing);
+#endif
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	if (m_context->sync.videoFrameWait) {
 		glFlush();

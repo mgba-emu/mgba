@@ -11,6 +11,7 @@
 #include "gba/serialize.h"
 #include "gba/video.h"
 #include "gba/renderers/video-software.h"
+#include "util/configuration.h"
 #include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
@@ -19,23 +20,68 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
-static int _openContexts = 0;
-
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
-	if (!_openContexts && SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
 		return false;
 	}
-	++_openContexts;
+
 	SDL_JoystickEventState(SDL_ENABLE);
-	context->joystick = SDL_JoystickOpen(0);
+	int nJoysticks = SDL_NumJoysticks();
+	if (nJoysticks > 0) {
+		context->nJoysticks = nJoysticks;
+		context->joysticks = calloc(context->nJoysticks, sizeof(SDL_Joystick*));
+		size_t i;
+		for (i = 0; i < context->nJoysticks; ++i) {
+			context->joysticks[i] = SDL_JoystickOpen(i);
+		}
+	} else {
+		context->nJoysticks = 0;
+		context->joysticks = 0;
+	}
+
+	context->playersAttached = 0;
+
+	size_t i;
+	for (i = 0; i < MAX_PLAYERS; ++i) {
+		context->preferredJoysticks[i] = 0;
+		context->joysticksClaimed[i] = SIZE_MAX;
+	}
+
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 #endif
 	return true;
 }
 
+void GBASDLDeinitEvents(struct GBASDLEvents* context) {
+	size_t i;
+	for (i = 0; i < context->nJoysticks; ++i) {
+		SDL_JoystickClose(context->joysticks[i]);
+	}
+
+	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+}
+
+void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
+	context->preferredJoysticks[0] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 0);
+	context->preferredJoysticks[1] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 1);
+	context->preferredJoysticks[2] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 2);
+	context->preferredJoysticks[3] = GBAInputGetPreferredDevice(config, SDL_BINDING_BUTTON, 3);
+}
+
 void GBASDLInitBindings(struct GBAInputMap* inputMap) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#ifdef BUILD_PANDORA
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_PAGEDOWN, GBA_KEY_A);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_END, GBA_KEY_B);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RSHIFT, GBA_KEY_L);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RCTRL, GBA_KEY_R);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LALT, GBA_KEY_START);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LCTRL, GBA_KEY_SELECT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_UP, GBA_KEY_UP);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
+	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
 	GBAInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
@@ -76,18 +122,80 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 	GBAInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 }
 
-void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
-	GBAInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
-	GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
+	player->joystick = 0;
+	player->joystickIndex = SIZE_MAX;
+
+	if (events->playersAttached >= MAX_PLAYERS) {
+		return false;
+	}
+
+	player->playerId = events->playersAttached;
+	size_t firstUnclaimed = SIZE_MAX;
+
+	size_t i;
+	for (i = 0; i < events->nJoysticks; ++i) {
+		bool claimed = false;
+
+		int p;
+		for (p = 0; p < events->playersAttached; ++p) {
+			if (events->joysticksClaimed[p] == i) {
+				claimed = true;
+				break;
+			}
+		}
+		if (claimed) {
+			continue;
+		}
+
+		if (firstUnclaimed == SIZE_MAX) {
+			firstUnclaimed = i;
+		}
+
+		const char* joystickName;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		joystickName = SDL_JoystickName(events->joysticks[i]);
+#else
+		joystickName = SDL_JoystickName(SDL_JoystickIndex(events->joysticks[i]));
+#endif
+		if (events->preferredJoysticks[player->playerId] && strcmp(events->preferredJoysticks[player->playerId], joystickName) == 0) {
+			player->joystickIndex = i;
+			break;
+		}
+	}
+
+	if (player->joystickIndex == SIZE_MAX && firstUnclaimed != SIZE_MAX) {
+		player->joystickIndex = firstUnclaimed;
+	}
+
+	if (player->joystickIndex != SIZE_MAX) {
+		player->joystick = events->joysticks[player->joystickIndex];
+		events->joysticksClaimed[player->playerId] = player->joystickIndex;
+	}
+
+	++events->playersAttached;
+	return true;
 }
 
-void GBASDLDeinitEvents(struct GBASDLEvents* context) {
-	SDL_JoystickClose(context->joystick);
-
-	--_openContexts;
-	if (!_openContexts) {
-		SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configuration* config) {
+	GBAInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
+	if (context->joystick) {
+		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(context->joystick));
+#else
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
+#endif
 	}
+}
+
+void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
+	if (player->playerId > MAX_PLAYERS || index >= events->nJoysticks) {
+		return;
+	}
+	events->joysticksClaimed[player->playerId] = index;
+	player->joystickIndex = index;
+	player->joystick = events->joysticks[index];
 }
 
 static void _pauseAfterFrame(struct GBAThread* context) {
@@ -95,10 +203,10 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 	GBAThreadPauseFromThread(context);
 }
 
-static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_KeyboardEvent* event) {
+static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
 #else
 		key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
@@ -140,14 +248,11 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 			GBARewind(context, 10);
 			GBAThreadContinue(context);
 			return;
+#ifdef BUILD_PANDORA
 		case SDLK_ESCAPE:
-			GBAThreadInterrupt(context);
-			if (context->gba->rr) {
-				GBARRStopPlaying(context->gba->rr);
-				GBARRStopRecording(context->gba->rr);
-			}
-			GBAThreadContinue(context);
+			GBAThreadEnd(context);
 			return;
+#endif
 		default:
 			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
 				switch (event->keysym.sym) {
@@ -168,31 +273,6 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 					break;
 				case SDLK_r:
 					GBAThreadReset(context);
-					break;
-				case SDLK_t:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						if (!GBARRIsRecording(context->gba->rr)) {
-							GBARRStopPlaying(context->gba->rr);
-							GBARRInitStream(context->gba->rr, context->stateDir);
-							GBARRReinitStream(context->gba->rr, INIT_EX_NIHILO);
-							GBARRStartRecording(context->gba->rr);
-							GBARRSaveState(context->gba);
-						}
-						GBAThreadContinue(context);
-					}
-					break;
-				case SDLK_y:
-					if (context->stateDir) {
-						GBAThreadInterrupt(context);
-						GBARRContextCreate(context->gba);
-						GBARRStopRecording(context->gba->rr);
-						GBARRInitStream(context->gba->rr, context->stateDir);
-						GBARRStartPlaying(context->gba->rr, false);
-						GBARRLoadState(context->gba);
-						GBAThreadContinue(context);
-					}
 					break;
 				default:
 					break;
@@ -240,7 +320,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLEvents
 	}
 }
 
-static void _GBASDLHandleJoyButton(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_JoyButtonEvent* event) {
+static void _GBASDLHandleJoyButton(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	enum GBAKey key = 0;
 	key = GBAInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
 	if (key == GBA_KEY_NONE) {
@@ -274,7 +354,7 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
-static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_JoyAxisEvent* event) {
+static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
 	int keys = context->activeKeys;
 
 	keys = GBAInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, keys);
@@ -287,7 +367,7 @@ static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLEvents*
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const struct SDL_WindowEvent* event) {
+static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
 	UNUSED(context);
 	switch (event->event) {
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -297,7 +377,7 @@ static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLEve
 }
 #endif
 
-void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLEvents* sdlContext, const union SDL_Event* event) {
+void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
 		GBAThreadEnd(context);

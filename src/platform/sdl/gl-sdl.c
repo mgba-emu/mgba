@@ -29,6 +29,26 @@ static const GLint _glTexCoords[] = {
 };
 #endif
 
+static void _doViewport(int w, int h, struct SDLSoftwareRenderer* renderer) {
+	int drawW = w;
+	int drawH = h;
+	if (renderer->lockAspectRatio) {
+		if (w * 2 > h * 3) {
+			drawW = h * 3 / 2;
+		} else if (w * 2 < h * 3) {
+			drawH = w * 2 / 3;
+		}
+	}
+	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+	glClear(GL_COLOR_BUFFER_BIT);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_SwapWindow(renderer->window);
+#else
+	SDL_GL_SwapBuffers();
+#endif
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -45,11 +65,11 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer->window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->events.fullscreen));
+	renderer->window = SDL_CreateWindow(PROJECT_NAME, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
 	SDL_GL_CreateContext(renderer->window);
 	SDL_GL_SetSwapInterval(1);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-	renderer->events.window = renderer->window;
+	renderer->player.window = renderer->window;
 #else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #ifdef COLOR_16_BIT
@@ -59,7 +79,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 #endif
 #endif
 
-	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 	glGenTextures(1, &renderer->tex);
 	glBindTexture(GL_TEXTURE_2D, renderer->tex);
@@ -86,9 +106,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
-
-	glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
-
+	_doViewport(renderer->viewportWidth, renderer->viewportHeight, renderer);
 	return true;
 }
 
@@ -105,13 +123,13 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->events, &event);
+			GBASDLHandleEvent(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
-			if (renderer->events.windowUpdated) {
+			if (renderer->player.windowUpdated) {
 				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				glViewport(0, 0, renderer->viewportWidth, renderer->viewportHeight);
-				renderer->events.windowUpdated = 0;
+				_doViewport(renderer->viewportWidth, renderer->viewportHeight, renderer);
+				renderer->player.windowUpdated = 0;
 			}
 #endif
 		}
@@ -142,5 +160,5 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 }
 
 void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
-	UNUSED(renderer);
+	free(renderer->d.outputBuffer);
 }

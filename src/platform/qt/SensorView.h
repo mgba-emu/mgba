@@ -23,6 +23,7 @@ public:
 
 private slots:
 	void setLuminanceValue(int);
+	void luminanceValueChanged(int);
 
 private:
 	Ui::SensorView m_ui;

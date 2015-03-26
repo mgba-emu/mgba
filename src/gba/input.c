@@ -24,7 +24,7 @@ struct GBAInputMapImpl {
 
 struct GBAAxisSave {
 	struct Configuration* config;
-	uint32_t type;
+	const char* sectionName;
 };
 
 struct GBAAxisEnumerate {
@@ -44,6 +44,11 @@ const char* GBAKeyNames[] = {
 	"R",
 	"L"
 };
+
+static void _makeSectionName(char* sectionName, size_t len, uint32_t type) {
+	snprintf(sectionName, len, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
+	sectionName[len - 1] = '\0';
+}
 
 static bool _getIntValue(const struct Configuration* config, const char* section, const char* key, int* value) {
 	const char* strValue = ConfigurationGetValue(config, section, key);
@@ -122,11 +127,7 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 	return impl;
 }
 
-static void _loadKey(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, enum GBAKey key, const char* keyName) {
-	char sectionName[SECTION_NAME_MAX];
-	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
-	sectionName[SECTION_NAME_MAX - 1] = '\0';
-
+static void _loadKey(struct GBAInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config, enum GBAKey key, const char* keyName) {
 	char keyKey[KEY_NAME_MAX];
 	snprintf(keyKey, KEY_NAME_MAX, "key%s", keyName);
 	keyKey[KEY_NAME_MAX - 1] = '\0';
@@ -138,11 +139,7 @@ static void _loadKey(struct GBAInputMap* map, uint32_t type, const struct Config
 	GBAInputBindKey(map, type, value, key);
 }
 
-static void _loadAxis(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, enum GBAKey direction, const char* axisName) {
-	char sectionName[SECTION_NAME_MAX];
-	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
-	sectionName[SECTION_NAME_MAX - 1] = '\0';
-
+static void _loadAxis(struct GBAInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config, enum GBAKey direction, const char* axisName) {
 	char axisKey[KEY_NAME_MAX];
 	snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", axisName);
 	axisKey[KEY_NAME_MAX - 1] = '\0';
@@ -179,11 +176,7 @@ static void _loadAxis(struct GBAInputMap* map, uint32_t type, const struct Confi
 	GBAInputBindAxis(map, type, axis, &realDescription);
 }
 
-static void _saveKey(const struct GBAInputMap* map, uint32_t type, struct Configuration* config, enum GBAKey key, const char* keyName) {
-	char sectionName[SECTION_NAME_MAX];
-	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
-	sectionName[SECTION_NAME_MAX - 1] = '\0';
-
+static void _saveKey(const struct GBAInputMap* map, uint32_t type, const char* sectionName, struct Configuration* config, enum GBAKey key, const char* keyName) {
 	char keyKey[KEY_NAME_MAX];
 	snprintf(keyKey, KEY_NAME_MAX, "key%s", keyName);
 	keyKey[KEY_NAME_MAX - 1] = '\0';
@@ -195,11 +188,7 @@ static void _saveKey(const struct GBAInputMap* map, uint32_t type, struct Config
 	ConfigurationSetValue(config, sectionName, keyKey, keyValue);
 }
 
-static void _clearAxis(uint32_t type, struct Configuration* config, const char* axisName) {
-	char sectionName[SECTION_NAME_MAX];
-	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
-	sectionName[SECTION_NAME_MAX - 1] = '\0';
-
+static void _clearAxis(const char* sectionName, struct Configuration* config, const char* axisName) {
 	char axisKey[KEY_NAME_MAX];
 	snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", axisName);
 	axisKey[KEY_NAME_MAX - 1] = '\0';
@@ -214,10 +203,7 @@ static void _saveAxis(uint32_t axis, void* dp, void* up) {
 	struct GBAAxisSave* user = up;
 	const struct GBAAxis* description = dp;
 
-	uint32_t type = user->type;
-	char sectionName[SECTION_NAME_MAX];
-	snprintf(sectionName, SECTION_NAME_MAX, "input.%c%c%c%c", type >> 24, type >> 16, type >> 8, type);
-	sectionName[SECTION_NAME_MAX - 1] = '\0';
+	const char* sectionName = user->sectionName;
 
 	if (description->lowDirection != GBA_KEY_NONE) {
 		const char* keyName = GBAKeyNames[description->lowDirection];
@@ -269,6 +255,64 @@ void _unbindAxis(uint32_t axis, void* dp, void* user) {
 	if (description->lowDirection == *key) {
 		description->lowDirection = GBA_KEY_NONE;
 	}
+}
+
+static void _loadAll(struct GBAInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config) {
+	_loadKey(map, type, sectionName, config, GBA_KEY_A, "A");
+	_loadKey(map, type, sectionName, config, GBA_KEY_B, "B");
+	_loadKey(map, type, sectionName, config, GBA_KEY_L, "L");
+	_loadKey(map, type, sectionName, config, GBA_KEY_R, "R");
+	_loadKey(map, type, sectionName, config, GBA_KEY_START, "Start");
+	_loadKey(map, type, sectionName, config, GBA_KEY_SELECT, "Select");
+	_loadKey(map, type, sectionName, config, GBA_KEY_UP, "Up");
+	_loadKey(map, type, sectionName, config, GBA_KEY_DOWN, "Down");
+	_loadKey(map, type, sectionName, config, GBA_KEY_LEFT, "Left");
+	_loadKey(map, type, sectionName, config, GBA_KEY_RIGHT, "Right");
+
+	_loadAxis(map, type, sectionName, config, GBA_KEY_A, "A");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_B, "B");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_L, "L");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_R, "R");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_START, "Start");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_SELECT, "Select");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_UP, "Up");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_DOWN, "Down");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_LEFT, "Left");
+	_loadAxis(map, type, sectionName, config, GBA_KEY_RIGHT, "Right");
+}
+
+static void _saveAll(const struct GBAInputMap* map, uint32_t type, const char* sectionName, struct Configuration* config) {
+	_saveKey(map, type, sectionName, config, GBA_KEY_A, "A");
+	_saveKey(map, type, sectionName, config, GBA_KEY_B, "B");
+	_saveKey(map, type, sectionName, config, GBA_KEY_L, "L");
+	_saveKey(map, type, sectionName, config, GBA_KEY_R, "R");
+	_saveKey(map, type, sectionName, config, GBA_KEY_START, "Start");
+	_saveKey(map, type, sectionName, config, GBA_KEY_SELECT, "Select");
+	_saveKey(map, type, sectionName, config, GBA_KEY_UP, "Up");
+	_saveKey(map, type, sectionName, config, GBA_KEY_DOWN, "Down");
+	_saveKey(map, type, sectionName, config, GBA_KEY_LEFT, "Left");
+	_saveKey(map, type, sectionName, config, GBA_KEY_RIGHT, "Right");
+
+	_clearAxis(sectionName, config, "A");
+	_clearAxis(sectionName, config, "B");
+	_clearAxis(sectionName, config, "L");
+	_clearAxis(sectionName, config, "R");
+	_clearAxis(sectionName, config, "Start");
+	_clearAxis(sectionName, config, "Select");
+	_clearAxis(sectionName, config, "Up");
+	_clearAxis(sectionName, config, "Down");
+	_clearAxis(sectionName, config, "Left");
+	_clearAxis(sectionName, config, "Right");
+
+	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return;
+	}
+	struct GBAAxisSave save = {
+		config,
+		sectionName
+	};
+	TableEnumerate(&impl->axes, _saveAxis, &save);
 }
 
 void GBAInputMapInit(struct GBAInputMap* map) {
@@ -414,59 +458,45 @@ void GBAInputEnumerateAxes(const struct GBAInputMap* map, uint32_t type, void (h
 }
 
 void GBAInputMapLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config) {
-	_loadKey(map, type, config, GBA_KEY_A, "A");
-	_loadKey(map, type, config, GBA_KEY_B, "B");
-	_loadKey(map, type, config, GBA_KEY_L, "L");
-	_loadKey(map, type, config, GBA_KEY_R, "R");
-	_loadKey(map, type, config, GBA_KEY_START, "Start");
-	_loadKey(map, type, config, GBA_KEY_SELECT, "Select");
-	_loadKey(map, type, config, GBA_KEY_UP, "Up");
-	_loadKey(map, type, config, GBA_KEY_DOWN, "Down");
-	_loadKey(map, type, config, GBA_KEY_LEFT, "Left");
-	_loadKey(map, type, config, GBA_KEY_RIGHT, "Right");
-
-	_loadAxis(map, type, config, GBA_KEY_A, "A");
-	_loadAxis(map, type, config, GBA_KEY_B, "B");
-	_loadAxis(map, type, config, GBA_KEY_L, "L");
-	_loadAxis(map, type, config, GBA_KEY_R, "R");
-	_loadAxis(map, type, config, GBA_KEY_START, "Start");
-	_loadAxis(map, type, config, GBA_KEY_SELECT, "Select");
-	_loadAxis(map, type, config, GBA_KEY_UP, "Up");
-	_loadAxis(map, type, config, GBA_KEY_DOWN, "Down");
-	_loadAxis(map, type, config, GBA_KEY_LEFT, "Left");
-	_loadAxis(map, type, config, GBA_KEY_RIGHT, "Right");
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+	_loadAll(map, type, sectionName, config);
 }
 
 void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Configuration* config) {
-	_saveKey(map, type, config, GBA_KEY_A, "A");
-	_saveKey(map, type, config, GBA_KEY_B, "B");
-	_saveKey(map, type, config, GBA_KEY_L, "L");
-	_saveKey(map, type, config, GBA_KEY_R, "R");
-	_saveKey(map, type, config, GBA_KEY_START, "Start");
-	_saveKey(map, type, config, GBA_KEY_SELECT, "Select");
-	_saveKey(map, type, config, GBA_KEY_UP, "Up");
-	_saveKey(map, type, config, GBA_KEY_DOWN, "Down");
-	_saveKey(map, type, config, GBA_KEY_LEFT, "Left");
-	_saveKey(map, type, config, GBA_KEY_RIGHT, "Right");
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+	_saveAll(map, type, sectionName, config);
+}
 
-	_clearAxis(type, config, "A");
-	_clearAxis(type, config, "B");
-	_clearAxis(type, config, "L");
-	_clearAxis(type, config, "R");
-	_clearAxis(type, config, "Start");
-	_clearAxis(type, config, "Select");
-	_clearAxis(type, config, "Up");
-	_clearAxis(type, config, "Down");
-	_clearAxis(type, config, "Left");
-	_clearAxis(type, config, "Right");
+void GBAInputProfileLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, const char* profile) {
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+	_loadAll(map, type, sectionName, config);
+}
 
-	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
-	if (!impl) {
-		return;
-	}
-	struct GBAAxisSave save = {
-		config,
-		type
-	};
-	TableEnumerate(&impl->axes, _saveAxis, &save);
+void GBAInputProfileSave(const struct GBAInputMap* map, uint32_t type, struct Configuration* config, const char* profile) {
+	char sectionName[SECTION_NAME_MAX];
+	snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
+	sectionName[SECTION_NAME_MAX - 1] = '\0';
+	_saveAll(map, type, sectionName, config);
+}
+
+const char* GBAInputGetPreferredDevice(const struct Configuration* config, uint32_t type, int playerId) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
+	return ConfigurationGetValue(config, sectionName, deviceId);
+}
+
+void GBAInputSetPreferredDevice(struct Configuration* config, uint32_t type, int playerId, const char* deviceName) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
+	return ConfigurationSetValue(config, sectionName, deviceId, deviceName);
 }

@@ -31,12 +31,18 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(QObject* parent = nullptr);
+	InputController(int playerId = 0, QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
 	void loadConfiguration(uint32_t type);
+	void loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type = KEYBOARD);
+	void saveProfile(uint32_t type, const QString& profile);
+	const char* profileForType(uint32_t type);
+
+	bool allowOpposing() const { return m_allowOpposing; }
+	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
 
 	GBAKey mapKeyboard(int key) const;
 
@@ -52,6 +58,11 @@ public:
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
+
+	QStringList connectedGamepads(uint32_t type) const;
+	int gamepad(uint32_t type) const { return m_sdlPlayer.joystickIndex; }
+	void setGamepad(uint32_t type, int index) { GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index); }
+	void setPreferredGamepad(uint32_t type, const QString& device);
 #endif
 
 public slots:
@@ -64,9 +75,14 @@ private:
 
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
+	int m_playerId;
+	bool m_allowOpposing;
 
 #ifdef BUILD_SDL
-	GBASDLEvents m_sdlEvents;
+	static int s_sdlInited;
+	static GBASDLEvents s_sdlEvents;
+	GBASDLPlayer m_sdlPlayer;
+	bool m_playerAttached;
 #endif
 
 	QSet<int> m_activeButtons;

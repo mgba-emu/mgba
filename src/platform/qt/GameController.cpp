@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "InputController.h"
+#include "MultiplayerController.h"
 
 #include <QDateTime>
 #include <QThread>
@@ -32,6 +33,7 @@ GameController::GameController(QObject* parent)
 	, m_drawContext(new uint32_t[256 * 256])
 	, m_threadContext()
 	, m_activeKeys(0)
+	, m_inactiveKeys(0)
 	, m_logLevels(0)
 	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
@@ -41,6 +43,7 @@ GameController::GameController(QObject* parent)
 	, m_turbo(false)
 	, m_turboForced(false)
 	, m_inputController(nullptr)
+	, m_multiplayer(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -115,7 +118,14 @@ GameController::GameController(QObject* parent)
 	};
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
+		static const char* stubMessage = "Stub software interrupt";
 		GameController* controller = static_cast<GameController*>(context->userData);
+		if (level == GBA_LOG_STUB && strncmp(stubMessage, format, strlen(stubMessage)) == 0) {
+			va_list argc;
+			va_copy(argc, args);
+			int immediate = va_arg(argc, int);
+			controller->unimplementedBiosCall(immediate);
+		}
 		if (level == GBA_LOG_FATAL) {
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		} else if (!(controller->m_logLevels & level)) {
@@ -140,10 +150,28 @@ GameController::~GameController() {
 	m_audioThread->quit();
 	m_audioThread->wait();
 	disconnect();
+	clearMultiplayerController();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
+}
+
+void GameController::setMultiplayerController(std::shared_ptr<MultiplayerController> controller) {
+	if (controller == m_multiplayer) {
+		return;
+	}
+	clearMultiplayerController();
+	m_multiplayer = controller;
+	controller->attachGame(this);
+}
+
+void GameController::clearMultiplayerController() {
+	if (!m_multiplayer) {
+		return;
+	}
+	m_multiplayer->detachGame(this);
+	m_multiplayer.reset();
 }
 
 void GameController::setOverride(const GBACartridgeOverride& override) {
@@ -156,6 +184,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setAudioSync(opts->audioSync);
 	setVideoSync(opts->videoSync);
 	setSkipBIOS(opts->skipBios);
+	setUseBIOS(opts->useBios);
 	setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
 
 	threadInterrupt();
@@ -216,20 +245,22 @@ void GameController::openGame() {
 		m_threadContext.stateDir = m_threadContext.gameDir;
 	} else {
 		m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
-#if ENABLE_LIBZIP
+#if USE_LIBZIP
 		if (!m_threadContext.gameDir) {
 			m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
 		}
 #endif
-#if ENABLE_LZMA
+#if USE_LZMA
 		if (!m_threadContext.gameDir) {
 			m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
 		}
 #endif
 	}
 
-	if (!m_bios.isNull()) {
+	if (!m_bios.isNull() &&m_useBios) {
 		m_threadContext.bios = VFileOpen(m_bios.toLocal8Bit().constData(), O_RDONLY);
+	} else {
+		m_threadContext.bios = nullptr;
 	}
 
 	if (!m_patch.isNull()) {
@@ -367,17 +398,38 @@ void GameController::rewind(int states) {
 void GameController::keyPressed(int key) {
 	int mappedKey = 1 << key;
 	m_activeKeys |= mappedKey;
+	if (!m_inputController->allowOpposing()) {
+		if ((m_activeKeys & 0x30) == 0x30) {
+			m_inactiveKeys |= mappedKey ^ 0x30;
+			m_activeKeys ^= mappedKey ^ 0x30;
+		}
+		if ((m_activeKeys & 0xC0) == 0xC0) {
+			m_inactiveKeys |= mappedKey ^ 0xC0;
+			m_activeKeys ^= mappedKey ^ 0xC0;
+		}
+	}
 	updateKeys();
 }
 
 void GameController::keyReleased(int key) {
 	int mappedKey = 1 << key;
 	m_activeKeys &= ~mappedKey;
+	if (!m_inputController->allowOpposing()) {
+		if (mappedKey & 0x30) {
+			m_activeKeys |= m_inactiveKeys & (0x30 ^ mappedKey);
+			m_inactiveKeys &= ~0x30;
+		}
+		if (mappedKey & 0xC0) {
+			m_activeKeys |= m_inactiveKeys & (0xC0 ^ mappedKey);
+			m_inactiveKeys &= ~0xC0;
+		}
+	}
 	updateKeys();
 }
 
 void GameController::clearKeys() {
 	m_activeKeys = 0;
+	m_inactiveKeys = 0;
 	updateKeys();
 }
 
@@ -399,6 +451,12 @@ void GameController::setFPSTarget(float fps) {
 void GameController::setSkipBIOS(bool set) {
 	threadInterrupt();
 	m_threadContext.skipBios = set;
+	threadContinue();
+}
+
+void GameController::setUseBIOS(bool use) {
+	threadInterrupt();
+	m_useBios = use;
 	threadContinue();
 }
 
@@ -489,6 +547,7 @@ void GameController::setLuminanceValue(uint8_t value) {
 			break;
 		}
 	}
+	emit luminanceValueChanged(m_luxValue);
 }
 
 void GameController::setLuminanceLevel(int level) {
@@ -519,6 +578,7 @@ void GameController::updateKeys() {
 #ifdef BUILD_SDL
 	activeKeys |= m_activeButtons;
 #endif
+	activeKeys &= ~m_inactiveKeys;
 	m_threadContext.activeKeys = activeKeys;
 }
 

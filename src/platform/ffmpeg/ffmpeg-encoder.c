@@ -22,7 +22,7 @@
 #include <libswscale/swscale.h>
 
 static void _ffmpegPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _ffmpegPostAudioFrame(struct GBAAVStream*, int32_t left, int32_t right);
+static void _ffmpegPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
 
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
@@ -33,6 +33,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
+	encoder->d.postAudioBuffer = 0;
 
 	encoder->audioCodec = 0;
 	encoder->videoCodec = 0;
@@ -288,10 +289,18 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->height = encoder->video->height;
 	encoder->videoFrame->pts = 0;
 	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+		AV_PIX_FMT_RGB565,
+#else
+		AV_PIX_FMT_BGR555,
+#endif
+#else
 #ifndef USE_LIBAV
 		AV_PIX_FMT_0BGR32,
 #else
 		AV_PIX_FMT_BGR32,
+#endif
 #endif
 		encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
 		SWS_POINT, 0, 0, 0);
@@ -349,7 +358,7 @@ bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
 	return !!encoder->context;
 }
 
-void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int32_t left, int32_t right) {
+void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context || !encoder->audioCodec) {
 		return;
@@ -416,7 +425,7 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	uint8_t* pixels;
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
-	stride *= 4;
+	stride *= BYTES_PER_PIXEL;
 
 	AVPacket packet;
 

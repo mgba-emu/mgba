@@ -8,8 +8,8 @@
 
 #include "util/common.h"
 
-struct GBA;
-struct VDir;
+#include "gba/serialize.h"
+
 struct VFile;
 
 enum GBARRInitFrom {
@@ -19,95 +19,39 @@ enum GBARRInitFrom {
 	INIT_FROM_BOTH = 3,
 };
 
-enum GBARRTag {
-	// Playback tags
-	TAG_INVALID = 0x00,
-	TAG_INPUT = 0x01,
-	TAG_FRAME = 0x02,
-	TAG_LAG = 0x03,
-
-	// Stream chunking tags
-	TAG_BEGIN = 0x10,
-	TAG_END = 0x11,
-	TAG_PREVIOUSLY = 0x12,
-	TAG_NEXT_TIME = 0x13,
-	TAG_MAX_STREAM = 0x14,
-
-	// Recording information tags
-	TAG_FRAME_COUNT = 0x20,
-	TAG_LAG_COUNT = 0x21,
-	TAG_RR_COUNT = 0x22,
-	TAG_INIT = 0x24,
-	TAG_INIT_EX_NIHILO = 0x24 | INIT_EX_NIHILO,
-	TAG_INIT_FROM_SAVEGAME = 0x24 | INIT_FROM_SAVEGAME,
-	TAG_INIT_FROM_SAVESTATE = 0x24 | INIT_FROM_SAVESTATE,
-	TAG_INIT_FROM_BOTH = 0x24 | INIT_FROM_BOTH,
-
-	// User metadata tags
-	TAG_AUTHOR = 0x30,
-	TAG_COMMENT = 0x31,
-
-	TAG_EOF = INT_MAX
-};
-
 struct GBARRContext {
-	// Playback state
-	bool isPlaying;
-	bool autorecord;
+	void (*destroy)(struct GBARRContext*);
 
-	// Recording state
-	bool isRecording;
-	bool inputThisFrame;
+	bool (*startPlaying)(struct GBARRContext*, bool autorecord);
+	void (*stopPlaying)(struct GBARRContext*);
+	bool (*startRecording)(struct GBARRContext*);
+	void (*stopRecording)(struct GBARRContext*);
 
-	// Metadata
+	bool (*isPlaying)(const struct GBARRContext*);
+	bool (*isRecording)(const struct GBARRContext*);
+
+	void (*nextFrame)(struct GBARRContext*);
+	void (*logInput)(struct GBARRContext*, uint16_t input);
+	uint16_t (*queryInput)(struct GBARRContext*);
+
+	void (*stateSaved)(struct GBARRContext*, struct GBASerializedState*);
+	void (*stateLoaded)(struct GBARRContext*, const struct GBASerializedState*);
+
+	struct VFile* (*openSavedata)(struct GBARRContext* mgm, int flags);
+	struct VFile* (*openSavestate)(struct GBARRContext* mgm, int flags);
+
 	uint32_t frames;
 	uint32_t lagFrames;
-	uint32_t streamId;
-
-	uint32_t maxStreamId;
-	off_t maxStreamIdOffset;
-
 	enum GBARRInitFrom initFrom;
-	off_t initFromOffset;
 
 	uint32_t rrCount;
-	off_t rrCountOffset;
 
 	struct VFile* savedata;
-
-	// Streaming state
-	struct VDir* streamDir;
-	struct VFile* metadataFile;
-	struct VFile* movieStream;
-	uint16_t currentInput;
-	enum GBARRTag peekedTag;
-	uint32_t nextTime;
-	uint32_t previously;
 };
 
-void GBARRContextCreate(struct GBA*);
-void GBARRContextDestroy(struct GBA*);
-void GBARRSaveState(struct GBA*);
-void GBARRLoadState(struct GBA*);
+void GBARRDestroy(struct GBARRContext*);
 
-bool GBARRInitStream(struct GBARRContext*, struct VDir*);
-bool GBARRReinitStream(struct GBARRContext*, enum GBARRInitFrom);
-bool GBARRLoadStream(struct GBARRContext*, uint32_t streamId);
-bool GBARRIncrementStream(struct GBARRContext*, bool recursive);
-bool GBARRFinishSegment(struct GBARRContext*);
-bool GBARRSkipSegment(struct GBARRContext*);
-bool GBARRMarkRerecord(struct GBARRContext*);
-
-bool GBARRStartPlaying(struct GBARRContext*, bool autorecord);
-void GBARRStopPlaying(struct GBARRContext*);
-bool GBARRStartRecording(struct GBARRContext*);
-void GBARRStopRecording(struct GBARRContext*);
-
-bool GBARRIsPlaying(struct GBARRContext*);
-bool GBARRIsRecording(struct GBARRContext*);
-
-void GBARRNextFrame(struct GBARRContext*);
-void GBARRLogInput(struct GBARRContext*, uint16_t input);
-uint16_t GBARRQueryInput(struct GBARRContext*);
+void GBARRInitRecord(struct GBA*);
+void GBARRInitPlay(struct GBA*);
 
 #endif

@@ -37,6 +37,7 @@ static const int _objSizes[32] = {
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
+static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -77,7 +78,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.init = GBAVideoSoftwareRendererInit;
-	renderer->d.reset = GBAVideoSoftwareRendererInit;
+	renderer->d.reset = GBAVideoSoftwareRendererReset;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;
@@ -89,6 +90,21 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 }
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
+	GBAVideoSoftwareRendererReset(renderer);
+
+	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+
+	int y;
+	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+		int x;
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+			row[x] = GBA_COLOR_WHITE;
+		}
+	}
+}
+
+static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	int i;
 
@@ -544,7 +560,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 #ifdef COLOR_16_BIT
-#ifdef __arm__
+#ifdef __ARM_NEON
 	_to16Bit(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS);
 #else
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -1510,6 +1526,12 @@ static void _drawBackgroundMode3(struct GBAVideoSoftwareRenderer* renderer, stru
 			color32 |= (color << 6) & 0xF800;
 			color32 |= (color << 9) & 0xF80000;
 			color = color32;
+#elif COLOR_5_6_5
+			uint16_t color16 = 0;
+			color16 |= (color & 0x001F) << 11;
+			color16 |= (color & 0x03E0) << 1;
+			color16 |= (color & 0x7C00) >> 10;
+			color = color16;
 #endif
 			mosaicWait = mosaicH;
 		} else {
@@ -1593,6 +1615,12 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 			color32 |= (color << 3) & 0xF8;
 			color32 |= (color << 6) & 0xF800;
 			color = color32;
+#elif COLOR_5_6_5
+			uint16_t color16 = 0;
+			color16 |= (color & 0x001F) << 11;
+			color16 |= (color & 0x03E0) << 1;
+			color16 |= (color & 0x7C00) >> 10;
+			color = color16;
 #endif
 			mosaicWait = mosaicH;
 		} else {

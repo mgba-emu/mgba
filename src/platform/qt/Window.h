@@ -39,7 +39,7 @@ class Window : public QMainWindow {
 Q_OBJECT
 
 public:
-	Window(ConfigController* config, QWidget* parent = nullptr);
+	Window(ConfigController* config, int playerId = 0, QWidget* parent = nullptr);
 	virtual ~Window();
 
 	GameController* controller() { return m_controller; }
@@ -59,6 +59,7 @@ public slots:
 	void selectROM();
 	void selectBIOS();
 	void selectPatch();
+	void exitFullScreen();
 	void toggleFullScreen();
 	void loadConfig();
 	void saveConfig();
@@ -101,6 +102,7 @@ private slots:
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();
+	void unimplementedBiosCall(int);
 
 	void recordFrame();
 	void showFPS();
@@ -134,6 +136,9 @@ private:
 	QList<QString> m_mruFiles;
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
+	int m_playerId;
+
+	bool m_hitUnimplementedBiosCall;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;

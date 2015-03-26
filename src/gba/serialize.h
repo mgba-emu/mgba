@@ -129,7 +129,7 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * 0x00290 - 0x002C3: GPIO state
  * | 0x00290 - 0x00291: Pin state
  * | 0x00292 - 0x00293: Direction state
- * | 0x00294 - 0x002B6: RTC state (see gba-hardware.h for format)
+ * | 0x00294 - 0x002B6: RTC state (see hardware.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
  *   | bit 1: Has rumble value (reserved)
@@ -150,7 +150,20 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002C1 - 0x002C3: Flags
  *   | bits 0 - 1: Tilt state machine
  *   | bits 2 - 31: Reserved
- * 0x002C4 - 0x002F3: Reserved (leave zero)
+ * 0x002C4 - 0x002DF: Reserved (leave zero)
+ * 0x002E0 - 0x002EF: Savedata state
+ * | 0x002E0 - 0x002E0: Savedata type
+ * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
+ * | 0x002E2 - 0x002E2: Flags
+ *   | bits 0 - 1: Flash state machine
+ *   | bits 2 - 3: Reserved
+ *   | bit 4: Flash bank
+ *   | bits 5 - 7: Reserved
+ * | 0x002E3 - 0x002E3: Reserved
+ * | 0x002E4 - 0x002E7: EEPROM read bits remaining
+ * | 0x002E8 - 0x002EB: EEPROM read address
+ * | 0x002EC - 0x002EBF EEPROM write address
+ * 0x002F0 - 0x002F3: Reserved (leave zero)
  * 0x002F4 - 0x002FF: Prefetch
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
@@ -271,7 +284,22 @@ struct GBASerializedState {
 		unsigned : 22;
 	} hw;
 
-	uint32_t reservedHardware[12];
+	uint32_t reservedHardware[7];
+
+	struct {
+		unsigned type : 8;
+		unsigned command : 8;
+		unsigned flashState : 2;
+		unsigned : 2;
+		unsigned flashBank : 1;
+		unsigned : 3;
+		unsigned : 8;
+		int32_t readBitsRemaining;
+		uint32_t readAddress;
+		uint32_t writeAddress;
+	} savedata;
+
+	uint32_t reservedPadding;
 
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];
@@ -292,7 +320,7 @@ struct VDir;
 struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
-void GBADeserialize(struct GBA* gba, struct GBASerializedState* state);
+void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);

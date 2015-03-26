@@ -19,6 +19,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	m_ui.setupUi(this);
 
 	loadSetting("bios", m_ui.bios);
+	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
 	loadSetting("videoSync", m_ui.videoSync);
@@ -30,6 +31,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
+	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
@@ -40,17 +42,17 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 		m_ui.idleOptimization->setCurrentIndex(2);
 	}
 
-	int audioDriver = m_controller->getQtOption("audioDriver").toInt();
+	QVariant audioDriver = m_controller->getQtOption("audioDriver");
 #ifdef BUILD_QT_MULTIMEDIA
 	m_ui.audioDriver->addItem(tr("Qt Multimedia"), static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA));
-	if (audioDriver == static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA)) {
+	if (!audioDriver.isNull() && audioDriver.toInt() == static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA)) {
 		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
 	}
 #endif
 
 #ifdef BUILD_SDL
 	m_ui.audioDriver->addItem(tr("SDL"), static_cast<int>(AudioProcessor::Driver::SDL));
-	if (audioDriver == static_cast<int>(AudioProcessor::Driver::SDL)) {
+	if (audioDriver.isNull() || audioDriver.toInt() == static_cast<int>(AudioProcessor::Driver::SDL)) {
 		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
 	}
 #endif
@@ -68,6 +70,7 @@ void SettingsView::selectBios() {
 
 void SettingsView::updateConfig() {
 	saveSetting("bios", m_ui.bios);
+	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
 	saveSetting("videoSync", m_ui.videoSync);
@@ -79,6 +82,7 @@ void SettingsView::updateConfig() {
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
+	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
@@ -128,7 +132,7 @@ void SettingsView::saveSetting(const char* key, const QString& field) {
 
 void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
 	QString option = loadSetting(key);
-	field->setChecked(option != "0");
+	field->setChecked(!option.isNull() && option != "0");
 }
 
 void SettingsView::loadSetting(const char* key, QComboBox* field) {

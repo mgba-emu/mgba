@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "GBAKeyEditor.h"
 
+#include <QComboBox>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
@@ -20,9 +21,11 @@ const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.431;
 const qreal GBAKeyEditor::DPAD_WIDTH = 0.1;
 const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
 
-GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* parent)
+GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
+	, m_profileSelect(nullptr)
 	, m_type(type)
+	, m_profile(profile)
 	, m_controller(controller)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
@@ -41,19 +44,26 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, QWidget* paren
 	m_keyL = new KeyEditor(this);
 	m_keyR = new KeyEditor(this);
 
-	lookupBinding(map, m_keyDU, GBA_KEY_UP);
-	lookupBinding(map, m_keyDD, GBA_KEY_DOWN);
-	lookupBinding(map, m_keyDL, GBA_KEY_LEFT);
-	lookupBinding(map, m_keyDR, GBA_KEY_RIGHT);
-	lookupBinding(map, m_keySelect, GBA_KEY_SELECT);
-	lookupBinding(map, m_keyStart, GBA_KEY_START);
-	lookupBinding(map, m_keyA, GBA_KEY_A);
-	lookupBinding(map, m_keyB, GBA_KEY_B);
-	lookupBinding(map, m_keyL, GBA_KEY_L);
-	lookupBinding(map, m_keyR, GBA_KEY_R);
+	refresh();
 
 #ifdef BUILD_SDL
 	lookupAxes(map);
+
+	if (type == SDL_BINDING_BUTTON) {
+		m_profileSelect = new QComboBox(this);
+		m_profileSelect->addItems(controller->connectedGamepads(type));
+		int activeGamepad = controller->gamepad(type);
+		if (activeGamepad > 0) {
+			m_profileSelect->setCurrentIndex(activeGamepad);
+		}
+
+		connect(m_profileSelect, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this] (int i) {
+			m_controller->setGamepad(m_type, i);
+			m_profile = m_profileSelect->currentText();
+			m_controller->loadProfile(m_type, m_profile);
+			refresh();
+		});
+	}
 #endif
 
 	connect(m_keyDU, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
@@ -128,6 +138,10 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 	setLocation(m_keyB, 0.667, 0.490);
 	setLocation(m_keyL, 0.1, 0.1);
 	setLocation(m_keyR, 0.9, 0.1);
+
+	if (m_profileSelect) {
+		setLocation(m_profileSelect, 0.5, 0.7);
+	}
 }
 
 void GBAKeyEditor::paintEvent(QPaintEvent* event) {
@@ -163,6 +177,30 @@ void GBAKeyEditor::save() {
 	bindKey(m_keyL, GBA_KEY_L);
 	bindKey(m_keyR, GBA_KEY_R);
 	m_controller->saveConfiguration(m_type);
+
+#ifdef BUILD_SDL
+	if (m_profileSelect) {
+		m_controller->setPreferredGamepad(m_type, m_profileSelect->currentText());
+	}
+#endif
+
+	if (!m_profile.isNull()) {
+		m_controller->saveProfile(m_type, m_profile);
+	}
+}
+
+void GBAKeyEditor::refresh() {
+	const GBAInputMap* map = m_controller->map();
+	lookupBinding(map, m_keyDU, GBA_KEY_UP);
+	lookupBinding(map, m_keyDD, GBA_KEY_DOWN);
+	lookupBinding(map, m_keyDL, GBA_KEY_LEFT);
+	lookupBinding(map, m_keyDR, GBA_KEY_RIGHT);
+	lookupBinding(map, m_keySelect, GBA_KEY_SELECT);
+	lookupBinding(map, m_keyStart, GBA_KEY_START);
+	lookupBinding(map, m_keyA, GBA_KEY_A);
+	lookupBinding(map, m_keyB, GBA_KEY_B);
+	lookupBinding(map, m_keyL, GBA_KEY_L);
+	lookupBinding(map, m_keyR, GBA_KEY_R);
 }
 
 void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {
@@ -199,11 +237,15 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 #endif
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
+#ifdef BUILD_SDL
 	if (keyEditor->direction() != GamepadAxisEvent::NEUTRAL) {
 		m_controller->bindAxis(m_type, keyEditor->value(), keyEditor->direction(), key);
 	} else {
+#endif
 		m_controller->bindKey(m_type, keyEditor->value(), key);
+#ifdef BUILD_SDL
 	}
+#endif
 }
 
 bool GBAKeyEditor::findFocus() {

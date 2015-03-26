@@ -143,6 +143,7 @@ void OverrideView::gameStopped() {
 	m_ui.hwTilt->setEnabled(!m_ui.hwAutodetect->isChecked());
 	m_ui.hwRumble->setEnabled(!m_ui.hwAutodetect->isChecked());
 
+	m_ui.hwAutodetect->setChecked(true);
 	m_ui.hwRTC->setChecked(false);
 	m_ui.hwGyro->setChecked(false);
 	m_ui.hwLight->setChecked(false);
@@ -150,7 +151,9 @@ void OverrideView::gameStopped() {
 	m_ui.hwRumble->setChecked(false);
 
 	m_ui.idleLoop->setEnabled(true);
+	m_ui.idleLoop->clear();
 
-	m_ui.clear->setEnabled(false);
 	m_ui.save->setEnabled(false);
+
+	updateOverrides();
 }
