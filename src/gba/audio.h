@@ -11,6 +11,10 @@
 
 #include "util/circle-buffer.h"
 
+#ifndef RESAMPLE_BLIP_BUF
+#define RESAMPLE_BLIP_BUF 2
+#endif
+
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 #include "third-party/blip_buf/blip_buf.h"
 #endif
