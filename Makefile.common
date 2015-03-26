@@ -31,6 +31,7 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/supervisor/thread.c \
 					$(CORE_DIR)/gba/renderers/video-software.c \
 					$(CORE_DIR)/platform/commandline.c \
+					$(CORE_DIR)/platform/libretro/memory.c \
 					$(CORE_DIR)/platform/libretro/libretro.c \
 					$(CORE_DIR)/third-party/inih/ini.c \
 					$(CORE_DIR)/util/formatting.c \
@@ -45,5 +46,3 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 SOURCES_C += $(CORE_DIR)/util/circle-buffer.c
 #SOURCES_C += $(CORE_DIR)/debugger/gdb-stub.c
 SOURCES_C  += $(CORE_DIR)/third-party/blip_buf/blip_buf.c
-
-SOURCES_C += $(CORE_DIR)/platform/posix/memory.c
