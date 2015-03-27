@@ -464,7 +464,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		}
 		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->reload;
 		currentTimer->oldReload = currentTimer->reload;
-		currentTimer->lastEvent = 0;
+		currentTimer->lastEvent = gba->cpu->cycles;
 		gba->timersEnabled |= 1 << timer;
 	} else if (wasEnabled && !currentTimer->enable) {
 		if (!currentTimer->countUp) {
