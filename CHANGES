@@ -56,6 +56,8 @@ Bugfixes:
  - Qt: Fix crash when loading a game after stopping GDB server
  - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
  - GBA: Initialize gba.sync to null
+ - GBA: Fix timer initialization
+ - GBA Memory: Fix I cycles that had been moved to ARM7 core
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
