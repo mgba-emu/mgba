@@ -380,7 +380,7 @@ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 2 + wait;
+		*cycleCounter += 1 + wait;
 	}
 	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
 	int rotate = (address & 3) << 3;
@@ -483,7 +483,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 2 + wait;
+		*cycleCounter += 1 + wait;
 	}
 	// Unaligned 16-bit loads are "unpredictable", but the GBA rotates them, so we have to, too.
 	int rotate = (address & 1) << 3;
@@ -588,7 +588,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 2 + wait;
+		*cycleCounter += 1 + wait;
 	}
 	return value;
 }
