@@ -623,6 +623,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	gba->video.renderer->writeOAM(gba->video.renderer, ((address & (SIZE_OAM - 4)) >> 1) + 1);
 
 #define STORE_CART \
+	wait += waitstatesRegion[address >> BASE_OFFSET]; \
 	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
