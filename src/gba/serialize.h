@@ -162,8 +162,9 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002E3 - 0x002E3: Reserved
  * | 0x002E4 - 0x002E7: EEPROM read bits remaining
  * | 0x002E8 - 0x002EB: EEPROM read address
- * | 0x002EC - 0x002EBF EEPROM write address
- * 0x002F0 - 0x002F3: Reserved (leave zero)
+ * | 0x002EC - 0x002EF: EEPROM write address
+ * | 0x002F0 - 0x002F1: Flash settling sector
+ * | 0x002F2 - 0x002F3: Flash settling remaining
  * 0x002F4 - 0x002FF: Prefetch
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
@@ -297,9 +298,9 @@ struct GBASerializedState {
 		int32_t readBitsRemaining;
 		uint32_t readAddress;
 		uint32_t writeAddress;
+		uint16_t settlingSector;
+		uint16_t settlingDust;
 	} savedata;
-
-	uint32_t reservedPadding;
 
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];

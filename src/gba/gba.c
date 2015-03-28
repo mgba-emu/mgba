@@ -89,6 +89,9 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->lastJump = 0;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
+
+	gba->realisticTiming = false;
+
 	gba->performingDMA = false;
 }
 

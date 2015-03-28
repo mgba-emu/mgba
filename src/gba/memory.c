@@ -778,7 +778,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			if (address == SAVEDATA_FLASH_BASE) {
 				GBALog(gba, GBA_LOG_INFO, "Detected Flash savegame");
-				GBASavedataInitFlash(&memory->savedata);
+				GBASavedataInitFlash(&memory->savedata, gba->realisticTiming);
 			} else {
 				GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
 				GBASavedataInitSRAM(&memory->savedata);

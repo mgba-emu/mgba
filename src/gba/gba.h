@@ -161,6 +161,8 @@ struct GBA {
 	int idleDetectionFailures;
 	int32_t cachedRegisters[16];
 	bool taintedRegisters[16];
+
+	bool realisticTiming;
 };
 
 struct GBACartridge {
