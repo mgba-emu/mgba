@@ -1180,9 +1180,9 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	memory->waitstatesSeq16[REGION_CART1] = memory->waitstatesSeq16[REGION_CART1_EX] = GBA_ROM_WAITSTATES_SEQ[ws1seq + 2];
 	memory->waitstatesSeq16[REGION_CART2] = memory->waitstatesSeq16[REGION_CART2_EX] = GBA_ROM_WAITSTATES_SEQ[ws2seq + 4];
 
-	memory->waitstatesNonseq32[REGION_CART0] = memory->waitstatesNonseq32[REGION_CART0_EX] = memory->waitstatesSeq16[REGION_CART0] + 1 + memory->waitstatesSeq16[REGION_CART0];
-	memory->waitstatesNonseq32[REGION_CART1] = memory->waitstatesNonseq32[REGION_CART1_EX] = memory->waitstatesSeq16[REGION_CART1] + 1 + memory->waitstatesSeq16[REGION_CART1];
-	memory->waitstatesNonseq32[REGION_CART2] = memory->waitstatesNonseq32[REGION_CART2_EX] = memory->waitstatesSeq16[REGION_CART2] + 1 + memory->waitstatesSeq16[REGION_CART2];
+	memory->waitstatesNonseq32[REGION_CART0] = memory->waitstatesNonseq32[REGION_CART0_EX] = memory->waitstatesNonseq16[REGION_CART0] + 1 + memory->waitstatesSeq16[REGION_CART0];
+	memory->waitstatesNonseq32[REGION_CART1] = memory->waitstatesNonseq32[REGION_CART1_EX] = memory->waitstatesNonseq16[REGION_CART1] + 1 + memory->waitstatesSeq16[REGION_CART1];
+	memory->waitstatesNonseq32[REGION_CART2] = memory->waitstatesNonseq32[REGION_CART2_EX] = memory->waitstatesNonseq16[REGION_CART2] + 1 + memory->waitstatesSeq16[REGION_CART2];
 
 	memory->waitstatesSeq32[REGION_CART0] = memory->waitstatesSeq32[REGION_CART0_EX] = 2 * memory->waitstatesSeq16[REGION_CART0] + 1;
 	memory->waitstatesSeq32[REGION_CART1] = memory->waitstatesSeq32[REGION_CART1_EX] = 2 * memory->waitstatesSeq16[REGION_CART1] + 1;
