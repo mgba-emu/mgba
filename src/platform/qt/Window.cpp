@@ -79,6 +79,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
 
+	QVariant windowPos = m_config->getQtOption("windowPos");
+	if (!windowPos.isNull()) {
+		move(windowPos.toPoint());
+	}
+
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
@@ -344,6 +349,7 @@ void Window::resizeEvent(QResizeEvent*) {
 
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
+	m_config->setQtOption("windowPos", pos());
 	QMainWindow::closeEvent(event);
 }
 
