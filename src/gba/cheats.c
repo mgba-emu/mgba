@@ -507,11 +507,27 @@ static bool _addPAR3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 		return true;
 	}
 
+	if (op2 == 0x001DC0DE) {
+		return true;
+	}
+
 	switch (op1) {
 	case 0x00000000:
 		return _addPAR3Special(cheats, op2);
 	case 0xDEADFACE:
 		_reseedGameShark(cheats->gsaSeeds, op2, _par3T1, _par3T2);
+		return true;
+	}
+
+	if (op1 >> 24 == 0xC4) {
+		if (cheats->hook) {
+			return false;
+		}
+		cheats->hook = malloc(sizeof(*cheats->hook));
+		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->mode = MODE_THUMB;
+		cheats->hook->refs = 1;
+		cheats->hook->reentries = 0;
 		return true;
 	}
 
@@ -522,8 +538,6 @@ static bool _addPAR3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	int width = 1 << ((op1 & PAR3_WIDTH) >> PAR3_WIDTH_BASE);
 	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
 	cheat->address = _parAddr(op1);
-	cheat->width = width;
-	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
 	cheat->operandOffset = 0;
 	cheat->addressOffset = 0;
 	cheat->repeat = 1;
@@ -546,10 +560,14 @@ static bool _addPAR3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 		cheat->type = CHEAT_ADD;
 		break;
 	case PAR3_BASE_OTHER:
+		width = ((op1 >> 24) & 1) + 1;
 		cheat->type = CHEAT_ASSIGN;
 		cheat->address = BASE_IO | (op1 & OFFSET_MASK);
 		break;
 	}
+
+	cheat->width = width;
+	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
 	return true;
 }
 
