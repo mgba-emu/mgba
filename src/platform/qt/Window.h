@@ -59,6 +59,7 @@ public slots:
 	void selectROM();
 	void selectBIOS();
 	void selectPatch();
+	void enterFullScreen();
 	void exitFullScreen();
 	void toggleFullScreen();
 	void loadConfig();

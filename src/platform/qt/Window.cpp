@@ -181,6 +181,10 @@ void Window::loadConfig() {
 		resizeFrame(opts->width, opts->height);
 	}
 
+	if (opts->fullscreen) {
+		enterFullScreen();
+	}
+
 	m_mruFiles = m_config->getMRU();
 	updateMRU();
 
@@ -345,6 +349,7 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 void Window::resizeEvent(QResizeEvent*) {
 	m_config->setOption("height", m_screenWidget->height());
 	m_config->setOption("width", m_screenWidget->width());
+	m_config->setOption("fullscreen", isFullScreen());
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -380,6 +385,18 @@ void Window::dropEvent(QDropEvent* event) {
 	m_controller->loadGame(url.path());
 }
 
+void Window::enterFullScreen() {
+	if (isFullScreen()) {
+		return;
+	}
+	showFullScreen();
+#ifndef Q_OS_MAC
+	if (m_controller->isLoaded() && !m_controller->isPaused()) {
+		menuBar()->hide();
+	}
+#endif
+}
+
 void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
@@ -390,15 +407,9 @@ void Window::exitFullScreen() {
 
 void Window::toggleFullScreen() {
 	if (isFullScreen()) {
-		showNormal();
-		menuBar()->show();
+		exitFullScreen();
 	} else {
-		showFullScreen();
-#ifndef Q_OS_MAC
-		if (m_controller->isLoaded() && !m_controller->isPaused()) {
-			menuBar()->hide();
-		}
-#endif
+		enterFullScreen();
 	}
 }
 
@@ -831,7 +842,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setTurbo(false, false);
 	}, QKeySequence(Qt::Key_Tab), tr("Fast Forward (held)"), "holdFastForward");
 
-	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullscreen");
+	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullScreen");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
