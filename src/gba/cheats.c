@@ -435,25 +435,25 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		return false;
 	// TODO: Fix overriding existing patches
 	case PAR3_OTHER_PATCH_1:
-		cheats->romPatches[0].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[0].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
 		cheats->romPatches[0].applied = false;
 		cheats->romPatches[0].exists = true;
 		cheats->incompletePatch = &cheats->romPatches[0];
 		break;
 	case PAR3_OTHER_PATCH_2:
-		cheats->romPatches[1].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[1].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
 		cheats->romPatches[1].applied = false;
 		cheats->romPatches[1].exists = true;
 		cheats->incompletePatch = &cheats->romPatches[1];
 		break;
 	case PAR3_OTHER_PATCH_3:
-		cheats->romPatches[2].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[2].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
 		cheats->romPatches[2].applied = false;
 		cheats->romPatches[2].exists = true;
 		cheats->incompletePatch = &cheats->romPatches[2];
 		break;
 	case PAR3_OTHER_PATCH_4:
-		cheats->romPatches[3].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[3].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
 		cheats->romPatches[3].applied = false;
 		cheats->romPatches[3].exists = true;
 		cheats->incompletePatch = &cheats->romPatches[3];
