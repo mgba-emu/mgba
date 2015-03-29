@@ -294,6 +294,7 @@ static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 		return true;
 	case GSA_BUTTON:
 		// TODO: Implement button
+		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
 		return false;
 	case GSA_IF_EQ:
 		if (op1 == 0xDEADFACE) {
@@ -331,14 +332,225 @@ static bool _addGSA1(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	return true;
 }
 
+static uint32_t _parAddr(uint32_t x) {
+	return (x & 0xFFFFF) | ((x << 4) & 0x0F000000);
+}
+
+static void _parEndBlock(struct GBACheatSet* cheats) {
+	size_t size = GBACheatListSize(&cheats->list) - GBACheatListIndex(&cheats->list, cheats->currentBlock);
+	if (cheats->currentBlock->repeat) {
+		cheats->currentBlock->negativeRepeat = size - cheats->currentBlock->repeat;
+	} else {
+		cheats->currentBlock->repeat = size;
+	}
+	cheats->currentBlock = 0;
+}
+
+static void _parElseBlock(struct GBACheatSet* cheats) {
+	size_t size = GBACheatListSize(&cheats->list) - GBACheatListIndex(&cheats->list, cheats->currentBlock);
+	cheats->currentBlock->repeat = size;
+}
+
+static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
+	enum GBAActionReplay3Condition condition = op1 & PAR3_COND;
+	int width = 1 << ((op1 & PAR3_WIDTH) >> PAR3_WIDTH_BASE);
+	if (width > 4) {
+		// TODO: Always false conditions
+		return false;
+	}
+	if ((op1 & PAR3_ACTION) == PAR3_ACTION_DISABLE) {
+		// TODO: Codes that disable
+		return false;
+	}
+
+	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
+	cheat->address = _parAddr(op1);
+	cheat->width = width;
+	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
+	cheat->addressOffset = 0;
+	cheat->operandOffset = 0;
+
+	switch (op1 & PAR3_ACTION) {
+	case PAR3_ACTION_NEXT:
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
+		break;
+	case PAR3_ACTION_NEXT_TWO:
+		cheat->repeat = 2;
+		cheat->negativeRepeat = 0;
+		break;
+	case PAR3_ACTION_BLOCK:
+		cheat->repeat = 0;
+		cheat->negativeRepeat = 0;
+		if (cheats->currentBlock) {
+			_parEndBlock(cheats);
+		}
+		cheats->currentBlock = cheat;
+		break;
+	}
+
+	switch (condition) {
+	case PAR3_COND_OTHER:
+		// We shouldn't be able to get here
+		GBALog(0, GBA_LOG_ERROR, "Unexpectedly created 'other' PARv3 code");
+		cheat->type = CHEAT_IF_LAND;
+		cheat->operand = 0;
+		break;
+	case PAR3_COND_EQ:
+		cheat->type = CHEAT_IF_EQ;
+		break;
+	case PAR3_COND_NE:
+		cheat->type = CHEAT_IF_NE;
+		break;
+	case PAR3_COND_LT:
+		cheat->type = CHEAT_IF_LT;
+		break;
+	case PAR3_COND_GT:
+		cheat->type = CHEAT_IF_GT;
+		break;
+	case PAR3_COND_ULT:
+		cheat->type = CHEAT_IF_ULT;
+		break;
+	case PAR3_COND_UGT:
+		cheat->type = CHEAT_IF_UGT;
+		break;
+	case PAR3_COND_LAND:
+		cheat->type = CHEAT_IF_LAND;
+		break;
+	}
+	return true;
+}
+
+static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
+	struct GBACheat* cheat;
+	switch (op2 & 0xFF000000) {
+	case PAR3_OTHER_SLOWDOWN:
+		// TODO: Slowdown
+		return false;
+	case PAR3_OTHER_BUTTON_1:
+	case PAR3_OTHER_BUTTON_2:
+	case PAR3_OTHER_BUTTON_4:
+		// TODO: Button
+		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
+		return false;
+	// TODO: Fix overriding existing patches
+	case PAR3_OTHER_PATCH_1:
+		cheats->romPatches[0].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[0].applied = false;
+		cheats->romPatches[0].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[0];
+		break;
+	case PAR3_OTHER_PATCH_2:
+		cheats->romPatches[1].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[1].applied = false;
+		cheats->romPatches[1].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[1];
+		break;
+	case PAR3_OTHER_PATCH_3:
+		cheats->romPatches[2].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[2].applied = false;
+		cheats->romPatches[2].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[2];
+		break;
+	case PAR3_OTHER_PATCH_4:
+		cheats->romPatches[3].address = (op2 & 0xFFFFFF) << 1;
+		cheats->romPatches[3].applied = false;
+		cheats->romPatches[3].exists = true;
+		cheats->incompletePatch = &cheats->romPatches[3];
+		break;
+	case PAR3_OTHER_ENDIF:
+		if (cheats->currentBlock) {
+			_parEndBlock(cheats);
+			return true;
+		}
+		return false;
+	case PAR3_OTHER_ELSE:
+		if (cheats->currentBlock) {
+			_parElseBlock(cheats);
+			return true;
+		}
+		return false;
+	case PAR3_OTHER_FILL_1:
+		cheat = GBACheatListAppend(&cheats->list);
+		cheat->address = _parAddr(op2);
+		cheat->width = 1;
+		cheats->incompleteCheat = cheat;
+		break;
+	case PAR3_OTHER_FILL_2:
+		cheat = GBACheatListAppend(&cheats->list);
+		cheat->address = _parAddr(op2);
+		cheat->width = 2;
+		cheats->incompleteCheat = cheat;
+		break;
+	case PAR3_OTHER_FILL_4:
+		cheat = GBACheatListAppend(&cheats->list);
+		cheat->address = _parAddr(op2);
+		cheat->width = 3;
+		cheats->incompleteCheat = cheat;
+		break;
+	}
+	return true;
+}
+
 static bool _addPAR3(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
-	// TODO
-	UNUSED(cheats);
-	UNUSED(op1);
-	UNUSED(op2);
-	UNUSED(_par3T1);
-	UNUSED(_par3T2);
-	return false;
+	if (cheats->incompletePatch) {
+		cheats->incompletePatch->newValue = op1;
+		cheats->incompletePatch = 0;
+		return true;
+	}
+	if (cheats->incompleteCheat) {
+		cheats->incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - cheats->incompleteCheat->width) * 8));
+		cheats->incompleteCheat->addressOffset = op2 >> 24;
+		cheats->incompleteCheat->repeat = (op2 >> 16) & 0xFF;
+		cheats->incompleteCheat->addressOffset = (op2 & 0xFFFF) * cheats->incompleteCheat->width;
+		cheats->incompleteCheat = 0;
+		return true;
+	}
+
+	switch (op1) {
+	case 0x00000000:
+		return _addPAR3Special(cheats, op2);
+	case 0xDEADFACE:
+		_reseedGameShark(cheats->gsaSeeds, op2, _par3T1, _par3T2);
+		return true;
+	}
+
+	if (op1 & PAR3_COND) {
+		return _addPAR3Cond(cheats, op1, op2);
+	}
+
+	int width = 1 << ((op1 & PAR3_WIDTH) >> PAR3_WIDTH_BASE);
+	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
+	cheat->address = _parAddr(op1);
+	cheat->width = width;
+	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
+	cheat->operandOffset = 0;
+	cheat->addressOffset = 0;
+	cheat->repeat = 1;
+
+	switch (op1 & PAR3_BASE) {
+	case PAR3_BASE_ASSIGN:
+		cheat->type = CHEAT_ASSIGN;
+		cheat->addressOffset = width;
+		if (width < 4) {
+			cheat->repeat = (op2 >> (width * 8)) + 1;
+		}
+		break;
+	case PAR3_BASE_INDIRECT:
+		cheat->type = CHEAT_ASSIGN_INDIRECT;
+		if (width < 4) {
+			cheat->addressOffset = (op2 >> (width * 8)) * width;
+		}
+		break;
+	case PAR3_BASE_ADD:
+		cheat->type = CHEAT_ADD;
+		break;
+	case PAR3_BASE_OTHER:
+		cheat->type = CHEAT_ASSIGN;
+		cheat->address = BASE_IO | (op1 & OFFSET_MASK);
+		break;
+	}
+	return true;
 }
 
 static void _addBreakpoint(struct GBACheatDevice* device, struct GBACheatSet* cheats) {
@@ -415,6 +627,8 @@ void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 	GBACheatListInit(&set->list, 4);
 	StringListInit(&set->lines, 4);
 	set->incompleteCheat = 0;
+	set->incompletePatch = 0;
+	set->currentBlock = 0;
 	set->gsaVersion = 0;
 	set->remainingAddresses = 0;
 	set->hook = 0;
@@ -587,6 +801,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 	cheat->address = op1 & 0x0FFFFFFF;
 	cheat->operand = op2;
 	cheat->repeat = 1;
+	cheat->negativeRepeat = 0;
 	return true;
 }
 
@@ -640,6 +855,41 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet* cheats, const char* line) {
 		return false;
 	}
 	return GBACheatAddGameShark(cheats, op1, op2);
+}
+
+bool GBACheatAddProActionReplay(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
+	uint32_t o1 = op1;
+	uint32_t o2 = op2;
+	char line[18] = "XXXXXXXX XXXXXXXX";
+	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
+	_registerLine(set, line);
+
+	switch (set->gsaVersion) {
+	case 0:
+		_setGameSharkVersion(set, 3);
+		// Fall through
+	case 1:
+		_decryptGameShark(&o1, &o2, set->gsaSeeds);
+		return _addPAR3(set, o1, o2);
+	}
+	return false;
+}
+
+bool GBACheatAddProActionReplayLine(struct GBACheatSet* cheats, const char* line) {
+	uint32_t op1;
+	uint32_t op2;
+	line = _hex32(line, &op1);
+	if (!line) {
+		return false;
+	}
+	while (*line == ' ') {
+		++line;
+	}
+	line = _hex32(line, &op2);
+	if (!line) {
+		return false;
+	}
+	return GBACheatAddProActionReplay(cheats, op1, op2);
 }
 
 bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
@@ -849,6 +1099,7 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 	}
 	bool condition = true;
 	int conditionRemaining = 0;
+	int negativeConditionRemaining = 0;
 	_patchROM(device, cheats);
 
 	size_t nCodes = GBACheatListSize(&cheats->list);
@@ -856,6 +1107,13 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 	for (i = 0; i < nCodes; ++i) {
 		if (conditionRemaining > 0) {
 			--conditionRemaining;
+			if (!condition) {
+				continue;
+			}
+		} else if (negativeConditionRemaining > 0) {
+			conditionRemaining = negativeConditionRemaining - 1;
+			negativeConditionRemaining = 0;
+			condition = !condition;
 			if (!condition) {
 				continue;
 			}
@@ -874,6 +1132,11 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 				value = operand;
 				performAssignment = true;
 				break;
+			case CHEAT_ASSIGN_INDIRECT:
+				value = operand;
+				address = _readMem(device->p->cpu, address + cheat->addressOffset, 4);
+				performAssignment = true;
+				break;
 			case CHEAT_AND:
 				value = _readMem(device->p->cpu, address, cheat->width) & operand;
 				performAssignment = true;
@@ -889,34 +1152,42 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 			case CHEAT_IF_EQ:
 				condition = _readMem(device->p->cpu, address, cheat->width) == operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_NE:
 				condition = _readMem(device->p->cpu, address, cheat->width) != operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_LT:
 				condition = _readMem(device->p->cpu, address, cheat->width) < operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_GT:
 				condition = _readMem(device->p->cpu, address, cheat->width) > operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_ULT:
 				condition = (uint32_t) _readMem(device->p->cpu, address, cheat->width) < (uint32_t) operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_UGT:
 				condition = (uint32_t) _readMem(device->p->cpu, address, cheat->width) > (uint32_t) operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_AND:
 				condition = _readMem(device->p->cpu, address, cheat->width) & operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			case CHEAT_IF_LAND:
 				condition = _readMem(device->p->cpu, address, cheat->width) && operand;
 				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
 			}
 

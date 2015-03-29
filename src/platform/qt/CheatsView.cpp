@@ -40,6 +40,10 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 		enterCheat(GBACheatAddGameSharkLine);
 	});
 
+	connect(m_ui.addPAR, &QPushButton::clicked, [this]() {
+		enterCheat(GBACheatAddProActionReplayLine);
+	});
+
 	connect(m_ui.addCB, &QPushButton::clicked, [this]() {
 		enterCheat(GBACheatAddCodeBreakerLine);
 	});
