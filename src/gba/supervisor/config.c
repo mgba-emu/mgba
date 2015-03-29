@@ -190,7 +190,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 
 	int fakeBool;
-	if (_lookupIntValue(config, "useSync", &fakeBool)) {
+	if (_lookupIntValue(config, "useBios", &fakeBool)) {
 		opts->useBios = fakeBool;
 	}
 	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
