@@ -11,6 +11,9 @@
 
 #include "util/circle-buffer.h"
 
+#define RESAMPLE_NN 0
+#define RESAMPLE_BLIP_BUF 2
+
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 #include "third-party/blip_buf/blip_buf.h"
 #endif
@@ -18,9 +21,6 @@
 struct GBADMA;
 
 extern const unsigned GBA_AUDIO_SAMPLES;
-
-#define RESAMPLE_NN 0
-#define RESAMPLE_BLIP_BUF 2
 
 DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);
 DECL_BITS(GBAAudioRegisterEnvelope, Length, 0, 6);
