@@ -85,6 +85,7 @@ Misc:
  - GBA: Move A/V stream interface into core
  - GBA: Savestates now take into account savedata state machines (fixes #109)
  - Qt: Remember window position
+ - Qt: Double-clicking on the window toggles full screen
 
 0.1.1: (2015-01-24)
 Bugfixes:

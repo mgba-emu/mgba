@@ -385,6 +385,13 @@ void Window::dropEvent(QDropEvent* event) {
 	m_controller->loadGame(url.path());
 }
 
+void Window::mouseDoubleClickEvent(QMouseEvent* event) {
+	if (event->button() != Qt::LeftButton) {
+		return;
+	}
+	toggleFullScreen();
+}
+
 void Window::enterFullScreen() {
 	if (isFullScreen()) {
 		return;
