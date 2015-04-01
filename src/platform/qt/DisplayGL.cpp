@@ -153,14 +153,12 @@ void Painter::resize(const QSize& size) {
 	QWidget::resize(size);
 	if (m_drawTimer) {
 		forceDraw();
-		forceDraw();
 	}
 }
 
 void Painter::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 	if (m_drawTimer) {
-		forceDraw();
 		forceDraw();
 	}
 }
@@ -175,7 +173,6 @@ void Painter::filter(bool filter) {
 	}
 	doneCurrent();
 	if (m_drawTimer) {
-		forceDraw();
 		forceDraw();
 	}
 }
