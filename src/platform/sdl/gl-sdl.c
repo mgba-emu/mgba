@@ -49,7 +49,17 @@ static void _doViewport(int w, int h, struct SDLSoftwareRenderer* renderer) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+static bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer);
+
+void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLGLInit;
+	renderer->deinit = GBASDLGLDeinit;
+	renderer->runloop = GBASDLGLRunloop;
+}
+
+bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -110,7 +120,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
 
 	glEnable(GL_TEXTURE_2D);
@@ -159,6 +169,6 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	}
 }
 
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
 	free(renderer->d.outputBuffer);
 }
