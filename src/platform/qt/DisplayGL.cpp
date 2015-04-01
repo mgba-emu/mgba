@@ -117,14 +117,6 @@ void DisplayGL::filter(bool filter) {
 	}
 }
 
-#ifdef USE_PNG
-void DisplayGL::screenshot() {
-	GBAThreadInterrupt(m_context);
-	GBAThreadTakeScreenshot(m_context);
-	GBAThreadContinue(m_context);
-}
-#endif
-
 void DisplayGL::resizeEvent(QResizeEvent* event) {
 	m_painter->resize(event->size());
 }

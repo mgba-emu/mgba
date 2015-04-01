@@ -119,6 +119,10 @@ public slots:
 	void clearAVStream();
 	void reloadAudioDriver();
 
+#ifdef USE_PNG
+	void screenshot();
+#endif
+
 	void setLuminanceValue(uint8_t value);
 	uint8_t luminanceValue() const { return m_luxValue; }
 	void setLuminanceLevel(int level);

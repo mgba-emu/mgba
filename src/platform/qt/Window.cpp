@@ -738,7 +738,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef USE_PNG
 	QAction* screenshot = new QAction(tr("Take &screenshot"), avMenu);
 	screenshot->setShortcut(tr("F12"));
-	connect(screenshot, SIGNAL(triggered()), m_display, SLOT(screenshot()));
+	connect(screenshot, SIGNAL(triggered()), m_controller, SLOT(screenshot()));
 	m_gameActions.append(screenshot);
 	addControlledAction(avMenu, screenshot, "screenshot");
 #endif

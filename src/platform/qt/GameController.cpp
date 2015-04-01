@@ -520,6 +520,14 @@ void GameController::clearAVStream() {
 	threadContinue();
 }
 
+#ifdef USE_PNG
+void GameController::screenshot() {
+	GBAThreadInterrupt(&m_threadContext);
+	GBAThreadTakeScreenshot(&m_threadContext);
+	GBAThreadContinue(&m_threadContext);
+}
+#endif
+
 void GameController::reloadAudioDriver() {
 	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
 	int samples = m_audioProcessor->getBufferSamples();

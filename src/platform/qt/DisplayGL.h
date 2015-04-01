@@ -31,9 +31,6 @@ public slots:
 	void forceDraw();
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
-#ifdef USE_PNG
-	void screenshot();
-#endif
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override {};

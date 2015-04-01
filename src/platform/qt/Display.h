@@ -26,9 +26,6 @@ public slots:
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock) = 0;
 	virtual void filter(bool filter) = 0;
-#ifdef USE_PNG
-	virtual void screenshot() = 0;
-#endif
 };
 
 }
