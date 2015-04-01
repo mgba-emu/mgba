@@ -18,7 +18,6 @@ extern "C" {
 }
 
 #include "GDBController.h"
-#include "Display.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 
@@ -28,6 +27,7 @@ struct GBAArguments;
 namespace QGBA {
 
 class ConfigController;
+class Display;
 class GameController;
 class GIFView;
 class LogView;

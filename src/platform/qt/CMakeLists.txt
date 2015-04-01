@@ -41,6 +41,7 @@ set(SOURCE_FILES
 	CheatsView.cpp
 	ConfigController.cpp
 	Display.cpp
+	DisplayGL.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp

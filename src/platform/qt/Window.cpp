@@ -16,6 +16,7 @@
 
 #include "CheatsView.h"
 #include "ConfigController.h"
+#include "DisplayGL.h"
 #include "GameController.h"
 #include "GBAKeyEditor.h"
 #include "GDBController.h"
@@ -67,7 +68,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
-	m_display = new Display(format);
+	m_display = new DisplayGL(format);
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -857,6 +858,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 }
 
 void Window::attachWidget(QWidget* widget) {
+	m_screenWidget->clear();
 	m_screenWidget->layout()->addWidget(widget);
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
@@ -924,13 +926,13 @@ void WindowBackground::setLockAspectRatio(int width, int height) {
 }
 
 void WindowBackground::paintEvent(QPaintEvent*) {
-	QPainter painter(this);
-	painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	const QPixmap* logo = pixmap();
-	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	if (!logo) {
 		return;
 	}
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform);
+	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
 	QSize ds = s;
 	if (s.width() * m_aspectHeight > s.height() * m_aspectWidth) {
