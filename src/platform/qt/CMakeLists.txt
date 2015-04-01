@@ -42,6 +42,7 @@ set(SOURCE_FILES
 	ConfigController.cpp
 	Display.cpp
 	DisplayGL.cpp
+	DisplayQt.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
