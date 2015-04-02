@@ -8,6 +8,23 @@
 
 #include "util/common.h"
 
+#ifndef _WIN32
+#include <sys/mman.h>
+#define PATH_SEP "/"
+#else
+#include <io.h>
+#include <windows.h>
+#define PATH_SEP "\\"
+#endif
+
+#ifndef PATH_MAX
+#ifdef MAX_PATH
+#define PATH_MAX MAX_PATH
+#else
+#define PATH_MAX 128
+#endif
+#endif
+
 enum {
 	MAP_READ = 1,
 	MAP_WRITE = 2

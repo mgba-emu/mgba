@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include "util/formatting.h"
+#include "util/vfs.h"
 
 #include <sys/stat.h>
 
@@ -13,9 +14,6 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <strsafe.h>
-#define PATH_SEP "\\"
-#else
-#define PATH_SEP "/"
 #endif
 
 #define SECTION_NAME_MAX 128
