@@ -120,7 +120,7 @@ if(WIN32)
 	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
-else()
+elseif(UNIX)
 	add_definitions(-DUSE_PTHREADS)
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -362,6 +362,10 @@ if(BUILD_PERF)
 	target_link_libraries(${BINARY_NAME}-perf ${BINARY_NAME} ${PERF_LIB})
 	install(TARGETS ${BINARY_NAME}-perf DESTINATION bin COMPONENT ${BINARY_NAME}-perf)
 	install(FILES ${CMAKE_SOURCE_DIR}/tools/perf.py DESTINATION "${CMAKE_INSTALL_LIBDIR}/${BINARY_NAME}" COMPONENT ${BINARY_NAME}-perf)
+endif()
+
+if(PSP)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp ${CMAKE_BINARY_DIR}/psp)
 endif()
 
 # Packaging

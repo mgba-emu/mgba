@@ -9,7 +9,9 @@
 #include "util/common.h"
 
 #ifndef _WIN32
+#ifndef PSP
 #include <sys/mman.h>
+#endif
 #define PATH_SEP "/"
 #else
 #include <io.h>

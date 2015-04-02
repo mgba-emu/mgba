@@ -15,6 +15,10 @@ enum {
 	PATCH_CHECKSUM = -4,
 };
 
+#ifdef PSP
+#define SSIZE_MAX 0x7FFFFFFF
+#endif
+
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
 
 static bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
