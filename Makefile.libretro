@@ -133,8 +133,8 @@ else ifeq ($(platform), psp1)
 	CXX = psp-g++$(EXE_EXT)
 	AR = psp-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DPSP -DCC_RESAMPLER
-	CFLAGS += -G0
-	CXXFLAGS += -G0
+	CFLAGS += -G0 -I$(shell psp-config --pspsdk-path)/include
+	CXXFLAGS += -G0 -I$(shell psp-config --pspsdk-path)/include
 	STATIC_LINKING = 1
 	DEFINES += -std=c99
 
