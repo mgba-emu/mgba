@@ -198,7 +198,14 @@ void Window::saveConfig() {
 }
 
 void Window::selectROM() {
+	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
+	if (doPause) {
+		m_controller->setPaused(true);
+	}
 	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString(), tr("Game Boy Advance ROMs (*.gba *.zip *.rom *.bin)"));
+	if (doPause) {
+		m_controller->setPaused(false);
+	}
 	if (!filename.isEmpty()) {
 		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadGame(filename);
@@ -206,7 +213,14 @@ void Window::selectROM() {
 }
 
 void Window::selectBIOS() {
+	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
+	if (doPause) {
+		m_controller->setPaused(true);
+	}
 	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"), m_config->getQtOption("lastDirectory").toString());
+	if (doPause) {
+		m_controller->setPaused(false);
+	}
 	if (!filename.isEmpty()) {
 		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
@@ -218,7 +232,14 @@ void Window::selectBIOS() {
 }
 
 void Window::selectPatch() {
+	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
+	if (doPause) {
+		m_controller->setPaused(true);
+	}
 	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), m_config->getQtOption("lastDirectory").toString(), tr("Patches (*.ips *.ups *.bps)"));
+	if (doPause) {
+		m_controller->setPaused(false);
+	}
 	if (!filename.isEmpty()) {
 		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadPatch(filename);
