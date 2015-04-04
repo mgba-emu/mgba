@@ -434,6 +434,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
