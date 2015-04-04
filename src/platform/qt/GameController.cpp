@@ -334,7 +334,7 @@ bool GameController::isPaused() {
 }
 
 void GameController::setPaused(bool paused) {
-	if (paused == GBAThreadIsPaused(&m_threadContext)) {
+	if (!m_gameOpen || paused == GBAThreadIsPaused(&m_threadContext)) {
 		return;
 	}
 	if (paused) {
