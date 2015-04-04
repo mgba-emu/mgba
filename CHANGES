@@ -61,6 +61,7 @@ Bugfixes:
  - GBA Memory: Fix cycle counting for 32-bit load/stores
  - ARM7: Fix cycle counting for loads
  - Qt: Pause game while open file dialogs are open (fixes #6 on GitHub)
+ - Qt: Fix crash when attempting to pause if a game is not running
 Misc:
  - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
  - GBA Memory: Simplify memory API and use fixed bus width
