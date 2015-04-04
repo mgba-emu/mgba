@@ -683,6 +683,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, this);
 	m_config->updateOption("audioSync");
 
+	emulationMenu->addSeparator();
+
+	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
+	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
+	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
+	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
+
+	QAction* solarDecrease = new QAction(tr("Decrease solar level"), solarMenu);
+	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
+	addControlledAction(solarMenu, solarDecrease, "decreaseLuminanceLevel");
+
+	QAction* maxSolar = new QAction(tr("Brightest solar level"), solarMenu);
+	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
+	addControlledAction(solarMenu, maxSolar, "maxLuminanceLevel");
+
+	QAction* minSolar = new QAction(tr("Darkest solar level"), solarMenu);
+	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
+	addControlledAction(solarMenu, minSolar, "minLuminanceLevel");
+
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
@@ -800,23 +819,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
-
-	QMenu* solarMenu = toolsMenu->addMenu(tr("Solar sensor"));
-	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
-	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
-	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
-
-	QAction* solarDecrease = new QAction(tr("Decrease solar level"), solarMenu);
-	connect(solarDecrease, SIGNAL(triggered()), m_controller, SLOT(decreaseLuminanceLevel()));
-	addControlledAction(solarMenu, solarDecrease, "decreaseLuminanceLevel");
-
-	QAction* maxSolar = new QAction(tr("Brightest solar level"), solarMenu);
-	connect(maxSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(10); });
-	addControlledAction(solarMenu, maxSolar, "maxLuminanceLevel");
-
-	QAction* minSolar = new QAction(tr("Darkest solar level"), solarMenu);
-	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
-	addControlledAction(solarMenu, minSolar, "minLuminanceLevel");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
