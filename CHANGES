@@ -1,6 +1,7 @@
 0.2.1: (Future)
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
+ - All: Fix sanitize-deb script not cleaning up after itself
 
 0.2.0: (2015-04-03)
 Features:
