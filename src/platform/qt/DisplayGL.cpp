@@ -33,9 +33,6 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	, m_painter(new Painter(format, this))
 	, m_started(false)
 {
-	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	setCursor(Qt::BlankCursor);
 }
 
 void DisplayGL::startDrawing(const uint32_t* buffer, GBAThread* thread) {
