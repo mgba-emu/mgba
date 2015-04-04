@@ -69,7 +69,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
-	m_display = new DisplayGL(format);
+	m_display = new DisplayGL(format, this);
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
