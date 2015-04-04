@@ -22,19 +22,19 @@ public:
 	DisplayQt(QWidget* parent = nullptr);
 
 public slots:
-	void startDrawing(const uint32_t* buffer, GBAThread* context);
-	void stopDrawing();
-	void pauseDrawing();
-	void unpauseDrawing();
-	void forceDraw();
-	void lockAspectRatio(bool lock);
-	void filter(bool filter);
+	void startDrawing(const uint32_t* buffer, GBAThread* context) override;
+	void stopDrawing() override {}
+	void pauseDrawing() override {}
+	void unpauseDrawing() override {}
+	void forceDraw() override { update(); }
+	void lockAspectRatio(bool lock) override;
+	void filter(bool filter) override;
+	void framePosted(const uint32_t*) override { update(); }
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
-	QTimer m_drawTimer;
 	GBAThread* m_context;
 	QImage m_backing;
 	bool m_lockAspectRatio;

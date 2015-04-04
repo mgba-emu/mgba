@@ -14,8 +14,6 @@ DisplayQt::DisplayQt(QWidget* parent)
 	, m_lockAspectRatio(false)
 	, m_filter(false)
 {
-	connect(&m_drawTimer, SIGNAL(timeout()), this, SLOT(update()));
-	m_drawTimer.setInterval(12); // Give update time roughly 4.6ms of clearance
 }
 
 void DisplayQt::startDrawing(const uint32_t* buffer, GBAThread* context) {
@@ -29,23 +27,6 @@ void DisplayQt::startDrawing(const uint32_t* buffer, GBAThread* context) {
 #else
 	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB32);
 #endif
-	m_drawTimer.start();
-}
-
-void DisplayQt::stopDrawing() {
-	m_drawTimer.stop();
-}
-
-void DisplayQt::pauseDrawing() {
-	m_drawTimer.stop();
-}
-
-void DisplayQt::unpauseDrawing() {
-	m_drawTimer.start();
-}
-
-void DisplayQt::forceDraw() {
-	update();
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {

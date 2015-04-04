@@ -102,6 +102,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
+	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), m_display, SLOT(framePosted(const uint32_t*)));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
 	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));

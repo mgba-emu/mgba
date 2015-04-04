@@ -26,6 +26,7 @@ public slots:
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock) = 0;
 	virtual void filter(bool filter) = 0;
+	virtual void framePosted(const uint32_t*) = 0;
 };
 
 }
