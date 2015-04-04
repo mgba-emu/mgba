@@ -43,6 +43,12 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 		m_slots[i]->installEventFilter(this);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
+
+	QAction* escape = new QAction(this);
+	escape->connect(escape, SIGNAL(triggered()), this, SLOT(close()));
+	escape->setShortcut(QKeySequence("Esc"));
+	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	addAction(escape);
 }
 
 void LoadSaveState::setMode(LoadSave mode) {
@@ -79,9 +85,6 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 		case Qt::Key_8:
 		case Qt::Key_9:
 			triggerState(static_cast<QKeyEvent*>(event)->key() - Qt::Key_1 + 1);
-			break;
-		case Qt::Key_Escape:
-			close();
 			break;
 		case Qt::Key_Enter:
 		case Qt::Key_Return:

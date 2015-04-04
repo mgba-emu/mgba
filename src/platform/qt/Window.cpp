@@ -922,6 +922,7 @@ void Window::updateMRU() {
 QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString& name) {
 	m_shortcutController->addAction(menu, action, name);
 	menu->addAction(action);
+	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;
 }
