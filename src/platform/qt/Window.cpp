@@ -880,7 +880,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 }
 
 void Window::attachWidget(QWidget* widget) {
-	m_screenWidget->clear();
 	m_screenWidget->layout()->addWidget(widget);
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
