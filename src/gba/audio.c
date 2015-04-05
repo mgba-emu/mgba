@@ -41,6 +41,13 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 #endif
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+
+	audio->forceDisableCh[0] = false;
+	audio->forceDisableCh[1] = false;
+	audio->forceDisableCh[2] = false;
+	audio->forceDisableCh[3] = false;
+	audio->forceDisableChA = false;
+	audio->forceDisableChB = false;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
@@ -750,55 +757,67 @@ static void _sample(struct GBAAudio* audio) {
 	int16_t sampleRight = 0;
 	int psgShift = 5 - audio->volume;
 
-	if (audio->ch1Left) {
-		sampleLeft += audio->ch1.sample;
+	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
+		if (audio->ch1Left) {
+			sampleLeft += audio->ch1.sample;
+		}
+
+		if (audio->ch1Right) {
+			sampleRight += audio->ch1.sample;
+		}
 	}
 
-	if (audio->ch1Right) {
-		sampleRight += audio->ch1.sample;
+	if (audio->playingCh2 && !audio->forceDisableCh[1]) {
+		if (audio->ch2Left) {
+			sampleLeft += audio->ch2.sample;
+		}
+
+		if (audio->ch2Right) {
+			sampleRight += audio->ch2.sample;
+		}
 	}
 
-	if (audio->ch2Left) {
-		sampleLeft += audio->ch2.sample;
+	if (audio->playingCh3 && !audio->forceDisableCh[2]) {
+		if (audio->ch3Left) {
+			sampleLeft += audio->ch3.sample;
+		}
+
+		if (audio->ch3Right) {
+			sampleRight += audio->ch3.sample;
+		}
 	}
 
-	if (audio->ch2Right) {
-		sampleRight += audio->ch2.sample;
-	}
+	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
+		if (audio->ch4Left) {
+			sampleLeft += audio->ch4.sample;
+		}
 
-	if (audio->ch3Left) {
-		sampleLeft += audio->ch3.sample;
-	}
-
-	if (audio->ch3Right) {
-		sampleRight += audio->ch3.sample;
-	}
-
-	if (audio->ch4Left) {
-		sampleLeft += audio->ch4.sample;
-	}
-
-	if (audio->ch4Right) {
-		sampleRight += audio->ch4.sample;
+		if (audio->ch4Right) {
+			sampleRight += audio->ch4.sample;
+		}
 	}
 
 	sampleLeft = (sampleLeft * (1 + audio->volumeLeft)) >> psgShift;
 	sampleRight = (sampleRight * (1 + audio->volumeRight)) >> psgShift;
 
-	if (audio->chALeft) {
-		sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
+	if (!audio->forceDisableChA) {
+		if (audio->chALeft) {
+			sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
+		}
+
+		if (audio->chARight) {
+			sampleRight += (audio->chA.sample << 2) >> !audio->volumeChA;
+		}
 	}
 
-	if (audio->chARight) {
-		sampleRight += (audio->chA.sample << 2) >> !audio->volumeChA;
-	}
+	if (!audio->forceDisableChB) {
+		if (audio->chBLeft) {
+			sampleLeft += (audio->chB.sample << 2) >> !audio->volumeChB;
+		}
 
-	if (audio->chBLeft) {
-		sampleLeft += (audio->chB.sample << 2) >> !audio->volumeChB;
-	}
-
-	if (audio->chBRight) {
-		sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
+		if (audio->chBRight) {
+			sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
+		}
 	}
 
 	sampleLeft = _applyBias(audio, sampleLeft);

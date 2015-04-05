@@ -236,6 +236,10 @@ struct GBAAudio {
 	int32_t nextSample;
 
 	int32_t sampleInterval;
+
+	bool forceDisableCh[4];
+	bool forceDisableChA;
+	bool forceDisableChB;
 };
 
 struct GBAStereoSample {
