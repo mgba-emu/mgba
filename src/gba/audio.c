@@ -514,11 +514,15 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", fifoId);
 		return;
 	}
-	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t)) {
+	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t) && channel->dmaSource > 0) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
-		dma->nextCount = 4;
-		dma->nextEvent = 0;
-		GBAMemoryUpdateDMAs(audio->p, -cycles);
+		if (GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_CUSTOM) {
+			dma->nextCount = 4;
+			dma->nextEvent = 0;
+			GBAMemoryUpdateDMAs(audio->p, -cycles);
+		} else {
+			channel->dmaSource = 0;
+		}
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
