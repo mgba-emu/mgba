@@ -799,6 +799,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
 
+	avMenu->addSeparator();
+	QMenu* videoLayers = avMenu->addMenu(tr("Video layers"));
+
+	for (int i = 0; i < 4; ++i) {
+		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
+		enableBg->setCheckable(true);
+		enableBg->setChecked(true);
+		connect(enableBg, &QAction::triggered, [this, i](bool enable) { m_controller->thread()->gba->video.renderer->disableBG[i] = !enable; });
+		m_gameActions.append(enableBg);
+		addControlledAction(videoLayers, enableBg, QString("enableBG%0").arg(i));
+	}
+
+	QAction* enableObj = new QAction(tr("OBJ (sprites)"), videoLayers);
+	enableObj->setCheckable(true);
+	enableObj->setChecked(true);
+	connect(enableObj, &QAction::triggered, [this](bool enable) { m_controller->thread()->gba->video.renderer->disableOBJ = !enable; });
+	m_gameActions.append(enableObj);
+	addControlledAction(videoLayers, enableObj, "enableOBJ");
+
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));
 	m_shortcutController->addMenu(toolsMenu);
 	QAction* viewLogs = new QAction(tr("View &logs..."), toolsMenu);

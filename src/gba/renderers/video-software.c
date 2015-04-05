@@ -87,6 +87,12 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.finishFrame = GBAVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = GBAVideoSoftwareRendererGetPixels;
 	renderer->d.putPixels = GBAVideoSoftwareRendererPutPixels;
+
+	renderer->d.disableBG[0] = false;
+	renderer->d.disableBG[1] = false;
+	renderer->d.disableBG[2] = false;
+	renderer->d.disableBG[3] = false;
+	renderer->d.disableOBJ = false;
 }
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
@@ -522,6 +528,8 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->windows[0].control.packed = 0xFF;
 	}
 
+	GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
+
 	int w;
 	x = 0;
 	for (w = 0; w < softwareRenderer->nWindows; ++w) {
@@ -599,10 +607,10 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 }
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer) {
-	renderer->bg[0].enabled = GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt);
-	renderer->bg[1].enabled = GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt);
-	renderer->bg[2].enabled = GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt);
-	renderer->bg[3].enabled = GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt);
+	renderer->bg[0].enabled = GBARegisterDISPCNTGetBg0Enable(renderer->dispcnt) && !renderer->d.disableBG[0];
+	renderer->bg[1].enabled = GBARegisterDISPCNTGetBg1Enable(renderer->dispcnt) && !renderer->d.disableBG[1];
+	renderer->bg[2].enabled = GBARegisterDISPCNTGetBg2Enable(renderer->dispcnt) && !renderer->d.disableBG[2];
+	renderer->bg[3].enabled = GBARegisterDISPCNTGetBg3Enable(renderer->dispcnt) && !renderer->d.disableBG[3];
 }
 
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value) {
@@ -691,7 +699,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 	int w;
 	renderer->end = 0;
 	int spriteLayers = 0;
-	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt)) {
+	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt) && !renderer->d.disableOBJ) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}

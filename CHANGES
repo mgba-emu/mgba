@@ -1,4 +1,6 @@
 0.3.0: (Future)
+Features:
+ - Ability to hide individual background layers, or OBJs
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself
