@@ -715,7 +715,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			showNormal();
 			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
 		});
-		addControlledAction(frameMenu, setSize, tr("frame%1x").arg(QString::number(i)));
+		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
 	}
 	addControlledAction(frameMenu, frameMenu->addAction(tr("Fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")), "fullscreen");
 
@@ -759,7 +759,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 
-	QMenu* target = avMenu->addMenu("FPS target");
+	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
 	fpsTargetOption->connect([this](const QVariant& value) {
 		emit fpsTargetChanged(value.toInt());
