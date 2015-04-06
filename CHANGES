@@ -11,6 +11,7 @@ Bugfixes:
  - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
  - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
  - ARM7: Fix SWI and IRQ timings
+ - GBA Audio: Force audio FIFOs to 32-bit
 
 0.2.0: (2015-04-03)
 Features:

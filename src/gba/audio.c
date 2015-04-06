@@ -487,30 +487,6 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 	}
 }
 
-void GBAAudioWriteFIFO16(struct GBAAudio* audio, int address, uint16_t value) {
-	struct CircleBuffer* fifo;
-	switch (address) {
-	case REG_FIFO_A_LO:
-	case REG_FIFO_A_HI:
-		fifo = &audio->chA.fifo;
-		break;
-	case REG_FIFO_B_LO:
-	case REG_FIFO_B_HI:
-		fifo = &audio->chB.fifo;
-		break;
-	default:
-		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", address);
-		return;
-	}
-	int i;
-	for (i = 0; i < 2; ++i) {
-		while (!CircleBufferWrite8(fifo, value >> (8 * i))) {
-			int8_t dummy;
-			CircleBufferRead8(fifo, &dummy);
-		}
-	}
-}
-
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	struct GBAAudioFIFO* channel;
 	if (fifoId == 0) {
@@ -526,6 +502,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		if (GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_CUSTOM) {
 			dma->nextCount = 4;
 			dma->nextEvent = 0;
+			dma->reg = GBADMARegisterSetWidth(dma->reg, 1);
 			GBAMemoryUpdateDMAs(audio->p, -cycles);
 		} else {
 			channel->dmaSource = 0;
