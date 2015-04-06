@@ -129,7 +129,6 @@ void Display::screenshot() {
 void Display::initializeGL() {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	swapBuffers();
 }
 
 void Display::resizeEvent(QResizeEvent* event) {
