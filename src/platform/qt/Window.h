@@ -73,6 +73,8 @@ public slots:
 	void openSensorWindow();
 	void openCheatsWindow();
 
+	void openPaletteWindow();
+
 #ifdef BUILD_SDL
 	void openGamepadWindow();
 #endif

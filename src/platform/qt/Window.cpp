@@ -27,6 +27,7 @@
 #include "LogView.h"
 #include "MultiplayerController.h"
 #include "OverrideView.h"
+#include "PaletteView.h"
 #include "SensorView.h"
 #include "SettingsView.h"
 #include "ShortcutController.h"
@@ -284,6 +285,11 @@ void Window::openSensorWindow() {
 void Window::openCheatsWindow() {
 	CheatsView* cheatsWindow = new CheatsView(m_controller);
 	openView(cheatsWindow);
+}
+
+void Window::openPaletteWindow() {
+	PaletteView* paletteWindow = new PaletteView(m_controller);
+	openView(paletteWindow);
 }
 
 #ifdef BUILD_SDL
@@ -872,6 +878,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
 	addControlledAction(toolsMenu, gamepad, "remapGamepad");
 #endif
+
+	toolsMenu->addSeparator();
+
+	QAction* paletteView = new QAction(tr("View &palette..."), toolsMenu);
+	connect(paletteView, SIGNAL(triggered()), this, SLOT(openPaletteWindow()));
+	m_gameActions.append(paletteView);
+	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {

@@ -58,11 +58,13 @@ set(SOURCE_FILES
 	LogView.cpp
 	MultiplayerController.cpp
 	OverrideView.cpp
+	PaletteView.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
 	ShortcutController.cpp
 	ShortcutView.cpp
+	Swatch.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -73,6 +75,7 @@ qt5_wrap_ui(UI_FILES
 	LoadSaveState.ui
 	LogView.ui
 	OverrideView.ui
+	PaletteView.ui
 	SensorView.ui
 	SettingsView.ui
 	ShortcutView.ui
