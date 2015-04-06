@@ -9,6 +9,7 @@ Bugfixes:
  - Qt: Fix .deb dependencies
  - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
  - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
+ - ARM7: Fix SWI and IRQ timings
 
 0.2.0: (2015-04-03)
 Features:
