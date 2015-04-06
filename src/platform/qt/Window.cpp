@@ -247,58 +247,50 @@ void Window::selectPatch() {
 	}
 }
 
+void Window::openView(QWidget* widget) {
+	connect(this, SIGNAL(shutdown()), widget, SLOT(close()));
+	widget->setAttribute(Qt::WA_DeleteOnClose);
+	widget->show();
+}
+
 void Window::openKeymapWindow() {
 	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, InputController::KEYBOARD);
-	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
-	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
-	keyEditor->show();
+	openView(keyEditor);
 }
 
 void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config);
-	connect(this, SIGNAL(shutdown()), settingsWindow, SLOT(close()));
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
-	settingsWindow->setAttribute(Qt::WA_DeleteOnClose);
-	settingsWindow->show();
+	openView(settingsWindow);
 }
 
 void Window::openShortcutWindow() {
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
-	connect(this, SIGNAL(shutdown()), shortcutView, SLOT(close()));
-	shortcutView->setAttribute(Qt::WA_DeleteOnClose);
-	shortcutView->show();
+	openView(shortcutView);
 }
 
 void Window::openOverrideWindow() {
 	OverrideView* overrideWindow = new OverrideView(m_controller, m_config);
-	connect(this, SIGNAL(shutdown()), overrideWindow, SLOT(close()));
-	overrideWindow->setAttribute(Qt::WA_DeleteOnClose);
-	overrideWindow->show();
+	openView(overrideWindow);
 }
 
 void Window::openSensorWindow() {
 	SensorView* sensorWindow = new SensorView(m_controller);
-	connect(this, SIGNAL(shutdown()), sensorWindow, SLOT(close()));
-	sensorWindow->setAttribute(Qt::WA_DeleteOnClose);
-	sensorWindow->show();
+	openView(sensorWindow);
 }
 
 void Window::openCheatsWindow() {
 	CheatsView* cheatsWindow = new CheatsView(m_controller);
-	connect(this, SIGNAL(shutdown()), cheatsWindow, SLOT(close()));
-	cheatsWindow->setAttribute(Qt::WA_DeleteOnClose);
-	cheatsWindow->show();
+	openView(cheatsWindow);
 }
 
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
 	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
 	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
-	connect(this, SIGNAL(shutdown()), keyEditor, SLOT(close()));
-	keyEditor->setAttribute(Qt::WA_DeleteOnClose);
-	keyEditor->show();
+	openView(keyEditor);
 }
 #endif
 

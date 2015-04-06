@@ -122,6 +122,8 @@ private:
 	void appendMRU(const QString& fname);
 	void updateMRU();
 
+	void openView(QWidget* widget);
+
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 
 	GameController* m_controller;
