@@ -1257,6 +1257,11 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* currentDma = &memory->dma[dma];
 	int wasEnabled = GBADMARegisterIsEnable(currentDma->reg);
+	int oldTiming = GBADMARegisterGetTiming(currentDma->reg);
+	int newTiming = GBADMARegisterGetTiming(control);
+	if (oldTiming && oldTiming != newTiming) {
+		wasEnabled = false;
+	}
 	currentDma->reg = control;
 
 	if (GBADMARegisterIsDRQ(currentDma->reg)) {
