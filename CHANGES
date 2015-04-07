@@ -7,6 +7,7 @@ Bugfixes:
  - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
  - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
  - GBA Memory: Ensure changing the timing of a DMA reschedules it
+ - Qt: Fix window not regaining focus after exiting savestate window
 
 0.2.0: (2015-04-03)
 Features:

@@ -541,7 +541,7 @@ void Window::openStateWindow(LoadSave ls) {
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
 		m_screenWidget->layout()->removeWidget(m_stateWindow);
 		m_stateWindow = nullptr;
-		setFocus();
+		QMetaObject::invokeMethod(this, "setFocus", Qt::QueuedConnection);
 	});
 	if (!wasPaused) {
 		m_controller->setPaused(true);
