@@ -13,6 +13,7 @@ Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
  - GBA Memory: Ensure changing the timing of a DMA reschedules it
+ - Qt: Fix window not regaining focus after exiting savestate window
 
 0.2.0: (2015-04-03)
 Features:
