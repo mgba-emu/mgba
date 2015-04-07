@@ -520,6 +520,9 @@ void GameController::setAVStream(GBAAVStream* stream) {
 void GameController::clearAVStream() {
 	threadInterrupt();
 	m_threadContext.stream = nullptr;
+	if (m_gameOpen) {
+		m_threadContext.gba->stream = nullptr;
+	}
 	threadContinue();
 }
 
