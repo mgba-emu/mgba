@@ -511,6 +511,9 @@ void GameController::setTurbo(bool set, bool forced) {
 void GameController::setAVStream(GBAAVStream* stream) {
 	threadInterrupt();
 	m_threadContext.stream = stream;
+	if (m_gameOpen) {
+		m_threadContext.gba->stream = stream;
+	}
 	threadContinue();
 }
 
