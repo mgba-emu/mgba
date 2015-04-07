@@ -8,6 +8,7 @@ Bugfixes:
  - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
  - GBA Memory: Ensure changing the timing of a DMA reschedules it
  - Qt: Fix window not regaining focus after exiting savestate window
+ - Qt: Fix regression where video would not record if the game had already started
 
 0.2.0: (2015-04-03)
 Features:
