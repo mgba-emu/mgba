@@ -74,7 +74,7 @@ Controls are configurable in the menu. The default gamepad controls are mapped s
 Compiling
 ---------
 
-Compiling requires using CMake 2.8.11 or newer. To use CMake to build on a Unix-based system, the recommended commands are as follows:
+Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
 	mkdir build
 	cd build
