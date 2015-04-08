@@ -80,6 +80,8 @@ struct GBAThread {
 	float fpsTarget;
 	size_t audioBuffers;
 	bool skipBios;
+	int volume;
+	bool mute;
 
 	// Threading state
 	Thread thread;

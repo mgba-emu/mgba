@@ -186,6 +186,8 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setSkipBIOS(opts->skipBios);
 	setUseBIOS(opts->useBios);
 	setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
+	setVolume(opts->volume);
+	setMute(opts->mute);
 
 	threadInterrupt();
 	m_threadContext.idleOptimization = opts->idleOptimization;
@@ -494,6 +496,24 @@ void GameController::setAudioSync(bool set) {
 
 void GameController::setFrameskip(int skip) {
 	m_threadContext.frameskip = skip;
+}
+
+void GameController::setVolume(int volume) {
+	threadInterrupt();
+	m_threadContext.volume = volume;
+	if (m_gameOpen) {
+		m_threadContext.gba->audio.masterVolume = volume;
+	}
+	threadContinue();
+}
+
+void GameController::setMute(bool mute) {
+	threadInterrupt();
+	m_threadContext.mute = mute;
+	if (m_gameOpen) {
+		m_threadContext.gba->audio.masterVolume = mute ? 0 : m_threadContext.volume;
+	}
+	threadContinue();
 }
 
 void GameController::setTurbo(bool set, bool forced) {

@@ -233,6 +233,15 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
 
+	if (threadContext->volume == 0) {
+		threadContext->volume = GBA_AUDIO_VOLUME_MAX;
+	}
+	if (threadContext->mute) {
+		gba.audio.volume = 0;
+	} else {
+		gba.audio.volume = threadContext->volume;
+	}
+
 	gba.keySource = &threadContext->activeKeys;
 
 	if (threadContext->startCallback) {
@@ -316,6 +325,8 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 		threadContext->bios = 0;
 	}
 	threadContext->frameskip = opts->frameskip;
+	threadContext->volume = opts->volume;
+	threadContext->mute = opts->mute;
 	threadContext->logLevel = opts->logLevel;
 	if (opts->rewindEnable) {
 		threadContext->rewindBufferCapacity = opts->rewindBufferCapacity;

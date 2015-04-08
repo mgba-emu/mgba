@@ -21,6 +21,7 @@
 struct GBADMA;
 
 extern const unsigned GBA_AUDIO_SAMPLES;
+extern const int GBA_AUDIO_VOLUME_MAX;
 
 DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);
 DECL_BITS(GBAAudioRegisterEnvelope, Length, 0, 6);
@@ -240,6 +241,7 @@ struct GBAAudio {
 	bool forceDisableCh[4];
 	bool forceDisableChA;
 	bool forceDisableChB;
+	int masterVolume;
 };
 
 struct GBAStereoSample {

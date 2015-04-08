@@ -14,6 +14,7 @@
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned BLIP_BUFFER_SIZE = 0x4000;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
+const int GBA_AUDIO_VOLUME_MAX = 0x100;
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
 static bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value);
@@ -48,6 +49,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->forceDisableCh[3] = false;
 	audio->forceDisableChA = false;
 	audio->forceDisableChB = false;
+	audio->masterVolume = GBA_AUDIO_VOLUME_MAX;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
@@ -726,7 +728,7 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 	} else if (sample < 0) {
 		sample = 0;
 	}
-	return (sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) << 5;
+	return ((sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) * audio->masterVolume) >> 3;
 }
 
 static void _sample(struct GBAAudio* audio) {

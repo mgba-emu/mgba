@@ -114,6 +114,8 @@ public slots:
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
+	void setVolume(int);
+	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();

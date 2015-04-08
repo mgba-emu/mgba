@@ -3,6 +3,7 @@ Features:
  - Ability to hide individual background layers, or OBJs
  - Ability to mute individual audio channels
  - Palette viewer
+ - Volume control
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself

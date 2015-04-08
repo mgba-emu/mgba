@@ -27,6 +27,8 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("volume", m_ui.volume);
+	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
@@ -78,6 +80,8 @@ void SettingsView::updateConfig() {
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	saveSetting("volume", m_ui.volume);
+	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
@@ -121,6 +125,10 @@ void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
 	saveSetting(key, field->text());
 }
 
+void SettingsView::saveSetting(const char* key, const QSlider* field) {
+	saveSetting(key, QString::number(field->value()));
+}
+
 void SettingsView::saveSetting(const char* key, const QSpinBox* field) {
 	saveSetting(key, field->cleanText());
 }
@@ -142,6 +150,11 @@ void SettingsView::loadSetting(const char* key, QComboBox* field) {
 void SettingsView::loadSetting(const char* key, QLineEdit* field) {
 	QString option = loadSetting(key);
 	field->setText(option);
+}
+
+void SettingsView::loadSetting(const char* key, QSlider* field) {
+	QString option = loadSetting(key);
+	field->setValue(option.toInt());
 }
 
 void SettingsView::loadSetting(const char* key, QSpinBox* field) {

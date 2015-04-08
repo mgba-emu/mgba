@@ -891,9 +891,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setSkipBIOS(value.toBool());
 	}, this);
 
-	ConfigOption* useBios = m_config->addOption("useBios");
-	useBios->connect([this](const QVariant& value) {
-		m_controller->setUseBIOS(value.toBool());
+	ConfigOption* volume = m_config->addOption("volume");
+	volume->connect([this](const QVariant& value) {
+		m_controller->setVolume(value.toInt());
+	}, this);
+
+	ConfigOption* mute = m_config->addOption("mute");
+	mute->connect([this](const QVariant& value) {
+		m_controller->setMute(value.toBool());
 	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
