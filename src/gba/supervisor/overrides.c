@@ -145,7 +145,7 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	override->savetype = SAVEDATA_AUTODETECT;
 	override->hardware = HW_NONE;
 	override->idleLoop = IDLE_LOOP_NONE;
-	bool found;
+	bool found = false;
 
 	if (override->id[0] == 'F') {
 		// Classic NES Series
