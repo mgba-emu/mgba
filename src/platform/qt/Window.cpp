@@ -518,8 +518,14 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
-	char title[13] = { '\0' };
-	GBAGetGameTitle(m_controller->thread()->gba, title);
+	char gameTitle[13] = { '\0' };
+	GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
+
+	QString title(gameTitle);
+	std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
+	if (multiplayer && multiplayer->attached() > 1) {
+		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
+	}
 	if (m_frameList.isEmpty()) {
 		setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
 		return;
