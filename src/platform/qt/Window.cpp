@@ -580,21 +580,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
+	m_shortcutController->addMenu(quickLoadMenu);
+	m_shortcutController->addMenu(quickSaveMenu);
 	int i;
 	for (i = 1; i < 10; ++i) {
 		QAction* quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
 		quickLoad->setShortcut(tr("F%1").arg(i));
 		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
 		m_gameActions.append(quickLoad);
-		addAction(quickLoad);
-		quickLoadMenu->addAction(quickLoad);
+		addControlledAction(quickLoadMenu, quickLoad, QString("quickLoad.%1").arg(i));
 
 		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
 		quickSave->setShortcut(tr("Shift+F%1").arg(i));
 		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
 		m_gameActions.append(quickSave);
-		addAction(quickSave);
-		quickSaveMenu->addAction(quickSave);
+		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
 
 	fileMenu->addSeparator();
@@ -687,6 +687,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	emulationMenu->addSeparator();
 
 	QMenu* solarMenu = emulationMenu->addMenu(tr("Solar sensor"));
+	m_shortcutController->addMenu(solarMenu);
 	QAction* solarIncrease = new QAction(tr("Increase solar level"), solarMenu);
 	connect(solarIncrease, SIGNAL(triggered()), m_controller, SLOT(increaseLuminanceLevel()));
 	addControlledAction(solarMenu, solarIncrease, "increaseLuminanceLevel");
