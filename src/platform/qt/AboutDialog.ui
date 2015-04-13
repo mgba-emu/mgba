@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AboutDialog</class>
+ <widget class="QDialog" name="AboutDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>516</width>
+    <height>440</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>About mGBA</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:large; font-weight:600;&quot;&gt;mGBA&lt;/span&gt;&lt;/p&gt;&lt;p&gt;mGBA is a new Game Boy Advance emulator written in C. &lt;/p&gt;&lt;p&gt;The project started in April 2013 with the goal of being fast&lt;/p&gt;&lt;p&gt;enough to run on lower end hardware than other emulators&lt;/p&gt;&lt;p&gt;support, without sacrificing accuracy or portability. Even in&lt;/p&gt;&lt;p&gt;the initial version, games generally play without problems.&lt;/p&gt;&lt;p&gt;It is loosely based on the previous &lt;a href=&quot;https://endrift.github.io/gbajs/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GBA.js&lt;/span&gt;&lt;/a&gt; emulator, although&lt;/p&gt;&lt;p&gt;very little of GBA.js can still be seen in mGBA. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;Other goals include accurate enough emulation to provide a development&lt;/p&gt;&lt;p&gt;environment for homebrew software, a good workflow for tool-assist runners,&lt;/p&gt;&lt;p&gt;and a modern feature set for emulators that older emulators may not support. &lt;/p&gt;&lt;p&gt;mGBA is licensed under the Mozilla Public License 2.0,&lt;/p&gt;&lt;p&gt;and the code can be found on &lt;a href=&quot;https://github.com/mgba-emu/mgba&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;. &lt;br/&gt;&lt;br/&gt;We are not affiliated with Nintendo in any way. Game Boy Advance is&lt;/p&gt;&lt;p&gt;a trademark of Nintendo. This emulator should not be used to play&lt;/p&gt;&lt;p&gt;games you do not legally own.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

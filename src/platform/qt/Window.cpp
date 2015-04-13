@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QStackedLayout>
 
+#include "AboutDialog.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "DisplayGL.h"
@@ -340,6 +341,11 @@ void Window::gdbOpen() {
 	window->show();
 }
 #endif
+
+void Window::openAboutDialog() {
+	AboutDialog* aboutDialog = new AboutDialog();
+	openView(aboutDialog);
+}
 
 void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
@@ -928,6 +934,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	allowOpposingDirections->connect([this](const QVariant& value) {
 		m_inputController.setAllowOpposing(value.toBool());
 	}, this);
+
+	QMenu* helpMenu = menubar->addMenu(tr("&Help"));
+	m_shortcutController->addMenu(helpMenu);
+	QAction* about = new QAction(tr("&About mGBA"), helpMenu);
+	connect(about, SIGNAL(triggered()), this, SLOT(openAboutDialog()));
+	addControlledAction(helpMenu, about, "aboutDialog");
+
 
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);
