@@ -381,6 +381,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->sync.videoFrameSkip = 0;
 
 	threadContext->rewindBuffer = 0;
+	threadContext->rewindScreenBuffer = 0;
 	int newCapacity = threadContext->rewindBufferCapacity;
 	int newInterval = threadContext->rewindBufferInterval;
 	threadContext->rewindBufferCapacity = 0;
@@ -531,6 +532,7 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		}
 	}
 	free(threadContext->rewindBuffer);
+	free(threadContext->rewindScreenBuffer);
 
 	if (threadContext->rom) {
 		threadContext->rom->close(threadContext->rom);

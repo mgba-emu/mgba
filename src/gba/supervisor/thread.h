@@ -106,6 +106,7 @@ struct GBAThread {
 	int rewindBufferNext;
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
+	uint8_t* rewindScreenBuffer;
 
 	struct GBACheatDevice* cheats;
 };

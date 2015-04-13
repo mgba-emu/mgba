@@ -5,6 +5,7 @@ Features:
  - Palette viewer
  - Volume control
  - More shortcuts are editable (e.g. quick save/load, solar sensor)
+ - Rewind now shows the frame after rewinding
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself
