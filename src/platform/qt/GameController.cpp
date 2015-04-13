@@ -395,6 +395,8 @@ void GameController::rewind(int states) {
 		GBARewind(&m_threadContext, states);
 	}
 	threadContinue();
+	emit rewound(&m_threadContext);
+	emit frameAvailable(m_drawContext);
 }
 
 void GameController::keyPressed(int key) {

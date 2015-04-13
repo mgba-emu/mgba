@@ -91,6 +91,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
 	connect(m_controller, SIGNAL(stateLoaded(GBAThread*)), m_display, SLOT(forceDraw()));
+	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), m_display, SLOT(pauseDrawing()));
 #ifndef Q_OS_MAC
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), menuBar(), SLOT(show()));

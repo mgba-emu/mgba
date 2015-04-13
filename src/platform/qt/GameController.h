@@ -85,6 +85,7 @@ signals:
 	void gameCrashed(const QString& errorMessage);
 	void gameFailed();
 	void stateLoaded(GBAThread*);
+	void rewound(GBAThread*);
 	void unimplementedBiosCall(int);
 
 	void luminanceValueChanged(int);
