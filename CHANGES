@@ -17,6 +17,7 @@ Bugfixes:
  - GBA Memory: Ensure changing the timing of a DMA reschedules it
  - Qt: Fix window not regaining focus after exiting savestate window
  - Qt: Fix regression where video would not record if the game had already started
+ - GBA: Fix rewind boundary conditions
 Misc:
  - Qt: Show multiplayer numbers in window title
 
