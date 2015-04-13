@@ -67,6 +67,7 @@ public slots:
 
 protected:
 	virtual void initializeGL() override;
+	virtual void paintEvent(QPaintEvent*) override {}
 
 private:
 	void performDraw();
