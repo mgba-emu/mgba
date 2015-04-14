@@ -3,7 +3,7 @@
  <class>AboutDialog</class>
  <widget class="QWidget" name="AboutDialog">
   <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="enabled">
    <bool>true</bool>
