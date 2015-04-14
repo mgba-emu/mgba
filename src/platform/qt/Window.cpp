@@ -941,7 +941,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(about, SIGNAL(triggered()), this, SLOT(openAboutDialog()));
 	addControlledAction(helpMenu, about, "aboutDialog");
 
-
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);
 	m_shortcutController->addFunctions(other, [this]() {
