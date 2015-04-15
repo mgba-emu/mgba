@@ -19,6 +19,7 @@ Bugfixes:
  - Qt: Fix window not regaining focus after exiting savestate window
  - Qt: Fix regression where video would not record if the game had already started
  - GBA: Fix rewind boundary conditions
+ - GBA: Add initial I/O register settings for background matrix registers
 Misc:
  - Qt: Show multiplayer numbers in window title
 
