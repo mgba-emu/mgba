@@ -18,6 +18,7 @@ extern "C" {
 #include "gba/audio.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
+#include "gba/sharkport.h"
 #include "gba/renderers/video-software.h"
 #include "gba/supervisor/config.h"
 #include "util/vfs.h"
@@ -294,6 +295,20 @@ void GameController::loadPatch(const QString& path) {
 	} else {
 		m_patch = path;
 	}
+}
+
+void GameController::importSharkport(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
+	if (!vf) {
+		return;
+	}
+	threadInterrupt();
+	GBASavedataImportSharkPort(m_threadContext.gba, vf);
+	threadContinue();
+	vf->close(vf);
 }
 
 void GameController::closeGame() {

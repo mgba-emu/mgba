@@ -98,6 +98,7 @@ public slots:
 	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
+	void importSharkport(const QString& path);
 	void openGame();
 	void closeGame();
 	void setPaused(bool paused);

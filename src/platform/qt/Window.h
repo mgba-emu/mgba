@@ -65,6 +65,8 @@ public slots:
 	void loadConfig();
 	void saveConfig();
 
+	void importSharkport();
+
 	void openKeymapWindow();
 	void openSettingsWindow();
 	void openShortcutWindow();
