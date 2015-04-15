@@ -286,6 +286,10 @@ void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_RCNT >> 1] = RCNT_INITIAL;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
 	gba->memory.io[REG_SOUNDBIAS >> 1] = 0x200;
+	gba->memory.io[REG_BG2PA >> 1] = 0x100;
+	gba->memory.io[REG_BG2PD >> 1] = 0x100;
+	gba->memory.io[REG_BG3PA >> 1] = 0x100;
+	gba->memory.io[REG_BG3PD >> 1] = 0x100;
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
