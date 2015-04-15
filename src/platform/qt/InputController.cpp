@@ -290,6 +290,10 @@ void InputController::testGamepad() {
 		QApplication::sendEvent(QApplication::focusWidget(), event);
 	}
 
+	if (!QApplication::focusWidget()) {
+		return;
+	}
+
 	activeButtons.subtract(oldButtons);
 	oldButtons.subtract(m_activeButtons);
 
