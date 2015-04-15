@@ -311,6 +311,20 @@ void GameController::importSharkport(const QString& path) {
 	vf->close(vf);
 }
 
+void GameController::exportSharkport(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return;
+	}
+	threadInterrupt();
+	GBASavedataExportSharkPort(m_threadContext.gba, vf);
+	threadContinue();
+	vf->close(vf);
+}
+
 void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;

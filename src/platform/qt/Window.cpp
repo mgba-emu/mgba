@@ -270,6 +270,21 @@ void Window::importSharkport() {
 	}
 }
 
+void Window::exportSharkport() {
+	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
+	if (doPause) {
+		m_controller->setPaused(true);
+	}
+	QString filename = QFileDialog::getSaveFileName(this, tr("Select save"), m_config->getQtOption("lastDirectory").toString(), tr("GameShark saves (*.sps *.xps)"));
+	if (doPause) {
+		m_controller->setPaused(false);
+	}
+	if (!filename.isEmpty()) {
+		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+		m_controller->exportSharkport(filename);
+	}
+}
+
 void Window::openKeymapWindow() {
 	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, InputController::KEYBOARD);
 	openView(keyEditor);
@@ -620,10 +635,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	fileMenu->addSeparator();
-	QAction* loadSharkport = new QAction(tr("Import GameShark Save"), fileMenu);
-	connect(loadSharkport, SIGNAL(triggered()), this, SLOT(importSharkport()));
-	m_gameActions.append(loadSharkport);
-	addControlledAction(fileMenu, loadSharkport, "loadSharkport");
+	QAction* importShark = new QAction(tr("Import GameShark Save"), fileMenu);
+	connect(importShark, SIGNAL(triggered()), this, SLOT(importSharkport()));
+	m_gameActions.append(importShark);
+	addControlledAction(fileMenu, importShark, "importShark");
+
+	QAction* exportShark = new QAction(tr("Export GameShark Save"), fileMenu);
+	connect(exportShark, SIGNAL(triggered()), this, SLOT(exportSharkport()));
+	m_gameActions.append(exportShark);
+	addControlledAction(fileMenu, exportShark, "exportShark");
 
 	fileMenu->addSeparator();
 	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
