@@ -306,7 +306,7 @@ void GameController::importSharkport(const QString& path) {
 		return;
 	}
 	threadInterrupt();
-	GBASavedataImportSharkPort(m_threadContext.gba, vf);
+	GBASavedataImportSharkPort(m_threadContext.gba, vf, false);
 	threadContinue();
 	vf->close(vf);
 }

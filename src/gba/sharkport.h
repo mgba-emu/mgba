@@ -11,7 +11,7 @@
 struct GBA;
 struct VFile;
 
-bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf);
+bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChecksum);
 bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf);
 
 #endif

@@ -10,7 +10,7 @@
 
 static const char* const SHARKPORT_HEADER = "SharkPortSave";
 
-bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf) {
+bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChecksum) {
 	union {
 		char c[0x1C];
 		int32_t i;
@@ -100,14 +100,16 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf) {
 	}
 	LOAD_32(checksum, 0, &buffer.i);
 
-	uint32_t calcChecksum = 0;
-	int i;
-	for (i = 0; i < size; ++i) {
-		calcChecksum += payload[i] << (calcChecksum % 24);
-	}
+	if (testChecksum) {
+		uint32_t calcChecksum = 0;
+		int i;
+		for (i = 0; i < size; ++i) {
+			calcChecksum += ((int32_t) payload[i]) << (calcChecksum % 24);
+		}
 
-	if (calcChecksum != checksum) {
-		goto cleanup;
+		if (calcChecksum != checksum) {
+			goto cleanup;
+		}
 	}
 
 	uint32_t copySize = size - 0x1C;
