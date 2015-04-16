@@ -718,6 +718,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(rewind);
 	addControlledAction(emulationMenu, rewind, "rewind");
 
+	QAction* frameRewind = new QAction(tr("Step backwards"), emulationMenu);
+	frameRewind->setShortcut(tr("Ctrl+B"));
+	connect(frameRewind, &QAction::triggered, [this] () {
+		m_controller->rewind(1);
+	});
+	m_gameActions.append(frameRewind);
+	addControlledAction(emulationMenu, frameRewind, "frameRewind");
+
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
 	videoSync->connect([this](const QVariant& value) {
