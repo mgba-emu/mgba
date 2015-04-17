@@ -281,13 +281,14 @@ void InputController::testGamepad() {
 		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 		if (newlyAboveThreshold) {
 			postPendingEvent(event->gbaKey());
+			QApplication::sendEvent(QApplication::focusWidget(), event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
 		} else if (oldAxes.contains(axis)) {
 			clearPendingEvent(event->gbaKey());
+			QApplication::sendEvent(QApplication::focusWidget(), event);
 		}
-		QApplication::sendEvent(QApplication::focusWidget(), event);
 	}
 
 	if (!QApplication::focusWidget()) {

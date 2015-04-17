@@ -13,6 +13,7 @@ Bugfixes:
  - GBA: Add initial I/O register settings for background matrix registers
  - Qt: Fix potential crash if a gamepad causes focus to change
  - GBA Memory: Allow SRAM to be 64kB
+ - Qt: Fix controller axis querying
 Misc:
  - Qt: Show multiplayer numbers in window title
 
