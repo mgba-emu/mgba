@@ -98,6 +98,9 @@ GameController::GameController(QObject* parent)
 		context->gba->logLevel = GBA_LOG_FATAL;
 		context->gba->luminanceSource = &controller->m_lux;
 		context->gba->rtcSource = &controller->m_rtc;
+#ifdef BUILD_SDL
+		context->gba->rumble = controller->m_inputController->rumble();
+#endif
 		controller->gameStarted(context);
 	};
 

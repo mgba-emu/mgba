@@ -26,6 +26,9 @@ struct GBASDLEvents {
 	const char* preferredJoysticks[MAX_PLAYERS];
 	int playersAttached;
 	size_t joysticksClaimed[MAX_PLAYERS];
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Haptic** haptic;
+#endif
 };
 
 struct GBASDLPlayer {
@@ -37,6 +40,12 @@ struct GBASDLPlayer {
 	SDL_Window* window;
 	int fullscreen;
 	int windowUpdated;
+	SDL_Haptic* haptic;
+
+	struct GBASDLRumble {
+		struct GBARumble d;
+		struct GBASDLPlayer* p;
+	} rumble;
 #endif
 };
 

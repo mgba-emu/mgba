@@ -150,6 +150,10 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 	}
 	GBAInputSetPreferredDevice(m_config->input(), type, m_sdlPlayer.playerId, device.toLocal8Bit().constData());
 }
+
+GBARumble* InputController::rumble() {
+	return &m_sdlPlayer.rumble.d;
+}
 #endif
 
 GBAKey InputController::mapKeyboard(int key) const {
