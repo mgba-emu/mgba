@@ -279,13 +279,30 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 }
 
 #define LOAD_BAD \
-	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
 	if (gba->performingDMA) { \
 		value = gba->bus; \
 	} else { \
 		value = cpu->prefetch[1]; \
 		if (cpu->executionMode == MODE_THUMB) { \
-			value |= value << 16; \
+			/* http://ngemu.com/threads/gba-open-bus.170809/ */ \
+			switch (cpu->gprs[ARM_PC] >> BASE_OFFSET) { \
+			case REGION_BIOS: \
+			case REGION_OAM: \
+				/* This isn't right half the time, but we don't have $+6 handy */ \
+				value <<= 16; \
+				value |= cpu->prefetch[0]; \
+				break; \
+			case REGION_WORKING_IRAM: \
+				/* This doesn't handle prefetch clobbering */ \
+				if (cpu->gprs[ARM_PC] & 2) { \
+					value |= cpu->prefetch[0] << 16; \
+				} else { \
+					value <<= 16; \
+					value |= cpu->prefetch[0]; \
+				} \
+			default: \
+				value |= value << 16; \
+			} \
 		} \
 	}
 
@@ -298,6 +315,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			value = memory->biosPrefetch; \
 		} \
 	} else { \
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
 		LOAD_BAD; \
 	}
 
@@ -380,6 +398,7 @@ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_SRAM;
 		break;
 	default:
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
 		LOAD_BAD;
 		break;
 	}
@@ -409,15 +428,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-			if (gba->performingDMA) {
-				LOAD_16(value, address & 2, &gba->bus);
-			} else {
-				uint32_t prefetch = cpu->prefetch[1];
-				if (cpu->executionMode == MODE_THUMB) {
-					prefetch |= prefetch << 16;
-				}
-				LOAD_16(value, address & 2, &prefetch);
-			}
+			LOAD_BAD;
+			uint32_t v2 = value;
+			LOAD_16(v2, address & 2, &value);
 		}
 		break;
 	case REGION_WORKING_RAM:
@@ -475,15 +488,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
-		if (gba->performingDMA) {
-			LOAD_16(value, address & 2, &gba->bus);
-		} else {
-			uint32_t prefetch = cpu->prefetch[1];
-			if (cpu->executionMode == MODE_THUMB) {
-				prefetch |= prefetch << 16;
-			}
-			LOAD_16(value, address & 2, &prefetch);
-		}
+		LOAD_BAD;
+		uint32_t v2 = value;
+		LOAD_16(v2, address & 2, &value);
 		break;
 	}
 
@@ -498,49 +505,42 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
-	uint8_t value = 0;
+	uint32_t value = 0;
 	int wait = 0;
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_BIOS:
 		if (address < SIZE_BIOS) {
 			if (memory->activeRegion == REGION_BIOS) {
-				value = ((int8_t*) memory->bios)[address];
+				value = ((uint8_t*) memory->bios)[address];
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
 				value = ((uint8_t*) &memory->biosPrefetch)[address & 3];
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
-			if (gba->performingDMA) {
-				value = ((uint8_t*) &gba->bus)[address & 3];
-			} else {
-				uint32_t prefetch = cpu->prefetch[1];
-				if (cpu->executionMode == MODE_THUMB) {
-					prefetch |= prefetch << 16;
-				}
-				value = ((uint8_t*) &prefetch)[address & 3];
-			}
+			LOAD_BAD;
+			value = ((uint8_t*) &value)[address & 3];
 		}
 		break;
 	case REGION_WORKING_RAM:
-		value = ((int8_t*) memory->wram)[address & (SIZE_WORKING_RAM - 1)];
+		value = ((uint8_t*) memory->wram)[address & (SIZE_WORKING_RAM - 1)];
 		wait = memory->waitstatesNonseq16[REGION_WORKING_RAM];
 		break;
 	case REGION_WORKING_IRAM:
-		value = ((int8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
+		value = ((uint8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
 		break;
 	case REGION_IO:
 		value = (GBAIORead(gba, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
 		break;
 	case REGION_PALETTE_RAM:
-		value = ((int8_t*) gba->video.palette)[address & (SIZE_PALETTE_RAM - 1)];
+		value = ((uint8_t*) gba->video.palette)[address & (SIZE_PALETTE_RAM - 1)];
 		break;
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
-			value = ((int8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
+			value = ((uint8_t*) gba->video.renderer->vram)[address & 0x0001FFFF];
 		} else {
-			value = ((int8_t*) gba->video.renderer->vram)[address & 0x00017FFF];
+			value = ((uint8_t*) gba->video.renderer->vram)[address & 0x00017FFF];
 		}
 		break;
 	case REGION_OAM:
@@ -554,7 +554,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART2_EX:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
-			value = ((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
+			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
 			value = (address >> 1) & 0xFF; \
@@ -577,18 +577,12 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
 		}
+		value &= 0xFF;
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
-		if (gba->performingDMA) {
-			value = ((uint8_t*) &gba->bus)[address & 3];
-		} else {
-			uint32_t prefetch = cpu->prefetch[1];
-			if (cpu->executionMode == MODE_THUMB) {
-				prefetch |= prefetch << 16;
-			}
-			value = ((uint8_t*) &prefetch)[address & 3];
-		}
+		LOAD_BAD;
+		value = ((uint8_t*) &value)[address & 3];
 		break;
 	}
 
