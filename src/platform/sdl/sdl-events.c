@@ -142,8 +142,8 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->joystickIndex = SIZE_MAX;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-    player->rumble.d.setRumble = _GBASDLSetRumble;
-    player->rumble.p = player;
+	player->rumble.d.setRumble = _GBASDLSetRumble;
+	player->rumble.p = player;
 #endif
 
 	if (events->playersAttached >= MAX_PLAYERS) {
@@ -195,7 +195,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		player->haptic = events->haptic[player->joystickIndex];
 		if (player->haptic) {
-		    SDL_HapticRumbleInit(player->haptic);
+			SDL_HapticRumbleInit(player->haptic);
 		}
 #endif
 	}
@@ -438,7 +438,7 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 		return;
 	}
 	if (enable) {
-	    SDL_HapticRumblePlay(sdlRumble->p->haptic, 1.0f, 20);
+		SDL_HapticRumblePlay(sdlRumble->p->haptic, 1.0f, 20);
 	} else {
 		SDL_HapticRumbleStop(sdlRumble->p->haptic);
 	}
