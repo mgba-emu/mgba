@@ -9,6 +9,7 @@ Features:
  - Import/Export of GameShark/Action Replay snapshots
  - Add "Step backwards" item for single increment rewind
  - Deadzone estimation for game controllers
+ - Analog inputs can be used for shortcuts
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself

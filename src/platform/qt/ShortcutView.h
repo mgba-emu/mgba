@@ -6,6 +6,8 @@
 #ifndef QGBA_SHORTCUT_VIEW
 #define QGBA_SHORTCUT_VIEW
 
+#include "GamepadAxisEvent.h"
+
 #include <QWidget>
 
 #include "ui_ShortcutView.h"
@@ -23,7 +25,6 @@ public:
 	void setController(ShortcutController* controller);
 
 protected:
-	virtual bool event(QEvent* event) override;
 	virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
@@ -31,6 +32,7 @@ private slots:
 	void clear();
 	void updateKey(const QKeySequence&);
 	void updateButton(int button);
+	void updateAxis(int axis, int direction);
 
 private:
 	Ui::ShortcutView m_ui;

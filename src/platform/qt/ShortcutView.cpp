@@ -22,6 +22,7 @@ ShortcutView::ShortcutView(QWidget* parent)
 
 	connect(m_ui.keySequenceEdit, SIGNAL(keySequenceChanged(const QKeySequence&)), this, SLOT(updateKey(const QKeySequence&)));
 	connect(m_ui.keyEdit, SIGNAL(valueChanged(int)), this, SLOT(updateButton(int)));
+	connect(m_ui.keyEdit, SIGNAL(axisChanged(int, int)), this, SLOT(updateAxis(int, int)));
 	connect(m_ui.shortcutTable, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(load(const QModelIndex&)));
 	connect(m_ui.clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 }
@@ -29,15 +30,6 @@ ShortcutView::ShortcutView(QWidget* parent)
 void ShortcutView::setController(ShortcutController* controller) {
 	m_controller = controller;
 	m_ui.shortcutTable->setModel(controller);
-}
-
-bool ShortcutView::event(QEvent* event) {
-	if (event->type() == GamepadButtonEvent::Down()) {
-		updateButton(static_cast<GamepadButtonEvent*>(event)->value());
-		event->accept();
-		return true;
-	}
-	return QWidget::event(event);
 }
 
 bool ShortcutView::eventFilter(QObject*, QEvent* event) {
@@ -106,5 +98,12 @@ void ShortcutView::updateButton(int button) {
 		return;
 	}
 	m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
+}
 
+
+void ShortcutView::updateAxis(int axis, int direction) {
+	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
+		return;
+	}
+	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis, static_cast<GamepadAxisEvent::Direction>(direction));
 }

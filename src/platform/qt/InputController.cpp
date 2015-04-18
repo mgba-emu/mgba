@@ -298,17 +298,19 @@ void InputController::testGamepad() {
 
 	for (auto& axis : m_activeAxes) {
 		bool newlyAboveThreshold = activeAxes.contains(axis);
-		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 		if (newlyAboveThreshold) {
+			GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 			postPendingEvent(event->gbaKey());
 			QApplication::sendEvent(QApplication::focusWidget(), event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
-		} else if (oldAxes.contains(axis)) {
-			clearPendingEvent(event->gbaKey());
-			QApplication::sendEvent(QApplication::focusWidget(), event);
 		}
+	}
+	for (auto axis : oldAxes) {
+		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, this);
+		clearPendingEvent(event->gbaKey());
+		QApplication::sendEvent(QApplication::focusWidget(), event);
 	}
 
 	if (!QApplication::focusWidget()) {
