@@ -18,7 +18,7 @@ Features
 - Real-time clock support, even without configuration.
 - A built-in BIOS implementation, and ability to load external BIOS files.
 - Turbo/fast-forward support by holding Tab.
-- Frameskip, configurable up to 9.
+- Frameskip, configurable up to 10.
 - Screenshot support.
 - Cheat code support.
 - 9 savestate slots. Savestates are also viewable as screenshots.
