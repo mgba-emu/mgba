@@ -298,6 +298,9 @@ void Window::openSettingsWindow() {
 }
 
 void Window::openShortcutWindow() {
+#ifdef BUILD_SDL
+	m_inputController.recalibrateAxes();
+#endif
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
 	openView(shortcutView);

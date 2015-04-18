@@ -62,7 +62,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			m_controller->setGamepad(m_type, i);
 			m_profile = m_profileSelect->currentText();
 			m_controller->loadProfile(m_type, m_profile);
-			m_controller->recalibrateAxes();
 			refresh();
 		});
 	}

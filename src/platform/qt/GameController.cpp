@@ -273,6 +273,10 @@ void GameController::openGame() {
 		m_threadContext.patch = VFileOpen(m_patch.toLocal8Bit().constData(), O_RDONLY);
 	}
 
+#ifdef BUILD_SDL
+	m_inputController->recalibrateAxes();
+#endif
+
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
 		emit gameFailed();

@@ -94,6 +94,9 @@ void InputController::loadConfiguration(uint32_t type) {
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
 	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+#ifdef BUILD_SDL
+	recalibrateAxes();
+#endif
 }
 
 void InputController::saveConfiguration(uint32_t type) {
