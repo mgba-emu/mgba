@@ -74,7 +74,6 @@ private:
 
 	QTimer* m_drawTimer;
 	GBAThread* m_context;
-	const uint32_t* m_backing;
 	GLuint m_tex;
 	QSize m_size;
 	bool m_lockAspectRatio;
