@@ -17,6 +17,7 @@
 #define IDLE_LOOP_THRESHOLD 10000
 
 static uint32_t _popcount32(unsigned bits);
+static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
@@ -848,12 +849,12 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
+		_pristineCow(gba);
 		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
-			LOAD_32(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
-			STORE_32(value, address & (SIZE_CART0 - 1), gba->memory.rom);
-		} else {
-			GBALog(gba, GBA_LOG_WARN, "Bad memory Patch32: 0x%08X", address);
+			gba->memory.romSize = (address & (SIZE_CART0 - 4)) + 4;
 		}
+		LOAD_32(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
+		STORE_32(value, address & (SIZE_CART0 - 1), gba->memory.rom);
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
@@ -915,12 +916,12 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 	case REGION_CART1_EX:
 	case REGION_CART2:
 	case REGION_CART2_EX:
+		_pristineCow(gba);
 		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
-			LOAD_16(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
-			STORE_16(value, address & (SIZE_CART0 - 1), gba->memory.rom);
-		} else {
-			GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
 		}
+		LOAD_16(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
+		STORE_16(value, address & (SIZE_CART0 - 1), gba->memory.rom);
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
@@ -1481,4 +1482,13 @@ uint32_t _popcount32(unsigned bits) {
 	bits = bits - ((bits >> 1) & 0x55555555);
 	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
 	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+}
+
+void _pristineCow(struct GBA* gba) {
+	if (gba->memory.rom != gba->pristineRom) {
+		return;
+	}
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
+	memcpy(gba->memory.rom, gba->pristineRom, gba->memory.romSize);
+	memset(((uint8_t*) gba->memory.rom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
 }
