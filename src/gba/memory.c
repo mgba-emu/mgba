@@ -347,7 +347,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	} else { \
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
 		value = (address >> 1) & 0xFFFF; \
-		value |= value << 16; \
+		value |= ((address + 2) >> 1) << 16; \
 	}
 
 #define LOAD_SRAM \

@@ -28,6 +28,7 @@ Bugfixes:
  - GBA Memory: Allow SRAM to be 64kB
  - Qt: Fix controller axis querying
  - GBA Memory: Improve Thumb open bus behavior
+ - GBA Memory: Fix 32-bit loads from unaddress cartridge space
 Misc:
  - Qt: Show multiplayer numbers in window title
 
