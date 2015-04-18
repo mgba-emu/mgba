@@ -820,11 +820,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
 	fpsTargetOption->connect([this](const QVariant& value) {
-		emit fpsTargetChanged(value.toInt());
+		emit fpsTargetChanged(value.toFloat());
 	}, this);
 	fpsTargetOption->addValue(tr("15"), 15, target);
 	fpsTargetOption->addValue(tr("30"), 30, target);
 	fpsTargetOption->addValue(tr("45"), 45, target);
+	fpsTargetOption->addValue(tr("Native (59.7)"), float(GBA_ARM7TDMI_FREQUENCY) / float(VIDEO_TOTAL_LENGTH), target);
 	fpsTargetOption->addValue(tr("60"), 60, target);
 	fpsTargetOption->addValue(tr("90"), 90, target);
 	fpsTargetOption->addValue(tr("120"), 120, target);
