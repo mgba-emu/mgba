@@ -226,14 +226,27 @@ QSet<int> InputController::activeGamepadButtons() {
 	return activeButtons;
 }
 
+void InputController::recalibrateAxes() {
+	SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	SDL_JoystickUpdate();
+	int numAxes = SDL_JoystickNumAxes(joystick);
+	m_deadzones.resize(numAxes);
+	int i;
+	for (i = 0; i < numAxes; ++i) {
+		m_deadzones[i] = SDL_JoystickGetAxis(joystick, i);
+	}
+}
+
 QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes() {
 	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
-	int numButtons = SDL_JoystickNumAxes(joystick);
+	int numAxes = SDL_JoystickNumAxes(joystick);
+	m_deadzones.resize(numAxes);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
 	int i;
-	for (i = 0; i < numButtons; ++i) {
+	for (i = 0; i < numAxes; ++i) {
 		int32_t axis = SDL_JoystickGetAxis(joystick, i);
+		axis -= m_deadzones[i];
 		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
 			activeAxes.insert(qMakePair(i, axis > 0 ? GamepadAxisEvent::POSITIVE : GamepadAxisEvent::NEGATIVE));
 		}
@@ -250,11 +263,11 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
-		description.deadLow = -AXIS_THRESHOLD;
+		description.deadLow = m_deadzones[axis] - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
-		description.deadHigh = AXIS_THRESHOLD;
+		description.deadHigh = m_deadzones[axis] + AXIS_THRESHOLD;
 		break;
 	default:
 		return;

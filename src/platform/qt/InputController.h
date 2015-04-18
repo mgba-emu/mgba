@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QVector>
 
 class QTimer;
 
@@ -56,6 +57,7 @@ public:
 	int testSDLEvents();
 	QSet<int> activeGamepadButtons();
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
+	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 
@@ -84,6 +86,7 @@ private:
 	static GBASDLEvents s_sdlEvents;
 	GBASDLPlayer m_sdlPlayer;
 	bool m_playerAttached;
+	QVector<int> m_deadzones;
 #endif
 
 	QSet<int> m_activeButtons;

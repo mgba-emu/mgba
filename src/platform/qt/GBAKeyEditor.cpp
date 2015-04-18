@@ -47,9 +47,10 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	refresh();
 
 #ifdef BUILD_SDL
-	lookupAxes(map);
-
 	if (type == SDL_BINDING_BUTTON) {
+		controller->recalibrateAxes();
+		lookupAxes(map);
+
 		m_profileSelect = new QComboBox(this);
 		m_profileSelect->addItems(controller->connectedGamepads(type));
 		int activeGamepad = controller->gamepad(type);
@@ -61,6 +62,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			m_controller->setGamepad(m_type, i);
 			m_profile = m_profileSelect->currentText();
 			m_controller->loadProfile(m_type, m_profile);
+			m_controller->recalibrateAxes();
 			refresh();
 		});
 	}
