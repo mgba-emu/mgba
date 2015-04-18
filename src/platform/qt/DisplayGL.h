@@ -24,14 +24,14 @@ public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 
 public slots:
-	void startDrawing(const uint32_t* buffer, GBAThread* context) override;
+	void startDrawing(GBAThread* context) override;
 	void stopDrawing() override;
 	void pauseDrawing() override;
 	void unpauseDrawing() override;
 	void forceDraw() override;
 	void lockAspectRatio(bool lock) override;
 	void filter(bool filter) override;
-	void framePosted(const uint32_t*) override {}
+	void framePosted(const uint32_t*) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override {};

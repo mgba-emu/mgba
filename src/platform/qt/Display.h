@@ -19,7 +19,7 @@ public:
 	Display(QWidget* parent = nullptr);
 
 public slots:
-	virtual void startDrawing(const uint32_t* buffer, GBAThread* context) = 0;
+	virtual void startDrawing(GBAThread* context) = 0;
 	virtual void stopDrawing() = 0;
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;

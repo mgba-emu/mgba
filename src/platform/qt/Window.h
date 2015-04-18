@@ -50,7 +50,7 @@ public:
 	void resizeFrame(int width, int height);
 
 signals:
-	void startDrawing(const uint32_t*, GBAThread*);
+	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void fpsTargetChanged(float target);

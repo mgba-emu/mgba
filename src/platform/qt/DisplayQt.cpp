@@ -11,22 +11,14 @@ using namespace QGBA;
 
 DisplayQt::DisplayQt(QWidget* parent)
 	: Display(parent)
+	, m_backing(nullptr)
 	, m_lockAspectRatio(false)
 	, m_filter(false)
 {
 }
 
-void DisplayQt::startDrawing(const uint32_t* buffer, GBAThread* context) {
+void DisplayQt::startDrawing(GBAThread* context) {
 	m_context = context;
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB16);
-#else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB555);
-#endif
-#else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB32);
-#endif
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {
@@ -37,6 +29,22 @@ void DisplayQt::lockAspectRatio(bool lock) {
 void DisplayQt::filter(bool filter) {
 	m_filter = filter;
 	update();
+}
+
+void DisplayQt::framePosted(const uint32_t* buffer) {
+	update();
+	if (const_cast<const QImage&>(m_backing).bits() == reinterpret_cast<const uchar*>(buffer)) {
+		return;
+	}
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB16);
+#else
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB555);
+#endif
+#else
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB32);
+#endif
 }
 
 void DisplayQt::paintEvent(QPaintEvent*) {
