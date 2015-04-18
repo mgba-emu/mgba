@@ -233,6 +233,9 @@ void InputController::recalibrateAxes() {
 	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
 	int numAxes = SDL_JoystickNumAxes(joystick);
+	if (numAxes < 1) {
+		return;
+	}
 	m_deadzones.resize(numAxes);
 	int i;
 	for (i = 0; i < numAxes; ++i) {
@@ -244,8 +247,11 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
 	int numAxes = SDL_JoystickNumAxes(joystick);
-	m_deadzones.resize(numAxes);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
+	if (numAxes < 1) {
+		return activeAxes;
+	}
+	m_deadzones.resize(numAxes);
 	int i;
 	for (i = 0; i < numAxes; ++i) {
 		int32_t axis = SDL_JoystickGetAxis(joystick, i);
