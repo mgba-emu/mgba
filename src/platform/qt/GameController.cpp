@@ -118,7 +118,11 @@ GameController::GameController(QObject* parent)
 			controller->gamePaused(&controller->m_threadContext);
 		}
 		controller->m_pauseMutex.unlock();
-		controller->frameAvailable(controller->m_drawContext);
+		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
+			controller->frameAvailable(controller->m_drawContext);
+		} else {
+			controller->frameAvailable(nullptr);
+		}
 	};
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {

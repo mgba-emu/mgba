@@ -114,7 +114,9 @@ void DisplayGL::filter(bool filter) {
 }
 
 void DisplayGL::framePosted(const uint32_t* buffer) {
-	m_painter->setBacking(buffer);
+	if (buffer) {
+		m_painter->setBacking(buffer);
+	}
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
