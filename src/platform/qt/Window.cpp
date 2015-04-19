@@ -664,6 +664,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	});
 	addControlledAction(fileMenu, multiWindow, "multiWindow");
 
+	QAction* dolphin = new QAction(tr("Connect to Dolphin"), fileMenu);
+	connect(dolphin, &QAction::triggered, [this]() {
+		m_controller->connectDolphin(0x7F000001);
+	});
+	addControlledAction(fileMenu, dolphin, "connectDolphin");
+
 #ifndef Q_OS_MAC
 	addControlledAction(fileMenu, fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit), "quit");
 #endif

@@ -17,6 +17,7 @@
 extern "C" {
 #include "gba/cheats.h"
 #include "gba/hardware.h"
+#include "gba/sio/dolphin.h"
 #include "gba/supervisor/thread.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"
@@ -65,6 +66,9 @@ public:
 	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
 	std::shared_ptr<MultiplayerController> multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
+
+	bool connectDolphin(uint32_t ipv4);
+	void detachDolphin();
 
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
@@ -164,6 +168,8 @@ private:
 	int m_activeKeys;
 	int m_inactiveKeys;
 	int m_logLevels;
+
+	GBASIODolphin m_dolphin;
 
 	bool m_gameOpen;
 	bool m_dirmode;

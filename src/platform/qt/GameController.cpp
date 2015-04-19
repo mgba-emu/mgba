@@ -52,6 +52,7 @@ GameController::GameController(QObject* parent)
 	m_renderer->outputBufferStride = 256;
 
 	GBACheatDeviceCreate(&m_cheatDevice);
+	GBASIODolphinCreate(&m_dolphin);
 
 	m_threadContext.state = THREAD_INITIALIZED;
 	m_threadContext.debugger = 0;
@@ -159,6 +160,7 @@ GameController::~GameController() {
 	m_audioThread->wait();
 	disconnect();
 	clearMultiplayerController();
+	detachDolphin();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
@@ -180,6 +182,28 @@ void GameController::clearMultiplayerController() {
 	}
 	m_multiplayer->detachGame(this);
 	m_multiplayer.reset();
+}
+
+bool GameController::connectDolphin(uint32_t ipv4) {
+	Address ipaddr;
+	ipaddr.version = IPV4;
+	ipaddr.ipv4 = htonl(ipv4);
+	if (GBASIODolphinConnect(&m_dolphin, &ipaddr, 0, 0)) {
+		if (m_gameOpen) {
+			GBASIOSetDriver(&m_threadContext.gba->sio, &m_dolphin.d, SIO_JOYBUS);
+		}
+		m_threadContext.sioDrivers.joybus = &m_dolphin.d;
+		return true;
+	}
+	return false;
+}
+
+void GameController::detachDolphin() {
+	if (m_gameOpen) {
+		GBASIOSetDriver(&m_threadContext.gba->sio, nullptr, SIO_JOYBUS);
+	}
+	m_threadContext.sioDrivers.joybus = nullptr;
+	GBASIODolphinDestroy(&m_dolphin);
 }
 
 void GameController::setOverride(const GBACartridgeOverride& override) {
