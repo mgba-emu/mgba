@@ -223,6 +223,9 @@ void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer
 	events->joysticksClaimed[player->playerId] = index;
 	player->joystickIndex = index;
 	player->joystick = events->joysticks[index];
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	player->haptic = events->haptic[index];
+#endif
 }
 
 static void _pauseAfterFrame(struct GBAThread* context) {
