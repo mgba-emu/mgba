@@ -763,6 +763,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(minSolar, &QAction::triggered, [this]() { m_controller->setLuminanceLevel(0); });
 	addControlledAction(solarMenu, minSolar, "minLuminanceLevel");
 
+	solarMenu->addSeparator();
+	for (int i = 0; i <= 10; ++i) {
+		QAction* setSolar = new QAction(tr("Brightness %1").arg(QString::number(i)), solarMenu);
+		connect(setSolar, &QAction::triggered, [this, i]() {
+			m_controller->setLuminanceLevel(i);
+		});
+		addControlledAction(solarMenu, setSolar, QString("luminanceLevel.%1").arg(QString::number(i)));
+	}
+
 	QMenu* avMenu = menubar->addMenu(tr("Audio/&Video"));
 	m_shortcutController->addMenu(avMenu);
 	QMenu* frameMenu = avMenu->addMenu(tr("Frame size"));
