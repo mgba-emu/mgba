@@ -87,8 +87,12 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
 	gba->idleLoop = IDLE_LOOP_NONE;
 	gba->lastJump = 0;
+	gba->haltPending = false;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
+
+	gba->realisticTiming = false;
+
 	gba->performingDMA = false;
 }
 
@@ -430,6 +434,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
@@ -464,7 +469,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		}
 		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->reload;
 		currentTimer->oldReload = currentTimer->reload;
-		currentTimer->lastEvent = 0;
+		currentTimer->lastEvent = gba->cpu->cycles;
 		gba->timersEnabled |= 1 << timer;
 	} else if (wasEnabled && !currentTimer->enable) {
 		if (!currentTimer->countUp) {

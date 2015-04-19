@@ -8,7 +8,17 @@
 #include "gba/supervisor/thread.h"
 #include "util/arm-algo.h"
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+static bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLSWDeinit(struct SDLSoftwareRenderer* renderer);
+
+void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLSWInit;
+	renderer->deinit = GBASDLSWDeinit;
+	renderer->runloop = GBASDLSWRunloop;
+}
+
+bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
@@ -24,15 +34,15 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	renderer->tex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #else
-	renderer->tex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR1555, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 #else
-	renderer->tex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 #endif
 
-	SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+	SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 	renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 	SDL_Surface* surface = SDL_GetVideoSurface();
@@ -72,7 +82,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
@@ -85,10 +95,10 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-			SDL_UnlockTexture(renderer->tex);
-			SDL_RenderCopy(renderer->sdlRenderer, renderer->tex, 0, 0);
+			SDL_UnlockTexture(renderer->sdlTex);
+			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
 			SDL_RenderPresent(renderer->sdlRenderer);
-			SDL_LockTexture(renderer->tex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
+			SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->d.outputBuffer, &renderer->d.outputBufferStride);
 			renderer->d.outputBufferStride /= BYTES_PER_PIXEL;
 #else
 #ifdef USE_PIXMAN
@@ -122,7 +132,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	}
 }
 
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLSWDeinit(struct SDLSoftwareRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->d.outputBuffer);
 	}

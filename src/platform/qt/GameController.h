@@ -85,6 +85,7 @@ signals:
 	void gameCrashed(const QString& errorMessage);
 	void gameFailed();
 	void stateLoaded(GBAThread*);
+	void rewound(GBAThread*);
 	void unimplementedBiosCall(int);
 
 	void luminanceValueChanged(int);
@@ -97,6 +98,8 @@ public slots:
 	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
+	void importSharkport(const QString& path);
+	void exportSharkport(const QString& path);
 	void openGame();
 	void closeGame();
 	void setPaused(bool paused);
@@ -114,10 +117,16 @@ public slots:
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
+	void setVolume(int);
+	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
+
+#ifdef USE_PNG
+	void screenshot();
+#endif
 
 	void setLuminanceValue(uint8_t value);
 	uint8_t luminanceValue() const { return m_luxValue; }

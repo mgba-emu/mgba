@@ -197,3 +197,71 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 	newUTF8[utf8Length] = '\0';
 	return newUTF8;
 }
+
+int hexDigit(char digit) {
+	switch (digit) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		return digit - '0';
+
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+		return digit - 'a' + 10;
+
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+		return digit - 'A' + 10;
+
+	default:
+		return -1;
+	}
+}
+
+const char* hex32(const char* line, uint32_t* out) {
+	uint32_t value = 0;
+	int i;
+	for (i = 0; i < 8; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}
+
+const char* hex16(const char* line, uint16_t* out) {
+	uint16_t value = 0;
+	*out = 0;
+	int i;
+	for (i = 0; i < 4; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}

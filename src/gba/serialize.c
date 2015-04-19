@@ -256,6 +256,18 @@ void GBARecordFrame(struct GBAThread* thread) {
 		thread->rewindBuffer[offset] = state;
 	}
 	GBASerialize(thread->gba, state);
+
+	if (thread->rewindScreenBuffer) {
+		unsigned stride;
+		uint8_t* pixels = 0;
+		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (void*) &pixels);
+		if (pixels) {
+			size_t y;
+			for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+				memcpy(&thread->rewindScreenBuffer[(offset * VIDEO_VERTICAL_PIXELS + y) * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL], &pixels[y * stride * BYTES_PER_PIXEL], VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+			}
+		}
+	}
 	thread->rewindBufferSize = thread->rewindBufferSize == thread->rewindBufferCapacity ? thread->rewindBufferCapacity : thread->rewindBufferSize + 1;
 	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
 }
@@ -273,12 +285,15 @@ void GBARewindSettingsChanged(struct GBAThread* threadContext, int newCapacity, 
 			GBADeallocateState(threadContext->rewindBuffer[i]);
 		}
 		free(threadContext->rewindBuffer);
+		free(threadContext->rewindScreenBuffer);
 	}
 	threadContext->rewindBufferCapacity = newCapacity;
 	if (threadContext->rewindBufferCapacity > 0) {
 		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(struct GBASerializedState*));
+		threadContext->rewindScreenBuffer = calloc(threadContext->rewindBufferCapacity, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
 	} else {
 		threadContext->rewindBuffer = 0;
+		threadContext->rewindScreenBuffer = 0;
 	}
 }
 
@@ -291,15 +306,18 @@ void GBARewind(struct GBAThread* thread, int nStates) {
 	}
 	int offset = thread->rewindBufferWriteOffset - nStates;
 	if (offset < 0) {
-		offset += thread->rewindBufferSize;
+		offset += thread->rewindBufferCapacity;
 	}
 	struct GBASerializedState* state = thread->rewindBuffer[offset];
 	if (!state) {
 		return;
 	}
-	thread->rewindBufferSize -= nStates - 1;
-	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
+	thread->rewindBufferSize -= nStates;
+	thread->rewindBufferWriteOffset = offset;
 	GBADeserialize(thread->gba, state);
+	if (thread->rewindScreenBuffer) {
+		thread->gba->video.renderer->putPixels(thread->gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, &thread->rewindScreenBuffer[offset * VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL]);
+	}
 }
 
 void GBARewindAll(struct GBAThread* thread) {

@@ -28,8 +28,8 @@
 
 #define PORT "sdl"
 
-static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer);
-static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
+static bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
 
 int main(int argc, char** argv) {
 	struct SDLSoftwareRenderer renderer;
@@ -83,7 +83,13 @@ int main(int argc, char** argv) {
 	renderer.lockAspectRatio = opts.lockAspectRatio;
 	renderer.filter = opts.resampleVideo;
 
-	if (!_GBASDLInit(&renderer)) {
+#ifdef BUILD_GL
+	GBASDLGLCreate(&renderer);
+#else
+	GBASDLSWCreate(&renderer);
+#endif
+
+	if (!GBASDLInit(&renderer)) {
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
 		GBAConfigDeinit(&config);
@@ -113,7 +119,7 @@ int main(int argc, char** argv) {
 
 	int didFail = 0;
 	if (GBAThreadStart(&context)) {
-		GBASDLRunloop(&context, &renderer);
+		renderer.runloop(&context, &renderer);
 		GBAThreadJoin(&context);
 	} else {
 		didFail = 1;
@@ -130,28 +136,28 @@ int main(int argc, char** argv) {
 	free(context.debugger);
 	GBAInputMapDeinit(&inputMap);
 
-	_GBASDLDeinit(&renderer);
+	GBASDLDeinit(&renderer);
 
 	return didFail;
 }
 
-static bool _GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+static bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		return false;
 	}
 
-	return GBASDLInit(renderer);
+	return renderer->init(renderer);
 }
 
-static void _GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_DestroyWindow(renderer->window);
 #endif
 
-	GBASDLDeinit(renderer);
+	renderer->deinit(renderer);
 
 	SDL_Quit();
 

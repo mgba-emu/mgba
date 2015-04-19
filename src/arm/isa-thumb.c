@@ -41,7 +41,8 @@
 
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
-#define THUMB_LOAD_POST_BODY ++currentCycles;
+#define THUMB_LOAD_POST_BODY \
+	currentCycles += 1 + cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 #define THUMB_STORE_POST_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;

@@ -57,5 +57,6 @@ while [ $# -gt 0 ]; do
     sed -i~ "/^[^:]*: $/d" deb-temp/DEBIAN/control
     rm deb-temp/DEBIAN/control~
     dpkg-deb -b deb-temp $DEB
+    rm -rf deb-temp
     shift
 done

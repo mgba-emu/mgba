@@ -254,7 +254,7 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_4_WRITEBACK_STM cpu->gprs[rn] = address;
 
 #define ARM_LOAD_POST_BODY \
-	++currentCycles; \
+	currentCycles += 1 + cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32; \
 	if (rd == ARM_PC) { \
 		ARM_WRITE_PC; \
 	}
@@ -562,14 +562,14 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(LDM,
 	load,
-	++currentCycles;
+	currentCycles += 1 + cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32;
 	if (rs & 0x8000) {
 		ARM_WRITE_PC;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_INSTRUCTION_ARM(STM,
 	store,
-	currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
+	ARM_STORE_POST_BODY;)
 
 DEFINE_INSTRUCTION_ARM(SWP,
 	int rm = opcode & 0xF;

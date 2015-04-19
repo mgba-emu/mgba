@@ -94,6 +94,9 @@ void InputController::loadConfiguration(uint32_t type) {
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
 	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+#ifdef BUILD_SDL
+	recalibrateAxes();
+#endif
 }
 
 void InputController::saveConfiguration(uint32_t type) {
@@ -149,6 +152,10 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 		return;
 	}
 	GBAInputSetPreferredDevice(m_config->input(), type, m_sdlPlayer.playerId, device.toLocal8Bit().constData());
+}
+
+GBARumble* InputController::rumble() {
+	return &m_sdlPlayer.rumble.d;
 }
 #endif
 
@@ -222,14 +229,33 @@ QSet<int> InputController::activeGamepadButtons() {
 	return activeButtons;
 }
 
+void InputController::recalibrateAxes() {
+	SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	SDL_JoystickUpdate();
+	int numAxes = SDL_JoystickNumAxes(joystick);
+	if (numAxes < 1) {
+		return;
+	}
+	m_deadzones.resize(numAxes);
+	int i;
+	for (i = 0; i < numAxes; ++i) {
+		m_deadzones[i] = SDL_JoystickGetAxis(joystick, i);
+	}
+}
+
 QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes() {
 	SDL_Joystick* joystick = m_sdlPlayer.joystick;
 	SDL_JoystickUpdate();
-	int numButtons = SDL_JoystickNumAxes(joystick);
+	int numAxes = SDL_JoystickNumAxes(joystick);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
+	if (numAxes < 1) {
+		return activeAxes;
+	}
+	m_deadzones.resize(numAxes);
 	int i;
-	for (i = 0; i < numButtons; ++i) {
+	for (i = 0; i < numAxes; ++i) {
 		int32_t axis = SDL_JoystickGetAxis(joystick, i);
+		axis -= m_deadzones[i];
 		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
 			activeAxes.insert(qMakePair(i, axis > 0 ? GamepadAxisEvent::POSITIVE : GamepadAxisEvent::NEGATIVE));
 		}
@@ -246,11 +272,11 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
-		description.deadLow = -AXIS_THRESHOLD;
+		description.deadLow = m_deadzones[axis] - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
-		description.deadHigh = AXIS_THRESHOLD;
+		description.deadHigh = m_deadzones[axis] + AXIS_THRESHOLD;
 		break;
 	default:
 		return;
@@ -278,16 +304,23 @@ void InputController::testGamepad() {
 
 	for (auto& axis : m_activeAxes) {
 		bool newlyAboveThreshold = activeAxes.contains(axis);
-		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 		if (newlyAboveThreshold) {
+			GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 			postPendingEvent(event->gbaKey());
+			QApplication::sendEvent(QApplication::focusWidget(), event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
-		} else if (oldAxes.contains(axis)) {
-			clearPendingEvent(event->gbaKey());
 		}
+	}
+	for (auto axis : oldAxes) {
+		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, this);
+		clearPendingEvent(event->gbaKey());
 		QApplication::sendEvent(QApplication::focusWidget(), event);
+	}
+
+	if (!QApplication::focusWidget()) {
+		return;
 	}
 
 	activeButtons.subtract(oldButtons);

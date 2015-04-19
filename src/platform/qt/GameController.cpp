@@ -18,6 +18,7 @@ extern "C" {
 #include "gba/audio.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
+#include "gba/sharkport.h"
 #include "gba/renderers/video-software.h"
 #include "gba/supervisor/config.h"
 #include "util/vfs.h"
@@ -97,6 +98,9 @@ GameController::GameController(QObject* parent)
 		context->gba->logLevel = GBA_LOG_FATAL;
 		context->gba->luminanceSource = &controller->m_lux;
 		context->gba->rtcSource = &controller->m_rtc;
+#ifdef BUILD_SDL
+		context->gba->rumble = controller->m_inputController->rumble();
+#endif
 		controller->gameStarted(context);
 	};
 
@@ -114,7 +118,11 @@ GameController::GameController(QObject* parent)
 			controller->gamePaused(&controller->m_threadContext);
 		}
 		controller->m_pauseMutex.unlock();
-		controller->frameAvailable(controller->m_drawContext);
+		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
+			controller->frameAvailable(controller->m_drawContext);
+		} else {
+			controller->frameAvailable(nullptr);
+		}
 	};
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
@@ -186,6 +194,8 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setSkipBIOS(opts->skipBios);
 	setUseBIOS(opts->useBios);
 	setRewind(opts->rewindEnable, opts->rewindBufferCapacity, opts->rewindBufferInterval);
+	setVolume(opts->volume);
+	setMute(opts->mute);
 
 	threadInterrupt();
 	m_threadContext.idleOptimization = opts->idleOptimization;
@@ -267,6 +277,10 @@ void GameController::openGame() {
 		m_threadContext.patch = VFileOpen(m_patch.toLocal8Bit().constData(), O_RDONLY);
 	}
 
+#ifdef BUILD_SDL
+	m_inputController->recalibrateAxes();
+#endif
+
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
 		emit gameFailed();
@@ -292,6 +306,34 @@ void GameController::loadPatch(const QString& path) {
 	} else {
 		m_patch = path;
 	}
+}
+
+void GameController::importSharkport(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
+	if (!vf) {
+		return;
+	}
+	threadInterrupt();
+	GBASavedataImportSharkPort(m_threadContext.gba, vf, false);
+	threadContinue();
+	vf->close(vf);
+}
+
+void GameController::exportSharkport(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return;
+	}
+	threadInterrupt();
+	GBASavedataExportSharkPort(m_threadContext.gba, vf);
+	threadContinue();
+	vf->close(vf);
 }
 
 void GameController::closeGame() {
@@ -334,7 +376,7 @@ bool GameController::isPaused() {
 }
 
 void GameController::setPaused(bool paused) {
-	if (paused == GBAThreadIsPaused(&m_threadContext)) {
+	if (!m_gameOpen || paused == GBAThreadIsPaused(&m_threadContext)) {
 		return;
 	}
 	if (paused) {
@@ -393,6 +435,8 @@ void GameController::rewind(int states) {
 		GBARewind(&m_threadContext, states);
 	}
 	threadContinue();
+	emit rewound(&m_threadContext);
+	emit frameAvailable(m_drawContext);
 }
 
 void GameController::keyPressed(int key) {
@@ -496,6 +540,24 @@ void GameController::setFrameskip(int skip) {
 	m_threadContext.frameskip = skip;
 }
 
+void GameController::setVolume(int volume) {
+	threadInterrupt();
+	m_threadContext.volume = volume;
+	if (m_gameOpen) {
+		m_threadContext.gba->audio.masterVolume = volume;
+	}
+	threadContinue();
+}
+
+void GameController::setMute(bool mute) {
+	threadInterrupt();
+	m_threadContext.mute = mute;
+	if (m_gameOpen) {
+		m_threadContext.gba->audio.masterVolume = mute ? 0 : m_threadContext.volume;
+	}
+	threadContinue();
+}
+
 void GameController::setTurbo(bool set, bool forced) {
 	if (m_turboForced && !forced) {
 		return;
@@ -511,14 +573,28 @@ void GameController::setTurbo(bool set, bool forced) {
 void GameController::setAVStream(GBAAVStream* stream) {
 	threadInterrupt();
 	m_threadContext.stream = stream;
+	if (m_gameOpen) {
+		m_threadContext.gba->stream = stream;
+	}
 	threadContinue();
 }
 
 void GameController::clearAVStream() {
 	threadInterrupt();
 	m_threadContext.stream = nullptr;
+	if (m_gameOpen) {
+		m_threadContext.gba->stream = nullptr;
+	}
 	threadContinue();
 }
+
+#ifdef USE_PNG
+void GameController::screenshot() {
+	GBAThreadInterrupt(&m_threadContext);
+	GBAThreadTakeScreenshot(&m_threadContext);
+	GBAThreadContinue(&m_threadContext);
+}
+#endif
 
 void GameController::reloadAudioDriver() {
 	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);

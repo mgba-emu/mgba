@@ -14,6 +14,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#define FLASH_SETTLE_CYCLES 18000
+
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
@@ -113,7 +115,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming) {
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
 		GBASavedataDeinit(savedata);
@@ -123,7 +125,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 	case SAVEDATA_FLASH512:
 	case SAVEDATA_FLASH1M:
 		savedata->type = type;
-		GBASavedataInitFlash(savedata);
+		GBASavedataInitFlash(savedata, realisticTiming);
 		break;
 	case SAVEDATA_EEPROM:
 		GBASavedataInitEEPROM(savedata);
@@ -139,7 +141,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 	}
 }
 
-void GBASavedataInitFlash(struct GBASavedata* savedata) {
+void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_FLASH512;
 	}
@@ -162,6 +164,8 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	}
 
 	savedata->currentBank = savedata->data;
+	savedata->dust = 0;
+	savedata->realisticTiming = realisticTiming;
 	if (end < SIZE_CART_FLASH512) {
 		memset(&savedata->data[end], 0xFF, flashSize - end);
 	}
@@ -225,6 +229,10 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 				return FLASH_MFG_SANYO >> (address * 8);
 			}
 		}
+	}
+	if (savedata->dust > 0 && (address >> 12) == savedata->settling) {
+		--savedata->dust;
+		return 0x5F;
 	}
 	return savedata->currentBank[address];
 }
@@ -384,6 +392,8 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 	state->savedata.readBitsRemaining = savedata->readBitsRemaining;
 	state->savedata.readAddress = savedata->readAddress;
 	state->savedata.writeAddress = savedata->writeAddress;
+	state->savedata.settlingSector = savedata->settling;
+	state->savedata.settlingDust = savedata->dust;
 
 	UNUSED(includeData); // TODO
 }
@@ -393,13 +403,16 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 		return;
 	}
 	if (savedata->type != state->savedata.type) {
-		GBASavedataForceType(savedata, state->savedata.type);
+		GBASavedataForceType(savedata, state->savedata.type, savedata->realisticTiming);
 	}
 	savedata->command = state->savedata.command;
 	savedata->flashState = state->savedata.flashState;
 	savedata->readBitsRemaining = state->savedata.readBitsRemaining;
 	savedata->readAddress = state->savedata.readAddress;
 	savedata->writeAddress = state->savedata.writeAddress;
+	savedata->settling = state->savedata.settlingSector;
+	savedata->dust = state->savedata.settlingDust;
+
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		_flashSwitchBank(savedata, state->savedata.flashBank);
 	}
@@ -433,6 +446,10 @@ void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
+	}
+	savedata->settling = sectorStart >> 12;
+	if (savedata->realisticTiming) {
+		savedata->dust = FLASH_SETTLE_CYCLES;
 	}
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }

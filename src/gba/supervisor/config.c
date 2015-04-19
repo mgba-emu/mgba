@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include "util/formatting.h"
+#include "util/vfs.h"
 
 #include <sys/stat.h>
 
@@ -13,9 +14,6 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <strsafe.h>
-#define PATH_SEP "\\"
-#else
-#define PATH_SEP "/"
 #endif
 
 #define SECTION_NAME_MAX 128
@@ -181,6 +179,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
+	_lookupIntValue(config, "volume", &opts->volume);
 	_lookupIntValue(config, "rewindBufferCapacity", &opts->rewindBufferCapacity);
 	_lookupIntValue(config, "rewindBufferInterval", &opts->rewindBufferInterval);
 	_lookupFloatValue(config, "fpsTarget", &opts->fpsTarget);
@@ -190,7 +189,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 
 	int fakeBool;
-	if (_lookupIntValue(config, "useSync", &fakeBool)) {
+	if (_lookupIntValue(config, "useBios", &fakeBool)) {
 		opts->useBios = fakeBool;
 	}
 	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
@@ -204,6 +203,9 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
 		opts->resampleVideo = fakeBool;
+	}
+	if (_lookupIntValue(config, "mute", &fakeBool)) {
+		opts->mute = fakeBool;
 	}
 	if (_lookupIntValue(config, "skipBios", &fakeBool)) {
 		opts->skipBios = fakeBool;
@@ -245,6 +247,8 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "fullscreen", opts->fullscreen);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "width", opts->width);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "height", opts->height);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "volume", opts->volume);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "mute", opts->mute);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 

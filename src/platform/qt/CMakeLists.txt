@@ -4,7 +4,10 @@ enable_language(CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
 
 if(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7 -stdlib=libc++")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
+	if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+	endif()
 endif()
 
 set(PLATFORM_SRC)
@@ -41,6 +44,8 @@ set(SOURCE_FILES
 	CheatsView.cpp
 	ConfigController.cpp
 	Display.cpp
+	DisplayGL.cpp
+	DisplayQt.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
@@ -53,11 +58,13 @@ set(SOURCE_FILES
 	LogView.cpp
 	MultiplayerController.cpp
 	OverrideView.cpp
+	PaletteView.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
 	ShortcutController.cpp
 	ShortcutView.cpp
+	Swatch.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -68,13 +75,14 @@ qt5_wrap_ui(UI_FILES
 	LoadSaveState.ui
 	LogView.ui
 	OverrideView.ui
+	PaletteView.ui
 	SensorView.ui
 	SettingsView.ui
 	ShortcutView.ui
 	VideoView.ui)
 
 set(QT_LIBRARIES)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5" PARENT_SCOPE)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
@@ -87,7 +95,7 @@ if(Qt5Multimedia_FOUND)
 		AudioDevice.cpp)
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
 	add_definitions(-DBUILD_QT_MULTIMEDIA)
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5" PARENT_SCOPE)
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5")
 endif()
 
 if(NOT AUDIO_SRC)
@@ -115,6 +123,7 @@ set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CM
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 
 install(TARGETS ${BINARY_NAME}-qt
 	RUNTIME DESTINATION bin COMPONENT ${BINARY_NAME}-qt

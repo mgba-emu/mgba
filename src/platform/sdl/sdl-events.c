@@ -20,8 +20,14 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
+
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+	int subsystem = SDL_INIT_JOYSTICK;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	subsystem |= SDL_INIT_HAPTIC;
+#endif
+	if (SDL_InitSubSystem(subsystem) < 0) {
 		return false;
 	}
 
@@ -30,9 +36,15 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	if (nJoysticks > 0) {
 		context->nJoysticks = nJoysticks;
 		context->joysticks = calloc(context->nJoysticks, sizeof(SDL_Joystick*));
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		context->haptic = calloc(context->nJoysticks, sizeof(SDL_Haptic*));
+#endif
 		size_t i;
 		for (i = 0; i < context->nJoysticks; ++i) {
 			context->joysticks[i] = SDL_JoystickOpen(i);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			context->haptic[i] = SDL_HapticOpenFromJoystick(context->joysticks[i]);
+#endif
 		}
 	} else {
 		context->nJoysticks = 0;
@@ -56,6 +68,9 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	size_t i;
 	for (i = 0; i < context->nJoysticks; ++i) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_HapticClose(context->haptic[i]);
+#endif
 		SDL_JoystickClose(context->joysticks[i]);
 	}
 
@@ -126,6 +141,11 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->joystick = 0;
 	player->joystickIndex = SIZE_MAX;
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	player->rumble.d.setRumble = _GBASDLSetRumble;
+	player->rumble.p = player;
+#endif
+
 	if (events->playersAttached >= MAX_PLAYERS) {
 		return false;
 	}
@@ -171,6 +191,13 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	if (player->joystickIndex != SIZE_MAX) {
 		player->joystick = events->joysticks[player->joystickIndex];
 		events->joysticksClaimed[player->playerId] = player->joystickIndex;
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		player->haptic = events->haptic[player->joystickIndex];
+		if (player->haptic) {
+			SDL_HapticRumbleInit(player->haptic);
+		}
+#endif
 	}
 
 	++events->playersAttached;
@@ -403,3 +430,17 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContex
 		break;
 	}
 }
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
+	struct GBASDLRumble* sdlRumble = (struct GBASDLRumble*) rumble;
+	if (!sdlRumble->p->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->haptic)) {
+		return;
+	}
+	if (enable) {
+		SDL_HapticRumblePlay(sdlRumble->p->haptic, 1.0f, 20);
+	} else {
+		SDL_HapticRumbleStop(sdlRumble->p->haptic);
+	}
+}
+#endif

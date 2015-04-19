@@ -14,6 +14,7 @@
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned BLIP_BUFFER_SIZE = 0x4000;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
+const int GBA_AUDIO_VOLUME_MAX = 0x100;
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
 static bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value);
@@ -41,6 +42,14 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 #endif
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
 	CircleBufferInit(&audio->chB.fifo, GBA_AUDIO_FIFO_SIZE);
+
+	audio->forceDisableCh[0] = false;
+	audio->forceDisableCh[1] = false;
+	audio->forceDisableCh[2] = false;
+	audio->forceDisableCh[3] = false;
+	audio->forceDisableChA = false;
+	audio->forceDisableChB = false;
+	audio->masterVolume = GBA_AUDIO_VOLUME_MAX;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
@@ -480,30 +489,6 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 	}
 }
 
-void GBAAudioWriteFIFO16(struct GBAAudio* audio, int address, uint16_t value) {
-	struct CircleBuffer* fifo;
-	switch (address) {
-	case REG_FIFO_A_LO:
-	case REG_FIFO_A_HI:
-		fifo = &audio->chA.fifo;
-		break;
-	case REG_FIFO_B_LO:
-	case REG_FIFO_B_HI:
-		fifo = &audio->chB.fifo;
-		break;
-	default:
-		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", address);
-		return;
-	}
-	int i;
-	for (i = 0; i < 2; ++i) {
-		while (!CircleBufferWrite8(fifo, value >> (8 * i))) {
-			int8_t dummy;
-			CircleBufferRead8(fifo, &dummy);
-		}
-	}
-}
-
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	struct GBAAudioFIFO* channel;
 	if (fifoId == 0) {
@@ -514,11 +499,16 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", fifoId);
 		return;
 	}
-	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t)) {
+	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t) && channel->dmaSource > 0) {
 		struct GBADMA* dma = &audio->p->memory.dma[channel->dmaSource];
-		dma->nextCount = 4;
-		dma->nextEvent = 0;
-		GBAMemoryUpdateDMAs(audio->p, -cycles);
+		if (GBADMARegisterGetTiming(dma->reg) == DMA_TIMING_CUSTOM) {
+			dma->nextCount = 4;
+			dma->nextEvent = 0;
+			dma->reg = GBADMARegisterSetWidth(dma->reg, 1);
+			GBAMemoryUpdateDMAs(audio->p, -cycles);
+		} else {
+			channel->dmaSource = 0;
+		}
 	}
 	CircleBufferRead8(&channel->fifo, &channel->sample);
 }
@@ -738,7 +728,7 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 	} else if (sample < 0) {
 		sample = 0;
 	}
-	return (sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) << 5;
+	return ((sample - GBARegisterSOUNDBIASGetBias(audio->soundbias)) * audio->masterVolume) >> 3;
 }
 
 static void _sample(struct GBAAudio* audio) {
@@ -746,55 +736,67 @@ static void _sample(struct GBAAudio* audio) {
 	int16_t sampleRight = 0;
 	int psgShift = 5 - audio->volume;
 
-	if (audio->ch1Left) {
-		sampleLeft += audio->ch1.sample;
+	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
+		if (audio->ch1Left) {
+			sampleLeft += audio->ch1.sample;
+		}
+
+		if (audio->ch1Right) {
+			sampleRight += audio->ch1.sample;
+		}
 	}
 
-	if (audio->ch1Right) {
-		sampleRight += audio->ch1.sample;
+	if (audio->playingCh2 && !audio->forceDisableCh[1]) {
+		if (audio->ch2Left) {
+			sampleLeft += audio->ch2.sample;
+		}
+
+		if (audio->ch2Right) {
+			sampleRight += audio->ch2.sample;
+		}
 	}
 
-	if (audio->ch2Left) {
-		sampleLeft += audio->ch2.sample;
+	if (audio->playingCh3 && !audio->forceDisableCh[2]) {
+		if (audio->ch3Left) {
+			sampleLeft += audio->ch3.sample;
+		}
+
+		if (audio->ch3Right) {
+			sampleRight += audio->ch3.sample;
+		}
 	}
 
-	if (audio->ch2Right) {
-		sampleRight += audio->ch2.sample;
-	}
+	if (audio->playingCh4 && !audio->forceDisableCh[3]) {
+		if (audio->ch4Left) {
+			sampleLeft += audio->ch4.sample;
+		}
 
-	if (audio->ch3Left) {
-		sampleLeft += audio->ch3.sample;
-	}
-
-	if (audio->ch3Right) {
-		sampleRight += audio->ch3.sample;
-	}
-
-	if (audio->ch4Left) {
-		sampleLeft += audio->ch4.sample;
-	}
-
-	if (audio->ch4Right) {
-		sampleRight += audio->ch4.sample;
+		if (audio->ch4Right) {
+			sampleRight += audio->ch4.sample;
+		}
 	}
 
 	sampleLeft = (sampleLeft * (1 + audio->volumeLeft)) >> psgShift;
 	sampleRight = (sampleRight * (1 + audio->volumeRight)) >> psgShift;
 
-	if (audio->chALeft) {
-		sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
+	if (!audio->forceDisableChA) {
+		if (audio->chALeft) {
+			sampleLeft += (audio->chA.sample << 2) >> !audio->volumeChA;
+		}
+
+		if (audio->chARight) {
+			sampleRight += (audio->chA.sample << 2) >> !audio->volumeChA;
+		}
 	}
 
-	if (audio->chARight) {
-		sampleRight += (audio->chA.sample << 2) >> !audio->volumeChA;
-	}
+	if (!audio->forceDisableChB) {
+		if (audio->chBLeft) {
+			sampleLeft += (audio->chB.sample << 2) >> !audio->volumeChB;
+		}
 
-	if (audio->chBLeft) {
-		sampleLeft += (audio->chB.sample << 2) >> !audio->volumeChB;
-	}
-
-	if (audio->chBRight) {
-		sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
+		if (audio->chBRight) {
+			sampleRight += (audio->chB.sample << 2) >> !audio->volumeChB;
+		}
 	}
 
 	sampleLeft = _applyBias(audio, sampleLeft);

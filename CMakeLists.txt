@@ -18,18 +18,19 @@ set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
 set(BUILD_SHARED ON CACHE BOOL "Build a shared library")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
-file(GLOB VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/video-software.c)
 file(GLOB SIO_SRC ${CMAKE_SOURCE_DIR}/src/gba/sio/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
+set(VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
-source_group("GBA supervisor" FILES ${GBA_SV_SRC} ${GBA_RR_SRC})
-source_group("Utilities" FILES ${UTIL_SRC} ${VFS_SRC}})
+source_group("GBA supervisor" FILES ${GBA_CHEATS_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
@@ -71,9 +72,9 @@ endfunction()
 
 # Version information
 set(LIB_VERSION_MAJOR 0)
-set(LIB_VERSION_MINOR 2)
+set(LIB_VERSION_MINOR 3)
 set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION_ABI 0.2)
+set(LIB_VERSION_ABI 0.3)
 set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
 
 # Advanced settings
@@ -117,6 +118,7 @@ if(WIN32)
 	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	list(APPEND OS_LIB ws2_32)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 else()
@@ -129,6 +131,7 @@ else()
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif()
 
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
@@ -262,12 +265,14 @@ if(USE_LIBZIP)
 	link_directories(${LIBZIP_LIBRARY_DIRS})
 	list(APPEND DEPENDENCY_LIB ${LIBZIP_LIBRARIES})
 	list(APPEND FEATURES LIBZIP)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-zip.c)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libzip2")
 endif()
 
 if (USE_LZMA)
 	include_directories(AFTER ${CMAKE_SOURCE_DIR}/third-party/lzma)
 	add_definitions(-D_7ZIP_PPMD_SUPPPORT)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-lzma.c)
 	set(LZMA_SRC
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zAlloc.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zArcIn.c
@@ -299,6 +304,7 @@ endforeach()
 set(CORE_SRC
 	${ARM_SRC}
 	${GBA_SRC}
+	${GBA_CHEATS_SRC}
 	${GBA_RR_SRC}
 	${GBA_SV_SRC}
 	${DEBUGGER_SRC}

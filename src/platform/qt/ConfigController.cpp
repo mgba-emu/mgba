@@ -108,6 +108,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.videoSync = GameController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
+	m_opts.volume = GBA_AUDIO_VOLUME_MAX;
 	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;

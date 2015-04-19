@@ -286,6 +286,10 @@ void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_RCNT >> 1] = RCNT_INITIAL;
 	gba->memory.io[REG_KEYINPUT >> 1] = 0x3FF;
 	gba->memory.io[REG_SOUNDBIAS >> 1] = 0x200;
+	gba->memory.io[REG_BG2PA >> 1] = 0x100;
+	gba->memory.io[REG_BG2PD >> 1] = 0x100;
+	gba->memory.io[REG_BG3PA >> 1] = 0x100;
+	gba->memory.io[REG_BG3PD >> 1] = 0x100;
 }
 
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
@@ -366,23 +370,14 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
 			break;
 
-		// TODO: Confirm this behavior on real hardware
 		case REG_FIFO_A_LO:
 		case REG_FIFO_B_LO:
-			if (gba->performingDMA) {
-				GBAAudioWriteFIFO16(&gba->audio, address, value);
-			} else {
-				GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
-			}
+			GBAIOWrite32(gba, address, (gba->memory.io[(address >> 1) + 1] << 16) | value);
 			break;
 
 		case REG_FIFO_A_HI:
 		case REG_FIFO_B_HI:
-			if (gba->performingDMA) {
-				GBAAudioWriteFIFO16(&gba->audio, address, value);
-			} else {
-				GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
-			}
+			GBAIOWrite32(gba, address - 2, gba->memory.io[(address >> 1) - 1] | (value << 16));
 			break;
 
 		// DMA
@@ -573,7 +568,7 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 }
 
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
-	gba->lastJump = -1; // IO reads need to invalidate detected idle loops
+	gba->haltPending = false; // IO reads need to invalidate detected idle loops
 	switch (address) {
 	case REG_TM0CNT_LO:
 		GBATimerUpdateRegister(gba, 0);

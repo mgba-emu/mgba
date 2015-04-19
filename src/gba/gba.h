@@ -157,10 +157,13 @@ struct GBA {
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;
 	uint32_t lastJump;
+	bool haltPending;
 	int idleDetectionStep;
 	int idleDetectionFailures;
 	int32_t cachedRegisters[16];
 	bool taintedRegisters[16];
+
+	bool realisticTiming;
 };
 
 struct GBACartridge {

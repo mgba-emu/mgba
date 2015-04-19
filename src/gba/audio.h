@@ -11,6 +11,9 @@
 
 #include "util/circle-buffer.h"
 
+#define RESAMPLE_NN 0
+#define RESAMPLE_BLIP_BUF 2
+
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 #include "third-party/blip_buf/blip_buf.h"
 #endif
@@ -18,9 +21,7 @@
 struct GBADMA;
 
 extern const unsigned GBA_AUDIO_SAMPLES;
-
-#define RESAMPLE_NN 0
-#define RESAMPLE_BLIP_BUF 2
+extern const int GBA_AUDIO_VOLUME_MAX;
 
 DECL_BITFIELD(GBAAudioRegisterEnvelope, uint16_t);
 DECL_BITS(GBAAudioRegisterEnvelope, Length, 0, 6);
@@ -236,6 +237,11 @@ struct GBAAudio {
 	int32_t nextSample;
 
 	int32_t sampleInterval;
+
+	bool forceDisableCh[4];
+	bool forceDisableChA;
+	bool forceDisableChB;
+	int masterVolume;
 };
 
 struct GBAStereoSample {
@@ -268,7 +274,6 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value);
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value);
-void GBAAudioWriteFIFO16(struct GBAAudio* audio, int address, uint16_t value);
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 

@@ -40,6 +40,16 @@ QVariant ShortcutController::data(const QModelIndex& index, int role) const {
 		if (item->button() >= 0) {
 			return item->button();
 		}
+		if (item->axis() >= 0) {
+			char d = '\0';
+			if (item->direction() == GamepadAxisEvent::POSITIVE) {
+				d = '+';
+			}
+			if (item->direction() == GamepadAxisEvent::NEGATIVE) {
+				d = '-';
+			}
+			return QString("%1%2").arg(d).arg(item->axis());
+		}
 		break;
 	}
 	return QVariant();
@@ -219,10 +229,43 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 		m_buttons.take(oldButton);
 	}
 	if (button >= 0) {
+		updateAxis(index, -1, GamepadAxisEvent::NEUTRAL);
 		m_buttons[button] = item;
 	}
 	if (m_config) {
 		m_config->setQtOption(item->name(), button, BUTTON_SECTION);
+	}
+	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
+}
+
+void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction) {
+	if (!index.isValid()) {
+		return;
+	}
+	const QModelIndex& parent = index.parent();
+	if (!parent.isValid()) {
+		return;
+	}
+	ShortcutItem* item = itemAt(index);
+	int oldAxis = item->axis();
+	GamepadAxisEvent::Direction oldDirection = item->direction();
+	item->setAxis(axis, direction);
+	if (oldAxis >= 0) {
+		m_axes.take(qMakePair(oldAxis, oldDirection));
+	}
+	if (axis >= 0 && direction != GamepadAxisEvent::NEUTRAL) {
+		updateButton(index, -1);
+		m_axes[qMakePair(axis, direction)] = item;
+	}
+	if (m_config) {
+		char d = '\0';
+		if (direction == GamepadAxisEvent::POSITIVE) {
+			d = '+';
+		}
+		if (direction == GamepadAxisEvent::NEGATIVE) {
+			d = '-';
+		}
+		m_config->setQtOption(item->name(), QString("%1%2").arg(d).arg(axis), AXIS_SECTION);
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
 }
@@ -286,6 +329,31 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		event->accept();
 		return true;
 	}
+	if (event->type() == GamepadAxisEvent::Type()) {
+		GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
+		auto item = m_axes.find(qMakePair(gae->axis(), gae->direction()));
+		if (item == m_axes.end()) {
+			return false;
+		}
+		if (gae->isNew()) {
+			QAction* action = item.value()->action();
+			if (action && action->isEnabled()) {
+				action->trigger();
+			}
+		}
+		ShortcutItem::Functions pair = item.value()->functions();
+		if (gae->isNew()) {
+			if (pair.first) {
+				pair.first();
+			}
+		} else {
+			if (pair.second) {
+				pair.second();
+			}
+		}
+		event->accept();
+		return true;
+	}
 	return false;
 }
 
@@ -310,6 +378,30 @@ void ShortcutController::loadShortcuts(ShortcutItem* item) {
 			m_buttons.take(oldButton);
 		}
 		m_buttons[button.toInt()] = item;
+	}
+	QVariant axis = m_config->getQtOption(item->name(), AXIS_SECTION);
+	if (!axis.isNull()) {
+		int oldAxis = item->axis();
+		GamepadAxisEvent::Direction oldDirection = item->direction();
+		QString axisDesc = axis.toString();
+		if (axisDesc.size() >= 2) {
+			GamepadAxisEvent::Direction direction = GamepadAxisEvent::NEUTRAL;
+			if (axisDesc[0] == '-') {
+				direction = GamepadAxisEvent::NEGATIVE;
+			}
+			if (axisDesc[0] == '+') {
+				direction = GamepadAxisEvent::POSITIVE;
+			}
+			bool ok;
+			int axis = axisDesc.mid(1).toInt(&ok);
+			if (ok) {
+				item->setAxis(axis, direction);
+				if (oldAxis >= 0) {
+					m_axes.take(qMakePair(oldAxis, oldDirection));
+				}
+				m_axes[qMakePair(axis, direction)] = item;
+			}
+		}
 	}
 }
 
@@ -339,6 +431,8 @@ ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& n
 	, m_menu(nullptr)
 	, m_name(name)
 	, m_button(-1)
+	, m_axis(-1)
+	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {
 	m_visibleName = action->text()
@@ -354,6 +448,8 @@ ShortcutController::ShortcutItem::ShortcutItem(ShortcutController::ShortcutItem:
 	, m_name(name)
 	, m_visibleName(visibleName)
 	, m_button(-1)
+	, m_axis(-1)
+	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {
 }
@@ -362,6 +458,8 @@ ShortcutController::ShortcutItem::ShortcutItem(QMenu* menu, ShortcutItem* parent
 	: m_action(nullptr)
 	, m_menu(menu)
 	, m_button(-1)
+	, m_axis(-1)
+	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_parent(parent)
 {
 	if (menu) {
@@ -388,4 +486,9 @@ void ShortcutController::ShortcutItem::setShortcut(const QKeySequence& shortcut)
 	if (m_action) {
 		m_action->setShortcut(shortcut);
 	}
+}
+
+void ShortcutController::ShortcutItem::setAxis(int axis, GamepadAxisEvent::Direction direction) {
+	m_axis = axis;
+	m_direction = direction;
 }

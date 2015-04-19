@@ -80,6 +80,8 @@ struct GBAThread {
 	float fpsTarget;
 	size_t audioBuffers;
 	bool skipBios;
+	int volume;
+	bool mute;
 
 	// Threading state
 	Thread thread;
@@ -104,6 +106,7 @@ struct GBAThread {
 	int rewindBufferNext;
 	struct GBASerializedState** rewindBuffer;
 	int rewindBufferWriteOffset;
+	uint8_t* rewindScreenBuffer;
 
 	struct GBACheatDevice* cheats;
 };

@@ -1,14 +1,46 @@
-0.2.0: (Future)
+0.3.0: (Future)
+Features:
+ - Ability to hide individual background layers, or OBJs
+ - Ability to mute individual audio channels
+ - Palette viewer
+ - Volume control
+ - More shortcuts are editable (e.g. quick save/load, solar sensor)
+ - Rewind now shows the frame after rewinding
+ - Import/Export of GameShark/Action Replay snapshots
+ - Add "Step backwards" item for single increment rewind
+ - Deadzone estimation for game controllers
+ - Analog inputs can be used for shortcuts
+Bugfixes:
+ - GBA: Fix timers not updating timing when writing to only the reload register
+ - All: Fix sanitize-deb script not cleaning up after itself
+ - Qt: Fix Display object leak when closing a window
+ - Qt: Fix .deb dependencies
+ - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
+ - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
+ - ARM7: Fix SWI and IRQ timings
+ - GBA Audio: Force audio FIFOs to 32-bit
+ - GBA Memory: Ensure changing the timing of a DMA reschedules it
+ - Qt: Fix window not regaining focus after exiting savestate window
+ - Qt: Fix regression where video would not record if the game had already started
+ - GBA: Fix rewind boundary conditions
+ - GBA: Add initial I/O register settings for background matrix registers
+ - Qt: Fix potential crash if a gamepad causes focus to change
+ - GBA Memory: Allow SRAM to be 64kB
+ - Qt: Fix controller axis querying
+ - GBA Memory: Improve Thumb open bus behavior
+ - GBA Memory: Fix 32-bit loads from unaddress cartridge space
+Misc:
+ - Qt: Show multiplayer numbers in window title
+
+0.2.0: (2015-04-03)
 Features:
  - Support for gamepad axes, e.g. analog sticks or triggers
  - Add scale presets for up to 6x
- - Debugger: Add CLI "frame", frame advance command
  - Settings window
  - Bilinear resampling option
  - Add option to skip BIOS start screen
  - List of recently opened games
  - Support for games using the Solar Sensor
- - Debugger: Add CLI functions for writing to memory
  - Better audio resampling via blip-buf
  - Game Pak overrides dialog for setting savetype and sensor values
  - Support for games using the tilt sensor
@@ -23,9 +55,7 @@ Features:
  - Support loading 7-Zip files
  - Drag and drop game loading
  - Cheat code support
- - Debugger: Add CLI functions for examining memory regions
  - Runtime configurable audio driver
- - Debugger: Add CLI function for writing a register
  - Libretro core for use with RetroArch and other front-ends
  - Controller profiles for setting different bindings for different controllers
  - Ability to lock aspect ratio
@@ -33,53 +63,65 @@ Features:
  - Ability to switch which game controller is in use per instance
  - Ability to prevent opposing directional input
  - Warning dialog if an unimplemented BIOS feature is called
+ - Debugger: Add CLI "frame", frame advance command
+ - Debugger: Add CLI functions for writing to memory
+ - Debugger: Add CLI functions for examining memory regions
+ - Debugger: Add CLI function for writing a register
 Bugfixes:
  - ARM7: Extend prefetch by one stage
+ - ARM7: Fix cycle counting for loads
+ - Debugger: Disassembly now lists PSR bitmasks (fixes #191)
+ - GBA: Fix savestate loading of DISPSTAT and WAITCNT registers
+ - GBA: Initialize gba.sync to null
+ - GBA: Fix timer initialization
  - GBA Audio: Support 16-bit writes to FIFO audio
  - GBA Audio: Audio buffer sizes are now correct sizes for both sample rates
  - GBA BIOS: Fix BIOS prefetch after returning from an IRQ
  - GBA BIOS: Fix BIOS prefetch after reset
- - GBA Memory: Fix alignment of open bus 8- and 16-bit loads
- - GBA Thread: Fix possible hang when loading an archive
- - Perf: Fix crash when the GBA thread fails to start
- - SDL: Properly clean up if a game doesn't launch
- - Debugger: Disassembly now lists PSR bitmasks (fixes #191)
  - GBA BIOS: Prevent CpuSet and CpuFastSet from using BIOS addresses as a source (fixes #184)
+ - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
+ - GBA Memory: Fix alignment of open bus 8- and 16-bit loads
+ - GBA Memory: Fix I cycles that had been moved to ARM7 core
+ - GBA Memory: Fix cycle counting for 32-bit load/stores
  - GBA RR: Fix fallthrough error when reading tags from a movie
+ - GBA Thread: Fix possible hang when loading an archive
  - GBA Thread: Fix possible deadlock in video sync
- - GBA: Fix savestate loading of DISPSTAT and WAITCNT registers
+ - Perf: Fix crash when the GBA thread fails to start
  - Qt: Fix crash starting a GDB stub if a game isn't loaded
  - Qt: Fix crash when adjusting settings after closing a game
  - Qt: Fix crash when starting GDB stub after closing a game
  - Qt: Fix patch loading while a game is running
- - Util: Fix sockets on Windows
  - Qt: Fix crash when loading a game after stopping GDB server
- - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
- - GBA: Initialize gba.sync to null
+ - Qt: Pause game while open file dialogs are open (fixes #6 on GitHub)
+ - Qt: Fix crash when attempting to pause if a game is not running
+ - SDL: Properly clean up if a game doesn't launch
+ - Util: Fix sockets on Windows
 Misc:
- - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
- - GBA Memory: Simplify memory API and use fixed bus width
- - GBA Video: Start video at the last scanline instead of the first
+ - All: Enable link-time optimization
  - Debugger: Watchpoints now work on STM/LDM instructions
- - GBA: Improve accuracy of event timing
  - Debugger: Clean up GDB stub network interfacing
  - Debugger: Simplify debugger state machine to play nicer with the GBA thread loop
  - Debugger: Merge Thumb BL instructions when disassembling
  - Debugger: Clean up debugger interface, removing obsolete state (fixes #67)
  - Debugger: Watchpoints now report address watched (fixes #68)
+ - Debugger: Add support for soft breakpoints
+ - Debugger: Make I/O register names be addresses instead of values
+ - Debugger: Rename read/write commands
+ - GBA: Improve accuracy of event timing
  - GBA: Add API for getting Configuration structs for overrides and input
  - GBA: Refactor gba-sensors and gba-gpio into gba-hardware
  - GBA: Refactor gba directory, dropping gba- prefix and making supervisor directory
- - Debugger: Add support for soft breakpoints
- - Util: Use proper locale for reading and writing float values
- - Debugger: Make I/O register names be addresses instead of values
- - Debugger: Rename read/write commands
- - Qt: Optimize logo drawing
- - Qt: Move frame upload back onto main thread
- - All: Enable link-time optimization
- - GBA Thread: Make GBASyncWaitFrameStart time out
  - GBA: Move A/V stream interface into core
  - GBA: Savestates now take into account savedata state machines (fixes #109)
+ - GBA Audio: Change internal audio sample buffer from 32-bit to 16-bit samples
+ - GBA Memory: Simplify memory API and use fixed bus width
+ - GBA Thread: Make GBASyncWaitFrameStart time out
+ - GBA Video: Start video at the last scanline instead of the first
+ - Qt: Optimize logo drawing
+ - Qt: Move frame upload back onto main thread
+ - Qt: Remember window position
+ - Qt: Double-clicking on the window toggles full screen
+ - Util: Use proper locale for reading and writing float values
 
 0.1.1: (2015-01-24)
 Bugfixes:
