@@ -15,6 +15,7 @@ Bugfixes:
  - GBA Memory: Allow SRAM to be 64kB
  - Qt: Fix controller axis querying
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
+ - Qt: Fix multiplayer windows opening as the wrong size
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set

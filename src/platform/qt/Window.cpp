@@ -612,9 +612,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 		Window* w2 = new Window(m_config, multiplayer->attached());
 		w2->setAttribute(Qt::WA_DeleteOnClose);
+#ifndef Q_OS_MAC
+		w2->show();
+#endif
 		w2->loadConfig();
 		w2->controller()->setMultiplayerController(multiplayer);
+#ifdef Q_OS_MAC
 		w2->show();
+#endif
 	});
 	addControlledAction(fileMenu, multiWindow, "multiWindow");
 
