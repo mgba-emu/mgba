@@ -17,6 +17,7 @@ Bugfixes:
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
 Misc:
  - Qt: Show multiplayer numbers in window title
+ - Qt: Solar sensor can have shortcuts set
 
 0.2.0: (2015-04-03)
 Features:
