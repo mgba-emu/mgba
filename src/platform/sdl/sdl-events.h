@@ -47,6 +47,13 @@ struct GBASDLPlayer {
 		struct GBASDLPlayer* p;
 	} rumble;
 #endif
+
+	struct GBASDLRotation {
+		struct GBARotationSource d;
+		struct GBASDLPlayer* p;
+		int axisX;
+		int axisY;
+	} rotation;
 };
 
 bool GBASDLInitEvents(struct GBASDLEvents*);

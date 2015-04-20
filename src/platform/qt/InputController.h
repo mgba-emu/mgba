@@ -66,6 +66,7 @@ public:
 	void setGamepad(uint32_t type, int index) { GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index); }
 	void setPreferredGamepad(uint32_t type, const QString& device);
 	GBARumble* rumble();
+	GBARotationSource* rotationSource();
 #endif
 
 public slots:

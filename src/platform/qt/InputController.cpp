@@ -157,6 +157,10 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 GBARumble* InputController::rumble() {
 	return &m_sdlPlayer.rumble.d;
 }
+
+GBARotationSource* InputController::rotationSource() {
+	return &m_sdlPlayer.rotation.d;
+}
 #endif
 
 GBAKey InputController::mapKeyboard(int key) const {

@@ -21,6 +21,9 @@
 #endif
 
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
+static int32_t _GBASDLReadTiltX(struct GBARotationSource* rumble);
+static int32_t _GBASDLReadTiltY(struct GBARotationSource* rumble);
+static void _GBASDLRotationSample(struct GBARotationSource* source);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	int subsystem = SDL_INIT_JOYSTICK;
@@ -145,6 +148,14 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->rumble.d.setRumble = _GBASDLSetRumble;
 	player->rumble.p = player;
 #endif
+
+	player->rotation.d.readTiltX = _GBASDLReadTiltX;
+	player->rotation.d.readTiltY = _GBASDLReadTiltY;
+	player->rotation.d.readGyroZ = 0;
+	player->rotation.d.sample = _GBASDLRotationSample;
+	player->rotation.axisX = 2;
+	player->rotation.axisY = 3;
+	player->rotation.p = player;
 
 	if (events->playersAttached >= MAX_PLAYERS) {
 		return false;
@@ -447,3 +458,21 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 	}
 }
 #endif
+
+static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
+	return SDL_JoystickGetAxis(player->joystick, axis) * 0x3800;
+}
+
+static int32_t _GBASDLReadTiltX(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	return _readTilt(rotation->p, rotation->axisX);
+}
+
+static int32_t _GBASDLReadTiltY(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	return _readTilt(rotation->p, rotation->axisY);
+}
+static void _GBASDLRotationSample(struct GBARotationSource* source) {
+	UNUSED(source);
+	SDL_JoystickUpdate();
+}

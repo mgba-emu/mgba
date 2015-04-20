@@ -100,6 +100,7 @@ GameController::GameController(QObject* parent)
 		context->gba->rtcSource = &controller->m_rtc;
 #ifdef BUILD_SDL
 		context->gba->rumble = controller->m_inputController->rumble();
+		context->gba->rotationSource = controller->m_inputController->rotationSource();
 #endif
 		controller->gameStarted(context);
 	};
