@@ -165,6 +165,14 @@ GBARumble* InputController::rumble() {
 GBARotationSource* InputController::rotationSource() {
 	return &m_sdlPlayer.rotation.d;
 }
+#else
+GBARumble* InputController::rumble() {
+	return nullptr;
+}
+
+GBARotationSource* InputController::rotationSource() {
+	return nullptr;
+}
 #endif
 
 GBAKey InputController::mapKeyboard(int key) const {

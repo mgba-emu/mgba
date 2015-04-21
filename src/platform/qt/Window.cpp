@@ -312,7 +312,7 @@ void Window::openOverrideWindow() {
 }
 
 void Window::openSensorWindow() {
-	SensorView* sensorWindow = new SensorView(m_controller);
+	SensorView* sensorWindow = new SensorView(m_controller, &m_inputController);
 	openView(sensorWindow);
 }
 

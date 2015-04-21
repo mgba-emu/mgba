@@ -6,12 +6,15 @@
 #include "SensorView.h"
 
 #include "GameController.h"
+#include "InputController.h"
 
 using namespace QGBA;
 
-SensorView::SensorView(GameController* controller, QWidget* parent)
+SensorView::SensorView(GameController* controller, InputController* input, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
+	, m_input(input)
+	, m_rotation(input->rotationSource())
  {
 	m_ui.setupUi(this);
 
@@ -33,7 +36,45 @@ SensorView::SensorView(GameController* controller, QWidget* parent)
 	});
 
 	connect(m_controller, SIGNAL(luminanceValueChanged(int)), this, SLOT(luminanceValueChanged(int)));
- }
+
+	m_timer.setInterval(2);
+	connect(&m_timer, SIGNAL(timeout()), this, SLOT(updateSensors()));
+	if (!m_rotation || !m_rotation->readTiltX || !m_rotation->readTiltY) {
+		m_ui.tilt->hide();
+	} else {
+		m_timer.start();
+	}
+
+	if (!m_rotation || !m_rotation->readGyroZ) {
+		m_ui.gyro->hide();
+	} else {
+		m_timer.start();
+	}
+}
+
+void SensorView::updateSensors() {
+	m_controller->threadInterrupt();
+	if (m_rotation->sample && (!m_controller->isLoaded() || !(m_controller->thread()->gba->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+		m_rotation->sample(m_rotation);
+	}
+	if (m_rotation->readTiltX && m_rotation->readTiltY) {
+		float x = m_rotation->readTiltX(m_rotation);
+		float y = m_rotation->readTiltY(m_rotation);
+		m_ui.tiltX->setValue(x / 469762048.0f); // TODO: Document this value (0xE0 << 21)
+		m_ui.tiltY->setValue(y / 469762048.0f);
+	}
+	if (m_rotation->readGyroZ) {
+		m_ui.gyroView->setValue(m_rotation->readGyroZ(m_rotation));
+	}
+	m_controller->threadContinue();
+}
 
 void SensorView::setLuminanceValue(int value) {
 	value = std::max(0, std::min(value, 255));
