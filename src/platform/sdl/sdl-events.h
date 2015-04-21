@@ -7,6 +7,7 @@
 #define SDL_EVENTS_H
 
 #include "util/common.h"
+#include "util/circle-buffer.h"
 
 #include "gba/supervisor/thread.h"
 
@@ -51,8 +52,19 @@ struct GBASDLPlayer {
 	struct GBASDLRotation {
 		struct GBARotationSource d;
 		struct GBASDLPlayer* p;
+
+		// Tilt
 		int axisX;
 		int axisY;
+
+		// Gyro
+		int gyroX;
+		int gyroY;
+		float gyroSensitivity;
+		struct CircleBuffer zHistory;
+		int oldX;
+		int oldY;
+		float zDelta;
 	} rotation;
 };
 
@@ -60,6 +72,7 @@ bool GBASDLInitEvents(struct GBASDLEvents*);
 void GBASDLDeinitEvents(struct GBASDLEvents*);
 
 bool GBASDLAttachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
+void GBASDLDetachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
 void GBASDLEventsLoadConfig(struct GBASDLEvents*, const struct Configuration*);
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents*, struct GBASDLPlayer*, size_t index);
 

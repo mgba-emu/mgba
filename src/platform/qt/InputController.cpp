@@ -66,6 +66,10 @@ InputController::~InputController() {
 	GBAInputMapDeinit(&m_inputMap);
 
 #ifdef BUILD_SDL
+	if (m_playerAttached) {
+		GBASDLDetachPlayer(&s_sdlEvents, &m_sdlPlayer);
+	}
+
 	--s_sdlInited;
 	if (s_sdlInited == 0) {
 		GBASDLDeinitEvents(&s_sdlEvents);

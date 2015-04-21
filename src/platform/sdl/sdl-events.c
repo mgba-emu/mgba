@@ -20,9 +20,12 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+#define GYRO_STEPS 100
+
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
 static int32_t _GBASDLReadTiltX(struct GBARotationSource* rumble);
 static int32_t _GBASDLReadTiltY(struct GBARotationSource* rumble);
+static int32_t _GBASDLReadGyroZ(struct GBARotationSource* rumble);
 static void _GBASDLRotationSample(struct GBARotationSource* source);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
@@ -151,10 +154,15 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 
 	player->rotation.d.readTiltX = _GBASDLReadTiltX;
 	player->rotation.d.readTiltY = _GBASDLReadTiltY;
-	player->rotation.d.readGyroZ = 0;
+	player->rotation.d.readGyroZ = _GBASDLReadGyroZ;
 	player->rotation.d.sample = _GBASDLRotationSample;
 	player->rotation.axisX = 2;
 	player->rotation.axisY = 3;
+	player->rotation.gyroSensitivity = 2.2e9f;
+	player->rotation.gyroX = 0;
+	player->rotation.gyroY = 1;
+	player->rotation.zDelta = 0;
+	CircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
 	player->rotation.p = player;
 
 	if (events->playersAttached >= MAX_PLAYERS) {
@@ -213,6 +221,11 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 
 	++events->playersAttached;
 	return true;
+}
+
+void GBASDLDetachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
+	events->joysticksClaimed[player->playerId] = SIZE_MAX;
+	CircleBufferDeinit(&player->rotation.zHistory);
 }
 
 void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configuration* config) {
@@ -472,7 +485,34 @@ static int32_t _GBASDLReadTiltY(struct GBARotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	return _readTilt(rotation->p, rotation->axisY);
 }
+
+static int32_t _GBASDLReadGyroZ(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	float z = rotation->zDelta;
+	return z * rotation->gyroSensitivity;
+}
+
 static void _GBASDLRotationSample(struct GBARotationSource* source) {
-	UNUSED(source);
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	SDL_JoystickUpdate();
+
+	int x = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroX);
+	int y = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroY);
+	float theta = atan2f(y, x) - atan2f(rotation->oldY, rotation->oldX);
+	if (isnan(theta)) {
+		theta = 0.0f;
+	} else if (theta > M_PI) {
+		theta -= 2.0f * M_PI;
+	} else if (theta < -M_PI) {
+		theta += 2.0f * M_PI;
+	}
+	rotation->oldX = x;
+	rotation->oldY = y;
+
+	float oldZ = 0;
+	if (CircleBufferSize(&rotation->zHistory) == GYRO_STEPS * sizeof(float)) {
+		CircleBufferRead32(&rotation->zHistory, (int32_t*) &oldZ);
+	}
+	CircleBufferWrite32(&rotation->zHistory, *(int32_t*) &theta);
+	rotation->zDelta += theta - oldZ;
 }
