@@ -23,4 +23,8 @@
 
 #define UNUSED(V) (void)(V)
 
+#ifndef M_PI
+#define M_PI 3.141592654f
+#endif
+
 #endif

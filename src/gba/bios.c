@@ -10,10 +10,6 @@
 #include "gba/memory.h"
 #include "isa-inlines.h"
 
-#ifndef M_PI
-#define M_PI 3.141592654f
-#endif
-
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
