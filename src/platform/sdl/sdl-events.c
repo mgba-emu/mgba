@@ -498,13 +498,16 @@ static void _GBASDLRotationSample(struct GBARotationSource* source) {
 
 	int x = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroX);
 	int y = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroY);
-	float theta = atan2f(y, x) - atan2f(rotation->oldY, rotation->oldX);
-	if (isnan(theta)) {
-		theta = 0.0f;
-	} else if (theta > M_PI) {
-		theta -= 2.0f * M_PI;
-	} else if (theta < -M_PI) {
-		theta += 2.0f * M_PI;
+	union {
+		float f;
+		int32_t i;
+	} theta = { .f = atan2f(y, x) - atan2f(rotation->oldY, rotation->oldX) };
+	if (isnan(theta.f)) {
+		theta.f = 0.0f;
+	} else if (theta.f > M_PI) {
+		theta.f -= 2.0f * M_PI;
+	} else if (theta.f < -M_PI) {
+		theta.f += 2.0f * M_PI;
 	}
 	rotation->oldX = x;
 	rotation->oldY = y;
@@ -513,6 +516,6 @@ static void _GBASDLRotationSample(struct GBARotationSource* source) {
 	if (CircleBufferSize(&rotation->zHistory) == GYRO_STEPS * sizeof(float)) {
 		CircleBufferRead32(&rotation->zHistory, (int32_t*) &oldZ);
 	}
-	CircleBufferWrite32(&rotation->zHistory, *(int32_t*) &theta);
-	rotation->zDelta += theta - oldZ;
+	CircleBufferWrite32(&rotation->zHistory, theta.i);
+	rotation->zDelta += theta.f - oldZ;
 }
