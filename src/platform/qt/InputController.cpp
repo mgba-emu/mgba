@@ -90,6 +90,11 @@ void InputController::setConfiguration(ConfigController* config) {
 
 void InputController::loadConfiguration(uint32_t type) {
 	GBAInputMapLoad(&m_inputMap, type, m_config->input());
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		GBASDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
+	}
+#endif
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
