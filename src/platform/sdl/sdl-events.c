@@ -242,32 +242,33 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 
 		const char* value;
 		char* end;
+		int numAxes = SDL_JoystickNumAxes(context->joystick);
 		int axis;
 		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", name);
 		if (value) {
 			axis = strtol(value, &end, 0);
-			if (end && !*end) {
+			if (axis >= 0 && axis < numAxes && end && !*end) {
 				context->rotation.axisX = axis;
 			}
 		}
 		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisY", name);
 		if (value) {
 			axis = strtol(value, &end, 0);
-			if (end && !*end) {
+			if (axis >= 0 && axis < numAxes && end && !*end) {
 				context->rotation.axisY = axis;
 			}
 		}
 		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisX", name);
 		if (value) {
 			axis = strtol(value, &end, 0);
-			if (end && !*end) {
+			if (axis >= 0 && axis < numAxes && end && !*end) {
 				context->rotation.gyroX = axis;
 			}
 		}
 		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisY", name);
 		if (value) {
 			axis = strtol(value, &end, 0);
-			if (end && !*end) {
+			if (axis >= 0 && axis < numAxes && end && !*end) {
 				context->rotation.gyroY = axis;
 			}
 		}
