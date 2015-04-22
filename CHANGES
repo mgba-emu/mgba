@@ -31,6 +31,7 @@ Bugfixes:
  - GBA Memory: Improve Thumb open bus behavior
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
  - Qt: Fix multiplayer windows opening as the wrong size
+ - Qt: Fix controllers sometimes not loading the right profile
 Misc:
  - Qt: Show multiplayer numbers in window title
 
