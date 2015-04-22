@@ -12,6 +12,7 @@
 #include "gba/video.h"
 #include "gba/renderers/video-software.h"
 #include "util/configuration.h"
+#include "util/formatting.h"
 #include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
@@ -233,10 +234,71 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 	if (context->joystick) {
 		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(context->joystick));
+		const char* name = SDL_JoystickName(context->joystick);
 #else
-		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
 #endif
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
+
+		const char* value;
+		char* end;
+		int axis;
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (end && !*end) {
+				context->rotation.axisX = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisY", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (end && !*end) {
+				context->rotation.axisY = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisX", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (end && !*end) {
+				context->rotation.gyroX = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisY", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (end && !*end) {
+				context->rotation.gyroY = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroSensitivity", name);
+		if (value) {
+			float sensitivity = strtof_u(value, &end);
+			if (end && !*end) {
+				context->rotation.gyroSensitivity = sensitivity;
+			}
+		}
+	}
+}
+
+void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configuration* config) {
+	if (context->joystick) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		const char* name = SDL_JoystickName(context->joystick);
+#else
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
+#endif
+		char value[12];
+		snprintf(value, sizeof(value), "%i", context->rotation.axisX);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.axisY);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisY", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.gyroX);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisX", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.gyroY);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisY", value, name);
+		snprintf(value, sizeof(value), "%g", context->rotation.gyroSensitivity);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroSensitivity", value, name);
 	}
 }
 

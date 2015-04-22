@@ -65,6 +65,14 @@ public:
 	int gamepad(uint32_t type) const { return m_sdlPlayer.joystickIndex; }
 	void setGamepad(uint32_t type, int index) { GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index); }
 	void setPreferredGamepad(uint32_t type, const QString& device);
+
+	void registerTiltAxisX(int axis);
+	void registerTiltAxisY(int axis);
+	void registerGyroAxisX(int axis);
+	void registerGyroAxisY(int axis);
+
+	float gyroSensitivity() const;
+	void setGyroSensitivity(float sensitivity);
 #endif
 
 	GBARumble* rumble();

@@ -6,6 +6,7 @@
 #include "SensorView.h"
 
 #include "GameController.h"
+#include "GamepadAxisEvent.h"
 #include "InputController.h"
 
 using namespace QGBA;
@@ -50,6 +51,42 @@ SensorView::SensorView(GameController* controller, InputController* input, QWidg
 	} else {
 		m_timer.start();
 	}
+
+	jiggerer(m_ui.tiltSetX, &InputController::registerTiltAxisX);
+	jiggerer(m_ui.tiltSetY, &InputController::registerTiltAxisY);
+	jiggerer(m_ui.gyroSetX, &InputController::registerGyroAxisX);
+	jiggerer(m_ui.gyroSetY, &InputController::registerGyroAxisY);
+
+	m_ui.gyroSensitivity->setValue(m_input->gyroSensitivity() / 1e8f);
+	connect(m_ui.gyroSensitivity, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double value) {
+		m_input->setGyroSensitivity(value * 1e8f);
+	});
+}
+
+void SensorView::jiggerer(QAbstractButton* button, void (InputController::*setter)(int)) {
+	connect(button, &QAbstractButton::toggled, [this, button, setter](bool checked) {
+		if (!checked) {
+			m_jiggered = nullptr;
+		} else {
+			m_jiggered = [this, button, setter](int axis) {
+				(m_input->*setter)(axis);
+				button->setChecked(false);
+			};
+		}
+	});
+	button->installEventFilter(this);
+}
+
+bool SensorView::eventFilter(QObject*, QEvent* event) {
+	if (event->type() == GamepadAxisEvent::Type()) {
+		GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
+		gae->accept();
+		if (m_jiggered && gae->direction() != GamepadAxisEvent::NEUTRAL && gae->isNew()) {
+			m_jiggered(gae->axis());
+		}
+		return true;
+	}
+	return false;
 }
 
 void SensorView::updateSensors() {

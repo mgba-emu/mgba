@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>508</width>
-    <height>258</height>
+    <width>434</width>
+    <height>288</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -157,12 +157,18 @@
             <property name="text">
              <string>Set Y</string>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QPushButton" name="tiltSetX">
             <property name="text">
              <string>Set X</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -240,12 +246,18 @@
             <property name="text">
              <string>Set Y</string>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QPushButton" name="gyroSetX">
             <property name="text">
              <string>Set X</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

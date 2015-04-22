@@ -110,6 +110,11 @@ void InputController::loadProfile(uint32_t type, const QString& profile) {
 
 void InputController::saveConfiguration(uint32_t type) {
 	GBAInputMapSave(&m_inputMap, type, m_config->input());
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		GBASDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
+	}
+#endif
 	m_config->write();
 }
 
@@ -169,6 +174,27 @@ GBARumble* InputController::rumble() {
 
 GBARotationSource* InputController::rotationSource() {
 	return &m_sdlPlayer.rotation.d;
+}
+
+void InputController::registerTiltAxisX(int axis) {
+	m_sdlPlayer.rotation.axisX = axis;
+}
+void InputController::registerTiltAxisY(int axis) {
+	m_sdlPlayer.rotation.axisY = axis;
+}
+void InputController::registerGyroAxisX(int axis) {
+	m_sdlPlayer.rotation.gyroX = axis;
+}
+void InputController::registerGyroAxisY(int axis) {
+	m_sdlPlayer.rotation.gyroY = axis;
+}
+
+float InputController::gyroSensitivity() const {
+	return m_sdlPlayer.rotation.gyroSensitivity;
+}
+
+void InputController::setGyroSensitivity(float sensitivity) {
+	m_sdlPlayer.rotation.gyroSensitivity = sensitivity;
 }
 #else
 GBARumble* InputController::rumble() {

@@ -500,3 +500,23 @@ void GBAInputSetPreferredDevice(struct Configuration* config, uint32_t type, int
 	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
 	return ConfigurationSetValue(config, sectionName, deviceId, deviceName);
 }
+
+const char* GBAInputGetCustomValue(const struct Configuration* config, uint32_t type, const char* key, const char* profile) {
+	char sectionName[SECTION_NAME_MAX];
+	if (profile) {
+		snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
+	} else {
+		_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+	}
+	return ConfigurationGetValue(config, sectionName, key);
+}
+
+void GBAInputSetCustomValue(struct Configuration* config, uint32_t type, const char* key, const char* value, const char* profile) {
+	char sectionName[SECTION_NAME_MAX];
+	if (profile) {
+		snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
+	} else {
+		_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+	}
+	ConfigurationSetValue(config, sectionName, key, value);
+}

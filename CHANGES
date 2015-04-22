@@ -11,6 +11,7 @@ Features:
  - Deadzone estimation for game controllers
  - Analog inputs can be used for shortcuts
  - Menu items for specific solar sensor brightness levels
+ - Remappable controls for tilt and gyroscope sensors
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself

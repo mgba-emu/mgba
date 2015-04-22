@@ -78,6 +78,7 @@ void GBASDLPlayerChangeJoystick(struct GBASDLEvents*, struct GBASDLPlayer*, size
 
 void GBASDLInitBindings(struct GBAInputMap* inputMap);
 void GBASDLPlayerLoadConfig(struct GBASDLPlayer*, const struct Configuration*);
+void GBASDLPlayerSaveConfig(const struct GBASDLPlayer*, struct Configuration*);
 
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const union SDL_Event* event);
 

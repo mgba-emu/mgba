@@ -51,4 +51,7 @@ void GBAInputProfileSave(const struct GBAInputMap*, uint32_t type, struct Config
 const char* GBAInputGetPreferredDevice(const struct Configuration*, uint32_t type, int playerId);
 void GBAInputSetPreferredDevice(struct Configuration*, uint32_t type, int playerId, const char* deviceName);
 
+const char* GBAInputGetCustomValue(const struct Configuration* config, uint32_t type, const char* key, const char* profile);
+void GBAInputSetCustomValue(struct Configuration* config, uint32_t type, const char* key, const char* value, const char* profile);
+
 #endif
