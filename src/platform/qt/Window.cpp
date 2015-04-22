@@ -197,6 +197,7 @@ void Window::loadConfig() {
 }
 
 void Window::saveConfig() {
+	m_inputController.saveConfiguration();
 	m_config->write();
 }
 
@@ -411,6 +412,7 @@ void Window::resizeEvent(QResizeEvent*) {
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
 	m_config->setQtOption("windowPos", pos());
+	saveConfig();
 	QMainWindow::closeEvent(event);
 }
 

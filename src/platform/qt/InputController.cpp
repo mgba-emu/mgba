@@ -108,13 +108,20 @@ void InputController::loadProfile(uint32_t type, const QString& profile) {
 #endif
 }
 
-void InputController::saveConfiguration(uint32_t type) {
-	GBAInputMapSave(&m_inputMap, type, m_config->input());
+void InputController::saveConfiguration() {
+	saveConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
+	saveConfiguration(SDL_BINDING_BUTTON);
+	saveProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 	if (m_playerAttached) {
 		GBASDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
 	}
+	m_config->write();
 #endif
+}
+
+void InputController::saveConfiguration(uint32_t type) {
+	GBAInputMapSave(&m_inputMap, type, m_config->input());
 	m_config->write();
 }
 

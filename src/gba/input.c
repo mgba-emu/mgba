@@ -505,9 +505,12 @@ const char* GBAInputGetCustomValue(const struct Configuration* config, uint32_t 
 	char sectionName[SECTION_NAME_MAX];
 	if (profile) {
 		snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
-	} else {
-		_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+		const char* value = ConfigurationGetValue(config, sectionName, key);
+		if (value) {
+			return value;
+		}
 	}
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
 	return ConfigurationGetValue(config, sectionName, key);
 }
 
@@ -515,8 +518,8 @@ void GBAInputSetCustomValue(struct Configuration* config, uint32_t type, const c
 	char sectionName[SECTION_NAME_MAX];
 	if (profile) {
 		snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
-	} else {
-		_makeSectionName(sectionName, SECTION_NAME_MAX, type);
+		ConfigurationSetValue(config, sectionName, key, value);
 	}
+	_makeSectionName(sectionName, SECTION_NAME_MAX, type);
 	ConfigurationSetValue(config, sectionName, key, value);
 }

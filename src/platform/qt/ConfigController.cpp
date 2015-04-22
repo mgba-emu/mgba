@@ -120,8 +120,6 @@ ConfigController::ConfigController(QObject* parent)
 }
 
 ConfigController::~ConfigController() {
-	write();
-
 	GBAConfigDeinit(&m_config);
 	GBAConfigFreeOpts(&m_opts);
 }
