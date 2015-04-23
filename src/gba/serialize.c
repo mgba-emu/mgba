@@ -178,7 +178,10 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 	PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
 	gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
+	bool videoFrameWait = gba->sync->videoFrameWait;
+	gba->sync->videoFrameWait = false;
 	GBASyncPostFrame(gba->sync);
+	gba->sync->videoFrameWait = videoFrameWait;
 
 	free(pixels);
 	return true;
