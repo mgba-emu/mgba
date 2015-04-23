@@ -35,6 +35,7 @@ Bugfixes:
  - Qt: Fix controllers sometimes not loading the right profile
  - GBA: Fix hang when loading a savestate if sync to video is enabled
  - Debugger: Fix use-after-free in breakpoint clearing code
+ - Util: Fix resource leak in UTF-8 handling code
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
