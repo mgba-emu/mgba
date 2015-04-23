@@ -178,13 +178,14 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			offset = utf8 + bytes;
 		} else if (utf8Length >= utf8TotalBytes) {
 			char* newUTF8 = realloc(utf8, utf8TotalBytes * 2);
+			offset = offset - utf8 + newUTF8;
 			if (newUTF8 != utf8) {
 				free(utf8);
 			}
 			if (!newUTF8) {
 				return 0;
 			}
-			offset = offset - utf8 + newUTF8;
+			utf8 = newUTF8;
 			memcpy(offset, buffer, bytes);
 			offset += bytes;
 		}
