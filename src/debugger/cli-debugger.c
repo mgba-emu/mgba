@@ -519,6 +519,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerClearBreakpoint(&debugger->d, address);
+	ARMDebuggerClearWatchpoint(&debugger->d, address);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
