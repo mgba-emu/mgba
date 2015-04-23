@@ -20,6 +20,7 @@ Bugfixes:
  - GBA: Fix hang when loading a savestate if sync to video is enabled
  - Debugger: Fix use-after-free in breakpoint clearing code
  - Util: Fix resource leak in UTF-8 handling code
+ - VFS: Fix resource leaks if some allocations fail
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
