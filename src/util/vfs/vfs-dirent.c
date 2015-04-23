@@ -36,6 +36,7 @@ struct VDir* VDirOpen(const char* path) {
 
 	struct VDirDE* vd = malloc(sizeof(struct VDirDE));
 	if (!vd) {
+		closedir(de);
 		return 0;
 	}
 
