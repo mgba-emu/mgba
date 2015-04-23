@@ -712,6 +712,16 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
+void GBASyncForceFrame(struct GBASync* sync) {
+	if (!sync) {
+		return;
+	}
+
+	MutexLock(&sync->videoFrameMutex);
+	ConditionWake(&sync->videoFrameAvailableCond);
+	MutexUnlock(&sync->videoFrameMutex);
+}
+
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 	if (!sync) {
 		return true;

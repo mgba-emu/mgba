@@ -138,6 +138,7 @@ void GBAThreadTakeScreenshot(struct GBAThread* threadContext);
 #endif
 
 void GBASyncPostFrame(struct GBASync* sync);
+void GBASyncForceFrame(struct GBASync* sync);
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
 bool GBASyncDrawingFrame(struct GBASync* sync);

@@ -33,6 +33,7 @@ Bugfixes:
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
  - Qt: Fix multiplayer windows opening as the wrong size
  - Qt: Fix controllers sometimes not loading the right profile
+ - GBA: Fix hang when loading a savestate if sync to video is enabled
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
