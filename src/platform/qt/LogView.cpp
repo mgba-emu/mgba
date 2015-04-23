@@ -12,6 +12,9 @@ using namespace QGBA;
 
 LogView::LogView(QWidget* parent)
 	: QWidget(parent)
+	, m_logLevel(0)
+	, m_lines(0)
+	, m_lineLimit(DEFAULT_LINE_LIMIT)
 {
 	m_ui.setupUi(this);
 	connect(m_ui.levelDebug, SIGNAL(toggled(bool)), this, SLOT(setLevelDebug(bool)));
@@ -24,8 +27,6 @@ LogView::LogView(QWidget* parent)
 	connect(m_ui.levelSWI, SIGNAL(toggled(bool)), this, SLOT(setLevelSWI(bool)));
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
-	m_logLevel = 0;
-	m_lines = 0;
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 }
 

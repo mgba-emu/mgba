@@ -15,6 +15,7 @@ using namespace QGBA;
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_button(false)
 {
 	setAlignment(Qt::AlignCenter);
 }

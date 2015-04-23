@@ -17,8 +17,7 @@ DisplayQt::DisplayQt(QWidget* parent)
 {
 }
 
-void DisplayQt::startDrawing(GBAThread* context) {
-	m_context = context;
+void DisplayQt::startDrawing(GBAThread*) {
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {

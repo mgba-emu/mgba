@@ -32,6 +32,9 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
 	, m_painter(new Painter(format, this))
 	, m_started(false)
+	, m_lockAspectRatio(false)
+	, m_filter(false)
+	, m_context(nullptr)
 {
 }
 
@@ -114,7 +117,7 @@ void DisplayGL::filter(bool filter) {
 }
 
 void DisplayGL::framePosted(const uint32_t* buffer) {
-	if (buffer) {
+	if (m_started && buffer) {
 		m_painter->setBacking(buffer);
 	}
 }
@@ -128,6 +131,7 @@ Painter::Painter(const QGLFormat& format, QWidget* parent)
 	, m_drawTimer(nullptr)
 	, m_lockAspectRatio(false)
 	, m_filter(false)
+	, m_context(nullptr)
 {
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	m_size = parent->size();
