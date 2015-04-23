@@ -32,6 +32,9 @@ Display::Display(QGLFormat format, QWidget* parent)
 	: QGLWidget(format, parent)
 	, m_painter(nullptr)
 	, m_started(false)
+	, m_lockAspectRatio(false)
+	, m_filter(false)
+	, m_context(nullptr)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
@@ -145,6 +148,7 @@ Painter::Painter(Display* parent)
 	: m_gl(parent)
 	, m_lockAspectRatio(false)
 	, m_filter(false)
+	, m_context(nullptr)
 {
 	m_size = parent->size();
 }

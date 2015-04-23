@@ -22,6 +22,10 @@ AudioProcessorSDL::~AudioProcessorSDL() {
 }
 
 void AudioProcessorSDL::start() {
+	if (!input()) {
+		return;
+	}
+
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
 	} else {

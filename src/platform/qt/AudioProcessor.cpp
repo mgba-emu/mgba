@@ -48,6 +48,8 @@ AudioProcessor* AudioProcessor::create() {
 
 AudioProcessor::AudioProcessor(QObject* parent)
 	: QObject(parent)
+	, m_context(nullptr)
+	, m_samples(GBA_AUDIO_SAMPLES)
 {
 }
 
