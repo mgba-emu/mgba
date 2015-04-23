@@ -238,6 +238,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -253,6 +254,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -269,6 +271,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -286,6 +289,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
