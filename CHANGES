@@ -18,6 +18,7 @@ Bugfixes:
  - Qt: Fix multiplayer windows opening as the wrong size
  - Qt: Fix controllers sometimes not loading the right profile
  - GBA: Fix hang when loading a savestate if sync to video is enabled
+ - Debugger: Fix use-after-free in breakpoint clearing code
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
