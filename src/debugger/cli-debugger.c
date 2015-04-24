@@ -817,7 +817,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	}
 
 	const char* commandPtr;
-	int cmd = 0, len = 0;
+	size_t cmd = 0, len = 0;
 	const char* name = 0;
 	for (commandPtr = li->buffer; commandPtr <= li->cursor; ++commandPtr, ++len) {
 		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
@@ -833,7 +833,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	if (!name) {
 		return CC_ERROR;
 	}
-	if (_debuggerCommands[cmd + 1].name && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
+	if (_debuggerCommands[cmd + 1].name && strlen(_debuggerCommands[cmd + 1].name) >= len - 1 && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
 		--len;
 		const char* next = 0;
 		int i;
@@ -842,6 +842,9 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 				break;
 			}
 			next = _debuggerCommands[i].name;
+		}
+		if (!next) {
+			return CC_ERROR;
 		}
 
 		for (; name[len]; ++len) {

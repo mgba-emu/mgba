@@ -37,6 +37,7 @@ Bugfixes:
  - Debugger: Fix use-after-free in breakpoint clearing code
  - Util: Fix resource leak in UTF-8 handling code
  - VFS: Fix resource leaks if some allocations fail
+ - Debugger: Fix boundary conditions in tab completion
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
