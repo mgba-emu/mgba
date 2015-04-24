@@ -24,6 +24,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
 	, m_currentFocus(0)
+	, m_mode(LoadSave::LOAD)
 {
 	m_ui.setupUi(this);
 
