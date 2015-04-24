@@ -23,6 +23,7 @@ Bugfixes:
  - VFS: Fix resource leaks if some allocations fail
  - Debugger: Fix boundary conditions in tab completion
  - Video: Fix an issue with very long filenames
+ - SDL: Fix boundary conditions for joystick adjustments
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
