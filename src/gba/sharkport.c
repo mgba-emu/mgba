@@ -77,7 +77,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	}
 
 	struct GBACartridge* cart = (struct GBACartridge*) gba->memory.rom;
-	memcpy(buffer.c, cart->title, 16);
+	memcpy(buffer.c, &cart->title, 16);
 	buffer.c[0x10] = 0;
 	buffer.c[0x11] = 0;
 	buffer.c[0x12] = cart->checksum;
@@ -220,7 +220,7 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 	}
 	size -= 0x1C;
 
-	memcpy(buffer.c, cart->title, 16);
+	memcpy(buffer.c, &cart->title, 16);
 	buffer.c[0x10] = 0;
 	buffer.c[0x11] = 0;
 	buffer.c[0x12] = cart->checksum;
