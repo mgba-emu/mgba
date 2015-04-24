@@ -304,7 +304,7 @@ void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configura
 }
 
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
-	if (player->playerId > MAX_PLAYERS || index >= events->nJoysticks) {
+	if (player->playerId >= MAX_PLAYERS || index >= events->nJoysticks) {
 		return;
 	}
 	events->joysticksClaimed[player->playerId] = index;
