@@ -61,13 +61,13 @@ void LoadSaveState::setMode(LoadSave mode) {
 bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 	if (event->type() == QEvent::KeyPress) {
 		int column = m_currentFocus % 3;
-		int row = m_currentFocus - column;
+		int row = m_currentFocus / 3;
 		switch (static_cast<QKeyEvent*>(event)->key()) {
 		case Qt::Key_Up:
-			row += 6;
+			row += 2;
 			break;
 		case Qt::Key_Down:
-			row += 3;
+			row += 1;
 			break;
 		case Qt::Key_Left:
 			column += 2;
@@ -94,8 +94,8 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 			return false;
 		}
 		column %= 3;
-		row %= 9;
-		m_currentFocus = column + row;
+		row %= 3;
+		m_currentFocus = column + row * 3;
 		m_slots[m_currentFocus]->setFocus();
 		return true;
 	}
