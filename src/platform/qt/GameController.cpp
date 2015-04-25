@@ -563,6 +563,10 @@ void GameController::setTurbo(bool set, bool forced) {
 	if (m_turboForced && !forced) {
 		return;
 	}
+	if (m_turbo == set && m_turboForced == forced) {
+		// Don't interrupt the thread if we don't need to
+		return;
+	}
 	m_turbo = set;
 	m_turboForced = set && forced;
 	threadInterrupt();
