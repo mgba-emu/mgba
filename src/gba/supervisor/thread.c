@@ -274,6 +274,13 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 				threadContext->state = THREAD_INTERRUPTED;
 				ConditionWake(&threadContext->stateCond);
 			}
+			if (threadContext->state == THREAD_RUN_ON) {
+				if (threadContext->run) {
+					threadContext->run(threadContext);
+				}
+				threadContext->state = THREAD_RUNNING;
+				ConditionWake(&threadContext->stateCond);
+			}
 			if (threadContext->state == THREAD_RESETING) {
 				threadContext->state = THREAD_RUNNING;
 				resetScheduled = 1;
@@ -595,6 +602,17 @@ void GBAThreadContinue(struct GBAThread* threadContext) {
 		threadContext->state = threadContext->savedState;
 		ConditionWake(&threadContext->stateCond);
 	}
+	MutexUnlock(&threadContext->stateMutex);
+}
+
+void GBARunOnThread(struct GBAThread* threadContext, void (*run)(struct GBAThread*)) {
+	MutexLock(&threadContext->stateMutex);
+	threadContext->run = run;
+	_waitOnInterrupt(threadContext);
+	threadContext->state = THREAD_RUN_ON;
+	threadContext->gba->cpu->nextEvent = 0;
+	ConditionWake(&threadContext->stateCond);
+	_waitUntilNotState(threadContext, THREAD_RUN_ON);
 	MutexUnlock(&threadContext->stateMutex);
 }
 

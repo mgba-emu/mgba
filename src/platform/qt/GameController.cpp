@@ -506,17 +506,21 @@ void GameController::setUseBIOS(bool use) {
 }
 
 void GameController::loadState(int slot) {
-	threadInterrupt();
-	GBALoadState(&m_threadContext, m_threadContext.stateDir, slot);
-	threadContinue();
-	emit stateLoaded(&m_threadContext);
-	emit frameAvailable(m_drawContext);
+	m_stateSlot = slot;
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		GBALoadState(context, context->stateDir, controller->m_stateSlot);
+		controller->stateLoaded(context);
+		controller->frameAvailable(controller->m_drawContext);
+	});
 }
 
 void GameController::saveState(int slot) {
-	threadInterrupt();
-	GBASaveState(&m_threadContext, m_threadContext.stateDir, slot, true);
-	threadContinue();
+	m_stateSlot = slot;
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
+	});
 }
 
 void GameController::setVideoSync(bool set) {
@@ -595,9 +599,7 @@ void GameController::clearAVStream() {
 
 #ifdef USE_PNG
 void GameController::screenshot() {
-	GBAThreadInterrupt(&m_threadContext);
-	GBAThreadTakeScreenshot(&m_threadContext);
-	GBAThreadContinue(&m_threadContext);
+	GBARunOnThread(&m_threadContext, GBAThreadTakeScreenshot);
 }
 #endif
 

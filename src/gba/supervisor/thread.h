@@ -28,6 +28,7 @@ enum ThreadState {
 	THREAD_INTERRUPTING,
 	THREAD_PAUSED,
 	THREAD_PAUSING,
+	THREAD_RUN_ON,
 	THREAD_RESETING,
 	THREAD_EXITING,
 	THREAD_SHUTDOWN,
@@ -97,6 +98,7 @@ struct GBAThread {
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
 	void* userData;
+	void (*run)(struct GBAThread*);
 
 	struct GBASync sync;
 
@@ -125,6 +127,8 @@ void GBAThreadJoin(struct GBAThread* threadContext);
 bool GBAThreadIsActive(struct GBAThread* threadContext);
 void GBAThreadInterrupt(struct GBAThread* threadContext);
 void GBAThreadContinue(struct GBAThread* threadContext);
+
+void GBARunOnThread(struct GBAThread* threadContext, void (*run)(struct GBAThread*));
 
 void GBAThreadPause(struct GBAThread* threadContext);
 void GBAThreadUnpause(struct GBAThread* threadContext);

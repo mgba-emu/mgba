@@ -46,6 +46,7 @@ Misc:
  - Debugger: Free watchpoints in addition to breakpoints
  - Qt: Move GL frame drawing back onto its own thread
  - GBA: Add status log level
+ - GBA Thread: Add functionality for running callbacks on the GBA thread
 
 0.2.0: (2015-04-03)
 Features:

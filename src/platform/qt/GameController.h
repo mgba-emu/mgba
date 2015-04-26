@@ -184,6 +184,8 @@ private:
 	bool m_turbo;
 	bool m_turboForced;
 
+	int m_stateSlot;
+
 	InputController* m_inputController;
 	std::shared_ptr<MultiplayerController> m_multiplayer;
 
