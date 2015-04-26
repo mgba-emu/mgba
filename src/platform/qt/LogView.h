@@ -40,6 +40,7 @@ public slots:
 	void setLevelFatal(bool);
 	void setLevelGameError(bool);
 	void setLevelSWI(bool);
+	void setLevelStatus(bool);
 
 	void setMaxLines(int);
 

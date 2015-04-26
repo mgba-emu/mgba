@@ -681,9 +681,12 @@ void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
+	bool success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
 	PNGWriteClose(png, info);
 	vf->close(vf);
+	if (success) {
+		GBALog(threadContext->gba, GBA_LOG_STATUS, "Screenshot saved");
+	}
 }
 #endif
 

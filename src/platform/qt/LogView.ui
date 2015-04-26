@@ -106,6 +106,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="levelStatus">
+          <property name="text">
+           <string>Status</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

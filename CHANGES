@@ -45,6 +45,7 @@ Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
  - Qt: Move GL frame drawing back onto its own thread
+ - GBA: Add status log level
 
 0.2.0: (2015-04-03)
 Features:

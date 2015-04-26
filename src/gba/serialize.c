@@ -192,6 +192,9 @@ bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, b
 	}
 	bool success = GBASaveStateNamed(threadContext->gba, vf, screenshot);
 	vf->close(vf);
+	if (success) {
+		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i saved", slot);
+	}
 	return success;
 }
 
@@ -203,6 +206,9 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 	threadContext->rewindBufferSize = 0;
 	bool success = GBALoadStateNamed(threadContext->gba, vf);
 	vf->close(vf);
+	if (success) {
+		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i loaded", slot);
+	}
 	return success;
 }
 

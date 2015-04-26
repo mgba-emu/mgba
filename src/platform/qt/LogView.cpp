@@ -25,6 +25,7 @@ LogView::LogView(QWidget* parent)
 	connect(m_ui.levelFatal, SIGNAL(toggled(bool)), this, SLOT(setLevelFatal(bool)));
 	connect(m_ui.levelGameError, SIGNAL(toggled(bool)), this, SLOT(setLevelGameError(bool)));
 	connect(m_ui.levelSWI, SIGNAL(toggled(bool)), this, SLOT(setLevelSWI(bool)));
+	connect(m_ui.levelStatus, SIGNAL(toggled(bool)), this, SLOT(setLevelStatus(bool)));
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
@@ -57,6 +58,7 @@ void LogView::setLevels(int levels) {
 	m_ui.levelFatal->setCheckState(levels & GBA_LOG_FATAL ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelGameError->setCheckState(levels & GBA_LOG_GAME_ERROR ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelSWI->setCheckState(levels & GBA_LOG_SWI ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelStatus->setCheckState(levels & GBA_LOG_STATUS ? Qt::Checked : Qt::Unchecked);
 
 	emit levelsSet(levels);
 }
@@ -125,6 +127,14 @@ void LogView::setLevelSWI(bool set) {
 	}
 }
 
+void LogView::setLevelStatus(bool set) {
+	if (set) {
+		setLevel(GBA_LOG_STATUS);
+	} else {
+		clearLevel(GBA_LOG_STATUS);
+	}
+}
+
 void LogView::setMaxLines(int limit) {
 	m_lineLimit = limit;
 	while (m_lines > m_lineLimit) {
@@ -150,6 +160,8 @@ QString LogView::toString(int level) {
 		return tr("GAME ERROR");
 	case GBA_LOG_SWI:
 		return tr("SWI");
+	case GBA_LOG_STATUS:
+		return tr("STATUS");
 	}
 	return QString();
 }

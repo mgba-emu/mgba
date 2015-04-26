@@ -61,7 +61,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.userData = this;
 	m_threadContext.rewindBufferCapacity = 0;
 	m_threadContext.cheats = &m_cheatDevice;
-	m_threadContext.logLevel = -1;
+	m_threadContext.logLevel = GBA_LOG_ALL;
 
 	m_lux.p = this;
 	m_lux.sample = [] (GBALuminanceSource* context) {

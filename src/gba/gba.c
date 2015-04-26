@@ -530,7 +530,7 @@ void GBAHalt(struct GBA* gba) {
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
 	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = -1;
+	enum GBALogLevel logLevel = GBA_LOG_ALL;
 
 	if (gba) {
 		logLevel = gba->logLevel;
