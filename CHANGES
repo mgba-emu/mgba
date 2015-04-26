@@ -44,6 +44,7 @@ Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
+ - Qt: Move GL frame drawing back onto its own thread
 
 0.2.0: (2015-04-03)
 Features:

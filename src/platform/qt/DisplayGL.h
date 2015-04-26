@@ -16,12 +16,22 @@ struct GBAThread;
 
 namespace QGBA {
 
-class Painter;
+class EmptyGLWidget : public QGLWidget {
+public:
+	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) {}
+
+protected:
+	void paintEvent(QPaintEvent*) override {}
+	void resizeEvent(QResizeEvent*) override {}
+};
+
+class PainterGL;
 class DisplayGL : public Display {
 Q_OBJECT
 
 public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
+	~DisplayGL();
 
 public slots:
 	void startDrawing(GBAThread* context) override;
@@ -34,27 +44,31 @@ public slots:
 	void framePosted(const uint32_t*) override;
 
 protected:
-	virtual void paintEvent(QPaintEvent*) override {};
+	virtual void paintEvent(QPaintEvent*) override {
+		QPainter paint(this);
+		paint.fillRect(QRect(QPoint(), size()), Qt::black);
+	};
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private:
-	Painter* m_painter;
-	bool m_started;
+	QGLWidget* m_gl;
+	PainterGL* m_painter;
+	QThread* m_drawThread;
 	GBAThread* m_context;
 	bool m_lockAspectRatio;
 	bool m_filter;
 };
 
-class Painter : public QGLWidget {
+class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	Painter(const QGLFormat& format, QWidget* parent);
+	PainterGL(QGLWidget* parent);
 
 	void setContext(GBAThread*);
-	void setBacking(const uint32_t*);
 
 public slots:
+	void setBacking(const uint32_t*);
 	void forceDraw();
 	void draw();
 	void start();
@@ -65,13 +79,11 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
 
-protected:
-	virtual void initializeGL() override;
-	virtual void paintEvent(QPaintEvent*) override {}
-
 private:
 	void performDraw();
 
+	QGLWidget* m_gl;
+	QThread* m_thread;
 	QTimer* m_drawTimer;
 	GBAThread* m_context;
 	GLuint m_tex;
