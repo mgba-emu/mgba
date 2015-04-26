@@ -9,6 +9,7 @@
 #include "Display.h"
 
 #include <QGLWidget>
+#include <QStaticText>
 #include <QThread>
 #include <QTimer>
 
@@ -18,7 +19,7 @@ namespace QGBA {
 
 class EmptyGLWidget : public QGLWidget {
 public:
-	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) {}
+	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) { setAutoBufferSwap(false); }
 
 protected:
 	void paintEvent(QPaintEvent*) override {}
@@ -43,14 +44,15 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
+	void showMessage(const QString& message) override;
+
 protected:
-	virtual void paintEvent(QPaintEvent*) override {
-		QPainter paint(this);
-		paint.fillRect(QRect(QPoint(), size()), Qt::black);
-	};
+	virtual void paintEvent(QPaintEvent*) override {}
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private:
+	void resizePainter();
+
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread;
@@ -79,17 +81,26 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
 
+	void showMessage(const QString& message);
+	void clearMessage();
+
 private:
 	void performDraw();
 
+	QPainter m_painter;
+	QStaticText m_message;
 	QGLWidget* m_gl;
 	QThread* m_thread;
 	QTimer* m_drawTimer;
+	QTimer m_messageTimer;
 	GBAThread* m_context;
 	GLuint m_tex;
 	QSize m_size;
 	bool m_lockAspectRatio;
 	bool m_filter;
+	QRect m_viewport;
+	QTransform m_world;
+	QFont m_messageFont;
 };
 
 }

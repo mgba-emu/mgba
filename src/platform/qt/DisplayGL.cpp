@@ -51,7 +51,6 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_context = thread;
 	m_painter->resize(size());
 	m_gl->move(0, 0);
-	m_gl->resize(size());
 	m_drawThread = new QThread(this);
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
@@ -61,6 +60,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 
 	lockAspectRatio(m_lockAspectRatio);
 	filter(m_filter);
+	resizePainter();
 }
 
 void DisplayGL::stopDrawing() {
@@ -133,20 +133,39 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 	}
 }
 
-void DisplayGL::resizeEvent(QResizeEvent* event) {
+void DisplayGL::showMessage(const QString& message) {
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "showMessage", Q_ARG(const QString&, message));
+	}
+}
+
+void DisplayGL::resizeEvent(QResizeEvent*) {
+	resizePainter();
+}
+
+void DisplayGL::resizePainter() {
 	m_gl->resize(size());
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, event->size()));
+		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
 }
 
 PainterGL::PainterGL(QGLWidget* parent)
 	: m_gl(parent)
 	, m_drawTimer(nullptr)
+	, m_messageTimer(this)
 	, m_lockAspectRatio(false)
 	, m_filter(false)
 	, m_context(nullptr)
 {
+	m_messageFont.setFamily("Source Code Pro");
+	m_messageFont.setStyleHint(QFont::Monospace);
+	m_messageFont.setPixelSize(6);
+	connect(&m_messageTimer, SIGNAL(timeout()), this, SLOT(clearMessage()));
+	m_messageTimer.setSingleShot(true);
+	m_messageTimer.setInterval(5000);
+
+	clearMessage();
 }
 
 void PainterGL::setContext(GBAThread* context) {
@@ -155,6 +174,7 @@ void PainterGL::setContext(GBAThread* context) {
 
 void PainterGL::setBacking(const uint32_t* backing) {
 	m_gl->makeCurrent();
+	glBindTexture(GL_TEXTURE_2D, m_tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, backing);
@@ -169,8 +189,29 @@ void PainterGL::setBacking(const uint32_t* backing) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
+	int w = m_size.width() * m_gl->devicePixelRatio();
+	int h = m_size.height() *m_gl->devicePixelRatio();
+	int drawW = w;
+	int drawH = h;
+	if (m_lockAspectRatio) {
+		if (w * 2 > h * 3) {
+			drawW = h * 3 / 2;
+		} else if (w * 2 < h * 3) {
+			drawH = w * 2 / 3;
+		}
+	}
+	m_viewport = QRect((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+	m_painter.begin(m_gl->context()->device());
+	m_world = QTransform(
+		qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, 0,
+		0, qreal(drawH) / VIDEO_VERTICAL_PIXELS,
+		m_viewport.x() / 2,
+		m_viewport.y() / 2);
+	m_painter.setWorldTransform(m_world);
+	m_painter.setFont(m_messageFont);
+	m_message.prepare(m_world, m_messageFont);
+	m_painter.end();
 	if (m_drawTimer) {
-		forceDraw();
 		forceDraw();
 	}
 }
@@ -178,7 +219,6 @@ void PainterGL::resize(const QSize& size) {
 void PainterGL::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
 	if (m_drawTimer) {
-		forceDraw();
 		forceDraw();
 	}
 }
@@ -213,9 +253,6 @@ void PainterGL::start() {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_INT, 0, _glVertices);
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, 240, 160, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glClearColor(0, 0, 0, 0);
@@ -230,21 +267,21 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	m_gl->makeCurrent();
 	GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip);
+	m_painter.begin(m_gl->context()->device());
+	m_painter.setWorldTransform(m_world);
 	performDraw();
+	m_painter.end();
 	GBASyncWaitFrameEnd(&m_context->sync);
 	m_gl->swapBuffers();
-	m_gl->doneCurrent();
 }
 
 void PainterGL::forceDraw() {
-	m_gl->makeCurrent();
-	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
-	glClear(GL_COLOR_BUFFER_BIT);
+	m_painter.begin(m_gl->context()->device());
+	m_painter.setWorldTransform(m_world);
 	performDraw();
+	m_painter.end();
 	m_gl->swapBuffers();
-	m_gl->doneCurrent();
 }
 
 void PainterGL::stop() {
@@ -253,6 +290,7 @@ void PainterGL::stop() {
 	m_drawTimer = nullptr;
 	m_gl->makeCurrent();
 	glDeleteTextures(1, &m_tex);
+	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_gl->swapBuffers();
 	m_gl->doneCurrent();
@@ -272,26 +310,42 @@ void PainterGL::unpause() {
 }
 
 void PainterGL::performDraw() {
-	int w = m_size.width() * m_gl->devicePixelRatio();
-	int h = m_size.height() *m_gl->devicePixelRatio();
-#ifndef Q_OS_MAC
-	// TODO: This seems to cause framerates to drag down to 120 FPS on OS X,
-	// even if the emulator can go faster. Look into why.
+	m_painter.beginNativePainting();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
+	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-#endif
-	int drawW = w;
-	int drawH = h;
-	if (m_lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
-		}
-	}
-	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+	glViewport(m_viewport.x(), m_viewport.y(), m_viewport.width(), m_viewport.height());
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	if (m_context->sync.videoFrameWait) {
 		glFlush();
 	}
+	m_painter.endNativePainting();
+	m_painter.setRenderHint(QPainter::Antialiasing);
+	m_painter.setFont(m_messageFont);
+	m_painter.setPen(Qt::black);
+	m_painter.translate(1, 72);
+	for (int i = 0; i < 16; ++i) {
+		m_painter.save();
+		m_painter.translate(cos(i * M_PI / 8.0) * 0.4, sin(i * M_PI / 8.0) * 0.4);
+		m_painter.drawStaticText(0, 0, m_message);
+		m_painter.restore();
+	}
+	m_painter.setPen(Qt::white);
+	m_painter.drawStaticText(0, 0, m_message);
+}
+
+void PainterGL::showMessage(const QString& message) {
+	m_message.setText(message);
+	m_message.prepare(m_world, m_messageFont);
+	m_messageTimer.stop();
+	m_messageTimer.start();
+}
+
+void PainterGL::clearMessage() {
+	m_message.setText(QString());
 }

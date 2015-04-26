@@ -94,8 +94,6 @@ GameController::GameController(QObject* parent)
 	m_threadContext.startCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
-		// Override the GBA object's log level to prevent stdout spew
-		context->gba->logLevel = GBA_LOG_FATAL;
 		context->gba->luminanceSource = &controller->m_lux;
 		context->gba->rtcSource = &controller->m_rtc;
 #ifdef BUILD_SDL
@@ -128,6 +126,9 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
 		static const char* stubMessage = "Stub software interrupt";
+		if (!context) {
+			return;
+		}
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (level == GBA_LOG_STUB && strncmp(stubMessage, format, strlen(stubMessage)) == 0) {
 			va_list argc;
@@ -140,7 +141,11 @@ GameController::GameController(QObject* parent)
 		} else if (!(controller->m_logLevels & level)) {
 			return;
 		}
-		controller->postLog(level, QString().vsprintf(format, args));
+		QString message(QString().vsprintf(format, args));
+		if (level == GBA_LOG_STATUS) {
+			controller->statusPosted(message);
+		}
+		controller->postLog(level, message);
 	};
 
 	m_audioThread->start(QThread::TimeCriticalPriority);

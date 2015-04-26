@@ -90,6 +90,7 @@ signals:
 
 	void luminanceValueChanged(int);
 
+	void statusPosted(const QString& message);
 	void postLog(int level, const QString& log);
 
 public slots:

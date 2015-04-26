@@ -108,6 +108,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
 	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));
+	connect(m_controller, SIGNAL(statusPosted(const QString&)), m_display, SLOT(showMessage(const QString&)));
 	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
@@ -119,7 +120,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 
-	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL);
+	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
 	m_shortcutController->setConfigController(m_config);

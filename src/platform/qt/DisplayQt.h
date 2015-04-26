@@ -31,6 +31,8 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
+	void showMessage(const QString& message) override {};
+
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
 

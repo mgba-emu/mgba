@@ -12,6 +12,7 @@ Features:
  - Analog inputs can be used for shortcuts
  - Menu items for specific solar sensor brightness levels
  - Remappable controls for tilt and gyroscope sensors
+ - Status messages for actions taken while a game is running (e.g. save/load state)
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself

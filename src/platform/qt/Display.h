@@ -27,6 +27,8 @@ public slots:
 	virtual void lockAspectRatio(bool lock) = 0;
 	virtual void filter(bool filter) = 0;
 	virtual void framePosted(const uint32_t*) = 0;
+
+	virtual void showMessage(const QString& message) = 0;
 };
 
 }
