@@ -52,19 +52,18 @@ public:
 
 	const GBAInputMap* map() const { return &m_inputMap; }
 
-#ifdef BUILD_SDL
-	static const int32_t AXIS_THRESHOLD = 0x3000;
+	int pollEvents();
 
-	int testSDLEvents();
-	QSet<int> activeGamepadButtons();
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
+	static const int32_t AXIS_THRESHOLD = 0x3000;
+	QSet<int> activeGamepadButtons(int type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
 	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
 
 	QStringList connectedGamepads(uint32_t type) const;
-	int gamepad(uint32_t type) const { return m_sdlPlayer.joystickIndex; }
-	void setGamepad(uint32_t type, int index) { GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index); }
+	int gamepad(uint32_t type) const;
+	void setGamepad(uint32_t type, int index);
 	void setPreferredGamepad(uint32_t type, const QString& device);
 
 	void registerTiltAxisX(int axis);
@@ -74,13 +73,12 @@ public:
 
 	float gyroSensitivity() const;
 	void setGyroSensitivity(float sensitivity);
-#endif
 
 	GBARumble* rumble();
 	GBARotationSource* rotationSource();
 
 public slots:
-	void testGamepad();
+	void testGamepad(int type);
 
 private:
 	void postPendingEvent(GBAKey);
@@ -97,8 +95,9 @@ private:
 	static GBASDLEvents s_sdlEvents;
 	GBASDLPlayer m_sdlPlayer;
 	bool m_playerAttached;
-	QVector<int> m_deadzones;
 #endif
+
+	QVector<int> m_deadzones;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

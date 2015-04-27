@@ -146,13 +146,7 @@ public slots:
 private slots:
 	void crashGame(const QString& crashMessage);
 
-#ifdef BUILD_SDL
-	void testSDLEvents();
-
-private:
-	GBASDLEvents m_sdlEvents;
-	int m_activeButtons;
-#endif
+	void pollEvents();
 
 private:
 	void updateKeys();
@@ -163,6 +157,7 @@ private:
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
+	int m_activeButtons;
 	int m_inactiveKeys;
 	int m_logLevels;
 

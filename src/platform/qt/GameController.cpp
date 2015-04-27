@@ -96,10 +96,8 @@ GameController::GameController(QObject* parent)
 		controller->m_audioProcessor->setInput(context);
 		context->gba->luminanceSource = &controller->m_lux;
 		context->gba->rtcSource = &controller->m_rtc;
-#ifdef BUILD_SDL
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
-#endif
 		controller->gameStarted(context);
 	};
 
@@ -154,10 +152,7 @@ GameController::GameController(QObject* parent)
 	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
-
-#ifdef BUILD_SDL
-	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(testSDLEvents()));
-#endif
+	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
 }
 
 GameController::~GameController() {
@@ -283,9 +278,7 @@ void GameController::openGame() {
 		m_threadContext.patch = VFileOpen(m_patch.toLocal8Bit().constData(), O_RDONLY);
 	}
 
-#ifdef BUILD_SDL
 	m_inputController->recalibrateAxes();
-#endif
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
@@ -663,9 +656,7 @@ void GameController::setFakeEpoch(const QDateTime& time) {
 
 void GameController::updateKeys() {
 	int activeKeys = m_activeKeys;
-#ifdef BUILD_SDL
 	activeKeys |= m_activeButtons;
-#endif
 	activeKeys &= ~m_inactiveKeys;
 	m_threadContext.activeKeys = activeKeys;
 }
@@ -705,13 +696,11 @@ void GameController::disableLogLevel(int levels) {
 	threadContinue();
 }
 
-#ifdef BUILD_SDL
-void GameController::testSDLEvents() {
+void GameController::pollEvents() {
 	if (!m_inputController) {
 		return;
 	}
 
-	m_activeButtons = m_inputController->testSDLEvents();
+	m_activeButtons = m_inputController->pollEvents();
 	updateKeys();
 }
-#endif
