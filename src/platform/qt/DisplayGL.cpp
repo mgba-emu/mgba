@@ -160,7 +160,7 @@ PainterGL::PainterGL(QGLWidget* parent)
 {
 	m_messageFont.setFamily("Source Code Pro");
 	m_messageFont.setStyleHint(QFont::Monospace);
-	m_messageFont.setPixelSize(6);
+	m_messageFont.setPixelSize(13);
 	connect(&m_messageTimer, SIGNAL(timeout()), this, SLOT(clearMessage()));
 	m_messageTimer.setSingleShot(true);
 	m_messageTimer.setInterval(5000);
@@ -189,8 +189,8 @@ void PainterGL::setBacking(const uint32_t* backing) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
-	int w = m_size.width() * m_gl->devicePixelRatio();
-	int h = m_size.height() *m_gl->devicePixelRatio();
+	int w = m_size.width();
+	int h = m_size.height();
 	int drawW = w;
 	int drawH = h;
 	if (m_lockAspectRatio) {
@@ -202,11 +202,9 @@ void PainterGL::resize(const QSize& size) {
 	}
 	m_viewport = QRect((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 	m_painter.begin(m_gl->context()->device());
-	m_world = QTransform(
-		qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, 0,
-		0, qreal(drawH) / VIDEO_VERTICAL_PIXELS,
-		m_viewport.x() / 2,
-		m_viewport.y() / 2);
+	m_world.reset();
+	m_world.translate(m_viewport.x(), m_viewport.y());
+	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
 	m_painter.setWorldTransform(m_world);
 	m_painter.setFont(m_messageFont);
 	m_message.prepare(m_world, m_messageFont);
@@ -319,7 +317,8 @@ void PainterGL::performDraw() {
 	glViewport(0, 0, m_size.width() * m_gl->devicePixelRatio(), m_size.height() * m_gl->devicePixelRatio());
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(m_viewport.x(), m_viewport.y(), m_viewport.width(), m_viewport.height());
+	QRect viewport(m_viewport.topLeft() * m_gl->devicePixelRatio(), m_viewport.size() * m_gl->devicePixelRatio());
+	glViewport(viewport.x(), viewport.y(), viewport.width(), viewport.height());
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	if (m_context->sync.videoFrameWait) {
 		glFlush();
@@ -328,10 +327,10 @@ void PainterGL::performDraw() {
 	m_painter.setRenderHint(QPainter::Antialiasing);
 	m_painter.setFont(m_messageFont);
 	m_painter.setPen(Qt::black);
-	m_painter.translate(1, 72);
+	m_painter.translate(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
 	for (int i = 0; i < 16; ++i) {
 		m_painter.save();
-		m_painter.translate(cos(i * M_PI / 8.0) * 0.4, sin(i * M_PI / 8.0) * 0.4);
+		m_painter.translate(cos(i * M_PI / 8.0) * 0.8, sin(i * M_PI / 8.0) * 0.8);
 		m_painter.drawStaticText(0, 0, m_message);
 		m_painter.restore();
 	}
