@@ -41,6 +41,8 @@ void PaletteView::updatePalette() {
 		m_ui.bgGrid->setColor(i, palette[i]);
 		m_ui.objGrid->setColor(i, palette[i + 256]);
 	}
+	m_ui.bgGrid->update();
+	m_ui.objGrid->update();
 }
 
 void PaletteView::selectIndex(int index) {
