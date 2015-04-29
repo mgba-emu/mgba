@@ -26,6 +26,7 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MultiplayerController.h"
+#include "MemoryView.h"
 #include "OverrideView.h"
 #include "PaletteView.h"
 #include "SensorView.h"
@@ -326,6 +327,11 @@ void Window::openCheatsWindow() {
 void Window::openPaletteWindow() {
 	PaletteView* paletteWindow = new PaletteView(m_controller);
 	openView(paletteWindow);
+}
+
+void Window::openMemoryWindow() {
+	MemoryView* memoryWindow = new MemoryView(m_controller);
+	openView(memoryWindow);
 }
 
 #ifdef BUILD_SDL
@@ -963,6 +969,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(paletteView, SIGNAL(triggered()), this, SLOT(openPaletteWindow()));
 	m_gameActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
+
+	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
+	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
+	m_gameActions.append(memoryView);
+	addControlledAction(toolsMenu, memoryView, "memoryView");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {

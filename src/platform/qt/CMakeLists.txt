@@ -56,6 +56,8 @@ set(SOURCE_FILES
 	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogView.cpp
+	MemoryModel.cpp
+	MemoryView.cpp
 	MultiplayerController.cpp
 	OverrideView.cpp
 	PaletteView.cpp
@@ -74,6 +76,7 @@ qt5_wrap_ui(UI_FILES
 	GIFView.ui
 	LoadSaveState.ui
 	LogView.ui
+	MemoryView.ui
 	OverrideView.ui
 	PaletteView.ui
 	SensorView.ui

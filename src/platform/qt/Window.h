@@ -77,6 +77,7 @@ public slots:
 	void openCheatsWindow();
 
 	void openPaletteWindow();
+	void openMemoryWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();

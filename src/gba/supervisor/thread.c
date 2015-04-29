@@ -133,6 +133,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	ARMInit(&cpu);
 	gba.sync = &threadContext->sync;
 	threadContext->gba = &gba;
+	threadContext->cpu = &cpu;
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
