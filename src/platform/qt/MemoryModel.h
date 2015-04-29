@@ -27,10 +27,9 @@ public:
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void paintEvent(QPaintEvent*) override;
+	void wheelEvent(QWheelEvent*) override;
 
 private:
-	QString headerData(int section, Qt::Orientation orientation) const;
-
 	ARMCore* m_cpu;
 	QFont m_font;
 	int m_cellHeight;

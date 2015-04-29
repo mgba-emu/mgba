@@ -79,11 +79,3 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.drawLine(viewport()->size().width() - m_margins.right(), 0, viewport()->size().width() - m_margins.right(), viewport()->size().height());
 	painter.drawLine(0, m_margins.top(), viewport()->size().width(), m_margins.top());
 }
-
-QString MemoryModel::headerData(int section, Qt::Orientation orientation) const {
-	if (orientation == Qt::Vertical) {
-		return QString("%0").arg(section >> 4, 8, 16, QChar('0')).toUpper();
-	} else {
-		return QString("%0").arg(section, 2, 16, QChar('0')).toUpper();
-	}
-}
