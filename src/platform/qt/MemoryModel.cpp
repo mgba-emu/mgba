@@ -37,9 +37,9 @@ MemoryModel::MemoryModel(QWidget* parent)
 	}
 
 	for (int i = 0; i < 128; ++i) {
-		QChar c(0xFFFD);
-		if (c.isPrint()) {
-			c = i;
+		QChar c(i);
+		if (!c.isPrint()) {
+			c = '.';
 		}
 		QStaticText str = QStaticText(QString(c));
 		str.prepare(QTransform(), m_font);
