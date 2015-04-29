@@ -30,6 +30,22 @@ MemoryModel::MemoryModel(QWidget* parent)
 	m_cellHeight = metrics.height();
 	m_letterWidth = metrics.averageCharWidth();
 
+	for (int i = 0; i < 256; ++i) {
+		QStaticText str(QString("%0").arg(i, 2, 16, QChar('0')).toUpper());
+		str.prepare(QTransform(), m_font);
+		m_staticNumbers.append(str);
+	}
+
+	for (int i = 0; i < 128; ++i) {
+		QChar c(0xFFFD);
+		if (c.isPrint()) {
+			c = i;
+		}
+		QStaticText str = QStaticText(QString(c));
+		str.prepare(QTransform(), m_font);
+		m_staticAscii.append(str);
+	}
+
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_margins = QMargins(metrics.width("FFFFFF ") + 3, m_cellHeight + 1, metrics.width(" AAAAAAAAAAAAAAAA") + 3, 0);
@@ -69,13 +85,8 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		painter.drawText(QRectF(QPointF(0, yp), QSizeF(m_margins.left(), m_cellHeight)), Qt::AlignHCenter, data);
 		for (int x = 0; x < 16; ++x) {
 			uint8_t b = m_cpu->memory.load8(m_cpu, (y + m_top) * 16 + x, nullptr);
-			QChar c(b);
-			if (!c.isPrint() || c.unicode() >= 0x80) {
-				c = 0xFFFD;
-			}
-			data = QString("%0").arg(b, 2, 16, c0).toUpper();
-			painter.drawText(QRectF(QPointF(cellSize.width() * x + m_margins.left(), yp), cellSize), Qt::AlignHCenter, data);
-			painter.drawText(QRectF(QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 16.f, yp), letterSize), Qt::AlignHCenter, c);
+			painter.drawStaticText(QPointF(cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp), m_staticNumbers[b]);
+			painter.drawStaticText(QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp), b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
 		}
 	}
 	painter.drawLine(m_margins.left() - 2, 0, m_margins.left() - 2, viewport()->size().height());

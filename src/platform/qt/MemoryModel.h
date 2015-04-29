@@ -9,6 +9,8 @@
 #include <QAbstractScrollArea>
 #include <QFont>
 #include <QSize>
+#include <QStaticText>
+#include <QVector>
 
 struct ARMCore;
 
@@ -38,6 +40,8 @@ private:
 	int m_letterWidth;
 	int m_top;
 	QMargins m_margins;
+	QVector<QStaticText> m_staticNumbers;
+	QVector<QStaticText> m_staticAscii;
 };
 
 }
