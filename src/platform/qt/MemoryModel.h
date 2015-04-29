@@ -30,6 +30,8 @@ protected:
 	void wheelEvent(QWheelEvent*) override;
 
 private:
+	void boundsCheck();
+
 	ARMCore* m_cpu;
 	QFont m_font;
 	int m_cellHeight;

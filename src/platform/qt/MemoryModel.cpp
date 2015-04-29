@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QSlider>
+#include <QWheelEvent>
 
 extern "C" {
 #include "gba/memory.h"
@@ -33,9 +34,10 @@ MemoryModel::MemoryModel(QWidget* parent)
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	m_margins = QMargins(metrics.width("FFFFFF ") + 3, m_cellHeight + 1, metrics.width(" AAAAAAAAAAAAAAAA") + 3, 0);
 
-	verticalScrollBar()->setRange(0, 0x01000000 - viewport()->size().height() / m_cellHeight);
+	verticalScrollBar()->setRange(0, 0x01000001 - viewport()->size().height() / m_cellHeight);
 	connect(verticalScrollBar(), &QSlider::sliderMoved, [this](int position) {
 		m_top = position;
+		update();
 	});
 	update();
 }
@@ -45,7 +47,8 @@ void MemoryModel::setController(GameController* controller) {
 }
 
 void MemoryModel::resizeEvent(QResizeEvent*) {
-	verticalScrollBar()->setRange(0, 0x01000000 - viewport()->size().height() / m_cellHeight);
+	verticalScrollBar()->setRange(0, 0x01000001 - viewport()->size().height() / m_cellHeight);
+	boundsCheck();
 }
 
 void MemoryModel::paintEvent(QPaintEvent* event) {
@@ -59,7 +62,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	for (int x = 0; x < 16; ++x) {
 		painter.drawText(QRectF(QPointF(cellSize.width() * x + m_margins.left(), 0), cellSize), Qt::AlignHCenter, QString::number(x, 16).toUpper());
 	}
-	int height = (viewport()->size().height() - m_cellHeight + 1) / m_cellHeight;
+	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
 		QString data = QString("%0").arg(y + m_top, 6, 16, c0).toUpper();
@@ -78,4 +81,20 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.drawLine(m_margins.left() - 2, 0, m_margins.left() - 2, viewport()->size().height());
 	painter.drawLine(viewport()->size().width() - m_margins.right(), 0, viewport()->size().width() - m_margins.right(), viewport()->size().height());
 	painter.drawLine(0, m_margins.top(), viewport()->size().width(), m_margins.top());
+}
+
+void MemoryModel::wheelEvent(QWheelEvent* event) {
+	m_top -= event->angleDelta().y() / 8;
+	boundsCheck();
+	event->accept();
+	update();
+	QAbstractScrollArea::wheelEvent(event);
+}
+
+void MemoryModel::boundsCheck() {
+	if (m_top < 0) {
+		m_top = 0;
+	} else if (m_top > 0x01000001 - viewport()->size().height() / m_cellHeight) {
+		m_top = 0x01000001 - viewport()->size().height() / m_cellHeight;
+	}
 }
