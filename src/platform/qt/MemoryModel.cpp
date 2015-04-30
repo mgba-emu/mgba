@@ -49,7 +49,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-	m_margins = QMargins(metrics.width("FFFFFF ") + 4, m_cellHeight + 1, metrics.width(" AAAAAAAAAAAAAAAA") + 3, 0);
+	m_margins = QMargins(metrics.width("0FFFFFF0 ") + 4, m_cellHeight + 1, metrics.width(" AAAAAAAAAAAAAAAA") + 3, 0);
 
 	connect(verticalScrollBar(), &QSlider::sliderMoved, [this](int position) {
 		m_top = position;
@@ -93,7 +93,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
-		QString data = QString("%0").arg(y + m_top + m_base / 16, 6, 16, c0).toUpper();
+		QString data = QString("%0").arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
 		painter.drawText(QRectF(QPointF(0, yp), QSizeF(m_margins.left(), m_cellHeight)), Qt::AlignHCenter, data);
 		for (int x = 0; x < 16; ++x) {
 			uint8_t b = m_cpu->memory.load8(m_cpu, (y + m_top) * 16 + x + m_base, nullptr);

@@ -42,8 +42,8 @@ void MemoryView::setIndex(int index) {
 		{ "VRAM", BASE_VRAM, SIZE_VRAM },
 		{ "OAM", BASE_OAM, SIZE_OAM },
 		{ "ROM", BASE_CART0, SIZE_CART0 },
-		{ "ROM (WS1)", BASE_CART1, SIZE_CART1 },
-		{ "ROM (WS2)", BASE_CART2, SIZE_CART2 },
+		{ "ROM WS1", BASE_CART1, SIZE_CART1 },
+		{ "ROM WS2", BASE_CART2, SIZE_CART2 },
 		{ "SRAM", BASE_CART_SRAM, SIZE_CART_SRAM },
 	};
 	const auto& info = indexInfo[index];
