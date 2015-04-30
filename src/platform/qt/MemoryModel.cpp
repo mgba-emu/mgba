@@ -21,6 +21,7 @@ using namespace QGBA;
 
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
+	, m_cpu(nullptr)
 	, m_top(0)
 {
 	m_font.setFamily("Source Code Pro");

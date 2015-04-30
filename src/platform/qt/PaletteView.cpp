@@ -33,9 +33,14 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 
 	connect(m_ui.bgGrid, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
 	connect(m_ui.objGrid, &Swatch::indexPressed, [this] (int index) { selectIndex(index + 256); });
+
+	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
 }
 
 void PaletteView::updatePalette() {
+	if (!m_controller->thread() || !m_controller->thread()->gba) {
+		return;
+	}
 	const uint16_t* palette = m_controller->thread()->gba->video.palette;
 	for (int i = 0; i < 256; ++i) {
 		m_ui.bgGrid->setColor(i, palette[i]);

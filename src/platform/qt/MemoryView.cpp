@@ -6,6 +6,8 @@
 
 #include "MemoryView.h"
 
+#include "GameController.h"
+
 using namespace QGBA;
 
 MemoryView::MemoryView(GameController* controller, QWidget* parent)
@@ -15,4 +17,5 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	m_ui.setupUi(this);
 
 	m_ui.hexfield->setController(controller);
+	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
 }
