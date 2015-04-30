@@ -15,7 +15,112 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGBA::MemoryModel" name="hexfield" native="true"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QComboBox" name="regions">
+       <item>
+        <property name="text">
+         <string>All</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>BIOS (16kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Working RAM (256kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Internal Working RAM (32kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Memory-Mapped I/O</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Palette RAM (1kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Video RAM (96kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>OBJ Attribute Memory (1kiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Game Pak (32MiB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Game Pak (Waitstate 1)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Game Pak (Waitstate 2)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Static RAM (64kiB)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Inspect Address</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="maxLength">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGBA::MemoryModel" name="hexfield" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

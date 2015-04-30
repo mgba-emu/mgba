@@ -26,6 +26,8 @@ public:
 
 	void setController(GameController* controller);
 
+	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
+
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void paintEvent(QPaintEvent*) override;
@@ -38,10 +40,13 @@ private:
 	QFont m_font;
 	int m_cellHeight;
 	int m_letterWidth;
+	uint32_t m_base;
+	uint32_t m_size;
 	int m_top;
 	QMargins m_margins;
 	QVector<QStaticText> m_staticNumbers;
 	QVector<QStaticText> m_staticAscii;
+	QStaticText m_regionName;
 };
 
 }

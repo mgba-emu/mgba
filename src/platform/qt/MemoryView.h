@@ -20,6 +20,9 @@ Q_OBJECT
 public:
 	MemoryView(GameController* controller, QWidget* parent = nullptr);
 
+private slots:
+	void setIndex(int);
+
 private:
 	Ui::MemoryView m_ui;
 
