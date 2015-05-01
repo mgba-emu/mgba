@@ -29,6 +29,10 @@ public:
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
 	void setAlignment(int);
 
+public slots:
+	void jumpToAddress(const QString& hex);
+	void jumpToAddress(uint32_t);
+
 protected:
 	void resizeEvent(QResizeEvent*) override;
 	void paintEvent(QPaintEvent*) override;

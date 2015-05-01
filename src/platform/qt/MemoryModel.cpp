@@ -83,6 +83,26 @@ void MemoryModel::setAlignment(int width) {
 	viewport()->update();
 }
 
+void MemoryModel::jumpToAddress(const QString& hex) {
+	bool ok = false;
+	uint32_t i = hex.toInt(&ok, 16);
+	if (ok) {
+		jumpToAddress(i);
+	}
+}
+
+void MemoryModel::jumpToAddress(uint32_t address) {
+	if (address >= 0x10000000) {
+		return;
+	}
+	if (address < m_base || address >= m_base + m_size) {
+		setRegion(0, 0x10000000, tr("All"));
+	}
+	m_top = (address - m_base) / 16;
+	boundsCheck();
+	verticalScrollBar()->setValue(m_top);
+}
+
 void MemoryModel::resizeEvent(QResizeEvent*) {
 	verticalScrollBar()->setRange(0, (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
 	boundsCheck();

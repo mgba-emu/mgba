@@ -90,17 +90,23 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Inspect Address</string>
+        <string>Inspect Address:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit">
-       <property name="enabled">
-        <bool>false</bool>
+      <widget class="QSpinBox" name="setAddress">
+       <property name="prefix">
+        <string>0x</string>
        </property>
-       <property name="maxLength">
-        <number>10</number>
+       <property name="maximum">
+        <number>268435455</number>
+       </property>
+       <property name="singleStep">
+        <number>16</number>
+       </property>
+       <property name="displayIntegerBase">
+        <number>16</number>
        </property>
       </widget>
      </item>

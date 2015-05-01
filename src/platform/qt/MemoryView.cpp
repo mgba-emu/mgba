@@ -27,6 +27,7 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(m_ui.width8, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(1); });
 	connect(m_ui.width16, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(2); });
 	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
+	connect(m_ui.setAddress, SIGNAL(valueChanged(const QString&)), m_ui.hexfield, SLOT(jumpToAddress(const QString&)));
 
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
 }
