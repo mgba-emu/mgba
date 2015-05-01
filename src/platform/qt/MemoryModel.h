@@ -37,9 +37,13 @@ protected:
 	void resizeEvent(QResizeEvent*) override;
 	void paintEvent(QPaintEvent*) override;
 	void wheelEvent(QWheelEvent*) override;
+	void mousePressEvent(QMouseEvent*) override;
+	void mouseMoveEvent(QMouseEvent*) override;
 
 private:
 	void boundsCheck();
+
+	bool isInSelection(uint32_t address);
 
 	ARMCore* m_cpu;
 	QFont m_font;
@@ -53,6 +57,9 @@ private:
 	QVector<QStaticText> m_staticNumbers;
 	QVector<QStaticText> m_staticAscii;
 	QStaticText m_regionName;
+	QSizeF m_cellSize;
+	QPair<uint32_t, uint32_t> m_selection;
+	uint32_t m_selectionAnchor;
 };
 
 }
