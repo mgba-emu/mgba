@@ -27,6 +27,7 @@ public:
 	void setController(GameController* controller);
 
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
+	void setAlignment(int);
 
 protected:
 	void resizeEvent(QResizeEvent*) override;
@@ -43,6 +44,7 @@ private:
 	uint32_t m_base;
 	uint32_t m_size;
 	int m_top;
+	int m_align;
 	QMargins m_margins;
 	QVector<QStaticText> m_staticNumbers;
 	QVector<QStaticText> m_staticAscii;
