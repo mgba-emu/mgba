@@ -135,20 +135,31 @@ static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	}
 
 	struct GBASerializedState* state = GBAAllocateState();
+	if (!state) {
+		return false;
+	}
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	if (!png || !info) {
+		PNGWriteClose(png, info);
+		GBADeallocateState(state);
+		return false;
+	}
 	uLongf len = compressBound(sizeof(*state));
 	void* buffer = malloc(len);
-	if (state && png && info && buffer) {
-		GBASerialize(gba, state);
-		compress(buffer, &len, (const Bytef*) state, sizeof(*state));
-		PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
-		PNGWriteCustomChunk(png, "gbAs", len, buffer);
+	if (!buffer) {
+		PNGWriteClose(png, info);
+		GBADeallocateState(state);
+		return false;
 	}
+	GBASerialize(gba, state);
+	compress(buffer, &len, (const Bytef*) state, sizeof(*state));
+	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
+	PNGWriteCustomChunk(png, "gbAs", len, buffer);
 	PNGWriteClose(png, info);
 	free(buffer);
 	GBADeallocateState(state);
-	return state && png && info && buffer;
+	return true;
 }
 
 static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
