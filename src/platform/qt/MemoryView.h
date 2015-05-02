@@ -22,6 +22,7 @@ public:
 
 private slots:
 	void setIndex(int);
+	void updateStatus(uint32_t start, uint32_t end);
 
 private:
 	Ui::MemoryView m_ui;

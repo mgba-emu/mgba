@@ -29,6 +29,8 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
 	connect(m_ui.setAddress, SIGNAL(valueChanged(const QString&)), m_ui.hexfield, SLOT(jumpToAddress(const QString&)));
 
+	connect(m_ui.hexfield, SIGNAL(selectionChanged(uint32_t, uint32_t)), this, SLOT(updateStatus(uint32_t, uint32_t)));
+
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
 }
 
@@ -53,4 +55,39 @@ void MemoryView::setIndex(int index) {
 	};
 	const auto& info = indexInfo[index];
 	m_ui.hexfield->setRegion(info.base, info.size, info.name);
+}
+
+void MemoryView::updateStatus(uint32_t start, uint32_t end) {
+	int align = m_ui.hexfield->alignment();
+	if (start & (align - 1) || end - start != align) {
+		m_ui.sintVal->clear();
+		m_ui.uintVal->clear();
+		return;
+	}
+	ARMCore* cpu = m_controller->thread()->cpu;
+	union {
+		uint32_t u32;
+		int32_t i32;
+		uint16_t u16;
+		int16_t i16;
+		uint8_t u8;
+		int8_t i8;
+	} value;
+	switch (align) {
+	case 1:
+		value.u8 = cpu->memory.load8(cpu, start, nullptr);
+		m_ui.sintVal->setText(QString::number(value.i8));
+		m_ui.uintVal->setText(QString::number(value.u8));
+		break;
+	case 2:
+		value.u16 = cpu->memory.load16(cpu, start, nullptr);
+		m_ui.sintVal->setText(QString::number(value.i16));
+		m_ui.uintVal->setText(QString::number(value.u16));
+		break;
+	case 4:
+		value.u32 = cpu->memory.load32(cpu, start, nullptr);
+		m_ui.sintVal->setText(QString::number(value.i32));
+		m_ui.uintVal->setText(QString::number(value.u32));
+		break;
+	}
 }

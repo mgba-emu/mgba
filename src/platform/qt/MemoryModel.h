@@ -27,11 +27,16 @@ public:
 	void setController(GameController* controller);
 
 	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
+
 	void setAlignment(int);
+	int alignment() const { return m_align; }
 
 public slots:
 	void jumpToAddress(const QString& hex);
 	void jumpToAddress(uint32_t);
+
+signals:
+	void selectionChanged(uint32_t start, uint32_t end);
 
 protected:
 	void resizeEvent(QResizeEvent*) override;

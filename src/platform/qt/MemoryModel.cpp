@@ -204,6 +204,7 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 	uint32_t address = int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	m_selectionAnchor = address & ~(m_align - 1);
 	m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
 }
 
@@ -219,6 +220,7 @@ void MemoryModel::mouseMoveEvent(QMouseEvent* event) {
 	} else {
 		m_selection = qMakePair(m_selectionAnchor, (address & ~(m_align - 1)) + m_align);
 	}
+	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
 }
 
