@@ -39,6 +39,7 @@ if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
 endif()
 
 set(SOURCE_FILES
+	AboutDialog.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -72,6 +73,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	AboutDialog.ui
 	CheatsView.ui
 	GIFView.ui
 	LoadSaveState.ui
