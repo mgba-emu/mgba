@@ -114,7 +114,9 @@ void MemoryModel::resizeEvent(QResizeEvent*) {
 
 void MemoryModel::paintEvent(QPaintEvent* event) {
 	QPainter painter(viewport());
+	QPalette palette;
 	painter.setFont(m_font);
+	painter.setPen(palette.color(QPalette::WindowText));
 	QChar c0('0');
 	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
@@ -132,7 +134,10 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			for (int x = 0; x < 16; x += 2) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 2, m_cellSize.height())), Qt::lightGray);
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 2, m_cellSize.height())), palette.highlight());
+					painter.setPen(palette.color(QPalette::HighlightedText));
+				} else {
+					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint16_t b = m_cpu->memory.load16(m_cpu, address, nullptr);
 				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[(b >> 8) & 0xFF]);
@@ -143,7 +148,10 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			for (int x = 0; x < 16; x += 4) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 4, m_cellSize.height())), Qt::lightGray);
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 4, m_cellSize.height())), palette.highlight());
+					painter.setPen(palette.color(QPalette::HighlightedText));
+				} else {
+					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint32_t b = m_cpu->memory.load32(m_cpu, address, nullptr);
 				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[(b >> 24) & 0xFF]);
@@ -157,13 +165,17 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			for (int x = 0; x < 16; ++x) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize), Qt::lightGray);
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize), palette.highlight());
+					painter.setPen(palette.color(QPalette::HighlightedText));
+				} else {
+					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint8_t b = m_cpu->memory.load8(m_cpu, address, nullptr);
 				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp), m_staticNumbers[b]);
 			}
 			break;
 		}
+		painter.setPen(palette.color(QPalette::WindowText));
 		for (int x = 0; x < 16; ++x) {
 			uint8_t b = m_cpu->memory.load8(m_cpu, (y + m_top) * 16 + x + m_base, nullptr);
 			painter.drawStaticText(QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp), b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
