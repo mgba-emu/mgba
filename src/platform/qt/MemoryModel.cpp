@@ -34,6 +34,8 @@ MemoryModel::MemoryModel(QWidget* parent)
 	m_cellHeight = metrics.height();
 	m_letterWidth = metrics.averageCharWidth();
 
+	setFocusPolicy(Qt::StrongFocus);
+
 	for (int i = 0; i < 256; ++i) {
 		QStaticText str(QString("%0").arg(i, 2, 16, QChar('0')).toUpper());
 		str.prepare(QTransform(), m_font);
@@ -83,6 +85,8 @@ void MemoryModel::setAlignment(int width) {
 		return;
 	}
 	m_align = width;
+	m_buffer = 0;
+	m_bufferedNybbles = 0;
 	viewport()->update();
 }
 
@@ -104,6 +108,8 @@ void MemoryModel::jumpToAddress(uint32_t address) {
 	m_top = (address - m_base) / 16;
 	boundsCheck();
 	verticalScrollBar()->setValue(m_top);
+	m_buffer = 0;
+	m_bufferedNybbles = 0;
 }
 
 void MemoryModel::resizeEvent(QResizeEvent*) {
@@ -204,6 +210,8 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 	uint32_t address = int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	m_selectionAnchor = address & ~(m_align - 1);
 	m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	m_buffer = 0;
+	m_bufferedNybbles = 0;
 	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
 }
@@ -220,8 +228,66 @@ void MemoryModel::mouseMoveEvent(QMouseEvent* event) {
 	} else {
 		m_selection = qMakePair(m_selectionAnchor, (address & ~(m_align - 1)) + m_align);
 	}
+	m_buffer = 0;
+	m_bufferedNybbles = 0;
 	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
+}
+
+void MemoryModel::keyPressEvent(QKeyEvent* event) {
+	if (m_selection.first >= m_selection.second) {
+		return;
+	}
+	int key = event->key();
+	uint8_t nybble = 0;
+	switch (key) {
+	case Qt::Key_0:
+	case Qt::Key_1:
+	case Qt::Key_2:
+	case Qt::Key_3:
+	case Qt::Key_4:
+	case Qt::Key_5:
+	case Qt::Key_6:
+	case Qt::Key_7:
+	case Qt::Key_8:
+	case Qt::Key_9:
+		nybble = key - Qt::Key_0;
+		break;
+	case Qt::Key_A:
+	case Qt::Key_B:
+	case Qt::Key_C:
+	case Qt::Key_D:
+	case Qt::Key_E:
+	case Qt::Key_F:
+		nybble = key - Qt::Key_A + 10;
+		break;
+	default:
+		return;
+	}
+	m_buffer <<= 4;
+	m_buffer |= nybble;
+	++m_bufferedNybbles;
+	if (m_bufferedNybbles == m_align * 2) {
+		switch (m_align) {
+		case 1:
+			GBAPatch8(m_cpu, m_selection.first, m_buffer, nullptr);
+			break;
+		case 2:
+			GBAPatch16(m_cpu, m_selection.first, m_buffer, nullptr);
+			break;
+		case 4:
+			GBAPatch32(m_cpu, m_selection.first, m_buffer, nullptr);
+			break;
+		}
+		m_bufferedNybbles = 0;
+		m_buffer = 0;
+		m_selection.first += m_align;
+		if (m_selection.second <= m_selection.first) {
+			m_selection.second = m_selection.first + m_align;
+		}
+		emit selectionChanged(m_selection.first, m_selection.second);
+		viewport()->update();
+	}
 }
 
 void MemoryModel::boundsCheck() {

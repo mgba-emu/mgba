@@ -941,6 +941,63 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 	}
 }
 
+void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	struct GBAMemory* memory = &gba->memory;
+	int8_t oldValue = -1;
+
+	switch (address >> BASE_OFFSET) {
+	case REGION_WORKING_RAM:
+		oldValue = ((int8_t*) memory->wram)[address & (SIZE_WORKING_RAM - 1)];
+		((int8_t*) memory->wram)[address & (SIZE_WORKING_RAM - 1)] = value;
+		break;
+	case REGION_WORKING_IRAM:
+		oldValue = ((int8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
+		((int8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)] = value;
+		break;
+	case REGION_IO:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		break;
+	case REGION_PALETTE_RAM:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		break;
+	case REGION_VRAM:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		break;
+	case REGION_OAM:
+		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		break;
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		_pristineCow(gba);
+		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
+		}
+		oldValue = ((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
+		((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)] = value;
+		break;
+	case REGION_CART_SRAM:
+	case REGION_CART_SRAM_MIRROR:
+		if (memory->savedata.type == SAVEDATA_SRAM) {
+			oldValue = ((int8_t*) memory->savedata.data)[address & (SIZE_CART_SRAM - 1)];
+			((int8_t*) memory->savedata.data)[address & (SIZE_CART_SRAM - 1)] = value;
+		} else {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+		}
+		break;
+	default:
+		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch8: 0x%08X", address);
+		break;
+	}
+	if (old) {
+		*old = oldValue;
+	}
+}
+
 #define LDM_LOOP(LDM) \
 	for (i = 0; i < 16; i += 4) { \
 		if (UNLIKELY(mask & (1 << i))) { \

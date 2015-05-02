@@ -44,6 +44,7 @@ protected:
 	void wheelEvent(QWheelEvent*) override;
 	void mousePressEvent(QMouseEvent*) override;
 	void mouseMoveEvent(QMouseEvent*) override;
+	void keyPressEvent(QKeyEvent*) override;
 
 private:
 	void boundsCheck();
@@ -65,6 +66,8 @@ private:
 	QSizeF m_cellSize;
 	QPair<uint32_t, uint32_t> m_selection;
 	uint32_t m_selectionAnchor;
+	uint32_t m_buffer;
+	int m_bufferedNybbles;
 };
 
 }

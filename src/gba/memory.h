@@ -154,6 +154,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 
 void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* old);
 void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* old);
+void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old);
 
 uint32_t GBALoadMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
 uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
