@@ -1016,10 +1016,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_inputController.setAllowOpposing(value.toBool());
 	}, this);
 
-	QMenu* other = new QMenu(tr("Other"), this);
-	m_shortcutController->addMenu(other);
-
-	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullScreen");
+	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);
+	connect(exitFullScreen, SIGNAL(triggered()), this, SLOT(exitFullScreen()));
+	exitFullScreen->setShortcut(QKeySequence("Esc"));
+	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
@@ -1066,8 +1066,13 @@ void Window::updateMRU() {
 }
 
 QAction* Window::addControlledAction(QMenu* menu, QAction* action, const QString& name) {
-	m_shortcutController->addAction(menu, action, name);
+	addHiddenAction(menu, action, name);
 	menu->addAction(action);
+	return action;
+}
+
+QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& name) {
+	m_shortcutController->addAction(menu, action, name);
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;

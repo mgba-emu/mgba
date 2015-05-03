@@ -131,6 +131,7 @@ private:
 	void openView(QWidget* widget);
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
 
 	GameController* m_controller;
 	Display* m_display;
