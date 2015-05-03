@@ -722,6 +722,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	emulationMenu->addSeparator();
 
+	m_shortcutController->addFunctions(emulationMenu, [this]() {
+		m_controller->setTurbo(true, false);
+	}, [this]() {
+		m_controller->setTurbo(false, false);
+	}, QKeySequence(Qt::Key_Tab), tr("Fast forward (held)"), "holdFastForward");
+
 	QAction* turbo = new QAction(tr("&Fast forward"), emulationMenu);
 	turbo->setCheckable(true);
 	turbo->setChecked(false);
@@ -1012,11 +1018,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QMenu* other = new QMenu(tr("Other"), this);
 	m_shortcutController->addMenu(other);
-	m_shortcutController->addFunctions(other, [this]() {
-		m_controller->setTurbo(true, false);
-	}, [this]() {
-		m_controller->setTurbo(false, false);
-	}, QKeySequence(Qt::Key_Tab), tr("Fast Forward (held)"), "holdFastForward");
 
 	addControlledAction(other, other->addAction(tr("Exit fullscreen"), this, SLOT(exitFullScreen()), QKeySequence("Esc")), "exitFullScreen");
 

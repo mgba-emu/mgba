@@ -50,6 +50,7 @@ Misc:
  - Qt: Move GL frame drawing back onto its own thread
  - GBA: Add status log level
  - GBA Thread: Add functionality for running callbacks on the GBA thread
+ - Qt: Fast forward (held) option moved from Other to Emulation menu
 
 0.2.0: (2015-04-03)
 Features:
