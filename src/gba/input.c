@@ -95,7 +95,7 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 		map->numMaps = 1;
 		impl = &map->maps[0];
 		impl->type = type;
-		impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
+		impl->map = calloc(GBA_KEY_MAX, sizeof(int));
 		TableInit(&impl->axes, 2, free);
 	} else {
 		impl = _lookupMap(map, type);
@@ -110,7 +110,7 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 		}
 		if (impl) {
 			impl->type = type;
-			impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
+			impl->map = calloc(GBA_KEY_MAX, sizeof(int));
 		} else {
 			map->maps = realloc(map->maps, sizeof(*map->maps) * map->numMaps * 2);
 			for (m = map->numMaps * 2 - 1; m > map->numMaps; --m) {
@@ -120,7 +120,7 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 			map->numMaps *= 2;
 			impl = &map->maps[m];
 			impl->type = type;
-			impl->map = calloc(GBA_KEY_MAX, sizeof(enum GBAKey));
+			impl->map = calloc(GBA_KEY_MAX, sizeof(int));
 		}
 		TableInit(&impl->axes, 2, free);
 	}

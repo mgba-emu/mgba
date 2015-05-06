@@ -44,6 +44,7 @@ Bugfixes:
  - Video: Fix an issue with very long filenames
  - SDL: Fix boundary conditions for joystick adjustments
  - Util: Fix a null-pointer issue when attempting to delete a key
+ - SDL: Allocate properly sized input maps
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
