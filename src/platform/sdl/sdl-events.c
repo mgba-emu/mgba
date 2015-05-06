@@ -32,7 +32,7 @@ static void _GBASDLRotationSample(struct GBARotationSource* source);
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	int subsystem = SDL_INIT_JOYSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	subsystem |= SDL_INIT_HAPTIC;
+	subsystem |= SDL_INIT_HAPTIC | SDL_INIT_VIDEO;
 #endif
 	if (SDL_InitSubSystem(subsystem) < 0) {
 		return false;
@@ -68,6 +68,8 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#else
+	context->screensaverSuspendDepth = 0;
 #endif
 	return true;
 }
@@ -582,3 +584,33 @@ static void _GBASDLRotationSample(struct GBARotationSource* source) {
 	CircleBufferWrite32(&rotation->zHistory, theta.i);
 	rotation->zDelta += theta.f - oldZ;
 }
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+void GBASDLSuspendScreensaver(struct GBASDLEvents* events) {
+	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
+		SDL_DisableScreenSaver();
+	}
+	++events->screensaverSuspendDepth;
+}
+
+void GBASDLResumeScreensaver(struct GBASDLEvents* events) {
+	--events->screensaverSuspendDepth;
+	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
+		SDL_EnableScreenSaver();
+	}
+}
+
+void GBASDLSetScreensaverSuspendable(struct GBASDLEvents* events, bool suspendable) {
+	bool wasSuspendable = events->screensaverSuspendable;
+	events->screensaverSuspendable = suspendable;
+	if (events->screensaverSuspendDepth > 0) {
+		if (suspendable && !wasSuspendable) {
+			SDL_DisableScreenSaver();
+		} else if (!suspendable && wasSuspendable) {
+			SDL_EnableScreenSaver();
+		}
+	} else {
+		SDL_EnableScreenSaver();
+	}
+}
+#endif

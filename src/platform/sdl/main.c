@@ -117,6 +117,11 @@ int main(int argc, char** argv) {
 	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
 	context.overrides = GBAConfigGetOverrides(&config);
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	GBASDLSetScreensaverSuspendable(&renderer.events, opts.suspendScreensaver);
+	GBASDLSuspendScreensaver(&renderer.events);
+#endif
+
 	int didFail = 0;
 	if (GBAThreadStart(&context)) {
 		renderer.runloop(&context, &renderer);
@@ -125,6 +130,11 @@ int main(int argc, char** argv) {
 		didFail = 1;
 		printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	GBASDLResumeScreensaver(&renderer.events);
+	GBASDLSetScreensaverSuspendable(&renderer.events, false);
+#endif
 
 	if (GBAThreadHasCrashed(&context)) {
 		didFail = 1;

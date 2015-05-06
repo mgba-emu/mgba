@@ -204,6 +204,9 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
 		opts->resampleVideo = fakeBool;
 	}
+	if (_lookupIntValue(config, "suspendScreensaver", &fakeBool)) {
+		opts->suspendScreensaver = fakeBool;
+	}
 	if (_lookupIntValue(config, "mute", &fakeBool)) {
 		opts->mute = fakeBool;
 	}
@@ -251,6 +254,7 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "mute", opts->mute);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
 
 	switch (opts->idleOptimization) {
 	case IDLE_LOOP_IGNORE:

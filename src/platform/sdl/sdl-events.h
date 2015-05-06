@@ -29,6 +29,8 @@ struct GBASDLEvents {
 	size_t joysticksClaimed[MAX_PLAYERS];
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Haptic** haptic;
+	int screensaverSuspendDepth;
+	bool screensaverSuspendable;
 #endif
 };
 
@@ -81,5 +83,11 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer*, const struct Configuration*);
 void GBASDLPlayerSaveConfig(const struct GBASDLPlayer*, struct Configuration*);
 
 void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const union SDL_Event* event);
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+void GBASDLSuspendScreensaver(struct GBASDLEvents*);
+void GBASDLResumeScreensaver(struct GBASDLEvents*);
+void GBASDLSetScreensaverSuspendable(struct GBASDLEvents*, bool suspendable);
+#endif
 
 #endif

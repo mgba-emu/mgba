@@ -114,6 +114,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
+	m_opts.suspendScreensaver = true;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);

@@ -469,3 +469,17 @@ void InputController::clearPendingEvent(GBAKey key) {
 bool InputController::hasPendingEvent(GBAKey key) const {
 	return m_pendingEvents.contains(key);
 }
+
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
+void InputController::suspendScreensaver() {
+	GBASDLSuspendScreensaver(&s_sdlEvents);
+}
+
+void InputController::resumeScreensaver() {
+	GBASDLResumeScreensaver(&s_sdlEvents);
+}
+
+void InputController::setScreensaverSuspendable(bool suspendable) {
+	GBASDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
+}
+#endif
