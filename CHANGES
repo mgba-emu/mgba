@@ -27,6 +27,7 @@ Bugfixes:
  - Util: Fix a null-pointer issue when attempting to delete a key
  - SDL: Allocate properly sized input maps
  - ARM7: Handle writeback for PC in addressing modes 2 and 3
+ - GBA: Handle out-of-bounds I/O access
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
