@@ -233,7 +233,12 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define ADDR_MODE_2_RM (cpu->gprs[rm])
 #define ADDR_MODE_2_IMMEDIATE (opcode & 0x00000FFF)
 #define ADDR_MODE_2_INDEX(U_OP, M) (cpu->gprs[rn] U_OP M)
-#define ADDR_MODE_2_WRITEBACK(ADDR) (cpu->gprs[rn] = ADDR)
+#define ADDR_MODE_2_WRITEBACK(ADDR) \
+	cpu->gprs[rn] = ADDR; \
+	if (UNLIKELY(rn == ARM_PC)) { \
+		ARM_WRITE_PC; \
+	}
+
 #define ADDR_MODE_2_LSL (cpu->gprs[rm] << ADDR_MODE_2_I)
 #define ADDR_MODE_2_LSR (ADDR_MODE_2_I_TEST ? ((uint32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : 0)
 #define ADDR_MODE_2_ASR (ADDR_MODE_2_I_TEST ? ((int32_t) cpu->gprs[rm]) >> ADDR_MODE_2_I : ((int32_t) cpu->gprs[rm]) >> 31)
