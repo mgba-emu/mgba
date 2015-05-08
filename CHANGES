@@ -29,6 +29,7 @@ Bugfixes:
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
+ - GBA Memory: Soft-crash if jumping past the end of a ROM
 
 0.2.0: (2015-04-03)
 Features:

@@ -225,6 +225,12 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 	gba->lastJump = address;
+	if (newRegion >= REGION_CART0 && (address & (SIZE_CART0 - 1)) >= memory->romSize) {
+		cpu->memory.activeRegion = _deadbeef;
+		cpu->memory.activeMask = 0;
+		GBALog(gba, GBA_LOG_FATAL, "Jumped past end of ROM");
+		return;
+	}
 	if (newRegion == memory->activeRegion) {
 		return;
 	}
@@ -233,29 +239,29 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		memory->biosPrefetch = cpu->prefetch[1];
 	}
 	memory->activeRegion = newRegion;
-	switch (address & ~OFFSET_MASK) {
-	case BASE_BIOS:
+	switch (newRegion) {
+	case REGION_BIOS:
 		cpu->memory.activeRegion = memory->bios;
 		cpu->memory.activeMask = SIZE_BIOS - 1;
 		break;
-	case BASE_WORKING_RAM:
+	case REGION_WORKING_RAM:
 		cpu->memory.activeRegion = memory->wram;
 		cpu->memory.activeMask = SIZE_WORKING_RAM - 1;
 		break;
-	case BASE_WORKING_IRAM:
+	case REGION_WORKING_IRAM:
 		cpu->memory.activeRegion = memory->iwram;
 		cpu->memory.activeMask = SIZE_WORKING_IRAM - 1;
 		break;
-	case BASE_VRAM:
+	case REGION_VRAM:
 		cpu->memory.activeRegion = (uint32_t*) gba->video.renderer->vram;
 		cpu->memory.activeMask = 0x0000FFFF;
 		break;
-	case BASE_CART0:
-	case BASE_CART0_EX:
-	case BASE_CART1:
-	case BASE_CART1_EX:
-	case BASE_CART2:
-	case BASE_CART2_EX:
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
 		cpu->memory.activeRegion = memory->rom;
 		cpu->memory.activeMask = SIZE_CART0 - 1;
 		break;
