@@ -53,6 +53,7 @@ Misc:
  - GBA: Add status log level
  - GBA Thread: Add functionality for running callbacks on the GBA thread
  - Qt: Fast forward (held) option moved from Other to Emulation menu
+ - GBA Memory: Soft-crash if jumping past the end of a ROM
 
 0.2.0: (2015-04-03)
 Features:
