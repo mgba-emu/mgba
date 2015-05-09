@@ -331,7 +331,7 @@ static void _unLz77(struct GBA* gba, int width) {
 	uint32_t disp;
 	int bytes;
 	int byte;
-	int halfword;
+	int halfword = 0;
 	while (remaining > 0) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {
