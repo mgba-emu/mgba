@@ -380,8 +380,12 @@ DEFINE_DECODER_ARM(MRC, ILL, info->operandFormat = ARM_OPERAND_NONE;)
 
 // Begin miscellaneous definitions
 
-DEFINE_DECODER_ARM(BKPT, BKPT, info->operandFormat = ARM_OPERAND_NONE;) // Not strictly in ARMv4T, but here for convenience
-DEFINE_DECODER_ARM(ILL, ILL, info->operandFormat = ARM_OPERAND_NONE;) // Illegal opcode
+DEFINE_DECODER_ARM(BKPT, BKPT,
+	info->operandFormat = ARM_OPERAND_NONE;
+	info->traps = 1;) // Not strictly in ARMv4T, but here for convenience
+DEFINE_DECODER_ARM(ILL, ILL,
+	info->operandFormat = ARM_OPERAND_NONE;
+	info->traps = 1;) // Illegal opcode
 
 DEFINE_DECODER_ARM(MSR, MSR,
 	info->affectsCPSR = 1;

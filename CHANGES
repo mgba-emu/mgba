@@ -48,6 +48,7 @@ Bugfixes:
  - ARM7: Handle writeback for PC in addressing modes 2 and 3
  - GBA: Handle out-of-bounds I/O access
  - GBA: Fix bounds-checking on EEPROM access
+ - ARM7: Make illegal instruction decoding consistent between ARM and Thumb
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
