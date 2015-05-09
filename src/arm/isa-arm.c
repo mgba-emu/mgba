@@ -327,13 +327,12 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		int rdHi = (opcode >> 16) & 0xF; \
 		int rs = (opcode >> 8) & 0xF; \
 		int rm = opcode & 0xF; \
-		UNUSED(rdHi); \
+		if (rdHi == ARM_PC || rd == ARM_PC) { \
+			return; \
+		} \
 		ARM_WAIT_MUL(cpu->gprs[rs]); \
 		BODY; \
-		S_BODY; \
-		if (rd == ARM_PC) { \
-			ARM_WRITE_PC; \
-		})
+		S_BODY;)
 
 #define DEFINE_MULTIPLY_INSTRUCTION_ARM(NAME, BODY, S_BODY) \
 	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, ) \
