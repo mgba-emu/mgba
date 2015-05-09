@@ -28,6 +28,7 @@ Bugfixes:
  - SDL: Allocate properly sized input maps
  - ARM7: Handle writeback for PC in addressing modes 2 and 3
  - GBA: Handle out-of-bounds I/O access
+ - GBA: Fix bounds-checking on EEPROM access
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set

@@ -345,12 +345,14 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			savedata->writeAddress |= (value & 0x1) << 6;
 		} else if (writeSize == 1) {
 			savedata->command = EEPROM_COMMAND_NULL;
-		} else {
+		} else if ((savedata->writeAddress >> 3) < SIZE_CART_EEPROM) {
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
 			savedata->data[savedata->writeAddress >> 3] = current;
 			++savedata->writeAddress;
+		} else {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
 		}
 		break;
 	case EEPROM_COMMAND_READ_PENDING:
@@ -375,7 +377,12 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	--savedata->readBitsRemaining;
 	if (savedata->readBitsRemaining < 64) {
 		int step = 63 - savedata->readBitsRemaining;
-		uint8_t data = savedata->data[(savedata->readAddress + step) >> 3] >> (0x7 - (step & 0x7));
+		uint32_t address = (savedata->readAddress + step) >> 3;
+		if (address >= SIZE_CART_EEPROM) {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Reading beyond end of EEPROM: %08X", address);
+			return 0xFF;
+		}
+		uint8_t data = savedata->data[address] >> (0x7 - (step & 0x7));
 		if (!savedata->readBitsRemaining) {
 			savedata->command = EEPROM_COMMAND_NULL;
 		}
