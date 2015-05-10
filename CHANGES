@@ -63,6 +63,7 @@ Misc:
  - GBA Thread: Add functionality for running callbacks on the GBA thread
  - Qt: Fast forward (held) option moved from Other to Emulation menu
  - GBA Memory: Soft-crash if jumping past the end of a ROM
+ - All: Add --help flag for command line programs
 
 0.2.0: (2015-04-03)
 Features:
