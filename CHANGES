@@ -36,6 +36,7 @@ Bugfixes:
  - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
  - GBA Video: Fix second frame mode 5
  - Perf: Fix race condition if a game crashes immediately on start
+ - All: Fix dependencies for libavcodec on Debian-derived platforms
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
