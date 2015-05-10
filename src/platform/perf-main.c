@@ -95,7 +95,14 @@ int main(int argc, char** argv) {
 	if (!didStart) {
 		goto cleanup;
 	}
+	GBAThreadInterrupt(&context);
+	if (GBAThreadHasCrashed(&context)) {
+		GBAThreadJoin(&context);
+		goto cleanup;
+	}
+
 	GBAGetGameCode(context.gba, gameCode);
+	GBAThreadContinue(&context);
 
 	int frames = perfOpts.frames;
 	if (!frames) {
