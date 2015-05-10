@@ -34,6 +34,7 @@ Bugfixes:
  - ARM7: Fix ARM multiply instructions when PC is a destination register
  - SDL: Fix potential build issues when Qt and SDL2 are in use
  - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
+ - GBA Video: Fix second frame mode 5
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Solar sensor can have shortcuts set
