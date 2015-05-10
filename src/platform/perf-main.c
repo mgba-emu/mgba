@@ -62,12 +62,13 @@ int main(int argc, char** argv) {
 	GBAConfigLoadDefaults(&config, &opts);
 
 	struct GBAArguments args;
-	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
+	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
 		GBAConfigDeinit(&config);
-		return 1;
+		return !parsed;
 	}
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);

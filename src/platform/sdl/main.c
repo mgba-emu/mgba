@@ -59,12 +59,13 @@ int main(int argc, char** argv) {
 	struct SubParser subparser;
 
 	initParserForGraphics(&subparser, &graphicsOpts);
-	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
+	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	if (!parsed || args.showHelp) {
 		usage(argv[0], subparser.usage);
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
 		GBAConfigDeinit(&config);
-		return 1;
+		return !parsed;
 	}
 
 	GBAConfigMap(&config, &opts);
