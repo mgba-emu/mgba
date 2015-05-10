@@ -54,6 +54,7 @@ Bugfixes:
  - SDL: Fix potential build issues when Qt and SDL2 are in use
  - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
  - GBA Video: Fix second frame mode 5
+ - Perf: Fix race condition if a game crashes immediately on start
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
