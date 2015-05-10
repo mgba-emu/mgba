@@ -1616,7 +1616,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 		BACKGROUND_BITMAP_ITERATE(160, 128);
 
 		if (!mosaicWait) {
-			LOAD_16(color, (offset + (localX >> 8) + (localY >> 8) * 160) << 1, renderer->d.vram);
+			LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vram);
 #ifndef COLOR_16_BIT
 			unsigned color32 = 0;
 			color32 |= (color << 9) & 0xF80000;
