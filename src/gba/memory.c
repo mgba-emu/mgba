@@ -231,13 +231,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 	gba->lastJump = address;
-	if (newRegion >= REGION_CART0 && (address & (SIZE_CART0 - 1)) >= memory->romSize) {
-		cpu->memory.activeRegion = _deadbeef;
-		cpu->memory.activeMask = 0;
-		GBALog(gba, GBA_LOG_FATAL, "Jumped past end of ROM");
-		return;
-	}
-	if (newRegion == memory->activeRegion) {
+	if (newRegion == memory->activeRegion && (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize)) {
 		return;
 	}
 
@@ -270,8 +264,12 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	case REGION_CART2_EX:
 		cpu->memory.activeRegion = memory->rom;
 		cpu->memory.activeMask = SIZE_CART0 - 1;
-		break;
+		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
+			break;
+		}
+		// Fall through
 	default:
+		memory->activeRegion = 0;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
 		GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");

@@ -52,6 +52,7 @@ Bugfixes:
  - GBA BIOS: Initialize a variable that may be uninitialized in very rare cases
  - ARM7: Fix ARM multiply instructions when PC is a destination register
  - SDL: Fix potential build issues when Qt and SDL2 are in use
+ - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
 Misc:
  - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
