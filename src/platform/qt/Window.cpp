@@ -637,15 +637,29 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* quickSaveMenu = fileMenu->addMenu(tr("Quick save"));
 	m_shortcutController->addMenu(quickLoadMenu);
 	m_shortcutController->addMenu(quickSaveMenu);
+
+	QAction* quickLoad = new QAction(tr("Load recent"), quickLoadMenu);
+	connect(quickLoad, SIGNAL(triggered()), m_controller, SLOT(loadState()));
+	m_gameActions.append(quickLoad);
+	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
+
+	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
+	connect(quickSave, SIGNAL(triggered()), m_controller, SLOT(saveState()));
+	m_gameActions.append(quickSave);
+	addControlledAction(quickSaveMenu, quickSave, "quickSave");
+
+	quickLoadMenu->addSeparator();
+	quickSaveMenu->addSeparator();
+
 	int i;
 	for (i = 1; i < 10; ++i) {
-		QAction* quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
+		quickLoad = new QAction(tr("State &%1").arg(i), quickLoadMenu);
 		quickLoad->setShortcut(tr("F%1").arg(i));
 		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
 		m_gameActions.append(quickLoad);
 		addControlledAction(quickLoadMenu, quickLoad, QString("quickLoad.%1").arg(i));
 
-		QAction* quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
+		quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
 		quickSave->setShortcut(tr("Shift+F%1").arg(i));
 		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
 		m_gameActions.append(quickSave);

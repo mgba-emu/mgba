@@ -15,6 +15,7 @@ Features:
  - Status messages for actions taken while a game is running (e.g. save/load state)
  - Memory inspector
  - Screensaver can now be suspended while a game is running
+ - Load/save the most recent savestate slot
 Bugfixes:
  - GBA: Fix timers not updating timing when writing to only the reload register
  - All: Fix sanitize-deb script not cleaning up after itself

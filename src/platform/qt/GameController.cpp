@@ -45,6 +45,7 @@ GameController::GameController(QObject* parent)
 	, m_turboForced(false)
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
+	, m_stateSlot(1)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -504,7 +505,9 @@ void GameController::setUseBIOS(bool use) {
 }
 
 void GameController::loadState(int slot) {
-	m_stateSlot = slot;
+	if (slot > 0) {
+		m_stateSlot = slot;
+	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		GBALoadState(context, context->stateDir, controller->m_stateSlot);
@@ -514,7 +517,9 @@ void GameController::loadState(int slot) {
 }
 
 void GameController::saveState(int slot) {
-	m_stateSlot = slot;
+	if (slot > 0) {
+		m_stateSlot = slot;
+	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);

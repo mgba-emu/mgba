@@ -113,8 +113,8 @@ public slots:
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
 	void setFPSTarget(float fps);
-	void loadState(int slot);
-	void saveState(int slot);
+	void loadState(int slot = 0);
+	void saveState(int slot = 0);
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
