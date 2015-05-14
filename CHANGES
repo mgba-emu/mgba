@@ -15,7 +15,6 @@ Bugfixes:
  - GBA: Fix bounds-checking on EEPROM access
  - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
  - GBA BIOS: Initialize a variable that may be uninitialized in very rare cases
- - GBA Memory: Ensure changing the timing of a DMA reschedules it
  - GBA Memory: Allow SRAM to be 64kB
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
  - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
