@@ -17,56 +17,63 @@ Features:
  - Screensaver can now be suspended while a game is running
  - Load/save the most recent savestate slot
 Bugfixes:
- - GBA: Fix timers not updating timing when writing to only the reload register
- - All: Fix sanitize-deb script not cleaning up after itself
- - Qt: Fix Display object leak when closing a window
- - Qt: Fix .deb dependencies
- - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
- - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
  - GBA Memory: Ensure changing the timing of a DMA reschedules it
- - Qt: Fix window not regaining focus after exiting savestate window
- - Qt: Fix regression where video would not record if the game had already started
- - GBA: Fix rewind boundary conditions
- - GBA: Add initial I/O register settings for background matrix registers
- - Qt: Fix potential crash if a gamepad causes focus to change
- - GBA Memory: Allow SRAM to be 64kB
- - Qt: Fix controller axis querying
  - GBA Memory: Improve Thumb open bus behavior
- - GBA Memory: Fix 32-bit loads from unaddress cartridge space
- - Qt: Fix multiplayer windows opening as the wrong size
- - Qt: Fix controllers sometimes not loading the right profile
- - GBA: Fix hang when loading a savestate if sync to video is enabled
- - Debugger: Fix use-after-free in breakpoint clearing code
- - Util: Fix resource leak in UTF-8 handling code
  - VFS: Fix resource leaks if some allocations fail
- - Debugger: Fix boundary conditions in tab completion
  - Video: Fix an issue with very long filenames
- - SDL: Fix boundary conditions for joystick adjustments
- - Util: Fix a null-pointer issue when attempting to delete a key
- - SDL: Allocate properly sized input maps
- - ARM7: Handle writeback for PC in addressing modes 2 and 3
- - GBA: Handle out-of-bounds I/O access
- - GBA: Fix bounds-checking on EEPROM access
- - ARM7: Make illegal instruction decoding consistent between ARM and Thumb
- - GBA BIOS: Initialize a variable that may be uninitialized in very rare cases
- - ARM7: Fix ARM multiply instructions when PC is a destination register
- - SDL: Fix potential build issues when Qt and SDL2 are in use
- - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
- - GBA Video: Fix second frame mode 5
- - Perf: Fix race condition if a game crashes immediately on start
- - All: Fix dependencies for libavcodec on Debian-derived platforms
 Misc:
- - Qt: Show multiplayer numbers in window title
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
  - Qt: Move GL frame drawing back onto its own thread
  - GBA: Add status log level
  - GBA Thread: Add functionality for running callbacks on the GBA thread
  - Qt: Fast forward (held) option moved from Other to Emulation menu
- - GBA Memory: Soft-crash if jumping past the end of a ROM
  - All: Add --help flag for command line programs
+
+0.2.1: (2015-05-13)
+Bugfixes:
+ - All: Fix sanitize-deb script not cleaning up after itself
+ - All: Fix dependencies for libavcodec on Debian-derived platforms
+ - ARM7: Handle writeback for PC in addressing modes 2 and 3
+ - ARM7: Make illegal instruction decoding consistent between ARM and Thumb
+ - ARM7: Fix ARM multiply instructions when PC is a destination register
+ - Debugger: Fix use-after-free in breakpoint clearing code
+ - Debugger: Fix boundary conditions in tab completion
+ - GBA: Fix timers not updating timing when writing to only the reload register
+ - GBA: Fix rewind boundary conditions
+ - GBA: Add initial I/O register settings for background matrix registers
+ - GBA: Fix hang when loading a savestate if sync to video is enabled
+ - GBA: Handle out-of-bounds I/O access
+ - GBA: Fix bounds-checking on EEPROM access
+ - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
+ - GBA BIOS: Initialize a variable that may be uninitialized in very rare cases
+ - GBA Memory: Allow SRAM to be 64kB
+ - GBA Memory: Fix 32-bit loads from unaddress cartridge space
+ - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
+ - GBA Video: Fix second frame mode 5
+ - Perf: Fix race condition if a game crashes immediately on start
+ - Qt: Fix Display object leak when closing a window
+ - Qt: Fix .deb dependencies
+ - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
+ - Qt: Fix window not regaining focus after exiting savestate window
+ - Qt: Fix regression where video would not record if the game had already started
+ - Qt: Fix potential crash if a gamepad causes focus to change
+ - Qt: Fix controller axis querying
+ - Qt: Fix multiplayer windows opening as the wrong size
+ - Qt: Fix controllers sometimes not loading the right profile
+ - SDL: Fix boundary conditions for joystick adjustments
+ - SDL: Allocate properly sized input maps
+ - SDL: Fix potential build issues when Qt and SDL2 are in use
+ - Util: Fix resource leak in UTF-8 handling code
+ - Util: Fix a null-pointer issue when attempting to delete a key
+ - VFS: Fix resource leaks if some allocations fail
+ - Video: Fix an issue with very long filenames
+Misc:
+ - GBA Memory: Soft-crash if jumping past the end of a ROM
+ - Qt: Show multiplayer numbers in window title
+ - Qt: Solar sensor can have shortcuts set
 
 0.2.0: (2015-04-03)
 Features:
