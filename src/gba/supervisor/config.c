@@ -129,12 +129,12 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
-	snprintf(out, outLength, "%s/.config/%s", home, BINARY_NAME);
+	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
 	mkdir(out, 0755);
 #else
 	char home[MAX_PATH];
 	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(out, outLength, "%s\\%s", home, PROJECT_NAME);
+	snprintf(out, outLength, "%s\\%s", home, projectName);
 	CreateDirectoryA(out, NULL);
 #endif
 }

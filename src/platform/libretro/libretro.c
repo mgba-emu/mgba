@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "libretro.h"
 
+#include "util/common.h"
+
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
@@ -66,8 +68,8 @@ void retro_set_input_state(retro_input_state_t input) {
 void retro_get_system_info(struct retro_system_info* info) {
    info->need_fullpath = false;
    info->valid_extensions = "gba";
-   info->library_version = PROJECT_VERSION;
-   info->library_name = PROJECT_NAME;
+   info->library_version = projectVersion;
+   info->library_name = projectName;
    info->block_extract = false;
 }
 

@@ -62,7 +62,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 {
-	setWindowTitle(PROJECT_NAME);
+	setWindowTitle(projectName);
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
 	m_controller = new GameController(this);
@@ -506,7 +506,7 @@ void Window::gameStarted(GBAThread* context) {
 		action->setDisabled(false);
 	}
 	appendMRU(context->fname);
-	setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
+	setWindowTitle(tr("%1 - %2").arg(projectName).arg(title));
 	attachWidget(m_display);
 
 #ifndef Q_OS_MAC
@@ -523,7 +523,7 @@ void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
-	setWindowTitle(tr(PROJECT_NAME));
+	setWindowTitle(projectName);
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
@@ -577,13 +577,13 @@ void Window::showFPS() {
 		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
 	}
 	if (m_frameList.isEmpty()) {
-		setWindowTitle(tr(PROJECT_NAME " - %1").arg(title));
+		setWindowTitle(tr("%1 - %2").arg(projectName).arg(title));
 		return;
 	}
 	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
 	float fps = (m_frameList.count() - 1) * 10000.f / interval;
 	fps = round(fps) / 10.f;
-	setWindowTitle(tr(PROJECT_NAME " - %1 (%2 fps)").arg(title).arg(fps));
+	setWindowTitle(tr("%1 - %2 (%3 fps)").arg(projectName).arg(title).arg(fps));
 }
 
 void Window::openStateWindow(LoadSave ls) {

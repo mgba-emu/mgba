@@ -28,8 +28,8 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
 
-	QApplication::setApplicationName(PROJECT_NAME);
-	QApplication::setApplicationVersion(PROJECT_VERSION);
+	QApplication::setApplicationName(projectName);
+	QApplication::setApplicationVersion(projectVersion);
 
 #ifndef Q_OS_MAC
 	m_window.show();
