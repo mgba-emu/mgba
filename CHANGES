@@ -1,5 +1,6 @@
 0.2.2: (Future)
 Bugfixes:
+ - GBA Video: Blended sprites should never have other effects applied
 
 0.2.1: (2015-05-13)
 Bugfixes:
