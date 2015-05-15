@@ -21,6 +21,8 @@
 #include <strings.h>
 #include <unistd.h>
 
+#include "version.h"
+
 #define UNUSED(V) (void)(V)
 
 #endif
