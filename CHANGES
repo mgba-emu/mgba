@@ -15,6 +15,7 @@ Misc:
  - All: Enable static linking for Windows
  - All: Enable static linking for OS X
  - All: Add --help flag for command line programs
+ - Qt: Show version info in window title
 
 0.2.1: (2015-05-13)
 Bugfixes:

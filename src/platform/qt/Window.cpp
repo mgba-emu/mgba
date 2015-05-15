@@ -58,12 +58,12 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 {
-	setWindowTitle(projectName);
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setOverrides(m_config->overrides());
+	updateTitle();
 
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
@@ -467,7 +467,7 @@ void Window::gameStarted(GBAThread* context) {
 		action->setDisabled(false);
 	}
 	appendMRU(context->fname);
-	setWindowTitle(tr("%1 - %2").arg(projectName).arg(title));
+	updateTitle();
 	attachWidget(m_display);
 
 #ifndef Q_OS_MAC
@@ -484,7 +484,7 @@ void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
-	setWindowTitle(projectName);
+	updateTitle();
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
@@ -529,22 +529,38 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
-	char gameTitle[13] = { '\0' };
-	GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
-
-	QString title(gameTitle);
-	std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
-	if (multiplayer && multiplayer->attached() > 1) {
-		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
-	}
 	if (m_frameList.isEmpty()) {
-		setWindowTitle(tr("%1 - %2").arg(projectName).arg(title));
+		updateTitle();
 		return;
 	}
 	qint64 interval = m_frameList.first().msecsTo(m_frameList.last());
 	float fps = (m_frameList.count() - 1) * 10000.f / interval;
 	fps = round(fps) / 10.f;
-	setWindowTitle(tr("%1 - %2 (%3 fps)").arg(projectName).arg(title).arg(fps));
+	updateTitle(fps);
+}
+
+void Window::updateTitle(float fps) {
+	QString title;
+
+	m_controller->threadInterrupt();
+	if (m_controller->isLoaded()) {
+		char gameTitle[13] = { '\0' };
+		GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
+
+		title = (gameTitle);
+	}
+	std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
+	if (multiplayer && multiplayer->attached() > 1) {
+		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
+	}
+	m_controller->threadContinue();
+	if (title.isNull()) {
+		setWindowTitle(tr("%1 - %2").arg(projectName).arg(projectVersion));
+	} else if (isnan(fps)) {
+		setWindowTitle(tr("%1 - %2 - %3").arg(projectName).arg(title).arg(projectVersion));
+	} else {
+		setWindowTitle(tr("%1 - %2 (%3 fps) - %4").arg(projectName).arg(title).arg(fps).arg(projectVersion));
+	}
 }
 
 void Window::openStateWindow(LoadSave ls) {
