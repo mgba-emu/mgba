@@ -1,3 +1,6 @@
+0.2.2: (Future)
+Bugfixes:
+
 0.2.1: (2015-05-13)
 Bugfixes:
  - All: Fix sanitize-deb script not cleaning up after itself
