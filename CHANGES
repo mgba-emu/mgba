@@ -33,6 +33,7 @@ Misc:
  - GBA Thread: Add functionality for running callbacks on the GBA thread
  - Qt: Fast forward (held) option moved from Other to Emulation menu
  - All: Add --help flag for command line programs
+ - Qt: Show version info in window title
 
 0.2.1: (2015-05-13)
 Bugfixes:

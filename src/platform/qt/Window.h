@@ -133,6 +133,8 @@ private:
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
 
+	void updateTitle(float fps = NAN);
+
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
