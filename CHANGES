@@ -1,6 +1,7 @@
 0.2.2: (Future)
 Bugfixes:
  - GBA Video: Blended sprites should never have other effects applied
+ - GBA: Fix crash if a 512kb flash save is loaded when a game has a 1Mb flash override
 
 0.2.1: (2015-05-13)
 Bugfixes:
