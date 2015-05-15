@@ -149,14 +149,17 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	size_t flashSize = SIZE_CART_FLASH512;
+	int32_t flashSize = SIZE_CART_FLASH512;
+	if (savedata->type == SAVEDATA_FLASH1M) {
+		flashSize = SIZE_CART_FLASH1M;
+	}
 	off_t end;
 	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
 		end = savedata->vf->size(savedata->vf);
-		if (end < SIZE_CART_FLASH512) {
+		if (end < flashSize) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 			flashSize = SIZE_CART_FLASH1M;
 		}
