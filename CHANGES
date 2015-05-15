@@ -23,6 +23,7 @@ Bugfixes:
  - GBA Memory: Improve Thumb open bus behavior
  - VFS: Fix resource leaks if some allocations fail
  - Video: Fix an issue with very long filenames
+ - GBA Video: Blended sprites should never have other effects applied
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

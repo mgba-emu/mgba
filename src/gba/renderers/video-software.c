@@ -1764,8 +1764,7 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
 	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
-	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT && renderer->target2Bd) {
-		// Hack: if a sprite is blended, then the variant palette is not used, but we don't know if it's blended in advance
+	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
 		variant = 0;
 	}
 	color_t* palette = &renderer->normalPalette[0x100];
