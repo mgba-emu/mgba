@@ -36,6 +36,11 @@ extern "C" {
 
 using namespace QGBA;
 
+#ifdef __WIN32
+// This is a macro everywhere except MinGW, it seems
+using std::isnan;
+#endif
+
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_logView(new LogView())
