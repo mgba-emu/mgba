@@ -366,6 +366,7 @@ void GameController::closeGame() {
 void GameController::crashGame(const QString& crashMessage) {
 	closeGame();
 	emit gameCrashed(crashMessage);
+	emit gameStopped(&m_threadContext);
 }
 
 bool GameController::isPaused() {
