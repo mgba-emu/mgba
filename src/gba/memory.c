@@ -854,7 +854,7 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		_pristineCow(gba);
-		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+		if ((address & (SIZE_CART0 - 1)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 4)) + 4;
 		}
 		LOAD_32(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
@@ -921,7 +921,7 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		_pristineCow(gba);
-		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+		if ((address & (SIZE_CART0 - 1)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
 		}
 		LOAD_16(oldValue, address & (SIZE_CART0 - 1), gba->memory.rom);
@@ -978,7 +978,7 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		_pristineCow(gba);
-		if ((address & (SIZE_CART0 - 1)) < gba->memory.romSize) {
+		if ((address & (SIZE_CART0 - 1)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
 		}
 		oldValue = ((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
