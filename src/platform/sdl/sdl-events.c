@@ -33,6 +33,8 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	int subsystem = SDL_INIT_JOYSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	subsystem |= SDL_INIT_HAPTIC | SDL_INIT_VIDEO;
+
+	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 #endif
 	if (SDL_InitSubSystem(subsystem) < 0) {
 		return false;
