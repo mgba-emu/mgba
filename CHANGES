@@ -26,6 +26,7 @@ Bugfixes:
  - GBA Video: Blended sprites should never have other effects applied
  - GBA: Fix crash if a 512kb flash save is loaded when a game has a 1Mb flash override
  - Qt: Better cleanup when a game crashes
+ - Qt: Fix open ROM dialog filtering for archive formats
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
