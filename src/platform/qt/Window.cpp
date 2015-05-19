@@ -200,7 +200,18 @@ void Window::selectROM() {
 	if (doPause) {
 		m_controller->setPaused(true);
 	}
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString(), tr("Game Boy Advance ROMs (*.gba *.zip *.rom *.bin)"));
+	QStringList formats{
+		"*.gba",
+#ifdef USE_LIBZIP
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
+	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString(), filter);
 	if (doPause) {
 		m_controller->setPaused(false);
 	}
