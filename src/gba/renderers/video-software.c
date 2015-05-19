@@ -1757,7 +1757,14 @@ static int _preprocessSprite(struct GBAVideoSoftwareRenderer* renderer, struct G
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
 	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
-		variant = 0;
+		int target2 = renderer->target2Bd << 4;
+		target2 |= renderer->bg[0].target2 << (renderer->bg[0].priority);
+		target2 |= renderer->bg[1].target2 << (renderer->bg[1].priority);
+		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
+		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
+		if (GBAObjAttributesCGetPriority(sprite->c) < target2) {
+			variant = 0;
+		}
 	}
 	color_t* palette = &renderer->normalPalette[0x100];
 	if (variant) {
