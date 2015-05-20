@@ -228,8 +228,8 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	if (oldButton >= 0) {
 		m_buttons.take(oldButton);
 	}
+	updateAxis(index, -1, GamepadAxisEvent::NEUTRAL);
 	if (button >= 0) {
-		updateAxis(index, -1, GamepadAxisEvent::NEUTRAL);
 		m_buttons[button] = item;
 	}
 	if (m_config) {
