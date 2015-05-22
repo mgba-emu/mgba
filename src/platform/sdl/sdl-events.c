@@ -22,8 +22,11 @@
 #endif
 
 #define GYRO_STEPS 100
+#define RUMBLE_PWM 35
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
+#endif
 static int32_t _GBASDLReadTiltX(struct GBARotationSource* rumble);
 static int32_t _GBASDLReadTiltY(struct GBARotationSource* rumble);
 static int32_t _GBASDLReadGyroZ(struct GBARotationSource* rumble);
@@ -154,6 +157,8 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	player->rumble.d.setRumble = _GBASDLSetRumble;
+	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
+	player->rumble.level = 0;
 	player->rumble.p = player;
 #endif
 
@@ -531,8 +536,15 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 	if (!sdlRumble->p->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->haptic)) {
 		return;
 	}
-	if (enable) {
-		SDL_HapticRumblePlay(sdlRumble->p->haptic, 1.0f, 20);
+	sdlRumble->level += enable;
+	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&sdlRumble->history, &oldLevel);
+		sdlRumble->level -= oldLevel;
+	}
+	CircleBufferWrite8(&sdlRumble->history, enable);
+	if (sdlRumble->level) {
+		SDL_HapticRumblePlay(sdlRumble->p->haptic, sdlRumble->level / (float) RUMBLE_PWM, 20);
 	} else {
 		SDL_HapticRumbleStop(sdlRumble->p->haptic);
 	}

@@ -48,6 +48,9 @@ struct GBASDLPlayer {
 	struct GBASDLRumble {
 		struct GBARumble d;
 		struct GBASDLPlayer* p;
+
+		int level;
+		struct CircleBuffer history;
 	} rumble;
 #endif
 
