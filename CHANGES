@@ -17,6 +17,7 @@ Features:
  - Screensaver can now be suspended while a game is running
  - Load/save the most recent savestate slot
  - Support varible speed (PWM) rumble
+ - Ability to cap fast forward speed
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit

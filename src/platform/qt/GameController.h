@@ -121,6 +121,7 @@ public slots:
 	void setVolume(int);
 	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
+	void setTurboSpeed(float ratio = -1);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
@@ -151,6 +152,7 @@ private slots:
 private:
 	void updateKeys();
 	void redoSamples(int samples);
+	void enableTurbo();
 
 	uint32_t* m_drawContext;
 	GBAThread m_threadContext;
@@ -177,8 +179,10 @@ private:
 
 	bool m_videoSync;
 	bool m_audioSync;
+	float m_fpsTarget;
 	bool m_turbo;
 	bool m_turboForced;
+	float m_turboSpeed;
 
 	int m_stateSlot;
 

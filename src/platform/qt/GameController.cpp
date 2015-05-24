@@ -41,8 +41,10 @@ GameController::GameController(QObject* parent)
 	, m_audioProcessor(AudioProcessor::create())
 	, m_videoSync(VIDEO_SYNC)
 	, m_audioSync(AUDIO_SYNC)
+	, m_fpsTarget(-1)
 	, m_turbo(false)
 	, m_turboForced(false)
+	, m_turboSpeed(-1)
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
@@ -99,6 +101,7 @@ GameController::GameController(QObject* parent)
 		context->gba->rtcSource = &controller->m_rtc;
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
+		controller->m_fpsTarget = context->fpsTarget;
 		controller->gameStarted(context);
 	};
 
@@ -487,7 +490,11 @@ void GameController::setAudioBufferSamples(int samples) {
 
 void GameController::setFPSTarget(float fps) {
 	threadInterrupt();
+	m_fpsTarget = fps;
 	m_threadContext.fpsTarget = fps;
+	if (m_turbo && m_turboSpeed > 0) {
+		m_threadContext.fpsTarget *= m_turboSpeed;
+	}
 	redoSamples(m_audioProcessor->getBufferSamples());
 	threadContinue();
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
@@ -577,9 +584,30 @@ void GameController::setTurbo(bool set, bool forced) {
 	}
 	m_turbo = set;
 	m_turboForced = set && forced;
+	enableTurbo();
+}
+
+void GameController::setTurboSpeed(float ratio) {
+	m_turboSpeed = ratio;
+	enableTurbo();
+}
+
+void GameController::enableTurbo() {
 	threadInterrupt();
-	m_threadContext.sync.audioWait = set ? false : m_audioSync;
-	m_threadContext.sync.videoFrameWait = set ? false : m_videoSync;
+	if (!m_turbo) {
+		m_threadContext.fpsTarget = m_fpsTarget;
+		m_threadContext.sync.audioWait = m_audioSync;
+		m_threadContext.sync.videoFrameWait = m_videoSync;
+		redoSamples(m_audioProcessor->getBufferSamples());
+	} else if (m_turboSpeed <= 0) {
+		m_threadContext.sync.audioWait = false;
+		m_threadContext.sync.videoFrameWait = false;
+	} else {
+		m_threadContext.fpsTarget = m_fpsTarget * m_turboSpeed;
+		m_threadContext.sync.audioWait = true;
+		m_threadContext.sync.videoFrameWait = false;
+		redoSamples(m_audioProcessor->getBufferSamples());
+	}
 	threadContinue();
 }
 

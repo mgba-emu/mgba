@@ -787,6 +787,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(turbo, SIGNAL(triggered(bool)), m_controller, SLOT(setTurbo(bool)));
 	addControlledAction(emulationMenu, turbo, "fastForward");
 
+	QMenu* ffspeedMenu = emulationMenu->addMenu(tr("Fast forward speed"));
+	ConfigOption* ffspeed = m_config->addOption("fastForwardRatio");
+	ffspeed->connect([this](const QVariant& value) {
+		m_controller->setTurboSpeed(value.toFloat());
+	}, this);
+	ffspeed->addValue(tr("Unbounded"), -1.0f, ffspeedMenu);
+	ffspeed->setValue(QVariant(-1.0f));
+	ffspeedMenu->addSeparator();
+	for (i = 2; i < 6; ++i) {
+		ffspeed->addValue(tr("%0x").arg(i), i, ffspeedMenu);
+	}
+	m_config->updateOption("fastForwardRatio");
+
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
 	rewind->setShortcut(tr("`"));
 	connect(rewind, SIGNAL(triggered()), m_controller, SLOT(rewind()));
