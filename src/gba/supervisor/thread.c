@@ -238,9 +238,9 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		threadContext->volume = GBA_AUDIO_VOLUME_MAX;
 	}
 	if (threadContext->mute) {
-		gba.audio.volume = 0;
+		gba.audio.masterVolume = 0;
 	} else {
-		gba.audio.volume = threadContext->volume;
+		gba.audio.masterVolume = threadContext->volume;
 	}
 
 	gba.keySource = &threadContext->activeKeys;
