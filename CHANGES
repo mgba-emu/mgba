@@ -18,6 +18,7 @@ Features:
  - Load/save the most recent savestate slot
  - Support varible speed (PWM) rumble
  - Ability to cap fast forward speed
+ - Finer control over FPS target
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit

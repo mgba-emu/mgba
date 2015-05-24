@@ -123,6 +123,10 @@ void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 	saveSetting(key, field->lineEdit());
 }
 
+void SettingsView::saveSetting(const char* key, const QDoubleSpinBox* field) {
+	saveSetting(key, field->cleanText());
+}
+
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
 	saveSetting(key, field->text());
 }
@@ -147,6 +151,11 @@ void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
 
 void SettingsView::loadSetting(const char* key, QComboBox* field) {
 	loadSetting(key, field->lineEdit());
+}
+
+void SettingsView::loadSetting(const char* key, QDoubleSpinBox* field) {
+	QString option = loadSetting(key);
+	field->setValue(option.toDouble());
 }
 
 void SettingsView::loadSetting(const char* key, QLineEdit* field) {

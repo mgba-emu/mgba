@@ -35,6 +35,7 @@ private:
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);
+	void saveSetting(const char* key, const QDoubleSpinBox*);
 	void saveSetting(const char* key, const QLineEdit*);
 	void saveSetting(const char* key, const QSlider*);
 	void saveSetting(const char* key, const QSpinBox*);
@@ -42,6 +43,7 @@ private:
 
 	void loadSetting(const char* key, QAbstractButton*);
 	void loadSetting(const char* key, QComboBox*);
+	void loadSetting(const char* key, QDoubleSpinBox*);
 	void loadSetting(const char* key, QLineEdit*);
 	void loadSetting(const char* key, QSlider*);
 	void loadSetting(const char* key, QSpinBox*);
