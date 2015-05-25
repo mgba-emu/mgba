@@ -133,6 +133,23 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
 		value = sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOCNT, value);
+	} else {
+		// Dummy drivers
+		switch (sio->mode) {
+		case SIO_NORMAL_8:
+		case SIO_NORMAL_32:
+			value |= 0x0004;
+			if (value & 0x0080) {
+			if ((value & 0x4080) == 0x4080) {
+				// TODO: Test this on hardware to see if this is correct
+				GBARaiseIRQ(sio->p, IRQ_SIO);
+			}
+			value &= ~0x0080;
+			break;
+		default:
+			// TODO
+			break;
+		}
 	}
 	sio->siocnt = value;
 	_switchMode(sio);

@@ -39,6 +39,7 @@ Misc:
  - All: Add --help flag for command line programs
  - Qt: Show version info in window title
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
+ - GBA SIO: Add a dummy driver for Normal mode
 
 0.2.1: (2015-05-13)
 Bugfixes:
