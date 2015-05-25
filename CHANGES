@@ -22,7 +22,6 @@ Features:
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
- - GBA Memory: Ensure changing the timing of a DMA reschedules it
  - GBA Memory: Improve Thumb open bus behavior
  - VFS: Fix resource leaks if some allocations fail
  - Video: Fix an issue with very long filenames
