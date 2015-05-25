@@ -139,7 +139,6 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		case SIO_NORMAL_8:
 		case SIO_NORMAL_32:
 			value |= 0x0004;
-			if (value & 0x0080) {
 			if ((value & 0x4080) == 0x4080) {
 				// TODO: Test this on hardware to see if this is correct
 				GBARaiseIRQ(sio->p, IRQ_SIO);
