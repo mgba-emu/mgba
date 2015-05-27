@@ -314,12 +314,12 @@ void GBARewindSettingsChanged(struct GBAThread* threadContext, int newCapacity, 
 	}
 }
 
-void GBARewind(struct GBAThread* thread, int nStates) {
+int GBARewind(struct GBAThread* thread, int nStates) {
 	if (nStates > thread->rewindBufferSize || nStates < 0) {
 		nStates = thread->rewindBufferSize;
 	}
 	if (nStates == 0) {
-		return;
+		return 0;
 	}
 	int offset = thread->rewindBufferWriteOffset - nStates;
 	if (offset < 0) {
@@ -327,7 +327,7 @@ void GBARewind(struct GBAThread* thread, int nStates) {
 	}
 	struct GBASerializedState* state = thread->rewindBuffer[offset];
 	if (!state) {
-		return;
+		return 0;
 	}
 	thread->rewindBufferSize -= nStates;
 	thread->rewindBufferWriteOffset = offset;
@@ -335,6 +335,7 @@ void GBARewind(struct GBAThread* thread, int nStates) {
 	if (thread->rewindScreenBuffer) {
 		thread->gba->video.renderer->putPixels(thread->gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, &thread->rewindScreenBuffer[offset * VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL]);
 	}
+	return nStates;
 }
 
 void GBARewindAll(struct GBAThread* thread) {
