@@ -142,6 +142,10 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 2, m_cellSize.height())), palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
+					if (isEditing(address)) {
+						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp));
+						continue;
+					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
@@ -156,6 +160,10 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 4, m_cellSize.height())), palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
+					if (isEditing(address)) {
+						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp));
+						continue;
+					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
@@ -173,6 +181,10 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize), palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
+					if (isEditing(address)) {
+						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp));
+						continue;
+					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
@@ -286,8 +298,8 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 			m_selection.second = m_selection.first + m_align;
 		}
 		emit selectionChanged(m_selection.first, m_selection.second);
-		viewport()->update();
 	}
+	viewport()->update();
 }
 
 void MemoryModel::boundsCheck() {
@@ -309,4 +321,22 @@ bool MemoryModel::isInSelection(uint32_t address) {
 		return true;
 	}
 	return false;
+}
+
+bool MemoryModel::isEditing(uint32_t address) {
+	return m_bufferedNybbles && m_selection.first == (address & ~(m_align - 1));
+}
+
+void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
+	QPointF o(origin);
+	for (int nybbles = m_bufferedNybbles; nybbles > 0; nybbles -= 2) {
+		if (nybbles > 1) {
+			uint8_t b = m_buffer >> ((nybbles - 2) * 4);
+			painter.drawStaticText(o, m_staticNumbers[b]);
+		} else {
+			int b = m_buffer & 0xF;
+			painter.drawStaticText(o, m_staticAscii[b + '0']);
+		}
+		o += QPointF(m_letterWidth * 2, 0);
+	}
 }

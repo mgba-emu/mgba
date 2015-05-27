@@ -50,6 +50,8 @@ private:
 	void boundsCheck();
 
 	bool isInSelection(uint32_t address);
+	bool isEditing(uint32_t address);
+	void drawEditingText(QPainter& painter, const QPointF& origin);
 
 	ARMCore* m_cpu;
 	QFont m_font;
