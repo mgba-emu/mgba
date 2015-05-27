@@ -150,6 +150,13 @@ GameController::GameController(QObject* parent)
 		controller->postLog(level, message);
 	};
 
+	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
+		GBARewind(&m_threadContext, 1);
+		emit rewound(&m_threadContext);
+		emit frameAvailable(m_drawContext);
+	});
+	m_rewindTimer.setInterval(100);
+
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
@@ -441,6 +448,16 @@ void GameController::rewind(int states) {
 	threadContinue();
 	emit rewound(&m_threadContext);
 	emit frameAvailable(m_drawContext);
+}
+
+void GameController::startRewinding() {
+	threadInterrupt();
+	m_rewindTimer.start();
+}
+
+void GameController::stopRewinding() {
+	m_rewindTimer.stop();
+	threadContinue();
 }
 
 void GameController::keyPressed(int key) {

@@ -19,6 +19,7 @@ Features:
  - Support varible speed (PWM) rumble
  - Ability to cap fast forward speed
  - Finer control over FPS target
+ - Holdable shortcut for rewinding one frame at a time
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit

@@ -11,6 +11,7 @@
 #include <QObject>
 #include <QMutex>
 #include <QString>
+#include <QTimer>
 
 #include <memory>
 
@@ -108,6 +109,8 @@ public slots:
 	void frameAdvance();
 	void setRewind(bool enable, int capacity, int interval);
 	void rewind(int states = 0);
+	void startRewinding();
+	void stopRewinding();
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void clearKeys();
@@ -183,6 +186,7 @@ private:
 	bool m_turbo;
 	bool m_turboForced;
 	float m_turboSpeed;
+	QTimer m_rewindTimer;
 
 	int m_stateSlot;
 

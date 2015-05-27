@@ -800,6 +800,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
+	m_shortcutController->addFunctions(emulationMenu, [this]() {
+		m_controller->startRewinding();
+	}, [this]() {
+		m_controller->stopRewinding();
+	}, QKeySequence("~"), tr("Rewind (held)"), "holdRewind");
+
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
 	rewind->setShortcut(tr("`"));
 	connect(rewind, SIGNAL(triggered()), m_controller, SLOT(rewind()));
