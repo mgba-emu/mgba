@@ -7,6 +7,7 @@ Bugfixes:
  - ARM7: Fix Thumb MUL timing
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
+ - All: Enable static linking for Windows
 
 0.2.1: (2015-05-13)
 Bugfixes:
