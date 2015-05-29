@@ -4,6 +4,7 @@ Bugfixes:
  - GBA: Fix crash if a 512kb flash save is loaded when a game has a 1Mb flash override
  - Qt: Better cleanup when a game crashes
  - Qt: Fix open ROM dialog filtering for archive formats
+ - ARM7: Fix Thumb MUL timing
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
 
