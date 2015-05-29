@@ -8,6 +8,7 @@
 #include "AudioProcessor.h"
 #include "InputController.h"
 #include "MultiplayerController.h"
+#include "VFileDevice.h"
 
 #include <QDateTime>
 #include <QThread>
@@ -280,13 +281,13 @@ void GameController::openGame() {
 	}
 
 	if (!m_bios.isNull() &&m_useBios) {
-		m_threadContext.bios = VFileOpen(m_bios.toLocal8Bit().constData(), O_RDONLY);
+		m_threadContext.bios = VFileDevice::open(m_bios, O_RDONLY);
 	} else {
 		m_threadContext.bios = nullptr;
 	}
 
 	if (!m_patch.isNull()) {
-		m_threadContext.patch = VFileOpen(m_patch.toLocal8Bit().constData(), O_RDONLY);
+		m_threadContext.patch = VFileDevice::open(m_patch, O_RDONLY);
 	}
 
 	m_inputController->recalibrateAxes();
@@ -322,7 +323,7 @@ void GameController::importSharkport(const QString& path) {
 	if (!m_gameOpen) {
 		return;
 	}
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
+	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
 		return;
 	}
@@ -336,7 +337,7 @@ void GameController::exportSharkport(const QString& path) {
 	if (!m_gameOpen) {
 		return;
 	}
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		return;
 	}

@@ -8,7 +8,9 @@
 
 #include <QFileDevice>
 
-struct VFile;
+extern "C" {
+#include "util/vfs.h"
+}
 
 namespace QGBA {
 
@@ -17,6 +19,8 @@ Q_OBJECT
 
 public:
 	VFileDevice(VFile* vf, QObject* parent = nullptr);
+
+	static VFile* open(QString path, int mode);
 
 protected:
 	virtual qint64 readData(char* data, qint64 maxSize) override;

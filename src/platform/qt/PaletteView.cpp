@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "PaletteView.h"
 
+#include "VFileDevice.h"
+
 #include <QFileDialog>
 #include <QFontDatabase>
 
@@ -86,7 +88,7 @@ void PaletteView::exportPalette(int start, int length) {
 		m_controller->threadContinue();
 		return;
 	}
-	VFile* vf = VFileOpen(filename.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		m_controller->threadContinue();
 		return;
