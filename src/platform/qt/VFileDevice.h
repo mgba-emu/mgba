@@ -28,7 +28,7 @@ protected:
 	virtual qint64 size() const override;
 
 private:
-	mutable VFile* m_vf;
+	VFile* m_vf;
 };
 
 }
