@@ -53,9 +53,9 @@ void PaletteView::updatePalette() {
 void PaletteView::selectIndex(int index) {
 	uint16_t color = m_controller->thread()->gba->video.palette[index];
 	m_ui.selected->setColor(0, color);
-	uint32_t r = color & 0x1F;
-	uint32_t g = (color >> 5) & 0x1F;
-	uint32_t b = (color >> 10) & 0x1F;
+	uint32_t r = GBA_R5(color);
+	uint32_t g = GBA_G5(color);
+	uint32_t b = GBA_B5(color);
 	uint32_t hexcode = (r << 19) | (g << 11) | (b << 3);
 	m_ui.hexcode->setText(tr("#%0").arg(hexcode, 6, 16, QChar('0')));
 	m_ui.value->setText(tr("0x%0").arg(color, 4, 16, QChar('0')));
