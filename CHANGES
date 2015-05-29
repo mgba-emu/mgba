@@ -2,7 +2,7 @@
 Features:
  - Ability to hide individual background layers, or OBJs
  - Ability to mute individual audio channels
- - Palette viewer
+ - Palette viewer and exporter
  - Volume control
  - More shortcuts are editable (e.g. quick save/load)
  - Rewind now shows the frame after rewinding

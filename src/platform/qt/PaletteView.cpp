@@ -5,7 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "PaletteView.h"
 
+#include <QFileDialog>
 #include <QFontDatabase>
+
+extern "C" {
+#include "gba/supervisor/export.h"
+#include "util/vfs.h"
+}
 
 using namespace QGBA;
 
@@ -33,6 +39,8 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 
 	connect(m_ui.bgGrid, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
 	connect(m_ui.objGrid, &Swatch::indexPressed, [this] (int index) { selectIndex(index + 256); });
+	connect(m_ui.exportBG, &QAbstractButton::clicked, [this] () { exportPalette(0, 256); });
+	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this] () { exportPalette(256, 256); });
 
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
 }
@@ -63,4 +71,27 @@ void PaletteView::selectIndex(int index) {
 	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
 	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
+}
+
+void PaletteView::exportPalette(int start, int length) {
+	if (start >= 512) {
+		return;
+	}
+	if (start + length > 512) {
+		length = 512 - start;
+	}
+	m_controller->threadInterrupt();
+	QString filename = QFileDialog::getSaveFileName(this, tr("Export palette"), QString(), tr("Windows PAL (*.pal)"));
+	if (filename.isNull()) {
+		m_controller->threadContinue();
+		return;
+	}
+	VFile* vf = VFileOpen(filename.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		m_controller->threadContinue();
+		return;
+	}
+	GBAExportPaletteRIFF(vf, length, &m_controller->thread()->gba->video.palette[start]);
+	vf->close(vf);
+	m_controller->threadContinue();
 }
