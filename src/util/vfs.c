@@ -44,3 +44,33 @@ struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const
 	}
 	return vf;
 }
+
+ssize_t VFileWrite32LE(struct VFile* vf, int32_t word) {
+	uint32_t leword;
+	STORE_32LE(word, 0, &leword);
+	return vf->write(vf, &leword, 4);
+}
+
+ssize_t VFileWrite16LE(struct VFile* vf, int16_t hword) {
+	uint16_t lehword;
+	STORE_16LE(hword, 0, &lehword);
+	return vf->write(vf, &lehword, 2);
+}
+
+ssize_t VFileRead32LE(struct VFile* vf, void* word) {
+	uint32_t leword;
+	ssize_t r = vf->read(vf, &leword, 4);
+	if (r == 4) {
+		STORE_32LE(leword, 0, word);
+	}
+	return r;
+}
+
+ssize_t VFileRead16LE(struct VFile* vf, void* hword) {
+	uint16_t lehword;
+	ssize_t r = vf->read(vf, &lehword, 2);
+	if (r == 2) {
+		STORE_16LE(lehword, 0, hword);
+	}
+	return r;
+}

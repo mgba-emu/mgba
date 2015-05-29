@@ -72,4 +72,9 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 
+ssize_t VFileWrite32LE(struct VFile* vf, int32_t word);
+ssize_t VFileWrite16LE(struct VFile* vf, int16_t hword);
+ssize_t VFileRead32LE(struct VFile* vf, void* word);
+ssize_t VFileRead16LE(struct VFile* vf, void* hword);
+
 #endif
