@@ -66,7 +66,10 @@ bool GBAApp::event(QEvent* event) {
 	return QApplication::event(event);
 }
 
-Window* GBAApp::newWindowInternal() {
+Window* GBAApp::newWindow() {
+	if (m_multiplayer.attached() >= MAX_GBAS) {
+		return nullptr;
+	}
 	Window* w = new Window(&m_configController, m_multiplayer.attached());
 	m_windows[m_multiplayer.attached()] = w;
 	w->setAttribute(Qt::WA_DeleteOnClose);

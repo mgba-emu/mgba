@@ -10,6 +10,7 @@ Bugfixes:
  - GBA: Check for improperly sized savestates when loading
  - GBA: Check for savestates made from differently sized ROMs
  - GBA Video: Fix out-of-bounds tiles in mosaic
+ - Qt: Cap the maximum number of multiplayer windows
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
  - All: Enable static linking for Windows
