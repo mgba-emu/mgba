@@ -31,6 +31,7 @@ Bugfixes:
  - Qt: Better cleanup when a game crashes
  - Qt: Fix open ROM dialog filtering for archive formats
  - ARM7: Fix Thumb MUL timing
+ - Qt: Cap the maximum number of multiplayer windows
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
