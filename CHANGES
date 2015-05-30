@@ -45,6 +45,7 @@ Misc:
  - GBA: GBARewind now returns how many states it has rewound
  - All: Enable static linking for Windows
  - All: Enable static linking for OS X
+ - Qt: Migrate multiplayer window handling into GBAApp
 
 0.2.1: (2015-05-13)
 Bugfixes:

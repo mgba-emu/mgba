@@ -83,7 +83,7 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 	m_controller->threadInterrupt();
-	QString filename = QFileDialog::getSaveFileName(this, tr("Export palette"), QString(), tr("Windows PAL (*.pal)"));
+	QString filename = QFileDialog::getSaveFileName(this, tr("Export palette"), QString(), tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	if (filename.isNull()) {
 		m_controller->threadContinue();
 		return;

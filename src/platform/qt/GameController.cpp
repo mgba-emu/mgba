@@ -178,7 +178,7 @@ GameController::~GameController() {
 	delete[] m_drawContext;
 }
 
-void GameController::setMultiplayerController(std::shared_ptr<MultiplayerController> controller) {
+void GameController::setMultiplayerController(MultiplayerController* controller) {
 	if (controller == m_multiplayer) {
 		return;
 	}
@@ -192,7 +192,7 @@ void GameController::clearMultiplayerController() {
 		return;
 	}
 	m_multiplayer->detachGame(this);
-	m_multiplayer.reset();
+	m_multiplayer = nullptr;
 }
 
 void GameController::setOverride(const GBACartridgeOverride& override) {

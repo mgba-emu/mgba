@@ -63,8 +63,8 @@ public:
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
-	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
-	std::shared_ptr<MultiplayerController> multiplayerController() { return m_multiplayer; }
+	void setMultiplayerController(MultiplayerController* controller);
+	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
 	void setOverride(const GBACartridgeOverride& override);
@@ -191,7 +191,7 @@ private:
 	int m_stateSlot;
 
 	InputController* m_inputController;
-	std::shared_ptr<MultiplayerController> m_multiplayer;
+	MultiplayerController* m_multiplayer;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;
