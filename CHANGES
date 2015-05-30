@@ -16,6 +16,7 @@ Misc:
  - All: Enable static linking for OS X
  - All: Add --help flag for command line programs
  - Qt: Show version info in window title
+ - Qt: Migrate multiplayer window handling into GBAApp
 
 0.2.1: (2015-05-13)
 Bugfixes:

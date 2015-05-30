@@ -17,6 +17,7 @@
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "GameController.h"
+#include "GBAApp.h"
 #include "GBAKeyEditor.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
@@ -549,7 +550,7 @@ void Window::updateTitle(float fps) {
 
 		title = (gameTitle);
 	}
-	std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
+	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {
 		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
 	}
@@ -632,21 +633,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
 	connect(multiWindow, &QAction::triggered, [this]() {
-		std::shared_ptr<MultiplayerController> multiplayer = m_controller->multiplayerController();
-		if (!multiplayer) {
-			multiplayer = std::make_shared<MultiplayerController>();
-			m_controller->setMultiplayerController(multiplayer);
-		}
-		Window* w2 = new Window(m_config, multiplayer->attached());
-		w2->setAttribute(Qt::WA_DeleteOnClose);
-#ifndef Q_OS_MAC
-		w2->show();
-#endif
-		w2->loadConfig();
-		w2->controller()->setMultiplayerController(multiplayer);
-#ifdef Q_OS_MAC
-		w2->show();
-#endif
+		GBAApp::newWindow();
 	});
 	addControlledAction(fileMenu, multiWindow, "multiWindow");
 

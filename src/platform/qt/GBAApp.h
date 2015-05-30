@@ -9,11 +9,16 @@
 #include <QApplication>
 
 #include "ConfigController.h"
-#include "Window.h"
+#include "MultiplayerController.h"
+
+extern "C" {
+#include "gba/sio.h"
+}
 
 namespace QGBA {
 
 class GameController;
+class Window;
 
 class GBAApp : public QApplication {
 Q_OBJECT
@@ -21,12 +26,17 @@ Q_OBJECT
 public:
 	GBAApp(int& argc, char* argv[]);
 
+	static Window* newWindow();
+
 protected:
 	bool event(QEvent*);
 
 private:
+	Window* newWindowInternal();
+
 	ConfigController m_configController;
-	Window m_window;
+	Window* m_windows[MAX_GBAS];
+	MultiplayerController m_multiplayer;
 };
 
 }

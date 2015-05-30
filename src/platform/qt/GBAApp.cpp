@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "GameController.h"
+#include "Window.h"
 
 #include <QFileOpenEvent>
 
@@ -17,10 +18,13 @@ extern "C" {
 
 using namespace QGBA;
 
+GBAApp* g_app = nullptr;
+
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
-	, m_window(&m_configController)
 {
+	g_app = this;
+
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
@@ -30,30 +34,53 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
 
+	Window* w = new Window(&m_configController);
+	m_windows[0] = w;
+
 #ifndef Q_OS_MAC
-	m_window.show();
+	w->show();
 #endif
 
 	GBAArguments args;
 	if (m_configController.parseArguments(&args, argc, argv)) {
-		m_window.argumentsPassed(&args);
+		w->argumentsPassed(&args);
 	} else {
-		m_window.loadConfig();
+		w->loadConfig();
 	}
 	freeArguments(&args);
 
 	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
-	m_window.controller()->reloadAudioDriver();
+	w->controller()->reloadAudioDriver();
 
+	w->controller()->setMultiplayerController(&m_multiplayer);
 #ifdef Q_OS_MAC
-	m_window.show();
+	w->show();
 #endif
 }
 
 bool GBAApp::event(QEvent* event) {
 	if (event->type() == QEvent::FileOpen) {
-		m_window.controller()->loadGame(static_cast<QFileOpenEvent*>(event)->file());
+		m_windows[0]->controller()->loadGame(static_cast<QFileOpenEvent*>(event)->file());
 		return true;
 	}
 	return QApplication::event(event);
+}
+
+Window* GBAApp::newWindowInternal() {
+	Window* w = new Window(&m_configController, m_multiplayer.attached());
+	m_windows[m_multiplayer.attached()] = w;
+	w->setAttribute(Qt::WA_DeleteOnClose);
+#ifndef Q_OS_MAC
+	w->show();
+#endif
+	w->loadConfig();
+	w->controller()->setMultiplayerController(&m_multiplayer);
+#ifdef Q_OS_MAC
+	w->show();
+#endif
+	return w;
+}
+
+Window* GBAApp::newWindow() {
+	return g_app->newWindowInternal();
 }
