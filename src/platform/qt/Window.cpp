@@ -5,8 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Window.h"
 
-#include <QFileDialog>
-#include <QFileInfo>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
@@ -197,10 +195,6 @@ void Window::saveConfig() {
 }
 
 void Window::selectROM() {
-	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
-	if (doPause) {
-		m_controller->setPaused(true);
-	}
 	QStringList formats{
 		"*.gba",
 #ifdef USE_LIBZIP
@@ -212,27 +206,15 @@ void Window::selectROM() {
 		"*.rom",
 		"*.bin"};
 	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select ROM"), m_config->getQtOption("lastDirectory").toString(), filter);
-	if (doPause) {
-		m_controller->setPaused(false);
-	}
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
 	if (!filename.isEmpty()) {
-		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadGame(filename);
 	}
 }
 
 void Window::selectBIOS() {
-	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
-	if (doPause) {
-		m_controller->setPaused(true);
-	}
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"), m_config->getQtOption("lastDirectory").toString());
-	if (doPause) {
-		m_controller->setPaused(false);
-	}
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
-		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_config->setOption("bios", filename);
 		m_config->updateOption("bios");
 		m_config->setOption("useBios", true);
@@ -242,16 +224,8 @@ void Window::selectBIOS() {
 }
 
 void Window::selectPatch() {
-	bool doPause = m_controller->isLoaded() && !m_controller->isPaused();
-	if (doPause) {
-		m_controller->setPaused(true);
-	}
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select patch"), m_config->getQtOption("lastDirectory").toString(), tr("Patches (*.ips *.ups *.bps)"));
-	if (doPause) {
-		m_controller->setPaused(false);
-	}
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select patch"), tr("Patches (*.ips *.ups *.bps)"));
 	if (!filename.isEmpty()) {
-		m_config->setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 		m_controller->loadPatch(filename);
 	}
 }
@@ -633,7 +607,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fileMenu->addSeparator();
 	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
 	connect(multiWindow, &QAction::triggered, [this]() {
-		GBAApp::newWindow();
+		GBAApp::app()->newWindow();
 	});
 	addControlledAction(fileMenu, multiWindow, "multiWindow");
 

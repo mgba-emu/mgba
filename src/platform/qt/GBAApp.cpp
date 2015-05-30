@@ -9,6 +9,8 @@
 #include "GameController.h"
 #include "Window.h"
 
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFileOpenEvent>
 
 extern "C" {
@@ -22,6 +24,7 @@ GBAApp* g_app = nullptr;
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
+	, m_windows{}
 {
 	g_app = this;
 
@@ -84,6 +87,44 @@ Window* GBAApp::newWindow() {
 	return w;
 }
 
-Window* GBAApp::newWindow() {
-	return g_app->newWindowInternal();
+GBAApp* GBAApp::app() {
+	return g_app;
+}
+
+void GBAApp::interruptAll() {
+	for (int i = 0; i < MAX_GBAS; ++i) {
+		if (!m_windows[i] || !m_windows[i]->controller()->isLoaded()) {
+			continue;
+		}
+		m_windows[i]->controller()->threadInterrupt();
+	}
+}
+
+void GBAApp::continueAll() {
+	for (int i = 0; i < MAX_GBAS; ++i) {
+		if (!m_windows[i] || !m_windows[i]->controller()->isLoaded()) {
+			continue;
+		}
+		m_windows[i]->controller()->threadContinue();
+	}
+}
+
+QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter) {
+	interruptAll();
+	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController.getQtOption("lastDirectory").toString(), filter);
+	continueAll();
+	if (!filename.isEmpty()) {
+		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+	}
+	return filename;
+}
+
+QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter) {
+	interruptAll();
+	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController.getQtOption("lastDirectory").toString(), filter);
+	continueAll();
+	if (!filename.isEmpty()) {
+		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
+	}
+	return filename;
 }

@@ -25,8 +25,16 @@ Q_OBJECT
 
 public:
 	GBAApp(int& argc, char* argv[]);
+	static GBAApp* app();
 
-	static Window* newWindow();
+	Window* newWindow();
+
+	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+
+public slots:
+	void interruptAll();
+	void continueAll();
 
 protected:
 	bool event(QEvent*);

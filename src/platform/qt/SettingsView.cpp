@@ -7,8 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "ConfigController.h"
-
-#include <QFileDialog>
+#include "GBAApp.h"
 
 using namespace QGBA;
 
@@ -62,7 +61,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 }
 
 void SettingsView::selectBios() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
 		m_ui.bios->setText(filename);
 	}
