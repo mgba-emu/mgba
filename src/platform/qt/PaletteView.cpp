@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "PaletteView.h"
 
+#include "GBAApp.h"
 #include "VFileDevice.h"
 
-#include <QFileDialog>
 #include <QFontDatabase>
 
 extern "C" {
@@ -83,7 +83,7 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 	m_controller->threadInterrupt();
-	QString filename = QFileDialog::getSaveFileName(this, tr("Export palette"), QString(), tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export palette"), tr("Windows PAL (*.pal)"));
 	if (filename.isNull()) {
 		m_controller->threadContinue();
 		return;
