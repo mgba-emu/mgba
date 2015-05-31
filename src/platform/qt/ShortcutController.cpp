@@ -224,11 +224,11 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	}
 	ShortcutItem* item = itemAt(index);
 	int oldButton = item->button();
-	item->setButton(button);
 	if (oldButton >= 0) {
 		m_buttons.take(oldButton);
 	}
 	updateAxis(index, -1, GamepadAxisEvent::NEUTRAL);
+	item->setButton(button);
 	if (button >= 0) {
 		m_buttons[button] = item;
 	}
@@ -249,7 +249,6 @@ void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadA
 	ShortcutItem* item = itemAt(index);
 	int oldAxis = item->axis();
 	GamepadAxisEvent::Direction oldDirection = item->direction();
-	item->setAxis(axis, direction);
 	if (oldAxis >= 0) {
 		m_axes.take(qMakePair(oldAxis, oldDirection));
 	}
@@ -257,6 +256,7 @@ void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadA
 		updateButton(index, -1);
 		m_axes[qMakePair(axis, direction)] = item;
 	}
+	item->setAxis(axis, direction);
 	if (m_config) {
 		char d = '\0';
 		if (direction == GamepadAxisEvent::POSITIVE) {
