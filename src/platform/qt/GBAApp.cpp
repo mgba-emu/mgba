@@ -9,7 +9,6 @@
 #include "GameController.h"
 #include "Window.h"
 
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QFileOpenEvent>
 
@@ -128,4 +127,33 @@ QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QStr
 		m_configController.setQtOption("lastDirectory", QFileInfo(filename).dir().path());
 	}
 	return filename;
+}
+
+QFileDialog* GBAApp::getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter) {
+	FileDialog* dialog = new FileDialog(this, owner, title, filter);
+	dialog->setAcceptMode(QFileDialog::AcceptOpen);
+	return dialog;
+}
+
+QFileDialog* GBAApp::getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter) {
+	FileDialog* dialog = new FileDialog(this, owner, title, filter);
+	dialog->setAcceptMode(QFileDialog::AcceptSave);
+	return dialog;
+}
+
+GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)
+	: QFileDialog(parent, caption, app->m_configController.getQtOption("lastDirectory").toString(), filter)
+	, m_app(app)
+{
+}
+
+int GBAApp::FileDialog::exec() {
+	m_app->interruptAll();
+	bool didAccept = QFileDialog::exec() == QDialog::Accepted;
+	QStringList filenames = selectedFiles();
+	if (!filenames.isEmpty()) {
+		m_app->m_configController.setQtOption("lastDirectory", QFileInfo(filenames[0]).dir().path());
+	}
+	m_app->continueAll();
+	return didAccept;
 }

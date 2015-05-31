@@ -7,6 +7,7 @@
 #define QGBA_APP_H
 
 #include <QApplication>
+#include <QFileDialog>
 
 #include "ConfigController.h"
 #include "MultiplayerController.h"
@@ -32,6 +33,9 @@ public:
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 
+	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
+	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
+
 public slots:
 	void interruptAll();
 	void continueAll();
@@ -40,6 +44,15 @@ protected:
 	bool event(QEvent*);
 
 private:
+	class FileDialog : public QFileDialog {
+	public:
+		FileDialog(GBAApp* app, QWidget* parent = nullptr, const QString& caption = QString(), const QString& filter = QString());
+		virtual int exec() override;
+
+	private:
+		GBAApp* m_app;
+	};
+
 	Window* newWindowInternal();
 
 	ConfigController m_configController;

@@ -8,6 +8,7 @@
 #include "GBAApp.h"
 #include "VFileDevice.h"
 
+#include <QFileDialog>
 #include <QFontDatabase>
 
 extern "C" {
@@ -83,17 +84,23 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 	m_controller->threadInterrupt();
-	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export palette"), tr("Windows PAL (*.pal)"));
-	if (filename.isNull()) {
+	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"), tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
+	if (!dialog->exec()) {
 		m_controller->threadContinue();
 		return;
 	}
+	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		m_controller->threadContinue();
 		return;
 	}
-	GBAExportPaletteRIFF(vf, length, &m_controller->thread()->gba->video.palette[start]);
+	QString filter = dialog->selectedNameFilter();
+	if (filter.contains("*.pal")) {
+		GBAExportPaletteRIFF(vf, length, &m_controller->thread()->gba->video.palette[start]);
+	} else if (filter.contains("*.act")) {
+		GBAExportPaletteACT(vf, length, &m_controller->thread()->gba->video.palette[start]);
+	}
 	vf->close(vf);
 	m_controller->threadContinue();
 }
