@@ -78,9 +78,9 @@
           </property>
           <property name="maximumDate">
            <date>
-            <year>2100</year>
-            <month>1</month>
-            <day>6</day>
+            <year>2099</year>
+            <month>12</month>
+            <day>31</day>
            </date>
           </property>
           <property name="minimumDate">
