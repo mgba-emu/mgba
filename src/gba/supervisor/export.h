@@ -11,5 +11,6 @@
 struct VFile;
 
 bool GBAExportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors);
+bool GBAExportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors);
 
 #endif

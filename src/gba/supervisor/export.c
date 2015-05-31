@@ -55,3 +55,27 @@ bool GBAExportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colo
 
 	return true;
 }
+
+bool GBAExportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors) {
+	if (entries > 256) {
+		return false;
+	}
+	size_t i;
+	for (i = 0; i < entries; ++i) {
+		uint8_t block[3] = {
+			GBA_R8(colors[i]),
+			GBA_G8(colors[i]),
+			GBA_B8(colors[i]),
+		};
+		if (vf->write(vf, block, 3) < 3) {
+			return false;
+		}
+	}
+	for (; i < 256; ++i) {
+		uint8_t block[3] = { 0, 0, 0 };
+		if (vf->write(vf, block, 3) < 3) {
+			return false;
+		}
+	}
+	return true;
+}
