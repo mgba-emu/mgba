@@ -187,6 +187,7 @@ private:
 	bool m_turboForced;
 	float m_turboSpeed;
 	QTimer m_rewindTimer;
+	bool m_wasPaused;
 
 	int m_stateSlot;
 

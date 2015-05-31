@@ -46,6 +46,7 @@ GameController::GameController(QObject* parent)
 	, m_turbo(false)
 	, m_turboForced(false)
 	, m_turboSpeed(-1)
+	, m_wasPaused(false)
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
@@ -351,6 +352,7 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
+	m_rewindTimer.stop();
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
 	}
@@ -388,7 +390,7 @@ bool GameController::isPaused() {
 }
 
 void GameController::setPaused(bool paused) {
-	if (!m_gameOpen || paused == GBAThreadIsPaused(&m_threadContext)) {
+	if (!m_gameOpen || m_rewindTimer.isActive() || paused == GBAThreadIsPaused(&m_threadContext)) {
 		return;
 	}
 	if (paused) {
@@ -452,13 +454,17 @@ void GameController::rewind(int states) {
 }
 
 void GameController::startRewinding() {
-	threadInterrupt();
+	if (!m_gameOpen) {
+		return;
+	}
+	m_wasPaused = isPaused();
+	setPaused(true);
 	m_rewindTimer.start();
 }
 
 void GameController::stopRewinding() {
 	m_rewindTimer.stop();
-	threadContinue();
+	setPaused(m_wasPaused);
 }
 
 void GameController::keyPressed(int key) {
