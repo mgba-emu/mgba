@@ -231,7 +231,7 @@ struct GBASerializedState {
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
-		int32_t fifoSize;
+		uint32_t fifoSize;
 		unsigned ch1Volume : 4;
 		unsigned ch1Dead : 1;
 		unsigned ch1Hi : 1;

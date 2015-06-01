@@ -906,8 +906,12 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 
 	CircleBufferClear(&audio->chA.fifo);
 	CircleBufferClear(&audio->chB.fifo);
-	int i;
-	for (i = 0; i < state->audio.fifoSize; ++i) {
+	size_t fifoSize = state->audio.fifoSize;
+	if (state->audio.fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
+		fifoSize = CircleBufferCapacity(&audio->chA.fifo);
+	}
+	size_t i;
+	for (i = 0; i < fifoSize; ++i) {
 		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}
