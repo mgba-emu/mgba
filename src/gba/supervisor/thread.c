@@ -279,7 +279,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 				if (threadContext->run) {
 					threadContext->run(threadContext);
 				}
-				threadContext->state = THREAD_RUNNING;
+				threadContext->state = threadContext->savedState;
 				ConditionWake(&threadContext->stateCond);
 			}
 			if (threadContext->state == THREAD_RESETING) {
@@ -610,6 +610,7 @@ void GBARunOnThread(struct GBAThread* threadContext, void (*run)(struct GBAThrea
 	MutexLock(&threadContext->stateMutex);
 	threadContext->run = run;
 	_waitOnInterrupt(threadContext);
+	threadContext->savedState = threadContext->state;
 	threadContext->state = THREAD_RUN_ON;
 	threadContext->gba->cpu->nextEvent = 0;
 	ConditionWake(&threadContext->stateCond);
