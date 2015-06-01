@@ -443,6 +443,7 @@ void Window::enterFullScreen() {
 		return;
 	}
 	showFullScreen();
+	setCursor(Qt::BlankCursor);
 #ifndef Q_OS_MAC
 	if (m_controller->isLoaded() && !m_controller->isPaused()) {
 		menuBar()->hide();
@@ -454,6 +455,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
+	unsetCursor();
 	showNormal();
 	menuBar()->show();
 }

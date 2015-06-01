@@ -16,5 +16,4 @@ Display::Display(QWidget* parent)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	setCursor(Qt::BlankCursor);
 }
