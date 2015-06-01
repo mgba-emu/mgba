@@ -51,6 +51,7 @@ Misc:
  - Qt: Unified file opening and saving with last location
  - Qt: Fix windows being resizable when they shouldn't have been
  - Qt: Only hide cursor in full screen
+ - Perf: Ability to load savestates immediately on launch
 
 0.2.1: (2015-05-13)
 Bugfixes:
