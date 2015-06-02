@@ -250,6 +250,9 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
 		return _loadPNGState(gba, vf);
 	}
 	#endif
+	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
+		return false;
+	}
 	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
 	if (!state) {
 		return false;
