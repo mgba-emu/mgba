@@ -34,6 +34,7 @@ Bugfixes:
  - Qt: Cap the maximum number of multiplayer windows
  - Qt: Fix maximum year in sensor override
  - GBA: Cap audio FIFO read size during deserialization
+ - GBA: Check for corrupted savestates when loading
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

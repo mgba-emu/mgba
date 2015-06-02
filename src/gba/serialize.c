@@ -74,6 +74,22 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (state->romCrc32 != gba->romCrc32) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
 	}
+	if (state->cpu.cycles < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
+		return;
+	}
+	if (state->video.nextHblank - state->video.eventDiff < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank is negative");
+		return;
+	}
+	if (state->video.lastHblank - state->video.eventDiff < -VIDEO_HBLANK_LENGTH) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: lastHblank is negative");
+		return;
+	}
+	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
+		return;
+	}
 	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
 	gba->cpu->cpsr = state->cpu.cpsr;
 	gba->cpu->spsr = state->cpu.spsr;
