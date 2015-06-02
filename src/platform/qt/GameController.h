@@ -6,10 +6,10 @@
 #ifndef QGBA_GAME_CONTROLLER
 #define QGBA_GAME_CONTROLLER
 
+#include <QAtomicInt>
 #include <QFile>
 #include <QImage>
 #include <QObject>
-#include <QMutex>
 #include <QString>
 #include <QTimer>
 
@@ -177,8 +177,7 @@ private:
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;
 
-	QMutex m_pauseMutex;
-	bool m_pauseAfterFrame;
+	QAtomicInt m_pauseAfterFrame;
 
 	bool m_videoSync;
 	bool m_audioSync;

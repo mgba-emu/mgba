@@ -40,6 +40,7 @@ GameController::GameController(QObject* parent)
 	, m_gameOpen(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
+	, m_pauseAfterFrame(false)
 	, m_videoSync(VIDEO_SYNC)
 	, m_audioSync(AUDIO_SYNC)
 	, m_fpsTarget(-1)
@@ -114,13 +115,10 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.frameCallback = [] (GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->m_pauseMutex.lock();
-		if (controller->m_pauseAfterFrame) {
+		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
-			controller->m_pauseAfterFrame = false;
 			controller->gamePaused(&controller->m_threadContext);
 		}
-		controller->m_pauseMutex.unlock();
 		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
 			controller->frameAvailable(controller->m_drawContext);
 		} else {
@@ -422,10 +420,9 @@ void GameController::frameAdvance() {
 	if (m_rewindTimer.isActive()) {
 		return;
 	}
-	m_pauseMutex.lock();
-	m_pauseAfterFrame = true;
-	setPaused(false);
-	m_pauseMutex.unlock();
+	if (m_pauseAfterFrame.testAndSetRelaxed(false, true)) {
+		setPaused(false);
+	}
 }
 
 void GameController::setRewind(bool enable, int capacity, int interval) {
