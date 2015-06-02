@@ -419,6 +419,9 @@ void GameController::threadContinue() {
 }
 
 void GameController::frameAdvance() {
+	if (m_rewindTimer.isActive()) {
+		return;
+	}
 	m_pauseMutex.lock();
 	m_pauseAfterFrame = true;
 	setPaused(false);
@@ -454,7 +457,7 @@ void GameController::rewind(int states) {
 }
 
 void GameController::startRewinding() {
-	if (!m_gameOpen) {
+	if (!m_gameOpen || m_rewindTimer.isActive()) {
 		return;
 	}
 	m_wasPaused = isPaused();
