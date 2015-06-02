@@ -6,6 +6,7 @@ Bugfixes:
  - Qt: Fix open ROM dialog filtering for archive formats
  - ARM7: Fix Thumb MUL timing
  - GBA: Cap audio FIFO read size during deserialization
+ - GBA: Check for corrupted savestates when loading
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
  - All: Enable static linking for Windows
