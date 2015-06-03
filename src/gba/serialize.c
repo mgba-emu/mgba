@@ -90,6 +90,22 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
 		return;
 	}
+	if (state->audio.ch1.envelopeNextStep < 0 || state->audio.ch1.waveNextStep < 0 || state->audio.ch1.sweepNextStep < 0 || state->audio.ch1.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 1 register is negative");
+		return;
+	}
+	if (state->audio.ch2.envelopeNextStep < 0 || state->audio.ch2.waveNextStep < 0 || state->audio.ch2.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 2 register is negative");
+		return;
+	}
+	if (state->audio.ch3.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 3 register is negative");
+		return;
+	}
+	if (state->audio.ch4.envelopeNextStep < 0 || state->audio.ch4.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
+		return;
+	}
 	if (state->cpu.gprs[ARM_PC] == BASE_CART0 || (state->cpu.gprs[ARM_PC] & SIZE_CART0) >= gba->memory.romSize) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
 		return;
