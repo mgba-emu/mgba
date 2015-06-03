@@ -90,6 +90,10 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
 		return;
 	}
+	if (state->cpu.gprs[ARM_PC] == BASE_CART0 || (state->cpu.gprs[ARM_PC] & SIZE_CART0) >= gba->memory.romSize) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
+		return;
+	}
 	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
 	gba->cpu->cpsr = state->cpu.cpsr;
 	gba->cpu->spsr = state->cpu.spsr;
