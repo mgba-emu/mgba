@@ -36,6 +36,7 @@ Bugfixes:
  - GBA: Cap audio FIFO read size during deserialization
  - GBA: Check for corrupted savestates when loading
  - GBA: Check for improperly sized savestates when loading
+ - GBA: Check for savestates made from differently sized ROMs
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
