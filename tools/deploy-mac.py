@@ -67,6 +67,15 @@ def parseOtoolLine(line, execPath, root):
 		split[:1] = execPath
 	if split[0] == '/' and not os.access(joinPath(split), os.F_OK):
 		split[:1] = root
+	try:
+		oldPath = joinPath(split)
+		while True:
+			linkPath = os.readlink(os.path.abspath(oldPath))
+			oldPath = os.path.join(os.path.dirname(oldPath), linkPath)
+	except OSError as e:
+		if e.errno != errno.EINVAL:
+			raise
+		split = splitPath(oldPath)
 	isFramework = False
 	if not split[-1].endswith('.dylib'):
 		isFramework = True
