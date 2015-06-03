@@ -973,23 +973,27 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			BACKGROUND_TEXT_SELECT_CHARACTER; \
 		} \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
-		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-		palette = &mainPalette[paletteData]; \
-		LOAD_32(tileData, charBase, vram); \
-		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-			tileData >>= 4 * baseX; \
+		if (UNLIKELY(charBase >= 0x10000)) { \
+			carryData = 0; \
 		} else { \
-			tileData >>= 4 * (7 - baseX); \
+			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
+			palette = &mainPalette[paletteData]; \
+			LOAD_32(tileData, charBase, vram); \
+			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+				tileData >>= 4 * baseX; \
+			} else { \
+				tileData >>= 4 * (7 - baseX); \
+			} \
+			tileData &= 0xF; \
+			tileData |= tileData << 4; \
+			tileData |= tileData << 8; \
+			tileData |= tileData << 12; \
+			tileData |= tileData << 16; \
+			tileData |= tileData << 20; \
+			tileData |= tileData << 24; \
+			tileData |= tileData << 28; \
+			carryData = tileData; \
 		} \
-		tileData &= 0xF; \
-		tileData |= tileData << 4; \
-		tileData |= tileData << 8; \
-		tileData |= tileData << 12; \
-		tileData |= tileData << 16; \
-		tileData |= tileData << 20; \
-		tileData |= tileData << 24; \
-		tileData |= tileData << 28; \
-		carryData = tileData; \
 	} \
 	for (; length; ++tileX) { \
 		BACKGROUND_TEXT_SELECT_CHARACTER; \
@@ -997,23 +1001,27 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		tileData = carryData; \
 		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
-				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-				palette = &mainPalette[paletteData]; \
-				LOAD_32(tileData, charBase, vram); \
-				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-					tileData >>= x * 4; \
+				if (UNLIKELY(charBase >= 0x10000)) { \
+					carryData = 0; \
 				} else { \
-					tileData >>= (7 - x) * 4; \
+					paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
+					palette = &mainPalette[paletteData]; \
+					LOAD_32(tileData, charBase, vram); \
+					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+						tileData >>= x * 4; \
+					} else { \
+						tileData >>= (7 - x) * 4; \
+					} \
+					tileData &= 0xF; \
+					tileData |= tileData << 4; \
+					tileData |= tileData << 8; \
+					tileData |= tileData << 12; \
+					tileData |= tileData << 16; \
+					tileData |= tileData << 20; \
+					tileData |= tileData << 24; \
+					tileData |= tileData << 28; \
+					carryData = tileData; \
 				} \
-				tileData &= 0xF; \
-				tileData |= tileData << 4; \
-				tileData |= tileData << 8; \
-				tileData |= tileData << 12; \
-				tileData |= tileData << 16; \
-				tileData |= tileData << 20; \
-				tileData |= tileData << 24; \
-				tileData |= tileData << 28; \
-				carryData = tileData; \
 				mosaicWait = mosaicH; \
 			} \
 			--mosaicWait; \
@@ -1239,25 +1247,29 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		tileData = carryData; \
 		for (x = 0; x < 8; ++x) { \
 			if (!mosaicWait) { \
-				if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-					if (x >= 4) { \
-						LOAD_32(tileData, charBase + 4, vram); \
-						tileData >>= (x - 4) * 8; \
-					} else { \
-						LOAD_32(tileData, charBase, vram); \
-						tileData >>= x * 8; \
-					} \
+				if (UNLIKELY(charBase >= 0x10000)) { \
+					carryData = 0; \
 				} else { \
-					if (x >= 4) { \
-						LOAD_32(tileData, charBase, vram); \
-						tileData >>= (7 - x) * 8; \
+					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
+						if (x >= 4) { \
+							LOAD_32(tileData, charBase + 4, vram); \
+							tileData >>= (x - 4) * 8; \
+						} else { \
+							LOAD_32(tileData, charBase, vram); \
+							tileData >>= x * 8; \
+						} \
 					} else { \
-						LOAD_32(tileData, charBase + 4, vram); \
-						tileData >>= (3 - x) * 8; \
+						if (x >= 4) { \
+							LOAD_32(tileData, charBase, vram); \
+							tileData >>= (7 - x) * 8; \
+						} else { \
+							LOAD_32(tileData, charBase + 4, vram); \
+							tileData >>= (3 - x) * 8; \
+						} \
 					} \
+					tileData &= 0xFF; \
+					carryData = tileData; \
 				} \
-				tileData &= 0xFF; \
-				carryData = tileData; \
 				mosaicWait = mosaicH; \
 			} \
 			tileData |= tileData << 8; \
