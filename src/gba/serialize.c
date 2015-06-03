@@ -106,7 +106,8 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
 		return;
 	}
-	if (state->cpu.gprs[ARM_PC] == BASE_CART0 || (state->cpu.gprs[ARM_PC] & SIZE_CART0) >= gba->memory.romSize) {
+	int region = (state->cpu.gprs[ARM_PC] >> BASE_OFFSET);
+	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((state->cpu.gprs[ARM_PC] - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
 		return;
 	}
