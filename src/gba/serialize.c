@@ -78,12 +78,20 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
 		return;
 	}
+	if (state->video.eventDiff < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
+		return;
+	}
 	if (state->video.nextHblank - state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank is negative");
 		return;
 	}
 	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
+		return;
+	}
+	if (state->audio.eventDiff < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
 		return;
 	}
 	if (state->audio.ch1.envelopeNextStep < 0 || state->audio.ch1.waveNextStep < 0 || state->audio.ch1.sweepNextStep < 0 || state->audio.ch1.nextEvent < 0) {
