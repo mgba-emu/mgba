@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#ifndef DISABLE_THREADING
 #ifdef USE_PTHREADS
 #include <pthread.h>
 #include <sys/time.h>
@@ -144,6 +145,9 @@ static inline int ThreadJoin(Thread thread) {
 }
 #else
 #define DISABLE_THREADING
+#endif
+#endif
+#ifdef DISABLE_THREADING
 typedef void* Thread;
 typedef void* Mutex;
 typedef void* Condition;

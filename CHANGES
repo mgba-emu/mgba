@@ -58,6 +58,7 @@ Misc:
  - Qt: Only hide cursor in full screen
  - Perf: Ability to load savestates immediately on launch
  - Qt: Replace pause-after-frame mutex with an atomic
+ - Util: Allow disabling the threading code entirely
 
 0.2.1: (2015-05-13)
 Bugfixes:
