@@ -58,6 +58,10 @@ static void GBAGLContextResized(struct VideoBackend* v, int w, int h) {
 			drawH = w * 2 / 3;
 		}
 	}
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 }
 
