@@ -742,7 +742,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ffspeed->addValue(tr("Unbounded"), -1.0f, ffspeedMenu);
 	ffspeed->setValue(QVariant(-1.0f));
 	ffspeedMenu->addSeparator();
-	for (i = 2; i < 6; ++i) {
+	for (i = 2; i < 11; ++i) {
 		ffspeed->addValue(tr("%0x").arg(i), i, ffspeedMenu);
 	}
 	m_config->updateOption("fastForwardRatio");
