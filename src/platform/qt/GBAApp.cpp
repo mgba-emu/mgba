@@ -19,7 +19,7 @@ extern "C" {
 
 using namespace QGBA;
 
-GBAApp* g_app = nullptr;
+static GBAApp* g_app = nullptr;
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
