@@ -38,6 +38,7 @@ Bugfixes:
  - GBA: Check for improperly sized savestates when loading
  - GBA: Check for savestates made from differently sized ROMs
  - GBA Video: Fix out-of-bounds tiles in mosaic
+ - GBA Memory: Fix potential DMA issue when loading a savestate
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

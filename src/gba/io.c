@@ -704,5 +704,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			gba->timersEnabled |= 1 << i;
 		}
 	}
+	GBAMemoryUpdateDMAs(gba, 0);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }
