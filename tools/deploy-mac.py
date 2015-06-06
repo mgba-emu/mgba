@@ -44,6 +44,8 @@ def makedirs(path):
 	while split:
 		accum.append(split.pop())
 		newPath = joinPath(accum)
+		if newPath == '/':
+			continue
 		try:
 			os.mkdir(newPath)
 		except OSError as e:
