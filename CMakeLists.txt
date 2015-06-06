@@ -98,7 +98,7 @@ else()
 	endif()
 endif()
 
-add_custom_target(version ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
+add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
 	-DGIT_COMMIT=${GIT_COMMIT}
 	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
@@ -363,13 +363,13 @@ if(BUILD_SHARED)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
 		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
 		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
-		add_dependencies(${BINARY_NAME}-static version)
+		add_dependencies(${BINARY_NAME}-static version-info)
 	endif()
 else()
 	add_library(${BINARY_NAME} STATIC ${SRC})
 endif()
 
-add_dependencies(${BINARY_NAME} version)
+add_dependencies(${BINARY_NAME} version-info)
 
 target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
 install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
