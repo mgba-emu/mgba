@@ -43,6 +43,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_painter->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
 	m_drawThread->start();
+	GBASyncSetVideoSync(&m_context->sync, false);
 
 	lockAspectRatio(m_lockAspectRatio);
 	filter(m_filter);
@@ -53,13 +54,11 @@ void DisplayGL::stopDrawing() {
 	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
@@ -69,11 +68,9 @@ void DisplayGL::pauseDrawing() {
 	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
 		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
@@ -83,11 +80,9 @@ void DisplayGL::unpauseDrawing() {
 	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
 		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
@@ -138,7 +133,7 @@ void DisplayGL::resizePainter() {
 
 PainterGL::PainterGL(QGLWidget* parent)
 	: m_gl(parent)
-	, m_drawTimer(nullptr)
+	, m_active(false)
 	, m_messageTimer(this)
 	, m_context(nullptr)
 {
@@ -167,6 +162,9 @@ void PainterGL::setContext(GBAThread* context) {
 void PainterGL::setBacking(const uint32_t* backing) {
 	m_gl->makeCurrent();
 	m_backend.d.postFrame(&m_backend.d, backing);
+	if (m_active) {
+		draw();
+	}
 	m_gl->doneCurrent();
 }
 
@@ -187,21 +185,21 @@ void PainterGL::resize(const QSize& size) {
 	m_world.translate((w - drawW) / 2, (h - drawH) / 2);
 	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
 	m_message.prepare(m_world, m_messageFont);
-	if (m_drawTimer) {
+	if (m_active) {
 		forceDraw();
 	}
 }
 
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend.d.lockAspectRatio = lock;
-	if (m_drawTimer) {
+	if (m_active) {
 		forceDraw();
 	}
 }
 
 void PainterGL::filter(bool filter) {
 	m_backend.d.filter = filter;
-	if (m_drawTimer) {
+	if (m_active) {
 		forceDraw();
 	}
 }
@@ -210,21 +208,19 @@ void PainterGL::start() {
 	m_gl->makeCurrent();
 	m_backend.d.init(&m_backend.d, (void*) m_gl->winId());
 	m_gl->doneCurrent();
-
-	m_drawTimer = new QTimer;
-	m_drawTimer->moveToThread(QThread::currentThread());
-	m_drawTimer->setInterval(0);
-	connect(m_drawTimer, SIGNAL(timeout()), this, SLOT(draw()));
-	m_drawTimer->start();
+	m_active = true;
 }
 
 void PainterGL::draw() {
-	GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip);
-	m_painter.begin(m_gl->context()->device());
-	performDraw();
-	m_painter.end();
-	GBASyncWaitFrameEnd(&m_context->sync);
-	m_backend.d.swap(&m_backend.d);
+	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
+		m_painter.begin(m_gl->context()->device());
+		performDraw();
+		m_painter.end();
+		GBASyncWaitFrameEnd(&m_context->sync);
+		m_backend.d.swap(&m_backend.d);
+	} else {
+		GBASyncWaitFrameEnd(&m_context->sync);
+	}
 }
 
 void PainterGL::forceDraw() {
@@ -235,9 +231,7 @@ void PainterGL::forceDraw() {
 }
 
 void PainterGL::stop() {
-	m_drawTimer->stop();
-	delete m_drawTimer;
-	m_drawTimer = nullptr;
+	m_active = false;
 	m_gl->makeCurrent();
 	m_backend.d.clear(&m_backend.d);
 	m_backend.d.swap(&m_backend.d);
@@ -248,14 +242,14 @@ void PainterGL::stop() {
 }
 
 void PainterGL::pause() {
-	m_drawTimer->stop();
+	m_active = false;
 	// Make sure both buffers are filled
 	forceDraw();
 	forceDraw();
 }
 
 void PainterGL::unpause() {
-	m_drawTimer->start();
+	m_active = true;
 }
 
 void PainterGL::performDraw() {

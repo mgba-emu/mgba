@@ -781,20 +781,12 @@ bool GBASyncDrawingFrame(struct GBASync* sync) {
 	return sync->videoFrameSkip <= 0;
 }
 
-void GBASyncSuspendDrawing(struct GBASync* sync) {
+void GBASyncSetVideoSync(struct GBASync* sync, bool wait) {
 	if (!sync) {
 		return;
 	}
 
-	_changeVideoSync(sync, false);
-}
-
-void GBASyncResumeDrawing(struct GBASync* sync) {
-	if (!sync) {
-		return;
-	}
-
-	_changeVideoSync(sync, true);
+	_changeVideoSync(sync, wait);
 }
 
 void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
