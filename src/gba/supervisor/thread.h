@@ -91,6 +91,7 @@ struct GBAThread {
 	Condition stateCond;
 	enum ThreadState savedState;
 	int interruptDepth;
+	bool frameWasOn;
 
 	GBALogHandler logHandler;
 	int logLevel;

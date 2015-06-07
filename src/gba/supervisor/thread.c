@@ -619,11 +619,12 @@ void GBARunOnThread(struct GBAThread* threadContext, void (*run)(struct GBAThrea
 }
 
 void GBAThreadPause(struct GBAThread* threadContext) {
-	bool frameOn = true;
+	bool frameOn = threadContext->sync.videoFrameOn;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_RUNNING) {
 		_pauseThread(threadContext, false);
+		threadContext->frameWasOn = frameOn;
 		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
@@ -632,15 +633,17 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 }
 
 void GBAThreadUnpause(struct GBAThread* threadContext) {
+	bool frameOn = threadContext->sync.videoFrameOn;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
+		frameOn = threadContext->frameWasOn;
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	_changeVideoSync(&threadContext->sync, true);
+	_changeVideoSync(&threadContext->sync, frameOn);
 }
 
 bool GBAThreadIsPaused(struct GBAThread* threadContext) {
@@ -653,14 +656,16 @@ bool GBAThreadIsPaused(struct GBAThread* threadContext) {
 }
 
 void GBAThreadTogglePause(struct GBAThread* threadContext) {
-	bool frameOn = true;
+	bool frameOn = threadContext->sync.videoFrameOn;
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_PAUSED || threadContext->state == THREAD_PAUSING) {
 		threadContext->state = THREAD_RUNNING;
 		ConditionWake(&threadContext->stateCond);
+		frameOn = threadContext->frameWasOn;
 	} else if (threadContext->state == THREAD_RUNNING) {
 		_pauseThread(threadContext, false);
+		threadContext->frameWasOn = frameOn;
 		frameOn = false;
 	}
 	MutexUnlock(&threadContext->stateMutex);
