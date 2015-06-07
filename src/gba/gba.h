@@ -216,10 +216,10 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf,3,4)
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

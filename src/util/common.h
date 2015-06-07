@@ -18,8 +18,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef _MSC_VER
+#ifdef _WIN64
+typedef int64_t off_t;
+typedef int64_t ssize_t;
+#else
+typedef int32_t off_t;
+typedef int32_t ssize_t;
+#endif
+#define restrict __restrict
+#define SSIZE_MAX ((ssize_t) SIZE_MAX)
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#define ftruncate _chsize
+#else
 #include <strings.h>
 #include <unistd.h>
+#endif
 
 #include "version.h"
 
@@ -67,29 +83,44 @@
 #define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
 #define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
 
+#ifdef _MSC_VER
+#define ATTRIBUTE_UNUSED
+#define ATTRIBUTE_FORMAT(X, Y, Z)
+#define ATTRIBUTE_PACKED
+#else
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+#define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
+#define ATTRIBUTE_PACKED __attribute__((packed))
+#endif
+
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME
 
 #define DECL_BITS(TYPE, FIELD, START, SIZE) \
-	__attribute__((unused)) static inline TYPE TYPE ## Is ## FIELD (TYPE src) { \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Is ## FIELD (TYPE src) { \
 		return CHECK_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	__attribute__((unused)) static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Get ## FIELD (TYPE src) { \
 		return EXT_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	__attribute__((unused)) static inline TYPE TYPE ## Clear ## FIELD (TYPE src) { \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Clear ## FIELD (TYPE src) { \
 		return CLEAR_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	__attribute__((unused)) static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Fill ## FIELD (TYPE src) { \
 		return FILL_BITS(src, (START), (START) + (SIZE)); \
 	} \
-	__attribute__((unused)) static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)
 
+#ifdef _MSC_VER
 #define LIKELY(X) __builtin_expect(!!(X), 1)
 #define UNLIKELY(X) __builtin_expect(!!(X), 0)
+#else
+#define LIKELY(X) (!!(X))
+#define UNLIKELY(X) (!!(X))
+#endif
 
 #define ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
 
