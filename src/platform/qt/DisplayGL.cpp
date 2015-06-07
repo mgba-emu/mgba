@@ -208,7 +208,7 @@ void PainterGL::filter(bool filter) {
 
 void PainterGL::start() {
 	m_gl->makeCurrent();
-	m_backend.d.init(&m_backend.d, (void*) m_gl->winId());
+	m_backend.d.init(&m_backend.d, reinterpret_cast<WHandle>(m_gl->winId()));
 	m_gl->doneCurrent();
 
 	m_drawTimer = new QTimer;
