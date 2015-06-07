@@ -146,9 +146,7 @@ void GBASyncForceFrame(struct GBASync* sync);
 bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
 bool GBASyncDrawingFrame(struct GBASync* sync);
-
-void GBASyncSuspendDrawing(struct GBASync* sync);
-void GBASyncResumeDrawing(struct GBASync* sync);
+void GBASyncSetVideoSync(struct GBASync* sync, bool wait);
 
 void GBASyncProduceAudio(struct GBASync* sync, bool wait);
 void GBASyncLockAudio(struct GBASync* sync);

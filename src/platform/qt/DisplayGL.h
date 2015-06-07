@@ -95,7 +95,7 @@ private:
 	QStaticText m_message;
 	QGLWidget* m_gl;
 	QThread* m_thread;
-	QTimer* m_drawTimer;
+	bool m_active;
 	QTimer m_messageTimer;
 	GBAThread* m_context;
 	GBAGLContext m_backend;
