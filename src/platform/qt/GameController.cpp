@@ -521,7 +521,6 @@ void GameController::setFPSTarget(float fps) {
 	}
 	redoSamples(m_audioProcessor->getBufferSamples());
 	threadContinue();
-	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 
 void GameController::setSkipBIOS(bool set) {
@@ -622,16 +621,16 @@ void GameController::enableTurbo() {
 		m_threadContext.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = m_audioSync;
 		m_threadContext.sync.videoFrameWait = m_videoSync;
-		redoSamples(m_audioProcessor->getBufferSamples());
 	} else if (m_turboSpeed <= 0) {
+		m_threadContext.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = false;
 		m_threadContext.sync.videoFrameWait = false;
 	} else {
 		m_threadContext.fpsTarget = m_fpsTarget * m_turboSpeed;
 		m_threadContext.sync.audioWait = true;
 		m_threadContext.sync.videoFrameWait = false;
-		redoSamples(m_audioProcessor->getBufferSamples());
 	}
+	redoSamples(m_audioProcessor->getBufferSamples());
 	threadContinue();
 }
 
@@ -734,6 +733,7 @@ void GameController::redoSamples(int samples) {
 	if (m_threadContext.gba) {
 		GBAAudioResizeBuffer(&m_threadContext.gba->audio, m_threadContext.audioBuffers);
 	}
+	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }
 
 void GameController::setLogLevel(int levels) {
