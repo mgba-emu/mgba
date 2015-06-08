@@ -167,13 +167,13 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 			GBAOverrideApply(&gba, &threadContext->override);
 		}
 
-		if (threadContext->bios && GBAIsBIOS(threadContext->bios)) {
-			GBALoadBIOS(&gba, threadContext->bios);
-		}
-
 		if (threadContext->patch && loadPatch(threadContext->patch, &patch)) {
 			GBAApplyPatch(&gba, &patch);
 		}
+	}
+
+	if (threadContext->bios && GBAIsBIOS(threadContext->bios)) {
+		GBALoadBIOS(&gba, threadContext->bios);
 	}
 
 	if (threadContext->movie) {
@@ -400,7 +400,9 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		threadContext->fpsTarget = _defaultFPSTarget;
 	}
 
-	if (threadContext->rom && !GBAIsROM(threadContext->rom)) {
+	bool bootBios = threadContext->bootBios && threadContext->bios;
+
+	if (threadContext->rom && (!GBAIsROM(threadContext->rom) || bootBios)) {
 		threadContext->rom->close(threadContext->rom);
 		threadContext->rom = 0;
 	}
@@ -427,7 +429,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	}
 
-	if (!threadContext->rom) {
+	if (!threadContext->rom && !bootBios) {
 		threadContext->state = THREAD_SHUTDOWN;
 		return false;
 	}

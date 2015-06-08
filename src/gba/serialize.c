@@ -29,8 +29,13 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	state->biosChecksum = gba->biosChecksum;
 	state->romCrc32 = gba->romCrc32;
 
-	state->id = ((struct GBACartridge*) gba->memory.rom)->id;
-	memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
+	if (gba->memory.rom) {
+		state->id = ((struct GBACartridge*) gba->memory.rom)->id;
+		memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
+	} else {
+		state->id = 0;
+		memset(state->title, 0, sizeof(state->title));
+	}
 
 	memcpy(state->cpu.gprs, gba->cpu->gprs, sizeof(state->cpu.gprs));
 	state->cpu.cpsr = gba->cpu->cpsr;
@@ -67,8 +72,11 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			return;
 		}
 	}
-	if (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
+	if (gba->memory.rom && state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
+		return;
+	} else if (!gba->memory.rom && state->id != 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is for a game, but no game loaded");
 		return;
 	}
 	if (state->romCrc32 != gba->romCrc32) {

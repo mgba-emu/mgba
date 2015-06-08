@@ -633,10 +633,18 @@ bool GBAIsBIOS(struct VFile* vf) {
 }
 
 void GBAGetGameCode(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		out[0] = '\0';
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		strncpy(out, "(BIOS)", 12);
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 }
 

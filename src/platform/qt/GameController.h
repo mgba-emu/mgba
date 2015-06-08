@@ -102,7 +102,7 @@ public slots:
 	void loadPatch(const QString& path);
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
-	void openGame();
+	void bootBIOS();
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
@@ -148,6 +148,7 @@ public slots:
 	void disableLogLevel(int);
 
 private slots:
+	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
 
 	void pollEvents();

@@ -72,6 +72,7 @@ struct GBAThread {
 	struct GBAAVStream* stream;
 	struct Configuration* overrides;
 	enum GBAIdleLoopOptimization idleOptimization;
+	bool bootBios;
 
 	bool hasOverride;
 	struct GBACartridgeOverride override;

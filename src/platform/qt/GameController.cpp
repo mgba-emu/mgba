@@ -247,7 +247,18 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 	openGame();
 }
 
-void GameController::openGame() {
+void GameController::bootBIOS() {
+	closeGame();
+	m_fname = QString();
+	m_dirmode = false;
+	openGame(true);
+}
+
+void GameController::openGame(bool biosOnly) {
+	if (biosOnly && (!m_useBios || m_bios.isNull())) {
+		return;
+	}
+
 	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
@@ -261,25 +272,30 @@ void GameController::openGame() {
 	}
 
 	m_threadContext.gameDir = 0;
-	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
-	if (m_dirmode) {
-		m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
-		m_threadContext.stateDir = m_threadContext.gameDir;
+	m_threadContext.bootBios = biosOnly;
+	if (biosOnly) {
+		m_threadContext.fname = nullptr;
 	} else {
-		m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
+		m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
+		if (m_dirmode) {
+			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
+			m_threadContext.stateDir = m_threadContext.gameDir;
+		} else {
+			m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
 #if USE_LIBZIP
-		if (!m_threadContext.gameDir) {
-			m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
-		}
+			if (!m_threadContext.gameDir) {
+				m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
+			}
 #endif
 #if USE_LZMA
-		if (!m_threadContext.gameDir) {
-			m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
-		}
+			if (!m_threadContext.gameDir) {
+				m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
+			}
 #endif
+		}
 	}
 
-	if (!m_bios.isNull() &&m_useBios) {
+	if (!m_bios.isNull() && m_useBios) {
 		m_threadContext.bios = VFileDevice::open(m_bios, O_RDONLY);
 	} else {
 		m_threadContext.bios = nullptr;

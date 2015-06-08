@@ -47,6 +47,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.wram = 0;
 	gba->memory.iwram = 0;
 	gba->memory.rom = 0;
+	gba->memory.romSize = 0;
 	gba->memory.hw.p = gba;
 
 	int i;
