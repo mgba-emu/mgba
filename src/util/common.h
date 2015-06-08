@@ -86,11 +86,9 @@ typedef int32_t ssize_t;
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
 #define ATTRIBUTE_FORMAT(X, Y, Z)
-#define ATTRIBUTE_PACKED
 #else
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 #define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
-#define ATTRIBUTE_PACKED __attribute__((packed))
 #endif
 
 #define DECL_BITFIELD(NAME, TYPE) typedef TYPE NAME
