@@ -17,6 +17,10 @@ const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+static const int CLOCKS_PER_FRAME = 0x400;
+#endif
+
 static bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value);
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAAudioEnvelope* envelope);
@@ -815,11 +819,10 @@ static void _sample(struct GBAAudio* audio) {
 		audio->lastLeft = sampleLeft;
 		audio->lastRight = sampleRight;
 		audio->clock += audio->sampleInterval;
-		int clockNeeded = blip_clocks_needed(audio->left, audio->samples / 32);
-		if (audio->clock >= clockNeeded) {
+		if (audio->clock >= CLOCKS_PER_FRAME) {
 			blip_end_frame(audio->left, audio->clock);
 			blip_end_frame(audio->right, audio->clock);
-			audio->clock -= clockNeeded;
+			audio->clock -= CLOCKS_PER_FRAME;
 		}
 	}
 	produced = blip_samples_avail(audio->left);
