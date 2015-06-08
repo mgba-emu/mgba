@@ -114,7 +114,7 @@ typedef int32_t ssize_t;
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)
 
-#ifdef _MSC_VER
+#ifndef _MSC_VER
 #define LIKELY(X) __builtin_expect(!!(X), 1)
 #define UNLIKELY(X) __builtin_expect(!!(X), 0)
 #else
