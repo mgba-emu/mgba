@@ -72,7 +72,7 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			return;
 		}
 	}
-	if (gba->memory.rom && state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title))) {
+	if (gba->memory.rom && (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title)))) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
 		return;
 	} else if (!gba->memory.rom && state->id != 0) {
