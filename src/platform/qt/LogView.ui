@@ -116,6 +116,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="levelSIO">
+          <property name="text">
+           <string>Serial I/O</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
