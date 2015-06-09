@@ -116,16 +116,18 @@ static uint16_t GBASIOLockstepNodeWriteRegister(struct GBASIODriver* driver, uin
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	if (address == REG_SIOCNT) {
 		if (value & 0x0080) {
-			value &= ~0x0080;
 			if (!node->id) {
 				MutexLock(&node->p->mutex);
 				node->p->transferActive = true;
 				node->p->transferCycles = GBASIOCyclesPerTransfer[node->d.p->multiplayerControl.baud][node->p->attached - 1];
+				node->multiSend = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
 				MutexUnlock(&node->p->mutex);
+			} else {
+				value &= ~0x0080;
 			}
 		}
-		value &= 0xFF03;
-		value |= driver->p->siocnt & 0x007C;
+		value &= 0xFF83;
+		value |= driver->p->siocnt & 0x00FC;
 	}
 	return value;
 }
@@ -180,8 +182,8 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
 			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
 			node->d.p->rcnt &= ~1;
-			node->multiSend = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
 			if (node->id) {
+				node->multiSend = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
 				node->d.p->multiplayerControl.busy = 1;
 			}
 		}
