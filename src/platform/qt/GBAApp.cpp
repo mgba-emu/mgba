@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFileOpenEvent>
+#include <QIcon>
 
 extern "C" {
 #include "platform/commandline.h"
@@ -31,6 +32,8 @@ GBAApp::GBAApp(int& argc, char* argv[])
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
+
+	setWindowIcon(QIcon(":/res/mgba-1024.png"));
 
 	SocketSubsystemInit();
 
