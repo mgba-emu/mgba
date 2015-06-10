@@ -11,6 +11,7 @@
 #include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/supervisor/overrides.h"
+#include "gba/supervisor/sync.h"
 
 #include "util/threading.h"
 
@@ -33,20 +34,6 @@ enum ThreadState {
 	THREAD_EXITING,
 	THREAD_SHUTDOWN,
 	THREAD_CRASHED
-};
-
-struct GBASync {
-	int videoFramePending;
-	bool videoFrameWait;
-	int videoFrameSkip;
-	bool videoFrameOn;
-	Mutex videoFrameMutex;
-	Condition videoFrameAvailableCond;
-	Condition videoFrameRequiredCond;
-
-	bool audioWait;
-	Condition audioRequiredCond;
-	Mutex audioBufferMutex;
 };
 
 struct GBAThread {
@@ -142,17 +129,5 @@ struct GBAThread* GBAThreadGetContext(void);
 #ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext);
 #endif
-
-void GBASyncPostFrame(struct GBASync* sync);
-void GBASyncForceFrame(struct GBASync* sync);
-bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
-void GBASyncWaitFrameEnd(struct GBASync* sync);
-bool GBASyncDrawingFrame(struct GBASync* sync);
-void GBASyncSetVideoSync(struct GBASync* sync, bool wait);
-
-void GBASyncProduceAudio(struct GBASync* sync, bool wait);
-void GBASyncLockAudio(struct GBASync* sync);
-void GBASyncUnlockAudio(struct GBASync* sync);
-void GBASyncConsumeAudio(struct GBASync* sync);
 
 #endif

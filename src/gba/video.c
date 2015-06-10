@@ -9,7 +9,7 @@
 #include "gba/io.h"
 #include "gba/serialize.h"
 #include "gba/supervisor/rr.h"
-#include "gba/supervisor/thread.h"
+#include "gba/supervisor/sync.h"
 
 #include "util/memory.h"
 
