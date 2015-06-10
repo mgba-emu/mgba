@@ -146,6 +146,12 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 install(TARGETS ${BINARY_NAME}-qt
 	RUNTIME DESTINATION bin COMPONENT ${BINARY_NAME}-qt
 	BUNDLE DESTINATION Applications COMPONENT ${BINARY_NAME}-qt)
+if(UNIX AND NOT APPLE)
+	find_program(DESKTOP_FILE_INSTALL desktop-file-install)
+	if(DESKTOP_FILE_INSTALL)
+		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop\" --dir \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/applications/\")")
+	endif()
+endif()
 if(APPLE OR WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 endif()
