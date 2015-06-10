@@ -49,25 +49,25 @@ typedef int32_t ssize_t;
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	asm("lwbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
+	__asm__("lwbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define LOAD_16LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	asm("lhbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
+	__asm__("lhbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define STORE_32LE(SRC, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	asm("stwbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
+	__asm__("stwbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
 
 #define STORE_16LE(SRC, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
 	void* _ptr = (ARR); \
-	asm("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
+	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
 #else
 #define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
