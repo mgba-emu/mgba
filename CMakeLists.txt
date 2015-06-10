@@ -160,7 +160,7 @@ if(WIN32)
 	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
-else()
+elseif(UNIX)
 	add_definitions(-DUSE_PTHREADS)
 
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

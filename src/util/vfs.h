@@ -8,13 +8,12 @@
 
 #include "util/common.h"
 
-#ifndef _WIN32
-#include <sys/mman.h>
-#define PATH_SEP "/"
-#else
+#ifdef _WIN32
 #include <io.h>
 #include <windows.h>
 #define PATH_SEP "\\"
+#else
+#define PATH_SEP "/"
 #endif
 
 #ifndef PATH_MAX
