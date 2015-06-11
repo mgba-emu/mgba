@@ -479,6 +479,9 @@ void GameController::startRewinding() {
 }
 
 void GameController::stopRewinding() {
+	if (!m_rewindTimer.isActive()) {
+		return;
+	}
 	m_rewindTimer.stop();
 	setPaused(m_wasPaused);
 }

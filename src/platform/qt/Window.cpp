@@ -406,6 +406,7 @@ void Window::closeEvent(QCloseEvent* event) {
 
 void Window::focusOutEvent(QFocusEvent*) {
 	m_controller->setTurbo(false, false);
+	m_controller->stopRewinding();
 	m_controller->clearKeys();
 }
 
