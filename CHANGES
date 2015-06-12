@@ -42,6 +42,7 @@ Bugfixes:
  - GBA Memory: Fix potential DMA issue when loading a savestate
  - GBA Audio: Fix audio pitch changing when adjusting buffer size
  - SDL: Fix SDL build when OpenGL is missing
+ - ARM7: Fix timing of multiplies to use N cycles
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
