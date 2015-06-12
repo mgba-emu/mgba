@@ -33,18 +33,22 @@ static int32_t _GBASDLReadGyroZ(struct GBARotationSource* rumble);
 static void _GBASDLRotationSample(struct GBARotationSource* source);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
-	int subsystem = SDL_INIT_JOYSTICK;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	subsystem |= SDL_INIT_HAPTIC | SDL_INIT_VIDEO;
-
-	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-#endif
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif
-	if (SDL_InitSubSystem(subsystem) < 0) {
-		return false;
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+		GBALog(0, GBA_LOG_ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
+		GBALog(0, GBA_LOG_ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
+	}
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+		GBALog(0, GBA_LOG_ERROR, "SDL video initialization failed: %s", SDL_GetError());
+	}
+#endif
 
 	SDL_JoystickEventState(SDL_ENABLE);
 	int nJoysticks = SDL_NumJoysticks();
@@ -158,6 +162,10 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->joystick = 0;
 	player->joystickIndex = SIZE_MAX;
 
+	if (events->playersAttached >= MAX_PLAYERS) {
+		return false;
+	}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	player->rumble.d.setRumble = _GBASDLSetRumble;
 	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
@@ -177,10 +185,6 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->rotation.zDelta = 0;
 	CircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
 	player->rotation.p = player;
-
-	if (events->playersAttached >= MAX_PLAYERS) {
-		return false;
-	}
 
 	player->playerId = events->playersAttached;
 	size_t firstUnclaimed = SIZE_MAX;
