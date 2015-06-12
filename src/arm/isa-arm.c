@@ -332,7 +332,8 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		} \
 		ARM_WAIT_MUL(cpu->gprs[rs]); \
 		BODY; \
-		S_BODY;)
+		S_BODY; \
+		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
 
 #define DEFINE_MULTIPLY_INSTRUCTION_ARM(NAME, BODY, S_BODY) \
 	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, ) \
