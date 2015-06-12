@@ -107,8 +107,12 @@ int main(int argc, char** argv) {
 	GBAMapOptionsToContext(&opts, &context);
 	GBAMapArgumentsToContext(&args, &context);
 
+	bool didFail = false;
+
 	renderer.audio.samples = context.audioBuffers;
-	GBASDLInitAudio(&renderer.audio, &context);
+	if (!GBASDLInitAudio(&renderer.audio, &context)) {
+		didFail = true;
+	}
 
 	renderer.player.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
@@ -118,28 +122,28 @@ int main(int argc, char** argv) {
 	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
 	context.overrides = GBAConfigGetOverrides(&config);
 
+	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBASDLSetScreensaverSuspendable(&renderer.events, opts.suspendScreensaver);
-	GBASDLSuspendScreensaver(&renderer.events);
+		GBASDLSetScreensaverSuspendable(&renderer.events, opts.suspendScreensaver);
+		GBASDLSuspendScreensaver(&renderer.events);
+#endif
+		if (GBAThreadStart(&context)) {
+			renderer.runloop(&context, &renderer);
+			GBAThreadJoin(&context);
+		} else {
+			didFail = true;
+			printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
+		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		GBASDLResumeScreensaver(&renderer.events);
+		GBASDLSetScreensaverSuspendable(&renderer.events, false);
 #endif
 
-	int didFail = 0;
-	if (GBAThreadStart(&context)) {
-		renderer.runloop(&context, &renderer);
-		GBAThreadJoin(&context);
-	} else {
-		didFail = 1;
-		printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
-	}
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBASDLResumeScreensaver(&renderer.events);
-	GBASDLSetScreensaverSuspendable(&renderer.events, false);
-#endif
-
-	if (GBAThreadHasCrashed(&context)) {
-		didFail = 1;
-		printf("The game crashed!\n");
+		if (GBAThreadHasCrashed(&context)) {
+			didFail = true;
+			printf("The game crashed!\n");
+		}
 	}
 	freeArguments(&args);
 	GBAConfigFreeOpts(&opts);
