@@ -22,6 +22,7 @@ Misc:
  - Qt: Migrate multiplayer window handling into GBAApp
  - Qt: Unified file opening and saving with last location
  - Qt: Add application icon and XDG desktop files
+ - Qt: Rename "Fullscreen" to "Toggle fullscreen"
 
 0.2.1: (2015-05-13)
 Bugfixes:
