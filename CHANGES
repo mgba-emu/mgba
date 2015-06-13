@@ -23,6 +23,7 @@ Misc:
  - Qt: Unified file opening and saving with last location
  - Qt: Add application icon and XDG desktop files
  - Qt: Rename "Fullscreen" to "Toggle fullscreen"
+ - Qt: Don't save window size when entering fullscreen
 
 0.2.1: (2015-05-13)
 Bugfixes:
