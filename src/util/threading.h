@@ -159,6 +159,7 @@ static inline int ThreadJoin(Thread thread) {
 }
 
 static inline int ThreadSetName(const char* name) {
+	UNUSED(name);
 	return -1;
 }
 #else
