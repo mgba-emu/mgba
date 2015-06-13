@@ -157,6 +157,7 @@ GameController::GameController(QObject* parent)
 	});
 	m_rewindTimer.setInterval(100);
 
+	m_audioThread->setObjectName("Audio Thread");
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));

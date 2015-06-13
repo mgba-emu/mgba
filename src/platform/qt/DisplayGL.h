@@ -94,7 +94,6 @@ private:
 	QPainter m_painter;
 	QStaticText m_message;
 	QGLWidget* m_gl;
-	QThread* m_thread;
 	bool m_active;
 	QTimer m_messageTimer;
 	GBAThread* m_context;

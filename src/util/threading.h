@@ -75,6 +75,16 @@ static inline int ThreadJoin(Thread thread) {
 	return pthread_join(thread, 0);
 }
 
+static inline int ThreadSetName(const char* name) {
+#ifdef __APPLE__
+	return pthread_setname_np(name);
+#elif defined(__FreeBSD__)
+	return pthread_set_name_np(pthread_self(), name);
+#else
+	return pthread_setname_np(pthread_self(), name);
+#endif
+}
+
 #elif _WIN32
 #define _WIN32_WINNT 0x0600
 #include <windows.h>
@@ -142,6 +152,10 @@ static inline int ThreadJoin(Thread thread) {
 		return GetLastError();
 	}
 	return 0;
+}
+
+static inline int ThreadSetName(const char* name) {
+	return -1;
 }
 #else
 #define DISABLE_THREADING

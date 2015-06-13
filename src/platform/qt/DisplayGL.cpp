@@ -38,6 +38,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_painter->resize(size());
 	m_gl->move(0, 0);
 	m_drawThread = new QThread(this);
+	m_drawThread->setObjectName("Painter Thread");
 	m_gl->context()->doneCurrent();
 	m_gl->context()->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);

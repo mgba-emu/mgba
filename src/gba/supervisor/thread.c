@@ -110,6 +110,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 
+	ThreadSetName("CPU Thread");
+
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
 	sigemptyset(&signals);

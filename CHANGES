@@ -69,6 +69,7 @@ Misc:
  - GBA Thread: Split GBASync into a separate file
  - SDL: Properly check for initialization
  - SDL: Clean up initialization functions
+ - All: Threads are now named
 
 0.2.1: (2015-05-13)
 Bugfixes:
