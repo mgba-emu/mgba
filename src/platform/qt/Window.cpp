@@ -390,8 +390,10 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void Window::resizeEvent(QResizeEvent*) {
-	m_config->setOption("height", m_screenWidget->height());
-	m_config->setOption("width", m_screenWidget->width());
+	if (!isFullScreen()) {
+		m_config->setOption("height", m_screenWidget->height());
+		m_config->setOption("width", m_screenWidget->width());
+	}
 	m_config->setOption("fullscreen", isFullScreen());
 }
 

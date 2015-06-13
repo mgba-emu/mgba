@@ -71,6 +71,7 @@ Misc:
  - SDL: Clean up initialization functions
  - All: Threads are now named
  - Qt: Rename "Fullscreen" to "Toggle fullscreen"
+ - Qt: Don't save window size when entering fullscreen
 
 0.2.1: (2015-05-13)
 Bugfixes:
