@@ -135,8 +135,8 @@ void DisplayGL::resizePainter() {
 PainterGL::PainterGL(QGLWidget* parent)
 	: m_gl(parent)
 	, m_active(false)
-	, m_messageTimer(this)
 	, m_context(nullptr)
+	, m_messagePainter(nullptr)
 {
 	GBAGLContextCreate(&m_backend);
 	m_backend.d.swap = [](VideoBackend* v) {
@@ -146,14 +146,6 @@ PainterGL::PainterGL(QGLWidget* parent)
 	m_backend.d.user = this;
 	m_backend.d.filter = false;
 	m_backend.d.lockAspectRatio = false;
-	m_messageFont.setFamily("Source Code Pro");
-	m_messageFont.setStyleHint(QFont::Monospace);
-	m_messageFont.setPixelSize(13);
-	connect(&m_messageTimer, SIGNAL(timeout()), this, SLOT(clearMessage()));
-	m_messageTimer.setSingleShot(true);
-	m_messageTimer.setInterval(5000);
-
-	clearMessage();
 }
 
 void PainterGL::setContext(GBAThread* context) {
@@ -171,22 +163,8 @@ void PainterGL::setBacking(const uint32_t* backing) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
-	int w = m_size.width();
-	int h = m_size.height();
-	int drawW = w;
-	int drawH = h;
-	if (m_backend.d.lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
-		}
-	}
-	m_world.reset();
-	m_world.translate((w - drawW) / 2, (h - drawH) / 2);
-	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
-	m_message.prepare(m_world, m_messageFont);
 	if (m_active) {
+		m_messagePainter->resize(size, m_backend.d.lockAspectRatio);
 		forceDraw();
 	}
 }
@@ -194,6 +172,7 @@ void PainterGL::resize(const QSize& size) {
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend.d.lockAspectRatio = lock;
 	if (m_active) {
+		m_messagePainter->resize(m_size, m_backend.d.lockAspectRatio);
 		forceDraw();
 	}
 }
@@ -206,6 +185,8 @@ void PainterGL::filter(bool filter) {
 }
 
 void PainterGL::start() {
+	m_messagePainter = new MessagePainter(this);
+	m_messagePainter->resize(m_size, m_backend.d.lockAspectRatio);
 	m_gl->makeCurrent();
 	m_backend.d.init(&m_backend.d, reinterpret_cast<WHandle>(m_gl->winId()));
 	m_gl->doneCurrent();
@@ -239,6 +220,9 @@ void PainterGL::stop() {
 	m_backend.d.deinit(&m_backend.d);
 	m_gl->doneCurrent();
 	m_gl->context()->moveToThread(m_gl->thread());
+	m_messagePainter->clearMessage();
+	delete m_messagePainter;
+	m_messagePainter = nullptr;
 	moveToThread(m_gl->thread());
 }
 
@@ -259,28 +243,9 @@ void PainterGL::performDraw() {
 	m_backend.d.resized(&m_backend.d, m_size.width() * r, m_size.height() * r);
 	m_backend.d.drawFrame(&m_backend.d);
 	m_painter.endNativePainting();
-	m_painter.setWorldTransform(m_world);
-	m_painter.setRenderHint(QPainter::Antialiasing);
-	m_painter.setFont(m_messageFont);
-	m_painter.setPen(Qt::black);
-	m_painter.translate(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
-	for (int i = 0; i < 16; ++i) {
-		m_painter.save();
-		m_painter.translate(cos(i * M_PI / 8.0) * 0.8, sin(i * M_PI / 8.0) * 0.8);
-		m_painter.drawStaticText(0, 0, m_message);
-		m_painter.restore();
-	}
-	m_painter.setPen(Qt::white);
-	m_painter.drawStaticText(0, 0, m_message);
+	m_messagePainter->paint(&m_painter);
 }
 
 void PainterGL::showMessage(const QString& message) {
-	m_message.setText(message);
-	m_message.prepare(m_world, m_messageFont);
-	m_messageTimer.stop();
-	m_messageTimer.start();
-}
-
-void PainterGL::clearMessage() {
-	m_message.setText(QString());
+	m_messagePainter->showMessage(message);
 }

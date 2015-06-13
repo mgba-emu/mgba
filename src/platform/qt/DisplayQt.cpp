@@ -46,6 +46,10 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 #endif
 }
 
+void DisplayQt::showMessage(const QString& message) {
+	m_messagePainter.showMessage(message);
+}
+
 void DisplayQt::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
@@ -54,10 +58,12 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	}
 	QSize s = size();
 	QSize ds = s;
-	if (s.width() * 2 > s.height() * 3) {
-		ds.setWidth(s.height() * 3 / 2);
-	} else if (s.width() * 2 < s.height() * 3) {
-		ds.setHeight(s.width() * 2 / 3);
+	if (m_lockAspectRatio) {
+		if (s.width() * 2 > s.height() * 3) {
+			ds.setWidth(s.height() * 3 / 2);
+		} else if (s.width() * 2 < s.height() * 3) {
+			ds.setHeight(s.width() * 2 / 3);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
@@ -67,4 +73,9 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 #else
 	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, 240, 160));
 #endif
+	m_messagePainter.paint(&painter);
+}
+
+void DisplayQt::resizeEvent(QResizeEvent*) {
+	m_messagePainter.resize(size(), m_lockAspectRatio);
 }

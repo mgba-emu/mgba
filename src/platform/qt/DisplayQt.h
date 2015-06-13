@@ -7,6 +7,7 @@
 #define QGBA_DISPLAY_QT
 
 #include "Display.h"
+#include "MessagePainter.h"
 
 #include <QImage>
 #include <QTimer>
@@ -31,15 +32,17 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
-	void showMessage(const QString& message) override {};
+	void showMessage(const QString& message) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
+	virtual void resizeEvent(QResizeEvent*) override;;
 
 private:
 	QImage m_backing;
 	bool m_lockAspectRatio;
 	bool m_filter;
+	MessagePainter m_messagePainter;
 };
 
 }

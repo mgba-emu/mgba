@@ -67,6 +67,7 @@ set(SOURCE_FILES
 	LogView.cpp
 	MemoryModel.cpp
 	MemoryView.cpp
+	MessagePainter.cpp
 	MultiplayerController.cpp
 	OverrideView.cpp
 	PaletteView.cpp

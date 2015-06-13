@@ -8,8 +8,9 @@
 
 #include "Display.h"
 
+#include "MessagePainter.h"
+
 #include <QGLWidget>
-#include <QStaticText>
 #include <QThread>
 #include <QTimer>
 
@@ -86,21 +87,17 @@ public slots:
 	void filter(bool filter);
 
 	void showMessage(const QString& message);
-	void clearMessage();
 
 private:
 	void performDraw();
 
 	QPainter m_painter;
-	QStaticText m_message;
 	QGLWidget* m_gl;
 	bool m_active;
-	QTimer m_messageTimer;
 	GBAThread* m_context;
 	GBAGLContext m_backend;
 	QSize m_size;
-	QTransform m_world;
-	QFont m_messageFont;
+	MessagePainter* m_messagePainter;
 };
 
 }
