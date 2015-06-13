@@ -12,6 +12,9 @@
 #ifdef USE_PTHREADS
 #include <pthread.h>
 #include <sys/time.h>
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#endif
 
 #define THREAD_ENTRY void*
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
@@ -79,7 +82,8 @@ static inline int ThreadSetName(const char* name) {
 #ifdef __APPLE__
 	return pthread_setname_np(name);
 #elif defined(__FreeBSD__)
-	return pthread_set_name_np(pthread_self(), name);
+	pthread_set_name_np(pthread_self(), name);
+	return 0;
 #else
 	return pthread_setname_np(pthread_self(), name);
 #endif
