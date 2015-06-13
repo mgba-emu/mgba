@@ -31,7 +31,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Multimedia)
 find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
-find_package(OpenGL)
 
 if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
 	message(WARNING "Cannot find Qt modules")
