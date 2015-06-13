@@ -15,7 +15,7 @@
 
 #include "CheatsView.h"
 #include "ConfigController.h"
-#include "DisplayGL.h"
+#include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
 #include "GBAKeyEditor.h"
@@ -73,9 +73,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_controller->setOverrides(m_config->overrides());
 	updateTitle();
 
-	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
-	format.setSwapInterval(1);
-	m_display = new DisplayGL(format, this);
+	m_display = Display::create(this);
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap

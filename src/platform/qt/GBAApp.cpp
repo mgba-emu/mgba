@@ -6,6 +6,7 @@
 #include "GBAApp.h"
 
 #include "AudioProcessor.h"
+#include "Display.h"
 #include "GameController.h"
 #include "Window.h"
 
@@ -55,6 +56,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	}
 	freeArguments(&args);
 
+	Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("videoDriver").toInt()));
 	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
 	w->controller()->reloadAudioDriver();
 
