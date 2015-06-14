@@ -29,9 +29,14 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
 	connect(m_ui.setAddress, SIGNAL(valueChanged(const QString&)), m_ui.hexfield, SLOT(jumpToAddress(const QString&)));
 
-	connect(m_ui.hexfield, SIGNAL(selectionChanged(uint32_t, uint32_t)), this, SLOT(updateStatus(uint32_t, uint32_t)));
+	connect(m_ui.hexfield, SIGNAL(selectionChanged(uint32_t, uint32_t)), this, SLOT(updateSelection(uint32_t, uint32_t)));
 
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
+
+	connect(controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(update()));
+	connect(controller, SIGNAL(gamePaused(GBAThread*)), this, SLOT(update()));
+	connect(controller, SIGNAL(stateLoaded(GBAThread*)), this, SLOT(update()));
+	connect(controller, SIGNAL(rewound(GBAThread*)), this, SLOT(update()));
 }
 
 void MemoryView::setIndex(int index) {
@@ -57,9 +62,20 @@ void MemoryView::setIndex(int index) {
 	m_ui.hexfield->setRegion(info.base, info.size, info.name);
 }
 
-void MemoryView::updateStatus(uint32_t start, uint32_t end) {
+void MemoryView::update() {
+	m_ui.hexfield->viewport()->update();
+	updateStatus();
+}
+
+void MemoryView::updateSelection(uint32_t start, uint32_t end) {
+	m_selection.first = start;
+	m_selection.second = end;
+	updateStatus();
+}
+
+void MemoryView::updateStatus() {
 	int align = m_ui.hexfield->alignment();
-	if (start & (align - 1) || end - start != align) {
+	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
 		m_ui.uintVal->clear();
 		return;
@@ -75,17 +91,17 @@ void MemoryView::updateStatus(uint32_t start, uint32_t end) {
 	} value;
 	switch (align) {
 	case 1:
-		value.u8 = cpu->memory.load8(cpu, start, nullptr);
+		value.u8 = cpu->memory.load8(cpu, m_selection.first, nullptr);
 		m_ui.sintVal->setText(QString::number(value.i8));
 		m_ui.uintVal->setText(QString::number(value.u8));
 		break;
 	case 2:
-		value.u16 = cpu->memory.load16(cpu, start, nullptr);
+		value.u16 = cpu->memory.load16(cpu, m_selection.first, nullptr);
 		m_ui.sintVal->setText(QString::number(value.i16));
 		m_ui.uintVal->setText(QString::number(value.u16));
 		break;
 	case 4:
-		value.u32 = cpu->memory.load32(cpu, start, nullptr);
+		value.u32 = cpu->memory.load32(cpu, m_selection.first, nullptr);
 		m_ui.sintVal->setText(QString::number(value.i32));
 		m_ui.uintVal->setText(QString::number(value.u32));
 		break;

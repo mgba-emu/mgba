@@ -20,14 +20,19 @@ Q_OBJECT
 public:
 	MemoryView(GameController* controller, QWidget* parent = nullptr);
 
+public slots:
+	void update();
+
 private slots:
 	void setIndex(int);
-	void updateStatus(uint32_t start, uint32_t end);
+	void updateSelection(uint32_t start, uint32_t end);
+	void updateStatus();
 
 private:
 	Ui::MemoryView m_ui;
 
 	GameController* m_controller;
+	QPair<uint32_t, uint32_t> m_selection;
 };
 
 }
