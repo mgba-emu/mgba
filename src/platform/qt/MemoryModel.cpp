@@ -357,6 +357,7 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	if (m_selection.first >= m_selection.second) {
 		return;
 	}
+	int cursorPosition = m_top;
 	if (shift) {
 		if (m_selectionAnchor == m_selection.first) {
 			if (adjust < 0 && m_base - adjust > m_selection.second) {
@@ -368,8 +369,10 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 			if (adjust <= m_selection.first) {
 				m_selection.second = m_selection.first + m_align;
 				m_selection.first = adjust - m_align;
+				cursorPosition = m_selection.first;
 			} else {
 				m_selection.second = adjust;
+				cursorPosition = m_selection.second;
 			}
 		} else {
 			if (adjust < 0 && m_base - adjust > m_selection.first) {
@@ -381,10 +384,13 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 			if (adjust >= m_selection.second) {
 				m_selection.first = m_selection.second - m_align;
 				m_selection.second = adjust + m_align;
+				cursorPosition = m_selection.second;
 			} else {
 				m_selection.first = adjust;
+				cursorPosition = m_selection.first;
 			}
 		}
+		cursorPosition = (cursorPosition - m_base) / 16;
 	} else {
 		if (m_selectionAnchor == m_selection.first) {
 			m_selectionAnchor = m_selection.second - m_align;
@@ -400,6 +406,12 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 		}
 		m_selection.first = m_selectionAnchor;
 		m_selection.second = m_selection.first + m_align;
+		cursorPosition = (m_selectionAnchor - m_base) / 16;
+	}
+	if (cursorPosition < m_top) {
+		m_top = cursorPosition;
+	} else if (cursorPosition >= m_top + viewport()->size().height() / m_cellHeight - 1) {
+		m_top = cursorPosition - viewport()->size().height() / m_cellHeight + 2;
 	}
 	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
