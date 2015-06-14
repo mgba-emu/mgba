@@ -32,6 +32,7 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/supervisor/cli.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
 					$(CORE_DIR)/gba/supervisor/sync.c \
+					$(CORE_DIR)/gba/supervisor/thread.c \
 					$(CORE_DIR)/gba/renderers/video-software.c \
 					$(CORE_DIR)/platform/commandline.c \
 					$(CORE_DIR)/platform/libretro/memory.c \
@@ -39,6 +40,7 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/third-party/inih/ini.c \
 					$(CORE_DIR)/util/formatting.c \
 					$(CORE_DIR)/util/vfs.c \
+					$(CORE_DIR)/util/vfs/vfs-fd.c \
 					$(CORE_DIR)/util/table.c \
 					$(CORE_DIR)/util/vfs/vfs-mem.c \
 					$(CORE_DIR)/util/string.c \
