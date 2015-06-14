@@ -51,8 +51,9 @@ MemoryModel::MemoryModel(QWidget* parent)
 	connect(save, SIGNAL(triggered()), this, SLOT(save()));
 	addAction(save);
 
+	static QString arg("%0");
 	for (int i = 0; i < 256; ++i) {
-		QStaticText str(QString("%0").arg(i, 2, 16, QChar('0')).toUpper());
+		QStaticText str(arg.arg(i, 2, 16, QChar('0')).toUpper());
 		str.prepare(QTransform(), m_font);
 		m_staticNumbers.append(str);
 	}
@@ -190,7 +191,8 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	QPalette palette;
 	painter.setFont(m_font);
 	painter.setPen(palette.color(QPalette::WindowText));
-	QChar c0('0');
+	static QChar c0('0');
+	static QString arg("%0");
 	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())), Qt::AlignHCenter, tr("ASCII"));
@@ -200,7 +202,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
-		QString data = QString("%0").arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
+		QString data = arg.arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
 		painter.drawText(QRectF(QPointF(0, yp), QSizeF(m_margins.left(), m_cellHeight)), Qt::AlignHCenter, data);
 		switch (m_align) {
 		case 2:
