@@ -8,6 +8,22 @@
 
 #include "util/common.h"
 
+#ifdef _WIN32
+#include <io.h>
+#include <windows.h>
+#define PATH_SEP "\\"
+#else
+#define PATH_SEP "/"
+#endif
+
+#ifndef PATH_MAX
+#ifdef MAX_PATH
+#define PATH_MAX MAX_PATH
+#else
+#define PATH_MAX 128
+#endif
+#endif
+
 enum {
 	MAP_READ = 1,
 	MAP_WRITE = 2
@@ -54,5 +70,10 @@ struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const
 struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
+
+ssize_t VFileWrite32LE(struct VFile* vf, int32_t word);
+ssize_t VFileWrite16LE(struct VFile* vf, int16_t hword);
+ssize_t VFileRead32LE(struct VFile* vf, void* word);
+ssize_t VFileRead16LE(struct VFile* vf, void* hword);
 
 #endif

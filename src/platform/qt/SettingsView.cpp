@@ -7,8 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "ConfigController.h"
-
-#include <QFileDialog>
+#include "GBAApp.h"
 
 using namespace QGBA;
 
@@ -27,11 +26,14 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("volume", m_ui.volume);
+	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
+	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
@@ -62,7 +64,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 }
 
 void SettingsView::selectBios() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
 		m_ui.bios->setText(filename);
 	}
@@ -78,11 +80,14 @@ void SettingsView::updateConfig() {
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("fpsTarget", m_ui.fpsTarget);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	saveSetting("volume", m_ui.volume);
+	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
+	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
@@ -117,8 +122,16 @@ void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 	saveSetting(key, field->lineEdit());
 }
 
+void SettingsView::saveSetting(const char* key, const QDoubleSpinBox* field) {
+	saveSetting(key, field->cleanText());
+}
+
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
 	saveSetting(key, field->text());
+}
+
+void SettingsView::saveSetting(const char* key, const QSlider* field) {
+	saveSetting(key, QString::number(field->value()));
 }
 
 void SettingsView::saveSetting(const char* key, const QSpinBox* field) {
@@ -139,9 +152,19 @@ void SettingsView::loadSetting(const char* key, QComboBox* field) {
 	loadSetting(key, field->lineEdit());
 }
 
+void SettingsView::loadSetting(const char* key, QDoubleSpinBox* field) {
+	QString option = loadSetting(key);
+	field->setValue(option.toDouble());
+}
+
 void SettingsView::loadSetting(const char* key, QLineEdit* field) {
 	QString option = loadSetting(key);
 	field->setText(option);
+}
+
+void SettingsView::loadSetting(const char* key, QSlider* field) {
+	QString option = loadSetting(key);
+	field->setValue(option.toInt());
 }
 
 void SettingsView::loadSetting(const char* key, QSpinBox* field) {

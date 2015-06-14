@@ -56,6 +56,9 @@ while [ $# -gt 0 ]; do
     sed -i~ "s/,$//g" deb-temp/DEBIAN/control
     sed -i~ "/^[^:]*: $/d" deb-temp/DEBIAN/control
     rm deb-temp/DEBIAN/control~
+    chown -R 0:0 deb-temp
+    chmod 600 deb-temp/DEBIAN/md5sums
     dpkg-deb -b deb-temp $DEB
+    rm -rf deb-temp
     shift
 done

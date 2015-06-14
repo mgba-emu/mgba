@@ -87,8 +87,12 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
 	gba->idleLoop = IDLE_LOOP_NONE;
 	gba->lastJump = 0;
+	gba->haltPending = false;
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
+
+	gba->realisticTiming = false;
+
 	gba->performingDMA = false;
 }
 
@@ -430,6 +434,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
@@ -525,7 +530,7 @@ void GBAHalt(struct GBA* gba) {
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
 	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = -1;
+	enum GBALogLevel logLevel = GBA_LOG_ALL;
 
 	if (gba) {
 		logLevel = gba->logLevel;
@@ -628,10 +633,18 @@ bool GBAIsBIOS(struct VFile* vf) {
 }
 
 void GBAGetGameCode(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		out[0] = '\0';
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		strncpy(out, "(BIOS)", 12);
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 }
 

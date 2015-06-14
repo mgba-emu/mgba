@@ -12,6 +12,7 @@
 #include "gba/video.h"
 #include "gba/renderers/video-software.h"
 #include "util/configuration.h"
+#include "util/formatting.h"
 #include "util/vfs.h"
 
 #if SDL_VERSION_ATLEAST(2, 0, 0) && defined(__APPLE__)
@@ -20,19 +21,49 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+#define GYRO_STEPS 100
+#define RUMBLE_PWM 35
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
+#endif
+static int32_t _GBASDLReadTiltX(struct GBARotationSource* rumble);
+static int32_t _GBASDLReadTiltY(struct GBARotationSource* rumble);
+static int32_t _GBASDLReadGyroZ(struct GBARotationSource* rumble);
+static void _GBASDLRotationSample(struct GBARotationSource* source);
+
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
+#if SDL_VERSION_ATLEAST(2, 0, 4)
+	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#endif
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		return false;
+		GBALog(0, GBA_LOG_ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
+		GBALog(0, GBA_LOG_ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
+	}
+	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+		GBALog(0, GBA_LOG_ERROR, "SDL video initialization failed: %s", SDL_GetError());
+	}
+#endif
 
 	SDL_JoystickEventState(SDL_ENABLE);
 	int nJoysticks = SDL_NumJoysticks();
 	if (nJoysticks > 0) {
 		context->nJoysticks = nJoysticks;
 		context->joysticks = calloc(context->nJoysticks, sizeof(SDL_Joystick*));
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		context->haptic = calloc(context->nJoysticks, sizeof(SDL_Haptic*));
+#endif
 		size_t i;
 		for (i = 0; i < context->nJoysticks; ++i) {
 			context->joysticks[i] = SDL_JoystickOpen(i);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			context->haptic[i] = SDL_HapticOpenFromJoystick(context->joysticks[i]);
+#endif
 		}
 	} else {
 		context->nJoysticks = 0;
@@ -49,6 +80,8 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#else
+	context->screensaverSuspendDepth = 0;
 #endif
 	return true;
 }
@@ -56,6 +89,9 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	size_t i;
 	for (i = 0; i < context->nJoysticks; ++i) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_HapticClose(context->haptic[i]);
+#endif
 		SDL_JoystickClose(context->joysticks[i]);
 	}
 
@@ -130,6 +166,26 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 		return false;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	player->rumble.d.setRumble = _GBASDLSetRumble;
+	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
+	player->rumble.level = 0;
+	player->rumble.p = player;
+#endif
+
+	player->rotation.d.readTiltX = _GBASDLReadTiltX;
+	player->rotation.d.readTiltY = _GBASDLReadTiltY;
+	player->rotation.d.readGyroZ = _GBASDLReadGyroZ;
+	player->rotation.d.sample = _GBASDLRotationSample;
+	player->rotation.axisX = 2;
+	player->rotation.axisY = 3;
+	player->rotation.gyroSensitivity = 2.2e9f;
+	player->rotation.gyroX = 0;
+	player->rotation.gyroY = 1;
+	player->rotation.zDelta = 0;
+	CircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
+	player->rotation.p = player;
+
 	player->playerId = events->playersAttached;
 	size_t firstUnclaimed = SIZE_MAX;
 
@@ -171,10 +227,22 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	if (player->joystickIndex != SIZE_MAX) {
 		player->joystick = events->joysticks[player->joystickIndex];
 		events->joysticksClaimed[player->playerId] = player->joystickIndex;
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		player->haptic = events->haptic[player->joystickIndex];
+		if (player->haptic) {
+			SDL_HapticRumbleInit(player->haptic);
+		}
+#endif
 	}
 
 	++events->playersAttached;
 	return true;
+}
+
+void GBASDLDetachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
+	events->joysticksClaimed[player->playerId] = SIZE_MAX;
+	CircleBufferDeinit(&player->rotation.zHistory);
 }
 
 void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configuration* config) {
@@ -182,20 +250,85 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 	if (context->joystick) {
 		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(context->joystick));
+		const char* name = SDL_JoystickName(context->joystick);
 #else
-		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, SDL_JoystickName(SDL_JoystickIndex(context->joystick)));
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
 #endif
+		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
+
+		const char* value;
+		char* end;
+		int numAxes = SDL_JoystickNumAxes(context->joystick);
+		int axis;
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (axis >= 0 && axis < numAxes && end && !*end) {
+				context->rotation.axisX = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisY", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (axis >= 0 && axis < numAxes && end && !*end) {
+				context->rotation.axisY = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisX", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (axis >= 0 && axis < numAxes && end && !*end) {
+				context->rotation.gyroX = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisY", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (axis >= 0 && axis < numAxes && end && !*end) {
+				context->rotation.gyroY = axis;
+			}
+		}
+		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "gyroSensitivity", name);
+		if (value) {
+			float sensitivity = strtof_u(value, &end);
+			if (end && !*end) {
+				context->rotation.gyroSensitivity = sensitivity;
+			}
+		}
+	}
+}
+
+void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configuration* config) {
+	if (context->joystick) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		const char* name = SDL_JoystickName(context->joystick);
+#else
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
+#endif
+		char value[12];
+		snprintf(value, sizeof(value), "%i", context->rotation.axisX);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.axisY);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisY", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.gyroX);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisX", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.gyroY);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroAxisY", value, name);
+		snprintf(value, sizeof(value), "%g", context->rotation.gyroSensitivity);
+		GBAInputSetCustomValue(config, SDL_BINDING_BUTTON, "gyroSensitivity", value, name);
 	}
 }
 
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
-	if (player->playerId > MAX_PLAYERS || index >= events->nJoysticks) {
+	if (player->playerId >= MAX_PLAYERS || index >= events->nJoysticks) {
 		return;
 	}
 	events->joysticksClaimed[player->playerId] = index;
 	player->joystickIndex = index;
 	player->joystick = events->joysticks[index];
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	player->haptic = events->haptic[index];
+#endif
 }
 
 static void _pauseAfterFrame(struct GBAThread* context) {
@@ -403,3 +536,102 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContex
 		break;
 	}
 }
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
+	struct GBASDLRumble* sdlRumble = (struct GBASDLRumble*) rumble;
+	if (!sdlRumble->p->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->haptic)) {
+		return;
+	}
+	sdlRumble->level += enable;
+	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&sdlRumble->history, &oldLevel);
+		sdlRumble->level -= oldLevel;
+	}
+	CircleBufferWrite8(&sdlRumble->history, enable);
+	if (sdlRumble->level) {
+		SDL_HapticRumblePlay(sdlRumble->p->haptic, sdlRumble->level / (float) RUMBLE_PWM, 20);
+	} else {
+		SDL_HapticRumbleStop(sdlRumble->p->haptic);
+	}
+}
+#endif
+
+static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
+	return SDL_JoystickGetAxis(player->joystick, axis) * 0x3800;
+}
+
+static int32_t _GBASDLReadTiltX(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	return _readTilt(rotation->p, rotation->axisX);
+}
+
+static int32_t _GBASDLReadTiltY(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	return _readTilt(rotation->p, rotation->axisY);
+}
+
+static int32_t _GBASDLReadGyroZ(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	float z = rotation->zDelta;
+	return z * rotation->gyroSensitivity;
+}
+
+static void _GBASDLRotationSample(struct GBARotationSource* source) {
+	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+	SDL_JoystickUpdate();
+
+	int x = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroX);
+	int y = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroY);
+	union {
+		float f;
+		int32_t i;
+	} theta = { .f = atan2f(y, x) - atan2f(rotation->oldY, rotation->oldX) };
+	if (isnan(theta.f)) {
+		theta.f = 0.0f;
+	} else if (theta.f > M_PI) {
+		theta.f -= 2.0f * M_PI;
+	} else if (theta.f < -M_PI) {
+		theta.f += 2.0f * M_PI;
+	}
+	rotation->oldX = x;
+	rotation->oldY = y;
+
+	float oldZ = 0;
+	if (CircleBufferSize(&rotation->zHistory) == GYRO_STEPS * sizeof(float)) {
+		CircleBufferRead32(&rotation->zHistory, (int32_t*) &oldZ);
+	}
+	CircleBufferWrite32(&rotation->zHistory, theta.i);
+	rotation->zDelta += theta.f - oldZ;
+}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+void GBASDLSuspendScreensaver(struct GBASDLEvents* events) {
+	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
+		SDL_DisableScreenSaver();
+	}
+	++events->screensaverSuspendDepth;
+}
+
+void GBASDLResumeScreensaver(struct GBASDLEvents* events) {
+	--events->screensaverSuspendDepth;
+	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
+		SDL_EnableScreenSaver();
+	}
+}
+
+void GBASDLSetScreensaverSuspendable(struct GBASDLEvents* events, bool suspendable) {
+	bool wasSuspendable = events->screensaverSuspendable;
+	events->screensaverSuspendable = suspendable;
+	if (events->screensaverSuspendDepth > 0) {
+		if (suspendable && !wasSuspendable) {
+			SDL_DisableScreenSaver();
+		} else if (!suspendable && wasSuspendable) {
+			SDL_EnableScreenSaver();
+		}
+	} else {
+		SDL_EnableScreenSaver();
+	}
+}
+#endif

@@ -93,7 +93,7 @@ ssize_t _vfmRead(struct VFile* vf, void* buffer, size_t size) {
 		size = vfm->size - vfm->offset;
 	}
 
-	memcpy(buffer, vfm->mem + vfm->offset, size);
+	memcpy(buffer, (void*) ((uintptr_t) vfm->mem + vfm->offset), size);
 	vfm->offset += size;
 	return size;
 }
@@ -105,7 +105,7 @@ ssize_t _vfmWrite(struct VFile* vf, const void* buffer, size_t size) {
 		size = vfm->size - vfm->offset;
 	}
 
-	memcpy(vfm->mem + vfm->offset, buffer, size);
+	memcpy((void*) ((uintptr_t) vfm->mem + vfm->offset), buffer, size);
 	vfm->offset += size;
 	return size;
 }

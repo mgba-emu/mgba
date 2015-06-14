@@ -286,7 +286,7 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* hw) {
 
 void _gyroReadPins(struct GBACartridgeHardware* hw) {
 	struct GBARotationSource* gyro = hw->p->rotationSource;
-	if (!gyro) {
+	if (!gyro || !gyro->readGyroZ) {
 		return;
 	}
 

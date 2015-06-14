@@ -464,6 +464,8 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.custom = _gdbStubPoll;
 	stub->d.log = 0;
 	stub->untilPoll = GDB_STUB_INTERVAL;
+	stub->lineAck = GDB_ACK_PENDING;
+	stub->shouldBlock = false;
 }
 
 bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {

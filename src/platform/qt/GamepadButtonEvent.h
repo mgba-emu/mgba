@@ -18,7 +18,7 @@ class InputController;
 
 class GamepadButtonEvent : public QEvent  {
 public:
-	GamepadButtonEvent(Type type, int button, InputController* controller = nullptr);
+	GamepadButtonEvent(Type pressType, int button, int type, InputController* controller = nullptr);
 
 	int value() const { return m_button; }
 	GBAKey gbaKey() const { return m_key; }

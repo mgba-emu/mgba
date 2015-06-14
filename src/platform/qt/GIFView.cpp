@@ -7,7 +7,8 @@
 
 #ifdef USE_MAGICK
 
-#include <QFileDialog>
+#include "GBAApp.h"
+
 #include <QMap>
 
 using namespace QGBA;
@@ -48,7 +49,7 @@ void GIFView::stopRecording() {
 }
 
 void GIFView::selectFile() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Select output file"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif)"));
 	if (!filename.isEmpty()) {
 		m_ui.filename->setText(filename);
 		if (!ImageMagickGIFEncoderIsOpen(&m_encoder)) {

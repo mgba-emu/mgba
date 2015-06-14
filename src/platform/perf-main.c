@@ -7,8 +7,10 @@
 #include "gba/supervisor/config.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
+#include "gba/serialize.h"
 
 #include "platform/commandline.h"
+#include "util/vfs.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -16,27 +18,31 @@
 #include <inttypes.h>
 #include <sys/time.h>
 
-#define PERF_OPTIONS "F:NPS:"
+#define PERF_OPTIONS "F:L:NPS:"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
 	"  -P               CSV output, useful for parsing\n" \
-	"  -S SEC           Run for SEC in-game seconds before exiting"
+	"  -S SEC           Run for SEC in-game seconds before exiting\n" \
+	"  -L FILE          Load a savestate when starting the test"
 
 struct PerfOpts {
 	bool noVideo;
 	bool csv;
 	unsigned duration;
 	unsigned frames;
+	char* savestate;
 };
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
 static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+static void _loadSavestate(struct GBAThread* context);
 
 static struct GBAThread* _thread;
 static bool _dispatchExiting = false;
+static struct VFile* _savestate = 0;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAPerfShutdown);
@@ -44,7 +50,7 @@ int main(int argc, char** argv) {
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
 
-	struct PerfOpts perfOpts = { false, false, 0, 0 };
+	struct PerfOpts perfOpts = { false, false, 0, 0, 0 };
 	struct SubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
@@ -62,12 +68,13 @@ int main(int argc, char** argv) {
 	GBAConfigLoadDefaults(&config, &opts);
 
 	struct GBAArguments args;
-	if (!parseArguments(&args, &config, argc, argv, &subparser)) {
+	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
 		GBAConfigFreeOpts(&opts);
 		GBAConfigDeinit(&config);
-		return 1;
+		return !parsed;
 	}
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);
@@ -78,6 +85,13 @@ int main(int argc, char** argv) {
 
 	if (!perfOpts.noVideo) {
 		context.renderer = &renderer.d;
+	}
+	if (perfOpts.savestate) {
+		_savestate = VFileOpen(perfOpts.savestate, O_RDONLY);
+		free(perfOpts.savestate);
+	}
+	if (_savestate) {
+		context.startCallback = _loadSavestate;
 	}
 
 	context.debugger = createDebugger(&args, &context);
@@ -95,7 +109,14 @@ int main(int argc, char** argv) {
 	if (!didStart) {
 		goto cleanup;
 	}
+	GBAThreadInterrupt(&context);
+	if (GBAThreadHasCrashed(&context)) {
+		GBAThreadJoin(&context);
+		goto cleanup;
+	}
+
 	GBAGetGameCode(context.gba, gameCode);
+	GBAThreadContinue(&context);
 
 	int frames = perfOpts.frames;
 	if (!frames) {
@@ -126,6 +147,9 @@ int main(int argc, char** argv) {
 	}
 
 cleanup:
+	if (_savestate) {
+		_savestate->close(_savestate);
+	}
 	GBAConfigFreeOpts(&opts);
 	freeArguments(&args);
 	GBAConfigDeinit(&config);
@@ -197,7 +221,16 @@ static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, i
 	case 'S':
 		opts->duration = strtoul(arg, 0, 10);
 		return !errno;
+	case 'L':
+		opts->savestate = strdup(arg);
+		return true;
 	default:
 		return false;
 	}
+}
+
+static void _loadSavestate(struct GBAThread* context) {
+	GBALoadStateNamed(context->gba, _savestate);
+	_savestate->close(_savestate);
+	_savestate = 0;
 }

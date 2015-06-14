@@ -18,7 +18,6 @@ extern "C" {
 }
 
 #include "GDBController.h"
-#include "Display.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 
@@ -28,6 +27,7 @@ struct GBAArguments;
 namespace QGBA {
 
 class ConfigController;
+class Display;
 class GameController;
 class GIFView;
 class LogView;
@@ -50,7 +50,7 @@ public:
 	void resizeFrame(int width, int height);
 
 signals:
-	void startDrawing(const uint32_t*, GBAThread*);
+	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void fpsTargetChanged(float target);
@@ -59,10 +59,14 @@ public slots:
 	void selectROM();
 	void selectBIOS();
 	void selectPatch();
+	void enterFullScreen();
 	void exitFullScreen();
 	void toggleFullScreen();
 	void loadConfig();
 	void saveConfig();
+
+	void importSharkport();
+	void exportSharkport();
 
 	void openKeymapWindow();
 	void openSettingsWindow();
@@ -71,6 +75,9 @@ public slots:
 	void openOverrideWindow();
 	void openSensorWindow();
 	void openCheatsWindow();
+
+	void openPaletteWindow();
+	void openMemoryWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -96,6 +103,7 @@ protected:
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
+	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
 	void gameStarted(GBAThread*);
@@ -120,7 +128,12 @@ private:
 	void appendMRU(const QString& fname);
 	void updateMRU();
 
+	void openView(QWidget* widget);
+
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+
+	void updateTitle(float fps = NAN);
 
 	GameController* m_controller;
 	Display* m_display;

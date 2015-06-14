@@ -24,6 +24,7 @@
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference); \
 	void NAME ## EnsureCapacity(struct NAME* vector, size_t capacity); \
 	size_t NAME ## Size(const struct NAME* vector); \
+	size_t NAME ## Index(const struct NAME* vector, const TYPE* member);
 
 #define DEFINE_VECTOR(NAME, TYPE) \
 	void NAME ## Init(struct NAME* vector, size_t capacity) { \
@@ -74,6 +75,9 @@
 	} \
 	size_t NAME ## Size(const struct NAME* vector) { \
 		return vector->size; \
+	} \
+	size_t NAME ## Index(const struct NAME* vector, const TYPE* member) { \
+		return member - (const TYPE*) vector->vector; \
 	} \
 
 #endif
