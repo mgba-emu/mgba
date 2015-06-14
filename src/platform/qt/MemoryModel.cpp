@@ -274,10 +274,10 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 		nybble = key - Qt::Key_A + 10;
 		break;
 	case Qt::Key_Left:
-		adjustCursor(-1, event->modifiers() & Qt::ShiftModifier);
+		adjustCursor(-m_align, event->modifiers() & Qt::ShiftModifier);
 		return;
 	case Qt::Key_Right:
-		adjustCursor(1, event->modifiers() & Qt::ShiftModifier);
+		adjustCursor(m_align, event->modifiers() & Qt::ShiftModifier);
 		return;
 	case Qt::Key_Up:
 		adjustCursor(-16, event->modifiers() & Qt::ShiftModifier);
@@ -359,31 +359,48 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	if (shift) {
 		if (m_selectionAnchor == m_selection.first) {
+			if (adjust < 0 && m_base - adjust > m_selection.second) {
+				adjust = m_base - m_selection.second + m_align;
+			} else if (adjust > 0 && m_selection.second + adjust > m_base + m_size) {
+				adjust = m_base + m_size - m_selection.second;
+			}
 			adjust += m_selection.second;
 			if (adjust <= m_selection.first) {
-				m_selection.second = m_selection.first + 1;
-				m_selection.first = adjust - 1;
+				m_selection.second = m_selection.first + m_align;
+				m_selection.first = adjust - m_align;
 			} else {
 				m_selection.second = adjust;
 			}
 		} else {
+			if (adjust < 0 && m_base - adjust > m_selection.first) {
+				adjust = m_base - m_selection.first;
+			} else if (adjust > 0 && m_selection.first + adjust > m_base + m_size) {
+				adjust = m_base + m_size - m_selection.first - m_align;
+			}
 			adjust += m_selection.first;
 			if (adjust >= m_selection.second) {
-				m_selection.first = m_selection.second - 1;
-				m_selection.second = adjust + 1;
+				m_selection.first = m_selection.second - m_align;
+				m_selection.second = adjust + m_align;
 			} else {
 				m_selection.first = adjust;
 			}
 		}
 	} else {
 		if (m_selectionAnchor == m_selection.first) {
-			m_selectionAnchor = m_selection.second + shift - 1;
+			m_selectionAnchor = m_selection.second - m_align;
 		} else {
-			m_selectionAnchor = m_selection.first + shift;
+			m_selectionAnchor = m_selection.first;
 		}
-		m_selectionAnchor += adjust;
+		if (adjust < 0 && m_base - adjust > m_selectionAnchor) {
+			m_selectionAnchor = m_base;
+		} else if (adjust > 0 && m_selectionAnchor + adjust > m_base + m_size) {
+			m_selectionAnchor = m_base + m_size - m_align;
+		} else {
+			m_selectionAnchor += adjust;
+		}
 		m_selection.first = m_selectionAnchor;
-		m_selection.second = m_selection.first + 1;
+		m_selection.second = m_selection.first + m_align;
 	}
+	emit selectionChanged(m_selection.first, m_selection.second);
 	viewport()->update();
 }
