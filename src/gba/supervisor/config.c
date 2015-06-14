@@ -134,7 +134,7 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 #else
 	char home[MAX_PATH];
 	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(out, outLength, "%s\\%s", home, projectName);
+	snprintf(out, outLength, "%s\\%s", home, "mGBA");
 	CreateDirectoryA(out, NULL);
 #endif
 }

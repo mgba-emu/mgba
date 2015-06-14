@@ -68,8 +68,12 @@ void retro_set_input_state(retro_input_state_t input) {
 void retro_get_system_info(struct retro_system_info* info) {
    info->need_fullpath = false;
    info->valid_extensions = "gba";
-   info->library_version = projectVersion;
-   info->library_name = projectName;
+#ifdef GIT_VERSION
+   info->library_version = GIT_VERSION;
+#else
+   info->library_version = "git";
+#endif
+   info->library_name = "mGBA";
    info->block_extract = false;
 }
 

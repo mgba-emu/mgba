@@ -1,4 +1,5 @@
 DEBUG = 0
+GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 
 ifneq ($(EMSCRIPTEN),)
 	platform = emscripten
@@ -203,7 +204,7 @@ else
 	CC = gcc
 	CXX = g++
 	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-	DEFINES += -std=c99 -DDISABLE_THREADING
+	DEFINES += -std=c99 -DDISABLE_THREADING -DGIT_VERSION=\"$(GIT_VERSION)\"
 
 endif
 
