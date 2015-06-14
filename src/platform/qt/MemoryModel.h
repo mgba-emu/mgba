@@ -35,6 +35,9 @@ public slots:
 	void jumpToAddress(const QString& hex);
 	void jumpToAddress(uint32_t);
 
+	void copy();
+	void save();
+
 signals:
 	void selectionChanged(uint32_t start, uint32_t end);
 
@@ -54,6 +57,8 @@ private:
 	void drawEditingText(QPainter& painter, const QPointF& origin);
 
 	void adjustCursor(int adjust, bool shift);
+
+	void serialize(QDataStream* stream);
 
 	ARMCore* m_cpu;
 	QFont m_font;

@@ -5,8 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "MemoryModel.h"
 
+#include "GBAApp.h"
 #include "GameController.h"
 
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
 #include <QFontMetrics>
 #include <QPainter>
 #include <QScrollBar>
@@ -35,6 +39,17 @@ MemoryModel::MemoryModel(QWidget* parent)
 	m_letterWidth = metrics.averageCharWidth();
 
 	setFocusPolicy(Qt::StrongFocus);
+	setContextMenuPolicy(Qt::ActionsContextMenu);
+
+	QAction* copy = new QAction(tr("Copy selection"), this);
+	copy->setShortcut(QKeySequence::Copy);
+	connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
+	addAction(copy);
+
+	QAction* save = new QAction(tr("Save selection"), this);
+	save->setShortcut(QKeySequence::Save);
+	connect(save, SIGNAL(triggered()), this, SLOT(save()));
+	addAction(save);
 
 	for (int i = 0; i < 256; ++i) {
 		QStaticText str(QString("%0").arg(i, 2, 16, QChar('0')).toUpper());
@@ -110,6 +125,58 @@ void MemoryModel::jumpToAddress(uint32_t address) {
 	verticalScrollBar()->setValue(m_top);
 	m_buffer = 0;
 	m_bufferedNybbles = 0;
+}
+
+void MemoryModel::copy() {
+	QClipboard* clipboard = QApplication::clipboard();
+	if (!clipboard) {
+		return;
+	}
+	QByteArray bytestring;
+	QDataStream stream(&bytestring, QIODevice::WriteOnly);
+	serialize(&stream);
+	QString string;
+	string.reserve(bytestring.size() * 2);
+	static QString arg("%0");
+	static QChar c0('0');
+	for (uchar c : bytestring) {
+		string.append(arg.arg(c, 2, 16, c0).toUpper());
+	}
+	clipboard->setText(string);
+}
+
+void MemoryModel::save() {
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Save selected memory"));
+	if (filename.isNull()) {
+		return;
+	}
+	QFile outfile(filename);
+	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		// TODO: Log
+		return;
+	}
+	QDataStream stream(&outfile);
+	serialize(&stream);
+}
+
+void MemoryModel::serialize(QDataStream* stream) {
+	switch (m_align) {
+	case 1:
+		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
+			*stream << (quint8) m_cpu->memory.load8(m_cpu, i, nullptr);
+		}
+		break;
+	case 2:
+		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
+			*stream << (quint16) m_cpu->memory.load16(m_cpu, i, nullptr);
+		}
+		break;
+	case 4:
+		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
+			*stream << (quint32) m_cpu->memory.load32(m_cpu, i, nullptr);
+		}
+		break;
+	}
 }
 
 void MemoryModel::resizeEvent(QResizeEvent*) {
@@ -220,6 +287,9 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 
 	QPoint position(event->pos() - QPoint(m_margins.left(), m_margins.top()));
 	uint32_t address = int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
+	if (event->button() == Qt::RightButton && isInSelection(address)) {
+		return;
+	}
 	m_selectionAnchor = address & ~(m_align - 1);
 	m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
 	m_buffer = 0;
