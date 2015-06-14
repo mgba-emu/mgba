@@ -273,6 +273,18 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 	case Qt::Key_F:
 		nybble = key - Qt::Key_A + 10;
 		break;
+	case Qt::Key_Left:
+		adjustCursor(-1, event->modifiers() & Qt::ShiftModifier);
+		return;
+	case Qt::Key_Right:
+		adjustCursor(1, event->modifiers() & Qt::ShiftModifier);
+		return;
+	case Qt::Key_Up:
+		adjustCursor(-16, event->modifiers() & Qt::ShiftModifier);
+		return;
+	case Qt::Key_Down:
+		adjustCursor(16, event->modifiers() & Qt::ShiftModifier);
+		return;
 	default:
 		return;
 	}
@@ -339,4 +351,39 @@ void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
 		}
 		o += QPointF(m_letterWidth * 2, 0);
 	}
+}
+
+void MemoryModel::adjustCursor(int adjust, bool shift) {
+	if (m_selection.first >= m_selection.second) {
+		return;
+	}
+	if (shift) {
+		if (m_selectionAnchor == m_selection.first) {
+			adjust += m_selection.second;
+			if (adjust <= m_selection.first) {
+				m_selection.second = m_selection.first + 1;
+				m_selection.first = adjust - 1;
+			} else {
+				m_selection.second = adjust;
+			}
+		} else {
+			adjust += m_selection.first;
+			if (adjust >= m_selection.second) {
+				m_selection.first = m_selection.second - 1;
+				m_selection.second = adjust + 1;
+			} else {
+				m_selection.first = adjust;
+			}
+		}
+	} else {
+		if (m_selectionAnchor == m_selection.first) {
+			m_selectionAnchor = m_selection.second + shift - 1;
+		} else {
+			m_selectionAnchor = m_selection.first + shift;
+		}
+		m_selectionAnchor += adjust;
+		m_selection.first = m_selectionAnchor;
+		m_selection.second = m_selection.first + 1;
+	}
+	viewport()->update();
 }

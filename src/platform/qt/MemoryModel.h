@@ -53,6 +53,8 @@ private:
 	bool isEditing(uint32_t address);
 	void drawEditingText(QPainter& painter, const QPointF& origin);
 
+	void adjustCursor(int adjust, bool shift);
+
 	ARMCore* m_cpu;
 	QFont m_font;
 	int m_cellHeight;
