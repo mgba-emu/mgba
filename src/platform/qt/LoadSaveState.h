@@ -47,7 +47,6 @@ private:
 
 	Ui::LoadSaveState m_ui;
 	GameController* m_controller;
-	InputController* m_inputController;
 	SavestateButton* m_slots[NUM_SLOTS];
 	LoadSave m_mode;
 

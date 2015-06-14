@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
+#ifndef DISABLE_THREADING
 #ifdef USE_PTHREADS
 #include <pthread.h>
 #include <sys/time.h>
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#endif
 
 #define THREAD_ENTRY void*
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
@@ -72,6 +76,17 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 
 static inline int ThreadJoin(Thread thread) {
 	return pthread_join(thread, 0);
+}
+
+static inline int ThreadSetName(const char* name) {
+#ifdef __APPLE__
+	return pthread_setname_np(name);
+#elif defined(__FreeBSD__)
+	pthread_set_name_np(pthread_self(), name);
+	return 0;
+#else
+	return pthread_setname_np(pthread_self(), name);
+#endif
 }
 
 #elif _WIN32
@@ -142,8 +157,16 @@ static inline int ThreadJoin(Thread thread) {
 	}
 	return 0;
 }
+
+static inline int ThreadSetName(const char* name) {
+	UNUSED(name);
+	return -1;
+}
 #else
 #define DISABLE_THREADING
+#endif
+#endif
+#ifdef DISABLE_THREADING
 typedef void* Thread;
 typedef void* Mutex;
 typedef void* Condition;

@@ -37,9 +37,6 @@
    </item>
    <item row="8" column="1" colspan="2">
     <widget class="QPushButton" name="addPAR">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Add Pro Action Replay</string>
      </property>

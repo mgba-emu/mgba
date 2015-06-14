@@ -74,16 +74,18 @@ DECL_BITS(RTCCommandData, Magic, 0, 4);
 DECL_BITS(RTCCommandData, Command, 4, 3);
 DECL_BIT(RTCCommandData, Reading, 7);
 
+#pragma pack(push, 1)
 struct GBARTC {
-	int bytesRemaining;
-	int transferStep;
-	int bitsRead;
-	int bits;
-	int commandActive;
+	int32_t bytesRemaining;
+	int32_t transferStep;
+	int32_t bitsRead;
+	int32_t bits;
+	int32_t commandActive;
 	RTCCommandData command;
 	RTCControl control;
 	uint8_t time[7];
-} __attribute__((packed));
+};
+#pragma pack(pop)
 
 struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);

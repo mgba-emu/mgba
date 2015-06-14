@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsView.h"
 
+#include "GBAApp.h"
 #include "GameController.h"
 
 #include <QClipboard>
-#include <QFileDialog>
 
 extern "C" {
 #include "gba/cheats.h"
@@ -40,6 +40,10 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 		enterCheat(GBACheatAddGameSharkLine);
 	});
 
+	connect(m_ui.addPAR, &QPushButton::clicked, [this]() {
+		enterCheat(GBACheatAddProActionReplayLine);
+	});
+
 	connect(m_ui.addCB, &QPushButton::clicked, [this]() {
 		enterCheat(GBACheatAddCodeBreakerLine);
 	});
@@ -60,14 +64,14 @@ bool CheatsView::eventFilter(QObject* object, QEvent* event) {
 }
 
 void CheatsView::load() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select cheats file"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select cheats file"));
 	if (!filename.isEmpty()) {
 		m_model.loadFile(filename);
 	}
 }
 
 void CheatsView::save() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Select cheats file"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select cheats file"));
 	if (!filename.isEmpty()) {
 		m_model.saveFile(filename);
 	}

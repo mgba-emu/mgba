@@ -108,19 +108,19 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.videoSync = GameController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
-	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_opts.volume = GBA_AUDIO_VOLUME_MAX;
+	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
+	m_opts.suspendScreensaver = true;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);
 }
 
 ConfigController::~ConfigController() {
-	write();
-
 	GBAConfigDeinit(&m_config);
 	GBAConfigFreeOpts(&m_opts);
 }

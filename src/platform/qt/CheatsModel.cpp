@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsModel.h"
 
+#include "VFileDevice.h"
+
 #include <QFont>
 #include <QSet>
 
 extern "C" {
 #include "gba/cheats.h"
-#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -201,7 +202,7 @@ void CheatsModel::endAppendRow() {
 }
 
 void CheatsModel::loadFile(const QString& path) {
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
+	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
 		return;
 	}
@@ -212,7 +213,7 @@ void CheatsModel::loadFile(const QString& path) {
 }
 
 void CheatsModel::saveFile(const QString& path) {
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_TRUNC | O_CREAT | O_WRONLY);
+	VFile* vf = VFileDevice::open(path, O_TRUNC | O_CREAT | O_WRONLY);
 	if (!vf) {
 		return;
 	}

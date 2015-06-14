@@ -10,10 +10,6 @@
 #include "gba/memory.h"
 #include "isa-inlines.h"
 
-#ifndef M_PI
-#define M_PI 3.141592654f
-#endif
-
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
@@ -242,6 +238,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -257,6 +254,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -273,6 +271,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -290,6 +289,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -331,7 +331,7 @@ static void _unLz77(struct GBA* gba, int width) {
 	uint32_t disp;
 	int bytes;
 	int byte;
-	int halfword;
+	int halfword = 0;
 	while (remaining > 0) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {

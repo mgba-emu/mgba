@@ -519,6 +519,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerClearBreakpoint(&debugger->d, address);
+	ARMDebuggerClearWatchpoint(&debugger->d, address);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -816,7 +817,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	}
 
 	const char* commandPtr;
-	int cmd = 0, len = 0;
+	size_t cmd = 0, len = 0;
 	const char* name = 0;
 	for (commandPtr = li->buffer; commandPtr <= li->cursor; ++commandPtr, ++len) {
 		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
@@ -832,7 +833,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	if (!name) {
 		return CC_ERROR;
 	}
-	if (_debuggerCommands[cmd + 1].name && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
+	if (_debuggerCommands[cmd + 1].name && strlen(_debuggerCommands[cmd + 1].name) >= len - 1 && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
 		--len;
 		const char* next = 0;
 		int i;
@@ -841,6 +842,9 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 				break;
 			}
 			next = _debuggerCommands[i].name;
+		}
+		if (!next) {
+			return CC_ERROR;
 		}
 
 		for (; name[len]; ++len) {
@@ -861,7 +865,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 static void _cliDebuggerInit(struct ARMDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	// TODO: get argv[0]
-	cliDebugger->elstate = el_init(BINARY_NAME, stdin, stdout, stderr);
+	cliDebugger->elstate = el_init(binaryName, stdin, stdout, stderr);
 	el_set(cliDebugger->elstate, EL_PROMPT, _prompt);
 	el_set(cliDebugger->elstate, EL_EDITOR, "emacs");
 
