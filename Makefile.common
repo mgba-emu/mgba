@@ -18,6 +18,9 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/audio.c \
 					$(CORE_DIR)/gba/memory.c \
 					$(CORE_DIR)/gba/cheats.c \
+					$(CORE_DIR)/gba/cheats/gameshark.c \
+					$(CORE_DIR)/gba/cheats/parv3.c \
+					$(CORE_DIR)/gba/cheats/codebreaker.c \
 					$(CORE_DIR)/gba/gba.c \
 					$(CORE_DIR)/gba/hardware.c \
 					$(CORE_DIR)/gba/sio.c \
@@ -28,7 +31,7 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/supervisor/rr.c \
 					$(CORE_DIR)/gba/supervisor/cli.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
-					$(CORE_DIR)/gba/supervisor/thread.c \
+					$(CORE_DIR)/gba/supervisor/sync.c \
 					$(CORE_DIR)/gba/renderers/video-software.c \
 					$(CORE_DIR)/platform/commandline.c \
 					$(CORE_DIR)/platform/libretro/memory.c \
