@@ -362,7 +362,7 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 		if (m_selectionAnchor == m_selection.first) {
 			if (adjust < 0 && m_base - adjust > m_selection.second) {
 				adjust = m_base - m_selection.second + m_align;
-			} else if (adjust > 0 && m_selection.second + adjust > m_base + m_size) {
+			} else if (adjust > 0 && m_selection.second + adjust >= m_base + m_size) {
 				adjust = m_base + m_size - m_selection.second;
 			}
 			adjust += m_selection.second;
@@ -372,19 +372,19 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 				cursorPosition = m_selection.first;
 			} else {
 				m_selection.second = adjust;
-				cursorPosition = m_selection.second;
+				cursorPosition = m_selection.second - m_align;
 			}
 		} else {
 			if (adjust < 0 && m_base - adjust > m_selection.first) {
 				adjust = m_base - m_selection.first;
-			} else if (adjust > 0 && m_selection.first + adjust > m_base + m_size) {
+			} else if (adjust > 0 && m_selection.first + adjust >= m_base + m_size) {
 				adjust = m_base + m_size - m_selection.first - m_align;
 			}
 			adjust += m_selection.first;
 			if (adjust >= m_selection.second) {
 				m_selection.first = m_selection.second - m_align;
 				m_selection.second = adjust + m_align;
-				cursorPosition = m_selection.second;
+				cursorPosition = adjust;
 			} else {
 				m_selection.first = adjust;
 				cursorPosition = m_selection.first;
@@ -399,7 +399,7 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 		}
 		if (adjust < 0 && m_base - adjust > m_selectionAnchor) {
 			m_selectionAnchor = m_base;
-		} else if (adjust > 0 && m_selectionAnchor + adjust > m_base + m_size) {
+		} else if (adjust > 0 && m_selectionAnchor + adjust >= m_base + m_size) {
 			m_selectionAnchor = m_base + m_size - m_align;
 		} else {
 			m_selectionAnchor += adjust;
