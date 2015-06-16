@@ -1723,7 +1723,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width >> 1 : 0x80) + (localY & 0x7) * 4;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -1735,7 +1735,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
@@ -1745,7 +1745,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 #define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80) + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	current = renderer->spriteLayer[outX]; \
 	if ((current & FLAG_ORDER_MASK) > flags) { \
@@ -1757,7 +1757,7 @@ static void _drawBackgroundMode5(struct GBAVideoSoftwareRenderer* renderer, stru
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFF), vramBase); \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
 	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
 	if (tileData) { \
 		renderer->row[outX] |= FLAG_OBJWIN; \
