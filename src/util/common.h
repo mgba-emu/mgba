@@ -32,6 +32,9 @@ typedef int32_t ssize_t;
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
+#elif defined(__wii__)
+typedef int32_t ssize_t;
+#define SSIZE_MAX ((ssize_t) SIZE_MAX)
 #else
 #include <strings.h>
 #include <unistd.h>
