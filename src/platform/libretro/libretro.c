@@ -172,7 +172,6 @@ void retro_run(void) {
 	while (gba.video.frameCounter == frameCount) {
 		ARMRunLoop(&cpu);
 	}
-	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * 256);
 }
 
 void retro_reset(void) {
