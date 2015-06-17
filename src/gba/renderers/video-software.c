@@ -728,7 +728,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			renderer->start = renderer->end;
 			renderer->end = renderer->windows[w].endX;
 			renderer->currentWindow = renderer->windows[w].control;
-			if (spriteLayers & (1 << priority)) {
+			if (GBAWindowControlIsObjEnable(renderer->currentWindow.packed) && spriteLayers & (1 << priority)) {
 				_postprocessSprite(renderer, priority);
 			}
 			if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(renderer->dispcnt) < 2) {
