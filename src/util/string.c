@@ -17,6 +17,16 @@ char* strndup(const char* start, size_t len) {
 }
 #endif
 
+#ifndef HAVE_STRDUP
+char* strdup(const char* str) {
+	size_t len = strlen(str);
+	char* out = malloc(len + 1);
+	strncpy(out, str, len);
+	out[len] = '\0';
+	return out;
+}
+#endif
+
 char* strnrstr(const char* restrict haystack, const char* restrict needle, size_t len) {
 	char* last = 0;
 	const char* next = haystack;

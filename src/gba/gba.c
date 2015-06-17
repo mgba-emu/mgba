@@ -743,14 +743,13 @@ void GBAFrameEnded(struct GBA* gba) {
 		}
 	}
 
+	if (gba->stream) {
+		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+	}
 
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
 		return;
-	}
-
-	if (gba->stream) {
-		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
 	if (thread->frameCallback) {
