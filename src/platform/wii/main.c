@@ -45,14 +45,7 @@ int main() {
 	VIDEO_Init();
 	PAD_Init();
 
-	int fmt;
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	fmt = GX_PF_RGB565_Z16;
-#else
-#error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
-#endif
-#else
+#if !defined(COLOR_16_BIT) && !defined(COLOR_5_6_5)
 #error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
 #endif
 
@@ -65,15 +58,24 @@ int main() {
 	VIDEO_SetBlack(FALSE);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if (mode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
+	if (mode->viTVMode & VI_NON_INTERLACE) {
+		VIDEO_WaitVSync();
+	}
 
 	GXColor bg = { 0, 0, 0, 0xFF };
 	void* fifo = memalign(32, 0x40000);
 	memset(fifo, 0, 0x40000);
 	GX_Init(fifo, 0x40000);
-	GX_SetPixelFmt(fmt, GX_ZC_LINEAR);
 	GX_SetCopyClear(bg, 0x00FFFFFF);
 	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
+
+	f32 yscale = GX_GetYScaleFactor(mode->efbHeight, mode->xfbHeight);
+	u32 xfbHeight = GX_SetDispCopyYScale(yscale);
+	GX_SetScissor(0, 0, mode->viWidth, mode->viWidth);
+	GX_SetDispCopySrc(0, 0, mode->fbWidth, mode->efbHeight);
+	GX_SetDispCopyDst(mode->fbWidth, xfbHeight);
+	GX_SetCopyFilter(mode->aa, mode->sample_pattern, GX_TRUE, mode->vfilter);
+	GX_SetFieldMode(mode->field_rendering, ((mode->viHeight == 2 * mode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
@@ -103,7 +105,6 @@ int main() {
 	guVector up = { 0.0f, 1.0f, 0.0f };
 	guVector look = { 0.0f, 0.0f, -1.0f };
 	guLookAt(view, &cam, &up, &look);
-	GX_LoadPosMtxImm(view, GX_PNMTX0);
 
 	guMtxIdentity(model);
 	guMtxTransApply(model, model, 0.0f, 0.0f, -6.0f);
@@ -111,6 +112,7 @@ int main() {
 	GX_LoadPosMtxImm(modelview, GX_PNMTX0);
 
 	texmem = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
+	memset(texmem, 0, 256 * 256 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, 256, 256, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 
 	fatInitDefault();
@@ -148,7 +150,7 @@ int main() {
 
 	while (true) {
 		PAD_ScanPads();
-		u16 padkeys = PAD_ButtonsDown(0);
+		u16 padkeys = PAD_ButtonsHeld(0);
 		int keys = 0;
 		gba.keySource = &keys;
 		if (padkeys & PAD_BUTTON_A) {
@@ -213,6 +215,9 @@ static void GBAWiiFrame(void) {
 	}
 	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
 
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	GX_SetColorUpdate(GX_TRUE);
+
 	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
 	GX_InvalidateTexAll();
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
@@ -235,8 +240,6 @@ static void GBAWiiFrame(void) {
 
 	whichFb = !whichFb;
 
-	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
