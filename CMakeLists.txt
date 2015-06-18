@@ -464,6 +464,10 @@ if(3DS)
 	add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx)
 endif()
 
+if(PSP)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp ${CMAKE_BINARY_DIR}/psp)
+endif()
+
 # Packaging
 set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
 set(CPACK_PACKAGE_VERSION_MAJOR ${LIB_VERSION_MAJOR})

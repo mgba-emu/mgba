@@ -168,7 +168,7 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 }
 
-#ifndef _3DS
+#if !defined(_3DS) && !defined(PSP)
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
 	char suffix[5] = { '\0' };
 	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
@@ -247,7 +247,7 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 }
 #endif
 
-#ifndef _3DS
+#if !defined(_3DS) && !defined(PSP)
 bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, bool screenshot) {
 	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
 	if (!vf) {
