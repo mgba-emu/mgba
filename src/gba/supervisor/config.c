@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include "util/formatting.h"
+#include "util/string.h"
 #include "util/vfs.h"
 
 #include <sys/stat.h>

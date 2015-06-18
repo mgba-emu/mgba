@@ -17,6 +17,7 @@
 #endif
 
 #include "gba/video.h"
+#include "util/string.h"
 
 #include <fcntl.h>
 #include <getopt.h>
