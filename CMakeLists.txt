@@ -211,6 +211,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 endif()
 
 include(CheckFunctionExists)
+check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
 check_function_exists(snprintf_l HAVE_SNPRINTF_L)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -222,6 +223,10 @@ endif()
 check_function_exists(newlocale HAVE_NEWLOCALE)
 check_function_exists(freelocale HAVE_FREELOCALE)
 check_function_exists(uselocale HAVE_USELOCALE)
+
+if(HAVE_STRDUP)
+	add_definitions(-DHAVE_STRDUP)
+endif()
 
 if(HAVE_STRNDUP)
 	add_definitions(-DHAVE_STRNDUP)

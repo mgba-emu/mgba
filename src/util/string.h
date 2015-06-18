@@ -13,6 +13,10 @@
 char* strndup(const char* start, size_t len);
 #endif
 
+#ifndef strdup
+char* strdup(const char* str);
+#endif
+
 char* strnrstr(const char* restrict s1, const char* restrict s2, size_t len);
 
 int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t utf8Length);
