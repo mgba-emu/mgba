@@ -25,6 +25,9 @@ struct GBASDLAudio {
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
 	float drift;
 #endif
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_AudioDeviceID deviceId;
+#endif
 
 	struct GBAThread* thread;
 };

@@ -6,11 +6,14 @@
 #ifndef QGBA_GAME_CONTROLLER
 #define QGBA_GAME_CONTROLLER
 
+#include <QAtomicInt>
 #include <QFile>
 #include <QImage>
 #include <QObject>
-#include <QMutex>
 #include <QString>
+#include <QTimer>
+
+#include <memory>
 
 extern "C" {
 #include "gba/cheats.h"
@@ -32,6 +35,7 @@ namespace QGBA {
 
 class AudioProcessor;
 class InputController;
+class MultiplayerController;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -59,6 +63,10 @@ public:
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
+	void setMultiplayerController(MultiplayerController* controller);
+	MultiplayerController* multiplayerController() { return m_multiplayer; }
+	void clearMultiplayerController();
+
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
 
@@ -78,37 +86,55 @@ signals:
 	void gameCrashed(const QString& errorMessage);
 	void gameFailed();
 	void stateLoaded(GBAThread*);
+	void rewound(GBAThread*);
+	void unimplementedBiosCall(int);
 
+	void luminanceValueChanged(int);
+
+	void statusPosted(const QString& message);
 	void postLog(int level, const QString& log);
 
 public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
 	void setSkipBIOS(bool);
+	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
-	void openGame();
+	void importSharkport(const QString& path);
+	void exportSharkport(const QString& path);
+	void bootBIOS();
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
 	void setRewind(bool enable, int capacity, int interval);
 	void rewind(int states = 0);
+	void startRewinding();
+	void stopRewinding();
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
 	void setFPSTarget(float fps);
-	void loadState(int slot);
-	void saveState(int slot);
+	void loadState(int slot = 0);
+	void saveState(int slot = 0);
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
+	void setVolume(int);
+	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
+	void setTurboSpeed(float ratio = -1);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
 
+#ifdef USE_PNG
+	void screenshot();
+#endif
+
 	void setLuminanceValue(uint8_t value);
+	uint8_t luminanceValue() const { return m_luxValue; }
 	void setLuminanceLevel(int level);
 	void increaseLuminanceLevel() { setLuminanceLevel(m_luxLevel + 1); }
 	void decreaseLuminanceLevel() { setLuminanceLevel(m_luxLevel - 1); }
@@ -122,25 +148,23 @@ public slots:
 	void disableLogLevel(int);
 
 private slots:
+	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
 
-#ifdef BUILD_SDL
-	void testSDLEvents();
-
-private:
-	GBASDLEvents m_sdlEvents;
-	int m_activeButtons;
-#endif
+	void pollEvents();
 
 private:
 	void updateKeys();
 	void redoSamples(int samples);
+	void enableTurbo();
 
 	uint32_t* m_drawContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
+	int m_activeButtons;
+	int m_inactiveKeys;
 	int m_logLevels;
 
 	bool m_gameOpen;
@@ -148,20 +172,27 @@ private:
 
 	QString m_fname;
 	QString m_bios;
+	bool m_useBios;
 	QString m_patch;
 
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;
 
-	QMutex m_pauseMutex;
-	bool m_pauseAfterFrame;
+	QAtomicInt m_pauseAfterFrame;
 
 	bool m_videoSync;
 	bool m_audioSync;
+	float m_fpsTarget;
 	bool m_turbo;
 	bool m_turboForced;
+	float m_turboSpeed;
+	QTimer m_rewindTimer;
+	bool m_wasPaused;
+
+	int m_stateSlot;
 
 	InputController* m_inputController;
+	MultiplayerController* m_multiplayer;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;

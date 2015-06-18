@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(mGBA C)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=gnu99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
 set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
@@ -16,19 +16,22 @@ set(BUILD_LIBRETRO OFF CACHE BOOL "Build libretro core")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
 set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
 set(BUILD_SHARED ON CACHE BOOL "Build a shared library")
+set(BUILD_GL ON CACHE STRING "Build with OpenGL")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
-file(GLOB VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/video-software.c)
+file(GLOB SIO_SRC ${CMAKE_SOURCE_DIR}/src/gba/sio/lockstep.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
+set(VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 source_group("ARM core" FILES ${ARM_SRC})
-source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC})
-source_group("GBA supervisor" FILES ${GBA_SV_SRC} ${GBA_RR_SRC})
-source_group("Utilities" FILES ${UTIL_SRC} ${VFS_SRC}})
+source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
+source_group("GBA supervisor" FILES ${GBA_CHEATS_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
@@ -70,10 +73,51 @@ endfunction()
 
 # Version information
 set(LIB_VERSION_MAJOR 0)
-set(LIB_VERSION_MINOR 2)
+set(LIB_VERSION_MINOR 3)
 set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION_ABI 0.2)
+set(LIB_VERSION_ABI 0.3)
 set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
+
+execute_process(COMMAND git describe --always --abbrev=40 --dirty OUTPUT_VARIABLE GIT_COMMIT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE GIT_COMMIT_SHORT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git symbolic-ref --short HEAD OUTPUT_VARIABLE GIT_BRANCH ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git rev-list HEAD --count OUTPUT_VARIABLE GIT_REV ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND git describe --tag --exact-match OUTPUT_VARIABLE GIT_TAG ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(GIT_REV STREQUAL "")
+	set(GIT_REV -1)
+endif()
+if(NOT GIT_TAG STREQUAL "")
+	set(VERSION_STRING ${GIT_TAG})
+elseif(GIT_BRANCH STREQUAL "")
+	set(VERSION_STRING ${LIB_VERSION_STRING})
+else()
+	if(GIT_BRANCH STREQUAL "master")
+		set(VERSION_STRING ${GIT_REV}-${GIT_COMMIT_SHORT})
+	else()
+		set(VERSION_STRING ${GIT_BRANCH}-${GIT_REV}-${GIT_COMMIT_SHORT})
+	endif()
+
+	if(NOT LIB_VERSION_ABI STREQUAL GIT_BRANCH)
+		set(VERSION_STRING ${LIB_VERSION_ABI}-${VERSION_STRING})
+	endif()
+endif()
+
+add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
+	COMMAND ${CMAKE_COMMAND}
+	-DGIT_COMMIT=${GIT_COMMIT}
+	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
+	-DGIT_BRANCH=${GIT_BRANCH}
+	-DGIT_REV=${GIT_REV}
+	-DBINARY_NAME=${BINARY_NAME}
+	-DPROJECT_NAME=${PROJECT_NAME}
+	-DVERSION_STRING=${VERSION_STRING}
+	-D${BINARY_NAME}_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+	-P ${CMAKE_SOURCE_DIR}/version.cmake
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+include(${CMAKE_SOURCE_DIR}/version.cmake)
+list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
 
 # Advanced settings
 set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
@@ -94,14 +138,21 @@ elseif(BUILD_PGO AND PGO_STAGE_2)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${PGO_POST_FLAGS}")
 endif()
 
-add_definitions(-DBINARY_NAME="${BINARY_NAME}" -DPROJECT_NAME="${PROJECT_NAME}" -DPROJECT_VERSION="${LIB_VERSION_STRING}")
-
 # Feature dependencies
 set(FEATURES)
 if(CMAKE_SYSTEM_NAME MATCHES .*BSD)
 	set(LIBEDIT_LIBRARIES -ledit)
+	if (CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
+		list(APPEND LIBEDIT_LIBRARIES -ltermcap)
+	endif()
 else()
 	find_feature(USE_CLI_DEBUGGER "libedit")
+endif()
+if(BUILD_GL)
+	find_package(OpenGL QUIET)
+	if(NOT OPENGL_FOUND)
+		set(BUILD_GL OFF)
+	endif()
 endif()
 find_feature(USE_FFMPEG "libavcodec;libavformat;libavresample;libavutil;libswscale")
 find_feature(USE_PNG "ZLIB;PNG")
@@ -110,15 +161,23 @@ find_feature(USE_MAGICK "MagickWand")
 
 # Platform support
 if(WIN32)
+	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	list(APPEND OS_LIB ws2_32)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 elseif(UNIX)
 	add_definitions(-DUSE_PTHREADS)
-	if(NOT APPLE)
+
+	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+		add_definitions(-D_GNU_SOURCE)
+	endif()
+	if(NOT APPLE AND NOT HAIKU)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif()
+
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 elseif(3DS)
@@ -129,7 +188,12 @@ elseif(3DS)
 endif()
 
 if(APPLE)
+	add_definitions(-D_DARWIN_C_SOURCE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
+endif()
+
+if(NOT HAIKU)
+	list(APPEND OS_LIB m)
 endif()
 
 if(APPLE OR CMAKE_C_COMPILER_ID STREQUAL "GNU" AND BUILD_LTO)
@@ -137,17 +201,22 @@ if(APPLE OR CMAKE_C_COMPILER_ID STREQUAL "GNU" AND BUILD_LTO)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 endif()
 
-if(BUILD_BBB OR BUILD_RASPI)
+if(BUILD_BBB OR BUILD_RASPI OR BUILD_PANDORA)
 	if(NOT BUILD_EGL)
 		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	endif()
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+if(BUILD_PANDORA)
+	add_definitions(-DBUILD_PANDORA)
+endif()
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
 
 include(CheckFunctionExists)
+check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
 check_function_exists(snprintf_l HAVE_SNPRINTF_L)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -159,6 +228,10 @@ endif()
 check_function_exists(newlocale HAVE_NEWLOCALE)
 check_function_exists(freelocale HAVE_FREELOCALE)
 check_function_exists(uselocale HAVE_USELOCALE)
+
+if(HAVE_STRDUP)
+	add_definitions(-DHAVE_STRDUP)
+endif()
 
 if(HAVE_STRNDUP)
 	add_definitions(-DHAVE_STRNDUP)
@@ -214,12 +287,16 @@ if(USE_FFMPEG)
 	string(REGEX MATCH "^[0-9]+" LIBAVUTIL_VERSION_MAJOR ${libavutil_VERSION})
 	string(REGEX MATCH "^[0-9]+" LIBSWSCALE_VERSION_MAJOR ${libswscale_VERSION})
 	list(APPEND DEPENDENCY_LIB ${LIBAVCODEC_LIBRARIES} ${LIBAVFORMAT_LIBRARIES} ${LIBAVRESAMPLE_LIBRARIES} ${LIBAVUTIL_LIBRARIES} ${LIBSWSCALE_LIBRARIES})
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libavcodec${LIBAVCODEC_VERSION_MAJOR},libavformat${LIBAVFORMAT_VERSION_MAJOR},libavresample${LIBAVRESAMPLE_VERSION_MAJOR},libavutil${LIBAVUTIL_VERSION_MAJOR},libswscale${LIBSWSCALE_VERSION_MAJOR}")
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libavcodec${LIBAVCODEC_VERSION_MAJOR}|libavcodec-extra-${LIBAVCODEC_VERSION_MAJOR},libavformat${LIBAVFORMAT_VERSION_MAJOR},libavresample${LIBAVRESAMPLE_VERSION_MAJOR},libavutil${LIBAVUTIL_VERSION_MAJOR},libswscale${LIBSWSCALE_VERSION_MAJOR}")
 	set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "libavcodec-extra")
+	if(APPLE)
+		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework VideoDecodeAcceleration -framework CoreVideo")
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework VideoDecodeAcceleration -framework CoreVideo")
+	endif()
 endif()
 
 if(USE_BLIP)
-	list(APPEND FEATURE_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
+	list(APPEND THIRD_PARTY_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
 	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_BLIP_BUF)
 else()
 	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_NN)
@@ -252,12 +329,14 @@ if(USE_LIBZIP)
 	link_directories(${LIBZIP_LIBRARY_DIRS})
 	list(APPEND DEPENDENCY_LIB ${LIBZIP_LIBRARIES})
 	list(APPEND FEATURES LIBZIP)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-zip.c)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libzip2")
 endif()
 
 if (USE_LZMA)
 	include_directories(AFTER ${CMAKE_SOURCE_DIR}/third-party/lzma)
 	add_definitions(-D_7ZIP_PPMD_SUPPPORT)
+	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-lzma.c)
 	set(LZMA_SRC
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zAlloc.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zArcIn.c
@@ -289,10 +368,12 @@ endforeach()
 set(CORE_SRC
 	${ARM_SRC}
 	${GBA_SRC}
+	${GBA_CHEATS_SRC}
 	${GBA_RR_SRC}
 	${GBA_SV_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
+	${SIO_SRC}
 	${UTIL_SRC}
 	${VFS_SRC}
 	${OS_SRC}
@@ -310,24 +391,40 @@ if(BUILD_SHARED)
 	add_library(${BINARY_NAME} SHARED ${SRC})
 	if(BUILD_STATIC)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
-		target_compile_definitions(${BINARY_NAME}-static PRIVATE ${FEATURE_DEFINES})
+		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
 		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
+		add_dependencies(${BINARY_NAME}-static version-info)
 	endif()
 else()
 	add_library(${BINARY_NAME} STATIC ${SRC})
 endif()
 
-target_link_libraries(${BINARY_NAME} m ${DEBUGGER_LIB} ${OS_LIB} ${DEPENDENCY_LIB})
-target_compile_definitions(${BINARY_NAME} PRIVATE ${FEATURE_DEFINES})
+add_dependencies(${BINARY_NAME} version-info)
+
+target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
 install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
-set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI})
+if(UNIX AND NOT APPLE)
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-16.png DESTINATION share/icons/hicolor/16x16/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-24.png DESTINATION share/icons/hicolor/24x24/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-32.png DESTINATION share/icons/hicolor/32x32/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-48.png DESTINATION share/icons/hicolor/48x48/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-64.png DESTINATION share/icons/hicolor/64x64/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-96.png DESTINATION share/icons/hicolor/96x96/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-128.png DESTINATION share/icons/hicolor/128x128/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-256.png DESTINATION share/icons/hicolor/256x256/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-512.png DESTINATION share/icons/hicolor/512x512/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
+endif()
+set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
+
+if(BUILD_GL)
+	add_definitions(-DBUILD_GL)
+endif()
 
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "")
-	target_compile_definitions(${BINARY_NAME}_libretro PRIVATE COLOR_16_BIT;COLOR_5_6_5 PUBLIC "" INTERFACE "")
-	target_link_libraries(${BINARY_NAME}_libretro m ${OS_LIB})
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5")
+	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 endif()
 
 if(BUILD_SDL)
@@ -358,6 +455,7 @@ if(3DS)
 endif()
 
 # Packaging
+set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
 set(CPACK_PACKAGE_VERSION_MAJOR ${LIB_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${LIB_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${LIB_VERSION_PATCH})

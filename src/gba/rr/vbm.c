@@ -94,7 +94,12 @@ bool GBAVBMIsRecording(const struct GBARRContext* rr) {
 }
 
 void GBAVBMNextFrame(struct GBARRContext* rr) {
-	UNUSED(rr);
+	if (!rr->isPlaying(rr)) {
+		return;
+	}
+
+	struct GBAVBMContext* vbm = (struct GBAVBMContext*) rr;
+	vbm->vbmFile->seek(vbm->vbmFile, sizeof(uint16_t), SEEK_CUR);
 }
 
 uint16_t GBAVBMQueryInput(struct GBARRContext* rr) {
@@ -105,6 +110,7 @@ uint16_t GBAVBMQueryInput(struct GBARRContext* rr) {
 	struct GBAVBMContext* vbm = (struct GBAVBMContext*) rr;
 	uint16_t input;
 	vbm->vbmFile->read(vbm->vbmFile, &input, sizeof(input));
+	vbm->vbmFile->seek(vbm->vbmFile, -sizeof(input), SEEK_CUR);
 	return input & 0x3FF;
 }
 

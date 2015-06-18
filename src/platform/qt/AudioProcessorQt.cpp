@@ -33,6 +33,10 @@ void AudioProcessorQt::setInput(GBAThread* input) {
 }
 
 void AudioProcessorQt::start() {
+	if (!input()) {
+		return;
+	}
+
 	if (!m_device) {
 		m_device = new AudioDevice(this);
 	}

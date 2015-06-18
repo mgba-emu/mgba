@@ -12,11 +12,7 @@
 #include "sdl-events.h"
 
 #ifdef BUILD_GL
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "platform/opengl/gl.h"
 #endif
 
 #ifdef BUILD_RASPI
@@ -31,17 +27,24 @@
 #pragma GCC diagnostic pop
 #endif
 
+#ifdef USE_PIXMAN
+#include <pixman.h>
+#endif
+
 struct SDLSoftwareRenderer {
 	struct GBAVideoSoftwareRenderer d;
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
+	struct GBASDLPlayer player;
+
+	bool (*init)(struct SDLSoftwareRenderer* renderer);
+	void (*runloop)(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+	void (*deinit)(struct SDLSoftwareRenderer* renderer);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
-#ifndef BUILD_GL
-	SDL_Texture* tex;
+	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
-#endif
 #endif
 
 	int viewportWidth;
@@ -52,7 +55,12 @@ struct SDLSoftwareRenderer {
 	bool filter;
 
 #ifdef BUILD_GL
-	GLuint tex;
+	struct GBAGLContext gl;
+#endif
+
+#ifdef USE_PIXMAN
+	pixman_image_t* pix;
+	pixman_image_t* screenpix;
 #endif
 
 #ifdef BUILD_RASPI
@@ -68,11 +76,17 @@ struct SDLSoftwareRenderer {
 	GLuint texLocation;
 	GLuint positionLocation;
 #endif
+
+#ifdef BUILD_PANDORA
+	int fb;
+	int odd;
+	void* base[2];
+#endif
 };
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer);
 
+#ifdef BUILD_GL
+void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer);
 #endif
-
+#endif

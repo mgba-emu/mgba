@@ -7,8 +7,6 @@
 
 #include "gba/serialize.h"
 
-#include <time.h>
-
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
@@ -81,8 +79,8 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.bitsRead = 0;
 	hw->rtc.bits = 0;
 	hw->rtc.commandActive = 0;
-	hw->rtc.command.packed = 0;
-	hw->rtc.control.packed = 0x40;
+	hw->rtc.command = 0;
+	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
 }
 
@@ -139,14 +137,14 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		}
 		break;
 	case 2:
-		if (!hw->p0) {
+		if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
-			hw->rtc.bits |= hw->p1 << hw->rtc.bitsRead;
+			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
 		} else {
-			if (hw->p2) {
+			if (hw->pinState & 4) {
 				// GPIO direction should always != reading
-				if (hw->dir1) {
-					if (hw->rtc.command.reading) {
+				if (hw->direction & 2) {
+					if (RTCCommandDataIsReading(hw->rtc.command)) {
 						GBALog(hw->p, GBA_LOG_GAME_ERROR, "Attempting to write to RTC while in read mode");
 					}
 					++hw->rtc.bitsRead;
@@ -160,7 +158,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 						--hw->rtc.bytesRemaining;
 						if (hw->rtc.bytesRemaining <= 0) {
 							hw->rtc.commandActive = 0;
-							hw->rtc.command.reading = 0;
+							hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
 						}
 						hw->rtc.bitsRead = 0;
 					}
@@ -169,7 +167,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 				hw->rtc.bitsRead = 0;
 				hw->rtc.bytesRemaining = 0;
 				hw->rtc.commandActive = 0;
-				hw->rtc.command.reading = 0;
+				hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
 				hw->rtc.transferStep = 0;
 			}
 		}
@@ -180,16 +178,16 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 	--hw->rtc.bytesRemaining;
 	if (!hw->rtc.commandActive) {
-		union RTCCommandData command;
-		command.packed = hw->rtc.bits;
-		if (command.magic == 0x06) {
+		RTCCommandData command;
+		command = hw->rtc.bits;
+		if (RTCCommandDataGetMagic(command) == 0x06) {
 			hw->rtc.command = command;
 
-			hw->rtc.bytesRemaining = RTC_BYTES[hw->rtc.command.command];
+			hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
 			hw->rtc.commandActive = hw->rtc.bytesRemaining > 0;
-			switch (command.command) {
+			switch (RTCCommandDataGetCommand(command)) {
 			case RTC_RESET:
-				hw->rtc.control.packed = 0;
+				hw->rtc.control = 0;
 				break;
 			case RTC_DATETIME:
 			case RTC_TIME:
@@ -203,12 +201,12 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 			GBALog(hw->p, GBA_LOG_WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
 		}
 	} else {
-		switch (hw->rtc.command.command) {
+		switch (RTCCommandDataGetCommand(hw->rtc.command)) {
 		case RTC_CONTROL:
-			hw->rtc.control.packed = hw->rtc.bits;
+			hw->rtc.control = hw->rtc.bits;
 			break;
 		case RTC_FORCE_IRQ:
-			GBALog(hw->p, GBA_LOG_STUB, "Unimplemented RTC command %u", hw->rtc.command.command);
+			GBALog(hw->p, GBA_LOG_STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
 			break;
 		case RTC_RESET:
 		case RTC_DATETIME:
@@ -221,15 +219,15 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 	hw->rtc.bitsRead = 0;
 	if (!hw->rtc.bytesRemaining) {
 		hw->rtc.commandActive = 0;
-		hw->rtc.command.reading = 0;
+		hw->rtc.command = RTCCommandDataClearReading(hw->rtc.command);
 	}
 }
 
 unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
 	uint8_t outputByte = 0;
-	switch (hw->rtc.command.command) {
+	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
 	case RTC_CONTROL:
-		outputByte = hw->rtc.control.packed;
+		outputByte = hw->rtc.control;
 		break;
 	case RTC_DATETIME:
 	case RTC_TIME:
@@ -262,7 +260,7 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	hw->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
 	hw->rtc.time[2] = _rtcBCD(date.tm_mday);
 	hw->rtc.time[3] = _rtcBCD(date.tm_wday);
-	if (hw->rtc.control.hour24) {
+	if (RTCControlIsHour24(hw->rtc.control)) {
 		hw->rtc.time[4] = _rtcBCD(date.tm_hour);
 	} else {
 		hw->rtc.time[4] = _rtcBCD(date.tm_hour % 12);
@@ -288,11 +286,11 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* hw) {
 
 void _gyroReadPins(struct GBACartridgeHardware* hw) {
 	struct GBARotationSource* gyro = hw->p->rotationSource;
-	if (!gyro) {
+	if (!gyro || !gyro->readGyroZ) {
 		return;
 	}
 
-	if (hw->p0) {
+	if (hw->pinState & 1) {
 		if (gyro->sample) {
 			gyro->sample(gyro);
 		}
@@ -302,14 +300,14 @@ void _gyroReadPins(struct GBACartridgeHardware* hw) {
 		hw->gyroSample = (sample >> 21) + 0x6C0; // Crop off an extra bit so that we can't go negative
 	}
 
-	if (hw->gyroEdge && !hw->p1) {
+	if (hw->gyroEdge && !(hw->pinState & 2)) {
 		// Write bit on falling edge
 		unsigned bit = hw->gyroSample >> 15;
 		hw->gyroSample <<= 1;
 		_outputPins(hw, bit << 2);
 	}
 
-	hw->gyroEdge = hw->p1;
+	hw->gyroEdge = !!(hw->pinState & 2);
 }
 
 // == Rumble
@@ -324,7 +322,7 @@ void _rumbleReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	rumble->setRumble(rumble, hw->p3);
+	rumble->setRumble(rumble, !!(hw->pinState & 8));
 }
 
 // == Light sensor
@@ -337,11 +335,11 @@ void GBAHardwareInitLight(struct GBACartridgeHardware* hw) {
 }
 
 void _lightReadPins(struct GBACartridgeHardware* hw) {
-	if (hw->p2) {
+	if (hw->pinState & 4) {
 		// Boktai chip select
 		return;
 	}
-	if (hw->p1) {
+	if (hw->pinState & 2) {
 		struct GBALuminanceSource* lux = hw->p->luminanceSource;
 		GBALog(hw->p, GBA_LOG_DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
@@ -352,10 +350,10 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 			hw->lightSample = 0xFF;
 		}
 	}
-	if (hw->p0 && hw->lightEdge) {
+	if ((hw->pinState & 1) && hw->lightEdge) {
 		++hw->lightCounter;
 	}
-	hw->lightEdge = !hw->p0;
+	hw->lightEdge = !(hw->pinState & 1);
 
 	bool sendBit = hw->lightCounter >= hw->lightSample;
 	_outputPins(hw, sendBit << 3);

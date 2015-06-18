@@ -13,10 +13,10 @@ struct VFile;
 enum SavedataType {
 	SAVEDATA_AUTODETECT = -1,
 	SAVEDATA_FORCE_NONE = 0,
-	SAVEDATA_SRAM,
-	SAVEDATA_FLASH512,
-	SAVEDATA_FLASH1M,
-	SAVEDATA_EEPROM
+	SAVEDATA_SRAM = 1,
+	SAVEDATA_FLASH512 = 2,
+	SAVEDATA_FLASH1M = 3,
+	SAVEDATA_EEPROM = 4
 };
 
 enum SavedataCommand {
@@ -42,8 +42,8 @@ enum SavedataCommand {
 
 enum FlashStateMachine {
 	FLASH_STATE_RAW = 0,
-	FLASH_STATE_START,
-	FLASH_STATE_CONTINUE
+	FLASH_STATE_START = 1,
+	FLASH_STATE_CONTINUE = 2,
 };
 
 enum FlashManufacturer {
@@ -67,13 +67,15 @@ struct GBASavedata {
 	int mapMode;
 	struct VFile* realVf;
 
-	int readBitsRemaining;
-	int readAddress;
-	int writeAddress;
-	int writePending;
-	int addressBits;
+	int32_t readBitsRemaining;
+	uint32_t readAddress;
+	uint32_t writeAddress;
 
 	uint8_t* currentBank;
+
+	bool realisticTiming;
+	unsigned settling;
+	int dust;
 
 	enum FlashStateMachine flashState;
 };
@@ -84,9 +86,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata);
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataUnmask(struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
 
-void GBASavedataInitFlash(struct GBASavedata* savedata);
+void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
@@ -95,5 +97,9 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata);
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize);
+
+struct GBASerializedState;
+void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData);
+void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state, bool includeData);
 
 #endif

@@ -45,4 +45,13 @@ void GBAInputEnumerateAxes(const struct GBAInputMap*, uint32_t type, void (handl
 void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 void GBAInputMapSave(const struct GBAInputMap*, uint32_t type, struct Configuration*);
 
+void GBAInputProfileLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*, const char* profile);
+void GBAInputProfileSave(const struct GBAInputMap*, uint32_t type, struct Configuration*, const char* profile);
+
+const char* GBAInputGetPreferredDevice(const struct Configuration*, uint32_t type, int playerId);
+void GBAInputSetPreferredDevice(struct Configuration*, uint32_t type, int playerId, const char* deviceName);
+
+const char* GBAInputGetCustomValue(const struct Configuration* config, uint32_t type, const char* key, const char* profile);
+void GBAInputSetCustomValue(struct Configuration* config, uint32_t type, const char* key, const char* value, const char* profile);
+
 #endif

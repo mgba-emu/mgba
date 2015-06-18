@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QSet>
+#include <QVector>
 
 class QTimer;
 
@@ -31,12 +32,19 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(QObject* parent = nullptr);
+	InputController(int playerId = 0, QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
+	void saveConfiguration();
 	void loadConfiguration(uint32_t type);
-	void saveConfiguration(uint32_t type = KEYBOARD);
+	void loadProfile(uint32_t type, const QString& profile);
+	void saveConfiguration(uint32_t type);
+	void saveProfile(uint32_t type, const QString& profile);
+	const char* profileForType(uint32_t type);
+
+	bool allowOpposing() const { return m_allowOpposing; }
+	void setAllowOpposing(bool allowOpposing) { m_allowOpposing = allowOpposing; }
 
 	GBAKey mapKeyboard(int key) const;
 
@@ -44,18 +52,40 @@ public:
 
 	const GBAInputMap* map() const { return &m_inputMap; }
 
-#ifdef BUILD_SDL
-	static const int32_t AXIS_THRESHOLD = 0x3000;
+	int pollEvents();
 
-	int testSDLEvents();
-	QSet<int> activeGamepadButtons();
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes();
+	static const int32_t AXIS_THRESHOLD = 0x3000;
+	QSet<int> activeGamepadButtons(int type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
+	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
-#endif
+
+	QStringList connectedGamepads(uint32_t type) const;
+	int gamepad(uint32_t type) const;
+	void setGamepad(uint32_t type, int index);
+	void setPreferredGamepad(uint32_t type, const QString& device);
+
+	void registerTiltAxisX(int axis);
+	void registerTiltAxisY(int axis);
+	void registerGyroAxisX(int axis);
+	void registerGyroAxisY(int axis);
+
+	float gyroSensitivity() const;
+	void setGyroSensitivity(float sensitivity);
+
+	GBARumble* rumble();
+	GBARotationSource* rotationSource();
 
 public slots:
-	void testGamepad();
+	void testGamepad(int type);
+
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
+	// TODO: Move these to somewhere that makes sense
+	void suspendScreensaver();
+	void resumeScreensaver();
+	void setScreensaverSuspendable(bool);
+#endif
 
 private:
 	void postPendingEvent(GBAKey);
@@ -64,10 +94,17 @@ private:
 
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
+	int m_playerId;
+	bool m_allowOpposing;
 
 #ifdef BUILD_SDL
-	GBASDLEvents m_sdlEvents;
+	static int s_sdlInited;
+	static GBASDLEvents s_sdlEvents;
+	GBASDLPlayer m_sdlPlayer;
+	bool m_playerAttached;
 #endif
+
+	QVector<int> m_deadzones;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

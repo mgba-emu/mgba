@@ -18,7 +18,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len);
 
 bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContext) {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system");
+		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
 		return false;
 	}
 
@@ -31,7 +31,13 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
 	context->drift = 0.f;
 #endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	context->deviceId = SDL_OpenAudioDevice(0, 0, &context->desiredSpec, &context->obtainedSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+	if (context->deviceId == 0) {
+#else
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
+#endif
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
 		return false;
 	}
@@ -43,25 +49,43 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		threadContext->audioBuffers = context->samples * 2;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_PauseAudioDevice(context->deviceId, 0);
+#else
 	SDL_PauseAudio(0);
+#endif
 	return true;
 }
 
 void GBASDLDeinitAudio(struct GBASDLAudio* context) {
 	UNUSED(context);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_PauseAudioDevice(context->deviceId, 1);
+	SDL_CloseAudioDevice(context->deviceId);
+#else
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
+#endif
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
 void GBASDLPauseAudio(struct GBASDLAudio* context) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_PauseAudioDevice(context->deviceId, 1);
+#else
 	UNUSED(context);
 	SDL_PauseAudio(1);
+#endif
+
 }
 
 void GBASDLResumeAudio(struct GBASDLAudio* context) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_PauseAudioDevice(context->deviceId, 0);
+#else
 	UNUSED(context);
 	SDL_PauseAudio(0);
+#endif
 }
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {

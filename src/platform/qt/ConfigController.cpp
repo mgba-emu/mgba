@@ -23,8 +23,11 @@ ConfigOption::ConfigOption(QObject* parent)
 {
 }
 
-void ConfigOption::connect(std::function<void(const QVariant&)> slot) {
-	m_slot = slot;
+void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
+	m_slots[parent] = slot;
+	QObject::connect(parent, &QAction::destroyed, [this, slot, parent]() {
+		m_slots.remove(parent);
+	});
 }
 
 QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMenu* parent) {
@@ -32,6 +35,9 @@ QAction* ConfigOption::addValue(const QString& text, const QVariant& value, QMen
 	action->setCheckable(true);
 	QObject::connect(action, &QAction::triggered, [this, value]() {
 		emit valueChanged(value);
+	});
+	QObject::connect(parent, &QAction::destroyed, [this, action, value]() {
+		m_actions.removeAll(qMakePair(action, value));
 	});
 	parent->addAction(action);
 	m_actions.append(qMakePair(action, value));
@@ -47,6 +53,9 @@ QAction* ConfigOption::addBoolean(const QString& text, QMenu* parent) {
 	action->setCheckable(true);
 	QObject::connect(action, &QAction::triggered, [this, action]() {
 		emit valueChanged(action->isChecked());
+	});
+	QObject::connect(parent, &QAction::destroyed, [this, action]() {
+		m_actions.removeAll(qMakePair(action, 1));
 	});
 	parent->addAction(action);
 	m_actions.append(qMakePair(action, 1));
@@ -76,7 +85,10 @@ void ConfigOption::setValue(const QVariant& value) {
 		action.first->setChecked(value == action.second);
 		action.first->blockSignals(signalsEnabled);
 	}
-	m_slot(value);
+	std::function<void(const QVariant&)> slot;
+	foreach(slot, m_slots.values()) {
+		slot(value);
+	}
 }
 
 ConfigController::ConfigController(QObject* parent)
@@ -96,18 +108,19 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.videoSync = GameController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
-	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_opts.volume = GBA_AUDIO_VOLUME_MAX;
+	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
+	m_opts.useBios = true;
+	m_opts.suspendScreensaver = true;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);
 }
 
 ConfigController::~ConfigController() {
-	write();
-
 	GBAConfigDeinit(&m_config);
 	GBAConfigFreeOpts(&m_opts);
 }

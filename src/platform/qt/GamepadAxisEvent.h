@@ -24,7 +24,7 @@ public:
 		NEGATIVE = -1
 	};
 
-	GamepadAxisEvent(int axis, Direction direction, bool isNew, InputController* controller = nullptr);
+	GamepadAxisEvent(int axis, Direction direction, bool isNew, int type, InputController* controller = nullptr);
 
 	int axis() const { return m_axis; }
 	Direction direction() const { return m_direction; }

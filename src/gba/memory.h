@@ -61,7 +61,7 @@ enum {
 	SIZE_CART0 = 0x02000000,
 	SIZE_CART1 = 0x02000000,
 	SIZE_CART2 = 0x02000000,
-	SIZE_CART_SRAM = 0x00008000,
+	SIZE_CART_SRAM = 0x00010000,
 	SIZE_CART_FLASH512 = 0x00010000,
 	SIZE_CART_FLASH1M = 0x00020000,
 	SIZE_CART_EEPROM = 0x00002000
@@ -154,6 +154,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 
 void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* old);
 void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* old);
+void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old);
 
 uint32_t GBALoadMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
 uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);

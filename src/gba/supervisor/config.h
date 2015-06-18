@@ -21,6 +21,7 @@ struct GBAConfig {
 struct GBAOptions {
 	char* bios;
 	bool skipBios;
+	bool useBios;
 	int logLevel;
 	int frameskip;
 	bool rewindEnable;
@@ -34,6 +35,10 @@ struct GBAOptions {
 	int height;
 	bool lockAspectRatio;
 	bool resampleVideo;
+	bool suspendScreensaver;
+
+	int volume;
+	bool mute;
 
 	bool videoSync;
 	bool audioSync;

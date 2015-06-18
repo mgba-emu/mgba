@@ -6,7 +6,7 @@
 #ifndef IMAGEMAGICK_GIF_ENCODER
 #define IMAGEMAGICK_GIF_ENCODER
 
-#include "gba/supervisor/thread.h"
+#include "gba/gba.h"
 
 #define MAGICKCORE_HDRI_ENABLE 0
 #define MAGICKCORE_QUANTUM_DEPTH 8

@@ -88,8 +88,8 @@ static void _BgAffineSet(struct GBA* gba) {
 		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
 		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
 		// [  0   0  1 ]   [     0            0       1 ]   [ 0  0     1    ]   [ 0 0  1 ]
-		ox = cpu->memory.load32(cpu, offset, 0) / 256.f;
-		oy = cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
+		ox = (int32_t) cpu->memory.load32(cpu, offset, 0) / 256.f;
+		oy = (int32_t) cpu->memory.load32(cpu, offset + 4, 0) / 256.f;
 		cx = (int16_t) cpu->memory.load16(cpu, offset + 8, 0);
 		cy = (int16_t) cpu->memory.load16(cpu, offset + 10, 0);
 		sx = (int16_t) cpu->memory.load16(cpu, offset + 12, 0) / 256.f;
@@ -238,6 +238,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -253,6 +254,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -269,6 +271,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -286,6 +289,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 			default:
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+				// Fall through
 			case REGION_WORKING_RAM:
 			case REGION_WORKING_IRAM:
 			case REGION_VRAM:
@@ -327,7 +331,7 @@ static void _unLz77(struct GBA* gba, int width) {
 	uint32_t disp;
 	int bytes;
 	int byte;
-	int halfword;
+	int halfword = 0;
 	while (remaining > 0) {
 		if (blocksRemaining) {
 			if (blockheader & 0x80) {

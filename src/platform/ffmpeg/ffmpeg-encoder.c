@@ -33,6 +33,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
+	encoder->d.postAudioBuffer = 0;
 
 	encoder->audioCodec = 0;
 	encoder->videoCodec = 0;
@@ -201,7 +202,8 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	avformat_alloc_output_context2(&encoder->context, oformat, 0, outfile);
 #else
 	encoder->context = avformat_alloc_context();
-	strncpy(encoder->context->filename, outfile, sizeof(encoder->context->filename));
+	strncpy(encoder->context->filename, outfile, sizeof(encoder->context->filename) - 1);
+	encoder->context->filename[sizeof(encoder->context->filename) - 1] = '\0';
 	encoder->context->oformat = oformat;
 #endif
 

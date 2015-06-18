@@ -6,6 +6,8 @@
 #ifndef QGBA_SHORTCUT_MODEL
 #define QGBA_SHORTCUT_MODEL
 
+#include "GamepadAxisEvent.h"
+
 #include <QAbstractItemModel>
 #include <QKeySequence>
 
@@ -26,6 +28,7 @@ Q_OBJECT
 private:
 	constexpr static const char* const KEY_SECTION = "shortcutKey";
 	constexpr static const char* const BUTTON_SECTION = "shortcutButton";
+	constexpr static const char* const AXIS_SECTION = "shortcutAxis";
 
 	class ShortcutItem {
 	public:
@@ -53,6 +56,9 @@ private:
 		int button() const { return m_button; }
 		void setShortcut(const QKeySequence& sequence);
 		void setButton(int button) { m_button = button; }
+		int axis() const { return m_axis; }
+		GamepadAxisEvent::Direction direction() const { return m_direction; }
+		void setAxis(int axis, GamepadAxisEvent::Direction direction);
 
 		bool operator==(const ShortcutItem& other) const { return m_menu == other.m_menu && m_action == other.m_action; }
 
@@ -64,6 +70,8 @@ private:
 		QString m_name;
 		QString m_visibleName;
 		int m_button;
+		int m_axis;
+		GamepadAxisEvent::Direction m_direction;
 		QList<ShortcutItem> m_items;
 		ShortcutItem* m_parent;
 	};
@@ -91,6 +99,7 @@ public:
 
 	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
 	void updateButton(const QModelIndex& index, int button);
+	void updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction);
 
 	void clearKey(const QModelIndex& index);
 	void clearButton(const QModelIndex& index);
@@ -108,6 +117,7 @@ private:
 	ShortcutItem m_rootMenu;
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
 	QMap<int, ShortcutItem*> m_buttons;
+	QMap<QPair<int, GamepadAxisEvent::Direction>, ShortcutItem*> m_axes;
 	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
 	ConfigController* m_config;
 };

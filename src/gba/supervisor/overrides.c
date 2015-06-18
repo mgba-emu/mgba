@@ -11,6 +11,10 @@
  #include "util/configuration.h"
 
 static const struct GBACartridgeOverride _overrides[] = {
+	// Advance Wars
+	{ "AWRE", SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
+	{ "AWRP", SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
+
 	// Boktai: The Sun is in Your Hand
 	{ "U3IJ", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
 	{ "U3IE", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
@@ -21,12 +25,22 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "U32E", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
 	{ "U32P", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
 
+	// Dragon Ball Z - The Legacy of Goku
+	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+
+	// Dragon Ball Z - Taiketsu
+	{ "BDBE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+	{ "BDBP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+
 	// Drill Dozer
 	{ "V49J", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE },
 	{ "V49E", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE },
 
 	// Final Fantasy Tactics Advance
 	{ "AFXE", SAVEDATA_FLASH512, HW_NONE, 0x8000428 },
+
+	// F-Zero - Climax
+	{ "BFTJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 
 	// Golden Sun: The Lost Age
 	{ "AGFE", SAVEDATA_FLASH512, HW_NONE, 0x801353A },
@@ -36,6 +50,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Mega Man Battle Network
 	{ "AREE", SAVEDATA_SRAM, HW_NONE, 0x800032E },
+
+	// Mega Man Zero
+	{ "AZCE", SAVEDATA_SRAM, HW_NONE, 0x80004E8 },
 
 	// Metal Slug Advance
 	{ "BSME", SAVEDATA_EEPROM, HW_NONE, 0x8000290 },
@@ -59,13 +76,13 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AXPF", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
 
 	// Pokemon Emerald
-	{ "BPEJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
+	{ "BPEJ", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
 	{ "BPEE", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
-	{ "BPEP", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
-	{ "BPEI", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
-	{ "BPES", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
-	{ "BPED", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
-	{ "BPEF", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
+	{ "BPEP", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEI", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPES", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPED", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEF", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
 
 	// Pokemon Mystery Dungeon
 	{ "B24J", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
@@ -77,28 +94,47 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "BPRJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 	{ "BPRE", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 	{ "BPRP", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPRI", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPRS", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPRD", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPRF", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 
 	// Pokemon LeafGreen
 	{ "BPGJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 	{ "BPGE", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 	{ "BPGP", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPGI", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPGS", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPGD", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "BPGF", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 
 	// RockMan EXE 4.5 - Real Operation
 	{ "BR4J", SAVEDATA_FLASH512, HW_RTC, IDLE_LOOP_NONE },
+
+	// Rocky
+	{ "AR8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+	{ "AROP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+
+	// Sennen Kazoku
+	{ "BKAJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE },
 
 	// Shin Bokura no Taiyou: Gyakushuu no Sabata
 	{ "U33J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
 
 	// Super Mario Advance 2
+	{ "AA2J", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
 	{ "AA2E", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
+	{ "AA2P", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
 
 	// Super Mario Advance 3
+	{ "A3AJ", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
 	{ "A3AE", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
+	{ "A3AP", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
 
 	// Super Mario Advance 4
-	{ "AX4J", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
-	{ "AX4E", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
-	{ "AX4P", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
+	{ "AX4J", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
+	{ "AX4E", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
+	{ "AX4P", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 
 	// Top Gun - Combat Zones
 	{ "A2YE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },
@@ -120,7 +156,7 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	override->savetype = SAVEDATA_AUTODETECT;
 	override->hardware = HW_NONE;
 	override->idleLoop = IDLE_LOOP_NONE;
-	bool found;
+	bool found = false;
 
 	if (override->id[0] == 'F') {
 		// Classic NES Series
@@ -224,7 +260,7 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
 	if (override->savetype != SAVEDATA_AUTODETECT) {
-		GBASavedataForceType(&gba->memory.savedata, override->savetype);
+		GBASavedataForceType(&gba->memory.savedata, override->savetype, gba->realisticTiming);
 	}
 
 	if (override->hardware != HW_NO_OVERRIDE) {

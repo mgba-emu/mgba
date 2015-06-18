@@ -15,6 +15,7 @@
 
 enum GBACheatType {
 	CHEAT_ASSIGN,
+	CHEAT_ASSIGN_INDIRECT,
 	CHEAT_AND,
 	CHEAT_ADD,
 	CHEAT_OR,
@@ -85,6 +86,11 @@ enum GBAActionReplay3Action {
 };
 
 enum GBAActionReplay3Base {
+	PAR3_BASE_ASSIGN = 0x00000000,
+	PAR3_BASE_INDIRECT = 0x40000000,
+	PAR3_BASE_ADD = 0x80000000,
+	PAR3_BASE_OTHER = 0xC0000000,
+
 	PAR3_BASE_ASSIGN_1 = 0x00000000,
 	PAR3_BASE_ASSIGN_2 = 0x02000000,
 	PAR3_BASE_ASSIGN_4 = 0x04000000,
@@ -119,7 +125,10 @@ enum GBAActionReplay3Other {
 enum {
 	PAR3_COND = 0x38000000,
 	PAR3_WIDTH = 0x06000000,
-	PAR3_ACTION = 0xC0000000
+	PAR3_ACTION = 0xC0000000,
+	PAR3_BASE = 0xC0000000,
+
+	PAR3_WIDTH_BASE = 25
 };
 
 struct GBACheat {
@@ -128,6 +137,7 @@ struct GBACheat {
 	uint32_t address;
 	uint32_t operand;
 	uint32_t repeat;
+	uint32_t negativeRepeat;
 
 	int32_t addressOffset;
 	int32_t operandOffset;
@@ -148,8 +158,6 @@ struct GBACheatSet {
 	struct GBACheatHook* hook;
 	struct GBACheatList list;
 
-	struct GBACheat* incompleteCheat;
-
 	struct GBACheatPatch {
 		uint32_t address;
 		int16_t newValue;
@@ -157,6 +165,10 @@ struct GBACheatSet {
 		bool applied;
 		bool exists;
 	} romPatches[MAX_ROM_PATCHES];
+
+	struct GBACheat* incompleteCheat;
+	struct GBACheatPatch* incompletePatch;
+	struct GBACheat* currentBlock;
 
 	int gsaVersion;
 	uint32_t gsaSeeds[4];
@@ -195,6 +207,9 @@ bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);
 
 bool GBACheatAddGameShark(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddGameSharkLine(struct GBACheatSet*, const char* line);
+
+bool GBACheatAddProActionReplay(struct GBACheatSet*, uint32_t op1, uint32_t op2);
+bool GBACheatAddProActionReplayLine(struct GBACheatSet*, const char* line);
 
 bool GBACheatAddAutodetect(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddAutodetectLine(struct GBACheatSet*, const char* line);

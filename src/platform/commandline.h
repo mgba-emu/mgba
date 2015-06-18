@@ -30,6 +30,7 @@ struct GBAArguments {
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;
+	bool showHelp;
 };
 
 struct SubParser {
