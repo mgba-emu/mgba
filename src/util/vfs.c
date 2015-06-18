@@ -6,15 +6,19 @@
 #include "vfs.h"
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
-	size_t bytesRead = 0;
+	ssize_t bytesRead = 0;
 	while (bytesRead < size - 1) {
-		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		ssize_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		if (newRead <= 0) {
+			break;
+		}
 		bytesRead += newRead;
-		if (!newRead || buffer[bytesRead] == '\n') {
+		if (buffer[bytesRead] == '\n') {
 			break;
 		}
 	}
-	return buffer[bytesRead] = '\0';
+	buffer[bytesRead] = '\0';
+	return bytesRead;
 }
 
 ssize_t VFileWrite32LE(struct VFile* vf, int32_t word) {
