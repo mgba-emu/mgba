@@ -10,6 +10,7 @@
 #include "gba/serialize.h"
 
 #include "platform/commandline.h"
+#include "util/string.h"
 #include "util/vfs.h"
 
 #include <errno.h>

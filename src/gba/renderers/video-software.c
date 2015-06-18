@@ -1883,6 +1883,9 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 	if (objwinSlowPath) {
 		objwinDisable = !GBAWindowControlIsObjEnable(renderer->objwin.packed);
 		objwinOnly = !objwinDisable && !GBAWindowControlIsObjEnable(renderer->currentWindow.packed);
+		if (objwinDisable && !GBAWindowControlIsObjEnable(renderer->currentWindow.packed)) {
+			return;
+		}
 
 		if (objwinDisable) {
 			for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
@@ -1912,6 +1915,8 @@ static void _postprocessSprite(struct GBAVideoSoftwareRenderer* renderer, unsign
 			}
 			return;
 		}
+	} else if (!GBAWindowControlIsObjEnable(renderer->currentWindow.packed)) {
+		return;
 	}
 	for (x = renderer->start; x < renderer->end; ++x, ++pixel) {
 		uint32_t color = renderer->spriteLayer[x] & ~FLAG_OBJWIN;

@@ -6,6 +6,7 @@
 #include "configuration.h"
 
 #include "util/formatting.h"
+#include "util/string.h"
 #include "util/vfs.h"
 
 #include "third-party/inih/ini.h"
