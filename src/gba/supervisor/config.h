@@ -35,6 +35,10 @@ struct GBAOptions {
 	int height;
 	bool lockAspectRatio;
 	bool resampleVideo;
+	bool suspendScreensaver;
+
+	int volume;
+	bool mute;
 
 	bool videoSync;
 	bool audioSync;

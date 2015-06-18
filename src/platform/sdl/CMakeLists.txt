@@ -1,5 +1,4 @@
 set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2 or 2)")
-set(BUILD_GL ON CACHE STRING "Build with OpenGL")
 
 if (SDL_VERSION EQUAL "2")
 	include(FindPkgConfig)
@@ -7,7 +6,7 @@ if (SDL_VERSION EQUAL "2")
 	if (SDL2_FOUND)
 		set(SDL_INCLUDE_DIR ${SDL2_INCLUDE_DIRS})
 		set(SDL_LIBRARY ${SDL2_LIBRARIES})
-		set(SDLMAIN_LIBRARY)
+		set(SDLMAIN_LIBRARY "")
 		link_directories(${SDL2_LIBDIR})
 		set(SDL_VERSION_DEBIAN "2-2.0-0")
 	endif()
@@ -31,6 +30,13 @@ if(USE_PIXMAN)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libpixman-1.0" PARENT_SCOPE)
 endif()
 
+if(WIN32)
+	list(APPEND SDL_LIBRARY imm32 version winmm)
+elseif(APPLE)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework AppKit -framework AudioUnit -framework Carbon -framework CoreAudio -framework ForceFeedback -framework IOKit")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}" PARENT_SCOPE)
+endif()
+
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libsdl${SDL_VERSION_DEBIAN}" PARENT_SCOPE)
 
 file(GLOB PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-*.c)
@@ -39,6 +45,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/platform/sdl ${PIXMAN-1_INCLUDE_DIR}
 
 set(SDL_INCLUDE_DIR "${SDL_INCLUDE_DIR}" PARENT_SCOPE)
 set(SDL_LIBRARY "${SDL_LIBRARY}" PARENT_SCOPE)
+set(SDLMAIN_LIBRARY "${SDLMAIN_LIBRARY}" PARENT_SCOPE)
 
 set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/main.c)
 
@@ -59,8 +66,7 @@ else()
 	list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sw-sdl.c)
 	if(BUILD_GL)
 		list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-sdl.c)
-		add_definitions(-DBUILD_GL)
-		find_package(OpenGL REQUIRED)
+		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
 		include_directories(${OPENGL_INCLUDE_DIR})
 	endif()
 endif()

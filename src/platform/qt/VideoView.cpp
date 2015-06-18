@@ -7,7 +7,8 @@
 
 #ifdef USE_FFMPEG
 
-#include <QFileDialog>
+#include "GBAApp.h"
+
 #include <QMap>
 
 using namespace QGBA;
@@ -212,7 +213,7 @@ void VideoView::stopRecording() {
 }
 
 void VideoView::selectFile() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Select output file"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"));
 	if (!filename.isEmpty()) {
 		m_ui.filename->setText(filename);
 	}

@@ -164,10 +164,10 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = BASE_IRQ;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
+	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseSWI(struct ARMCore* cpu) {
@@ -184,10 +184,10 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = BASE_SWI;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
+	cpu->cycles += currentCycles;
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {

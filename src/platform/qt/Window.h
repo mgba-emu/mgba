@@ -50,7 +50,7 @@ public:
 	void resizeFrame(int width, int height);
 
 signals:
-	void startDrawing(const uint32_t*, GBAThread*);
+	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void fpsTargetChanged(float target);
@@ -65,6 +65,9 @@ public slots:
 	void loadConfig();
 	void saveConfig();
 
+	void importSharkport();
+	void exportSharkport();
+
 	void openKeymapWindow();
 	void openSettingsWindow();
 	void openShortcutWindow();
@@ -72,6 +75,9 @@ public slots:
 	void openOverrideWindow();
 	void openSensorWindow();
 	void openCheatsWindow();
+
+	void openPaletteWindow();
+	void openMemoryWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -122,7 +128,12 @@ private:
 	void appendMRU(const QString& fname);
 	void updateMRU();
 
+	void openView(QWidget* widget);
+
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+
+	void updateTitle(float fps = NAN);
 
 	GameController* m_controller;
 	Display* m_display;

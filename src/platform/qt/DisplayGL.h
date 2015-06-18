@@ -8,52 +8,74 @@
 
 #include "Display.h"
 
+#include "MessagePainter.h"
+
 #include <QGLWidget>
 #include <QThread>
 #include <QTimer>
+
+extern "C" {
+#include "platform/opengl/gl.h"
+}
 
 struct GBAThread;
 
 namespace QGBA {
 
-class Painter;
+class EmptyGLWidget : public QGLWidget {
+public:
+	EmptyGLWidget(const QGLFormat& format, QWidget* parent) : QGLWidget(format, parent) { setAutoBufferSwap(false); }
+
+protected:
+	void paintEvent(QPaintEvent*) override {}
+	void resizeEvent(QResizeEvent*) override {}
+};
+
+class PainterGL;
 class DisplayGL : public Display {
 Q_OBJECT
 
 public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
+	~DisplayGL();
 
 public slots:
-	void startDrawing(const uint32_t* buffer, GBAThread* context);
-	void stopDrawing();
-	void pauseDrawing();
-	void unpauseDrawing();
-	void forceDraw();
-	void lockAspectRatio(bool lock);
-	void filter(bool filter);
+	void startDrawing(GBAThread* context) override;
+	void stopDrawing() override;
+	void pauseDrawing() override;
+	void unpauseDrawing() override;
+	void forceDraw() override;
+	void lockAspectRatio(bool lock) override;
+	void filter(bool filter) override;
+	void framePosted(const uint32_t*) override;
+
+	void showMessage(const QString& message) override;
 
 protected:
-	virtual void paintEvent(QPaintEvent*) override {};
+	virtual void paintEvent(QPaintEvent*) override {}
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private:
-	Painter* m_painter;
-	bool m_started;
+	void resizePainter();
+
+	QGLWidget* m_gl;
+	PainterGL* m_painter;
+	QThread* m_drawThread;
 	GBAThread* m_context;
 	bool m_lockAspectRatio;
 	bool m_filter;
 };
 
-class Painter : public QGLWidget {
+class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	Painter(const QGLFormat& format, QWidget* parent);
+	PainterGL(QGLWidget* parent);
 
 	void setContext(GBAThread*);
-	void setBacking(const uint32_t*);
 
 public slots:
+	void setBacking(const uint32_t*);
 	void forceDraw();
 	void draw();
 	void start();
@@ -64,19 +86,18 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
 
-protected:
-	virtual void initializeGL() override;
+	void showMessage(const QString& message);
 
 private:
 	void performDraw();
 
-	QTimer* m_drawTimer;
+	QPainter m_painter;
+	QGLWidget* m_gl;
+	bool m_active;
 	GBAThread* m_context;
-	const uint32_t* m_backing;
-	GLuint m_tex;
+	GBAGLContext m_backend;
 	QSize m_size;
-	bool m_lockAspectRatio;
-	bool m_filter;
+	MessagePainter* m_messagePainter;
 };
 
 }

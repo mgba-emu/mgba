@@ -17,12 +17,13 @@ AudioDevice::AudioDevice(QObject* parent)
 	: QIODevice(parent)
 	, m_context(nullptr)
 	, m_drift(0)
+	, m_ratio(1.f)
 {
 	setOpenMode(ReadOnly);
 }
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
-	if (!GBAThreadIsActive(m_context)) {
+	if (!m_context || !GBAThreadIsActive(m_context)) {
 		return;
 	}
 #if RESAMPLE_LIBRARY == RESAMPLE_NN

@@ -36,6 +36,7 @@ struct VDir* VDirOpen(const char* path) {
 
 	struct VDirDE* vd = malloc(sizeof(struct VDirDE));
 	if (!vd) {
+		closedir(de);
 		return 0;
 	}
 
@@ -188,4 +189,32 @@ const char* _vdeName(struct VDirEntry* vde) {
 		return vdede->ent->d_name;
 	}
 	return 0;
+}
+
+struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode) {
+	char path[PATH_MAX];
+	path[PATH_MAX - 1] = '\0';
+	struct VFile* vf;
+	if (!dir) {
+		if (!realPath) {
+			return 0;
+		}
+		char* dotPoint = strrchr(realPath, '.');
+		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
+			return 0;
+		}
+		if (dotPoint > strrchr(realPath, '/')) {
+			int len = dotPoint - realPath;
+			strncpy(path, realPath, len);
+			path[len] = 0;
+			strncat(path + len, suffix, PATH_MAX - len - 1);
+		} else {
+			snprintf(path, PATH_MAX - 1, "%s%s", realPath, suffix);
+		}
+		vf = VFileOpen(path, mode);
+	} else {
+		snprintf(path, PATH_MAX - 1, "%s%s", prefix, suffix);
+		vf = dir->openFile(dir, path, mode);
+	}
+	return vf;
 }

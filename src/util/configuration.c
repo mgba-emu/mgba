@@ -6,6 +6,7 @@
 #include "configuration.h"
 
 #include "util/formatting.h"
+#include "util/string.h"
 #include "util/vfs.h"
 
 #include "third-party/inih/ini.h"
@@ -53,10 +54,14 @@ void ConfigurationSetValue(struct Configuration* configuration, const char* sect
 	struct Table* currentSection = &configuration->root;
 	if (section) {
 		currentSection = HashTableLookup(&configuration->sections, section);
-		if (!currentSection && value) {
-			currentSection = malloc(sizeof(*currentSection));
-			HashTableInit(currentSection, 0, _sectionDeinit);
-			HashTableInsert(&configuration->sections, section, currentSection);
+		if (!currentSection) {
+			if (value) {
+				currentSection = malloc(sizeof(*currentSection));
+				HashTableInit(currentSection, 0, _sectionDeinit);
+				HashTableInsert(&configuration->sections, section, currentSection);
+			} else {
+				return;
+			}
 		}
 	}
 	if (value) {

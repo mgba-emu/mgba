@@ -6,41 +6,47 @@
 #include "vfs.h"
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
-	size_t bytesRead = 0;
+	ssize_t bytesRead = 0;
 	while (bytesRead < size - 1) {
-		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		ssize_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		if (newRead <= 0) {
+			break;
+		}
 		bytesRead += newRead;
-		if (!newRead || buffer[bytesRead] == '\n') {
+		if (buffer[bytesRead] == '\n') {
 			break;
 		}
 	}
-	return buffer[bytesRead] = '\0';
+	buffer[bytesRead] = '\0';
+	return bytesRead;
 }
 
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode) {
-	char path[PATH_MAX];
-	path[PATH_MAX - 1] = '\0';
-	struct VFile* vf;
-	if (!dir) {
-		if (!realPath) {
-			return 0;
-		}
-		char* dotPoint = strrchr(realPath, '.');
-		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
-			return 0;
-		}
-		if (dotPoint > strrchr(realPath, '/')) {
-			int len = dotPoint - realPath;
-			strncpy(path, realPath, len);
-			path[len] = 0;
-			strncat(path + len, suffix, PATH_MAX - len - 1);
-		} else {
-			snprintf(path, PATH_MAX - 1, "%s%s", realPath, suffix);
-		}
-		vf = VFileOpen(path, mode);
-	} else {
-		snprintf(path, PATH_MAX - 1, "%s%s", prefix, suffix);
-		vf = dir->openFile(dir, path, mode);
+ssize_t VFileWrite32LE(struct VFile* vf, int32_t word) {
+	uint32_t leword;
+	STORE_32LE(word, 0, &leword);
+	return vf->write(vf, &leword, 4);
+}
+
+ssize_t VFileWrite16LE(struct VFile* vf, int16_t hword) {
+	uint16_t lehword;
+	STORE_16LE(hword, 0, &lehword);
+	return vf->write(vf, &lehword, 2);
+}
+
+ssize_t VFileRead32LE(struct VFile* vf, void* word) {
+	uint32_t leword;
+	ssize_t r = vf->read(vf, &leword, 4);
+	if (r == 4) {
+		STORE_32LE(leword, 0, word);
 	}
-	return vf;
+	return r;
+}
+
+ssize_t VFileRead16LE(struct VFile* vf, void* hword) {
+	uint16_t lehword;
+	ssize_t r = vf->read(vf, &lehword, 2);
+	if (r == 2) {
+		STORE_16LE(lehword, 0, hword);
+	}
+	return r;
 }

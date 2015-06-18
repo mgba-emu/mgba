@@ -16,16 +16,32 @@ class Display : public QWidget {
 Q_OBJECT
 
 public:
+	enum class Driver {
+		QT = 0,
+#ifdef BUILD_GL
+		OPENGL = 1,
+#endif
+	};
+
 	Display(QWidget* parent = nullptr);
 
+	static Display* create(QWidget* parent = nullptr);
+	static void setDriver(Driver driver) { s_driver = driver; }
+
 public slots:
-	virtual void startDrawing(const uint32_t* buffer, GBAThread* context) = 0;
+	virtual void startDrawing(GBAThread* context) = 0;
 	virtual void stopDrawing() = 0;
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock) = 0;
 	virtual void filter(bool filter) = 0;
+	virtual void framePosted(const uint32_t*) = 0;
+
+	virtual void showMessage(const QString& message) = 0;
+
+private:
+	static Driver s_driver;
 };
 
 }

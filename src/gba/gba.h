@@ -45,8 +45,10 @@ enum GBALogLevel {
 
 	GBA_LOG_GAME_ERROR = 0x100,
 	GBA_LOG_SWI = 0x200,
+	GBA_LOG_STATUS = 0x400,
+	GBA_LOG_SIO = 0x800,
 
-	GBA_LOG_ALL = 0x33F,
+	GBA_LOG_ALL = 0xF3F,
 
 #ifdef NDEBUG
 	GBA_LOG_DANGER = GBA_LOG_ERROR
@@ -215,10 +217,10 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf,3,4)
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

@@ -434,6 +434,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
@@ -529,7 +530,7 @@ void GBAHalt(struct GBA* gba) {
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
 	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = -1;
+	enum GBALogLevel logLevel = GBA_LOG_ALL;
 
 	if (gba) {
 		logLevel = gba->logLevel;
@@ -632,10 +633,18 @@ bool GBAIsBIOS(struct VFile* vf) {
 }
 
 void GBAGetGameCode(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		out[0] = '\0';
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		strncpy(out, "(BIOS)", 12);
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 }
 
@@ -734,14 +743,13 @@ void GBAFrameEnded(struct GBA* gba) {
 		}
 	}
 
+	if (gba->stream) {
+		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+	}
 
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
 		return;
-	}
-
-	if (gba->stream) {
-		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
 	if (thread->frameCallback) {

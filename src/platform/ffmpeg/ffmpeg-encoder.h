@@ -6,7 +6,7 @@
 #ifndef FFMPEG_ENCODER
 #define FFMPEG_ENCODER
 
-#include "gba/supervisor/thread.h"
+#include "gba/gba.h"
 
 #include <libavformat/avformat.h>
 
