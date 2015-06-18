@@ -826,7 +826,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		});
 		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
 	}
-	addControlledAction(frameMenu, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), QKeySequence("Ctrl+F")), "fullscreen");
+	QKeySequence fullscreenKeys;
+#ifdef Q_OS_WIN
+	fullscreenKeys = QKeySequence("Alt+Enter");
+#else
+	fullscreenKeys = QKeySequence("Ctrl+F");
+#endif
+	addControlledAction(frameMenu, frameMenu->addAction(tr("Toggle fullscreen"), this, SLOT(toggleFullScreen()), fullscreenKeys), "fullscreen");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), avMenu);
