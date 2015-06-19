@@ -18,7 +18,7 @@
 
 static uint32_t _popcount32(unsigned bits);
 static void _pristineCow(struct GBA* gba);
-static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
+static uint32_t _deadbeef[1] = { 0xF00FC7C8 };
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
@@ -273,7 +273,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		memory->activeRegion = 0;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
-		GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
+		if (!gba->yankedRomSize) {
+			GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
+		}
 		break;
 	}
 	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];

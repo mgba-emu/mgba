@@ -376,6 +376,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
 		return;
 	}
+	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
@@ -383,6 +384,11 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	// TODO: error check
+}
+
+void GBAYankROM(struct GBA* gba) {
+	gba->yankedRomSize = gba->memory.romSize;
+	gba->memory.romSize = 0;
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {

@@ -325,6 +325,15 @@ void GameController::loadBIOS(const QString& path) {
 	}
 }
 
+void GameController::yankPak() {
+	if (!m_gameOpen) {
+		return;
+	}
+	threadInterrupt();
+	GBAYankROM(m_threadContext.gba);
+	threadContinue();
+}
+
 void GameController::loadPatch(const QString& path) {
 	if (m_gameOpen) {
 		closeGame();

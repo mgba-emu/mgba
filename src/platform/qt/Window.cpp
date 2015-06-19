@@ -698,6 +698,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
 	addControlledAction(emulationMenu, shutdown, "shutdown");
+
+	QAction* yank = new QAction(tr("Yank game pak"), emulationMenu);
+	connect(yank, SIGNAL(triggered()), m_controller, SLOT(yankPak()));
+	m_gameActions.append(yank);
+	addControlledAction(emulationMenu, yank, "yank");
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);

@@ -21,6 +21,7 @@ Features:
  - Finer control over FPS target
  - Holdable shortcut for rewinding one frame at a time
  - Ability to boot directly into the BIOS
+ - Preliminary support for yanking out the game pak while a game is running
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
