@@ -215,4 +215,6 @@ struct GBASerializedState;
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
 
+extern const int GBAVideoObjSizes[16][2];
+
 #endif

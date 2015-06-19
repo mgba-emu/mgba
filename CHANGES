@@ -76,6 +76,7 @@ Misc:
  - Qt: Rename "Fullscreen" to "Toggle fullscreen"
  - Qt: Don't save window size when entering fullscreen
  - Qt: Make the default fullscreen binding for Windows be Alt-Enter
+ - GBA Video: Refactor software renderer into separate files
 
 0.2.1: (2015-05-13)
 Bugfixes:
