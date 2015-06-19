@@ -24,9 +24,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
-static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 7, 7, 9, 9, 13, 13, 9 };
+static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 1, 1, 0, 7, 7, 9, 9, 13, 13, 9 };
 static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
-static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 9, 9, 17, 17, 9 };
+static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 5, 0, 0, 1, 1, 0, 5, 5, 9, 9, 17, 17, 9 };
 static const char GBA_ROM_WAITSTATES[] = { 4, 3, 2, 8 };
 static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
@@ -336,7 +336,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_PALETTE_RAM \
 	LOAD_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
-	++wait;
+	wait += waitstatesRegion[REGION_PALETTE_RAM];
 
 #define LOAD_VRAM \
 	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
@@ -344,7 +344,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	} else { \
 		LOAD_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
 	} \
-	++wait;
+	wait += waitstatesRegion[REGION_VRAM];
 
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 4), gba->video.oam.raw);
 
@@ -613,7 +613,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 #define STORE_PALETTE_RAM \
 	STORE_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
 	gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 4)) + 2, value >> 16); \
-	++wait; \
+	wait += waitstatesRegion[REGION_PALETTE_RAM]; \
 	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 4), value);
 
 #define STORE_VRAM \
@@ -622,7 +622,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	} else { \
 		STORE_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
 	} \
-	++wait;
+	wait += waitstatesRegion[REGION_VRAM];
 
 #define STORE_OAM \
 	STORE_32(value, address & (SIZE_OAM - 4), gba->video.oam.raw); \
