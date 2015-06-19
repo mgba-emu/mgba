@@ -68,6 +68,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
+	setAttribute(Qt::WA_DeleteOnClose);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setOverrides(m_config->overrides());
