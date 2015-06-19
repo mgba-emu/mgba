@@ -650,7 +650,7 @@ void GBAGetGameTitle(struct GBA* gba, char* out) {
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	enum GBALogLevel level = GBA_LOG_FATAL;
+	enum GBALogLevel level = GBA_LOG_ERROR;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
 		struct DebuggerEntryInfo info = {
@@ -671,6 +671,8 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 			.opcode = opcode
 		};
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	} else {
+		ARMRaiseUndefined(cpu);
 	}
 }
 

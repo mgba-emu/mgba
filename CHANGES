@@ -77,6 +77,7 @@ Misc:
  - Qt: Don't save window size when entering fullscreen
  - Qt: Make the default fullscreen binding for Windows be Alt-Enter
  - GBA Video: Refactor software renderer into separate files
+ - ARM7: Add emulation for Undefined CPU mode
 
 0.2.1: (2015-05-13)
 Bugfixes:
