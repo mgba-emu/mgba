@@ -1270,21 +1270,23 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 		memory->waitstatesPrefetchNonseq32[REGION_CART1] = memory->waitstatesPrefetchNonseq32[REGION_CART1_EX] = memory->waitstatesNonseq32[REGION_CART1];
 		memory->waitstatesPrefetchNonseq32[REGION_CART2] = memory->waitstatesPrefetchNonseq32[REGION_CART2_EX] = memory->waitstatesNonseq32[REGION_CART2];
 	} else {
-		memory->waitstatesPrefetchSeq16[REGION_CART0] = memory->waitstatesPrefetchSeq16[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchSeq16[REGION_CART1] = memory->waitstatesPrefetchSeq16[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchSeq16[REGION_CART2] = memory->waitstatesPrefetchSeq16[REGION_CART2_EX] = 0;
+		// Assume it stalls one cycle to pull a value from the prefetch
+		// This needs more research to tell if it's accurate or not
+		memory->waitstatesPrefetchSeq16[REGION_CART0] = memory->waitstatesPrefetchSeq16[REGION_CART0_EX] = 1;
+		memory->waitstatesPrefetchSeq16[REGION_CART1] = memory->waitstatesPrefetchSeq16[REGION_CART1_EX] = 1;
+		memory->waitstatesPrefetchSeq16[REGION_CART2] = memory->waitstatesPrefetchSeq16[REGION_CART2_EX] = 1;
 
-		memory->waitstatesPrefetchSeq32[REGION_CART0] = memory->waitstatesPrefetchSeq32[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchSeq32[REGION_CART1] = memory->waitstatesPrefetchSeq32[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchSeq32[REGION_CART2] = memory->waitstatesPrefetchSeq32[REGION_CART2_EX] = 0;
+		memory->waitstatesPrefetchSeq32[REGION_CART0] = memory->waitstatesPrefetchSeq32[REGION_CART0_EX] = 2;
+		memory->waitstatesPrefetchSeq32[REGION_CART1] = memory->waitstatesPrefetchSeq32[REGION_CART1_EX] = 2;
+		memory->waitstatesPrefetchSeq32[REGION_CART2] = memory->waitstatesPrefetchSeq32[REGION_CART2_EX] = 2;
 
-		memory->waitstatesPrefetchNonseq16[REGION_CART0] = memory->waitstatesPrefetchNonseq16[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchNonseq16[REGION_CART1] = memory->waitstatesPrefetchNonseq16[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchNonseq16[REGION_CART2] = memory->waitstatesPrefetchNonseq16[REGION_CART2_EX] = 0;
+		memory->waitstatesPrefetchNonseq16[REGION_CART0] = memory->waitstatesPrefetchNonseq16[REGION_CART0_EX] = 1;
+		memory->waitstatesPrefetchNonseq16[REGION_CART1] = memory->waitstatesPrefetchNonseq16[REGION_CART1_EX] = 1;
+		memory->waitstatesPrefetchNonseq16[REGION_CART2] = memory->waitstatesPrefetchNonseq16[REGION_CART2_EX] = 1;
 
-		memory->waitstatesPrefetchNonseq32[REGION_CART0] = memory->waitstatesPrefetchNonseq32[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchNonseq32[REGION_CART1] = memory->waitstatesPrefetchNonseq32[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchNonseq32[REGION_CART2] = memory->waitstatesPrefetchNonseq32[REGION_CART2_EX] = 0;
+		memory->waitstatesPrefetchNonseq32[REGION_CART0] = memory->waitstatesPrefetchNonseq32[REGION_CART0_EX] = 2;
+		memory->waitstatesPrefetchNonseq32[REGION_CART1] = memory->waitstatesPrefetchNonseq32[REGION_CART1_EX] = 2;
+		memory->waitstatesPrefetchNonseq32[REGION_CART2] = memory->waitstatesPrefetchNonseq32[REGION_CART2_EX] = 2;
 	}
 
 	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
