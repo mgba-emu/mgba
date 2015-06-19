@@ -14,6 +14,11 @@
 #include <errno.h>
 #include <fcntl.h>
 
+// Some testing was done here...
+// Erase cycles can vary greatly.
+// Some games may vary anywhere between about 2000 cycles to up to 30000 cycles. (Observed on a Macronix (09C2) chip).
+// Other games vary from very little, with a fairly solid 20500 cycle count. (Observed on a SST (D4BF) chip).
+// An average estimation is as follows.
 #define FLASH_SETTLE_CYCLES 18000
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
@@ -234,7 +239,9 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 		}
 	}
 	if (savedata->dust > 0 && (address >> 12) == savedata->settling) {
-		--savedata->dust;
+		// Give some overhead for waitstates and the comparison
+		// This estimation can probably be improved
+		savedata->dust -= 10;
 		return 0x5F;
 	}
 	return savedata->currentBank[address];
