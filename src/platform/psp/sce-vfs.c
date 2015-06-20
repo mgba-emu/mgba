@@ -23,10 +23,6 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfsceTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfsceSize(struct VFile* vf);
 
-struct VFile* VFileOpen(const char* path, int flags) {
-	return VFileOpenSce(path, flags, 0666);
-}
-
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
 	if (!vfsce) {
