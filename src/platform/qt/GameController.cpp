@@ -282,17 +282,7 @@ void GameController::openGame(bool biosOnly) {
 			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 			m_threadContext.stateDir = m_threadContext.gameDir;
 		} else {
-			m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
-#if USE_LIBZIP
-			if (!m_threadContext.gameDir) {
-				m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
-			}
-#endif
-#if USE_LZMA
-			if (!m_threadContext.gameDir) {
-				m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
-			}
-#endif
+			GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
 		}
 	}
 
@@ -323,6 +313,28 @@ void GameController::loadBIOS(const QString& path) {
 		closeGame();
 		openGame();
 	}
+}
+
+void GameController::yankPak() {
+	if (!m_gameOpen) {
+		return;
+	}
+	threadInterrupt();
+	GBAYankROM(m_threadContext.gba);
+	threadContinue();
+}
+
+
+void GameController::replaceGame(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+
+	m_fname = path;
+	threadInterrupt();
+	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
+	GBAThreadReplaceROM(&m_threadContext, m_threadContext.fname);
+	threadContinue();
 }
 
 void GameController::loadPatch(const QString& path) {
@@ -561,9 +573,10 @@ void GameController::loadState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		GBALoadState(context, context->stateDir, controller->m_stateSlot);
-		controller->stateLoaded(context);
-		controller->frameAvailable(controller->m_drawContext);
+		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
+			controller->stateLoaded(context);
+			controller->frameAvailable(controller->m_drawContext);
+		}
 	});
 }
 

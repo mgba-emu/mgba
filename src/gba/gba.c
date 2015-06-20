@@ -96,14 +96,22 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->performingDMA = false;
 }
 
-void GBADestroy(struct GBA* gba) {
+void GBAUnloadROM(struct GBA* gba) {
 	if (gba->pristineRom == gba->memory.rom) {
 		gba->memory.rom = 0;
+	} else {
+		mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
 	}
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+		gba->pristineRom = 0;
+		gba->romVf = 0;
 	}
+}
+
+void GBADestroy(struct GBA* gba) {
+	GBAUnloadROM(gba);
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
@@ -139,6 +147,11 @@ void GBAReset(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
 		GBASavedataUnmask(&gba->memory.savedata);
+	}
+
+	if (gba->yankedRomSize) {
+		gba->memory.romSize = gba->yankedRomSize;
+		gba->yankedRomSize = 0;
 	}
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
@@ -365,6 +378,7 @@ void GBADetachDebugger(struct GBA* gba) {
 }
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
@@ -376,6 +390,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
 		return;
 	}
+	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
@@ -383,6 +398,12 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	// TODO: error check
+}
+
+void GBAYankROM(struct GBA* gba) {
+	gba->yankedRomSize = gba->memory.romSize;
+	gba->memory.romSize = 0;
+	GBARaiseIRQ(gba, IRQ_GAMEPAK);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -489,10 +510,6 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_KEYPAD)) {
 		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
-	}
-
-	if (value & (1 << IRQ_GAMEPAK)) {
-		GBALog(gba, GBA_LOG_STUB, "Gamepak interrupts not implemented");
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
@@ -650,7 +667,7 @@ void GBAGetGameTitle(struct GBA* gba, char* out) {
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	enum GBALogLevel level = GBA_LOG_FATAL;
+	enum GBALogLevel level = GBA_LOG_ERROR;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
 		struct DebuggerEntryInfo info = {
@@ -664,13 +681,17 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	if (!gba->yankedRomSize) {
+		GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	}
 	if (gba->debugger) {
 		struct DebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	} else {
+		ARMRaiseUndefined(cpu);
 	}
 }
 

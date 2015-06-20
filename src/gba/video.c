@@ -23,6 +23,25 @@ static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer,
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
 
+const int GBAVideoObjSizes[16][2] = {
+	{ 8, 8 },
+	{ 16, 16 },
+	{ 32, 32 },
+	{ 64, 64 },
+	{ 16, 8 },
+	{ 32, 8 },
+	{ 32, 16 },
+	{ 64, 32 },
+	{ 8, 16 },
+	{ 8, 32 },
+	{ 16, 32 },
+	{ 32, 64 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+};
+
 static struct GBAVideoRenderer dummyRenderer = {
 	.init = GBAVideoDummyRendererInit,
 	.reset = GBAVideoDummyRendererReset,
