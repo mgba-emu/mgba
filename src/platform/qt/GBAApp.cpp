@@ -42,6 +42,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	QApplication::setApplicationVersion(projectVersion);
 
 	Window* w = new Window(&m_configController);
+	connect(w, &Window::destroyed, [this]() {
+		m_windows[0] = nullptr;
+	});
 	m_windows[0] = w;
 
 #ifndef Q_OS_MAC
@@ -79,7 +82,11 @@ Window* GBAApp::newWindow() {
 		return nullptr;
 	}
 	Window* w = new Window(&m_configController, m_multiplayer.attached());
-	m_windows[m_multiplayer.attached()] = w;
+	int windowId = m_multiplayer.attached();
+	connect(w, &Window::destroyed, [this, windowId]() {
+		m_windows[windowId] = nullptr;
+	});
+	m_windows[windowId] = w;
 	w->setAttribute(Qt::WA_DeleteOnClose);
 #ifndef Q_OS_MAC
 	w->show();

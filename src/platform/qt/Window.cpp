@@ -68,6 +68,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
+	setAttribute(Qt::WA_DeleteOnClose);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setOverrides(m_config->overrides());
@@ -226,6 +227,24 @@ void Window::selectROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
 	if (!filename.isEmpty()) {
 		m_controller->loadGame(filename);
+	}
+}
+
+void Window::replaceROM() {
+	QStringList formats{
+		"*.gba",
+#ifdef USE_LIBZIP
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
+	if (!filename.isEmpty()) {
+		m_controller->replaceGame(filename);
 	}
 }
 
@@ -614,6 +633,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
 
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
+
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 
 	fileMenu->addSeparator();
@@ -697,6 +718,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(shutdown, SIGNAL(triggered()), m_controller, SLOT(closeGame()));
 	m_gameActions.append(shutdown);
 	addControlledAction(emulationMenu, shutdown, "shutdown");
+
+	QAction* yank = new QAction(tr("Yank game pak"), emulationMenu);
+	connect(yank, SIGNAL(triggered()), m_controller, SLOT(yankPak()));
+	m_gameActions.append(yank);
+	addControlledAction(emulationMenu, yank, "yank");
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
