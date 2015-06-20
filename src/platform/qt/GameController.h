@@ -98,6 +98,7 @@ public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
 	void yankPak();
+	void replaceGame(const QString& path);
 	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);

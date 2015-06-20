@@ -282,17 +282,7 @@ void GameController::openGame(bool biosOnly) {
 			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 			m_threadContext.stateDir = m_threadContext.gameDir;
 		} else {
-			m_threadContext.rom = VFileOpen(m_threadContext.fname, O_RDONLY);
-#if USE_LIBZIP
-			if (!m_threadContext.gameDir) {
-				m_threadContext.gameDir = VDirOpenZip(m_threadContext.fname, 0);
-			}
-#endif
-#if USE_LZMA
-			if (!m_threadContext.gameDir) {
-				m_threadContext.gameDir = VDirOpen7z(m_threadContext.fname, 0);
-			}
-#endif
+			GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
 		}
 	}
 
@@ -331,6 +321,19 @@ void GameController::yankPak() {
 	}
 	threadInterrupt();
 	GBAYankROM(m_threadContext.gba);
+	threadContinue();
+}
+
+
+void GameController::replaceGame(const QString& path) {
+	if (!m_gameOpen) {
+		return;
+	}
+
+	m_fname = path;
+	threadInterrupt();
+	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
+	GBAThreadReplaceROM(&m_threadContext, m_threadContext.fname);
 	threadContinue();
 }
 

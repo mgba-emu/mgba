@@ -230,6 +230,24 @@ void Window::selectROM() {
 	}
 }
 
+void Window::replaceROM() {
+	QStringList formats{
+		"*.gba",
+#ifdef USE_LIBZIP
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
+	if (!filename.isEmpty()) {
+		m_controller->replaceGame(filename);
+	}
+}
+
 void Window::selectBIOS() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
@@ -614,6 +632,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
+
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
 
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 
