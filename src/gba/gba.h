@@ -146,6 +146,7 @@ struct GBA {
 	struct GBARRContext* rr;
 	void* pristineRom;
 	size_t pristineRomSize;
+	size_t yankedRomSize;
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
@@ -206,6 +207,8 @@ void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t 
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+void GBAYankROM(struct GBA* gba);
+void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 

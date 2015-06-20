@@ -29,7 +29,7 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfdSize(struct VFile* vf);
 
-struct VFile* VFileOpen(const char* path, int flags) {
+struct VFile* VFileOpenFD(const char* path, int flags) {
 	if (!path) {
 		return 0;
 	}
