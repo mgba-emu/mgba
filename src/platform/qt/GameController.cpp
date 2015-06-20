@@ -573,9 +573,10 @@ void GameController::loadState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		GBALoadState(context, context->stateDir, controller->m_stateSlot);
-		controller->stateLoaded(context);
-		controller->frameAvailable(controller->m_drawContext);
+		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
+			controller->stateLoaded(context);
+			controller->frameAvailable(controller->m_drawContext);
+		}
 	});
 }
 
