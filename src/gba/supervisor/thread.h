@@ -126,6 +126,9 @@ void GBAThreadTogglePause(struct GBAThread* threadContext);
 void GBAThreadPauseFromThread(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
 
+void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname);
+void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname);
+
 #ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext);
 #endif

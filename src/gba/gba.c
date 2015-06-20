@@ -96,14 +96,22 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->performingDMA = false;
 }
 
-void GBADestroy(struct GBA* gba) {
+void GBAUnloadROM(struct GBA* gba) {
 	if (gba->pristineRom == gba->memory.rom) {
 		gba->memory.rom = 0;
+	} else {
+		mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
 	}
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+		gba->pristineRom = 0;
+		gba->romVf = 0;
 	}
+}
+
+void GBADestroy(struct GBA* gba) {
+	GBAUnloadROM(gba);
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
@@ -370,6 +378,7 @@ void GBADetachDebugger(struct GBA* gba) {
 }
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
