@@ -247,7 +247,7 @@ static void GBAWiiFrame(void) {
 }
 
 bool GBAWiiLoadGame(const char* path) {
-	rom = VFileFOpen(path, "rb");
+	rom = VFileOpen(path, O_RDONLY);
 
 	if (!rom) {
 		return false;
@@ -256,7 +256,7 @@ bool GBAWiiLoadGame(const char* path) {
 		return false;
 	}
 
-	save = VFileFOpen("test.sav", "w+b");
+	save = VFileOpen("test.sav", O_RDWR | O_CREAT);
 
 	GBALoadROM(&gba, rom, save, path);
 
