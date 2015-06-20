@@ -5,6 +5,36 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+struct VFile* VFileOpen(const char* path, int flags) {
+#ifdef USE_VFS_FILE
+	const char* chflags;
+	switch (flags & O_ACCMODE) {
+	case O_WRONLY:
+		if (flags & O_APPEND) {
+			chflags = "ab";
+		} else {
+			chflags = "wb";
+		}
+		break;
+	case O_RDWR:
+		if (flags & O_APPEND) {
+			chflags = "a+b";
+		} else if (flags & O_TRUNC) {
+			chflags = "w+b";
+		} else {
+			chflags = "r+b";
+		}
+		break;
+	case O_RDONLY:
+		chflags = "rb";
+		break;
+	}
+	return VFileFOpen(path, chflags);
+#else
+	return VFileOpenFD(path, flags);
+#endif
+}
+
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 	ssize_t bytesRead = 0;
 	while (bytesRead < size - 1) {
