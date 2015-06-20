@@ -140,6 +140,11 @@ void GBAReset(struct ARMCore* cpu) {
 	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
 		GBASavedataUnmask(&gba->memory.savedata);
 	}
+
+	if (gba->yankedRomSize) {
+		gba->memory.romSize = gba->yankedRomSize;
+		gba->yankedRomSize = 0;
+	}
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
 	GBAAudioReset(&gba->audio);
@@ -389,6 +394,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 void GBAYankROM(struct GBA* gba) {
 	gba->yankedRomSize = gba->memory.romSize;
 	gba->memory.romSize = 0;
+	GBARaiseIRQ(gba, IRQ_GAMEPAK);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -495,10 +501,6 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_KEYPAD)) {
 		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
-	}
-
-	if (value & (1 << IRQ_GAMEPAK)) {
-		GBALog(gba, GBA_LOG_STUB, "Gamepak interrupts not implemented");
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
@@ -670,7 +672,9 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	if (!gba->yankedRomSize) {
+		GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	}
 	if (gba->debugger) {
 		struct DebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),

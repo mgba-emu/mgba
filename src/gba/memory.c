@@ -18,7 +18,7 @@
 
 static uint32_t _popcount32(unsigned bits);
 static void _pristineCow(struct GBA* gba);
-static uint32_t _deadbeef[1] = { 0xF00FC7C8 };
+static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
@@ -270,20 +270,20 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		}
 		// Fall through
 	default:
-		memory->activeRegion = 0;
+		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
 		if (!gba->yankedRomSize) {
 			GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
 		}
-		break;
+		return;
 	}
-	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
-	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
-	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
-	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
-	cpu->memory.activeUncachedCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
-	cpu->memory.activeUncachedCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[newRegion];
+	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[newRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[newRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[newRegion];
+	cpu->memory.activeUncachedCycles32 = memory->waitstatesNonseq32[newRegion];
+	cpu->memory.activeUncachedCycles16 = memory->waitstatesNonseq16[newRegion];
 }
 
 #define LOAD_BAD \
