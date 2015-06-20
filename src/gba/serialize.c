@@ -173,13 +173,11 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	return true;
 }
 
-#ifndef PSP
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
 	char suffix[5] = { '\0' };
 	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
 	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
-#endif
 
 #ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
@@ -251,7 +249,6 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 }
 #endif
 
-#ifndef PSP
 bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, bool screenshot) {
 	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
 	if (!vf) {
@@ -282,7 +279,6 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 	}
 	return success;
 }
-#endif
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 	if (!screenshot) {

@@ -5,6 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+#ifdef PSP
+#include "platform/psp/sce-vfs.h"
+#endif
+
 struct VFile* VFileOpen(const char* path, int flags) {
 #ifdef USE_VFS_FILE
 	const char* chflags;
@@ -30,6 +34,8 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		break;
 	}
 	return VFileFOpen(path, chflags);
+#elif defined(PSP)
+	return VFileOpenSce(path, flags, 0666);
 #else
 	return VFileOpenFD(path, flags);
 #endif
