@@ -100,7 +100,10 @@ void GBAUnloadROM(struct GBA* gba) {
 	if (gba->pristineRom == gba->memory.rom) {
 		gba->memory.rom = 0;
 	} else {
-		mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
+		if (gba->yankedRomSize) {
+			gba->yankedRomSize = 0;
+		}
+		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
 
 	if (gba->romVf) {
