@@ -81,6 +81,7 @@ Misc:
  - GBA Video: Refactor software renderer into separate files
  - ARM7: Add emulation for Undefined CPU mode
  - GBA: More accurate cycle estimation for ROM prefetch and flash save chips
+ - ARM7: Reduce the size of the Thumb instruction table
 
 0.2.1: (2015-05-13)
 Bugfixes:
