@@ -97,14 +97,13 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 }
 
 void GBAUnloadROM(struct GBA* gba) {
-	if (gba->pristineRom == gba->memory.rom) {
-		gba->memory.rom = 0;
-	} else {
+	if (gba->memory.rom && gba->pristineRom != gba->memory.rom) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
 		}
 		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
+	gba->memory.rom = 0;
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
