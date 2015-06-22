@@ -36,7 +36,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 }
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
-	ssize_t bytesRead = 0;
+	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
 		ssize_t newRead = vf->read(vf, &buffer[bytesRead], 1);
 		if (newRead <= 0) {
