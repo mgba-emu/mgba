@@ -36,14 +36,18 @@
 #define ARM_V_SUBTRACTION(M, N, D) ((ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))))
 
 #define ARM_WAIT_MUL(R) \
-	if ((R & 0xFFFFFF00) == 0xFFFFFF00 || !(R & 0xFFFFFF00)) { \
-		currentCycles += 1; \
-	} else if ((R & 0xFFFF0000) == 0xFFFF0000 || !(R & 0xFFFF0000)) { \
-		currentCycles += 2; \
-	} else if ((R & 0xFF000000) == 0xFF000000 || !(R & 0xFF000000)) { \
-		currentCycles += 3; \
-	} else { \
-		currentCycles += 4; \
+	 { \
+		int32_t wait; \
+		if ((R & 0xFFFFFF00) == 0xFFFFFF00 || !(R & 0xFFFFFF00)) { \
+			wait = 1; \
+		} else if ((R & 0xFFFF0000) == 0xFFFF0000 || !(R & 0xFFFF0000)) { \
+			wait = 2; \
+		} else if ((R & 0xFF000000) == 0xFF000000 || !(R & 0xFF000000)) { \
+			wait = 3; \
+		} else { \
+			wait = 4; \
+		} \
+		currentCycles += cpu->memory.stall(cpu, wait); \
 	}
 
 #define ARM_STUB cpu->irqh.hitStub(cpu, opcode)
@@ -55,7 +59,7 @@
 	LOAD_32(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_ARM; \
 	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
-	currentCycles += 2 + cpu->memory.activeUncachedCycles32 + cpu->memory.activeSeqCycles32;
+	currentCycles += 2 + cpu->memory.activeNonseqCycles32 + cpu->memory.activeSeqCycles32;
 
 #define THUMB_WRITE_PC \
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB); \
@@ -63,7 +67,7 @@
 	LOAD_16(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
 	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB; \
 	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion); \
-	currentCycles += 2 + cpu->memory.activeUncachedCycles16 + cpu->memory.activeSeqCycles16;
+	currentCycles += 2 + cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
 
 static inline int _ARMModeHasSPSR(enum PrivilegeMode mode) {
 	return mode != MODE_SYSTEM && mode != MODE_USER;
