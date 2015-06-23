@@ -1528,7 +1528,7 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 		return wait;
 	}
 
-	int32_t stall = 5 - memory->waitstatesSeq16[memory->activeRegion]; // Figure out where this value comes from
+	int32_t stall = memory->waitstatesNonseq16[memory->activeRegion] - memory->waitstatesSeq16[memory->activeRegion] + 1;
 
 	// Base number of cycles for this insn is N
 	int32_t base = memory->waitstatesSeq16[memory->activeRegion] + 1;
