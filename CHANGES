@@ -48,6 +48,7 @@ Bugfixes:
  - GBA Video: Fix windows not affecting sprites
  - VFS: Fix line-reading to return proper values
  - GBA Memory: Fix load/store multiple video memory waitstates
+ - GBA: Fix timing of reading from timer registers
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
