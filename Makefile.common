@@ -33,6 +33,9 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
 					$(CORE_DIR)/gba/supervisor/sync.c \
 					$(CORE_DIR)/gba/supervisor/thread.c \
+					$(CORE_DIR)/gba/renderers/software-mode0.c \
+					$(CORE_DIR)/gba/renderers/software-obj.c \
+					$(CORE_DIR)/gba/renderers/software-bg.c \
 					$(CORE_DIR)/gba/renderers/video-software.c \
 					$(CORE_DIR)/platform/commandline.c \
 					$(CORE_DIR)/platform/libretro/memory.c \

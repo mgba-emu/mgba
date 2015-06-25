@@ -6,6 +6,7 @@
 #include "imagemagick-gif-encoder.h"
 
 #include "gba/video.h"
+#include "util/string.h"
 
 static void _magickPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _magickPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);

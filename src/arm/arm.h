@@ -110,8 +110,7 @@ struct ARMMemory {
 	uint32_t activeSeqCycles16;
 	uint32_t activeNonseqCycles32;
 	uint32_t activeNonseqCycles16;
-	uint32_t activeUncachedCycles32;
-	uint32_t activeUncachedCycles16;
+	int32_t (*stall)(struct ARMCore*, int32_t wait);
 	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
 };
 
@@ -172,6 +171,7 @@ void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
 void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
+void ARMRaiseUndefined(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
 void ARMRunLoop(struct ARMCore* cpu);

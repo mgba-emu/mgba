@@ -19,16 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "version.h"
+
 #ifdef _MSC_VER
-#ifdef _WIN64
-typedef int64_t off_t;
-typedef int64_t ssize_t;
-#else
-typedef int32_t off_t;
-typedef int32_t ssize_t;
-#endif
+typedef intptr_t off_t;
+typedef intptr_t ssize_t;
 #define restrict __restrict
-#define SSIZE_MAX ((ssize_t) SIZE_MAX)
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
@@ -37,7 +33,9 @@ typedef int32_t ssize_t;
 #include <unistd.h>
 #endif
 
-#include "version.h"
+#ifndef SSIZE_MAX
+#define SSIZE_MAX ((ssize_t) (SIZE_MAX >> 1))
+#endif
 
 #define UNUSED(V) (void)(V)
 

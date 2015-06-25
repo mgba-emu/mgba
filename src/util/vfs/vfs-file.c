@@ -7,6 +7,7 @@
 
 #include "util/memory.h"
 
+#include <errno.h>
 #include <stdio.h>
 
 struct VFileFILE {
@@ -28,6 +29,9 @@ struct VFile* VFileFOpen(const char* path, const char* mode) {
 		return 0;
 	}
 	FILE* file = fopen(path, mode);
+	if (!file && errno == ENOENT && strcmp(mode, "r+b") == 0) {
+		file = fopen(path, "w+b");
+	}
 	return VFileFromFILE(file);
 }
 
