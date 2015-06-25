@@ -65,6 +65,8 @@ public slots:
 	void loadConfig();
 	void saveConfig();
 
+	void replaceROM();
+
 	void importSharkport();
 	void exportSharkport();
 

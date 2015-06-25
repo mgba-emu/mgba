@@ -5,44 +5,50 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+struct VFile* VFileOpen(const char* path, int flags) {
+#ifdef USE_VFS_FILE
+	const char* chflags;
+	switch (flags & O_ACCMODE) {
+	case O_WRONLY:
+		if (flags & O_APPEND) {
+			chflags = "ab";
+		} else {
+			chflags = "wb";
+		}
+		break;
+	case O_RDWR:
+		if (flags & O_APPEND) {
+			chflags = "a+b";
+		} else if (flags & O_TRUNC) {
+			chflags = "w+b";
+		} else {
+			chflags = "r+b";
+		}
+		break;
+	case O_RDONLY:
+		chflags = "rb";
+		break;
+	}
+	return VFileFOpen(path, chflags);
+#else
+	return VFileOpenFD(path, flags);
+#endif
+}
+
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
-		size_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		ssize_t newRead = vf->read(vf, &buffer[bytesRead], 1);
+		if (newRead <= 0) {
+			break;
+		}
 		bytesRead += newRead;
-		if (!newRead || buffer[bytesRead] == '\n') {
+		if (buffer[bytesRead] == '\n') {
 			break;
 		}
 	}
-	return buffer[bytesRead] = '\0';
-}
-
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode) {
-	char path[PATH_MAX];
-	path[PATH_MAX - 1] = '\0';
-	struct VFile* vf;
-	if (!dir) {
-		if (!realPath) {
-			return 0;
-		}
-		char* dotPoint = strrchr(realPath, '.');
-		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
-			return 0;
-		}
-		if (dotPoint > strrchr(realPath, '/')) {
-			int len = dotPoint - realPath;
-			strncpy(path, realPath, len);
-			path[len] = 0;
-			strncat(path + len, suffix, PATH_MAX - len - 1);
-		} else {
-			snprintf(path, PATH_MAX - 1, "%s%s", realPath, suffix);
-		}
-		vf = VFileOpen(path, mode);
-	} else {
-		snprintf(path, PATH_MAX - 1, "%s%s", prefix, suffix);
-		vf = dir->openFile(dir, path, mode);
-	}
-	return vf;
+	buffer[bytesRead] = '\0';
+	return bytesRead;
 }
 
 ssize_t VFileWrite32LE(struct VFile* vf, int32_t word) {
@@ -73,4 +79,32 @@ ssize_t VFileRead16LE(struct VFile* vf, void* hword) {
 		STORE_16LE(lehword, 0, hword);
 	}
 	return r;
+}
+
+struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode) {
+	char path[PATH_MAX];
+	path[PATH_MAX - 1] = '\0';
+	struct VFile* vf;
+	if (!dir) {
+		if (!realPath) {
+			return 0;
+		}
+		char* dotPoint = strrchr(realPath, '.');
+		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
+			return 0;
+		}
+		if (dotPoint > strrchr(realPath, '/')) {
+			int len = dotPoint - realPath;
+			strncpy(path, realPath, len);
+			path[len] = 0;
+			strncat(path + len, suffix, PATH_MAX - len - 1);
+		} else {
+			snprintf(path, PATH_MAX - 1, "%s%s", realPath, suffix);
+		}
+		vf = VFileOpen(path, mode);
+	} else {
+		snprintf(path, PATH_MAX - 1, "%s%s", prefix, suffix);
+		vf = dir->openFile(dir, path, mode);
+	}
+	return vf;
 }

@@ -18,15 +18,16 @@
 
 static uint32_t _popcount32(unsigned bits);
 static void _pristineCow(struct GBA* gba);
-static uint32_t _deadbeef[2] = { 0xDEADBEEF, 0xFEEDFACE };
+static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
 static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t region);
 static void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info);
+static int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait);
 
 static const char GBA_BASE_WAITSTATES[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4 };
-static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 7, 7, 9, 9, 13, 13, 9 };
+static const char GBA_BASE_WAITSTATES_32[16] = { 0, 0, 5, 0, 0, 1, 1, 0, 7, 7, 9, 9, 13, 13, 9 };
 static const char GBA_BASE_WAITSTATES_SEQ[16] = { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4 };
-static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 5, 0, 0, 0, 0, 0, 5, 5, 9, 9, 17, 17, 9 };
+static const char GBA_BASE_WAITSTATES_SEQ_32[16] = { 0, 0, 5, 0, 0, 1, 1, 0, 5, 5, 9, 9, 17, 17, 9 };
 static const char GBA_ROM_WAITSTATES[] = { 4, 3, 2, 8 };
 static const char GBA_ROM_WAITSTATES_SEQ[] = { 2, 1, 4, 1, 8, 1 };
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
@@ -41,6 +42,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.store16 = GBAStore16;
 	cpu->memory.store8 = GBAStore8;
 	cpu->memory.storeMultiple = GBAStoreMultiple;
+	cpu->memory.stall = GBAMemoryStall;
 
 	gba->memory.bios = (uint32_t*) hleBios;
 	gba->memory.fullBios = 0;
@@ -76,8 +78,6 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeSeqCycles16 = 0;
 	cpu->memory.activeNonseqCycles32 = 0;
 	cpu->memory.activeNonseqCycles16 = 0;
-	cpu->memory.activeUncachedCycles32 = 0;
-	cpu->memory.activeUncachedCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
 }
 
@@ -270,18 +270,18 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		}
 		// Fall through
 	default:
-		memory->activeRegion = 0;
+		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
-		GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
-		break;
+		if (!gba->yankedRomSize) {
+			GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
+		}
+		return;
 	}
-	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
-	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
-	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
-	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
-	cpu->memory.activeUncachedCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
-	cpu->memory.activeUncachedCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+	cpu->memory.activeSeqCycles32 = memory->waitstatesSeq32[memory->activeRegion];
+	cpu->memory.activeSeqCycles16 = memory->waitstatesSeq16[memory->activeRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 }
 
 #define LOAD_BAD \
@@ -334,7 +334,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_PALETTE_RAM \
 	LOAD_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
-	++wait;
+	wait += waitstatesRegion[REGION_PALETTE_RAM];
 
 #define LOAD_VRAM \
 	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
@@ -342,7 +342,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	} else { \
 		LOAD_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
 	} \
-	++wait;
+	wait += waitstatesRegion[REGION_VRAM];
 
 #define LOAD_OAM LOAD_32(value, address & (SIZE_OAM - 4), gba->video.oam.raw);
 
@@ -410,7 +410,11 @@ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		wait += 2;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 	// Unaligned 32-bit loads are "rotated" so they make some semblance of sense
 	int rotate = (address & 3) << 3;
@@ -501,7 +505,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		wait += 2;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 	// Unaligned 16-bit loads are "unpredictable", but the GBA rotates them, so we have to, too.
 	int rotate = (address & 1) << 3;
@@ -593,7 +601,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		wait += 2;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 	return value;
 }
@@ -611,7 +623,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 #define STORE_PALETTE_RAM \
 	STORE_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \
 	gba->video.renderer->writePalette(gba->video.renderer, (address & (SIZE_PALETTE_RAM - 4)) + 2, value >> 16); \
-	++wait; \
+	wait += waitstatesRegion[REGION_PALETTE_RAM]; \
 	gba->video.renderer->writePalette(gba->video.renderer, address & (SIZE_PALETTE_RAM - 4), value);
 
 #define STORE_VRAM \
@@ -620,7 +632,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	} else { \
 		STORE_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
 	} \
-	++wait;
+	wait += waitstatesRegion[REGION_VRAM];
 
 #define STORE_OAM \
 	STORE_32(value, address & (SIZE_OAM - 4), gba->video.oam.raw); \
@@ -680,7 +692,11 @@ void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		++wait;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 }
 
@@ -740,7 +756,11 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		++wait;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 }
 
@@ -806,7 +826,11 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 
 	if (cycleCounter) {
-		*cycleCounter += 1 + wait;
+		++wait;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
+		*cycleCounter += wait;
 	}
 }
 
@@ -1098,6 +1122,10 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	}
 
 	if (cycleCounter) {
+		++wait;
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
 		*cycleCounter += wait;
 	}
 
@@ -1204,6 +1232,9 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	}
 
 	if (cycleCounter) {
+		if (address >> BASE_OFFSET < REGION_CART0) {
+			wait = GBAMemoryStall(cpu, wait);
+		}
 		*cycleCounter += wait;
 	}
 
@@ -1251,48 +1282,13 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	memory->waitstatesSeq32[REGION_CART1] = memory->waitstatesSeq32[REGION_CART1_EX] = 2 * memory->waitstatesSeq16[REGION_CART1] + 1;
 	memory->waitstatesSeq32[REGION_CART2] = memory->waitstatesSeq32[REGION_CART2_EX] = 2 * memory->waitstatesSeq16[REGION_CART2] + 1;
 
-	if (!prefetch) {
-		memory->waitstatesPrefetchSeq16[REGION_CART0] = memory->waitstatesPrefetchSeq16[REGION_CART0_EX] = memory->waitstatesSeq16[REGION_CART0];
-		memory->waitstatesPrefetchSeq16[REGION_CART1] = memory->waitstatesPrefetchSeq16[REGION_CART1_EX] = memory->waitstatesSeq16[REGION_CART1];
-		memory->waitstatesPrefetchSeq16[REGION_CART2] = memory->waitstatesPrefetchSeq16[REGION_CART2_EX] = memory->waitstatesSeq16[REGION_CART2];
+	memory->prefetch = prefetch;
 
-		memory->waitstatesPrefetchSeq32[REGION_CART0] = memory->waitstatesPrefetchSeq32[REGION_CART0_EX] = memory->waitstatesSeq32[REGION_CART0];
-		memory->waitstatesPrefetchSeq32[REGION_CART1] = memory->waitstatesPrefetchSeq32[REGION_CART1_EX] = memory->waitstatesSeq32[REGION_CART1];
-		memory->waitstatesPrefetchSeq32[REGION_CART2] = memory->waitstatesPrefetchSeq32[REGION_CART2_EX] = memory->waitstatesSeq32[REGION_CART2];
+	cpu->memory.activeSeqCycles32 = memory->waitstatesSeq32[memory->activeRegion];
+	cpu->memory.activeSeqCycles16 = memory->waitstatesSeq16[memory->activeRegion];
 
-		memory->waitstatesPrefetchNonseq16[REGION_CART0] = memory->waitstatesPrefetchNonseq16[REGION_CART0_EX] = memory->waitstatesNonseq16[REGION_CART0];
-		memory->waitstatesPrefetchNonseq16[REGION_CART1] = memory->waitstatesPrefetchNonseq16[REGION_CART1_EX] = memory->waitstatesNonseq16[REGION_CART1];
-		memory->waitstatesPrefetchNonseq16[REGION_CART2] = memory->waitstatesPrefetchNonseq16[REGION_CART2_EX] = memory->waitstatesNonseq16[REGION_CART2];
-
-		memory->waitstatesPrefetchNonseq32[REGION_CART0] = memory->waitstatesPrefetchNonseq32[REGION_CART0_EX] = memory->waitstatesNonseq32[REGION_CART0];
-		memory->waitstatesPrefetchNonseq32[REGION_CART1] = memory->waitstatesPrefetchNonseq32[REGION_CART1_EX] = memory->waitstatesNonseq32[REGION_CART1];
-		memory->waitstatesPrefetchNonseq32[REGION_CART2] = memory->waitstatesPrefetchNonseq32[REGION_CART2_EX] = memory->waitstatesNonseq32[REGION_CART2];
-	} else {
-		memory->waitstatesPrefetchSeq16[REGION_CART0] = memory->waitstatesPrefetchSeq16[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchSeq16[REGION_CART1] = memory->waitstatesPrefetchSeq16[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchSeq16[REGION_CART2] = memory->waitstatesPrefetchSeq16[REGION_CART2_EX] = 0;
-
-		memory->waitstatesPrefetchSeq32[REGION_CART0] = memory->waitstatesPrefetchSeq32[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchSeq32[REGION_CART1] = memory->waitstatesPrefetchSeq32[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchSeq32[REGION_CART2] = memory->waitstatesPrefetchSeq32[REGION_CART2_EX] = 0;
-
-		memory->waitstatesPrefetchNonseq16[REGION_CART0] = memory->waitstatesPrefetchNonseq16[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchNonseq16[REGION_CART1] = memory->waitstatesPrefetchNonseq16[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchNonseq16[REGION_CART2] = memory->waitstatesPrefetchNonseq16[REGION_CART2_EX] = 0;
-
-		memory->waitstatesPrefetchNonseq32[REGION_CART0] = memory->waitstatesPrefetchNonseq32[REGION_CART0_EX] = 0;
-		memory->waitstatesPrefetchNonseq32[REGION_CART1] = memory->waitstatesPrefetchNonseq32[REGION_CART1_EX] = 0;
-		memory->waitstatesPrefetchNonseq32[REGION_CART2] = memory->waitstatesPrefetchNonseq32[REGION_CART2_EX] = 0;
-	}
-
-	cpu->memory.activeSeqCycles32 = memory->waitstatesPrefetchSeq32[memory->activeRegion];
-	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
-
-	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
-	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
-
-	cpu->memory.activeUncachedCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
-	cpu->memory.activeUncachedCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+	cpu->memory.activeNonseqCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
+	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 }
 
 void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
@@ -1522,6 +1518,31 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		info->nextEvent += cycles;
 	}
 	cpu->cycles += cycles;
+}
+
+int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	struct GBAMemory* memory = &gba->memory;
+
+	if (!memory->prefetch || memory->activeRegion < REGION_CART0) {
+		return wait;
+	}
+
+	int32_t stall = memory->waitstatesNonseq16[memory->activeRegion] - memory->waitstatesSeq16[memory->activeRegion] + 1;
+
+	// Base number of cycles for this insn is N
+	int32_t base = memory->waitstatesSeq16[memory->activeRegion] + 1;
+	if (cpu->executionMode == MODE_ARM) {
+		base <<= 1;
+	}
+	if (base <= wait) {
+		--base;
+	} else {
+		base = wait;
+	}
+
+	cpu->cycles -= stall + base - 1;
+	return wait;
 }
 
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state) {
