@@ -7,6 +7,10 @@
 
 #include <QPainter>
 
+extern "C" {
+#include "gba/video.h"
+}
+
 using namespace QGBA;
 
 DisplayQt::DisplayQt(QWidget* parent)
@@ -69,9 +73,9 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	QRect full(origin, ds);
 
 #ifdef COLOR_5_6_5
-	painter.drawImage(full, m_backing, QRect(0, 0, 240, 160));
+	painter.drawImage(full, m_backing, QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
 #else
-	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, 240, 160));
+	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
 #endif
 	m_messagePainter.paint(&painter);
 }

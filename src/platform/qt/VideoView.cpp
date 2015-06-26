@@ -131,8 +131,8 @@ VideoView::VideoView(QWidget* parent)
 		.acodec = QString(),
 		.vbr = 0,
 		.abr = 0,
-		.width = 240,
-		.height = 160
+		.width = VIDEO_HORIZONTAL_PIXELS,
+		.height = VIDEO_VERTICAL_PIXELS
 	});
 
 	addPreset(m_ui.presetHQ, (Preset) {
@@ -169,8 +169,8 @@ VideoView::VideoView(QWidget* parent)
 		.acodec = "FLAC",
 		.vbr = 0,
 		.abr = 0,
-		.width = 240,
-		.height = 160,
+		.width = VIDEO_HORIZONTAL_PIXELS,
+		.height = VIDEO_VERTICAL_PIXELS,
 	});
 
 	setPreset((Preset) {
@@ -179,8 +179,8 @@ VideoView::VideoView(QWidget* parent)
 		.acodec = "FLAC",
 		.vbr = 0,
 		.abr = 0,
-		.width = 240,
-		.height = 160,
+		.width = VIDEO_HORIZONTAL_PIXELS,
+		.height = VIDEO_VERTICAL_PIXELS,
 	});
 
 	showAdvanced(false);
