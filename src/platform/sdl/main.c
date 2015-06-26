@@ -176,5 +176,4 @@ static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
 	renderer->deinit(renderer);
 
 	SDL_Quit();
-
 }
