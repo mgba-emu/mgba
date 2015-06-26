@@ -79,6 +79,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeNonseqCycles32 = 0;
 	cpu->memory.activeNonseqCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
+	gba->memory.prefetch = false;
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
