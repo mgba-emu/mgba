@@ -451,8 +451,12 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {
+		int32_t prefetchSkew = 0;
+		if ((gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) < gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB) {
+			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) / gba->cpu->memory.activeSeqCycles16;
+		}
 		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2) >> currentTimer->prescaleBits);
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
 	}
 }
 
