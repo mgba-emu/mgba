@@ -113,6 +113,9 @@ void GBAMemoryReset(struct GBA* gba) {
 	gba->memory.nextDMA = INT_MAX;
 	gba->memory.eventDiff = 0;
 
+	gba->memory.prefetch = false;
+	gba->memory.lastPrefetchedPc = 0;
+
 	if (!gba->memory.wram || !gba->memory.iwram) {
 		GBAMemoryDeinit(gba);
 		GBALog(gba, GBA_LOG_FATAL, "Could not map memory");
@@ -232,6 +235,8 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 	gba->lastJump = address;
+	memory->lastPrefetchedPc = 0;
+	memory->lastPrefetchedLoads = 0;
 	if (newRegion == memory->activeRegion && (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize)) {
 		return;
 	}
@@ -1525,23 +1530,39 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	struct GBAMemory* memory = &gba->memory;
 
 	if (!memory->prefetch || memory->activeRegion < REGION_CART0) {
+		// The wait is the stall
 		return wait;
 	}
 
-	int32_t stall = memory->waitstatesNonseq16[memory->activeRegion] - memory->waitstatesSeq16[memory->activeRegion] + 1;
+	int32_t s = cpu->memory.activeSeqCycles16 + 1;
+	int32_t n2s = cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16 + 1;
 
-	// Base number of cycles for this insn is N
-	int32_t base = memory->waitstatesSeq16[memory->activeRegion] + 1;
-	if (cpu->executionMode == MODE_ARM) {
-		base <<= 1;
-	}
-	if (base <= wait) {
-		--base;
-	} else {
-		base = wait;
-	}
+	// Figure out how many sequential loads we can jam in
+	int32_t stall = s;
+	int32_t loads = 1;
+	int32_t previousLoads = 0;
 
-	cpu->cycles -= stall + base - 1;
+	// Don't prefetch too much if we're overlapping with a previous prefetch
+	if (UNLIKELY((memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) < memory->lastPrefetchedLoads * WORD_SIZE_THUMB)) {
+		previousLoads = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	}
+	while (stall < wait && LIKELY(loads + previousLoads < 8)) {
+		stall += s;
+		++loads;
+	}
+	if (stall > wait && loads == 1) {
+		// We might need to stall a bit extra if we haven't finished the first S cycle
+		wait = stall;
+	}
+	// This instruction used to have an N, convert it to an S.
+	wait -= n2s;
+
+	// TODO: Invalidate prefetch on branch
+	memory->lastPrefetchedLoads = loads;
+	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * loads;
+
+	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
+	cpu->cycles -= (s - 1) * loads;
 	return wait;
 }
 

@@ -111,10 +111,10 @@ void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 			switch (renderer->ratio) {
 #if defined(__ARM_NEON) && COLOR_16_BIT
 			case 2:
-				_neon2x(surface->pixels, renderer->d.outputBuffer, 240, 160);
+				_neon2x(surface->pixels, renderer->d.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 				break;
 			case 4:
-				_neon4x(surface->pixels, renderer->d.outputBuffer, 240, 160);
+				_neon4x(surface->pixels, renderer->d.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 				break;
 #endif
 			case 1:
