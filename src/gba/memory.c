@@ -235,6 +235,8 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 	gba->lastJump = address;
+	memory->lastPrefetchedPc = 0;
+	memory->lastPrefetchedLoads = 0;
 	if (newRegion == memory->activeRegion && (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize)) {
 		return;
 	}
@@ -1541,10 +1543,10 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t previousLoads = 0;
 
 	// Don't prefetch too much if we're overlapping with a previous prefetch
-	if ((memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) < memory->lastPrefetchedLoads * WORD_SIZE_THUMB) {
+	if (UNLIKELY((memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) < memory->lastPrefetchedLoads * WORD_SIZE_THUMB)) {
 		previousLoads = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
 	}
-	while (stall < wait && loads + previousLoads < 8) {
+	while (stall < wait && LIKELY(loads + previousLoads < 8)) {
 		stall += s;
 		++loads;
 	}
