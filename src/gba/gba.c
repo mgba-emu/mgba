@@ -435,10 +435,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
-	if (!patchedSize) {
+	if (!patchedSize || patchedSize > SIZE_CART0) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(patchedSize);
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
