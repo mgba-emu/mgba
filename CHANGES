@@ -49,6 +49,7 @@ Bugfixes:
  - VFS: Fix line-reading to return proper values
  - GBA Memory: Fix load/store multiple video memory waitstates
  - GBA: Fix timing of reading from timer registers
+ - Util: Allow loading IPS patches that grow the ROM
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
