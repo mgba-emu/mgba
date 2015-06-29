@@ -108,7 +108,7 @@ void ARMHotplugDetach(struct ARMCore* cpu, size_t slot) {
 	if (slot >= cpu->numComponents) {
 		return;
 	}
-	cpu->components[slot]->init(cpu, cpu->components[slot]);
+	cpu->components[slot]->deinit(cpu->components[slot]);
 }
 
 void ARMReset(struct ARMCore* cpu) {
