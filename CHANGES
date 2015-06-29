@@ -86,6 +86,7 @@ Misc:
  - ARM7: Reduce the size of the Thumb instruction table
  - GBA: Don't include GBACLIDebugger struct unless needed
  - SDL: Clean up GL context
+ - GBA Audio: Implement audio reset for channels A/B
 
 0.2.1: (2015-05-13)
 Bugfixes:

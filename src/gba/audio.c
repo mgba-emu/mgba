@@ -456,7 +456,12 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->chBRight = GBARegisterSOUNDCNT_HIGetChBRight(value);
 	audio->chBLeft = GBARegisterSOUNDCNT_HIGetChBLeft(value);
 	audio->chBTimer = GBARegisterSOUNDCNT_HIGetChBTimer(value);
-	// TODO: Implement channel reset
+	if (GBARegisterSOUNDCNT_HIIsChAReset(value)) {
+		CircleBufferClear(&audio->chA.fifo);
+	}
+	if (GBARegisterSOUNDCNT_HIIsChBReset(value)) {
+		CircleBufferClear(&audio->chB.fifo);
+	}
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
