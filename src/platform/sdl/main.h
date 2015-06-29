@@ -45,6 +45,7 @@ struct SDLSoftwareRenderer {
 	SDL_Window* window;
 	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
+	SDL_GLContext* glCtx;
 #endif
 
 	int viewportWidth;
