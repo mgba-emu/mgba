@@ -50,6 +50,7 @@ Bugfixes:
  - GBA Memory: Fix load/store multiple video memory waitstates
  - GBA: Fix timing of reading from timer registers
  - Util: Allow loading IPS patches that grow the ROM
+ - GBA Audio: Fix sample order in audio channel 3
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
