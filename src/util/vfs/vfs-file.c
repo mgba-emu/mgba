@@ -13,6 +13,7 @@
 struct VFileFILE {
 	struct VFile d;
 	FILE* file;
+	bool writable;
 };
 
 static bool _vffClose(struct VFile* vf);
@@ -46,6 +47,7 @@ struct VFile* VFileFromFILE(FILE* file) {
 	}
 
 	vff->file = file;
+	vff->writable = false;
 	vff->d.close = _vffClose;
 	vff->d.seek = _vffSeek;
 	vff->d.read = _vffRead;
@@ -84,8 +86,10 @@ ssize_t _vffWrite(struct VFile* vf, const void* buffer, size_t size) {
 }
 
 static void* _vffMap(struct VFile* vf, size_t size, int flags) {
-	UNUSED(flags);
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
+	if (flags & MAP_WRITE) {
+		vff->writable = true;
+	}
 	void* mem = anonymousMemoryMap(size);
 	if (!mem) {
 		return 0;
@@ -99,10 +103,12 @@ static void* _vffMap(struct VFile* vf, size_t size, int flags) {
 
 static void _vffUnmap(struct VFile* vf, void* memory, size_t size) {
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
-	long pos = ftell(vff->file);
-	fseek(vff->file, 0, SEEK_SET);
-	fwrite(memory, size, 1, vff->file);
-	fseek(vff->file, pos, SEEK_SET);
+	if (vff->writable) {
+		long pos = ftell(vff->file);
+		fseek(vff->file, 0, SEEK_SET);
+		fwrite(memory, size, 1, vff->file);
+		fseek(vff->file, pos, SEEK_SET);
+	}
 	mappedMemoryFree(memory, size);
 }
 
