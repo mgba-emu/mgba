@@ -15,6 +15,7 @@ Bugfixes:
  - ARM7: Fix timing of multiplies to use N cycles
  - GBA Video: Fix windows not affecting sprites
  - Util: Allow loading IPS patches that grow the ROM
+ - GBA Audio: Fix sample order in audio channel 3
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
  - All: Enable static linking for Windows
