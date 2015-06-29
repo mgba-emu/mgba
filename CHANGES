@@ -16,6 +16,7 @@ Bugfixes:
  - GBA Video: Fix windows not affecting sprites
  - Util: Allow loading IPS patches that grow the ROM
  - GBA Audio: Fix sample order in audio channel 3
+ - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
  - All: Enable static linking for Windows
