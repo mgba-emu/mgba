@@ -130,7 +130,7 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, u
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
 
 struct GBAVideo;
-bool GBAHardwarePlayerCheckScreen(cosnt struct GBAVideo* video);
+bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
