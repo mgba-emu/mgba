@@ -1529,7 +1529,7 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
-	if (!memory->prefetch || memory->activeRegion < REGION_CART0) {
+	if (memory->activeRegion < REGION_CART0 || !memory->prefetch) {
 		// The wait is the stall
 		return wait;
 	}
@@ -1543,14 +1543,19 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t previousLoads = 0;
 
 	// Don't prefetch too much if we're overlapping with a previous prefetch
-	if (UNLIKELY((memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) < memory->lastPrefetchedLoads * WORD_SIZE_THUMB)) {
-		previousLoads = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	uint32_t dist = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	if (dist < memory->lastPrefetchedLoads) {
+		previousLoads = dist;
 	}
-	while (stall < wait && LIKELY(loads + previousLoads < 8)) {
+	while (stall < wait) {
 		stall += s;
 		++loads;
 	}
-	if (stall > wait && loads == 1) {
+	if (loads + previousLoads > 8) {
+		int diff = (loads + previousLoads) - 8;
+		loads -= diff;
+		stall -= s * diff;
+	} else if (stall > wait && loads == 1) {
 		// We might need to stall a bit extra if we haven't finished the first S cycle
 		wait = stall;
 	}
