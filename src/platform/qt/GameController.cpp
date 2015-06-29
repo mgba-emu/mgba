@@ -152,8 +152,8 @@ GameController::GameController(QObject* parent)
 
 	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
 		GBARewind(&m_threadContext, 1);
-		emit rewound(&m_threadContext);
 		emit frameAvailable(m_drawContext);
+		emit rewound(&m_threadContext);
 	});
 	m_rewindTimer.setInterval(100);
 
@@ -478,8 +478,8 @@ void GameController::rewind(int states) {
 		GBARewind(&m_threadContext, states);
 	}
 	threadContinue();
-	emit rewound(&m_threadContext);
 	emit frameAvailable(m_drawContext);
+	emit rewound(&m_threadContext);
 }
 
 void GameController::startRewinding() {
@@ -574,8 +574,8 @@ void GameController::loadState(int slot) {
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
-			controller->stateLoaded(context);
 			controller->frameAvailable(controller->m_drawContext);
+			controller->stateLoaded(context);
 		}
 	});
 }
