@@ -253,7 +253,6 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, un
 	// Nothing to do
 }
 
-
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);

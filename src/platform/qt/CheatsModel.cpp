@@ -104,7 +104,7 @@ QModelIndex CheatsModel::parent(const QModelIndex& index) const {
 	return QModelIndex();
 }
 
-Qt::ItemFlags CheatsModel::flags(const QModelIndex &index) const {
+Qt::ItemFlags CheatsModel::flags(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return 0;
 	}
@@ -152,7 +152,6 @@ void CheatsModel::removeAt(const QModelIndex& index) {
 	GBACheatSetDeinit(set);
 	delete set;
 	endInsertRows();
-
 }
 
 QString CheatsModel::toString(const QModelIndexList& indices) const {

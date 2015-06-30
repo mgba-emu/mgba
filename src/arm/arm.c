@@ -42,30 +42,29 @@ void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 
 		cpu->bankedSPSRs[oldBank] = cpu->spsr.packed;
 		cpu->spsr.packed = cpu->bankedSPSRs[newBank];
-
 	}
 	cpu->privilegeMode = mode;
 }
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 	switch (mode) {
-		case MODE_USER:
-		case MODE_SYSTEM:
-			// No banked registers
-			return BANK_NONE;
-		case MODE_FIQ:
-			return BANK_FIQ;
-		case MODE_IRQ:
-			return BANK_IRQ;
-		case MODE_SUPERVISOR:
-			return BANK_SUPERVISOR;
-		case MODE_ABORT:
-			return BANK_ABORT;
-		case MODE_UNDEFINED:
-			return BANK_UNDEFINED;
-		default:
-			// This should be unreached
-			return BANK_NONE;
+	case MODE_USER:
+	case MODE_SYSTEM:
+		// No banked registers
+		return BANK_NONE;
+	case MODE_FIQ:
+		return BANK_FIQ;
+	case MODE_IRQ:
+		return BANK_IRQ;
+	case MODE_SUPERVISOR:
+		return BANK_SUPERVISOR;
+	case MODE_ABORT:
+		return BANK_ABORT;
+	case MODE_UNDEFINED:
+		return BANK_UNDEFINED;
+	default:
+		// This should be unreached
+		return BANK_NONE;
 	}
 }
 
@@ -308,7 +307,7 @@ void ARMRunLoop(struct ARMCore* cpu) {
 }
 
 void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
-	if (cpu->executionMode== MODE_ARM) {
+	if (cpu->executionMode == MODE_ARM) {
 		cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
 	} else {
 		cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;

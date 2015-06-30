@@ -205,7 +205,7 @@ void GBAKeyEditor::refresh() {
 }
 
 void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {
-	#ifdef BUILD_SDL
+#ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON) {
 		int value = GBAInputQueryBinding(map, m_type, key);
 		if (value != GBA_NO_MAPPING) {
@@ -213,7 +213,7 @@ void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, G
 		}
 		return;
 	}
-	#endif
+#endif
 	keyEditor->setValueKey(GBAInputQueryBinding(map, m_type, key));
 }
 
@@ -304,5 +304,6 @@ KeyEditor* GBAKeyEditor::keyById(GBAKey key) {
 void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 	QSize s = size();
 	QSize hint = widget->sizeHint();
-	widget->setGeometry(s.width() * x - hint.width() / 2.0, s.height() * y - hint.height() / 2.0, hint.width(), hint.height());
+	widget->setGeometry(s.width() * x - hint.width() / 2.0, s.height() * y - hint.height() / 2.0, hint.width(),
+	                    hint.height());
 }

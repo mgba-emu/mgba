@@ -106,9 +106,8 @@ void GDBWindow::stopped() {
 }
 
 void GDBWindow::failed() {
-	QMessageBox* failure = new QMessageBox(QMessageBox::Warning, tr("Crash"),
-		tr("Could not start GDB server"),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	QMessageBox* failure = new QMessageBox(QMessageBox::Warning, tr("Crash"), tr("Could not start GDB server"),
+	                                       QMessageBox::Ok, this, Qt::Sheet);
 	failure->setAttribute(Qt::WA_DeleteOnClose);
 	failure->show();
 }

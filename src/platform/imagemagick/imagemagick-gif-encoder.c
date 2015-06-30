@@ -58,7 +58,7 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
 	size_t row;
 	for (row = 0; row < VIDEO_VERTICAL_PIXELS; ++row) {
-		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 *stride], VIDEO_HORIZONTAL_PIXELS * 4);
+		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);
 	}
 
 	MagickConstituteImage(encoder->wand, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, "RGBP", CharPixel, encoder->frame);

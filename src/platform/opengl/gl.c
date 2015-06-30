@@ -78,7 +78,7 @@ void GBAGLContextDrawFrame(struct VideoBackend* v) {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(2, GL_INT, 0, _glVertices);
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
-	glMatrixMode (GL_PROJECTION);
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);

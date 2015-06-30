@@ -101,8 +101,10 @@ struct ARMMemory {
 	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
 	void (*store8)(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
 
-	uint32_t (*loadMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
-	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
+	uint32_t (*loadMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+	                         int* cycleCounter);
+	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+	                          int* cycleCounter);
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;

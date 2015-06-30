@@ -80,7 +80,7 @@ void ConfigOption::setValue(const char* value) {
 
 void ConfigOption::setValue(const QVariant& value) {
 	QPair<QAction*, QVariant> action;
-	foreach(action, m_actions) {
+	foreach (action, m_actions) {
 		bool signalsEnabled = action.first->blockSignals(true);
 		action.first->setChecked(value == action.second);
 		action.first->blockSignals(signalsEnabled);

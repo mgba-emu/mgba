@@ -118,10 +118,12 @@ void ShortcutController::addAction(QMenu* menu, QAction* action, const QString& 
 	if (m_config) {
 		loadShortcuts(item);
 	}
-	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
+	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
+	                 createIndex(smenu->items().count() - 1, 2, item));
 }
 
-void ShortcutController::addFunctions(QMenu* menu, std::function<void ()> press, std::function<void ()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name) {
+void ShortcutController::addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
+                                      const QKeySequence& shortcut, const QString& visibleName, const QString& name) {
 	ShortcutItem* smenu = m_menuMap[menu];
 	if (!smenu) {
 		return;
@@ -137,7 +139,8 @@ void ShortcutController::addFunctions(QMenu* menu, std::function<void ()> press,
 		loadShortcuts(item);
 	}
 	m_heldKeys[shortcut] = item;
-	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
+	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
+	                 createIndex(smenu->items().count() - 1, 2, item));
 }
 
 void ShortcutController::addMenu(QMenu* menu, QMenu* parentMenu) {
@@ -155,7 +158,8 @@ void ShortcutController::addMenu(QMenu* menu, QMenu* parentMenu) {
 	smenu->addSubmenu(menu);
 	endInsertRows();
 	ShortcutItem* item = &smenu->items().last();
-	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item), createIndex(smenu->items().count() - 1, 2, item));
+	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
+	                 createIndex(smenu->items().count() - 1, 2, item));
 	m_menuMap[menu] = item;
 }
 
@@ -211,7 +215,8 @@ void ShortcutController::updateKey(const QModelIndex& index, const QKeySequence&
 	if (m_config) {
 		m_config->setQtOption(item->name(), keySequence.toString(), KEY_SECTION);
 	}
-	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
+	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
+	                 createIndex(index.row(), 2, index.internalPointer()));
 }
 
 void ShortcutController::updateButton(const QModelIndex& index, int button) {
@@ -235,7 +240,8 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	if (m_config) {
 		m_config->setQtOption(item->name(), button, BUTTON_SECTION);
 	}
-	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
+	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
+	                 createIndex(index.row(), 2, index.internalPointer()));
 }
 
 void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction) {
@@ -267,7 +273,8 @@ void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadA
 		}
 		m_config->setQtOption(item->name(), QString("%1%2").arg(d).arg(axis), AXIS_SECTION);
 	}
-	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()), createIndex(index.row(), 2, index.internalPointer()));
+	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
+	                 createIndex(index.row(), 2, index.internalPointer()));
 }
 
 void ShortcutController::clearKey(const QModelIndex& index) {
@@ -473,7 +480,9 @@ void ShortcutController::ShortcutItem::addAction(QAction* action, const QString&
 	m_items.append(ShortcutItem(action, name, this));
 }
 
-void ShortcutController::ShortcutItem::addFunctions(ShortcutController::ShortcutItem::Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name) {
+void ShortcutController::ShortcutItem::addFunctions(ShortcutController::ShortcutItem::Functions functions,
+                                                    const QKeySequence& shortcut, const QString& visibleName,
+                                                    const QString& name) {
 	m_items.append(ShortcutItem(functions, shortcut, visibleName, name, this));
 }
 

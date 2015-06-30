@@ -273,7 +273,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			break;
 		}
-		// Fall through
+	// Fall through
 	default:
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
@@ -481,7 +481,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
-			value = (address >> 1) & 0xFFFF; \
+			value = (address >> 1) & 0xFFFF;
 		}
 		break;
 	case REGION_CART2_EX:
@@ -492,7 +492,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
-			value = (address >> 1) & 0xFFFF; \
+			value = (address >> 1) & 0xFFFF;
 		}
 		break;
 	case REGION_CART_SRAM:
@@ -576,7 +576,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
-			value = (address >> 1) & 0xFF; \
+			value = (address >> 1) & 0xFF;
 		}
 		break;
 	case REGION_CART_SRAM:
@@ -1266,7 +1266,7 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	int ws2seq = (parameters & 0x0400) >> 10;
 	int prefetch = parameters & 0x4000;
 
-	memory->waitstatesNonseq16[REGION_CART_SRAM] = memory->waitstatesNonseq16[REGION_CART_SRAM_MIRROR] =  GBA_ROM_WAITSTATES[sram];
+	memory->waitstatesNonseq16[REGION_CART_SRAM] = memory->waitstatesNonseq16[REGION_CART_SRAM_MIRROR] = GBA_ROM_WAITSTATES[sram];
 	memory->waitstatesSeq16[REGION_CART_SRAM] = memory->waitstatesSeq16[REGION_CART_SRAM_MIRROR] = GBA_ROM_WAITSTATES[sram];
 	memory->waitstatesNonseq32[REGION_CART_SRAM] = memory->waitstatesNonseq32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
 	memory->waitstatesSeq32[REGION_CART_SRAM] = memory->waitstatesSeq32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;

@@ -41,7 +41,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->left = blip_new(BLIP_BUFFER_SIZE);
 	audio->right = blip_new(BLIP_BUFFER_SIZE);
 	// Guess too large; we hang producing extra samples if we guess too low
-	blip_set_rates(audio->left,  GBA_ARM7TDMI_FREQUENCY, 96000);
+	blip_set_rates(audio->left, GBA_ARM7TDMI_FREQUENCY, 96000);
 	blip_set_rates(audio->right, GBA_ARM7TDMI_FREQUENCY, 96000);
 #endif
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);

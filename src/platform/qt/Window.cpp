@@ -509,7 +509,7 @@ void Window::gameStarted(GBAThread* context) {
 	attachWidget(m_display);
 
 #ifndef Q_OS_MAC
-	if(isFullScreen()) {
+	if (isFullScreen()) {
 		menuBar()->hide();
 	}
 #endif
@@ -532,16 +532,16 @@ void Window::gameStopped() {
 
 void Window::gameCrashed(const QString& errorMessage) {
 	QMessageBox* crash = new QMessageBox(QMessageBox::Critical, tr("Crash"),
-		tr("The game has crashed with the following error:\n\n%1").arg(errorMessage),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	                                     tr("The game has crashed with the following error:\n\n%1").arg(errorMessage),
+	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
 }
 
 void Window::gameFailed() {
 	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
-		tr("Could not load game. Are you sure it's in the correct format?"),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	                                    tr("Could not load game. Are you sure it's in the correct format?"),
+	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
 }
@@ -552,9 +552,10 @@ void Window::unimplementedBiosCall(int call) {
 	}
 	m_hitUnimplementedBiosCall = true;
 
-	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Unimplemented BIOS call"),
-		tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	QMessageBox* fail = new QMessageBox(
+	    QMessageBox::Warning, tr("Unimplemented BIOS call"),
+	    tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
+	    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
 }
@@ -628,7 +629,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	m_shortcutController->addMenu(fileMenu);
 	installEventFilter(m_shortcutController);
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open), "loadROM");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
+	                    "loadROM");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
@@ -733,7 +735,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(m_controller, &GameController::gamePaused, [this, pause]() {
 		pause->setChecked(true);
 
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
+		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage.rgbSwapped());
 		m_screenWidget->setPixmap(pixmap);
@@ -1010,8 +1013,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	toolsMenu->addSeparator();
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())), "shortcuts");
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
+	                    "settings");
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())),
+	                    "shortcuts");
 
 	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
 	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));

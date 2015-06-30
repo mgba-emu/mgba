@@ -291,20 +291,20 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		return true;
 	}
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	else {
 		return _savePNGState(gba, vf);
 	}
-	#endif
+#endif
 	return false;
 }
 
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	if (isPNG(vf)) {
 		return _loadPNGState(gba, vf);
 	}
-	#endif
+#endif
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}

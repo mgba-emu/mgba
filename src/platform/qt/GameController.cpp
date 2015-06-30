@@ -70,12 +70,12 @@ GameController::GameController(QObject* parent)
 	m_threadContext.logLevel = GBA_LOG_ALL;
 
 	m_lux.p = this;
-	m_lux.sample = [] (GBALuminanceSource* context) {
+	m_lux.sample = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
 		lux->value = 0xFF - lux->p->m_luxValue;
 	};
 
-	m_lux.readLuminance = [] (GBALuminanceSource* context) {
+	m_lux.readLuminance = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
 		return lux->value;
 	};
@@ -83,8 +83,8 @@ GameController::GameController(QObject* parent)
 
 	m_rtc.p = this;
 	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
-	m_rtc.sample = [] (GBARTCSource* context) { };
-	m_rtc.unixTime = [] (GBARTCSource* context) -> time_t {
+	m_rtc.sample = [](GBARTCSource* context) {};
+	m_rtc.unixTime = [](GBARTCSource* context) -> time_t {
 		GameControllerRTC* rtc = static_cast<GameControllerRTC*>(context);
 		switch (rtc->override) {
 		case GameControllerRTC::NO_OVERRIDE:
@@ -97,7 +97,7 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	m_threadContext.startCallback = [] (GBAThread* context) {
+	m_threadContext.startCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
 		context->gba->luminanceSource = &controller->m_lux;
@@ -108,12 +108,12 @@ GameController::GameController(QObject* parent)
 		controller->gameStarted(context);
 	};
 
-	m_threadContext.cleanCallback = [] (GBAThread* context) {
+	m_threadContext.cleanCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->gameStopped(context);
 	};
 
-	m_threadContext.frameCallback = [] (GBAThread* context) {
+	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
@@ -126,7 +126,7 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
+	m_threadContext.logHandler = [](GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
 		static const char* stubMessage = "Stub software interrupt";
 		if (!context) {
 			return;
@@ -323,7 +323,6 @@ void GameController::yankPak() {
 	GBAYankROM(m_threadContext.gba);
 	threadContinue();
 }
-
 
 void GameController::replaceGame(const QString& path) {
 	if (!m_gameOpen) {

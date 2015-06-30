@@ -65,7 +65,6 @@ DECL_BIT(GBAObjAttributesA, Mosaic, 12);
 DECL_BIT(GBAObjAttributesA, 256Color, 13);
 DECL_BITS(GBAObjAttributesA, Shape, 14, 2);
 
-
 DECL_BITFIELD(GBAObjAttributesB, uint16_t);
 DECL_BITS(GBAObjAttributesB, X, 0, 9);
 DECL_BITS(GBAObjAttributesB, MatIndex, 9, 5);

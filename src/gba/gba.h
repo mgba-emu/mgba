@@ -203,7 +203,8 @@ void GBAHalt(struct GBA* gba);
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode,
+                      uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
@@ -220,7 +221,7 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
 
-ATTRIBUTE_FORMAT(printf,3,4)
+ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)

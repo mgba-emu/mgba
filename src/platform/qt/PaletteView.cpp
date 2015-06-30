@@ -84,7 +84,8 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 	m_controller->threadInterrupt();
-	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"), tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
+	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"),
+	                                                       tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	if (!dialog->exec()) {
 		m_controller->threadContinue();
 		return;
