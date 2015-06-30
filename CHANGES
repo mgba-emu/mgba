@@ -52,6 +52,7 @@ Bugfixes:
  - Util: Allow loading IPS patches that grow the ROM
  - GBA Audio: Fix sample order in audio channel 3
  - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
+ - ARM7: ARMHotplugDetach should call deinit
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
