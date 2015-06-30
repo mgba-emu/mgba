@@ -53,6 +53,7 @@ Bugfixes:
  - GBA Audio: Fix sample order in audio channel 3
  - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
  - ARM7: ARMHotplugDetach should call deinit
+ - Qt: Fix window being too tall after exiting fullscreen
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

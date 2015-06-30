@@ -476,8 +476,8 @@ void Window::exitFullScreen() {
 		return;
 	}
 	unsetCursor();
-	showNormal();
 	menuBar()->show();
+	showNormal();
 }
 
 void Window::toggleFullScreen() {
