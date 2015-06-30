@@ -205,15 +205,7 @@ private:
 
 	static const int LUX_LEVELS[10];
 
-	struct GameControllerRTC : GBARTCSource {
-		GameController* p;
-		enum {
-			NO_OVERRIDE,
-			FIXED,
-			FAKE_EPOCH
-		} override;
-		int64_t value;
-	} m_rtc;
+	GBARTCGenericSource m_rtc;
 };
 
 }

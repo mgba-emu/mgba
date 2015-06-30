@@ -17,6 +17,8 @@ static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
 
+static time_t _rtcGenericCallback(struct GBARTCSource* source);
+
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
 static void _rumbleReadPins(struct GBACartridgeHardware* hw);
@@ -246,7 +248,9 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	time_t t;
 	struct GBARTCSource* rtc = hw->p->rtcSource;
 	if (rtc) {
-		rtc->sample(rtc);
+		if (rtc->sample) {
+			rtc->sample(rtc);
+		}
 		t = rtc->unixTime(rtc);
 	} else {
 		t = time(0);
@@ -275,6 +279,27 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
+}
+
+time_t _rtcGenericCallback(struct GBARTCSource* source) {
+	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
+	switch (rtc->override) {
+	case RTC_NO_OVERRIDE:
+	default:
+		return time(0);
+	case RTC_FIXED:
+		return rtc->value;
+	case RTC_FAKE_EPOCH:
+		return rtc->value + rtc->p->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
+	}
+}
+
+void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba) {
+	rtc->p = gba;
+	rtc->override = RTC_NO_OVERRIDE;
+	rtc->value = 0;
+	rtc->d.sample = 0;
+	rtc->d.unixTime = _rtcGenericCallback;
 }
 
 // == Gyro
@@ -466,7 +491,6 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->readWrite = state->hw.readWrite;
 	hw->pinState = state->hw.pinState;
 	hw->direction = state->hw.pinDirection;
-	// TODO: Deterministic RTC
 	hw->rtc = state->hw.rtc;
 	hw->gyroSample = state->hw.gyroSample;
 	hw->gyroEdge = state->hw.gyroEdge;

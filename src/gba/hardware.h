@@ -35,6 +35,17 @@ struct GBARTCSource {
 	time_t (*unixTime)(struct GBARTCSource*);
 };
 
+struct GBARTCGenericSource {
+	struct GBARTCSource d;
+	struct GBA* p;
+	enum {
+		RTC_NO_OVERRIDE,
+		RTC_FIXED,
+		RTC_FAKE_EPOCH
+	} override;
+	int64_t value;
+};
+
 enum GBAHardwareDevice {
 	HW_NO_OVERRIDE = 0x8000,
 	HW_NONE = 0,
@@ -131,6 +142,8 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address)
 
 struct GBAVideo;
 bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
+
+void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
