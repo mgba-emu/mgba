@@ -422,8 +422,8 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	showNormal();
 	menuBar()->show();
+	showNormal();
 }
 
 void Window::toggleFullScreen() {

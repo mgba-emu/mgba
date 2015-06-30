@@ -18,6 +18,7 @@ Bugfixes:
  - GBA Audio: Fix sample order in audio channel 3
  - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
  - ARM7: ARMHotplugDetach should call deinit
+ - Qt: Fix window being too tall after exiting fullscreen
 Misc:
  - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
  - All: Enable static linking for Windows
