@@ -91,6 +91,7 @@ Misc:
  - SDL: Clean up GL context
  - GBA Audio: Implement audio reset for channels A/B
  - GBA Hardware: Backport generic RTC source into core
+ - All: Proper handling of Unicode file paths
 
 0.2.1: (2015-05-13)
 Bugfixes:

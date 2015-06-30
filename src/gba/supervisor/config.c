@@ -133,10 +133,15 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
 	mkdir(out, 0755);
 #else
-	char home[MAX_PATH];
-	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(out, outLength, "%s\\%s", home, projectName);
-	CreateDirectoryA(out, NULL);
+	wchar_t* home;
+	wchar_t wpath[MAX_PATH];
+	wchar_t wprojectName[MAX_PATH];
+	SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
+	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
+	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
+	CoTaskMemFree(home);
+	CreateDirectoryW(wpath, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #endif
 }
 
