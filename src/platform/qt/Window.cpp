@@ -857,7 +857,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	QKeySequence fullscreenKeys;
 #ifdef Q_OS_WIN
-	fullscreenKeys = QKeySequence("Alt+Enter");
+	fullscreenKeys = QKeySequence("Alt+Return");
 #else
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
