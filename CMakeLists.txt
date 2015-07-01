@@ -107,7 +107,7 @@ else()
 	endif()
 endif()
 
-add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
+add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
 	-DGIT_COMMIT=${GIT_COMMIT}
 	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
