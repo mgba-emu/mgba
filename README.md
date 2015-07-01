@@ -15,6 +15,7 @@ Features
 - Qt and SDL ports for a heavy-weight and a light-weight frontend.
 - Local (same computer) link cable support.
 - Save type detection, even for flash memory size[<sup>[2]</sup>](#flashdetect).
+- Support for cartridges with motion sensors and rumble (only usable with game controllers).
 - Real-time clock support, even without configuration.
 - A built-in BIOS implementation, and ability to load external BIOS files.
 - Turbo/fast-forward support by holding Tab.
@@ -26,8 +27,9 @@ Features
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
 - IPS, UPS and BPS patch support.
-- Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
+- Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
+- Support for loading and exporting GameShark and Action Replay snapshots.
 
 ### Planned features
 
