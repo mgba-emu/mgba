@@ -122,6 +122,7 @@ add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
+source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
 # Advanced settings
 set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
@@ -362,6 +363,10 @@ set(FEATURE_DEFINES)
 foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
+
+source_group("Virtual files" FILES ${VFS_SRC})
+source_group("Extra features" FILES ${FEATURE_SRC})
+source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
 
 # Binaries
 set(CORE_SRC
