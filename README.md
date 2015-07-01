@@ -76,7 +76,7 @@ Controls are configurable in the menu. The default gamepad controls are mapped s
 Compiling
 ---------
 
-Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. To use CMake to build on a Unix-based system, the recommended commands are as follows:
+Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon. To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
 	mkdir build
 	cd build
@@ -85,6 +85,26 @@ Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to 
 	sudo make install
 
 This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
+
+#### Windows developer building
+
+To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MinGW-w64 Win32 Shell") and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
+
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+
+Check out the source code by running this command:
+
+	git clone https://github.com/mgba-emu/mgba.git
+
+Then finally build it by running these commands:
+
+	cd mgba
+	mkdir build
+	cd build
+	cmake .. -G "MSYS Makefiles"
+	make
+
+Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development.
 
 ### Dependencies
 
