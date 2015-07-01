@@ -130,9 +130,13 @@ struct GBAMemory {
 	char waitstatesPrefetchNonseq32[16];
 	char waitstatesPrefetchNonseq16[16];
 	int activeRegion;
+
 	bool prefetch;
 	uint32_t lastPrefetchedPc;
 	uint32_t lastPrefetchedLoads;
+	int32_t prefetchCycles;
+	int prefetchStalls;
+
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
@@ -175,6 +179,8 @@ void GBAMemoryRunHblankDMAs(struct GBA* gba, int32_t cycles);
 void GBAMemoryRunVblankDMAs(struct GBA* gba, int32_t cycles);
 void GBAMemoryUpdateDMAs(struct GBA* gba, int32_t cycles);
 int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles);
+
+void GBAMemoryInvalidatePrefetch(struct GBA* gba);
 
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);
