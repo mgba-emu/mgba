@@ -124,4 +124,5 @@ mGBA contains the following third-party libraries:
 
 - [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
-- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public doman.
+- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
+- MurmurHash3 implementation by Austin Appleby, which is public domain.
