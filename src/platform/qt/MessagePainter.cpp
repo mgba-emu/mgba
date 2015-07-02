@@ -7,8 +7,6 @@
 
 #include <QPainter>
 
-#include <QDebug>
-
 extern "C" {
 #include "gba/video.h"
 }

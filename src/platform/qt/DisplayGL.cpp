@@ -117,7 +117,7 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 
 void DisplayGL::showMessage(const QString& message) {
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "showMessage", Q_ARG(const QString&, message));
+		QMetaObject::invokeMethod(m_painter, "showMessage", Qt::BlockingQueuedConnection, Q_ARG(const QString&, message));
 	}
 }
 
