@@ -121,6 +121,7 @@ GameController::GameController(QObject* parent)
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
+			va_end(argc);
 			controller->unimplementedBiosCall(immediate);
 		}
 		if (level == GBA_LOG_FATAL) {
