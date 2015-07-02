@@ -55,6 +55,7 @@ Bugfixes:
  - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
  - ARM7: ARMHotplugDetach should call deinit
  - Qt: Fix window being too tall after exiting fullscreen
+ - Qt: Fix a missing va_end call in the log handler lambda within the GameController constructor
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
