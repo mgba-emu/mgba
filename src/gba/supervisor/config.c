@@ -13,6 +13,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shlwapi.h>
 #include <shlobj.h>
 #include <strsafe.h>
 #endif
@@ -126,21 +127,41 @@ bool GBAConfigSave(const struct GBAConfig* config) {
 }
 
 void GBAConfigDirectory(char* out, size_t outLength) {
+	struct VFile* portable;
 #ifndef _WIN32
+	getcwd(out, outLength);
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		getcwd(out, outLength);
+		portable->close(portable);
+		return;
+	}
+
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
 	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
 	mkdir(out, 0755);
 #else
-	wchar_t* home;
 	wchar_t wpath[MAX_PATH];
 	wchar_t wprojectName[MAX_PATH];
-	SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
 	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
-	StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
-	CoTaskMemFree(home);
-	CreateDirectoryW(wpath, NULL);
+	HMODULE hModule = GetModuleHandleW(NULL);
+	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	PathRemoveFileSpecW(wpath);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
+	StringCchCatA(out, outLength, "\\portable.ini");
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		portable->close(portable);
+	} else {
+		wchar_t* home;
+		SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
+		StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
+		CoTaskMemFree(home);
+		CreateDirectoryW(wpath, NULL);
+	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #endif
 }
