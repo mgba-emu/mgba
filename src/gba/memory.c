@@ -1566,8 +1566,8 @@ void GBAMemoryInvalidatePrefetch(struct GBA* gba) {
 	int32_t toRemove = (s - 1) * loads + n2s * nWaits + diff;
 	if (toRemove > gba->cpu->cycles) {
 		// We have to delay invalidating...
-		gba->memory.prefetchCycles = gba->memory.prefetchCycles;
-		gba->memory.prefetchStalls = gba->memory.prefetchStalls;
+		gba->memory.prefetchCycles = waited;
+		gba->memory.prefetchStalls = nWaits;
 		return;
 	}
 	gba->cpu->cycles -= toRemove;
