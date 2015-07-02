@@ -94,11 +94,16 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
 		return;
 	}
-	if (state->audio.ch1.envelopeNextStep < 0 || state->audio.ch1.waveNextStep < 0 || state->audio.ch1.sweepNextStep < 0 || state->audio.ch1.nextEvent < 0) {
+	if (!state->audio.ch1Dead && (state->audio.ch1.envelopeNextStep < 0 ||
+		                          state->audio.ch1.waveNextStep < 0 ||
+		                          state->audio.ch1.sweepNextStep < 0 ||
+		                          state->audio.ch1.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 1 register is negative");
 		return;
 	}
-	if (state->audio.ch2.envelopeNextStep < 0 || state->audio.ch2.waveNextStep < 0 || state->audio.ch2.nextEvent < 0) {
+	if (!state->audio.ch2Dead && (state->audio.ch2.envelopeNextStep < 0 ||
+		                          state->audio.ch2.waveNextStep < 0 ||
+		                          state->audio.ch2.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 2 register is negative");
 		return;
 	}
@@ -106,7 +111,8 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 3 register is negative");
 		return;
 	}
-	if (state->audio.ch4.envelopeNextStep < 0 || state->audio.ch4.nextEvent < 0) {
+	if (!state->audio.ch4Dead && (state->audio.ch4.envelopeNextStep < 0 ||
+		                          state->audio.ch4.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
 		return;
 	}
