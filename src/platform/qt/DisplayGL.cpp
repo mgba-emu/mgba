@@ -47,6 +47,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 
 	lockAspectRatio(isAspectRatioLocked());
 	filter(isFiltered());
+	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 	resizePainter();
 }
 

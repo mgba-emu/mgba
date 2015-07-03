@@ -52,12 +52,12 @@ Display::Display(QWidget* parent)
 }
 
 void Display::resizeEvent(QResizeEvent*) {
-	m_messagePainter.resize(size(), m_lockAspectRatio);
+	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
 
 void Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
-	m_messagePainter.resize(size(), m_lockAspectRatio);
+	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
 
 void Display::filter(bool filter) {

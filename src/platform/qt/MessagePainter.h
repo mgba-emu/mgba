@@ -8,6 +8,7 @@
 
 #include <QMutex>
 #include <QObject>
+#include <QPixmap>
 #include <QStaticText>
 #include <QTimer>
 
@@ -19,19 +20,26 @@ Q_OBJECT
 public:
 	MessagePainter(QObject* parent = nullptr);
 
-	void resize(const QSize& size, bool lockAspectRatio);
+	void resize(const QSize& size, bool lockAspectRatio, qreal scaleFactor);
 	void paint(QPainter* painter);
+	void setScaleFactor(qreal factor);
 
 public slots:
 	void showMessage(const QString& message);
 	void clearMessage();
 
 private:
+	void redraw();
+
 	QMutex m_mutex;
 	QStaticText m_message;
+	QPixmap m_pixmap;
+	QPixmap m_pixmapBuffer;
 	QTimer m_messageTimer;
+	QPoint m_local;
 	QTransform m_world;
 	QFont m_messageFont;
+	qreal m_scaleFactor;
 };
 
 }
