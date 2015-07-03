@@ -114,8 +114,6 @@ void GBAMemoryReset(struct GBA* gba) {
 	gba->memory.eventDiff = 0;
 
 	gba->memory.prefetch = false;
-	gba->memory.prefetchCycles = 0;
-	gba->memory.prefetchStalls = 0;
 	gba->memory.lastPrefetchedPc = 0;
 
 	if (!gba->memory.wram || !gba->memory.iwram) {
@@ -237,7 +235,6 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	}
 
 	gba->lastJump = address;
-	GBAMemoryInvalidatePrefetch(gba);
 	memory->lastPrefetchedPc = 0;
 	memory->lastPrefetchedLoads = 0;
 	if (newRegion == memory->activeRegion && (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize)) {
@@ -1537,40 +1534,41 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 		return wait;
 	}
 
-	// Offload the prefetch timing until the next event, which will happen too early.
-	memory->prefetchCycles += wait;
-	++memory->prefetchStalls;
-	return wait;
-}
-
-void GBAMemoryInvalidatePrefetch(struct GBA* gba) {
-	int32_t waited = gba->memory.prefetchCycles;
-	int32_t nWaits = gba->memory.prefetchStalls;
-	gba->memory.prefetchCycles = 0;
-	gba->memory.prefetchStalls = 0;
-
-	if (!waited) {
-		return;
-	}
-
-	int32_t s = gba->cpu->memory.activeSeqCycles16 + 1;
-	int32_t n2s = gba->cpu->memory.activeNonseqCycles16 - gba->cpu->memory.activeSeqCycles16;
+	int32_t s = cpu->memory.activeSeqCycles16 + 1;
+	int32_t n2s = cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16 + 1;
 
 	// Figure out how many sequential loads we can jam in
-	int32_t loads = (waited - 1) / s;
-	int32_t diff = waited - loads * s;
+	int32_t stall = s;
+	int32_t loads = 1;
+	int32_t previousLoads = 0;
 
-	// The next |loads|S waitstates disappear entirely, so long as they're all in a row.
-	// Each instruction that waited has an N cycle that was converted into an S, so those
-	// disappear as well.
-	int32_t toRemove = (s - 1) * loads + n2s * nWaits + diff;
-	if (toRemove > gba->cpu->cycles) {
-		// We have to delay invalidating...
-		gba->memory.prefetchCycles = waited;
-		gba->memory.prefetchStalls = nWaits;
-		return;
+	// Don't prefetch too much if we're overlapping with a previous prefetch
+	uint32_t dist = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	if (dist < memory->lastPrefetchedLoads) {
+		previousLoads = dist;
 	}
-	gba->cpu->cycles -= toRemove;
+	while (stall < wait) {
+		stall += s;
+		++loads;
+	}
+	if (loads + previousLoads > 8) {
+		int diff = (loads + previousLoads) - 8;
+		loads -= diff;
+		stall -= s * diff;
+	} else if (stall > wait && loads == 1) {
+		// We might need to stall a bit extra if we haven't finished the first S cycle
+		wait = stall;
+	}
+	// This instruction used to have an N, convert it to an S.
+	wait -= n2s;
+
+	// TODO: Invalidate prefetch on branch
+	memory->lastPrefetchedLoads = loads;
+	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * loads;
+
+	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
+	cpu->cycles -= (s - 1) * loads;
+	return wait;
 }
 
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state) {
