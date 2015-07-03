@@ -16,8 +16,6 @@ using namespace QGBA;
 DisplayQt::DisplayQt(QWidget* parent)
 	: Display(parent)
 	, m_backing(nullptr)
-	, m_lockAspectRatio(false)
-	, m_filter(false)
 {
 }
 
@@ -25,12 +23,12 @@ void DisplayQt::startDrawing(GBAThread*) {
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
+	Display::lockAspectRatio(lock);
 	update();
 }
 
 void DisplayQt::filter(bool filter) {
-	m_filter = filter;
+	Display::filter(filter);
 	update();
 }
 
@@ -50,19 +48,15 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 #endif
 }
 
-void DisplayQt::showMessage(const QString& message) {
-	m_messagePainter.showMessage(message);
-}
-
 void DisplayQt::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
-	if (m_filter) {
+	if (isFiltered()) {
 		painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	}
 	QSize s = size();
 	QSize ds = s;
-	if (m_lockAspectRatio) {
+	if (isAspectRatioLocked()) {
 		if (s.width() * 2 > s.height() * 3) {
 			ds.setWidth(s.height() * 3 / 2);
 		} else if (s.width() * 2 < s.height() * 3) {
@@ -77,9 +71,5 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 #else
 	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
 #endif
-	m_messagePainter.paint(&painter);
-}
-
-void DisplayQt::resizeEvent(QResizeEvent*) {
-	m_messagePainter.resize(size(), m_lockAspectRatio);
+	messagePainter()->paint(&painter);
 }

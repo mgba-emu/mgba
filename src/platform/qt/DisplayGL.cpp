@@ -19,8 +19,6 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	, m_gl(new EmptyGLWidget(format, this))
 	, m_painter(new PainterGL(m_gl))
 	, m_drawThread(nullptr)
-	, m_lockAspectRatio(false)
-	, m_filter(false)
 	, m_context(nullptr)
 {
 }
@@ -34,6 +32,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 		return;
 	}
 	m_painter->setContext(thread);
+	m_painter->setMessagePainter(messagePainter());
 	m_context = thread;
 	m_painter->resize(size());
 	m_gl->move(0, 0);
@@ -46,8 +45,8 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_drawThread->start();
 	GBASyncSetVideoSync(&m_context->sync, false);
 
-	lockAspectRatio(m_lockAspectRatio);
-	filter(m_filter);
+	lockAspectRatio(isAspectRatioLocked());
+	filter(isFiltered());
 	resizePainter();
 }
 
@@ -96,14 +95,14 @@ void DisplayGL::forceDraw() {
 }
 
 void DisplayGL::lockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
+	Display::lockAspectRatio(lock);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Q_ARG(bool, lock));
 	}
 }
 
 void DisplayGL::filter(bool filter) {
-	m_filter = filter;
+	Display::filter(filter);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "filter", Q_ARG(bool, filter));
 	}
@@ -115,13 +114,8 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 	}
 }
 
-void DisplayGL::showMessage(const QString& message) {
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "showMessage", Qt::BlockingQueuedConnection, Q_ARG(const QString&, message));
-	}
-}
-
-void DisplayGL::resizeEvent(QResizeEvent*) {
+void DisplayGL::resizeEvent(QResizeEvent* event) {
+	Display::resizeEvent(event);
 	resizePainter();
 }
 
@@ -152,6 +146,10 @@ void PainterGL::setContext(GBAThread* context) {
 	m_context = context;
 }
 
+void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
+	m_messagePainter = messagePainter;
+}
+
 void PainterGL::setBacking(const uint32_t* backing) {
 	m_gl->makeCurrent();
 	m_backend.d.postFrame(&m_backend.d, backing);
@@ -164,7 +162,6 @@ void PainterGL::setBacking(const uint32_t* backing) {
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
 	if (m_active) {
-		m_messagePainter->resize(size, m_backend.d.lockAspectRatio);
 		forceDraw();
 	}
 }
@@ -172,7 +169,6 @@ void PainterGL::resize(const QSize& size) {
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend.d.lockAspectRatio = lock;
 	if (m_active) {
-		m_messagePainter->resize(m_size, m_backend.d.lockAspectRatio);
 		forceDraw();
 	}
 }
@@ -185,8 +181,6 @@ void PainterGL::filter(bool filter) {
 }
 
 void PainterGL::start() {
-	m_messagePainter = new MessagePainter(this);
-	m_messagePainter->resize(m_size, m_backend.d.lockAspectRatio);
 	m_gl->makeCurrent();
 	m_backend.d.init(&m_backend.d, reinterpret_cast<WHandle>(m_gl->winId()));
 	m_gl->doneCurrent();
@@ -220,9 +214,6 @@ void PainterGL::stop() {
 	m_backend.d.deinit(&m_backend.d);
 	m_gl->doneCurrent();
 	m_gl->context()->moveToThread(m_gl->thread());
-	m_messagePainter->clearMessage();
-	delete m_messagePainter;
-	m_messagePainter = nullptr;
 	moveToThread(m_gl->thread());
 }
 
@@ -243,9 +234,7 @@ void PainterGL::performDraw() {
 	m_backend.d.resized(&m_backend.d, m_size.width() * r, m_size.height() * r);
 	m_backend.d.drawFrame(&m_backend.d);
 	m_painter.endNativePainting();
-	m_messagePainter->paint(&m_painter);
-}
-
-void PainterGL::showMessage(const QString& message) {
-	m_messagePainter->showMessage(message);
+	if (m_messagePainter) {
+		m_messagePainter->paint(&m_painter);
+	}
 }

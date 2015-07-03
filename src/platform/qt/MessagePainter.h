@@ -6,6 +6,7 @@
 #ifndef QGBA_MESSAGE_PAINTER
 #define QGBA_MESSAGE_PAINTER
 
+#include <QMutex>
 #include <QObject>
 #include <QStaticText>
 #include <QTimer>
@@ -26,6 +27,7 @@ public slots:
 	void clearMessage();
 
 private:
+	QMutex m_mutex;
 	QStaticText m_message;
 	QTimer m_messageTimer;
 	QTransform m_world;

@@ -8,8 +8,6 @@
 
 #include "Display.h"
 
-#include "MessagePainter.h"
-
 #include <QGLWidget>
 #include <QThread>
 #include <QTimer>
@@ -49,8 +47,6 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
-	void showMessage(const QString& message) override;
-
 protected:
 	virtual void paintEvent(QPaintEvent*) override {}
 	virtual void resizeEvent(QResizeEvent*) override;
@@ -62,8 +58,6 @@ private:
 	PainterGL* m_painter;
 	QThread* m_drawThread;
 	GBAThread* m_context;
-	bool m_lockAspectRatio;
-	bool m_filter;
 };
 
 class PainterGL : public QObject {
@@ -73,6 +67,7 @@ public:
 	PainterGL(QGLWidget* parent);
 
 	void setContext(GBAThread*);
+	void setMessagePainter(MessagePainter*);
 
 public slots:
 	void setBacking(const uint32_t*);
@@ -85,8 +80,6 @@ public slots:
 	void resize(const QSize& size);
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
-
-	void showMessage(const QString& message);
 
 private:
 	void performDraw();

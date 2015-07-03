@@ -42,7 +42,9 @@ void MessagePainter::resize(const QSize& size, bool lockAspectRatio) {
 	m_world.reset();
 	m_world.translate((w - drawW) / 2, (h - drawH) / 2);
 	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
+	m_mutex.lock();
 	m_message.prepare(m_world, m_messageFont);
+	m_mutex.unlock();
 }
 
 void MessagePainter::paint(QPainter* painter) {
@@ -51,6 +53,7 @@ void MessagePainter::paint(QPainter* painter) {
 	painter->setFont(m_messageFont);
 	painter->setPen(Qt::black);
 	painter->translate(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
+	m_mutex.lock();
 	const static int ITERATIONS = 11;
 	for (int i = 0; i < ITERATIONS; ++i) {
 		painter->save();
@@ -60,11 +63,14 @@ void MessagePainter::paint(QPainter* painter) {
 	}
 	painter->setPen(Qt::white);
 	painter->drawStaticText(0, 0, m_message);
+	m_mutex.unlock();
 }
 
 void MessagePainter::showMessage(const QString& message) {
+	m_mutex.lock();
 	m_message.setText(message);
 	m_message.prepare(m_world, m_messageFont);
+	m_mutex.unlock();
 	m_messageTimer.stop();
 	m_messageTimer.start();
 }

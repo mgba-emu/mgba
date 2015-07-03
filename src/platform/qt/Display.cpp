@@ -50,3 +50,20 @@ Display::Display(QWidget* parent)
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 }
+
+void Display::resizeEvent(QResizeEvent*) {
+	m_messagePainter.resize(size(), m_lockAspectRatio);
+}
+
+void Display::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	m_messagePainter.resize(size(), m_lockAspectRatio);
+}
+
+void Display::filter(bool filter) {
+	m_filter = filter;
+}
+
+void Display::showMessage(const QString& message) {
+	m_messagePainter.showMessage(message);
+}
