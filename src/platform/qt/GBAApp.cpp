@@ -41,6 +41,10 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
 
+	if (!m_configController.getQtOption("displayDriver").isNull()) {
+		Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("displayDriver").toInt()));
+	}
+
 	Window* w = new Window(&m_configController);
 	connect(w, &Window::destroyed, [this]() {
 		m_windows[0] = nullptr;
@@ -59,7 +63,6 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	}
 	freeArguments(&args);
 
-	Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("videoDriver").toInt()));
 	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
 	w->controller()->reloadAudioDriver();
 
