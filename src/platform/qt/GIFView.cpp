@@ -8,6 +8,7 @@
 #ifdef USE_MAGICK
 
 #include "GBAApp.h"
+#include "LogController.h"
 
 #include <QMap>
 
@@ -34,6 +35,7 @@ GIFView::~GIFView() {
 
 void GIFView::startRecording() {
 	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
+		LOG(ERROR) << tr("Failed to open output GIF file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);

@@ -8,6 +8,7 @@
 #ifdef USE_FFMPEG
 
 #include "GBAApp.h"
+#include "LogController.h"
 
 #include <QMap>
 
@@ -198,6 +199,7 @@ void VideoView::startRecording() {
 		return;
 	}
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
+		LOG(ERROR) << tr("Failed to open output video file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);

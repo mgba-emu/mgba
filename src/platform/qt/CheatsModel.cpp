@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsModel.h"
 
+#include "LogController.h"
 #include "VFileDevice.h"
 
 #include <QFont>
@@ -203,6 +204,7 @@ void CheatsModel::endAppendRow() {
 void CheatsModel::loadFile(const QString& path) {
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
+		LOG(WARN) << tr("Failed to open cheats file: %1").arg(path);
 		return;
 	}
 	beginResetModel();

@@ -7,10 +7,22 @@
 
 using namespace QGBA;
 
+LogController LogController::s_global(GBA_LOG_ALL);
+
 LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
 	, m_logLevel(levels)
 {
+	if (this != &s_global) {
+		connect(&s_global, SIGNAL(logPosted(int, const QString&)), this, SLOT(postLog(int, const QString&)));
+		connect(this, SIGNAL(levelsSet(int)), &s_global, SLOT(setLevels(int)));
+		connect(this, SIGNAL(levelsEnabled(int)), &s_global, SLOT(enableLevels(int)));
+		connect(this, SIGNAL(levelsDisabled(int)), &s_global, SLOT(disableLevels(int)));
+	}
+}
+
+LogController::Stream LogController::operator()(int level) {
+	return Stream(this, level);
 }
 
 void LogController::postLog(int level, const QString& string) {
@@ -33,6 +45,10 @@ void LogController::enableLevels(int levels) {
 void LogController::disableLevels(int levels) {
 	m_logLevel &= ~levels;
 	emit levelsDisabled(levels);
+}
+
+LogController* LogController::global() {
+	return &s_global;
 }
 
 QString LogController::toString(int level) {

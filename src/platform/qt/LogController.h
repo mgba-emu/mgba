@@ -40,6 +40,7 @@ public:
 
 	Stream operator()(int level);
 
+	static LogController* global();
 	static QString toString(int level);
 
 signals:
@@ -56,7 +57,11 @@ public slots:
 
 private:
 	int m_logLevel;
+
+	static LogController s_global;
 };
+
+#define LOG(L) (*LogController::global())(GBA_LOG_ ## L)
 
 }
 

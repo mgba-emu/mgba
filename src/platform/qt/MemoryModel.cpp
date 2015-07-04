@@ -7,6 +7,7 @@
 
 #include "GBAApp.h"
 #include "GameController.h"
+#include "LogController.h"
 
 #include <QAction>
 #include <QApplication>
@@ -153,7 +154,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		// TODO: Log
+		LOG(WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QDataStream stream(&outfile);

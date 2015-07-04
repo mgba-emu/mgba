@@ -224,6 +224,7 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 	if (!dirmode) {
 		QFile file(path);
 		if (!file.open(QIODevice::ReadOnly)) {
+			postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
 			return;
 		}
 		file.close();
@@ -338,6 +339,7 @@ void GameController::importSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for reading: %1").arg(path));
 		return;
 	}
 	threadInterrupt();
@@ -352,6 +354,7 @@ void GameController::exportSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for writing: %1").arg(path));
 		return;
 	}
 	threadInterrupt();
