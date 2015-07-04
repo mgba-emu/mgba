@@ -63,6 +63,7 @@ set(SOURCE_FILES
 	InputController.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
+	LogController.cpp
 	LogView.cpp
 	MemoryModel.cpp
 	MemoryView.cpp

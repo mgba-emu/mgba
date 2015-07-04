@@ -47,7 +47,8 @@ using std::isnan;
 
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
-	, m_logView(new LogView())
+	, m_log(0)
+	, m_logView(new LogView(&m_log))
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
@@ -110,16 +111,16 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), &m_inputController, SLOT(suspendScreensaver()));
-	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
+	connect(m_controller, SIGNAL(postLog(int, const QString&)), &m_log, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), m_display, SLOT(framePosted(const uint32_t*)));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
 	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));
 	connect(m_controller, SIGNAL(statusPosted(const QString&)), m_display, SLOT(showMessage(const QString&)));
-	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
-	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
-	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
 	connect(this, SIGNAL(startDrawing(GBAThread*)), m_display, SLOT(startDrawing(GBAThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
@@ -128,7 +129,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 
-	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
+	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
 	m_shortcutController->setConfigController(m_config);
@@ -173,7 +174,7 @@ void Window::setConfig(ConfigController* config) {
 void Window::loadConfig() {
 	const GBAOptions* opts = m_config->options();
 
-	m_logView->setLevels(opts->logLevel);
+	m_log.setLevels(opts->logLevel);
 
 	m_controller->setOptions(opts);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
