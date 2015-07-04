@@ -450,7 +450,11 @@ void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
 			painter.drawStaticText(o, m_staticNumbers[b]);
 		} else {
 			int b = m_buffer & 0xF;
-			painter.drawStaticText(o, m_staticAscii[b + '0']);
+			if (b < 10) {
+				painter.drawStaticText(o, m_staticAscii[b + '0']);
+			} else {
+				painter.drawStaticText(o, m_staticAscii[b - 10 + 'A']);
+			}
 		}
 		o += QPointF(m_letterWidth * 2, 0);
 	}
