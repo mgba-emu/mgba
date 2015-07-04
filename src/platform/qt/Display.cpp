@@ -46,6 +46,8 @@ Display* Display::create(QWidget* parent) {
 
 Display::Display(QWidget* parent)
 	: QWidget(parent)
+	, m_lockAspectRatio(false)
+	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
