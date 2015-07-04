@@ -214,7 +214,7 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 		return;
 	}
 	QString stringValue(value.toString());
-	setOption(key, stringValue.toLocal8Bit().constData());
+	setOption(key, stringValue.toUtf8().constData());
 }
 
 void ConfigController::setQtOption(const QString& key, const QVariant& value, const QString& group) {

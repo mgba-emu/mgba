@@ -68,7 +68,7 @@ bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int r
 			free(cheats->name);
 			cheats->name = nullptr;
 		}
-		cheats->name = strdup(value.toString().toLocal8Bit().constData());
+		cheats->name = strdup(value.toString().toUtf8().constData());
 		emit dataChanged(index, index);
 		return true;
 	case Qt::CheckStateRole:

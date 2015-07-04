@@ -263,7 +263,7 @@ void GameController::openGame(bool biosOnly) {
 	if (biosOnly) {
 		m_threadContext.fname = nullptr;
 	} else {
-		m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
+		m_threadContext.fname = strdup(m_fname.toUtf8().constData());
 		if (m_dirmode) {
 			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 			m_threadContext.stateDir = m_threadContext.gameDir;

@@ -106,7 +106,7 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
 }
 
@@ -128,7 +128,7 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
 
@@ -193,7 +193,7 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 	if (!m_config) {
 		return;
 	}
-	GBAInputSetPreferredDevice(m_config->input(), type, m_playerId, device.toLocal8Bit().constData());
+	GBAInputSetPreferredDevice(m_config->input(), type, m_playerId, device.toUtf8().constData());
 }
 
 GBARumble* InputController::rumble() {

@@ -33,7 +33,7 @@ GIFView::~GIFView() {
 }
 
 void GIFView::startRecording() {
-	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toLocal8Bit().constData())) {
+	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
 		return;
 	}
 	m_ui.start->setEnabled(false);
