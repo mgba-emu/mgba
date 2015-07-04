@@ -192,7 +192,7 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(NOT HAIKU AND NOT MSVC)
+if(NOT HAIKU AND NOT MSVC AND NOT PSP2)
 	list(APPEND OS_LIB m)
 endif()
 
@@ -450,6 +450,10 @@ if(BUILD_PERF)
 	target_link_libraries(${BINARY_NAME}-perf ${BINARY_NAME} ${PERF_LIB})
 	install(TARGETS ${BINARY_NAME}-perf DESTINATION bin COMPONENT ${BINARY_NAME}-perf)
 	install(FILES ${CMAKE_SOURCE_DIR}/tools/perf.py DESTINATION "${CMAKE_INSTALL_LIBDIR}/${BINARY_NAME}" COMPONENT ${BINARY_NAME}-perf)
+endif()
+
+if(PSP2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
 endif()
 
 # Packaging
