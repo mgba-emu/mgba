@@ -316,13 +316,21 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 	}
 
 	QPoint position(event->pos() - QPoint(m_margins.left(), m_margins.top()));
-	uint32_t address =
-	    int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
+	uint32_t address = int(position.x() / m_cellSize.width()) +
+	                   (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	if (event->button() == Qt::RightButton && isInSelection(address)) {
 		return;
 	}
-	m_selectionAnchor = address & ~(m_align - 1);
-	m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	if (event->modifiers() & Qt::ShiftModifier) {
+		if ((address & ~(m_align - 1)) < m_selectionAnchor) {
+			m_selection = qMakePair(address & ~(m_align - 1), m_selectionAnchor + m_align);
+		} else {
+			m_selection = qMakePair(m_selectionAnchor, (address & ~(m_align - 1)) + m_align);
+		}
+	} else {
+		m_selectionAnchor = address & ~(m_align - 1);
+		m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	}
 	m_buffer = 0;
 	m_bufferedNybbles = 0;
 	emit selectionChanged(m_selection.first, m_selection.second);
@@ -336,8 +344,8 @@ void MemoryModel::mouseMoveEvent(QMouseEvent* event) {
 	}
 
 	QPoint position(event->pos() - QPoint(m_margins.left(), m_margins.top()));
-	uint32_t address =
-	    int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
+	uint32_t address = int(position.x() / m_cellSize.width()) +
+	                   (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	if ((address & ~(m_align - 1)) < m_selectionAnchor) {
 		m_selection = qMakePair(address & ~(m_align - 1), m_selectionAnchor + m_align);
 	} else {
