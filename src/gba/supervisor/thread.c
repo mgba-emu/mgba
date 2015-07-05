@@ -99,7 +99,7 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
-#else
+#elif _WIN32
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 #endif
 
@@ -132,7 +132,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
-#else
+#elif _WIN32
 	TlsSetValue(_contextKey, threadContext);
 #endif
 
@@ -410,7 +410,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	threadContext->interruptDepth = 0;
 
-#ifndef _WIN32
+#ifdef USE_PTHREADS
 	sigset_t signals;
 	sigemptyset(&signals);
 	sigaddset(&signals, SIGINT);
@@ -721,6 +721,10 @@ struct GBAThread* GBAThreadGetContext(void) {
 struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
+}
+#else
+struct GBAThread* GBAThreadGetContext(void) {
+	return 0;
 }
 #endif
 

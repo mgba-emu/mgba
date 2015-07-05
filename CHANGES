@@ -96,6 +96,7 @@ Misc:
  - GBA Audio: Implement audio reset for channels A/B
  - GBA Hardware: Backport generic RTC source into core
  - All: Proper handling of Unicode file paths
+ - GBA Video: Slightly optimize mode 0 mosaic rendering
 
 0.2.1: (2015-05-13)
 Bugfixes:

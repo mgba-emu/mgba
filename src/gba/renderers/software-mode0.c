@@ -98,11 +98,7 @@
 			tileData &= 0xF; \
 			tileData |= tileData << 4; \
 			tileData |= tileData << 8; \
-			tileData |= tileData << 12; \
 			tileData |= tileData << 16; \
-			tileData |= tileData << 20; \
-			tileData |= tileData << 24; \
-			tileData |= tileData << 28; \
 			carryData = tileData; \
 		} \
 	} \
@@ -126,11 +122,7 @@
 					tileData &= 0xF; \
 					tileData |= tileData << 4; \
 					tileData |= tileData << 8; \
-					tileData |= tileData << 12; \
 					tileData |= tileData << 16; \
-					tileData |= tileData << 20; \
-					tileData |= tileData << 24; \
-					tileData |= tileData << 28; \
 					carryData = tileData; \
 				} \
 				mosaicWait = mosaicH; \

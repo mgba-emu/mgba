@@ -228,6 +228,7 @@ endif()
 check_function_exists(newlocale HAVE_NEWLOCALE)
 check_function_exists(freelocale HAVE_FREELOCALE)
 check_function_exists(uselocale HAVE_USELOCALE)
+check_function_exists(setlocale HAVE_SETLOCALE)
 
 if(HAVE_STRDUP)
 	add_definitions(-DHAVE_STRDUP)
@@ -247,6 +248,9 @@ if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE)
 	endif()
 endif()
 
+if(HAVE_SETLOCALE)
+	add_definitions(-DHAVE_SETLOCALE)
+endif()
 
 # Features
 set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)
