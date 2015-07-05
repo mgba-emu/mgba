@@ -87,7 +87,8 @@ void OverrideView::updateOverrides() {
 		m_override.idleLoop = parsedIdleLoop;
 	}
 
-	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != HW_NO_OVERRIDE || m_override.idleLoop != IDLE_LOOP_NONE) {
+	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != HW_NO_OVERRIDE ||
+	    m_override.idleLoop != IDLE_LOOP_NONE) {
 		m_controller->setOverride(m_override);
 	} else {
 		m_controller->clearOverride();
@@ -119,7 +120,6 @@ void OverrideView::gameStarted(GBAThread* thread) {
 		m_ui.idleLoop->setText(QString::number(thread->gba->idleLoop, 16));
 	} else {
 		m_ui.idleLoop->clear();
-
 	}
 
 	GBAGetGameCode(thread->gba, m_override.id);

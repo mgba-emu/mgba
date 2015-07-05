@@ -51,7 +51,7 @@ bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
-	SDL_GL_CreateContext(renderer->window);
+	renderer->glCtx = SDL_GL_CreateContext(renderer->window);
 	SDL_GL_SetSwapInterval(1);
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->player.window = renderer->window;
@@ -109,4 +109,7 @@ void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
 	free(renderer->d.outputBuffer);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_DeleteContext(renderer->glCtx);
+#endif
 }

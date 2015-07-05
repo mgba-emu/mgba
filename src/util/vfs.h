@@ -70,8 +70,10 @@ struct VDir* VDirOpenZip(const char* path, int flags);
 struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode);
-struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode);
+struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix,
+                                   int mode);
+struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix,
+                                            const char* infix, const char* suffix, int mode);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 

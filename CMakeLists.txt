@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(mGBA C)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
+if(NOT MSVC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
+else()
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146")
+endif()
 set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
@@ -103,7 +107,7 @@ else()
 	endif()
 endif()
 
-add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
+add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
 	-DGIT_COMMIT=${GIT_COMMIT}
 	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
@@ -118,6 +122,7 @@ add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
+source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
 # Advanced settings
 set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
@@ -163,7 +168,7 @@ find_feature(USE_MAGICK "MagickWand")
 if(WIN32)
 	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
-	list(APPEND OS_LIB ws2_32)
+	list(APPEND OS_LIB ws2_32 shlwapi)
 	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
@@ -198,7 +203,7 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(NOT HAIKU)
+if(NOT HAIKU AND NOT MSVC AND NOT PSP2)
 	list(APPEND OS_LIB m)
 endif()
 
@@ -376,6 +381,10 @@ foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
 
+source_group("Virtual files" FILES ${VFS_SRC})
+source_group("Extra features" FILES ${FEATURE_SRC})
+source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
+
 # Binaries
 set(CORE_SRC
 	${ARM_SRC}
@@ -468,6 +477,10 @@ endif()
 
 if(PSP)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp ${CMAKE_BINARY_DIR}/psp)
+endif()
+
+if(PSP2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
 endif()
 
 # Packaging

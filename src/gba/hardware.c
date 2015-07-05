@@ -6,6 +6,11 @@
 #include "hardware.h"
 
 #include "gba/serialize.h"
+#include "util/hash.h"
+
+#ifdef PSP2
+#include <psp2/rtc.h>
+#endif
 
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
@@ -15,6 +20,8 @@ static unsigned _rtcOutput(struct GBACartridgeHardware* hw);
 static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
+
+static time_t _rtcGenericCallback(struct GBARTCSource* source);
 
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
@@ -245,7 +252,9 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	time_t t;
 	struct GBARTCSource* rtc = hw->p->rtcSource;
 	if (rtc) {
-		rtc->sample(rtc);
+		if (rtc->sample) {
+			rtc->sample(rtc);
+		}
 		t = rtc->unixTime(rtc);
 	} else {
 		t = time(0);
@@ -253,6 +262,10 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	struct tm date;
 #ifdef _WIN32
 	date = *localtime(&t);
+#elif defined(PSP2)
+	SceRtcTime scertc;
+	sceRtcGetCurrentClockLocalTime(&scertc);
+	sceRtcGetTime_t(&scertc, &t);
 #else
 	localtime_r(&t, &date);
 #endif
@@ -274,6 +287,27 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
+}
+
+time_t _rtcGenericCallback(struct GBARTCSource* source) {
+	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
+	switch (rtc->override) {
+	case RTC_NO_OVERRIDE:
+	default:
+		return time(0);
+	case RTC_FIXED:
+		return rtc->value;
+	case RTC_FAKE_EPOCH:
+		return rtc->value + rtc->p->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
+	}
+}
+
+void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba) {
+	rtc->p = gba;
+	rtc->override = RTC_NO_OVERRIDE;
+	rtc->value = 0;
+	rtc->d.sample = 0;
+	rtc->d.unixTime = _rtcGenericCallback;
 }
 
 // == Gyro
@@ -420,6 +454,29 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* hw, uint32_t address) {
 	return 0xFF;
 }
 
+// == Game Boy Player
+
+static const uint16_t _logoPalette[] = {
+	0xFFDF, 0x640C, 0xE40C, 0xE42D, 0x644E, 0xE44E, 0xE46E, 0x68AF,
+	0xE8B0, 0x68D0, 0x68F0, 0x6911, 0xE911, 0x6D32, 0xED32, 0xED73,
+	0x6D93, 0xED94, 0x6DB4, 0xF1D5, 0x71F5, 0xF1F6, 0x7216, 0x7257,
+	0xF657, 0x7678, 0xF678, 0xF699, 0xF6B9, 0x76D9, 0xF6DA, 0x7B1B,
+	0xFB1B, 0xFB3C, 0x7B5C, 0x7B7D, 0xFF7D, 0x7F9D, 0x7FBE, 0x7FFF,
+	0x642D, 0x648E, 0xE88F, 0xE8F1, 0x6D52, 0x6D73, 0xF1B4, 0xF216,
+	0x7237, 0x7698, 0x7AFA, 0xFAFA, 0xFB5C, 0xFFBE, 0x7FDE, 0xFFFF,
+	0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000
+};
+
+static const uint32_t _logoHash = 0xEEDA6963;
+
+bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video) {
+	if (memcmp(video->palette, _logoPalette, sizeof(_logoPalette)) != 0) {
+		return false;
+	}
+	uint32_t hash = hash32(&video->renderer->vram[0x4000], 0x4000, 0);
+	return hash == _logoHash;
+}
+
 // == Serialization
 
 void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
@@ -442,7 +499,6 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->readWrite = state->hw.readWrite;
 	hw->pinState = state->hw.pinState;
 	hw->direction = state->hw.pinDirection;
-	// TODO: Deterministic RTC
 	hw->rtc = state->hw.rtc;
 	hw->gyroSample = state->hw.gyroSample;
 	hw->gyroEdge = state->hw.gyroEdge;

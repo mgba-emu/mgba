@@ -112,7 +112,7 @@ void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callb
 	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
 	for (const QString& string : cheats) {
 		m_model.beginAppendRow(selection[0]);
-		callback(set, string.toLocal8Bit().constData());
+		callback(set, string.toUtf8().constData());
 		m_model.endAppendRow();
 	}
 	m_controller->threadContinue();

@@ -29,14 +29,14 @@ static uint32_t _popcount32(unsigned bits) {
 		} \
 	}
 
-#define CREATE_SHIM(NAME, RETURN, TYPES, ARGS...) \
+#define CREATE_SHIM(NAME, RETURN, TYPES, ...) \
 	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		return debugger->originalMemory.NAME(cpu, ARGS); \
+		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
-#define CREATE_WATCHPOINT_SHIM(NAME, WIDTH, RETURN, TYPES, ARGS...) \
+#define CREATE_WATCHPOINT_SHIM(NAME, WIDTH, RETURN, TYPES, ...) \
 	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
@@ -44,7 +44,7 @@ static uint32_t _popcount32(unsigned bits) {
 		if (_checkWatchpoints(debugger, address, &info, WIDTH)) { \
 			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
-		return debugger->originalMemory.NAME(cpu, ARGS); \
+		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
 #define CREATE_MULTIPLE_WATCHPOINT_SHIM(NAME) \

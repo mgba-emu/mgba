@@ -27,5 +27,5 @@ qint64 VFileDevice::size() const {
 }
 
 VFile* VFileDevice::open(QString path, int mode) {
-	return VFileOpen(path.toLocal8Bit().constData(), mode);
+	return VFileOpen(path.toUtf8().constData(), mode);
 }

@@ -91,7 +91,8 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 
 void SensorView::updateSensors() {
 	m_controller->threadInterrupt();
-	if (m_rotation->sample && (!m_controller->isLoaded() || !(m_controller->thread()->gba->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
+	if (m_rotation->sample &&
+	    (!m_controller->isLoaded() || !(m_controller->thread()->gba->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
 		m_rotation->sample(m_rotation);
 		m_rotation->sample(m_rotation);
 		m_rotation->sample(m_rotation);

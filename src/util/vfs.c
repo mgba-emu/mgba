@@ -7,6 +7,8 @@
 
 #ifdef PSP
 #include "platform/psp/sce-vfs.h"
+#elif defined(PSP2)
+#include "platform/psp2/sce-vfs.h"
 #endif
 
 struct VFile* VFileOpen(const char* path, int flags) {
@@ -34,7 +36,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		break;
 	}
 	return VFileFOpen(path, chflags);
-#elif defined(PSP)
+#elif defined(PSP) || defined(PSP2)
 	return VFileOpenSce(path, flags, 0666);
 #else
 	return VFileOpenFD(path, flags);
@@ -42,7 +44,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 }
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
-	ssize_t bytesRead = 0;
+	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {
 		ssize_t newRead = vf->read(vf, &buffer[bytesRead], 1);
 		if (newRead <= 0) {

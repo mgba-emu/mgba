@@ -22,6 +22,8 @@ Features:
  - Holdable shortcut for rewinding one frame at a time
  - Ability to boot directly into the BIOS
  - Preliminary support for yanking out the game pak while a game is running
+ - Thumb-drive mode by putting a file called portable.ini in the same folder
+ - Configurable display driver, between software and OpenGL
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
@@ -48,6 +50,13 @@ Bugfixes:
  - GBA Video: Fix windows not affecting sprites
  - VFS: Fix line-reading to return proper values
  - GBA Memory: Fix load/store multiple video memory waitstates
+ - GBA: Fix timing of reading from timer registers
+ - Util: Allow loading IPS patches that grow the ROM
+ - GBA Audio: Fix sample order in audio channel 3
+ - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
+ - ARM7: ARMHotplugDetach should call deinit
+ - Qt: Fix window being too tall after exiting fullscreen
+ - Qt: Fix a missing va_end call in the log handler lambda within the GameController constructor
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
@@ -81,6 +90,12 @@ Misc:
  - GBA Video: Refactor software renderer into separate files
  - ARM7: Add emulation for Undefined CPU mode
  - GBA: More accurate cycle estimation for ROM prefetch and flash save chips
+ - ARM7: Reduce the size of the Thumb instruction table
+ - GBA: Don't include GBACLIDebugger struct unless needed
+ - SDL: Clean up GL context
+ - GBA Audio: Implement audio reset for channels A/B
+ - GBA Hardware: Backport generic RTC source into core
+ - All: Proper handling of Unicode file paths
 
 0.2.1: (2015-05-13)
 Bugfixes:

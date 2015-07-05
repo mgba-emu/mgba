@@ -8,7 +8,7 @@
 #include "gba/gba.h"
 #include "gba/hardware.h"
 
- #include "util/configuration.h"
+#include "util/configuration.h"
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Advance Wars

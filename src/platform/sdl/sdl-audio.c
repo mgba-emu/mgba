@@ -76,7 +76,6 @@ void GBASDLPauseAudio(struct GBASDLAudio* context) {
 	UNUSED(context);
 	SDL_PauseAudio(1);
 #endif
-
 }
 
 void GBASDLResumeAudio(struct GBASDLAudio* context) {

@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/mman.h>
+#else
+#include <windows.h>
 #endif
 
 struct VFileFD {
@@ -35,8 +37,12 @@ struct VFile* VFileOpenFD(const char* path, int flags) {
 	}
 #ifdef _WIN32
 	flags |= O_BINARY;
-#endif
+	wchar_t wpath[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
+	int fd = _wopen(wpath, flags, 0666);
+#else
 	int fd = open(path, flags, 0666);
+#endif
 	return VFileFromFD(fd);
 }
 

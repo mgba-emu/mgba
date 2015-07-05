@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "ConfigController.h"
+#include "Display.h"
 #include "GBAApp.h"
 
 using namespace QGBA;
@@ -59,6 +60,19 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	}
 #endif
 
+	QVariant displayDriver = m_controller->getQtOption("displayDriver");
+	m_ui.displayDriver->addItem(tr("Software (Qt)"), static_cast<int>(Display::Driver::QT));
+	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::QT)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+
+#ifdef BUILD_GL
+	m_ui.displayDriver->addItem(tr("OpenGL"), static_cast<int>(Display::Driver::OPENGL));
+	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+#endif
+
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
 }
@@ -106,6 +120,13 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("audioDriver", audioDriver);
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(audioDriver.toInt()));
 		emit audioDriverChanged();
+	}
+
+	QVariant displayDriver = m_ui.displayDriver->itemData(m_ui.displayDriver->currentIndex());
+	if (displayDriver != m_controller->getQtOption("displayDriver")) {
+		m_controller->setQtOption("displayDriver", displayDriver);
+		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
+		emit displayDriverChanged();
 	}
 
 	m_controller->write();

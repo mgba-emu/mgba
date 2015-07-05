@@ -91,17 +91,19 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
 
-	gba->realisticTiming = false;
+	gba->realisticTiming = true;
 
 	gba->performingDMA = false;
 }
 
 void GBAUnloadROM(struct GBA* gba) {
-	if (gba->pristineRom == gba->memory.rom) {
-		gba->memory.rom = 0;
-	} else {
-		mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
+	if (gba->memory.rom && gba->pristineRom != gba->memory.rom) {
+		if (gba->yankedRomSize) {
+			gba->yankedRomSize = 0;
+		}
+		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
+	gba->memory.rom = 0;
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
@@ -433,10 +435,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
-	if (!patchedSize) {
+	if (!patchedSize || patchedSize > SIZE_CART0) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(patchedSize);
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
@@ -449,7 +451,12 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
+		int32_t prefetchSkew = 0;
+		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
+			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
+		}
+		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
 	}
 }
 

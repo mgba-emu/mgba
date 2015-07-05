@@ -108,7 +108,7 @@ static uint32_t _hex2int(const char* hex, int maxDigits) {
 		letter = *hex - '0';
 		if (letter > 9) {
 			letter = *hex - 'a';
-			if  (letter > 5) {
+			if (letter > 5) {
 				break;
 			}
 			value *= 0x10;

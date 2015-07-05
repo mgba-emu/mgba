@@ -108,7 +108,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct Patch patch;
 	struct GBACheatDevice cheatDevice;
 	struct GBAThread* threadContext = context;
-	struct ARMComponent* components[GBA_COMPONENT_MAX] = {0};
+	struct ARMComponent* components[GBA_COMPONENT_MAX] = { 0 };
 	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 
@@ -701,7 +701,7 @@ void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname) {
 	}
 
 	GBAThreadLoadROM(threadContext, fname);
-	if(threadContext->gameDir) {
+	if (threadContext->gameDir) {
 		_loadGameDir(threadContext);
 	}
 

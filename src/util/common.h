@@ -6,7 +6,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifndef PSP2
 #include <ctype.h>
+#endif
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -22,12 +24,14 @@
 #include "version.h"
 
 #ifdef _MSC_VER
-typedef intptr_t off_t;
+#include <sys/types.h>
 typedef intptr_t ssize_t;
+#define inline __inline
 #define restrict __restrict
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
+#define snprintf _snprintf
 #elif defined(__wii__)
 typedef intptr_t ssize_t;
 #else

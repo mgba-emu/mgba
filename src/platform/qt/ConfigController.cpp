@@ -80,7 +80,7 @@ void ConfigOption::setValue(const char* value) {
 
 void ConfigOption::setValue(const QVariant& value) {
 	QPair<QAction*, QVariant> action;
-	foreach(action, m_actions) {
+	foreach (action, m_actions) {
 		bool signalsEnabled = action.first->blockSignals(true);
 		action.first->setChecked(value == action.second);
 		action.first->blockSignals(signalsEnabled);
@@ -214,7 +214,7 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 		return;
 	}
 	QString stringValue(value.toString());
-	setOption(key, stringValue.toLocal8Bit().constData());
+	setOption(key, stringValue.toUtf8().constData());
 }
 
 void ConfigController::setQtOption(const QString& key, const QVariant& value, const QString& group) {
