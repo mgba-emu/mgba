@@ -13,6 +13,8 @@
 #include "platform/posix/threading.h"
 #elif _WIN32
 #include "platform/windows/threading.h"
+#elif PSP2
+#include "platform/psp2/threading.h"
 #else
 #define DISABLE_THREADING
 #endif
