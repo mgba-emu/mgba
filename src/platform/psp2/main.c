@@ -18,28 +18,12 @@
 #include <psp2/kernel/memorymgr.h>
 #include <psp2/kernel/processmgr.h>
 
+#include <vita2d.h>
+
 PSP2_MODULE_INFO(0, 0, "mGBA");
 
 #define PSP2_HORIZONTAL_PIXELS 960
 #define PSP2_VERTICAL_PIXELS 544
-
-static void allocFramebuffer(SceDisplayFrameBuf* fb, int nfbs, SceUID* memblock) {
-	size_t baseSize = 0x200000;
-	size_t size = baseSize * nfbs;
-	*memblock = sceKernelAllocMemBlock("fb", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, size, 0);
-	sceKernelGetMemBlockBase(*memblock, &fb[0].base);
-	sceGxmMapMemory(fb[0].base, size, SCE_GXM_MEMORY_ATTRIB_RW);
-
-	int i;
-	for (i = 0; i < nfbs; ++i) {
-		fb[i].size = sizeof(fb[i]);
-		fb[i].pitch = PSP2_HORIZONTAL_PIXELS;
-		fb[i].width = PSP2_HORIZONTAL_PIXELS;
-		fb[i].height = PSP2_VERTICAL_PIXELS;
-		fb[i].pixelformat = PSP2_DISPLAY_PIXELFORMAT_A8B8G8R8;
-		fb[i].base = (char*) fb[0].base + i * baseSize;
-	}
-}
 
 int main() {
 	printf("%s initializing", projectName);
@@ -55,24 +39,11 @@ int main() {
 	printf("CPU: %08X", cpu);
 	int activeKeys = 0;
 
-	SceGxmInitializeParams gxmParams;
-	gxmParams.flags = 0;
-	gxmParams.displayQueueMaxPendingCount = 2;
-	gxmParams.displayQueueCallback = 0;
-	gxmParams.displayQueueCallbackDataSize = 0;
-	gxmParams.parameterBufferSize = 0x1000000;
-	int ret = sceGxmInitialize(&gxmParams);
-	printf("sceGxmInitialize: %08X", ret);
+	vita2d_init();
+	vita2d_texture* tex = vita2d_create_empty_texture(256, 256);
 
-	SceDisplayFrameBuf fb[2];
-	int currentFb = 0;
-	SceUID memblock;
-	allocFramebuffer(fb, 2, &memblock);
-	printf("fb[0]: %08X", fb[0].base);
-	printf("fb[1]: %08X", fb[1].base);
-
-	renderer.outputBuffer = fb[0].base;
-	renderer.outputBufferStride = PSP2_HORIZONTAL_PIXELS;
+	renderer.outputBuffer = vita2d_texture_get_datap(tex);
+	renderer.outputBufferStride = 256;
 
 	struct VFile* rom = VFileOpenSce("cache0:/VitaDefilerClient/Documents/GBA/rom.gba", PSP2_O_RDONLY, 0666);
 	struct VFile* save = VFileOpenSce("cache0:/VitaDefilerClient/Documents/GBA/rom.sav", PSP2_O_RDWR | PSP2_O_CREAT, 0666);
@@ -136,10 +107,11 @@ int main() {
 				activeKeys |= 1 << GBA_KEY_R;
 			}
 
-			sceDisplaySetFrameBuf(&fb[currentFb], PSP2_DISPLAY_SETBUF_NEXTFRAME);
-			sceDisplayWaitVblankStart();
-			currentFb = !currentFb;
-			renderer.outputBuffer = fb[currentFb].base;
+			vita2d_start_drawing();
+			vita2d_clear_screen();
+			vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
+			vita2d_end_drawing();
+			vita2d_swap_buffers();
 
 			frameCounter = gba->video.frameCounter;
 		}
@@ -154,5 +126,10 @@ int main() {
 
 	mappedMemoryFree(gba, 0);
 	mappedMemoryFree(cpu, 0);
+
+	vita2d_fini();
+	vita2d_free_texture(tex);
+
+	sceKernelExitProcess(0);
 	return 0;
 }
