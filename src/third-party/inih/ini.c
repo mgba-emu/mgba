@@ -8,7 +8,9 @@ http://code.google.com/p/inih/
 */
 
 #include <stdio.h>
+#ifndef PSP2
 #include <ctype.h>
+#endif
 #include <string.h>
 
 #include "ini.h"
