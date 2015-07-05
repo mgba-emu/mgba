@@ -642,6 +642,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	fileMenu->addSeparator();
 
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), m_config, SLOT(makePortable())), "makePortable");
+
+	fileMenu->addSeparator();
+
 	QAction* loadState = new QAction(tr("&Load state"), fileMenu);
 	loadState->setShortcut(tr("F10"));
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
