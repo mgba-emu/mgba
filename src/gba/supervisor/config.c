@@ -134,14 +134,15 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
 #else
+	char out[MAX_PATH];
 	wchar_t wpath[MAX_PATH];
 	wchar_t wprojectName[MAX_PATH];
 	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
 	HMODULE hModule = GetModuleHandleW(NULL);
 	GetModuleFileNameW(hModule, wpath, MAX_PATH);
 	PathRemoveFileSpecW(wpath);
-	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
-	StringCchCatA(out, outLength, "\\portable.ini");
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
+	StringCchCatA(out, MAX_PATH, "\\portable.ini");
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
 #endif
 	if (portable) {
