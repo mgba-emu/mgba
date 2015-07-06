@@ -35,10 +35,7 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
-	GBAThread* m_context;
 	QImage m_backing;
-	bool m_lockAspectRatio;
-	bool m_filter;
 };
 
 }

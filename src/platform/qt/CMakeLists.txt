@@ -11,6 +11,7 @@ if(APPLE)
 endif()
 
 set(PLATFORM_SRC)
+set(QT_STATIC OFF)
 
 if(BUILD_SDL)
 	if(NOT SDL_FOUND AND NOT SDL2_FOUND)
@@ -30,12 +31,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Multimedia)
 find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
-find_package(OpenGL)
 
 if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
+endif()
+
+list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+
+get_target_property(QT_TYPE Qt5::Core TYPE)
+if(QT_TYPE STREQUAL STATIC_LIBRARY)
+	set(QT_STATIC ON)
+	add_definitions(-DQT_STATIC)
 endif()
 
 set(SOURCE_FILES
@@ -55,7 +63,11 @@ set(SOURCE_FILES
 	InputController.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
+	LogController.cpp
 	LogView.cpp
+	MemoryModel.cpp
+	MemoryView.cpp
+	MessagePainter.cpp
 	MultiplayerController.cpp
 	OverrideView.cpp
 	PaletteView.cpp
@@ -74,6 +86,7 @@ qt5_wrap_ui(UI_FILES
 	GIFView.ui
 	LoadSaveState.ui
 	LogView.ui
+	MemoryView.ui
 	OverrideView.ui
 	PaletteView.ui
 	SensorView.ui
@@ -93,6 +106,9 @@ if(Qt5Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
 		AudioDevice.cpp)
+	if (WIN32 AND QT_STATIC)
+		list(APPEND QT_LIBRARIES qtaudio_windows strmiids winmm)
+	endif()
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
 	add_definitions(-DBUILD_QT_MULTIMEDIA)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5")
@@ -117,6 +133,9 @@ qt5_add_resources(RESOURCES resources.qrc)
 if(WIN32)
 	configure_file(${CMAKE_SOURCE_DIR}/res/mgba.rc.in ${CMAKE_BINARY_DIR}/res/mgba.rc)
 	list(APPEND RESOURCES ${CMAKE_BINARY_DIR}/res/mgba.rc)
+	if(QT_STATIC)
+		list(APPEND QT_LIBRARIES qwindows imm32)
+	endif()
 endif()
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
@@ -128,6 +147,12 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 install(TARGETS ${BINARY_NAME}-qt
 	RUNTIME DESTINATION bin COMPONENT ${BINARY_NAME}-qt
 	BUNDLE DESTINATION Applications COMPONENT ${BINARY_NAME}-qt)
+if(UNIX AND NOT APPLE)
+	find_program(DESKTOP_FILE_INSTALL desktop-file-install)
+	if(DESKTOP_FILE_INSTALL)
+		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop\" --dir \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/applications/\")")
+	endif()
+endif()
 if(APPLE OR WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 endif()

@@ -32,6 +32,8 @@ private slots:
 	void selectIndex(int);
 
 private:
+	void exportPalette(int start, int length);
+
 	Ui::PaletteView m_ui;
 
 	GameController* m_controller;

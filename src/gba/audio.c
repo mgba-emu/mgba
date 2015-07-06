@@ -17,6 +17,10 @@ const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
 #define SWEEP_CYCLES (GBA_ARM7TDMI_FREQUENCY / 128)
 
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+static const int CLOCKS_PER_FRAME = 0x400;
+#endif
+
 static bool _writeEnvelope(struct GBAAudioEnvelope* envelope, uint16_t value);
 static int32_t _updateSquareChannel(struct GBAAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAAudioEnvelope* envelope);
@@ -37,7 +41,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->left = blip_new(BLIP_BUFFER_SIZE);
 	audio->right = blip_new(BLIP_BUFFER_SIZE);
 	// Guess too large; we hang producing extra samples if we guess too low
-	blip_set_rates(audio->left,  GBA_ARM7TDMI_FREQUENCY, 96000);
+	blip_set_rates(audio->left, GBA_ARM7TDMI_FREQUENCY, 96000);
 	blip_set_rates(audio->right, GBA_ARM7TDMI_FREQUENCY, 96000);
 #endif
 	CircleBufferInit(&audio->chA.fifo, GBA_AUDIO_FIFO_SIZE);
@@ -452,7 +456,12 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 	audio->chBRight = GBARegisterSOUNDCNT_HIGetChBRight(value);
 	audio->chBLeft = GBARegisterSOUNDCNT_HIGetChBLeft(value);
 	audio->chBTimer = GBARegisterSOUNDCNT_HIGetChBTimer(value);
-	// TODO: Implement channel reset
+	if (GBARegisterSOUNDCNT_HIIsChAReset(value)) {
+		CircleBufferClear(&audio->chA.fifo);
+	}
+	if (GBARegisterSOUNDCNT_HIIsChBReset(value)) {
+		CircleBufferClear(&audio->chB.fifo);
+	}
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
@@ -695,15 +704,15 @@ static int32_t _updateChannel3(struct GBAAudioChannel3* ch) {
 		start = 3;
 		end = 0;
 	}
-	uint32_t bitsCarry = ch->wavedata[end] & 0x0F000000;
+	uint32_t bitsCarry = ch->wavedata[end] & 0x000000F0;
 	uint32_t bits;
 	for (i = start; i >= end; --i) {
-		bits = ch->wavedata[i] & 0x0F000000;
-		ch->wavedata[i] = ((ch->wavedata[i] & 0xF0F0F0F0) >> 4) | ((ch->wavedata[i] & 0x000F0F0F) << 12);
-		ch->wavedata[i] |= bitsCarry >> 20;
+		bits = ch->wavedata[i] & 0x000000F0;
+		ch->wavedata[i] = ((ch->wavedata[i] & 0x0F0F0F0F) << 4) | ((ch->wavedata[i] & 0xF0F0F000) >> 12);
+		ch->wavedata[i] |= bitsCarry << 20;
 		bitsCarry = bits;
 	}
-	ch->sample = bitsCarry >> 24;
+	ch->sample = bitsCarry >> 4;
 	ch->sample -= 8;
 	ch->sample *= volume * 4;
 	return 8 * (2048 - ch->control.rate);
@@ -815,11 +824,10 @@ static void _sample(struct GBAAudio* audio) {
 		audio->lastLeft = sampleLeft;
 		audio->lastRight = sampleRight;
 		audio->clock += audio->sampleInterval;
-		int clockNeeded = blip_clocks_needed(audio->left, audio->samples / 32);
-		if (audio->clock >= clockNeeded) {
+		if (audio->clock >= CLOCKS_PER_FRAME) {
 			blip_end_frame(audio->left, audio->clock);
 			blip_end_frame(audio->right, audio->clock);
-			audio->clock -= clockNeeded;
+			audio->clock -= CLOCKS_PER_FRAME;
 		}
 	}
 	produced = blip_samples_avail(audio->left);
@@ -904,8 +912,12 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 
 	CircleBufferClear(&audio->chA.fifo);
 	CircleBufferClear(&audio->chB.fifo);
-	int i;
-	for (i = 0; i < state->audio.fifoSize; ++i) {
+	size_t fifoSize = state->audio.fifoSize;
+	if (state->audio.fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
+		fifoSize = CircleBufferCapacity(&audio->chA.fifo);
+	}
+	size_t i;
+	for (i = 0; i < fifoSize; ++i) {
 		CircleBufferWrite8(&audio->chA.fifo, state->audio.fifoA[i]);
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}

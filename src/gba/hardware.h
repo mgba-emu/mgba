@@ -35,6 +35,17 @@ struct GBARTCSource {
 	time_t (*unixTime)(struct GBARTCSource*);
 };
 
+struct GBARTCGenericSource {
+	struct GBARTCSource d;
+	struct GBA* p;
+	enum {
+		RTC_NO_OVERRIDE,
+		RTC_FIXED,
+		RTC_FAKE_EPOCH
+	} override;
+	int64_t value;
+};
+
 enum GBAHardwareDevice {
 	HW_NO_OVERRIDE = 0x8000,
 	HW_NONE = 0,
@@ -74,16 +85,18 @@ DECL_BITS(RTCCommandData, Magic, 0, 4);
 DECL_BITS(RTCCommandData, Command, 4, 3);
 DECL_BIT(RTCCommandData, Reading, 7);
 
+#pragma pack(push, 1)
 struct GBARTC {
-	int bytesRemaining;
-	int transferStep;
-	int bitsRead;
-	int bits;
-	int commandActive;
+	int32_t bytesRemaining;
+	int32_t transferStep;
+	int32_t bitsRead;
+	int32_t bits;
+	int32_t commandActive;
 	RTCCommandData command;
 	RTCControl control;
 	uint8_t time[7];
-} __attribute__((packed));
+};
+#pragma pack(pop)
 
 struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
@@ -126,6 +139,11 @@ void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
+
+struct GBAVideo;
+bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
+
+void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);

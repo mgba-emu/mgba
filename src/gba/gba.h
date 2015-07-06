@@ -45,8 +45,10 @@ enum GBALogLevel {
 
 	GBA_LOG_GAME_ERROR = 0x100,
 	GBA_LOG_SWI = 0x200,
+	GBA_LOG_STATUS = 0x400,
+	GBA_LOG_SIO = 0x800,
 
-	GBA_LOG_ALL = 0x33F,
+	GBA_LOG_ALL = 0xF3F,
 
 #ifdef NDEBUG
 	GBA_LOG_DANGER = GBA_LOG_ERROR
@@ -144,6 +146,7 @@ struct GBA {
 	struct GBARRContext* rr;
 	void* pristineRom;
 	size_t pristineRomSize;
+	size_t yankedRomSize;
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
@@ -200,10 +203,13 @@ void GBAHalt(struct GBA* gba);
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode,
+                      uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+void GBAYankROM(struct GBA* gba);
+void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
@@ -215,10 +221,10 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
-__attribute__((format (printf, 3, 4)))
+ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

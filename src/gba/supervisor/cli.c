@@ -30,11 +30,9 @@ struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
 	{ "save", _save, CLIDVParse, "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
-#endif
 
 struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	struct GBACLIDebugger* debugger = malloc(sizeof(struct GBACLIDebugger));
-#ifdef USE_CLI_DEBUGGER
 	debugger->d.init = _GBACLIDebuggerInit;
 	debugger->d.deinit = _GBACLIDebuggerDeinit;
 	debugger->d.custom = _GBACLIDebuggerCustom;
@@ -44,14 +42,10 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	debugger->d.commands = _GBACLIDebuggerCommands;
 
 	debugger->context = context;
-#else
-	UNUSED(context);
-#endif
 
 	return debugger;
 }
 
-#ifdef USE_CLI_DEBUGGER
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem* debugger) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
 

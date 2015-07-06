@@ -80,7 +80,7 @@ void ConfigOption::setValue(const char* value) {
 
 void ConfigOption::setValue(const QVariant& value) {
 	QPair<QAction*, QVariant> action;
-	foreach(action, m_actions) {
+	foreach (action, m_actions) {
 		bool signalsEnabled = action.first->blockSignals(true);
 		action.first->setChecked(value == action.second);
 		action.first->blockSignals(signalsEnabled);
@@ -109,19 +109,18 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 2048;
 	m_opts.volume = GBA_AUDIO_VOLUME_MAX;
-	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
+	m_opts.suspendScreensaver = true;
 	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
 	GBAConfigMap(&m_config, &m_opts);
 }
 
 ConfigController::~ConfigController() {
-	write();
-
 	GBAConfigDeinit(&m_config);
 	GBAConfigFreeOpts(&m_opts);
 }
@@ -215,7 +214,7 @@ void ConfigController::setOption(const char* key, const QVariant& value) {
 		return;
 	}
 	QString stringValue(value.toString());
-	setOption(key, stringValue.toLocal8Bit().constData());
+	setOption(key, stringValue.toUtf8().constData());
 }
 
 void ConfigController::setQtOption(const QString& key, const QVariant& value, const QString& group) {
@@ -258,4 +257,20 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 void ConfigController::write() {
 	GBAConfigSave(&m_config);
 	m_settings->sync();
+}
+
+void ConfigController::makePortable() {
+	GBAConfigMakePortable(&m_config);
+
+	char path[PATH_MAX];
+	GBAConfigDirectory(path, sizeof(path));
+	QString fileName(path);
+	fileName.append(QDir::separator());
+	fileName.append("qt.ini");
+	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
+	for (const auto& key : m_settings->allKeys()) {
+		settings2->setValue(key, m_settings->value(key));
+	}
+	delete m_settings;
+	m_settings = settings2;
 }

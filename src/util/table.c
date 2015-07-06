@@ -6,6 +6,7 @@
 #include "table.h"
 
 #include "util/hash.h"
+#include "util/string.h"
 
 #define LIST_INITIAL_SIZE 8
 #define TABLE_INITIAL_SIZE 8

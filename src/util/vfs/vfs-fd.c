@@ -7,6 +7,11 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifndef _WIN32
+#include <sys/mman.h>
+#else
+#include <windows.h>
+#endif
 
 struct VFileFD {
 	struct VFile d;
@@ -26,14 +31,18 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfdSize(struct VFile* vf);
 
-struct VFile* VFileOpen(const char* path, int flags) {
+struct VFile* VFileOpenFD(const char* path, int flags) {
 	if (!path) {
 		return 0;
 	}
 #ifdef _WIN32
 	flags |= O_BINARY;
-#endif
+	wchar_t wpath[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
+	int fd = _wopen(wpath, flags, 0666);
+#else
 	int fd = open(path, flags, 0666);
+#endif
 	return VFileFromFD(fd);
 }
 

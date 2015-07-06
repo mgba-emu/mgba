@@ -6,11 +6,12 @@
 #ifndef QGBA_GAME_CONTROLLER
 #define QGBA_GAME_CONTROLLER
 
+#include <QAtomicInt>
 #include <QFile>
 #include <QImage>
 #include <QObject>
-#include <QMutex>
 #include <QString>
+#include <QTimer>
 
 #include <memory>
 
@@ -63,8 +64,8 @@ public:
 	void setInputController(InputController* controller) { m_inputController = controller; }
 	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
-	void setMultiplayerController(std::shared_ptr<MultiplayerController> controller);
-	std::shared_ptr<MultiplayerController> multiplayerController() { return m_multiplayer; }
+	void setMultiplayerController(MultiplayerController* controller);
+	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
 	bool connectDolphin(uint32_t ipv4);
@@ -94,36 +95,42 @@ signals:
 
 	void luminanceValueChanged(int);
 
+	void statusPosted(const QString& message);
 	void postLog(int level, const QString& log);
 
 public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
+	void yankPak();
+	void replaceGame(const QString& path);
 	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
-	void openGame();
+	void bootBIOS();
 	void closeGame();
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
 	void setRewind(bool enable, int capacity, int interval);
 	void rewind(int states = 0);
+	void startRewinding();
+	void stopRewinding();
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
 	void setFPSTarget(float fps);
-	void loadState(int slot);
-	void saveState(int slot);
+	void loadState(int slot = 0);
+	void saveState(int slot = 0);
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
 	void setVolume(int);
 	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
+	void setTurboSpeed(float ratio = -1);
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
@@ -147,25 +154,22 @@ public slots:
 	void disableLogLevel(int);
 
 private slots:
+	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
 
-#ifdef BUILD_SDL
-	void testSDLEvents();
-
-private:
-	GBASDLEvents m_sdlEvents;
-	int m_activeButtons;
-#endif
+	void pollEvents();
 
 private:
 	void updateKeys();
 	void redoSamples(int samples);
+	void enableTurbo();
 
 	uint32_t* m_drawContext;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
+	int m_activeButtons;
 	int m_inactiveKeys;
 	int m_logLevels;
 
@@ -182,16 +186,21 @@ private:
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;
 
-	QMutex m_pauseMutex;
-	bool m_pauseAfterFrame;
+	QAtomicInt m_pauseAfterFrame;
 
 	bool m_videoSync;
 	bool m_audioSync;
+	float m_fpsTarget;
 	bool m_turbo;
 	bool m_turboForced;
+	float m_turboSpeed;
+	QTimer m_rewindTimer;
+	bool m_wasPaused;
+
+	int m_stateSlot;
 
 	InputController* m_inputController;
-	std::shared_ptr<MultiplayerController> m_multiplayer;
+	MultiplayerController* m_multiplayer;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;
@@ -202,15 +211,7 @@ private:
 
 	static const int LUX_LEVELS[10];
 
-	struct GameControllerRTC : GBARTCSource {
-		GameController* p;
-		enum {
-			NO_OVERRIDE,
-			FIXED,
-			FAKE_EPOCH
-		} override;
-		int64_t value;
-	} m_rtc;
+	GBARTCGenericSource m_rtc;
 };
 
 }

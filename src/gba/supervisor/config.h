@@ -35,6 +35,7 @@ struct GBAOptions {
 	int height;
 	bool lockAspectRatio;
 	bool resampleVideo;
+	bool suspendScreensaver;
 
 	int volume;
 	bool mute;
@@ -51,6 +52,7 @@ void GBAConfigDeinit(struct GBAConfig*);
 bool GBAConfigLoad(struct GBAConfig*);
 bool GBAConfigSave(const struct GBAConfig*);
 
+void GBAConfigMakePortable(const struct GBAConfig*);
 void GBAConfigDirectory(char* out, size_t outLength);
 
 const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);

@@ -11,7 +11,7 @@ using namespace QGBA;
 
 QEvent::Type GamepadAxisEvent::s_type = QEvent::None;
 
-GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, InputController* controller)
+GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, int type, InputController* controller)
 	: QEvent(Type())
 	, m_axis(axis)
 	, m_direction(direction)
@@ -20,11 +20,9 @@ GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, In
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();
-#ifdef BUILD_SDL
 	if (controller) {
-		m_key = GBAInputMapAxis(controller->map(), SDL_BINDING_BUTTON, axis, direction * INT_MAX);
+		m_key = GBAInputMapAxis(controller->map(), type, axis, direction * INT_MAX);
 	}
-#endif
 }
 
 QEvent::Type GamepadAxisEvent::Type() {

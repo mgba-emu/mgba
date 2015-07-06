@@ -17,6 +17,7 @@
 #endif
 
 #include "gba/video.h"
+#include "util/string.h"
 
 #include <fcntl.h>
 #include <getopt.h>
@@ -43,6 +44,7 @@ static const struct option _options[] = {
 #ifdef USE_GDB_STUB
 	{ "gdb",       no_argument, 0, 'g' },
 #endif
+	{ "help",      no_argument, 0, 'h' },
 	{ "movie",     required_argument, 0, 'v' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ 0, 0, 0, 0 }
@@ -53,7 +55,7 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
-		"b:c:Dl:p:s:v:"
+		"b:c:Dhl:p:s:v:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -93,6 +95,9 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 			opts->debuggerType = DEBUGGER_GDB;
 			break;
 #endif
+		case 'h':
+			opts->showHelp = true;
+			break;
 		case 'l':
 			GBAConfigSetDefaultValue(config, "logLevel", optarg);
 			break;
@@ -117,7 +122,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 	argc -= optind;
 	argv += optind;
 	if (argc != 1) {
-		return false;
+		return opts->showHelp;
 	}
 	opts->fname = strdup(argv[0]);
 	return true;

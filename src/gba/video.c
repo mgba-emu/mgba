@@ -9,7 +9,7 @@
 #include "gba/io.h"
 #include "gba/serialize.h"
 #include "gba/supervisor/rr.h"
-#include "gba/supervisor/thread.h"
+#include "gba/supervisor/sync.h"
 
 #include "util/memory.h"
 
@@ -22,6 +22,25 @@ static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uin
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+
+const int GBAVideoObjSizes[16][2] = {
+	{ 8, 8 },
+	{ 16, 16 },
+	{ 32, 32 },
+	{ 64, 64 },
+	{ 16, 8 },
+	{ 32, 8 },
+	{ 32, 16 },
+	{ 64, 32 },
+	{ 8, 16 },
+	{ 8, 32 },
+	{ 16, 32 },
+	{ 32, 64 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+	{ 0, 0 },
+};
 
 static struct GBAVideoRenderer dummyRenderer = {
 	.init = GBAVideoDummyRendererInit,
@@ -233,7 +252,6 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, un
 	UNUSED(pixels);
 	// Nothing to do
 }
-
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);

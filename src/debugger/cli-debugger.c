@@ -82,7 +82,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "print/t", _printBin, CLIDVParse, "Print a value as binary" },
 	{ "print/x", _printHex, CLIDVParse, "Print a value as hexadecimal" },
 	{ "q", _quit, 0, "Quit the emulator" },
-	{ "quit", _quit, 0, "Quit the emulator"  },
+	{ "quit", _quit, 0, "Quit the emulator" },
 	{ "reset", _reset, 0, "Reset the emulation" },
 	{ "r/1", _readByte, CLIDVParse, "Read a byte from a specified offset" },
 	{ "r/2", _readHalfword, CLIDVParse, "Read a halfword from a specified offset" },
@@ -103,13 +103,13 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 
 static inline void _printPSR(union PSR psr) {
 	printf("%08X [%c%c%c%c%c%c%c]\n", psr.packed,
-		psr.n ? 'N' : '-',
-		psr.z ? 'Z' : '-',
-		psr.c ? 'C' : '-',
-		psr.v ? 'V' : '-',
-		psr.i ? 'I' : '-',
-		psr.f ? 'F' : '-',
-		psr.t ? 'T' : '-');
+	    psr.n ? 'N' : '-',
+	    psr.z ? 'Z' : '-',
+	    psr.c ? 'C' : '-',
+	    psr.v ? 'V' : '-',
+	    psr.i ? 'I' : '-',
+	    psr.f ? 'F' : '-',
+	    psr.t ? 'T' : '-');
 }
 
 static void _handleDeath(int sig) {
@@ -196,7 +196,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(debugger);
-	for ( ; dv; dv = dv->next) {
+	for (; dv; dv = dv->next) {
 		printf(" %u", dv->intValue);
 	}
 	printf("\n");
@@ -204,7 +204,7 @@ static void _print(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _printBin(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(debugger);
-	for ( ; dv; dv = dv->next) {
+	for (; dv; dv = dv->next) {
 		printf(" 0b");
 		int i = 32;
 		while (i--) {
@@ -216,7 +216,7 @@ static void _printBin(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 static void _printHex(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(debugger);
-	for ( ; dv; dv = dv->next) {
+	for (; dv; dv = dv->next) {
 		printf(" 0x%08X", dv->intValue);
 	}
 	printf("\n");
@@ -289,10 +289,10 @@ static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 	int r;
 	for (r = 0; r < 4; ++r) {
 		printf("%08X %08X %08X %08X\n",
-			debugger->d.cpu->gprs[r << 2],
-			debugger->d.cpu->gprs[(r << 2) + 1],
-			debugger->d.cpu->gprs[(r << 2) + 2],
-			debugger->d.cpu->gprs[(r << 2) + 3]);
+		    debugger->d.cpu->gprs[r << 2],
+		    debugger->d.cpu->gprs[(r << 2) + 1],
+		    debugger->d.cpu->gprs[(r << 2) + 2],
+		    debugger->d.cpu->gprs[(r << 2) + 3]);
 	}
 	_printPSR(debugger->d.cpu->cpsr);
 	int instructionLength;
@@ -519,6 +519,7 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	}
 	uint32_t address = dv->intValue;
 	ARMDebuggerClearBreakpoint(&debugger->d, address);
+	ARMDebuggerClearWatchpoint(&debugger->d, address);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -816,7 +817,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	}
 
 	const char* commandPtr;
-	int cmd = 0, len = 0;
+	size_t cmd = 0, len = 0;
 	const char* name = 0;
 	for (commandPtr = li->buffer; commandPtr <= li->cursor; ++commandPtr, ++len) {
 		for (; (name = _debuggerCommands[cmd].name); ++cmd) {
@@ -832,7 +833,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	if (!name) {
 		return CC_ERROR;
 	}
-	if (_debuggerCommands[cmd + 1].name && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
+	if (_debuggerCommands[cmd + 1].name && strlen(_debuggerCommands[cmd + 1].name) >= len - 1 && name[len - 2] == _debuggerCommands[cmd + 1].name[len - 2]) {
 		--len;
 		const char* next = 0;
 		int i;
@@ -841,6 +842,9 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 				break;
 			}
 			next = _debuggerCommands[i].name;
+		}
+		if (!next) {
+			return CC_ERROR;
 		}
 
 		for (; name[len]; ++len) {
@@ -861,7 +865,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 static void _cliDebuggerInit(struct ARMDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	// TODO: get argv[0]
-	cliDebugger->elstate = el_init(BINARY_NAME, stdin, stdout, stderr);
+	cliDebugger->elstate = el_init(binaryName, stdin, stdout, stderr);
 	el_set(cliDebugger->elstate, EL_PROMPT, _prompt);
 	el_set(cliDebugger->elstate, EL_EDITOR, "emacs");
 

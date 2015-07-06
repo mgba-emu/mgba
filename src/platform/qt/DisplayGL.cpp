@@ -14,269 +14,228 @@ extern "C" {
 
 using namespace QGBA;
 
-static const GLint _glVertices[] = {
-	0, 0,
-	256, 0,
-	256, 256,
-	0, 256
-};
-
-static const GLint _glTexCoords[] = {
-	0, 0,
-	1, 0,
-	1, 1,
-	0, 1
-};
-
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_painter(new Painter(format, this))
-	, m_started(false)
+	, m_gl(new EmptyGLWidget(format, this))
+	, m_painter(new PainterGL(m_gl))
+	, m_drawThread(nullptr)
+	, m_context(nullptr)
 {
 }
 
+DisplayGL::~DisplayGL() {
+	delete m_painter;
+}
+
 void DisplayGL::startDrawing(GBAThread* thread) {
-	if (m_started) {
+	if (m_drawThread) {
 		return;
 	}
 	m_painter->setContext(thread);
+	m_painter->setMessagePainter(messagePainter());
 	m_context = thread;
-	m_painter->start();
 	m_painter->resize(size());
-	m_painter->move(0, 0);
-	m_started = true;
+	m_gl->move(0, 0);
+	m_drawThread = new QThread(this);
+	m_drawThread->setObjectName("Painter Thread");
+	m_gl->context()->doneCurrent();
+	m_gl->context()->moveToThread(m_drawThread);
+	m_painter->moveToThread(m_drawThread);
+	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
+	m_drawThread->start();
+	GBASyncSetVideoSync(&m_context->sync, false);
 
-	lockAspectRatio(m_lockAspectRatio);
-	filter(m_filter);
+	lockAspectRatio(isAspectRatioLocked());
+	filter(isFiltered());
+	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
+	resizePainter();
 }
 
 void DisplayGL::stopDrawing() {
-	if (m_started) {
+	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		m_painter->stop();
-		m_started = false;
+		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
+		m_drawThread->exit();
+		m_drawThread = nullptr;
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
 }
 
 void DisplayGL::pauseDrawing() {
-	if (m_started) {
+	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		m_painter->pause();
+		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
 }
 
 void DisplayGL::unpauseDrawing() {
-	if (m_started) {
+	if (m_drawThread) {
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
-			GBASyncSuspendDrawing(&m_context->sync);
 		}
-		m_painter->unpause();
+		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
 		if (GBAThreadIsActive(m_context)) {
-			GBASyncResumeDrawing(&m_context->sync);
 			GBAThreadContinue(m_context);
 		}
 	}
 }
 
 void DisplayGL::forceDraw() {
-	if (m_started) {
-		m_painter->forceDraw();
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "forceDraw");
 	}
 }
 
 void DisplayGL::lockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
-	if (m_started) {
-		m_painter->lockAspectRatio(lock);
+	Display::lockAspectRatio(lock);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Q_ARG(bool, lock));
 	}
 }
 
 void DisplayGL::filter(bool filter) {
-	m_filter = filter;
-	if (m_started) {
-		m_painter->filter(filter);
+	Display::filter(filter);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "filter", Q_ARG(bool, filter));
 	}
 }
 
 void DisplayGL::framePosted(const uint32_t* buffer) {
-	if (buffer) {
-		m_painter->setBacking(buffer);
+	if (m_drawThread && buffer) {
+		QMetaObject::invokeMethod(m_painter, "setBacking", Q_ARG(const uint32_t*, buffer));
 	}
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
-	m_painter->resize(event->size());
+	Display::resizeEvent(event);
+	resizePainter();
 }
 
-Painter::Painter(const QGLFormat& format, QWidget* parent)
-	: QGLWidget(format, parent)
-	, m_drawTimer(nullptr)
-	, m_lockAspectRatio(false)
-	, m_filter(false)
+void DisplayGL::resizePainter() {
+	m_gl->resize(size());
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
+	}
+}
+
+PainterGL::PainterGL(QGLWidget* parent)
+	: m_gl(parent)
+	, m_active(false)
+	, m_context(nullptr)
+	, m_messagePainter(nullptr)
 {
-	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	m_size = parent->size();
-	setAutoBufferSwap(false);
+	GBAGLContextCreate(&m_backend);
+	m_backend.d.swap = [](VideoBackend* v) {
+		PainterGL* painter = static_cast<PainterGL*>(v->user);
+		painter->m_gl->swapBuffers();
+	};
+	m_backend.d.user = this;
+	m_backend.d.filter = false;
+	m_backend.d.lockAspectRatio = false;
 }
 
-void Painter::setContext(GBAThread* context) {
+void PainterGL::setContext(GBAThread* context) {
 	m_context = context;
 }
 
-void Painter::setBacking(const uint32_t* backing) {
-	makeCurrent();
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, backing);
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, backing);
-#endif
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, backing);
-#endif
-	doneCurrent();
+void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
+	m_messagePainter = messagePainter;
 }
 
-void Painter::resize(const QSize& size) {
+void PainterGL::setBacking(const uint32_t* backing) {
+	m_gl->makeCurrent();
+	m_backend.d.postFrame(&m_backend.d, backing);
+	if (m_active) {
+		draw();
+	}
+	m_gl->doneCurrent();
+}
+
+void PainterGL::resize(const QSize& size) {
 	m_size = size;
-	QWidget::resize(size);
-	if (m_drawTimer) {
+	if (m_active) {
 		forceDraw();
 	}
 }
 
-void Painter::lockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
-	if (m_drawTimer) {
+void PainterGL::lockAspectRatio(bool lock) {
+	m_backend.d.lockAspectRatio = lock;
+	if (m_active) {
 		forceDraw();
 	}
 }
 
-void Painter::filter(bool filter) {
-	m_filter = filter;
-	makeCurrent();
-	if (m_filter) {
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+void PainterGL::filter(bool filter) {
+	m_backend.d.filter = filter;
+	if (m_active) {
+		forceDraw();
+	}
+}
+
+void PainterGL::start() {
+	m_gl->makeCurrent();
+	m_backend.d.init(&m_backend.d, reinterpret_cast<WHandle>(m_gl->winId()));
+	m_gl->doneCurrent();
+	m_active = true;
+}
+
+void PainterGL::draw() {
+	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
+		m_painter.begin(m_gl->context()->device());
+		performDraw();
+		m_painter.end();
+		GBASyncWaitFrameEnd(&m_context->sync);
+		m_backend.d.swap(&m_backend.d);
 	} else {
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	}
-	doneCurrent();
-	if (m_drawTimer) {
-		forceDraw();
+		GBASyncWaitFrameEnd(&m_context->sync);
 	}
 }
 
-void Painter::start() {
-	makeCurrent();
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &m_tex);
-	glBindTexture(GL_TEXTURE_2D, m_tex);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	if (m_filter) {
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	} else {
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	}
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_INT, 0, _glVertices);
-	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, 240, 160, 0, 0, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	doneCurrent();
-
-	m_drawTimer = new QTimer;
-	m_drawTimer->moveToThread(QThread::currentThread());
-	m_drawTimer->setInterval(0);
-	connect(m_drawTimer, SIGNAL(timeout()), this, SLOT(draw()));
-	m_drawTimer->start();
-}
-
-void Painter::draw() {
-	makeCurrent();
-	GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip);
+void PainterGL::forceDraw() {
+	m_painter.begin(m_gl->context()->device());
 	performDraw();
-	GBASyncWaitFrameEnd(&m_context->sync);
-	swapBuffers();
-	doneCurrent();
+	m_painter.end();
+	m_backend.d.swap(&m_backend.d);
 }
 
-void Painter::forceDraw() {
-	makeCurrent();
-	glViewport(0, 0, m_size.width() * devicePixelRatio(), m_size.height() * devicePixelRatio());
-	glClear(GL_COLOR_BUFFER_BIT);
-	performDraw();
-	swapBuffers();
-	doneCurrent();
+void PainterGL::stop() {
+	m_active = false;
+	m_gl->makeCurrent();
+	m_backend.d.clear(&m_backend.d);
+	m_backend.d.swap(&m_backend.d);
+	m_backend.d.deinit(&m_backend.d);
+	m_gl->doneCurrent();
+	m_gl->context()->moveToThread(m_gl->thread());
+	moveToThread(m_gl->thread());
 }
 
-void Painter::stop() {
-	m_drawTimer->stop();
-	delete m_drawTimer;
-	m_drawTimer = nullptr;
-	makeCurrent();
-	glDeleteTextures(1, &m_tex);
-	glClear(GL_COLOR_BUFFER_BIT);
-	swapBuffers();
-	doneCurrent();
-}
-
-void Painter::pause() {
-	m_drawTimer->stop();
+void PainterGL::pause() {
+	m_active = false;
 	// Make sure both buffers are filled
 	forceDraw();
 	forceDraw();
 }
 
-void Painter::unpause() {
-	m_drawTimer->start();
+void PainterGL::unpause() {
+	m_active = true;
 }
 
-void Painter::initializeGL() {
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void Painter::performDraw() {
-	int w = m_size.width() * devicePixelRatio();
-	int h = m_size.height() * devicePixelRatio();
-#ifndef Q_OS_MAC
-	// TODO: This seems to cause framerates to drag down to 120 FPS on OS X,
-	// even if the emulator can go faster. Look into why.
-	glViewport(0, 0, m_size.width() * devicePixelRatio(), m_size.height() * devicePixelRatio());
-	glClear(GL_COLOR_BUFFER_BIT);
-#endif
-	int drawW = w;
-	int drawH = h;
-	if (m_lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
-		}
-	}
-	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	if (m_context->sync.videoFrameWait) {
-		glFlush();
+void PainterGL::performDraw() {
+	m_painter.beginNativePainting();
+	float r = m_gl->devicePixelRatio();
+	m_backend.d.resized(&m_backend.d, m_size.width() * r, m_size.height() * r);
+	m_backend.d.drawFrame(&m_backend.d);
+	m_painter.endNativePainting();
+	if (m_messagePainter) {
+		m_messagePainter->paint(&m_painter);
 	}
 }

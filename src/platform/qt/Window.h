@@ -20,6 +20,7 @@ extern "C" {
 #include "GDBController.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
+#include "LogController.h"
 
 struct GBAOptions;
 struct GBAArguments;
@@ -65,6 +66,8 @@ public slots:
 	void loadConfig();
 	void saveConfig();
 
+	void replaceROM();
+
 	void importSharkport();
 	void exportSharkport();
 
@@ -77,6 +80,7 @@ public slots:
 	void openCheatsWindow();
 
 	void openPaletteWindow();
+	void openMemoryWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -130,10 +134,14 @@ private:
 	void openView(QWidget* widget);
 
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+
+	void updateTitle(float fps = NAN);
 
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	LogController m_log;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;

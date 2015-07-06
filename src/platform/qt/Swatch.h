@@ -7,12 +7,12 @@
 #define QGBA_SWATCH
 
 #include <QColor>
-#include <QLabel>
+#include <QWidget>
 #include <QVector>
 
 namespace QGBA {
 
-class Swatch : public QLabel {
+class Swatch : public QWidget {
 Q_OBJECT
 
 public:

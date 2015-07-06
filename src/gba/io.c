@@ -333,7 +333,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_SOUND3CNT_X:
 			GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
 			// TODO: The low bits need to not be readable, but still 8-bit writable
-			value &= 0x43FF;
+			value &= 0x47FF;
 			break;
 		case REG_SOUND4CNT_LO:
 			GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
@@ -495,6 +495,10 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		default:
 			GBALog(gba, GBA_LOG_STUB, "Stub I/O register write: %03x", address);
+			if (address >= REG_MAX) {
+				GBALog(gba, GBA_LOG_GAME_ERROR, "Write to unused I/O register: %03X", address);
+				return;
+			}
 			break;
 		}
 	}
@@ -657,6 +661,10 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		break;
 	default:
 		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
+		if (address >= REG_MAX) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Read from unused I/O register: %03X", address);
+			return 0; // TODO: Reuse LOAD_BAD
+		}
 		break;
 	}
 	return gba->memory.io[address >> 1];
@@ -710,5 +718,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			gba->timersEnabled |= 1 << i;
 		}
 	}
+	GBAMemoryUpdateDMAs(gba, 0);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }

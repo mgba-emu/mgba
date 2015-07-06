@@ -2,35 +2,144 @@
 Features:
  - Ability to hide individual background layers, or OBJs
  - Ability to mute individual audio channels
- - Palette viewer
+ - Palette viewer and exporter
  - Volume control
- - More shortcuts are editable (e.g. quick save/load, solar sensor)
+ - More shortcuts are editable (e.g. quick save/load)
  - Rewind now shows the frame after rewinding
  - Import/Export of GameShark/Action Replay snapshots
  - Add "Step backwards" item for single increment rewind
  - Deadzone estimation for game controllers
  - Analog inputs can be used for shortcuts
+ - Menu items for specific solar sensor brightness levels
+ - Remappable controls for tilt and gyroscope sensors
+ - Status messages for actions taken while a game is running (e.g. save/load state)
+ - Memory inspector
+ - Screensaver can now be suspended while a game is running
+ - Load/save the most recent savestate slot
+ - Support varible speed (PWM) rumble
+ - Ability to cap fast forward speed
+ - Finer control over FPS target
+ - Holdable shortcut for rewinding one frame at a time
+ - Ability to boot directly into the BIOS
+ - Preliminary support for yanking out the game pak while a game is running
+ - Thumb-drive mode by putting a file called portable.ini in the same folder
+ - Configurable display driver, between software and OpenGL
 Bugfixes:
- - GBA: Fix timers not updating timing when writing to only the reload register
- - All: Fix sanitize-deb script not cleaning up after itself
- - Qt: Fix Display object leak when closing a window
- - Qt: Fix .deb dependencies
- - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
- - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
- - GBA Memory: Ensure changing the timing of a DMA reschedules it
- - Qt: Fix window not regaining focus after exiting savestate window
- - Qt: Fix regression where video would not record if the game had already started
+ - GBA Memory: Improve Thumb open bus behavior
+ - VFS: Fix resource leaks if some allocations fail
+ - Video: Fix an issue with very long filenames
+ - GBA Video: Blended sprites should never have other effects applied
+ - GBA: Fix crash if a 512kb flash save is loaded when a game has a 1Mb flash override
+ - Qt: Better cleanup when a game crashes
+ - Qt: Fix open ROM dialog filtering for archive formats
+ - ARM7: Fix Thumb MUL timing
+ - Qt: Cap the maximum number of multiplayer windows
+ - Qt: Fix maximum year in sensor override
+ - GBA: Cap audio FIFO read size during deserialization
+ - GBA: Check for corrupted savestates when loading
+ - GBA: Check for improperly sized savestates when loading
+ - GBA: Check for savestates made from differently sized ROMs
+ - GBA Video: Fix out-of-bounds tiles in mosaic
+ - GBA Memory: Fix potential DMA issue when loading a savestate
+ - GBA Audio: Fix audio pitch changing when adjusting buffer size
+ - SDL: Fix SDL build when OpenGL is missing
+ - ARM7: Fix timing of multiplies to use N cycles
+ - GBA: Fix calls to endian-independent loadstores
+ - GBA Video: Fix windows not affecting sprites
+ - VFS: Fix line-reading to return proper values
+ - GBA Memory: Fix load/store multiple video memory waitstates
+ - GBA: Fix timing of reading from timer registers
+ - Util: Allow loading IPS patches that grow the ROM
+ - GBA Audio: Fix sample order in audio channel 3
+ - GBA Audio: Fix 8-bit writes to audio channel 3 frequency
+ - ARM7: ARMHotplugDetach should call deinit
+ - Qt: Fix window being too tall after exiting fullscreen
+ - Qt: Fix a missing va_end call in the log handler lambda within the GameController constructor
+Misc:
+ - Qt: Handle saving input settings better
+ - Debugger: Free watchpoints in addition to breakpoints
+ - Qt: Move GL frame drawing back onto its own thread
+ - GBA: Add status log level
+ - GBA Thread: Add functionality for running callbacks on the GBA thread
+ - Qt: Fast forward (held) option moved from Other to Emulation menu
+ - All: Add --help flag for command line programs
+ - Qt: Show version info in window title
+ - All: Fix sanitize-deb script to set file permissions properly if run as (fake)root
+ - GBA SIO: Add a dummy driver for Normal mode
+ - GBA: GBARewind now returns how many states it has rewound
+ - All: Enable static linking for Windows
+ - All: Enable static linking for OS X
+ - Qt: Migrate multiplayer window handling into GBAApp
+ - Qt: Unified file opening and saving with last location
+ - Qt: Fix windows being resizable when they shouldn't have been
+ - Qt: Only hide cursor in full screen
+ - Perf: Ability to load savestates immediately on launch
+ - Qt: Replace pause-after-frame mutex with an atomic
+ - Util: Allow disabling the threading code entirely
+ - GBA: SIO logging layer
+ - Qt: Add application icon and XDG desktop files
+ - GBA Thread: Split GBASync into a separate file
+ - SDL: Properly check for initialization
+ - SDL: Clean up initialization functions
+ - All: Threads are now named
+ - Qt: Rename "Fullscreen" to "Toggle fullscreen"
+ - Qt: Don't save window size when entering fullscreen
+ - Qt: Make the default fullscreen binding for Windows be Alt-Enter
+ - GBA Video: Refactor software renderer into separate files
+ - ARM7: Add emulation for Undefined CPU mode
+ - GBA: More accurate cycle estimation for ROM prefetch and flash save chips
+ - ARM7: Reduce the size of the Thumb instruction table
+ - GBA: Don't include GBACLIDebugger struct unless needed
+ - SDL: Clean up GL context
+ - GBA Audio: Implement audio reset for channels A/B
+ - GBA Hardware: Backport generic RTC source into core
+ - All: Proper handling of Unicode file paths
+ - GBA Video: Slightly optimize mode 0 mosaic rendering
+
+0.2.1: (2015-05-13)
+Bugfixes:
+ - All: Fix sanitize-deb script not cleaning up after itself
+ - All: Fix dependencies for libavcodec on Debian-derived platforms
+ - ARM7: Handle writeback for PC in addressing modes 2 and 3
+ - ARM7: Make illegal instruction decoding consistent between ARM and Thumb
+ - ARM7: Fix ARM multiply instructions when PC is a destination register
+ - Debugger: Fix use-after-free in breakpoint clearing code
+ - Debugger: Fix boundary conditions in tab completion
+ - GBA: Fix timers not updating timing when writing to only the reload register
  - GBA: Fix rewind boundary conditions
  - GBA: Add initial I/O register settings for background matrix registers
- - Qt: Fix potential crash if a gamepad causes focus to change
+ - GBA: Fix hang when loading a savestate if sync to video is enabled
+ - GBA: Handle out-of-bounds I/O access
+ - GBA: Fix bounds-checking on EEPROM access
+ - GBA Audio: FIFOs should not poll DMAs that are not scheduled for audio
+ - GBA BIOS: Initialize a variable that may be uninitialized in very rare cases
  - GBA Memory: Allow SRAM to be 64kB
- - Qt: Fix controller axis querying
- - GBA Memory: Improve Thumb open bus behavior
  - GBA Memory: Fix 32-bit loads from unaddress cartridge space
+ - GBA Memory: Fix jumping to invalid memory when switching from Thumb to ARM
+ - GBA Video: Fix second frame mode 5
+ - Perf: Fix race condition if a game crashes immediately on start
+ - Qt: Fix Display object leak when closing a window
+ - Qt: Fix .deb dependencies
+ - Qt: Fix "QOpenGLContext::swapBuffers() called with non-exposed window" warning
+ - Qt: Fix window not regaining focus after exiting savestate window
+ - Qt: Fix regression where video would not record if the game had already started
+ - Qt: Fix potential crash if a gamepad causes focus to change
+ - Qt: Fix controller axis querying
+ - Qt: Fix multiplayer windows opening as the wrong size
+ - Qt: Fix controllers sometimes not loading the right profile
+ - SDL: Fix boundary conditions for joystick adjustments
+ - SDL: Allocate properly sized input maps
+ - SDL: Fix potential build issues when Qt and SDL2 are in use
+ - Util: Fix resource leak in UTF-8 handling code
+ - Util: Fix a null-pointer issue when attempting to delete a key
+ - VFS: Fix resource leaks if some allocations fail
+ - Video: Fix an issue with very long filenames
 Misc:
+ - GBA Memory: Soft-crash if jumping past the end of a ROM
  - Qt: Show multiplayer numbers in window title
+ - Qt: Solar sensor can have shortcuts set
 
 0.2.0: (2015-04-03)
 Features:

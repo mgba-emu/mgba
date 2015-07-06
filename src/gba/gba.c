@@ -91,19 +91,29 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
 
-	gba->realisticTiming = false;
+	gba->realisticTiming = true;
 
 	gba->performingDMA = false;
 }
 
-void GBADestroy(struct GBA* gba) {
-	if (gba->pristineRom == gba->memory.rom) {
-		gba->memory.rom = 0;
+void GBAUnloadROM(struct GBA* gba) {
+	if (gba->memory.rom && gba->pristineRom != gba->memory.rom) {
+		if (gba->yankedRomSize) {
+			gba->yankedRomSize = 0;
+		}
+		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
+	gba->memory.rom = 0;
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+		gba->pristineRom = 0;
+		gba->romVf = 0;
 	}
+}
+
+void GBADestroy(struct GBA* gba) {
+	GBAUnloadROM(gba);
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
@@ -139,6 +149,11 @@ void GBAReset(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->rr || (!gba->rr->isPlaying(gba->rr) && !gba->rr->isRecording(gba->rr))) {
 		GBASavedataUnmask(&gba->memory.savedata);
+	}
+
+	if (gba->yankedRomSize) {
+		gba->memory.romSize = gba->yankedRomSize;
+		gba->yankedRomSize = 0;
 	}
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
@@ -365,6 +380,7 @@ void GBADetachDebugger(struct GBA* gba) {
 }
 
 void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
@@ -376,6 +392,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
 		return;
 	}
+	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
@@ -383,6 +400,12 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	// TODO: error check
+}
+
+void GBAYankROM(struct GBA* gba) {
+	gba->yankedRomSize = gba->memory.romSize;
+	gba->memory.romSize = 0;
+	GBARaiseIRQ(gba, IRQ_GAMEPAK);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -412,10 +435,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
-	if (!patchedSize) {
+	if (!patchedSize || patchedSize > SIZE_CART0) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(patchedSize);
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
@@ -428,7 +451,12 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
+		int32_t prefetchSkew = 0;
+		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
+			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
+		}
+		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
 	}
 }
 
@@ -491,10 +519,6 @@ void GBAWriteIE(struct GBA* gba, uint16_t value) {
 		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
 	}
 
-	if (value & (1 << IRQ_GAMEPAK)) {
-		GBALog(gba, GBA_LOG_STUB, "Gamepak interrupts not implemented");
-	}
-
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
 		ARMRaiseIRQ(gba->cpu);
 	}
@@ -530,7 +554,7 @@ void GBAHalt(struct GBA* gba) {
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
 	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = -1;
+	enum GBALogLevel logLevel = GBA_LOG_ALL;
 
 	if (gba) {
 		logLevel = gba->logLevel;
@@ -633,16 +657,24 @@ bool GBAIsBIOS(struct VFile* vf) {
 }
 
 void GBAGetGameCode(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		out[0] = '\0';
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
+	if (!gba->memory.rom) {
+		strncpy(out, "(BIOS)", 12);
+		return;
+	}
 	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	enum GBALogLevel level = GBA_LOG_FATAL;
+	enum GBALogLevel level = GBA_LOG_ERROR;
 	if (gba->debugger) {
 		level = GBA_LOG_STUB;
 		struct DebuggerEntryInfo info = {
@@ -656,13 +688,17 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	if (!gba->yankedRomSize) {
+		GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+	}
 	if (gba->debugger) {
 		struct DebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
 		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	} else {
+		ARMRaiseUndefined(cpu);
 	}
 }
 
@@ -735,14 +771,13 @@ void GBAFrameEnded(struct GBA* gba) {
 		}
 	}
 
+	if (gba->stream) {
+		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+	}
 
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
 		return;
-	}
-
-	if (gba->stream) {
-		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
 	if (thread->frameCallback) {

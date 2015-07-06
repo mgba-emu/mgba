@@ -108,7 +108,7 @@ static uint32_t _hex2int(const char* hex, int maxDigits) {
 		letter = *hex - '0';
 		if (letter > 9) {
 			letter = *hex - 'a';
-			if  (letter > 5) {
+			if (letter > 5) {
 				break;
 			}
 			value *= 0x10;
@@ -464,6 +464,8 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.custom = _gdbStubPoll;
 	stub->d.log = 0;
 	stub->untilPoll = GDB_STUB_INTERVAL;
+	stub->lineAck = GDB_ACK_PENDING;
+	stub->shouldBlock = false;
 }
 
 bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {

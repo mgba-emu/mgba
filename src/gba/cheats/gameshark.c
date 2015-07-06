@@ -198,7 +198,7 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	switch (set->gsaVersion) {
 	case 0:
 		GBACheatSetGameSharkVersion(set, 1);
-		// Fall through
+	// Fall through
 	case 1:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 		return GBACheatAddGameSharkRaw(set, o1, o2);

@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
-#ifndef strndup
+#ifndef HAVE_STRNDUP
 // This is sometimes a macro
 char* strndup(const char* start, size_t len);
+#endif
+
+#ifndef HAVE_STRDUP
+char* strdup(const char* str);
 #endif
 
 char* strnrstr(const char* restrict s1, const char* restrict s2, size_t len);

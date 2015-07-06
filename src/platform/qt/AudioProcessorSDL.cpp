@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AudioProcessorSDL.h"
 
+#include "LogController.h"
+
 extern "C" {
 #include "gba/supervisor/thread.h"
 }
@@ -22,6 +24,11 @@ AudioProcessorSDL::~AudioProcessorSDL() {
 }
 
 void AudioProcessorSDL::start() {
+	if (!input()) {
+		LOG(WARN) << tr("Can't start an audio processor without input");
+		return;
+	}
+
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
 	} else {

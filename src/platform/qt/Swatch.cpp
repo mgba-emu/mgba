@@ -8,10 +8,14 @@
 #include <QMouseEvent>
 #include <QPainter>
 
+extern "C" {
+#include "gba/video.h"
+}
+
 using namespace QGBA;
 
 Swatch::Swatch(QWidget* parent)
-	: QLabel(parent)
+	: QWidget(parent)
 {
 	m_size = 10;
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -35,15 +39,15 @@ void Swatch::setDimensions(const QSize& size) {
 
 void Swatch::setColor(int index, uint16_t color) {
 	m_colors[index].setRgb(
-		(color << 3) & 0xF8,
-		(color >> 2) & 0xF8,
-		(color >> 7) & 0xF8);
+		GBA_R8(color),
+		GBA_G8(color),
+		GBA_B8(color));
 	updateFill(index);
 }
 
 void Swatch::paintEvent(QPaintEvent* event) {
-	setPixmap(m_backing);
-	QLabel::paintEvent(event);
+	QPainter painter(this);
+	painter.drawPixmap(QPoint(), m_backing);
 }
 
 void Swatch::mousePressEvent(QMouseEvent* event) {

@@ -61,11 +61,15 @@ void ShortcutView::load(const QModelIndex& index) {
 		m_ui.gamepadButton->click();
 	}
 	if (m_ui.gamepadButton->isChecked()) {
+		bool blockSignals = m_ui.keyEdit->blockSignals(true);
 		m_ui.keyEdit->setFocus();
 		m_ui.keyEdit->setValueButton(-1); // There are no default bindings
+		m_ui.keyEdit->blockSignals(blockSignals);
 	} else {
+		bool blockSignals = m_ui.keySequenceEdit->blockSignals(true);
 		m_ui.keySequenceEdit->setFocus();
 		m_ui.keySequenceEdit->setKeySequence(sequence);
+		m_ui.keySequenceEdit->blockSignals(blockSignals);
 	}
 }
 
@@ -100,10 +104,10 @@ void ShortcutView::updateButton(int button) {
 	m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
 }
 
-
 void ShortcutView::updateAxis(int axis, int direction) {
 	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
 		return;
 	}
-	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis, static_cast<GamepadAxisEvent::Direction>(direction));
+	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis,
+	                         static_cast<GamepadAxisEvent::Direction>(direction));
 }

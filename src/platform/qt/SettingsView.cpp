@@ -7,8 +7,8 @@
 
 #include "AudioProcessor.h"
 #include "ConfigController.h"
-
-#include <QFileDialog>
+#include "Display.h"
+#include "GBAApp.h"
 
 using namespace QGBA;
 
@@ -34,6 +34,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
+	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
@@ -59,12 +60,25 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	}
 #endif
 
+	QVariant displayDriver = m_controller->getQtOption("displayDriver");
+	m_ui.displayDriver->addItem(tr("Software (Qt)"), static_cast<int>(Display::Driver::QT));
+	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::QT)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+
+#ifdef BUILD_GL
+	m_ui.displayDriver->addItem(tr("OpenGL"), static_cast<int>(Display::Driver::OPENGL));
+	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+#endif
+
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
 }
 
 void SettingsView::selectBios() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Select BIOS"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
 		m_ui.bios->setText(filename);
 	}
@@ -87,6 +101,7 @@ void SettingsView::updateConfig() {
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
+	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
@@ -107,6 +122,13 @@ void SettingsView::updateConfig() {
 		emit audioDriverChanged();
 	}
 
+	QVariant displayDriver = m_ui.displayDriver->itemData(m_ui.displayDriver->currentIndex());
+	if (displayDriver != m_controller->getQtOption("displayDriver")) {
+		m_controller->setQtOption("displayDriver", displayDriver);
+		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
+		emit displayDriverChanged();
+	}
+
 	m_controller->write();
 
 	emit biosLoaded(m_ui.bios->text());
@@ -119,6 +141,10 @@ void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
 
 void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 	saveSetting(key, field->lineEdit());
+}
+
+void SettingsView::saveSetting(const char* key, const QDoubleSpinBox* field) {
+	saveSetting(key, field->cleanText());
 }
 
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
@@ -145,6 +171,11 @@ void SettingsView::loadSetting(const char* key, QAbstractButton* field) {
 
 void SettingsView::loadSetting(const char* key, QComboBox* field) {
 	loadSetting(key, field->lineEdit());
+}
+
+void SettingsView::loadSetting(const char* key, QDoubleSpinBox* field) {
+	QString option = loadSetting(key);
+	field->setValue(option.toDouble());
 }
 
 void SettingsView::loadSetting(const char* key, QLineEdit* field) {

@@ -12,11 +12,7 @@
 #include "sdl-events.h"
 
 #ifdef BUILD_GL
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "platform/opengl/gl.h"
 #endif
 
 #ifdef BUILD_RASPI
@@ -49,6 +45,7 @@ struct SDLSoftwareRenderer {
 	SDL_Window* window;
 	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
+	SDL_GLContext* glCtx;
 #endif
 
 	int viewportWidth;
@@ -59,7 +56,7 @@ struct SDLSoftwareRenderer {
 	bool filter;
 
 #ifdef BUILD_GL
-	GLuint tex;
+	struct GBAGLContext gl;
 #endif
 
 #ifdef USE_PIXMAN

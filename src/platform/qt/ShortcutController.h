@@ -35,7 +35,8 @@ private:
 		typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
 		ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent = nullptr);
-		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name, ShortcutItem* parent = nullptr);
+		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name,
+		             ShortcutItem* parent = nullptr);
 		ShortcutItem(QMenu* action, ShortcutItem* parent = nullptr);
 
 		QAction* action() { return m_action; }
@@ -51,7 +52,8 @@ private:
 		ShortcutItem* parent() { return m_parent; }
 		const ShortcutItem* parent() const { return m_parent; }
 		void addAction(QAction* action, const QString& name);
-		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
+		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName,
+		                  const QString& name);
 		void addSubmenu(QMenu* menu);
 		int button() const { return m_button; }
 		void setShortcut(const QKeySequence& sequence);
@@ -60,7 +62,9 @@ private:
 		GamepadAxisEvent::Direction direction() const { return m_direction; }
 		void setAxis(int axis, GamepadAxisEvent::Direction direction);
 
-		bool operator==(const ShortcutItem& other) const { return m_menu == other.m_menu && m_action == other.m_action; }
+		bool operator==(const ShortcutItem& other) const {
+			return m_menu == other.m_menu && m_action == other.m_action;
+		}
 
 	private:
 		QAction* m_action;
@@ -91,7 +95,8 @@ public:
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	void addAction(QMenu* menu, QAction* action, const QString& name);
-	void addFunctions(QMenu* menu, std::function<void ()> press, std::function<void()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
+	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
+	                  const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
 
 	QKeySequence shortcutAt(const QModelIndex& index) const;

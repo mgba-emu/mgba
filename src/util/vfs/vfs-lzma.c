@@ -65,11 +65,11 @@ static struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode);
 static const char* _vde7zName(struct VDirEntry* vde);
 
 struct VDir* VDirOpen7z(const char* path, int flags) {
-	struct VDir7z* vd = malloc(sizeof(struct VDir7z));
-
 	if (flags & O_WRONLY || flags & O_CREAT) {
 		return 0;
 	}
+
+	struct VDir7z* vd = malloc(sizeof(struct VDir7z));
 
 	// What does any of this mean, Igor?
 	if (InFile_Open(&vd->archiveStream.file, path)) {

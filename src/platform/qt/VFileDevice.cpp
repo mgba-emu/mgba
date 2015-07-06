@@ -5,10 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "VFileDevice.h"
 
-extern "C" {
-#include "util/vfs.h"
-}
-
 using namespace QGBA;
 
 VFileDevice::VFileDevice(VFile* vf, QObject* parent)
@@ -28,4 +24,8 @@ qint64 VFileDevice::writeData(const char* data, qint64 maxSize) {
 
 qint64 VFileDevice::size() const {
 	return m_vf->size(m_vf);
+}
+
+VFile* VFileDevice::open(QString path, int mode) {
+	return VFileOpen(path.toUtf8().constData(), mode);
 }

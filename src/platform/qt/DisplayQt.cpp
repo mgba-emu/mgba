@@ -7,27 +7,28 @@
 
 #include <QPainter>
 
+extern "C" {
+#include "gba/video.h"
+}
+
 using namespace QGBA;
 
 DisplayQt::DisplayQt(QWidget* parent)
 	: Display(parent)
 	, m_backing(nullptr)
-	, m_lockAspectRatio(false)
-	, m_filter(false)
 {
 }
 
-void DisplayQt::startDrawing(GBAThread* context) {
-	m_context = context;
+void DisplayQt::startDrawing(GBAThread*) {
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
+	Display::lockAspectRatio(lock);
 	update();
 }
 
 void DisplayQt::filter(bool filter) {
-	m_filter = filter;
+	Display::filter(filter);
 	update();
 }
 
@@ -50,22 +51,25 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 void DisplayQt::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
-	if (m_filter) {
+	if (isFiltered()) {
 		painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	}
 	QSize s = size();
 	QSize ds = s;
-	if (s.width() * 2 > s.height() * 3) {
-		ds.setWidth(s.height() * 3 / 2);
-	} else if (s.width() * 2 < s.height() * 3) {
-		ds.setHeight(s.width() * 2 / 3);
+	if (isAspectRatioLocked()) {
+		if (s.width() * 2 > s.height() * 3) {
+			ds.setWidth(s.height() * 3 / 2);
+		} else if (s.width() * 2 < s.height() * 3) {
+			ds.setHeight(s.width() * 2 / 3);
+		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
 
 #ifdef COLOR_5_6_5
-	painter.drawImage(full, m_backing, QRect(0, 0, 240, 160));
+	painter.drawImage(full, m_backing, QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
 #else
-	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, 240, 160));
+	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
 #endif
+	messagePainter()->paint(&painter);
 }

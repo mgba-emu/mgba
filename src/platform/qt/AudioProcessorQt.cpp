@@ -6,6 +6,7 @@
 #include "AudioProcessorQt.h"
 
 #include "AudioDevice.h"
+#include "LogController.h"
 
 #include <QAudioOutput>
 
@@ -33,6 +34,11 @@ void AudioProcessorQt::setInput(GBAThread* input) {
 }
 
 void AudioProcessorQt::start() {
+	if (!input()) {
+		LOG(WARN) << tr("Can't start an audio processor without input");
+		return;
+	}
+
 	if (!m_device) {
 		m_device = new AudioDevice(this);
 	}

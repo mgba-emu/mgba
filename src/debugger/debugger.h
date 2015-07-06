@@ -91,7 +91,7 @@ struct ARMDebugger {
 	bool (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 	bool (*clearSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-	__attribute__((format (printf, 3, 4)))
+	ATTRIBUTE_FORMAT(printf, 3, 4)
 	void (*log)(struct ARMDebugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 

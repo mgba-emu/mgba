@@ -231,7 +231,7 @@ struct GBASerializedState {
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
-		int32_t fifoSize;
+		uint32_t fifoSize;
 		unsigned ch1Volume : 4;
 		unsigned ch1Dead : 1;
 		unsigned ch1Hi : 1;
@@ -321,7 +321,7 @@ struct VDir;
 struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
-void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
+bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);
@@ -335,7 +335,7 @@ void GBADeallocateState(struct GBASerializedState* state);
 
 void GBARecordFrame(struct GBAThread* thread);
 void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int newInterval);
-void GBARewind(struct GBAThread* thread, int nStates);
+int GBARewind(struct GBAThread* thread, int nStates);
 void GBARewindAll(struct GBAThread* thread);
 
 #endif

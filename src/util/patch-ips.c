@@ -39,7 +39,8 @@ bool loadPatchIPS(struct Patch* patch) {
 
 size_t _IPSOutputSize(struct Patch* patch, size_t inSize) {
 	UNUSED(patch);
-	return inSize;
+	UNUSED(inSize);
+	return 16 * 1024 * 1024; // IPS patches can grow up to 16MiB, but not beyond
 }
 
 bool _IPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
