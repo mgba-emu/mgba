@@ -59,17 +59,26 @@ static inline int ConditionDeinit(Condition* cond) {
 }
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
-	MutexLock(&cond->mutex);
+	int ret = MutexLock(&cond->mutex);
+	if (ret < 0) {
+		return ret;
+	}
 	++cond->waiting;
 	MutexUnlock(mutex);
 	MutexUnlock(&cond->mutex);
-	sceKernelWaitSema(cond->semaphore, 1, 0);
+	ret = sceKernelWaitSema(cond->semaphore, 1, 0);
+	if (ret < 0) {
+		printf("Premature wakeup: %08X", ret);
+	}
 	MutexLock(mutex);
-	return 0;
+	return ret;
 }
 
 static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
-	MutexLock(&cond->mutex);
+	int ret = MutexLock(&cond->mutex);
+	if (ret < 0) {
+		return ret;
+	}
 	++cond->waiting;
 	MutexUnlock(mutex);
 	MutexUnlock(&cond->mutex);
@@ -77,7 +86,10 @@ static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t time
 	if (timeoutMs > 0) {
 		timeout = timeoutMs;
 	}
-	int ret = sceKernelWaitSema(cond->semaphore, 1, &timeout);
+	ret = sceKernelWaitSema(cond->semaphore, 1, &timeout);
+	if (ret < 0) {
+		printf("Premature wakeup: %08X", ret);
+	}
 	MutexLock(mutex);
 	return ret;
 }
@@ -104,7 +116,7 @@ static inline int _sceThreadEntry(SceSize args, void* argp) {
 }
 
 static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
-	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x10000100, 0x10000, 0, 0, 0);
+	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x40, 0x10000, 0, 0x70000, 0);
 	if (id < 0) {
 		return id;
 	}
