@@ -77,9 +77,9 @@ static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t time
 	if (timeoutMs > 0) {
 		timeout = timeoutMs;
 	}
-	sceKernelWaitSema(cond->semaphore, 1, &timeout);
+	int ret = sceKernelWaitSema(cond->semaphore, 1, &timeout);
 	MutexLock(mutex);
-	return 0;
+	return ret;
 }
 
 static inline int ConditionWake(Condition* cond) {
