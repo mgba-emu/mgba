@@ -7,8 +7,9 @@
 
 #include "gba/io.h"
 
-#define CYCLES_PER_BIT 75
-#define CLOCK_GRAIN (CYCLES_PER_BIT * 8)
+#define BITS_PER_SECOND 216000
+#define CYCLES_PER_BIT (GBA_ARM7TDMI_FREQUENCY / BITS_PER_SECOND)
+#define CLOCK_GRAIN 1024
 
 const uint16_t DOLPHIN_CLOCK_PORT = 49420;
 const uint16_t DOLPHIN_DATA_PORT = 54970;
@@ -126,12 +127,10 @@ int32_t GBASIODolphinProcessEvents(struct GBASIODriver* driver, int32_t cycles) 
 
 		if (SocketRecv(dol->data, &command, 1) == 1) {
 			dol->nextEvent += _processCommand(dol, command);
+		} else if (dol->clockSlice > 128) {
+			dol->nextEvent += clockSlice;
 		} else {
 			dol->nextEvent += CLOCK_GRAIN;
-		}
-
-		if (dol->nextEvent > dol->clockSlice) {
-			dol->nextEvent = dol->clockSlice;
 		}
 	}
 	return dol->nextEvent;
