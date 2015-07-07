@@ -756,6 +756,8 @@ void GBAFrameStarted(struct GBA* gba) {
 }
 
 void GBAFrameEnded(struct GBA* gba) {
+	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
+
 	if (gba->rr) {
 		gba->rr->nextFrame(gba->rr);
 	}
