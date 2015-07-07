@@ -297,9 +297,10 @@ bool GBACheatAddProActionReplay(struct GBACheatSet* set, uint32_t op1, uint32_t 
 
 	switch (set->gsaVersion) {
 	case 0:
+	case 1:
 		GBACheatSetGameSharkVersion(set, 3);
 	// Fall through
-	case 1:
+	case 3:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 		return GBACheatAddProActionReplayRaw(set, o1, o2);
 	}

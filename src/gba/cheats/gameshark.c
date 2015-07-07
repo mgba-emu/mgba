@@ -197,6 +197,7 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 
 	switch (set->gsaVersion) {
 	case 0:
+	case 3:
 		GBACheatSetGameSharkVersion(set, 1);
 	// Fall through
 	case 1:

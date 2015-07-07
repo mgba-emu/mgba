@@ -57,6 +57,7 @@ Bugfixes:
  - ARM7: ARMHotplugDetach should call deinit
  - Qt: Fix window being too tall after exiting fullscreen
  - Qt: Fix a missing va_end call in the log handler lambda within the GameController constructor
+ - GBA Cheats: Fix Pro Action Replay and GameShark issues when used together
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
