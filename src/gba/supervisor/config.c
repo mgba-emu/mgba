@@ -126,6 +126,31 @@ bool GBAConfigSave(const struct GBAConfig* config) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
+void GBAConfigMakePortable(const struct GBAConfig* config) {
+	struct VFile* portable;
+#ifndef _WIN32
+	char out[PATH_MAX];
+	getcwd(out, PATH_MAX);
+	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
+	portable = VFileOpen(out, O_WRONLY | O_CREAT);
+#else
+	char out[MAX_PATH];
+	wchar_t wpath[MAX_PATH];
+	wchar_t wprojectName[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
+	HMODULE hModule = GetModuleHandleW(NULL);
+	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	PathRemoveFileSpecW(wpath);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
+	StringCchCatA(out, MAX_PATH, "\\portable.ini");
+	portable = VFileOpen(out, O_WRONLY | O_CREAT);
+#endif
+	if (portable) {
+		portable->close(portable);
+		GBAConfigSave(config);
+	}
+}
+
 void GBAConfigDirectory(char* out, size_t outLength) {
 	struct VFile* portable;
 #ifndef _WIN32

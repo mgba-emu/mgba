@@ -258,3 +258,19 @@ void ConfigController::write() {
 	GBAConfigSave(&m_config);
 	m_settings->sync();
 }
+
+void ConfigController::makePortable() {
+	GBAConfigMakePortable(&m_config);
+
+	char path[PATH_MAX];
+	GBAConfigDirectory(path, sizeof(path));
+	QString fileName(path);
+	fileName.append(QDir::separator());
+	fileName.append("qt.ini");
+	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
+	for (const auto& key : m_settings->allKeys()) {
+		settings2->setValue(key, m_settings->value(key));
+	}
+	delete m_settings;
+	m_settings = settings2;
+}

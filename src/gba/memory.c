@@ -818,6 +818,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM) {
 			memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else {

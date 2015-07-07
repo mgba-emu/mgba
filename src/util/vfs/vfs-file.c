@@ -24,6 +24,7 @@ static void* _vffMap(struct VFile* vf, size_t size, int flags);
 static void _vffUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vffTruncate(struct VFile* vf, size_t size);
 static ssize_t _vffSize(struct VFile* vf);
+static bool _vffSync(struct VFile* vf, const void* buffer, size_t size);
 
 struct VFile* VFileFOpen(const char* path, const char* mode) {
 	if (!path && !mode) {
@@ -57,6 +58,7 @@ struct VFile* VFileFromFILE(FILE* file) {
 	vff->d.unmap = _vffUnmap;
 	vff->d.truncate = _vffTruncate;
 	vff->d.size = _vffSize;
+	vff->d.sync = _vffSync;
 
 	return &vff->d;
 }
@@ -139,4 +141,15 @@ static ssize_t _vffSize(struct VFile* vf) {
 	ssize_t size = ftell(vff->file);
 	fseek(vff->file, pos, SEEK_SET);
 	return size;
+}
+
+static bool _vffSync(struct VFile* vf, const void* buffer, size_t size) {
+	struct VFileFILE* vff = (struct VFileFILE*) vf;
+	if (buffer && size) {
+		long pos = ftell(vff->file);
+		fseek(vff->file, 0, SEEK_SET);
+		fwrite(buffer, size, 1, vff->file);
+		fseek(vff->file, pos, SEEK_SET);
+	}
+	return fflush(vff->file) == 0;
 }
