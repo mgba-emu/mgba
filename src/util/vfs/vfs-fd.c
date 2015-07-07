@@ -173,5 +173,9 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	UNUSED(buffer);
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+#ifndef _WIN32
 	return fsync(vfd->fd) == 0;
+#else
+	return FlushFileBuffers((HANDLE) _get_osfhandle(vfd->fd));
+#endif
 }
