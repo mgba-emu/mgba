@@ -23,6 +23,7 @@ static void* _vfsceMap(struct VFile* vf, size_t size, int flags);
 static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfsceTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfsceSize(struct VFile* vf);
+static bool _vfsceSync(struct VFile* vf, const void* memory, size_t size);
 
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
@@ -45,6 +46,7 @@ struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	vfsce->d.unmap = _vfsceUnmap;
 	vfsce->d.truncate = _vfsceTruncate;
 	vfsce->d.size = _vfsceSize;
+	vfsce->d.sync = _vfsceSync;
 
 	return &vfsce->d;
 }
@@ -96,4 +98,16 @@ ssize_t _vfsceSize(struct VFile* vf) {
 	SceOff end = sceIoLseek(vfsce->fd, 0, SEEK_END);
 	sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	return end;
+}
+
+bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
+	struct VFileSce* vfsce = (struct VFileSce*) vf;
+	if (buffer && size) {
+		SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
+		sceIoLseek(vfsce->fd, 0, SEEK_SET);
+		sceIoWrite(vfsce->fd, buffer, size);
+		sceIoLseek(vfsce->fd, cur, SEEK_SET);
+	}
+	// TODO: Get the right device
+	return sceIoSync("cache0:", 0) >= 0;
 }
