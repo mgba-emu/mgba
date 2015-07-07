@@ -98,6 +98,7 @@ Misc:
  - GBA Hardware: Backport generic RTC source into core
  - All: Proper handling of Unicode file paths
  - GBA Video: Slightly optimize mode 0 mosaic rendering
+ - VFS: Add sync method to force syncing with backing
 
 0.2.1: (2015-05-13)
 Bugfixes:
