@@ -111,3 +111,8 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 	// TODO: Get the right device
 	return sceIoSync("cache0:", 0) >= 0;
 }
+
+struct VDir* VDirOpen(const char* path) {
+	// TODO
+	return 0;
+}
