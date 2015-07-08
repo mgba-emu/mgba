@@ -115,6 +115,8 @@ private slots:
 	void gameFailed();
 	void unimplementedBiosCall(int);
 
+	void tryMakePortable();
+
 	void recordFrame();
 	void showFPS();
 

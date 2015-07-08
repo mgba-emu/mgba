@@ -561,6 +561,15 @@ void Window::unimplementedBiosCall(int call) {
 	fail->show();
 }
 
+void Window::tryMakePortable() {
+	QMessageBox* confirm = new QMessageBox(QMessageBox::Question, tr("Really make portable?"),
+	                                       tr("This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?"),
+	                                       QMessageBox::Yes | QMessageBox::Cancel, this, Qt::Sheet);
+	confirm->setAttribute(Qt::WA_DeleteOnClose);
+	connect(confirm->button(QMessageBox::Yes), SIGNAL(clicked()), m_config, SLOT(makePortable()));
+	confirm->show();
+}
+
 void Window::recordFrame() {
 	m_frameList.append(QDateTime::currentDateTime());
 	while (m_frameList.count() > FRAME_LIST_SIZE) {
@@ -642,7 +651,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	fileMenu->addSeparator();
 
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), m_config, SLOT(makePortable())), "makePortable");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), this, SLOT(tryMakePortable())), "makePortable");
 
 	fileMenu->addSeparator();
 
