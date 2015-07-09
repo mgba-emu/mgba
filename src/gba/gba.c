@@ -79,7 +79,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->biosVf = 0;
 
 	gba->logHandler = 0;
-	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	gba->logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	gba->stream = 0;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
