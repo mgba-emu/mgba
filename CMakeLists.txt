@@ -215,6 +215,10 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
 
+if(PSP2)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
+endif()
+
 include(CheckFunctionExists)
 check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
