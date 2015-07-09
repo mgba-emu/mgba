@@ -8,10 +8,6 @@
 #include "gba/serialize.h"
 #include "util/hash.h"
 
-#ifdef PSP2
-#include <psp2/rtc.h>
-#endif
-
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
@@ -260,12 +256,8 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 		t = time(0);
 	}
 	struct tm date;
-#ifdef _WIN32
-	date = *localtime(&t);
-#elif defined(PSP2)
-	SceRtcTime scertc;
-	sceRtcGetCurrentClockLocalTime(&scertc);
-	sceRtcGetTime_t(&scertc, &t);
+#if  defined(_WIN32) || defined(PSP2)
+	localtime_s(&date, &t);
 #else
 	localtime_r(&t, &date);
 #endif
