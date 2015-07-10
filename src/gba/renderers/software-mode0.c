@@ -406,7 +406,7 @@
 			return; \
 		} \
 		if (UNLIKELY(end < outX)) { \
-			GBALog(0, GBA_LOG_DANGER, "Out of bounds background draw!"); \
+			GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \
