@@ -407,6 +407,9 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 }
 
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
+	if (!savedata->vf) {
+		return;
+	}
 	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
 		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
 		if (!(savedata->dirty & SAVEDATA_DIRT_SEEN)) {
