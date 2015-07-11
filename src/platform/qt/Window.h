@@ -116,6 +116,7 @@ private slots:
 	void unimplementedBiosCall(int);
 
 	void tryMakePortable();
+	void mustRestart();
 
 	void recordFrame();
 	void showFPS();

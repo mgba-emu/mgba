@@ -296,6 +296,7 @@ void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config);
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
+	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	openView(settingsWindow);
 }
 
@@ -568,6 +569,14 @@ void Window::tryMakePortable() {
 	confirm->setAttribute(Qt::WA_DeleteOnClose);
 	connect(confirm->button(QMessageBox::Yes), SIGNAL(clicked()), m_config, SLOT(makePortable()));
 	confirm->show();
+}
+
+void Window::mustRestart() {
+	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Restart needed"),
+	                                      tr("Some changes will not take effect until the emulator is restarted."),
+	                                      QMessageBox::Ok, this, Qt::Sheet);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	dialog->show();
 }
 
 void Window::recordFrame() {
