@@ -85,6 +85,7 @@ add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/src/util/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
