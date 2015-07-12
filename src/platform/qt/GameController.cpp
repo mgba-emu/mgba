@@ -746,7 +746,7 @@ void GameController::redoSamples(int samples) {
 	if (m_threadContext.gba) {
 		sampleRate = m_threadContext.gba->audio.sampleRate;
 	}
-	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, 44100);
+	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, m_audioProcess->sampleRate());
 	m_threadContext.audioBuffers = ceil(samples / ratio);
 #else
 	m_threadContext.audioBuffers = samples;
