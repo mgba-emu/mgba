@@ -12,9 +12,11 @@
 #include "gba/serialize.h"
 #include "gba/supervisor/overrides.h"
 #include "gba/video.h"
+#include "util/circle-buffer.h"
 #include "util/vfs.h"
 
 #define SAMPLES 1024
+#define RUMBLE_PWM 35
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -22,11 +24,13 @@ static retro_audio_sample_batch_t audioCallback;
 static retro_input_poll_t inputPollCallback;
 static retro_input_state_t inputCallback;
 static retro_log_printf_t logCallback;
+static retro_set_rumble_state_t rumbleCallback;
 
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+static void _setRumble(struct GBARumble* rumble, int enable);
 
 static struct GBA gba;
 static struct ARMCore cpu;
@@ -36,6 +40,9 @@ static void* data;
 static struct VFile* save;
 static void* savedata;
 static struct GBAAVStream stream;
+static int rumbleLevel;
+static struct CircleBuffer rumbleHistory;
+static struct GBARumble rumble;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -112,7 +119,15 @@ void retro_init(void) {
 	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
 
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
-	// TODO: RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE
+
+	struct retro_rumble_interface rumbleInterface;
+	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
+		rumbleCallback = rumbleInterface.set_rumble_state;
+		CircleBufferInit(&rumbleHistory, RUMBLE_PWM);
+		rumble.setRumble = _setRumble;
+	} else {
+		rumbleCallback = 0;
+	}
 
 	struct retro_log_callback log;
 	if (environCallback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
@@ -132,6 +147,9 @@ void retro_init(void) {
 	gba.logHandler = GBARetroLog;
 	gba.stream = &stream;
 	gba.idleOptimization = IDLE_LOOP_REMOVE; // TODO: Settings
+	if (rumbleCallback) {
+		gba.rumble = &rumble;
+	}
 	rom = 0;
 
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -176,6 +194,10 @@ void retro_run(void) {
 
 void retro_reset(void) {
 	ARMReset(&cpu);
+
+	if (rumbleCallback) {
+		CircleBufferClear(&rumbleHistory);
+	}
 }
 
 bool retro_load_game(const struct retro_game_info* game) {
@@ -219,6 +241,7 @@ void retro_unload_game(void) {
 	save = 0;
 	free(savedata);
 	savedata = 0;
+	CircleBufferDeinit(&rumbleHistory);
 }
 
 size_t retro_serialize_size(void) {
@@ -317,10 +340,12 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 	case GBA_LOG_INFO:
 	case GBA_LOG_GAME_ERROR:
 	case GBA_LOG_SWI:
+	case GBA_LOG_STATUS:
 		retroLevel = RETRO_LOG_INFO;
 		break;
 	case GBA_LOG_DEBUG:
 	case GBA_LOG_STUB:
+	case GBA_LOG_SIO:
 		retroLevel = RETRO_LOG_DEBUG;
 		break;
 	}
@@ -351,4 +376,19 @@ static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer*
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, &pixels);
 	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);
+}
+
+static void _setRumble(struct GBARumble* rumble, int enable) {
+	UNUSED(rumble);
+	if (!rumbleCallback) {
+		return;
+	}
+	rumbleLevel += enable;
+	if (CircleBufferSize(&rumbleHistory) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&rumbleHistory, &oldLevel);
+		rumbleLevel -= oldLevel;
+	}
+	CircleBufferWrite8(&rumbleHistory, enable);
+	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
 }
