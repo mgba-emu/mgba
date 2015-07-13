@@ -9,6 +9,7 @@
 #include "Display.h"
 
 #include <QGLWidget>
+#include <QMouseEvent>
 #include <QThread>
 #include <QTimer>
 
@@ -27,6 +28,7 @@ public:
 protected:
 	void paintEvent(QPaintEvent*) override {}
 	void resizeEvent(QResizeEvent*) override {}
+	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
 };
 
 class PainterGL;

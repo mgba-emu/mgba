@@ -33,6 +33,10 @@ public:
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
 	bool isFiltered() const { return m_filter; }
 
+signals:
+	void showCursor();
+	void hideCursor();
+
 public slots:
 	virtual void startDrawing(GBAThread* context) = 0;
 	virtual void stopDrawing() = 0;
@@ -47,15 +51,19 @@ public slots:
 
 protected:
 	void resizeEvent(QResizeEvent*);
+	virtual void mouseMoveEvent(QMouseEvent*) override;
 
 	MessagePainter* messagePainter() { return &m_messagePainter; }
 
+
 private:
 	static Driver s_driver;
+	static const int MOUSE_DISAPPEAR_TIMER = 2000;
 
 	MessagePainter m_messagePainter;
 	bool m_lockAspectRatio;
 	bool m_filter;
+	QTimer m_mouseTimer;
 };
 
 }
