@@ -27,7 +27,6 @@ static void _rumbleReadPins(struct GBACartridgeHardware* hw);
 static void _lightReadPins(struct GBACartridgeHardware* hw);
 
 static uint16_t _gbpRead(struct GBAKeyCallback*);
-static bool _gbpSioLoad(struct GBASIODriver* driver);
 static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles);
 
@@ -52,7 +51,6 @@ void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->direction = GPIO_WRITE_ONLY;
 	hw->pinState = 0;
 	hw->direction = 0;
-	hw->gbpRunning = false;
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
@@ -501,7 +499,7 @@ bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video) {
 }
 
 void GBAHardwarePlayerUpdate(struct GBA* gba) {
-	if (gba->memory.hw.gbpRunning) {
+	if (gba->memory.hw.devices & HW_GB_PLAYER) {
 		if (GBAHardwarePlayerCheckScreen(&gba->video)) {
 			++gba->memory.hw.gbpInputsPosted;
 			gba->memory.hw.gbpInputsPosted %= 3;
@@ -517,17 +515,18 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 		return;
 	}
 	if (GBAHardwarePlayerCheckScreen(&gba->video)) {
-		gba->memory.hw.gbpRunning = true;
+		gba->memory.hw.devices |= HW_GB_PLAYER;
 		gba->memory.hw.gbpCallback.d.readKeys = _gbpRead;
 		gba->memory.hw.gbpCallback.p = &gba->memory.hw;
 		gba->memory.hw.gbpDriver.d.init = 0;
 		gba->memory.hw.gbpDriver.d.deinit = 0;
-		gba->memory.hw.gbpDriver.d.load = _gbpSioLoad;
+		gba->memory.hw.gbpDriver.d.load = 0;
 		gba->memory.hw.gbpDriver.d.unload = 0;
 		gba->memory.hw.gbpDriver.d.writeRegister = _gbpSioWriteRegister;
 		gba->memory.hw.gbpDriver.d.processEvents = _gbpSioProcessEvents;
 		gba->memory.hw.gbpDriver.p = &gba->memory.hw;
 		gba->memory.hw.gbpInputsPosted = 0;
+		gba->memory.hw.gbpNextEvent = INT_MAX;
 		gba->keyCallback = &gba->memory.hw.gbpCallback.d;
 		GBASIOSetDriver(&gba->sio, &gba->memory.hw.gbpDriver.d, SIO_NORMAL_32);
 	}
@@ -539,13 +538,6 @@ uint16_t _gbpRead(struct GBAKeyCallback* callback) {
 		return 0x30F;
 	}
 	return 0x3FF;
-}
-
-bool _gbpSioLoad(struct GBASIODriver* driver) {
-	struct GBAGBPSIODriver* gbp = (struct GBAGBPSIODriver*) driver;
-	gbp->p->gbpTxPosition = 0;
-	gbp->p->gbpNextEvent = INT_MAX;
-	return true;
 }
 
 uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
@@ -608,6 +600,9 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	state->hw.lightCounter = hw->lightCounter;
 	state->hw.lightSample = hw->lightSample;
 	state->hw.lightEdge = hw->lightEdge;
+	state->hw.gbpInputsPosted = hw->gbpInputsPosted;
+	state->hw.gbpTxPosition = hw->gbpTxPosition;
+	state->hw.gbpNextEvent = hw->gbpNextEvent;
 }
 
 void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {
@@ -623,4 +618,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->lightCounter = state->hw.lightCounter;
 	hw->lightSample = state->hw.lightSample;
 	hw->lightEdge = state->hw.lightEdge;
+	hw->gbpInputsPosted = state->hw.gbpInputsPosted;
+	hw->gbpTxPosition = state->hw.gbpTxPosition;
+	hw->gbpNextEvent = state->hw.gbpNextEvent;
 }

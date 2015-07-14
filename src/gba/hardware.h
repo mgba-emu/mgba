@@ -33,7 +33,8 @@ enum GBAHardwareDevice {
 	HW_RUMBLE = 2,
 	HW_LIGHT_SENSOR = 4,
 	HW_GYRO = 8,
-	HW_TILT = 16
+	HW_TILT = 16,
+	HW_GB_PLAYER = 32
 };
 
 enum GPIORegister {
@@ -116,12 +117,11 @@ struct GBACartridgeHardware {
 	uint16_t tiltY;
 	int tiltState;
 
-	bool gbpRunning;
-	int gbpInputsPosted;
+	unsigned gbpInputsPosted;
 	int gbpTxPosition;
+	int32_t gbpNextEvent;
 	struct GBAGBPKeyCallback gbpCallback;
 	struct GBAGBPSIODriver gbpDriver;
-	int32_t gbpNextEvent;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
