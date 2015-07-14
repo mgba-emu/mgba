@@ -129,7 +129,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 	connect(m_display, &Display::hideCursor, [this]() {
-		setCursor(Qt::BlankCursor);
+		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
+			setCursor(Qt::BlankCursor);
+		}
 	});
 	connect(m_display, &Display::showCursor, [this]() {
 		unsetCursor();
@@ -1122,6 +1124,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
+	unsetCursor();
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
 
