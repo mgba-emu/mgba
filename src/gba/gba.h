@@ -11,6 +11,7 @@
 #include "arm.h"
 #include "debugger/debugger.h"
 
+#include "gba/interface.h"
 #include "gba/memory.h"
 #include "gba/video.h"
 #include "gba/audio.h"
@@ -35,37 +36,6 @@ enum GBAIRQ {
 	IRQ_GAMEPAK = 0xD
 };
 
-enum GBALogLevel {
-	GBA_LOG_FATAL = 0x01,
-	GBA_LOG_ERROR = 0x02,
-	GBA_LOG_WARN = 0x04,
-	GBA_LOG_INFO = 0x08,
-	GBA_LOG_DEBUG = 0x10,
-	GBA_LOG_STUB = 0x20,
-
-	GBA_LOG_GAME_ERROR = 0x100,
-	GBA_LOG_SWI = 0x200,
-	GBA_LOG_STATUS = 0x400,
-	GBA_LOG_SIO = 0x800,
-
-	GBA_LOG_ALL = 0xF3F,
-};
-
-enum GBAKey {
-	GBA_KEY_A = 0,
-	GBA_KEY_B = 1,
-	GBA_KEY_SELECT = 2,
-	GBA_KEY_START = 3,
-	GBA_KEY_RIGHT = 4,
-	GBA_KEY_LEFT = 5,
-	GBA_KEY_UP = 6,
-	GBA_KEY_DOWN = 7,
-	GBA_KEY_R = 8,
-	GBA_KEY_L = 9,
-	GBA_KEY_MAX,
-	GBA_KEY_NONE = -1
-};
-
 enum GBAComponent {
 	GBA_COMPONENT_DEBUGGER,
 	GBA_COMPONENT_CHEAT_DEVICE,
@@ -85,18 +55,9 @@ enum {
 };
 
 struct GBA;
-struct GBARotationSource;
 struct GBAThread;
 struct Patch;
 struct VFile;
-
-typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
-
-struct GBAAVStream {
-	void (*postVideoFrame)(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-	void (*postAudioFrame)(struct GBAAVStream*, int16_t left, int16_t right);
-	void (*postAudioBuffer)(struct GBAAVStream*, struct GBAAudio*);
-};
 
 struct GBATimer {
 	uint16_t reload;
@@ -150,6 +111,7 @@ struct GBA {
 	GBALogHandler logHandler;
 	enum GBALogLevel logLevel;
 	struct GBAAVStream* stream;
+	struct GBAKeyCallback* keyCallback;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

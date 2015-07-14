@@ -81,6 +81,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->logHandler = 0;
 	gba->logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	gba->stream = 0;
+	gba->keyCallback = 0;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -776,6 +777,8 @@ void GBAFrameEnded(struct GBA* gba) {
 	if (gba->stream) {
 		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
+
+	GBAHardwarePlayerUpdate(gba);
 
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
