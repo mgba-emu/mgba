@@ -51,6 +51,8 @@ GameController::GameController(QObject* parent)
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
+	, m_backupLoadState(nullptr)
+	, m_backupSaveState(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -162,6 +164,7 @@ GameController::~GameController() {
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
+	delete m_backupLoadState;
 }
 
 void GameController::setMultiplayerController(MultiplayerController* controller) {
@@ -561,6 +564,10 @@ void GameController::loadState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		if (!controller->m_backupLoadState) {
+			controller->m_backupLoadState = new GBASerializedState;
+		}
+		GBASerialize(context->gba, controller->m_backupLoadState);
 		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
@@ -575,6 +582,23 @@ void GameController::saveState(int slot) {
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
+	});
+}
+
+void GameController::loadBackupState() {
+	if (!m_backupLoadState) {
+		return;
+	}
+
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		if (GBADeserialize(context->gba, controller->m_backupLoadState)) {
+			GBALog(context->gba, GBA_LOG_STATUS, "Undid state load");
+			controller->frameAvailable(controller->m_drawContext);
+			controller->stateLoaded(context);
+		}
+		delete controller->m_backupLoadState;
+		controller->m_backupLoadState = nullptr;
 	});
 }
 

@@ -120,6 +120,7 @@ public slots:
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
+	void loadBackupState();
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
@@ -192,6 +193,8 @@ private:
 	bool m_wasPaused;
 
 	int m_stateSlot;
+	GBASerializedState* m_backupLoadState;
+	GBASerializedState* m_backupSaveState; // TODO: Use this
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

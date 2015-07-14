@@ -698,6 +698,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
 
 	quickLoadMenu->addSeparator();
+
+	QAction* undoLoadState = new QAction(tr("Undo load state"), quickLoadMenu);
+	undoLoadState->setShortcut(tr("F11"));
+	connect(undoLoadState, SIGNAL(triggered()), m_controller, SLOT(loadBackupState()));
+	m_gameActions.append(undoLoadState);
+	addControlledAction(quickLoadMenu, undoLoadState, "undoLoadState");
+
+	quickLoadMenu->addSeparator();
 	quickSaveMenu->addSeparator();
 
 	int i;
@@ -961,14 +969,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef USE_FFMPEG
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
-	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
 	addControlledAction(avMenu, recordOutput, "recordOutput");
 #endif
 
 #ifdef USE_MAGICK
 	QAction* recordGIF = new QAction(tr("Record GIF..."), avMenu);
-	recordGIF->setShortcut(tr("Shift+F11"));
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
