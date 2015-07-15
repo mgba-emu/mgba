@@ -24,7 +24,7 @@ Features:
  - Preliminary support for yanking out the game pak while a game is running
  - Thumb-drive mode by putting a file called portable.ini in the same folder
  - Configurable display driver, between software and OpenGL
- - Undo-able savestate loading
+ - Undo-able savestate loading and saving
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit

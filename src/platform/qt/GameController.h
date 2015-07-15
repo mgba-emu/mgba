@@ -121,6 +121,7 @@ public slots:
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
 	void loadBackupState();
+	void saveBackupState();
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
@@ -194,7 +195,7 @@ private:
 
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;
-	GBASerializedState* m_backupSaveState; // TODO: Use this
+	QByteArray m_backupSaveState;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

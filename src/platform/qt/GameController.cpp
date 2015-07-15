@@ -581,6 +581,12 @@ void GameController::saveState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, false);
+		if (vf) {
+			controller->m_backupSaveState.resize(vf->size(vf));
+			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
+			vf->close(vf);
+		}
 		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
 	});
 }
@@ -599,6 +605,23 @@ void GameController::loadBackupState() {
 		}
 		delete controller->m_backupLoadState;
 		controller->m_backupLoadState = nullptr;
+	});
+}
+
+void GameController::saveBackupState() {
+	if (m_backupSaveState.isEmpty()) {
+		return;
+	}
+
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, true);
+		if (vf) {
+			vf->write(vf, controller->m_backupSaveState.constData(), controller->m_backupSaveState.size());
+			vf->close(vf);
+			GBALog(context->gba, GBA_LOG_STATUS, "Undid state save");
+		}
+		controller->m_backupSaveState.clear();
 	});
 }
 
