@@ -712,7 +712,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	undoSaveState->setShortcut(tr("Shift+F11"));
 	connect(undoSaveState, SIGNAL(triggered()), m_controller, SLOT(saveBackupState()));
 	m_gameActions.append(undoSaveState);
-	addControlledAction(quickLoadMenu, undoSaveState, "undoSaveState");
+	addControlledAction(quickSaveMenu, undoSaveState, "undoSaveState");
 
 	quickLoadMenu->addSeparator();
 	quickSaveMenu->addSeparator();
