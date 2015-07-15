@@ -108,6 +108,7 @@ void InputController::loadConfiguration(uint32_t type) {
 void InputController::loadProfile(uint32_t type, const QString& profile) {
 	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
+	emit profileLoaded(profile);
 }
 
 void InputController::saveConfiguration() {

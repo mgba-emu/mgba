@@ -136,6 +136,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_display, &Display::showCursor, [this]() {
 		unsetCursor();
 	});
+	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
 	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);

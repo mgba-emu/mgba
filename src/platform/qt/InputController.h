@@ -77,6 +77,9 @@ public:
 	GBARumble* rumble();
 	GBARotationSource* rotationSource();
 
+signals:
+	void profileLoaded(const QString& profile);
+
 public slots:
 	void testGamepad(int type);
 
