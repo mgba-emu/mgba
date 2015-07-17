@@ -559,8 +559,9 @@ void GameController::setUseBIOS(bool use) {
 }
 
 void GameController::loadState(int slot) {
-	if (slot > 0) {
+	if (slot > 0 && slot != m_stateSlot) {
 		m_stateSlot = slot;
+		m_backupSaveState.clear();
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
