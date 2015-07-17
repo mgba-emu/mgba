@@ -701,6 +701,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
 
 	quickLoadMenu->addSeparator();
+	quickSaveMenu->addSeparator();
 
 	QAction* undoLoadState = new QAction(tr("Undo load state"), quickLoadMenu);
 	undoLoadState->setShortcut(tr("F11"));
