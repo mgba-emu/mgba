@@ -8,6 +8,7 @@
 #include "ConfigController.h"
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
+#include "InputProfile.h"
 
 #include <QApplication>
 #include <QTimer>
@@ -106,8 +107,14 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+	bool loaded = GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
+	if (!loaded) {
+		const InputProfile* ip = InputProfile::findProfile(profile);
+		if (ip) {
+			ip->apply(this);
+		}
+	}
 	emit profileLoaded(profile);
 }
 

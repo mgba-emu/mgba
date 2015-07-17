@@ -257,7 +257,10 @@ void _unbindAxis(uint32_t axis, void* dp, void* user) {
 	}
 }
 
-static void _loadAll(struct GBAInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config) {
+static bool _loadAll(struct GBAInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config) {
+	if (!ConfigurationHasSection(config, sectionName)) {
+		return false;
+	}
 	_loadKey(map, type, sectionName, config, GBA_KEY_A, "A");
 	_loadKey(map, type, sectionName, config, GBA_KEY_B, "B");
 	_loadKey(map, type, sectionName, config, GBA_KEY_L, "L");
@@ -279,6 +282,7 @@ static void _loadAll(struct GBAInputMap* map, uint32_t type, const char* section
 	_loadAxis(map, type, sectionName, config, GBA_KEY_DOWN, "Down");
 	_loadAxis(map, type, sectionName, config, GBA_KEY_LEFT, "Left");
 	_loadAxis(map, type, sectionName, config, GBA_KEY_RIGHT, "Right");
+	return true;
 }
 
 static void _saveAll(const struct GBAInputMap* map, uint32_t type, const char* sectionName, struct Configuration* config) {
@@ -469,11 +473,11 @@ void GBAInputMapSave(const struct GBAInputMap* map, uint32_t type, struct Config
 	_saveAll(map, type, sectionName, config);
 }
 
-void GBAInputProfileLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, const char* profile) {
+bool GBAInputProfileLoad(struct GBAInputMap* map, uint32_t type, const struct Configuration* config, const char* profile) {
 	char sectionName[SECTION_NAME_MAX];
 	snprintf(sectionName, SECTION_NAME_MAX, "input-profile.%s", profile);
 	sectionName[SECTION_NAME_MAX - 1] = '\0';
-	_loadAll(map, type, sectionName, config);
+	return _loadAll(map, type, sectionName, config);
 }
 
 void GBAInputProfileSave(const struct GBAInputMap* map, uint32_t type, struct Configuration* config, const char* profile) {

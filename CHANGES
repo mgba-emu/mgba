@@ -26,6 +26,7 @@ Features:
  - Configurable display driver, between software and OpenGL
  - Undo-able savestate loading and saving
  - Controller profiles now store shortcut settings
+ - Default controller profiles for several common controllers
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit

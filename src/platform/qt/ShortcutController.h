@@ -21,6 +21,7 @@ class QString;
 namespace QGBA {
 
 class ConfigController;
+class InputProfile;
 
 class ShortcutController : public QAbstractItemModel {
 Q_OBJECT
@@ -133,7 +134,8 @@ private:
 	QMap<QPair<int, GamepadAxisEvent::Direction>, ShortcutItem*> m_axes;
 	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
 	ConfigController* m_config;
-	QString m_profile;
+	QString m_profileName;
+	const InputProfile* m_profile;
 };
 
 }

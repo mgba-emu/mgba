@@ -100,6 +100,10 @@ void ConfigurationClearValue(struct Configuration* configuration, const char* se
 	HashTableRemove(currentSection, key);
 }
 
+bool ConfigurationHasSection(const struct Configuration* configuration, const char* section) {
+	return HashTableLookup(&configuration->sections, section);
+}
+
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {
 	const struct Table* currentSection = &configuration->root;
 	if (section) {
