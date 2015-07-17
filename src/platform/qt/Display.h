@@ -58,7 +58,7 @@ protected:
 
 private:
 	static Driver s_driver;
-	static const int MOUSE_DISAPPEAR_TIMER = 2000;
+	static const int MOUSE_DISAPPEAR_TIMER = 1000;
 
 	MessagePainter m_messagePainter;
 	bool m_lockAspectRatio;
