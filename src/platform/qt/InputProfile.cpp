@@ -13,16 +13,66 @@ using namespace QGBA;
 
 const InputProfile InputProfile::s_defaultMaps[] = {
 	{
+		"XInput Controller #\\d+", // XInput (Windows)
+		(int[GBA_KEY_MAX]) {
+		/*keyA      */ 11,
+		/*keyB      */ 10,
+		/*keySelect */  5,
+		/*keyStart  */  4,
+		/*keyRight  */  3,
+		/*keyLeft   */  2,
+		/*keyUp     */  0,
+		/*keyDown   */  1,
+		/*keyR      */  9,
+		/*keyL      */  8
+		},
+		(ShortcutButton[]) {
+			{"loadState", 12},
+			{"saveState", 13},
+			{}
+		},
+		(ShortcutAxis[]) {
+			{"holdFastForward", GamepadAxisEvent::Direction::POSITIVE, 5},
+			{"holdRewind", GamepadAxisEvent::Direction::POSITIVE, 4},
+			{}
+		}
+	},
+	{
+		"Controller", // The Xbox 360 controller drivers on OS X are vague...
+		(int[GBA_KEY_MAX]) {
+		/*keyA      */  1,
+		/*keyB      */  0,
+		/*keySelect */  9,
+		/*keyStart  */  8,
+		/*keyRight  */ 14,
+		/*keyLeft   */ 13,
+		/*keyUp     */ 11,
+		/*keyDown   */ 12,
+		/*keyR      */  5,
+		/*keyL      */  4
+		},
+		(ShortcutButton[]) {
+			{"loadState", 2},
+			{"saveState", 3},
+			{}
+		},
+		(ShortcutAxis[]) {
+			{"holdFastForward", GamepadAxisEvent::Direction::POSITIVE, 5},
+			{"holdRewind", GamepadAxisEvent::Direction::POSITIVE, 2},
+			{}
+		}
+	},
+	{
 		"PLAYSTATION\\(R\\)3 Controller", // DualShock 3 (OS X)
 		(int[GBA_KEY_MAX]) {
 		/*keyA      */ 13,
 		/*keyB      */ 14,
 		/*keySelect */  0,
 		/*keyStart  */  3,
-		/*keyRight  */ -1,
-		/*keyLeft   */ -1,
-		/*keyUp     */ -1,
-		/*keyDown   */ -1,
+		/*keyRight  */  5,
+		/*keyLeft   */  7,
+		/*keyUp     */  4,
+		/*keyDown   */  6,
 		/*keyR      */ 11,
 		/*keyL      */ 10
 		},
@@ -41,10 +91,10 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 		/*keyB      */ 16,
 		/*keySelect */  7,
 		/*keyStart  */  6,
-		/*keyRight  */ -1,
-		/*keyLeft   */ -1,
-		/*keyUp     */ -1,
-		/*keyDown   */ -1,
+		/*keyRight  */ 14,
+		/*keyLeft   */ 13,
+		/*keyUp     */ 11,
+		/*keyDown   */ 12,
 		/*keyR      */ 20,
 		/*keyL      */ 19
 		},
@@ -53,31 +103,6 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 			{"saveState", 17},
 			{"holdFastForward", 22},
 			{"holdRewind", 21},
-			{}
-		}
-	},
-	{
-		"Controller", // The Xbox 360 controller drivers on OS X are vague...
-		(int[GBA_KEY_MAX]) {
-		/*keyA      */ 1,
-		/*keyB      */ 0,
-		/*keySelect */  9,
-		/*keyStart  */  8,
-		/*keyRight  */ -1,
-		/*keyLeft   */ -1,
-		/*keyUp     */ -1,
-		/*keyDown   */ -1,
-		/*keyR      */ 5,
-		/*keyL      */ 4
-		},
-		(ShortcutButton[]) {
-			{"loadState", 2},
-			{"saveState", 3},
-			{}
-		},
-		(ShortcutAxis[]) {
-			{"holdFastForward", GamepadAxisEvent::Direction::POSITIVE, 5},
-			{"holdRewind", GamepadAxisEvent::Direction::POSITIVE, 2},
 			{}
 		}
 	},
