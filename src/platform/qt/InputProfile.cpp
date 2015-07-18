@@ -161,8 +161,10 @@ const InputProfile* InputProfile::findProfile(const QString& name) {
 
 void InputProfile::apply(InputController* controller) const {
 	for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
+#ifdef BUILD_SDL
 		controller->bindKey(SDL_BINDING_BUTTON, m_keys[i], static_cast<GBAKey>(i));
 		controller->bindAxis(SDL_BINDING_BUTTON, m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
+#endif
 	}
 	controller->registerTiltAxisX(m_tiltAxis.x);
 	controller->registerTiltAxisY(m_tiltAxis.y);
