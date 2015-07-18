@@ -103,6 +103,7 @@ Misc:
  - GBA Video: Slightly optimize mode 0 mosaic rendering
  - VFS: Add sync method to force syncing with backing
  - GBA: Savedata is now synced shortly after data finishes being written
+ - GBA Input: Allow axes and buttons to be mapped to the same key
 
 0.2.1: (2015-05-13)
 Bugfixes:
