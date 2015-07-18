@@ -53,7 +53,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
-	, m_inputController(playerId)
+	, m_inputController(playerId, this)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif

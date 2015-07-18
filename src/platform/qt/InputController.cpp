@@ -25,7 +25,7 @@ int InputController::s_sdlInited = 0;
 GBASDLEvents InputController::s_sdlEvents;
 #endif
 
-InputController::InputController(int playerId, QObject* parent)
+InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
 	, m_config(nullptr)
@@ -34,6 +34,7 @@ InputController::InputController(int playerId, QObject* parent)
 	, m_playerAttached(false)
 #endif
 	, m_allowOpposing(false)
+	, m_topLevel(topLevel)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -432,7 +433,7 @@ void InputController::testGamepad(int type) {
 		if (newlyAboveThreshold) {
 			GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, type, this);
 			postPendingEvent(event->gbaKey());
-			QApplication::sendEvent(QApplication::focusWidget(), event);
+			sendGamepadEvent(event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
@@ -441,7 +442,7 @@ void InputController::testGamepad(int type) {
 	for (auto axis : oldAxes) {
 		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, type, this);
 		clearPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 	}
 
 	if (!QApplication::focusWidget()) {
@@ -454,7 +455,7 @@ void InputController::testGamepad(int type) {
 	for (int button : activeButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, type, this);
 		postPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 		if (!event->isAccepted()) {
 			clearPendingEvent(event->gbaKey());
 		}
@@ -462,8 +463,21 @@ void InputController::testGamepad(int type) {
 	for (int button : oldButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, type, this);
 		clearPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 	}
+}
+
+void InputController::sendGamepadEvent(QEvent* event) {
+	QWidget* focusWidget = nullptr;
+	if (m_topLevel) {
+		focusWidget = m_topLevel->focusWidget();
+		if (!focusWidget) {
+			focusWidget = m_topLevel;
+		}
+	} else {
+		focusWidget = QApplication::focusWidget();
+	}
+	QApplication::sendEvent(focusWidget, event);
 }
 
 void InputController::postPendingEvent(GBAKey key) {

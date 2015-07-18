@@ -32,7 +32,7 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(int playerId = 0, QObject* parent = nullptr);
+	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
@@ -94,11 +94,13 @@ private:
 	void postPendingEvent(GBAKey);
 	void clearPendingEvent(GBAKey);
 	bool hasPendingEvent(GBAKey) const;
+	void sendGamepadEvent(QEvent*);
 
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
 	int m_playerId;
 	bool m_allowOpposing;
+	QWidget* m_topLevel;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
