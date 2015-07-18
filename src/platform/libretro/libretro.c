@@ -39,6 +39,7 @@ static struct VFile* rom;
 static void* data;
 static struct VFile* save;
 static void* savedata;
+static struct VFile* bios;
 static struct GBAAVStream stream;
 static int rumbleLevel;
 static struct CircleBuffer rumbleHistory;
@@ -152,6 +153,16 @@ void retro_init(void) {
 	}
 	rom = 0;
 
+	const char* sysDir = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+		char biosPath[PATH_MAX];
+		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
+		bios = VFileOpen(biosPath, O_RDONLY);
+		if (bios) {
+			GBALoadBIOS(&gba, bios);
+		}
+	}
+
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
@@ -166,6 +177,10 @@ void retro_init(void) {
 }
 
 void retro_deinit(void) {
+	if (bios) {
+		bios->close(bios);
+		bios = 0;
+	}
 	GBADestroy(&gba);
 }
 
