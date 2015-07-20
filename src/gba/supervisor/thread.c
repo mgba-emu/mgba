@@ -96,6 +96,18 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 	}
 }
 
+struct GBAThreadStop {
+	struct GBAStopCallback d;
+	struct GBAThread* p;
+};
+
+static void _stopCallback(struct GBAStopCallback* stop) {
+	struct GBAThreadStop* callback = (struct GBAThreadStop*) stop;
+	if (callback->p->stopCallback(callback->p)) {
+		_changeState(callback->p, THREAD_EXITING, false);
+	}
+}
+
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
@@ -129,6 +141,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+
+	struct GBAThreadStop stop;
+	if (threadContext->stopCallback) {
+		stop.d.stop = _stopCallback;
+		stop.p = threadContext;
+		gba.stopCallback = &stop.d;
+	}
+
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);

@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "InputController.h"
+#include "LogController.h"
 #include "MultiplayerController.h"
 #include "VFileDevice.h"
 
@@ -92,6 +93,13 @@ GameController::GameController(QObject* parent)
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
 		controller->m_fpsTarget = context->fpsTarget;
+
+		if (GBALoadState(context, context->stateDir, 0)) {
+			VFile* vf = GBAGetState(context->gba, context->stateDir, 0, true);
+			if (vf) {
+				vf->truncate(vf, 0);
+			}
+		}
 		controller->gameStarted(context);
 	};
 
@@ -113,8 +121,22 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
+	m_threadContext.stopCallback = [](GBAThread* context) {
+		if (!context) {
+			return false;
+		}
+		GameController* controller = static_cast<GameController*>(context->userData);
+		if (!GBASaveState(context, context->stateDir, 0, true)) {
+			return false;
+		}
+		QMetaObject::invokeMethod(controller, "closeGame");
+		return true;
+	};
+
 	m_threadContext.logHandler = [](GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
-		static const char* stubMessage = "Stub software interrupt";
+		static const char* stubMessage = "Stub software interrupt: %02X";
+		static const char* savestateMessage = "State %i loaded";
+		static const char* savestateFailedMessage = "State %i failed to load";
 		if (!context) {
 			return;
 		}
@@ -125,6 +147,25 @@ GameController::GameController(QObject* parent)
 			int immediate = va_arg(argc, int);
 			va_end(argc);
 			controller->unimplementedBiosCall(immediate);
+		} else if (level == GBA_LOG_STATUS) {
+			// Slot 0 is reserved for suspend points
+			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
+				va_list argc;
+				va_copy(argc, args);
+				int slot = va_arg(argc, int);
+				va_end(argc);
+				if (slot == 0) {
+					format = "Loaded suspend state";
+				}
+			} else if (strncmp(savestateFailedMessage, format, strlen(savestateFailedMessage)) == 0) {
+				va_list argc;
+				va_copy(argc, args);
+				int slot = va_arg(argc, int);
+				va_end(argc);
+				if (slot == 0) {
+					return;
+				}
+			}
 		}
 		if (level == GBA_LOG_FATAL) {
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
