@@ -112,6 +112,7 @@ struct GBA {
 	enum GBALogLevel logLevel;
 	struct GBAAVStream* stream;
 	struct GBAKeyCallback* keyCallback;
+	struct GBAStopCallback* stopCallback;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;
@@ -155,6 +156,7 @@ void GBAWriteIME(struct GBA* gba, uint16_t value);
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq);
 void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
+void GBAStop(struct GBA* gba);
 
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);

@@ -191,6 +191,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x2:
 		GBAHalt(gba);
 		break;
+	case 0x3:
+		GBAStop(gba);
+		break;
 	case 0x05:
 	// VBlankIntrWait
 	// Fall through:

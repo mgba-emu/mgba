@@ -505,7 +505,7 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		if (!value) {
 			GBAHalt(gba);
 		} else {
-			GBALog(gba, GBA_LOG_STUB, "Stop unimplemented");
+			GBAStop(gba);
 		}
 		return;
 	}

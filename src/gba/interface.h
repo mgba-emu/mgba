@@ -66,6 +66,10 @@ struct GBAKeyCallback {
 	uint16_t (*readKeys)(struct GBAKeyCallback*);
 };
 
+struct GBAStopCallback {
+	void (*stop)(struct GBAStopCallback*);
+};
+
 struct GBARotationSource {
 	void (*sample)(struct GBARotationSource*);
 
