@@ -300,6 +300,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			break;
 		}
 		break;
+	case 0x19:
+		// SoundBias is mostly meaningless here
+		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: SoundBias (19)");
+		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);
 		break;

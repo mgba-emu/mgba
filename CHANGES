@@ -106,6 +106,7 @@ Misc:
  - VFS: Add sync method to force syncing with backing
  - GBA: Savedata is now synced shortly after data finishes being written
  - GBA Input: Allow axes and buttons to be mapped to the same key
+ - GBA BIOS: Stub out SoundBias
 
 0.2.1: (2015-05-13)
 Bugfixes:
