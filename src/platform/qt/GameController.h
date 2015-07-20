@@ -55,7 +55,7 @@ public:
 	void threadContinue();
 
 	bool isPaused();
-	bool isLoaded() { return m_gameOpen; }
+	bool isLoaded() { return m_gameOpen && GBAThreadIsActive(&m_threadContext); }
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
