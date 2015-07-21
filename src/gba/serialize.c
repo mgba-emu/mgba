@@ -140,12 +140,12 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	gba->cpu->nextEvent = state->cpu.nextEvent;
 	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
 	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
-	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
+	gba->cpu->privilegeMode = gba->cpu->cpsr.a.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {
 		gba->memory.biosPrefetch = state->biosPrefetch;
 	}
-	if (gba->cpu->cpsr.t) {
+	if (gba->cpu->cpsr.a.t) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
 			gba->cpu->prefetch[0] = state->cpuPrefetch[0] & 0xFFFF;

@@ -29,7 +29,7 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 }
 
 static void _switchMode(struct GBASIO* sio) {
-	unsigned mode = ((sio->rcnt & 0xC000) | (sio->siocnt & 0x3000)) >> 12;
+	unsigned mode = ((sio->rcnt & 0xC000) | (sio->a.siocnt & 0x3000)) >> 12;
 	enum GBASIOMode oldMode = sio->mode;
 	if (mode < 8) {
 		sio->mode = (enum GBASIOMode) (mode & 0x3);
@@ -49,7 +49,7 @@ static void _switchMode(struct GBASIO* sio) {
 
 void GBASIOInit(struct GBASIO* sio) {
 	sio->rcnt = RCNT_INITIAL;
-	sio->siocnt = 0;
+	sio->a.siocnt = 0;
 	sio->mode = -1;
 	sio->activeDriver = 0;
 	sio->drivers.normal = 0;
@@ -131,8 +131,8 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
-	if ((value ^ sio->siocnt) & 0x3000) {
-		sio->siocnt = value & 0x3000;
+	if ((value ^ sio->a.siocnt) & 0x3000) {
+		sio->a.siocnt = value & 0x3000;
 		_switchMode(sio);
 	}
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
@@ -154,7 +154,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 			break;
 		}
 	}
-	sio->siocnt = value;
+	sio->a.siocnt = value;
 }
 
 void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value) {

@@ -19,8 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "version.h"
-
 #ifdef _MSC_VER
 #include <sys/types.h>
 typedef intptr_t ssize_t;
@@ -31,7 +29,6 @@ typedef intptr_t ssize_t;
 #define ftruncate _chsize
 #define snprintf _snprintf
 #else
-#include <strings.h>
 #include <unistd.h>
 #endif
 

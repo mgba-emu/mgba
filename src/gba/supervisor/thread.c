@@ -21,7 +21,9 @@
 
 #include "platform/commandline.h"
 
+#if !defined(__CELLOS_LV2__)
 #include <signal.h>
+#endif
 
 static void _loadGameDir(struct GBAThread* threadContext);
 

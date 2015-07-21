@@ -166,7 +166,7 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
-	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
+        snprintf(out, outLength, "%s/.config/%s", home, binaryName);
 	mkdir(out, 0755);
 #else
 	wchar_t wpath[MAX_PATH];

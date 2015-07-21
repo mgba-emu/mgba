@@ -55,12 +55,12 @@ struct DebuggerEntryInfo {
 		struct {
 			uint32_t oldValue;
 			enum WatchpointType watchType;
-		};
+		} b;
 
 		struct {
 			uint32_t opcode;
-		};
-	};
+		} c;
+	} a;
 };
 
 enum DebuggerLogLevel {

@@ -1,0 +1,52 @@
+INCFLAGS := -I$(CORE_DIR) -I$(CORE_DIR)/arm
+
+SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
+					$(CORE_DIR)/arm/isa-thumb.c \
+					$(CORE_DIR)/arm/isa-arm.c \
+					$(CORE_DIR)/arm/decoder-arm.c \
+					$(CORE_DIR)/arm/decoder-thumb.c \
+					$(CORE_DIR)/arm/decoder.c \
+					$(CORE_DIR)/debugger/debugger.c \
+					$(CORE_DIR)/debugger/memory-debugger.c \
+					$(CORE_DIR)/gba/savedata.c \
+					$(CORE_DIR)/gba/io.c \
+					$(CORE_DIR)/gba/bios.c \
+					$(CORE_DIR)/gba/hle-bios.c \
+					$(CORE_DIR)/gba/input.c \
+					$(CORE_DIR)/gba/audio.c \
+					$(CORE_DIR)/gba/memory.c \
+					$(CORE_DIR)/gba/cheats.c \
+					$(CORE_DIR)/gba/cheats/gameshark.c \
+					$(CORE_DIR)/gba/cheats/parv3.c \
+					$(CORE_DIR)/gba/cheats/codebreaker.c \
+					$(CORE_DIR)/gba/gba.c \
+					$(CORE_DIR)/gba/hardware.c \
+					$(CORE_DIR)/gba/sio.c \
+					$(CORE_DIR)/gba/video.c \
+					$(CORE_DIR)/gba/serialize.c \
+					$(CORE_DIR)/gba/supervisor/overrides.c \
+					$(CORE_DIR)/gba/supervisor/sync.c \
+					$(CORE_DIR)/gba/supervisor/thread.c \
+					$(CORE_DIR)/gba/renderers/software-mode0.c \
+					$(CORE_DIR)/gba/renderers/software-obj.c \
+					$(CORE_DIR)/gba/renderers/software-bg.c \
+					$(CORE_DIR)/gba/renderers/video-software.c \
+					$(CORE_DIR)/platform/libretro/memory.c \
+					$(CORE_DIR)/platform/libretro/libretro.c \
+					$(CORE_DIR)/third-party/inih/ini.c \
+					$(CORE_DIR)/util/formatting.c \
+					$(CORE_DIR)/util/vfs.c \
+					$(CORE_DIR)/util/table.c \
+					$(CORE_DIR)/util/vfs/vfs-mem.c \
+					$(CORE_DIR)/util/string.c \
+					$(CORE_DIR)/util/hash.c \
+					$(CORE_DIR)/util/configuration.c \
+					$(CORE_DIR)/util/circle-buffer.c \
+					$(CORE_DIR)/third-party/blip_buf/blip_buf.c \
+					$(CORE_DIR)/util/crc32.c
+
+ifeq ($(HAVE_VFS_FD),1)
+SOURCES_C += $(CORE_DIR)/util/vfs/vfs-fd.c
+else
+SOURCES_C += $(CORE_DIR)/util/vfs/vfs-file.c
+endif

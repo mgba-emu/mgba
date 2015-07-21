@@ -106,8 +106,8 @@ union ARMOperand {
 			uint8_t shifterReg;
 			uint8_t shifterImm;
 			uint8_t psrBits;
-		};
-	};
+		} b;
+	} a;
 	int32_t immediate;
 };
 
