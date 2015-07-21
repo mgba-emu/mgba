@@ -25,6 +25,11 @@ ifeq ($(shell uname -a),)
 	system_platform = win
 else ifneq ($(findstring Darwin,$(shell uname -a)),)
 	system_platform = osx
+ifeq ($(shell uname -p),powerpc)
+	arch = ppc
+else
+	arch = intel
+endif
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
 	system_platform = win
 endif
@@ -54,6 +59,9 @@ else ifeq ($(platform), osx)
 		CXXFLAGS += $(ARCHFLAGS)
 		LDFLAGS += $(ARCHFLAGS)
 	endif
+ifeq ($(arch),ppc)
+	DEFINES += -D__POWERPC__ -D__PPC__ -DMSB_FIRST
+endif
 	DEFINES += -DHAVE_LOCALE
 	DEFINES += -std=c99
 # iOS

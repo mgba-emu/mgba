@@ -574,11 +574,11 @@ int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
 		}
 		gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 		gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
-		if (gbp->d.p->normalControl.irq) {
+		if (gbp->d.p->a.normalControl.irq) {
 			GBARaiseIRQ(gbp->p->p, IRQ_SIO);
 		}
-		gbp->d.p->normalControl.start = 0;
-		gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt;
+		gbp->d.p->a.normalControl.start = 0;
+		gbp->p->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->a.siocnt;
 		gbp->p->gbpNextEvent = INT_MAX;
 	}
 	return gbp->p->gbpNextEvent;

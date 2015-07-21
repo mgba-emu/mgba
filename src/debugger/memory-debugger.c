@@ -88,17 +88,17 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 		if (!((watchpoints->address ^ address) & ~width)) {
 			switch (width + 1) {
 			case 1:
-				info->oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
+				info->a.b.oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
 				break;
 			case 2:
-				info->oldValue = debugger->originalMemory.load16(debugger->cpu, address, 0);
+				info->a.b.oldValue = debugger->originalMemory.load16(debugger->cpu, address, 0);
 				break;
 			case 4:
-				info->oldValue = debugger->originalMemory.load32(debugger->cpu, address, 0);
+				info->a.b.oldValue = debugger->originalMemory.load32(debugger->cpu, address, 0);
 				break;
 			}
 			info->address = address;
-			info->watchType = watchpoints->type;
+			info->a.b.watchType = watchpoints->type;
 			return true;
 		}
 	}
