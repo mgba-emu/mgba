@@ -36,7 +36,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/third-party/inih/ini.c \
 					$(CORE_DIR)/util/formatting.c \
 					$(CORE_DIR)/util/vfs.c \
-					$(CORE_DIR)/util/vfs/vfs-fd.c \
 					$(CORE_DIR)/util/table.c \
 					$(CORE_DIR)/util/vfs/vfs-mem.c \
 					$(CORE_DIR)/util/string.c \
@@ -45,3 +44,9 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/util/circle-buffer.c \
 					$(CORE_DIR)/third-party/blip_buf/blip_buf.c \
 					$(CORE_DIR)/util/crc32.c
+
+ifeq ($(HAVE_VFS_FD),1)
+SOURCES_C += $(CORE_DIR)/util/vfs/vfs-fd.c
+else
+SOURCES_C += $(CORE_DIR)/util/vfs/vfs-file.c
+endif
