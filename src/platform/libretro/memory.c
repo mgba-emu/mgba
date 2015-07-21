@@ -7,6 +7,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#elif defined(GEKKO) || defined(__CELLOS_LV2__)
+/* stub */
 #else
 #include <sys/mman.h>
 
@@ -22,16 +24,20 @@
 void* anonymousMemoryMap(size_t size) {
 #ifdef _WIN32
 	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+#elif defined(__CELLOS_LV2__) || defined(GEKKO)
+   return (void*)malloc(size);
 #else
 	return mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 #endif
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
-#ifdef _WIN32
 	UNUSED(size);
+#ifdef _WIN32
 	// size is not useful here because we're freeing the memory, not decommitting it
 	VirtualFree(memory, 0, MEM_RELEASE);
+#elif defined(__CELLOS_LV2__) || defined(GEKKO)
+   free(memory);
 #else
 	munmap(memory, size);
 #endif
