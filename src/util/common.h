@@ -29,7 +29,6 @@ typedef intptr_t ssize_t;
 #define ftruncate _chsize
 #define snprintf _snprintf
 #else
-#include <strings.h>
 #include <unistd.h>
 #endif
 
