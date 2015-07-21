@@ -85,6 +85,9 @@ struct GBALuminanceSource {
 	uint8_t (*readLuminance)(struct GBALuminanceSource*);
 };
 
+/* Have to include this here because of time_t returntype below. */
+#include <time.h> 
+
 struct GBARTCSource {
 	void (*sample)(struct GBARTCSource*);
 
