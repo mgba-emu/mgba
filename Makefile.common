@@ -22,7 +22,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/gba.c \
 					$(CORE_DIR)/gba/hardware.c \
 					$(CORE_DIR)/gba/sio.c \
-					$(CORE_DIR)/gba/sio/lockstep.c \
 					$(CORE_DIR)/gba/video.c \
 					$(CORE_DIR)/gba/serialize.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
@@ -43,8 +42,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/util/string.c \
 					$(CORE_DIR)/util/hash.c \
 					$(CORE_DIR)/util/configuration.c \
+					$(CORE_DIR)/util/circle-buffer.c \
+					$(CORE_DIR)/third-party/blip_buf/blip_buf.c \
 					$(CORE_DIR)/util/crc32.c
-					
-SOURCES_C += $(CORE_DIR)/util/circle-buffer.c
-#SOURCES_C += $(CORE_DIR)/debugger/gdb-stub.c
-SOURCES_C  += $(CORE_DIR)/third-party/blip_buf/blip_buf.c
