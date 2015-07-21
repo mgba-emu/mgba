@@ -10,8 +10,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/debugger/memory-debugger.c \
 					$(CORE_DIR)/gba/savedata.c \
 					$(CORE_DIR)/gba/io.c \
-					$(CORE_DIR)/gba/rr/vbm.c \
-					$(CORE_DIR)/gba/rr/mgm.c \
 					$(CORE_DIR)/gba/bios.c \
 					$(CORE_DIR)/gba/hle-bios.c \
 					$(CORE_DIR)/gba/input.c \
