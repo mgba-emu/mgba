@@ -211,17 +211,10 @@ Bugfixes:
  - Qt: Fix crash when starting GDB stub after closing a game
  - Qt: Fix patch loading while a game is running
  - Qt: Fix crash when loading a game after stopping GDB server
-<<<<<<< HEAD
- - GBA BIOS: Fix BIOS decompression routines with invalid source addresses
- - GBA: Initialize gba.sync to null
- - GBA: Fix timer initialization
- - GBA Memory: Fix I cycles that had been moved to ARM7 core
-=======
  - Qt: Pause game while open file dialogs are open (fixes #6 on GitHub)
  - Qt: Fix crash when attempting to pause if a game is not running
  - SDL: Properly clean up if a game doesn't launch
  - Util: Fix sockets on Windows
->>>>>>> upstream/master
 Misc:
  - All: Enable link-time optimization
  - Debugger: Watchpoints now work on STM/LDM instructions
