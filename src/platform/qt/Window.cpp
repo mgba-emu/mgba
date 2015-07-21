@@ -47,12 +47,13 @@ using std::isnan;
 
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
-	, m_logView(new LogView())
+	, m_log(0)
+	, m_logView(new LogView(&m_log))
 	, m_stateWindow(nullptr)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
-	, m_inputController(playerId)
+	, m_inputController(playerId, this)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -110,16 +111,16 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), &m_inputController, SLOT(suspendScreensaver()));
-	connect(m_controller, SIGNAL(postLog(int, const QString&)), m_logView, SLOT(postLog(int, const QString&)));
+	connect(m_controller, SIGNAL(postLog(int, const QString&)), &m_log, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), m_display, SLOT(framePosted(const uint32_t*)));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));
 	connect(m_controller, SIGNAL(gameFailed()), this, SLOT(gameFailed()));
 	connect(m_controller, SIGNAL(unimplementedBiosCall(int)), this, SLOT(unimplementedBiosCall(int)));
 	connect(m_controller, SIGNAL(statusPosted(const QString&)), m_display, SLOT(showMessage(const QString&)));
-	connect(m_logView, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
-	connect(m_logView, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
-	connect(m_logView, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
+	connect(&m_log, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
 	connect(this, SIGNAL(startDrawing(GBAThread*)), m_display, SLOT(startDrawing(GBAThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
@@ -127,8 +128,17 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
+	connect(m_display, &Display::hideCursor, [this]() {
+		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
+			setCursor(Qt::BlankCursor);
+		}
+	});
+	connect(m_display, &Display::showCursor, [this]() {
+		unsetCursor();
+	});
+	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
-	m_logView->setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
+	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 
 	m_shortcutController->setConfigController(m_config);
@@ -173,7 +183,7 @@ void Window::setConfig(ConfigController* config) {
 void Window::loadConfig() {
 	const GBAOptions* opts = m_config->options();
 
-	m_logView->setLevels(opts->logLevel);
+	m_log.setLevels(opts->logLevel);
 
 	m_controller->setOptions(opts);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
@@ -295,6 +305,7 @@ void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config);
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
+	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	openView(settingsWindow);
 }
 
@@ -476,8 +487,8 @@ void Window::exitFullScreen() {
 		return;
 	}
 	unsetCursor();
-	showNormal();
 	menuBar()->show();
+	showNormal();
 }
 
 void Window::toggleFullScreen() {
@@ -509,7 +520,7 @@ void Window::gameStarted(GBAThread* context) {
 	attachWidget(m_display);
 
 #ifndef Q_OS_MAC
-	if(isFullScreen()) {
+	if (isFullScreen()) {
 		menuBar()->hide();
 	}
 #endif
@@ -532,16 +543,16 @@ void Window::gameStopped() {
 
 void Window::gameCrashed(const QString& errorMessage) {
 	QMessageBox* crash = new QMessageBox(QMessageBox::Critical, tr("Crash"),
-		tr("The game has crashed with the following error:\n\n%1").arg(errorMessage),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	                                     tr("The game has crashed with the following error:\n\n%1").arg(errorMessage),
+	                                     QMessageBox::Ok, this, Qt::Sheet);
 	crash->setAttribute(Qt::WA_DeleteOnClose);
 	crash->show();
 }
 
 void Window::gameFailed() {
 	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Couldn't Load"),
-		tr("Could not load game. Are you sure it's in the correct format?"),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	                                    tr("Could not load game. Are you sure it's in the correct format?"),
+	                                    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
 }
@@ -552,11 +563,29 @@ void Window::unimplementedBiosCall(int call) {
 	}
 	m_hitUnimplementedBiosCall = true;
 
-	QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("Unimplemented BIOS call"),
-		tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
-		QMessageBox::Ok, this,  Qt::Sheet);
+	QMessageBox* fail = new QMessageBox(
+	    QMessageBox::Warning, tr("Unimplemented BIOS call"),
+	    tr("This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience."),
+	    QMessageBox::Ok, this, Qt::Sheet);
 	fail->setAttribute(Qt::WA_DeleteOnClose);
 	fail->show();
+}
+
+void Window::tryMakePortable() {
+	QMessageBox* confirm = new QMessageBox(QMessageBox::Question, tr("Really make portable?"),
+	                                       tr("This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?"),
+	                                       QMessageBox::Yes | QMessageBox::Cancel, this, Qt::Sheet);
+	confirm->setAttribute(Qt::WA_DeleteOnClose);
+	connect(confirm->button(QMessageBox::Yes), SIGNAL(clicked()), m_config, SLOT(makePortable()));
+	confirm->show();
+}
+
+void Window::mustRestart() {
+	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Restart needed"),
+	                                      tr("Some changes will not take effect until the emulator is restarted."),
+	                                      QMessageBox::Ok, this, Qt::Sheet);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	dialog->show();
 }
 
 void Window::recordFrame() {
@@ -628,7 +657,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* fileMenu = menubar->addMenu(tr("&File"));
 	m_shortcutController->addMenu(fileMenu);
 	installEventFilter(m_shortcutController);
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open), "loadROM");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
+	                    "loadROM");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
@@ -636,6 +666,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
 
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
+
+	fileMenu->addSeparator();
+
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), this, SLOT(tryMakePortable())), "makePortable");
 
 	fileMenu->addSeparator();
 
@@ -665,6 +699,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(quickSave, SIGNAL(triggered()), m_controller, SLOT(saveState()));
 	m_gameActions.append(quickSave);
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
+
+	quickLoadMenu->addSeparator();
+	quickSaveMenu->addSeparator();
+
+	QAction* undoLoadState = new QAction(tr("Undo load state"), quickLoadMenu);
+	undoLoadState->setShortcut(tr("F11"));
+	connect(undoLoadState, SIGNAL(triggered()), m_controller, SLOT(loadBackupState()));
+	m_gameActions.append(undoLoadState);
+	addControlledAction(quickLoadMenu, undoLoadState, "undoLoadState");
+
+	QAction* undoSaveState = new QAction(tr("Undo save state"), quickSaveMenu);
+	undoSaveState->setShortcut(tr("Shift+F11"));
+	connect(undoSaveState, SIGNAL(triggered()), m_controller, SLOT(saveBackupState()));
+	m_gameActions.append(undoSaveState);
+	addControlledAction(quickSaveMenu, undoSaveState, "undoSaveState");
 
 	quickLoadMenu->addSeparator();
 	quickSaveMenu->addSeparator();
@@ -733,7 +782,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(m_controller, &GameController::gamePaused, [this, pause]() {
 		pause->setChecked(true);
 
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
+		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage.rgbSwapped());
 		m_screenWidget->setPixmap(pixmap);
@@ -854,7 +904,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	QKeySequence fullscreenKeys;
 #ifdef Q_OS_WIN
-	fullscreenKeys = QKeySequence("Alt+Enter");
+	fullscreenKeys = QKeySequence("Alt+Return");
 #else
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
@@ -929,14 +979,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef USE_FFMPEG
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
-	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
 	addControlledAction(avMenu, recordOutput, "recordOutput");
 #endif
 
 #ifdef USE_MAGICK
 	QAction* recordGIF = new QAction(tr("Record GIF..."), avMenu);
-	recordGIF->setShortcut(tr("Shift+F11"));
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
@@ -1010,8 +1058,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	toolsMenu->addSeparator();
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())), "settings");
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())), "shortcuts");
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
+	                    "settings");
+	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())),
+	                    "shortcuts");
 
 	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
 	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
@@ -1082,6 +1132,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
+	unsetCursor();
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
 

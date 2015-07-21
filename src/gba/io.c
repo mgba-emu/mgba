@@ -333,7 +333,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		case REG_SOUND3CNT_X:
 			GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
 			// TODO: The low bits need to not be readable, but still 8-bit writable
-			value &= 0x43FF;
+			value &= 0x47FF;
 			break;
 		case REG_SOUND4CNT_LO:
 			GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
@@ -505,7 +505,7 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		if (!value) {
 			GBAHalt(gba);
 		} else {
-			GBALog(gba, GBA_LOG_STUB, "Stop unimplemented");
+			GBAStop(gba);
 		}
 		return;
 	}
@@ -584,14 +584,18 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_KEYINPUT:
 		if (gba->rr && gba->rr->isPlaying(gba->rr)) {
 			return 0x3FF ^ gba->rr->queryInput(gba->rr);
-		} else if (gba->keySource) {
-			uint16_t input = *gba->keySource;
+		} else {
+			uint16_t input = 0x3FF;
+			if (gba->keyCallback) {
+				input = gba->keyCallback->readKeys(gba->keyCallback);
+			} else if (gba->keySource) {
+				input = *gba->keySource;
+			}
 			if (gba->rr && gba->rr->isRecording(gba->rr)) {
 				gba->rr->logInput(gba->rr, input);
 			}
 			return 0x3FF ^ input;
 		}
-		break;
 
 	case REG_SIOCNT:
 		return gba->sio.siocnt;

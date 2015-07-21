@@ -20,6 +20,7 @@
 // Other games vary from very little, with a fairly solid 20500 cycle count. (Observed on a SST (D4BF) chip).
 // An average estimation is as follows.
 #define FLASH_SETTLE_CYCLES 18000
+#define CLEANUP_THRESHOLD 15
 
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
@@ -33,6 +34,8 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->vf = vf;
 	savedata->realVf = vf;
 	savedata->mapMode = MAP_WRITE;
+	savedata->dirty = 0;
+	savedata->dirtAge = 0;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
@@ -252,6 +255,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 	case FLASH_STATE_RAW:
 		switch (savedata->command) {
 		case FLASH_COMMAND_PROGRAM:
+			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
 			break;
@@ -359,6 +363,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
+			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
 			++savedata->writeAddress;
 		} else {
@@ -399,6 +404,41 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		return data & 0x1;
 	}
 	return 0;
+}
+
+void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
+	if (!savedata->vf) {
+		return;
+	}
+	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
+		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
+		if (!(savedata->dirty & SAVEDATA_DIRT_SEEN)) {
+			savedata->dirtAge = frameCount;
+			savedata->dirty |= SAVEDATA_DIRT_SEEN;
+		}
+	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
+		size_t size;
+		switch (savedata->type) {
+		case SAVEDATA_EEPROM:
+			size = SIZE_CART_EEPROM;
+			break;
+		case SAVEDATA_SRAM:
+			size = SIZE_CART_SRAM;
+			break;
+		case SAVEDATA_FLASH512:
+			size = SIZE_CART_FLASH512;
+			break;
+		case SAVEDATA_FLASH1M:
+			size = SIZE_CART_FLASH1M;
+			break;
+		default:
+			size = 0;
+			break;
+		}
+		savedata->vf->sync(savedata->vf, savedata->data, size);
+		savedata->dirty = 0;
+		GBALog(0, GBA_LOG_INFO, "Savedata synced");
+	}
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
@@ -451,6 +491,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 
 void _flashErase(struct GBASavedata* savedata) {
 	GBALog(0, GBA_LOG_DEBUG, "Performing flash chip erase");
+	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = SIZE_CART_FLASH512;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		size = SIZE_CART_FLASH1M;
@@ -460,6 +501,7 @@ void _flashErase(struct GBASavedata* savedata) {
 
 void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 	GBALog(0, GBA_LOG_DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
+	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);

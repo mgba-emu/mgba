@@ -65,7 +65,7 @@ bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer) {
 		pixman_format_code_t format = PIXMAN_x8b8g8r8;
 #endif
 		renderer->pix = pixman_image_create_bits(format, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
-			renderer->d.outputBuffer, renderer->d.outputBufferStride * BYTES_PER_PIXEL);
+		    renderer->d.outputBuffer, renderer->d.outputBufferStride * BYTES_PER_PIXEL);
 		renderer->screenpix = pixman_image_create_bits(format, renderer->viewportWidth, renderer->viewportHeight, surface->pixels, surface->pitch);
 
 		pixman_transform_t transform;
@@ -104,8 +104,8 @@ void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 #ifdef USE_PIXMAN
 			if (renderer->ratio > 1) {
 				pixman_image_composite32(PIXMAN_OP_SRC, renderer->pix, 0, renderer->screenpix,
-					0, 0, 0, 0, 0, 0,
-					renderer->viewportWidth, renderer->viewportHeight);
+				    0, 0, 0, 0, 0, 0,
+				    renderer->viewportWidth, renderer->viewportHeight);
 			}
 #else
 			switch (renderer->ratio) {

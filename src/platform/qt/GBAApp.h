@@ -46,7 +46,8 @@ protected:
 private:
 	class FileDialog : public QFileDialog {
 	public:
-		FileDialog(GBAApp* app, QWidget* parent = nullptr, const QString& caption = QString(), const QString& filter = QString());
+		FileDialog(GBAApp* app, QWidget* parent = nullptr, const QString& caption = QString(),
+		           const QString& filter = QString());
 		virtual int exec() override;
 
 	private:

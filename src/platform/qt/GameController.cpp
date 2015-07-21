@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "InputController.h"
+#include "LogController.h"
 #include "MultiplayerController.h"
 #include "VFileDevice.h"
 
@@ -51,6 +52,8 @@ GameController::GameController(QObject* parent)
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
+	, m_backupLoadState(nullptr)
+	, m_backupSaveState(nullptr)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -70,50 +73,42 @@ GameController::GameController(QObject* parent)
 	m_threadContext.logLevel = GBA_LOG_ALL;
 
 	m_lux.p = this;
-	m_lux.sample = [] (GBALuminanceSource* context) {
+	m_lux.sample = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
 		lux->value = 0xFF - lux->p->m_luxValue;
 	};
 
-	m_lux.readLuminance = [] (GBALuminanceSource* context) {
+	m_lux.readLuminance = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
 		return lux->value;
 	};
 	setLuminanceLevel(0);
 
-	m_rtc.p = this;
-	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
-	m_rtc.sample = [] (GBARTCSource* context) { };
-	m_rtc.unixTime = [] (GBARTCSource* context) -> time_t {
-		GameControllerRTC* rtc = static_cast<GameControllerRTC*>(context);
-		switch (rtc->override) {
-		case GameControllerRTC::NO_OVERRIDE:
-		default:
-			return time(nullptr);
-		case GameControllerRTC::FIXED:
-			return rtc->value;
-		case GameControllerRTC::FAKE_EPOCH:
-			return rtc->value + rtc->p->m_threadContext.gba->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
-		}
-	};
-
-	m_threadContext.startCallback = [] (GBAThread* context) {
+	m_threadContext.startCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_audioProcessor->setInput(context);
 		context->gba->luminanceSource = &controller->m_lux;
-		context->gba->rtcSource = &controller->m_rtc;
+		GBARTCGenericSourceInit(&controller->m_rtc, context->gba);
+		context->gba->rtcSource = &controller->m_rtc.d;
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
 		controller->m_fpsTarget = context->fpsTarget;
+
+		if (GBALoadState(context, context->stateDir, 0)) {
+			VFile* vf = GBAGetState(context->gba, context->stateDir, 0, true);
+			if (vf) {
+				vf->truncate(vf, 0);
+			}
+		}
 		controller->gameStarted(context);
 	};
 
-	m_threadContext.cleanCallback = [] (GBAThread* context) {
+	m_threadContext.cleanCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->gameStopped(context);
 	};
 
-	m_threadContext.frameCallback = [] (GBAThread* context) {
+	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
@@ -126,8 +121,22 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
-	m_threadContext.logHandler = [] (GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
-		static const char* stubMessage = "Stub software interrupt";
+	m_threadContext.stopCallback = [](GBAThread* context) {
+		if (!context) {
+			return false;
+		}
+		GameController* controller = static_cast<GameController*>(context->userData);
+		if (!GBASaveState(context, context->stateDir, 0, true)) {
+			return false;
+		}
+		QMetaObject::invokeMethod(controller, "closeGame");
+		return true;
+	};
+
+	m_threadContext.logHandler = [](GBAThread* context, enum GBALogLevel level, const char* format, va_list args) {
+		static const char* stubMessage = "Stub software interrupt: %02X";
+		static const char* savestateMessage = "State %i loaded";
+		static const char* savestateFailedMessage = "State %i failed to load";
 		if (!context) {
 			return;
 		}
@@ -136,7 +145,27 @@ GameController::GameController(QObject* parent)
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
+			va_end(argc);
 			controller->unimplementedBiosCall(immediate);
+		} else if (level == GBA_LOG_STATUS) {
+			// Slot 0 is reserved for suspend points
+			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
+				va_list argc;
+				va_copy(argc, args);
+				int slot = va_arg(argc, int);
+				va_end(argc);
+				if (slot == 0) {
+					format = "Loaded suspend state";
+				}
+			} else if (strncmp(savestateFailedMessage, format, strlen(savestateFailedMessage)) == 0) {
+				va_list argc;
+				va_copy(argc, args);
+				int slot = va_arg(argc, int);
+				va_end(argc);
+				if (slot == 0) {
+					return;
+				}
+			}
 		}
 		if (level == GBA_LOG_FATAL) {
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
@@ -152,8 +181,8 @@ GameController::GameController(QObject* parent)
 
 	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
 		GBARewind(&m_threadContext, 1);
-		emit rewound(&m_threadContext);
 		emit frameAvailable(m_drawContext);
+		emit rewound(&m_threadContext);
 	});
 	m_rewindTimer.setInterval(100);
 
@@ -176,6 +205,7 @@ GameController::~GameController() {
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
+	delete m_backupLoadState;
 }
 
 void GameController::setMultiplayerController(MultiplayerController* controller) {
@@ -238,6 +268,7 @@ void GameController::loadGame(const QString& path, bool dirmode) {
 	if (!dirmode) {
 		QFile file(path);
 		if (!file.open(QIODevice::ReadOnly)) {
+			postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
 			return;
 		}
 		file.close();
@@ -277,7 +308,7 @@ void GameController::openGame(bool biosOnly) {
 	if (biosOnly) {
 		m_threadContext.fname = nullptr;
 	} else {
-		m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
+		m_threadContext.fname = strdup(m_fname.toUtf8().constData());
 		if (m_dirmode) {
 			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
 			m_threadContext.stateDir = m_threadContext.gameDir;
@@ -324,7 +355,6 @@ void GameController::yankPak() {
 	threadContinue();
 }
 
-
 void GameController::replaceGame(const QString& path) {
 	if (!m_gameOpen) {
 		return;
@@ -353,6 +383,7 @@ void GameController::importSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for reading: %1").arg(path));
 		return;
 	}
 	threadInterrupt();
@@ -367,6 +398,7 @@ void GameController::exportSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for writing: %1").arg(path));
 		return;
 	}
 	threadInterrupt();
@@ -478,8 +510,8 @@ void GameController::rewind(int states) {
 		GBARewind(&m_threadContext, states);
 	}
 	threadContinue();
-	emit rewound(&m_threadContext);
 	emit frameAvailable(m_drawContext);
+	emit rewound(&m_threadContext);
 }
 
 void GameController::startRewinding() {
@@ -568,14 +600,19 @@ void GameController::setUseBIOS(bool use) {
 }
 
 void GameController::loadState(int slot) {
-	if (slot > 0) {
+	if (slot > 0 && slot != m_stateSlot) {
 		m_stateSlot = slot;
+		m_backupSaveState.clear();
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		if (!controller->m_backupLoadState) {
+			controller->m_backupLoadState = new GBASerializedState;
+		}
+		GBASerialize(context->gba, controller->m_backupLoadState);
 		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
-			controller->stateLoaded(context);
 			controller->frameAvailable(controller->m_drawContext);
+			controller->stateLoaded(context);
 		}
 	});
 }
@@ -586,7 +623,47 @@ void GameController::saveState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, false);
+		if (vf) {
+			controller->m_backupSaveState.resize(vf->size(vf));
+			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
+			vf->close(vf);
+		}
 		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
+	});
+}
+
+void GameController::loadBackupState() {
+	if (!m_backupLoadState) {
+		return;
+	}
+
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		if (GBADeserialize(context->gba, controller->m_backupLoadState)) {
+			GBALog(context->gba, GBA_LOG_STATUS, "Undid state load");
+			controller->frameAvailable(controller->m_drawContext);
+			controller->stateLoaded(context);
+		}
+		delete controller->m_backupLoadState;
+		controller->m_backupLoadState = nullptr;
+	});
+}
+
+void GameController::saveBackupState() {
+	if (m_backupSaveState.isEmpty()) {
+		return;
+	}
+
+	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, true);
+		if (vf) {
+			vf->write(vf, controller->m_backupSaveState.constData(), controller->m_backupSaveState.size());
+			vf->close(vf);
+			GBALog(context->gba, GBA_LOG_STATUS, "Undid state save");
+		}
+		controller->m_backupSaveState.clear();
 	});
 }
 
@@ -731,16 +808,16 @@ void GameController::setLuminanceLevel(int level) {
 }
 
 void GameController::setRealTime() {
-	m_rtc.override = GameControllerRTC::NO_OVERRIDE;
+	m_rtc.override = GBARTCGenericSource::RTC_NO_OVERRIDE;
 }
 
 void GameController::setFixedTime(const QDateTime& time) {
-	m_rtc.override = GameControllerRTC::FIXED;
+	m_rtc.override = GBARTCGenericSource::RTC_FIXED;
 	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
 }
 
 void GameController::setFakeEpoch(const QDateTime& time) {
-	m_rtc.override = GameControllerRTC::FAKE_EPOCH;
+	m_rtc.override = GBARTCGenericSource::RTC_FAKE_EPOCH;
 	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
 }
 
@@ -758,7 +835,7 @@ void GameController::redoSamples(int samples) {
 	if (m_threadContext.gba) {
 		sampleRate = m_threadContext.gba->audio.sampleRate;
 	}
-	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, 44100);
+	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, m_audioProcess->sampleRate());
 	m_threadContext.audioBuffers = ceil(samples / ratio);
 #else
 	m_threadContext.audioBuffers = samples;

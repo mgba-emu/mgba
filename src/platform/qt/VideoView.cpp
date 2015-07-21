@@ -8,6 +8,7 @@
 #ifdef USE_FFMPEG
 
 #include "GBAApp.h"
+#include "LogController.h"
 
 #include <QMap>
 
@@ -197,7 +198,8 @@ void VideoView::startRecording() {
 	if (!validateSettings()) {
 		return;
 	}
-	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toLocal8Bit().constData())) {
+	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
+		LOG(ERROR) << tr("Failed to open output video file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);
@@ -230,7 +232,7 @@ void VideoView::setAudioCodec(const QString& codec, bool manual) {
 	if (m_audioCodec == "none") {
 		m_audioCodecCstr = nullptr;
 	} else {
-		m_audioCodecCstr = strdup(m_audioCodec.toLocal8Bit().constData());
+		m_audioCodecCstr = strdup(m_audioCodec.toUtf8().constData());
 	}
 	if (!FFmpegEncoderSetAudio(&m_encoder, m_audioCodecCstr, m_abr)) {
 		free(m_audioCodecCstr);
@@ -246,7 +248,7 @@ void VideoView::setAudioCodec(const QString& codec, bool manual) {
 void VideoView::setVideoCodec(const QString& codec, bool manual) {
 	free(m_videoCodecCstr);
 	m_videoCodec = sanitizeCodec(codec, s_vcodecMap);
-	m_videoCodecCstr = strdup(m_videoCodec.toLocal8Bit().constData());
+	m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());
 	if (!FFmpegEncoderSetVideo(&m_encoder, m_videoCodecCstr, m_vbr)) {
 		free(m_videoCodecCstr);
 		m_videoCodecCstr = nullptr;
@@ -261,7 +263,7 @@ void VideoView::setVideoCodec(const QString& codec, bool manual) {
 void VideoView::setContainer(const QString& container, bool manual) {
 	free(m_containerCstr);
 	m_container = sanitizeCodec(container, s_containerMap);
-	m_containerCstr = strdup(m_container.toLocal8Bit().constData());
+	m_containerCstr = strdup(m_container.toUtf8().constData());
 	if (!FFmpegEncoderSetContainer(&m_encoder, m_containerCstr)) {
 		free(m_containerCstr);
 		m_containerCstr = nullptr;

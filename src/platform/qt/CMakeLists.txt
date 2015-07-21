@@ -61,8 +61,10 @@ set(SOURCE_FILES
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
 	InputController.cpp
+	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
+	LogController.cpp
 	LogView.cpp
 	MemoryModel.cpp
 	MemoryView.cpp

@@ -15,6 +15,7 @@ Features
 - Qt and SDL ports for a heavy-weight and a light-weight frontend.
 - Local (same computer) link cable support.
 - Save type detection, even for flash memory size[<sup>[2]</sup>](#flashdetect).
+- Support for cartridges with motion sensors and rumble (only usable with game controllers).
 - Real-time clock support, even without configuration.
 - A built-in BIOS implementation, and ability to load external BIOS files.
 - Turbo/fast-forward support by holding Tab.
@@ -26,8 +27,9 @@ Features
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
 - IPS, UPS and BPS patch support.
-- Game debugging via a command-line interface (not available with Qt port) and GDB remote support.
+- Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
+- Support for loading and exporting GameShark and Action Replay snapshots.
 
 ### Planned features
 
@@ -74,7 +76,7 @@ Controls are configurable in the menu. The default gamepad controls are mapped s
 Compiling
 ---------
 
-Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. To use CMake to build on a Unix-based system, the recommended commands are as follows:
+Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon. To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
 	mkdir build
 	cd build
@@ -83,6 +85,26 @@ Compiling requires using CMake 2.8.11 or newer. GCC and Clang are both known to 
 	sudo make install
 
 This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies that are installed will be automatically detected, and features that are disabled if the dependencies are not found will be shown after running the `cmake` command after warnings about being unable to find them.
+
+#### Windows developer building
+
+To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MinGW-w64 Win32 Shell") and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 500MiB of packages, so it will take a long time):
+
+	pacman -Sy mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,imagemagick,libzip,pkg-config,qt5,SDL2}
+
+Check out the source code by running this command:
+
+	git clone https://github.com/mgba-emu/mgba.git
+
+Then finally build it by running these commands:
+
+	cd mgba
+	mkdir build
+	cd build
+	cmake .. -G "MSYS Makefiles"
+	make
+
+Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development.
 
 ### Dependencies
 
@@ -104,7 +126,6 @@ Footnotes
 - OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
 - Mosaic for transformed OBJs ([Bug #9](http://mgba.io/b/9))
 - BIOS call RegisterRamReset is partially stubbed out ([Bug #141](http://mgba.io/b/141))
-- Audio channel reset flags ([Bug #142](http://mgba.io/b/142))
 - Game Pak prefetch ([Bug #195](http://mgba.io/b/195))
 - BIOS call Stop, for entering sleep mode ([Bug #199](http://mgba.io/b/199))
 
@@ -124,4 +145,5 @@ mGBA contains the following third-party libraries:
 
 - [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
-- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public doman.
+- [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
+- [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) implementation by Austin Appleby, which is public domain.

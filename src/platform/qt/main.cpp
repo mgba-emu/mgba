@@ -9,12 +9,12 @@
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef _WIN32
-Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
-Q_IMPORT_PLUGIN (QWindowsAudioPlugin);
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
+Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
 #endif
 #endif
 
 int main(int argc, char* argv[]) {
-    QGBA::GBAApp application(argc, argv);
-    return application.exec();
+	QGBA::GBAApp application(argc, argv);
+	return application.exec();
 }

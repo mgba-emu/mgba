@@ -27,7 +27,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/sio/lockstep.c \
 					$(CORE_DIR)/gba/video.c \
 					$(CORE_DIR)/gba/serialize.c \
-					$(CORE_DIR)/gba/supervisor/config.c \
 					$(CORE_DIR)/gba/supervisor/rr.c \
 					$(CORE_DIR)/gba/supervisor/cli.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
@@ -37,7 +36,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/renderers/software-obj.c \
 					$(CORE_DIR)/gba/renderers/software-bg.c \
 					$(CORE_DIR)/gba/renderers/video-software.c \
-					$(CORE_DIR)/platform/commandline.c \
 					$(CORE_DIR)/platform/libretro/memory.c \
 					$(CORE_DIR)/platform/libretro/libretro.c \
 					$(CORE_DIR)/third-party/inih/ini.c \

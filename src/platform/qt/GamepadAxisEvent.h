@@ -16,7 +16,7 @@ namespace QGBA {
 
 class InputController;
 
-class GamepadAxisEvent : public QEvent  {
+class GamepadAxisEvent : public QEvent {
 public:
 	enum Direction {
 		NEUTRAL = 0,

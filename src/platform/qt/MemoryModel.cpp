@@ -7,6 +7,7 @@
 
 #include "GBAApp.h"
 #include "GameController.h"
+#include "LogController.h"
 
 #include <QAction>
 #include <QApplication>
@@ -153,7 +154,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		// TODO: Log
+		LOG(WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QDataStream stream(&outfile);
@@ -195,9 +196,12 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	static QString arg("%0");
 	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
-	painter.drawText(QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())), Qt::AlignHCenter, tr("ASCII"));
+	painter.drawText(
+	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),
+	    Qt::AlignHCenter, tr("ASCII"));
 	for (int x = 0; x < 16; ++x) {
-		painter.drawText(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), 0), m_cellSize), Qt::AlignHCenter, QString::number(x, 16).toUpper());
+		painter.drawText(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), 0), m_cellSize), Qt::AlignHCenter,
+		                 QString::number(x, 16).toUpper());
 	}
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
@@ -209,38 +213,56 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			for (int x = 0; x < 16; x += 2) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 2, m_cellSize.height())), palette.highlight());
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
+					                        QSizeF(m_cellSize.width() * 2, m_cellSize.height())),
+					                 palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
 					if (isEditing(address)) {
-						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp));
+						drawEditingText(
+						    painter,
+						    QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp));
 						continue;
 					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint16_t b = m_cpu->memory.load16(m_cpu, address, nullptr);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[(b >> 8) & 0xFF]);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 1.0) + m_margins.left(), yp), m_staticNumbers[b & 0xFF]);
+				painter.drawStaticText(
+				    QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp),
+				    m_staticNumbers[(b >> 8) & 0xFF]);
+				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 1.0) + m_margins.left(), yp),
+				                       m_staticNumbers[b & 0xFF]);
 			}
 			break;
 		case 4:
 			for (int x = 0; x < 16; x += 4) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), QSizeF(m_cellSize.width() * 4, m_cellSize.height())), palette.highlight());
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
+					                        QSizeF(m_cellSize.width() * 4, m_cellSize.height())),
+					                 palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
 					if (isEditing(address)) {
-						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp));
+						drawEditingText(
+						    painter,
+						    QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp));
 						continue;
 					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint32_t b = m_cpu->memory.load32(m_cpu, address, nullptr);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[(b >> 24) & 0xFF]);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) - 2 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[(b >> 16) & 0xFF]);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) + m_margins.left(), yp), m_staticNumbers[(b >> 8) & 0xFF]);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) + 2 * m_letterWidth + m_margins.left(), yp), m_staticNumbers[b & 0xFF]);
+				painter.drawStaticText(
+				    QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp),
+				    m_staticNumbers[(b >> 24) & 0xFF]);
+				painter.drawStaticText(
+				    QPointF(m_cellSize.width() * (x + 2.0) - 2 * m_letterWidth + m_margins.left(), yp),
+				    m_staticNumbers[(b >> 16) & 0xFF]);
+				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 2.0) + m_margins.left(), yp),
+				                       m_staticNumbers[(b >> 8) & 0xFF]);
+				painter.drawStaticText(
+				    QPointF(m_cellSize.width() * (x + 2.0) + 2 * m_letterWidth + m_margins.left(), yp),
+				    m_staticNumbers[b & 0xFF]);
 			}
 			break;
 		case 1:
@@ -248,28 +270,34 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 			for (int x = 0; x < 16; ++x) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
 				if (isInSelection(address)) {
-					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize), palette.highlight());
+					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize),
+					                 palette.highlight());
 					painter.setPen(palette.color(QPalette::HighlightedText));
 					if (isEditing(address)) {
-						drawEditingText(painter, QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp));
+						drawEditingText(painter,
+						                QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp));
 						continue;
 					}
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
 				uint8_t b = m_cpu->memory.load8(m_cpu, address, nullptr);
-				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp), m_staticNumbers[b]);
+				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp),
+				                       m_staticNumbers[b]);
 			}
 			break;
 		}
 		painter.setPen(palette.color(QPalette::WindowText));
 		for (int x = 0; x < 16; ++x) {
 			uint8_t b = m_cpu->memory.load8(m_cpu, (y + m_top) * 16 + x + m_base, nullptr);
-			painter.drawStaticText(QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp), b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
+			painter.drawStaticText(
+			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp),
+			    b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
 		}
 	}
 	painter.drawLine(m_margins.left(), 0, m_margins.left(), viewport()->size().height());
-	painter.drawLine(viewport()->size().width() - m_margins.right(), 0, viewport()->size().width() - m_margins.right(), viewport()->size().height());
+	painter.drawLine(viewport()->size().width() - m_margins.right(), 0, viewport()->size().width() - m_margins.right(),
+	                 viewport()->size().height());
 	painter.drawLine(0, m_margins.top(), viewport()->size().width(), m_margins.top());
 }
 
@@ -282,18 +310,28 @@ void MemoryModel::wheelEvent(QWheelEvent* event) {
 }
 
 void MemoryModel::mousePressEvent(QMouseEvent* event) {
-	if (event->x() < m_margins.left() || event->y() < m_margins.top() || event->x() > size().width() - m_margins.right()) {
+	if (event->x() < m_margins.left() || event->y() < m_margins.top() ||
+	    event->x() > size().width() - m_margins.right()) {
 		m_selection = qMakePair(0, 0);
 		return;
 	}
 
 	QPoint position(event->pos() - QPoint(m_margins.left(), m_margins.top()));
-	uint32_t address = int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
+	uint32_t address = int(position.x() / m_cellSize.width()) +
+	                   (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	if (event->button() == Qt::RightButton && isInSelection(address)) {
 		return;
 	}
-	m_selectionAnchor = address & ~(m_align - 1);
-	m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	if (event->modifiers() & Qt::ShiftModifier) {
+		if ((address & ~(m_align - 1)) < m_selectionAnchor) {
+			m_selection = qMakePair(address & ~(m_align - 1), m_selectionAnchor + m_align);
+		} else {
+			m_selection = qMakePair(m_selectionAnchor, (address & ~(m_align - 1)) + m_align);
+		}
+	} else {
+		m_selectionAnchor = address & ~(m_align - 1);
+		m_selection = qMakePair(m_selectionAnchor, m_selectionAnchor + m_align);
+	}
 	m_buffer = 0;
 	m_bufferedNybbles = 0;
 	emit selectionChanged(m_selection.first, m_selection.second);
@@ -301,12 +339,14 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 }
 
 void MemoryModel::mouseMoveEvent(QMouseEvent* event) {
-	if (event->x() < m_margins.left() || event->y() < m_margins.top() || event->x() > size().width() - m_margins.right()) {
+	if (event->x() < m_margins.left() || event->y() < m_margins.top() ||
+	    event->x() > size().width() - m_margins.right()) {
 		return;
 	}
 
 	QPoint position(event->pos() - QPoint(m_margins.left(), m_margins.top()));
-	uint32_t address = int(position.x() / m_cellSize.width()) + (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
+	uint32_t address = int(position.x() / m_cellSize.width()) +
+	                   (int(position.y() / m_cellSize.height()) + m_top) * 16 + m_base;
 	if ((address & ~(m_align - 1)) < m_selectionAnchor) {
 		m_selection = qMakePair(address & ~(m_align - 1), m_selectionAnchor + m_align);
 	} else {
@@ -419,7 +459,11 @@ void MemoryModel::drawEditingText(QPainter& painter, const QPointF& origin) {
 			painter.drawStaticText(o, m_staticNumbers[b]);
 		} else {
 			int b = m_buffer & 0xF;
-			painter.drawStaticText(o, m_staticAscii[b + '0']);
+			if (b < 10) {
+				painter.drawStaticText(o, m_staticAscii[b + '0']);
+			} else {
+				painter.drawStaticText(o, m_staticAscii[b - 10 + 'A']);
+			}
 		}
 		o += QPointF(m_letterWidth * 2, 0);
 	}

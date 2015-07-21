@@ -20,6 +20,7 @@ extern "C" {
 #include "GDBController.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
+#include "LogController.h"
 
 struct GBAOptions;
 struct GBAArguments;
@@ -114,6 +115,9 @@ private slots:
 	void gameFailed();
 	void unimplementedBiosCall(int);
 
+	void tryMakePortable();
+	void mustRestart();
+
 	void recordFrame();
 	void showFPS();
 
@@ -140,6 +144,7 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	LogController m_log;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;

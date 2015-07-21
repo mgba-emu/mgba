@@ -8,6 +8,7 @@
 #include "ConfigController.h"
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
+#include "InputProfile.h"
 
 #include <QApplication>
 #include <QTimer>
@@ -24,7 +25,7 @@ int InputController::s_sdlInited = 0;
 GBASDLEvents InputController::s_sdlEvents;
 #endif
 
-InputController::InputController(int playerId, QObject* parent)
+InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
 	, m_config(nullptr)
@@ -33,6 +34,7 @@ InputController::InputController(int playerId, QObject* parent)
 	, m_playerAttached(false)
 #endif
 	, m_allowOpposing(false)
+	, m_topLevel(topLevel)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -106,8 +108,15 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	bool loaded = GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
+	if (!loaded) {
+		const InputProfile* ip = InputProfile::findProfile(profile);
+		if (ip) {
+			ip->apply(this);
+		}
+	}
+	emit profileLoaded(profile);
 }
 
 void InputController::saveConfiguration() {
@@ -128,7 +137,7 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
 
@@ -193,7 +202,7 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 	if (!m_config) {
 		return;
 	}
-	GBAInputSetPreferredDevice(m_config->input(), type, m_playerId, device.toLocal8Bit().constData());
+	GBAInputSetPreferredDevice(m_config->input(), type, m_playerId, device.toUtf8().constData());
 }
 
 GBARumble* InputController::rumble() {
@@ -424,7 +433,7 @@ void InputController::testGamepad(int type) {
 		if (newlyAboveThreshold) {
 			GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, type, this);
 			postPendingEvent(event->gbaKey());
-			QApplication::sendEvent(QApplication::focusWidget(), event);
+			sendGamepadEvent(event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
@@ -433,7 +442,7 @@ void InputController::testGamepad(int type) {
 	for (auto axis : oldAxes) {
 		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, type, this);
 		clearPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 	}
 
 	if (!QApplication::focusWidget()) {
@@ -446,7 +455,7 @@ void InputController::testGamepad(int type) {
 	for (int button : activeButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, type, this);
 		postPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 		if (!event->isAccepted()) {
 			clearPendingEvent(event->gbaKey());
 		}
@@ -454,8 +463,21 @@ void InputController::testGamepad(int type) {
 	for (int button : oldButtons) {
 		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, type, this);
 		clearPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 	}
+}
+
+void InputController::sendGamepadEvent(QEvent* event) {
+	QWidget* focusWidget = nullptr;
+	if (m_topLevel) {
+		focusWidget = m_topLevel->focusWidget();
+		if (!focusWidget) {
+			focusWidget = m_topLevel;
+		}
+	} else {
+		focusWidget = QApplication::focusWidget();
+	}
+	QApplication::sendEvent(focusWidget, event);
 }
 
 void InputController::postPendingEvent(GBAKey key) {

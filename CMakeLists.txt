@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(mGBA C)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
+if(NOT MSVC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
+else()
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146")
+endif()
 set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
@@ -39,7 +43,11 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (e.g. Release or Debug)" FORCE)
 endif()
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+if (NOT DEFINED LIBDIR)
+	set(LIBDIR "lib")
+endif()
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
 
 include(GNUInstallDirs)
 
@@ -72,52 +80,18 @@ function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 endfunction()
 
 # Version information
-set(LIB_VERSION_MAJOR 0)
-set(LIB_VERSION_MINOR 3)
-set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION_ABI 0.3)
-set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
-
-execute_process(COMMAND git describe --always --abbrev=40 --dirty OUTPUT_VARIABLE GIT_COMMIT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE GIT_COMMIT_SHORT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git symbolic-ref --short HEAD OUTPUT_VARIABLE GIT_BRANCH ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git rev-list HEAD --count OUTPUT_VARIABLE GIT_REV ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --tag --exact-match OUTPUT_VARIABLE GIT_TAG ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(GIT_REV STREQUAL "")
-	set(GIT_REV -1)
-endif()
-if(NOT GIT_TAG STREQUAL "")
-	set(VERSION_STRING ${GIT_TAG})
-elseif(GIT_BRANCH STREQUAL "")
-	set(VERSION_STRING ${LIB_VERSION_STRING})
-else()
-	if(GIT_BRANCH STREQUAL "master")
-		set(VERSION_STRING ${GIT_REV}-${GIT_COMMIT_SHORT})
-	else()
-		set(VERSION_STRING ${GIT_BRANCH}-${GIT_REV}-${GIT_COMMIT_SHORT})
-	endif()
-
-	if(NOT LIB_VERSION_ABI STREQUAL GIT_BRANCH)
-		set(VERSION_STRING ${LIB_VERSION_ABI}-${VERSION_STRING})
-	endif()
-endif()
-
-add_custom_target(version-info ALL touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
+add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
-	-DGIT_COMMIT=${GIT_COMMIT}
-	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
-	-DGIT_BRANCH=${GIT_BRANCH}
-	-DGIT_REV=${GIT_REV}
 	-DBINARY_NAME=${BINARY_NAME}
-	-DPROJECT_NAME=${PROJECT_NAME}
-	-DVERSION_STRING=${VERSION_STRING}
-	-D${BINARY_NAME}_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+	-DCONFIG_FILE=${CMAKE_SOURCE_DIR}/src/util/version.c.in
+	-DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/version.c
 	-P ${CMAKE_SOURCE_DIR}/version.cmake
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/src/util/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
+source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
 # Advanced settings
 set(BUILD_LTO ON CACHE BOOL "Build with link-time optimization")
@@ -163,7 +137,7 @@ find_feature(USE_MAGICK "MagickWand")
 if(WIN32)
 	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
-	list(APPEND OS_LIB ws2_32)
+	list(APPEND OS_LIB ws2_32 shlwapi)
 	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
@@ -187,7 +161,7 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(NOT HAIKU)
+if(NOT HAIKU AND NOT MSVC)
 	list(APPEND OS_LIB m)
 endif()
 
@@ -223,6 +197,7 @@ endif()
 check_function_exists(newlocale HAVE_NEWLOCALE)
 check_function_exists(freelocale HAVE_FREELOCALE)
 check_function_exists(uselocale HAVE_USELOCALE)
+check_function_exists(setlocale HAVE_SETLOCALE)
 
 if(HAVE_STRDUP)
 	add_definitions(-DHAVE_STRDUP)
@@ -242,6 +217,9 @@ if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE)
 	endif()
 endif()
 
+if(HAVE_SETLOCALE)
+	add_definitions(-DHAVE_SETLOCALE)
+endif()
 
 # Features
 set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)
@@ -359,6 +337,10 @@ foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
 
+source_group("Virtual files" FILES ${VFS_SRC})
+source_group("Extra features" FILES ${FEATURE_SRC})
+source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
+
 # Binaries
 set(CORE_SRC
 	${ARM_SRC}
@@ -387,7 +369,7 @@ if(BUILD_SHARED)
 	if(BUILD_STATIC)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
 		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
-		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
+		install(TARGETS ${BINARY_NAME}-static DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 		add_dependencies(${BINARY_NAME}-static version-info)
 	endif()
 else()
@@ -397,7 +379,7 @@ endif()
 add_dependencies(${BINARY_NAME} version-info)
 
 target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
-install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
+install(TARGETS ${BINARY_NAME} DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 if(UNIX AND NOT APPLE)
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-16.png DESTINATION share/icons/hicolor/16x16/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-24.png DESTINATION share/icons/hicolor/24x24/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})

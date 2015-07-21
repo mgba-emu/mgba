@@ -273,7 +273,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			break;
 		}
-		// Fall through
+	// Fall through
 	default:
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
@@ -481,7 +481,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
-			value = (address >> 1) & 0xFFFF; \
+			value = (address >> 1) & 0xFFFF;
 		}
 		break;
 	case REGION_CART2_EX:
@@ -492,7 +492,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
-			value = (address >> 1) & 0xFFFF; \
+			value = (address >> 1) & 0xFFFF;
 		}
 		break;
 	case REGION_CART_SRAM:
@@ -576,7 +576,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
-			value = (address >> 1) & 0xFF; \
+			value = (address >> 1) & 0xFF;
 		}
 		break;
 	case REGION_CART_SRAM:
@@ -818,6 +818,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM) {
 			memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else {
@@ -1266,7 +1267,7 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	int ws2seq = (parameters & 0x0400) >> 10;
 	int prefetch = parameters & 0x4000;
 
-	memory->waitstatesNonseq16[REGION_CART_SRAM] = memory->waitstatesNonseq16[REGION_CART_SRAM_MIRROR] =  GBA_ROM_WAITSTATES[sram];
+	memory->waitstatesNonseq16[REGION_CART_SRAM] = memory->waitstatesNonseq16[REGION_CART_SRAM_MIRROR] = GBA_ROM_WAITSTATES[sram];
 	memory->waitstatesSeq16[REGION_CART_SRAM] = memory->waitstatesSeq16[REGION_CART_SRAM_MIRROR] = GBA_ROM_WAITSTATES[sram];
 	memory->waitstatesNonseq32[REGION_CART_SRAM] = memory->waitstatesNonseq32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
 	memory->waitstatesSeq32[REGION_CART_SRAM] = memory->waitstatesSeq32[REGION_CART_SRAM_MIRROR] = 2 * GBA_ROM_WAITSTATES[sram] + 1;
@@ -1529,7 +1530,7 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 
-	if (!memory->prefetch || memory->activeRegion < REGION_CART0) {
+	if (memory->activeRegion < REGION_CART0 || !memory->prefetch) {
 		// The wait is the stall
 		return wait;
 	}
@@ -1543,14 +1544,19 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t previousLoads = 0;
 
 	// Don't prefetch too much if we're overlapping with a previous prefetch
-	if (UNLIKELY((memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) < memory->lastPrefetchedLoads * WORD_SIZE_THUMB)) {
-		previousLoads = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	uint32_t dist = (memory->lastPrefetchedPc - cpu->gprs[ARM_PC]) >> 1;
+	if (dist < memory->lastPrefetchedLoads) {
+		previousLoads = dist;
 	}
-	while (stall < wait && LIKELY(loads + previousLoads < 8)) {
+	while (stall < wait) {
 		stall += s;
 		++loads;
 	}
-	if (stall > wait && loads == 1) {
+	if (loads + previousLoads > 8) {
+		int diff = (loads + previousLoads) - 8;
+		loads -= diff;
+		stall -= s * diff;
+	} else if (stall > wait && loads == 1) {
 		// We might need to stall a bit extra if we haven't finished the first S cycle
 		wait = stall;
 	}

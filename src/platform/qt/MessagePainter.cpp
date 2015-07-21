@@ -18,6 +18,7 @@ using namespace QGBA;
 MessagePainter::MessagePainter(QObject* parent)
 	: QObject(parent)
 	, m_messageTimer(this)
+	, m_scaleFactor(1)
 {
 	m_messageFont.setFamily("Source Code Pro");
 	m_messageFont.setStyleHint(QFont::Monospace);
@@ -29,7 +30,7 @@ MessagePainter::MessagePainter(QObject* parent)
 	clearMessage();
 }
 
-void MessagePainter::resize(const QSize& size, bool lockAspectRatio) {
+void MessagePainter::resize(const QSize& size, bool lockAspectRatio, qreal scaleFactor) {
 	int w = size.width();
 	int h = size.height();
 	int drawW = w;
@@ -42,36 +43,63 @@ void MessagePainter::resize(const QSize& size, bool lockAspectRatio) {
 		}
 	}
 	m_world.reset();
-	m_world.translate((w - drawW) / 2, (h - drawH) / 2);
 	m_world.scale(qreal(drawW) / VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / VIDEO_VERTICAL_PIXELS);
+	m_scaleFactor = scaleFactor;
+	m_local = QPoint(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
+	m_local = m_world.map(m_local);
+	m_local += QPoint((w - drawW) / 2, (h - drawH) / 2);
+	m_pixmapBuffer = QPixmap(drawW * m_scaleFactor,
+		                     (m_messageFont.pixelSize() + 2) * m_world.m22() * m_scaleFactor);
+	m_pixmapBuffer.setDevicePixelRatio(m_scaleFactor);
+	m_mutex.lock();
 	m_message.prepare(m_world, m_messageFont);
+	redraw();
+	m_mutex.unlock();
+}
+
+void MessagePainter::redraw() {
+	m_pixmapBuffer.fill(Qt::transparent);
+	if (m_message.text().isEmpty()) {
+		m_pixmap = m_pixmapBuffer;
+		m_pixmap.setDevicePixelRatio(m_scaleFactor);
+		return;
+	}
+	QPainter painter(&m_pixmapBuffer);
+	painter.setWorldTransform(m_world);
+	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setFont(m_messageFont);
+	painter.setPen(Qt::black);
+	const static int ITERATIONS = 11;
+	for (int i = 0; i < ITERATIONS; ++i) {
+		painter.save();
+		painter.translate(cos(i * 2.0 * M_PI / ITERATIONS) * 0.8, sin(i * 2.0 * M_PI / ITERATIONS) * 0.8);
+		painter.drawStaticText(0, 0, m_message);
+		painter.restore();
+	}
+	painter.setPen(Qt::white);
+	painter.drawStaticText(0, 0, m_message);
+	m_pixmap = m_pixmapBuffer;
+	m_pixmap.setDevicePixelRatio(m_scaleFactor);
 }
 
 void MessagePainter::paint(QPainter* painter) {
-	painter->setWorldTransform(m_world);
-	painter->setRenderHint(QPainter::Antialiasing);
-	painter->setFont(m_messageFont);
-	painter->setPen(Qt::black);
-	painter->translate(1, VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
-	const static int ITERATIONS = 11;
-	for (int i = 0; i < ITERATIONS; ++i) {
-		painter->save();
-		painter->translate(cos(i * 2.0 * M_PI / ITERATIONS) * 0.8, sin(i * 2.0 * M_PI / ITERATIONS) * 0.8);
-		painter->drawStaticText(0, 0, m_message);
-		painter->restore();
-	}
-	painter->setPen(Qt::white);
-	painter->drawStaticText(0, 0, m_message);
+	painter->drawPixmap(m_local, m_pixmap);
 }
 
+
 void MessagePainter::showMessage(const QString& message) {
+	m_mutex.lock();
 	m_message.setText(message);
-	m_message.prepare(m_world, m_messageFont);
+	redraw();
+	m_mutex.unlock();
 	m_messageTimer.stop();
 	m_messageTimer.start();
 }
 
 void MessagePainter::clearMessage() {
+	m_mutex.lock();
 	m_message.setText(QString());
+	redraw();
+	m_mutex.unlock();
 	m_messageTimer.stop();
 }
