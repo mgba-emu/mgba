@@ -27,8 +27,6 @@ SOURCES_C :=   $(CORE_DIR)/arm/arm.c \
 					$(CORE_DIR)/gba/sio/lockstep.c \
 					$(CORE_DIR)/gba/video.c \
 					$(CORE_DIR)/gba/serialize.c \
-					$(CORE_DIR)/gba/supervisor/rr.c \
-					$(CORE_DIR)/gba/supervisor/cli.c \
 					$(CORE_DIR)/gba/supervisor/overrides.c \
 					$(CORE_DIR)/gba/supervisor/sync.c \
 					$(CORE_DIR)/gba/supervisor/thread.c \
