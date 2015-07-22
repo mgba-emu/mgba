@@ -116,13 +116,21 @@ bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
-	return ConfigurationRead(&config->configTable, path);
+	return GBAConfigLoadPath(config, path);
 }
 
 bool GBAConfigSave(const struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
+	return GBAConfigSavePath(config, path);
+}
+
+bool GBAConfigLoadPath(struct GBAConfig* config, const char* path) {
+	return ConfigurationRead(&config->configTable, path);
+}
+
+bool GBAConfigSavePath(const struct GBAConfig* config, const char* path) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
