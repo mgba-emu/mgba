@@ -35,6 +35,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 #endif
 	, m_allowOpposing(false)
 	, m_topLevel(topLevel)
+	, m_focusParent(topLevel)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -469,10 +470,10 @@ void InputController::testGamepad(int type) {
 
 void InputController::sendGamepadEvent(QEvent* event) {
 	QWidget* focusWidget = nullptr;
-	if (m_topLevel) {
-		focusWidget = m_topLevel->focusWidget();
+	if (m_focusParent) {
+		focusWidget = m_focusParent->focusWidget();
 		if (!focusWidget) {
-			focusWidget = m_topLevel;
+			focusWidget = m_focusParent;
 		}
 	} else {
 		focusWidget = QApplication::focusWidget();
@@ -505,3 +506,13 @@ void InputController::setScreensaverSuspendable(bool suspendable) {
 	GBASDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
 }
 #endif
+
+void InputController::stealFocus(QWidget* focus) {
+	m_focusParent = focus;
+}
+
+void InputController::releaseFocus(QWidget* focus) {
+	if (focus == m_focusParent) {
+		m_focusParent = m_topLevel;
+	}
+}

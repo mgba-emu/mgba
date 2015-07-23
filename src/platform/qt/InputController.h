@@ -74,6 +74,9 @@ public:
 	float gyroSensitivity() const;
 	void setGyroSensitivity(float sensitivity);
 
+	void stealFocus(QWidget* focus);
+	void releaseFocus(QWidget* focus);
+
 	GBARumble* rumble();
 	GBARotationSource* rotationSource();
 
@@ -101,6 +104,7 @@ private:
 	int m_playerId;
 	bool m_allowOpposing;
 	QWidget* m_topLevel;
+	QWidget* m_focusParent;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;

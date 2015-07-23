@@ -35,6 +35,8 @@ public slots:
 protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
+	virtual bool event(QEvent*) override;
+	virtual void closeEvent(QCloseEvent*) override;
 
 private slots:
 	void setNext();

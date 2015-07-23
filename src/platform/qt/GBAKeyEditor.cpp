@@ -32,6 +32,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setMinimumSize(300, 300);
 
 	const GBAInputMap* map = controller->map();
+	controller->stealFocus(this);
 
 	m_keyDU = new KeyEditor(this);
 	m_keyDD = new KeyEditor(this);
@@ -149,6 +150,19 @@ void GBAKeyEditor::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.scale(width() / 480.0, height() / 480.0);
 	painter.drawPicture(0, 0, m_background);
+}
+
+void GBAKeyEditor::closeEvent(QCloseEvent*) {
+	m_controller->releaseFocus(this);
+}
+
+bool GBAKeyEditor::event(QEvent* event) {
+	if (event->type() == QEvent::WindowActivate) {
+		m_controller->stealFocus(this);
+	} else if (event->type() == QEvent::WindowDeactivate) {
+		m_controller->releaseFocus(this);
+	}
+	return QWidget::event(event);
 }
 
 void GBAKeyEditor::setNext() {
