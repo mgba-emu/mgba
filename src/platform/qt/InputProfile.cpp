@@ -38,6 +38,31 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 		}
 	},
 	{
+		"(Microsoft X-Box 360 pad|Xbox Gamepad \\(userspace driver\\))", // Linux
+		(int[GBA_KEY_MAX]) {
+		/*keyA      */  1,
+		/*keyB      */  0,
+		/*keySelect */  6,
+		/*keyStart  */  7,
+		/*keyRight  */ -1,
+		/*keyLeft   */ -1,
+		/*keyUp     */ -1,
+		/*keyDown   */ -1,
+		/*keyR      */  5,
+		/*keyL      */  4
+		},
+		(ShortcutButton[]) {
+			{"loadState", 2},
+			{"saveState", 3},
+			{}
+		},
+		(ShortcutAxis[]) {
+			{"holdFastForward", GamepadAxisEvent::Direction::POSITIVE, 5},
+			{"holdRewind", GamepadAxisEvent::Direction::POSITIVE, 2},
+			{}
+		}
+	},
+	{
 		"Controller", // The Xbox 360 controller drivers on OS X are vague...
 		(int[GBA_KEY_MAX]) {
 		/*keyA      */  1,
