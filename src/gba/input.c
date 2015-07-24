@@ -366,7 +366,6 @@ void GBAInputUnbindKey(struct GBAInputMap* map, uint32_t type, enum GBAKey input
 	if (impl) {
 		impl->map[input] = GBA_NO_MAPPING;
 	}
-	TableEnumerate(&impl->axes, _unbindAxis, &input);
 }
 
 int GBAInputQueryBinding(const struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
@@ -420,6 +419,8 @@ int GBAInputClearAxis(const struct GBAInputMap* map, uint32_t type, int axis, in
 
 void GBAInputBindAxis(struct GBAInputMap* map, uint32_t type, int axis, const struct GBAAxis* description) {
 	struct GBAInputMapImpl* impl = _guaranteeMap(map, type);
+	TableEnumerate(&impl->axes, _unbindAxis, &description->highDirection);
+	TableEnumerate(&impl->axes, _unbindAxis, &description->lowDirection);
 	struct GBAAxis* dup = malloc(sizeof(struct GBAAxis));
 	*dup = *description;
 	TableInsert(&impl->axes, axis, dup);
