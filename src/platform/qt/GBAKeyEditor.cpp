@@ -68,28 +68,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	}
 #endif
 
-	connect(m_keyDU, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDD, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keySelect, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyStart, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyA, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyB, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-
-	connect(m_keyDU, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDD, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keySelect, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyStart, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyA, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyB, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-
 	m_buttons = new QWidget(this);
 	QVBoxLayout* layout = new QVBoxLayout;
 	m_buttons->setLayout(layout);
@@ -115,6 +93,11 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 		m_keyL,
 		m_keyR
 	};
+
+	for (auto& key : m_keyOrder) {
+		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	}
 
 	m_currentKey = m_keyOrder.end();
 
