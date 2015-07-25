@@ -15,8 +15,8 @@
 #include <psp2/display.h>
 #include <psp2/gxm.h>
 #include <psp2/moduleinfo.h>
-#include <psp2/kernel/memorymgr.h>
 #include <psp2/kernel/processmgr.h>
+#include <psp2/kernel/sysmem.h>
 
 #include <vita2d.h>
 
