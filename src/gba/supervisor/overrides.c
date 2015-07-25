@@ -285,6 +285,12 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		if (override->hardware & HW_TILT) {
 			GBAHardwareInitTilt(&gba->memory.hw);
 		}
+
+		if (override->hardware & HW_GB_PLAYER_DETECTION) {
+			gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
+		} else {
+			gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
+		}
 	}
 
 	if (override->idleLoop != IDLE_LOOP_NONE) {

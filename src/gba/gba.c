@@ -787,7 +787,9 @@ void GBAFrameEnded(struct GBA* gba) {
 		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
-	GBAHardwarePlayerUpdate(gba);
+	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {
+		GBAHardwarePlayerUpdate(gba);
+	}
 
 	struct GBAThread* thread = GBAThreadGetContext();
 	if (!thread) {
