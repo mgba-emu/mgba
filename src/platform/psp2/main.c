@@ -40,7 +40,7 @@ int main() {
 	int activeKeys = 0;
 
 	vita2d_init();
-	vita2d_texture* tex = vita2d_create_empty_texture(256, 256);
+	vita2d_texture* tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
 	renderer.outputBufferStride = 256;
