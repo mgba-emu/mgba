@@ -75,6 +75,11 @@ int main() {
 		if (frameCounter != gba->video.frameCounter) {
 			SceCtrlData pad;
 			sceCtrlPeekBufferPositive(0, &pad, 1);
+			if (pad.buttons & PSP2_CTRL_TRIANGLE) {
+				running = false;
+				break;
+			}
+
 			activeKeys = 0;
 			if (pad.buttons & PSP2_CTRL_CROSS) {
 				activeKeys |= 1 << GBA_KEY_A;
