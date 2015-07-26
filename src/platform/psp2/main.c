@@ -58,6 +58,11 @@ int main() {
 	_mapVitaKey(&inputMap, PSP2_CTRL_LTRIGGER, GBA_KEY_L);
 	_mapVitaKey(&inputMap, PSP2_CTRL_RTRIGGER, GBA_KEY_R);
 
+	struct GBAAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
+	GBAInputBindAxis(&inputMap, PSP2_INPUT, 0, &desc);
+	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
+	GBAInputBindAxis(&inputMap, PSP2_INPUT, 1, &desc);
+
 	vita2d_init();
 	vita2d_texture* tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
@@ -100,6 +105,22 @@ int main() {
 			}
 
 			activeKeys = GBAInputMapKeyBits(&inputMap, PSP2_INPUT, pad.buttons, 0);
+			enum GBAKey angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 0, pad.ly);
+			if (angles != GBA_KEY_NONE) {
+				activeKeys |= 1 << angles;
+			}
+			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 1, pad.lx);
+			if (angles != GBA_KEY_NONE) {
+				activeKeys |= 1 << angles;
+			}
+			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 2, pad.ry);
+			if (angles != GBA_KEY_NONE) {
+				activeKeys |= 1 << angles;
+			}
+			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 3, pad.rx);
+			if (angles != GBA_KEY_NONE) {
+				activeKeys |= 1 << angles;
+			}
 
 			vita2d_start_drawing();
 			vita2d_clear_screen();
