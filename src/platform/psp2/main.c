@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/gba.h"
+#include "gba/input.h"
 #include "gba/video.h"
 
 #include "gba/renderers/video-software.h"
@@ -24,6 +25,11 @@ PSP2_MODULE_INFO(0, 0, "mGBA");
 
 #define PSP2_HORIZONTAL_PIXELS 960
 #define PSP2_VERTICAL_PIXELS 544
+#define PSP2_INPUT 0x50535032
+
+static void _mapVitaKey(struct GBAInputMap* map, int pspKey, enum GBAKey key) {
+	GBAInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
+}
 
 int main() {
 	printf("%s initializing", projectName);
@@ -38,6 +44,19 @@ int main() {
 	printf("GBA: %08X", gba);
 	printf("CPU: %08X", cpu);
 	int activeKeys = 0;
+
+	struct GBAInputMap inputMap;
+	GBAInputMapInit(&inputMap);
+	_mapVitaKey(&inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
+	_mapVitaKey(&inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
+	_mapVitaKey(&inputMap, PSP2_CTRL_START, GBA_KEY_START);
+	_mapVitaKey(&inputMap, PSP2_CTRL_SELECT, GBA_KEY_SELECT);
+	_mapVitaKey(&inputMap, PSP2_CTRL_UP, GBA_KEY_UP);
+	_mapVitaKey(&inputMap, PSP2_CTRL_DOWN, GBA_KEY_DOWN);
+	_mapVitaKey(&inputMap, PSP2_CTRL_LEFT, GBA_KEY_LEFT);
+	_mapVitaKey(&inputMap, PSP2_CTRL_RIGHT, GBA_KEY_RIGHT);
+	_mapVitaKey(&inputMap, PSP2_CTRL_LTRIGGER, GBA_KEY_L);
+	_mapVitaKey(&inputMap, PSP2_CTRL_RTRIGGER, GBA_KEY_R);
 
 	vita2d_init();
 	vita2d_texture* tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
@@ -80,37 +99,7 @@ int main() {
 				break;
 			}
 
-			activeKeys = 0;
-			if (pad.buttons & PSP2_CTRL_CROSS) {
-				activeKeys |= 1 << GBA_KEY_A;
-			}
-			if (pad.buttons & PSP2_CTRL_CIRCLE) {
-				activeKeys |= 1 << GBA_KEY_B;
-			}
-			if (pad.buttons & PSP2_CTRL_START) {
-				activeKeys |= 1 << GBA_KEY_START;
-			}
-			if (pad.buttons & PSP2_CTRL_SELECT) {
-				activeKeys |= 1 << GBA_KEY_SELECT;
-			}
-			if (pad.buttons & PSP2_CTRL_UP) {
-				activeKeys |= 1 << GBA_KEY_UP;
-			}
-			if (pad.buttons & PSP2_CTRL_DOWN) {
-				activeKeys |= 1 << GBA_KEY_DOWN;
-			}
-			if (pad.buttons & PSP2_CTRL_LEFT) {
-				activeKeys |= 1 << GBA_KEY_LEFT;
-			}
-			if (pad.buttons & PSP2_CTRL_RIGHT) {
-				activeKeys |= 1 << GBA_KEY_RIGHT;
-			}
-			if (pad.buttons & PSP2_CTRL_LTRIGGER) {
-				activeKeys |= 1 << GBA_KEY_L;
-			}
-			if (pad.buttons & PSP2_CTRL_RTRIGGER) {
-				activeKeys |= 1 << GBA_KEY_R;
-			}
+			activeKeys = GBAInputMapKeyBits(&inputMap, PSP2_INPUT, pad.buttons, 0);
 
 			vita2d_start_drawing();
 			vita2d_clear_screen();
