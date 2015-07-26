@@ -139,6 +139,8 @@ int main() {
 	rom->close(rom);
 	save->close(save);
 
+	GBAInputMapDeinit(&inputMap);
+
 	mappedMemoryFree(gba, 0);
 	mappedMemoryFree(cpu, 0);
 
