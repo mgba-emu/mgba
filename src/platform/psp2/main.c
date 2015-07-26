@@ -5,13 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/gba.h"
 #include "gba/input.h"
+#include "gba/audio.h"
 #include "gba/video.h"
 
 #include "gba/renderers/video-software.h"
+#include "util/circle-buffer.h"
 #include "util/memory.h"
+#include "util/threading.h"
 #include "util/vfs.h"
 #include "platform/psp2/sce-vfs.h"
+#include "third-party/blip_buf/blip_buf.h"
 
+#include <psp2/audioout.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 #include <psp2/gxm.h>
@@ -26,9 +31,44 @@ PSP2_MODULE_INFO(0, 0, "mGBA");
 #define PSP2_HORIZONTAL_PIXELS 960
 #define PSP2_VERTICAL_PIXELS 544
 #define PSP2_INPUT 0x50535032
+#define PSP2_SAMPLES 64
+#define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 19)
+
+struct GBAPSP2AudioContext {
+	struct CircleBuffer buffer;
+	Mutex mutex;
+	Condition cond;
+	bool running;
+};
 
 static void _mapVitaKey(struct GBAInputMap* map, int pspKey, enum GBAKey key) {
 	GBAInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
+}
+
+static THREAD_ENTRY _audioThread(void* context) {
+	struct GBAPSP2AudioContext* audio = (struct GBAPSP2AudioContext*) context;
+	struct GBAStereoSample buffer[PSP2_AUDIO_BUFFER_SIZE];
+	int audioPort = sceAudioOutOpenPort(PSP2_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_AUDIO_BUFFER_SIZE, 48000, PSP2_AUDIO_OUT_MODE_STEREO);
+	while (audio->running) {
+		MutexLock(&audio->mutex);
+		int len = CircleBufferSize(&audio->buffer);
+		len /= sizeof(buffer[0]);
+		if (len > PSP2_AUDIO_BUFFER_SIZE) {
+			len = PSP2_AUDIO_BUFFER_SIZE;
+		}
+		if (len > 0) {
+			len &= ~(PSP2_AUDIO_MIN_LEN - 1);
+			CircleBufferRead(&audio->buffer, buffer, len * sizeof(buffer[0]));
+			MutexUnlock(&audio->mutex);
+			sceAudioOutSetConfig(audioPort, len, -1, -1);
+			sceAudioOutOutput(audioPort, buffer);
+			MutexLock(&audio->mutex);
+		}
+		ConditionWait(&audio->cond, &audio->mutex);
+		MutexUnlock(&audio->mutex);
+	}
+	sceAudioOutReleasePort(audioPort);
+	return 0;
 }
 
 int main() {
@@ -89,6 +129,17 @@ int main() {
 	printf("%s loaded.", "ROM");
 
 	ARMReset(cpu);
+	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	blip_set_rates(gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+
+	struct GBAPSP2AudioContext audioContext;
+	CircleBufferInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
+	MutexInit(&audioContext.mutex);
+	ConditionInit(&audioContext.cond);
+	audioContext.running = true;
+	Thread audioThread;
+	ThreadCreate(&audioThread, _audioThread, &audioContext);
 
 	printf("%s all set and ready to roll.", projectName);
 
@@ -122,6 +173,23 @@ int main() {
 				activeKeys |= 1 << angles;
 			}
 
+			MutexLock(&audioContext.mutex);
+			while (blip_samples_avail(gba->audio.left) >= PSP2_SAMPLES) {
+				if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
+					break;
+				}
+				struct GBAStereoSample samples[PSP2_SAMPLES];
+				blip_read_samples(gba->audio.left, &samples[0].left, PSP2_SAMPLES, true);
+				blip_read_samples(gba->audio.right, &samples[0].right, PSP2_SAMPLES, true);
+				int i;
+				for (i = 0; i < PSP2_SAMPLES; ++i) {
+					CircleBufferWrite16(&audioContext.buffer, samples[i].left);
+					CircleBufferWrite16(&audioContext.buffer, samples[i].right);
+				}
+			}
+			ConditionWake(&audioContext.cond);
+			MutexUnlock(&audioContext.mutex);
+
 			vita2d_start_drawing();
 			vita2d_clear_screen();
 			vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
@@ -140,6 +208,15 @@ int main() {
 	save->close(save);
 
 	GBAInputMapDeinit(&inputMap);
+
+	MutexLock(&audioContext.mutex);
+	audioContext.running = false;
+	ConditionWake(&audioContext.cond);
+	MutexUnlock(&audioContext.mutex);
+	ThreadJoin(audioThread);
+	CircleBufferDeinit(&audioContext.buffer);
+	MutexDeinit(&audioContext.mutex);
+	ConditionDeinit(&audioContext.cond);
 
 	mappedMemoryFree(gba, 0);
 	mappedMemoryFree(cpu, 0);

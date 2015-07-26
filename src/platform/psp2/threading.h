@@ -118,6 +118,7 @@ static inline int _sceThreadEntry(SceSize args, void* argp) {
 static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
 	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x40, 0x10000, 0, 0x70000, 0);
 	if (id < 0) {
+		*thread = 0;
 		return id;
 	}
 	*thread = id;
