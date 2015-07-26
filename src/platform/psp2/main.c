@@ -74,6 +74,8 @@ static THREAD_ENTRY _audioThread(void* context) {
 int main() {
 	printf("%s initializing", projectName);
 	bool running = true;
+	bool fullscreen = false;
+	bool fsToggle = false;
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -154,6 +156,14 @@ int main() {
 				running = false;
 				break;
 			}
+			if (pad.buttons & PSP2_CTRL_SQUARE) {
+				if (!fsToggle) {
+					fullscreen = !fullscreen;
+				}
+				fsToggle = true;
+			} else {
+				fsToggle = false;
+			}
 
 			activeKeys = GBAInputMapKeyBits(&inputMap, PSP2_INPUT, pad.buttons, 0);
 			enum GBAKey angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 0, pad.ly);
@@ -192,7 +202,11 @@ int main() {
 
 			vita2d_start_drawing();
 			vita2d_clear_screen();
-			vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
+			if (fullscreen) {
+				vita2d_draw_texture_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f);
+			} else {
+				vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
+			}
 			vita2d_end_drawing();
 			vita2d_swap_buffers();
 
