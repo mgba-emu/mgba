@@ -413,6 +413,10 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	GBAInputBindAxis(&m_inputMap, type, axis, &description);
 }
 
+void InputController::unbindAllAxes(uint32_t type) {
+	GBAInputUnbindAllAxes(&m_inputMap, type);
+}
+
 void InputController::testGamepad(int type) {
 	auto activeAxes = activeGamepadAxes(type);
 	auto oldAxes = m_activeAxes;

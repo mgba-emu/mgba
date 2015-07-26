@@ -197,6 +197,10 @@ void GBAKeyEditor::setNext() {
 }
 
 void GBAKeyEditor::save() {
+#ifdef BUILD_SDL
+	m_controller->unbindAllAxes(m_type);
+#endif
+
 	bindKey(m_keyDU, GBA_KEY_UP);
 	bindKey(m_keyDD, GBA_KEY_DOWN);
 	bindKey(m_keyDL, GBA_KEY_LEFT);
