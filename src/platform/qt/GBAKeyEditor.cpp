@@ -6,6 +6,7 @@
 #include "GBAKeyEditor.h"
 
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
@@ -24,6 +25,7 @@ const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
 	, m_profileSelect(nullptr)
+	, m_clear(nullptr)
 	, m_type(type)
 	, m_profile(profile)
 	, m_controller(controller)
@@ -64,6 +66,33 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			m_profile = m_profileSelect->currentText();
 			m_controller->loadProfile(m_type, m_profile);
 			refresh();
+		});
+
+		m_clear = new QWidget(this);
+		QHBoxLayout* layout = new QHBoxLayout;
+		m_clear->setLayout(layout);
+		layout->setSpacing(6);
+
+		QPushButton* clearButton = new QPushButton(tr("Clear Button"));
+		layout->addWidget(clearButton);
+		connect(clearButton, &QAbstractButton::pressed, [this]() {
+			if (!findFocus()) {
+				return;
+			}
+			bool signalsBlocked = (*m_currentKey)->blockSignals(true);
+			(*m_currentKey)->clearButton();
+			(*m_currentKey)->blockSignals(signalsBlocked);
+		});
+
+		QPushButton* clearAxis = new QPushButton(tr("Clear Analog"));
+		layout->addWidget(clearAxis);
+		connect(clearAxis, &QAbstractButton::pressed, [this]() {
+			if (!findFocus()) {
+				return;
+			}
+			bool signalsBlocked = (*m_currentKey)->blockSignals(true);
+			(*m_currentKey)->clearAxis();
+			(*m_currentKey)->blockSignals(signalsBlocked);
 		});
 	}
 #endif
@@ -125,7 +154,11 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 	setLocation(m_keyR, 0.9, 0.1);
 
 	if (m_profileSelect) {
-		setLocation(m_profileSelect, 0.5, 0.7);
+		setLocation(m_profileSelect, 0.5, 0.67);
+	}
+
+	if (m_clear) {
+		setLocation(m_clear, 0.5, 0.77);
 	}
 }
 

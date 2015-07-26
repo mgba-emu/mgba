@@ -29,6 +29,8 @@ public slots:
 	void setValueKey(int key);
 	void setValueButton(int button);
 	void setValueAxis(int axis, int32_t value);
+	void clearButton();
+	void clearAxis();
 
 signals:
 	void valueChanged(int key);

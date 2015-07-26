@@ -50,6 +50,19 @@ void KeyEditor::setValueAxis(int axis, int32_t value) {
 	emit axisChanged(axis, m_direction);
 }
 
+void KeyEditor::clearButton() {
+	m_button = true;
+	setValue(-1);
+}
+
+void KeyEditor::clearAxis() {
+	m_button = true;
+	m_axis = -1;
+	m_direction = GamepadAxisEvent::NEUTRAL;
+	updateButtonText();
+	emit axisChanged(m_axis, m_direction);
+}
+
 QSize KeyEditor::sizeHint() const {
 	QSize hint = QLineEdit::sizeHint();
 	hint.setWidth(40);
