@@ -30,6 +30,7 @@ void GBAInputMapInit(struct GBAInputMap*);
 void GBAInputMapDeinit(struct GBAInputMap*);
 
 enum GBAKey GBAInputMapKey(const struct GBAInputMap*, uint32_t type, int key);
+int GBAInputMapKeyBits(const struct GBAInputMap* map, uint32_t type, uint32_t bits, unsigned offset);
 void GBAInputBindKey(struct GBAInputMap*, uint32_t type, int key, enum GBAKey input);
 void GBAInputUnbindKey(struct GBAInputMap*, uint32_t type, enum GBAKey input);
 int GBAInputQueryBinding(const struct GBAInputMap*, uint32_t type, enum GBAKey input);
