@@ -198,13 +198,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	GBALoadROM(&gba, rom, save, game->path);
-
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(0, &override)) {
-		GBAOverrideApply(&gba, &override);
-	}
+	GBAOverrideApplyDefaults(&gba);
 
 	ARMReset(&cpu);
 	return true;
