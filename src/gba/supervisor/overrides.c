@@ -300,3 +300,12 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		}
 	}
 }
+
+void GBAOverrideApplyDefaults(struct GBA* gba) {
+	struct GBACartridgeOverride override;
+	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
+	memcpy(override.id, &cart->id, sizeof(override.id));
+	if (GBAOverrideFind(0, &override)) {
+		GBAOverrideApply(gba, &override);
+	}
+}
