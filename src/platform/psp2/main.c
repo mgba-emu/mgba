@@ -6,6 +6,7 @@
 #include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/audio.h"
+#include "gba/supervisor/overrides.h"
 #include "gba/video.h"
 
 #include "gba/renderers/video-software.h"
@@ -128,6 +129,7 @@ int main() {
 	GBAVideoAssociateRenderer(&gba->video, &renderer.d);
 
 	GBALoadROM(gba, rom, save, 0);
+	GBAOverrideApplyDefaults(gba);
 	printf("%s loaded.", "ROM");
 
 	ARMReset(cpu);
