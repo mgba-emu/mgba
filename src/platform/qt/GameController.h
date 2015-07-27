@@ -55,7 +55,7 @@ public:
 	void threadContinue();
 
 	bool isPaused();
-	bool isLoaded() { return m_gameOpen; }
+	bool isLoaded() { return m_gameOpen && GBAThreadIsActive(&m_threadContext); }
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
@@ -120,6 +120,8 @@ public slots:
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
+	void loadBackupState();
+	void saveBackupState();
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
@@ -192,6 +194,8 @@ private:
 	bool m_wasPaused;
 
 	int m_stateSlot;
+	GBASerializedState* m_backupLoadState;
+	QByteArray m_backupSaveState;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

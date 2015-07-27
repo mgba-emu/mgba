@@ -153,7 +153,7 @@ DEFINE_DECODER_WITH_HIGH_THUMB(MOV3, MOV, ARM_OPERAND_AFFECTED_1, 0)
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_MEM_THUMB(NAME, MNEMONIC, REG, CYCLES) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.reg = (opcode >> 6) & 0x0007; \
+		info->op1.reg = (opcode >> 8) & 0x0007; \
 		info->memory.baseReg = REG; \
 		info->memory.offset.immediate = (opcode & 0x00FF) << 2; \
 		info->memory.width = ARM_ACCESS_WORD; \

@@ -53,7 +53,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_screenWidget(new WindowBackground())
 	, m_logo(":/res/mgba-1024.png")
 	, m_config(config)
-	, m_inputController(playerId)
+	, m_inputController(playerId, this)
 #ifdef USE_FFMPEG
 	, m_videoView(nullptr)
 #endif
@@ -128,6 +128,15 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
+	connect(m_display, &Display::hideCursor, [this]() {
+		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
+			setCursor(Qt::BlankCursor);
+		}
+	});
+	connect(m_display, &Display::showCursor, [this]() {
+		unsetCursor();
+	});
+	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
 	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
@@ -296,6 +305,7 @@ void Window::openSettingsWindow() {
 	SettingsView* settingsWindow = new SettingsView(m_config);
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
+	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	openView(settingsWindow);
 }
 
@@ -305,6 +315,7 @@ void Window::openShortcutWindow() {
 #endif
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
+	shortcutView->setInputController(&m_inputController);
 	openView(shortcutView);
 }
 
@@ -561,6 +572,23 @@ void Window::unimplementedBiosCall(int call) {
 	fail->show();
 }
 
+void Window::tryMakePortable() {
+	QMessageBox* confirm = new QMessageBox(QMessageBox::Question, tr("Really make portable?"),
+	                                       tr("This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?"),
+	                                       QMessageBox::Yes | QMessageBox::Cancel, this, Qt::Sheet);
+	confirm->setAttribute(Qt::WA_DeleteOnClose);
+	connect(confirm->button(QMessageBox::Yes), SIGNAL(clicked()), m_config, SLOT(makePortable()));
+	confirm->show();
+}
+
+void Window::mustRestart() {
+	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Restart needed"),
+	                                      tr("Some changes will not take effect until the emulator is restarted."),
+	                                      QMessageBox::Ok, this, Qt::Sheet);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	dialog->show();
+}
+
 void Window::recordFrame() {
 	m_frameList.append(QDateTime::currentDateTime());
 	while (m_frameList.count() > FRAME_LIST_SIZE) {
@@ -642,7 +670,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	fileMenu->addSeparator();
 
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), m_config, SLOT(makePortable())), "makePortable");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Make portable"), this, SLOT(tryMakePortable())), "makePortable");
 
 	fileMenu->addSeparator();
 
@@ -672,6 +700,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(quickSave, SIGNAL(triggered()), m_controller, SLOT(saveState()));
 	m_gameActions.append(quickSave);
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
+
+	quickLoadMenu->addSeparator();
+	quickSaveMenu->addSeparator();
+
+	QAction* undoLoadState = new QAction(tr("Undo load state"), quickLoadMenu);
+	undoLoadState->setShortcut(tr("F11"));
+	connect(undoLoadState, SIGNAL(triggered()), m_controller, SLOT(loadBackupState()));
+	m_gameActions.append(undoLoadState);
+	addControlledAction(quickLoadMenu, undoLoadState, "undoLoadState");
+
+	QAction* undoSaveState = new QAction(tr("Undo save state"), quickSaveMenu);
+	undoSaveState->setShortcut(tr("Shift+F11"));
+	connect(undoSaveState, SIGNAL(triggered()), m_controller, SLOT(saveBackupState()));
+	m_gameActions.append(undoSaveState);
+	addControlledAction(quickSaveMenu, undoSaveState, "undoSaveState");
 
 	quickLoadMenu->addSeparator();
 	quickSaveMenu->addSeparator();
@@ -937,14 +980,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef USE_FFMPEG
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
-	recordOutput->setShortcut(tr("F11"));
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
 	addControlledAction(avMenu, recordOutput, "recordOutput");
 #endif
 
 #ifdef USE_MAGICK
 	QAction* recordGIF = new QAction(tr("Record GIF..."), avMenu);
-	recordGIF->setShortcut(tr("Shift+F11"));
 	connect(recordGIF, SIGNAL(triggered()), this, SLOT(openGIFWindow()));
 	addControlledAction(avMenu, recordGIF, "recordGIF");
 #endif
@@ -1092,6 +1133,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
+	unsetCursor();
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
 

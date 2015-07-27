@@ -20,6 +20,7 @@ public:
 	int value() const { return m_key; }
 
 	GamepadAxisEvent::Direction direction() const { return m_direction; }
+	int axis() const { return m_axis; }
 
 	virtual QSize sizeHint() const override;
 
@@ -28,6 +29,8 @@ public slots:
 	void setValueKey(int key);
 	void setValueButton(int button);
 	void setValueAxis(int axis, int32_t value);
+	void clearButton();
+	void clearAxis();
 
 signals:
 	void valueChanged(int key);
@@ -38,7 +41,10 @@ protected:
 	virtual bool event(QEvent* event) override;
 
 private:
+	void updateButtonText();
+
 	int m_key;
+	int m_axis;
 	bool m_button;
 	GamepadAxisEvent::Direction m_direction;
 };

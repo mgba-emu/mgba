@@ -7,6 +7,7 @@
 
 #include "ConfigController.h"
 #include "GamepadButtonEvent.h"
+#include "InputProfile.h"
 
 #include <QAction>
 #include <QKeyEvent>
@@ -18,6 +19,7 @@ ShortcutController::ShortcutController(QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_rootMenu(nullptr)
 	, m_config(nullptr)
+	, m_profile(nullptr)
 {
 }
 
@@ -239,6 +241,9 @@ void ShortcutController::updateButton(const QModelIndex& index, int button) {
 	}
 	if (m_config) {
 		m_config->setQtOption(item->name(), button, BUTTON_SECTION);
+		if (!m_profileName.isNull()) {
+			m_config->setQtOption(item->name(), button, BUTTON_PROFILE_SECTION + m_profileName);
+		}
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
 	                 createIndex(index.row(), 2, index.internalPointer()));
@@ -272,6 +277,9 @@ void ShortcutController::updateAxis(const QModelIndex& index, int axis, GamepadA
 			d = '-';
 		}
 		m_config->setQtOption(item->name(), QString("%1%2").arg(d).arg(axis), AXIS_SECTION);
+		if (!m_profileName.isNull()) {
+			m_config->setQtOption(item->name(), QString("%1%2").arg(d).arg(axis), AXIS_PROFILE_SECTION + m_profileName);
+		}
 	}
 	emit dataChanged(createIndex(index.row(), 0, index.internalPointer()),
 	                 createIndex(index.row(), 2, index.internalPointer()));
@@ -365,6 +373,9 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 }
 
 void ShortcutController::loadShortcuts(ShortcutItem* item) {
+	if (item->name().isNull()) {
+		return;
+	}
 	QVariant shortcut = m_config->getQtOption(item->name(), KEY_SECTION);
 	if (!shortcut.isNull()) {
 		QKeySequence keySequence(shortcut.toString());
@@ -377,19 +388,45 @@ void ShortcutController::loadShortcuts(ShortcutItem* item) {
 		}
 		item->setShortcut(keySequence);
 	}
-	QVariant button = m_config->getQtOption(item->name(), BUTTON_SECTION);
-	if (!button.isNull()) {
-		int oldButton = item->button();
-		item->setButton(button.toInt());
-		if (oldButton >= 0) {
-			m_buttons.take(oldButton);
+	loadGamepadShortcuts(item);
+}
+
+void ShortcutController::loadGamepadShortcuts(ShortcutItem* item) {
+	if (item->name().isNull()) {
+		return;
+	}
+	QVariant button = m_config->getQtOption(item->name(), !m_profileName.isNull() ? BUTTON_PROFILE_SECTION + m_profileName : BUTTON_SECTION);
+	int oldButton = item->button();
+	if (oldButton >= 0) {
+		m_buttons.take(oldButton);
+		item->setButton(-1);
+	}
+	if (button.isNull() && m_profile) {
+		int buttonInt;
+		if (m_profile->lookupShortcutButton(item->name(), &buttonInt)) {
+			button = buttonInt;
 		}
+	}
+	if (!button.isNull()) {
+		item->setButton(button.toInt());
 		m_buttons[button.toInt()] = item;
 	}
-	QVariant axis = m_config->getQtOption(item->name(), AXIS_SECTION);
+
+	QVariant axis = m_config->getQtOption(item->name(), !m_profileName.isNull() ? AXIS_PROFILE_SECTION + m_profileName : AXIS_SECTION);
+	int oldAxis = item->axis();
+	GamepadAxisEvent::Direction oldDirection = item->direction();
+	if (oldAxis >= 0) {
+		m_axes.take(qMakePair(oldAxis, oldDirection));
+		item->setAxis(-1, GamepadAxisEvent::NEUTRAL);
+	}
+	if (axis.isNull() && m_profile) {
+		int axisInt;
+		GamepadAxisEvent::Direction direction;
+		if (m_profile->lookupShortcutAxis(item->name(), &axisInt, &direction)) {
+			axis = QLatin1String(direction == GamepadAxisEvent::Direction::NEGATIVE ? "-" : "+") + QString::number(axisInt);
+		}
+	}
 	if (!axis.isNull()) {
-		int oldAxis = item->axis();
-		GamepadAxisEvent::Direction oldDirection = item->direction();
 		QString axisDesc = axis.toString();
 		if (axisDesc.size() >= 2) {
 			GamepadAxisEvent::Direction direction = GamepadAxisEvent::NEUTRAL;
@@ -403,9 +440,6 @@ void ShortcutController::loadShortcuts(ShortcutItem* item) {
 			int axis = axisDesc.mid(1).toInt(&ok);
 			if (ok) {
 				item->setAxis(axis, direction);
-				if (oldAxis >= 0) {
-					m_axes.take(qMakePair(oldAxis, oldDirection));
-				}
 				m_axes[qMakePair(axis, direction)] = item;
 			}
 		}
@@ -430,6 +464,21 @@ QKeySequence ShortcutController::keyEventToSequence(const QKeyEvent* event) {
 
 	QString key = QKeySequence(event->key()).toString();
 	return QKeySequence(modifier + key);
+}
+
+void ShortcutController::loadProfile(const QString& profile) {
+	m_profileName = profile;
+	m_profile = InputProfile::findProfile(profile);
+	onSubitems(&m_rootMenu, [this](ShortcutItem* item) {
+		loadGamepadShortcuts(item);
+	});
+}
+
+void ShortcutController::onSubitems(ShortcutItem* item, std::function<void(ShortcutItem*)> func) {
+	for (ShortcutItem& subitem : item->items()) {
+		func(&subitem);
+		onSubitems(&subitem, func);
+	}
 }
 
 ShortcutController::ShortcutItem::ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent)

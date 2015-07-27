@@ -83,3 +83,10 @@ void AudioProcessorQt::inputParametersChanged() {
 		m_device->setFormat(m_audioOutput->format());
 	}
 }
+
+unsigned AudioProcessorQt::sampleRate() const {
+	if (!m_audioOutput) {
+		return 0;
+	}
+	return m_audioOutput->format().sampleRate();
+}

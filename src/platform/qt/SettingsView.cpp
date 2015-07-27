@@ -36,6 +36,19 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
+	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
+	if (fastForwardRatio <= 0) {
+		m_ui.fastForwardUnbounded->setChecked(true);
+		m_ui.fastForwardRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardUnbounded->setChecked(false);
+		m_ui.fastForwardRatio->setEnabled(true);
+		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+	connect(m_ui.fastForwardUnbounded, &QAbstractButton::toggled, [this](bool checked) {
+		m_ui.fastForwardRatio->setEnabled(!checked);
+	});
+
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
 		m_ui.idleOptimization->setCurrentIndex(0);
@@ -102,6 +115,12 @@ void SettingsView::updateConfig() {
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
+
+	if (m_ui.fastForwardUnbounded->isChecked()) {
+		saveSetting("fastForwardRatio", "-1");
+	} else {
+		saveSetting("fastForwardRatio", m_ui.fastForwardRatio);
+	}
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:

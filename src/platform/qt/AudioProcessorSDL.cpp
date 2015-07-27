@@ -54,3 +54,7 @@ void AudioProcessorSDL::setBufferSamples(int samples) {
 
 void AudioProcessorSDL::inputParametersChanged() {
 }
+
+unsigned AudioProcessorSDL::sampleRate() const {
+	return m_audio.obtainedSpec.freq;
+}

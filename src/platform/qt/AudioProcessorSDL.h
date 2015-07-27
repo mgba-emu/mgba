@@ -29,6 +29,8 @@ public slots:
 	virtual void setBufferSamples(int samples);
 	virtual void inputParametersChanged();
 
+	virtual unsigned sampleRate() const override;
+
 private:
 	GBASDLAudio m_audio;
 };

@@ -403,12 +403,10 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 				if (win->h.end >= oldWindow.endX) {
 					// Trim off extra windows we've overwritten
 					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
-#ifdef DEBUG
-						if (activeWindow >= MAX_WINDOW) {
-							GBALog(0, GBA_LOG_DANGER, "Out of bounds window write will occur");
+						if (VIDEO_CHECKS && activeWindow >= MAX_WINDOW) {
+							GBALog(0, GBA_LOG_FATAL, "Out of bounds window write will occur");
 							return;
 						}
-#endif
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
 						--softwareRenderer->nWindows;
 					}
@@ -428,7 +426,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 	}
 #ifdef DEBUG
 	if (softwareRenderer->nWindows > MAX_WINDOW) {
-		GBALog(0, GBA_LOG_ABORT, "Out of bounds window write occurred!");
+		GBALog(0, GBA_LOG_FATAL, "Out of bounds window write occurred!");
 	}
 #endif
 }
@@ -532,7 +530,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 #ifdef COLOR_16_BIT
-#ifdef __ARM_NEON
+#if defined(__ARM_NEON) && !defined(__APPLE__)
 	_to16Bit(row, softwareRenderer->row, VIDEO_HORIZONTAL_PIXELS);
 #else
 	for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {

@@ -43,7 +43,11 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (e.g. Release or Debug)" FORCE)
 endif()
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+if (NOT DEFINED LIBDIR)
+	set(LIBDIR "lib")
+endif()
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
 
 include(GNUInstallDirs)
 
@@ -76,51 +80,16 @@ function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 endfunction()
 
 # Version information
-set(LIB_VERSION_MAJOR 0)
-set(LIB_VERSION_MINOR 3)
-set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION_ABI 0.3)
-set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
-
-execute_process(COMMAND git describe --always --abbrev=40 --dirty OUTPUT_VARIABLE GIT_COMMIT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE GIT_COMMIT_SHORT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git symbolic-ref --short HEAD OUTPUT_VARIABLE GIT_BRANCH ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git rev-list HEAD --count OUTPUT_VARIABLE GIT_REV ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --tag --exact-match OUTPUT_VARIABLE GIT_TAG ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(GIT_REV STREQUAL "")
-	set(GIT_REV -1)
-endif()
-if(NOT GIT_TAG STREQUAL "")
-	set(VERSION_STRING ${GIT_TAG})
-elseif(GIT_BRANCH STREQUAL "")
-	set(VERSION_STRING ${LIB_VERSION_STRING})
-else()
-	if(GIT_BRANCH STREQUAL "master")
-		set(VERSION_STRING ${GIT_REV}-${GIT_COMMIT_SHORT})
-	else()
-		set(VERSION_STRING ${GIT_BRANCH}-${GIT_REV}-${GIT_COMMIT_SHORT})
-	endif()
-
-	if(NOT LIB_VERSION_ABI STREQUAL GIT_BRANCH)
-		set(VERSION_STRING ${LIB_VERSION_ABI}-${VERSION_STRING})
-	endif()
-endif()
-
 add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
-	-DGIT_COMMIT=${GIT_COMMIT}
-	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
-	-DGIT_BRANCH=${GIT_BRANCH}
-	-DGIT_REV=${GIT_REV}
 	-DBINARY_NAME=${BINARY_NAME}
-	-DPROJECT_NAME=${PROJECT_NAME}
-	-DVERSION_STRING=${VERSION_STRING}
-	-D${BINARY_NAME}_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+	-DCONFIG_FILE=${CMAKE_SOURCE_DIR}/src/util/version.c.in
+	-DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/version.c
 	-P ${CMAKE_SOURCE_DIR}/version.cmake
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/src/util/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
@@ -404,7 +373,7 @@ if(BUILD_SHARED)
 	if(BUILD_STATIC)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
 		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
-		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
+		install(TARGETS ${BINARY_NAME}-static DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 		add_dependencies(${BINARY_NAME}-static version-info)
 	endif()
 else()
@@ -414,7 +383,7 @@ endif()
 add_dependencies(${BINARY_NAME} version-info)
 
 target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
-install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
+install(TARGETS ${BINARY_NAME} DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 if(UNIX AND NOT APPLE)
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-16.png DESTINATION share/icons/hicolor/16x16/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-24.png DESTINATION share/icons/hicolor/24x24/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})

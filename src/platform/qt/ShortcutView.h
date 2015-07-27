@@ -14,6 +14,7 @@
 
 namespace QGBA {
 
+class InputController;
 class ShortcutController;
 
 class ShortcutView : public QWidget {
@@ -23,9 +24,12 @@ public:
 	ShortcutView(QWidget* parent = nullptr);
 
 	void setController(ShortcutController* controller);
+	void setInputController(InputController* input);
 
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent* event) override;
+	virtual bool event(QEvent*) override;
+	virtual void closeEvent(QCloseEvent*) override;
 
 private slots:
 	void load(const QModelIndex&);
@@ -38,6 +42,7 @@ private:
 	Ui::ShortcutView m_ui;
 
 	ShortcutController* m_controller;
+	InputController* m_input;
 };
 
 }

@@ -39,6 +39,8 @@ public slots:
 	virtual void setBufferSamples(int samples) = 0;
 	virtual void inputParametersChanged() = 0;
 
+	virtual unsigned sampleRate() const = 0;
+
 protected:
 	GBAThread* input() { return m_context; }
 
