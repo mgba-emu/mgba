@@ -315,6 +315,7 @@ void Window::openShortcutWindow() {
 #endif
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(m_shortcutController);
+	shortcutView->setInputController(&m_inputController);
 	openView(shortcutView);
 }
 

@@ -519,7 +519,9 @@ void GameController::startRewinding() {
 		return;
 	}
 	m_wasPaused = isPaused();
+	bool signalsBlocked = blockSignals(true);
 	setPaused(true);
+	blockSignals(signalsBlocked);
 	m_rewindTimer.start();
 }
 
@@ -528,7 +530,9 @@ void GameController::stopRewinding() {
 		return;
 	}
 	m_rewindTimer.stop();
+	bool signalsBlocked = blockSignals(true);
 	setPaused(m_wasPaused);
+	blockSignals(signalsBlocked);
 }
 
 void GameController::keyPressed(int key) {

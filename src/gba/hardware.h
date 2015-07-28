@@ -34,7 +34,8 @@ enum GBAHardwareDevice {
 	HW_LIGHT_SENSOR = 4,
 	HW_GYRO = 8,
 	HW_TILT = 16,
-	HW_GB_PLAYER = 32
+	HW_GB_PLAYER = 32,
+	HW_GB_PLAYER_DETECTION = 64
 };
 
 enum GPIORegister {

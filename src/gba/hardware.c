@@ -44,6 +44,16 @@ static const int RTC_BYTES[8] = {
 void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 	hw->gpioBase = base;
 	GBAHardwareClear(hw);
+
+	hw->gbpCallback.d.readKeys = _gbpRead;
+	hw->gbpCallback.p = hw;
+	hw->gbpDriver.d.init = 0;
+	hw->gbpDriver.d.deinit = 0;
+	hw->gbpDriver.d.load = 0;
+	hw->gbpDriver.d.unload = 0;
+	hw->gbpDriver.d.writeRegister = _gbpSioWriteRegister;
+	hw->gbpDriver.d.processEvents = _gbpSioProcessEvents;
+	hw->gbpDriver.p = hw;
 }
 
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
@@ -518,15 +528,6 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 	}
 	if (GBAHardwarePlayerCheckScreen(&gba->video)) {
 		gba->memory.hw.devices |= HW_GB_PLAYER;
-		gba->memory.hw.gbpCallback.d.readKeys = _gbpRead;
-		gba->memory.hw.gbpCallback.p = &gba->memory.hw;
-		gba->memory.hw.gbpDriver.d.init = 0;
-		gba->memory.hw.gbpDriver.d.deinit = 0;
-		gba->memory.hw.gbpDriver.d.load = 0;
-		gba->memory.hw.gbpDriver.d.unload = 0;
-		gba->memory.hw.gbpDriver.d.writeRegister = _gbpSioWriteRegister;
-		gba->memory.hw.gbpDriver.d.processEvents = _gbpSioProcessEvents;
-		gba->memory.hw.gbpDriver.p = &gba->memory.hw;
 		gba->memory.hw.gbpInputsPosted = 0;
 		gba->memory.hw.gbpNextEvent = INT_MAX;
 		gba->keyCallback = &gba->memory.hw.gbpCallback.d;

@@ -60,6 +60,7 @@ public:
 	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
+	void unbindAllAxes(uint32_t type);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -73,6 +74,9 @@ public:
 
 	float gyroSensitivity() const;
 	void setGyroSensitivity(float sensitivity);
+
+	void stealFocus(QWidget* focus);
+	void releaseFocus(QWidget* focus);
 
 	GBARumble* rumble();
 	GBARotationSource* rotationSource();
@@ -101,6 +105,7 @@ private:
 	int m_playerId;
 	bool m_allowOpposing;
 	QWidget* m_topLevel;
+	QWidget* m_focusParent;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
