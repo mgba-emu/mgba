@@ -6,7 +6,7 @@
 #include "util/memory.h"
 #include "util/vector.h"
 
-#include <psp2/kernel/memorymgr.h>
+#include <psp2/kernel/sysmem.h>
 #include <psp2/types.h>
 
 DECLARE_VECTOR(SceUIDList, SceUID);
