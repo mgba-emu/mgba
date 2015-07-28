@@ -64,6 +64,7 @@ Bugfixes:
  - Qt: Fix a missing va_end call in the log handler lambda within the GameController constructor
  - GBA Cheats: Fix Pro Action Replay and GameShark issues when used together
  - Qt: Fix analog buttons not getting unmapped
+ - GBA Video: Fix sprites in modes 3 - 5 when character mapping is disabled
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
