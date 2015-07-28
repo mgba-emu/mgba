@@ -3,18 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef PSP2_CONTEXT_H
-#define PSP2_CONTEXT_H
+#ifndef PSP2_COMMON_H
+#define PSP2_COMMON_H
+ 
+#include "util/common.h"
 
-#include "psp2-common.h"
-
-void GBAPSP2Setup(void);
-void GBAPSP2Teardown(void);
-
-void GBAPSP2LoadROM(const char* path);
-void GBAPSP2Runloop(void);
-void GBAPSP2UnloadROM(void);
-
-void GBAPSP2Draw(void);
+#define PSP2_HORIZONTAL_PIXELS 960
+#define PSP2_VERTICAL_PIXELS 544
 
 #endif

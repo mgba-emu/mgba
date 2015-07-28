@@ -39,8 +39,6 @@ static Thread audioThread;
 
 static bool fullscreen = false;
 
-#define PSP2_HORIZONTAL_PIXELS 960
-#define PSP2_VERTICAL_PIXELS 544
 #define PSP2_INPUT 0x50535032
 #define PSP2_SAMPLES 64
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 19)
@@ -100,7 +98,6 @@ void GBAPSP2Setup() {
 	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
 	GBAInputBindAxis(&inputMap, PSP2_INPUT, 1, &desc);
 
-	vita2d_init();
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
@@ -251,7 +248,6 @@ void GBAPSP2Teardown(void) {
 	GBAInputMapDeinit(&inputMap);
 
 	vita2d_free_texture(tex);
-	vita2d_fini();
 }
 
 void GBAPSP2Draw(void) {
