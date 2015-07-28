@@ -40,8 +40,8 @@ extern "C" {
 
 using namespace QGBA;
 
-#ifdef __WIN32
-// This is a macro everywhere except MinGW, it seems
+#if defined(__WIN32) || defined(__OpenBSD__)
+// This is a macro everywhere except MinGW and OpenBSD, it seems
 using std::isnan;
 #endif
 
