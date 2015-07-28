@@ -5,14 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sce-vfs.h"
 
+#include <psp2/io/dirent.h>
+
 #include "util/vfs.h"
 #include "util/memory.h"
-
 
 struct VFileSce {
 	struct VFile d;
 
 	SceUID fd;
+};
+
+struct VDirEntrySce {
+	struct VDirEntry d;
+	SceIoDirent ent;
+};
+
+struct VDirSce {
+	struct VDir d;
+	struct VDirEntrySce de;
+	SceUID fd;
+	char* path;
 };
 
 static bool _vfsceClose(struct VFile* vf);
@@ -24,6 +37,13 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfsceTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfsceSize(struct VFile* vf);
 static bool _vfsceSync(struct VFile* vf, const void* memory, size_t size);
+
+static bool _vdsceClose(struct VDir* vd);
+static void _vdsceRewind(struct VDir* vd);
+static struct VDirEntry* _vdsceListNext(struct VDir* vd);
+static struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode);
+
+static const char* _vdesceName(struct VDirEntry* vde);
 
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
@@ -113,6 +133,63 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 }
 
 struct VDir* VDirOpen(const char* path) {
-	// TODO
-	return 0;
+	SceUID dir = sceIoDopen(path);
+	if (dir < 0) {
+		return 0;
+	}
+
+	struct VDirSce* vd = malloc(sizeof(struct VDirSce));
+	vd->fd = dir;
+	vd->d.close = _vdsceClose;
+	vd->d.rewind = _vdsceRewind;
+	vd->d.listNext = _vdsceListNext;
+	vd->d.openFile = _vdsceOpenFile;
+	vd->path = strdup(path);
+
+	vd->de.d.name = _vdesceName;
+
+	return &vd->d;
+}
+
+bool _vdsceClose(struct VDir* vd) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	if (sceIoDclose(vdsce->fd) < 0) {
+		return false;
+	}
+	free(vdsce->path);
+	free(vdsce);
+	return true;
+}
+
+void _vdsceRewind(struct VDir* vd) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	sceIoDclose(vdsce->fd);
+	vdsce->fd = sceIoDopen(vdsce->path);
+}
+
+struct VDirEntry* _vdsceListNext(struct VDir* vd) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	if (sceIoDread(vdsce->fd, &vdsce->de.ent) <= 0) {
+		return 0;
+	}
+	return &vdsce->de.d;
+}
+
+struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vdsce->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+
+	struct VFile* file = VFileOpenSce(combined, mode, 0666);
+	free(combined);
+	return file;
+}
+
+static const char* _vdesceName(struct VDirEntry* vde) {
+	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
+	return vdesce->ent.d_name;
 }
