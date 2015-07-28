@@ -209,7 +209,9 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
+#endif
 
 	m_mruFiles = m_config->getMRU();
 	updateMRU();
