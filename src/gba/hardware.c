@@ -261,8 +261,10 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 		t = time(0);
 	}
 	struct tm date;
-#ifdef _WIN32
+#if defined(_WIN32)
 	date = *localtime(&t);
+#elif defined(__CELLOS_LV2__)
+   memcpy(&date, localtime(&t), sizeof(date));
 #else
 	localtime_r(&t, &date);
 #endif
