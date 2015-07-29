@@ -211,7 +211,8 @@ else ifneq (,$(findstring armv,$(platform)))
 # emscripten
 else ifeq ($(platform), emscripten)
 	TARGET := $(TARGET_NAME)_libretro_emscripten.bc
-	DEFINES += -std=c99
+	DEFINES += -std=gnu99
+	DEFINES += -DHAVE_LOCALE
 
 # Windows
 else
