@@ -64,8 +64,6 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 
 	proxyRenderer->vramDirtyBitmap = 0;
 	memset(proxyRenderer->oamDirtyBitmap, 0, sizeof(proxyRenderer->oamDirtyBitmap));
-	memset(proxyRenderer->paletteDirtyBitmap, 0, sizeof(proxyRenderer->paletteDirtyBitmap));
-	memset(proxyRenderer->regDirtyBitmap, 0, sizeof(proxyRenderer->regDirtyBitmap));
 	proxyRenderer->threadState = PROXY_THREAD_IDLE;
 	ThreadCreate(&proxyRenderer->thread, _proxyThread, proxyRenderer);
 }
@@ -135,19 +133,14 @@ uint16_t GBAVideoThreadProxyRendererWriteVideoRegister(struct GBAVideoRenderer* 
 	if (address > REG_BLDY) {
 		return value;
 	}
-	proxyRenderer->regProxy[address >> 1] = value;
-	int bit = 1 << ((address >> 1) & 31);
-	int base = address >> 6;
-	if (proxyRenderer->regDirtyBitmap[base] & bit) {
-		return value;
-	}
-	proxyRenderer->regDirtyBitmap[base] |= bit;
 
 	struct GBAVideoDirtyInfo dirty = {
 		DIRTY_REGISTER,
-		address
+		address,
+		value
 	};
 	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
+	ConditionWake(&proxyRenderer->toThreadCond);
 	return value;
 }
 
@@ -158,27 +151,17 @@ void GBAVideoThreadProxyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uin
 		return;
 	}
 	proxyRenderer->vramDirtyBitmap |= bit;
-	struct GBAVideoDirtyInfo dirty = {
-		DIRTY_VRAM,
-		address
-	};
-	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
 }
 
 void GBAVideoThreadProxyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
-	proxyRenderer->paletteProxy[address >> 1] = value;
-	int bit = 1 << ((address >> 1) & 31);
-	int base = address >> 6;
-	if (proxyRenderer->paletteDirtyBitmap[base] & bit) {
-		return;
-	}
-	proxyRenderer->paletteDirtyBitmap[base] |= bit;
 	struct GBAVideoDirtyInfo dirty = {
 		DIRTY_PALETTE,
-		address
+		address,
+		value
 	};
 	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
+	ConditionWake(&proxyRenderer->toThreadCond);
 }
 
 void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -192,35 +175,43 @@ void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint
 	proxyRenderer->oamDirtyBitmap[base] |= bit;
 	struct GBAVideoDirtyInfo dirty = {
 		DIRTY_OAM,
-		oam
+		oam,
+		0
 	};
 	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
+	ConditionWake(&proxyRenderer->toThreadCond);
 }
 
 void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
-	MutexLock(&proxyRenderer->mutex);
-	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
-		ConditionWake(&proxyRenderer->toThreadCond);
-		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
-	}
-	proxyRenderer->y = y;
+	struct GBAVideoDirtyInfo dirty = {
+		DIRTY_SCANLINE,
+		y,
+		0
+	};
+	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
 	ConditionWake(&proxyRenderer->toThreadCond);
-	while (proxyRenderer->threadState == PROXY_THREAD_IDLE) {
-		ConditionWake(&proxyRenderer->toThreadCond);
-		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
-	}
-	MutexUnlock(&proxyRenderer->mutex);
 }
 
 void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
 	MutexLock(&proxyRenderer->mutex);
-	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
+	// Insert an extra item into the queue to make sure it gets flushed
+	struct GBAVideoDirtyInfo dirty = {
+		DIRTY_FLUSH,
+		0,
+		0
+	};
+	*GBAVideoDirtyQueueAppend(&proxyRenderer->dirtyQueue) = dirty;
+	do {
 		ConditionWake(&proxyRenderer->toThreadCond);
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
-	}
+	} while (proxyRenderer->threadState == PROXY_THREAD_BUSY);
 	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
+	GBAVideoDirtyQueueClear(&proxyRenderer->dirtyQueue);
+	proxyRenderer->queueCleared = true;
+	proxyRenderer->vramDirtyBitmap = 0;
+	memset(proxyRenderer->oamDirtyBitmap, 0, sizeof(proxyRenderer->oamDirtyBitmap));
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
@@ -232,51 +223,59 @@ void GBAVideoThreadProxyRendererPutPixels(struct GBAVideoRenderer* renderer, uns
 	// TODO
 }
 
-
 static THREAD_ENTRY _proxyThread(void* renderer) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = renderer;
 	ThreadSetName("Proxy Renderer Thread");
 
 	MutexLock(&proxyRenderer->mutex);
+	size_t i = 0;
 	while (1) {
 		ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
 			break;
 		}
 		proxyRenderer->threadState = PROXY_THREAD_BUSY;
-		proxyRenderer->vramDirtyBitmap = 0;
-		memset(proxyRenderer->oamDirtyBitmap, 0, sizeof(proxyRenderer->oamDirtyBitmap));
-		memset(proxyRenderer->paletteDirtyBitmap, 0, sizeof(proxyRenderer->paletteDirtyBitmap));
-		memset(proxyRenderer->regDirtyBitmap, 0, sizeof(proxyRenderer->regDirtyBitmap));
-		size_t queueSize = GBAVideoDirtyQueueSize(&proxyRenderer->dirtyQueue);
-		struct GBAVideoDirtyInfo* queue = malloc(queueSize * sizeof(struct GBAVideoDirtyInfo));
-		memcpy(queue, GBAVideoDirtyQueueGetPointer(&proxyRenderer->dirtyQueue, 0), queueSize * sizeof(struct GBAVideoDirtyInfo));
-		GBAVideoDirtyQueueClear(&proxyRenderer->dirtyQueue);
-		size_t i;
-		for (i = 0; i < queueSize; ++i) {
-			switch (queue[i].type) {
+		if (proxyRenderer->queueCleared) {
+			proxyRenderer->queueCleared = false;
+			i = 0;
+		}
+		if (!GBAVideoDirtyQueueSize(&proxyRenderer->dirtyQueue)) {
+			continue;
+		}
+		MutexUnlock(&proxyRenderer->mutex);
+		for (; i < GBAVideoDirtyQueueSize(&proxyRenderer->dirtyQueue) - 1; ++i) {
+			struct GBAVideoDirtyInfo* item = GBAVideoDirtyQueueGetPointer(&proxyRenderer->dirtyQueue, i);
+			switch (item->type) {
 			case DIRTY_REGISTER:
-				proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, queue[i].address, proxyRenderer->regProxy[queue[i].address >> 1]);
-				break;
-			case DIRTY_VRAM:
-				proxyRenderer->backend->writeVRAM(proxyRenderer->backend, queue[i].address);
-				memcpy(&proxyRenderer->vramProxy[(queue[i].address & ~0xFFF) >> 1], &proxyRenderer->d.vram[(queue[i].address & ~0xFFF) >> 1], 0x1000);
+				proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
 				break;
 			case DIRTY_PALETTE:
-				proxyRenderer->backend->writePalette(proxyRenderer->backend, queue[i].address, proxyRenderer->paletteProxy[queue[i].address >> 1]);
+				proxyRenderer->paletteProxy[item->address >> 1] = item->value;
+				proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
 				break;
 			case DIRTY_OAM:
-				proxyRenderer->backend->writeOAM(proxyRenderer->backend, queue[i].address);
+				proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
+				break;
+			case DIRTY_SCANLINE:
+				if (proxyRenderer->vramDirtyBitmap) {
+					int bitmap = proxyRenderer->vramDirtyBitmap;
+					proxyRenderer->vramDirtyBitmap = 0;
+					int j;
+					for (j = 0; j < 24; ++j) {
+						if (!(bitmap & (1 << j))) {
+							continue;
+						}
+						proxyRenderer->backend->writeVRAM(proxyRenderer->backend, j * 0x1000);
+						memcpy(&proxyRenderer->vramProxy[j * 0x800], &proxyRenderer->d.vram[j * 0x800], 0x1000);
+					}
+				}
+				proxyRenderer->backend->drawScanline(proxyRenderer->backend, item->address);
+				break;
+			case DIRTY_FLUSH:
+				// This is only here to ensure the queue gets flushed
 				break;
 			}
 		}
-		free(queue);
-		ConditionWake(&proxyRenderer->fromThreadCond);
-		ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
-		MutexUnlock(&proxyRenderer->mutex);
-
-		proxyRenderer->backend->drawScanline(proxyRenderer->backend, proxyRenderer->y);
-
 		MutexLock(&proxyRenderer->mutex);
 		proxyRenderer->threadState = PROXY_THREAD_IDLE;
 		ConditionWake(&proxyRenderer->fromThreadCond);

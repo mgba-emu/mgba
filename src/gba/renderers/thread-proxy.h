@@ -12,9 +12,10 @@
 
 enum GBAVideoDirtyType {
 	DIRTY_REGISTER,
-	DIRTY_VRAM,
 	DIRTY_OAM,
-	DIRTY_PALETTE
+	DIRTY_PALETTE,
+	DIRTY_SCANLINE,
+	DIRTY_FLUSH
 };
 
 enum GBAVideoThreadProxyState {
@@ -26,6 +27,7 @@ enum GBAVideoThreadProxyState {
 struct GBAVideoDirtyInfo {
 	enum GBAVideoDirtyType type;
 	uint32_t address;
+	uint16_t value;
 };
 
 DECLARE_VECTOR(GBAVideoDirtyQueue, struct GBAVideoDirtyInfo);
@@ -43,15 +45,12 @@ struct GBAVideoThreadProxyRenderer {
 	struct GBAVideoDirtyQueue dirtyQueue;
 	uint32_t vramDirtyBitmap;
 	uint32_t oamDirtyBitmap[16];
-	uint32_t paletteDirtyBitmap[16];
-	uint32_t regDirtyBitmap[2];
 
 	uint16_t* vramProxy;
 	union GBAOAM oamProxy;
 	uint16_t paletteProxy[512];
-	uint16_t regProxy[42];
 
-	int y;
+	bool queueCleared;
 };
 
 void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend);
