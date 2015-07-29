@@ -1,0 +1,99 @@
+.\" Copyright (c) 2015 Anthony J. Bentley <anthony@anjbe.name>
+.\"
+.\" This Source Code Form is subject to the terms of the Mozilla Public
+.\" License, v. 2.0. If a copy of the MPL was not distributed with this
+.\" file, you can obtain one at https://mozilla.org/MPL/2.0/.
+.Dd July 29, 2015
+.Dt MGBA 6
+.Os
+.Sh NAME
+.Nm mgba
+.Nd Game Boy Advance emulator
+.Sh SYNOPSIS
+.Nm mgba
+.Op Fl 123456dfg
+.Op Fl b Ar biosfile
+.Op Fl c Ar cheatfile
+.Op Fl p Ar patchfile
+.Op Fl s Ar n
+.Op Fl v Ar moviefile
+.Ar file
+.Sh DESCRIPTION
+.Nm
+is a Game Boy Advance emulator.
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl 1
+Scale the window 1\(mu.
+.It Fl 2
+Scale the window 2\(mu.
+.It Fl 3
+Scale the window 3\(mu.
+.It Fl 4
+Scale the window 4\(mu.
+.It Fl 5
+Scale the window 5\(mu.
+.It Fl 6
+Scale the window 6\(mu.
+.It Fl b Ar biosfile , Fl -bios Ar biosfile
+Specify a BIOS file to use during boot.
+If this flag is omitted,
+.Nm
+will use a high\(hylevel emulated BIOS.
+.It Fl c Ar cheatfile , Fl -cheats Ar cheatfile
+Apply cheat codes from
+.Ar cheatfile .
+.It Fl d
+Start emulating via the command\(hyline debugger.
+.It Fl f
+Start the emulator full\(hyscreen.
+.It Fl g
+Start a
+.Xr gdb 1
+session.
+By default the session starts on port 2345.
+.It Fl p Ar patchfile , Fl -patch Ar patchfile
+Specify a patch file in IPS or UPS format.
+.It Fl s Ar n , Fl -frameskip Ar n
+Skip every
+.Ar n
+frames.
+.It Fl v Ar moviefile , Fl -movie Ar moviefile
+Play back a movie of recording input from
+.Ar moviefile .
+.El
+.Sh CONTROLS
+The default controls are as follows:
+.Bl -hang -width Select -compact
+.It A
+.Cm x
+.It B
+.Cm z
+.It L
+.Cm a
+.It R
+.Cm s
+.It Start
+.Aq Cm Enter
+.It Select
+.Aq Cm Backspace
+.It Load state
+.Cm F1 Ns \(en Ns Cm F9
+.It Save state
+.Ao Cm Shift Ac Ns \(hy Ns Cm F1 Ns \(en Ns Cm F9
+.It Frame advance
+.Ao Cm Ctrl Ac Ns \(hy Ns Cm n
+.El
+.Sh AUTHORS
+.An Jeffrey Pfau Aq Mt jeffrey@endrift.com
+.Sh HOMEPAGE
+.Bl -bullet
+.It
+.Lk https://endrift.com/mgba/ "mGBA homepage"
+.It
+.Lk https://github.com/mgba-emu/mgba "Development repository"
+.It
+.Lk https://endrift.com/mgba/bugs/ "Bug tracker"
+.It
+.Lk https://forums.mgba.io/ "Message board"
+.El
