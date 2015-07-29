@@ -10,7 +10,7 @@
 
 #include <pthread.h>
 #include <sys/time.h>
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h>
 #endif
 
