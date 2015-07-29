@@ -207,7 +207,7 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 }
 
 GBARumble* InputController::rumble() {
-#ifdef BUILD_SDL
+#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	if (m_playerAttached) {
 		return &m_sdlPlayer.rumble.d;
 	}
