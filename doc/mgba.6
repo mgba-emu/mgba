@@ -64,7 +64,7 @@ Play back a movie of recording input from
 .El
 .Sh CONTROLS
 The default controls are as follows:
-.Bl -hang -width Select -compact
+.Bl -hang -width "Frame advance" -compact
 .It A
 .Cm x
 .It B
@@ -83,6 +83,79 @@ The default controls are as follows:
 .Ao Cm Shift Ac Ns \(hy Ns Cm F1 Ns \(en Ns Cm F9
 .It Frame advance
 .Ao Cm Ctrl Ac Ns \(hy Ns Cm n
+.El
+.Sh DEBUGGER
+When
+.Nm
+is run with the
+.Fl d
+option, the command\(hyline debugger is enabled.
+It supports the following commands:
+.Pp
+.Bl -tag -compact -width 1
+.It Cm b Ns Oo Cm reak Oc Ar address
+.It Cm b Ns Oo Cm reak Oc Ns Cm /a Ar address
+.It Cm b Ns Oo Cm reak Oc Ns Cm /t Ar address
+Set a breakpoint at
+.Ar address .
+.It Cm c Ns Op Cm ontinue
+Continue execution.
+.It Cm d Ns Oo elete Oc Ar address
+Delete a breakpoint at
+.Ar address .
+.It Cm dis Ns Oo Cm asm Oc Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /a Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /t Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /a Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /t Ar address Op Ar count
+Disassemble
+.Ar count
+instructions starting at address
+.Ar address .
+If
+.Ar count
+is not specified, only disassemble the instruction at
+.Ar address .
+.It Cm h Ns Op Cm elp
+Print help.
+.It Cm i Ns Op Cm nfo
+.It Cm status
+Print the current contents of general\(hypurpose registers.
+.It Cm n Ns Op Cm ext
+Execute the next instruction.
+.It Cm p Ns Oo Cm rint Oc Ar value ...
+.It Cm p Ns Oo Cm rint Oc Ns Cm /t Ar value ...
+.It Cm p Ns Oo Cm rint Oc Ns Cm /x Ar value ...
+Print
+.Ar value .
+.It Cm q Ns Op Cm uit
+Quit the emulator.
+.It Cm reset
+Reset the emulation.
+.It Cm r/1 Ar address
+.It Cm r/2 Ar address
+.It Cm r/4 Ar address
+Read a byte, halfword, or word from
+.Ar address .
+.It Cm w Ns Oo Cm atch Oc Ar address
+Set a watchpoint at
+.Ar address .
+.It Cm w/1 Ar address
+.It Cm w/2 Ar address
+.It Cm w/4 Ar address
+Write a byte, halfword, or word to
+.Ar address .
+.It Cm w/r Ar register
+Write a word to
+.Ar register .
+.It Cm x/1 Ar address
+.It Cm x/2 Ar address
+.It Cm x/4 Ar address
+Examine bytes, halfwords, or words from
+.Ar address .
+.It Cm \&!\ \&
+Break into the attached debugger.
 .El
 .Sh AUTHORS
 .An Jeffrey Pfau Aq Mt jeffrey@endrift.com
