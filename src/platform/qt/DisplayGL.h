@@ -14,7 +14,11 @@
 #include <QTimer>
 
 extern "C" {
+#ifdef BUILD_GL
 #include "platform/opengl/gl.h"
+#elif defined(BUILD_GLES2)
+#include "platform/opengl/gles2.h"
+#endif
 }
 
 struct GBAThread;
@@ -90,7 +94,11 @@ private:
 	QGLWidget* m_gl;
 	bool m_active;
 	GBAThread* m_context;
+#ifdef BUILD_GL
 	GBAGLContext m_backend;
+#elif defined(BUILD_GLES2)
+	GBAGLES2Context m_backend;
+#endif
 	QSize m_size;
 	MessagePainter* m_messagePainter;
 };

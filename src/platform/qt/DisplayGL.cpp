@@ -135,7 +135,11 @@ PainterGL::PainterGL(QGLWidget* parent)
 	, m_context(nullptr)
 	, m_messagePainter(nullptr)
 {
+#ifdef BUILD_GL
 	GBAGLContextCreate(&m_backend);
+#elif defined(BUILD_GLES2)
+	GBAGLES2ContextCreate(&m_backend);
+#endif
 	m_backend.d.swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
 		painter->m_gl->swapBuffers();
