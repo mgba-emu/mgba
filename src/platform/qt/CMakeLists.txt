@@ -47,6 +47,7 @@ if(QT_TYPE STREQUAL STATIC_LIBRARY)
 endif()
 
 set(SOURCE_FILES
+	AboutScreen.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -83,6 +84,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	AboutScreen.ui
 	CheatsView.ui
 	GIFView.ui
 	LoadSaveState.ui
