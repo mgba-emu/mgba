@@ -9,6 +9,8 @@
 #include "gba/serialize.h"
 #include "util/hash.h"
 
+const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
+
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 

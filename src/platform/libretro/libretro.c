@@ -8,6 +8,7 @@
 #include "util/common.h"
 
 #include "gba/gba.h"
+#include "gba/interface.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "gba/supervisor/overrides.h"
@@ -17,6 +18,8 @@
 
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
+
+#define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -31,6 +34,8 @@ static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _setRumble(struct GBARumble* rumble, int enable);
+static uint8_t _readLux(struct GBALuminanceSource* lux);
+static void _updateLux(struct GBALuminanceSource* lux);
 
 static struct GBA gba;
 static struct ARMCore cpu;
@@ -44,6 +49,8 @@ static struct GBAAVStream stream;
 static int rumbleLevel;
 static struct CircleBuffer rumbleHistory;
 static struct GBARumble rumble;
+static struct GBALuminanceSource lux;
+static int luxLevel;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -51,6 +58,13 @@ unsigned retro_api_version(void) {
 
 void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
+
+	struct retro_variable vars[] = {
+		{ SOLAR_SENSOR_LEVEL, "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
+		{ 0, 0 }
+	};
+
+	environCallback(RETRO_ENVIRONMENT_SET_VARIABLES, vars);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
@@ -130,6 +144,11 @@ void retro_init(void) {
 		rumbleCallback = 0;
 	}
 
+	luxLevel = 0;
+	lux.readLuminance = _readLux;
+	lux.sample = _updateLux;
+	_updateLux(&lux);
+
 	struct retro_log_callback log;
 	if (environCallback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
 		logCallback = log.log;
@@ -151,6 +170,7 @@ void retro_init(void) {
 	if (rumbleCallback) {
 		gba.rumble = &rumble;
 	}
+	gba.luminanceSource = &lux;
 	rom = 0;
 
 	const char* sysDir = 0;
@@ -400,4 +420,41 @@ static void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 	CircleBufferWrite8(&rumbleHistory, enable);
 	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
+}
+
+static void _updateLux(struct GBALuminanceSource* lux) {
+	UNUSED(lux);
+	struct retro_variable var = {
+		.key = SOLAR_SENSOR_LEVEL,
+		.value = 0
+	};
+
+	bool updated = false;
+	if (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) || !updated) {
+		return;
+	}
+	if (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || !var.value) {
+		return;
+	}
+
+	char* end;
+	int newLuxLevel = strtol(var.value, &end, 10);
+	if (!*end) {
+		if (newLuxLevel > 10) {
+			luxLevel = 10;
+		} else if (newLuxLevel < 0) {
+			luxLevel = 0;
+		} else {
+			luxLevel = newLuxLevel;
+		}
+	}
+}
+
+static uint8_t _readLux(struct GBALuminanceSource* lux) {
+	UNUSED(lux);
+	int value = 0x16;
+	if (luxLevel > 0) {
+		value += GBA_LUX_LEVELS[luxLevel - 1];
+	}
+	return 0xFF - value;
 }
