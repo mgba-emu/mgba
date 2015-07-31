@@ -28,7 +28,9 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Multimedia)
+if(NOT WIN32 OR NOT BUILD_SDL)
+	find_package(Qt5Multimedia)
+endif()
 find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
 
