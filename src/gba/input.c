@@ -433,8 +433,9 @@ int GBAInputClearAxis(const struct GBAInputMap* map, uint32_t type, int axis, in
 
 void GBAInputBindAxis(struct GBAInputMap* map, uint32_t type, int axis, const struct GBAAxis* description) {
 	struct GBAInputMapImpl* impl = _guaranteeMap(map, type);
-	TableEnumerate(&impl->axes, _unbindAxis, &description->highDirection);
-	TableEnumerate(&impl->axes, _unbindAxis, &description->lowDirection);
+	struct GBAAxis d2 = *description;
+	TableEnumerate(&impl->axes, _unbindAxis, &d2.highDirection);
+	TableEnumerate(&impl->axes, _unbindAxis, &d2.lowDirection);
 	struct GBAAxis* dup = malloc(sizeof(struct GBAAxis));
 	*dup = *description;
 	TableInsert(&impl->axes, axis, dup);
