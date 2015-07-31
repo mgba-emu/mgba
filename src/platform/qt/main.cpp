@@ -10,7 +10,9 @@
 #include <QtPlugin>
 #ifdef _WIN32
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
+#ifdef BUILD_QT_MULTIMEDIA
 Q_IMPORT_PLUGIN(QWindowsAudioPlugin);
+#endif
 #endif
 #endif
 
