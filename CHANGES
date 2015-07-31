@@ -27,7 +27,7 @@ Features:
  - Undo-able savestate loading and saving
  - Controller profiles now store shortcut settings
  - Default controller profiles for several common controllers
- - Libretro now supports BIOS and rumble
+ - Libretro now supports BIOS, rumble and solar sensor
  - Implement BIOS call Stop, for sleep mode
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
