@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <QStackedLayout>
 
+#include "AboutScreen.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "Display.h"
@@ -40,8 +41,8 @@ extern "C" {
 
 using namespace QGBA;
 
-#ifdef __WIN32
-// This is a macro everywhere except MinGW, it seems
+#if defined(__WIN32) || defined(__OpenBSD__)
+// This is a macro everywhere except MinGW and OpenBSD, it seems
 using std::isnan;
 #endif
 
@@ -342,6 +343,11 @@ void Window::openPaletteWindow() {
 void Window::openMemoryWindow() {
 	MemoryView* memoryWindow = new MemoryView(m_controller);
 	openView(memoryWindow);
+}
+
+void Window::openAboutScreen() {
+	AboutScreen* about = new AboutScreen();
+	openView(about);
 }
 
 #ifdef BUILD_SDL
@@ -751,6 +757,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 		GBAApp::app()->newWindow();
 	});
 	addControlledAction(fileMenu, multiWindow, "multiWindow");
+
+#ifndef Q_OS_MAC
+	fileMenu->addSeparator();
+#endif
+
+	QAction* about = new QAction(tr("About"), fileMenu);
+	connect(about, SIGNAL(triggered()), this, SLOT(openAboutScreen()));
+	fileMenu->addAction(about);
 
 #ifndef Q_OS_MAC
 	addControlledAction(fileMenu, fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit), "quit");
@@ -1214,11 +1228,11 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
-	QSize ds = s;
-	if (s.width() * m_aspectHeight > s.height() * m_aspectWidth) {
-		ds.setWidth(s.height() * m_aspectWidth / m_aspectHeight);
-	} else if (s.width() * m_aspectHeight < s.height() * m_aspectWidth) {
-		ds.setHeight(s.width() * m_aspectHeight / m_aspectWidth);
+	QSize ds = s * 0.8;
+	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
+		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
+	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
+		ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);

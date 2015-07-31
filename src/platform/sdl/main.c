@@ -86,6 +86,8 @@ int main(int argc, char** argv) {
 
 #ifdef BUILD_GL
 	GBASDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2)
+	GBASDLGLES2Create(&renderer);
 #else
 	GBASDLSWCreate(&renderer);
 #endif

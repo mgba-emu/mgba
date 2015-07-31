@@ -56,6 +56,8 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
 	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "break", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
+	{ "break/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
+	{ "break/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "c", _continue, 0, "Continue execution" },
 	{ "continue", _continue, 0, "Continue execution" },
 	{ "d", _clearBreakpoint, CLIDVParse, "Delete a breakpoint" },

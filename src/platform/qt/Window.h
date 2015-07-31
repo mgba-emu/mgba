@@ -82,6 +82,8 @@ public slots:
 	void openPaletteWindow();
 	void openMemoryWindow();
 
+	void openAboutScreen();
+
 #ifdef BUILD_SDL
 	void openGamepadWindow();
 #endif

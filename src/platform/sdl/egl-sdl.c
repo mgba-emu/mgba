@@ -1,37 +1,26 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-static const char* _vertexShader =
-	"attribute vec4 position;\n"
-	"varying vec2 texCoord;\n"
+static void _sdlSwap(struct VideoBackend* context) {
+	UNUSED(context);
+	SDL_GL_SwapBuffers();
+}
 
-	"void main() {\n"
-	"	gl_Position = position;\n"
-	"	texCoord = (position.st + vec2(1.0, -1.0)) * vec2(0.46875, -0.3125);\n"
-	"}";
+static bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer);
 
-static const char* _fragmentShader =
-	"varying vec2 texCoord;\n"
-	"uniform sampler2D tex;\n"
+void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLGLES2Init;
+	renderer->deinit = GBASDLGLES2Deinit;
+	renderer->runloop = GBASDLGLES2Runloop;
+}
 
-	"void main() {\n"
-	"	vec4 color = texture2D(tex, texCoord);\n"
-	"	color.a = 1.;\n"
-	"	gl_FragColor = color;"
-	"}";
-
-static const GLfloat _vertices[] = {
-	-1.f, -1.f,
-	-1.f, 1.f,
-	1.f, 1.f,
-	1.f, -1.f,
-};
-
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	int major, minor;
@@ -103,36 +92,19 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 
 	renderer->d.outputBuffer = memalign(16, 256 * 256 * 4);
 	renderer->d.outputBufferStride = 256;
-	glGenTextures(1, &renderer->tex);
-	glBindTexture(GL_TEXTURE_2D, renderer->tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-	renderer->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	renderer->vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	renderer->program = glCreateProgram();
 
-	glShaderSource(renderer->fragmentShader, 1, (const GLchar**) &_fragmentShader, 0);
-	glShaderSource(renderer->vertexShader, 1, (const GLchar**) &_vertexShader, 0);
-	glAttachShader(renderer->program, renderer->vertexShader);
-	glAttachShader(renderer->program, renderer->fragmentShader);
-	char log[1024];
-	glCompileShader(renderer->fragmentShader);
-	glCompileShader(renderer->vertexShader);
-	glGetShaderInfoLog(renderer->fragmentShader, 1024, 0, log);
-	glGetShaderInfoLog(renderer->vertexShader, 1024, 0, log);
-	glLinkProgram(renderer->program);
-	glGetProgramInfoLog(renderer->program, 1024, 0, log);
-	printf("%s\n", log);
-	renderer->texLocation = glGetUniformLocation(renderer->program, "tex");
-	renderer->positionLocation = glGetAttribLocation(renderer->program, "position");
-	glClearColor(1.f, 0.f, 0.f, 1.f);
+	GBAGLES2ContextCreate(&renderer->gl);
+	renderer->gl.d.user = renderer;
+	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
+	renderer->gl.d.filter = renderer->filter;
+	renderer->gl.d.swap = _sdlSwap;
+	renderer->gl.d.init(&renderer->gl.d, 0);
+	return true;
 }
 
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
+	struct VideoBackend* v = &renderer->gl.d;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
@@ -140,27 +112,22 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 		}
 
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
-			glViewport(0, 0, 240, 160);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glUseProgram(renderer->program);
-			glUniform1i(renderer->texLocation, 0);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, renderer->tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, renderer->d.outputBuffer);
-			glVertexAttribPointer(renderer->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
-			glEnableVertexAttribArray(renderer->positionLocation);
-			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-			glUseProgram(0);
-			eglSwapBuffers(renderer->display, renderer->surface);
+			v->postFrame(v, renderer->d.outputBuffer);
 		}
+		v->drawFrame(v);
 		GBASyncWaitFrameEnd(&context->sync);
+		eglSwapBuffers(renderer->display, renderer->surface);
 	}
 }
 
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer) {
+	if (renderer->gl.d.deinit) {
+		renderer->gl.d.deinit(&renderer->gl.d);
+	}
 	eglMakeCurrent(renderer->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	eglDestroySurface(renderer->display, renderer->surface);
 	eglDestroyContext(renderer->display, renderer->context);
 	eglTerminate(renderer->display);
+	free(renderer->d.outputBuffer);
 	bcm_host_deinit();
 }

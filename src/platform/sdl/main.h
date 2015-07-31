@@ -20,11 +20,14 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #include <SDL/SDL.h>
-#include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
 #include <bcm_host.h>
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef BUILD_GLES2
+#include "platform/opengl/gles2.h"
 #endif
 
 #ifdef USE_PIXMAN
@@ -69,13 +72,7 @@ struct SDLSoftwareRenderer {
 	EGLSurface surface;
 	EGLContext context;
 	EGL_DISPMANX_WINDOW_T window;
-	GLuint tex;
-	GLuint fragmentShader;
-	GLuint vertexShader;
-	GLuint program;
-	GLuint bufferObject;
-	GLuint texLocation;
-	GLuint positionLocation;
+	struct GBAGLES2Context gl;
 #endif
 
 #ifdef BUILD_PANDORA
@@ -89,5 +86,9 @@ void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer);
 
 #ifdef BUILD_GL
 void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer);
+#endif
+
+#ifdef BUILD_GLES2
+void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer);
 #endif
 #endif

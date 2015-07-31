@@ -29,8 +29,6 @@ extern "C" {
 using namespace QGBA;
 using namespace std;
 
-const int GameController::LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
-
 GameController::GameController(QObject* parent)
 	: QObject(parent)
 	, m_drawContext(new uint32_t[256 * 256])
@@ -794,7 +792,7 @@ void GameController::setLuminanceValue(uint8_t value) {
 	value = std::max<int>(value - 0x16, 0);
 	m_luxLevel = 10;
 	for (int i = 0; i < 10; ++i) {
-		if (value < LUX_LEVELS[i]) {
+		if (value < GBA_LUX_LEVELS[i]) {
 			m_luxLevel = i;
 			break;
 		}
@@ -806,7 +804,7 @@ void GameController::setLuminanceLevel(int level) {
 	int value = 0x16;
 	level = std::max(0, std::min(10, level));
 	if (level > 0) {
-		value += LUX_LEVELS[level - 1];
+		value += GBA_LUX_LEVELS[level - 1];
 	}
 	setLuminanceValue(value);
 }

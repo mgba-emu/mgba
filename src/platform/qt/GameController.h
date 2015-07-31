@@ -207,8 +207,6 @@ private:
 	uint8_t m_luxValue;
 	int m_luxLevel;
 
-	static const int LUX_LEVELS[10];
-
 	GBARTCGenericSource m_rtc;
 };
 

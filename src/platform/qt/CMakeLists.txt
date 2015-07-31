@@ -28,7 +28,9 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Multimedia)
+if(NOT WIN32 OR NOT BUILD_SDL)
+	find_package(Qt5Multimedia)
+endif()
 find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
 
@@ -38,7 +40,13 @@ if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
 	return()
 endif()
 
+if(BUILD_GL)
 list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+endif()
+
+if(BUILD_GLES2)
+list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+endif()
 
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
@@ -47,6 +55,7 @@ if(QT_TYPE STREQUAL STATIC_LIBRARY)
 endif()
 
 set(SOURCE_FILES
+	AboutScreen.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -83,6 +92,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	AboutScreen.ui
 	CheatsView.ui
 	GIFView.ui
 	LoadSaveState.ui
