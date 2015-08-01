@@ -51,7 +51,7 @@ set(MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/main.c)
 
 if(BUILD_RASPI)
 	add_definitions(-DBUILD_RASPI)
-	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-common.c)
 	list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gles2-sdl.c)
 	set(OPENGLES2_LIBRARY "-lEGL -lGLESv2 -lbcm_host")
 	set(BUILD_GLES2 ON CACHE BOOL "Using OpenGL|ES 2" FORCE)
@@ -60,6 +60,7 @@ if(BUILD_RASPI)
 	set_target_properties(${BINARY_NAME}-rpi PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
 	target_link_libraries(${BINARY_NAME}-rpi ${BINARY_NAME} ${PLATFORM_LIBRARY} ${OPENGLES2_LIBRARY})
 	install(TARGETS ${BINARY_NAME}-rpi DESTINATION bin COMPONENT ${BINARY_NAME}-rpi)
+	unset(OPENGLES2_INCLUDE_DIR} CACHE) # Clear NOTFOUND
 endif()
 
 if(BUILD_PANDORA)
