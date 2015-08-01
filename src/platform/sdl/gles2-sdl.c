@@ -7,6 +7,8 @@
 
 #include "gl-common.h"
 
+#include <malloc.h>
+
 static bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer);
 static void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
 static void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer);

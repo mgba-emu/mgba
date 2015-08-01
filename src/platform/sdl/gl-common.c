@@ -10,6 +10,7 @@ void GBASDLGLCommonSwap(struct VideoBackend* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_SwapWindow(renderer->window);
 #else
+	UNUSED(renderer);
 	SDL_GL_SwapBuffers();
 #endif
 }
