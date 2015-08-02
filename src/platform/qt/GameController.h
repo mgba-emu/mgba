@@ -117,6 +117,8 @@ public slots:
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
+	void setAudioChannelEnabled(int channel, bool enable = true);
+	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
@@ -192,6 +194,9 @@ private:
 	float m_turboSpeed;
 	QTimer m_rewindTimer;
 	bool m_wasPaused;
+
+	bool m_audioChannels[6];
+	bool m_videoLayers[5];
 
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;
