@@ -1011,16 +1011,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
 		enableBg->setCheckable(true);
 		enableBg->setChecked(true);
-		connect(enableBg, &QAction::triggered, [this, i](bool enable) { m_controller->thread()->gba->video.renderer->disableBG[i] = !enable; });
-		m_gameActions.append(enableBg);
+		connect(enableBg, &QAction::triggered, [this, i](bool enable) { m_controller->setVideoLayerEnabled(i, enable); });
 		addControlledAction(videoLayers, enableBg, QString("enableBG%0").arg(i));
 	}
 
 	QAction* enableObj = new QAction(tr("OBJ (sprites)"), videoLayers);
 	enableObj->setCheckable(true);
 	enableObj->setChecked(true);
-	connect(enableObj, &QAction::triggered, [this](bool enable) { m_controller->thread()->gba->video.renderer->disableOBJ = !enable; });
-	m_gameActions.append(enableObj);
+	connect(enableObj, &QAction::triggered, [this](bool enable) { m_controller->setVideoLayerEnabled(4, enable); });
 	addControlledAction(videoLayers, enableObj, "enableOBJ");
 
 	QMenu* audioChannels = avMenu->addMenu(tr("Audio channels"));
@@ -1029,23 +1027,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 		QAction* enableCh = new QAction(tr("Channel %0").arg(i + 1), audioChannels);
 		enableCh->setCheckable(true);
 		enableCh->setChecked(true);
-		connect(enableCh, &QAction::triggered, [this, i](bool enable) { m_controller->thread()->gba->audio.forceDisableCh[i] = !enable; });
-		m_gameActions.append(enableCh);
+		connect(enableCh, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(i, enable); });
 		addControlledAction(audioChannels, enableCh, QString("enableCh%0").arg(i + 1));
 	}
 
 	QAction* enableChA = new QAction(tr("Channel A"), audioChannels);
 	enableChA->setCheckable(true);
 	enableChA->setChecked(true);
-	connect(enableChA, &QAction::triggered, [this, i](bool enable) { m_controller->thread()->gba->audio.forceDisableChA = !enable; });
-	m_gameActions.append(enableChA);
+	connect(enableChA, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(4, enable); });
 	addControlledAction(audioChannels, enableChA, QString("enableChA"));
 
 	QAction* enableChB = new QAction(tr("Channel B"), audioChannels);
 	enableChB->setCheckable(true);
 	enableChB->setChecked(true);
-	connect(enableChB, &QAction::triggered, [this, i](bool enable) { m_controller->thread()->gba->audio.forceDisableChB = !enable; });
-	m_gameActions.append(enableChB);
+	connect(enableChB, &QAction::triggered, [this, i](bool enable) { m_controller->setAudioChannelEnabled(5, enable); });
 	addControlledAction(audioChannels, enableChB, QString("enableChB"));
 
 	QMenu* toolsMenu = menubar->addMenu(tr("&Tools"));

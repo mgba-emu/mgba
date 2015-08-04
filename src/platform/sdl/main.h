@@ -60,6 +60,8 @@ struct SDLSoftwareRenderer {
 
 #ifdef BUILD_GL
 	struct GBAGLContext gl;
+#elif BUILD_GLES2
+	struct GBAGLES2Context gl;
 #endif
 
 #ifdef USE_PIXMAN
@@ -72,7 +74,6 @@ struct SDLSoftwareRenderer {
 	EGLSurface surface;
 	EGLContext context;
 	EGL_DISPMANX_WINDOW_T window;
-	struct GBAGLES2Context gl;
 #endif
 
 #ifdef BUILD_PANDORA

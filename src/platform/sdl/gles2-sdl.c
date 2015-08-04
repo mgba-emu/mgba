@@ -5,10 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-static void _sdlSwap(struct VideoBackend* context) {
-	UNUSED(context);
-	SDL_GL_SwapBuffers();
-}
+#include "gl-common.h"
+
+#include <malloc.h>
 
 static bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer);
 static void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
@@ -21,6 +20,7 @@ void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer) {
 }
 
 bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
+#ifdef BUILD_RASPI
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	int major, minor;
@@ -89,6 +89,9 @@ bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	if (EGL_FALSE == eglMakeCurrent(renderer->display, renderer->surface, renderer->surface, renderer->context)) {
 		return false;
 	}
+#else
+	GBASDLGLCommonInit(renderer);
+#endif
 
 	renderer->d.outputBuffer = memalign(16, 256 * 256 * 4);
 	renderer->d.outputBufferStride = 256;
@@ -97,7 +100,7 @@ bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = _sdlSwap;
+	renderer->gl.d.swap = GBASDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
 	return true;
 }
@@ -116,7 +119,11 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 		}
 		v->drawFrame(v);
 		GBASyncWaitFrameEnd(&context->sync);
+#ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
+#else
+		v->swap(v);
+#endif
 	}
 }
 
@@ -124,10 +131,14 @@ void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
+#ifdef BUILD_RASPI
 	eglMakeCurrent(renderer->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	eglDestroySurface(renderer->display, renderer->surface);
 	eglDestroyContext(renderer->display, renderer->context);
 	eglTerminate(renderer->display);
-	free(renderer->d.outputBuffer);
 	bcm_host_deinit();
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_DeleteContext(renderer->glCtx);
+#endif
+	free(renderer->d.outputBuffer);
 }

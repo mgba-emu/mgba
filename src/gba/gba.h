@@ -124,6 +124,7 @@ struct GBA {
 	bool taintedRegisters[16];
 
 	bool realisticTiming;
+	bool hardCrash;
 };
 
 struct GBACartridge {

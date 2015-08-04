@@ -47,6 +47,8 @@ GameController::GameController(QObject* parent)
 	, m_turboForced(false)
 	, m_turboSpeed(-1)
 	, m_wasPaused(false)
+	, m_audioChannels{ true, true, true, true, true, true }
+	, m_videoLayers{ true, true, true, true, true }
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
@@ -90,6 +92,17 @@ GameController::GameController(QObject* parent)
 		context->gba->rtcSource = &controller->m_rtc.d;
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
+		context->gba->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
+		context->gba->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
+		context->gba->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
+		context->gba->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
+		context->gba->audio.forceDisableChA = !controller->m_audioChannels[4];
+		context->gba->audio.forceDisableChB = !controller->m_audioChannels[5];
+		context->gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
+		context->gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
+		context->gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
+		context->gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
+		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
 		if (GBALoadState(context, context->stateDir, 0)) {
@@ -576,6 +589,49 @@ void GameController::setAudioBufferSamples(int samples) {
 	redoSamples(samples);
 	threadContinue();
 	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+}
+
+void GameController::setAudioChannelEnabled(int channel, bool enable) {
+	if (channel > 5 || channel < 0) {
+		return;
+	}
+	m_audioChannels[channel] = enable;
+	if (m_gameOpen) {
+		switch (channel) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			m_threadContext.gba->audio.forceDisableCh[channel] = !enable;
+			break;
+		case 4:
+			m_threadContext.gba->audio.forceDisableChA = !enable;
+			break;
+		case 5:
+			m_threadContext.gba->audio.forceDisableChB = !enable;
+			break;
+		}
+	}
+}
+
+void GameController::setVideoLayerEnabled(int layer, bool enable) {
+	if (layer > 4 || layer < 0) {
+		return;
+	}
+	m_videoLayers[layer] = enable;
+	if (m_gameOpen) {
+		switch (layer) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			m_threadContext.gba->video.renderer->disableBG[layer] = !enable;
+			break;
+		case 4:
+			m_threadContext.gba->video.renderer->disableOBJ = !enable;
+			break;
+		}
+	}
 }
 
 void GameController::setFPSTarget(float fps) {
