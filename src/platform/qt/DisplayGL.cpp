@@ -16,6 +16,7 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	: Display(parent)
+	, m_isDrawing(false)
 	, m_gl(new EmptyGLWidget(format, this))
 	, m_painter(new PainterGL(m_gl))
 	, m_drawThread(nullptr)
@@ -33,6 +34,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	if (m_drawThread) {
 		return;
 	}
+	m_isDrawing = true;
 	m_painter->setContext(thread);
 	m_painter->setMessagePainter(messagePainter());
 	m_context = thread;
@@ -55,6 +57,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 
 void DisplayGL::stopDrawing() {
 	if (m_drawThread) {
+		m_isDrawing = false;
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 		}
@@ -69,6 +72,7 @@ void DisplayGL::stopDrawing() {
 
 void DisplayGL::pauseDrawing() {
 	if (m_drawThread) {
+		m_isDrawing = false;
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 		}
@@ -81,6 +85,7 @@ void DisplayGL::pauseDrawing() {
 
 void DisplayGL::unpauseDrawing() {
 	if (m_drawThread) {
+		m_isDrawing = true;
 		if (GBAThreadIsActive(m_context)) {
 			GBAThreadInterrupt(m_context);
 		}
