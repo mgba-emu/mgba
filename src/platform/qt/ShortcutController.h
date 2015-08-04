@@ -9,7 +9,6 @@
 #include "GamepadAxisEvent.h"
 
 #include <QAbstractItemModel>
-#include <QKeySequence>
 
 #include <functional>
 
@@ -38,13 +37,13 @@ private:
 		typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
 		ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent = nullptr);
-		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name,
+		ShortcutItem(Functions functions, int shortcut, const QString& visibleName, const QString& name,
 		             ShortcutItem* parent = nullptr);
 		ShortcutItem(QMenu* action, ShortcutItem* parent = nullptr);
 
 		QAction* action() { return m_action; }
 		const QAction* action() const { return m_action; }
-		const QKeySequence& shortcut() const { return m_shortcut; }
+		const int shortcut() const { return m_shortcut; }
 		Functions functions() const { return m_functions; }
 		QMenu* menu() { return m_menu; }
 		const QMenu* menu() const { return m_menu; }
@@ -55,11 +54,11 @@ private:
 		ShortcutItem* parent() { return m_parent; }
 		const ShortcutItem* parent() const { return m_parent; }
 		void addAction(QAction* action, const QString& name);
-		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName,
+		void addFunctions(Functions functions, int shortcut, const QString& visibleName,
 		                  const QString& name);
 		void addSubmenu(QMenu* menu);
 		int button() const { return m_button; }
-		void setShortcut(const QKeySequence& sequence);
+		void setShortcut(int sequence);
 		void setButton(int button) { m_button = button; }
 		int axis() const { return m_axis; }
 		GamepadAxisEvent::Direction direction() const { return m_direction; }
@@ -71,7 +70,7 @@ private:
 
 	private:
 		QAction* m_action;
-		QKeySequence m_shortcut;
+		int m_shortcut;
 		QMenu* m_menu;
 		Functions m_functions;
 		QString m_name;
@@ -100,20 +99,24 @@ public:
 
 	void addAction(QMenu* menu, QAction* action, const QString& name);
 	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
+	                  int shortcut, const QString& visibleName, const QString& name);
+	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
 	                  const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
 
-	QKeySequence shortcutAt(const QModelIndex& index) const;
+	int shortcutAt(const QModelIndex& index) const;
 	bool isMenuAt(const QModelIndex& index) const;
 
-	void updateKey(const QModelIndex& index, const QKeySequence& keySequence);
+	void updateKey(const QModelIndex& index, int keySequence);
 	void updateButton(const QModelIndex& index, int button);
 	void updateAxis(const QModelIndex& index, int axis, GamepadAxisEvent::Direction direction);
 
 	void clearKey(const QModelIndex& index);
 	void clearButton(const QModelIndex& index);
 
-	static QKeySequence keyEventToSequence(const QKeyEvent*);
+	static int toModifierShortcut(const QString& shortcut);
+	static bool isModifierKey(int key);
+	static int toModifierKey(int key);
 
 public slots:
 	void loadProfile(const QString& profile);
@@ -127,12 +130,13 @@ private:
 	void loadShortcuts(ShortcutItem*);
 	void loadGamepadShortcuts(ShortcutItem*);
 	void onSubitems(ShortcutItem*, std::function<void(ShortcutItem*)> func);
+	void updateKey(ShortcutItem* item, int keySequence);
 
 	ShortcutItem m_rootMenu;
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
 	QMap<int, ShortcutItem*> m_buttons;
 	QMap<QPair<int, GamepadAxisEvent::Direction>, ShortcutItem*> m_axes;
-	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
+	QMap<int, ShortcutItem*> m_heldKeys;
 	ConfigController* m_config;
 	QString m_profileName;
 	const InputProfile* m_profile;
