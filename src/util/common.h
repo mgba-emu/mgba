@@ -42,6 +42,12 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
+#ifdef ANDROID
+#ifndef restrict
+#define restrict __restrict
+#endif
+#endif
+
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \

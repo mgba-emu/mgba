@@ -47,6 +47,7 @@ static FORCE_INLINE uint32_t fmix32 (uint32_t h) {
 //-----------------------------------------------------------------------------
 
 uint32_t hash32(const void* key, int len, uint32_t seed) {
+  int i;
   const uint8_t * data = (const uint8_t*)key;
   const int nblocks = len / 4;
 
@@ -60,7 +61,7 @@ uint32_t hash32(const void* key, int len, uint32_t seed) {
 
   const uint32_t * blocks = (const uint32_t *)(data + nblocks*4);
 
-  for(int i = -nblocks; i; i++)
+  for(i = -nblocks; i; i++)
   {
     uint32_t k1 = getblock32(blocks,i);
 

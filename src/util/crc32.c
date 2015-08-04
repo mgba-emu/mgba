@@ -99,10 +99,11 @@ uint32_t doCrc32(const void* buf, size_t size) {
 }
 
 uint32_t updateCrc32(uint32_t crc, const void* buf, size_t size) {
+   size_t i;
 	const uint8_t* p = buf;
 	
 	crc = ~crc;
-	for (size_t i = 0; i < size; ++i) {
+	for (i = 0; i < size; ++i) {
 		crc = crc32Table[(crc ^ p[i]) & 0xFF] ^ (crc >> 8);
 	}
 
