@@ -1,0 +1,40 @@
+TARGET_NAME ?= mgba
+
+ifeq ($(STATIC_LINKING), 1)
+  TARGET = $(TARGET_NAME)_libretro_$(platform).a
+else
+  TARGET = $(TARGET_NAME)_libretro$(SOEXT)
+endif
+
+DEFINES  +=
+CFLAGS   += -Wall
+CXXFLAGS += -Wall
+LDFLAGS  +=
+
+OBJS    = $(SOURCES_C:.c=$(OBJEXT)) $(SOURCES_CXX:.cpp=$(OBJEXT))
+
+%$(OBJEXT): %.cpp
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+%$(OBJEXT): %.c
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+%$(OBJEXT): %.S
+	$(CC_AS) -c -o $@ $< $(CFLAGS)
+
+all: $(TARGET)
+
+$(TARGET): $(HEADERS) $(OBJS)
+ifeq ($(STATIC_LINKING), 1)
+	$(AR) rcs $@ $(OBJS)
+else
+	$(CC) -o $@ $(OBJS) $(LDFLAGS)
+endif
+
+clean-objs:
+	rm -f $(OBJS)
+
+clean: clean-objs
+	rm -f $(TARGET)
+
+.PHONY: clean-objs clean dist-clean FORCE

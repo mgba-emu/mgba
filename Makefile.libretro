@@ -1,7 +1,42 @@
 DEBUG = 0
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 HAVE_VFS_FD := 1
+CORE_DIR := src
+BUILD_DIR := libretro-build
 
+ifeq ($(platform),android-arm64_v8a)
+include $(BUILD_DIR)/Makefile.android-arm64_v8a
+else ifeq ($(platform),android-armeabi)
+include $(BUILD_DIR)/Makefile.android-armeabi
+else ifeq ($(platform),android-armeabi_v7a)
+include $(BUILD_DIR)/Makefile.android-armeabi_v7a
+else ifeq ($(platform),android-mips)
+include $(BUILD_DIR)/Makefile.android-mips
+else ifeq ($(platform),android-mips64)
+include $(BUILD_DIR)/Makefile.android-mips64
+else ifeq ($(platform),android-x86)
+include $(BUILD_DIR)/Makefile.android-x86
+else ifeq ($(platform),android-x86_64)
+include $(BUILD_DIR)/Makefile.android-x86_64
+else ifeq ($(platform),linux_portable-x86)
+include $(BUILD_DIR)/Makefile.linux_portable-x86
+else ifeq ($(platform),linux_portable-x86_64)
+include $(BUILD_DIR)/Makefile.linux_portable-x86_64
+else ifeq ($(platform),linux-x86)
+include $(BUILD_DIR)/Makefile.linux-x86
+else ifeq ($(platform),linux-x86_64)
+include $(BUILD_DIR)/Makefile.linux-x86_64
+else ifeq ($(platform),mingw32)
+include $(BUILD_DIR)/Makefile.mingw32
+else ifeq ($(platform),mingw64)
+include $(BUILD_DIR)/Makefile.mingw64
+else ifeq ($(platform),wii)
+include $(BUILD_DIR)/Makefile.wii
+else ifeq ($(platform),windows-x86)
+include $(BUILD_DIR)/Makefile.windows-x86
+else ifeq ($(platform),windows-x86_64)
+include $(BUILD_DIR)/Makefile.windows-x86_64
+else
 ifneq ($(EMSCRIPTEN),)
 	platform = emscripten
 endif
@@ -233,17 +268,12 @@ else
 	CXXFLAGS += -O3 -fno-exceptions -fno-rtti -DHAVE_STDINT_H
 endif
 
-CORE_DIR := src
 
-include Makefile.common
+include $(BUILD_DIR)/Makefile.common
 
 OBJS := $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 
-DEFINES += -D__LIBRETRO__ $(PLATFORM_DEFINES) -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DINLINE=inline -DCOLOR_16_BIT -DCOLOR_5_6_5 -DRESAMPLE_LIBRARY=2 -DM_PI=3.14159265358979323846 -DPATH_MAX=4096 -DBINARY_NAME=\"mgba\" -DPROJECT_VERSION=\"0.2.0\" -DPROJECT_NAME=\"mGBA\" -DSSIZE_MAX=32767
-
-ifneq ($(HAVE_VFS_FD),1)
-DEFINES += -DUSE_VFS_FILE
-endif
+DEFINES += $(PLATFORM_DEFINES) $(RETRODEFS)
 
 CFLAGS += $(CODE_DEFINES) $(fpic) $(DEFINES)
 CXXFLAGS += $(fpic) $(DEFINES)
@@ -281,4 +311,6 @@ clean:
 	rm -f $(TARGET)
 
 .PHONY: clean clean-objs
+endif
+
 endif
