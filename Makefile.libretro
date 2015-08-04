@@ -30,8 +30,6 @@ else ifeq ($(platform),mingw32)
 include $(BUILD_DIR)/Makefile.mingw32
 else ifeq ($(platform),mingw64)
 include $(BUILD_DIR)/Makefile.mingw64
-else ifeq ($(platform),wii)
-include $(BUILD_DIR)/Makefile.wii
 else ifeq ($(platform),windows-x86)
 include $(BUILD_DIR)/Makefile.windows-x86
 else ifeq ($(platform),windows-x86_64)
