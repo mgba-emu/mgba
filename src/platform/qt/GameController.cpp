@@ -121,14 +121,14 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
-			GBAThreadPauseFromThread(context);
-			controller->gamePaused(&controller->m_threadContext);
-		}
 		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
 			controller->frameAvailable(controller->m_drawContext);
 		} else {
 			controller->frameAvailable(nullptr);
+		}
+		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
+			GBAThreadPauseFromThread(context);
+			controller->gamePaused(&controller->m_threadContext);
 		}
 	};
 
@@ -339,6 +339,7 @@ void GameController::openGame(bool biosOnly) {
 	}
 
 	m_inputController->recalibrateAxes();
+	memset(m_drawContext, 0xF8, 1024 * 256);
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
@@ -464,8 +465,7 @@ void GameController::setPaused(bool paused) {
 		return;
 	}
 	if (paused) {
-		GBAThreadPause(&m_threadContext);
-		emit gamePaused(&m_threadContext);
+		m_pauseAfterFrame.testAndSetRelaxed(false, true);
 	} else {
 		GBAThreadUnpause(&m_threadContext);
 		emit gameUnpaused(&m_threadContext);

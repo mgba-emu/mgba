@@ -29,6 +29,7 @@ Features:
  - Default controller profiles for several common controllers
  - Libretro now supports BIOS, rumble and solar sensor
  - Implement BIOS call Stop, for sleep mode
+ - Automatically load patches, if found
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
@@ -110,6 +111,7 @@ Misc:
  - GBA Input: Allow axes and buttons to be mapped to the same key
  - GBA BIOS: Stub out SoundBias
  - Qt: Gamepads can now have both buttons and analog axes mapped to the same key
+ - Qt: Increase usability of key mapper
 
 0.2.1: (2015-05-13)
 Bugfixes:

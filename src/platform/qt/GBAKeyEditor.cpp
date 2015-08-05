@@ -18,9 +18,9 @@
 using namespace QGBA;
 
 const qreal GBAKeyEditor::DPAD_CENTER_X = 0.247;
-const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.431;
-const qreal GBAKeyEditor::DPAD_WIDTH = 0.1;
-const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
+const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.432;
+const qreal GBAKeyEditor::DPAD_WIDTH = 0.12;
+const qreal GBAKeyEditor::DPAD_HEIGHT = 0.12;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
@@ -148,8 +148,8 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 	setLocation(m_keyDR, DPAD_CENTER_X + DPAD_WIDTH, DPAD_CENTER_Y);
 	setLocation(m_keySelect, 0.415, 0.93);
 	setLocation(m_keyStart, 0.585, 0.93);
-	setLocation(m_keyA, 0.826, 0.451);
-	setLocation(m_keyB, 0.667, 0.490);
+	setLocation(m_keyA, 0.826, 0.475);
+	setLocation(m_keyB, 0.667, 0.514);
 	setLocation(m_keyL, 0.1, 0.1);
 	setLocation(m_keyR, 0.9, 0.1);
 

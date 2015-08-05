@@ -43,6 +43,8 @@ public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
+	bool isDrawing() const override { return m_isDrawing; }
+
 public slots:
 	void startDrawing(GBAThread* context) override;
 	void stopDrawing() override;
@@ -60,6 +62,7 @@ protected:
 private:
 	void resizePainter();
 
+	bool m_isDrawing;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread;

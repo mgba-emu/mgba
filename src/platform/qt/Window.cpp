@@ -131,11 +131,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 	connect(m_display, &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
-			setCursor(Qt::BlankCursor);
+			m_screenWidget->setCursor(Qt::BlankCursor);
 		}
 	});
 	connect(m_display, &Display::showCursor, [this]() {
-		unsetCursor();
+		m_screenWidget->unsetCursor();
 	});
 	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
@@ -172,6 +172,7 @@ void Window::argumentsPassed(GBAArguments* args) {
 
 void Window::resizeFrame(int width, int height) {
 	QSize newSize(width, height);
+	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += size();
 	resize(newSize);
@@ -434,11 +435,19 @@ void Window::resizeEvent(QResizeEvent*) {
 	m_config->setOption("fullscreen", isFullScreen());
 }
 
+void Window::showEvent(QShowEvent* event) {
+	resizeFrame(m_screenWidget->sizeHint().width(), m_screenWidget->sizeHint().height());
+}
+
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
 	m_config->setQtOption("windowPos", pos());
 	saveConfig();
 	QMainWindow::closeEvent(event);
+}
+
+void Window::focusInEvent(QFocusEvent*) {
+	m_display->forceDraw();
 }
 
 void Window::focusOutEvent(QFocusEvent*) {
@@ -481,7 +490,6 @@ void Window::enterFullScreen() {
 		return;
 	}
 	showFullScreen();
-	setCursor(Qt::BlankCursor);
 #ifndef Q_OS_MAC
 	if (m_controller->isLoaded() && !m_controller->isPaused()) {
 		menuBar()->hide();
@@ -493,7 +501,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	unsetCursor();
+	m_screenWidget->unsetCursor();
 	menuBar()->show();
 	showNormal();
 }
@@ -544,6 +552,7 @@ void Window::gameStopped() {
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
+	m_screenWidget->unsetCursor();
 
 	m_fpsTimer.stop();
 }
@@ -1223,7 +1232,7 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
-	QSize ds = s * 0.8;
+	QSize ds = s;
 	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
 		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
 	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {

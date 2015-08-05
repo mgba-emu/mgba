@@ -72,6 +72,9 @@ void Display::filter(bool filter) {
 
 void Display::showMessage(const QString& message) {
 	m_messagePainter.showMessage(message);
+	if (!isDrawing()) {
+		forceDraw();
+	}
 }
 
 void Display::mouseMoveEvent(QMouseEvent*) {

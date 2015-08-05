@@ -33,6 +33,8 @@ public:
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
 	bool isFiltered() const { return m_filter; }
 
+	virtual bool isDrawing() const = 0;
+
 signals:
 	void showCursor();
 	void hideCursor();
