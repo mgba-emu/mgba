@@ -1227,7 +1227,7 @@ void WindowBackground::paintEvent(QPaintEvent*) {
 	painter.setRenderHint(QPainter::SmoothPixmapTransform);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QSize s = size();
-	QSize ds = s * 0.8;
+	QSize ds = s;
 	if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
 		ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
 	} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
