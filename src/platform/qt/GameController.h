@@ -72,6 +72,8 @@ public:
 
 	void setOptions(const GBAOptions*);
 
+	int stateSlot() const { return m_stateSlot; }
+
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
 	void setDebugger(ARMDebugger*);
