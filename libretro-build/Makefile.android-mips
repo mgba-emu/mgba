@@ -45,8 +45,8 @@ AR  = $(NDK_ROOT_DIR)/toolchains/mipsel-linux-android-4.8/prebuilt/$(HOST_PLATFO
 ############
 # Extensions
 
-OBJEXT = .android_mips.o
-SOEXT  = .android_mips.so
+OBJEXT = .android-mips.o
+SOEXT  = .android-mips.so
 
 ################
 # Platform setup

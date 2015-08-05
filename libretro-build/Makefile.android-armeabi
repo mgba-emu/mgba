@@ -45,8 +45,8 @@ AR  = $(NDK_ROOT_DIR)/toolchains/arm-linux-androideabi-4.8/prebuilt/$(HOST_PLATF
 ############
 # Extensions
 
-OBJEXT = .armeabi.o
-SOEXT  = .armeabi.so
+OBJEXT = .android-armeabi.o
+SOEXT  = .android-armeabi.so
 
 ################
 # Platform setup
