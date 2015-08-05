@@ -51,10 +51,6 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	});
 	m_windows[0] = w;
 
-#ifndef Q_OS_MAC
-	w->show();
-#endif
-
 	GBAArguments args;
 	if (m_configController.parseArguments(&args, argc, argv)) {
 		w->argumentsPassed(&args);
@@ -62,14 +58,12 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		w->loadConfig();
 	}
 	freeArguments(&args);
+	w->show();
 
 	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
 	w->controller()->reloadAudioDriver();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
-#ifdef Q_OS_MAC
-	w->show();
-#endif
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -91,14 +85,9 @@ Window* GBAApp::newWindow() {
 	});
 	m_windows[windowId] = w;
 	w->setAttribute(Qt::WA_DeleteOnClose);
-#ifndef Q_OS_MAC
-	w->show();
-#endif
 	w->loadConfig();
-	w->controller()->setMultiplayerController(&m_multiplayer);
-#ifdef Q_OS_MAC
 	w->show();
-#endif
+	w->controller()->setMultiplayerController(&m_multiplayer);
 	return w;
 }
 

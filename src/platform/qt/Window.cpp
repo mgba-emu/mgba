@@ -172,6 +172,7 @@ void Window::argumentsPassed(GBAArguments* args) {
 
 void Window::resizeFrame(int width, int height) {
 	QSize newSize(width, height);
+	m_screenWidget->setSizeHint(newSize);
 	newSize -= m_screenWidget->size();
 	newSize += size();
 	resize(newSize);
@@ -432,6 +433,10 @@ void Window::resizeEvent(QResizeEvent*) {
 		m_config->setOption("width", m_screenWidget->width());
 	}
 	m_config->setOption("fullscreen", isFullScreen());
+}
+
+void Window::showEvent(QShowEvent* event) {
+	resizeFrame(m_screenWidget->sizeHint().width(), m_screenWidget->sizeHint().height());
 }
 
 void Window::closeEvent(QCloseEvent* event) {
