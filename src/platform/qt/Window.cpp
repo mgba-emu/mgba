@@ -441,6 +441,10 @@ void Window::closeEvent(QCloseEvent* event) {
 	QMainWindow::closeEvent(event);
 }
 
+void Window::focusInEvent(QFocusEvent*) {
+	m_display->forceDraw();
+}
+
 void Window::focusOutEvent(QFocusEvent*) {
 	m_controller->setTurbo(false, false);
 	m_controller->stopRewinding();

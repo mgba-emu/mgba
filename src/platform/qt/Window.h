@@ -105,6 +105,7 @@ protected:
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void focusInEvent(QFocusEvent*) override;
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
