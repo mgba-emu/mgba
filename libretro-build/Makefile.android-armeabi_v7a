@@ -26,7 +26,7 @@ endif
 ####################################
 # Variable setup for Makefile.common
 
-CORE_DIR  ?= ..
+CORE_DIR  ?= ../src
 BUILD_DIR ?= .
 INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-3/arch-arm/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include/backward
 
