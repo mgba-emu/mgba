@@ -419,6 +419,16 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
 
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ups", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ips", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".bps", O_RDONLY);
+	}
+
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
 
