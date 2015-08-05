@@ -131,11 +131,11 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 	connect(m_display, &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
-			setCursor(Qt::BlankCursor);
+			m_screenWidget->setCursor(Qt::BlankCursor);
 		}
 	});
 	connect(m_display, &Display::showCursor, [this]() {
-		unsetCursor();
+		m_screenWidget->unsetCursor();
 	});
 	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
@@ -481,7 +481,6 @@ void Window::enterFullScreen() {
 		return;
 	}
 	showFullScreen();
-	setCursor(Qt::BlankCursor);
 #ifndef Q_OS_MAC
 	if (m_controller->isLoaded() && !m_controller->isPaused()) {
 		menuBar()->hide();
@@ -493,7 +492,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	unsetCursor();
+	m_screenWidget->unsetCursor();
 	menuBar()->show();
 	showNormal();
 }
@@ -544,6 +543,7 @@ void Window::gameStopped() {
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	m_screenWidget->setPixmap(m_logo);
+	m_screenWidget->unsetCursor();
 
 	m_fpsTimer.stop();
 }
