@@ -339,6 +339,7 @@ void GameController::openGame(bool biosOnly) {
 	}
 
 	m_inputController->recalibrateAxes();
+	memset(m_drawContext, 0xF8, 1024 * 256);
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
