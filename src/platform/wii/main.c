@@ -16,6 +16,9 @@
 #include "gba/serialize.h"
 #include "gba/supervisor/overrides.h"
 #include "gba/video.h"
+#include "util/gui.h"
+#include "util/gui/file-select.h"
+#include "util/gui/font.h"
 #include "util/vfs.h"
 
 #define SAMPLES 1024
@@ -26,6 +29,10 @@ static bool GBAWiiLoadGame(const char* path);
 
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _audioDMA(void);
+
+static void _drawStart(void);
+static void _drawEnd(void);
+static int _pollInput(void);
 
 static struct GBA gba;
 static struct ARMCore cpu;
@@ -42,9 +49,11 @@ static GXTexObj tex;
 static void* framebuffer[2];
 static int whichFb = 0;
 
-static struct GBAStereoSample audioBuffer[2][SAMPLES] __attribute__ ((__aligned__(32)));
-static size_t audioBufferSize = 0;
-static int currentAudioBuffer = 0;
+static struct GBAStereoSample audioBuffer[3][SAMPLES] __attribute__((__aligned__(32)));
+static volatile size_t audioBufferSize = 0;
+static volatile int currentAudioBuffer = 0;
+
+static struct GUIFont* font;
 
 int main() {
 	VIDEO_Init();
@@ -108,8 +117,6 @@ int main() {
 	GX_InvalidateTexAll();
 
 	Mtx44 proj;
-	guOrtho(proj, 0, VIDEO_VERTICAL_PIXELS, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	guVector cam = { 0.0f, 0.0f, 0.0f };
 	guVector up = { 0.0f, 1.0f, 0.0f };
@@ -124,6 +131,8 @@ int main() {
 	texmem = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
 	memset(texmem, 0, 256 * 256 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, 256, 256, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+
+	font = GUIFontCreate();
 
 	fatInitDefault();
 
@@ -154,9 +163,22 @@ int main() {
 	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
 #endif
 
-	if (!GBAWiiLoadGame("/rom.gba")) {
+	char path[256];
+	guOrtho(proj, 0, 240, 0, 400, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+
+	struct GUIParams params = {
+		400, 240,
+		font, _drawStart, _drawEnd, _pollInput
+	};
+	if (!selectFile(&params, "sd:", path, sizeof(path), "gba") || !GBAWiiLoadGame(path)) {
+		free(renderer.outputBuffer);
+		GUIFontDestroy(font);
 		return 1;
 	}
+
+	guOrtho(proj, 0, VIDEO_VERTICAL_PIXELS, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	while (true) {
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
@@ -164,6 +186,7 @@ int main() {
 		if (available + audioBufferSize > SAMPLES) {
 			available = SAMPLES - audioBufferSize;
 		}
+		available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 		if (available > 0) {
 			blip_read_samples(gba.audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
 			blip_read_samples(gba.audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
@@ -223,10 +246,15 @@ int main() {
 	rom->close(rom);
 	save->close(save);
 
+	free(renderer.outputBuffer);
+	GUIFontDestroy(font);
+
 	return 0;
 }
 
 static void GBAWiiFrame(void) {
+	VIDEO_WaitVSync();
+
 	size_t x, y;
 	uint64_t* texdest = (uint64_t*) texmem;
 	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
@@ -240,10 +268,10 @@ static void GBAWiiFrame(void) {
 	}
 	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
 
-	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-	GX_SetColorUpdate(GX_TRUE);
+	_drawStart();
 
-	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
+	GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_SET);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	GX_InvalidateTexAll();
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
@@ -261,17 +289,14 @@ static void GBAWiiFrame(void) {
 	GX_TexCoord2s16(0, 0);
 	GX_End();
 
-	GX_DrawDone();
-
-	whichFb = !whichFb;
-
-	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
-	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
+	_drawEnd();
 }
 
 bool GBAWiiLoadGame(const char* path) {
+	_drawStart();
+	GUIFontPrintf(font, 0, 30, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
+	_drawEnd();
+
 	rom = VFileOpen(path, O_RDONLY);
 
 	if (!rom) {
@@ -281,7 +306,7 @@ bool GBAWiiLoadGame(const char* path) {
 		return false;
 	}
 
-	save = VFileOpen("test.sav", O_RDWR | O_CREAT);
+	save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
 
 	GBALoadROM(&gba, rom, save, path);
 
@@ -314,8 +339,51 @@ static void _audioDMA(void) {
 	if (!audioBufferSize) {
 		return;
 	}
-	currentAudioBuffer = !currentAudioBuffer;
 	DCFlushRange(audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
 	AUDIO_InitDMA((u32) audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
+	currentAudioBuffer = (currentAudioBuffer + 1) % 3;
 	audioBufferSize = 0;
+}
+
+static void _drawStart(void) {
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	GX_SetColorUpdate(GX_TRUE);
+
+	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
+}
+
+static void _drawEnd(void) {
+	GX_DrawDone();
+
+	whichFb = !whichFb;
+
+	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
+	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
+	VIDEO_Flush();
+}
+
+static int _pollInput(void) {
+	PAD_ScanPads();
+	u16 padkeys = PAD_ButtonsHeld(0);
+	int keys = 0;
+	gba.keySource = &keys;
+	if (padkeys & PAD_BUTTON_A) {
+		keys |= 1 << GUI_INPUT_SELECT;
+	}
+	if (padkeys & PAD_BUTTON_B) {
+		keys |= 1 << GUI_INPUT_BACK;
+	}
+	if (padkeys & PAD_BUTTON_LEFT) {
+		keys |= 1 << GUI_INPUT_LEFT;
+	}
+	if (padkeys & PAD_BUTTON_RIGHT) {
+		keys |= 1 << GUI_INPUT_RIGHT;
+	}
+	if (padkeys & PAD_BUTTON_UP) {
+		keys |= 1 << GUI_INPUT_UP;
+	}
+	if (padkeys & PAD_BUTTON_DOWN) {
+		keys |= 1 << GUI_INPUT_DOWN;
+	}
+	return keys;
 }
