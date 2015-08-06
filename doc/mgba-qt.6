@@ -31,25 +31,25 @@ Log messages during emulation.
 .Ar loglevel
 is a bitmask defining which types of messages to log:
 .Bl -inset
-.It 0x01
+.It 1
 fatal errors
-.It 0x02
+.It 2
 errors
-.It 0x04
+.It 4
 warnings
-.It 0x08
+.It 8
 informative messages
-.It 0x10
+.It 16
 debugging messages
-.It 0x20
+.It 32
 stub messages
-.It 0x100
+.It 256
 in\(hygame errors
-.It 0x200
+.It 512
 software interrupts
-.It 0x400
+.It 1024
 emulator status messages
-.It 0x800
+.It 2048
 serial I/O messages
 .El
 The default is to log warnings, errors, fatal errors, and status messages.
