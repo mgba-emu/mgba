@@ -12,6 +12,7 @@
 .Sh SYNOPSIS
 .Nm mgba-qt
 .Op Fl b Ar biosfile
+.Op Fl l Ar loglevel
 .Op Fl p Ar patchfile
 .Op Fl s Ar n
 .Ar file
@@ -25,6 +26,33 @@ Specify a BIOS file to use during boot.
 If this flag is omitted,
 .Nm
 will use a high\(hylevel emulated BIOS.
+.It Fl l Ar loglevel
+Log messages during emulation.
+.Ar loglevel
+is a bitmask defining which types of messages to log:
+.Bl -inset
+.It 0x01
+fatal errors
+.It 0x02
+errors
+.It 0x04
+warnings
+.It 0x08
+informative messages
+.It 0x10
+debugging messages
+.It 0x20
+stub messages
+.It 0x100
+in\(hygame errors
+.It 0x200
+software interrupts
+.It 0x400
+emulator status messages
+.It 0x800
+serial I/O messages
+.El
+The default is to log warnings, errors, fatal errors, and status messages.
 .It Fl p Ar patchfile , Fl -patch Ar patchfile
 Specify a patch file in IPS or UPS format.
 .It Fl s Ar n , Fl -frameskip Ar n
