@@ -209,7 +209,8 @@ struct ARMInstructionInfo {
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info);
-bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2, struct ARMInstructionInfo* out);
+bool ARMDecodeThumbCombine(struct ARMInstructionInfo* info1, struct ARMInstructionInfo* info2,
+                           struct ARMInstructionInfo* out);
 int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, int blen);
 
 #endif

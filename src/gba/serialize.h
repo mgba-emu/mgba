@@ -136,7 +136,8 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  *   | bit 2: Has light sensor value
  *   | bit 3: Has gyroscope value
  *   | bit 4: Has tilt values
- *   | bits 5 - 7: Reserved
+ *   | bit 5: Has Game Boy Player attached
+ *   | bits 6 - 7: Reserved
  * | 0x002B8 - 0x002B9: Gyroscope sample
  * | 0x002BA - 0x002BB: Tilt x sample
  * | 0x002BC - 0x002BD: Tilt y sample
@@ -149,8 +150,11 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002C0 - 0x002C0: Light sample
  * | 0x002C1 - 0x002C3: Flags
  *   | bits 0 - 1: Tilt state machine
- *   | bits 2 - 31: Reserved
- * 0x002C4 - 0x002DF: Reserved (leave zero)
+ *   | bits 2 - 3: GB Player inputs posted
+ *   | bits 4 - 8: GB Player transmit position
+ *   | bits 9 - 23: Reserved
+ * 0x002C4 - 0x002C7: Game Boy Player next event
+ * 0x002C8 - 0x002DF: Reserved (leave zero)
  * 0x002E0 - 0x002EF: Savedata state
  * | 0x002E0 - 0x002E0: Savedata type
  * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
@@ -282,10 +286,13 @@ struct GBASerializedState {
 		unsigned lightCounter : 12;
 		unsigned lightSample : 8;
 		unsigned tiltState : 2;
-		unsigned : 22;
+		unsigned gbpInputsPosted : 2;
+		unsigned gbpTxPosition : 5;
+		unsigned : 15;
+		uint32_t gbpNextEvent : 32;
 	} hw;
 
-	uint32_t reservedHardware[7];
+	uint32_t reservedHardware[6];
 
 	struct {
 		unsigned type : 8;

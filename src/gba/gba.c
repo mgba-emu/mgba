@@ -79,8 +79,10 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->biosVf = 0;
 
 	gba->logHandler = 0;
-	gba->logLevel = GBA_LOG_INFO | GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
+	gba->logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	gba->stream = 0;
+	gba->keyCallback = 0;
+	gba->stopCallback = 0;
 
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
 
@@ -91,17 +93,20 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->idleDetectionStep = 0;
 	gba->idleDetectionFailures = 0;
 
-	gba->realisticTiming = false;
+	gba->realisticTiming = true;
+	gba->hardCrash = true;
 
 	gba->performingDMA = false;
 }
 
 void GBAUnloadROM(struct GBA* gba) {
-	if (gba->pristineRom == gba->memory.rom) {
-		gba->memory.rom = 0;
-	} else {
-		mappedMemoryFree(gba->pristineRom, gba->pristineRomSize);
+	if (gba->memory.rom && gba->pristineRom != gba->memory.rom) {
+		if (gba->yankedRomSize) {
+			gba->yankedRomSize = 0;
+		}
+		mappedMemoryFree(gba->memory.rom, SIZE_CART0);
 	}
+	gba->memory.rom = 0;
 
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
@@ -433,10 +438,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	size_t patchedSize = patch->outputSize(patch, gba->memory.romSize);
-	if (!patchedSize) {
+	if (!patchedSize || patchedSize > SIZE_CART0) {
 		return;
 	}
-	gba->memory.rom = anonymousMemoryMap(patchedSize);
+	gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 	if (!patch->applyPatch(patch, gba->pristineRom, gba->pristineRomSize, gba->memory.rom, patchedSize)) {
 		mappedMemoryFree(gba->memory.rom, patchedSize);
 		gba->memory.rom = gba->pristineRom;
@@ -449,7 +454,12 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (currentTimer->enable && !currentTimer->countUp) {
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> currentTimer->prescaleBits);
+		int32_t prefetchSkew = 0;
+		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
+			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
+		}
+		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
 	}
 }
 
@@ -543,6 +553,14 @@ void GBATestIRQ(struct ARMCore* cpu) {
 void GBAHalt(struct GBA* gba) {
 	gba->cpu->nextEvent = 0;
 	gba->cpu->halted = 1;
+}
+
+void GBAStop(struct GBA* gba) {
+	if (!gba->stopCallback) {
+		return;
+	}
+	gba->cpu->nextEvent = 0;
+	gba->stopCallback->stop(gba->stopCallback);
 }
 
 static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
@@ -749,6 +767,8 @@ void GBAFrameStarted(struct GBA* gba) {
 }
 
 void GBAFrameEnded(struct GBA* gba) {
+	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
+
 	if (gba->rr) {
 		gba->rr->nextFrame(gba->rr);
 	}
@@ -766,6 +786,10 @@ void GBAFrameEnded(struct GBA* gba) {
 
 	if (gba->stream) {
 		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+	}
+
+	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {
+		GBAHardwarePlayerUpdate(gba);
 	}
 
 	struct GBAThread* thread = GBAThreadGetContext();

@@ -44,7 +44,7 @@ void GDBController::attach() {
 		ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		QObject::disconnect(m_autoattach);
-		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this] () {
+		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this]() {
 			QObject::disconnect(m_autoattach);
 			ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 		});

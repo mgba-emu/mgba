@@ -103,11 +103,16 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
 		error = true;
 	}
-	if (state->audio.ch1.envelopeNextStep < 0 || state->audio.ch1.waveNextStep < 0 || state->audio.ch1.sweepNextStep < 0 || state->audio.ch1.nextEvent < 0) {
+	if (!state->audio.ch1Dead && (state->audio.ch1.envelopeNextStep < 0 ||
+		                          state->audio.ch1.waveNextStep < 0 ||
+		                          state->audio.ch1.sweepNextStep < 0 ||
+		                          state->audio.ch1.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 1 register is negative");
 		error = true;
 	}
-	if (state->audio.ch2.envelopeNextStep < 0 || state->audio.ch2.waveNextStep < 0 || state->audio.ch2.nextEvent < 0) {
+	if (!state->audio.ch2Dead && (state->audio.ch2.envelopeNextStep < 0 ||
+		                          state->audio.ch2.waveNextStep < 0 ||
+		                          state->audio.ch2.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 2 register is negative");
 		error = true;
 	}
@@ -115,7 +120,8 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 3 register is negative");
 		error = true;
 	}
-	if (state->audio.ch4.envelopeNextStep < 0 || state->audio.ch4.nextEvent < 0) {
+	if (!state->audio.ch4Dead && (state->audio.ch4.envelopeNextStep < 0 ||
+		                          state->audio.ch4.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
 		error = true;
 	}
@@ -223,7 +229,10 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	struct GBASerializedState state;
 	uLongf len = sizeof(state);
 	uncompress((Bytef*) &state, &len, chunk->data, chunk->size);
-	return GBADeserialize(png_get_user_chunk_ptr(png), &state);
+	if (!GBADeserialize(png_get_user_chunk_ptr(png), &state)) {
+		longjmp(png_jmpbuf(png), 1);
+	}
+	return 1;
 }
 
 static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
@@ -237,15 +246,17 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 	uint32_t* pixels = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 
 	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
-	PNGReadHeader(png, info);
-	PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
-	PNGReadFooter(png, end);
+	bool success = PNGReadHeader(png, info);
+	success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
+	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
-	gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
-	GBASyncForceFrame(gba->sync);
+	if (success) {
+		gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
+		GBASyncForceFrame(gba->sync);
+	}
 
 	free(pixels);
-	return true;
+	return success;
 }
 #endif
 
@@ -291,20 +302,20 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		return true;
 	}
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	else {
 		return _savePNGState(gba, vf);
 	}
-	#endif
+#endif
 	return false;
 }
 
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	if (isPNG(vf)) {
 		return _loadPNGState(gba, vf);
 	}
-	#endif
+#endif
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}

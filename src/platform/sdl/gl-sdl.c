@@ -5,17 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
+#include "gl-common.h"
+
 #include "gba/supervisor/thread.h"
 #include "platform/opengl/gl.h"
-
-static void _sdlSwap(struct VideoBackend* context) {
-	struct SDLSoftwareRenderer* renderer = (struct SDLSoftwareRenderer*) context->user;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_GL_SwapWindow(renderer->window);
-#else
-	SDL_GL_SwapBuffers();
-#endif
-}
 
 static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->resized(v, w, h);
@@ -35,34 +28,7 @@ void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
 }
 
 bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
-#ifndef COLOR_16_BIT
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-#else
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-#ifdef COLOR_5_6_5
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
-#else
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-#endif
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-#endif
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
-	SDL_GL_CreateContext(renderer->window);
-	SDL_GL_SetSwapInterval(1);
-	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-	renderer->player.window = renderer->window;
-#else
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
-#ifdef COLOR_16_BIT
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
-#else
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL);
-#endif
-#endif
+	GBASDLGLCommonInit(renderer);
 
 	renderer->d.outputBuffer = malloc(256 * 256 * BYTES_PER_PIXEL);
 	renderer->d.outputBufferStride = 256;
@@ -71,7 +37,7 @@ bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = _sdlSwap;
+	renderer->gl.d.swap = GBASDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
 
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
@@ -109,4 +75,7 @@ void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
 	free(renderer->d.outputBuffer);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_DeleteContext(renderer->glCtx);
+#endif
 }

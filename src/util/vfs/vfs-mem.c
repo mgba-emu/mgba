@@ -20,6 +20,7 @@ static void* _vfmMap(struct VFile* vf, size_t size, int flags);
 static void _vfmUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfmTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfmSize(struct VFile* vf);
+static bool _vfmSync(struct VFile* vf, const void* buffer, size_t size);
 
 struct VFile* VFileFromMemory(void* mem, size_t size) {
 	if (!mem || !size) {
@@ -43,6 +44,7 @@ struct VFile* VFileFromMemory(void* mem, size_t size) {
 	vfm->d.unmap = _vfmUnmap;
 	vfm->d.truncate = _vfmTruncate;
 	vfm->d.size = _vfmSize;
+	vfm->d.sync = _vfmSync;
 
 	return &vfm->d;
 }
@@ -136,4 +138,11 @@ void _vfmTruncate(struct VFile* vf, size_t size) {
 ssize_t _vfmSize(struct VFile* vf) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
 	return vfm->size;
+}
+
+bool _vfmSync(struct VFile* vf, const void* buffer, size_t size) {
+	UNUSED(vf);
+	UNUSED(buffer);
+	UNUSED(size);
+	return true;
 }

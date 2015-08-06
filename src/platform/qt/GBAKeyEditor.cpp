@@ -6,6 +6,7 @@
 #include "GBAKeyEditor.h"
 
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPushButton>
@@ -17,13 +18,14 @@
 using namespace QGBA;
 
 const qreal GBAKeyEditor::DPAD_CENTER_X = 0.247;
-const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.431;
-const qreal GBAKeyEditor::DPAD_WIDTH = 0.1;
-const qreal GBAKeyEditor::DPAD_HEIGHT = 0.1;
+const qreal GBAKeyEditor::DPAD_CENTER_Y = 0.432;
+const qreal GBAKeyEditor::DPAD_WIDTH = 0.12;
+const qreal GBAKeyEditor::DPAD_HEIGHT = 0.12;
 
 GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString& profile, QWidget* parent)
 	: QWidget(parent)
 	, m_profileSelect(nullptr)
+	, m_clear(nullptr)
 	, m_type(type)
 	, m_profile(profile)
 	, m_controller(controller)
@@ -32,6 +34,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setMinimumSize(300, 300);
 
 	const GBAInputMap* map = controller->map();
+	controller->stealFocus(this);
 
 	m_keyDU = new KeyEditor(this);
 	m_keyDD = new KeyEditor(this);
@@ -64,30 +67,35 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			m_controller->loadProfile(m_type, m_profile);
 			refresh();
 		});
+
+		m_clear = new QWidget(this);
+		QHBoxLayout* layout = new QHBoxLayout;
+		m_clear->setLayout(layout);
+		layout->setSpacing(6);
+
+		QPushButton* clearButton = new QPushButton(tr("Clear Button"));
+		layout->addWidget(clearButton);
+		connect(clearButton, &QAbstractButton::pressed, [this]() {
+			if (!findFocus()) {
+				return;
+			}
+			bool signalsBlocked = (*m_currentKey)->blockSignals(true);
+			(*m_currentKey)->clearButton();
+			(*m_currentKey)->blockSignals(signalsBlocked);
+		});
+
+		QPushButton* clearAxis = new QPushButton(tr("Clear Analog"));
+		layout->addWidget(clearAxis);
+		connect(clearAxis, &QAbstractButton::pressed, [this]() {
+			if (!findFocus()) {
+				return;
+			}
+			bool signalsBlocked = (*m_currentKey)->blockSignals(true);
+			(*m_currentKey)->clearAxis();
+			(*m_currentKey)->blockSignals(signalsBlocked);
+		});
 	}
 #endif
-
-	connect(m_keyDU, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDD, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyDR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keySelect, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyStart, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyA, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyB, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyL, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-	connect(m_keyR, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
-
-	connect(m_keyDU, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDD, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyDR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keySelect, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyStart, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyA, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyB, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyL, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
-	connect(m_keyR, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
 
 	m_buttons = new QWidget(this);
 	QVBoxLayout* layout = new QVBoxLayout;
@@ -115,6 +123,11 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 		m_keyR
 	};
 
+	for (auto& key : m_keyOrder) {
+		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
+		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+	}
+
 	m_currentKey = m_keyOrder.end();
 
 	m_background.load(":/res/keymap.qpic");
@@ -135,13 +148,17 @@ void GBAKeyEditor::resizeEvent(QResizeEvent* event) {
 	setLocation(m_keyDR, DPAD_CENTER_X + DPAD_WIDTH, DPAD_CENTER_Y);
 	setLocation(m_keySelect, 0.415, 0.93);
 	setLocation(m_keyStart, 0.585, 0.93);
-	setLocation(m_keyA, 0.826, 0.451);
-	setLocation(m_keyB, 0.667, 0.490);
+	setLocation(m_keyA, 0.826, 0.475);
+	setLocation(m_keyB, 0.667, 0.514);
 	setLocation(m_keyL, 0.1, 0.1);
 	setLocation(m_keyR, 0.9, 0.1);
 
 	if (m_profileSelect) {
-		setLocation(m_profileSelect, 0.5, 0.7);
+		setLocation(m_profileSelect, 0.5, 0.67);
+	}
+
+	if (m_clear) {
+		setLocation(m_clear, 0.5, 0.77);
 	}
 }
 
@@ -149,6 +166,19 @@ void GBAKeyEditor::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.scale(width() / 480.0, height() / 480.0);
 	painter.drawPicture(0, 0, m_background);
+}
+
+void GBAKeyEditor::closeEvent(QCloseEvent*) {
+	m_controller->releaseFocus(this);
+}
+
+bool GBAKeyEditor::event(QEvent* event) {
+	if (event->type() == QEvent::WindowActivate) {
+		m_controller->stealFocus(this);
+	} else if (event->type() == QEvent::WindowDeactivate) {
+		m_controller->releaseFocus(this);
+	}
+	return QWidget::event(event);
 }
 
 void GBAKeyEditor::setNext() {
@@ -167,6 +197,10 @@ void GBAKeyEditor::setNext() {
 }
 
 void GBAKeyEditor::save() {
+#ifdef BUILD_SDL
+	m_controller->unbindAllAxes(m_type);
+#endif
+
 	bindKey(m_keyDU, GBA_KEY_UP);
 	bindKey(m_keyDD, GBA_KEY_DOWN);
 	bindKey(m_keyDL, GBA_KEY_LEFT);
@@ -205,7 +239,7 @@ void GBAKeyEditor::refresh() {
 }
 
 void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {
-	#ifdef BUILD_SDL
+#ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON) {
 		int value = GBAInputQueryBinding(map, m_type, key);
 		if (value != GBA_NO_MAPPING) {
@@ -213,7 +247,7 @@ void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, G
 		}
 		return;
 	}
-	#endif
+#endif
 	keyEditor->setValueKey(GBAInputQueryBinding(map, m_type, key));
 }
 
@@ -239,14 +273,11 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 #ifdef BUILD_SDL
-	if (keyEditor->direction() != GamepadAxisEvent::NEUTRAL) {
-		m_controller->bindAxis(m_type, keyEditor->value(), keyEditor->direction(), key);
-	} else {
-#endif
-		m_controller->bindKey(m_type, keyEditor->value(), key);
-#ifdef BUILD_SDL
+	if (m_type == SDL_BINDING_BUTTON) {
+		m_controller->bindAxis(m_type, keyEditor->axis(), keyEditor->direction(), key);
 	}
 #endif
+	m_controller->bindKey(m_type, keyEditor->value(), key);
 }
 
 bool GBAKeyEditor::findFocus() {
@@ -304,5 +335,6 @@ KeyEditor* GBAKeyEditor::keyById(GBAKey key) {
 void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 	QSize s = size();
 	QSize hint = widget->sizeHint();
-	widget->setGeometry(s.width() * x - hint.width() / 2.0, s.height() * y - hint.height() / 2.0, hint.width(), hint.height());
+	widget->setGeometry(s.width() * x - hint.width() / 2.0, s.height() * y - hint.height() / 2.0, hint.width(),
+	                    hint.height());
 }

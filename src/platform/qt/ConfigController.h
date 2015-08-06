@@ -89,6 +89,7 @@ public slots:
 	void setOption(const char* key, const QVariant& value);
 	void setQtOption(const QString& key, const QVariant& value, const QString& group = QString());
 
+	void makePortable();
 	void write();
 
 private:

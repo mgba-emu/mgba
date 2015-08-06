@@ -16,7 +16,7 @@ namespace QGBA {
 
 class InputController;
 
-class GamepadButtonEvent : public QEvent  {
+class GamepadButtonEvent : public QEvent {
 public:
 	GamepadButtonEvent(Type pressType, int button, int type, InputController* controller = nullptr);
 

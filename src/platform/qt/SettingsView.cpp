@@ -7,6 +7,7 @@
 
 #include "AudioProcessor.h"
 #include "ConfigController.h"
+#include "Display.h"
 #include "GBAApp.h"
 
 using namespace QGBA;
@@ -35,6 +36,19 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
+	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
+	if (fastForwardRatio <= 0) {
+		m_ui.fastForwardUnbounded->setChecked(true);
+		m_ui.fastForwardRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardUnbounded->setChecked(false);
+		m_ui.fastForwardRatio->setEnabled(true);
+		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+	connect(m_ui.fastForwardUnbounded, &QAbstractButton::toggled, [this](bool checked) {
+		m_ui.fastForwardRatio->setEnabled(!checked);
+	});
+
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
 		m_ui.idleOptimization->setCurrentIndex(0);
@@ -56,6 +70,19 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	m_ui.audioDriver->addItem(tr("SDL"), static_cast<int>(AudioProcessor::Driver::SDL));
 	if (audioDriver.isNull() || audioDriver.toInt() == static_cast<int>(AudioProcessor::Driver::SDL)) {
 		m_ui.audioDriver->setCurrentIndex(m_ui.audioDriver->count() - 1);
+	}
+#endif
+
+	QVariant displayDriver = m_controller->getQtOption("displayDriver");
+	m_ui.displayDriver->addItem(tr("Software (Qt)"), static_cast<int>(Display::Driver::QT));
+	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::QT)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+
+#ifdef BUILD_GL
+	m_ui.displayDriver->addItem(tr("OpenGL"), static_cast<int>(Display::Driver::OPENGL));
+	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 #endif
 
@@ -89,6 +116,12 @@ void SettingsView::updateConfig() {
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 
+	if (m_ui.fastForwardUnbounded->isChecked()) {
+		saveSetting("fastForwardRatio", "-1");
+	} else {
+		saveSetting("fastForwardRatio", m_ui.fastForwardRatio);
+	}
+
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
 		saveSetting("idleOptimization", "ignore");
@@ -106,6 +139,13 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("audioDriver", audioDriver);
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(audioDriver.toInt()));
 		emit audioDriverChanged();
+	}
+
+	QVariant displayDriver = m_ui.displayDriver->itemData(m_ui.displayDriver->currentIndex());
+	if (displayDriver != m_controller->getQtOption("displayDriver")) {
+		m_controller->setQtOption("displayDriver", displayDriver);
+		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
+		emit displayDriverChanged();
 	}
 
 	m_controller->write();

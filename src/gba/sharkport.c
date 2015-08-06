@@ -123,7 +123,7 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 		if (copySize > SIZE_CART_FLASH512) {
 			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M, gba->memory.savedata.realisticTiming);
 		}
-		// Fall through
+	// Fall through
 	case SAVEDATA_FLASH1M:
 		if (copySize > SIZE_CART_FLASH1M) {
 			copySize = SIZE_CART_FLASH1M;
@@ -148,7 +148,6 @@ cleanup:
 	free(payload);
 	return false;
 }
-
 
 bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 	union {

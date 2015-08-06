@@ -110,7 +110,6 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		bindInfo.sin6_port = htons(port);
 		memcpy(bindInfo.sin6_addr.s6_addr, bindAddress->ipv6, sizeof(bindInfo.sin6_addr.s6_addr));
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
-
 	}
 	if (err) {
 		close(sock);

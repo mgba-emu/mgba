@@ -21,6 +21,7 @@ class QString;
 namespace QGBA {
 
 class ConfigController;
+class InputProfile;
 
 class ShortcutController : public QAbstractItemModel {
 Q_OBJECT
@@ -29,13 +30,16 @@ private:
 	constexpr static const char* const KEY_SECTION = "shortcutKey";
 	constexpr static const char* const BUTTON_SECTION = "shortcutButton";
 	constexpr static const char* const AXIS_SECTION = "shortcutAxis";
+	constexpr static const char* const BUTTON_PROFILE_SECTION = "shortcutProfileButton.";
+	constexpr static const char* const AXIS_PROFILE_SECTION = "shortcutProfileAxis.";
 
 	class ShortcutItem {
 	public:
 		typedef QPair<std::function<void ()>, std::function<void ()>> Functions;
 
 		ShortcutItem(QAction* action, const QString& name, ShortcutItem* parent = nullptr);
-		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name, ShortcutItem* parent = nullptr);
+		ShortcutItem(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name,
+		             ShortcutItem* parent = nullptr);
 		ShortcutItem(QMenu* action, ShortcutItem* parent = nullptr);
 
 		QAction* action() { return m_action; }
@@ -51,7 +55,8 @@ private:
 		ShortcutItem* parent() { return m_parent; }
 		const ShortcutItem* parent() const { return m_parent; }
 		void addAction(QAction* action, const QString& name);
-		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
+		void addFunctions(Functions functions, const QKeySequence& shortcut, const QString& visibleName,
+		                  const QString& name);
 		void addSubmenu(QMenu* menu);
 		int button() const { return m_button; }
 		void setShortcut(const QKeySequence& sequence);
@@ -60,7 +65,9 @@ private:
 		GamepadAxisEvent::Direction direction() const { return m_direction; }
 		void setAxis(int axis, GamepadAxisEvent::Direction direction);
 
-		bool operator==(const ShortcutItem& other) const { return m_menu == other.m_menu && m_action == other.m_action; }
+		bool operator==(const ShortcutItem& other) const {
+			return m_menu == other.m_menu && m_action == other.m_action;
+		}
 
 	private:
 		QAction* m_action;
@@ -80,6 +87,7 @@ public:
 	ShortcutController(QObject* parent = nullptr);
 
 	void setConfigController(ConfigController* controller);
+	void setProfile(const QString& profile);
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -91,8 +99,11 @@ public:
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
 	void addAction(QMenu* menu, QAction* action, const QString& name);
-	void addFunctions(QMenu* menu, std::function<void ()> press, std::function<void()> release, const QKeySequence& shortcut, const QString& visibleName, const QString& name);
+	void addFunctions(QMenu* menu, std::function<void()> press, std::function<void()> release,
+	                  const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
+
+	QAction* getAction(const QString& name);
 
 	QKeySequence shortcutAt(const QModelIndex& index) const;
 	bool isMenuAt(const QModelIndex& index) const;
@@ -106,6 +117,9 @@ public:
 
 	static QKeySequence keyEventToSequence(const QKeyEvent*);
 
+public slots:
+	void loadProfile(const QString& profile);
+
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
@@ -113,6 +127,8 @@ private:
 	ShortcutItem* itemAt(const QModelIndex& index);
 	const ShortcutItem* itemAt(const QModelIndex& index) const;
 	void loadShortcuts(ShortcutItem*);
+	void loadGamepadShortcuts(ShortcutItem*);
+	void onSubitems(ShortcutItem*, std::function<void(ShortcutItem*)> func);
 
 	ShortcutItem m_rootMenu;
 	QMap<QMenu*, ShortcutItem*> m_menuMap;
@@ -120,6 +136,8 @@ private:
 	QMap<QPair<int, GamepadAxisEvent::Direction>, ShortcutItem*> m_axes;
 	QMap<QKeySequence, ShortcutItem*> m_heldKeys;
 	ConfigController* m_config;
+	QString m_profileName;
+	const InputProfile* m_profile;
 };
 
 }

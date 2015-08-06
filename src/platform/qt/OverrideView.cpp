@@ -39,6 +39,7 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 	connect(m_ui.hwLight, SIGNAL(clicked()), this, SLOT(updateOverrides()));
 	connect(m_ui.hwTilt, SIGNAL(clicked()), this, SLOT(updateOverrides()));
 	connect(m_ui.hwRumble, SIGNAL(clicked()), this, SLOT(updateOverrides()));
+	connect(m_ui.hwGBPlayer, SIGNAL(clicked()), this, SLOT(updateOverrides()));
 
 	connect(m_ui.save, SIGNAL(clicked()), this, SLOT(saveOverride()));
 
@@ -80,6 +81,9 @@ void OverrideView::updateOverrides() {
 			m_override.hardware |= HW_RUMBLE;
 		}
 	}
+	if (m_ui.hwGBPlayer->isChecked()) {
+		m_override.hardware |= HW_GB_PLAYER_DETECTION;
+	}
 
 	bool ok;
 	uint32_t parsedIdleLoop = m_ui.idleLoop->text().toInt(&ok, 16);
@@ -87,7 +91,8 @@ void OverrideView::updateOverrides() {
 		m_override.idleLoop = parsedIdleLoop;
 	}
 
-	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != HW_NO_OVERRIDE || m_override.idleLoop != IDLE_LOOP_NONE) {
+	if (m_override.savetype != SAVEDATA_AUTODETECT || m_override.hardware != HW_NO_OVERRIDE ||
+	    m_override.idleLoop != IDLE_LOOP_NONE) {
 		m_controller->setOverride(m_override);
 	} else {
 		m_controller->clearOverride();
@@ -114,12 +119,12 @@ void OverrideView::gameStarted(GBAThread* thread) {
 	m_ui.hwLight->setChecked(thread->gba->memory.hw.devices & HW_LIGHT_SENSOR);
 	m_ui.hwTilt->setChecked(thread->gba->memory.hw.devices & HW_TILT);
 	m_ui.hwRumble->setChecked(thread->gba->memory.hw.devices & HW_RUMBLE);
+	m_ui.hwGBPlayer->setChecked(thread->gba->memory.hw.devices & HW_GB_PLAYER_DETECTION);
 
 	if (thread->gba->idleLoop != IDLE_LOOP_NONE) {
 		m_ui.idleLoop->setText(QString::number(thread->gba->idleLoop, 16));
 	} else {
 		m_ui.idleLoop->clear();
-
 	}
 
 	GBAGetGameCode(thread->gba, m_override.id);

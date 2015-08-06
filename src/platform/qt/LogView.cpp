@@ -5,38 +5,71 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LogView.h"
 
+#include "LogController.h"
+
 #include <QTextBlock>
 #include <QTextCursor>
 
 using namespace QGBA;
 
-LogView::LogView(QWidget* parent)
+LogView::LogView(LogController* log, QWidget* parent)
 	: QWidget(parent)
-	, m_logLevel(0)
 	, m_lines(0)
 	, m_lineLimit(DEFAULT_LINE_LIMIT)
 {
 	m_ui.setupUi(this);
-	connect(m_ui.levelDebug, SIGNAL(toggled(bool)), this, SLOT(setLevelDebug(bool)));
-	connect(m_ui.levelStub, SIGNAL(toggled(bool)), this, SLOT(setLevelStub(bool)));
-	connect(m_ui.levelInfo, SIGNAL(toggled(bool)), this, SLOT(setLevelInfo(bool)));
-	connect(m_ui.levelWarn, SIGNAL(toggled(bool)), this, SLOT(setLevelWarn(bool)));
-	connect(m_ui.levelError, SIGNAL(toggled(bool)), this, SLOT(setLevelError(bool)));
-	connect(m_ui.levelFatal, SIGNAL(toggled(bool)), this, SLOT(setLevelFatal(bool)));
-	connect(m_ui.levelGameError, SIGNAL(toggled(bool)), this, SLOT(setLevelGameError(bool)));
-	connect(m_ui.levelSWI, SIGNAL(toggled(bool)), this, SLOT(setLevelSWI(bool)));
-	connect(m_ui.levelStatus, SIGNAL(toggled(bool)), this, SLOT(setLevelStatus(bool)));
-	connect(m_ui.levelSIO, SIGNAL(toggled(bool)), this, SLOT(setLevelSIO(bool)));
+	connect(m_ui.levelDebug, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_DEBUG, set);
+	});
+	connect(m_ui.levelStub, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_STUB, set);
+	});
+	connect(m_ui.levelInfo, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_INFO, set);
+	});
+	connect(m_ui.levelWarn, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_WARN, set);
+	});
+	connect(m_ui.levelError, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_ERROR, set);
+	});
+	connect(m_ui.levelFatal, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_FATAL, set);
+	});
+	connect(m_ui.levelGameError, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_GAME_ERROR, set);
+	});
+	connect(m_ui.levelSWI, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_SWI, set);
+	});
+	connect(m_ui.levelStatus, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_STATUS, set);
+	});
+	connect(m_ui.levelSIO, &QAbstractButton::toggled, [this](bool set) {
+		setLevel(GBA_LOG_SIO, set);
+	});
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
+
+	connect(log, SIGNAL(logPosted(int, const QString&)), this, SLOT(postLog(int, const QString&)));
+	connect(log, SIGNAL(levelsSet(int)), this, SLOT(setLevels(int)));
+	connect(log, &LogController::levelsEnabled, [this](int level) {
+		bool s = blockSignals(true);
+		setLevel(level, true);
+		blockSignals(s);
+	});
+	connect(log, &LogController::levelsDisabled, [this](int level) {
+		bool s = blockSignals(true);
+		setLevel(level, false);
+		blockSignals(s);
+	});
+	connect(this, SIGNAL(levelsEnabled(int)), log, SLOT(enableLevels(int)));
+	connect(this, SIGNAL(levelsDisabled(int)), log, SLOT(disableLevels(int)));
 }
 
 void LogView::postLog(int level, const QString& log) {
-	if (!(level & m_logLevel)) {
-		return;
-	}
-	m_ui.view->appendPlainText(QString("%1:\t%2").arg(toString(level)).arg(log));
+	m_ui.view->appendPlainText(QString("%1:\t%2").arg(LogController::toString(level)).arg(log));
 	++m_lines;
 	if (m_lines > m_lineLimit) {
 		clearLine();
@@ -49,8 +82,6 @@ void LogView::clear() {
 }
 
 void LogView::setLevels(int levels) {
-	m_logLevel = levels;
-
 	m_ui.levelDebug->setCheckState(levels & GBA_LOG_DEBUG ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelStub->setCheckState(levels & GBA_LOG_STUB ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelInfo->setCheckState(levels & GBA_LOG_INFO ? Qt::Checked : Qt::Unchecked);
@@ -61,87 +92,44 @@ void LogView::setLevels(int levels) {
 	m_ui.levelSWI->setCheckState(levels & GBA_LOG_SWI ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelStatus->setCheckState(levels & GBA_LOG_STATUS ? Qt::Checked : Qt::Unchecked);
 	m_ui.levelSIO->setCheckState(levels & GBA_LOG_SIO ? Qt::Checked : Qt::Unchecked);
-
-	emit levelsSet(levels);
 }
 
-void LogView::setLevelDebug(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_DEBUG);
-	} else {
-		clearLevel(GBA_LOG_DEBUG);
+void LogView::setLevel(int level, bool set) {
+	if (level & GBA_LOG_DEBUG) {
+		m_ui.levelDebug->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelStub(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_STUB);
-	} else {
-		clearLevel(GBA_LOG_STUB);
+	if (level & GBA_LOG_STUB) {
+		m_ui.levelStub->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelInfo(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_INFO);
-	} else {
-		clearLevel(GBA_LOG_INFO);
+	if (level & GBA_LOG_INFO) {
+		m_ui.levelInfo->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelWarn(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_WARN);
-	} else {
-		clearLevel(GBA_LOG_WARN);
+	if (level & GBA_LOG_WARN) {
+		m_ui.levelWarn->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelError(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_ERROR);
-	} else {
-		clearLevel(GBA_LOG_ERROR);
+	if (level & GBA_LOG_ERROR) {
+		m_ui.levelError->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelFatal(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_FATAL);
-	} else {
-		clearLevel(GBA_LOG_FATAL);
+	if (level & GBA_LOG_FATAL) {
+		m_ui.levelFatal->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelGameError(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_GAME_ERROR);
-	} else {
-		clearLevel(GBA_LOG_GAME_ERROR);
+	if (level & GBA_LOG_GAME_ERROR) {
+		m_ui.levelGameError->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelSWI(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_SWI);
-	} else {
-		clearLevel(GBA_LOG_SWI);
+	if (level & GBA_LOG_SWI) {
+		m_ui.levelSWI->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
-
-void LogView::setLevelStatus(bool set) {
-	if (set) {
-		setLevel(GBA_LOG_STATUS);
-	} else {
-		clearLevel(GBA_LOG_STATUS);
+	if (level & GBA_LOG_STATUS) {
+		m_ui.levelStatus->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-}
+	if (level & GBA_LOG_SIO) {
+		m_ui.levelSIO->setCheckState(set ? Qt::Checked : Qt::Unchecked);
+	}
 
-void LogView::setLevelSIO(bool set) {
 	if (set) {
-		setLevel(GBA_LOG_SIO);
+		emit levelsEnabled(level);
 	} else {
-		clearLevel(GBA_LOG_SIO);
+		emit levelsDisabled(level);
 	}
 }
 
@@ -150,42 +138,6 @@ void LogView::setMaxLines(int limit) {
 	while (m_lines > m_lineLimit) {
 		clearLine();
 	}
-}
-
-QString LogView::toString(int level) {
-	switch (level) {
-	case GBA_LOG_DEBUG:
-		return tr("DEBUG");
-	case GBA_LOG_STUB:
-		return tr("STUB");
-	case GBA_LOG_INFO:
-		return tr("INFO");
-	case GBA_LOG_WARN:
-		return tr("WARN");
-	case GBA_LOG_ERROR:
-		return tr("ERROR");
-	case GBA_LOG_FATAL:
-		return tr("FATAL");
-	case GBA_LOG_GAME_ERROR:
-		return tr("GAME ERROR");
-	case GBA_LOG_SWI:
-		return tr("SWI");
-	case GBA_LOG_STATUS:
-		return tr("STATUS");
-	case GBA_LOG_SIO:
-		return tr("SIO");
-	}
-	return QString();
-}
-
-void LogView::setLevel(int level) {
-	m_logLevel |= level;
-	emit levelsEnabled(level);
-}
-
-void LogView::clearLevel(int level) {
-	m_logLevel &= ~level;
-	emit levelsDisabled(level);
 }
 
 void LogView::clearLine() {

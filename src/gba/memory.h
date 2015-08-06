@@ -86,7 +86,6 @@ enum DMATiming {
 	DMA_TIMING_CUSTOM = 3
 };
 
-
 DECL_BITFIELD(GBADMARegister, uint16_t);
 DECL_BITS(GBADMARegister, DestControl, 5, 2);
 DECL_BITS(GBADMARegister, SrcControl, 7, 2);
@@ -131,6 +130,9 @@ struct GBAMemory {
 	char waitstatesPrefetchNonseq32[16];
 	char waitstatesPrefetchNonseq16[16];
 	int activeRegion;
+	bool prefetch;
+	uint32_t lastPrefetchedPc;
+	uint32_t lastPrefetchedLoads;
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
@@ -156,8 +158,10 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* old);
 void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old);
 
-uint32_t GBALoadMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
-uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
+uint32_t GBALoadMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+                         int* cycleCounter);
+uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+                          int* cycleCounter);
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
 
