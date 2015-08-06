@@ -96,10 +96,22 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 	}
 }
 
+struct GBAThreadStop {
+	struct GBAStopCallback d;
+	struct GBAThread* p;
+};
+
+static void _stopCallback(struct GBAStopCallback* stop) {
+	struct GBAThreadStop* callback = (struct GBAThreadStop*) stop;
+	if (callback->p->stopCallback(callback->p)) {
+		_changeState(callback->p, THREAD_EXITING, false);
+	}
+}
+
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
-#else
+#elif _WIN32
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 #endif
 
@@ -129,10 +141,18 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+
+	struct GBAThreadStop stop;
+	if (threadContext->stopCallback) {
+		stop.d.stop = _stopCallback;
+		stop.p = threadContext;
+		gba.stopCallback = &stop.d;
+	}
+
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
-#else
+#elif _WIN32
 	TlsSetValue(_contextKey, threadContext);
 #endif
 
@@ -399,6 +419,16 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
 
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ups", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ips", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".bps", O_RDONLY);
+	}
+
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
 
@@ -410,7 +440,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	threadContext->interruptDepth = 0;
 
-#ifndef _WIN32
+#ifdef USE_PTHREADS
 	sigset_t signals;
 	sigemptyset(&signals);
 	sigaddset(&signals, SIGINT);
@@ -721,6 +751,10 @@ struct GBAThread* GBAThreadGetContext(void) {
 struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
+}
+#else
+struct GBAThread* GBAThreadGetContext(void) {
+	return 0;
 }
 #endif
 

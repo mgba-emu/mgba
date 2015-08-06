@@ -9,11 +9,16 @@
 #include "Display.h"
 
 #include <QGLWidget>
+#include <QMouseEvent>
 #include <QThread>
 #include <QTimer>
 
 extern "C" {
+#ifdef BUILD_GL
 #include "platform/opengl/gl.h"
+#elif defined(BUILD_GLES2)
+#include "platform/opengl/gles2.h"
+#endif
 }
 
 struct GBAThread;
@@ -27,6 +32,7 @@ public:
 protected:
 	void paintEvent(QPaintEvent*) override {}
 	void resizeEvent(QResizeEvent*) override {}
+	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
 };
 
 class PainterGL;
@@ -36,6 +42,8 @@ Q_OBJECT
 public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
+
+	bool isDrawing() const override { return m_isDrawing; }
 
 public slots:
 	void startDrawing(GBAThread* context) override;
@@ -54,6 +62,7 @@ protected:
 private:
 	void resizePainter();
 
+	bool m_isDrawing;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread;
@@ -88,7 +97,11 @@ private:
 	QGLWidget* m_gl;
 	bool m_active;
 	GBAThread* m_context;
+#ifdef BUILD_GL
 	GBAGLContext m_backend;
+#elif defined(BUILD_GLES2)
+	GBAGLES2Context m_backend;
+#endif
 	QSize m_size;
 	MessagePainter* m_messagePainter;
 };

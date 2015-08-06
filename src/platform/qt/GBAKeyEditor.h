@@ -35,6 +35,8 @@ public slots:
 protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void paintEvent(QPaintEvent*) override;
+	virtual bool event(QEvent*) override;
+	virtual void closeEvent(QCloseEvent*) override;
 
 private slots:
 	void setNext();
@@ -64,6 +66,7 @@ private:
 	KeyEditor* keyById(GBAKey);
 
 	QComboBox* m_profileSelect;
+	QWidget* m_clear;
 	QWidget* m_buttons;
 	KeyEditor* m_keyDU;
 	KeyEditor* m_keyDD;

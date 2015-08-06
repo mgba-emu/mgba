@@ -115,8 +115,8 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
-	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
+	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigMap(&m_config, &m_opts);
 }
 
@@ -126,7 +126,11 @@ ConfigController::~ConfigController() {
 }
 
 bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[]) {
-	return ::parseArguments(args, &m_config, argc, argv, 0);
+	if (::parseArguments(args, &m_config, argc, argv, 0)) {
+		GBAConfigMap(&m_config, &m_opts);
+		return true;
+	}
+	return false;
 }
 
 ConfigOption* ConfigController::addOption(const char* key) {
@@ -257,4 +261,20 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 void ConfigController::write() {
 	GBAConfigSave(&m_config);
 	m_settings->sync();
+}
+
+void ConfigController::makePortable() {
+	GBAConfigMakePortable(&m_config);
+
+	char path[PATH_MAX];
+	GBAConfigDirectory(path, sizeof(path));
+	QString fileName(path);
+	fileName.append(QDir::separator());
+	fileName.append("qt.ini");
+	QSettings* settings2 = new QSettings(fileName, QSettings::IniFormat, this);
+	for (const auto& key : m_settings->allKeys()) {
+		settings2->setValue(key, m_settings->value(key));
+	}
+	delete m_settings;
+	m_settings = settings2;
 }

@@ -98,11 +98,7 @@
 			tileData &= 0xF; \
 			tileData |= tileData << 4; \
 			tileData |= tileData << 8; \
-			tileData |= tileData << 12; \
 			tileData |= tileData << 16; \
-			tileData |= tileData << 20; \
-			tileData |= tileData << 24; \
-			tileData |= tileData << 28; \
 			carryData = tileData; \
 		} \
 	} \
@@ -126,11 +122,7 @@
 					tileData &= 0xF; \
 					tileData |= tileData << 4; \
 					tileData |= tileData << 8; \
-					tileData |= tileData << 12; \
 					tileData |= tileData << 16; \
-					tileData |= tileData << 20; \
-					tileData |= tileData << 24; \
-					tileData |= tileData << 28; \
 					carryData = tileData; \
 				} \
 				mosaicWait = mosaicH; \
@@ -414,7 +406,7 @@
 			return; \
 		} \
 		if (UNLIKELY(end < outX)) { \
-			GBALog(0, GBA_LOG_DANGER, "Out of bounds background draw!"); \
+			GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \

@@ -38,10 +38,10 @@ AudioProcessor* AudioProcessor::create() {
 #endif
 
 	default:
-#ifdef BUILD_QT_MULTIMEDIA
-		return new AudioProcessorQt();
-#else
+#ifdef BUILD_SDL
 		return new AudioProcessorSDL();
+#else
+		return new AudioProcessorQt();
 #endif
 	}
 }

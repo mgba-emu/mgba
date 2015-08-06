@@ -30,6 +30,7 @@ void GBAInputMapInit(struct GBAInputMap*);
 void GBAInputMapDeinit(struct GBAInputMap*);
 
 enum GBAKey GBAInputMapKey(const struct GBAInputMap*, uint32_t type, int key);
+int GBAInputMapKeyBits(const struct GBAInputMap* map, uint32_t type, uint32_t bits, unsigned offset);
 void GBAInputBindKey(struct GBAInputMap*, uint32_t type, int key, enum GBAKey input);
 void GBAInputUnbindKey(struct GBAInputMap*, uint32_t type, enum GBAKey input);
 int GBAInputQueryBinding(const struct GBAInputMap*, uint32_t type, enum GBAKey input);
@@ -45,7 +46,7 @@ void GBAInputEnumerateAxes(const struct GBAInputMap*, uint32_t type, void (handl
 void GBAInputMapLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*);
 void GBAInputMapSave(const struct GBAInputMap*, uint32_t type, struct Configuration*);
 
-void GBAInputProfileLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*, const char* profile);
+bool GBAInputProfileLoad(struct GBAInputMap*, uint32_t type, const struct Configuration*, const char* profile);
 void GBAInputProfileSave(const struct GBAInputMap*, uint32_t type, struct Configuration*, const char* profile);
 
 const char* GBAInputGetPreferredDevice(const struct Configuration*, uint32_t type, int playerId);

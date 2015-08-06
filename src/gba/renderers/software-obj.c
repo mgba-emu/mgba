@@ -116,6 +116,9 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	x >>= 23;
 	uint16_t* vramBase = &renderer->d.vram[BASE_TILE >> 1];
 	unsigned charBase = GBAObjAttributesCGetTile(sprite->c) * 0x20;
+	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
+		return 0;
+	}
 	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
 		int target2 = renderer->target2Bd << 4;

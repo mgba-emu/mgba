@@ -30,6 +30,7 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfdSize(struct VFile* vf);
+static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size);
 
 struct VFile* VFileOpenFD(const char* path, int flags) {
 	if (!path) {
@@ -66,6 +67,7 @@ struct VFile* VFileFromFD(int fd) {
 	vfd->d.unmap = _vfdUnmap;
 	vfd->d.truncate = _vfdTruncate;
 	vfd->d.size = _vfdSize;
+	vfd->d.sync = _vfdSync;
 
 	return &vfd->d;
 }
@@ -165,4 +167,15 @@ static ssize_t _vfdSize(struct VFile* vf) {
 		return -1;
 	}
 	return stat.st_size;
+}
+
+static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
+	UNUSED(buffer);
+	UNUSED(size);
+	struct VFileFD* vfd = (struct VFileFD*) vf;
+#ifndef _WIN32
+	return fsync(vfd->fd) == 0;
+#else
+	return FlushFileBuffers((HANDLE) _get_osfhandle(vfd->fd));
+#endif
 }

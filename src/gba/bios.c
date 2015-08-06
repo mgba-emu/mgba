@@ -191,6 +191,9 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x2:
 		GBAHalt(gba);
 		break;
+	case 0x3:
+		GBAStop(gba);
+		break;
 	case 0x05:
 	// VBlankIntrWait
 	// Fall through:
@@ -296,6 +299,10 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 			_unFilter(gba, immediate == 0x18 ? 2 : 1, immediate == 0x16 ? 1 : 2);
 			break;
 		}
+		break;
+	case 0x19:
+		// SoundBias is mostly meaningless here
+		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: SoundBias (19)");
 		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);

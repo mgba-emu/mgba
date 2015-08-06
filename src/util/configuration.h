@@ -23,6 +23,7 @@ void ConfigurationSetIntValue(struct Configuration*, const char* section, const 
 void ConfigurationSetUIntValue(struct Configuration*, const char* section, const char* key, unsigned value);
 void ConfigurationSetFloatValue(struct Configuration*, const char* section, const char* key, float value);
 
+bool ConfigurationHasSection(const struct Configuration*, const char* section);
 const char* ConfigurationGetValue(const struct Configuration*, const char* section, const char* key);
 
 void ConfigurationClearValue(struct Configuration*, const char* section, const char* key);

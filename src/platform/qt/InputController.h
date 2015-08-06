@@ -32,7 +32,7 @@ Q_OBJECT
 public:
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(int playerId = 0, QObject* parent = nullptr);
+	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
 	void setConfiguration(ConfigController* config);
@@ -60,6 +60,7 @@ public:
 	void recalibrateAxes();
 
 	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
+	void unbindAllAxes(uint32_t type);
 
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
@@ -74,28 +75,35 @@ public:
 	float gyroSensitivity() const;
 	void setGyroSensitivity(float sensitivity);
 
+	void stealFocus(QWidget* focus);
+	void releaseFocus(QWidget* focus);
+
 	GBARumble* rumble();
 	GBARotationSource* rotationSource();
+
+signals:
+	void profileLoaded(const QString& profile);
 
 public slots:
 	void testGamepad(int type);
 
-#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	// TODO: Move these to somewhere that makes sense
 	void suspendScreensaver();
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
-#endif
 
 private:
 	void postPendingEvent(GBAKey);
 	void clearPendingEvent(GBAKey);
 	bool hasPendingEvent(GBAKey) const;
+	void sendGamepadEvent(QEvent*);
 
 	GBAInputMap m_inputMap;
 	ConfigController* m_config;
 	int m_playerId;
 	bool m_allowOpposing;
+	QWidget* m_topLevel;
+	QWidget* m_focusParent;
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
