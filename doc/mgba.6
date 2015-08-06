@@ -125,7 +125,11 @@ It supports the following commands:
 .It Cm b Ns Oo Cm reak Oc Ar address
 .It Cm b Ns Oo Cm reak Oc Ns Cm /a Ar address
 .It Cm b Ns Oo Cm reak Oc Ns Cm /t Ar address
-Set a breakpoint at
+Set a breakpoint \(en ARM
+.Pq Ql /a ,
+Thumb
+.Pq Ql /t ,
+or the current CPU mode \(en at
 .Ar address .
 .It Cm c Ns Op Cm ontinue
 Continue execution.
@@ -140,8 +144,13 @@ Delete a breakpoint at
 .It Cm dis Ns Oo Cm assemble Oc Ns Cm /t Ar address Op Ar count
 Disassemble
 .Ar count
-instructions starting at address
-.Ar address .
+instructions starting at
+.Ar address ,
+as ARM
+.Pq Ql /a ,
+Thumb
+.Pq Ql /t ,
+or the current CPU mode.
 If
 .Ar count
 is not specified, only disassemble the instruction at
@@ -156,8 +165,13 @@ Execute the next instruction.
 .It Cm p Ns Oo Cm rint Oc Ar value ...
 .It Cm p Ns Oo Cm rint Oc Ns Cm /t Ar value ...
 .It Cm p Ns Oo Cm rint Oc Ns Cm /x Ar value ...
-Print
-.Ar value .
+Print one or more
+.Ar value Ns s
+as binary
+.Pq Ql /t ,
+hexadecimal
+.Pq Ql /x ,
+or decimal.
 .It Cm q Ns Op Cm uit
 Quit the emulator.
 .It Cm reset
@@ -165,7 +179,13 @@ Reset the emulation.
 .It Cm r/1 Ar address
 .It Cm r/2 Ar address
 .It Cm r/4 Ar address
-Read a byte, halfword, or word from
+Read a byte
+.Pq Ql /1 ,
+halfword
+.Pq Ql /2 ,
+or word
+.Pq Ql /4
+from
 .Ar address .
 .It Cm w Ns Oo Cm atch Oc Ar address
 Set a watchpoint at
@@ -173,7 +193,13 @@ Set a watchpoint at
 .It Cm w/1 Ar address
 .It Cm w/2 Ar address
 .It Cm w/4 Ar address
-Write a byte, halfword, or word to
+Write a byte
+.Pq Ql /1 ,
+halfword
+.Pq Ql /2 ,
+or word
+.Pq Ql /4
+to
 .Ar address .
 .It Cm w/r Ar register
 Write a word to
@@ -181,7 +207,13 @@ Write a word to
 .It Cm x/1 Ar address
 .It Cm x/2 Ar address
 .It Cm x/4 Ar address
-Examine bytes, halfwords, or words from
+Examine bytes
+.Pq Ql /1 ,
+halfwords
+.Pq Ql /2 ,
+or words
+.Pq Ql /4
+from
 .Ar address .
 .It Cm \&!\ \&
 Break into the attached debugger.
