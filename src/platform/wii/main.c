@@ -42,9 +42,9 @@ static GXTexObj tex;
 static void* framebuffer[2];
 static int whichFb = 0;
 
-static struct GBAStereoSample audioBuffer[2][SAMPLES] __attribute__ ((__aligned__(32)));
-static size_t audioBufferSize = 0;
-static int currentAudioBuffer = 0;
+static struct GBAStereoSample audioBuffer[3][SAMPLES] __attribute__((__aligned__(32)));
+static volatile size_t audioBufferSize = 0;
+static volatile int currentAudioBuffer = 0;
 
 int main() {
 	VIDEO_Init();
@@ -164,6 +164,7 @@ int main() {
 		if (available + audioBufferSize > SAMPLES) {
 			available = SAMPLES - audioBufferSize;
 		}
+		available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 		if (available > 0) {
 			blip_read_samples(gba.audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
 			blip_read_samples(gba.audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
@@ -317,6 +318,6 @@ static void _audioDMA(void) {
 	}
 	DCFlushRange(audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
 	AUDIO_InitDMA((u32) audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
-	currentAudioBuffer = !currentAudioBuffer;
+	currentAudioBuffer = (currentAudioBuffer + 1) % 3;
 	audioBufferSize = 0;
 }
