@@ -25,6 +25,7 @@ static void GBAWiiFrame(void);
 static bool GBAWiiLoadGame(const char* path);
 
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+static void _audioDMA(void);
 
 static struct GBA gba;
 static struct ARMCore cpu;
@@ -41,9 +42,18 @@ static GXTexObj tex;
 static void* framebuffer[2];
 static int whichFb = 0;
 
+static struct GBAStereoSample audioBuffer[2][SAMPLES] __attribute__ ((__aligned__(32)));
+static size_t audioBufferSize = 0;
+static int currentAudioBuffer = 0;
+
 int main() {
 	VIDEO_Init();
 	PAD_Init();
+	AUDIO_Init(0);
+	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
+	AUDIO_RegisterDMACallback(_audioDMA);
+
+	memset(audioBuffer, 0, sizeof(audioBuffer));
 
 #if !defined(COLOR_16_BIT) && !defined(COLOR_5_6_5)
 #error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
@@ -140,8 +150,8 @@ int main() {
 	GBAAudioResizeBuffer(&gba.audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 44100);
-	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 44100);
+	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
+	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
 #endif
 
 	if (!GBAWiiLoadGame("/rom.gba")) {
@@ -149,6 +159,21 @@ int main() {
 	}
 
 	while (true) {
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+		int available = blip_samples_avail(gba.audio.left);
+		if (available + audioBufferSize > SAMPLES) {
+			available = SAMPLES - audioBufferSize;
+		}
+		if (available > 0) {
+			blip_read_samples(gba.audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+			blip_read_samples(gba.audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+			audioBufferSize += available;
+		}
+		if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
+			_audioDMA();
+			AUDIO_StartDMA();
+		}
+#endif
 		PAD_ScanPads();
 		u16 padkeys = PAD_ButtonsHeld(0);
 		int keys = 0;
@@ -283,4 +308,14 @@ static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer*
 	UNUSED(stream);
 	UNUSED(renderer);
 	GBAWiiFrame();
+}
+
+static void _audioDMA(void) {
+	if (!audioBufferSize) {
+		return;
+	}
+	currentAudioBuffer = !currentAudioBuffer;
+	DCFlushRange(audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
+	AUDIO_InitDMA((u32) audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
+	audioBufferSize = 0;
 }
