@@ -114,6 +114,7 @@ Misc:
  - Qt: Gamepads can now have both buttons and analog axes mapped to the same key
  - Qt: Increase usability of key mapper
  - Qt: Show checkmark for window sizes
+ - Qt: Set window path to loaded ROM
 
 0.2.1: (2015-05-13)
 Bugfixes:

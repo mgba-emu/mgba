@@ -545,6 +545,7 @@ void Window::gameStarted(GBAThread* context) {
 		action->setDisabled(false);
 	}
 	if (context->fname) {
+		setWindowFilePath(context->fname);
 		appendMRU(context->fname);
 	}
 	updateTitle();
@@ -564,6 +565,7 @@ void Window::gameStopped() {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
+	setWindowFilePath(QString());
 	updateTitle();
 	detachWidget(m_display);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
