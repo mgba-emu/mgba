@@ -11,10 +11,27 @@
 .Nd Game Boy Advance emulator
 .Sh SYNOPSIS
 .Nm mgba-qt
+.Op Fl b Ar biosfile
+.Op Fl p Ar patchfile
+.Op Fl s Ar n
 .Ar file
 .Sh DESCRIPTION
 .Nm
 is a Game Boy Advance emulator.
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl b Ar biosfile , Fl -bios Ar biosfile
+Specify a BIOS file to use during boot.
+If this flag is omitted,
+.Nm
+will use a high\(hylevel emulated BIOS.
+.It Fl p Ar patchfile , Fl -patch Ar patchfile
+Specify a patch file in IPS or UPS format.
+.It Fl s Ar n , Fl -frameskip Ar n
+Skip every
+.Ar n
+frames.
+.El
 .Sh CONTROLS
 The default controls are as follows:
 .Bl -hang -width "Frame advance" -compact
