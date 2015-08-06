@@ -148,6 +148,7 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;

@@ -427,11 +427,27 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 	event->accept();
 }
 
-void Window::resizeEvent(QResizeEvent*) {
+void Window::resizeEvent(QResizeEvent* event) {
 	if (!isFullScreen()) {
 		m_config->setOption("height", m_screenWidget->height());
 		m_config->setOption("width", m_screenWidget->width());
 	}
+
+	int factor = 0;
+	if (event->size().width() % VIDEO_HORIZONTAL_PIXELS == 0 && event->size().height() % VIDEO_VERTICAL_PIXELS == 0 &&
+	    event->size().width() / VIDEO_HORIZONTAL_PIXELS == event->size().height() / VIDEO_VERTICAL_PIXELS) {
+		factor = event->size().width() / VIDEO_HORIZONTAL_PIXELS;
+	}
+	for (QMap<int, QAction*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
+		bool enableSignals = iter.value()->blockSignals(true);
+		if (iter.key() == factor) {
+			iter.value()->setChecked(true);
+		} else {
+			iter.value()->setChecked(false);
+		}
+		iter.value()->blockSignals(enableSignals);
+	}
+
 	m_config->setOption("fullscreen", isFullScreen());
 }
 
@@ -920,10 +936,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_shortcutController->addMenu(frameMenu, avMenu);
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
+		setSize->setCheckable(true);
 		connect(setSize, &QAction::triggered, [this, i]() {
 			showNormal();
 			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
 		});
+		m_frameSizes[i] = setSize;
 		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
 	}
 	QKeySequence fullscreenKeys;

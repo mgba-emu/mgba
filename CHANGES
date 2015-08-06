@@ -113,6 +113,7 @@ Misc:
  - GBA BIOS: Stub out SoundBias
  - Qt: Gamepads can now have both buttons and analog axes mapped to the same key
  - Qt: Increase usability of key mapper
+ - Qt: Show checkmark for window sizes
 
 0.2.1: (2015-05-13)
 Bugfixes:

@@ -103,6 +103,8 @@ public:
 	                  const QKeySequence& shortcut, const QString& visibleName, const QString& name);
 	void addMenu(QMenu* menu, QMenu* parent = nullptr);
 
+	QAction* getAction(const QString& name);
+
 	QKeySequence shortcutAt(const QModelIndex& index) const;
 	bool isMenuAt(const QModelIndex& index) const;
 
