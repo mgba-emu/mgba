@@ -191,6 +191,7 @@ if(BUILD_BBB OR BUILD_RASPI OR BUILD_PANDORA)
 endif()
 
 if(WII)
+	add_definitions(-U__STRICT_ANSI__)
 	add_executable(${BINARY_NAME}.elf ${CMAKE_SOURCE_DIR}/src/platform/wii/main.c)
 	target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 	add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${ELF2DOL} ${BINARY_NAME}.elf ${BINARY_NAME}.dol)
