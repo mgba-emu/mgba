@@ -227,6 +227,8 @@ int main() {
 }
 
 static void GBAWiiFrame(void) {
+	VIDEO_WaitVSync();
+
 	size_t x, y;
 	uint64_t* texdest = (uint64_t*) texmem;
 	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
@@ -268,7 +270,6 @@ static void GBAWiiFrame(void) {
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
-	VIDEO_WaitVSync();
 }
 
 bool GBAWiiLoadGame(const char* path) {
