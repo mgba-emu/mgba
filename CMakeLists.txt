@@ -356,7 +356,6 @@ set(CORE_SRC
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
 	${SIO_SRC}
-	${GUI_SRC}
 	${UTIL_SRC}
 	${VFS_SRC}
 	${OS_SRC}
