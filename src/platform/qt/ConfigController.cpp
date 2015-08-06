@@ -115,8 +115,8 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
-	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigLoad(&m_config);
+	GBAConfigLoadDefaults(&m_config, &m_opts);
 	GBAConfigMap(&m_config, &m_opts);
 }
 
@@ -126,7 +126,11 @@ ConfigController::~ConfigController() {
 }
 
 bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[]) {
-	return ::parseArguments(args, &m_config, argc, argv, 0);
+	if (::parseArguments(args, &m_config, argc, argv, 0)) {
+		GBAConfigMap(&m_config, &m_opts);
+		return true;
+	}
+	return false;
 }
 
 ConfigOption* ConfigController::addOption(const char* key) {

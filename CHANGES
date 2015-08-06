@@ -66,6 +66,7 @@ Bugfixes:
  - GBA Cheats: Fix Pro Action Replay and GameShark issues when used together
  - Qt: Fix analog buttons not getting unmapped
  - GBA Video: Prevent tiles < 512 from being used in modes 3 - 5
+ - Qt: Fix passing command line options
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

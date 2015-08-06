@@ -45,14 +45,21 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("displayDriver").toInt()));
 	}
 
+	GBAArguments args;
+	bool loaded = m_configController.parseArguments(&args, argc, argv);
+	if (loaded && args.showHelp) {
+		usage(argv[0], 0);
+		::exit(0);
+		return;
+	}
+
 	Window* w = new Window(&m_configController);
 	connect(w, &Window::destroyed, [this]() {
 		m_windows[0] = nullptr;
 	});
 	m_windows[0] = w;
 
-	GBAArguments args;
-	if (m_configController.parseArguments(&args, argc, argv)) {
+	if (loaded) {
 		w->argumentsPassed(&args);
 	} else {
 		w->loadConfig();
