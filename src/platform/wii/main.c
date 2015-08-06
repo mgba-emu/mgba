@@ -314,8 +314,8 @@ static void _audioDMA(void) {
 	if (!audioBufferSize) {
 		return;
 	}
-	currentAudioBuffer = !currentAudioBuffer;
 	DCFlushRange(audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
 	AUDIO_InitDMA((u32) audioBuffer[currentAudioBuffer], audioBufferSize * sizeof(struct GBAStereoSample));
+	currentAudioBuffer = !currentAudioBuffer;
 	audioBufferSize = 0;
 }
