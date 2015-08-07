@@ -118,7 +118,8 @@ void DisplayGL::filter(bool filter) {
 
 void DisplayGL::framePosted(const uint32_t* buffer) {
 	if (m_drawThread && buffer) {
-		QMetaObject::invokeMethod(m_painter, "setBacking", Q_ARG(const uint32_t*, buffer));
+		m_painter->enqueue(buffer);
+		QMetaObject::invokeMethod(m_painter, "draw");
 	}
 }
 
@@ -152,6 +153,19 @@ PainterGL::PainterGL(QGLWidget* parent)
 	m_backend.d.user = this;
 	m_backend.d.filter = false;
 	m_backend.d.lockAspectRatio = false;
+
+	for (int i = 0; i < 2; ++i) {
+		m_free.append(new uint32_t[256 * 256]);
+	}
+}
+
+PainterGL::~PainterGL() {
+	while (!m_queue.isEmpty()) {
+		delete[] m_queue.dequeue();
+	}
+	for (auto item : m_free) {
+		delete[] item;
+	}
 }
 
 void PainterGL::setContext(GBAThread* context) {
@@ -160,15 +174,6 @@ void PainterGL::setContext(GBAThread* context) {
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 	m_messagePainter = messagePainter;
-}
-
-void PainterGL::setBacking(const uint32_t* backing) {
-	m_gl->makeCurrent();
-	m_backend.d.postFrame(&m_backend.d, backing);
-	if (m_active) {
-		draw();
-	}
-	m_gl->doneCurrent();
 }
 
 void PainterGL::resize(const QSize& size) {
@@ -200,7 +205,11 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip)) {
+	if (m_queue.isEmpty()) {
+		return;
+	}
+	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip) || !m_queue.isEmpty()) {
+		dequeue();
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
@@ -208,6 +217,9 @@ void PainterGL::draw() {
 		m_backend.d.swap(&m_backend.d);
 	} else {
 		GBASyncWaitFrameEnd(&m_context->sync);
+	}
+	if (!m_queue.isEmpty()) {
+		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);
 	}
 }
 
@@ -221,6 +233,7 @@ void PainterGL::forceDraw() {
 void PainterGL::stop() {
 	m_active = false;
 	m_gl->makeCurrent();
+	dequeueAll();
 	m_backend.d.clear(&m_backend.d);
 	m_backend.d.swap(&m_backend.d);
 	m_backend.d.deinit(&m_backend.d);
@@ -232,8 +245,11 @@ void PainterGL::stop() {
 void PainterGL::pause() {
 	m_active = false;
 	// Make sure both buffers are filled
+	m_gl->makeCurrent();
+	dequeueAll();
 	forceDraw();
 	forceDraw();
+	m_gl->doneCurrent();
 }
 
 void PainterGL::unpause() {
@@ -249,4 +265,40 @@ void PainterGL::performDraw() {
 	if (m_messagePainter) {
 		m_messagePainter->paint(&m_painter);
 	}
+}
+
+void PainterGL::enqueue(const uint32_t* backing) {
+	m_mutex.lock();
+	uint32_t* buffer;
+	if (m_free.isEmpty()) {
+		buffer = m_queue.dequeue();
+	} else {
+		buffer = m_free.takeLast();
+	}
+	memcpy(buffer, backing, 256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	m_queue.enqueue(buffer);
+	m_mutex.unlock();
+}
+
+void PainterGL::dequeue() {
+	m_mutex.lock();
+	if (m_queue.isEmpty()) {
+		m_mutex.unlock();
+		return;
+	}
+	uint32_t* buffer = m_queue.dequeue();
+	m_backend.d.postFrame(&m_backend.d, buffer);
+	m_free.append(buffer);
+	m_mutex.unlock();
+}
+
+void PainterGL::dequeueAll() {
+	uint32_t* buffer;
+	m_mutex.lock();
+	while (!m_queue.isEmpty()) {
+		buffer = m_queue.dequeue();
+		m_free.append(buffer);
+	}
+	m_backend.d.postFrame(&m_backend.d, buffer);
+	m_mutex.unlock();
 }

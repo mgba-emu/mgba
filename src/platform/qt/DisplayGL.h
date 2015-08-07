@@ -9,7 +9,9 @@
 #include "Display.h"
 
 #include <QGLWidget>
+#include <QList>
 #include <QMouseEvent>
+#include <QQueue>
 #include <QThread>
 #include <QTimer>
 
@@ -74,12 +76,13 @@ Q_OBJECT
 
 public:
 	PainterGL(QGLWidget* parent);
+	~PainterGL();
 
 	void setContext(GBAThread*);
 	void setMessagePainter(MessagePainter*);
+	void enqueue(const uint32_t* backing);
 
 public slots:
-	void setBacking(const uint32_t*);
 	void forceDraw();
 	void draw();
 	void start();
@@ -92,8 +95,13 @@ public slots:
 
 private:
 	void performDraw();
+	void dequeue();
+	void dequeueAll();
 
+	QList<uint32_t*> m_free;
+	QQueue<uint32_t*> m_queue;
 	QPainter m_painter;
+	QMutex m_mutex;
 	QGLWidget* m_gl;
 	bool m_active;
 	GBAThread* m_context;

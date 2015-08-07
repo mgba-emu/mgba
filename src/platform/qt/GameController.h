@@ -167,6 +167,7 @@ private:
 	void enableTurbo();
 
 	uint32_t* m_drawContext;
+	uint32_t* m_frontBuffer;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;

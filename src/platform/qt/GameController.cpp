@@ -31,7 +31,8 @@ using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(new uint32_t[256 * 256])
+	, m_drawContext(new uint32_t[256 * VIDEO_HORIZONTAL_PIXELS])
+	, m_frontBuffer(new uint32_t[256 * 256])
 	, m_threadContext()
 	, m_activeKeys(0)
 	, m_inactiveKeys(0)
@@ -122,7 +123,8 @@ GameController::GameController(QObject* parent)
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
-			controller->frameAvailable(controller->m_drawContext);
+			memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+			controller->frameAvailable(controller->m_frontBuffer);
 		} else {
 			controller->frameAvailable(nullptr);
 		}
@@ -216,6 +218,7 @@ GameController::~GameController() {
 	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_renderer;
 	delete[] m_drawContext;
+	delete[] m_frontBuffer;
 	delete m_backupLoadState;
 }
 
@@ -339,7 +342,7 @@ void GameController::openGame(bool biosOnly) {
 	}
 
 	m_inputController->recalibrateAxes();
-	memset(m_drawContext, 0xF8, 1024 * 256);
+	memset(m_drawContext, 0xF8, 1024 * VIDEO_HORIZONTAL_PIXELS);
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
