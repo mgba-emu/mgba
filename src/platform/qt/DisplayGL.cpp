@@ -244,12 +244,9 @@ void PainterGL::stop() {
 
 void PainterGL::pause() {
 	m_active = false;
-	// Make sure both buffers are filled
-	m_gl->makeCurrent();
-	dequeueAll();
-	forceDraw();
-	forceDraw();
-	m_gl->doneCurrent();
+	if (!m_queue.isEmpty()) {
+		QMetaObject::invokeMethod(this, "pause", Qt::QueuedConnection);
+	}
 }
 
 void PainterGL::unpause() {
@@ -293,12 +290,14 @@ void PainterGL::dequeue() {
 }
 
 void PainterGL::dequeueAll() {
-	uint32_t* buffer;
+	uint32_t* buffer = 0;
 	m_mutex.lock();
 	while (!m_queue.isEmpty()) {
 		buffer = m_queue.dequeue();
 		m_free.append(buffer);
 	}
-	m_backend.d.postFrame(&m_backend.d, buffer);
+	if (buffer) {
+		m_backend.d.postFrame(&m_backend.d, buffer);
+	}
 	m_mutex.unlock();
 }
