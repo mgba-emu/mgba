@@ -30,6 +30,7 @@ Features:
  - Libretro now supports BIOS, rumble and solar sensor
  - Implement BIOS call Stop, for sleep mode
  - Automatically load patches, if found
+ - Improved video synchronization
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
