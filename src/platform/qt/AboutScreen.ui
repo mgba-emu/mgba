@@ -145,7 +145,7 @@
    <item row="4" column="1">
     <widget class="QLabel" name="extraLinks">
      <property name="text">
-      <string>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums/mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/blob/{gitBranch}/LICENSE&quot;&gt;License&lt;/a&gt;</string>
+      <string>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/blob/{gitBranch}/LICENSE&quot;&gt;License&lt;/a&gt;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
