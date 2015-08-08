@@ -211,10 +211,12 @@ to
 .It Cm w/r Ar register
 Write a word to
 .Ar register .
-.It Cm x/1 Ar address
-.It Cm x/2 Ar address
-.It Cm x/4 Ar address
-Examine bytes
+.It Cm x/1 Ar address Op Ar count
+.It Cm x/2 Ar address Op Ar count
+.It Cm x/4 Ar address Op Ar count
+Examine
+.Ar count
+bytes
 .Pq Ql /1 ,
 halfwords
 .Pq Ql /2 ,
@@ -222,6 +224,9 @@ or words
 .Pq Ql /4
 from
 .Ar address .
+If
+.Ar count
+is not specified, examine 16 bytes, 8 halfwords, or 4 words.
 .It Cm \&!\ \&
 Break into the attached debugger.
 .El
