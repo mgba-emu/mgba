@@ -59,27 +59,27 @@ Log messages during emulation to
 .Dv stdout .
 .Ar loglevel
 is a bitmask defining which types of messages to log:
-.Bl -inset
-.It 1
-fatal errors
-.It 2
-errors
-.It 4
-warnings
-.It 8
-informative messages
-.It 16
-debugging messages
-.It 32
-stub messages for unimplemented features
-.It 256
-in\(hygame errors
-.It 512
-software interrupts
-.It 1024
-emulator status messages
-.It 2048
-serial I/O messages
+.Bl -bullet -compact
+.It
+1 \(en fatal errors
+.It
+2 \(en errors
+.It
+4 \(en warnings
+.It
+8 \(en informative messages
+.It
+16 \(en debugging messages
+.It
+32 \(en stub messages for unimplemented features
+.It
+256 \(en in\(hygame errors
+.It
+512 \(en software interrupts
+.It
+1024 \(en emulator status messages
+.It
+2048 \(en serial I/O messages
 .El
 The default is to log warnings, errors, fatal errors, and status messages.
 .It Fl p Ar patchfile , Fl -patch Ar patchfile
