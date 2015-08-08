@@ -195,10 +195,12 @@ from
 .It Cm w Ns Oo Cm atch Oc Ar address
 Set a watchpoint at
 .Ar address .
-.It Cm w/1 Ar address
-.It Cm w/2 Ar address
-.It Cm w/4 Ar address
-Write a byte
+.It Cm w/1 Ar address data
+.It Cm w/2 Ar address data
+.It Cm w/4 Ar address data
+Write
+.Ar data
+as a byte
 .Pq Ql /1 ,
 halfword
 .Pq Ql /2 ,
