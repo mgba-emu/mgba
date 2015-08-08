@@ -939,9 +939,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
-		connect(setSize, &QAction::triggered, [this, i]() {
+		connect(setSize, &QAction::triggered, [this, i, setSize]() {
 			showNormal();
 			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
+			bool enableSignals = setSize->blockSignals(true);
+			setSize->setChecked(true);
+			setSize->blockSignals(enableSignals);
 		});
 		m_frameSizes[i] = setSize;
 		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
