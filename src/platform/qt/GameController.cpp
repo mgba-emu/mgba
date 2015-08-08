@@ -533,9 +533,9 @@ void GameController::startRewinding() {
 		return;
 	}
 	m_wasPaused = isPaused();
-	bool signalsBlocked = blockSignals(true);
-	setPaused(true);
-	blockSignals(signalsBlocked);
+	if (!GBAThreadIsPaused(&m_threadContext)) {
+		GBAThreadPause(&m_threadContext);
+	}
 	m_rewindTimer.start();
 }
 
