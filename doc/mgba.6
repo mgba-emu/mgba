@@ -137,12 +137,12 @@ Continue execution.
 .It Cm d Ns Oo Cm elete Oc Ar address
 Delete a breakpoint at
 .Ar address .
-.It Cm dis Ns Oo Cm asm Oc Ar address Op Ar count
-.It Cm dis Ns Oo Cm asm Oc Ns Cm /a Ar address Op Ar count
-.It Cm dis Ns Oo Cm asm Oc Ns Cm /t Ar address Op Ar count
-.It Cm dis Ns Oo Cm assemble Oc Ar address Op Ar count
-.It Cm dis Ns Oo Cm assemble Oc Ns Cm /a Ar address Op Ar count
-.It Cm dis Ns Oo Cm assemble Oc Ns Cm /t Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /a Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /t Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /a Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /t Op Ar address Op Ar count
 Disassemble
 .Ar count
 instructions starting at
@@ -156,6 +156,9 @@ If
 .Ar count
 is not specified, only disassemble the instruction at
 .Ar address .
+If
+.Ar address
+is not specified, only disassemble the current address.
 .It Cm h Ns Op Cm elp
 Print help.
 .It Cm i Ns Op Cm nfo
