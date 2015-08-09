@@ -13,8 +13,8 @@
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
- 	: QWidget(parent)
- 	, m_controller(controller)
+	: QDialog(parent)
+	, m_controller(controller)
 {
 	m_ui.setupUi(this);
 
