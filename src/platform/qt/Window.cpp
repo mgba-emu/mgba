@@ -127,6 +127,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
+	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 	connect(m_display, &Display::hideCursor, [this]() {
@@ -195,12 +196,17 @@ void Window::loadConfig() {
 		m_controller->loadBIOS(opts->bios);
 	}
 
+	// TODO: Move these to ConfigController
 	if (opts->fpsTarget) {
 		emit fpsTargetChanged(opts->fpsTarget);
 	}
 
 	if (opts->audioBuffers) {
 		emit audioBufferSamplesChanged(opts->audioBuffers);
+	}
+
+	if (opts->sampleRate) {
+		emit sampleRateChanged(opts->sampleRate);
 	}
 
 	if (opts->width && opts->height) {

@@ -53,6 +53,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		return;
 	}
 
+	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
 	Window* w = new Window(&m_configController);
 	connect(w, &Window::destroyed, [this]() {
 		m_windows[0] = nullptr;
@@ -66,9 +67,6 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	}
 	freeArguments(&args);
 	w->show();
-
-	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
-	w->controller()->reloadAudioDriver();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
 }
