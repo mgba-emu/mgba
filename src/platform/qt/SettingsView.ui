@@ -62,14 +62,19 @@
             <bool>true</bool>
            </property>
            <property name="currentText">
-            <string>2048</string>
+            <string>1536</string>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>3</number>
            </property>
            <item>
             <property name="text">
              <string>512</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>768</string>
             </property>
            </item>
            <item>
@@ -79,7 +84,17 @@
            </item>
            <item>
             <property name="text">
+             <string>1536</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>2048</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3072</string>
             </property>
            </item>
            <item>

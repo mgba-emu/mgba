@@ -987,20 +987,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 
-	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
-	ConfigOption* buffers = m_config->addOption("audioBuffers");
-	buffers->connect([this](const QVariant& value) {
-		emit audioBufferSamplesChanged(value.toInt());
-	}, this);
-	buffers->addValue(tr("512"), 512, buffersMenu);
-	buffers->addValue(tr("768"), 768, buffersMenu);
-	buffers->addValue(tr("1024"), 1024, buffersMenu);
-	buffers->addValue(tr("2048"), 2048, buffersMenu);
-	buffers->addValue(tr("4096"), 4096, buffersMenu);
-	m_config->updateOption("audioBuffers");
-
-	avMenu->addSeparator();
-
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
 	fpsTargetOption->connect([this](const QVariant& value) {
