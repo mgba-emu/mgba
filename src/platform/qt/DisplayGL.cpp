@@ -244,9 +244,6 @@ void PainterGL::stop() {
 
 void PainterGL::pause() {
 	m_active = false;
-	if (!m_queue.isEmpty()) {
-		QMetaObject::invokeMethod(this, "pause", Qt::QueuedConnection);
-	}
 }
 
 void PainterGL::unpause() {

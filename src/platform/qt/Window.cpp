@@ -100,6 +100,14 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(stateLoaded(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
+	connect(m_controller, &GameController::gamePaused, [this]() {
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
+		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
+		QPixmap pixmap;
+		pixmap.convertFromImage(currentImage.rgbSwapped());
+		m_screenWidget->setPixmap(pixmap);
+		m_screenWidget->setLockAspectRatio(3, 2);
+	});
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), m_display, SLOT(pauseDrawing()));
 #ifndef Q_OS_MAC
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), menuBar(), SLOT(show()));
@@ -827,13 +835,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
 	connect(m_controller, &GameController::gamePaused, [this, pause]() {
 		pause->setChecked(true);
-
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
-		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
-		QPixmap pixmap;
-		pixmap.convertFromImage(currentImage.rgbSwapped());
-		m_screenWidget->setPixmap(pixmap);
-		m_screenWidget->setLockAspectRatio(3, 2);
 	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
@@ -1174,7 +1175,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
-	unsetCursor();
+	m_screenWidget->unsetCursor();
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
 
