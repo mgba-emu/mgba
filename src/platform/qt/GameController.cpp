@@ -114,25 +114,25 @@ GameController::GameController(QObject* parent)
 				vf->truncate(vf, 0);
 			}
 		}
-		controller->gameStarted(context);
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(GBAThread*, context));
 	};
 
 	m_threadContext.cleanCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->gameStopped(context);
+		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(GBAThread*, context));
 	};
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
 			memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-			controller->frameAvailable(controller->m_frontBuffer);
+			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		} else {
-			controller->frameAvailable(nullptr);
+			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, nullptr));
 		}
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
-			controller->gamePaused(&controller->m_threadContext);
+			QMetaObject::invokeMethod(controller, "gamePaused", Q_ARG(GBAThread*, context));
 		}
 	};
 
@@ -161,7 +161,7 @@ GameController::GameController(QObject* parent)
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
 			va_end(argc);
-			controller->unimplementedBiosCall(immediate);
+			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
 		} else if (level == GBA_LOG_STATUS) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
@@ -189,9 +189,9 @@ GameController::GameController(QObject* parent)
 		}
 		QString message(QString().vsprintf(format, args));
 		if (level == GBA_LOG_STATUS) {
-			controller->statusPosted(message);
+			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
-		controller->postLog(level, message);
+		QMetaObject::invokeMethod(controller, "postLog", Q_ARG(int, level), Q_ARG(const QString&, message));
 	};
 
 	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
