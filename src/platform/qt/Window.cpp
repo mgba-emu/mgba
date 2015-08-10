@@ -1122,6 +1122,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setSkipBIOS(value.toBool());
 	}, this);
 
+	ConfigOption* buffers = m_config->addOption("audioBuffers");
+	buffers->connect([this](const QVariant& value) {
+		emit audioBufferSamplesChanged(value.toInt());
+	}, this);
+
+	ConfigOption* sampleRate = m_config->addOption("sampleRate");
+	sampleRate->connect([this](const QVariant& value) {
+		emit sampleRateChanged(value.toUInt());
+	}, this);
+
 	ConfigOption* volume = m_config->addOption("volume");
 	volume->connect([this](const QVariant& value) {
 		m_controller->setVolume(value.toInt());
