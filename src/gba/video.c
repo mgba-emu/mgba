@@ -67,7 +67,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
 	video->nextEvent = video->nextHblank;
-	video->eventDiff = video->nextEvent;
+	video->eventDiff = 0;
 
 	video->nextHblankIRQ = 0;
 	video->nextVblankIRQ = 0;

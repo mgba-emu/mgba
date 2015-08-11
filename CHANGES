@@ -70,6 +70,7 @@ Bugfixes:
  - GBA Video: Prevent tiles < 512 from being used in modes 3 - 5
  - Qt: Fix passing command line options
  - Qt: Fix crashes on Windows by using using QMetaObject to do cross-thread calls
+ - GBA Video: Fix timing on first scanline
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
