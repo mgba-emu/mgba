@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+
+# Copyright (C) 2015 Sergio Benjamim
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+ARCH=$(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+ifeq ($(ARCH),armhf)
+	ARM=-DBUILD_GL=OFF -DBUILD_GLES2=ON
+endif
+
+%:
+	dh $@ --buildsystem=cmake --builddirectory=obj --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_SKIP_RPATH=ON -DBUILD_LIBRETRO=ON $(ARM)
+	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' \
+		debian/libretro-mgba.install.in > debian/libretro-mgba.install
+	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' \
+		debian/libmgba.install.in > debian/libmgba.install
+
+override_dh_installchangelogs:
+	dh_installchangelogs -k CHANGES
