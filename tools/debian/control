@@ -20,7 +20,7 @@ Build-Depends: cmake (>= 2.8.11),
                qtmultimedia5-dev,
                zlib1g-dev
 Standards-Version: 3.9.6
-Homepage: https://endrift.com/mgba/
+Homepage: http://mgba.io/
 
 Package: libmgba
 Architecture: any
