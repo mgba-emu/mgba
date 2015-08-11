@@ -34,7 +34,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
+#ifndef Q_OS_MAC
 	setWindowIcon(QIcon(":/res/mgba-1024.png"));
+#endif
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
