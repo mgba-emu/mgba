@@ -26,6 +26,7 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	, m_currentFocus(controller->stateSlot() - 1)
 	, m_mode(LoadSave::LOAD)
 {
+	setAttribute(Qt::WA_TranslucentBackground);
 	m_ui.setupUi(this);
 
 	m_slots[0] = m_ui.state1;
@@ -208,6 +209,5 @@ void LoadSaveState::showEvent(QShowEvent* event) {
 void LoadSaveState::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	QRect full(QPoint(), size());
-	painter.drawPixmap(full, m_currentImage);
 	painter.fillRect(full, QColor(0, 0, 0, 128));
 }

@@ -685,7 +685,7 @@ void Window::openStateWindow(LoadSave ls) {
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(close()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_stateWindow, SLOT(close()));
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
-		m_screenWidget->layout()->removeWidget(m_stateWindow);
+		detachWidget(m_stateWindow);
 		m_stateWindow = nullptr;
 		QMetaObject::invokeMethod(this, "setFocus", Qt::QueuedConnection);
 	});
