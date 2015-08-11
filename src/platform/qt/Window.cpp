@@ -102,9 +102,9 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, &GameController::gamePaused, [this]() {
 		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
-		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
+		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGBX8888);
 		QPixmap pixmap;
-		pixmap.convertFromImage(currentImage.rgbSwapped());
+		pixmap.convertFromImage(currentImage);
 		m_screenWidget->setPixmap(pixmap);
 		m_screenWidget->setLockAspectRatio(3, 2);
 	});
