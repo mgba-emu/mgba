@@ -118,6 +118,7 @@ Misc:
  - Qt: Increase usability of key mapper
  - Qt: Show checkmark for window sizes
  - Qt: Set window path to loaded ROM
+ - GBA Memory: Run multiple DMAs in a tight loop if they all occur before present
 
 0.2.1: (2015-05-13)
 Bugfixes:
