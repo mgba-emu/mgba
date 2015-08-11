@@ -71,6 +71,7 @@ Bugfixes:
  - Qt: Fix passing command line options
  - Qt: Fix crashes on Windows by using using QMetaObject to do cross-thread calls
  - GBA Video: Fix timing on first scanline
+ - GBA: Ensure cycles never go negative
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

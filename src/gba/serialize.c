@@ -87,6 +87,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
+	if (state->cpu.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: Next event is negative");
+		error = true;
+	}
 	if (state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;

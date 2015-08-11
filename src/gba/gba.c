@@ -184,6 +184,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		int32_t cycles = cpu->nextEvent;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
+#ifndef NDEBUG
+		if (cycles < 0) {
+			GBALog(gba, GBA_LOG_FATAL, "Negative cycles passed: %i", cycles);
+		}
+#endif
 
 		gba->bus = cpu->prefetch[1];
 		if (cpu->executionMode == MODE_THUMB) {
