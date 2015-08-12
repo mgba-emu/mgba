@@ -44,13 +44,17 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (e.g. Release or Debug)" FORCE)
 endif()
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
+
+include(GNUInstallDirs)
+
 if (NOT DEFINED LIBDIR)
 	set(LIBDIR "lib")
 endif()
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
-
-include(GNUInstallDirs)
+if (NOT DEFINED MANDIR)
+	set(MANDIR ${CMAKE_INSTALL_MANDIR})
+endif()
 
 # Function definitions
 include(FindPkgConfig)

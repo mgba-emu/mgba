@@ -167,7 +167,7 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 	audio->nextEvent -= cycles;
 	audio->eventDiff += cycles;
-	if (audio->nextEvent <= 0) {
+	while (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
 		if (audio->enable) {
 			if (audio->playingCh1 && !audio->ch1.envelope.dead) {

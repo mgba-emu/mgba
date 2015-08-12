@@ -119,6 +119,7 @@ public slots:
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
+	void setAudioSampleRate(unsigned rate);
 	void setAudioChannelEnabled(int channel, bool enable = true);
 	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);

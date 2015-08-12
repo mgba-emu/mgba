@@ -247,6 +247,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	if (_lookupUIntValue(config, "audioBuffers", &audioBuffers)) {
 		opts->audioBuffers = audioBuffers;
 	}
+	_lookupUIntValue(config, "sampleRate", &opts->sampleRate);
 
 	int fakeBool;
 	if (_lookupIntValue(config, "useBios", &fakeBool)) {
@@ -305,6 +306,7 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferInterval", opts->rewindBufferInterval);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "audioBuffers", opts->audioBuffers);
+	ConfigurationSetUIntValue(&config->defaultsTable, 0, "sampleRate", opts->sampleRate);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "audioSync", opts->audioSync);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "videoSync", opts->videoSync);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "fullscreen", opts->fullscreen);

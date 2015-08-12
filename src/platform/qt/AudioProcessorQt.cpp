@@ -20,6 +20,7 @@ AudioProcessorQt::AudioProcessorQt(QObject* parent)
 	: AudioProcessor(parent)
 	, m_audioOutput(nullptr)
 	, m_device(nullptr)
+	, m_sampleRate(44100)
 {
 }
 
@@ -45,7 +46,7 @@ void AudioProcessorQt::start() {
 
 	if (!m_audioOutput) {
 		QAudioFormat format;
-		format.setSampleRate(44100);
+		format.setSampleRate(m_sampleRate);
 		format.setChannelCount(2);
 		format.setSampleSize(16);
 		format.setCodec("audio/pcm");
@@ -81,6 +82,15 @@ void AudioProcessorQt::setBufferSamples(int samples) {
 void AudioProcessorQt::inputParametersChanged() {
 	if (m_device) {
 		m_device->setFormat(m_audioOutput->format());
+	}
+}
+
+void AudioProcessorQt::requestSampleRate(unsigned rate) {
+	m_sampleRate = rate;
+	if (m_device) {
+		QAudioFormat format(m_audioOutput->format());
+		format.setSampleRate(rate);
+		m_device->setFormat(format);
 	}
 }
 

@@ -6,7 +6,7 @@
 #ifndef QGBA_GDB_WINDOW
 #define QGBA_GDB_WINDOW
 
-#include <QWidget>
+#include <QDialog>
 
 class QLineEdit;
 class QPushButton;
@@ -15,7 +15,7 @@ namespace QGBA {
 
 class GDBController;
 
-class GDBWindow : public QWidget {
+class GDBWindow : public QDialog {
 Q_OBJECT
 
 public:

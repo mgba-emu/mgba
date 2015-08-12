@@ -87,7 +87,9 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->m_audioProcessor->setInput(context);
+		if (controller->m_audioProcessor) {
+			controller->m_audioProcessor->setInput(context);
+		}
 		context->gba->luminanceSource = &controller->m_lux;
 		GBARTCGenericSourceInit(&controller->m_rtc, context->gba);
 		context->gba->rtcSource = &controller->m_rtc.d;
@@ -112,25 +114,25 @@ GameController::GameController(QObject* parent)
 				vf->truncate(vf, 0);
 			}
 		}
-		controller->gameStarted(context);
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(GBAThread*, context));
 	};
 
 	m_threadContext.cleanCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		controller->gameStopped(context);
+		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(GBAThread*, context));
 	};
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
 			memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-			controller->frameAvailable(controller->m_frontBuffer);
+			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		} else {
-			controller->frameAvailable(nullptr);
+			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, nullptr));
 		}
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
-			controller->gamePaused(&controller->m_threadContext);
+			QMetaObject::invokeMethod(controller, "gamePaused", Q_ARG(GBAThread*, context));
 		}
 	};
 
@@ -159,7 +161,7 @@ GameController::GameController(QObject* parent)
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
 			va_end(argc);
-			controller->unimplementedBiosCall(immediate);
+			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
 		} else if (level == GBA_LOG_STATUS) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
@@ -187,9 +189,9 @@ GameController::GameController(QObject* parent)
 		}
 		QString message(QString().vsprintf(format, args));
 		if (level == GBA_LOG_STATUS) {
-			controller->statusPosted(message);
+			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
-		controller->postLog(level, message);
+		QMetaObject::invokeMethod(controller, "postLog", Q_ARG(int, level), Q_ARG(const QString&, message));
 	};
 
 	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
@@ -533,9 +535,9 @@ void GameController::startRewinding() {
 		return;
 	}
 	m_wasPaused = isPaused();
-	bool signalsBlocked = blockSignals(true);
-	setPaused(true);
-	blockSignals(signalsBlocked);
+	if (!GBAThreadIsPaused(&m_threadContext)) {
+		GBAThreadPause(&m_threadContext);
+	}
 	m_rewindTimer.start();
 }
 
@@ -588,10 +590,21 @@ void GameController::clearKeys() {
 }
 
 void GameController::setAudioBufferSamples(int samples) {
-	threadInterrupt();
-	redoSamples(samples);
-	threadContinue();
-	QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+	if (m_audioProcessor) {
+		threadInterrupt();
+		redoSamples(samples);
+		threadContinue();
+		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+	}
+}
+
+void GameController::setAudioSampleRate(unsigned rate) {
+	if (m_audioProcessor) {
+		threadInterrupt();
+		redoSamples(m_audioProcessor->getBufferSamples());
+		threadContinue();
+		QMetaObject::invokeMethod(m_audioProcessor, "requestSampleRate", Q_ARG(unsigned, rate));
+	}
 }
 
 void GameController::setAudioChannelEnabled(int channel, bool enable) {
@@ -644,7 +657,9 @@ void GameController::setFPSTarget(float fps) {
 	if (m_turbo && m_turboSpeed > 0) {
 		m_threadContext.fpsTarget *= m_turboSpeed;
 	}
-	redoSamples(m_audioProcessor->getBufferSamples());
+	if (m_audioProcessor) {
+		redoSamples(m_audioProcessor->getBufferSamples());
+	}
 	threadContinue();
 }
 
@@ -801,7 +816,9 @@ void GameController::enableTurbo() {
 		m_threadContext.sync.audioWait = true;
 		m_threadContext.sync.videoFrameWait = false;
 	}
-	redoSamples(m_audioProcessor->getBufferSamples());
+	if (m_audioProcessor) {
+		redoSamples(m_audioProcessor->getBufferSamples());
+	}
 	threadContinue();
 }
 
@@ -830,11 +847,21 @@ void GameController::screenshot() {
 #endif
 
 void GameController::reloadAudioDriver() {
-	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
-	int samples = m_audioProcessor->getBufferSamples();
-	delete m_audioProcessor;
+	int samples = 0;
+	unsigned sampleRate = 0;
+	if (m_audioProcessor) {
+		QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
+		samples = m_audioProcessor->getBufferSamples();
+		sampleRate = m_audioProcessor->sampleRate();
+		delete m_audioProcessor;
+	}
 	m_audioProcessor = AudioProcessor::create();
-	m_audioProcessor->setBufferSamples(samples);
+	if (samples) {
+		m_audioProcessor->setBufferSamples(samples);
+	}
+	if (sampleRate) {
+		m_audioProcessor->requestSampleRate(sampleRate);
+	}
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));

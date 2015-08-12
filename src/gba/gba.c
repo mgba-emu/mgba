@@ -184,6 +184,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		int32_t cycles = cpu->nextEvent;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
+#ifndef NDEBUG
+		if (cycles < 0) {
+			GBALog(gba, GBA_LOG_FATAL, "Negative cycles passed: %i", cycles);
+		}
+#endif
 
 		gba->bus = cpu->prefetch[1];
 		if (cpu->executionMode == MODE_THUMB) {
@@ -239,7 +244,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			if (timer->nextEvent <= 0) {
+			while (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
