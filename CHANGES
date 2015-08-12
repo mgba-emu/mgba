@@ -122,6 +122,7 @@ Misc:
  - Qt: Set window path to loaded ROM
  - GBA Memory: Run multiple DMAs in a tight loop if they all occur before present
  - GBA Audio: Process multiple audio events at once, if necessary
+ - GBA: Process multiple timer events at once, if necessary
 
 0.2.1: (2015-05-13)
 Bugfixes:

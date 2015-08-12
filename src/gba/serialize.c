@@ -103,6 +103,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
 		error = true;
 	}
+	if (state->timers[0].nextEvent < 0 || state->timers[1].nextEvent < 0 || state->timers[2].nextEvent < 0 || state->timers[3].nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: timer nextEvent is negative");
+		error = true;
+	}
 	if (state->audio.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
 		error = true;

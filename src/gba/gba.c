@@ -244,7 +244,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		if (timer->enable) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
-			if (timer->nextEvent <= 0) {
+			while (timer->nextEvent <= 0) {
 				timer->lastEvent = timer->nextEvent;
 				timer->nextEvent += timer->overflowInterval;
 				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
