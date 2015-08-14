@@ -22,6 +22,8 @@ public:
 	AudioProcessorSDL(QObject* parent = nullptr);
 	~AudioProcessorSDL();
 
+	virtual unsigned sampleRate() const override;
+
 public slots:
 	virtual void start();
 	virtual void pause();
@@ -29,7 +31,7 @@ public slots:
 	virtual void setBufferSamples(int samples);
 	virtual void inputParametersChanged();
 
-	virtual unsigned sampleRate() const override;
+	virtual void requestSampleRate(unsigned) override;
 
 private:
 	GBASDLAudio m_audio;

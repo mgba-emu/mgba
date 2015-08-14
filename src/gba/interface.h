@@ -79,6 +79,8 @@ struct GBARotationSource {
 	int32_t (*readGyroZ)(struct GBARotationSource*);
 };
 
+extern const int GBA_LUX_LEVELS[10];
+
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);
 

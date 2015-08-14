@@ -87,12 +87,10 @@ signals:
 public slots:
 	void testGamepad(int type);
 
-#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 	// TODO: Move these to somewhere that makes sense
 	void suspendScreensaver();
 	void resumeScreensaver();
 	void setScreensaverSuspendable(bool);
-#endif
 
 private:
 	void postPendingEvent(GBAKey);

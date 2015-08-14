@@ -18,7 +18,9 @@ static const char* ERROR_OVERFLOW = "Arguments overflow";
 
 static struct CLIDebugger* _activeDebugger;
 
+#ifndef NDEBUG
 static void _breakInto(struct CLIDebugger*, struct CLIDebugVector*);
+#endif
 static void _continue(struct CLIDebugger*, struct CLIDebugVector*);
 static void _disassemble(struct CLIDebugger*, struct CLIDebugVector*);
 static void _disassembleArm(struct CLIDebugger*, struct CLIDebugVector*);
@@ -56,6 +58,8 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "b/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
 	{ "b/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "break", _setBreakpoint, CLIDVParse, "Set a breakpoint" },
+	{ "break/a", _setBreakpointARM, CLIDVParse, "Set a software breakpoint as ARM" },
+	{ "break/t", _setBreakpointThumb, CLIDVParse, "Set a software breakpoint as Thumb" },
 	{ "c", _continue, 0, "Continue execution" },
 	{ "continue", _continue, 0, "Continue execution" },
 	{ "d", _clearBreakpoint, CLIDVParse, "Delete a breakpoint" },
@@ -97,7 +101,9 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "x/1", _dumpByte, CLIDVParse, "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, CLIDVParse, "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, CLIDVParse, "Examine words at a specified offset" },
+#ifndef NDEBUG
 	{ "!", _breakInto, 0, "Break into attached debugger (for developers)" },
+#endif
 	{ 0, 0, 0, 0 }
 };
 
@@ -112,6 +118,7 @@ static inline void _printPSR(union PSR psr) {
 	    psr.t ? 'T' : '-');
 }
 
+#ifndef NDEBUG
 static void _handleDeath(int sig) {
 	UNUSED(sig);
 	printf("No debugger attached!\n");
@@ -133,6 +140,7 @@ static void _breakInto(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 #endif
 	sigaction(SIGTRAP, &osa, 0);
 }
+#endif
 
 static void _continue(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);

@@ -72,6 +72,8 @@ public:
 
 	void setOptions(const GBAOptions*);
 
+	int stateSlot() const { return m_stateSlot; }
+
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
 	void setDebugger(ARMDebugger*);
@@ -117,6 +119,9 @@ public slots:
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
+	void setAudioSampleRate(unsigned rate);
+	void setAudioChannelEnabled(int channel, bool enable = true);
+	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
@@ -163,6 +168,7 @@ private:
 	void enableTurbo();
 
 	uint32_t* m_drawContext;
+	uint32_t* m_frontBuffer;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
@@ -193,6 +199,9 @@ private:
 	QTimer m_rewindTimer;
 	bool m_wasPaused;
 
+	bool m_audioChannels[6];
+	bool m_videoLayers[5];
+
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;
 	QByteArray m_backupSaveState;
@@ -206,8 +215,6 @@ private:
 	} m_lux;
 	uint8_t m_luxValue;
 	int m_luxLevel;
-
-	static const int LUX_LEVELS[10];
 
 	GBARTCGenericSource m_rtc;
 };

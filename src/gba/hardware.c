@@ -9,6 +9,8 @@
 #include "gba/serialize.h"
 #include "util/hash.h"
 
+const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
+
 static void _readPins(struct GBACartridgeHardware* hw);
 static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
@@ -610,6 +612,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->readWrite = state->hw.readWrite;
 	hw->pinState = state->hw.pinState;
 	hw->direction = state->hw.pinDirection;
+	hw->devices = state->hw.devices;
 	hw->rtc = state->hw.rtc;
 	hw->gyroSample = state->hw.gyroSample;
 	hw->gyroEdge = state->hw.gyroEdge;
@@ -622,4 +625,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->gbpInputsPosted = state->hw.gbpInputsPosted;
 	hw->gbpTxPosition = state->hw.gbpTxPosition;
 	hw->gbpNextEvent = state->hw.gbpNextEvent;
+	if (hw->devices & HW_GB_PLAYER) {
+		GBASIOSetDriver(&hw->p->sio, &hw->gbpDriver.d, SIO_NORMAL_32);
+	}
 }

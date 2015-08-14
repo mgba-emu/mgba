@@ -208,9 +208,11 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 
 GBARumble* InputController::rumble() {
 #ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	if (m_playerAttached) {
 		return &m_sdlPlayer.rumble.d;
 	}
+#endif
 #endif
 	return nullptr;
 }
@@ -497,19 +499,29 @@ bool InputController::hasPendingEvent(GBAKey key) const {
 	return m_pendingEvents.contains(key);
 }
 
-#if defined(BUILD_SDL) && SDL_VERSION_ATLEAST(2, 0, 0)
 void InputController::suspendScreensaver() {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	GBASDLSuspendScreensaver(&s_sdlEvents);
+#endif
+#endif
 }
 
 void InputController::resumeScreensaver() {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	GBASDLResumeScreensaver(&s_sdlEvents);
+#endif
+#endif
 }
 
 void InputController::setScreensaverSuspendable(bool suspendable) {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	GBASDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
-}
 #endif
+#endif
+}
 
 void InputController::stealFocus(QWidget* focus) {
 	m_focusParent = focus;

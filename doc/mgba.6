@@ -1,0 +1,259 @@
+.\" Copyright (c) 2015 Anthony J. Bentley <anthony@anjbe.name>
+.\"
+.\" This Source Code Form is subject to the terms of the Mozilla Public
+.\" License, v. 2.0. If a copy of the MPL was not distributed with this
+.\" file, you can obtain one at https://mozilla.org/MPL/2.0/.
+.Dd July 29, 2015
+.Dt MGBA 6
+.Os
+.Sh NAME
+.Nm mgba
+.Nd Game Boy Advance emulator
+.Sh SYNOPSIS
+.Nm mgba
+.Op Fl 123456dfg
+.Op Fl b Ar biosfile
+.Op Fl c Ar cheatfile
+.Op Fl l Ar loglevel
+.Op Fl p Ar patchfile
+.Op Fl s Ar n
+.Op Fl v Ar moviefile
+.Ar file
+.Sh DESCRIPTION
+.Nm
+is a Game Boy Advance emulator.
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl 1
+Scale the window 1\(mu.
+.It Fl 2
+Scale the window 2\(mu.
+.It Fl 3
+Scale the window 3\(mu.
+.It Fl 4
+Scale the window 4\(mu.
+.It Fl 5
+Scale the window 5\(mu.
+.It Fl 6
+Scale the window 6\(mu.
+.It Fl b Ar biosfile , Fl -bios Ar biosfile
+Specify a BIOS file to use during boot.
+If this flag is omitted,
+.Nm
+will use the BIOS specified in the configuration file,
+or a high\(hylevel emulated BIOS if none is specified.
+.It Fl c Ar cheatfile , Fl -cheats Ar cheatfile
+Apply cheat codes from
+.Ar cheatfile .
+.It Fl d
+Start emulating via the command\(hyline debugger.
+.It Fl f
+Start the emulator full\(hyscreen.
+.It Fl g
+Start a
+.Xr gdb 1
+session.
+By default the session starts on port 2345.
+.It Fl l Ar loglevel
+Log messages during emulation to
+.Dv stdout .
+.Ar loglevel
+is a bitmask defining which types of messages to log:
+.Bl -bullet -compact
+.It
+1 \(en fatal errors
+.It
+2 \(en errors
+.It
+4 \(en warnings
+.It
+8 \(en informative messages
+.It
+16 \(en debugging messages
+.It
+32 \(en stub messages for unimplemented features
+.It
+256 \(en in\(hygame errors
+.It
+512 \(en software interrupts
+.It
+1024 \(en emulator status messages
+.It
+2048 \(en serial I/O messages
+.El
+The default is to log warnings, errors, fatal errors, and status messages.
+.It Fl p Ar patchfile , Fl -patch Ar patchfile
+Specify a patch file in BPS, IPS, or UPS format.
+.It Fl s Ar n , Fl -frameskip Ar n
+Skip every
+.Ar n
+frames.
+.It Fl v Ar moviefile , Fl -movie Ar moviefile
+Play back a movie of recording input from
+.Ar moviefile .
+.El
+.Sh CONTROLS
+The default controls are as follows:
+.Bl -hang -width "Frame advance" -compact
+.It A
+.Cm x
+.It B
+.Cm z
+.It L
+.Cm a
+.It R
+.Cm s
+.It Start
+.Aq Cm Enter
+.It Select
+.Aq Cm Backspace
+.It Load state
+.Cm F1 Ns \(en Ns Cm F9
+.It Save state
+.Ao Cm Shift Ac Ns \(hy Ns Cm F1 Ns \(en Ns Cm F9
+.It Frame advance
+.Ao Cm Ctrl Ac Ns \(hy Ns Cm n
+.El
+.Sh DEBUGGER
+When
+.Nm
+is run with the
+.Fl d
+option, the command\(hyline debugger is enabled.
+It supports the following commands:
+.Pp
+.Bl -tag -compact -width 1
+.It Cm b Ns Oo Cm reak Oc Ar address
+.It Cm b Ns Oo Cm reak Oc Ns Cm /a Ar address
+.It Cm b Ns Oo Cm reak Oc Ns Cm /t Ar address
+Set a breakpoint \(en ARM
+.Pq Ql /a ,
+Thumb
+.Pq Ql /t ,
+or the current CPU mode \(en at
+.Ar address .
+.It Cm c Ns Op Cm ontinue
+Continue execution.
+.It Cm d Ns Oo Cm elete Oc Ar address
+Delete a breakpoint at
+.Ar address .
+.It Cm dis Ns Oo Cm asm Oc Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /a Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm asm Oc Ns Cm /t Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /a Op Ar address Op Ar count
+.It Cm dis Ns Oo Cm assemble Oc Ns Cm /t Op Ar address Op Ar count
+Disassemble
+.Ar count
+instructions starting at
+.Ar address ,
+as ARM
+.Pq Ql /a ,
+Thumb
+.Pq Ql /t ,
+or the current CPU mode.
+If
+.Ar count
+is not specified, only disassemble the instruction at
+.Ar address .
+If
+.Ar address
+is not specified, only disassemble the current address.
+.It Cm h Ns Op Cm elp
+Print help.
+.It Cm i Ns Op Cm nfo
+.It Cm status
+Print the current contents of general\(hypurpose registers and the current
+program state register, and disassemble the current instruction.
+.It Cm n Ns Op Cm ext
+Execute the next instruction.
+.It Cm p Ns Oo Cm rint Oc Ar value ...
+.It Cm p Ns Oo Cm rint Oc Ns Cm /t Ar value ...
+.It Cm p Ns Oo Cm rint Oc Ns Cm /x Ar value ...
+Print one or more
+.Ar value Ns s
+as binary
+.Pq Ql /t ,
+hexadecimal
+.Pq Ql /x ,
+or decimal.
+.It Cm q Ns Op Cm uit
+Quit the emulator.
+.It Cm reset
+Reset the emulation.
+.It Cm r/1 Ar address
+.It Cm r/2 Ar address
+.It Cm r/4 Ar address
+Read a byte
+.Pq Ql /1 ,
+halfword
+.Pq Ql /2 ,
+or word
+.Pq Ql /4
+from
+.Ar address .
+.It Cm w Ns Oo Cm atch Oc Ar address
+Set a watchpoint at
+.Ar address .
+.It Cm w/1 Ar address data
+.It Cm w/2 Ar address data
+.It Cm w/4 Ar address data
+Write
+.Ar data
+as a byte
+.Pq Ql /1 ,
+halfword
+.Pq Ql /2 ,
+or word
+.Pq Ql /4
+to
+.Ar address .
+.It Cm w/r Ar register data
+Write
+.Ar data
+as a word to
+.Ar register .
+.It Cm x/1 Ar address Op Ar count
+.It Cm x/2 Ar address Op Ar count
+.It Cm x/4 Ar address Op Ar count
+Examine
+.Ar count
+bytes
+.Pq Ql /1 ,
+halfwords
+.Pq Ql /2 ,
+or words
+.Pq Ql /4
+from
+.Ar address .
+If
+.Ar count
+is not specified, examine 16 bytes, 8 halfwords, or 4 words.
+.El
+.Sh FILES
+.Bl -tag -width ~/.config/mgba/config.ini -compact
+.It Pa ~/.config/mgba/config.ini
+Default
+.Nm
+configuration file.
+.It Pa portable.ini
+If this file exists in the current directory,
+.Nm
+will read
+.Pa config.ini
+from the current directory instead of
+.Pa ~/.config/mgba .
+.El
+.Sh AUTHORS
+.An Jeffrey Pfau Aq Mt jeffrey@endrift.com
+.Sh HOMEPAGE
+.Bl -bullet
+.It
+.Lk https://mgba.io/ "mGBA homepage"
+.It
+.Lk https://github.com/mgba-emu/mgba "Development repository"
+.It
+.Lk https://github.com/mgba-emu/mgba/issues "Bug tracker"
+.It
+.Lk https://forums.mgba.io/ "Message board"
+.El

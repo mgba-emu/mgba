@@ -278,9 +278,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
-		if (!gba->yankedRomSize) {
-			GBALog(gba, GBA_LOG_FATAL, "Jumped to invalid address");
+		enum GBALogLevel errorLevel = GBA_LOG_FATAL;
+		if (gba->yankedRomSize || !gba->hardCrash) {
+			errorLevel = GBA_LOG_GAME_ERROR;
 		}
+		GBALog(gba, errorLevel, "Jumped to invalid address: %08X", address);
 		return;
 	}
 	cpu->memory.activeSeqCycles32 = memory->waitstatesSeq32[memory->activeRegion];
@@ -634,8 +636,12 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 #define STORE_VRAM \
 	if ((address & 0x0001FFFF) < SIZE_VRAM) { \
 		STORE_32(value, address & 0x0001FFFC, gba->video.renderer->vram); \
+		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC) + 2); \
+		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC)); \
 	} else { \
 		STORE_32(value, address & 0x00017FFC, gba->video.renderer->vram); \
+		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC) + 2); \
+		gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC)); \
 	} \
 	wait += waitstatesRegion[REGION_VRAM];
 
@@ -728,8 +734,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
 			STORE_16(value, address & 0x0001FFFE, gba->video.renderer->vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		} else {
 			STORE_16(value, address & 0x00017FFE, gba->video.renderer->vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x00017FFE);
 		}
 		break;
 	case REGION_OAM:
@@ -794,8 +802,8 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
 			break;
 		}
-		((int8_t*) gba->video.renderer->vram)[address & 0x1FFFE] = value;
-		((int8_t*) gba->video.renderer->vram)[(address & 0x1FFFE) | 1] = value;
+		gba->video.renderer->vram[(address & 0x1FFFE) >> 1] = ((uint8_t) value) | (value << 8);
+		gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		break;
 	case REGION_OAM:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
@@ -1397,7 +1405,7 @@ int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles) {
 	}
 	memory->nextDMA -= cycles;
 	memory->eventDiff += cycles;
-	if (memory->nextDMA <= 0) {
+	while (memory->nextDMA <= 0) {
 		struct GBADMA* dma = &memory->dma[memory->activeDMA];
 		GBAMemoryServiceDMA(gba, memory->activeDMA, dma);
 		GBAMemoryUpdateDMAs(gba, memory->eventDiff);

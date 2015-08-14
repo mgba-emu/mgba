@@ -15,11 +15,13 @@ using namespace QGBA;
 
 DisplayQt::DisplayQt(QWidget* parent)
 	: Display(parent)
+	, m_isDrawing(false)
 	, m_backing(nullptr)
 {
 }
 
 void DisplayQt::startDrawing(GBAThread*) {
+	m_isDrawing = true;
 }
 
 void DisplayQt::lockAspectRatio(bool lock) {

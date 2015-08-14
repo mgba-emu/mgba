@@ -22,7 +22,7 @@ Display::Driver Display::s_driver = Display::Driver::QT;
 
 Display* Display::create(QWidget* parent) {
 #ifdef BUILD_GL
-	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
+	QGLFormat format(QGLFormat(QGL::Rgba | QGL::SingleBuffer));
 	format.setSwapInterval(1);
 #endif
 
@@ -72,6 +72,9 @@ void Display::filter(bool filter) {
 
 void Display::showMessage(const QString& message) {
 	m_messagePainter.showMessage(message);
+	if (!isDrawing()) {
+		forceDraw();
+	}
 }
 
 void Display::mouseMoveEvent(QMouseEvent*) {
