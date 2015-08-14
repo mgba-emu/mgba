@@ -1405,7 +1405,7 @@ int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles) {
 	}
 	memory->nextDMA -= cycles;
 	memory->eventDiff += cycles;
-	if (memory->nextDMA <= 0) {
+	while (memory->nextDMA <= 0) {
 		struct GBADMA* dma = &memory->dma[memory->activeDMA];
 		GBAMemoryServiceDMA(gba, memory->activeDMA, dma);
 		GBAMemoryUpdateDMAs(gba, memory->eventDiff);

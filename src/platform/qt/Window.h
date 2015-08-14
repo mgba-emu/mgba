@@ -54,6 +54,7 @@ signals:
 	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
+	void sampleRateChanged(unsigned samples);
 	void fpsTargetChanged(float target);
 
 public slots:

@@ -112,6 +112,10 @@ int main(int argc, char** argv) {
 	bool didFail = false;
 
 	renderer.audio.samples = context.audioBuffers;
+	renderer.audio.sampleRate = 44100;
+	if (opts.sampleRate) {
+		renderer.audio.sampleRate = opts.sampleRate;
+	}
 	if (!GBASDLInitAudio(&renderer.audio, &context)) {
 		didFail = true;
 	}

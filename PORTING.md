@@ -30,13 +30,12 @@ The ports are vaguely usable, but by no means should be considered stable.
 
 ### PS Vita (port/psp2)
 * Add menu
-* Add audio
+* Fix audio
 * Make it faster
 	* Threaded renderer shim
 	* Hardware acceleration
 
 ### Wii (port/wii)
 * Add menu
-* Add audio
 * Thread support
 * Clean up video detection
