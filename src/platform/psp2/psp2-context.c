@@ -257,3 +257,8 @@ void GBAPSP2Draw(void) {
 		vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
 	}
 }
+
+__attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {
+	printf("ASSERT FAILED: %s in %s at %s:%i\n", expr, func, file, line);
+	exit(1);
+}
