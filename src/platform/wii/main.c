@@ -231,6 +231,20 @@ int main() {
 		if (padkeys & PAD_BUTTON_DOWN) {
 			keys |= 1 << GBA_KEY_DOWN;
 		}
+		int x = PAD_StickX(0);
+		int y = PAD_StickY(0);
+		if (x < -0x40) {
+			keys |= 1 << GBA_KEY_LEFT;
+		}
+		if (x > 0x40) {
+			keys |= 1 << GBA_KEY_RIGHT;
+		}
+		if (y < -0x40) {
+			keys |= 1 << GBA_KEY_DOWN;
+		}
+		if (y > 0x40) {
+			keys |= 1 << GBA_KEY_UP;
+		}
 		if (padkeys & PAD_TRIGGER_Z) {
 			break;
 		}
