@@ -164,14 +164,14 @@ int main() {
 #endif
 
 	char path[256];
-	guOrtho(proj, 0, 240, 0, 400, 0, 300);
+	guOrtho(proj, -20, 220, 0, 400, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	struct GUIParams params = {
-		400, 240,
+		400, 230,
 		font, _drawStart, _drawEnd, _pollInput
 	};
-	if (!selectFile(&params, "sd:", path, sizeof(path), "gba") || !GBAWiiLoadGame(path)) {
+	if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAWiiLoadGame(path)) {
 		free(renderer.outputBuffer);
 		GUIFontDestroy(font);
 		return 1;
