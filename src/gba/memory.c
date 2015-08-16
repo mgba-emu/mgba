@@ -446,8 +446,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			LOAD_BAD;
-			uint32_t v2 = value;
-			LOAD_16(value, address & 2, &v2);
+			value = (value >> ((address & 2) * 8)) & 0xFFFF;
 		}
 		break;
 	case REGION_WORKING_RAM:
@@ -506,8 +505,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 		LOAD_BAD;
-		uint32_t v2 = value;
-		LOAD_16(value, address & 2, &v2);
+		value = (value >> ((address & 2) * 8)) & 0xFFFF;
 		break;
 	}
 
@@ -1405,7 +1403,7 @@ int32_t GBAMemoryRunDMAs(struct GBA* gba, int32_t cycles) {
 	}
 	memory->nextDMA -= cycles;
 	memory->eventDiff += cycles;
-	if (memory->nextDMA <= 0) {
+	while (memory->nextDMA <= 0) {
 		struct GBADMA* dma = &memory->dma[memory->activeDMA];
 		GBAMemoryServiceDMA(gba, memory->activeDMA, dma);
 		GBAMemoryUpdateDMAs(gba, memory->eventDiff);

@@ -13,7 +13,7 @@ using namespace QGBA;
 SavestateButton::SavestateButton(QWidget* parent)
 	: QAbstractButton(parent)
 {
-	// Nothing to do
+	setAttribute(Qt::WA_TranslucentBackground);
 }
 
 void SavestateButton::paintEvent(QPaintEvent*) {

@@ -7,7 +7,7 @@
 #define QGBA_SENSOR_VIEW
 
 #include <QTimer>
-#include <QWidget>
+#include <QDialog>
 
 #include <functional>
 
@@ -22,7 +22,7 @@ class GameController;
 class GamepadAxisEvent;
 class InputController;
 
-class SensorView : public QWidget {
+class SensorView : public QDialog {
 Q_OBJECT
 
 public:

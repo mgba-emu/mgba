@@ -30,6 +30,8 @@ Features:
  - Libretro now supports BIOS, rumble and solar sensor
  - Implement BIOS call Stop, for sleep mode
  - Automatically load patches, if found
+ - Improved video synchronization
+ - Configurable audio output sample rate
 Bugfixes:
  - ARM7: Fix SWI and IRQ timings
  - GBA Audio: Force audio FIFOs to 32-bit
@@ -67,6 +69,10 @@ Bugfixes:
  - Qt: Fix analog buttons not getting unmapped
  - GBA Video: Prevent tiles < 512 from being used in modes 3 - 5
  - Qt: Fix passing command line options
+ - Qt: Fix crashes on Windows by using using QMetaObject to do cross-thread calls
+ - GBA Video: Fix timing on first scanline
+ - GBA: Ensure cycles never go negative
+ - Util: Fix formatting of floats
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints
@@ -115,6 +121,9 @@ Misc:
  - Qt: Increase usability of key mapper
  - Qt: Show checkmark for window sizes
  - Qt: Set window path to loaded ROM
+ - GBA Memory: Run multiple DMAs in a tight loop if they all occur before present
+ - GBA Audio: Process multiple audio events at once, if necessary
+ - GBA: Process multiple timer events at once, if necessary
 
 0.2.1: (2015-05-13)
 Bugfixes:
