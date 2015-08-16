@@ -6,7 +6,7 @@
 #ifndef QGBA_SETTINGS_VIEW
 #define QGBA_SETTINGS_VIEW
 
-#include <QWidget>
+#include <QDialog>
 
 #include "ui_SettingsView.h"
 
@@ -14,7 +14,7 @@ namespace QGBA {
 
 class ConfigController;
 
-class SettingsView : public QWidget {
+class SettingsView : public QDialog {
 Q_OBJECT
 
 public:

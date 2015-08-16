@@ -87,6 +87,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
+	if (state->cpu.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: Next event is negative");
+		error = true;
+	}
 	if (state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
@@ -97,6 +101,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
+		error = true;
+	}
+	if (state->timers[0].nextEvent < 0 || state->timers[1].nextEvent < 0 || state->timers[2].nextEvent < 0 || state->timers[3].nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: timer nextEvent is negative");
 		error = true;
 	}
 	if (state->audio.eventDiff < 0) {

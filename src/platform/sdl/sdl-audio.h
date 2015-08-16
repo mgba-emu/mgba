@@ -15,6 +15,7 @@
 struct GBASDLAudio {
 	// Input
 	size_t samples;
+	unsigned sampleRate;
 
 	// State
 	SDL_AudioSpec desiredSpec;

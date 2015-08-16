@@ -119,6 +119,7 @@ public slots:
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
+	void setAudioSampleRate(unsigned rate);
 	void setAudioChannelEnabled(int channel, bool enable = true);
 	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
@@ -167,6 +168,7 @@ private:
 	void enableTurbo();
 
 	uint32_t* m_drawContext;
+	uint32_t* m_frontBuffer;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;

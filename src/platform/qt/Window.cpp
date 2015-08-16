@@ -100,6 +100,14 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(stateLoaded(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
+	connect(m_controller, &GameController::gamePaused, [this]() {
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
+		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGBX8888);
+		QPixmap pixmap;
+		pixmap.convertFromImage(currentImage);
+		m_screenWidget->setPixmap(pixmap);
+		m_screenWidget->setLockAspectRatio(3, 2);
+	});
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), m_display, SLOT(pauseDrawing()));
 #ifndef Q_OS_MAC
 	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), menuBar(), SLOT(show()));
@@ -127,6 +135,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
+	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
 	connect(m_display, &Display::hideCursor, [this]() {
@@ -195,12 +204,17 @@ void Window::loadConfig() {
 		m_controller->loadBIOS(opts->bios);
 	}
 
+	// TODO: Move these to ConfigController
 	if (opts->fpsTarget) {
 		emit fpsTargetChanged(opts->fpsTarget);
 	}
 
 	if (opts->audioBuffers) {
 		emit audioBufferSamplesChanged(opts->audioBuffers);
+	}
+
+	if (opts->sampleRate) {
+		emit sampleRateChanged(opts->sampleRate);
 	}
 
 	if (opts->width && opts->height) {
@@ -393,9 +407,7 @@ void Window::gdbOpen() {
 		m_gdbController = new GDBController(m_controller, this);
 	}
 	GDBWindow* window = new GDBWindow(m_gdbController);
-	connect(this, SIGNAL(shutdown()), window, SLOT(close()));
-	window->setAttribute(Qt::WA_DeleteOnClose);
-	window->show();
+	openView(window);
 }
 #endif
 
@@ -673,7 +685,7 @@ void Window::openStateWindow(LoadSave ls) {
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(close()));
 	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_stateWindow, SLOT(close()));
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
-		m_screenWidget->layout()->removeWidget(m_stateWindow);
+		detachWidget(m_stateWindow);
 		m_stateWindow = nullptr;
 		QMetaObject::invokeMethod(this, "setFocus", Qt::QueuedConnection);
 	});
@@ -823,13 +835,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(pause, SIGNAL(triggered(bool)), m_controller, SLOT(setPaused(bool)));
 	connect(m_controller, &GameController::gamePaused, [this, pause]() {
 		pause->setChecked(true);
-
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
-		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGB32);
-		QPixmap pixmap;
-		pixmap.convertFromImage(currentImage.rgbSwapped());
-		m_screenWidget->setPixmap(pixmap);
-		m_screenWidget->setLockAspectRatio(3, 2);
 	});
 	connect(m_controller, &GameController::gameUnpaused, [pause]() { pause->setChecked(false); });
 	m_gameActions.append(pause);
@@ -939,9 +944,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	for (int i = 1; i <= 6; ++i) {
 		QAction* setSize = new QAction(tr("%1x").arg(QString::number(i)), avMenu);
 		setSize->setCheckable(true);
-		connect(setSize, &QAction::triggered, [this, i]() {
+		connect(setSize, &QAction::triggered, [this, i, setSize]() {
 			showNormal();
 			resizeFrame(VIDEO_HORIZONTAL_PIXELS * i, VIDEO_VERTICAL_PIXELS * i);
+			bool enableSignals = setSize->blockSignals(true);
+			setSize->setChecked(true);
+			setSize->blockSignals(enableSignals);
 		});
 		m_frameSizes[i] = setSize;
 		addControlledAction(frameMenu, setSize, QString("frame%1x").arg(QString::number(i)));
@@ -977,20 +985,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
-
-	avMenu->addSeparator();
-
-	QMenu* buffersMenu = avMenu->addMenu(tr("Audio buffer &size"));
-	ConfigOption* buffers = m_config->addOption("audioBuffers");
-	buffers->connect([this](const QVariant& value) {
-		emit audioBufferSamplesChanged(value.toInt());
-	}, this);
-	buffers->addValue(tr("512"), 512, buffersMenu);
-	buffers->addValue(tr("768"), 768, buffersMenu);
-	buffers->addValue(tr("1024"), 1024, buffersMenu);
-	buffers->addValue(tr("2048"), 2048, buffersMenu);
-	buffers->addValue(tr("4096"), 4096, buffersMenu);
-	m_config->updateOption("audioBuffers");
 
 	avMenu->addSeparator();
 
@@ -1129,6 +1123,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setSkipBIOS(value.toBool());
 	}, this);
 
+	ConfigOption* useBios = m_config->addOption("useBios");
+	useBios->connect([this](const QVariant& value) {
+		m_controller->setUseBIOS(value.toBool());
+	}, this);
+
+	ConfigOption* buffers = m_config->addOption("audioBuffers");
+	buffers->connect([this](const QVariant& value) {
+		emit audioBufferSamplesChanged(value.toInt());
+	}, this);
+
+	ConfigOption* sampleRate = m_config->addOption("sampleRate");
+	sampleRate->connect([this](const QVariant& value) {
+		emit sampleRateChanged(value.toUInt());
+	}, this);
+
 	ConfigOption* volume = m_config->addOption("volume");
 	volume->connect([this](const QVariant& value) {
 		m_controller->setVolume(value.toInt());
@@ -1171,7 +1180,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::attachWidget(QWidget* widget) {
 	m_screenWidget->layout()->addWidget(widget);
-	unsetCursor();
+	m_screenWidget->unsetCursor();
 	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
 }
 

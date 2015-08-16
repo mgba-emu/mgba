@@ -15,6 +15,7 @@
 #include <QIcon>
 
 extern "C" {
+#include "gba/supervisor/thread.h"
 #include "platform/commandline.h"
 #include "util/socket.h"
 }
@@ -33,10 +34,13 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
+#ifndef Q_OS_MAC
 	setWindowIcon(QIcon(":/res/mgba-1024.png"));
+#endif
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
+	qRegisterMetaType<GBAThread*>("GBAThread*");
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
@@ -53,6 +57,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		return;
 	}
 
+	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
 	Window* w = new Window(&m_configController);
 	connect(w, &Window::destroyed, [this]() {
 		m_windows[0] = nullptr;
@@ -66,9 +71,6 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	}
 	freeArguments(&args);
 	w->show();
-
-	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
-	w->controller()->reloadAudioDriver();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
 }
