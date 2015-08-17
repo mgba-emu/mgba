@@ -16,16 +16,6 @@ else ifneq ($(findstring win,$(shell uname -a)),)
   HOST_PLATFORM = windows
 endif
 
-
-####################################
-# Variable setup for Makefile.common
-
-CORE_DIR  ?= ..
-BUILD_DIR ?= .
-INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-9/arch-x86/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/libs/x86/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include/backward
-
-include $(BUILD_DIR)/Makefile.common
-
 #################
 # Toolchain setup
 
@@ -84,6 +74,15 @@ ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif
+
+####################################
+# Variable setup for Makefile.common
+
+CORE_DIR  ?= ..
+BUILD_DIR ?= .
+INCLUDES   = -I$(NDK_ROOT_DIR)/platforms/android-9/arch-x86/usr/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/libs/x86/include -I$(NDK_ROOT_DIR)/sources/cxx-stl/gnu-libstdc++/4.8/include/backward
+
+include $(BUILD_DIR)/Makefile.common
 
 ###############
 # Include rules
