@@ -204,9 +204,6 @@ endif()
 if(WII)
 	add_definitions(-U__STRICT_ANSI__)
 	execute_process(COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl OUTPUT_QUIET ERROR_QUIET)
-	add_executable(${BINARY_NAME}.elf ${GUI_SRC} ${CMAKE_BINARY_DIR}/font.c)
-	target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
-	add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${ELF2DOL} ${BINARY_NAME}.elf ${BINARY_NAME}.dol)
 endif()
 
 if(BUILD_RASPI)
@@ -457,6 +454,10 @@ endif()
 
 if(BUILD_QT)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/qt ${CMAKE_BINARY_DIR}/qt)
+endif()
+
+if(WII)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/wii ${CMAKE_BINARY_DIR})
 endif()
 
 if(BUILD_PERF)
