@@ -22,6 +22,7 @@ static void* _vf3dMap(struct VFile* vf, size_t size, int flags);
 static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf3dTruncate(struct VFile* vf, size_t size);
 static ssize_t _vf3dSize(struct VFile* vf);
+static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size);
 
 struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	struct VFile3DS* vf3d = malloc(sizeof(struct VFile3DS));
@@ -47,6 +48,7 @@ struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	vf3d->d.unmap = _vf3dUnmap;
 	vf3d->d.truncate = _vf3dTruncate;
 	vf3d->d.size = _vf3dSize;
+	vf3d->d.sync = _vf3dSync;
 
 	return &vf3d->d;
 }
@@ -125,4 +127,17 @@ ssize_t _vf3dSize(struct VFile* vf) {
 	u64 size;
 	FSFILE_GetSize(vf3d->handle, &size);
 	return size;
+}
+
+static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size) {
+	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
+	if (buffer) {
+		u32 sizeWritten;
+		Result res = FSFILE_Write(vf3d->handle, &sizeWritten, 0, buffer, size, FS_WRITE_FLUSH);
+		if (res) {
+			return false;
+		}
+	}
+	FSFILE_Flush(vf3d->handle);
+	return true;
 }
