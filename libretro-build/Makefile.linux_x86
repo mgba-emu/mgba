@@ -2,12 +2,6 @@
 # Works on hosts Linux
 # apt-get install g++-multilib libc6-dev-i386
 
-#############
-# User config
-
-DEBUG = 0
-LOG_PERFORMANCE = 1
-
 ##########################
 # Checks the host platform
 
@@ -54,8 +48,8 @@ platform       = unix
 PLATDEFS       = 
 PLATCFLAGS     = -m32 -fpic -fstrict-aliasing
 PLATCXXFLAGS   = -m32 -fpic -fstrict-aliasing
-PLATLDFLAGS    = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T
-PLATLDXFLAGS   = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T
+PLATLDFLAGS    = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
+PLATLDXFLAGS   = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
 
 ################
 # libretro setup
@@ -78,17 +72,15 @@ LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
 ########
 # Tuning
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG),)
   CFLAGS   += -O0 -g
   CXXFLAGS += -O0 -g
-  LDFLAGS  += -g
-  LDXFLAGS += -g
 else
   CFLAGS   += -O3 -DNDEBUG
   CXXFLAGS += -O3 -DNDEBUG
 endif
 
-ifeq ($(LOG_PERFORMANCE), 1)
+ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif

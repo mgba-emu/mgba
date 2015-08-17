@@ -2,12 +2,6 @@
 # Works on hosts Linux
 # Install devkitppc
 
-#############
-# User config
-
-DEBUG = 0
-LOG_PERFORMANCE = 1
-
 ##########################
 # Checks the host platform
 
@@ -43,8 +37,8 @@ AR  = $(DEVKITPPC_ROOT_DIR)/bin/powerpc-eabi-ar
 ############
 # Extensions
 
-OBJEXT = .wii.o
-SOEXT  = .wii.so
+OBJEXT = .wii_ppc.o
+SOEXT  = .wii_ppc.so
 
 ################
 # Platform setup
@@ -78,17 +72,15 @@ LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
 ########
 # Tuning
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG),)
   CFLAGS   += -O0 -g
   CXXFLAGS += -O0 -g
-  LDFLAGS  += -g
-  LDXFLAGS += -g
 else
   CFLAGS   += -O3 -DNDEBUG
   CXXFLAGS += -O3 -DNDEBUG
 endif
 
-ifeq ($(LOG_PERFORMANCE), 1)
+ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif
