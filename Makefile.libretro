@@ -4,37 +4,40 @@ HAVE_VFS_FD := 1
 CORE_DIR := src
 BUILD_DIR := libretro-build
 
-ifeq ($(platform),android-arm64_v8a)
-include $(BUILD_DIR)/Makefile.android-arm64_v8a
-else ifeq ($(platform),android-armeabi)
-include $(BUILD_DIR)/Makefile.android-armeabi
-else ifeq ($(platform),android-armeabi_v7a)
-include $(BUILD_DIR)/Makefile.android-armeabi_v7a
-else ifeq ($(platform),android-mips)
-include $(BUILD_DIR)/Makefile.android-mips
-else ifeq ($(platform),android-mips64)
-include $(BUILD_DIR)/Makefile.android-mips64
-else ifeq ($(platform),android-x86)
-include $(BUILD_DIR)/Makefile.android-x86
-else ifeq ($(platform),android-x86_64)
-include $(BUILD_DIR)/Makefile.android-x86_64
-else ifeq ($(platform),linux_portable-x86)
-include $(BUILD_DIR)/Makefile.linux_portable-x86
-else ifeq ($(platform),linux_portable-x86_64)
-include $(BUILD_DIR)/Makefile.linux_portable-x86_64
-else ifeq ($(platform),linux-x86)
-include $(BUILD_DIR)/Makefile.linux-x86
-else ifeq ($(platform),linux-x86_64)
-include $(BUILD_DIR)/Makefile.linux-x86_64
-else ifeq ($(platform),mingw32)
-include $(BUILD_DIR)/Makefile.mingw32
-else ifeq ($(platform),mingw64)
-include $(BUILD_DIR)/Makefile.mingw64
-else ifeq ($(platform),windows-x86)
-include $(BUILD_DIR)/Makefile.windows-x86
-else ifeq ($(platform),windows-x86_64)
-include $(BUILD_DIR)/Makefile.windows-x86_64
+ifeq ($(platform),android_arm64-v8a)
+include $(BUILD_DIR)/Makefile.android_arm64-v8a
+else ifeq ($(platform),android_armeabi)
+include $(BUILD_DIR)/Makefile.android_armeabi
+else ifeq ($(platform),android_armeabi-v7a)
+include $(BUILD_DIR)/Makefile.android_armeabi-v7a
+else ifeq ($(platform),android_mips)
+include $(BUILD_DIR)/Makefile.android_mips
+else ifeq ($(platform),android_mips64)
+include $(BUILD_DIR)/Makefile.android_mips64
+else ifeq ($(platform),android_x86)
+include $(BUILD_DIR)/Makefile.android_x86
+else ifeq ($(platform),android_x86_64)
+include $(BUILD_DIR)/Makefile.android_x86_64
+else ifeq ($(platform),linux-portable_x86)
+include $(BUILD_DIR)/Makefile.linux-portable_x86
+else ifeq ($(platform),linux-portable_x86_64)
+include $(BUILD_DIR)/Makefile.linux-portable_x86_64
+else ifeq ($(platform),linux_x86)
+include $(BUILD_DIR)/Makefile.linux_x86
+else ifeq ($(platform),linux_x86_64)
+include $(BUILD_DIR)/Makefile.linux_x86_64
+else ifeq ($(platform),mingw_x86)
+include $(BUILD_DIR)/Makefile.mingw_x86
+else ifeq ($(platform),mingw_x86_64)
+include $(BUILD_DIR)/Makefile.mingw_x86_64
+else ifeq ($(platform),wii_ppc)
+include $(BUILD_DIR)/Makefile.wii_ppc
+else ifeq ($(platform),windows_x86)
+include $(BUILD_DIR)/Makefile.windows_x86
+else ifeq ($(platform),windows_x86_64)
+include $(BUILD_DIR)/Makefile.windows_x86_64
 else
+
 ifneq ($(EMSCRIPTEN),)
 	platform = emscripten
 endif
