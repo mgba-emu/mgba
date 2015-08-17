@@ -13,12 +13,23 @@
 
 #include <3ds.h>
 
+static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
+static Handle logFile;
+
 int main() {
 	srvInit();
 	aptInit();
 	hidInit(0);
 	gfxInit(GSP_RGB565_OES, GSP_RGB565_OES, false);
 	fsInit();
+
+	FS_archive sdmcArchive = (FS_archive) {
+		ARCH_SDMC,
+		(FS_path) { PATH_EMPTY, 1, (u8*)"" },
+		0, 0
+	};
+	FSUSER_OpenArchive(0, &sdmcArchive);
+	FSUSER_OpenFile(0, &logFile, sdmcArchive, FS_makePath(PATH_CHAR, "/mgba.log"), FS_OPEN_WRITE | FS_OPEN_CREATE, FS_ATTRIBUTE_NONE);
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -31,13 +42,6 @@ int main() {
 
 	renderer.outputBuffer = videoBuffer;
 	renderer.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
-
-	FS_archive sdmcArchive = (FS_archive) {
-		ARCH_SDMC,
-		(FS_path) { PATH_EMPTY, 1, (u8*)"" },
-		0, 0
-	};
-	FSUSER_OpenArchive(0, &sdmcArchive);
 
 	struct VFile* rom = VFileOpen3DS(&sdmcArchive, "/rom.gba", FS_OPEN_READ);
 
@@ -53,6 +57,8 @@ int main() {
 	GBAVideoAssociateRenderer(&gba->video, &renderer.d);
 
 	GBALoadROM(gba, rom, save, 0);
+
+	gba->logHandler = GBA3DSLog;
 
 	ARMReset(cpu);
 
@@ -94,10 +100,27 @@ int main() {
 
 	mappedMemoryFree(videoBuffer, 0);
 
+	FSFILE_Close(logFile);
+
 	fsExit();
 	gfxExit();
 	hidExit();
 	aptExit();
 	srvExit();
 	return 0;
+}
+
+static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
+	UNUSED(thread);
+	UNUSED(level);
+	char out[256];
+	u64 size;
+	u32 written;
+	size_t len = vsnprintf(out, sizeof(out), format, args);
+	if (len >= 256) {
+		len = 255;
+	}
+	out[len] = '\n';
+	FSFILE_GetSize(logFile, &size);
+	FSFILE_Write(logFile, &written, size, out, len + 1, FS_WRITE_FLUSH);
 }
