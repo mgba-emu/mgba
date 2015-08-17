@@ -57,7 +57,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		return;
 	}
 
-	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
+	if (!m_configController.getQtOption("audioDriver").isNull()) {
+		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
+	}
 	Window* w = new Window(&m_configController);
 	connect(w, &Window::destroyed, [this]() {
 		m_windows[0] = nullptr;
