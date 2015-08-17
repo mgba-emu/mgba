@@ -7,7 +7,7 @@ else
 endif
 
 DEFINES  +=
-CFLAGS   += -Wall
+CFLAGS   += -Wall -std=c99
 CXXFLAGS += -Wall
 LDFLAGS  +=
 

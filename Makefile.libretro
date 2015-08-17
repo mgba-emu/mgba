@@ -1,41 +1,41 @@
 DEBUG = 0
 GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 HAVE_VFS_FD := 1
-CORE_DIR := src
+CORE_DIR := .
 BUILD_DIR := libretro-build
 
-ifeq ($(platform),android_arm64-v8a)
-include $(BUILD_DIR)/Makefile.android_arm64-v8a
+ifeq ($(platform),wii_ppc)
+include $(BUILD_DIR)/Makefile.wii_ppc
+else ifeq ($(platform),windows_x86)
+include $(BUILD_DIR)/Makefile.windows_x86
 else ifeq ($(platform),android_armeabi)
 include $(BUILD_DIR)/Makefile.android_armeabi
+else ifeq ($(platform),android_arm64-v8a)
+include $(BUILD_DIR)/Makefile.android_arm64-v8a
+else ifeq ($(platform),mingw_x86)
+include $(BUILD_DIR)/Makefile.mingw_x86
+else ifeq ($(platform),mingw_x86_64)
+include $(BUILD_DIR)/Makefile.mingw_x86_64
+else ifeq ($(platform),windows_x86_64)
+include $(BUILD_DIR)/Makefile.windows_x86_64
+else ifeq ($(platform),linux_x86)
+include $(BUILD_DIR)/Makefile.linux_x86
+else ifeq ($(platform),linux_x86_64)
+include $(BUILD_DIR)/Makefile.linux_x86_64
 else ifeq ($(platform),android_armeabi-v7a)
 include $(BUILD_DIR)/Makefile.android_armeabi-v7a
-else ifeq ($(platform),android_mips)
-include $(BUILD_DIR)/Makefile.android_mips
-else ifeq ($(platform),android_mips64)
-include $(BUILD_DIR)/Makefile.android_mips64
 else ifeq ($(platform),android_x86)
 include $(BUILD_DIR)/Makefile.android_x86
+else ifeq ($(platform),android_mips64)
+include $(BUILD_DIR)/Makefile.android_mips64
 else ifeq ($(platform),android_x86_64)
 include $(BUILD_DIR)/Makefile.android_x86_64
 else ifeq ($(platform),linux-portable_x86)
 include $(BUILD_DIR)/Makefile.linux-portable_x86
 else ifeq ($(platform),linux-portable_x86_64)
 include $(BUILD_DIR)/Makefile.linux-portable_x86_64
-else ifeq ($(platform),linux_x86)
-include $(BUILD_DIR)/Makefile.linux_x86
-else ifeq ($(platform),linux_x86_64)
-include $(BUILD_DIR)/Makefile.linux_x86_64
-else ifeq ($(platform),mingw_x86)
-include $(BUILD_DIR)/Makefile.mingw_x86
-else ifeq ($(platform),mingw_x86_64)
-include $(BUILD_DIR)/Makefile.mingw_x86_64
-else ifeq ($(platform),wii_ppc)
-include $(BUILD_DIR)/Makefile.wii_ppc
-else ifeq ($(platform),windows_x86)
-include $(BUILD_DIR)/Makefile.windows_x86
-else ifeq ($(platform),windows_x86_64)
-include $(BUILD_DIR)/Makefile.windows_x86_64
+else ifeq ($(platform),android_mips)
+include $(BUILD_DIR)/Makefile.android_mips
 else
 
 ifneq ($(EMSCRIPTEN),)
@@ -282,13 +282,13 @@ CXXFLAGS += $(fpic) $(DEFINES)
 LIBS :=
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCFLAGS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(INCLUDES)
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(INCFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
 
 ifeq ($(platform), theos_ios)
-COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
+COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCLUDES) -I$(THEOS_INCLUDE_PATH) -Wno-error
 $(LIBRARY_NAME)_CFLAGS += $(CFLAGS) $(COMMON_FLAGS)
 $(LIBRARY_NAME)_CXXFLAGS += $(CXXFLAGS) $(COMMON_FLAGS)
 ${LIBRARY_NAME}_FILES = $(SOURCES_CXX) $(SOURCES_C)
