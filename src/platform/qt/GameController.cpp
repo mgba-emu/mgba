@@ -599,6 +599,9 @@ void GameController::setAudioBufferSamples(int samples) {
 }
 
 void GameController::setAudioSampleRate(unsigned rate) {
+	if (!rate) {
+		return;
+	}
 	if (m_audioProcessor) {
 		threadInterrupt();
 		redoSamples(m_audioProcessor->getBufferSamples());

@@ -21,6 +21,11 @@ AboutScreen::AboutScreen(QWidget* parent)
 	logo.setDevicePixelRatio(devicePixelRatio());
 	m_ui.logo->setPixmap(logo);
 
+	QLatin1String tree(gitBranch);
+	if (tree == QLatin1String("(unknown)")) {
+		tree = QLatin1String(projectVersion);
+	}
+
 	m_ui.projectName->setText(QLatin1String(projectName));
 	m_ui.projectVersion->setText(QLatin1String(projectVersion));
 	QString gitInfo = m_ui.gitInfo->text();
@@ -31,6 +36,6 @@ AboutScreen::AboutScreen(QWidget* parent)
 	description.replace("{projectName}", QLatin1String(projectName));
 	m_ui.description->setText(description);
 	QString extraLinks = m_ui.extraLinks->text();
-	extraLinks.replace("{gitBranch}", QLatin1String(gitBranch));
+	extraLinks.replace("{gitBranch}", tree);
 	m_ui.extraLinks->setText(extraLinks);
 }
