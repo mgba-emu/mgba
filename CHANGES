@@ -74,6 +74,7 @@ Bugfixes:
  - GBA: Ensure cycles never go negative
  - Util: Fix formatting of floats
  - Debugger: Fix use-after-free in breakpoint clearing code
+ - GBA SIO: Fix reseting when there are SIO devices attached
 Misc:
  - Qt: Handle saving input settings better
  - Debugger: Free watchpoints in addition to breakpoints

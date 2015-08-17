@@ -163,8 +163,7 @@ void GBAReset(struct ARMCore* cpu) {
 	GBAAudioReset(&gba->audio);
 	GBAIOInit(gba);
 
-	GBASIODeinit(&gba->sio);
-	GBASIOInit(&gba->sio);
+	GBASIOReset(&gba->sio);
 
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
