@@ -1,0 +1,5 @@
+mgba (0.3.0-1) UNRELEASED; urgency=low
+
+  * Initial release (closes: Bug#787470).
+
+ -- Sérgio Benjamim <sergio_br2@yahoo.com.br>  Mon, 17 Aug 2015 18:40:00 -0300

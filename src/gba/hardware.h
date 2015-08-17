@@ -7,6 +7,7 @@
 #define GBA_HARDWARE_H
 
 #include "util/common.h"
+#include "gba/interface.h"
 
 #include "macros.h"
 
@@ -14,25 +15,15 @@
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
-struct GBARotationSource {
-	void (*sample)(struct GBARotationSource*);
-
-	int32_t (*readTiltX)(struct GBARotationSource*);
-	int32_t (*readTiltY)(struct GBARotationSource*);
-
-	int32_t (*readGyroZ)(struct GBARotationSource*);
-};
-
-struct GBALuminanceSource {
-	void (*sample)(struct GBALuminanceSource*);
-
-	uint8_t (*readLuminance)(struct GBALuminanceSource*);
-};
-
-struct GBARTCSource {
-	void (*sample)(struct GBARTCSource*);
-
-	time_t (*unixTime)(struct GBARTCSource*);
+struct GBARTCGenericSource {
+	struct GBARTCSource d;
+	struct GBA* p;
+	enum {
+		RTC_NO_OVERRIDE,
+		RTC_FIXED,
+		RTC_FAKE_EPOCH
+	} override;
+	int64_t value;
 };
 
 enum GBAHardwareDevice {
@@ -42,7 +33,9 @@ enum GBAHardwareDevice {
 	HW_RUMBLE = 2,
 	HW_LIGHT_SENSOR = 4,
 	HW_GYRO = 8,
-	HW_TILT = 16
+	HW_TILT = 16,
+	HW_GB_PLAYER = 32,
+	HW_GB_PLAYER_DETECTION = 64
 };
 
 enum GPIORegister {
@@ -91,6 +84,16 @@ struct GBARumble {
 	void (*setRumble)(struct GBARumble*, int enable);
 };
 
+struct GBAGBPKeyCallback {
+	struct GBAKeyCallback d;
+	struct GBACartridgeHardware* p;
+};
+
+struct GBAGBPSIODriver {
+	struct GBASIODriver d;
+	struct GBACartridgeHardware* p;
+};
+
 DECL_BITFIELD(GPIOPin, uint16_t);
 
 struct GBACartridgeHardware {
@@ -114,6 +117,12 @@ struct GBACartridgeHardware {
 	uint16_t tiltX;
 	uint16_t tiltY;
 	int tiltState;
+
+	unsigned gbpInputsPosted;
+	int gbpTxPosition;
+	int32_t gbpNextEvent;
+	struct GBAGBPKeyCallback gbpCallback;
+	struct GBAGBPSIODriver gbpDriver;
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
@@ -128,6 +137,12 @@ void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
+
+struct GBAVideo;
+void GBAHardwarePlayerUpdate(struct GBA* gba);
+bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video);
+
+void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);

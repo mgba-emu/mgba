@@ -22,7 +22,7 @@
 #endif
 
 #define GYRO_STEPS 100
-#define RUMBLE_PWM 35
+#define RUMBLE_PWM 20
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);

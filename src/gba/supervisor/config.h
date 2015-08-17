@@ -29,6 +29,7 @@ struct GBAOptions {
 	int rewindBufferInterval;
 	float fpsTarget;
 	size_t audioBuffers;
+	unsigned sampleRate;
 
 	int fullscreen;
 	int width;
@@ -51,7 +52,10 @@ void GBAConfigDeinit(struct GBAConfig*);
 
 bool GBAConfigLoad(struct GBAConfig*);
 bool GBAConfigSave(const struct GBAConfig*);
+bool GBAConfigLoadPath(struct GBAConfig*, const char* path);
+bool GBAConfigSavePath(const struct GBAConfig*, const char* path);
 
+void GBAConfigMakePortable(const struct GBAConfig*);
 void GBAConfigDirectory(char* out, size_t outLength);
 
 const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);

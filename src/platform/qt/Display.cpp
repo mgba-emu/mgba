@@ -22,7 +22,7 @@ Display::Driver Display::s_driver = Display::Driver::QT;
 
 Display* Display::create(QWidget* parent) {
 #ifdef BUILD_GL
-	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
+	QGLFormat format(QGLFormat(QGL::Rgba | QGL::SingleBuffer));
 	format.setSwapInterval(1);
 #endif
 
@@ -46,7 +46,39 @@ Display* Display::create(QWidget* parent) {
 
 Display::Display(QWidget* parent)
 	: QWidget(parent)
+	, m_lockAspectRatio(false)
+	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
+	m_mouseTimer.setSingleShot(true);
+	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);
+	setMouseTracking(true);
+}
+
+void Display::resizeEvent(QResizeEvent*) {
+	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+}
+
+void Display::lockAspectRatio(bool lock) {
+	m_lockAspectRatio = lock;
+	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+}
+
+void Display::filter(bool filter) {
+	m_filter = filter;
+}
+
+void Display::showMessage(const QString& message) {
+	m_messagePainter.showMessage(message);
+	if (!isDrawing()) {
+		forceDraw();
+	}
+}
+
+void Display::mouseMoveEvent(QMouseEvent*) {
+	emit showCursor();
+	m_mouseTimer.stop();
+	m_mouseTimer.start();
 }

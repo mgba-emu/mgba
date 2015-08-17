@@ -26,19 +26,17 @@
 #define GBA_B8(X) (((X) >> 7) & 0xF8)
 
 enum {
-	VIDEO_CYCLES_PER_PIXEL = 4,
-
 	VIDEO_HORIZONTAL_PIXELS = 240,
 	VIDEO_HBLANK_PIXELS = 68,
 	VIDEO_HDRAW_LENGTH = 1006,
 	VIDEO_HBLANK_LENGTH = 226,
-	VIDEO_HORIZONTAL_LENGTH = 1232,
+	VIDEO_HORIZONTAL_LENGTH = VIDEO_HDRAW_LENGTH + VIDEO_HBLANK_LENGTH,
 
 	VIDEO_VERTICAL_PIXELS = 160,
 	VIDEO_VBLANK_PIXELS = 68,
-	VIDEO_VERTICAL_TOTAL_PIXELS = 228,
+	VIDEO_VERTICAL_TOTAL_PIXELS = VIDEO_VERTICAL_PIXELS + VIDEO_VBLANK_PIXELS,
 
-	VIDEO_TOTAL_LENGTH = 280896,
+	VIDEO_TOTAL_LENGTH = VIDEO_HORIZONTAL_LENGTH * VIDEO_VERTICAL_TOTAL_PIXELS,
 
 	REG_DISPSTAT_MASK = 0xFF38,
 
@@ -66,7 +64,6 @@ DECL_BITS(GBAObjAttributesA, Mode, 10, 2);
 DECL_BIT(GBAObjAttributesA, Mosaic, 12);
 DECL_BIT(GBAObjAttributesA, 256Color, 13);
 DECL_BITS(GBAObjAttributesA, Shape, 14, 2);
-
 
 DECL_BITFIELD(GBAObjAttributesB, uint16_t);
 DECL_BITS(GBAObjAttributesB, X, 0, 9);
@@ -164,6 +161,7 @@ struct GBAVideoRenderer {
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
+	void (*writeVRAM)(struct GBAVideoRenderer* renderer, uint32_t address);
 	void (*writePalette)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writeOAM)(struct GBAVideoRenderer* renderer, uint32_t oam);
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
@@ -214,5 +212,7 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
 struct GBASerializedState;
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state);
+
+extern const int GBAVideoObjSizes[16][2];
 
 #endif

@@ -21,6 +21,7 @@ struct GBACheatSet;
 struct GBAOptions;
 
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+typedef bool (*ThreadStopCallback)(struct GBAThread* threadContext);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -86,6 +87,7 @@ struct GBAThread {
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
+	ThreadStopCallback stopCallback;
 	void* userData;
 	void (*run)(struct GBAThread*);
 
@@ -125,6 +127,9 @@ bool GBAThreadIsPaused(struct GBAThread* threadContext);
 void GBAThreadTogglePause(struct GBAThread* threadContext);
 void GBAThreadPauseFromThread(struct GBAThread* threadContext);
 struct GBAThread* GBAThreadGetContext(void);
+
+void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname);
+void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname);
 
 #ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext);

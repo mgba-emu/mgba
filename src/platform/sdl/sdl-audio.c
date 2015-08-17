@@ -22,7 +22,7 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		return false;
 	}
 
-	context->desiredSpec.freq = 44100;
+	context->desiredSpec.freq = context->sampleRate;
 	context->desiredSpec.format = AUDIO_S16SYS;
 	context->desiredSpec.channels = 2;
 	context->desiredSpec.samples = context->samples;
@@ -76,7 +76,6 @@ void GBASDLPauseAudio(struct GBASDLAudio* context) {
 	UNUSED(context);
 	SDL_PauseAudio(1);
 #endif
-
 }
 
 void GBASDLResumeAudio(struct GBASDLAudio* context) {

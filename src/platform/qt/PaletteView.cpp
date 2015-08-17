@@ -6,6 +6,7 @@
 #include "PaletteView.h"
 
 #include "GBAApp.h"
+#include "LogController.h"
 #include "VFileDevice.h"
 
 #include <QFileDialog>
@@ -84,7 +85,8 @@ void PaletteView::exportPalette(int start, int length) {
 		length = 512 - start;
 	}
 	m_controller->threadInterrupt();
-	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"), tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
+	QFileDialog* dialog = GBAApp::app()->getSaveFileDialog(this, tr("Export palette"),
+	                                                       tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
 	if (!dialog->exec()) {
 		m_controller->threadContinue();
 		return;
@@ -92,6 +94,7 @@ void PaletteView::exportPalette(int start, int length) {
 	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
+		LOG(ERROR) << tr("Failed to open output palette file: %1").arg(filename);
 		m_controller->threadContinue();
 		return;
 	}

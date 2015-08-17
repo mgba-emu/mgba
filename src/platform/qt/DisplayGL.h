@@ -8,14 +8,19 @@
 
 #include "Display.h"
 
-#include "MessagePainter.h"
-
 #include <QGLWidget>
+#include <QList>
+#include <QMouseEvent>
+#include <QQueue>
 #include <QThread>
 #include <QTimer>
 
 extern "C" {
+#ifdef BUILD_GL
 #include "platform/opengl/gl.h"
+#elif defined(BUILD_GLES2)
+#include "platform/opengl/gles2.h"
+#endif
 }
 
 struct GBAThread;
@@ -29,6 +34,7 @@ public:
 protected:
 	void paintEvent(QPaintEvent*) override {}
 	void resizeEvent(QResizeEvent*) override {}
+	void mouseMoveEvent(QMouseEvent* event) override { event->ignore(); }
 };
 
 class PainterGL;
@@ -38,6 +44,8 @@ Q_OBJECT
 public:
 	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
+
+	bool isDrawing() const override { return m_isDrawing; }
 
 public slots:
 	void startDrawing(GBAThread* context) override;
@@ -49,8 +57,6 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
-	void showMessage(const QString& message) override;
-
 protected:
 	virtual void paintEvent(QPaintEvent*) override {}
 	virtual void resizeEvent(QResizeEvent*) override;
@@ -58,12 +64,11 @@ protected:
 private:
 	void resizePainter();
 
+	bool m_isDrawing;
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread;
 	GBAThread* m_context;
-	bool m_lockAspectRatio;
-	bool m_filter;
 };
 
 class PainterGL : public QObject {
@@ -71,11 +76,13 @@ Q_OBJECT
 
 public:
 	PainterGL(QGLWidget* parent);
+	~PainterGL();
 
 	void setContext(GBAThread*);
+	void setMessagePainter(MessagePainter*);
+	void enqueue(const uint32_t* backing);
 
 public slots:
-	void setBacking(const uint32_t*);
 	void forceDraw();
 	void draw();
 	void start();
@@ -86,16 +93,23 @@ public slots:
 	void lockAspectRatio(bool lock);
 	void filter(bool filter);
 
-	void showMessage(const QString& message);
-
 private:
 	void performDraw();
+	void dequeue();
+	void dequeueAll();
 
+	QList<uint32_t*> m_free;
+	QQueue<uint32_t*> m_queue;
 	QPainter m_painter;
+	QMutex m_mutex;
 	QGLWidget* m_gl;
 	bool m_active;
 	GBAThread* m_context;
+#ifdef BUILD_GL
 	GBAGLContext m_backend;
+#elif defined(BUILD_GLES2)
+	GBAGLES2Context m_backend;
+#endif
 	QSize m_size;
 	MessagePainter* m_messagePainter;
 };

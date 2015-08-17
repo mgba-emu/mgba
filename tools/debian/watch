@@ -1,0 +1,3 @@
+version=3
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/mgba-$1\.tar\.gz/ \
+  https://github.com/mgba-emu/mgba/tags .*/v?(\d\S*)\.tar\.gz

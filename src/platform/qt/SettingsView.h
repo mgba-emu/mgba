@@ -6,7 +6,7 @@
 #ifndef QGBA_SETTINGS_VIEW
 #define QGBA_SETTINGS_VIEW
 
-#include <QWidget>
+#include <QDialog>
 
 #include "ui_SettingsView.h"
 
@@ -14,7 +14,7 @@ namespace QGBA {
 
 class ConfigController;
 
-class SettingsView : public QWidget {
+class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
@@ -23,6 +23,7 @@ public:
 signals:
 	void biosLoaded(const QString&);
 	void audioDriverChanged();
+	void displayDriverChanged();
 
 private slots:
 	void selectBios();
@@ -39,7 +40,7 @@ private:
 	void saveSetting(const char* key, const QLineEdit*);
 	void saveSetting(const char* key, const QSlider*);
 	void saveSetting(const char* key, const QSpinBox*);
-	void saveSetting(const char* key, const QString&);
+	void saveSetting(const char* key, const QVariant&);
 
 	void loadSetting(const char* key, QAbstractButton*);
 	void loadSetting(const char* key, QComboBox*);

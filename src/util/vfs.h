@@ -39,6 +39,7 @@ struct VFile {
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
 	ssize_t (*size)(struct VFile* vf);
+	bool (*sync)(struct VFile* vf, const void* buffer, size_t size);
 };
 
 struct VDirEntry {
@@ -53,6 +54,8 @@ struct VDir {
 };
 
 struct VFile* VFileOpen(const char* path, int flags);
+
+struct VFile* VFileOpenFD(const char* path, int flags);
 struct VFile* VFileFOpen(const char* path, const char* mode);
 struct VFile* VFileFromFD(int fd);
 struct VFile* VFileFromMemory(void* mem, size_t size);
@@ -68,8 +71,10 @@ struct VDir* VDirOpenZip(const char* path, int flags);
 struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode);
-struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode);
+struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix,
+                                   int mode);
+struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix,
+                                            const char* infix, const char* suffix, int mode);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 

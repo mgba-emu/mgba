@@ -7,11 +7,13 @@
 
 #include "util/memory.h"
 
+#include <errno.h>
 #include <stdio.h>
 
 struct VFileFILE {
 	struct VFile d;
 	FILE* file;
+	bool writable;
 };
 
 static bool _vffClose(struct VFile* vf);
@@ -22,12 +24,16 @@ static void* _vffMap(struct VFile* vf, size_t size, int flags);
 static void _vffUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vffTruncate(struct VFile* vf, size_t size);
 static ssize_t _vffSize(struct VFile* vf);
+static bool _vffSync(struct VFile* vf, const void* buffer, size_t size);
 
 struct VFile* VFileFOpen(const char* path, const char* mode) {
 	if (!path && !mode) {
 		return 0;
 	}
 	FILE* file = fopen(path, mode);
+	if (!file && errno == ENOENT && strcmp(mode, "r+b") == 0) {
+		file = fopen(path, "w+b");
+	}
 	return VFileFromFILE(file);
 }
 
@@ -42,6 +48,7 @@ struct VFile* VFileFromFILE(FILE* file) {
 	}
 
 	vff->file = file;
+	vff->writable = false;
 	vff->d.close = _vffClose;
 	vff->d.seek = _vffSeek;
 	vff->d.read = _vffRead;
@@ -51,6 +58,7 @@ struct VFile* VFileFromFILE(FILE* file) {
 	vff->d.unmap = _vffUnmap;
 	vff->d.truncate = _vffTruncate;
 	vff->d.size = _vffSize;
+	vff->d.sync = _vffSync;
 
 	return &vff->d;
 }
@@ -80,8 +88,10 @@ ssize_t _vffWrite(struct VFile* vf, const void* buffer, size_t size) {
 }
 
 static void* _vffMap(struct VFile* vf, size_t size, int flags) {
-	UNUSED(flags);
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
+	if (flags & MAP_WRITE) {
+		vff->writable = true;
+	}
 	void* mem = anonymousMemoryMap(size);
 	if (!mem) {
 		return 0;
@@ -95,10 +105,12 @@ static void* _vffMap(struct VFile* vf, size_t size, int flags) {
 
 static void _vffUnmap(struct VFile* vf, void* memory, size_t size) {
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
-	long pos = ftell(vff->file);
-	fseek(vff->file, 0, SEEK_SET);
-	fwrite(memory, size, 1, vff->file);
-	fseek(vff->file, pos, SEEK_SET);
+	if (vff->writable) {
+		long pos = ftell(vff->file);
+		fseek(vff->file, 0, SEEK_SET);
+		fwrite(memory, size, 1, vff->file);
+		fseek(vff->file, pos, SEEK_SET);
+	}
 	mappedMemoryFree(memory, size);
 }
 
@@ -129,4 +141,15 @@ static ssize_t _vffSize(struct VFile* vf) {
 	ssize_t size = ftell(vff->file);
 	fseek(vff->file, pos, SEEK_SET);
 	return size;
+}
+
+static bool _vffSync(struct VFile* vf, const void* buffer, size_t size) {
+	struct VFileFILE* vff = (struct VFileFILE*) vf;
+	if (buffer && size) {
+		long pos = ftell(vff->file);
+		fseek(vff->file, 0, SEEK_SET);
+		fwrite(buffer, size, 1, vff->file);
+		fseek(vff->file, pos, SEEK_SET);
+	}
+	return fflush(vff->file) == 0;
 }

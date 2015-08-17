@@ -118,8 +118,8 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 			break;
 		case LEX_EXPECT_BINARY:
 			switch (token) {
-				case '0':
-				case '1':
+			case '0':
+			case '1':
 				// TODO: handle overflow
 				next <<= 1;
 				next += token - '0';

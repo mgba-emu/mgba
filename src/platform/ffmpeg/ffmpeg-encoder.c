@@ -248,9 +248,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
 
 		if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
-			(strcasecmp(encoder->containerFormat, "mp4") ||
-			strcasecmp(encoder->containerFormat, "m4v") ||
-			strcasecmp(encoder->containerFormat, "mov"))) {
+		    (strcasecmp(encoder->containerFormat, "mp4") ||
+		        strcasecmp(encoder->containerFormat, "m4v") ||
+		        strcasecmp(encoder->containerFormat, "mov"))) {
 			// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
 			encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
 		}
@@ -292,19 +292,19 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-		AV_PIX_FMT_RGB565,
+	    AV_PIX_FMT_RGB565,
 #else
-		AV_PIX_FMT_BGR555,
+	    AV_PIX_FMT_BGR555,
 #endif
 #else
 #ifndef USE_LIBAV
-		AV_PIX_FMT_0BGR32,
+	    AV_PIX_FMT_0BGR32,
 #else
-		AV_PIX_FMT_BGR32,
+	    AV_PIX_FMT_BGR32,
 #endif
 #endif
-		encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
-		SWS_POINT, 0, 0, 0);
+	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
+	    SWS_POINT, 0, 0, 0);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
 
 	avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE);
@@ -378,8 +378,8 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t rig
 
 	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	avresample_convert(encoder->resampleContext,
-		0, 0, 0,
-		(uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
+	    0, 0, 0,
+	    (uint8_t**) &encoder->audioBuffer, 0, encoder->audioBufferSize / 4);
 	if (avresample_available(encoder->resampleContext) < encoder->audioFrame->nb_samples) {
 		return;
 	}
@@ -402,8 +402,8 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t rig
 		if (encoder->absf) {
 			AVPacket tempPacket = packet;
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
-				&tempPacket.data, &tempPacket.size,
-				packet.data, packet.size, 0);
+			    &tempPacket.data, &tempPacket.size,
+			    packet.data, packet.size, 0);
 			if (success > 0) {
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);

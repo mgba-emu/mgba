@@ -61,67 +61,85 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	}
 }
 
-void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
+bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
+	bool error = false;
 	if (state->versionMagic != GBA_SAVESTATE_MAGIC) {
 		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate");
-		return;
+		error = true;
 	}
 	if (state->biosChecksum != gba->biosChecksum) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS");
 		if (state->cpu.gprs[ARM_PC] < SIZE_BIOS && state->cpu.gprs[ARM_PC] >= 0x20) {
-			return;
+			error = true;
 		}
 	}
 	if (gba->memory.rom && (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title)))) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
-		return;
+		error = true;
 	} else if (!gba->memory.rom && state->id != 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a game, but no game loaded");
-		return;
+		error = true;
 	}
 	if (state->romCrc32 != gba->romCrc32) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
 	}
 	if (state->cpu.cycles < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
-		return;
+		error = true;
+	}
+	if (state->cpu.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: Next event is negative");
+		error = true;
 	}
 	if (state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
-		return;
+		error = true;
 	}
 	if (state->video.nextHblank - state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank is negative");
-		return;
+		error = true;
 	}
 	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
-		return;
+		error = true;
+	}
+	if (state->timers[0].nextEvent < 0 || state->timers[1].nextEvent < 0 || state->timers[2].nextEvent < 0 || state->timers[3].nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: timer nextEvent is negative");
+		error = true;
 	}
 	if (state->audio.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
-		return;
+		error = true;
 	}
-	if (state->audio.ch1.envelopeNextStep < 0 || state->audio.ch1.waveNextStep < 0 || state->audio.ch1.sweepNextStep < 0 || state->audio.ch1.nextEvent < 0) {
+	if (!state->audio.ch1Dead && (state->audio.ch1.envelopeNextStep < 0 ||
+		                          state->audio.ch1.waveNextStep < 0 ||
+		                          state->audio.ch1.sweepNextStep < 0 ||
+		                          state->audio.ch1.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 1 register is negative");
-		return;
+		error = true;
 	}
-	if (state->audio.ch2.envelopeNextStep < 0 || state->audio.ch2.waveNextStep < 0 || state->audio.ch2.nextEvent < 0) {
+	if (!state->audio.ch2Dead && (state->audio.ch2.envelopeNextStep < 0 ||
+		                          state->audio.ch2.waveNextStep < 0 ||
+		                          state->audio.ch2.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 2 register is negative");
-		return;
+		error = true;
 	}
 	if (state->audio.ch3.nextEvent < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 3 register is negative");
-		return;
+		error = true;
 	}
-	if (state->audio.ch4.envelopeNextStep < 0 || state->audio.ch4.nextEvent < 0) {
+	if (!state->audio.ch4Dead && (state->audio.ch4.envelopeNextStep < 0 ||
+		                          state->audio.ch4.nextEvent < 0)) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
-		return;
+		error = true;
 	}
 	int region = (state->cpu.gprs[ARM_PC] >> BASE_OFFSET);
 	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((state->cpu.gprs[ARM_PC] - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
-		return;
+		error = true;
+	}
+	if (error) {
+		return false;
 	}
 	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
 	gba->cpu->cpsr = state->cpu.cpsr;
@@ -166,6 +184,7 @@ void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (gba->rr) {
 		gba->rr->stateLoaded(gba->rr, state);
 	}
+	return true;
 }
 
 #ifndef _3DS
@@ -220,7 +239,9 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	struct GBASerializedState state;
 	uLongf len = sizeof(state);
 	uncompress((Bytef*) &state, &len, chunk->data, chunk->size);
-	GBADeserialize(png_get_user_chunk_ptr(png), &state);
+	if (!GBADeserialize(png_get_user_chunk_ptr(png), &state)) {
+		longjmp(png_jmpbuf(png), 1);
+	}
 	return 1;
 }
 
@@ -235,15 +256,17 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 	uint32_t* pixels = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 
 	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
-	PNGReadHeader(png, info);
-	PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
-	PNGReadFooter(png, end);
+	bool success = PNGReadHeader(png, info);
+	success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
+	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
-	gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
-	GBASyncForceFrame(gba->sync);
+	if (success) {
+		gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
+		GBASyncForceFrame(gba->sync);
+	}
 
 	free(pixels);
-	return true;
+	return success;
 }
 #endif
 
@@ -257,6 +280,8 @@ bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, b
 	vf->close(vf);
 	if (success) {
 		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i saved", slot);
+	} else {
+		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to save", slot);
 	}
 	return success;
 }
@@ -271,6 +296,8 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 	vf->close(vf);
 	if (success) {
 		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i loaded", slot);
+	} else {
+		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to load", slot);
 	}
 	return success;
 }
@@ -287,20 +314,20 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		return true;
 	}
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	else {
 		return _savePNGState(gba, vf);
 	}
-	#endif
+#endif
 	return false;
 }
 
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
-	#ifdef USE_PNG
+#ifdef USE_PNG
 	if (isPNG(vf)) {
 		return _loadPNGState(gba, vf);
 	}
-	#endif
+#endif
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}
@@ -308,9 +335,9 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
 	if (!state) {
 		return false;
 	}
-	GBADeserialize(gba, state);
+	bool success = GBADeserialize(gba, state);
 	vf->unmap(vf, state, sizeof(struct GBASerializedState));
-	return true;
+	return success;
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

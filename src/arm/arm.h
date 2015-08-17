@@ -101,8 +101,10 @@ struct ARMMemory {
 	void (*store16)(struct ARMCore*, uint32_t address, int16_t value, int* cycleCounter);
 	void (*store8)(struct ARMCore*, uint32_t address, int8_t value, int* cycleCounter);
 
-	uint32_t (*loadMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
-	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction, int* cycleCounter);
+	uint32_t (*loadMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+	                         int* cycleCounter);
+	uint32_t (*storeMultiple)(struct ARMCore*, uint32_t baseAddress, int mask, enum LSMDirection direction,
+	                          int* cycleCounter);
 
 	uint32_t* activeRegion;
 	uint32_t activeMask;
@@ -110,8 +112,7 @@ struct ARMMemory {
 	uint32_t activeSeqCycles16;
 	uint32_t activeNonseqCycles32;
 	uint32_t activeNonseqCycles16;
-	uint32_t activeUncachedCycles32;
-	uint32_t activeUncachedCycles16;
+	int32_t (*stall)(struct ARMCore*, int32_t wait);
 	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
 };
 
@@ -172,6 +173,7 @@ void ARMReset(struct ARMCore* cpu);
 void ARMSetPrivilegeMode(struct ARMCore*, enum PrivilegeMode);
 void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
+void ARMRaiseUndefined(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
 void ARMRunLoop(struct ARMCore* cpu);

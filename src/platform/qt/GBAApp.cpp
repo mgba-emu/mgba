@@ -15,6 +15,7 @@
 #include <QIcon>
 
 extern "C" {
+#include "gba/supervisor/thread.h"
 #include "platform/commandline.h"
 #include "util/socket.h"
 }
@@ -33,37 +34,47 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	SDL_Init(SDL_INIT_NOPARACHUTE);
 #endif
 
+#ifndef Q_OS_MAC
 	setWindowIcon(QIcon(":/res/mgba-1024.png"));
+#endif
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
+	qRegisterMetaType<GBAThread*>("GBAThread*");
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
 
-	Window* w = new Window(&m_configController);
-	m_windows[0] = w;
-
-#ifndef Q_OS_MAC
-	w->show();
-#endif
+	if (!m_configController.getQtOption("displayDriver").isNull()) {
+		Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("displayDriver").toInt()));
+	}
 
 	GBAArguments args;
-	if (m_configController.parseArguments(&args, argc, argv)) {
+	bool loaded = m_configController.parseArguments(&args, argc, argv);
+	if (loaded && args.showHelp) {
+		usage(argv[0], 0);
+		::exit(0);
+		return;
+	}
+
+	if (!m_configController.getQtOption("audioDriver").isNull()) {
+		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
+	}
+	Window* w = new Window(&m_configController);
+	connect(w, &Window::destroyed, [this]() {
+		m_windows[0] = nullptr;
+	});
+	m_windows[0] = w;
+
+	if (loaded) {
 		w->argumentsPassed(&args);
 	} else {
 		w->loadConfig();
 	}
 	freeArguments(&args);
-
-	Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("videoDriver").toInt()));
-	AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController.getQtOption("audioDriver").toInt()));
-	w->controller()->reloadAudioDriver();
+	w->show();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
-#ifdef Q_OS_MAC
-	w->show();
-#endif
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -79,16 +90,15 @@ Window* GBAApp::newWindow() {
 		return nullptr;
 	}
 	Window* w = new Window(&m_configController, m_multiplayer.attached());
-	m_windows[m_multiplayer.attached()] = w;
+	int windowId = m_multiplayer.attached();
+	connect(w, &Window::destroyed, [this, windowId]() {
+		m_windows[windowId] = nullptr;
+	});
+	m_windows[windowId] = w;
 	w->setAttribute(Qt::WA_DeleteOnClose);
-#ifndef Q_OS_MAC
-	w->show();
-#endif
 	w->loadConfig();
-	w->controller()->setMultiplayerController(&m_multiplayer);
-#ifdef Q_OS_MAC
 	w->show();
-#endif
+	w->controller()->setMultiplayerController(&m_multiplayer);
 	return w;
 }
 

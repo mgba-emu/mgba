@@ -31,6 +31,7 @@ public:
 
 	virtual void setInput(GBAThread* input);
 	int getBufferSamples() const { return m_samples; }
+	virtual unsigned sampleRate() const = 0;
 
 public slots:
 	virtual void start() = 0;
@@ -38,6 +39,8 @@ public slots:
 
 	virtual void setBufferSamples(int samples) = 0;
 	virtual void inputParametersChanged() = 0;
+
+	virtual void requestSampleRate(unsigned) = 0;
 
 protected:
 	GBAThread* input() { return m_context; }

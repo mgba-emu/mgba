@@ -15,22 +15,20 @@ using namespace QGBA;
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
+	, m_key(-1)
+	, m_axis(-1)
 	, m_button(false)
 {
 	setAlignment(Qt::AlignCenter);
 }
 
 void KeyEditor::setValue(int key) {
+	m_key = key;
 	if (m_button) {
-		if (key < 0) {
-			clear();
-		} else {
-			setText(QString::number(key));
-		}
+		updateButtonText();
 	} else {
 		setText(QKeySequence(key).toString(QKeySequence::NativeText));
 	}
-	m_key = key;
 	emit valueChanged(key);
 }
 
@@ -41,16 +39,28 @@ void KeyEditor::setValueKey(int key) {
 
 void KeyEditor::setValueButton(int button) {
 	m_button = true;
-	m_direction = GamepadAxisEvent::NEUTRAL;
 	setValue(button);
 }
 
 void KeyEditor::setValueAxis(int axis, int32_t value) {
 	m_button = true;
-	m_key = axis;
+	m_axis = axis;
 	m_direction = value < 0 ? GamepadAxisEvent::NEGATIVE : GamepadAxisEvent::POSITIVE;
-	setText((value < 0 ? "-" : "+") + QString::number(axis));
+	updateButtonText();
 	emit axisChanged(axis, m_direction);
+}
+
+void KeyEditor::clearButton() {
+	m_button = true;
+	setValue(-1);
+}
+
+void KeyEditor::clearAxis() {
+	m_button = true;
+	m_axis = -1;
+	m_direction = GamepadAxisEvent::NEUTRAL;
+	updateButtonText();
+	emit axisChanged(m_axis, m_direction);
 }
 
 QSize KeyEditor::sizeHint() const {
@@ -84,4 +94,19 @@ bool KeyEditor::event(QEvent* event) {
 		return true;
 	}
 	return QWidget::event(event);
+}
+
+void KeyEditor::updateButtonText() {
+	QStringList text;
+	if (m_key >= 0) {
+		text.append(QString::number(m_key));
+	}
+	if (m_direction != GamepadAxisEvent::NEUTRAL) {
+		text.append((m_direction == GamepadAxisEvent::NEGATIVE ? "-" : "+") + QString::number(m_axis));
+	}
+	if (text.isEmpty()) {
+		setText(tr("---"));
+	} else {
+		setText(text.join("/"));
+	}
 }

@@ -186,7 +186,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 			}
 		}
 		GBASyncWaitFrameEnd(&context->sync);
-		if (*frames == duration) {
+		if (duration > 0 && *frames == duration) {
 			_GBAPerfShutdown(0);
 		}
 		if (_dispatchExiting) {

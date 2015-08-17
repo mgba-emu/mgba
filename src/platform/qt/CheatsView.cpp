@@ -99,20 +99,30 @@ void CheatsView::removeSet() {
 }
 
 void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callback) {
-	GBACheatSet* set;
+	GBACheatSet* set = nullptr;
 	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
-	if (selection.count() != 1) {
-		return;
+	QModelIndex index;
+	if (selection.count() == 0) {
+		set = new GBACheatSet;
+		GBACheatSetInit(set, nullptr);
+	} else if (selection.count() == 1) {
+		index = selection[0];
+		set = m_model.itemAt(index);
 	}
-	set = m_model.itemAt(selection[0]);
+
 	if (!set) {
 		return;
 	}
 	m_controller->threadInterrupt();
+	if (selection.count() == 0) {
+		m_model.addSet(set);
+		index = m_model.index(m_model.rowCount() - 1, 0, QModelIndex());
+		m_ui.cheatList->selectionModel()->select(index, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
+	}
 	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
 	for (const QString& string : cheats) {
-		m_model.beginAppendRow(selection[0]);
-		callback(set, string.toLocal8Bit().constData());
+		m_model.beginAppendRow(index);
+		callback(set, string.toUtf8().constData());
 		m_model.endAppendRow();
 	}
 	m_controller->threadContinue();

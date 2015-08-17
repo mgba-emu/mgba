@@ -13,11 +13,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LOAD_CYCLES \
+#define LOAD_CYCLES    \
 	info->iCycles = 1; \
 	info->nDataCycles = 1;
 
-#define STORE_CYCLES \
+#define STORE_CYCLES              \
 	info->sInstructionCycles = 0; \
 	info->nInstructionCycles = 1; \
 	info->nDataCycles = 1;

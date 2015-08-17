@@ -7,7 +7,6 @@
 #define QGBA_DISPLAY_QT
 
 #include "Display.h"
-#include "MessagePainter.h"
 
 #include <QImage>
 #include <QTimer>
@@ -22,27 +21,24 @@ Q_OBJECT
 public:
 	DisplayQt(QWidget* parent = nullptr);
 
+	bool isDrawing() const override { return m_isDrawing; }
+
 public slots:
 	void startDrawing(GBAThread* context) override;
-	void stopDrawing() override {}
-	void pauseDrawing() override {}
-	void unpauseDrawing() override {}
+	void stopDrawing() override { m_isDrawing = false; }
+	void pauseDrawing() override { m_isDrawing = false; }
+	void unpauseDrawing() override { m_isDrawing = true; }
 	void forceDraw() override { update(); }
 	void lockAspectRatio(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 
-	void showMessage(const QString& message) override;
-
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
-	virtual void resizeEvent(QResizeEvent*) override;;
 
 private:
+	bool m_isDrawing;
 	QImage m_backing;
-	bool m_lockAspectRatio;
-	bool m_filter;
-	MessagePainter m_messagePainter;
 };
 
 }

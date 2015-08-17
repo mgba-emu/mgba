@@ -10,7 +10,7 @@
 
 #include <pthread.h>
 #include <sys/time.h>
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <pthread_np.h>
 #endif
 
@@ -79,7 +79,7 @@ static inline int ThreadJoin(Thread thread) {
 static inline int ThreadSetName(const char* name) {
 #ifdef __APPLE__
 	return pthread_setname_np(name);
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
 	pthread_set_name_np(pthread_self(), name);
 	return 0;
 #else

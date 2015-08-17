@@ -8,34 +8,14 @@
 
 #include "util/common.h"
 
+#include "gba/interface.h"
+
 #define MAX_GBAS 4
 
 extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
 
-enum GBASIOMode {
-	SIO_NORMAL_8 = 0,
-	SIO_NORMAL_32 = 1,
-	SIO_MULTI = 2,
-	SIO_UART = 3,
-	SIO_GPIO = 8,
-	SIO_JOYBUS = 12
-};
-
 enum {
 	RCNT_INITIAL = 0x8000
-};
-
-struct GBASIO;
-
-struct GBASIODriver {
-	struct GBASIO* p;
-
-	bool (*init)(struct GBASIODriver* driver);
-	void (*deinit)(struct GBASIODriver* driver);
-	bool (*load)(struct GBASIODriver* driver);
-	bool (*unload)(struct GBASIODriver* driver);
-	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
-	int32_t (*processEvents)(struct GBASIODriver* driver, int32_t cycles);
 };
 
 struct GBASIODriverSet {
@@ -85,6 +65,7 @@ struct GBASIO {
 
 void GBASIOInit(struct GBASIO* sio);
 void GBASIODeinit(struct GBASIO* sio);
+void GBASIOReset(struct GBASIO* sio);
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);

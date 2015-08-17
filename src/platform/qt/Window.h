@@ -20,6 +20,7 @@ extern "C" {
 #include "GDBController.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
+#include "LogController.h"
 
 struct GBAOptions;
 struct GBAArguments;
@@ -53,6 +54,7 @@ signals:
 	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
+	void sampleRateChanged(unsigned samples);
 	void fpsTargetChanged(float target);
 
 public slots:
@@ -64,6 +66,8 @@ public slots:
 	void toggleFullScreen();
 	void loadConfig();
 	void saveConfig();
+
+	void replaceROM();
 
 	void importSharkport();
 	void exportSharkport();
@@ -78,6 +82,8 @@ public slots:
 
 	void openPaletteWindow();
 	void openMemoryWindow();
+
+	void openAboutScreen();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -99,7 +105,9 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
+	virtual void showEvent(QShowEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void focusInEvent(QFocusEvent*) override;
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
@@ -111,6 +119,9 @@ private slots:
 	void gameCrashed(const QString&);
 	void gameFailed();
 	void unimplementedBiosCall(int);
+
+	void tryMakePortable();
+	void mustRestart();
 
 	void recordFrame();
 	void showFPS();
@@ -138,6 +149,8 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	QMap<int, QAction*> m_frameSizes;
+	LogController m_log;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;

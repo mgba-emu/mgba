@@ -8,7 +8,7 @@
 #include "gba/gba.h"
 #include "gba/hardware.h"
 
- #include "util/configuration.h"
+#include "util/configuration.h"
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Advance Wars
@@ -285,6 +285,12 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		if (override->hardware & HW_TILT) {
 			GBAHardwareInitTilt(&gba->memory.hw);
 		}
+
+		if (override->hardware & HW_GB_PLAYER_DETECTION) {
+			gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
+		} else {
+			gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
+		}
 	}
 
 	if (override->idleLoop != IDLE_LOOP_NONE) {
@@ -292,5 +298,14 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		if (gba->idleOptimization == IDLE_LOOP_DETECT) {
 			gba->idleOptimization = IDLE_LOOP_REMOVE;
 		}
+	}
+}
+
+void GBAOverrideApplyDefaults(struct GBA* gba) {
+	struct GBACartridgeOverride override;
+	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
+	memcpy(override.id, &cart->id, sizeof(override.id));
+	if (GBAOverrideFind(0, &override)) {
+		GBAOverrideApply(gba, &override);
 	}
 }

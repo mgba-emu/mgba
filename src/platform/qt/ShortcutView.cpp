@@ -6,6 +6,7 @@
 #include "ShortcutView.h"
 
 #include "GamepadButtonEvent.h"
+#include "InputController.h"
 #include "ShortcutController.h"
 
 #include <QKeyEvent>
@@ -15,6 +16,7 @@ using namespace QGBA;
 ShortcutView::ShortcutView(QWidget* parent)
 	: QWidget(parent)
 	, m_controller(nullptr)
+	, m_input(nullptr)
 {
 	m_ui.setupUi(this);
 	m_ui.keyEdit->setValueButton(-1);
@@ -30,6 +32,14 @@ ShortcutView::ShortcutView(QWidget* parent)
 void ShortcutView::setController(ShortcutController* controller) {
 	m_controller = controller;
 	m_ui.shortcutTable->setModel(controller);
+}
+
+void ShortcutView::setInputController(InputController* controller) {
+	if (m_input) {
+		m_input->releaseFocus(this);
+	}
+	m_input = controller;
+	m_input->stealFocus(this);
 }
 
 bool ShortcutView::eventFilter(QObject*, QEvent* event) {
@@ -104,10 +114,27 @@ void ShortcutView::updateButton(int button) {
 	m_controller->updateButton(m_ui.shortcutTable->selectionModel()->currentIndex(), button);
 }
 
-
 void ShortcutView::updateAxis(int axis, int direction) {
 	if (!m_controller || m_controller->isMenuAt(m_ui.shortcutTable->selectionModel()->currentIndex())) {
 		return;
 	}
-	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis, static_cast<GamepadAxisEvent::Direction>(direction));
+	m_controller->updateAxis(m_ui.shortcutTable->selectionModel()->currentIndex(), axis,
+	                         static_cast<GamepadAxisEvent::Direction>(direction));
+}
+
+void ShortcutView::closeEvent(QCloseEvent*) {
+	if (m_input) {
+		m_input->releaseFocus(this);
+	}
+}
+
+bool ShortcutView::event(QEvent* event) {
+	if (m_input) {
+		if (event->type() == QEvent::WindowActivate) {
+			m_input->stealFocus(this);
+		} else if (event->type() == QEvent::WindowDeactivate) {
+			m_input->releaseFocus(this);
+		}
+	}
+	return QWidget::event(event);
 }

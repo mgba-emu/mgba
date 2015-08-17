@@ -23,6 +23,8 @@
 
 #include <signal.h>
 
+static void _loadGameDir(struct GBAThread* threadContext);
+
 static const float _defaultFPSTarget = 60.f;
 
 #ifndef DISABLE_THREADING
@@ -94,10 +96,22 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 	}
 }
 
+struct GBAThreadStop {
+	struct GBAStopCallback d;
+	struct GBAThread* p;
+};
+
+static void _stopCallback(struct GBAStopCallback* stop) {
+	struct GBAThreadStop* callback = (struct GBAThreadStop*) stop;
+	if (callback->p->stopCallback(callback->p)) {
+		_changeState(callback->p, THREAD_EXITING, false);
+	}
+}
+
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
-#else
+#elif _WIN32
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 #endif
 
@@ -106,7 +120,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct Patch patch;
 	struct GBACheatDevice cheatDevice;
 	struct GBAThread* threadContext = context;
-	struct ARMComponent* components[GBA_COMPONENT_MAX] = {0};
+	struct ARMComponent* components[GBA_COMPONENT_MAX] = { 0 };
 	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 
@@ -127,10 +141,18 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+
+	struct GBAThreadStop stop;
+	if (threadContext->stopCallback) {
+		stop.d.stop = _stopCallback;
+		stop.p = threadContext;
+		gba.stopCallback = &stop.d;
+	}
+
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
-#else
+#elif _WIN32
 	TlsSetValue(_contextKey, threadContext);
 #endif
 
@@ -203,7 +225,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBARRInitPlay(&gba);
 	}
 
-	if (threadContext->skipBios) {
+	if (threadContext->skipBios && gba.memory.rom) {
 		GBASkipBIOS(&cpu);
 	}
 
@@ -283,7 +305,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			ARMReset(&cpu);
-			if (threadContext->skipBios) {
+			if (threadContext->skipBios && gba.memory.rom) {
 				GBASkipBIOS(&cpu);
 			}
 		}
@@ -352,18 +374,7 @@ void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread*
 		threadContext->gameDir = VDirOpen(args->fname);
 		threadContext->stateDir = threadContext->gameDir;
 	} else {
-		threadContext->rom = VFileOpen(args->fname, O_RDONLY);
-		threadContext->gameDir = 0;
-#if USE_LIBZIP
-		if (!threadContext->gameDir) {
-			threadContext->gameDir = VDirOpenZip(args->fname, 0);
-		}
-#endif
-#if USE_LZMA
-		if (!threadContext->gameDir) {
-			threadContext->gameDir = VDirOpen7z(args->fname, 0);
-		}
-#endif
+		GBAThreadLoadROM(threadContext, args->fname);
 	}
 	threadContext->fname = args->fname;
 	threadContext->patch = VFileOpen(args->patch, O_RDONLY);
@@ -398,25 +409,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	}
 
 	if (threadContext->gameDir) {
-		threadContext->gameDir->rewind(threadContext->gameDir);
-		struct VDirEntry* dirent = threadContext->gameDir->listNext(threadContext->gameDir);
-		while (dirent) {
-			struct Patch patchTemp;
-			struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
-			if (!vf) {
-				dirent = threadContext->gameDir->listNext(threadContext->gameDir);
-				continue;
-			}
-			if (!threadContext->rom && GBAIsROM(vf)) {
-				threadContext->rom = vf;
-			} else if (!threadContext->patch && loadPatch(vf, &patchTemp)) {
-				threadContext->patch = vf;
-			} else {
-				vf->close(vf);
-			}
-			dirent = threadContext->gameDir->listNext(threadContext->gameDir);
-		}
-
+		_loadGameDir(threadContext);
 	}
 
 	if (!threadContext->rom && !bootBios) {
@@ -425,6 +418,16 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	}
 
 	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
+
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ups", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ips", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".bps", O_RDONLY);
+	}
 
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
@@ -437,7 +440,7 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 
 	threadContext->interruptDepth = 0;
 
-#ifndef _WIN32
+#ifdef USE_PTHREADS
 	sigset_t signals;
 	sigemptyset(&signals);
 	sigaddset(&signals, SIGINT);
@@ -678,6 +681,67 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 	GBASyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
+void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
+	threadContext->rom = VFileOpen(fname, O_RDONLY);
+	threadContext->gameDir = 0;
+#if USE_LIBZIP
+	if (!threadContext->gameDir) {
+		threadContext->gameDir = VDirOpenZip(fname, 0);
+	}
+#endif
+#if USE_LZMA
+	if (!threadContext->gameDir) {
+		threadContext->gameDir = VDirOpen7z(fname, 0);
+	}
+#endif
+}
+
+static void _loadGameDir(struct GBAThread* threadContext) {
+	threadContext->gameDir->rewind(threadContext->gameDir);
+	struct VDirEntry* dirent = threadContext->gameDir->listNext(threadContext->gameDir);
+	while (dirent) {
+		struct Patch patchTemp;
+		struct VFile* vf = threadContext->gameDir->openFile(threadContext->gameDir, dirent->name(dirent), O_RDONLY);
+		if (!vf) {
+			dirent = threadContext->gameDir->listNext(threadContext->gameDir);
+			continue;
+		}
+		if (!threadContext->rom && GBAIsROM(vf)) {
+			threadContext->rom = vf;
+		} else if (!threadContext->patch && loadPatch(vf, &patchTemp)) {
+			threadContext->patch = vf;
+		} else {
+			vf->close(vf);
+		}
+		dirent = threadContext->gameDir->listNext(threadContext->gameDir);
+	}
+}
+
+void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname) {
+	GBAUnloadROM(threadContext->gba);
+
+	if (threadContext->rom) {
+		threadContext->rom->close(threadContext->rom);
+		threadContext->rom = 0;
+	}
+
+	if (threadContext->save) {
+		threadContext->save->close(threadContext->save);
+		threadContext->save = 0;
+	}
+
+	GBAThreadLoadROM(threadContext, fname);
+	if (threadContext->gameDir) {
+		_loadGameDir(threadContext);
+	}
+
+	threadContext->fname = fname;
+	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
+
+	GBARaiseIRQ(threadContext->gba, IRQ_GAMEPAK);
+	GBALoadROM(threadContext->gba, threadContext->rom, threadContext->save, threadContext->fname);
+}
+
 #ifdef USE_PTHREADS
 struct GBAThread* GBAThreadGetContext(void) {
 	pthread_once(&_contextOnce, _createTLS);
@@ -687,6 +751,10 @@ struct GBAThread* GBAThreadGetContext(void) {
 struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
+}
+#else
+struct GBAThread* GBAThreadGetContext(void) {
+	return 0;
 }
 #endif
 

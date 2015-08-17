@@ -55,7 +55,7 @@ public:
 	void threadContinue();
 
 	bool isPaused();
-	bool isLoaded() { return m_gameOpen; }
+	bool isLoaded() { return m_gameOpen && GBAThreadIsActive(&m_threadContext); }
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
@@ -71,6 +71,8 @@ public:
 	void clearOverride() { m_threadContext.hasOverride = false; }
 
 	void setOptions(const GBAOptions*);
+
+	int stateSlot() const { return m_stateSlot; }
 
 #ifdef USE_GDB_STUB
 	ARMDebugger* debugger();
@@ -97,6 +99,8 @@ signals:
 public slots:
 	void loadGame(const QString& path, bool dirmode = false);
 	void loadBIOS(const QString& path);
+	void yankPak();
+	void replaceGame(const QString& path);
 	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
@@ -115,9 +119,14 @@ public slots:
 	void keyReleased(int key);
 	void clearKeys();
 	void setAudioBufferSamples(int samples);
+	void setAudioSampleRate(unsigned rate);
+	void setAudioChannelEnabled(int channel, bool enable = true);
+	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
+	void loadBackupState();
+	void saveBackupState();
 	void setVideoSync(bool);
 	void setAudioSync(bool);
 	void setFrameskip(int);
@@ -159,6 +168,7 @@ private:
 	void enableTurbo();
 
 	uint32_t* m_drawContext;
+	uint32_t* m_frontBuffer;
 	GBAThread m_threadContext;
 	GBAVideoSoftwareRenderer* m_renderer;
 	GBACheatDevice m_cheatDevice;
@@ -189,7 +199,12 @@ private:
 	QTimer m_rewindTimer;
 	bool m_wasPaused;
 
+	bool m_audioChannels[6];
+	bool m_videoLayers[5];
+
 	int m_stateSlot;
+	GBASerializedState* m_backupLoadState;
+	QByteArray m_backupSaveState;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;
@@ -201,17 +216,7 @@ private:
 	uint8_t m_luxValue;
 	int m_luxLevel;
 
-	static const int LUX_LEVELS[10];
-
-	struct GameControllerRTC : GBARTCSource {
-		GameController* p;
-		enum {
-			NO_OVERRIDE,
-			FIXED,
-			FAKE_EPOCH
-		} override;
-		int64_t value;
-	} m_rtc;
+	GBARTCGenericSource m_rtc;
 };
 
 }

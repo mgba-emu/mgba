@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AudioDevice.h"
 
+#include "LogController.h"
+
 extern "C" {
 #include "gba/gba.h"
 #include "gba/audio.h"
@@ -24,6 +26,7 @@ AudioDevice::AudioDevice(QObject* parent)
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
 	if (!m_context || !GBAThreadIsActive(m_context)) {
+		LOG(INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
@@ -49,6 +52,7 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 	}
 
 	if (!m_context->gba) {
+		LOG(WARN) << tr("Audio device is missing its GBA");
 		return 0;
 	}
 
@@ -68,5 +72,6 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 }
 
 qint64 AudioDevice::writeData(const char*, qint64) {
+	LOG(WARN) << tr("Writing data to read-only audio device");
 	return 0;
 }

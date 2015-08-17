@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/mman.h>
+#else
+#include <windows.h>
 #endif
 
 struct VFileFD {
@@ -28,15 +30,20 @@ static void* _vfdMap(struct VFile* vf, size_t size, int flags);
 static void _vfdUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfdTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfdSize(struct VFile* vf);
+static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size);
 
-struct VFile* VFileOpen(const char* path, int flags) {
+struct VFile* VFileOpenFD(const char* path, int flags) {
 	if (!path) {
 		return 0;
 	}
 #ifdef _WIN32
 	flags |= O_BINARY;
-#endif
+	wchar_t wpath[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
+	int fd = _wopen(wpath, flags, 0666);
+#else
 	int fd = open(path, flags, 0666);
+#endif
 	return VFileFromFD(fd);
 }
 
@@ -60,6 +67,7 @@ struct VFile* VFileFromFD(int fd) {
 	vfd->d.unmap = _vfdUnmap;
 	vfd->d.truncate = _vfdTruncate;
 	vfd->d.size = _vfdSize;
+	vfd->d.sync = _vfdSync;
 
 	return &vfd->d;
 }
@@ -159,4 +167,15 @@ static ssize_t _vfdSize(struct VFile* vf) {
 		return -1;
 	}
 	return stat.st_size;
+}
+
+static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
+	UNUSED(buffer);
+	UNUSED(size);
+	struct VFileFD* vfd = (struct VFileFD*) vf;
+#ifndef _WIN32
+	return fsync(vfd->fd) == 0;
+#else
+	return FlushFileBuffers((HANDLE) _get_osfhandle(vfd->fd));
+#endif
 }
