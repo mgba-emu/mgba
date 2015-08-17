@@ -44,8 +44,7 @@ int main() {
 	renderer.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	struct VFile* rom = VFileOpen3DS(&sdmcArchive, "/rom.gba", FS_OPEN_READ);
-
-	struct VFile* save = VFileOpen3DS(&sdmcArchive, "/rom.sav", FS_OPEN_WRITE | FS_OPEN_CREATE);
+	struct VFile* save = VFileOpen3DS(&sdmcArchive, "/rom.sav", FS_OPEN_READ | FS_OPEN_WRITE);
 
 	GBACreate(gba);
 	ARMSetComponents(cpu, &gba->d, 0, 0);
