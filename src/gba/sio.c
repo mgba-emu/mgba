@@ -51,6 +51,7 @@ void GBASIOInit(struct GBASIO* sio) {
 	sio->drivers.normal = 0;
 	sio->drivers.multiplayer = 0;
 	sio->drivers.joybus = 0;
+	sio->activeDriver = 0;
 	GBASIOReset(sio);
 }
 
@@ -71,7 +72,6 @@ void GBASIOReset(struct GBASIO* sio) {
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
 	sio->mode = -1;
-	sio->activeDriver = 0;
 	_switchMode(sio);
 }
 
