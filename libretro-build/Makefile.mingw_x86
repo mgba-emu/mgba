@@ -1,12 +1,6 @@
 ##############
-# Works on hosts Linux
-# apt-get install mingw-w64
-
-#############
-# User config
-
-DEBUG = 0
-LOG_PERFORMANCE = 1
+# Works on hosts Windows
+# Install MSYS2
 
 ##########################
 # Checks the host platform
@@ -35,16 +29,16 @@ include $(BUILD_DIR)/Makefile.common
 #################
 # Toolchain setup
 
-CC  = i686-w64-mingw32-gcc
-CXX = i686-w64-mingw32-g++
-AS  = i686-w64-mingw32-as
-AR  = i686-w64-mingw32-ar
+CC  = gcc
+CXX = g++
+AS  = as
+AR  = ar
 
 ############
 # Extensions
 
-OBJEXT = .windows_x86.o
-SOEXT  = .windows_x86.dll
+OBJEXT = .mingw_x86.o
+SOEXT  = .mingw_x86.dll
 
 ################
 # Platform setup
@@ -52,10 +46,10 @@ SOEXT  = .windows_x86.dll
 STATIC_LINKING = 0
 platform       = win
 PLATDEFS       = 
-PLATCFLAGS     = -fstrict-aliasing
-PLATCXXFLAGS   = -fstrict-aliasing
-PLATLDFLAGS    = -shared -lm
-PLATLDXFLAGS   = -shared -lm
+PLATCFLAGS     = -m32 -fpic -fstrict-aliasing
+PLATCXXFLAGS   = -m32 -fpic -fstrict-aliasing
+PLATLDFLAGS    = -m32 -shared -lm
+PLATLDXFLAGS   = -m32 -shared -lm
 
 ################
 # libretro setup
@@ -78,17 +72,15 @@ LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
 ########
 # Tuning
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG),)
   CFLAGS   += -O0 -g
   CXXFLAGS += -O0 -g
-  LDFLAGS  += -g
-  LDXFLAGS += -g
 else
   CFLAGS   += -O3 -DNDEBUG
   CXXFLAGS += -O3 -DNDEBUG
 endif
 
-ifeq ($(LOG_PERFORMANCE), 1)
+ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif

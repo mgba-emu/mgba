@@ -1,12 +1,6 @@
 ##############
 # Works on hosts Linux
-# apt-get install g++-multilib libc6-dev-i386
-
-#############
-# User config
-
-DEBUG = 0
-LOG_PERFORMANCE = 1
+# 
 
 ##########################
 # Checks the host platform
@@ -43,8 +37,8 @@ AR  = ar
 ############
 # Extensions
 
-OBJEXT = .linux_x86.o
-SOEXT  = .linux_x86.so
+OBJEXT = .linux-portable_x86_64.o
+SOEXT  = .linux-portable_x86_64.so
 
 ################
 # Platform setup
@@ -52,10 +46,10 @@ SOEXT  = .linux_x86.so
 STATIC_LINKING = 0
 platform       = unix
 PLATDEFS       = 
-PLATCFLAGS     = -m32 -fpic -fstrict-aliasing
-PLATCXXFLAGS   = -m32 -fpic -fstrict-aliasing
-PLATLDFLAGS    = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
-PLATLDXFLAGS   = -m32 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
+PLATCFLAGS     = -m64 -fpic -fstrict-aliasing
+PLATCXXFLAGS   = -m64 -fpic -fstrict-aliasing
+PLATLDFLAGS    = -m64 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T
+PLATLDXFLAGS   = -m64 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T
 
 ################
 # libretro setup
@@ -78,17 +72,15 @@ LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
 ########
 # Tuning
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG),)
   CFLAGS   += -O0 -g
   CXXFLAGS += -O0 -g
-  LDFLAGS  += -g
-  LDXFLAGS += -g
 else
   CFLAGS   += -O3 -DNDEBUG
   CXXFLAGS += -O3 -DNDEBUG
 endif
 
-ifeq ($(LOG_PERFORMANCE), 1)
+ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif

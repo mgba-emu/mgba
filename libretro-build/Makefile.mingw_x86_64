@@ -1,12 +1,6 @@
 ##############
-# Works on hosts Linux
-# 
-
-#############
-# User config
-
-DEBUG = 0
-LOG_PERFORMANCE = 1
+# Works on hosts Windows
+# Install MSYS2
 
 ##########################
 # Checks the host platform
@@ -43,19 +37,19 @@ AR  = ar
 ############
 # Extensions
 
-OBJEXT = .linux_x86_64.o
-SOEXT  = .linux_x86_64.so
+OBJEXT = .mingw_x86_64.o
+SOEXT  = .mingw_x86_64.dll
 
 ################
 # Platform setup
 
 STATIC_LINKING = 0
-platform       = unix
+platform       = win
 PLATDEFS       = 
 PLATCFLAGS     = -m64 -fpic -fstrict-aliasing
 PLATCXXFLAGS   = -m64 -fpic -fstrict-aliasing
-PLATLDFLAGS    = -m64 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
-PLATLDXFLAGS   = -m64 -shared -lm -Wl,-version-script=$(BUILD_DIR)/link.T -Wl,-no-undefined
+PLATLDFLAGS    = -m64 -shared -lm
+PLATLDXFLAGS   = -m64 -shared -lm
 
 ################
 # libretro setup
@@ -78,17 +72,15 @@ LDXFLAGS = $(PLATLDXFLAGS) $(RETROLDXFLAGS)
 ########
 # Tuning
 
-ifeq ($(DEBUG), 1)
+ifneq ($(DEBUG),)
   CFLAGS   += -O0 -g
   CXXFLAGS += -O0 -g
-  LDFLAGS  += -g
-  LDXFLAGS += -g
 else
   CFLAGS   += -O3 -DNDEBUG
   CXXFLAGS += -O3 -DNDEBUG
 endif
 
-ifeq ($(LOG_PERFORMANCE), 1)
+ifneq ($(LOG_PERFORMANCE),)
   CFLAGS   += -DLOG_PERFORMANCE
   CXXFLAGS += -DLOG_PERFORMANCE
 endif
