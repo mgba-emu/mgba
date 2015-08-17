@@ -155,6 +155,7 @@ void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) 
 		if (breakpoint->address == address) {
 			*previous = *next;
 			free(breakpoint);
+			continue;
 		}
 		previous = next;
 	}
@@ -179,6 +180,7 @@ void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) 
 		if (watchpoint->address == address) {
 			*previous = *next;
 			free(watchpoint);
+			continue;
 		}
 		previous = next;
 	}

@@ -63,10 +63,14 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 }
 
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
-	hw->devices = HW_NONE;
+	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->direction = GPIO_WRITE_ONLY;
 	hw->pinState = 0;
 	hw->direction = 0;
+
+	if (hw->p->sio.drivers.normal == &hw->gbpDriver.d) {
+		GBASIOSetDriver(&hw->p->sio, 0, SIO_NORMAL_32);
+	}
 }
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uint16_t value) {
