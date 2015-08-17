@@ -77,8 +77,8 @@ int main() {
 				}
 			}
 			gfxFlushBuffers();
-			gfxSwapBuffersGpu();
-			gspWaitForVBlank();
+			gfxSwapBuffers();
+			gspWaitForVBlank1();
 			hidScanInput();
 			activeKeys = hidKeysHeld() & 0x3FF;
 			if (hidKeysDown() & KEY_X) {
