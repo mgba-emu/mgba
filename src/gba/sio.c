@@ -65,6 +65,9 @@ void GBASIODeinit(struct GBASIO* sio) {
 	if (sio->drivers.joybus && sio->drivers.joybus->deinit) {
 		sio->drivers.joybus->deinit(sio->drivers.joybus);
 	}
+	if (sio->drivers.normal && sio->drivers.normal->deinit) {
+		sio->drivers.normal->deinit(sio->drivers.normal);
+	}
 }
 
 void GBASIOReset(struct GBASIO* sio) {
