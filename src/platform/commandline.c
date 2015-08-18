@@ -50,7 +50,7 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+static bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
 bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
