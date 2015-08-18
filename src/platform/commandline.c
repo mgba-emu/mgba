@@ -145,6 +145,7 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	parser->parse = _parseGraphicsArg;
 	parser->extraOptions = GRAPHICS_OPTIONS;
 	opts->multiplier = 0;
+	opts->fullscreen = false;
 }
 
 bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
@@ -152,6 +153,7 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
+		graphicsOpts->fullscreen = true;
 		GBAConfigSetDefaultIntValue(config, "fullscreen", 1);
 		return true;
 	case '1':

@@ -126,8 +126,8 @@ ConfigController::~ConfigController() {
 	GBAConfigFreeOpts(&m_opts);
 }
 
-bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[]) {
-	if (::parseArguments(args, &m_config, argc, argv, 0)) {
+bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser) {
+	if (::parseArguments(args, &m_config, argc, argv, subparser)) {
 		GBAConfigMap(&m_config, &m_opts);
 		return true;
 	}

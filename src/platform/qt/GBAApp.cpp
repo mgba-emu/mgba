@@ -50,9 +50,12 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	}
 
 	GBAArguments args;
-	bool loaded = m_configController.parseArguments(&args, argc, argv);
+	GraphicsOpts graphicsOpts;
+	SubParser subparser;
+	initParserForGraphics(&subparser, &graphicsOpts);
+	bool loaded = m_configController.parseArguments(&args, argc, argv, &subparser);
 	if (loaded && args.showHelp) {
-		usage(argv[0], 0);
+		usage(argv[0], subparser.usage);
 		::exit(0);
 		return;
 	}
@@ -72,6 +75,14 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		w->loadConfig();
 	}
 	freeArguments(&args);
+
+	if (graphicsOpts.multiplier) {
+		w->resizeFrame(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier);
+	}
+	if (graphicsOpts.fullscreen) {
+		w->enterFullScreen();
+	}
+
 	w->show();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
