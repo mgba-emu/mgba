@@ -1,3 +1,7 @@
+0.4.1: (Future)
+Bugfixes:
+ - Qt: Windows no longer spawn in the top left on first launch
+
 0.3.0: (2015-08-16)
 Features:
  - Ability to hide individual background layers, or OBJs
