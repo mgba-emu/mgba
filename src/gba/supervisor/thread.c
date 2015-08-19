@@ -227,7 +227,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBARRInitPlay(&gba);
 	}
 
-	if (threadContext->skipBios) {
+	if (threadContext->skipBios && gba.memory.rom) {
 		GBASkipBIOS(&cpu);
 	}
 
@@ -307,7 +307,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			ARMReset(&cpu);
-			if (threadContext->skipBios) {
+			if (threadContext->skipBios && gba.memory.rom) {
 				GBASkipBIOS(&cpu);
 			}
 		}

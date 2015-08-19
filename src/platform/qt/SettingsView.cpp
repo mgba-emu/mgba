@@ -165,7 +165,7 @@ void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 }
 
 void SettingsView::saveSetting(const char* key, const QDoubleSpinBox* field) {
-	saveSetting(key, field->cleanText());
+	saveSetting(key, field->value());
 }
 
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
@@ -173,14 +173,14 @@ void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
 }
 
 void SettingsView::saveSetting(const char* key, const QSlider* field) {
-	saveSetting(key, QString::number(field->value()));
+	saveSetting(key, field->value());
 }
 
 void SettingsView::saveSetting(const char* key, const QSpinBox* field) {
-	saveSetting(key, field->cleanText());
+	saveSetting(key, field->value());
 }
 
-void SettingsView::saveSetting(const char* key, const QString& field) {
+void SettingsView::saveSetting(const char* key, const QVariant& field) {
 	m_controller->setOption(key, field);
 	m_controller->updateOption(key);
 }

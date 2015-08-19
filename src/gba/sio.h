@@ -65,6 +65,7 @@ struct GBASIO {
 
 void GBASIOInit(struct GBASIO* sio);
 void GBASIODeinit(struct GBASIO* sio);
+void GBASIOReset(struct GBASIO* sio);
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);

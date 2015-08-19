@@ -61,6 +61,7 @@ SensorView::SensorView(GameController* controller, InputController* input, QWidg
 	connect(m_ui.gyroSensitivity, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double value) {
 		m_input->setGyroSensitivity(value * 1e8f);
 	});
+	m_input->stealFocus(this);
 }
 
 void SensorView::jiggerer(QAbstractButton* button, void (InputController::*setter)(int)) {
@@ -68,13 +69,24 @@ void SensorView::jiggerer(QAbstractButton* button, void (InputController::*sette
 		if (!checked) {
 			m_jiggered = nullptr;
 		} else {
+			button->setFocus();
 			m_jiggered = [this, button, setter](int axis) {
 				(m_input->*setter)(axis);
 				button->setChecked(false);
+				button->clearFocus();
 			};
 		}
 	});
 	button->installEventFilter(this);
+}
+
+bool SensorView::event(QEvent* event) {
+	if (event->type() == QEvent::WindowActivate) {
+		m_input->stealFocus(this);
+	} else if (event->type() == QEvent::WindowDeactivate) {
+		m_input->releaseFocus(this);
+	}
+	return QWidget::event(event);
 }
 
 bool SensorView::eventFilter(QObject*, QEvent* event) {

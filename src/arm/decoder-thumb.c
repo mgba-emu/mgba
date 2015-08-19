@@ -31,7 +31,7 @@
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
 		info->op1.a.reg = opcode & 0x0007; \
 		info->memory.baseReg = (opcode >> 3) & 0x0007; \
-		info->memory.offset.immediate = ((opcode >> 6) & 0x0007) * WIDTH; \
+		info->memory.offset.immediate = ((opcode >> 6) & 0x001F) * WIDTH; \
 		info->memory.width = (enum ARMMemoryAccessType) WIDTH; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \
 			ARM_OPERAND_AFFECTED_1 | \

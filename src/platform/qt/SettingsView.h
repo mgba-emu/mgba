@@ -40,7 +40,7 @@ private:
 	void saveSetting(const char* key, const QLineEdit*);
 	void saveSetting(const char* key, const QSlider*);
 	void saveSetting(const char* key, const QSpinBox*);
-	void saveSetting(const char* key, const QString&);
+	void saveSetting(const char* key, const QVariant&);
 
 	void loadSetting(const char* key, QAbstractButton*);
 	void loadSetting(const char* key, QComboBox*);
