@@ -10,6 +10,7 @@
 #include "gba/serialize.h"
 
 #include "platform/commandline.h"
+#include "util/memory.h"
 #include "util/string.h"
 #include "util/vfs.h"
 
@@ -27,26 +28,20 @@
 
 struct FuzzOpts {
 	bool noVideo;
-	unsigned frames;
+	int frames;
 	size_t overlayOffset;
 	char* savestate;
 	char* ssOverlay;
 };
 
-static void _GBAFuzzRunloop(struct GBAThread* context, unsigned frames);
+static void _GBAFuzzRunloop(struct GBA* gba, int frames);
 static void _GBAFuzzShutdown(int signal);
 static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
-static void _loadSavestate(struct GBAThread* context);
 
-static struct GBAThread* _thread;
 static bool _dispatchExiting = false;
-static struct VFile* _savestate = 0;
-static struct VFile* _savestateOverlay = 0;
-static size_t _overlayOffset;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAFuzzShutdown);
-
 
 	struct FuzzOpts fuzzOpts = { false, 0, 0, 0, 0 };
 	struct SubParser subparser = {
@@ -75,97 +70,99 @@ int main(int argc, char** argv) {
 		return !parsed;
 	}
 
+	struct GBA* gba = anonymousMemoryMap(sizeof(struct GBA));
+	struct ARMCore* cpu = anonymousMemoryMap(sizeof(struct ARMCore));
+	struct VFile* rom = VFileOpen(args.fname, O_RDONLY);
+
+	GBACreate(gba);
+	ARMSetComponents(cpu, &gba->d, 0, 0);
+	ARMInit(cpu);
+	gba->sync = 0;
+	gba->hardCrash = false;
+
+	GBALoadROM(gba, rom, 0, 0);
+	ARMReset(cpu);
+
+	struct GBACartridgeOverride override;
+	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
+	memcpy(override.id, &cart->id, sizeof(override.id));
+	if (GBAOverrideFind(GBAConfigGetOverrides(&config), &override)) {
+		GBAOverrideApply(gba, &override);
+	}
+
 	struct GBAVideoSoftwareRenderer renderer;
 	renderer.outputBuffer = 0;
 
-	struct GBAThread context = {};
-	_thread = &context;
+	struct VFile* savestate = 0;
+	struct VFile* savestateOverlay = 0;
+	size_t overlayOffset;
 
 	if (!fuzzOpts.noVideo) {
 		GBAVideoSoftwareRendererCreate(&renderer);
 		renderer.outputBuffer = malloc(256 * 256 * 4);
 		renderer.outputBufferStride = 256;
-		context.renderer = &renderer.d;
+		GBAVideoAssociateRenderer(&gba->video, &renderer.d);
 	}
+
 	if (fuzzOpts.savestate) {
-		_savestate = VFileOpen(fuzzOpts.savestate, O_RDONLY);
+		savestate = VFileOpen(fuzzOpts.savestate, O_RDONLY);
 		free(fuzzOpts.savestate);
 	}
 	if (fuzzOpts.ssOverlay) {
-		_overlayOffset = fuzzOpts.overlayOffset;
-		if (_overlayOffset < sizeof(struct GBASerializedState)) {
-			_savestateOverlay = VFileOpen(fuzzOpts.ssOverlay, O_RDONLY);
+		overlayOffset = fuzzOpts.overlayOffset;
+		if (overlayOffset < sizeof(struct GBASerializedState)) {
+			savestateOverlay = VFileOpen(fuzzOpts.ssOverlay, O_RDONLY);
 		}
 		free(fuzzOpts.ssOverlay);
 	}
-	if (_savestate) {
-		context.startCallback = _loadSavestate;
+	if (savestate) {
+		if (!savestateOverlay) {
+			GBALoadStateNamed(gba, savestate);
+		} else {
+			struct GBASerializedState* state = GBAAllocateState();
+			savestate->read(savestate, state, sizeof(*state));
+			savestateOverlay->read(savestateOverlay, (uint8_t*) state + overlayOffset, sizeof(*state) - overlayOffset);
+			GBADeserialize(gba, state);
+			GBADeallocateState(state);
+			savestateOverlay->close(savestateOverlay);
+			savestateOverlay = 0;
+		}
+		savestate->close(savestate);
+		savestate = 0;
 	}
-
-	context.debugger = createDebugger(&args, &context);
-	context.overrides = GBAConfigGetOverrides(&config);
 
 	GBAConfigMap(&config, &opts);
-	opts.audioSync = false;
-	opts.videoSync = false;
-	GBAMapArgumentsToContext(&args, &context);
-	GBAMapOptionsToContext(&opts, &context);
 
-	int didStart = GBAThreadStart(&context);
+	blip_set_rates(gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
-	if (!didStart) {
-		goto cleanup;
+	_GBAFuzzRunloop(gba, fuzzOpts.frames);
+
+	if (savestate) {
+		savestate->close(savestate);
 	}
-	GBAThreadInterrupt(&context);
-	if (GBAThreadHasCrashed(&context)) {
-		GBAThreadJoin(&context);
-		goto cleanup;
-	}
-
-	GBAThreadContinue(&context);
-
-	_GBAFuzzRunloop(&context, fuzzOpts.frames);
-	GBAThreadJoin(&context);
-
-cleanup:
-	if (_savestate) {
-		_savestate->close(_savestate);
-	}
-	if (_savestateOverlay) {
-		_savestateOverlay->close(_savestateOverlay);
+	if (savestateOverlay) {
+		savestateOverlay->close(savestateOverlay);
 	}
 	GBAConfigFreeOpts(&opts);
 	freeArguments(&args);
 	GBAConfigDeinit(&config);
-	free(context.debugger);
 	if (renderer.outputBuffer) {
 		free(renderer.outputBuffer);
 	}
 
-	return !didStart || GBAThreadHasCrashed(&context);
+	return 0;
 }
 
-static void _GBAFuzzRunloop(struct GBAThread* context, unsigned duration) {
-	unsigned frames = 0;
-	while (context->state < THREAD_EXITING) {
-		if (GBASyncWaitFrameStart(&context->sync, 0)) {
-			++frames;
-		}
-		GBASyncWaitFrameEnd(&context->sync);
-		if (frames >= duration) {
-			_GBAFuzzShutdown(0);
-		}
-		if (_dispatchExiting) {
-			GBAThreadEnd(context);
-		}
-	}
+static void _GBAFuzzRunloop(struct GBA* gba, int frames) {
+	do {
+		ARMRunLoop(gba->cpu);
+	} while (gba->video.frameCounter < frames && !_dispatchExiting);
 }
 
 static void _GBAFuzzShutdown(int signal) {
 	UNUSED(signal);
-	// This will come in ON the GBA thread, so we have to handle it carefully
 	_dispatchExiting = true;
-	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
 static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
@@ -191,20 +188,4 @@ static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, i
 	default:
 		return false;
 	}
-}
-
-static void _loadSavestate(struct GBAThread* context) {
-	if (!_savestateOverlay) {
-		GBALoadStateNamed(context->gba, _savestate);
-	} else {
-		struct GBASerializedState* state = GBAAllocateState();
-		_savestate->read(_savestate, state, sizeof(*state));
-		_savestateOverlay->read(_savestateOverlay, (uint8_t*) state + _overlayOffset, sizeof(*state) - _overlayOffset);
-		GBADeserialize(context->gba, state);
-		GBADeallocateState(state);
-		_savestateOverlay->close(_savestateOverlay);
-		_savestateOverlay = 0;
-	}
-	_savestate->close(_savestate);
-	_savestate = 0;
 }
