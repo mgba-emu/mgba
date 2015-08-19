@@ -1,6 +1,7 @@
 0.4.0: (Future)
 Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
+ - Qt: Fix install path of XDG desktop file with DESTDIR
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
