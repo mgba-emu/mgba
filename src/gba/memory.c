@@ -12,11 +12,11 @@
 #include "gba/io.h"
 #include "gba/serialize.h"
 #include "gba/hle-bios.h"
+#include "util/math.h"
 #include "util/memory.h"
 
 #define IDLE_LOOP_THRESHOLD 10000
 
-static uint32_t _popcount32(unsigned bits);
 static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
@@ -1083,7 +1083,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = _popcount32(mask);
+		popcount = popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -1196,7 +1196,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = _popcount32(mask);
+		popcount = popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -1586,12 +1586,6 @@ void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedStat
 void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state) {
 	memcpy(memory->wram, state->wram, SIZE_WORKING_RAM);
 	memcpy(memory->iwram, state->iwram, SIZE_WORKING_IRAM);
-}
-
-uint32_t _popcount32(unsigned bits) {
-	bits = bits - ((bits >> 1) & 0x55555555);
-	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
-	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
 
 void _pristineCow(struct GBA* gba) {
