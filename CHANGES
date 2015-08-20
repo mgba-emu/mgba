@@ -7,6 +7,7 @@ Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
  - GBA Memory: Use a dynamically sized mask for ROM memory
+ - Qt: Remove useless help icons in dialogs
 
 0.3.0: (2015-08-16)
 Features:

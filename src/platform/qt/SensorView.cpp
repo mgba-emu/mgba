@@ -12,7 +12,7 @@
 using namespace QGBA;
 
 SensorView::SensorView(GameController* controller, InputController* input, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 	, m_input(input)
 	, m_rotation(input->rotationSource())
