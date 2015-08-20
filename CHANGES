@@ -2,6 +2,7 @@
 Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
  - Qt: Fix install path of XDG desktop file with DESTDIR
+ - Qt: Fix drag and drop on Windows
 
 0.3.0: (2015-08-16)
 Features:

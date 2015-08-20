@@ -507,7 +507,7 @@ void Window::dropEvent(QDropEvent* event) {
 		return;
 	}
 	event->accept();
-	m_controller->loadGame(url.path());
+	m_controller->loadGame(url.toLocalFile());
 }
 
 void Window::mouseDoubleClickEvent(QMouseEvent* event) {
