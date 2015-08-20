@@ -2,3 +2,10 @@
 *.user*
 *~
 *.swp
+/build_mgba
+*.c
+*.h
+*.a
+*.o
+*.dol
+*.elf

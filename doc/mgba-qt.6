@@ -11,6 +11,7 @@
 .Nd Game Boy Advance emulator
 .Sh SYNOPSIS
 .Nm mgba-qt
+.Op Fl 123456f
 .Op Fl b Ar biosfile
 .Op Fl l Ar loglevel
 .Op Fl p Ar patchfile
@@ -21,12 +22,26 @@
 is a Game Boy Advance emulator.
 The options are as follows:
 .Bl -tag -width Ds
+.It Fl 1
+Scale the window 1\(mu.
+.It Fl 2
+Scale the window 2\(mu.
+.It Fl 3
+Scale the window 3\(mu.
+.It Fl 4
+Scale the window 4\(mu.
+.It Fl 5
+Scale the window 5\(mu.
+.It Fl 6
+Scale the window 6\(mu.
 .It Fl b Ar biosfile , Fl -bios Ar biosfile
 Specify a BIOS file to use during boot.
 If this flag is omitted,
 .Nm
 will use the BIOS specified in the configuration file,
 or a high\(hylevel emulated BIOS if none is specified.
+.It Fl f
+Start the emulator full\(hyscreen.
 .It Fl l Ar loglevel
 Log messages during emulation.
 .Ar loglevel

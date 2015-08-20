@@ -16,6 +16,7 @@
 extern "C" {
 #include "gba/supervisor/config.h"
 #include "util/configuration.h"
+#include "platform/commandline.h"
 }
 
 class QAction;
@@ -64,7 +65,7 @@ public:
 	~ConfigController();
 
 	const GBAOptions* options() const { return &m_opts; }
-	bool parseArguments(GBAArguments* args, int argc, char* argv[]);
+	bool parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser = nullptr);
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
