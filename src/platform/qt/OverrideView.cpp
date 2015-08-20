@@ -15,7 +15,7 @@ extern "C" {
 using namespace QGBA;
 
 OverrideView::OverrideView(GameController* controller, ConfigController* config, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 	, m_config(config)
 {
