@@ -22,7 +22,7 @@ Display::Driver Display::s_driver = Display::Driver::QT;
 
 Display* Display::create(QWidget* parent) {
 #ifdef BUILD_GL
-	QGLFormat format(QGLFormat(QGL::Rgba | QGL::SingleBuffer));
+	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
 #endif
 

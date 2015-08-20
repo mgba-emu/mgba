@@ -3,6 +3,7 @@ Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
  - Qt: Fix install path of XDG desktop file with DESTDIR
  - Qt: Fix drag and drop on Windows
+ - Qt: Reenable double buffering, as disabling it broke some Windows configs
 Misc:
  - Qt: Remove useless help icons in dialogs
 
