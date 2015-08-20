@@ -201,7 +201,7 @@ int main() {
 		}
 #endif
 		PAD_ScanPads();
-    u16 padkeys = PAD_ButtonsHeld(0);
+		u16 padkeys = PAD_ButtonsHeld(0);
 		WPAD_ScanPads();
 		u32 WiiPad = WPAD_ButtonsHeld(0);
 		u32 ext = 0;
