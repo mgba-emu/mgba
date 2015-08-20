@@ -42,6 +42,7 @@ struct SubParser {
 
 struct GraphicsOpts {
 	int multiplier;
+	bool fullscreen;
 };
 
 struct GBAThread;
