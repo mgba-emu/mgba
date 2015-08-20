@@ -1123,6 +1123,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setSkipBIOS(value.toBool());
 	}, this);
 
+	ConfigOption* useBios = m_config->addOption("useBios");
+	useBios->connect([this](const QVariant& value) {
+		m_controller->setUseBIOS(value.toBool());
+	}, this);
+
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
 	buffers->connect([this](const QVariant& value) {
 		emit audioBufferSamplesChanged(value.toInt());

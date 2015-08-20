@@ -599,6 +599,9 @@ void GameController::setAudioBufferSamples(int samples) {
 }
 
 void GameController::setAudioSampleRate(unsigned rate) {
+	if (!rate) {
+		return;
+	}
 	if (m_audioProcessor) {
 		threadInterrupt();
 		redoSamples(m_audioProcessor->getBufferSamples());
@@ -670,9 +673,14 @@ void GameController::setSkipBIOS(bool set) {
 }
 
 void GameController::setUseBIOS(bool use) {
-	threadInterrupt();
+	if (use == m_useBios) {
+		return;
+	}
 	m_useBios = use;
-	threadContinue();
+	if (m_gameOpen) {
+		closeGame();
+		openGame();
+	}
 }
 
 void GameController::loadState(int slot) {
