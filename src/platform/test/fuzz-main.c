@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba/supervisor/thread.h"
 #include "gba/supervisor/config.h"
+#include "gba/supervisor/context.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
@@ -34,7 +34,7 @@ struct FuzzOpts {
 	char* ssOverlay;
 };
 
-static void _GBAFuzzRunloop(struct GBA* gba, int frames);
+static void _GBAFuzzRunloop(struct GBAContext* context, int frames);
 static void _GBAFuzzShutdown(int signal);
 static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
 
@@ -51,44 +51,27 @@ int main(int argc, char** argv) {
 		.opts = &fuzzOpts
 	};
 
-	struct GBAConfig config;
-	GBAConfigInit(&config, "fuzz");
-	GBAConfigLoad(&config);
-
+	struct GBAContext context;
+	GBAContextInit(&context, "fuzz");
 	struct GBAOptions opts = {
 		.idleOptimization = IDLE_LOOP_DETECT
 	};
-	GBAConfigLoadDefaults(&config, &opts);
+	GBAConfigLoadDefaults(&context.config, &opts);
+	GBAConfigFreeOpts(&opts);
 
 	struct GBAArguments args;
-	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	bool parsed = parseArguments(&args, &context.config, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		GBAContextDeinit(&context);
 		return !parsed;
 	}
 
-	struct GBA* gba = anonymousMemoryMap(sizeof(struct GBA));
-	struct ARMCore* cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	struct VFile* rom = VFileOpen(args.fname, O_RDONLY);
 
-	GBACreate(gba);
-	ARMSetComponents(cpu, &gba->d, 0, 0);
-	ARMInit(cpu);
-	gba->sync = 0;
-	gba->hardCrash = false;
-
-	GBALoadROM(gba, rom, 0, 0);
-	ARMReset(cpu);
-
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(GBAConfigGetOverrides(&config), &override)) {
-		GBAOverrideApply(gba, &override);
-	}
+	context.gba->hardCrash = false;
+	GBAContextLoadROMFromVFile(&context, rom, 0);
 
 	struct GBAVideoSoftwareRenderer renderer;
 	renderer.outputBuffer = 0;
@@ -101,8 +84,10 @@ int main(int argc, char** argv) {
 		GBAVideoSoftwareRendererCreate(&renderer);
 		renderer.outputBuffer = malloc(256 * 256 * 4);
 		renderer.outputBufferStride = 256;
-		GBAVideoAssociateRenderer(&gba->video, &renderer.d);
+		GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
 	}
+
+	GBAContextStart(&context);
 
 	if (fuzzOpts.savestate) {
 		savestate = VFileOpen(fuzzOpts.savestate, O_RDONLY);
@@ -117,12 +102,12 @@ int main(int argc, char** argv) {
 	}
 	if (savestate) {
 		if (!savestateOverlay) {
-			GBALoadStateNamed(gba, savestate);
+			GBALoadStateNamed(context.gba, savestate);
 		} else {
 			struct GBASerializedState* state = GBAAllocateState();
 			savestate->read(savestate, state, sizeof(*state));
 			savestateOverlay->read(savestateOverlay, (uint8_t*) state + overlayOffset, sizeof(*state) - overlayOffset);
-			GBADeserialize(gba, state);
+			GBADeserialize(context.gba, state);
 			GBADeallocateState(state);
 			savestateOverlay->close(savestateOverlay);
 			savestateOverlay = 0;
@@ -131,12 +116,10 @@ int main(int argc, char** argv) {
 		savestate = 0;
 	}
 
-	GBAConfigMap(&config, &opts);
+	blip_set_rates(context.gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
-	blip_set_rates(gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
-	blip_set_rates(gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
-
-	_GBAFuzzRunloop(gba, fuzzOpts.frames);
+	_GBAFuzzRunloop(&context, fuzzOpts.frames);
 
 	if (savestate) {
 		savestate->close(savestate);
@@ -144,9 +127,9 @@ int main(int argc, char** argv) {
 	if (savestateOverlay) {
 		savestateOverlay->close(savestateOverlay);
 	}
-	GBAConfigFreeOpts(&opts);
+	GBAContextStop(&context);
+	GBAContextDeinit(&context);
 	freeArguments(&args);
-	GBAConfigDeinit(&config);
 	if (renderer.outputBuffer) {
 		free(renderer.outputBuffer);
 	}
@@ -154,10 +137,10 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-static void _GBAFuzzRunloop(struct GBA* gba, int frames) {
+static void _GBAFuzzRunloop(struct GBAContext* context, int frames) {
 	do {
-		ARMRunLoop(gba->cpu);
-	} while (gba->video.frameCounter < frames && !_dispatchExiting);
+		GBAContextFrame(context, 0);
+	} while (context->gba->video.frameCounter < frames && !_dispatchExiting);
 }
 
 static void _GBAFuzzShutdown(int signal) {
