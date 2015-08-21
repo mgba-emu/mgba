@@ -7,15 +7,11 @@
 
 #include "debugger.h"
 
+#include "util/math.h"
+
 #include <string.h>
 
 static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, int width);
-
-static uint32_t _popcount32(unsigned bits) {
-	bits = bits - ((bits >> 1) & 0x55555555);
-	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
-	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
-}
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
@@ -51,7 +47,7 @@ static uint32_t _popcount32(unsigned bits) {
 	static uint32_t ARMDebuggerShim_ ## NAME (struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		uint32_t popcount = _popcount32(mask); \
+		uint32_t popcount = popcount32(mask); \
 		int offset = 4; \
 		int base = address; \
 		if (direction & LSM_D) { \

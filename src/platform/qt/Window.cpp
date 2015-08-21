@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Window.h"
 
+#include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
@@ -87,11 +88,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
-
-	QVariant windowPos = m_config->getQtOption("windowPos");
-	if (!windowPos.isNull()) {
-		move(windowPos.toPoint());
-	}
 
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
 	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), &m_inputController, SLOT(suspendScreensaver()));
@@ -465,6 +461,14 @@ void Window::resizeEvent(QResizeEvent* event) {
 
 void Window::showEvent(QShowEvent* event) {
 	resizeFrame(m_screenWidget->sizeHint().width(), m_screenWidget->sizeHint().height());
+	QVariant windowPos = m_config->getQtOption("windowPos");
+	if (!windowPos.isNull()) {
+		move(windowPos.toPoint());
+	} else {
+		QRect rect = frameGeometry();
+		rect.moveCenter(QApplication::desktop()->availableGeometry().center());
+		move(rect.topLeft());
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -503,7 +507,7 @@ void Window::dropEvent(QDropEvent* event) {
 		return;
 	}
 	event->accept();
-	m_controller->loadGame(url.path());
+	m_controller->loadGame(url.toLocalFile());
 }
 
 void Window::mouseDoubleClickEvent(QMouseEvent* event) {
