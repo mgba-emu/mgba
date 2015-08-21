@@ -77,7 +77,7 @@ void GBASIODeinit(struct GBASIO* sio) {
 void GBASIOReset(struct GBASIO* sio) {
 	GBASIODeinit(sio);
 	sio->rcnt = RCNT_INITIAL;
-	sio->siocnt = 0;
+	sio->a.siocnt = 0;
 	sio->mode = -1;
 	_switchMode(sio);
 }
