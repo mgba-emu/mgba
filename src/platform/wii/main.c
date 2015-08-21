@@ -11,11 +11,8 @@
 
 #include "util/common.h"
 
-#include "gba/gba.h"
 #include "gba/renderers/video-software.h"
-#include "gba/serialize.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/video.h"
+#include "gba/supervisor/context.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -34,11 +31,8 @@ static void _drawStart(void);
 static void _drawEnd(void);
 static int _pollInput(void);
 
-static struct GBA gba;
-static struct ARMCore cpu;
+static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
-static struct VFile* rom;
-static struct VFile* save;
 static struct GBAAVStream stream;
 static FILE* logfile;
 static GXRModeObj* mode;
@@ -142,25 +136,26 @@ int main() {
 	stream.postAudioBuffer = 0;
 	stream.postVideoFrame = _postVideoFrame;
 
-	GBACreate(&gba);
-	ARMSetComponents(&cpu, &gba.d, 0, 0);
-	ARMInit(&cpu);
-	gba.logLevel = 0; // TODO: Settings
-	gba.logHandler = GBAWiiLog;
-	gba.stream = &stream;
-	gba.idleOptimization = IDLE_LOOP_REMOVE; // TODO: Settings
-	rom = 0;
+	GBAContextInit(&context, 0);
+	struct GBAOptions opts = {
+		.useBios = true,
+		.logLevel = 0,
+		.idleOptimization = IDLE_LOOP_REMOVE
+	};
+	GBAConfigLoadDefaults(&context.config, &opts);
+	context.gba->logHandler = GBAWiiLog;
+	context.gba->stream = &stream;
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	GBAVideoAssociateRenderer(&gba.video, &renderer.d);
+	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
 
-	GBAAudioResizeBuffer(&gba.audio, SAMPLES);
+	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
-	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
+	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
+	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
 #endif
 
 	char path[256];
@@ -176,20 +171,21 @@ int main() {
 		GUIFontDestroy(font);
 		return 1;
 	}
+	GBAContextStart(&context);
 
 	guOrtho(proj, 0, VIDEO_VERTICAL_PIXELS, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	while (true) {
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-		int available = blip_samples_avail(gba.audio.left);
+		int available = blip_samples_avail(context.gba->audio.left);
 		if (available + audioBufferSize > SAMPLES) {
 			available = SAMPLES - audioBufferSize;
 		}
 		available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 		if (available > 0) {
-			blip_read_samples(gba.audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
-			blip_read_samples(gba.audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+			blip_read_samples(context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+			blip_read_samples(context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
 			audioBufferSize += available;
 		}
 		if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
@@ -199,8 +195,7 @@ int main() {
 #endif
 		PAD_ScanPads();
 		u16 padkeys = PAD_ButtonsHeld(0);
-		int keys = 0;
-		gba.keySource = &keys;
+		uint16_t keys = 0;
 		if (padkeys & PAD_BUTTON_A) {
 			keys |= 1 << GBA_KEY_A;
 		}
@@ -248,17 +243,14 @@ int main() {
 		if (padkeys & PAD_TRIGGER_Z) {
 			break;
 		}
-		int frameCount = gba.video.frameCounter;
-		while (gba.video.frameCounter == frameCount) {
-			ARMRunLoop(&cpu);
-		}
+		GBAContextFrame(&context, keys);
 	}
 
 	fclose(logfile);
 	free(fifo);
 
-	rom->close(rom);
-	save->close(save);
+	GBAContextStop(&context);
+	GBAContextDeinit(&context);
 
 	free(renderer.outputBuffer);
 	GUIFontDestroy(font);
@@ -311,28 +303,7 @@ bool GBAWiiLoadGame(const char* path) {
 	GUIFontPrintf(font, 0, 30, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
 	_drawEnd();
 
-	rom = VFileOpen(path, O_RDONLY);
-
-	if (!rom) {
-		return false;
-	}
-	if (!GBAIsROM(rom)) {
-		return false;
-	}
-
-	save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
-
-	GBALoadROM(&gba, rom, save, path);
-
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(0, &override)) {
-		GBAOverrideApply(&gba, &override);
-	}
-
-	ARMReset(&cpu);
-	return true;
+	return GBAContextLoadROM(&context, path, true);
 }
 
 void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
@@ -380,7 +351,6 @@ static int _pollInput(void) {
 	PAD_ScanPads();
 	u16 padkeys = PAD_ButtonsHeld(0);
 	int keys = 0;
-	gba.keySource = &keys;
 	if (padkeys & PAD_BUTTON_A) {
 		keys |= 1 << GUI_INPUT_SELECT;
 	}
