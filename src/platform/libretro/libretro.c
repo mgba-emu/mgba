@@ -350,6 +350,12 @@ void* retro_get_memory_data(unsigned id) {
 	if (id == RETRO_MEMORY_SAVE_RAM) {
 		return savedata;
 	}
+	if (id == RETRO_MEMORY_SYSTEM_RAM) {
+		return gba.memory.wram;
+	}
+	if (id == RETRO_MEMORY_VIDEO_RAM) {
+		return gba.video.renderer->vram;
+	}
 	return 0;
 }
 
@@ -368,6 +374,12 @@ size_t retro_get_memory_size(unsigned id) {
 		case SAVEDATA_FORCE_NONE:
 			return 0;
 		}
+	}
+	if (id == RETRO_MEMORY_SYSTEM_RAM) {
+		return SIZE_WORKING_RAM;
+	}
+	if (id == RETRO_MEMORY_VIDEO_RAM) {
+		return SIZE_VRAM;
 	}
 	return 0;
 }
