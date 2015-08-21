@@ -173,7 +173,7 @@ int main() {
 	}
 	GBAContextStart(&context);
 
-	guOrtho(proj, 0, VIDEO_VERTICAL_PIXELS, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+	guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	while (true) {
