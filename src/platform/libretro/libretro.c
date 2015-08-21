@@ -347,28 +347,27 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
+	if (id == RETRO_MEMORY_SAVE_RAM) {
+		return savedata;
 	}
-	return savedata;
+	return 0;
 }
 
 size_t retro_get_memory_size(unsigned id) {
-	if (id != RETRO_MEMORY_SAVE_RAM) {
-		return 0;
-	}
-	switch (gba.memory.savedata.type) {
-	case SAVEDATA_AUTODETECT:
-	case SAVEDATA_FLASH1M:
-		return SIZE_CART_FLASH1M;
-	case SAVEDATA_FLASH512:
-		return SIZE_CART_FLASH512;
-	case SAVEDATA_EEPROM:
-		return SIZE_CART_EEPROM;
-	case SAVEDATA_SRAM:
-		return SIZE_CART_SRAM;
-	case SAVEDATA_FORCE_NONE:
-		return 0;
+	if (id == RETRO_MEMORY_SAVE_RAM) {
+		switch (gba.memory.savedata.type) {
+		case SAVEDATA_AUTODETECT:
+		case SAVEDATA_FLASH1M:
+			return SIZE_CART_FLASH1M;
+		case SAVEDATA_FLASH512:
+			return SIZE_CART_FLASH512;
+		case SAVEDATA_EEPROM:
+			return SIZE_CART_EEPROM;
+		case SAVEDATA_SRAM:
+			return SIZE_CART_SRAM;
+		case SAVEDATA_FORCE_NONE:
+			return 0;
+		}
 	}
 	return 0;
 }
