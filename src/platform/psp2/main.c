@@ -72,7 +72,9 @@ int main() {
 		if (!selectFile(&params, "cache0:", path, sizeof(path), "gba")) {
 			break;
 		}
-		GBAPSP2LoadROM(path);
+		if (!GBAPSP2LoadROM(path)) {
+			continue;
+		}
 		GBAPSP2Runloop();
 		GBAPSP2UnloadROM();
 	}

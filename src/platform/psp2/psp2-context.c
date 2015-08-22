@@ -8,8 +8,7 @@
 #include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/audio.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/video.h"
+#include "gba/supervisor/context.h"
 
 #include "gba/renderers/video-software.h"
 #include "util/circle-buffer.h"
@@ -27,13 +26,8 @@
 
 #include <vita2d.h>
 
-static char gameName[13];
-static struct GBA* gba;
-static struct ARMCore* cpu;
-static struct VFile* rom;
-static struct VFile* save;
+static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
-static struct GBAInputMap inputMap;
 static vita2d_texture* tex;
 static Thread audioThread;
 
@@ -81,172 +75,130 @@ static THREAD_ENTRY _audioThread(void* context) {
 }
 
 void GBAPSP2Setup() {
-	GBAInputMapInit(&inputMap);
-	_mapVitaKey(&inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
-	_mapVitaKey(&inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
-	_mapVitaKey(&inputMap, PSP2_CTRL_START, GBA_KEY_START);
-	_mapVitaKey(&inputMap, PSP2_CTRL_SELECT, GBA_KEY_SELECT);
-	_mapVitaKey(&inputMap, PSP2_CTRL_UP, GBA_KEY_UP);
-	_mapVitaKey(&inputMap, PSP2_CTRL_DOWN, GBA_KEY_DOWN);
-	_mapVitaKey(&inputMap, PSP2_CTRL_LEFT, GBA_KEY_LEFT);
-	_mapVitaKey(&inputMap, PSP2_CTRL_RIGHT, GBA_KEY_RIGHT);
-	_mapVitaKey(&inputMap, PSP2_CTRL_LTRIGGER, GBA_KEY_L);
-	_mapVitaKey(&inputMap, PSP2_CTRL_RTRIGGER, GBA_KEY_R);
+	GBAContextInit(&context, 0);
+	struct GBAOptions opts = {
+		.useBios = true,
+		.logLevel = 0,
+		.idleOptimization = IDLE_LOOP_DETECT
+	};
+	GBAConfigLoadDefaults(&context.config, &opts);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_START, GBA_KEY_START);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_SELECT, GBA_KEY_SELECT);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_UP, GBA_KEY_UP);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_DOWN, GBA_KEY_DOWN);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_LEFT, GBA_KEY_LEFT);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_RIGHT, GBA_KEY_RIGHT);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_LTRIGGER, GBA_KEY_L);
+	_mapVitaKey(&context.inputMap, PSP2_CTRL_RTRIGGER, GBA_KEY_R);
 
 	struct GBAAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
-	GBAInputBindAxis(&inputMap, PSP2_INPUT, 0, &desc);
+	GBAInputBindAxis(&context.inputMap, PSP2_INPUT, 0, &desc);
 	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
-	GBAInputBindAxis(&inputMap, PSP2_INPUT, 1, &desc);
+	GBAInputBindAxis(&context.inputMap, PSP2_INPUT, 1, &desc);
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
+	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
 	renderer.outputBufferStride = 256;
+	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
+	printf("%s starting", projectName);
 }
 
-void GBAPSP2LoadROM(const char* path) {
-	GBAVideoSoftwareRendererCreate(&renderer);
-
-	gba = anonymousMemoryMap(sizeof(struct GBA));
-	cpu = anonymousMemoryMap(sizeof(struct ARMCore));
-
-	printf("GBA: %08X", gba);
-	printf("CPU: %08X", cpu);
-
-	rom = VFileOpenSce(path, PSP2_O_RDONLY, 0666);
-	save = VDirOptionalOpenFile(0, path, 0, ".sav", PSP2_O_RDWR | PSP2_O_CREAT);
-
-	printf("ROM: %08X", rom);
-	printf("Save: %08X", save);
-
-	GBACreate(gba);
-	ARMSetComponents(cpu, &gba->d, 0, 0);
-	ARMInit(cpu);
-	printf("%s initialized.", "CPU");
-
-	gba->sync = 0;
-
-	GBAVideoAssociateRenderer(&gba->video, &renderer.d);
-
-	GBALoadROM(gba, rom, save, 0);
-	GBAOverrideApplyDefaults(gba);
-	GBAGetGameTitle(gba, gameName);
-	printf("ROM loaded: %s", gameName);
-
-	ARMReset(cpu);
+bool GBAPSP2LoadROM(const char* path) {
+	if (!GBAContextLoadROM(&context, path, true)) {
+		printf("%s failed to load!", path);
+		return false;
+	}
+	printf("%s loaded, starting...", path);
+	GBAContextStart(&context);
+	char gameTitle[13];
+	GBAGetGameTitle(context.gba, gameTitle);
+	printf("%s started!", gameTitle);
 	double ratio = GBAAudioCalculateRatio(1, 60, 1);
-	blip_set_rates(gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(context.gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 
 	CircleBufferInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
 	MutexInit(&audioContext.mutex);
 	ConditionInit(&audioContext.cond);
 	audioContext.running = true;
 	ThreadCreate(&audioThread, _audioThread, &audioContext);
-
-	printf("%s all set and ready to roll.", projectName);
+	return true;
 }
 
 void GBAPSP2Runloop(void) {
 	int activeKeys = 0;
-	gba->keySource = &activeKeys;
 
 	bool fsToggle = false;
-	int frameCounter = 0;
 	while (true) {
-		ARMRunLoop(cpu);
+		SceCtrlData pad;
+		sceCtrlPeekBufferPositive(0, &pad, 1);
+		if (pad.buttons & PSP2_CTRL_TRIANGLE) {
+			break;
+		}
+		if (pad.buttons & PSP2_CTRL_SQUARE) {
+			if (!fsToggle) {
+				fullscreen = !fullscreen;
+			}
+			fsToggle = true;
+		} else {
+			fsToggle = false;
+		}
 
-		if (frameCounter != gba->video.frameCounter) {
-			SceCtrlData pad;
-			sceCtrlPeekBufferPositive(0, &pad, 1);
-			if (pad.buttons & PSP2_CTRL_TRIANGLE) {
+		activeKeys = GBAInputMapKeyBits(&context.inputMap, PSP2_INPUT, pad.buttons, 0);
+		enum GBAKey angles = GBAInputMapAxis(&context.inputMap, PSP2_INPUT, 0, pad.ly);
+		if (angles != GBA_KEY_NONE) {
+			activeKeys |= 1 << angles;
+		}
+		angles = GBAInputMapAxis(&context.inputMap, PSP2_INPUT, 1, pad.lx);
+		if (angles != GBA_KEY_NONE) {
+			activeKeys |= 1 << angles;
+		}
+		angles = GBAInputMapAxis(&context.inputMap, PSP2_INPUT, 2, pad.ry);
+		if (angles != GBA_KEY_NONE) {
+			activeKeys |= 1 << angles;
+		}
+		angles = GBAInputMapAxis(&context.inputMap, PSP2_INPUT, 3, pad.rx);
+		if (angles != GBA_KEY_NONE) {
+			activeKeys |= 1 << angles;
+		}
+
+		GBAContextFrame(&context, activeKeys);
+
+		MutexLock(&audioContext.mutex);
+		while (blip_samples_avail(context.gba->audio.left) >= PSP2_SAMPLES) {
+			if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
 				break;
 			}
-			if (pad.buttons & PSP2_CTRL_SQUARE) {
-				if (!fsToggle) {
-					fullscreen = !fullscreen;
-				}
-				fsToggle = true;
-			} else {
-				fsToggle = false;
+			struct GBAStereoSample samples[PSP2_SAMPLES];
+			blip_read_samples(context.gba->audio.left, &samples[0].left, PSP2_SAMPLES, true);
+			blip_read_samples(context.gba->audio.right, &samples[0].right, PSP2_SAMPLES, true);
+			int i;
+			for (i = 0; i < PSP2_SAMPLES; ++i) {
+				CircleBufferWrite16(&audioContext.buffer, samples[i].left);
+				CircleBufferWrite16(&audioContext.buffer, samples[i].right);
 			}
-
-			activeKeys = GBAInputMapKeyBits(&inputMap, PSP2_INPUT, pad.buttons, 0);
-			enum GBAKey angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 0, pad.ly);
-			if (angles != GBA_KEY_NONE) {
-				activeKeys |= 1 << angles;
-			}
-			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 1, pad.lx);
-			if (angles != GBA_KEY_NONE) {
-				activeKeys |= 1 << angles;
-			}
-			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 2, pad.ry);
-			if (angles != GBA_KEY_NONE) {
-				activeKeys |= 1 << angles;
-			}
-			angles = GBAInputMapAxis(&inputMap, PSP2_INPUT, 3, pad.rx);
-			if (angles != GBA_KEY_NONE) {
-				activeKeys |= 1 << angles;
-			}
-
-			MutexLock(&audioContext.mutex);
-			while (blip_samples_avail(gba->audio.left) >= PSP2_SAMPLES) {
-				if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
-					break;
-				}
-				struct GBAStereoSample samples[PSP2_SAMPLES];
-				blip_read_samples(gba->audio.left, &samples[0].left, PSP2_SAMPLES, true);
-				blip_read_samples(gba->audio.right, &samples[0].right, PSP2_SAMPLES, true);
-				int i;
-				for (i = 0; i < PSP2_SAMPLES; ++i) {
-					CircleBufferWrite16(&audioContext.buffer, samples[i].left);
-					CircleBufferWrite16(&audioContext.buffer, samples[i].right);
-				}
-			}
-			ConditionWake(&audioContext.cond);
-			MutexUnlock(&audioContext.mutex);
-
-			vita2d_start_drawing();
-			vita2d_clear_screen();
-			GBAPSP2Draw();
-			vita2d_end_drawing();
-			vita2d_swap_buffers();
-
-			frameCounter = gba->video.frameCounter;
 		}
+		ConditionWake(&audioContext.cond);
+		MutexUnlock(&audioContext.mutex);
+
+		vita2d_start_drawing();
+		vita2d_clear_screen();
+		GBAPSP2Draw();
+		vita2d_end_drawing();
+		vita2d_swap_buffers();
 	}
 }
 
 void GBAPSP2UnloadROM(void) {
-	printf("%s shutting down...", projectName);
-
-	ARMDeinit(cpu);
-	GBADestroy(gba);
-
-	rom->close(rom);
-	save->close(save);
-
-	MutexLock(&audioContext.mutex);
-	audioContext.running = false;
-	ConditionWake(&audioContext.cond);
-	MutexUnlock(&audioContext.mutex);
-	ThreadJoin(audioThread);
-	CircleBufferDeinit(&audioContext.buffer);
-	MutexDeinit(&audioContext.mutex);
-	ConditionDeinit(&audioContext.cond);
-
-	mappedMemoryFree(gba, 0);
-	mappedMemoryFree(cpu, 0);
-
-	gba = 0;
-	cpu = 0;
-	rom = 0;
-	save = 0;
+	GBAContextStop(&context);
 }
 
 void GBAPSP2Teardown(void) {
-	GBAInputMapDeinit(&inputMap);
-
+	GBAContextDeinit(&context);
 	vita2d_free_texture(tex);
 }
 
