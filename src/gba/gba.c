@@ -17,6 +17,7 @@
 
 #include "util/crc32.h"
 #include "util/memory.h"
+#include "util/math.h"
 #include "util/patch.h"
 #include "util/vfs.h"
 
@@ -156,6 +157,7 @@ void GBAReset(struct ARMCore* cpu) {
 
 	if (gba->yankedRomSize) {
 		gba->memory.romSize = gba->yankedRomSize;
+		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		gba->yankedRomSize = 0;
 	}
 	GBAMemoryReset(gba);
@@ -403,6 +405,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->memory.rom = gba->pristineRom;
 	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
+	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
@@ -412,6 +415,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 void GBAYankROM(struct GBA* gba) {
 	gba->yankedRomSize = gba->memory.romSize;
 	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
 	GBARaiseIRQ(gba, IRQ_GAMEPAK);
 }
 
@@ -452,6 +456,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		return;
 	}
 	gba->memory.romSize = patchedSize;
+	gba->memory.romMask = SIZE_CART0 - 1;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 }
 

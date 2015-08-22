@@ -7,12 +7,9 @@
 
 #include "util/common.h"
 
-#include "gba/gba.h"
-#include "gba/interface.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/video.h"
+#include "gba/supervisor/context.h"
 #include "util/circle-buffer.h"
 #include "util/vfs.h"
 
@@ -37,14 +34,10 @@ static void _setRumble(struct GBARumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 
-static struct GBA gba;
-static struct ARMCore cpu;
+static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
-static struct VFile* rom;
 static void* data;
-static struct VFile* save;
 static void* savedata;
-static struct VFile* bios;
 static struct GBAAVStream stream;
 static int rumbleLevel;
 static struct CircleBuffer rumbleHistory;
@@ -162,53 +155,49 @@ void retro_init(void) {
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = _postVideoFrame;
 
-	GBACreate(&gba);
-	ARMSetComponents(&cpu, &gba.d, 0, 0);
-	ARMInit(&cpu);
-	gba.logLevel = 0; // TODO: Settings
-	gba.logHandler = GBARetroLog;
-	gba.stream = &stream;
-	gba.idleOptimization = IDLE_LOOP_REMOVE; // TODO: Settings
+	GBAContextInit(&context, 0);
+	struct GBAOptions opts = {
+		.useBios = true,
+		.logLevel = 0,
+		.idleOptimization = IDLE_LOOP_REMOVE
+	};
+	GBAConfigLoadDefaults(&context.config, &opts);
+	context.gba->logHandler = GBARetroLog;
+	context.gba->stream = &stream;
 	if (rumbleCallback) {
-		gba.rumble = &rumble;
+		context.gba->rumble = &rumble;
 	}
-	gba.luminanceSource = &lux;
-	rom = 0;
+	context.gba->luminanceSource = &lux;
 
 	const char* sysDir = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
 		char biosPath[PATH_MAX];
 		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-		bios = VFileOpen(biosPath, O_RDONLY);
+		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
 		if (bios) {
-			GBALoadBIOS(&gba, bios);
+			GBAContextLoadBIOSFromVFile(&context, bios);
 		}
 	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	GBAVideoAssociateRenderer(&gba.video, &renderer.d);
+	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
 
-	GBAAudioResizeBuffer(&gba.audio, SAMPLES);
+	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 #endif
 }
 
 void retro_deinit(void) {
-	if (bios) {
-		bios->close(bios);
-		bios = 0;
-	}
-	GBADestroy(&gba);
+	GBAContextDeinit(&context);
 }
 
 void retro_run(void) {
-	int keys;
-	gba.keySource = &keys;
+	uint16_t keys;
 	inputPollCallback();
 
 	keys = 0;
@@ -243,14 +232,11 @@ void retro_run(void) {
 		}
 	}
 
-	int frameCount = gba.video.frameCounter;
-	while (gba.video.frameCounter == frameCount) {
-		ARMRunLoop(&cpu);
-	}
+	GBAContextFrame(&context, keys);
 }
 
 void retro_reset(void) {
-	ARMReset(&cpu);
+	ARMReset(context.cpu);
 
 	if (rumbleCallback) {
 		CircleBufferClear(&rumbleHistory);
@@ -258,6 +244,7 @@ void retro_reset(void) {
 }
 
 bool retro_load_game(const struct retro_game_info* game) {
+	struct VFile* rom;
 	if (game->data) {
 		data = malloc(game->size);
 		memcpy(data, game->data, game->size);
@@ -270,26 +257,23 @@ bool retro_load_game(const struct retro_game_info* game) {
 		return false;
 	}
 	if (!GBAIsROM(rom)) {
+		rom->close(rom);
+		free(data);
 		return false;
 	}
 
 	savedata = malloc(SIZE_CART_FLASH1M);
-	save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
-	GBALoadROM(&gba, rom, save, game->path);
-	GBAOverrideApplyDefaults(&gba);
-
-	ARMReset(&cpu);
+	GBAContextLoadROMFromVFile(&context, rom, save);
+	GBAContextStart(&context);
 	return true;
 }
 
 void retro_unload_game(void) {
-	rom->close(rom);
-	rom = 0;
+	GBAContextStop(&context);
 	free(data);
 	data = 0;
-	save->close(save);
-	save = 0;
 	free(savedata);
 	savedata = 0;
 	CircleBufferDeinit(&rumbleHistory);
@@ -303,7 +287,7 @@ bool retro_serialize(void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBASerialize(&gba, data);
+	GBASerialize(context.gba, data);
 	return true;
 }
 
@@ -311,7 +295,7 @@ bool retro_unserialize(const void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBADeserialize(&gba, data);
+	GBADeserialize(context.gba, data);
 	return true;
 }
 
@@ -353,7 +337,7 @@ size_t retro_get_memory_size(unsigned id) {
 	if (id != RETRO_MEMORY_SAVE_RAM) {
 		return 0;
 	}
-	switch (gba.memory.savedata.type) {
+	switch (context.gba->memory.savedata.type) {
 	case SAVEDATA_AUTODETECT:
 	case SAVEDATA_FLASH1M:
 		return SIZE_CART_FLASH1M;

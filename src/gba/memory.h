@@ -118,6 +118,7 @@ struct GBAMemory {
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
 	size_t romSize;
+	uint32_t romMask;
 	uint16_t romID;
 	int fullBios;
 

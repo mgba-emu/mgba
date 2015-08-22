@@ -11,7 +11,7 @@
 void GBAPSP2Setup(void);
 void GBAPSP2Teardown(void);
 
-void GBAPSP2LoadROM(const char* path);
+bool GBAPSP2LoadROM(const char* path);
 void GBAPSP2Runloop(void);
 void GBAPSP2UnloadROM(void);
 
