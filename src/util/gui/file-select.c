@@ -56,6 +56,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 	strncpy(currentPath, basePath, sizeof(currentPath));
 	int oldInput = -1;
 	size_t fileIndex = 0;
+	size_t start = 0;
 
 	struct FileList currentFiles;
 	FileListInit(&currentFiles, 0);
@@ -71,6 +72,12 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		}
 		if (newInput & (1 << GUI_INPUT_DOWN) && fileIndex < FileListSize(&currentFiles) - 1) {
 			++fileIndex;
+		}
+		if (fileIndex < start) {
+			start = fileIndex;
+		}
+		while ((fileIndex - start + 4) * GUIFontHeight(params->font) > params->height) {
+			++start;
 		}
 		if (newInput & (1 << GUI_INPUT_CANCEL)) {
 			_cleanFiles(&currentFiles);
@@ -101,7 +108,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "Current directory: %s", currentPath);
 		y += 2 * GUIFontHeight(params->font);
 		size_t i;
-		for (i = 0; i < FileListSize(&currentFiles); ++i) {
+		for (i = start; i < FileListSize(&currentFiles); ++i) {
 			int color = 0xE0A0A0A0;
 			char bullet = ' ';
 			if (i == fileIndex) {
