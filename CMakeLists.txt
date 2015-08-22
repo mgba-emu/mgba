@@ -173,7 +173,7 @@ elseif(WII)
 	add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5 -DUSE_VFS_FILE)
 	include_directories(${CMAKE_BINARY_DIR})
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/*.c)
-	list(APPEND OS_LIB fat ogc)
+	list(APPEND OS_LIB wiiuse bte fat ogc)
 	source_group("Wii-specific code" FILES ${OS_SRC})
 endif()
 
