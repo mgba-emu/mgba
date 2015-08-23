@@ -16,6 +16,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->rom = 0;
 	context->save = 0;
 	context->renderer = 0;
+	memset(context->components, 0, sizeof(context->components));
 
 	if (!context->gba || !context->cpu) {
 		if (context->gba) {
@@ -33,7 +34,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	}
 
 	GBACreate(context->gba);
-	ARMSetComponents(context->cpu, &context->gba->d, 0, 0);
+	ARMSetComponents(context->cpu, &context->gba->d, 0, context->components);
 	ARMInit(context->cpu);
 
 	context->gba->sync = 0;
