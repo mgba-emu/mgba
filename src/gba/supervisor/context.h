@@ -18,6 +18,7 @@ struct GBAContext {
 	struct VFile* rom;
 	struct VFile* save;
 	struct VFile* bios;
+	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct GBAConfig config;
 	struct GBAOptions opts;
 	struct GBAInputMap inputMap;
