@@ -13,6 +13,8 @@
 
 #include <3ds.h>
 
+FS_archive sdmcArchive;
+
 static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 static Handle logFile;
 
@@ -22,10 +24,9 @@ int main() {
 	hidInit(0);
 	gfxInit(GSP_RGB565_OES, GSP_RGB565_OES, false);
 	fsInit();
-
-	FS_archive sdmcArchive = (FS_archive) {
+	sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
-		(FS_path) { PATH_EMPTY, 1, (u8*)"" },
+		(FS_path) { PATH_EMPTY, 1, (const u8*)"" },
 		0, 0
 	};
 	FSUSER_OpenArchive(0, &sdmcArchive);
