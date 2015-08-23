@@ -161,11 +161,11 @@ int main() {
 #endif
 
 	char path[256];
-	guOrtho(proj, -20, 220, 0, 400, 0, 300);
+	guOrtho(proj, -20, 240, 0, 352, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 	struct GUIParams params = {
-		400, 230,
+		352, 230,
 		font, _drawStart, _drawEnd, _pollInput
 	};
 	if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAWiiLoadGame(path)) {

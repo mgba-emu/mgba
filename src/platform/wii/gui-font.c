@@ -4,13 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
+#include "util/gui/font-metrics.h"
 #include "font.h"
 
 #include <ogc/tpl.h>
 
-#define GLYPH_HEIGHT 11
-#define GLYPH_WIDTH 14
-#define FONT_TRACKING 10
+#define GLYPH_HEIGHT 12
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
 
@@ -67,21 +66,22 @@ void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignme
 		if (c > 0x7F) {
 			c = 0;
 		}
-		s16 tx = (c & 15) * CELL_WIDTH + ((CELL_WIDTH - GLYPH_WIDTH) >> 1);
-		s16 ty = (c >> 4) * CELL_HEIGHT + ((CELL_HEIGHT - GLYPH_HEIGHT) >> 1) - 1;
+		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
+		s16 tx = (c & 15) * CELL_WIDTH + metric.padding.left;
+		s16 ty = (c >> 4) * CELL_HEIGHT + metric.padding.top;
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-		GX_Position2s16(x, y - GLYPH_HEIGHT);
+		GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top);
 		GX_TexCoord2f32(tx / 256.f, ty / 128.f);
 
-		GX_Position2s16(x + GLYPH_WIDTH, y - GLYPH_HEIGHT);
-		GX_TexCoord2f32((tx + CELL_WIDTH) / 256.f, ty / 128.f);
+		GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + metric.padding.top);
+		GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, ty / 128.f);
 
-		GX_Position2s16(x + GLYPH_WIDTH, y);
-		GX_TexCoord2f32((tx + CELL_WIDTH) / 256.f, (ty + CELL_HEIGHT) / 128.f);
+		GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+		GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
 
-		GX_Position2s16(x, y);
-		GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT) / 128.f);
+		GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+		GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
 		GX_End();
-		x += FONT_TRACKING;
+		x += metric.width;
 	}
 }
