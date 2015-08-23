@@ -27,6 +27,7 @@ static bool GBAWiiLoadGame(const char* path);
 
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _audioDMA(void);
+static void _setRumble(struct GBARumble* rumble, int enable);
 
 static void _drawStart(void);
 static void _drawEnd(void);
@@ -35,6 +36,7 @@ static int _pollInput(void);
 static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBAAVStream stream;
+static struct GBARumble rumble;
 static FILE* logfile;
 static GXRModeObj* mode;
 static Mtx model, view, modelview;
@@ -138,6 +140,8 @@ int main() {
 	stream.postAudioBuffer = 0;
 	stream.postVideoFrame = _postVideoFrame;
 
+	rumble.setRumble = _setRumble;
+
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
@@ -147,6 +151,7 @@ int main() {
 	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBAWiiLog;
 	context.gba->stream = &stream;
+	context.gba->rumble = &rumble;
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
@@ -399,4 +404,9 @@ static int _pollInput(void) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
 	return keys;
+}
+
+void _setRumble(struct GBARumble* rumble, int enable) {
+	UNUSED(rumble);
+	WPAD_Rumble(0, enable);
 }
