@@ -8,6 +8,7 @@
 #include "ConfigController.h"
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
+#include "InputProfile.h"
 
 #include <QApplication>
 #include <QTimer>
@@ -19,14 +20,22 @@ extern "C" {
 
 using namespace QGBA;
 
+#ifdef BUILD_SDL
 int InputController::s_sdlInited = 0;
 GBASDLEvents InputController::s_sdlEvents;
+#endif
 
-InputController::InputController(int playerId, QObject* parent)
+InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
 	: QObject(parent)
 	, m_playerId(playerId)
 	, m_config(nullptr)
 	, m_gamepadTimer(nullptr)
+#ifdef BUILD_SDL
+	, m_playerAttached(false)
+#endif
+	, m_allowOpposing(false)
+	, m_topLevel(topLevel)
+	, m_focusParent(topLevel)
 {
 	GBAInputMapInit(&m_inputMap);
 
@@ -37,12 +46,16 @@ InputController::InputController(int playerId, QObject* parent)
 	++s_sdlInited;
 	m_sdlPlayer.bindings = &m_inputMap;
 	GBASDLInitBindings(&m_inputMap);
+#endif
 
 	m_gamepadTimer = new QTimer(this);
-	connect(m_gamepadTimer, SIGNAL(timeout()), this, SLOT(testGamepad()));
+#ifdef BUILD_SDL
+	connect(m_gamepadTimer, &QTimer::timeout, [this]() {
+		testGamepad(SDL_BINDING_BUTTON);
+	});
+#endif
 	m_gamepadTimer->setInterval(50);
 	m_gamepadTimer->start();
-#endif
 
 	GBAInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	GBAInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
@@ -60,6 +73,10 @@ InputController::~InputController() {
 	GBAInputMapDeinit(&m_inputMap);
 
 #ifdef BUILD_SDL
+	if (m_playerAttached) {
+		GBASDLDetachPlayer(&s_sdlEvents, &m_sdlPlayer);
+	}
+
 	--s_sdlInited;
 	if (s_sdlInited == 0) {
 		GBASDLDeinitEvents(&s_sdlEvents);
@@ -69,6 +86,7 @@ InputController::~InputController() {
 
 void InputController::setConfiguration(ConfigController* config) {
 	m_config = config;
+	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
 	GBASDLEventsLoadConfig(&s_sdlEvents, config->input());
@@ -83,10 +101,35 @@ void InputController::setConfiguration(ConfigController* config) {
 
 void InputController::loadConfiguration(uint32_t type) {
 	GBAInputMapLoad(&m_inputMap, type, m_config->input());
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		GBASDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
+	}
+#endif
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	bool loaded = GBAInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
+	recalibrateAxes();
+	if (!loaded) {
+		const InputProfile* ip = InputProfile::findProfile(profile);
+		if (ip) {
+			ip->apply(this);
+		}
+	}
+	emit profileLoaded(profile);
+}
+
+void InputController::saveConfiguration() {
+	saveConfiguration(KEYBOARD);
+#ifdef BUILD_SDL
+	saveConfiguration(SDL_BINDING_BUTTON);
+	saveProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
+	if (m_playerAttached) {
+		GBASDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
+	}
+	m_config->write();
+#endif
 }
 
 void InputController::saveConfiguration(uint32_t type) {
@@ -95,14 +138,14 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
-	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toLocal8Bit().constData());
+	GBAInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	m_config->write();
 }
 
 const char* InputController::profileForType(uint32_t type) {
 	UNUSED(type);
 #ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
+	if (type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		return SDL_JoystickName(m_sdlPlayer.joystick);
 #else
@@ -113,37 +156,124 @@ const char* InputController::profileForType(uint32_t type) {
 	return 0;
 }
 
-#ifdef BUILD_SDL
 QStringList InputController::connectedGamepads(uint32_t type) const {
 	UNUSED(type);
-	if (type != SDL_BINDING_BUTTON) {
-		return QStringList();
-	}
 
-	QStringList pads;
-	for (size_t i = 0; i < s_sdlEvents.nJoysticks; ++i) {
-		const char* name;
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+		QStringList pads;
+		for (size_t i = 0; i < s_sdlEvents.nJoysticks; ++i) {
+			const char* name;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		name = SDL_JoystickName(s_sdlEvents.joysticks[i]);
+			name = SDL_JoystickName(s_sdlEvents.joysticks[i]);
 #else
-		name = SDL_JoystickName(SDL_JoystickIndex(s_sdlEvents.joysticks[i]));
+			name = SDL_JoystickName(SDL_JoystickIndex(s_sdlEvents.joysticks[i]));
 #endif
-		if (name) {
-			pads.append(QString(name));
-		} else {
-			pads.append(QString());
+			if (name) {
+				pads.append(QString(name));
+			} else {
+				pads.append(QString());
+			}
 		}
+		return pads;
 	}
-	return pads;
+#endif
+
+	return QStringList();
+}
+
+int InputController::gamepad(uint32_t type) const {
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+		return m_sdlPlayer.joystickIndex;
+	}
+#endif
+	return 0;
+}
+
+void InputController::setGamepad(uint32_t type, int index) {
+#ifdef BUILD_SDL
+	if (type == SDL_BINDING_BUTTON) {
+		GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index);
+	}
+#endif
 }
 
 void InputController::setPreferredGamepad(uint32_t type, const QString& device) {
 	if (!m_config) {
 		return;
 	}
-	GBAInputSetPreferredDevice(m_config->input(), type, m_sdlPlayer.playerId, device.toLocal8Bit().constData());
+	GBAInputSetPreferredDevice(m_config->input(), type, m_playerId, device.toUtf8().constData());
 }
+
+GBARumble* InputController::rumble() {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (m_playerAttached) {
+		return &m_sdlPlayer.rumble.d;
+	}
 #endif
+#endif
+	return nullptr;
+}
+
+GBARotationSource* InputController::rotationSource() {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		return &m_sdlPlayer.rotation.d;
+	}
+#endif
+	return nullptr;
+}
+
+void InputController::registerTiltAxisX(int axis) {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.axisX = axis;
+	}
+#endif
+}
+
+void InputController::registerTiltAxisY(int axis) {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.axisY = axis;
+	}
+#endif
+}
+
+void InputController::registerGyroAxisX(int axis) {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroX = axis;
+	}
+#endif
+}
+
+void InputController::registerGyroAxisY(int axis) {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroY = axis;
+	}
+#endif
+}
+
+float InputController::gyroSensitivity() const {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		return m_sdlPlayer.rotation.gyroSensitivity;
+	}
+#endif
+	return 0;
+}
+
+void InputController::setGyroSensitivity(float sensitivity) {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroSensitivity = sensitivity;
+	}
+#endif
+}
 
 GBAKey InputController::mapKeyboard(int key) const {
 	return GBAInputMapKey(&m_inputMap, KEYBOARD, key);
@@ -153,85 +283,119 @@ void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
 	return GBAInputBindKey(&m_inputMap, type, key, gbaKey);
 }
 
-#ifdef BUILD_SDL
-int InputController::testSDLEvents() {
-	SDL_Joystick* joystick = m_sdlPlayer.joystick;
-	SDL_JoystickUpdate();
-	int numButtons = SDL_JoystickNumButtons(joystick);
+int InputController::pollEvents() {
 	int activeButtons = 0;
-	int i;
-	for (i = 0; i < numButtons; ++i) {
-		GBAKey key = GBAInputMapKey(&m_inputMap, SDL_BINDING_BUTTON, i);
-		if (key == GBA_KEY_NONE) {
-			continue;
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+		SDL_JoystickUpdate();
+		int numButtons = SDL_JoystickNumButtons(joystick);
+		int i;
+		for (i = 0; i < numButtons; ++i) {
+			GBAKey key = GBAInputMapKey(&m_inputMap, SDL_BINDING_BUTTON, i);
+			if (key == GBA_KEY_NONE) {
+				continue;
+			}
+			if (hasPendingEvent(key)) {
+				continue;
+			}
+			if (SDL_JoystickGetButton(joystick, i)) {
+				activeButtons |= 1 << key;
+			}
 		}
-		if (hasPendingEvent(key)) {
-			continue;
+		int numHats = SDL_JoystickNumHats(joystick);
+		for (i = 0; i < numHats; ++i) {
+			int hat = SDL_JoystickGetHat(joystick, i);
+			if (hat & SDL_HAT_UP) {
+				activeButtons |= 1 << GBA_KEY_UP;
+			}
+			if (hat & SDL_HAT_LEFT) {
+				activeButtons |= 1 << GBA_KEY_LEFT;
+			}
+			if (hat & SDL_HAT_DOWN) {
+				activeButtons |= 1 << GBA_KEY_DOWN;
+			}
+			if (hat & SDL_HAT_RIGHT) {
+				activeButtons |= 1 << GBA_KEY_RIGHT;
+			}
 		}
-		if (SDL_JoystickGetButton(joystick, i)) {
-			activeButtons |= 1 << key;
-		}
-	}
-	int numHats = SDL_JoystickNumHats(joystick);
-	for (i = 0; i < numHats; ++i) {
-		int hat = SDL_JoystickGetHat(joystick, i);
-		if (hat & SDL_HAT_UP) {
-			activeButtons |= 1 << GBA_KEY_UP;
-		}
-		if (hat & SDL_HAT_LEFT) {
-			activeButtons |= 1 << GBA_KEY_LEFT;
-		}
-		if (hat & SDL_HAT_DOWN) {
-			activeButtons |= 1 << GBA_KEY_DOWN;
-		}
-		if (hat & SDL_HAT_RIGHT) {
-			activeButtons |= 1 << GBA_KEY_RIGHT;
-		}
-	}
 
-	int numAxes = SDL_JoystickNumAxes(joystick);
-	for (i = 0; i < numAxes; ++i) {
-		int value = SDL_JoystickGetAxis(joystick, i);
+		int numAxes = SDL_JoystickNumAxes(joystick);
+		for (i = 0; i < numAxes; ++i) {
+			int value = SDL_JoystickGetAxis(joystick, i);
 
-		enum GBAKey key = GBAInputMapAxis(&m_inputMap, SDL_BINDING_BUTTON, i, value);
-		if (key != GBA_KEY_NONE) {
-			activeButtons |= 1 << key;
+			enum GBAKey key = GBAInputMapAxis(&m_inputMap, SDL_BINDING_BUTTON, i, value);
+			if (key != GBA_KEY_NONE) {
+				activeButtons |= 1 << key;
+			}
 		}
 	}
+#endif
 	return activeButtons;
 }
 
-QSet<int> InputController::activeGamepadButtons() {
-	SDL_Joystick* joystick = m_sdlPlayer.joystick;
-	SDL_JoystickUpdate();
-	int numButtons = SDL_JoystickNumButtons(joystick);
+QSet<int> InputController::activeGamepadButtons(int type) {
 	QSet<int> activeButtons;
-	int i;
-	for (i = 0; i < numButtons; ++i) {
-		if (SDL_JoystickGetButton(joystick, i)) {
-			activeButtons.insert(i);
+#ifdef BUILD_SDL
+	if (m_playerAttached && type == SDL_BINDING_BUTTON) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+		SDL_JoystickUpdate();
+		int numButtons = SDL_JoystickNumButtons(joystick);
+		int i;
+		for (i = 0; i < numButtons; ++i) {
+			if (SDL_JoystickGetButton(joystick, i)) {
+				activeButtons.insert(i);
+			}
 		}
 	}
+#endif
 	return activeButtons;
 }
 
-QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes() {
-	SDL_Joystick* joystick = m_sdlPlayer.joystick;
-	SDL_JoystickUpdate();
-	int numButtons = SDL_JoystickNumAxes(joystick);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
-	int i;
-	for (i = 0; i < numButtons; ++i) {
-		int32_t axis = SDL_JoystickGetAxis(joystick, i);
-		if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
-			activeAxes.insert(qMakePair(i, axis > 0 ? GamepadAxisEvent::POSITIVE : GamepadAxisEvent::NEGATIVE));
+void InputController::recalibrateAxes() {
+#ifdef BUILD_SDL
+	if (m_playerAttached) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+		SDL_JoystickUpdate();
+		int numAxes = SDL_JoystickNumAxes(joystick);
+		if (numAxes < 1) {
+			return;
+		}
+		m_deadzones.resize(numAxes);
+		int i;
+		for (i = 0; i < numAxes; ++i) {
+			m_deadzones[i] = SDL_JoystickGetAxis(joystick, i);
 		}
 	}
+#endif
+}
+
+QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes(int type) {
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
+#ifdef BUILD_SDL
+	if (m_playerAttached && type == SDL_BINDING_BUTTON) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+		SDL_JoystickUpdate();
+		int numAxes = SDL_JoystickNumAxes(joystick);
+		if (numAxes < 1) {
+			return activeAxes;
+		}
+		m_deadzones.resize(numAxes);
+		int i;
+		for (i = 0; i < numAxes; ++i) {
+			int32_t axis = SDL_JoystickGetAxis(joystick, i);
+			axis -= m_deadzones[i];
+			if (axis >= AXIS_THRESHOLD || axis <= -AXIS_THRESHOLD) {
+				activeAxes.insert(qMakePair(i, axis > 0 ? GamepadAxisEvent::POSITIVE : GamepadAxisEvent::NEGATIVE));
+			}
+		}
+	}
+#endif
 	return activeAxes;
 }
 
 void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, GBAKey key) {
-	const GBAAxis* old = GBAInputQueryAxis(&m_inputMap, SDL_BINDING_BUTTON, axis);
+	const GBAAxis* old = GBAInputQueryAxis(&m_inputMap, type, axis);
 	GBAAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
 	if (old) {
 		description = *old;
@@ -239,26 +403,28 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
-		description.deadLow = -AXIS_THRESHOLD;
+		description.deadLow = m_deadzones[axis] - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
-		description.deadHigh = AXIS_THRESHOLD;
+		description.deadHigh = m_deadzones[axis] + AXIS_THRESHOLD;
 		break;
 	default:
 		return;
 	}
-	GBAInputBindAxis(&m_inputMap, SDL_BINDING_BUTTON, axis, &description);
+	GBAInputBindAxis(&m_inputMap, type, axis, &description);
 }
-#endif
 
-void InputController::testGamepad() {
-#ifdef BUILD_SDL
-	auto activeAxes = activeGamepadAxes();
+void InputController::unbindAllAxes(uint32_t type) {
+	GBAInputUnbindAllAxes(&m_inputMap, type);
+}
+
+void InputController::testGamepad(int type) {
+	auto activeAxes = activeGamepadAxes(type);
 	auto oldAxes = m_activeAxes;
 	m_activeAxes = activeAxes;
 
-	auto activeButtons = activeGamepadButtons();
+	auto activeButtons = activeGamepadButtons(type);
 	auto oldButtons = m_activeButtons;
 	m_activeButtons = activeButtons;
 
@@ -271,35 +437,54 @@ void InputController::testGamepad() {
 
 	for (auto& axis : m_activeAxes) {
 		bool newlyAboveThreshold = activeAxes.contains(axis);
-		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, this);
 		if (newlyAboveThreshold) {
+			GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, newlyAboveThreshold, type, this);
 			postPendingEvent(event->gbaKey());
+			sendGamepadEvent(event);
 			if (!event->isAccepted()) {
 				clearPendingEvent(event->gbaKey());
 			}
-		} else if (oldAxes.contains(axis)) {
-			clearPendingEvent(event->gbaKey());
 		}
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+	}
+	for (auto axis : oldAxes) {
+		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, type, this);
+		clearPendingEvent(event->gbaKey());
+		sendGamepadEvent(event);
+	}
+
+	if (!QApplication::focusWidget()) {
+		return;
 	}
 
 	activeButtons.subtract(oldButtons);
 	oldButtons.subtract(m_activeButtons);
 
 	for (int button : activeButtons) {
-		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, this);
+		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Down(), button, type, this);
 		postPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 		if (!event->isAccepted()) {
 			clearPendingEvent(event->gbaKey());
 		}
 	}
 	for (int button : oldButtons) {
-		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, this);
+		GamepadButtonEvent* event = new GamepadButtonEvent(GamepadButtonEvent::Up(), button, type, this);
 		clearPendingEvent(event->gbaKey());
-		QApplication::sendEvent(QApplication::focusWidget(), event);
+		sendGamepadEvent(event);
 	}
-#endif
+}
+
+void InputController::sendGamepadEvent(QEvent* event) {
+	QWidget* focusWidget = nullptr;
+	if (m_focusParent) {
+		focusWidget = m_focusParent->focusWidget();
+		if (!focusWidget) {
+			focusWidget = m_focusParent;
+		}
+	} else {
+		focusWidget = QApplication::focusWidget();
+	}
+	QApplication::sendEvent(focusWidget, event);
 }
 
 void InputController::postPendingEvent(GBAKey key) {
@@ -312,4 +497,38 @@ void InputController::clearPendingEvent(GBAKey key) {
 
 bool InputController::hasPendingEvent(GBAKey key) const {
 	return m_pendingEvents.contains(key);
+}
+
+void InputController::suspendScreensaver() {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	GBASDLSuspendScreensaver(&s_sdlEvents);
+#endif
+#endif
+}
+
+void InputController::resumeScreensaver() {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	GBASDLResumeScreensaver(&s_sdlEvents);
+#endif
+#endif
+}
+
+void InputController::setScreensaverSuspendable(bool suspendable) {
+#ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	GBASDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
+#endif
+#endif
+}
+
+void InputController::stealFocus(QWidget* focus) {
+	m_focusParent = focus;
+}
+
+void InputController::releaseFocus(QWidget* focus) {
+	if (focus == m_focusParent) {
+		m_focusParent = m_topLevel;
+	}
 }

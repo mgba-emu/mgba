@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2015 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,77 +6,66 @@
 #ifndef QGBA_DISPLAY
 #define QGBA_DISPLAY
 
-#include <QGLWidget>
-#include <QThread>
-#include <QTimer>
+#include <QWidget>
+
+#include "MessagePainter.h"
 
 struct GBAThread;
 
 namespace QGBA {
 
-class Painter;
-class Display : public QGLWidget {
+class Display : public QWidget {
 Q_OBJECT
 
 public:
-	Display(QGLFormat format, QWidget* parent = nullptr);
+	enum class Driver {
+		QT = 0,
+#ifdef BUILD_GL
+		OPENGL = 1,
+#endif
+	};
+
+	Display(QWidget* parent = nullptr);
+
+	static Display* create(QWidget* parent = nullptr);
+	static void setDriver(Driver driver) { s_driver = driver; }
+
+	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
+	bool isFiltered() const { return m_filter; }
+
+	virtual bool isDrawing() const = 0;
+
+signals:
+	void showCursor();
+	void hideCursor();
 
 public slots:
-	void startDrawing(const uint32_t* buffer, GBAThread* context);
-	void stopDrawing();
-	void pauseDrawing();
-	void unpauseDrawing();
-	void forceDraw();
-	void lockAspectRatio(bool lock);
-	void filter(bool filter);
-#ifdef USE_PNG
-	void screenshot();
-#endif
+	virtual void startDrawing(GBAThread* context) = 0;
+	virtual void stopDrawing() = 0;
+	virtual void pauseDrawing() = 0;
+	virtual void unpauseDrawing() = 0;
+	virtual void forceDraw() = 0;
+	virtual void lockAspectRatio(bool lock);
+	virtual void filter(bool filter);
+	virtual void framePosted(const uint32_t*) = 0;
+
+	void showMessage(const QString& message);
 
 protected:
-	virtual void initializeGL() override;
-	virtual void paintEvent(QPaintEvent*) override {};
-	virtual void resizeEvent(QResizeEvent*) override;
+	void resizeEvent(QResizeEvent*);
+	virtual void mouseMoveEvent(QMouseEvent*) override;
+
+	MessagePainter* messagePainter() { return &m_messagePainter; }
+
 
 private:
-	Painter* m_painter;
-	bool m_started;
-	GBAThread* m_context;
+	static Driver s_driver;
+	static const int MOUSE_DISAPPEAR_TIMER = 1000;
+
+	MessagePainter m_messagePainter;
 	bool m_lockAspectRatio;
 	bool m_filter;
-};
-
-class Painter : public QObject {
-Q_OBJECT
-
-public:
-	Painter(Display* parent);
-
-	void setContext(GBAThread*);
-	void setBacking(const uint32_t*);
-
-public slots:
-	void forceDraw();
-	void draw();
-	void start();
-	void stop();
-	void pause();
-	void unpause();
-	void resize(const QSize& size);
-	void lockAspectRatio(bool lock);
-	void filter(bool filter);
-
-private:
-	void performDraw();
-
-	QTimer* m_drawTimer;
-	GBAThread* m_context;
-	const uint32_t* m_backing;
-	GLuint m_tex;
-	QGLWidget* m_gl;
-	QSize m_size;
-	bool m_lockAspectRatio;
-	bool m_filter;
+	QTimer m_mouseTimer;
 };
 
 }

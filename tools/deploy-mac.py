@@ -44,6 +44,8 @@ def makedirs(path):
 	while split:
 		accum.append(split.pop())
 		newPath = joinPath(accum)
+		if newPath == '/':
+			continue
 		try:
 			os.mkdir(newPath)
 		except OSError as e:
@@ -67,6 +69,8 @@ def parseOtoolLine(line, execPath, root):
 		split[:1] = execPath
 	if split[0] == '/' and not os.access(joinPath(split), os.F_OK):
 		split[:1] = root
+	oldPath = os.path.realpath(joinPath(split))
+	split = splitPath(oldPath)
 	isFramework = False
 	if not split[-1].endswith('.dylib'):
 		isFramework = True
@@ -104,16 +108,19 @@ def updateMachO(bin, execPath, root):
 			qtPath = findQtPath(oldPath)
 			if verbose:
 				print('Found Qt path at {}.'.format(qtPath))
+	args = [installNameTool]
 	for path, oldExecPath, newExecPath in toUpdate:
 		if path != bin:
 			updateMachO(path, execPath, root)
 			if verbose:
 				print('Updating Mach-O load from {} to {}...'.format(oldExecPath, newExecPath))
-			subprocess.check_call([installNameTool, '-change', oldExecPath, newExecPath, bin])
+			args.extend(['-change', oldExecPath, newExecPath])
 		else:
 			if verbose:
 				print('Updating Mach-O id from {} to {}...'.format(oldExecPath, newExecPath))
-			subprocess.check_call([installNameTool, '-id', newExecPath, bin])
+			args.extend(['-id', newExecPath])
+	args.append(bin)
+	subprocess.check_call(args)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()

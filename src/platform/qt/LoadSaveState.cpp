@@ -23,8 +23,10 @@ using namespace QGBA;
 LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
-	, m_currentFocus(0)
+	, m_currentFocus(controller->stateSlot() - 1)
+	, m_mode(LoadSave::LOAD)
 {
+	setAttribute(Qt::WA_TranslucentBackground);
 	m_ui.setupUi(this);
 
 	m_slots[0] = m_ui.state1;
@@ -43,6 +45,19 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 		m_slots[i]->installEventFilter(this);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
+
+	if (m_currentFocus >= 9) {
+		m_currentFocus = 0;
+	}
+	if (m_currentFocus < 0) {
+		m_currentFocus = 0;
+	}
+
+	QAction* escape = new QAction(this);
+	escape->connect(escape, SIGNAL(triggered()), this, SLOT(close()));
+	escape->setShortcut(QKeySequence("Esc"));
+	escape->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	addAction(escape);
 }
 
 void LoadSaveState::setMode(LoadSave mode) {
@@ -55,13 +70,13 @@ void LoadSaveState::setMode(LoadSave mode) {
 bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 	if (event->type() == QEvent::KeyPress) {
 		int column = m_currentFocus % 3;
-		int row = m_currentFocus - column;
+		int row = m_currentFocus / 3;
 		switch (static_cast<QKeyEvent*>(event)->key()) {
 		case Qt::Key_Up:
-			row += 6;
+			row += 2;
 			break;
 		case Qt::Key_Down:
-			row += 3;
+			row += 1;
 			break;
 		case Qt::Key_Left:
 			column += 2;
@@ -80,9 +95,6 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 		case Qt::Key_9:
 			triggerState(static_cast<QKeyEvent*>(event)->key() - Qt::Key_1 + 1);
 			break;
-		case Qt::Key_Escape:
-			close();
-			break;
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 			triggerState(m_currentFocus + 1);
@@ -91,8 +103,8 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 			return false;
 		}
 		column %= 3;
-		row %= 9;
-		m_currentFocus = column + row;
+		row %= 3;
+		m_currentFocus = column + row * 3;
 		m_slots[m_currentFocus]->setFocus();
 		return true;
 	}
@@ -197,6 +209,5 @@ void LoadSaveState::showEvent(QShowEvent* event) {
 void LoadSaveState::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	QRect full(QPoint(), size());
-	painter.drawPixmap(full, m_currentImage);
 	painter.fillRect(full, QColor(0, 0, 0, 128));
 }

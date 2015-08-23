@@ -5,12 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsModel.h"
 
+#include "LogController.h"
+#include "VFileDevice.h"
+
 #include <QFont>
 #include <QSet>
 
 extern "C" {
 #include "gba/cheats.h"
-#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -67,7 +69,7 @@ bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int r
 			free(cheats->name);
 			cheats->name = nullptr;
 		}
-		cheats->name = strdup(value.toString().toLocal8Bit().constData());
+		cheats->name = strdup(value.toString().toUtf8().constData());
 		emit dataChanged(index, index);
 		return true;
 	case Qt::CheckStateRole:
@@ -103,7 +105,7 @@ QModelIndex CheatsModel::parent(const QModelIndex& index) const {
 	return QModelIndex();
 }
 
-Qt::ItemFlags CheatsModel::flags(const QModelIndex &index) const {
+Qt::ItemFlags CheatsModel::flags(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return 0;
 	}
@@ -151,7 +153,6 @@ void CheatsModel::removeAt(const QModelIndex& index) {
 	GBACheatSetDeinit(set);
 	delete set;
 	endInsertRows();
-
 }
 
 QString CheatsModel::toString(const QModelIndexList& indices) const {
@@ -201,8 +202,9 @@ void CheatsModel::endAppendRow() {
 }
 
 void CheatsModel::loadFile(const QString& path) {
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_RDONLY);
+	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
+		LOG(WARN) << tr("Failed to open cheats file: %1").arg(path);
 		return;
 	}
 	beginResetModel();
@@ -212,7 +214,7 @@ void CheatsModel::loadFile(const QString& path) {
 }
 
 void CheatsModel::saveFile(const QString& path) {
-	VFile* vf = VFileOpen(path.toLocal8Bit().constData(), O_TRUNC | O_CREAT | O_WRONLY);
+	VFile* vf = VFileDevice::open(path, O_TRUNC | O_CREAT | O_WRONLY);
 	if (!vf) {
 		return;
 	}

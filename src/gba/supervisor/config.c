@@ -6,16 +6,16 @@
 #include "config.h"
 
 #include "util/formatting.h"
+#include "util/string.h"
+#include "util/vfs.h"
 
 #include <sys/stat.h>
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shlwapi.h>
 #include <shlobj.h>
 #include <strsafe.h>
-#define PATH_SEP "\\"
-#else
-#define PATH_SEP "/"
 #endif
 
 #define SECTION_NAME_MAX 128
@@ -116,28 +116,86 @@ bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
-	return ConfigurationRead(&config->configTable, path);
+	return GBAConfigLoadPath(config, path);
 }
 
 bool GBAConfigSave(const struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
+	return GBAConfigSavePath(config, path);
+}
+
+bool GBAConfigLoadPath(struct GBAConfig* config, const char* path) {
+	return ConfigurationRead(&config->configTable, path);
+}
+
+bool GBAConfigSavePath(const struct GBAConfig* config, const char* path) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
-void GBAConfigDirectory(char* out, size_t outLength) {
+void GBAConfigMakePortable(const struct GBAConfig* config) {
+	struct VFile* portable;
 #ifndef _WIN32
+	char out[PATH_MAX];
+	getcwd(out, PATH_MAX);
+	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
+	portable = VFileOpen(out, O_WRONLY | O_CREAT);
+#else
+	char out[MAX_PATH];
+	wchar_t wpath[MAX_PATH];
+	wchar_t wprojectName[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
+	HMODULE hModule = GetModuleHandleW(NULL);
+	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	PathRemoveFileSpecW(wpath);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
+	StringCchCatA(out, MAX_PATH, "\\portable.ini");
+	portable = VFileOpen(out, O_WRONLY | O_CREAT);
+#endif
+	if (portable) {
+		portable->close(portable);
+		GBAConfigSave(config);
+	}
+}
+
+void GBAConfigDirectory(char* out, size_t outLength) {
+	struct VFile* portable;
+#ifndef _WIN32
+	getcwd(out, outLength);
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		getcwd(out, outLength);
+		portable->close(portable);
+		return;
+	}
+
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
-	snprintf(out, outLength, "%s/.config/%s", home, BINARY_NAME);
+	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
 	mkdir(out, 0755);
 #else
-	char home[MAX_PATH];
-	SHGetFolderPath(0, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, home);
-	snprintf(out, outLength, "%s\\%s", home, PROJECT_NAME);
-	CreateDirectoryA(out, NULL);
+	wchar_t wpath[MAX_PATH];
+	wchar_t wprojectName[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
+	HMODULE hModule = GetModuleHandleW(NULL);
+	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	PathRemoveFileSpecW(wpath);
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
+	StringCchCatA(out, outLength, "\\portable.ini");
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		portable->close(portable);
+	} else {
+		wchar_t* home;
+		SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &home);
+		StringCchPrintfW(wpath, MAX_PATH, L"%ws\\%ws", home, wprojectName);
+		CoTaskMemFree(home);
+		CreateDirectoryW(wpath, NULL);
+	}
+	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #endif
 }
 
@@ -181,6 +239,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
+	_lookupIntValue(config, "volume", &opts->volume);
 	_lookupIntValue(config, "rewindBufferCapacity", &opts->rewindBufferCapacity);
 	_lookupIntValue(config, "rewindBufferInterval", &opts->rewindBufferInterval);
 	_lookupFloatValue(config, "fpsTarget", &opts->fpsTarget);
@@ -188,9 +247,10 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	if (_lookupUIntValue(config, "audioBuffers", &audioBuffers)) {
 		opts->audioBuffers = audioBuffers;
 	}
+	_lookupUIntValue(config, "sampleRate", &opts->sampleRate);
 
 	int fakeBool;
-	if (_lookupIntValue(config, "useSync", &fakeBool)) {
+	if (_lookupIntValue(config, "useBios", &fakeBool)) {
 		opts->useBios = fakeBool;
 	}
 	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
@@ -204,6 +264,12 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
 		opts->resampleVideo = fakeBool;
+	}
+	if (_lookupIntValue(config, "suspendScreensaver", &fakeBool)) {
+		opts->suspendScreensaver = fakeBool;
+	}
+	if (_lookupIntValue(config, "mute", &fakeBool)) {
+		opts->mute = fakeBool;
 	}
 	if (_lookupIntValue(config, "skipBios", &fakeBool)) {
 		opts->skipBios = fakeBool;
@@ -240,13 +306,17 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferInterval", opts->rewindBufferInterval);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "audioBuffers", opts->audioBuffers);
+	ConfigurationSetUIntValue(&config->defaultsTable, 0, "sampleRate", opts->sampleRate);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "audioSync", opts->audioSync);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "videoSync", opts->videoSync);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "fullscreen", opts->fullscreen);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "width", opts->width);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "height", opts->height);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "volume", opts->volume);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "mute", opts->mute);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
 
 	switch (opts->idleOptimization) {
 	case IDLE_LOOP_IGNORE:

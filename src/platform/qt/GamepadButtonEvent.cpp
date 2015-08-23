@@ -12,18 +12,16 @@ using namespace QGBA;
 QEvent::Type GamepadButtonEvent::s_downType = QEvent::None;
 QEvent::Type GamepadButtonEvent::s_upType = QEvent::None;
 
-GamepadButtonEvent::GamepadButtonEvent(QEvent::Type type, int button, InputController* controller)
-	: QEvent(type)
+GamepadButtonEvent::GamepadButtonEvent(QEvent::Type pressType, int button, int type, InputController* controller)
+	: QEvent(pressType)
 	, m_button(button)
 	, m_controller(controller)
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();
-#ifdef BUILD_SDL
 	if (controller) {
-		m_key = GBAInputMapKey(controller->map(), SDL_BINDING_BUTTON, button);
+		m_key = GBAInputMapKey(controller->map(), type, button);
 	}
-#endif
 }
 
 QEvent::Type GamepadButtonEvent::Down() {

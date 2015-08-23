@@ -18,9 +18,9 @@ extern "C" {
 }
 
 #include "GDBController.h"
-#include "Display.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
+#include "LogController.h"
 
 struct GBAOptions;
 struct GBAArguments;
@@ -28,6 +28,7 @@ struct GBAArguments;
 namespace QGBA {
 
 class ConfigController;
+class Display;
 class GameController;
 class GIFView;
 class LogView;
@@ -50,18 +51,26 @@ public:
 	void resizeFrame(int width, int height);
 
 signals:
-	void startDrawing(const uint32_t*, GBAThread*);
+	void startDrawing(GBAThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
+	void sampleRateChanged(unsigned samples);
 	void fpsTargetChanged(float target);
 
 public slots:
 	void selectROM();
 	void selectBIOS();
 	void selectPatch();
+	void enterFullScreen();
+	void exitFullScreen();
 	void toggleFullScreen();
 	void loadConfig();
 	void saveConfig();
+
+	void replaceROM();
+
+	void importSharkport();
+	void exportSharkport();
 
 	void openKeymapWindow();
 	void openSettingsWindow();
@@ -70,6 +79,11 @@ public slots:
 	void openOverrideWindow();
 	void openSensorWindow();
 	void openCheatsWindow();
+
+	void openPaletteWindow();
+	void openMemoryWindow();
+
+	void openAboutScreen();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();
@@ -91,16 +105,23 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
 	virtual void resizeEvent(QResizeEvent*) override;
+	virtual void showEvent(QShowEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void focusInEvent(QFocusEvent*) override;
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
+	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
 	void gameStarted(GBAThread*);
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();
+	void unimplementedBiosCall(int);
+
+	void tryMakePortable();
+	void mustRestart();
 
 	void recordFrame();
 	void showFPS();
@@ -118,11 +139,18 @@ private:
 	void appendMRU(const QString& fname);
 	void updateMRU();
 
+	void openView(QWidget* widget);
+
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
+	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
+
+	void updateTitle(float fps = NAN);
 
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	QMap<int, QAction*> m_frameSizes;
+	LogController m_log;
 	LogView* m_logView;
 	LoadSaveState* m_stateWindow;
 	WindowBackground* m_screenWidget;
@@ -135,6 +163,8 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	int m_playerId;
+
+	bool m_hitUnimplementedBiosCall;
 
 #ifdef USE_FFMPEG
 	VideoView* m_videoView;

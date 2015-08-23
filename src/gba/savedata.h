@@ -51,6 +51,11 @@ enum FlashManufacturer {
 	FLASH_MFG_SANYO = 0x1362
 };
 
+enum SavedataDirty {
+	SAVEDATA_DIRT_NEW = 1,
+	SAVEDATA_DIRT_SEEN = 2
+};
+
 enum {
 	SAVEDATA_FLASH_BASE = 0x0E005555,
 
@@ -73,6 +78,13 @@ struct GBASavedata {
 
 	uint8_t* currentBank;
 
+	bool realisticTiming;
+	unsigned settling;
+	int dust;
+
+	enum SavedataDirty dirty;
+	uint32_t dirtAge;
+
 	enum FlashStateMachine flashState;
 };
 
@@ -82,9 +94,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata);
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataUnmask(struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
 
-void GBASavedataInitFlash(struct GBASavedata* savedata);
+void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
@@ -93,6 +105,8 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata);
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize);
+
+void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount);
 
 struct GBASerializedState;
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData);

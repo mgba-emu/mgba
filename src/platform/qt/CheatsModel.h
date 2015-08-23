@@ -27,7 +27,7 @@ public:
 
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	virtual Qt::ItemFlags flags(const QModelIndex &index) const override;
+	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	GBACheatSet* itemAt(const QModelIndex& index);
 	void removeAt(const QModelIndex& index);

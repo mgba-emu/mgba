@@ -19,7 +19,7 @@ extern "C" {
 
 using namespace QGBA;
 
-#ifdef BUILD_QT_MULTIMEDIA
+#ifndef BUILD_SDL
 AudioProcessor::Driver AudioProcessor::s_driver = AudioProcessor::Driver::QT_MULTIMEDIA;
 #else
 AudioProcessor::Driver AudioProcessor::s_driver = AudioProcessor::Driver::SDL;
@@ -38,16 +38,18 @@ AudioProcessor* AudioProcessor::create() {
 #endif
 
 	default:
-#ifdef BUILD_QT_MULTIMEDIA
-		return new AudioProcessorQt();
-#else
+#ifdef BUILD_SDL
 		return new AudioProcessorSDL();
+#else
+		return new AudioProcessorQt();
 #endif
 	}
 }
 
 AudioProcessor::AudioProcessor(QObject* parent)
 	: QObject(parent)
+	, m_context(nullptr)
+	, m_samples(GBA_AUDIO_SAMPLES)
 {
 }
 

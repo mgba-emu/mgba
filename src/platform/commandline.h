@@ -30,6 +30,7 @@ struct GBAArguments {
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;
+	bool showHelp;
 };
 
 struct SubParser {
@@ -41,11 +42,13 @@ struct SubParser {
 
 struct GraphicsOpts {
 	int multiplier;
+	bool fullscreen;
 };
 
 struct GBAThread;
 
-bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser);
+bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv,
+                    struct SubParser* subparser);
 void freeArguments(struct GBAArguments* opts);
 
 void usage(const char* arg0, const char* extraOptions);

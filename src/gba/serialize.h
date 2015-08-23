@@ -136,7 +136,8 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  *   | bit 2: Has light sensor value
  *   | bit 3: Has gyroscope value
  *   | bit 4: Has tilt values
- *   | bits 5 - 7: Reserved
+ *   | bit 5: Has Game Boy Player attached
+ *   | bits 6 - 7: Reserved
  * | 0x002B8 - 0x002B9: Gyroscope sample
  * | 0x002BA - 0x002BB: Tilt x sample
  * | 0x002BC - 0x002BD: Tilt y sample
@@ -149,8 +150,11 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002C0 - 0x002C0: Light sample
  * | 0x002C1 - 0x002C3: Flags
  *   | bits 0 - 1: Tilt state machine
- *   | bits 2 - 31: Reserved
- * 0x002C4 - 0x002DF: Reserved (leave zero)
+ *   | bits 2 - 3: GB Player inputs posted
+ *   | bits 4 - 8: GB Player transmit position
+ *   | bits 9 - 23: Reserved
+ * 0x002C4 - 0x002C7: Game Boy Player next event
+ * 0x002C8 - 0x002DF: Reserved (leave zero)
  * 0x002E0 - 0x002EF: Savedata state
  * | 0x002E0 - 0x002E0: Savedata type
  * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
@@ -162,8 +166,9 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002E3 - 0x002E3: Reserved
  * | 0x002E4 - 0x002E7: EEPROM read bits remaining
  * | 0x002E8 - 0x002EB: EEPROM read address
- * | 0x002EC - 0x002EBF EEPROM write address
- * 0x002F0 - 0x002F3: Reserved (leave zero)
+ * | 0x002EC - 0x002EF: EEPROM write address
+ * | 0x002F0 - 0x002F1: Flash settling sector
+ * | 0x002F2 - 0x002F3: Flash settling remaining
  * 0x002F4 - 0x002FF: Prefetch
  * | 0x002F4 - 0x002F7: GBA BIOS bus prefetch
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
@@ -230,7 +235,7 @@ struct GBASerializedState {
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
-		int32_t fifoSize;
+		uint32_t fifoSize;
 		unsigned ch1Volume : 4;
 		unsigned ch1Dead : 1;
 		unsigned ch1Hi : 1;
@@ -281,10 +286,13 @@ struct GBASerializedState {
 		unsigned lightCounter : 12;
 		unsigned lightSample : 8;
 		unsigned tiltState : 2;
-		unsigned : 22;
+		unsigned gbpInputsPosted : 2;
+		unsigned gbpTxPosition : 5;
+		unsigned : 15;
+		uint32_t gbpNextEvent : 32;
 	} hw;
 
-	uint32_t reservedHardware[7];
+	uint32_t reservedHardware[6];
 
 	struct {
 		unsigned type : 8;
@@ -297,9 +305,9 @@ struct GBASerializedState {
 		int32_t readBitsRemaining;
 		uint32_t readAddress;
 		uint32_t writeAddress;
+		uint16_t settlingSector;
+		uint16_t settlingDust;
 	} savedata;
-
-	uint32_t reservedPadding;
 
 	uint32_t biosPrefetch;
 	uint32_t cpuPrefetch[2];
@@ -320,7 +328,7 @@ struct VDir;
 struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
-void GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
+bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);
@@ -334,7 +342,7 @@ void GBADeallocateState(struct GBASerializedState* state);
 
 void GBARecordFrame(struct GBAThread* thread);
 void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int newInterval);
-void GBARewind(struct GBAThread* thread, int nStates);
+int GBARewind(struct GBAThread* thread, int nStates);
 void GBARewindAll(struct GBAThread* thread);
 
 #endif

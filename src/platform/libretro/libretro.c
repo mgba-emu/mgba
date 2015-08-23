@@ -5,14 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "libretro.h"
 
-#include "gba/gba.h"
+#include "util/common.h"
+
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/video.h"
+#include "gba/supervisor/context.h"
+#include "util/circle-buffer.h"
 #include "util/vfs.h"
 
 #define SAMPLES 1024
+#define RUMBLE_PWM 35
+
+#define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -20,20 +24,26 @@ static retro_audio_sample_batch_t audioCallback;
 static retro_input_poll_t inputPollCallback;
 static retro_input_state_t inputCallback;
 static retro_log_printf_t logCallback;
+static retro_set_rumble_state_t rumbleCallback;
 
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
+static void _setRumble(struct GBARumble* rumble, int enable);
+static uint8_t _readLux(struct GBALuminanceSource* lux);
+static void _updateLux(struct GBALuminanceSource* lux);
 
-static struct GBA gba;
-static struct ARMCore cpu;
+static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
-static struct VFile* rom;
 static void* data;
-static struct VFile* save;
 static void* savedata;
 static struct GBAAVStream stream;
+static int rumbleLevel;
+static struct CircleBuffer rumbleHistory;
+static struct GBARumble rumble;
+static struct GBALuminanceSource lux;
+static int luxLevel;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -41,6 +51,13 @@ unsigned retro_api_version(void) {
 
 void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
+
+	struct retro_variable vars[] = {
+		{ SOLAR_SENSOR_LEVEL, "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
+		{ 0, 0 }
+	};
+
+	environCallback(RETRO_ENVIRONMENT_SET_VARIABLES, vars);
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video) {
@@ -66,8 +83,8 @@ void retro_set_input_state(retro_input_state_t input) {
 void retro_get_system_info(struct retro_system_info* info) {
    info->need_fullpath = false;
    info->valid_extensions = "gba";
-   info->library_version = PROJECT_VERSION;
-   info->library_name = PROJECT_NAME;
+   info->library_version = projectVersion;
+   info->library_name = projectName;
    info->block_extract = false;
 }
 
@@ -105,12 +122,27 @@ void retro_init(void) {
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" }
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Brighten Solar Sensor" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Darken Solar Sensor" }
 	};
 	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
 
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
-	// TODO: RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE
+
+	struct retro_rumble_interface rumbleInterface;
+	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
+		rumbleCallback = rumbleInterface.set_rumble_state;
+		CircleBufferInit(&rumbleHistory, RUMBLE_PWM);
+		rumble.setRumble = _setRumble;
+	} else {
+		rumbleCallback = 0;
+	}
+
+	luxLevel = 0;
+	lux.readLuminance = _readLux;
+	lux.sample = _updateLux;
+	_updateLux(&lux);
 
 	struct retro_log_callback log;
 	if (environCallback(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
@@ -123,35 +155,49 @@ void retro_init(void) {
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = _postVideoFrame;
 
-	GBACreate(&gba);
-	ARMSetComponents(&cpu, &gba.d, 0, 0);
-	ARMInit(&cpu);
-	gba.logLevel = 0; // TODO: Settings
-	gba.logHandler = GBARetroLog;
-	gba.stream = &stream;
-	gba.idleOptimization = IDLE_LOOP_REMOVE; // TODO: Settings
-	rom = 0;
+	GBAContextInit(&context, 0);
+	struct GBAOptions opts = {
+		.useBios = true,
+		.logLevel = 0,
+		.idleOptimization = IDLE_LOOP_REMOVE
+	};
+	GBAConfigLoadDefaults(&context.config, &opts);
+	context.gba->logHandler = GBARetroLog;
+	context.gba->stream = &stream;
+	if (rumbleCallback) {
+		context.gba->rumble = &rumble;
+	}
+	context.gba->luminanceSource = &lux;
+
+	const char* sysDir = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+		char biosPath[PATH_MAX];
+		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
+		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+		if (bios) {
+			GBAContextLoadBIOSFromVFile(&context, bios);
+		}
+	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	GBAVideoAssociateRenderer(&gba.video, &renderer.d);
+	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
 
-	GBAAudioResizeBuffer(&gba.audio, SAMPLES);
+	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(gba.audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(gba.audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 #endif
 }
 
 void retro_deinit(void) {
-	GBADestroy(&gba);
+	GBAContextDeinit(&context);
 }
 
 void retro_run(void) {
-	int keys;
-	gba.keySource = &keys;
+	uint16_t keys;
 	inputPollCallback();
 
 	keys = 0;
@@ -166,18 +212,39 @@ void retro_run(void) {
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
 
-	int frameCount = gba.video.frameCounter;
-	while (gba.video.frameCounter == frameCount) {
-		ARMRunLoop(&cpu);
+	static bool wasAdjustingLux = false;
+	if (wasAdjustingLux) {
+		wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
+		                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+	} else {
+		if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
+			++luxLevel;
+			if (luxLevel > 10) {
+				luxLevel = 10;
+			}
+			wasAdjustingLux = true;
+		} else if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)) {
+			--luxLevel;
+			if (luxLevel < 0) {
+				luxLevel = 0;
+			}
+			wasAdjustingLux = true;
+		}
 	}
-	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * 256);
+
+	GBAContextFrame(&context, keys);
 }
 
 void retro_reset(void) {
-	ARMReset(&cpu);
+	ARMReset(context.cpu);
+
+	if (rumbleCallback) {
+		CircleBufferClear(&rumbleHistory);
+	}
 }
 
 bool retro_load_game(const struct retro_game_info* game) {
+	struct VFile* rom;
 	if (game->data) {
 		data = malloc(game->size);
 		memcpy(data, game->data, game->size);
@@ -190,34 +257,26 @@ bool retro_load_game(const struct retro_game_info* game) {
 		return false;
 	}
 	if (!GBAIsROM(rom)) {
+		rom->close(rom);
+		free(data);
 		return false;
 	}
 
 	savedata = malloc(SIZE_CART_FLASH1M);
-	save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
-	GBALoadROM(&gba, rom, save, game->path);
-
-	struct GBACartridgeOverride override;
-	const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(0, &override)) {
-		GBAOverrideApply(&gba, &override);
-	}
-
-	ARMReset(&cpu);
+	GBAContextLoadROMFromVFile(&context, rom, save);
+	GBAContextStart(&context);
 	return true;
 }
 
 void retro_unload_game(void) {
-	rom->close(rom);
-	rom = 0;
+	GBAContextStop(&context);
 	free(data);
 	data = 0;
-	save->close(save);
-	save = 0;
 	free(savedata);
 	savedata = 0;
+	CircleBufferDeinit(&rumbleHistory);
 }
 
 size_t retro_serialize_size(void) {
@@ -228,7 +287,7 @@ bool retro_serialize(void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBASerialize(&gba, data);
+	GBASerialize(context.gba, data);
 	return true;
 }
 
@@ -236,7 +295,7 @@ bool retro_unserialize(const void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBADeserialize(&gba, data);
+	GBADeserialize(context.gba, data);
 	return true;
 }
 
@@ -278,7 +337,7 @@ size_t retro_get_memory_size(unsigned id) {
 	if (id != RETRO_MEMORY_SAVE_RAM) {
 		return 0;
 	}
-	switch (gba.memory.savedata.type) {
+	switch (context.gba->memory.savedata.type) {
 	case SAVEDATA_AUTODETECT:
 	case SAVEDATA_FLASH1M:
 		return SIZE_CART_FLASH1M;
@@ -316,10 +375,12 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 	case GBA_LOG_INFO:
 	case GBA_LOG_GAME_ERROR:
 	case GBA_LOG_SWI:
+	case GBA_LOG_STATUS:
 		retroLevel = RETRO_LOG_INFO;
 		break;
 	case GBA_LOG_DEBUG:
 	case GBA_LOG_STUB:
+	case GBA_LOG_SIO:
 		retroLevel = RETRO_LOG_DEBUG;
 		break;
 	}
@@ -350,4 +411,56 @@ static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer*
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, &pixels);
 	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);
+}
+
+static void _setRumble(struct GBARumble* rumble, int enable) {
+	UNUSED(rumble);
+	if (!rumbleCallback) {
+		return;
+	}
+	rumbleLevel += enable;
+	if (CircleBufferSize(&rumbleHistory) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&rumbleHistory, &oldLevel);
+		rumbleLevel -= oldLevel;
+	}
+	CircleBufferWrite8(&rumbleHistory, enable);
+	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
+}
+
+static void _updateLux(struct GBALuminanceSource* lux) {
+	UNUSED(lux);
+	struct retro_variable var = {
+		.key = SOLAR_SENSOR_LEVEL,
+		.value = 0
+	};
+
+	bool updated = false;
+	if (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) || !updated) {
+		return;
+	}
+	if (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || !var.value) {
+		return;
+	}
+
+	char* end;
+	int newLuxLevel = strtol(var.value, &end, 10);
+	if (!*end) {
+		if (newLuxLevel > 10) {
+			luxLevel = 10;
+		} else if (newLuxLevel < 0) {
+			luxLevel = 0;
+		} else {
+			luxLevel = newLuxLevel;
+		}
+	}
+}
+
+static uint8_t _readLux(struct GBALuminanceSource* lux) {
+	UNUSED(lux);
+	int value = 0x16;
+	if (luxLevel > 0) {
+		value += GBA_LUX_LEVELS[luxLevel - 1];
+	}
+	return 0xFF - value;
 }

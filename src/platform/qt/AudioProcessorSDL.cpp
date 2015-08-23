@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AudioProcessorSDL.h"
 
+#include "LogController.h"
+
 extern "C" {
 #include "gba/supervisor/thread.h"
 }
@@ -13,7 +15,7 @@ using namespace QGBA;
 
 AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
 	: AudioProcessor(parent)
-	, m_audio()
+	, m_audio{ 2048, 44100 }
 {
 }
 
@@ -22,6 +24,11 @@ AudioProcessorSDL::~AudioProcessorSDL() {
 }
 
 void AudioProcessorSDL::start() {
+	if (!input()) {
+		LOG(WARN) << tr("Can't start an audio processor without input");
+		return;
+	}
+
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
 	} else {
@@ -46,4 +53,20 @@ void AudioProcessorSDL::setBufferSamples(int samples) {
 }
 
 void AudioProcessorSDL::inputParametersChanged() {
+}
+
+void AudioProcessorSDL::requestSampleRate(unsigned rate) {
+	m_audio.sampleRate = rate;
+	if (m_audio.thread) {
+		GBASDLDeinitAudio(&m_audio);
+		GBASDLInitAudio(&m_audio, input());
+	}
+}
+
+unsigned AudioProcessorSDL::sampleRate() const {
+	if (m_audio.thread) {
+		return m_audio.obtainedSpec.freq;
+	} else {
+		return 0;
+	}
 }

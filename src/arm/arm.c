@@ -42,30 +42,29 @@ void ARMSetPrivilegeMode(struct ARMCore* cpu, enum PrivilegeMode mode) {
 
 		cpu->bankedSPSRs[oldBank] = cpu->spsr.packed;
 		cpu->spsr.packed = cpu->bankedSPSRs[newBank];
-
 	}
 	cpu->privilegeMode = mode;
 }
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 	switch (mode) {
-		case MODE_USER:
-		case MODE_SYSTEM:
-			// No banked registers
-			return BANK_NONE;
-		case MODE_FIQ:
-			return BANK_FIQ;
-		case MODE_IRQ:
-			return BANK_IRQ;
-		case MODE_SUPERVISOR:
-			return BANK_SUPERVISOR;
-		case MODE_ABORT:
-			return BANK_ABORT;
-		case MODE_UNDEFINED:
-			return BANK_UNDEFINED;
-		default:
-			// This should be unreached
-			return BANK_NONE;
+	case MODE_USER:
+	case MODE_SYSTEM:
+		// No banked registers
+		return BANK_NONE;
+	case MODE_FIQ:
+		return BANK_FIQ;
+	case MODE_IRQ:
+		return BANK_IRQ;
+	case MODE_SUPERVISOR:
+		return BANK_SUPERVISOR;
+	case MODE_ABORT:
+		return BANK_ABORT;
+	case MODE_UNDEFINED:
+		return BANK_UNDEFINED;
+	default:
+		// This should be unreached
+		return BANK_NONE;
 	}
 }
 
@@ -108,7 +107,7 @@ void ARMHotplugDetach(struct ARMCore* cpu, size_t slot) {
 	if (slot >= cpu->numComponents) {
 		return;
 	}
-	cpu->components[slot]->init(cpu, cpu->components[slot]);
+	cpu->components[slot]->deinit(cpu->components[slot]);
 }
 
 void ARMReset(struct ARMCore* cpu) {
@@ -164,10 +163,10 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = BASE_IRQ;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
+	cpu->cycles += currentCycles;
 }
 
 void ARMRaiseSWI(struct ARMCore* cpu) {
@@ -184,10 +183,30 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = BASE_SWI;
 	int currentCycles = 0;
 	ARM_WRITE_PC;
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
 	_ARMSetMode(cpu, MODE_ARM);
 	cpu->spsr = cpsr;
 	cpu->cpsr.i = 1;
+	cpu->cycles += currentCycles;
+}
+
+void ARMRaiseUndefined(struct ARMCore* cpu) {
+	union PSR cpsr = cpu->cpsr;
+	int instructionWidth;
+	if (cpu->executionMode == MODE_THUMB) {
+		instructionWidth = WORD_SIZE_THUMB;
+	} else {
+		instructionWidth = WORD_SIZE_ARM;
+	}
+	ARMSetPrivilegeMode(cpu, MODE_UNDEFINED);
+	cpu->cpsr.priv = MODE_UNDEFINED;
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
+	cpu->gprs[ARM_PC] = BASE_UNDEF;
+	int currentCycles = 0;
+	ARM_WRITE_PC;
+	_ARMSetMode(cpu, MODE_ARM);
+	cpu->spsr = cpsr;
+	cpu->cpsr.i = 1;
+	cpu->cycles += currentCycles;
 }
 
 static inline void ARMStep(struct ARMCore* cpu) {
@@ -288,7 +307,7 @@ void ARMRunLoop(struct ARMCore* cpu) {
 }
 
 void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
-	if (cpu->executionMode== MODE_ARM) {
+	if (cpu->executionMode == MODE_ARM) {
 		cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;
 	} else {
 		cpu->gprs[ARM_PC] -= WORD_SIZE_THUMB;

@@ -6,6 +6,7 @@
 #include "imagemagick-gif-encoder.h"
 
 #include "gba/video.h"
+#include "util/string.h"
 
 static void _magickPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _magickPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
@@ -57,7 +58,7 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	renderer->getPixels(renderer, &stride, (void**) &pixels);
 	size_t row;
 	for (row = 0; row < VIDEO_VERTICAL_PIXELS; ++row) {
-		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 *stride], VIDEO_HORIZONTAL_PIXELS * 4);
+		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);
 	}
 
 	MagickConstituteImage(encoder->wand, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, "RGBP", CharPixel, encoder->frame);

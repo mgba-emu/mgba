@@ -41,7 +41,8 @@
 
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
-#define THUMB_LOAD_POST_BODY ++currentCycles;
+#define THUMB_LOAD_POST_BODY \
+	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
 #define THUMB_STORE_POST_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
@@ -53,15 +54,12 @@
 		cpu->cycles += currentCycles; \
 	}
 
-#define DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB(NAME, IMMEDIATE, BODY) \
+#define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int immediate = IMMEDIATE; \
+		int immediate = (opcode >> 6) & 0x001F; \
 		int rd = opcode & 0x0007; \
 		int rm = (opcode >> 3) & 0x0007; \
 		BODY;)
-
-#define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_CALL_5(DEFINE_IMMEDIATE_5_INSTRUCTION_EX_THUMB, NAME ## _, BODY)
 
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
 	if (!immediate) {
@@ -103,40 +101,31 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STR1, cpu->memory.store32(cpu, cpu->gprs[rm
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRB1, cpu->memory.store8(cpu, cpu->gprs[rm] + immediate, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(STRH1, cpu->memory.store16(cpu, cpu->gprs[rm] + immediate * 2, cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
-#define DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB(NAME, RM, BODY) \
-	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rm = RM; \
-		int rd = opcode & 0x0007; \
-		int rn = (opcode >> 3) & 0x0007; \
-		BODY;)
-
 #define DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_CALL_3(DEFINE_DATA_FORM_1_INSTRUCTION_EX_THUMB, NAME ## 3_R, BODY)
-
-DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
-DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
-
-#define DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB(NAME, IMMEDIATE, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int immediate = IMMEDIATE; \
+		int rm = (opcode >> 6) & 0x0007; \
 		int rd = opcode & 0x0007; \
 		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
+
+DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD3, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
+DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB3, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], cpu->gprs[rm]))
 
 #define DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_CALL_3(DEFINE_DATA_FORM_2_INSTRUCTION_EX_THUMB, NAME ## 1_, BODY)
-
-DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(ADD, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], immediate))
-DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], immediate))
-
-#define DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB(NAME, RD, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rd = RD; \
-		int immediate = opcode & 0x00FF; \
+		int immediate = (opcode >> 6) & 0x0007; \
+		int rd = opcode & 0x0007; \
+		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
 
+DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(ADD1, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rn], immediate))
+DEFINE_DATA_FORM_2_INSTRUCTION_THUMB(SUB1, THUMB_SUBTRACTION(cpu->gprs[rd], cpu->gprs[rn], immediate))
+
 #define DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(NAME, BODY) \
-	COUNT_CALL_3(DEFINE_DATA_FORM_3_INSTRUCTION_EX_THUMB, NAME ## _R, BODY)
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int rd = (opcode >> 8) & 0x0007; \
+		int immediate = opcode & 0x00FF; \
+		BODY;)
 
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(ADD2, THUMB_ADDITION(cpu->gprs[rd], cpu->gprs[rd], immediate))
 DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(CMP1, int aluOut = cpu->gprs[rd] - immediate; THUMB_SUBTRACTION_S(cpu->gprs[rd], immediate, aluOut))
@@ -230,7 +219,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(NEG, THUMB_SUBTRACTION(cpu->gprs[rd], 0, cp
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(CMP2, int32_t aluOut = cpu->gprs[rd] - cpu->gprs[rn]; THUMB_SUBTRACTION_S(cpu->gprs[rd], cpu->gprs[rn], aluOut))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(CMN, int32_t aluOut = cpu->gprs[rd] + cpu->gprs[rn]; THUMB_ADDITION_S(cpu->gprs[rd], cpu->gprs[rn], aluOut))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ORR, cpu->gprs[rd] = cpu->gprs[rd] | cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
-DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MUL, ARM_WAIT_MUL(cpu->gprs[rn]); cpu->gprs[rd] *= cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MUL, ARM_WAIT_MUL(cpu->gprs[rd]); cpu->gprs[rd] *= cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]); currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(BIC, cpu->gprs[rd] = cpu->gprs[rd] & ~cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN, cpu->gprs[rd] = ~cpu->gprs[rn]; THUMB_NEUTRAL_S( , , cpu->gprs[rd]))
 
@@ -259,14 +248,11 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		THUMB_WRITE_PC;
 	})
 
-#define DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB(NAME, RD, BODY) \
+#define DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(NAME, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rd = RD; \
+		int rd = (opcode >> 8) & 0x0007; \
 		int immediate = (opcode & 0x00FF) << 2; \
 		BODY;)
-
-#define DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(NAME, BODY) \
-	COUNT_CALL_3(DEFINE_IMMEDIATE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
 
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3, cpu->gprs[rd] = cpu->memory.load32(cpu, (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[ARM_SP] + immediate, &currentCycles); THUMB_LOAD_POST_BODY;)
@@ -275,15 +261,12 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3, cpu->memory.store32(cpu, cpu->gprs[AR
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5, cpu->gprs[rd] = (cpu->gprs[ARM_PC] & 0xFFFFFFFC) + immediate)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6, cpu->gprs[rd] = cpu->gprs[ARM_SP] + immediate)
 
-#define DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB(NAME, RM, BODY) \
+#define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, BODY) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
-		int rm = RM; \
+		int rm = (opcode >> 6) & 0x0007; \
 		int rd = opcode & 0x0007; \
 		int rn = (opcode >> 3) & 0x0007; \
 		BODY;)
-
-#define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, BODY) \
-	COUNT_CALL_3(DEFINE_LOAD_STORE_WITH_REGISTER_EX_THUMB, NAME ## _R, BODY)
 
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDR2, cpu->gprs[rd] = cpu->memory.load32(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRB2, cpu->gprs[rd] = cpu->memory.load8(cpu, cpu->gprs[rn] + cpu->gprs[rm], &currentCycles); THUMB_LOAD_POST_BODY;)
@@ -294,7 +277,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STR2, cpu->memory.store32(cpu, cpu->gprs[r
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRB2, cpu->memory.store8(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory.store16(cpu, cpu->gprs[rn] + cpu->gprs[rm], cpu->gprs[rd], &currentCycles); THUMB_STORE_POST_BODY;)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
+#define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		int rn = RN; \
 		UNUSED(rn); \
@@ -304,20 +287,21 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(STRH2, cpu->memory.store16(cpu, cpu->gprs[
 		address = cpu->memory. LS ## Multiple(cpu, address, rs, LSM_ ## DIRECTION, &currentCycles); \
 		WRITEBACK;)
 
-#define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, LS, DIRECTION, WRITEBACK) \
-	COUNT_CALL_3(DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB, NAME ## _R, LS, DIRECTION, , WRITEBACK)
-
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
+	(opcode >> 8) & 0x0007,
 	load,
 	IA,
+	,
 	THUMB_LOAD_POST_BODY;
 	if (!((1 << rn) & rs)) {
 		cpu->gprs[rn] = address;
 	})
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
+	(opcode >> 8) & 0x0007,
 	store,
 	IA,
+	,
 	THUMB_STORE_POST_BODY;
 	cpu->gprs[rn] = address;)
 
@@ -347,7 +331,7 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 DEFINE_INSTRUCTION_THUMB(ADD7, cpu->gprs[ARM_SP] += (opcode & 0x7F) << 2)
 DEFINE_INSTRUCTION_THUMB(SUB4, cpu->gprs[ARM_SP] -= (opcode & 0x7F) << 2)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP,
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(POP,
 	ARM_SP,
 	load,
 	IA,
@@ -355,7 +339,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POP,
 	THUMB_LOAD_POST_BODY;
 	cpu->gprs[ARM_SP] = address)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR,
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(POPR,
 	ARM_SP,
 	load,
 	IA,
@@ -364,7 +348,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(POPR,
 	cpu->gprs[ARM_SP] = address;
 	THUMB_WRITE_PC;)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSH,
 	ARM_SP,
 	store,
 	DB,
@@ -372,7 +356,7 @@ DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSH,
 	THUMB_STORE_POST_BODY;
 	cpu->gprs[ARM_SP] = address)
 
-DEFINE_LOAD_STORE_MULTIPLE_EX_THUMB(PUSHR,
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 	ARM_SP,
 	store,
 	DB,

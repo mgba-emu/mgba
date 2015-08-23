@@ -48,14 +48,11 @@ static void _switchMode(struct GBASIO* sio) {
 }
 
 void GBASIOInit(struct GBASIO* sio) {
-	sio->rcnt = RCNT_INITIAL;
-	sio->siocnt = 0;
-	sio->mode = -1;
-	sio->activeDriver = 0;
 	sio->drivers.normal = 0;
 	sio->drivers.multiplayer = 0;
 	sio->drivers.joybus = 0;
-	_switchMode(sio);
+	sio->activeDriver = 0;
+	GBASIOReset(sio);
 }
 
 void GBASIODeinit(struct GBASIO* sio) {
@@ -68,6 +65,17 @@ void GBASIODeinit(struct GBASIO* sio) {
 	if (sio->drivers.joybus && sio->drivers.joybus->deinit) {
 		sio->drivers.joybus->deinit(sio->drivers.joybus);
 	}
+	if (sio->drivers.normal && sio->drivers.normal->deinit) {
+		sio->drivers.normal->deinit(sio->drivers.normal);
+	}
+}
+
+void GBASIOReset(struct GBASIO* sio) {
+	GBASIODeinit(sio);
+	sio->rcnt = RCNT_INITIAL;
+	sio->siocnt = 0;
+	sio->mode = -1;
+	_switchMode(sio);
 }
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
@@ -131,11 +139,30 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
+	if ((value ^ sio->siocnt) & 0x3000) {
+		sio->siocnt = value & 0x3000;
+		_switchMode(sio);
+	}
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
 		value = sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOCNT, value);
+	} else {
+		// Dummy drivers
+		switch (sio->mode) {
+		case SIO_NORMAL_8:
+		case SIO_NORMAL_32:
+			value |= 0x0004;
+			if ((value & 0x4080) == 0x4080) {
+				// TODO: Test this on hardware to see if this is correct
+				GBARaiseIRQ(sio->p, IRQ_SIO);
+			}
+			value &= ~0x0080;
+			break;
+		default:
+			// TODO
+			break;
+		}
 	}
 	sio->siocnt = value;
-	_switchMode(sio);
 }
 
 void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value) {

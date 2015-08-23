@@ -7,7 +7,9 @@
 
 #ifdef USE_MAGICK
 
-#include <QFileDialog>
+#include "GBAApp.h"
+#include "LogController.h"
+
 #include <QMap>
 
 using namespace QGBA;
@@ -32,7 +34,8 @@ GIFView::~GIFView() {
 }
 
 void GIFView::startRecording() {
-	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toLocal8Bit().constData())) {
+	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
+		LOG(ERROR) << tr("Failed to open output GIF file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);
@@ -48,7 +51,7 @@ void GIFView::stopRecording() {
 }
 
 void GIFView::selectFile() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Select output file"));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif)"));
 	if (!filename.isEmpty()) {
 		m_ui.filename->setText(filename);
 		if (!ImageMagickGIFEncoderIsOpen(&m_encoder)) {

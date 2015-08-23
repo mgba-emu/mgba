@@ -12,11 +12,7 @@
 #include "sdl-events.h"
 
 #ifdef BUILD_GL
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+#include "platform/opengl/gl.h"
 #endif
 
 #ifdef BUILD_RASPI
@@ -24,11 +20,14 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #include <SDL/SDL.h>
-#include <GLES2/gl2.h>
 #include <EGL/egl.h>
 
 #include <bcm_host.h>
 #pragma GCC diagnostic pop
+#endif
+
+#ifdef BUILD_GLES2
+#include "platform/opengl/gles2.h"
 #endif
 
 #ifdef USE_PIXMAN
@@ -41,12 +40,15 @@ struct SDLSoftwareRenderer {
 	struct GBASDLEvents events;
 	struct GBASDLPlayer player;
 
+	bool (*init)(struct SDLSoftwareRenderer* renderer);
+	void (*runloop)(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+	void (*deinit)(struct SDLSoftwareRenderer* renderer);
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
-#ifndef BUILD_GL
-	SDL_Texture* tex;
+	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
-#endif
+	SDL_GLContext* glCtx;
 #endif
 
 	int viewportWidth;
@@ -57,7 +59,9 @@ struct SDLSoftwareRenderer {
 	bool filter;
 
 #ifdef BUILD_GL
-	GLuint tex;
+	struct GBAGLContext gl;
+#elif BUILD_GLES2
+	struct GBAGLES2Context gl;
 #endif
 
 #ifdef USE_PIXMAN
@@ -70,13 +74,6 @@ struct SDLSoftwareRenderer {
 	EGLSurface surface;
 	EGLContext context;
 	EGL_DISPMANX_WINDOW_T window;
-	GLuint tex;
-	GLuint fragmentShader;
-	GLuint vertexShader;
-	GLuint program;
-	GLuint bufferObject;
-	GLuint texLocation;
-	GLuint positionLocation;
 #endif
 
 #ifdef BUILD_PANDORA
@@ -86,9 +83,13 @@ struct SDLSoftwareRenderer {
 #endif
 };
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer);
 
+#ifdef BUILD_GL
+void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer);
 #endif
 
+#ifdef BUILD_GLES2
+void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer);
+#endif
+#endif

@@ -14,6 +14,14 @@
 #include <errno.h>
 #include <fcntl.h>
 
+// Some testing was done here...
+// Erase cycles can vary greatly.
+// Some games may vary anywhere between about 2000 cycles to up to 30000 cycles. (Observed on a Macronix (09C2) chip).
+// Other games vary from very little, with a fairly solid 20500 cycle count. (Observed on a SST (D4BF) chip).
+// An average estimation is as follows.
+#define FLASH_SETTLE_CYCLES 18000
+#define CLEANUP_THRESHOLD 15
+
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
@@ -26,6 +34,8 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->vf = vf;
 	savedata->realVf = vf;
 	savedata->mapMode = MAP_WRITE;
+	savedata->dirty = 0;
+	savedata->dirtAge = 0;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
@@ -113,7 +123,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) {
+void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming) {
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
 		GBASavedataDeinit(savedata);
@@ -123,7 +133,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 	case SAVEDATA_FLASH512:
 	case SAVEDATA_FLASH1M:
 		savedata->type = type;
-		GBASavedataInitFlash(savedata);
+		GBASavedataInitFlash(savedata, realisticTiming);
 		break;
 	case SAVEDATA_EEPROM:
 		GBASavedataInitEEPROM(savedata);
@@ -139,7 +149,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 	}
 }
 
-void GBASavedataInitFlash(struct GBASavedata* savedata) {
+void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_FLASH512;
 	}
@@ -147,14 +157,17 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
 		return;
 	}
-	size_t flashSize = SIZE_CART_FLASH512;
+	int32_t flashSize = SIZE_CART_FLASH512;
+	if (savedata->type == SAVEDATA_FLASH1M) {
+		flashSize = SIZE_CART_FLASH1M;
+	}
 	off_t end;
 	if (!savedata->vf) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
 		end = savedata->vf->size(savedata->vf);
-		if (end < SIZE_CART_FLASH512) {
+		if (end < flashSize) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
 			flashSize = SIZE_CART_FLASH1M;
 		}
@@ -162,6 +175,8 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	}
 
 	savedata->currentBank = savedata->data;
+	savedata->dust = 0;
+	savedata->realisticTiming = realisticTiming;
 	if (end < SIZE_CART_FLASH512) {
 		memset(&savedata->data[end], 0xFF, flashSize - end);
 	}
@@ -226,6 +241,12 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 			}
 		}
 	}
+	if (savedata->dust > 0 && (address >> 12) == savedata->settling) {
+		// Give some overhead for waitstates and the comparison
+		// This estimation can probably be improved
+		savedata->dust -= 10;
+		return 0x5F;
+	}
 	return savedata->currentBank[address];
 }
 
@@ -234,6 +255,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 	case FLASH_STATE_RAW:
 		switch (savedata->command) {
 		case FLASH_COMMAND_PROGRAM:
+			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
 			break;
@@ -337,12 +359,15 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			savedata->writeAddress |= (value & 0x1) << 6;
 		} else if (writeSize == 1) {
 			savedata->command = EEPROM_COMMAND_NULL;
-		} else {
+		} else if ((savedata->writeAddress >> 3) < SIZE_CART_EEPROM) {
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
+			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
 			++savedata->writeAddress;
+		} else {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
 		}
 		break;
 	case EEPROM_COMMAND_READ_PENDING:
@@ -367,13 +392,53 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	--savedata->readBitsRemaining;
 	if (savedata->readBitsRemaining < 64) {
 		int step = 63 - savedata->readBitsRemaining;
-		uint8_t data = savedata->data[(savedata->readAddress + step) >> 3] >> (0x7 - (step & 0x7));
+		uint32_t address = (savedata->readAddress + step) >> 3;
+		if (address >= SIZE_CART_EEPROM) {
+			GBALog(0, GBA_LOG_GAME_ERROR, "Reading beyond end of EEPROM: %08X", address);
+			return 0xFF;
+		}
+		uint8_t data = savedata->data[address] >> (0x7 - (step & 0x7));
 		if (!savedata->readBitsRemaining) {
 			savedata->command = EEPROM_COMMAND_NULL;
 		}
 		return data & 0x1;
 	}
 	return 0;
+}
+
+void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
+	if (!savedata->vf) {
+		return;
+	}
+	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
+		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
+		if (!(savedata->dirty & SAVEDATA_DIRT_SEEN)) {
+			savedata->dirtAge = frameCount;
+			savedata->dirty |= SAVEDATA_DIRT_SEEN;
+		}
+	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
+		size_t size;
+		switch (savedata->type) {
+		case SAVEDATA_EEPROM:
+			size = SIZE_CART_EEPROM;
+			break;
+		case SAVEDATA_SRAM:
+			size = SIZE_CART_SRAM;
+			break;
+		case SAVEDATA_FLASH512:
+			size = SIZE_CART_FLASH512;
+			break;
+		case SAVEDATA_FLASH1M:
+			size = SIZE_CART_FLASH1M;
+			break;
+		default:
+			size = 0;
+			break;
+		}
+		savedata->vf->sync(savedata->vf, savedata->data, size);
+		savedata->dirty = 0;
+		GBALog(0, GBA_LOG_INFO, "Savedata synced");
+	}
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
@@ -384,6 +449,8 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 	state->savedata.readBitsRemaining = savedata->readBitsRemaining;
 	state->savedata.readAddress = savedata->readAddress;
 	state->savedata.writeAddress = savedata->writeAddress;
+	state->savedata.settlingSector = savedata->settling;
+	state->savedata.settlingDust = savedata->dust;
 
 	UNUSED(includeData); // TODO
 }
@@ -393,13 +460,16 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 		return;
 	}
 	if (savedata->type != state->savedata.type) {
-		GBASavedataForceType(savedata, state->savedata.type);
+		GBASavedataForceType(savedata, state->savedata.type, savedata->realisticTiming);
 	}
 	savedata->command = state->savedata.command;
 	savedata->flashState = state->savedata.flashState;
 	savedata->readBitsRemaining = state->savedata.readBitsRemaining;
 	savedata->readAddress = state->savedata.readAddress;
 	savedata->writeAddress = state->savedata.writeAddress;
+	savedata->settling = state->savedata.settlingSector;
+	savedata->dust = state->savedata.settlingDust;
+
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		_flashSwitchBank(savedata, state->savedata.flashBank);
 	}
@@ -421,6 +491,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 
 void _flashErase(struct GBASavedata* savedata) {
 	GBALog(0, GBA_LOG_DEBUG, "Performing flash chip erase");
+	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = SIZE_CART_FLASH512;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		size = SIZE_CART_FLASH1M;
@@ -430,9 +501,14 @@ void _flashErase(struct GBASavedata* savedata) {
 
 void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 	GBALog(0, GBA_LOG_DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
+	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
+	}
+	savedata->settling = sectorStart >> 12;
+	if (savedata->realisticTiming) {
+		savedata->dust = FLASH_SETTLE_CYCLES;
 	}
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }

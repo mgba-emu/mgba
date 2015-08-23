@@ -15,5 +15,4 @@ struct ARMCore;
 typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
 const ARMInstruction _armTable[0x1000];
 
-
 #endif
