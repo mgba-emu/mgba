@@ -62,7 +62,13 @@ void GBAVideoInit(struct GBAVideo* video) {
 }
 
 void GBAVideoReset(struct GBAVideo* video) {
-	video->vcount = VIDEO_VERTICAL_TOTAL_PIXELS - 1;
+	if (video->p->memory.fullBios) {
+		video->vcount = 0;
+	} else {
+		// TODO: Verify exact scanline hardware
+		video->vcount = 0x7E;
+	}
+	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
