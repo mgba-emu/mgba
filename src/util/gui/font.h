@@ -18,6 +18,17 @@ enum GUITextAlignment {
 	GUI_TEXT_RIGHT
 };
 
+struct GUIFontGlyphMetric {
+	int width;
+	int height;
+	struct {
+		int top;
+		int right;
+		int bottom;
+		int left;
+	} padding;
+};
+
 int GUIFontHeight(const struct GUIFont*);
 
 void GUIFontPrintf(const struct GUIFont*, int x, int y, enum GUITextAlignment, uint32_t color, const char* text, ...);
