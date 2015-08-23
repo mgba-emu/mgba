@@ -4,15 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
+#include "util/gui/font-metrics.h"
 #include "font.h"
 
 #include <vita2d.h>
 
-#define GLYPH_HEIGHT 11
-#define GLYPH_WIDTH 14
-#define FONT_TRACKING 10
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
+#define GLYPH_HEIGHT 12
 
 struct GUIFont {
 	vita2d_texture* tex;
@@ -50,10 +49,13 @@ void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignme
 		if (c > 0x7F) {
 			c = 0;
 		}
-		vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT,
-			                          (c & 15) * CELL_WIDTH + ((CELL_WIDTH - GLYPH_WIDTH) >> 1),
-			                          (c >> 4) * CELL_HEIGHT + ((CELL_HEIGHT - GLYPH_HEIGHT) >> 1),
-			                          GLYPH_WIDTH, GLYPH_HEIGHT, color);
-		x += FONT_TRACKING;
+		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
+		vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top,
+			                          (c & 15) * CELL_WIDTH + metric.padding.left,
+			                          (c >> 4) * CELL_HEIGHT + metric.padding.top,
+			                          CELL_WIDTH - (metric.padding.left + metric.padding.right),
+			                          CELL_HEIGHT - (metric.padding.top + metric.padding.bottom),
+			                          color);
+		x += metric.width;
 	}
 }
