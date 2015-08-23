@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
+#include "font.h"
 
 #include <vita2d.h>
 
@@ -13,19 +14,17 @@
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
 
-extern const uint8_t _binary_font_png_start[];
-
 struct GUIFont {
 	vita2d_texture* tex;
 };
 
 struct GUIFont* GUIFontCreate(void) {
-	struct GUIFont* font = malloc(sizeof(struct GUIFont));
-	if (!font) {
+	struct GUIFont* guiFont = malloc(sizeof(struct GUIFont));
+	if (!guiFont) {
 		return 0;
 	}
-	font->tex = vita2d_load_PNG_buffer(_binary_font_png_start);
-	return font;
+	guiFont->tex = vita2d_load_PNG_buffer(font);
+	return guiFont;
 }
 
 void GUIFontDestroy(struct GUIFont* font) {

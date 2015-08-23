@@ -45,6 +45,7 @@ set(CMAKE_SHARED_LINKER_FLAGS ${link_flags} CACHE INTERNAL "shared link flags")
 set(PKG_CONFIG_EXECUTABLE "/dev/null" CACHE INTERNAL "" FORCE)
 
 set(FIXUP ${toolchain_bin_dir}/psp2-fixup)
+set(RAW2C ${DEVKITARM}/bin/raw2c)
 
 set(PSP2 ON)
 add_definitions(-DPSP2)
