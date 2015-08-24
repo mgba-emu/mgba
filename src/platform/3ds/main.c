@@ -68,6 +68,7 @@ int main() {
 	sf2d_init();
 	sf2d_set_clear_color(0);
 	sf2d_texture* tex = sf2d_create_texture(256, 256, TEXFMT_RGB565, SF2D_PLACE_RAM);
+	memset(tex->data, 0, 256 * 256 * 2);
 
 	sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
@@ -119,86 +120,11 @@ int main() {
 			break;
 		}
 		GBAContextFrame(&context, activeKeys);
-		uint32_t* texdest = (uint32_t*) tex->data;
-		uint32_t* texsrc = (uint32_t*) renderer.outputBuffer;
-		int x, y;
-		for (y = 0; y < VIDEO_VERTICAL_PIXELS; y += 8) {
-			for (x = 0; x < 16; ++x) {
-				texdest[ 0 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 0) * 128];
-				texdest[ 2 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 0) * 128];
-				texdest[ 8 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 0) * 128];
-				texdest[10 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 0) * 128];
-				texdest[32 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 0) * 128];
-				texdest[34 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 0) * 128];
-				texdest[40 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 0) * 128];
-				texdest[42 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 0) * 128];
-
-				texdest[ 1 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 1) * 128];
-				texdest[ 3 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 1) * 128];
-				texdest[ 9 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 1) * 128];
-				texdest[11 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 1) * 128];
-				texdest[33 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 1) * 128];
-				texdest[35 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 1) * 128];
-				texdest[41 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 1) * 128];
-				texdest[43 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 1) * 128];
-
-				texdest[ 4 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 2) * 128];
-				texdest[ 6 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 2) * 128];
-				texdest[12 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 2) * 128];
-				texdest[14 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 2) * 128];
-				texdest[36 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 2) * 128];
-				texdest[38 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 2) * 128];
-				texdest[44 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 2) * 128];
-				texdest[46 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 2) * 128];
-
-				texdest[ 5 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 3) * 128];
-				texdest[ 7 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 3) * 128];
-				texdest[13 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 3) * 128];
-				texdest[15 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 3) * 128];
-				texdest[37 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 3) * 128];
-				texdest[39 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 3) * 128];
-				texdest[45 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 3) * 128];
-				texdest[47 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 3) * 128];
-
-				texdest[16 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 4) * 128];
-				texdest[18 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 4) * 128];
-				texdest[24 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 4) * 128];
-				texdest[26 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 4) * 128];
-				texdest[48 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 4) * 128];
-				texdest[50 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 4) * 128];
-				texdest[56 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 4) * 128];
-				texdest[58 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 4) * 128];
-
-				texdest[17 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 5) * 128];
-				texdest[19 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 5) * 128];
-				texdest[25 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 5) * 128];
-				texdest[27 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 5) * 128];
-				texdest[49 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 5) * 128];
-				texdest[51 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 5) * 128];
-				texdest[57 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 5) * 128];
-				texdest[59 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 5) * 128];
-
-				texdest[20 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 6) * 128];
-				texdest[22 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 6) * 128];
-				texdest[28 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 6) * 128];
-				texdest[30 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 6) * 128];
-				texdest[52 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 6) * 128];
-				texdest[54 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 6) * 128];
-				texdest[60 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 6) * 128];
-				texdest[62 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 6) * 128];
-
-				texdest[21 + x * 64 + y * 128] = texsrc[0 + x * 8 + (y + 7) * 128];
-				texdest[23 + x * 64 + y * 128] = texsrc[1 + x * 8 + (y + 7) * 128];
-				texdest[29 + x * 64 + y * 128] = texsrc[2 + x * 8 + (y + 7) * 128];
-				texdest[31 + x * 64 + y * 128] = texsrc[3 + x * 8 + (y + 7) * 128];
-				texdest[53 + x * 64 + y * 128] = texsrc[4 + x * 8 + (y + 7) * 128];
-				texdest[55 + x * 64 + y * 128] = texsrc[5 + x * 8 + (y + 7) * 128];
-				texdest[61 + x * 64 + y * 128] = texsrc[6 + x * 8 + (y + 7) * 128];
-				texdest[63 + x * 64 + y * 128] = texsrc[7 + x * 8 + (y + 7) * 128];
-			}
-		}
+		GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+		GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
+		gspWaitForPPF();
 		_drawStart();
-		sf2d_draw_texture_scale(tex, 40, 300, 1, -1);
+		sf2d_draw_texture_scale(tex, 40, 296, 1, -1);
 		_drawEnd();
 	}
 
