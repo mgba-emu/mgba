@@ -12,7 +12,7 @@
 DECLARE_VECTOR(FileList, char*);
 DEFINE_VECTOR(FileList, char*);
 
-void _cleanFiles(struct FileList* currentFiles) {
+static void _cleanFiles(struct FileList* currentFiles) {
 	size_t size = FileListSize(currentFiles);
 	size_t i;
 	for (i = 0; i < size; ++i) {
@@ -21,7 +21,7 @@ void _cleanFiles(struct FileList* currentFiles) {
 	FileListClear(currentFiles);
 }
 
-void _upDirectory(char* currentPath) {
+static void _upDirectory(char* currentPath) {
 	char* end = strrchr(currentPath, '/');
 	if (!end) {
 		return;
@@ -33,7 +33,7 @@ void _upDirectory(char* currentPath) {
 	// TODO: What if there was a trailing slash?
 }
 
-bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles) {
+static bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);

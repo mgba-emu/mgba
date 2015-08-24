@@ -104,7 +104,7 @@ int main() {
 		font, _drawStart, _drawEnd, _pollInput
 	};
 	_drawStart();
-	GUIFontPrintf(font, 20, 20, GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
+	GUIFontPrintf(font, 0, GUIFontHeight(font), GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
 	_drawEnd();
 	char path[256] = "/rom.gba";
 	if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAContextLoadROM(&context, path, true)) {
