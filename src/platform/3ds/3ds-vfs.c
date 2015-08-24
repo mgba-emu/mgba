@@ -6,12 +6,27 @@
 #include "3ds-vfs.h"
 
 #include "util/memory.h"
+#include "util/string.h"
 
 struct VFile3DS {
 	struct VFile d;
 
 	Handle handle;
 	u64 offset;
+};
+
+struct VDirEntry3DS {
+	struct VDirEntry d;
+	FS_dirent ent;
+	char* utf8Name;
+};
+
+struct VDir3DS {
+	struct VDir d;
+
+	char* path;
+	Handle handle;
+	struct VDirEntry3DS vde;
 };
 
 static bool _vf3dClose(struct VFile* vf);
@@ -23,6 +38,13 @@ static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf3dTruncate(struct VFile* vf, size_t size);
 static ssize_t _vf3dSize(struct VFile* vf);
 static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size);
+
+static bool _vd3dClose(struct VDir* vd);
+static void _vd3dRewind(struct VDir* vd);
+static struct VDirEntry* _vd3dListNext(struct VDir* vd);
+static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode);
+
+static const char* _vd3deName(struct VDirEntry* vde);
 
 struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	struct VFile3DS* vf3d = malloc(sizeof(struct VFile3DS));
@@ -140,4 +162,80 @@ static bool _vf3dSync(struct VFile* vf, const void* buffer, size_t size) {
 	}
 	FSFILE_Flush(vf3d->handle);
 	return true;
+}
+
+struct VDir* VDirOpen(const char* path) {
+	struct VDir3DS* vd3d = malloc(sizeof(struct VDir3DS));
+	if (!vd3d) {
+		return 0;
+	}
+
+	FS_path newPath = FS_makePath(PATH_CHAR, path);
+	Result res = FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+	if (res & 0xFFFC03FF) {
+		free(vd3d);
+		return 0;
+	}
+
+	vd3d->path = strdup(path);
+
+	vd3d->d.close = _vd3dClose;
+	vd3d->d.rewind = _vd3dRewind;
+	vd3d->d.listNext = _vd3dListNext; //// Crashes here for no good reason
+	vd3d->d.openFile = _vd3dOpenFile;
+
+	vd3d->vde.d.name = _vd3deName;
+
+	return &vd3d->d;
+}
+
+static bool _vd3dClose(struct VDir* vd) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	FSDIR_Close(vd3d->handle);
+	free(vd3d->path);
+	if (vd3d->vde.utf8Name) {
+		free(vd3d->vde.utf8Name);
+	}
+	free(vd3d);
+	return true;
+}
+
+static void _vd3dRewind(struct VDir* vd) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	FSDIR_Close(vd3d->handle);
+	FS_path newPath = FS_makePath(PATH_CHAR, vd3d->path);
+	FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+}
+
+static struct VDirEntry* _vd3dListNext(struct VDir* vd) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	u32 n = 0;
+	Result res = FSDIR_Read(vd3d->handle, &n, 1, &vd3d->vde.ent);
+	if (res & 0xFFFC03FF || !n) {
+		return 0;
+	}
+	return &vd3d->vde.d;
+}
+
+static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vd3d->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s/%s", dir, path);
+
+	struct VFile* file = VFileOpen(combined, mode);
+	free(combined);
+	return file;
+}
+
+static const char* _vd3deName(struct VDirEntry* vde) {
+	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
+	if (vd3de->utf8Name) {
+		free(vd3de->utf8Name);
+	}
+	vd3de->utf8Name = utf16to8(vd3de->ent.name, sizeof(vd3de->ent.name) / 2);
+	return vd3de->utf8Name;
 }

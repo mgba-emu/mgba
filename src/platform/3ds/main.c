@@ -7,6 +7,9 @@
 #include "gba/renderers/video-software.h"
 #include "gba/supervisor/context.h"
 #include "gba/video.h"
+#include "util/gui.h"
+#include "util/gui/file-select.h"
+#include "util/gui/font.h"
 #include "util/memory.h"
 
 #include "3ds-vfs.h"
@@ -25,6 +28,34 @@ static void _drawStart(void) {
 static void _drawEnd(void) {
 	sf2d_end_frame();
 	sf2d_swapbuffers();
+}
+
+static int _pollInput(void) {
+	hidScanInput();
+	int keys = 0;
+	int activeKeys = hidKeysHeld();
+	if (activeKeys & KEY_X) {
+		keys |= 1 << GUI_INPUT_CANCEL;
+	}
+	if (activeKeys & KEY_B) {
+		keys |= 1 << GUI_INPUT_BACK;
+	}
+	if (activeKeys & KEY_A) {
+		keys |= 1 << GUI_INPUT_SELECT;
+	}
+	if (activeKeys & KEY_LEFT) {
+		keys |= 1 << GUI_INPUT_LEFT;
+	}
+	if (activeKeys & KEY_RIGHT) {
+		keys |= 1 << GUI_INPUT_RIGHT;
+	}
+	if (activeKeys & KEY_UP) {
+		keys |= 1 << GUI_INPUT_UP;
+	}
+	if (activeKeys & KEY_DOWN) {
+		keys |= 1 << GUI_INPUT_DOWN;
+	}
+	return keys;
 }
 
 int main() {
@@ -46,6 +77,8 @@ int main() {
 	FSUSER_OpenArchive(0, &sdmcArchive);
 	FSUSER_OpenFile(0, &logFile, sdmcArchive, FS_makePath(PATH_CHAR, "/mgba.log"), FS_OPEN_WRITE | FS_OPEN_CREATE, FS_ATTRIBUTE_NONE);
 
+	struct GUIFont* font = GUIFontCreate();
+
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
@@ -54,6 +87,7 @@ int main() {
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBA3DSLog;
+	context.gba->logLevel = 0;
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -61,7 +95,21 @@ int main() {
 	renderer.outputBufferStride = 256;
 	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
 
-	GBAContextLoadROM(&context, "/rom.gba", true);
+	if (!font) {
+		goto cleanup;
+	}
+
+	struct GUIParams params = {
+		320, 240,
+		font, _drawStart, _drawEnd, _pollInput
+	};
+	_drawStart();
+	GUIFontPrintf(font, 20, 20, GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
+	_drawEnd();
+	char path[256] = "/rom.gba";
+	if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAContextLoadROM(&context, path, true)) {
+		goto cleanup;
+	}
 	GBAContextStart(&context);
 
 	while (aptMainLoop()) {
