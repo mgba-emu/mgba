@@ -54,12 +54,14 @@ void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignme
 			c = 0;
 		}
 		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
-		sf2d_draw_texture_part_blend(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top,
-			                         (c & 15) * CELL_WIDTH + metric.padding.left,
-			                         (c >> 4) * CELL_HEIGHT + metric.padding.top,
-			                         CELL_WIDTH - (metric.padding.left + metric.padding.right),
-			                         CELL_HEIGHT - (metric.padding.top + metric.padding.bottom),
-			                         color);
+		sf2d_draw_texture_part_blend(font->tex,
+		                             x - metric.padding.left,
+		                             y - GLYPH_HEIGHT,
+		                             (c & 15) * CELL_WIDTH,
+		                             (c >> 4) * CELL_HEIGHT,
+		                             CELL_WIDTH,
+		                             CELL_HEIGHT,
+		                             color);
 		x += metric.width;
 	}
 }
