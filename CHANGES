@@ -10,6 +10,7 @@ Misc:
  - Qt: Increase usability of key mapper
  - GBA Memory: Use a dynamically sized mask for ROM memory
  - Qt: Remove useless help icons in dialogs
+ - ARM7: Combine shifter-immediate and shifter-register functions to reduce binary size
 
 0.3.0: (2015-08-16)
 Features:

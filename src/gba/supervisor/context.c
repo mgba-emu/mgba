@@ -16,6 +16,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->rom = 0;
 	context->save = 0;
 	context->renderer = 0;
+	memset(context->components, 0, sizeof(context->components));
 
 	if (!context->gba || !context->cpu) {
 		if (context->gba) {
@@ -33,7 +34,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	}
 
 	GBACreate(context->gba);
-	ARMSetComponents(context->cpu, &context->gba->d, 0, 0);
+	ARMSetComponents(context->cpu, &context->gba->d, 0, context->components);
 	ARMInit(context->cpu);
 
 	context->gba->sync = 0;
@@ -113,13 +114,16 @@ bool GBAContextLoadBIOSFromVFile(struct GBAContext* context, struct VFile* bios)
 
 bool GBAContextStart(struct GBAContext* context) {
 	struct GBAOptions opts = {};
-	GBAConfigMap(&context->config, &opts);
 
 	if (context->renderer) {
 		GBAVideoAssociateRenderer(&context->gba->video, context->renderer);
 	}
 
-	GBALoadROM(context->gba, context->rom, context->save, 0);
+	if (!GBALoadROM(context->gba, context->rom, context->save, 0)) {
+		return false;
+	}
+
+	GBAConfigMap(&context->config, &opts);
 	if (opts.useBios && context->bios) {
 		GBALoadBIOS(context->gba, context->bios);
 	}

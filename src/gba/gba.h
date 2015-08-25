@@ -166,7 +166,7 @@ void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t 
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
 void GBAYankROM(struct GBA* gba);
 void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
