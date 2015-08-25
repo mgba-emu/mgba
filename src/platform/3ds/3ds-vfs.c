@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "3ds-vfs.h"
 
+#ifdef USE_VFS_3DS
 #include "util/memory.h"
 #include "util/string.h"
 
@@ -244,3 +245,4 @@ static const char* _vd3deName(struct VDirEntry* vde) {
 	}
 	return vd3de->utf8Name;
 }
+#endif

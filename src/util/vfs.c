@@ -34,7 +34,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		break;
 	}
 	return VFileFOpen(path, chflags);
-#elif defined(_3DS)
+#elif defined(USE_VFS_3DS)
 	int ctrFlags = FS_OPEN_READ;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:

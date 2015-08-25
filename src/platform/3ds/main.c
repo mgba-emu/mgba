@@ -64,6 +64,7 @@ int main() {
 	aptInit();
 	hidInit(0);
 	fsInit();
+	sdmcInit();
 
 	sf2d_init();
 	sf2d_set_clear_color(0);
@@ -139,6 +140,7 @@ cleanup:
 	sf2d_free_texture(tex);
 	sf2d_fini();
 
+	sdmcExit();
 	fsExit();
 	gfxExit();
 	hidExit();
