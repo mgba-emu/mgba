@@ -114,13 +114,16 @@ bool GBAContextLoadBIOSFromVFile(struct GBAContext* context, struct VFile* bios)
 
 bool GBAContextStart(struct GBAContext* context) {
 	struct GBAOptions opts = {};
-	GBAConfigMap(&context->config, &opts);
 
 	if (context->renderer) {
 		GBAVideoAssociateRenderer(&context->gba->video, context->renderer);
 	}
 
-	GBALoadROM(context->gba, context->rom, context->save, 0);
+	if (!GBALoadROM(context->gba, context->rom, context->save, 0)) {
+		return false;
+	}
+
+	GBAConfigMap(&context->config, &opts);
 	if (opts.useBios && context->bios) {
 		GBALoadBIOS(context->gba, context->bios);
 	}
