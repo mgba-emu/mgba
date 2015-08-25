@@ -26,6 +26,10 @@ void _upDirectory(char* currentPath) {
 	if (!end) {
 		return;
 	}
+	if (end == currentPath) {
+		end[1] = '\0';
+		return;
+	}
 	end[0] = '\0';
 	if (end[1]) {
 		return;
@@ -85,7 +89,12 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			return false;
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
-			snprintf(currentPath, sizeof(currentPath), "%s%c%s", currentPath, '/', *FileListGetPointer(&currentFiles, fileIndex));
+			size_t len = strlen(currentPath);
+			const char* sep = PATH_SEP;
+			if (currentPath[len - 1] == *sep) {
+				sep = "";
+			}
+			snprintf(currentPath, sizeof(currentPath), "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
 			if (!_refreshDirectory(currentPath, &currentFiles)) {
 				strncpy(outPath, currentPath, outLen);
 				return true;
