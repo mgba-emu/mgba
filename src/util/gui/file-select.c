@@ -26,6 +26,10 @@ void _upDirectory(char* currentPath) {
 	if (!end) {
 		return;
 	}
+	if (end == currentPath) {
+		end[1] = '\0';
+		return;
+	}
 	end[0] = '\0';
 	if (end[1]) {
 		return;
@@ -54,7 +58,6 @@ bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles) {
 bool selectFile(const struct GUIParams* params, const char* basePath, char* outPath, size_t outLen, const char* suffix) {
 	char currentPath[256];
 	strncpy(currentPath, basePath, sizeof(currentPath));
-	int oldInput = -1;
 	size_t fileIndex = 0;
 	size_t start = 0;
 
@@ -62,10 +65,21 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 	FileListInit(&currentFiles, 0);
 	_refreshDirectory(currentPath, &currentFiles);
 
+	int inputHistory[GUI_INPUT_MAX] = { 0 };
+
 	while (true) {
 		int input = params->pollInput();
-		int newInput = input & (oldInput ^ input);
-		oldInput = input;
+		int newInput = 0;
+		for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+			if (input & (1 << i)) {
+				++inputHistory[i];
+			} else {
+				inputHistory[i] = -1;
+			}
+			if (!inputHistory[i] || (inputHistory[i] >= 30 && !(inputHistory[i] % 6))) {
+				newInput |= (1 << i);
+			}
+		}
 
 		if (newInput & (1 << GUI_INPUT_UP) && fileIndex > 0) {
 			--fileIndex;
@@ -85,7 +99,12 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			return false;
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
-			snprintf(currentPath, sizeof(currentPath), "%s%c%s", currentPath, '/', *FileListGetPointer(&currentFiles, fileIndex));
+			size_t len = strlen(currentPath);
+			const char* sep = PATH_SEP;
+			if (currentPath[len - 1] == *sep) {
+				sep = "";
+			}
+			snprintf(currentPath, sizeof(currentPath), "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
 			if (!_refreshDirectory(currentPath, &currentFiles)) {
 				strncpy(outPath, currentPath, outLen);
 				return true;
