@@ -388,7 +388,7 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = 0;
 }
 
-void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
@@ -399,7 +399,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 	if (!gba->pristineRom) {
 		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
-		return;
+		return false;
 	}
 	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
@@ -409,6 +409,7 @@ void GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
+	return true;
 	// TODO: error check
 }
 
