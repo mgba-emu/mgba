@@ -20,6 +20,8 @@ enum GUIInput {
 	GUI_INPUT_DOWN,
 	GUI_INPUT_LEFT,
 	GUI_INPUT_RIGHT,
+
+	GUI_INPUT_MAX
 };
 
 struct GUIParams {
