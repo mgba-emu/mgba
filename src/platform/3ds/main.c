@@ -117,7 +117,9 @@ int main() {
 		if (!GBAContextLoadROM(&context, path, true)) {
 			continue;
 		}
-		GBAContextStart(&context);
+		if (!GBAContextStart(&context)) {
+			continue;
+		}
 		while (aptMainLoop()) {
 			hidScanInput();
 			int activeKeys = hidKeysHeld() & 0x3FF;
