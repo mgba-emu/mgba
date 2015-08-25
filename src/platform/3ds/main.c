@@ -105,31 +105,35 @@ int main() {
 		320, 240,
 		font, _drawStart, _drawEnd, _pollInput
 	};
-	_drawStart();
-	GUIFontPrintf(font, 0, GUIFontHeight(font), GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
-	_drawEnd();
-	char path[256] = "/rom.gba";
-	if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAContextLoadROM(&context, path, true)) {
-		goto cleanup;
-	}
-	GBAContextStart(&context);
 
 	while (aptMainLoop()) {
-		hidScanInput();
-		int activeKeys = hidKeysHeld() & 0x3FF;
-		if (hidKeysDown() & KEY_X) {
+		char path[256];
+		if (!selectFile(&params, "/", path, sizeof(path), "gba")) {
 			break;
 		}
-		GBAContextFrame(&context, activeKeys);
-		GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-		GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
-		gspWaitForPPF();
 		_drawStart();
-		sf2d_draw_texture_scale(tex, 40, 296, 1, -1);
+		GUIFontPrintf(font, 130, (GUIFontHeight(font) + 240) / 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
 		_drawEnd();
+		if (!GBAContextLoadROM(&context, path, true)) {
+			continue;
+		}
+		GBAContextStart(&context);
+		while (aptMainLoop()) {
+			hidScanInput();
+			int activeKeys = hidKeysHeld() & 0x3FF;
+			if (hidKeysDown() & KEY_X) {
+				break;
+			}
+			GBAContextFrame(&context, activeKeys);
+			GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
+			GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
+			gspWaitForPPF();
+			_drawStart();
+			sf2d_draw_texture_scale(tex, 40, 296, 1, -1);
+			_drawEnd();
+		}
+		GBAContextStop(&context);
 	}
-
-	GBAContextStop(&context);
 	GBAContextDeinit(&context);
 
 cleanup:
