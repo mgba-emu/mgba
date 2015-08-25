@@ -9,6 +9,8 @@
 #include "platform/psp/sce-vfs.h"
 #elif defined(PSP2)
 #include "platform/psp2/sce-vfs.h"
+#elif _3DS
+#include "platform/3ds/3ds-vfs.h"
 #endif
 
 struct VFile* VFileOpen(const char* path, int flags) {
@@ -60,7 +62,35 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		sceFlags |= PSP2_O_CREAT;
 	}
 	return VFileOpenSce(path, sceFlags, 0666);
->>>>>>> port/psp2
+#elif defined(USE_VFS_3DS)
+	int ctrFlags = FS_OPEN_READ;
+	switch (flags & O_ACCMODE) {
+	case O_WRONLY:
+		ctrFlags = FS_OPEN_WRITE;
+		break;
+	case O_RDWR:
+		ctrFlags = FS_OPEN_READ | FS_OPEN_WRITE;
+		break;
+	case O_RDONLY:
+		ctrFlags = FS_OPEN_READ;
+		break;
+	}
+
+	if (flags & O_CREAT) {
+		ctrFlags |= FS_OPEN_CREATE;
+	}
+	struct VFile* vf = VFileOpen3DS(&sdmcArchive, path, ctrFlags);
+	if (!vf) {
+		return 0;
+	}
+	if (flags & O_TRUNC) {
+		vf->truncate(vf, 0);
+	}
+	if (flags & O_APPEND) {
+		vf->seek(vf, vf->size(vf), SEEK_SET);
+	}
+	return vf;
+>>>>>>> port/3ds
 #else
 	return VFileOpenFD(path, flags);
 #endif
