@@ -15,7 +15,7 @@ DEFINE_VECTOR(FileList, char*);
 static void _cleanFiles(struct FileList* currentFiles) {
 	size_t size = FileListSize(currentFiles);
 	size_t i;
-	for (i = 0; i < size; ++i) {
+	for (i = 1; i < size; ++i) {
 		free(*FileListGetPointer(currentFiles, i));
 	}
 	FileListClear(currentFiles);
@@ -44,6 +44,7 @@ static bool _refreshDirectory(const char* currentPath, struct FileList* currentF
 	if (!dir) {
 		return false;
 	}
+	*FileListAppend(currentFiles) = "(Up)";
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
 		const char* name = de->name(de);
@@ -111,17 +112,22 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			FileListDeinit(&currentFiles);
 			return false;
 		}
-		if (newInput & (1 << GUI_INPUT_SELECT) && FileListSize(&currentFiles)) {
-			size_t len = strlen(currentPath);
-			const char* sep = PATH_SEP;
-			if (currentPath[len - 1] == *sep) {
-				sep = "";
+		if (newInput & (1 << GUI_INPUT_SELECT)) {
+			if (fileIndex == 0) {
+				_upDirectory(currentPath);
+				_refreshDirectory(currentPath, &currentFiles, filter);
+			} else {
+				size_t len = strlen(currentPath);
+				const char* sep = PATH_SEP;
+				if (currentPath[len - 1] == *sep) {
+					sep = "";
+				}
+				snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
+				if (!_refreshDirectory(outPath, &currentFiles, filter)) {
+					return true;
+				}
+				strncpy(currentPath, outPath, outLen);
 			}
-			snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
-			if (!_refreshDirectory(outPath, &currentFiles, filter)) {
-				return true;
-			}
-			strncpy(currentPath, outPath, outLen);
 			fileIndex = 0;
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
