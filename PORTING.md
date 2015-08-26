@@ -12,11 +12,11 @@ Port-specific TODO
 
 The ports are vaguely usable, but by no means should be considered stable.
 
-### 3DS (port/3ds)
-* Add menu
+### 3DS (master)
 * Add audio
 * Thread support testing
 * Make it faster
+	* Threaded renderer shim
 	* ARMv6 dynarec
 	* Hardware acceleration
 
@@ -28,14 +28,12 @@ The ports are vaguely usable, but by no means should be considered stable.
 	* MIPS dynarec
 	* Hardware acceleration
 
-### PS Vita (port/psp2)
-* Add menu
+### PS Vita (master)
 * Fix audio
 * Make it faster
 	* Threaded renderer shim
 	* Hardware acceleration
 
-### Wii (port/wii)
-* Add menu
+### Wii (master)
 * Thread support
 * Clean up video detection
