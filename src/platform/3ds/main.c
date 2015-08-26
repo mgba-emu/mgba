@@ -108,7 +108,8 @@ int main() {
 
 	while (aptMainLoop()) {
 		char path[256];
-		if (!selectFile(&params, "/", path, sizeof(path), "gba")) {
+		char currentPath[256] = "";
+		if (!selectFile(&params, "/", path, currentPath, sizeof(path), GBAIsROM)) {
 			break;
 		}
 		_drawStart();

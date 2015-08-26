@@ -37,7 +37,7 @@ static void _upDirectory(char* currentPath) {
 	// TODO: What if there was a trailing slash?
 }
 
-static bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles) {
+static bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);
@@ -46,24 +46,37 @@ static bool _refreshDirectory(const char* currentPath, struct FileList* currentF
 	}
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
-		if (de->name(de)[0] == '.') {
+		const char* name = de->name(de);
+		if (name[0] == '.') {
 			continue;
 		}
-		*FileListAppend(currentFiles) = strdup(de->name(de));
+		if (de->type(de) == VFS_FILE) {
+			struct VFile* vf = dir->openFile(dir, name, O_RDONLY);
+			if (!vf) {
+				continue;
+			}
+			if (!filter || filter(vf)) {
+				*FileListAppend(currentFiles) = strdup(name);
+			}
+			vf->close(vf);
+		} else {
+			*FileListAppend(currentFiles) = strdup(name);
+		}
 	}
 	dir->close(dir);
 	return true;
 }
 
-bool selectFile(const struct GUIParams* params, const char* basePath, char* outPath, size_t outLen, const char* suffix) {
-	char currentPath[256];
-	strncpy(currentPath, basePath, sizeof(currentPath));
+bool selectFile(const struct GUIParams* params, const char* basePath, char* outPath, char* currentPath, size_t outLen, bool (*filter)(struct VFile*)) {
+	if (!currentPath[0]) {
+		strncpy(currentPath, basePath, outLen);
+	}
 	size_t fileIndex = 0;
 	size_t start = 0;
 
 	struct FileList currentFiles;
 	FileListInit(&currentFiles, 0);
-	_refreshDirectory(currentPath, &currentFiles);
+	_refreshDirectory(currentPath, &currentFiles, filter);
 
 	int inputHistory[GUI_INPUT_MAX] = { 0 };
 
@@ -98,27 +111,27 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			FileListDeinit(&currentFiles);
 			return false;
 		}
-		if (newInput & (1 << GUI_INPUT_SELECT)) {
+		if (newInput & (1 << GUI_INPUT_SELECT) && FileListSize(&currentFiles)) {
 			size_t len = strlen(currentPath);
 			const char* sep = PATH_SEP;
 			if (currentPath[len - 1] == *sep) {
 				sep = "";
 			}
-			snprintf(currentPath, sizeof(currentPath), "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
-			if (!_refreshDirectory(currentPath, &currentFiles)) {
-				strncpy(outPath, currentPath, outLen);
+			snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
+			if (!_refreshDirectory(outPath, &currentFiles, filter)) {
 				return true;
 			}
+			strncpy(currentPath, outPath, outLen);
 			fileIndex = 0;
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
-			if (strncmp(currentPath, basePath, sizeof(currentPath)) == 0) {
+			if (strncmp(currentPath, basePath, outLen) == 0) {
 				_cleanFiles(&currentFiles);
 				FileListDeinit(&currentFiles);
 				return false;
 			}
 			_upDirectory(currentPath);
-			_refreshDirectory(currentPath, &currentFiles);
+			_refreshDirectory(currentPath, &currentFiles, filter);
 			fileIndex = 0;
 		}
 

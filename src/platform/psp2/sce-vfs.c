@@ -185,6 +185,7 @@ struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode) {
 	const char* dir = vdsce->path;
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + strlen(PATH_SEP) + 1));
 	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+	printf("Opening %s\n", combined);
 
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);

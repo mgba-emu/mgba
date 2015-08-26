@@ -167,6 +167,7 @@ int main() {
 
 	while (true) {
 		char path[256];
+		char currentPath[256] = "";
 		guOrtho(proj, -20, 240, 0, 352, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
@@ -174,7 +175,7 @@ int main() {
 			352, 230,
 			font, _drawStart, _drawEnd, _pollInput
 		};
-		if (!selectFile(&params, "/", path, sizeof(path), "gba") || !GBAWiiLoadGame(path)) {
+		if (!selectFile(&params, "/", path, currentPath, sizeof(path), GBAIsROM) || !GBAWiiLoadGame(path)) {
 			break;
 		}
 		GBAContextStart(&context);

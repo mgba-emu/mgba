@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "psp2-context.h"
 
+#include "gba/gba.h"
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
@@ -69,7 +70,8 @@ int main() {
 
 	while (true) {
 		char path[256];
-		if (!selectFile(&params, "cache0:", path, sizeof(path), "gba")) {
+		char currentPath[256] = "";
+		if (!selectFile(&params, "cache0:", path, currentPath, sizeof(path), GBAIsROM)) {
 			break;
 		}
 		if (!GBAPSP2LoadROM(path)) {
