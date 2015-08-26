@@ -44,6 +44,7 @@ static struct VDirEntry* _vdsceListNext(struct VDir* vd);
 static struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vdesceName(struct VDirEntry* vde);
+static enum VFSType _vdesceType(struct VDirEntry* vde);
 
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
@@ -147,6 +148,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->path = strdup(path);
 
 	vd->de.d.name = _vdesceName;
+	vd->de.d.type = _vdesceType;
 
 	return &vd->d;
 }
@@ -192,4 +194,12 @@ struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode) {
 static const char* _vdesceName(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
 	return vdesce->ent.d_name;
+}
+
+static enum VFSType _vdesceType(struct VDirEntry* vde) {
+	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
+	if (PSP2_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }

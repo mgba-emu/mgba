@@ -46,6 +46,7 @@ static struct VDirEntry* _vd3dListNext(struct VDir* vd);
 static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vd3deName(struct VDirEntry* vde);
+static enum VFSType _vd3deType(struct VDirEntry* vde);
 
 struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	struct VFile3DS* vf3d = malloc(sizeof(struct VFile3DS));
@@ -186,6 +187,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd3d->d.openFile = _vd3dOpenFile;
 
 	vd3d->vde.d.name = _vd3deName;
+	vd3d->vde.d.type = _vd3deType;
 	vd3d->vde.utf8Name = 0;
 
 	return &vd3d->d;
@@ -244,5 +246,13 @@ static const char* _vd3deName(struct VDirEntry* vde) {
 		vd3de->utf8Name = utf16to8(vd3de->ent.name, sizeof(vd3de->ent.name) / 2);
 	}
 	return vd3de->utf8Name;
+}
+
+static enum VFSType _vd3deType(struct VDirEntry* vde) {
+	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
+	if (vd3de->ent.isDirectory) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }
 #endif

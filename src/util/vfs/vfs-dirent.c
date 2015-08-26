@@ -15,6 +15,7 @@ static struct VDirEntry* _vdListNext(struct VDir* vd);
 static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vdeName(struct VDirEntry* vde);
+static enum VFSType _vdeType(struct VDirEntry* vde);
 
 struct VDirEntryDE {
 	struct VDirEntry d;
@@ -48,6 +49,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->de = de;
 
 	vd->vde.d.name = _vdeName;
+	vd->vde.d.type = _vdeType;
 
 	return &vd->d;
 }
@@ -189,4 +191,26 @@ const char* _vdeName(struct VDirEntry* vde) {
 		return vdede->ent->d_name;
 	}
 	return 0;
+}
+
+static enum VFSType _vdeType(struct VDirEntry* vde) {
+	struct VDirEntryDE* vdede = (struct VDirEntryDE*) vde;
+#ifndef WIN32
+	if (vdede->ent->d_type == DT_DIR) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
+#else
+	const char* dir = vdde->path;
+	char* combined = malloc(sizeof(char) * (strlen(vdede->ent->d_name) + strlen(dir) + 2));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, vdede->ent->d_name);
+	struct stat sb;
+	stat(combined, &sb);
+	free(combined);
+
+	if (S_ISDIR(sb.st_mode)) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
+#endif
 }

@@ -51,6 +51,7 @@ static struct VDirEntry* _vdzListNext(struct VDir* vd);
 static struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vdezName(struct VDirEntry* vde);
+static enum VFSType _vdezType(struct VDirEntry* vde);
 
 struct VDir* VDirOpenZip(const char* path, int flags) {
 	int zflags = 0;
@@ -74,6 +75,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	vd->z = z;
 
 	vd->dirent.d.name = _vdezName;
+	vd->dirent.d.type = _vdezType;
 	vd->dirent.index = -1;
 	vd->dirent.z = z;
 
@@ -295,6 +297,13 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	return &vfz->d;
 }
 
+bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {
+	UNUSED(vf);
+	UNUSED(memory);
+	UNUSED(size);
+	return false;
+}
+
 const char* _vdezName(struct VDirEntry* vde) {
 	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
 	struct zip_stat s;
@@ -304,11 +313,9 @@ const char* _vdezName(struct VDirEntry* vde) {
 	return s.name;
 }
 
-bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {
-	UNUSED(vf);
-	UNUSED(memory);
-	UNUSED(size);
-	return false;
+static enum VFSType _vdezType(struct VDirEntry* vde) {
+	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
+	return VFS_UNKNOWN;
 }
 
 #endif
