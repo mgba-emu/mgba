@@ -181,10 +181,10 @@ struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode) {
 		return 0;
 	}
 	const char* dir = vdsce->path;
-	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + strlen(PATH_SEP) + 1));
 	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
 
-	struct VFile* file = VFileOpenSce(combined, mode, 0666);
+	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
 	return file;
 }
