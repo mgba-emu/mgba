@@ -6,7 +6,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifndef PSP2
 #include <ctype.h>
+#endif
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>

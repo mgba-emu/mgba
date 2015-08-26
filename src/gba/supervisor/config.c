@@ -18,6 +18,10 @@
 #include <strsafe.h>
 #endif
 
+#ifdef PSP2
+#include <psp2/io/stat.h>
+#endif
+
 #define SECTION_NAME_MAX 128
 
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
@@ -135,13 +139,8 @@ bool GBAConfigSavePath(const struct GBAConfig* config, const char* path) {
 }
 
 void GBAConfigMakePortable(const struct GBAConfig* config) {
-	struct VFile* portable;
-#ifndef _WIN32
-	char out[PATH_MAX];
-	getcwd(out, PATH_MAX);
-	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
-	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#else
+	struct VFile* portable = 0;
+#ifdef _WIN32
 	char out[MAX_PATH];
 	wchar_t wpath[MAX_PATH];
 	wchar_t wprojectName[MAX_PATH];
@@ -152,6 +151,13 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
 	StringCchCatA(out, MAX_PATH, "\\portable.ini");
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
+#elif defined(PSP2)
+	// Already portable
+#else
+	char out[PATH_MAX];
+	getcwd(out, PATH_MAX);
+	strncat(out, PATH_SEP "portable.ini", PATH_MAX - strlen(out));
+	portable = VFileOpen(out, O_WRONLY | O_CREAT);
 #endif
 	if (portable) {
 		portable->close(portable);
@@ -161,22 +167,7 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 
 void GBAConfigDirectory(char* out, size_t outLength) {
 	struct VFile* portable;
-#ifndef _WIN32
-	getcwd(out, outLength);
-	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
-	portable = VFileOpen(out, O_RDONLY);
-	if (portable) {
-		getcwd(out, outLength);
-		portable->close(portable);
-		return;
-	}
-
-	char* home = getenv("HOME");
-	snprintf(out, outLength, "%s/.config", home);
-	mkdir(out, 0755);
-	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
-	mkdir(out, 0755);
-#else
+#ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
 	wchar_t wprojectName[MAX_PATH];
 	MultiByteToWideChar(CP_UTF8, 0, projectName, -1, wprojectName, MAX_PATH);
@@ -196,6 +187,25 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 		CreateDirectoryW(wpath, NULL);
 	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
+#elif defined(PSP2)
+	UNUSED(portable);
+	snprintf(out, outLength, "cache0:/%s", binaryName);
+	sceIoMkdir(out, 0777);
+#else
+	getcwd(out, outLength);
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+	portable = VFileOpen(out, O_RDONLY);
+	if (portable) {
+		getcwd(out, outLength);
+		portable->close(portable);
+		return;
+	}
+
+	char* home = getenv("HOME");
+	snprintf(out, outLength, "%s/.config", home);
+	mkdir(out, 0755);
+	snprintf(out, outLength, "%s/.config/%s", home, binaryName);
+	mkdir(out, 0755);
 #endif
 }
 

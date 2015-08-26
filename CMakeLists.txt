@@ -183,7 +183,7 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(NOT HAIKU AND NOT MSVC)
+if(NOT HAIKU AND NOT MSVC AND NOT PSP2)
 	list(APPEND OS_LIB m)
 endif()
 
@@ -213,6 +213,10 @@ endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
+endif()
+
+if(PSP2)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
 endif()
 
 include(CheckFunctionExists)
@@ -451,6 +455,10 @@ endif()
 
 if(WII)
 	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/wii ${CMAKE_BINARY_DIR})
+endif()
+
+if(PSP2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
 endif()
 
 if(BUILD_PERF)
