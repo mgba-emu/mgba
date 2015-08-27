@@ -19,6 +19,7 @@
 
 FS_archive sdmcArchive;
 
+extern bool allocateRomBuffer(void);
 static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 static Handle logFile;
 
@@ -60,11 +61,10 @@ static int _pollInput(void) {
 
 int main() {
 	struct GBAContext context;
-	srvInit();
-	aptInit();
-	hidInit(0);
-	fsInit();
-	sdmcInit();
+
+	if (!allocateRomBuffer()) {
+		return 1;
+	}
 
 	sf2d_init();
 	sf2d_set_clear_color(0);
@@ -146,13 +146,6 @@ cleanup:
 
 	sf2d_free_texture(tex);
 	sf2d_fini();
-
-	sdmcExit();
-	fsExit();
-	gfxExit();
-	hidExit();
-	aptExit();
-	srvExit();
 	return 0;
 }
 

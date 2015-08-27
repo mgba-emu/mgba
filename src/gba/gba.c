@@ -38,6 +38,12 @@ static void GBABreakpoint(struct ARMCore* cpu, int immediate);
 static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
+
+#ifdef _3DS
+extern uint32_t* romBuffer;
+extern size_t romBufferSize;
+#endif
+
 void GBACreate(struct GBA* gba) {
 	gba->d.id = GBA_COMPONENT_MAGIC;
 	gba->d.init = GBAInit;
@@ -110,7 +116,9 @@ void GBAUnloadROM(struct GBA* gba) {
 	gba->memory.rom = 0;
 
 	if (gba->romVf) {
+#ifndef _3DS
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
+#endif
 		gba->pristineRom = 0;
 		gba->romVf = 0;
 	}
@@ -396,7 +404,15 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	if (gba->pristineRomSize > SIZE_CART0) {
 		gba->pristineRomSize = SIZE_CART0;
 	}
+#ifdef _3DS
+	gba->pristineRom = 0;
+	if (gba->pristineRomSize <= romBufferSize) {
+		gba->pristineRom = romBuffer;
+		vf->read(vf, romBuffer, gba->pristineRomSize);
+	}
+#else
 	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+#endif
 	if (!gba->pristineRom) {
 		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
 		return false;
