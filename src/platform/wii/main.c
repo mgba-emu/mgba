@@ -165,9 +165,9 @@ int main() {
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
 #endif
 
+	char currentPath[256] = "";
 	while (true) {
 		char path[256];
-		char currentPath[256] = "";
 		guOrtho(proj, -20, 240, 0, 352, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 

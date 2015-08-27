@@ -68,9 +68,9 @@ int main() {
 		font, _drawStart, _drawEnd, _pollInput
 	};
 
+	char currentPath[256] = "";
 	while (true) {
 		char path[256];
-		char currentPath[256] = "";
 		if (!selectFile(&params, "cache0:", path, currentPath, sizeof(path), GBAIsROM)) {
 			break;
 		}

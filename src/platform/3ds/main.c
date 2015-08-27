@@ -106,9 +106,9 @@ int main() {
 		font, _drawStart, _drawEnd, _pollInput
 	};
 
+	char currentPath[256] = "";
 	while (aptMainLoop()) {
 		char path[256];
-		char currentPath[256] = "";
 		if (!selectFile(&params, "/", path, currentPath, sizeof(path), GBAIsROM)) {
 			break;
 		}
