@@ -12,6 +12,9 @@
 DECLARE_VECTOR(FileList, char*);
 DEFINE_VECTOR(FileList, char*);
 
+#define ITERATION_SIZE 5
+#define SCANNING_THRESHOLD 20
+
 static void _cleanFiles(struct FileList* currentFiles) {
 	size_t size = FileListSize(currentFiles);
 	size_t i;
@@ -37,7 +40,7 @@ static void _upDirectory(char* currentPath) {
 	// TODO: What if there was a trailing slash?
 }
 
-static bool _refreshDirectory(const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
+static bool _refreshDirectory(const struct GUIParams* params, const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);
@@ -45,8 +48,16 @@ static bool _refreshDirectory(const char* currentPath, struct FileList* currentF
 		return false;
 	}
 	*FileListAppend(currentFiles) = "(Up)";
+	size_t i = 0;
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
+		++i;
+		if (i == SCANNING_THRESHOLD) {
+			params->drawStart();
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning)");
+			params->drawEnd();
+		}
 		const char* name = de->name(de);
 		if (name[0] == '.') {
 			continue;
@@ -77,7 +88,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 
 	struct FileList currentFiles;
 	FileListInit(&currentFiles, 0);
-	_refreshDirectory(currentPath, &currentFiles, filter);
+	_refreshDirectory(params, currentPath, &currentFiles, filter);
 
 	int inputHistory[GUI_INPUT_MAX] = { 0 };
 
@@ -101,6 +112,21 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		if (newInput & (1 << GUI_INPUT_DOWN) && fileIndex < FileListSize(&currentFiles) - 1) {
 			++fileIndex;
 		}
+		if (newInput & (1 << GUI_INPUT_LEFT)) {
+			if (fileIndex >= ITERATION_SIZE) {
+				fileIndex -= ITERATION_SIZE;
+			} else {
+				fileIndex = 0;
+			}
+		}
+		if (newInput & (1 << GUI_INPUT_RIGHT)) {
+			if (fileIndex + ITERATION_SIZE < FileListSize(&currentFiles)) {
+				fileIndex += ITERATION_SIZE;
+			} else {
+				fileIndex = FileListSize(&currentFiles) - 1;
+			}
+		}
+
 		if (fileIndex < start) {
 			start = fileIndex;
 		}
@@ -115,7 +141,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
 			if (fileIndex == 0) {
 				_upDirectory(currentPath);
-				_refreshDirectory(currentPath, &currentFiles, filter);
+				_refreshDirectory(params, currentPath, &currentFiles, filter);
 			} else {
 				size_t len = strlen(currentPath);
 				const char* sep = PATH_SEP;
@@ -123,7 +149,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 					sep = "";
 				}
 				snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
-				if (!_refreshDirectory(outPath, &currentFiles, filter)) {
+				if (!_refreshDirectory(params, outPath, &currentFiles, filter)) {
 					return true;
 				}
 				strncpy(currentPath, outPath, outLen);
@@ -137,13 +163,13 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 				return false;
 			}
 			_upDirectory(currentPath);
-			_refreshDirectory(currentPath, &currentFiles, filter);
+			_refreshDirectory(params, currentPath, &currentFiles, filter);
 			fileIndex = 0;
 		}
 
 		params->drawStart();
 		int y = GUIFontHeight(params->font);
-		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "Current directory: %s", currentPath);
+		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 		y += 2 * GUIFontHeight(params->font);
 		size_t i;
 		for (i = start; i < FileListSize(&currentFiles); ++i) {
