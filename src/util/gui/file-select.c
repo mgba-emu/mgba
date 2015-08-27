@@ -9,6 +9,8 @@
 #include "util/vector.h"
 #include "util/vfs.h"
 
+#include <stdlib.h>
+
 DECLARE_VECTOR(FileList, char*);
 DEFINE_VECTOR(FileList, char*);
 
@@ -38,6 +40,10 @@ static void _upDirectory(char* currentPath) {
 		return;
 	}
 	// TODO: What if there was a trailing slash?
+}
+
+static int _strpcmp(const void* a, const void* b) {
+	return strcmp(*(const char**) a, *(const char**) b);
 }
 
 static bool _refreshDirectory(const struct GUIParams* params, const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
@@ -76,6 +82,7 @@ static bool _refreshDirectory(const struct GUIParams* params, const char* curren
 		}
 	}
 	dir->close(dir);
+	qsort(FileListGetPointer(currentFiles, 1), FileListSize(currentFiles) - 1, sizeof(char*), _strpcmp);
 	return true;
 }
 
