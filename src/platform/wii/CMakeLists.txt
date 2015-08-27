@@ -12,5 +12,4 @@ add_custom_target(${BINARY_NAME}-wii.zip ALL
 	DEPENDS ${BINARY_NAME}.elf
 	SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/meta.xml.in
-	${BINARY_NAME}.dol
 	${CMAKE_CURRENT_SOURCE_DIR}/icon.png)
