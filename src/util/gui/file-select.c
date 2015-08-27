@@ -85,6 +85,12 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 	}
 	size_t fileIndex = 0;
 	size_t start = 0;
+	size_t pageSize = params->height / GUIFontHeight(params->font);
+	if (pageSize > 4) {
+		pageSize -= 4;
+	} else {
+		pageSize = 1;
+	}
 
 	struct FileList currentFiles;
 	FileListInit(&currentFiles, 0);
@@ -113,15 +119,15 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			++fileIndex;
 		}
 		if (newInput & (1 << GUI_INPUT_LEFT)) {
-			if (fileIndex >= ITERATION_SIZE) {
-				fileIndex -= ITERATION_SIZE;
+			if (fileIndex >= pageSize) {
+				fileIndex -= pageSize;
 			} else {
 				fileIndex = 0;
 			}
 		}
 		if (newInput & (1 << GUI_INPUT_RIGHT)) {
-			if (fileIndex + ITERATION_SIZE < FileListSize(&currentFiles)) {
-				fileIndex += ITERATION_SIZE;
+			if (fileIndex + pageSize < FileListSize(&currentFiles)) {
+				fileIndex += pageSize;
 			} else {
 				fileIndex = FileListSize(&currentFiles) - 1;
 			}
