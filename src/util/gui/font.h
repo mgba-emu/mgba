@@ -30,7 +30,11 @@ struct GUIFontGlyphMetric {
 };
 
 unsigned GUIFontHeight(const struct GUIFont*);
+unsigned GUIFontGlyphWidth(const struct GUIFont*, uint32_t glyph);
+unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
 
 void GUIFontPrintf(const struct GUIFont*, int x, int y, enum GUITextAlignment, uint32_t color, const char* text, ...);
+void GUIFontPrint(const struct GUIFont*, int x, int y, enum GUITextAlignment, uint32_t color, const char* text);
+void GUIFontDrawGlyph(const struct GUIFont*, int x, int y, uint32_t color, uint32_t glyph);
 
 #endif

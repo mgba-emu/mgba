@@ -40,28 +40,25 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 	return GLYPH_HEIGHT;
 }
 
-void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignment align, uint32_t color, const char* text, ...) {
-	UNUSED(align); // TODO
-	char buffer[256];
-	va_list args;
-	va_start(args, text);
-	int len = vsnprintf(buffer, sizeof(buffer), text, args);
-	va_end(args);
-	int i;
-	for (i = 0; i < len; ++i) {
-		char c = buffer[i];
-		if (c > 0x7F) {
-			c = 0;
-		}
-		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
-		sf2d_draw_texture_part_blend(font->tex,
-		                             x - metric.padding.left,
-		                             y - GLYPH_HEIGHT,
-		                             (c & 15) * CELL_WIDTH,
-		                             (c >> 4) * CELL_HEIGHT,
-		                             CELL_WIDTH,
-		                             CELL_HEIGHT,
-		                             color);
-		x += metric.width;
+unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
+	UNUSED(font);
+	if (glyph > 0x7F) {
+		glyph = 0;
 	}
+	return defaultFontMetrics[glyph].width;
+}
+
+void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
+	if (glyph > 0x7F) {
+		glyph = 0;
+	}
+	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
+	sf2d_draw_texture_part_blend(font->tex,
+	                             x - metric.padding.left,
+	                             y - GLYPH_HEIGHT,
+	                             (glyph & 15) * CELL_WIDTH,
+	                             (glyph >> 4) * CELL_HEIGHT,
+	                             CELL_WIDTH,
+	                             CELL_HEIGHT,
+	                             color);
 }

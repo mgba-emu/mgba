@@ -324,7 +324,7 @@ static void GBAWiiFrame(void) {
 
 bool GBAWiiLoadGame(const char* path) {
 	_drawStart();
-	GUIFontPrintf(font, 0, 30, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
+	GUIFontPrintf(font, 176, 120, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
 	_drawEnd();
 
 	return GBAContextLoadROM(&context, path, true);

@@ -113,7 +113,7 @@ int main() {
 			break;
 		}
 		_drawStart();
-		GUIFontPrintf(font, 130, (GUIFontHeight(font) + 240) / 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "Loading...");
+		GUIFontPrintf(font, 160, (GUIFontHeight(font) + 240) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
 		_drawEnd();
 		if (!GBAContextLoadROM(&context, path, true)) {
 			continue;

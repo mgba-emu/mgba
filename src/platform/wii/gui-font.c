@@ -44,14 +44,15 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 	return GLYPH_HEIGHT;
 }
 
-void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignment align, uint32_t color, const char* text, ...) {
-	UNUSED(align); // TODO
-	char buffer[256];
-	va_list args;
-	va_start(args, text);
-	int len = vsnprintf(buffer, sizeof(buffer), text, args);
-	va_end(args);
-	int i;
+unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
+	UNUSED(font);
+	if (glyph > 0x7F) {
+		glyph = 0;
+	}
+	return defaultFontMetrics[glyph].width;
+}
+
+void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	GXTexObj tex;
 	// Grumble grumble, libogc is bad about const-correctness
 	struct GUIFont* ncfont = font;
@@ -61,27 +62,23 @@ void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignme
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 
-	for (i = 0; i < len; ++i) {
-		char c = buffer[i];
-		if (c > 0x7F) {
-			c = 0;
-		}
-		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
-		s16 tx = (c & 15) * CELL_WIDTH + metric.padding.left;
-		s16 ty = (c >> 4) * CELL_HEIGHT + metric.padding.top;
-		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-		GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top);
-		GX_TexCoord2f32(tx / 256.f, ty / 128.f);
-
-		GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + metric.padding.top);
-		GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, ty / 128.f);
-
-		GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
-		GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
-
-		GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
-		GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
-		GX_End();
-		x += metric.width;
+	if (glyph > 0x7F) {
+		glyph = 0;
 	}
+	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
+	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left;
+	s16 ty = (glyph >> 4) * CELL_HEIGHT + metric.padding.top;
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top);
+	GX_TexCoord2f32(tx / 256.f, ty / 128.f);
+
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + metric.padding.top);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, ty / 128.f);
+
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+
+	GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+	GX_End();
 }

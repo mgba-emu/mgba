@@ -36,26 +36,23 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 	return GLYPH_HEIGHT;
 }
 
-void GUIFontPrintf(const struct GUIFont* font, int x, int y, enum GUITextAlignment align, uint32_t color, const char* text, ...) {
-	UNUSED(align); // TODO
-	char buffer[256];
-	va_list args;
-	va_start(args, text);
-	int len = vsnprintf(buffer, sizeof(buffer), text, args);
-	va_end(args);
-	int i;
-	for (i = 0; i < len; ++i) {
-		char c = buffer[i];
-		if (c > 0x7F) {
-			c = 0;
-		}
-		struct GUIFontGlyphMetric metric = defaultFontMetrics[c];
-		vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top,
-			                          (c & 15) * CELL_WIDTH + metric.padding.left,
-			                          (c >> 4) * CELL_HEIGHT + metric.padding.top,
-			                          CELL_WIDTH - (metric.padding.left + metric.padding.right),
-			                          CELL_HEIGHT - (metric.padding.top + metric.padding.bottom),
-			                          color);
-		x += metric.width;
+unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
+	UNUSED(font);
+	if (glyph > 0x7F) {
+		glyph = 0;
 	}
+	return defaultFontMetrics[glyph].width;
+}
+
+void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
+	if (glyph > 0x7F) {
+		glyph = 0;
+	}
+	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
+	vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top,
+		                          (glyph & 15) * CELL_WIDTH + metric.padding.left,
+		                          (glyph >> 4) * CELL_HEIGHT + metric.padding.top,
+		                          CELL_WIDTH - (metric.padding.left + metric.padding.right),
+		                          CELL_HEIGHT - (metric.padding.top + metric.padding.bottom),
+		                          color);
 }
