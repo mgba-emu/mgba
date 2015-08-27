@@ -168,7 +168,7 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		}
 
 		params->drawStart();
-		int y = GUIFontHeight(params->font);
+		unsigned y = GUIFontHeight(params->font);
 		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 		y += 2 * GUIFontHeight(params->font);
 		size_t i;

@@ -25,8 +25,8 @@ enum GUIInput {
 };
 
 struct GUIParams {
-	int width;
-	int height;
+	unsigned width;
+	unsigned height;
 	const struct GUIFont* font;
 
 	void (*drawStart)(void);

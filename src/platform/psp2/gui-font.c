@@ -31,7 +31,7 @@ void GUIFontDestroy(struct GUIFont* font) {
 	free(font);
 }
 
-int GUIFontHeight(const struct GUIFont* font) {
+unsigned GUIFontHeight(const struct GUIFont* font) {
 	UNUSED(font);
 	return GLYPH_HEIGHT;
 }

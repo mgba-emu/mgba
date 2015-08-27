@@ -29,7 +29,7 @@ struct GUIFontGlyphMetric {
 	} padding;
 };
 
-int GUIFontHeight(const struct GUIFont*);
+unsigned GUIFontHeight(const struct GUIFont*);
 
 void GUIFontPrintf(const struct GUIFont*, int x, int y, enum GUITextAlignment, uint32_t color, const char* text, ...);
 
