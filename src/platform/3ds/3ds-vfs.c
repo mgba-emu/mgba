@@ -19,7 +19,7 @@ struct VFile3DS {
 struct VDirEntry3DS {
 	struct VDirEntry d;
 	FS_dirent ent;
-	char* utf8Name;
+	char utf8Name[256];
 };
 
 struct VDir3DS {
@@ -188,7 +188,6 @@ struct VDir* VDirOpen(const char* path) {
 
 	vd3d->vde.d.name = _vd3deName;
 	vd3d->vde.d.type = _vd3deType;
-	vd3d->vde.utf8Name = 0;
 
 	return &vd3d->d;
 }
@@ -197,9 +196,6 @@ static bool _vd3dClose(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	FSDIR_Close(vd3d->handle);
 	free(vd3d->path);
-	if (vd3d->vde.utf8Name) {
-		free(vd3d->vde.utf8Name);
-	}
 	free(vd3d);
 	return true;
 }
@@ -215,10 +211,7 @@ static struct VDirEntry* _vd3dListNext(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	u32 n = 0;
 	memset(&vd3d->vde.ent, 0, sizeof(vd3d->vde.ent));
-	if (vd3d->vde.utf8Name) {
-		free(vd3d->vde.utf8Name);
-		vd3d->vde.utf8Name = 0;
-	};
+	memset(vd3d->vde.utf8Name, 0, sizeof(vd3d->vde.utf8Name));
 	FSDIR_Read(vd3d->handle, &n, 1, &vd3d->vde.ent);
 	if (!n) {
 		return 0;
@@ -242,8 +235,8 @@ static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode) 
 
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
-	if (!vd3de->utf8Name) {
-		vd3de->utf8Name = utf16to8(vd3de->ent.name, sizeof(vd3de->ent.name) / 2);
+	if (!vd3de->utf8Name[0]) {
+		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->ent.name));
 	}
 	return vd3de->utf8Name;
 }
