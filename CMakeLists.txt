@@ -500,9 +500,7 @@ if(PSP2)
 endif()
 
 if(3DS)
-	add_executable(${BINARY_NAME}.elf ${GUI_SRC})
-	target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} m ${OS_LIB})
-	add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/3ds ${CMAKE_BINARY_DIR})
 endif()
 
 if(BUILD_PERF)

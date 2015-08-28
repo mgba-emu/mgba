@@ -1,0 +1,4 @@
+add_executable(${BINARY_NAME}.elf ${GUI_SRC})
+target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} m ${OS_LIB})
+add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
