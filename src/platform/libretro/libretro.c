@@ -104,6 +104,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
    info->geometry.base_height = VIDEO_VERTICAL_PIXELS;
    info->geometry.max_width = VIDEO_HORIZONTAL_PIXELS;
    info->geometry.max_height = VIDEO_VERTICAL_PIXELS;
+   info->geometry.aspect_ratio = 3.0 / 2.0;
    info->timing.fps =  GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
    info->timing.sample_rate = 32768;
 }
