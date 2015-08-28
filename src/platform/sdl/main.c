@@ -75,6 +75,8 @@ int main(int argc, char** argv) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.player.fullscreen = opts.fullscreen;
 	renderer.player.windowUpdated = 0;
+#else
+	renderer.fullscreen = opts.fullscreen;
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {

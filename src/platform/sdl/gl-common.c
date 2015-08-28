@@ -39,9 +39,9 @@ void GBASDLGLCommonInit(struct SDLSoftwareRenderer* renderer) {
 #else
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 #ifdef COLOR_16_BIT
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_OPENGL | (SDL_FULLSCREEN * renderer->fullscreen));
 #else
-	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL);
+	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 32, SDL_OPENGL | (SDL_FULLSCREEN * renderer->fullscreen));
 #endif
 #endif
 }
