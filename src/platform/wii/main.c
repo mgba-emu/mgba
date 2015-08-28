@@ -415,4 +415,9 @@ static int _pollInput(void) {
 void _setRumble(struct GBARumble* rumble, int enable) {
 	UNUSED(rumble);
 	WPAD_Rumble(0, enable);
+	if (enable) {
+		PAD_ControlMotor(0, PAD_MOTOR_RUMBLE);
+	} else {
+		PAD_ControlMotor(0, PAD_MOTOR_STOP);
+	}
 }
