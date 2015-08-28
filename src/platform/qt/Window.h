@@ -163,6 +163,7 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	int m_playerId;
+	bool m_fullscreenOnStart;
 
 	bool m_hitUnimplementedBiosCall;
 
