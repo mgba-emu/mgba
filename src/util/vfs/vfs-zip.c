@@ -315,6 +315,7 @@ const char* _vdezName(struct VDirEntry* vde) {
 
 static enum VFSType _vdezType(struct VDirEntry* vde) {
 	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
+	UNUSED(vdez);
 	return VFS_UNKNOWN;
 }
 
