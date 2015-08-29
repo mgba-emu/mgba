@@ -127,6 +127,8 @@ bool GBAContextStart(struct GBAContext* context) {
 	if (opts.useBios && context->bios) {
 		GBALoadBIOS(context->gba, context->bios);
 	}
+	context->gba->logLevel = opts.logLevel;
+	context->gba->idleOptimization = opts.idleOptimization;
 
 	ARMReset(context->cpu);
 
