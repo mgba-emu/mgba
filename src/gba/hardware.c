@@ -277,7 +277,7 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 		t = time(0);
 	}
 	struct tm date;
-#if  defined(_WIN32) || defined(PSP2)
+#ifdef _WIN32
 	localtime_s(&date, &t);
 #else
 	localtime_r(&t, &date);

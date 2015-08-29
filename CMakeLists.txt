@@ -496,7 +496,7 @@ if(WII)
 endif()
 
 if(PSP2)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR})
 endif()
 
 if(3DS)
