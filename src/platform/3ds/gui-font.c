@@ -52,6 +52,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	if (glyph > 0x7F) {
 		glyph = 0;
 	}
+	color = (color >> 24) | (color << 8);
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 	sf2d_draw_texture_part_blend(font->tex,
 	                             x - metric.padding.left,
