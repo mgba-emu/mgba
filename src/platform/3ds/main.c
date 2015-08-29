@@ -137,7 +137,7 @@ int main() {
 			GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 			blip_clear(context.gba->audio.left);
-			blip_clear(context.gba->audio.left);
+			blip_clear(context.gba->audio.right);
 #endif
 			gspWaitForPPF();
 			_drawStart();
