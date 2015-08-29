@@ -252,14 +252,14 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 		if (bytesRead < 0) {
 			return false;
 		}
-		while (isspace(cheat[i])) {
+		while (isspace((int) cheat[i])) {
 			++i;
 		}
 		switch (cheat[i]) {
 		case '#':
 			do {
 				++i;
-			} while (isspace(cheat[i]));
+			} while (isspace((int) cheat[i]));
 			newSet = malloc(sizeof(*set));
 			GBACheatSetInit(newSet, &cheat[i]);
 			newSet->enabled = !nextDisabled;
@@ -278,7 +278,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 		case '!':
 			do {
 				++i;
-			} while (isspace(cheat[i]));
+			} while (isspace((int) cheat[i]));
 			if (strncasecmp(&cheat[i], "GSAv", 4) == 0 || strncasecmp(&cheat[i], "PARv", 4) == 0) {
 				i += 4;
 				gsaVersion = atoi(&cheat[i]);
@@ -367,14 +367,14 @@ bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	if (!line) {
 		return false;
 	}
-	while (isspace(line[0])) {
+	while (isspace((int) line[0])) {
 		++line;
 	}
 	line = hex16(line, &op2);
 	if (!line) {
 		return false;
 	}
-	if (!line[0] || isspace(line[0])) {
+	if (!line[0] || isspace((int) line[0])) {
 		return GBACheatAddCodeBreaker(cheats, op1, op2);
 	}
 	line = hex16(line, &op3);

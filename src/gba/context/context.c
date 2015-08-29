@@ -113,7 +113,7 @@ bool GBAContextLoadBIOSFromVFile(struct GBAContext* context, struct VFile* bios)
 }
 
 bool GBAContextStart(struct GBAContext* context) {
-	struct GBAOptions opts = {};
+	struct GBAOptions opts = { .bios = 0 };
 
 	if (context->renderer) {
 		GBAVideoAssociateRenderer(&context->gba->video, context->renderer);
