@@ -29,7 +29,6 @@ The ports are vaguely usable, but by no means should be considered stable.
 	* Hardware acceleration
 
 ### PS Vita (master)
-* Fix audio
 * Make it faster
 	* Threaded renderer shim
 	* Hardware acceleration

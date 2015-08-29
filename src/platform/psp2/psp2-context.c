@@ -55,24 +55,27 @@ static void _mapVitaKey(struct GBAInputMap* map, int pspKey, enum GBAKey key) {
 
 static THREAD_ENTRY _audioThread(void* context) {
 	struct GBAPSP2AudioContext* audio = (struct GBAPSP2AudioContext*) context;
-	struct GBAStereoSample buffer[PSP2_AUDIO_BUFFER_SIZE];
-	int audioPort = sceAudioOutOpenPort(PSP2_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_AUDIO_BUFFER_SIZE, 48000, PSP2_AUDIO_OUT_MODE_STEREO);
+	struct GBAStereoSample buffer[PSP2_SAMPLES];
+	int audioPort = sceAudioOutOpenPort(PSP2_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_SAMPLES, 48000, PSP2_AUDIO_OUT_MODE_STEREO);
 	while (audio->running) {
+		memset(buffer, 0, sizeof(buffer));
 		MutexLock(&audio->mutex);
 		int len = CircleBufferSize(&audio->buffer);
 		len /= sizeof(buffer[0]);
-		if (len > PSP2_AUDIO_BUFFER_SIZE) {
-			len = PSP2_AUDIO_BUFFER_SIZE;
+		if (len > PSP2_SAMPLES) {
+			len = PSP2_SAMPLES;
 		}
 		if (len > 0) {
 			len &= ~(PSP2_AUDIO_MIN_LEN - 1);
 			CircleBufferRead(&audio->buffer, buffer, len * sizeof(buffer[0]));
 			MutexUnlock(&audio->mutex);
-			sceAudioOutSetConfig(audioPort, len, -1, -1);
 			sceAudioOutOutput(audioPort, buffer);
 			MutexLock(&audio->mutex);
 		}
-		ConditionWait(&audio->cond, &audio->mutex);
+
+		if (CircleBufferSize(&audio->buffer) < PSP2_SAMPLES) {
+			ConditionWait(&audio->cond, &audio->mutex);
+		}
 		MutexUnlock(&audio->mutex);
 	}
 	sceAudioOutReleasePort(audioPort);
