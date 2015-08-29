@@ -21,7 +21,7 @@ FS_archive sdmcArchive;
 
 extern bool allocateRomBuffer(void);
 static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
-static Handle logFile;
+static struct VFile* logFile;
 
 static void _drawStart(void) {
 	sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
@@ -77,8 +77,8 @@ int main() {
 		0, 0
 	};
 	FSUSER_OpenArchive(0, &sdmcArchive);
-	FSUSER_OpenFile(0, &logFile, sdmcArchive, FS_makePath(PATH_CHAR, "/mgba.log"), FS_OPEN_WRITE | FS_OPEN_CREATE, FS_ATTRIBUTE_NONE);
 
+	logFile = VFileOpen("/mgba.log", O_WRONLY | O_CREAT | O_TRUNC);
 	struct GUIFont* font = GUIFontCreate();
 
 	GBAContextInit(&context, 0);
@@ -89,7 +89,6 @@ int main() {
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBA3DSLog;
-	context.gba->logLevel = 0;
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -152,7 +151,9 @@ int main() {
 cleanup:
 	mappedMemoryFree(renderer.outputBuffer, 0);
 
-	FSFILE_Close(logFile);
+	if (logFile) {
+		logFile->close(logFile);
+	}
 
 	sf2d_free_texture(tex);
 	sf2d_fini();
@@ -162,14 +163,14 @@ cleanup:
 static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
 	UNUSED(thread);
 	UNUSED(level);
+	if (!logFile) {
+		return;
+	}
 	char out[256];
-	u64 size;
-	u32 written;
 	size_t len = vsnprintf(out, sizeof(out), format, args);
-	if (len >= 256) {
-		len = 255;
+	if (len >= sizeof(out)) {
+		len = sizeof(out) - 1;
 	}
 	out[len] = '\n';
-	FSFILE_GetSize(logFile, &size);
-	FSFILE_Write(logFile, &written, size, out, len + 1, FS_WRITE_FLUSH);
+	logFile->write(logFile, out, len + 1);
 }
