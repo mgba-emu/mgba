@@ -85,7 +85,7 @@ int main() {
 	struct GBAOptions opts = {
 		.useBios = true,
 		.logLevel = 0,
-		.idleOptimization = IDLE_LOOP_REMOVE
+		.idleOptimization = IDLE_LOOP_DETECT
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBA3DSLog;
