@@ -35,3 +35,4 @@ set(NIDDB ${VITASDK}/db.json)
 
 set(PSP2 ON)
 add_definitions(-DPSP2)
+set(M_LIBRARY m)

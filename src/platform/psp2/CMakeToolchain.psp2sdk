@@ -49,5 +49,6 @@ set(OBJCOPY ${cross_prefix}objcopy)
 
 set(PSP2 ON)
 add_definitions(-DPSP2)
+set(M_LIBRARY m_stub)
 
 set(CMAKE_C_COMPILER_WORKS 1) # Skip test
