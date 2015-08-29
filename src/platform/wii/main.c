@@ -156,7 +156,7 @@ int main() {
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	context.renderer = renderer.d;
+	context.renderer = &renderer.d;
 
 	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
