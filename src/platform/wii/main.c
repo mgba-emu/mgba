@@ -108,7 +108,7 @@ int main() {
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-	GX_SetTevOp(GX_TEVSTAGE0, GX_REPLACE);
+	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
 
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_InvVtxCache();
@@ -170,6 +170,7 @@ int main() {
 		char path[256];
 		guOrtho(proj, -20, 240, 0, 352, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+		GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
 
 		struct GUIParams params = {
 			352, 230,
@@ -182,6 +183,7 @@ int main() {
 
 		guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+		GX_SetVtxDesc(GX_VA_CLR0, GX_NONE);
 
 		while (true) {
 	#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
@@ -283,8 +285,6 @@ int main() {
 }
 
 static void GBAWiiFrame(void) {
-	VIDEO_WaitVSync();
-
 	size_t x, y;
 	uint64_t* texdest = (uint64_t*) texmem;
 	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
@@ -355,6 +355,7 @@ static void _audioDMA(void) {
 }
 
 static void _drawStart(void) {
+	VIDEO_WaitVSync();
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 
