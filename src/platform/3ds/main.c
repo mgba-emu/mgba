@@ -19,6 +19,12 @@
 
 FS_archive sdmcArchive;
 
+struct GBA3DSRotationSource {
+	struct GBARotationSource d;
+	accelVector accel;
+	angularRate gyro;
+};
+
 extern bool allocateRomBuffer(void);
 static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 static struct VFile* logFile;
@@ -59,8 +65,35 @@ static int _pollInput(void) {
 	return keys;
 }
 
+static void _sampleRotation(struct GBARotationSource* source) {
+	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	// Work around ctrulib getting the entries wrong
+	rotation->accel = *(accelVector*)& hidSharedMem[0x48];
+	rotation->gyro = *(angularRate*)& hidSharedMem[0x5C];
+}
+
+static int32_t _readTiltX(struct GBARotationSource* source) {
+	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	return rotation->accel.x << 18L;
+}
+
+static int32_t _readTiltY(struct GBARotationSource* source) {
+	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	return rotation->accel.y << 18L;
+}
+
+static int32_t _readGyroZ(struct GBARotationSource* source) {
+	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
+	return rotation->gyro.y << 18L; // Yes, y
+}
+
 int main() {
 	struct GBAContext context;
+	struct GBA3DSRotationSource rotation;
+	rotation.d.sample = _sampleRotation;
+	rotation.d.readTiltX = _readTiltX;
+	rotation.d.readTiltY = _readTiltY;
+	rotation.d.readGyroZ = _readGyroZ;
 
 	if (!allocateRomBuffer()) {
 		return 1;
@@ -89,6 +122,7 @@ int main() {
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBA3DSLog;
+	context.gba->rotationSource = &rotation.d;
 
 	struct GBAVideoSoftwareRenderer renderer;
 	GBAVideoSoftwareRendererCreate(&renderer);
@@ -121,6 +155,13 @@ int main() {
 			continue;
 		}
 
+		if (context.gba->memory.hw.devices & HW_TILT) {
+			HIDUSER_EnableAccelerometer();
+		}
+		if (context.gba->memory.hw.devices & HW_GYRO) {
+			HIDUSER_EnableGyroscope();
+		}
+
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 		blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
 		blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
@@ -145,6 +186,13 @@ int main() {
 			_drawEnd();
 		}
 		GBAContextStop(&context);
+
+		if (context.gba->memory.hw.devices & HW_TILT) {
+			HIDUSER_DisableAccelerometer();
+		}
+		if (context.gba->memory.hw.devices & HW_GYRO) {
+			HIDUSER_DisableGyroscope();
+		}
 	}
 	GBAContextDeinit(&context);
 
