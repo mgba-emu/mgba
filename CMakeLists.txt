@@ -227,8 +227,9 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
 	check_function_exists(uselocale HAVE_USELOCALE)
 	check_function_exists(setlocale HAVE_SETLOCALE)
 else()
-	set(DISABLE_DEPS ON CACHE BOOL "PS Vita cannot build with dependencies" FORCE)
+	set(DISABLE_DEPS ON CACHE BOOL "This platform cannot build with dependencies" FORCE)
 	set(DISABLE_FRONTENDS ON)
+	set(MINIMAL_CORE ON)
 endif()
 
 if(HAVE_STRDUP)
@@ -414,19 +415,23 @@ set(CORE_SRC
 	${ARM_SRC}
 	${GBA_SRC}
 	${GBA_CHEATS_SRC}
-	${GBA_RR_SRC}
 	${GBA_SV_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
-	${SIO_SRC}
 	${UTIL_SRC}
 	${VFS_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 
-set(SRC
-	${CORE_SRC}
-	${FEATURE_SRC})
+if(NOT MINIMAL_CORE)
+	set(SRC
+		${CORE_SRC}
+		${GBA_RR_SRC}
+		${SIO_SRC}
+		${FEATURE_SRC})
+else()
+	set(SRC ${CORE_SRC})
+endif()
 
 if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
 	set(BUILD_SHARED ON)
@@ -478,7 +483,7 @@ endif()
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5")
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 endif()
 
