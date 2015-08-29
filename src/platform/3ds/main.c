@@ -94,7 +94,7 @@ int main() {
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = anonymousMemoryMap(256 * VIDEO_VERTICAL_PIXELS * 2);
 	renderer.outputBufferStride = 256;
-	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
+	context.renderer = &renderer.d;
 
 	if (!font) {
 		goto cleanup;

@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 		GBAVideoSoftwareRendererCreate(&renderer);
 		renderer.outputBuffer = malloc(256 * 256 * 4);
 		renderer.outputBufferStride = 256;
-		GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
+		context->renderer = &renderer.d;
 	}
 
 	GBAContextStart(&context);

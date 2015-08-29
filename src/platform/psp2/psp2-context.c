@@ -103,7 +103,7 @@ void GBAPSP2Setup() {
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
 	renderer.outputBufferStride = 256;
-	GBAVideoAssociateRenderer(&context.gba->video, &renderer.d);
+	context.renderer = &renderer.d;
 	printf("%s starting", projectName);
 }
 
