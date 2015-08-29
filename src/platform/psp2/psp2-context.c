@@ -23,6 +23,7 @@
 #include <psp2/display.h>
 #include <psp2/gxm.h>
 #include <psp2/kernel/sysmem.h>
+#include <psp2/motion.h>
 
 #include <vita2d.h>
 
@@ -30,6 +31,10 @@ static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static vita2d_texture* tex;
 static Thread audioThread;
+static struct GBASceRotationSource {
+	struct GBARotationSource d;
+	struct SceMotionSensorState state;
+} rotation;
 
 static bool fullscreen = false;
 
@@ -74,6 +79,26 @@ static THREAD_ENTRY _audioThread(void* context) {
 	return 0;
 }
 
+static void _sampleRotation(struct GBARotationSource* source) {
+	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	sceMotionGetSensorState(&rotation->state, 1);
+}
+
+static int32_t _readTiltX(struct GBARotationSource* source) {
+	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	return rotation->state.accelerometer.x * 0x60000000;
+}
+
+static int32_t _readTiltY(struct GBARotationSource* source) {
+	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	return rotation->state.accelerometer.y * 0x60000000;
+}
+
+static int32_t _readGyroZ(struct GBARotationSource* source) {
+	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	return rotation->state.gyro.z * 0x10000000;
+}
+
 void GBAPSP2Setup() {
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
@@ -104,6 +129,13 @@ void GBAPSP2Setup() {
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
 	renderer.outputBufferStride = 256;
 	context.renderer = &renderer.d;
+
+	rotation.d.sample = _sampleRotation;
+	rotation.d.readTiltX = _readTiltX;
+	rotation.d.readTiltY = _readTiltY;
+	rotation.d.readGyroZ = _readGyroZ;
+	context.gba->rotationSource = &rotation.d;
+
 	printf("%s starting", projectName);
 }
 
@@ -120,6 +152,10 @@ bool GBAPSP2LoadROM(const char* path) {
 	double ratio = GBAAudioCalculateRatio(1, 60, 1);
 	blip_set_rates(context.gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+
+	if (context.gba->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+		sceMotionStartSampling();
+	}
 
 	CircleBufferInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
 	MutexInit(&audioContext.mutex);
@@ -194,6 +230,10 @@ void GBAPSP2Runloop(void) {
 }
 
 void GBAPSP2UnloadROM(void) {
+	if (context.gba->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+		sceMotionStopSampling();
+	}
+
 	GBAContextStop(&context);
 }
 
