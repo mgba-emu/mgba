@@ -7,6 +7,7 @@
 #include "util/gui/font-metrics.h"
 #include "font.h"
 
+#include <malloc.h>
 #include <ogc/tpl.h>
 
 #define GLYPH_HEIGHT 12
