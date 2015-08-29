@@ -382,6 +382,20 @@ static int _pollInput(void) {
 	WPAD_Probe(0, &ext);
 
 	int keys = 0;
+	int x = PAD_StickX(0);
+	int y = PAD_StickY(0);
+	if (x < -0x40) {
+		keys |= 1 << GUI_INPUT_LEFT;
+	}
+	if (x > 0x40) {
+		keys |= 1 << GUI_INPUT_RIGHT;
+	}
+	if (y < -0x40) {
+		keys |= 1 << GUI_INPUT_DOWN;
+	}
+	if (y > 0x40) {
+		keys |= 1 << GUI_INPUT_UP;
+	}
 	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
 		keys |= 1 << GUI_INPUT_SELECT;
