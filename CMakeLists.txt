@@ -29,6 +29,7 @@ file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
+file(GLOB GBA_CTX_SRC ${CMAKE_SOURCE_DIR}/src/gba/context/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
 file(GLOB GUI_SRC ${CMAKE_SOURCE_DIR}/src/util/gui/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
@@ -38,7 +39,7 @@ list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 set(VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
-source_group("GBA supervisor" FILES ${GBA_CHEATS_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_CTX_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -415,7 +416,7 @@ set(CORE_SRC
 	${ARM_SRC}
 	${GBA_SRC}
 	${GBA_CHEATS_SRC}
-	${GBA_SV_SRC}
+	${GBA_CTX_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
 	${UTIL_SRC}
@@ -427,6 +428,7 @@ if(NOT MINIMAL_CORE)
 	set(SRC
 		${CORE_SRC}
 		${GBA_RR_SRC}
+		${GBA_SV_SRC}
 		${SIO_SRC}
 		${FEATURE_SRC})
 else()

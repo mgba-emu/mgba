@@ -8,7 +8,7 @@
 #include "gba/bios.h"
 #include "gba/cheats.h"
 #include "gba/io.h"
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 #include "gba/supervisor/thread.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
@@ -863,6 +863,12 @@ void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mo
 		GBAPatch16(gba->cpu, address, opcode, 0);
 	}
 }
+
+#if (!defined(USE_PTHREADS) && !defined(_WIN32)) || defined(DISABLE_THREADING)
+struct GBAThread* GBAThreadGetContext(void) {
+	return 0;
+}
+#endif
 
 static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d, address, mode, opcode);

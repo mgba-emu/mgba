@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "gba/renderers/video-software.h"
-#include "gba/supervisor/context.h"
+#include "gba/context/context.h"
 #include "gba/video.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
@@ -121,6 +121,12 @@ int main() {
 		if (!GBAContextStart(&context)) {
 			continue;
 		}
+
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+		blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
+		blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
+#endif
+
 		while (aptMainLoop()) {
 			hidScanInput();
 			int activeKeys = hidKeysHeld() & 0x3FF;
@@ -130,6 +136,10 @@ int main() {
 			GBAContextFrame(&context, activeKeys);
 			GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
 			GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+			blip_clear(context.gba->audio.left);
+			blip_clear(context.gba->audio.left);
+#endif
 			gspWaitForPPF();
 			_drawStart();
 			sf2d_draw_texture_scale(tex, 40, 296, 1, -1);

@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video.h"
 
+#include "gba/context/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/rr/rr.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/rr.h"
-#include "gba/supervisor/sync.h"
 
 #include "util/memory.h"
 

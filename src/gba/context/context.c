@@ -3,9 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba/supervisor/context.h"
+#include "gba/context/context.h"
 
-#include "gba/supervisor/overrides.h"
+#include "gba/context/overrides.h"
 
 #include "util/memory.h"
 #include "util/vfs.h"

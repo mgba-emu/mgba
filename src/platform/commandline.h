@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 
 enum DebuggerType {
 	DEBUGGER_NONE = 0,

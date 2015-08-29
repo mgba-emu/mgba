@@ -9,7 +9,7 @@
 
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/context.h"
+#include "gba/context/context.h"
 #include "util/circle-buffer.h"
 #include "util/vfs.h"
 

@@ -14,7 +14,7 @@
 #include <functional>
 
 extern "C" {
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 #include "util/configuration.h"
 #include "platform/commandline.h"
 }

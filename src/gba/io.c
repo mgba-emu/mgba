@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "io.h"
 
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
 #include "gba/video.h"

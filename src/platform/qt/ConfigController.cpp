@@ -12,7 +12,7 @@
 #include <QMenu>
 
 extern "C" {
-#include "gba/supervisor/overrides.h"
+#include "gba/context/overrides.h"
 #include "platform/commandline.h"
 }
 

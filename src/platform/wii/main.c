@@ -13,7 +13,7 @@
 #include "util/common.h"
 
 #include "gba/renderers/video-software.h"
-#include "gba/supervisor/context.h"
+#include "gba/context/context.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"

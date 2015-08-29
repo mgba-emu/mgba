@@ -10,8 +10,8 @@
 
 #include "gba/gba.h"
 #include "gba/input.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/supervisor/sync.h"
+#include "gba/context/overrides.h"
+#include "gba/context/sync.h"
 
 #include "util/threading.h"
 

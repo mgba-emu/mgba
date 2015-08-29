@@ -14,7 +14,7 @@
 #endif
 
 #include "gba/gba.h"
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
 #include "platform/commandline.h"

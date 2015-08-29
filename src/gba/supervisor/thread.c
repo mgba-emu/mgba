@@ -9,7 +9,7 @@
 #include "gba/gba.h"
 #include "gba/cheats.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 #include "gba/rr/mgm.h"
 #include "gba/rr/vbm.h"
 
@@ -751,10 +751,6 @@ struct GBAThread* GBAThreadGetContext(void) {
 struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
-}
-#else
-struct GBAThread* GBAThreadGetContext(void) {
-	return 0;
 }
 #endif
 

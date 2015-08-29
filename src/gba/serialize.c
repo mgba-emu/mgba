@@ -7,7 +7,7 @@
 
 #include "gba/audio.h"
 #include "gba/io.h"
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
 
