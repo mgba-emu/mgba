@@ -11,7 +11,6 @@
 #include "util/vector.h"
 
 struct GUIFont;
-DECLARE_VECTOR(FileList, char*);
 
 enum GUIInput {
 	GUI_INPUT_NONE = -1,

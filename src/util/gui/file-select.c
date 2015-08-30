@@ -6,22 +6,21 @@
 #include "file-select.h"
 
 #include "util/gui/font.h"
+#include "util/gui/menu.h"
 #include "util/vfs.h"
 
 #include <stdlib.h>
 
-DEFINE_VECTOR(FileList, char*);
-
 #define ITERATION_SIZE 5
 #define SCANNING_THRESHOLD 15
 
-static void _cleanFiles(struct FileList* currentFiles) {
-	size_t size = FileListSize(currentFiles);
+static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
+	size_t size = GUIMenuItemListSize(currentFiles);
 	size_t i;
 	for (i = 1; i < size; ++i) {
-		free(*FileListGetPointer(currentFiles, i));
+		free(GUIMenuItemListGetPointer(currentFiles, i)->title);
 	}
-	FileListClear(currentFiles);
+	GUIMenuItemListClear(currentFiles);
 }
 
 static void _upDirectory(char* currentPath) {
@@ -41,17 +40,17 @@ static void _upDirectory(char* currentPath) {
 }
 
 static int _strpcmp(const void* a, const void* b) {
-	return strcmp(*(const char**) a, *(const char**) b);
+	return strcmp(((const struct GUIMenuItem*) a)->title, ((const struct GUIMenuItem*) b)->title);
 }
 
-static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
+static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct GUIMenuItemList* currentFiles, bool (*filter)(struct VFile*)) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);
 	if (!dir) {
 		return false;
 	}
-	*FileListAppend(currentFiles) = "(Up)";
+	*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = "(Up)" };
 	size_t i = 0;
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
@@ -64,7 +63,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			}
 			params->drawStart();
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning)");
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %z)", i);
 			params->drawEnd();
 		}
 		const char* name = de->name(de);
@@ -77,70 +76,38 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				continue;
 			}
 			if (!filter || filter(vf)) {
-				*FileListAppend(currentFiles) = strdup(name);
+				*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = strdup(name) };
 			}
 			vf->close(vf);
 		} else {
-			*FileListAppend(currentFiles) = strdup(name);
+			*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = strdup(name) };
 		}
 	}
 	dir->close(dir);
-	qsort(FileListGetPointer(currentFiles, 1), FileListSize(currentFiles) - 1, sizeof(char*), _strpcmp);
+	qsort(GUIMenuItemListGetPointer(currentFiles, 1), GUIMenuItemListSize(currentFiles) - 1, sizeof(struct GUIMenuItem), _strpcmp);
+
 	return true;
 }
 
 bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool (*filter)(struct VFile*)) {
-	size_t start = 0;
-	size_t pageSize = params->height / GUIFontHeight(params->font);
-	if (pageSize > 4) {
-		pageSize -= 4;
-	} else {
-		pageSize = 1;
-	}
-
-	GUIInvalidateKeys(params);
-	struct FileList currentFiles;
-	FileListInit(&currentFiles, 0);
-	_refreshDirectory(params, params->currentPath, &currentFiles, filter);
+	struct GUIMenu menu = {
+		.title = params->currentPath,
+		.index = params->fileIndex,
+	};
+	GUIMenuItemListInit(&menu.items, 0);
+	_refreshDirectory(params, params->currentPath, &menu.items, filter);
 
 	while (true) {
-		int newInput = 0;
-		GUIPollInput(params, &newInput, 0);
-
-		if (newInput & (1 << GUI_INPUT_UP) && params->fileIndex > 0) {
-			--params->fileIndex;
-		}
-		if (newInput & (1 << GUI_INPUT_DOWN) && params->fileIndex < FileListSize(&currentFiles) - 1) {
-			++params->fileIndex;
-		}
-		if (newInput & (1 << GUI_INPUT_LEFT)) {
-			if (params->fileIndex >= pageSize) {
-				params->fileIndex -= pageSize;
-			} else {
-				params->fileIndex = 0;
-			}
-		}
-		if (newInput & (1 << GUI_INPUT_RIGHT)) {
-			if (params->fileIndex + pageSize < FileListSize(&currentFiles)) {
-				params->fileIndex += pageSize;
-			} else {
-				params->fileIndex = FileListSize(&currentFiles) - 1;
-			}
-		}
-
-		if (params->fileIndex < start) {
-			start = params->fileIndex;
-		}
-		while ((params->fileIndex - start + 4) * GUIFontHeight(params->font) > params->height) {
-			++start;
-		}
-		if (newInput & (1 << GUI_INPUT_CANCEL)) {
+		struct GUIMenuItem item;
+		enum GUIMenuExitReason reason = GUIShowMenu(params, &menu, &item);
+		params->fileIndex = menu.index;
+		if (reason == GUI_MENU_EXIT_CANCEL) {
 			break;
 		}
-		if (newInput & (1 << GUI_INPUT_SELECT)) {
+		if (reason == GUI_MENU_EXIT_ACCEPT) {
 			if (params->fileIndex == 0) {
 				_upDirectory(params->currentPath);
-				if (!_refreshDirectory(params, params->currentPath, &currentFiles, filter)) {
+				if (!_refreshDirectory(params, params->currentPath, &menu.items, filter)) {
 					break;
 				}
 			} else {
@@ -149,69 +116,47 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				if (params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
-				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, *FileListGetPointer(&currentFiles, params->fileIndex));
+				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item.title);
 
-				struct FileList newFiles;
-				FileListInit(&newFiles, 0);
+				struct GUIMenuItemList newFiles;
+				GUIMenuItemListInit(&newFiles, 0);
 				if (!_refreshDirectory(params, outPath, &newFiles, filter)) {
 					_cleanFiles(&newFiles);
-					FileListDeinit(&newFiles);
+					GUIMenuItemListDeinit(&newFiles);
 					struct VFile* vf = VFileOpen(outPath, O_RDONLY);
 					if (!vf) {
 						continue;
 					}
 					if (!filter || filter(vf)) {
 						vf->close(vf);
-						_cleanFiles(&currentFiles);
-						FileListDeinit(&currentFiles);
+						_cleanFiles(&menu.items);
+						GUIMenuItemListDeinit(&menu.items);
 						return true;
 					}
 					vf->close(vf);
 					break;
 				} else {
-					_cleanFiles(&currentFiles);
-					FileListDeinit(&currentFiles);
-					currentFiles = newFiles;
+					_cleanFiles(&menu.items);
+					GUIMenuItemListDeinit(&menu.items);
+					menu.items = newFiles;
 					strncpy(params->currentPath, outPath, PATH_MAX);
 				}
 			}
 			params->fileIndex = 0;
 		}
-		if (newInput & (1 << GUI_INPUT_BACK)) {
+		if (reason == GUI_MENU_EXIT_BACK) {
 			if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0) {
 				break;
 			}
 			_upDirectory(params->currentPath);
-			if (!_refreshDirectory(params, params->currentPath, &currentFiles, filter)) {
+			if (!_refreshDirectory(params, params->currentPath, &menu.items, filter)) {
 				break;
 			}
 			params->fileIndex = 0;
 		}
-
-		params->drawStart();
-		unsigned y = GUIFontHeight(params->font);
-		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", params->currentPath);
-		y += 2 * GUIFontHeight(params->font);
-		size_t i;
-		for (i = start; i < FileListSize(&currentFiles); ++i) {
-			int color = 0xE0A0A0A0;
-			char bullet = ' ';
-			if (i == params->fileIndex) {
-				color = 0xFFFFFFFF;
-				bullet = '>';
-			}
-			GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, color, "%c %s", bullet, *FileListGetPointer(&currentFiles, i));
-			y += GUIFontHeight(params->font);
-			if (y + GUIFontHeight(params->font) > params->height) {
-				break;
-			}
-		}
-		y += GUIFontHeight(params->font) * 2;
-
-		params->drawEnd();
 	}
 
-	_cleanFiles(&currentFiles);
-	FileListDeinit(&currentFiles);
+	_cleanFiles(&menu.items);
+	GUIMenuItemListDeinit(&menu.items);
 	return false;
 }
