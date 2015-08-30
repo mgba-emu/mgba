@@ -354,6 +354,9 @@ bool GBAWiiLoadGame(const char* path) {
 	_drawStart();
 	GUIFontPrintf(font, 176, 120, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
 	_drawEnd();
+	_drawStart();
+	GUIFontPrintf(font, 176, 120, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
+	_drawEnd();
 
 	return GBAContextLoadROM(&context, path, true);
 }
@@ -361,6 +364,9 @@ bool GBAWiiLoadGame(const char* path) {
 void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
 	UNUSED(thread);
 	UNUSED(level);
+	if (!logfile) {
+		return;
+	}
 	vfprintf(logfile, format, args);
 	fprintf(logfile, "\n");
 	fflush(logfile);
