@@ -15,7 +15,7 @@ DECLARE_VECTOR(FileList, char*);
 DEFINE_VECTOR(FileList, char*);
 
 #define ITERATION_SIZE 5
-#define SCANNING_THRESHOLD 20
+#define SCANNING_THRESHOLD 15
 
 static void _cleanFiles(struct FileList* currentFiles) {
 	size_t size = FileListSize(currentFiles);
@@ -58,7 +58,11 @@ static bool _refreshDirectory(const struct GUIParams* params, const char* curren
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
 		++i;
-		if (i == SCANNING_THRESHOLD) {
+		if (i % SCANNING_THRESHOLD == SCANNING_THRESHOLD - 1) {
+			int input = params->pollInput();
+			if (input & (1 << GUI_INPUT_CANCEL)) {
+				return false;
+			}
 			params->drawStart();
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning)");
@@ -147,14 +151,14 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 			++start;
 		}
 		if (newInput & (1 << GUI_INPUT_CANCEL)) {
-			_cleanFiles(&currentFiles);
-			FileListDeinit(&currentFiles);
-			return false;
+			break;
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
 			if (fileIndex == 0) {
 				_upDirectory(currentPath);
-				_refreshDirectory(params, currentPath, &currentFiles, filter);
+				if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+					break;
+				}
 			} else {
 				size_t len = strlen(currentPath);
 				const char* sep = PATH_SEP;
@@ -163,7 +167,19 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 				}
 				snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
 				if (!_refreshDirectory(params, outPath, &currentFiles, filter)) {
-					return true;
+					struct VFile* vf = VFileOpen(currentPath, O_RDONLY);
+					if (!vf) {
+						break;
+					}
+					if (!filter || filter(vf)) {
+						vf->close(vf);
+						return true;
+					}
+					vf->close(vf);
+					_upDirectory(currentPath);
+					if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+						break;
+					}
 				}
 				strncpy(currentPath, outPath, outLen);
 			}
@@ -171,12 +187,12 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
 			if (strncmp(currentPath, basePath, outLen) == 0) {
-				_cleanFiles(&currentFiles);
-				FileListDeinit(&currentFiles);
-				return false;
+				break;
 			}
 			_upDirectory(currentPath);
-			_refreshDirectory(params, currentPath, &currentFiles, filter);
+			if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+				break;
+			}
 			fileIndex = 0;
 		}
 
@@ -202,4 +218,8 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 
 		params->drawEnd();
 	}
+
+	_cleanFiles(&currentFiles);
+	FileListDeinit(&currentFiles);
+	return false;
 }
