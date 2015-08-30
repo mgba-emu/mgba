@@ -242,7 +242,7 @@ void GBAPSP2Runloop(void) {
 
 		vita2d_start_drawing();
 		vita2d_clear_screen();
-		GBAPSP2Draw();
+		GBAPSP2Draw(0xFF);
 		vita2d_end_drawing();
 		vita2d_swap_buffers();
 	}
@@ -263,16 +263,16 @@ void GBAPSP2Teardown(void) {
 	vita2d_free_texture(backdrop);
 }
 
-void GBAPSP2Draw(void) {
+void GBAPSP2Draw(uint8_t alpha) {
 	switch (screenMode) {
 	case SM_BACKDROP:
-		vita2d_draw_texture(backdrop, 0, 0);
+		vita2d_draw_texture_tint(backdrop, 0, 0, (alpha << 24) | 0xFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_part_scale(tex, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f);
+		vita2d_draw_texture_tint_part_scale(tex, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f, (alpha << 24) | 0xFFFFFF);
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f);
+		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (alpha << 24) | 0xFFFFFF);
 		break;
 	}
 }

@@ -15,6 +15,6 @@ bool GBAPSP2LoadROM(const char* path);
 void GBAPSP2Runloop(void);
 void GBAPSP2UnloadROM(void);
 
-void GBAPSP2Draw(void);
+void GBAPSP2Draw(uint8_t alpha);
 
 #endif

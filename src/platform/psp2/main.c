@@ -12,6 +12,7 @@
 
 #include <psp2/ctrl.h>
 #include <psp2/kernel/processmgr.h>
+#include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
 
 #include <vita2d.h>
@@ -65,11 +66,14 @@ int main() {
 	GBAPSP2Setup();
 	struct GUIParams params = {
 		PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-		font, "cache0:", _drawStart, _drawEnd, _pollInput
+		font, "cache0:", _drawStart, _drawEnd, _pollInput,
+
+		GUI_PARAMS_TRAIL
 	};
 	GUIInit(&params);
 
 	while (true) {
+		bool running = true;
 		char path[256];
 		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM)) {
 			break;
@@ -77,7 +81,27 @@ int main() {
 		if (!GBAPSP2LoadROM(path)) {
 			continue;
 		}
-		GBAPSP2Runloop();
+		while (running) {
+			GBAPSP2Runloop();
+			GUIInvalidateKeys(&params);
+			while (true) {
+				int keys = 0;
+				_drawStart();
+				GBAPSP2Draw(0x80);
+				_drawEnd();
+				GUIPollInput(&params, &keys, 0);
+				if (keys & (1 << GUI_INPUT_CANCEL)) {
+					running = false;
+					break;
+				}
+				if (keys & (1 << GUI_INPUT_SELECT)) {
+					while (keys & (1 << GUI_INPUT_SELECT)) {
+						GUIPollInput(&params, 0, &keys);
+					}
+					break;
+				}
+			}
+		}
 		GBAPSP2UnloadROM();
 	}
 
