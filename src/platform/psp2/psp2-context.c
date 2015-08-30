@@ -24,6 +24,7 @@
 #include <psp2/gxm.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/motion.h>
+#include <psp2/power.h>
 
 #include <vita2d.h>
 
@@ -103,6 +104,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source) {
 }
 
 void GBAPSP2Setup() {
+	scePowerSetArmClockFrequency(80);
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
@@ -143,6 +145,7 @@ void GBAPSP2Setup() {
 }
 
 bool GBAPSP2LoadROM(const char* path) {
+	scePowerSetArmClockFrequency(444);
 	if (!GBAContextLoadROM(&context, path, true)) {
 		printf("%s failed to load!", path);
 		return false;
@@ -238,6 +241,7 @@ void GBAPSP2UnloadROM(void) {
 	}
 
 	GBAContextStop(&context);
+	scePowerSetArmClockFrequency(80);
 }
 
 void GBAPSP2Teardown(void) {
