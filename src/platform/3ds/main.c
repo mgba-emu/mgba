@@ -185,7 +185,8 @@ int main() {
 
 		while (aptMainLoop()) {
 			hidScanInput();
-			int activeKeys = hidKeysHeld() & 0x3FF;
+			uint32_t activeKeys = hidKeysHeld() & 0xF00003FF;
+			activeKeys |= activeKeys >> 24;
 			if (hidKeysDown() & KEY_X) {
 				break;
 			}
