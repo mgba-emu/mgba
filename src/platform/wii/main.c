@@ -14,6 +14,7 @@
 
 #include "gba/renderers/video-software.h"
 #include "gba/context/context.h"
+#include "gba/context/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -22,10 +23,7 @@
 #define SAMPLES 1024
 
 static void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
-static void GBAWiiFrame(void);
-static bool GBAWiiLoadGame(const char* path);
 
-static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
 static void _sampleRotation(struct GBARotationSource* source);
@@ -36,10 +34,16 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 static void _drawStart(void);
 static void _drawEnd(void);
 static int _pollInput(void);
+static void _guiPrepare(void);
 
-static struct GBAContext context;
+static void _setup(struct GBAGUIRunner* runner);
+static void _gameLoaded(struct GBAGUIRunner* runner);
+static void _gameUnloaded(struct GBAGUIRunner* runner);
+static void _prepareForFrame(struct GBAGUIRunner* runner);
+static void _drawFrame(struct GBAGUIRunner* runner, bool faded);
+static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
+
 static struct GBAVideoSoftwareRenderer renderer;
-static struct GBAAVStream stream;
 static struct GBARumble rumble;
 static struct GBARotationSource rotation;
 static FILE* logfile;
@@ -109,9 +113,11 @@ int main() {
 	GX_ClearVtxDesc();
 	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XY, GX_S16, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
@@ -121,8 +127,6 @@ int main() {
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	GX_InvVtxCache();
 	GX_InvalidateTexAll();
-
-	Mtx44 proj;
 
 	guVector cam = { 0.0f, 0.0f, 0.0f };
 	guVector up = { 0.0f, 1.0f, 0.0f };
@@ -144,10 +148,6 @@ int main() {
 
 	logfile = fopen("/mgba.log", "w");
 
-	stream.postAudioFrame = 0;
-	stream.postAudioBuffer = 0;
-	stream.postVideoFrame = _postVideoFrame;
-
 	rumble.setRumble = _setRumble;
 
 	rotation.sample = _sampleRotation;
@@ -155,210 +155,34 @@ int main() {
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
 
-	GBAContextInit(&context, 0);
-	struct GBAOptions opts = {
-		.useBios = true,
-		.logLevel = 0,
-		.idleOptimization = IDLE_LOOP_DETECT
+	struct GBAGUIRunner runner = {
+		.params = {
+			352, 230,
+			font, "/",
+			_drawStart, _drawEnd, _pollInput,
+			_guiPrepare, 0,
+
+			GUI_PARAMS_TRAIL
+		},
+		.setup = _setup,
+		.teardown = 0,
+		.gameLoaded = _gameLoaded,
+		.gameUnloaded = _gameUnloaded,
+		.prepareForFrame = _prepareForFrame,
+		.drawFrame = _drawFrame,
+		.pollGameInput = _pollGameInput
 	};
-	GBAConfigLoadDefaults(&context.config, &opts);
-	context.gba->logHandler = GBAWiiLog;
-	context.gba->stream = &stream;
-	context.gba->rumble = &rumble;
-	context.gba->rotationSource = &rotation;
-
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
-	renderer.outputBufferStride = 256;
-	context.renderer = &renderer.d;
-
-	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
-
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
-	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
-#endif
-
-	struct GUIParams params = {
-		352, 230,
-		font, "/", _drawStart, _drawEnd, _pollInput,
-
-		GUI_PARAMS_TRAIL
-	};
-	GUIInit(&params);
-
-	while (true) {
-		char path[256];
-		guOrtho(proj, -20, 240, 0, 352, 0, 300);
-		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
-		GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
-
-		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM) || !GBAWiiLoadGame(path)) {
-			break;
-		}
-		WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
-		GBAContextStart(&context);
-		if (context.gba->memory.hw.devices & HW_GYRO) {
-			int i;
-			for (i = 0; i < 6; ++i) {
-				u32 result = WPAD_SetMotionPlus(0, 1);
-				if (result == WPAD_ERR_NONE) {
-					break;
-				}
-				sleep(1);
-			}
-		}
-
-		guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
-		GX_SetVtxDesc(GX_VA_CLR0, GX_NONE);
-
-		while (true) {
-	#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-			int available = blip_samples_avail(context.gba->audio.left);
-			if (available + audioBufferSize > SAMPLES) {
-				available = SAMPLES - audioBufferSize;
-			}
-			available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
-			if (available > 0) {
-				blip_read_samples(context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
-				blip_read_samples(context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
-				audioBufferSize += available;
-			}
-			if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
-				_audioDMA();
-				AUDIO_StartDMA();
-			}
-	#endif
-			PAD_ScanPads();
-			u16 padkeys = PAD_ButtonsHeld(0);
-			WPAD_ScanPads();
-			u32 wiiPad = WPAD_ButtonsHeld(0);
-			u32 ext = 0;
-			uint16_t keys = 0;
-			WPAD_Probe(0, &ext);
-
-			if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
-				keys |= 1 << GBA_KEY_A;
-			}
-			if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
-				keys |= 1 << GBA_KEY_B;
-			}
-			if ((padkeys & PAD_TRIGGER_L) || (wiiPad & WPAD_BUTTON_B) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_L))) {
-				keys |= 1 << GBA_KEY_L;
-			}
-			if ((padkeys & PAD_TRIGGER_R) || (wiiPad & WPAD_BUTTON_A) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_R))) {
-				keys |= 1 << GBA_KEY_R;
-			}
-			if ((padkeys & PAD_BUTTON_START) || (wiiPad & WPAD_BUTTON_PLUS) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_PLUS))) {
-				keys |= 1 << GBA_KEY_START;
-			}
-			if ((padkeys & (PAD_BUTTON_X | PAD_BUTTON_Y)) || (wiiPad & WPAD_BUTTON_MINUS) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_MINUS))) {
-				keys |= 1 << GBA_KEY_SELECT;
-			}
-			if ((padkeys & PAD_BUTTON_LEFT) || (wiiPad & WPAD_BUTTON_UP) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_LEFT))) {
-				keys |= 1 << GBA_KEY_LEFT;
-			}
-			if ((padkeys & PAD_BUTTON_RIGHT) || (wiiPad & WPAD_BUTTON_DOWN) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_RIGHT))) {
-				keys |= 1 << GBA_KEY_RIGHT;
-			}
-			if ((padkeys & PAD_BUTTON_UP) || (wiiPad & WPAD_BUTTON_RIGHT) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_UP))) {
-				keys |= 1 << GBA_KEY_UP;
-			}
-			if ((padkeys & PAD_BUTTON_DOWN) || (wiiPad & WPAD_BUTTON_LEFT) ||
-			    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_DOWN))) {
-				keys |= 1 << GBA_KEY_DOWN;
-			}
-			int x = PAD_StickX(0);
-			int y = PAD_StickY(0);
-			if (x < -0x40) {
-				keys |= 1 << GBA_KEY_LEFT;
-			}
-			if (x > 0x40) {
-				keys |= 1 << GBA_KEY_RIGHT;
-			}
-			if (y < -0x40) {
-				keys |= 1 << GBA_KEY_DOWN;
-			}
-			if (y > 0x40) {
-				keys |= 1 << GBA_KEY_UP;
-			}
-			if ((padkeys & PAD_TRIGGER_Z) || (wiiPad & WPAD_BUTTON_HOME) || (wiiPad & WPAD_CLASSIC_BUTTON_HOME)) {
-				break;
-			}
-			GBAContextFrame(&context, keys);
-		}
-		AUDIO_StopDMA();
-		GBAContextStop(&context);
-	}
+	GBAGUIInit(&runner, 0);
+	GBAGUIRunloop(&runner);
+	GBAGUIDeinit(&runner);
 
 	fclose(logfile);
 	free(fifo);
-
-	GBAContextDeinit(&context);
 
 	free(renderer.outputBuffer);
 	GUIFontDestroy(font);
 
 	return 0;
-}
-
-static void GBAWiiFrame(void) {
-	size_t x, y;
-	uint64_t* texdest = (uint64_t*) texmem;
-	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; y += 4) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS >> 2; ++x) {
-			texdest[0 + x * 4 + y * 64] = texsrc[0   + x + y * 64];
-			texdest[1 + x * 4 + y * 64] = texsrc[64  + x + y * 64];
-			texdest[2 + x * 4 + y * 64] = texsrc[128 + x + y * 64];
-			texdest[3 + x * 4 + y * 64] = texsrc[192 + x + y * 64];
-		}
-	}
-	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
-
-	_drawStart();
-
-	GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_SET);
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
-	GX_InvalidateTexAll();
-	GX_LoadTexObj(&tex, GX_TEXMAP0);
-
-	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(0, 256);
-	GX_TexCoord2s16(0, 1);
-
-	GX_Position2s16(256, 256);
-	GX_TexCoord2s16(1, 1);
-
-	GX_Position2s16(256, 0);
-	GX_TexCoord2s16(1, 0);
-
-	GX_Position2s16(0, 0);
-	GX_TexCoord2s16(0, 0);
-	GX_End();
-
-	_drawEnd();
-}
-
-bool GBAWiiLoadGame(const char* path) {
-	_drawStart();
-	GUIFontPrintf(font, 176, 120, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
-	_drawEnd();
-	_drawStart();
-	GUIFontPrintf(font, 176, 120, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
-	_drawEnd();
-
-	return GBAContextLoadROM(&context, path, true);
 }
 
 void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
@@ -370,12 +194,6 @@ void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* for
 	vfprintf(logfile, format, args);
 	fprintf(logfile, "\n");
 	fflush(logfile);
-}
-
-static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
-	UNUSED(stream);
-	UNUSED(renderer);
-	GBAWiiFrame();
 }
 
 static void _audioDMA(void) {
@@ -457,6 +275,192 @@ static int _pollInput(void) {
 	if ((padkeys & PAD_BUTTON_DOWN) || (wiiPad & WPAD_BUTTON_LEFT) ||
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_DOWN))) {
 		keys |= 1 << GUI_INPUT_DOWN;
+	}
+	return keys;
+}
+
+void _guiPrepare(void) {
+	Mtx44 proj;
+	guOrtho(proj, -20, 240, 0, 352, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+}
+
+void _setup(struct GBAGUIRunner* runner) {
+	struct GBAOptions opts = {
+		.useBios = true,
+		.logLevel = 0,
+		.idleOptimization = IDLE_LOOP_DETECT
+	};
+	GBAConfigLoadDefaults(&runner->context.config, &opts);
+	runner->context.gba->logHandler = GBAWiiLog;
+	runner->context.gba->rumble = &rumble;
+	runner->context.gba->rotationSource = &rotation;
+
+	GBAVideoSoftwareRendererCreate(&renderer);
+	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
+	renderer.outputBufferStride = 256;
+	runner->context.renderer = &renderer.d;
+
+	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
+
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
+	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
+#endif
+}
+
+void _gameUnloaded(struct GBAGUIRunner* runner) {
+	UNUSED(runner);
+	AUDIO_StopDMA();
+}
+
+void _gameLoaded(struct GBAGUIRunner* runner) {
+	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
+	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
+		int i;
+		for (i = 0; i < 6; ++i) {
+			u32 result = WPAD_SetMotionPlus(0, 1);
+			if (result == WPAD_ERR_NONE) {
+				break;
+			}
+			sleep(1);
+		}
+	}
+
+	Mtx44 proj;
+	guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+}
+
+void _prepareForFrame(struct GBAGUIRunner* runner) {
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+	int available = blip_samples_avail(runner->context.gba->audio.left);
+	if (available + audioBufferSize > SAMPLES) {
+		available = SAMPLES - audioBufferSize;
+	}
+	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
+	if (available > 0) {
+		blip_read_samples(runner->context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+		blip_read_samples(runner->context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		audioBufferSize += available;
+	}
+	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
+		_audioDMA();
+		AUDIO_StartDMA();
+	}
+#endif
+}
+
+void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
+	uint32_t color = 0xFFFFFF3F;
+	if (!faded) {
+		color |= 0xC0;
+	}
+	size_t x, y;
+	uint64_t* texdest = (uint64_t*) texmem;
+	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
+	for (y = 0; y < VIDEO_VERTICAL_PIXELS; y += 4) {
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS >> 2; ++x) {
+			texdest[0 + x * 4 + y * 64] = texsrc[0   + x + y * 64];
+			texdest[1 + x * 4 + y * 64] = texsrc[64  + x + y * 64];
+			texdest[2 + x * 4 + y * 64] = texsrc[128 + x + y * 64];
+			texdest[3 + x * 4 + y * 64] = texsrc[192 + x + y * 64];
+		}
+	}
+	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
+
+	_drawStart();
+
+	GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_SET);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+	GX_InvalidateTexAll();
+	GX_LoadTexObj(&tex, GX_TEXMAP0);
+
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2s16(0, 256);
+	GX_Color1u32(color);
+	GX_TexCoord2s16(0, 1);
+
+	GX_Position2s16(256, 256);
+	GX_Color1u32(color);
+	GX_TexCoord2s16(1, 1);
+
+	GX_Position2s16(256, 0);
+	GX_Color1u32(color);
+	GX_TexCoord2s16(1, 0);
+
+	GX_Position2s16(0, 0);
+	GX_Color1u32(color);
+	GX_TexCoord2s16(0, 0);
+	GX_End();
+
+	_drawEnd();
+}
+
+uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
+	UNUSED(runner);
+	PAD_ScanPads();
+	u16 padkeys = PAD_ButtonsHeld(0);
+	WPAD_ScanPads();
+	u32 wiiPad = WPAD_ButtonsHeld(0);
+	u32 ext = 0;
+	uint16_t keys = 0;
+	WPAD_Probe(0, &ext);
+
+	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
+		keys |= 1 << GBA_KEY_A;
+	}
+	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
+		keys |= 1 << GBA_KEY_B;
+	}
+	if ((padkeys & PAD_TRIGGER_L) || (wiiPad & WPAD_BUTTON_B) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_L))) {
+		keys |= 1 << GBA_KEY_L;
+	}
+	if ((padkeys & PAD_TRIGGER_R) || (wiiPad & WPAD_BUTTON_A) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_R))) {
+		keys |= 1 << GBA_KEY_R;
+	}
+	if ((padkeys & PAD_BUTTON_START) || (wiiPad & WPAD_BUTTON_PLUS) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_PLUS))) {
+		keys |= 1 << GBA_KEY_START;
+	}
+	if ((padkeys & (PAD_BUTTON_X | PAD_BUTTON_Y)) || (wiiPad & WPAD_BUTTON_MINUS) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_MINUS))) {
+		keys |= 1 << GBA_KEY_SELECT;
+	}
+	if ((padkeys & PAD_BUTTON_LEFT) || (wiiPad & WPAD_BUTTON_UP) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_LEFT))) {
+		keys |= 1 << GBA_KEY_LEFT;
+	}
+	if ((padkeys & PAD_BUTTON_RIGHT) || (wiiPad & WPAD_BUTTON_DOWN) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_RIGHT))) {
+		keys |= 1 << GBA_KEY_RIGHT;
+	}
+	if ((padkeys & PAD_BUTTON_UP) || (wiiPad & WPAD_BUTTON_RIGHT) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_UP))) {
+		keys |= 1 << GBA_KEY_UP;
+	}
+	if ((padkeys & PAD_BUTTON_DOWN) || (wiiPad & WPAD_BUTTON_LEFT) ||
+	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_DOWN))) {
+		keys |= 1 << GBA_KEY_DOWN;
+	}
+	int x = PAD_StickX(0);
+	int y = PAD_StickY(0);
+	if (x < -0x40) {
+		keys |= 1 << GBA_KEY_LEFT;
+	}
+	if (x > 0x40) {
+		keys |= 1 << GBA_KEY_RIGHT;
+	}
+	if (y < -0x40) {
+		keys |= 1 << GBA_KEY_DOWN;
+	}
+	if (y > 0x40) {
+		keys |= 1 << GBA_KEY_UP;
 	}
 	return keys;
 }

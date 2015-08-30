@@ -148,7 +148,7 @@ int main() {
 
 	struct GUIParams params = {
 		320, 240,
-		font, "/", _drawStart, _drawEnd, _pollInput,
+		font, "/", _drawStart, _drawEnd, _pollInput, 0, 0,
 
 		GUI_PARAMS_TRAIL
 	};

@@ -66,7 +66,7 @@ int main() {
 	GBAPSP2Setup();
 	struct GUIParams params = {
 		PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-		font, "cache0:", _drawStart, _drawEnd, _pollInput,
+		font, "cache0:", _drawStart, _drawEnd, _pollInput, 0, 0,
 
 		GUI_PARAMS_TRAIL
 	};

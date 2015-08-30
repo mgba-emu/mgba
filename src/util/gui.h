@@ -35,6 +35,8 @@ struct GUIParams {
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
 	int (*pollInput)(void);
+	void (*guiPrepare)(void);
+	void (*guiFinish)(void);
 
 	// State
 	int inputHistory[GUI_INPUT_MAX];
@@ -44,7 +46,7 @@ struct GUIParams {
 	size_t fileIndex;
 };
 
-#define GUI_PARAMS_TRAIL {}, ""
+#define GUI_PARAMS_TRAIL {}, "", 0
 
 void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, int* newInput, int* heldInput);

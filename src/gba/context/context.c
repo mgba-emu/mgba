@@ -42,18 +42,6 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 }
 
 void GBAContextDeinit(struct GBAContext* context) {
-	if (context->bios) {
-		context->bios->close(context->bios);
-		context->bios = 0;
-	}
-	if (context->rom) {
-		context->rom->close(context->rom);
-		context->rom = 0;
-	}
-	if (context->save) {
-		context->save->close(context->save);
-		context->save = 0;
-	}
 	ARMDeinit(context->cpu);
 	GBADestroy(context->gba);
 	mappedMemoryFree(context->gba, 0);
@@ -77,6 +65,22 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 		context->save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
 	}
 	return true;
+}
+
+void GBAContextUnloadROM(struct GBAContext* context) {
+	GBAUnloadROM(context->gba);
+	if (context->bios) {
+		context->bios->close(context->bios);
+		context->bios = 0;
+	}
+	if (context->rom) {
+		context->rom->close(context->rom);
+		context->rom = 0;
+	}
+	if (context->save) {
+		context->save->close(context->save);
+		context->save = 0;
+	}
 }
 
 bool GBAContextLoadROMFromVFile(struct GBAContext* context, struct VFile* rom, struct VFile* save) {

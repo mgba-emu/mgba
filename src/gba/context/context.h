@@ -31,6 +31,7 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 bool GBAContextLoadROMFromVFile(struct GBAContext* context, struct VFile* rom, struct VFile* save);
 bool GBAContextLoadBIOS(struct GBAContext* context, const char* path);
 bool GBAContextLoadBIOSFromVFile(struct GBAContext* context, struct VFile* bios);
+void GBAContextUnloadROM(struct GBAContext* context);
 
 bool GBAContextStart(struct GBAContext* context);
 void GBAContextStop(struct GBAContext* context);
