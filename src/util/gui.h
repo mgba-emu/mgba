@@ -32,6 +32,11 @@ struct GUIParams {
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
 	int (*pollInput)(void);
+
+	// State
+	int inputHistory[GUI_INPUT_MAX];
 };
+
+void GUIPollInput(struct GUIParams* params, int* newInput, int* heldInput);
 
 #endif

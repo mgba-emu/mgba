@@ -46,7 +46,7 @@ static int _strpcmp(const void* a, const void* b) {
 	return strcmp(*(const char**) a, *(const char**) b);
 }
 
-static bool _refreshDirectory(const struct GUIParams* params, const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
+static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct FileList* currentFiles, bool (*filter)(struct VFile*)) {
 	_cleanFiles(currentFiles);
 
 	struct VDir* dir = VDirOpen(currentPath);
@@ -59,7 +59,8 @@ static bool _refreshDirectory(const struct GUIParams* params, const char* curren
 	while ((de = dir->listNext(dir))) {
 		++i;
 		if (i % SCANNING_THRESHOLD == SCANNING_THRESHOLD - 1) {
-			int input = params->pollInput();
+			int input = 0;
+			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
 				return false;
 			}
@@ -90,7 +91,7 @@ static bool _refreshDirectory(const struct GUIParams* params, const char* curren
 	return true;
 }
 
-bool selectFile(const struct GUIParams* params, const char* basePath, char* outPath, char* currentPath, size_t outLen, bool (*filter)(struct VFile*)) {
+bool selectFile(struct GUIParams* params, const char* basePath, char* outPath, char* currentPath, size_t outLen, bool (*filter)(struct VFile*)) {
 	if (!currentPath[0]) {
 		strncpy(currentPath, basePath, outLen);
 	}
@@ -107,21 +108,9 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 	FileListInit(&currentFiles, 0);
 	_refreshDirectory(params, currentPath, &currentFiles, filter);
 
-	int inputHistory[GUI_INPUT_MAX] = { 0 };
-
 	while (true) {
-		int input = params->pollInput();
 		int newInput = 0;
-		for (int i = 0; i < GUI_INPUT_MAX; ++i) {
-			if (input & (1 << i)) {
-				++inputHistory[i];
-			} else {
-				inputHistory[i] = -1;
-			}
-			if (!inputHistory[i] || (inputHistory[i] >= 30 && !(inputHistory[i] % 6))) {
-				newInput |= (1 << i);
-			}
-		}
+		GUIPollInput(params, &newInput, 0);
 
 		if (newInput & (1 << GUI_INPUT_UP) && fileIndex > 0) {
 			--fileIndex;
@@ -167,21 +156,24 @@ bool selectFile(const struct GUIParams* params, const char* basePath, char* outP
 				}
 				snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
 				if (!_refreshDirectory(params, outPath, &currentFiles, filter)) {
-					struct VFile* vf = VFileOpen(currentPath, O_RDONLY);
+					struct VFile* vf = VFileOpen(outPath, O_RDONLY);
 					if (!vf) {
-						break;
+						if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+							break;
+						}
+						continue;
 					}
 					if (!filter || filter(vf)) {
 						vf->close(vf);
+						_cleanFiles(&currentFiles);
+						FileListDeinit(&currentFiles);
 						return true;
 					}
 					vf->close(vf);
-					_upDirectory(currentPath);
-					if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
-						break;
-					}
+					break;
+				} else {
+					strncpy(currentPath, outPath, outLen);
 				}
-				strncpy(currentPath, outPath, outLen);
 			}
 			fileIndex = 0;
 		}

@@ -1,0 +1,27 @@
+/* Copyright (c) 2013-2015 Jeffrey Pfau
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "gui.h"
+
+void GUIPollInput(struct GUIParams* params, int* newInputOut, int* heldInput) {
+	int input = params->pollInput();
+	int newInput = 0;
+	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+		if (input & (1 << i)) {
+			++params->inputHistory[i];
+		} else {
+			params->inputHistory[i] = -1;
+		}
+		if (!params->inputHistory[i] || (params->inputHistory[i] >= 30 && !(params->inputHistory[i] % 6))) {
+			newInput |= (1 << i);
+		}
+	}
+	if (newInputOut) {
+		*newInputOut = newInput;
+	}
+	if (heldInput) {
+		*heldInput = input;
+	}
+}
