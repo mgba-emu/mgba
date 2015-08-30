@@ -35,6 +35,7 @@ static void _drawStart(void);
 static void _drawEnd(void);
 static int _pollInput(void);
 static void _guiPrepare(void);
+static void _guiFinish(void);
 
 static void _setup(struct GBAGUIRunner* runner);
 static void _gameLoaded(struct GBAGUIRunner* runner);
@@ -160,7 +161,7 @@ int main() {
 			352, 230,
 			font, "/",
 			_drawStart, _drawEnd, _pollInput,
-			_guiPrepare, 0,
+			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
 		},
@@ -285,6 +286,12 @@ void _guiPrepare(void) {
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
+void _guiFinish(void) {
+	Mtx44 proj;
+	guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+}
+
 void _setup(struct GBAGUIRunner* runner) {
 	struct GBAOptions opts = {
 		.useBios = true,
@@ -326,10 +333,6 @@ void _gameLoaded(struct GBAGUIRunner* runner) {
 			sleep(1);
 		}
 	}
-
-	Mtx44 proj;
-	guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
 void _prepareForFrame(struct GBAGUIRunner* runner) {
@@ -352,6 +355,7 @@ void _prepareForFrame(struct GBAGUIRunner* runner) {
 }
 
 void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
+	UNUSED(runner);
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
 		color |= 0xC0;
@@ -371,7 +375,11 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 
 	_drawStart();
 
-	GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_SET);
+	if (faded) {
+		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+	} else {
+		GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
+	}
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	GX_InvalidateTexAll();

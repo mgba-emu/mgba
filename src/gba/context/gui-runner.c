@@ -7,6 +7,12 @@
 
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
+#include "util/gui/menu.h"
+
+enum {
+	RUNNER_CONTINUE,
+	RUNNER_EXIT
+};
 
 void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
@@ -24,6 +30,14 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 }
 
 void GBAGUIRunloop(struct GBAGUIRunner* runner) {
+	struct GUIMenu pauseMenu = {
+		.title = "Game Paused",
+		.index = 0,
+	};
+	GUIMenuItemListInit(&pauseMenu.items, 0);
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = (void*) RUNNER_CONTINUE };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
+
 	while (true) {
 		if (runner->params.guiPrepare) {
 			runner->params.guiPrepare();
@@ -33,10 +47,8 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			if (runner->params.guiFinish) {
 				runner->params.guiFinish();
 			}
+			GUIMenuItemListDeinit(&pauseMenu.items);
 			return;
-		}
-		if (runner->params.guiFinish) {
-			runner->params.guiFinish();
 		}
 
 		// TODO: Message box API
@@ -55,22 +67,59 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				runner->params.drawEnd();
 			}
 		}
+		if (runner->params.guiFinish) {
+			runner->params.guiFinish();
+		}
 		GBAContextStart(&runner->context);
 		if (runner->gameLoaded) {
 			runner->gameLoaded(runner);
 		}
-		while (true) {
-			int guiKeys = runner->params.pollInput();
-			if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
-				break;
+		bool running = true;
+		while (running) {
+			while (true) {
+				int guiKeys = runner->params.pollInput();
+				if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
+					break;
+				}
+				uint16_t keys = runner->pollGameInput(runner);
+				if (runner->prepareForFrame) {
+					runner->prepareForFrame(runner);
+				}
+				GBAContextFrame(&runner->context, keys);
+				if (runner->drawFrame) {
+					runner->drawFrame(runner, false);
+				}
 			}
-			uint16_t keys = runner->pollGameInput(runner);
-			if (runner->prepareForFrame) {
-				runner->prepareForFrame(runner);
+
+			if (runner->params.guiPrepare) {
+				runner->params.guiPrepare();
 			}
-			GBAContextFrame(&runner->context, keys);
-			if (runner->drawFrame) {
-				runner->drawFrame(runner, false);
+			GUIInvalidateKeys(&runner->params);
+			while (true) {
+				struct GUIMenuItem item;
+				enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
+				if (reason == GUI_MENU_EXIT_ACCEPT) {
+					if (item.data == (void*) RUNNER_EXIT) {
+						running = false;
+						break;
+					}
+					if (item.data == (void*) RUNNER_CONTINUE) {
+						int keys = -1;
+						while (keys) {
+							GUIPollInput(&runner->params, 0, &keys);
+						}
+						break;
+					}
+				} else {
+					int keys = -1;
+					while (keys) {
+						GUIPollInput(&runner->params, 0, &keys);
+					}
+					break;
+				}
+			}
+			if (runner->params.guiFinish) {
+				runner->params.guiFinish();
 			}
 		}
 		GBAContextStop(&runner->context);
@@ -79,4 +128,5 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		}
 		GBAContextUnloadROM(&runner->context);
 	}
+	GUIMenuItemListDeinit(&pauseMenu.items);
 }
