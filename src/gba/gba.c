@@ -113,6 +113,8 @@ void GBAUnloadROM(struct GBA* gba) {
 		gba->pristineRom = 0;
 		gba->romVf = 0;
 	}
+
+	GBASavedataDeinit(&gba->memory.savedata);
 }
 
 void GBADestroy(struct GBA* gba) {
