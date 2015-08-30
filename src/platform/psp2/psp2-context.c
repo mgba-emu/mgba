@@ -28,6 +28,13 @@
 
 #include <vita2d.h>
 
+enum ScreenMode {
+	SM_BACKDROP,
+	SM_PLAIN,
+	SM_FULL,
+	SM_MAX
+};
+
 static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static vita2d_texture* tex;
@@ -37,7 +44,10 @@ static struct GBASceRotationSource {
 	struct SceMotionSensorState state;
 } rotation;
 
-static bool fullscreen = false;
+static int screenMode = 0;
+
+extern const uint8_t _binary_backdrop_png_start[];
+static vita2d_texture* backdrop = 0;
 
 #define PSP2_INPUT 0x50535032
 #define PSP2_SAMPLES 64
@@ -141,6 +151,8 @@ void GBAPSP2Setup() {
 	rotation.d.readGyroZ = _readGyroZ;
 	context.gba->rotationSource = &rotation.d;
 
+	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
+
 	printf("%s starting", projectName);
 }
 
@@ -183,7 +195,8 @@ void GBAPSP2Runloop(void) {
 		}
 		if (pad.buttons & PSP2_CTRL_SQUARE) {
 			if (!fsToggle) {
-				fullscreen = !fullscreen;
+				++screenMode;
+				screenMode %= SM_MAX;
 			}
 			fsToggle = true;
 		} else {
@@ -247,13 +260,20 @@ void GBAPSP2UnloadROM(void) {
 void GBAPSP2Teardown(void) {
 	GBAContextDeinit(&context);
 	vita2d_free_texture(tex);
+	vita2d_free_texture(backdrop);
 }
 
 void GBAPSP2Draw(void) {
-	if (fullscreen) {
+	switch (screenMode) {
+	case SM_BACKDROP:
+		vita2d_draw_texture(backdrop, 0, 0);
+		// Fall through
+	case SM_PLAIN:
+		vita2d_draw_texture_part_scale(tex, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f);
+		break;
+	case SM_FULL:
 		vita2d_draw_texture_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f);
-	} else {
-		vita2d_draw_texture_scale(tex, 120, 32, 3.0f, 3.0f);
+		break;
 	}
 }
 
