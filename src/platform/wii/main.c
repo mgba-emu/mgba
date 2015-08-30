@@ -28,6 +28,10 @@ static bool GBAWiiLoadGame(const char* path);
 static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
+static void _sampleRotation(struct GBARotationSource* source);
+static int32_t _readTiltX(struct GBARotationSource* source);
+static int32_t _readTiltY(struct GBARotationSource* source);
+static int32_t _readGyroZ(struct GBARotationSource* source);
 
 static void _drawStart(void);
 static void _drawEnd(void);
@@ -37,11 +41,15 @@ static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBAAVStream stream;
 static struct GBARumble rumble;
+static struct GBARotationSource rotation;
 static FILE* logfile;
 static GXRModeObj* mode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
 static GXTexObj tex;
+static int32_t tiltX;
+static int32_t tiltY;
+static int32_t gyroZ;
 
 static void* framebuffer[2];
 static int whichFb = 0;
@@ -142,6 +150,11 @@ int main() {
 
 	rumble.setRumble = _setRumble;
 
+	rotation.sample = _sampleRotation;
+	rotation.readTiltX = _readTiltX;
+	rotation.readTiltY = _readTiltY;
+	rotation.readGyroZ = _readGyroZ;
+
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
@@ -152,6 +165,7 @@ int main() {
 	context.gba->logHandler = GBAWiiLog;
 	context.gba->stream = &stream;
 	context.gba->rumble = &rumble;
+	context.gba->rotationSource = &rotation;
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
@@ -182,7 +196,18 @@ int main() {
 		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM) || !GBAWiiLoadGame(path)) {
 			break;
 		}
+		WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
 		GBAContextStart(&context);
+		if (context.gba->memory.hw.devices & HW_GYRO) {
+			int i;
+			for (i = 0; i < 6; ++i) {
+				u32 result = WPAD_SetMotionPlus(0, 1);
+				if (result == WPAD_ERR_NONE) {
+					break;
+				}
+				sleep(1);
+			}
+		}
 
 		guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
@@ -438,4 +463,37 @@ void _setRumble(struct GBARumble* rumble, int enable) {
 	} else {
 		PAD_ControlMotor(0, PAD_MOTOR_STOP);
 	}
+}
+
+void _sampleRotation(struct GBARotationSource* source) {
+	UNUSED(source);
+	vec3w_t accel;
+	WPAD_Accel(0, &accel);
+	// These are swapped
+	tiltX = (accel.y - 0x1EA) << 22;
+	tiltY = (accel.x - 0x1EA) << 22;
+
+	// This doesn't seem to work at all with -TR remotes
+	struct expansion_t exp;
+	WPAD_Expansion(0, &exp);
+	if (exp.type != EXP_MOTION_PLUS) {
+		return;
+	}
+	gyroZ = exp.mp.rz - 0x1FA0;
+	gyroZ <<= 18;
+}
+
+int32_t _readTiltX(struct GBARotationSource* source) {
+	UNUSED(source);
+	return tiltX;
+}
+
+int32_t _readTiltY(struct GBARotationSource* source) {
+	UNUSED(source);
+	return tiltY;
+}
+
+int32_t _readGyroZ(struct GBARotationSource* source) {
+	UNUSED(source);
+	return gyroZ;
 }
