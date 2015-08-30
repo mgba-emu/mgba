@@ -17,6 +17,8 @@
 #include <3ds.h>
 #include <sf2d.h>
 
+#define AUDIO_SAMPLES 0x800
+
 FS_archive sdmcArchive;
 
 struct GBA3DSRotationSource {
@@ -88,6 +90,8 @@ static int32_t _readGyroZ(struct GBARotationSource* source) {
 }
 
 int main() {
+	bool hasSound = !csndInit();
+
 	struct GBAContext context;
 	struct GBA3DSRotationSource rotation;
 	rotation.d.sample = _sampleRotation;
@@ -97,6 +101,14 @@ int main() {
 
 	if (!allocateRomBuffer()) {
 		return 1;
+	}
+
+	int16_t* audioLeft = 0;
+	int16_t* audioRight = 0;
+	size_t audioPos = 0;
+	if (hasSound) {
+		audioLeft = linearAlloc(AUDIO_SAMPLES * 2 * sizeof(int16_t));
+		audioRight = linearAlloc(AUDIO_SAMPLES * 2 * sizeof(int16_t));
 	}
 
 	sf2d_init();
@@ -165,9 +177,11 @@ int main() {
 		}
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-		blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
-		blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
+		blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 0x8000);
+		blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
 #endif
+		memset(audioLeft, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+		memset(audioRight, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 
 		while (aptMainLoop()) {
 			hidScanInput();
@@ -179,8 +193,21 @@ int main() {
 			GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
 			GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-			blip_clear(context.gba->audio.left);
-			blip_clear(context.gba->audio.right);
+			if (hasSound) {
+				memset(&audioLeft[audioPos], 0, AUDIO_SAMPLES);
+				memset(&audioRight[audioPos], 0, AUDIO_SAMPLES);
+				size_t samples = blip_read_samples(context.gba->audio.left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+				blip_read_samples(context.gba->audio.right, &audioRight[audioPos], AUDIO_SAMPLES, false);
+				size_t audioPosNew = (audioPos + AUDIO_SAMPLES) % (AUDIO_SAMPLES * 2);
+				GSPGPU_FlushDataCache(0, (void*) audioLeft, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+				GSPGPU_FlushDataCache(0, (void*) audioRight, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+				csndPlaySound(0x8, SOUND_ONE_SHOT | SOUND_FORMAT_16BIT, 0x8000, 1.0, -1.0, &audioLeft[audioPos], &audioLeft[audioPosNew], samples * 2);
+				csndPlaySound(0x9, SOUND_ONE_SHOT | SOUND_FORMAT_16BIT, 0x8000, 1.0, 1.0, &audioRight[audioPos], &audioLeft[audioPosNew], samples * 2);
+				audioPos = audioPosNew;
+			} else {
+				blip_clear(context.gba->audio.left);
+				blip_clear(context.gba->audio.right);
+			}
 #endif
 			gspWaitForPPF();
 			_drawStart();
@@ -188,6 +215,10 @@ int main() {
 			_drawEnd();
 		}
 		GBAContextStop(&context);
+
+		CSND_SetPlayState(8, 0);
+		CSND_SetPlayState(9, 0);
+		csndExecCmds(0);
 
 		if (context.gba->memory.hw.devices & HW_TILT) {
 			HIDUSER_DisableAccelerometer();
@@ -207,6 +238,12 @@ cleanup:
 
 	sf2d_free_texture(tex);
 	sf2d_fini();
+
+	if (hasSound) {
+		linearFree(audioLeft);
+		linearFree(audioRight);
+	}
+	csndExit();
 	return 0;
 }
 
