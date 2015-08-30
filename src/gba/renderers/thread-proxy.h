@@ -8,29 +8,13 @@
 
 #include "gba/video.h"
 #include "util/threading.h"
-#include "util/vector.h"
-
-enum GBAVideoDirtyType {
-	DIRTY_REGISTER,
-	DIRTY_OAM,
-	DIRTY_PALETTE,
-	DIRTY_SCANLINE,
-	DIRTY_FLUSH
-};
+#include "util/ring-fifo.h"
 
 enum GBAVideoThreadProxyState {
 	PROXY_THREAD_STOPPED = 0,
 	PROXY_THREAD_IDLE,
 	PROXY_THREAD_BUSY
 };
-
-struct GBAVideoDirtyInfo {
-	enum GBAVideoDirtyType type;
-	uint32_t address;
-	uint16_t value;
-};
-
-DECLARE_VECTOR(GBAVideoDirtyQueue, struct GBAVideoDirtyInfo);
 
 struct GBAVideoThreadProxyRenderer {
 	struct GBAVideoRenderer d;
@@ -42,15 +26,14 @@ struct GBAVideoThreadProxyRenderer {
 	Mutex mutex;
 	enum GBAVideoThreadProxyState threadState;
 
-	struct GBAVideoDirtyQueue dirtyQueue;
+	struct RingFIFO dirtyQueue;
+
 	uint32_t vramDirtyBitmap;
 	uint32_t oamDirtyBitmap[16];
 
 	uint16_t* vramProxy;
 	union GBAOAM oamProxy;
 	uint16_t paletteProxy[512];
-
-	bool queueCleared;
 };
 
 void GBAVideoThreadProxyRendererCreate(struct GBAVideoThreadProxyRenderer* renderer, struct GBAVideoRenderer* backend);
