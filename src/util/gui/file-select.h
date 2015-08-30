@@ -10,6 +10,6 @@
 
 struct VFile;
 
-bool selectFile(struct GUIParams*, const char* basePath, char* outPath, char* currentPath, size_t outLen, bool (*filter)(struct VFile*));
+bool GUISelectFile(struct GUIParams*, char* outPath, size_t outLen, bool (*filter)(struct VFile*));
 
 #endif

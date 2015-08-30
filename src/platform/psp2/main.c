@@ -65,13 +65,13 @@ int main() {
 	GBAPSP2Setup();
 	struct GUIParams params = {
 		PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-		font, _drawStart, _drawEnd, _pollInput
+		font, "cache0:", _drawStart, _drawEnd, _pollInput
 	};
+	GUIInit(&params);
 
-	char currentPath[256] = "";
 	while (true) {
 		char path[256];
-		if (!selectFile(&params, "cache0:", path, currentPath, sizeof(path), GBAIsROM)) {
+		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM)) {
 			break;
 		}
 		if (!GBAPSP2LoadROM(path)) {

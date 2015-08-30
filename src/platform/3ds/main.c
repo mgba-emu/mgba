@@ -136,13 +136,15 @@ int main() {
 
 	struct GUIParams params = {
 		320, 240,
-		font, _drawStart, _drawEnd, _pollInput
-	};
+		font, "/", _drawStart, _drawEnd, _pollInput,
 
-	char currentPath[256] = "";
+		GUI_PARAMS_TRAIL
+	};
+	GUIInit(&params);
+
 	while (aptMainLoop()) {
 		char path[256];
-		if (!selectFile(&params, "/", path, currentPath, sizeof(path), GBAIsROM)) {
+		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM)) {
 			break;
 		}
 		_drawStart();

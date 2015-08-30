@@ -165,18 +165,21 @@ int main() {
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
 #endif
 
-	char currentPath[256] = "";
+	struct GUIParams params = {
+		352, 230,
+		font, "/", _drawStart, _drawEnd, _pollInput,
+
+		GUI_PARAMS_TRAIL
+	};
+	GUIInit(&params);
+
 	while (true) {
 		char path[256];
 		guOrtho(proj, -20, 240, 0, 352, 0, 300);
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 		GX_SetVtxDesc(GX_VA_CLR0, GX_DIRECT);
 
-		struct GUIParams params = {
-			352, 230,
-			font, _drawStart, _drawEnd, _pollInput
-		};
-		if (!selectFile(&params, "/", path, currentPath, sizeof(path), GBAIsROM) || !GBAWiiLoadGame(path)) {
+		if (!GUISelectFile(&params, path, sizeof(path), GBAIsROM) || !GBAWiiLoadGame(path)) {
 			break;
 		}
 		GBAContextStart(&context);

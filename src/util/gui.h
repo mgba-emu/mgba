@@ -8,7 +8,10 @@
 
 #include "util/common.h"
 
+#include "util/vector.h"
+
 struct GUIFont;
+DECLARE_VECTOR(FileList, char*);
 
 enum GUIInput {
 	GUI_INPUT_NONE = -1,
@@ -28,6 +31,7 @@ struct GUIParams {
 	unsigned width;
 	unsigned height;
 	const struct GUIFont* font;
+	const char* basePath;
 
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
@@ -35,8 +39,16 @@ struct GUIParams {
 
 	// State
 	int inputHistory[GUI_INPUT_MAX];
+
+	// Directories
+	char currentPath[PATH_MAX];
+	size_t fileIndex;
 };
 
+#define GUI_PARAMS_TRAIL {}, ""
+
+void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, int* newInput, int* heldInput);
+void GUIInvalidateKeys(struct GUIParams* params);
 
 #endif

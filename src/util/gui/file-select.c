@@ -6,12 +6,10 @@
 #include "file-select.h"
 
 #include "util/gui/font.h"
-#include "util/vector.h"
 #include "util/vfs.h"
 
 #include <stdlib.h>
 
-DECLARE_VECTOR(FileList, char*);
 DEFINE_VECTOR(FileList, char*);
 
 #define ITERATION_SIZE 5
@@ -91,11 +89,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 	return true;
 }
 
-bool selectFile(struct GUIParams* params, const char* basePath, char* outPath, char* currentPath, size_t outLen, bool (*filter)(struct VFile*)) {
-	if (!currentPath[0]) {
-		strncpy(currentPath, basePath, outLen);
-	}
-	size_t fileIndex = 0;
+bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool (*filter)(struct VFile*)) {
 	size_t start = 0;
 	size_t pageSize = params->height / GUIFontHeight(params->font);
 	if (pageSize > 4) {
@@ -104,63 +98,66 @@ bool selectFile(struct GUIParams* params, const char* basePath, char* outPath, c
 		pageSize = 1;
 	}
 
+	GUIInvalidateKeys(params);
 	struct FileList currentFiles;
 	FileListInit(&currentFiles, 0);
-	_refreshDirectory(params, currentPath, &currentFiles, filter);
+	_refreshDirectory(params, params->currentPath, &currentFiles, filter);
 
 	while (true) {
 		int newInput = 0;
 		GUIPollInput(params, &newInput, 0);
 
-		if (newInput & (1 << GUI_INPUT_UP) && fileIndex > 0) {
-			--fileIndex;
+		if (newInput & (1 << GUI_INPUT_UP) && params->fileIndex > 0) {
+			--params->fileIndex;
 		}
-		if (newInput & (1 << GUI_INPUT_DOWN) && fileIndex < FileListSize(&currentFiles) - 1) {
-			++fileIndex;
+		if (newInput & (1 << GUI_INPUT_DOWN) && params->fileIndex < FileListSize(&currentFiles) - 1) {
+			++params->fileIndex;
 		}
 		if (newInput & (1 << GUI_INPUT_LEFT)) {
-			if (fileIndex >= pageSize) {
-				fileIndex -= pageSize;
+			if (params->fileIndex >= pageSize) {
+				params->fileIndex -= pageSize;
 			} else {
-				fileIndex = 0;
+				params->fileIndex = 0;
 			}
 		}
 		if (newInput & (1 << GUI_INPUT_RIGHT)) {
-			if (fileIndex + pageSize < FileListSize(&currentFiles)) {
-				fileIndex += pageSize;
+			if (params->fileIndex + pageSize < FileListSize(&currentFiles)) {
+				params->fileIndex += pageSize;
 			} else {
-				fileIndex = FileListSize(&currentFiles) - 1;
+				params->fileIndex = FileListSize(&currentFiles) - 1;
 			}
 		}
 
-		if (fileIndex < start) {
-			start = fileIndex;
+		if (params->fileIndex < start) {
+			start = params->fileIndex;
 		}
-		while ((fileIndex - start + 4) * GUIFontHeight(params->font) > params->height) {
+		while ((params->fileIndex - start + 4) * GUIFontHeight(params->font) > params->height) {
 			++start;
 		}
 		if (newInput & (1 << GUI_INPUT_CANCEL)) {
 			break;
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
-			if (fileIndex == 0) {
-				_upDirectory(currentPath);
-				if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+			if (params->fileIndex == 0) {
+				_upDirectory(params->currentPath);
+				if (!_refreshDirectory(params, params->currentPath, &currentFiles, filter)) {
 					break;
 				}
 			} else {
-				size_t len = strlen(currentPath);
+				size_t len = strlen(params->currentPath);
 				const char* sep = PATH_SEP;
-				if (currentPath[len - 1] == *sep) {
+				if (params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
-				snprintf(outPath, outLen, "%s%s%s", currentPath, sep, *FileListGetPointer(&currentFiles, fileIndex));
-				if (!_refreshDirectory(params, outPath, &currentFiles, filter)) {
+				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, *FileListGetPointer(&currentFiles, params->fileIndex));
+
+				struct FileList newFiles;
+				FileListInit(&newFiles, 0);
+				if (!_refreshDirectory(params, outPath, &newFiles, filter)) {
+					_cleanFiles(&newFiles);
+					FileListDeinit(&newFiles);
 					struct VFile* vf = VFileOpen(outPath, O_RDONLY);
 					if (!vf) {
-						if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
-							break;
-						}
 						continue;
 					}
 					if (!filter || filter(vf)) {
@@ -172,31 +169,34 @@ bool selectFile(struct GUIParams* params, const char* basePath, char* outPath, c
 					vf->close(vf);
 					break;
 				} else {
-					strncpy(currentPath, outPath, outLen);
+					_cleanFiles(&currentFiles);
+					FileListDeinit(&currentFiles);
+					currentFiles = newFiles;
+					strncpy(params->currentPath, outPath, PATH_MAX);
 				}
 			}
-			fileIndex = 0;
+			params->fileIndex = 0;
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
-			if (strncmp(currentPath, basePath, outLen) == 0) {
+			if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0) {
 				break;
 			}
-			_upDirectory(currentPath);
-			if (!_refreshDirectory(params, currentPath, &currentFiles, filter)) {
+			_upDirectory(params->currentPath);
+			if (!_refreshDirectory(params, params->currentPath, &currentFiles, filter)) {
 				break;
 			}
-			fileIndex = 0;
+			params->fileIndex = 0;
 		}
 
 		params->drawStart();
 		unsigned y = GUIFontHeight(params->font);
-		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
+		GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", params->currentPath);
 		y += 2 * GUIFontHeight(params->font);
 		size_t i;
 		for (i = start; i < FileListSize(&currentFiles); ++i) {
 			int color = 0xE0A0A0A0;
 			char bullet = ' ';
-			if (i == fileIndex) {
+			if (i == params->fileIndex) {
 				color = 0xFFFFFFFF;
 				bullet = '>';
 			}

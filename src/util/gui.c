@@ -5,6 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui.h"
 
+void GUIInit(struct GUIParams* params) {
+	memset(params->inputHistory, 0, sizeof(params->inputHistory));
+	strncpy(params->currentPath, params->basePath, PATH_MAX);
+}
+
 void GUIPollInput(struct GUIParams* params, int* newInputOut, int* heldInput) {
 	int input = params->pollInput();
 	int newInput = 0;
@@ -23,5 +28,11 @@ void GUIPollInput(struct GUIParams* params, int* newInputOut, int* heldInput) {
 	}
 	if (heldInput) {
 		*heldInput = input;
+	}
+}
+
+void GUIInvalidateKeys(struct GUIParams* params) {
+	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+		params->inputHistory[i] = 0;
 	}
 }
