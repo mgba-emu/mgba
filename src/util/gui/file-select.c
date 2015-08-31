@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #define ITERATION_SIZE 5
-#define SCANNING_THRESHOLD 15
+#define SCANNING_THRESHOLD 20
 
 static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
 	size_t size = GUIMenuItemListSize(currentFiles);
@@ -55,7 +55,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 	struct VDirEntry* de;
 	while ((de = dir->listNext(dir))) {
 		++i;
-		if (i % SCANNING_THRESHOLD == SCANNING_THRESHOLD - 1) {
+		if (!(i % SCANNING_THRESHOLD)) {
 			int input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
@@ -63,7 +63,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			}
 			params->drawStart();
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %z)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %lu)", i);
 			params->drawEnd();
 		}
 		const char* name = de->name(de);
