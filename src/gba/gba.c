@@ -790,7 +790,7 @@ void GBAFrameEnded(struct GBA* gba) {
 		}
 	}
 
-	if (gba->stream) {
+	if (gba->stream && gba->stream->postVideoFrame) {
 		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
 	}
 
