@@ -234,12 +234,14 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	if (strcmp((const char*) chunk->name, "gbAs") != 0) {
 		return 0;
 	}
-	struct GBASerializedState state;
-	uLongf len = sizeof(state);
-	uncompress((Bytef*) &state, &len, chunk->data, chunk->size);
-	if (!GBADeserialize(png_get_user_chunk_ptr(png), &state)) {
+	struct GBASerializedState* state = malloc(sizeof(*state));
+	uLongf len = sizeof(*state);
+	uncompress((Bytef*) state, &len, chunk->data, chunk->size);
+	if (!GBADeserialize(png_get_user_chunk_ptr(png), state)) {
+		free(state);
 		longjmp(png_jmpbuf(png), 1);
 	}
+	free(state);
 	return 1;
 }
 
@@ -252,6 +254,10 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 		return false;
 	}
 	uint32_t* pixels = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	if (!pixels) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
 
 	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
 	bool success = PNGReadHeader(png, info);
