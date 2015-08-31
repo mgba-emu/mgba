@@ -182,8 +182,12 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	UNUSED(stream);
 	memset(audioLeft, 0, AUDIO_SAMPLES * sizeof(int16_t));
 	memset(audioRight, 0, AUDIO_SAMPLES * sizeof(int16_t));
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	blip_read_samples(audio->left, audioLeft, AUDIO_SAMPLES, false);
 	blip_read_samples(audio->right, audioRight, AUDIO_SAMPLES, false);
+#elif RESAMPLE_LIBRARY == RESAMPLE_NN
+	GBAAudioCopy(audio, audioLeft, audioRight, AUDIO_SAMPLES);
+#endif
 	GSPGPU_FlushDataCache(0, (void*) audioLeft, AUDIO_SAMPLES * sizeof(int16_t));
 	GSPGPU_FlushDataCache(0, (void*) audioRight, AUDIO_SAMPLES * sizeof(int16_t));
 	csndPlaySound(0x8, SOUND_ONE_SHOT | SOUND_FORMAT_16BIT, 0x8000, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLES * sizeof(int16_t));
