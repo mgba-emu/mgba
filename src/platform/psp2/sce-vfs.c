@@ -104,7 +104,8 @@ static void* _vfsceMap(struct VFile* vf, size_t size, int flags) {
 }
 
 static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
-	UNUSED(vf);
+	struct VFileSce* vfsce = (struct VFileSce*) vf;
+	sceIoWrite(vfsce->fd, memory, size);
 	mappedMemoryFree(memory, size);
 }
 

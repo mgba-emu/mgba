@@ -137,7 +137,9 @@ static void* _vf3dMap(struct VFile* vf, size_t size, int flags) {
 }
 
 static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size) {
-	UNUSED(vf);
+	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
+	u32 sizeWritten;
+	FSFILE_Write(vf3d->handle, &sizeWritten, 0, memory, size, FS_WRITE_FLUSH);
 	mappedMemoryFree(memory, size);
 }
 
