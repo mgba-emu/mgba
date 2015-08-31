@@ -8,7 +8,7 @@
 #include "gba/gba.h"
 #include "gba/audio.h"
 #include "gba/context/context.h"
-#include "gba/context/gui-runner.h"
+#include "gba/gui/gui-runner.h"
 #include "gba/input.h"
 
 #include "gba/renderers/video-software.h"

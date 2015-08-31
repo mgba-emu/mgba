@@ -6,7 +6,7 @@
 #include "psp2-context.h"
 
 #include "gba/gba.h"
-#include "gba/context/gui-runner.h"
+#include "gba/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"

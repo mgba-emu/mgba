@@ -14,7 +14,7 @@
 
 #include "gba/renderers/video-software.h"
 #include "gba/context/context.h"
-#include "gba/context/gui-runner.h"
+#include "gba/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
