@@ -230,12 +230,6 @@ int main() {
 		.drawFrame = _drawFrame,
 		.pollGameInput = _pollGameInput
 	};
-	struct GUIParams params = {
-		320, 240,
-		font, "/", _drawStart, _drawEnd, _pollInput, 0, 0,
-
-		GUI_PARAMS_TRAIL
-	};
 	GBAGUIInit(&runner, 0);
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
