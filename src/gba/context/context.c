@@ -14,6 +14,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->gba = anonymousMemoryMap(sizeof(struct GBA));
 	context->cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	context->rom = 0;
+	context->fname = 0;
 	context->save = 0;
 	context->renderer = 0;
 	memset(context->components, 0, sizeof(context->components));
@@ -61,6 +62,7 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 		return false;
 	}
 
+	context->fname = path;
 	if (autoloadSave) {
 		context->save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
 	}
@@ -123,7 +125,7 @@ bool GBAContextStart(struct GBAContext* context) {
 		GBAVideoAssociateRenderer(&context->gba->video, context->renderer);
 	}
 
-	if (!GBALoadROM(context->gba, context->rom, context->save, 0)) {
+	if (!GBALoadROM(context->gba, context->rom, context->save, context->fname)) {
 		return false;
 	}
 

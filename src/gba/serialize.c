@@ -187,13 +187,11 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	return true;
 }
 
-#ifndef _3DS
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
 	char suffix[5] = { '\0' };
 	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
 	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
-#endif
 
 #ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf) {

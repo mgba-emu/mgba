@@ -16,6 +16,7 @@ struct GBAContext {
 	struct ARMCore* cpu;
 	struct GBAVideoRenderer* renderer;
 	struct VFile* rom;
+	const char* fname;
 	struct VFile* save;
 	struct VFile* bios;
 	struct ARMComponent* components[GBA_COMPONENT_MAX];

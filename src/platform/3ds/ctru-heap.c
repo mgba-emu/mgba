@@ -26,8 +26,8 @@ extern char* fake_heap_start;
 extern char* fake_heap_end;
 u32 __linear_heap;
 u32 __heapBase;
-static u32 __heap_size = 0x03000000;
-static u32 __linear_heap_size = 0x00800000;
+static u32 __heap_size = 0x02800000;
+static u32 __linear_heap_size = 0x01000000;
 
 extern void (*__system_retAddr)(void);
 
