@@ -77,8 +77,10 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 0x8000);
 	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
 #endif
-	memset(audioLeft, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
-	memset(audioRight, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+	if (hasSound) {
+		memset(audioLeft, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+		memset(audioRight, 0, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+	}
 }
 
 static void _gameUnloaded(struct GBAGUIRunner* runner) {
