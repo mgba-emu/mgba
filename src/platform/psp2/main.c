@@ -44,18 +44,19 @@ static int _pollInput(void) {
 		input |= 1 << GUI_INPUT_SELECT;
 	}
 
-	if (pad.buttons & PSP2_CTRL_UP) {
+	if (pad.buttons & PSP2_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
 	}
-	if (pad.buttons & PSP2_CTRL_DOWN) {
+	if (pad.buttons & PSP2_CTRL_DOWN || pad.ly >= 192) {
 		input |= 1 << GUI_INPUT_DOWN;
 	}
-	if (pad.buttons & PSP2_CTRL_LEFT) {
+	if (pad.buttons & PSP2_CTRL_LEFT || pad.lx < 64) {
 		input |= 1 << GUI_INPUT_LEFT;
 	}
-	if (pad.buttons & PSP2_CTRL_RIGHT) {
+	if (pad.buttons & PSP2_CTRL_RIGHT || pad.lx >= 192) {
 		input |= 1 << GUI_INPUT_RIGHT;
 	}
+
 	return input;
 }
 
