@@ -300,7 +300,11 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 }
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
+#ifdef USE_PNG
 	if (!screenshot) {
+#else
+	UNUSED(screenshot);
+#endif
 		vf->truncate(vf, sizeof(struct GBASerializedState));
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 		if (!state) {
@@ -309,8 +313,8 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		GBASerialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		return true;
-	}
 #ifdef USE_PNG
+	}
 	else {
 		return _savePNGState(gba, vf);
 	}
