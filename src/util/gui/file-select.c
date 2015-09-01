@@ -143,6 +143,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				}
 			}
 			params->fileIndex = 0;
+			menu.index = 0;
 		}
 		if (reason == GUI_MENU_EXIT_BACK) {
 			if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0) {
@@ -153,6 +154,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				break;
 			}
 			params->fileIndex = 0;
+			menu.index = 0;
 		}
 	}
 
