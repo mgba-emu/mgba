@@ -11,6 +11,7 @@ Misc:
  - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
  - GBA: Better memory handling with PNG savestates
  - GBA Audio: Allow GBAAVStream to have no video callback
+ - ARM7: Force disable LTO on two files to work around a GCC bug
 
 0.3.0: (2015-08-16)
 Features:
