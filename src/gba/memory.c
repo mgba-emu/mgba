@@ -156,7 +156,7 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 					} else {
 						loadAddress += offset;
 					}
-					if ((loadAddress >> BASE_OFFSET) == REGION_IO) {
+					if ((loadAddress >> BASE_OFFSET) == REGION_IO && !GBAIOIsReadConstant(loadAddress)) {
 						gba->idleDetectionStep = -1;
 						return;
 					}

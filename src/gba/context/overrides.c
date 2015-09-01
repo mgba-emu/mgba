@@ -15,6 +15,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AWRE", SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
 	{ "AWRP", SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
 
+	// Advance Wars 2: Black Hole Rising
+	{ "AW2E", SAVEDATA_FLASH512, HW_NONE, 0x8036E08 },
+	{ "AW2P", SAVEDATA_FLASH512, HW_NONE, 0x803719C },
+
 	// Boktai: The Sun is in Your Hand
 	{ "U3IJ", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
 	{ "U3IE", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE },
