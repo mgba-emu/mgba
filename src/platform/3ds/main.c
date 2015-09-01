@@ -65,7 +65,7 @@ static void _setup(struct GBAGUIRunner* runner) {
 	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = anonymousMemoryMap(256 * VIDEO_VERTICAL_PIXELS * 2);
+	renderer.outputBuffer = linearAlloc(256 * VIDEO_VERTICAL_PIXELS * 2);
 	renderer.outputBufferStride = 256;
 	runner->context.renderer = &renderer.d;
 
@@ -259,7 +259,7 @@ int main() {
 	GBAGUIDeinit(&runner);
 
 cleanup:
-	mappedMemoryFree(renderer.outputBuffer, 0);
+	linearFree(renderer.outputBuffer);
 
 	if (logFile) {
 		logFile->close(logFile);
