@@ -1,3 +1,6 @@
+#plain 'make' doesn't include the file that sets this. force it set anyways.
+RETRODEFS    ?= -D__LIBRETRO__
+
 INCLUDES  += -I$(CORE_DIR)/src -I$(CORE_DIR)/src/arm
 RETRODEFS += -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DINLINE=inline -DCOLOR_16_BIT -DCOLOR_5_6_5 -DRESAMPLE_LIBRARY=2 -DM_PI=3.14159265358979323846 -DPATH_MAX=4096 -DBINARY_NAME=\"mgba\" -DPROJECT_VERSION=\"0.2.0\" -DPROJECT_NAME=\"mGBA\" -DSSIZE_MAX=32767
 
@@ -29,13 +32,15 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/sio.c \
 					$(CORE_DIR)/src/gba/video.c \
 					$(CORE_DIR)/src/gba/serialize.c \
-					$(CORE_DIR)/src/gba/supervisor/overrides.c \
-					$(CORE_DIR)/src/gba/supervisor/sync.c \
 					$(CORE_DIR)/src/gba/supervisor/thread.c \
 					$(CORE_DIR)/src/gba/renderers/software-mode0.c \
 					$(CORE_DIR)/src/gba/renderers/software-obj.c \
 					$(CORE_DIR)/src/gba/renderers/software-bg.c \
 					$(CORE_DIR)/src/gba/renderers/video-software.c \
+					$(CORE_DIR)/src/gba/context/context.c \
+					$(CORE_DIR)/src/gba/context/config.c \
+					$(CORE_DIR)/src/gba/context/sync.c \
+					$(CORE_DIR)/src/gba/context/overrides.c \
 					$(CORE_DIR)/src/platform/libretro/memory.c \
 					$(CORE_DIR)/src/platform/libretro/libretro.c \
 					$(CORE_DIR)/src/third-party/inih/ini.c \

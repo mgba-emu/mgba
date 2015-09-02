@@ -16,160 +16,156 @@
 // Addressing mode 1
 static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	int immediate = (opcode & 0x00000F80) >> 7;
-	if (!immediate) {
-		cpu->shifterOperand = cpu->gprs[rm];
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
+	if (opcode & 0x00000010) {
+		int rs = (opcode >> 8) & 0x0000000F;
+		++cpu->cycles;
+		int shift = cpu->gprs[rs];
+		if (rs == ARM_PC) {
+			shift += 4;
+		}
+		shift &= 0xFF;
+		int32_t shiftVal = cpu->gprs[rm];
+		if (rm == ARM_PC) {
+			shiftVal += 4;
+		}
+		if (!shift) {
+			cpu->shifterOperand = shiftVal;
+			cpu->shifterCarryOut = cpu->cpsr.a.c;
+		} else if (shift < 32) {
+			cpu->shifterOperand = shiftVal << shift;
+			cpu->shifterCarryOut = (shiftVal >> (32 - shift)) & 1;
+		} else if (shift == 32) {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = shiftVal & 1;
+		} else {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = 0;
+		}
 	} else {
-		cpu->shifterOperand = cpu->gprs[rm] << immediate;
-		cpu->shifterCarryOut = (cpu->gprs[rm] >> (32 - immediate)) & 1;
-	}
-}
-
-static inline void _shiftLSLR(struct ARMCore* cpu, uint32_t opcode) {
-	int rm = opcode & 0x0000000F;
-	int rs = (opcode >> 8) & 0x0000000F;
-	++cpu->cycles;
-	int shift = cpu->gprs[rs];
-	if (rs == ARM_PC) {
-		shift += 4;
-	}
-	shift &= 0xFF;
-	int32_t shiftVal = cpu->gprs[rm];
-	if (rm == ARM_PC) {
-		shiftVal += 4;
-	}
-	if (!shift) {
-		cpu->shifterOperand = shiftVal;
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
-	} else if (shift < 32) {
-		cpu->shifterOperand = shiftVal << shift;
-		cpu->shifterCarryOut = (shiftVal >> (32 - shift)) & 1;
-	} else if (shift == 32) {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = shiftVal & 1;
-	} else {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = 0;
+		int immediate = (opcode & 0x00000F80) >> 7;
+		if (!immediate) {
+			cpu->shifterOperand = cpu->gprs[rm];
+			cpu->shifterCarryOut = cpu->cpsr.a.c;
+		} else {
+			cpu->shifterOperand = cpu->gprs[rm] << immediate;
+			cpu->shifterCarryOut = (cpu->gprs[rm] >> (32 - immediate)) & 1;
+		}
 	}
 }
 
 static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	int immediate = (opcode & 0x00000F80) >> 7;
-	if (immediate) {
-		cpu->shifterOperand = ((uint32_t) cpu->gprs[rm]) >> immediate;
-		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+	if (opcode & 0x00000010) {
+		int rs = (opcode >> 8) & 0x0000000F;
+		++cpu->cycles;
+		int shift = cpu->gprs[rs];
+		if (rs == ARM_PC) {
+			shift += 4;
+		}
+		shift &= 0xFF;
+		uint32_t shiftVal = cpu->gprs[rm];
+		if (rm == ARM_PC) {
+			shiftVal += 4;
+		}
+		if (!shift) {
+			cpu->shifterOperand = shiftVal;
+			cpu->shifterCarryOut = cpu->cpsr.a.c;
+		} else if (shift < 32) {
+			cpu->shifterOperand = shiftVal >> shift;
+			cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
+		} else if (shift == 32) {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = shiftVal >> 31;
+		} else {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = 0;
+		}
 	} else {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
-	}
-}
-
-static inline void _shiftLSRR(struct ARMCore* cpu, uint32_t opcode) {
-	int rm = opcode & 0x0000000F;
-	int rs = (opcode >> 8) & 0x0000000F;
-	++cpu->cycles;
-	int shift = cpu->gprs[rs];
-	if (rs == ARM_PC) {
-		shift += 4;
-	}
-	shift &= 0xFF;
-	uint32_t shiftVal = cpu->gprs[rm];
-	if (rm == ARM_PC) {
-		shiftVal += 4;
-	}
-	if (!shift) {
-		cpu->shifterOperand = shiftVal;
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
-	} else if (shift < 32) {
-		cpu->shifterOperand = shiftVal >> shift;
-		cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
-	} else if (shift == 32) {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = shiftVal >> 31;
-	} else {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = 0;
+		int immediate = (opcode & 0x00000F80) >> 7;
+		if (immediate) {
+			cpu->shifterOperand = ((uint32_t) cpu->gprs[rm]) >> immediate;
+			cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+		} else {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
+		}
 	}
 }
 
 static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	int immediate = (opcode & 0x00000F80) >> 7;
-	if (immediate) {
-		cpu->shifterOperand = cpu->gprs[rm] >> immediate;
-		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+	if (opcode & 0x00000010) {
+		int rs = (opcode >> 8) & 0x0000000F;
+		++cpu->cycles;
+		int shift = cpu->gprs[rs];
+		if (rs == ARM_PC) {
+			shift += 4;
+		}
+		shift &= 0xFF;
+		int shiftVal =  cpu->gprs[rm];
+		if (rm == ARM_PC) {
+			shiftVal += 4;
+		}
+		if (!shift) {
+			cpu->shifterOperand = shiftVal;
+			cpu->shifterCarryOut = cpu->cpsr.a.c;
+		} else if (shift < 32) {
+			cpu->shifterOperand = shiftVal >> shift;
+			cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
+		} else if (cpu->gprs[rm] >> 31) {
+			cpu->shifterOperand = 0xFFFFFFFF;
+			cpu->shifterCarryOut = 1;
+		} else {
+			cpu->shifterOperand = 0;
+			cpu->shifterCarryOut = 0;
+		}
 	} else {
-		cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
-		cpu->shifterOperand = cpu->shifterCarryOut;
-	}
-}
-
-static inline void _shiftASRR(struct ARMCore* cpu, uint32_t opcode) {
-	int rm = opcode & 0x0000000F;
-	int rs = (opcode >> 8) & 0x0000000F;
-	++cpu->cycles;
-	int shift = cpu->gprs[rs];
-	if (rs == ARM_PC) {
-		shift += 4;
-	}
-	shift &= 0xFF;
-	int shiftVal =  cpu->gprs[rm];
-	if (rm == ARM_PC) {
-		shiftVal += 4;
-	}
-	if (!shift) {
-		cpu->shifterOperand = shiftVal;
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
-	} else if (shift < 32) {
-		cpu->shifterOperand = shiftVal >> shift;
-		cpu->shifterCarryOut = (shiftVal >> (shift - 1)) & 1;
-	} else if (cpu->gprs[rm] >> 31) {
-		cpu->shifterOperand = 0xFFFFFFFF;
-		cpu->shifterCarryOut = 1;
-	} else {
-		cpu->shifterOperand = 0;
-		cpu->shifterCarryOut = 0;
+		int immediate = (opcode & 0x00000F80) >> 7;
+		if (immediate) {
+			cpu->shifterOperand = cpu->gprs[rm] >> immediate;
+			cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+		} else {
+			cpu->shifterCarryOut = ARM_SIGN(cpu->gprs[rm]);
+			cpu->shifterOperand = cpu->shifterCarryOut;
+		}
 	}
 }
 
 static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	int rm = opcode & 0x0000000F;
-	int immediate = (opcode & 0x00000F80) >> 7;
-	if (immediate) {
-		cpu->shifterOperand = ROR(cpu->gprs[rm], immediate);
-		cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+	if (opcode & 0x00000010) {
+		int rs = (opcode >> 8) & 0x0000000F;
+		++cpu->cycles;
+		int shift = cpu->gprs[rs];
+		if (rs == ARM_PC) {
+			shift += 4;
+		}
+		shift &= 0xFF;
+		int shiftVal =  cpu->gprs[rm];
+		if (rm == ARM_PC) {
+			shiftVal += 4;
+		}
+		int rotate = shift & 0x1F;
+		if (!shift) {
+			cpu->shifterOperand = shiftVal;
+			cpu->shifterCarryOut = cpu->cpsr.a.c;
+		} else if (rotate) {
+			cpu->shifterOperand = ROR(shiftVal, rotate);
+			cpu->shifterCarryOut = (shiftVal >> (rotate - 1)) & 1;
+		} else {
+			cpu->shifterOperand = shiftVal;
+			cpu->shifterCarryOut = ARM_SIGN(shiftVal);
+		}
 	} else {
-		// RRX
-		cpu->shifterOperand = (cpu->cpsr.a.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
-		cpu->shifterCarryOut = cpu->gprs[rm] & 0x00000001;
-	}
-}
-
-static inline void _shiftRORR(struct ARMCore* cpu, uint32_t opcode) {
-	int rm = opcode & 0x0000000F;
-	int rs = (opcode >> 8) & 0x0000000F;
-	++cpu->cycles;
-	int shift = cpu->gprs[rs];
-	if (rs == ARM_PC) {
-		shift += 4;
-	}
-	shift &= 0xFF;
-	int shiftVal =  cpu->gprs[rm];
-	if (rm == ARM_PC) {
-		shiftVal += 4;
-	}
-	int rotate = shift & 0x1F;
-	if (!shift) {
-		cpu->shifterOperand = shiftVal;
-		cpu->shifterCarryOut = cpu->cpsr.a.c;
-	} else if (rotate) {
-		cpu->shifterOperand = ROR(shiftVal, rotate);
-		cpu->shifterCarryOut = (shiftVal >> (rotate - 1)) & 1;
-	} else {
-		cpu->shifterOperand = shiftVal;
-		cpu->shifterCarryOut = ARM_SIGN(shiftVal);
+		int immediate = (opcode & 0x00000F80) >> 7;
+		if (immediate) {
+			cpu->shifterOperand = ROR(cpu->gprs[rm], immediate);
+			cpu->shifterCarryOut = (cpu->gprs[rm] >> (immediate - 1)) & 1;
+		} else {
+			// RRX
+			cpu->shifterOperand = (cpu->cpsr.a.c << 31) | (((uint32_t) cpu->gprs[rm]) >> 1);
+			cpu->shifterCarryOut = cpu->gprs[rm] & 0x00000001;
+		}
 	}
 }
 
@@ -293,32 +289,20 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 #define DEFINE_ALU_INSTRUCTION_ARM(NAME, S_BODY, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, , _shiftLSL, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSL, S_BODY, _shiftLSL, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, , _shiftLSLR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSLR, S_BODY, _shiftLSLR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, , _shiftLSR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSR, S_BODY, _shiftLSR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, , _shiftLSRR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_LSRR, S_BODY, _shiftLSRR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, , _shiftASR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASR, S_BODY, _shiftASR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, , _shiftASRR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ASRR, S_BODY, _shiftASRR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, , _shiftROR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_ROR, S_BODY, _shiftROR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, , _shiftRORR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## S_RORR, S_BODY, _shiftRORR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, , _immediate, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## SI, S_BODY, _immediate, BODY)
 
 #define DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(NAME, S_BODY, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSL, S_BODY, _shiftLSL, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSLR, S_BODY, _shiftLSLR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSR, S_BODY, _shiftLSR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _LSRR, S_BODY, _shiftLSRR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASR, S_BODY, _shiftASR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ASRR, S_BODY, _shiftASRR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, S_BODY, _shiftROR, BODY) \
-	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _RORR, S_BODY, _shiftRORR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, S_BODY, _immediate, BODY)
 
 #define DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, S_BODY) \

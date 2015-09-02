@@ -11,7 +11,7 @@
 #include "ui_OverrideView.h"
 
 extern "C" {
-#include "gba/supervisor/overrides.h"
+#include "gba/context/overrides.h"
 }
 
 struct GBAThread;

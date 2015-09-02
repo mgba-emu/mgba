@@ -68,6 +68,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
+	, m_fullscreenOnStart(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -469,6 +470,10 @@ void Window::showEvent(QShowEvent* event) {
 		rect.moveCenter(QApplication::desktop()->availableGeometry().center());
 		move(rect.topLeft());
 	}
+	if (m_fullscreenOnStart) {
+		enterFullScreen();
+		m_fullscreenOnStart = false;
+	}
 }
 
 void Window::closeEvent(QCloseEvent* event) {
@@ -507,7 +512,7 @@ void Window::dropEvent(QDropEvent* event) {
 		return;
 	}
 	event->accept();
-	m_controller->loadGame(url.path());
+	m_controller->loadGame(url.toLocalFile());
 }
 
 void Window::mouseDoubleClickEvent(QMouseEvent* event) {
@@ -518,6 +523,10 @@ void Window::mouseDoubleClickEvent(QMouseEvent* event) {
 }
 
 void Window::enterFullScreen() {
+	if (!isVisible()) {
+		m_fullscreenOnStart = true;
+		return;
+	}
 	if (isFullScreen()) {
 		return;
 	}

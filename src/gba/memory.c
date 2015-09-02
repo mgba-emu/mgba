@@ -12,11 +12,11 @@
 #include "gba/io.h"
 #include "gba/serialize.h"
 #include "gba/hle-bios.h"
+#include "util/math.h"
 #include "util/memory.h"
 
 #define IDLE_LOOP_THRESHOLD 10000
 
-static uint32_t _popcount32(unsigned bits);
 static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
@@ -50,6 +50,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.iwram = 0;
 	gba->memory.rom = 0;
 	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
 	gba->memory.hw.p = gba;
 
 	int i;
@@ -155,7 +156,7 @@ static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t a
 					} else {
 						loadAddress += offset;
 					}
-					if ((loadAddress >> BASE_OFFSET) == REGION_IO) {
+					if ((loadAddress >> BASE_OFFSET) == REGION_IO && !GBAIOIsReadConstant(loadAddress)) {
 						gba->idleDetectionStep = -1;
 						return;
 					}
@@ -269,7 +270,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		cpu->memory.activeRegion = memory->rom;
-		cpu->memory.activeMask = SIZE_CART0 - 1;
+		cpu->memory.activeMask = memory->romMask;
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			break;
 		}
@@ -893,6 +894,7 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		_pristineCow(gba);
 		if ((address & (SIZE_CART0 - 4)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 4)) + 4;
+			gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		}
 		LOAD_32(oldValue, address & (SIZE_CART0 - 4), gba->memory.rom);
 		STORE_32(value, address & (SIZE_CART0 - 4), gba->memory.rom);
@@ -960,6 +962,7 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 		_pristineCow(gba);
 		if ((address & (SIZE_CART0 - 1)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
+			gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		}
 		LOAD_16(oldValue, address & (SIZE_CART0 - 2), gba->memory.rom);
 		STORE_16(value, address & (SIZE_CART0 - 2), gba->memory.rom);
@@ -1017,6 +1020,7 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 		_pristineCow(gba);
 		if ((address & (SIZE_CART0 - 1)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (SIZE_CART0 - 2)) + 2;
+			gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		}
 		oldValue = ((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		((int8_t*) memory->rom)[address & (SIZE_CART0 - 1)] = value;
@@ -1083,7 +1087,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = _popcount32(mask);
+		popcount = popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -1196,7 +1200,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	int popcount = 0;
 	if (direction & LSM_D) {
 		offset = -4;
-		popcount = _popcount32(mask);
+		popcount = popcount32(mask);
 		address -= (popcount << 2) - 4;
 	}
 
@@ -1586,12 +1590,6 @@ void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedStat
 void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedState* state) {
 	memcpy(memory->wram, state->wram, SIZE_WORKING_RAM);
 	memcpy(memory->iwram, state->iwram, SIZE_WORKING_IRAM);
-}
-
-uint32_t _popcount32(unsigned bits) {
-	bits = bits - ((bits >> 1) & 0x55555555);
-	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
-	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
 
 void _pristineCow(struct GBA* gba) {

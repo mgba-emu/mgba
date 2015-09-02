@@ -1,0 +1,6 @@
+add_executable(${BINARY_NAME}.elf ${GUI_SRC} ${CMAKE_BINARY_DIR}/font.c)
+target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
+add_custom_command(TARGET ${BINARY_NAME}.elf POST_BUILD COMMAND ${ELF2DOL} ${BINARY_NAME}.elf ${BINARY_NAME}.dol)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/meta.xml.in ${CMAKE_CURRENT_BINARY_DIR}/meta.xml)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/icon.png ${CMAKE_CURRENT_BINARY_DIR}/meta.xml DESTINATION . COMPONENT ${BINARY_NAME}-wii)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.dol DESTINATION . RENAME boot.dol COMPONENT ${BINARY_NAME}-wii)

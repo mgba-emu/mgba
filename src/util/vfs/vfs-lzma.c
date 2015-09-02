@@ -64,6 +64,7 @@ static struct VDirEntry* _vd7zListNext(struct VDir* vd);
 static struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vde7zName(struct VDirEntry* vde);
+static enum VFSType _vde7zType(struct VDirEntry* vde);
 
 struct VDir* VDirOpen7z(const char* path, int flags) {
 	if (flags & O_WRONLY || flags & O_CREAT) {
@@ -104,6 +105,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	vd->dirent.utf8 = 0;
 	vd->dirent.vd = vd;
 	vd->dirent.d.name = _vde7zName;
+	vd->dirent.d.type = _vde7zType;
 
 	vd->d.close = _vd7zClose;
 	vd->d.rewind = _vd7zRewind;
@@ -299,6 +301,13 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	return &vf->d;
 }
 
+bool _vf7zSync(struct VFile* vf, const void* memory, size_t size) {
+	UNUSED(vf);
+	UNUSED(memory);
+	UNUSED(size);
+	return false;
+}
+
 const char* _vde7zName(struct VDirEntry* vde) {
 	struct VDirEntry7z* vde7z = (struct VDirEntry7z*) vde;
 	if (!vde7z->utf8) {
@@ -312,11 +321,12 @@ const char* _vde7zName(struct VDirEntry* vde) {
 	return vde7z->utf8;
 }
 
-bool _vf7zSync(struct VFile* vf, const void* memory, size_t size) {
-	UNUSED(vf);
-	UNUSED(memory);
-	UNUSED(size);
-	return false;
+static enum VFSType _vde7zType(struct VDirEntry* vde) {
+	struct VDirEntry7z* vde7z = (struct VDirEntry7z*) vde;
+	if (SzArEx_IsDir(&vde7z->vd->db, vde7z->index)) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }
 
 #endif

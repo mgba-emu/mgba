@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 
 struct GBA;
 struct VDir;

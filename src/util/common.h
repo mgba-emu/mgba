@@ -6,7 +6,9 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifndef PSP2
 #include <ctype.h>
+#endif
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -28,6 +30,8 @@ typedef intptr_t ssize_t;
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
 #define snprintf _snprintf
+#elif defined(__wii__)
+typedef intptr_t ssize_t;
 #else
 #include <unistd.h>
 #endif

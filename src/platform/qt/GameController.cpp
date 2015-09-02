@@ -18,11 +18,11 @@
 
 extern "C" {
 #include "gba/audio.h"
+#include "gba/context/config.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
 #include "gba/renderers/video-software.h"
-#include "gba/supervisor/config.h"
 #include "util/vfs.h"
 }
 

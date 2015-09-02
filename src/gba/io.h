@@ -159,6 +159,8 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value);
 void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value);
 uint16_t GBAIORead(struct GBA* gba, uint32_t address);
 
+bool GBAIOIsReadConstant(uint32_t address);
+
 struct GBASerializedState;
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state);
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state);
