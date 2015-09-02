@@ -228,8 +228,6 @@ void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
 
 void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
-	vita2d_start_drawing();
-	vita2d_clear_screen();
 	switch (screenMode) {
 	case SM_BACKDROP:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
@@ -241,8 +239,6 @@ void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	}
-	vita2d_end_drawing();
-	vita2d_swap_buffers();
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

@@ -14,10 +14,13 @@ struct GUIMenuItem {
 };
 
 DECLARE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
+
+struct GUIBackground;
 struct GUIMenu {
 	const char* title;
 	struct GUIMenuItemList items;
 	size_t index;
+	struct GUIBackground* background;
 };
 
 enum GUIMenuExitReason {

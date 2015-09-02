@@ -63,6 +63,12 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		}
 
 		params->drawStart();
+		if (menu->background) {
+			menu->background->draw(menu->background);
+		}
+		if (params->guiPrepare) {
+			params->guiPrepare();
+		}
 		unsigned y = GUIFontHeight(params->font);
 		GUIFontPrint(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, menu->title);
 		y += 2 * GUIFontHeight(params->font);
@@ -79,6 +85,9 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			if (y + GUIFontHeight(params->font) > params->height) {
 				break;
 			}
+		}
+		if (params->guiFinish) {
+			params->guiFinish();
 		}
 		y += GUIFontHeight(params->font) * 2;
 

@@ -18,9 +18,18 @@ enum {
 	RUNNER_LOAD_STATE,
 };
 
+static void _drawBackground(struct GUIBackground* background) {
+	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
+	if (gbaBackground->p->drawFrame) {
+		gbaBackground->p->drawFrame(gbaBackground->p, true);
+	}
+}
+
 void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
 	GBAContextInit(&runner->context, port);
+	runner->background.d.draw = _drawBackground;
+	runner->background.p = runner;
 	if (runner->setup) {
 		runner->setup(runner);
 	}
@@ -37,6 +46,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	struct GUIMenu pauseMenu = {
 		.title = "Game Paused",
 		.index = 0,
+		.background = &runner->background.d
 	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = (void*) RUNNER_CONTINUE };
@@ -48,9 +58,6 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
 	while (true) {
-		if (runner->params.guiPrepare) {
-			runner->params.guiPrepare();
-		}
 		char path[256];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
 			if (runner->params.guiFinish) {
@@ -60,6 +67,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			return;
 		}
 
+		if (runner->params.guiPrepare) {
+			runner->params.guiPrepare();
+		}
 		// TODO: Message box API
 		runner->params.drawStart();
 		GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
@@ -96,13 +106,12 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				}
 				GBAContextFrame(&runner->context, keys);
 				if (runner->drawFrame) {
+					runner->params.drawStart();
 					runner->drawFrame(runner, false);
+					runner->params.drawEnd();
 				}
 			}
 
-			if (runner->params.guiPrepare) {
-				runner->params.guiPrepare();
-			}
 			GUIInvalidateKeys(&runner->params);
 			int keys = -1; // Huge hack to avoid an extra variable!
 			struct GUIMenuItem item;

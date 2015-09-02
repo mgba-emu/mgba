@@ -116,9 +116,7 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	}
 #endif
 	gspWaitForPPF();
-	_drawStart();
 	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
-	_drawEnd();
 }
 
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {

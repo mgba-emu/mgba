@@ -9,9 +9,17 @@
 #include "gba/context/context.h"
 #include "util/gui.h"
 
+
+struct GBAGUIBackground {
+	struct GUIBackground d;
+	struct GBAGUIRunner* p;
+};
+
 struct GBAGUIRunner {
 	struct GBAContext context;
 	struct GUIParams params;
+
+	struct GBAGUIBackground background;
 
 	void (*setup)(struct GBAGUIRunner*);
 	void (*teardown)(struct GBAGUIRunner*);

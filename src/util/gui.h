@@ -26,6 +26,10 @@ enum GUIInput {
 	GUI_INPUT_MAX
 };
 
+struct GUIBackground {
+	void (*draw)(struct GUIBackground*);
+};
+
 struct GUIParams {
 	unsigned width;
 	unsigned height;

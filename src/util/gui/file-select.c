@@ -61,9 +61,16 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (input & (1 << GUI_INPUT_CANCEL)) {
 				return false;
 			}
+
 			params->drawStart();
+			if (params->guiPrepare) {
+				params->guiPrepare();
+			}
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %lu)", i);
+			if (params->guiFinish) {
+				params->guiFinish();
+			}
 			params->drawEnd();
 		}
 		const char* name = de->name(de);

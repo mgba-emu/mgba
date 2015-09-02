@@ -370,8 +370,6 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	}
 	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
 
-	_drawStart();
-
 	if (faded) {
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
 	} else {
@@ -399,8 +397,6 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	GX_Color1u32(color);
 	GX_TexCoord2s16(0, 0);
 	GX_End();
-
-	_drawEnd();
 }
 
 uint16_t _pollGameInput(struct GBAGUIRunner* runner) {

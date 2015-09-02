@@ -7,6 +7,7 @@
 #define PSP2_CONTEXT_H
 
 #include "psp2-common.h"
+#include "util/gui.h"
 
 struct GBAGUIRunner;
 void GBAPSP2Setup(struct GBAGUIRunner* runner);
