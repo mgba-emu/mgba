@@ -565,8 +565,34 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	gba->memory.io[(address >> 1) + 1] = value >> 16;
 }
 
+bool GBAIOIsReadConstant(uint32_t address) {
+	switch (address) {
+	default:
+		return false;
+	case REG_BG0CNT:
+	case REG_BG1CNT:
+	case REG_BG2CNT:
+	case REG_BG3CNT:
+	case REG_WININ:
+	case REG_WINOUT:
+	case REG_BLDCNT:
+	case REG_BLDALPHA:
+	case REG_DMA0CNT_LO:
+	case REG_DMA1CNT_LO:
+	case REG_DMA2CNT_LO:
+	case REG_DMA3CNT_LO:
+	case REG_KEYINPUT:
+	case REG_IE:
+		return true;
+	}
+}
+
 uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
-	gba->haltPending = false; // IO reads need to invalidate detected idle loops
+	if (!GBAIOIsReadConstant(address)) {
+		// Most IO reads need to disable idle removal
+		gba->haltPending = false;
+	}
+
 	switch (address) {
 	case REG_TM0CNT_LO:
 		GBATimerUpdateRegister(gba, 0);
