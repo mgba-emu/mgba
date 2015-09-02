@@ -56,7 +56,14 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT)) {
 			*item = *GUIMenuItemListGetPointer(&menu->items, menu->index);
-			return GUI_MENU_EXIT_ACCEPT;
+			if (item->submenu) {
+				enum GUIMenuExitReason reason = GUIShowMenu(params, item->submenu, item);
+				if (reason != GUI_MENU_EXIT_BACK) {
+					return reason;
+				}
+			} else {
+				return GUI_MENU_EXIT_ACCEPT;
+			}
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
 			return GUI_MENU_EXIT_BACK;

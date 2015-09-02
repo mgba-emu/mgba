@@ -8,9 +8,11 @@
 
 #include "util/vector.h"
 
+struct GUIMenu;
 struct GUIMenuItem {
 	const char* title;
 	void* data;
+	struct GUIMenu* submenu;
 };
 
 DECLARE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
