@@ -23,7 +23,9 @@ enum GUIInput {
 	GUI_INPUT_LEFT,
 	GUI_INPUT_RIGHT,
 
-	GUI_INPUT_MAX
+	GUI_INPUT_USER_START = 0x10,
+
+	GUI_INPUT_MAX = 0x20
 };
 
 struct GUIBackground {
@@ -38,7 +40,7 @@ struct GUIParams {
 
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
-	int (*pollInput)(void);
+	uint32_t (*pollInput)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
 
@@ -53,7 +55,7 @@ struct GUIParams {
 #define GUI_PARAMS_TRAIL {}, "", 0
 
 void GUIInit(struct GUIParams* params);
-void GUIPollInput(struct GUIParams* params, int* newInput, int* heldInput);
+void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);
 void GUIInvalidateKeys(struct GUIParams* params);
 
 #endif

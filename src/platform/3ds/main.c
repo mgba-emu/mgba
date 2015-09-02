@@ -126,9 +126,9 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	return activeKeys;
 }
 
-static int _pollInput(void) {
+static uint32_t _pollInput(void) {
 	hidScanInput();
-	int keys = 0;
+	uint32_t keys = 0;
 	int activeKeys = hidKeysHeld();
 	if (activeKeys & KEY_X) {
 		keys |= 1 << GUI_INPUT_CANCEL;
@@ -150,6 +150,12 @@ static int _pollInput(void) {
 	}
 	if (activeKeys & KEY_DOWN) {
 		keys |= 1 << GUI_INPUT_DOWN;
+	}
+	if (activeKeys & KEY_CSTICK_UP) {
+		keys |= 1 << GBA_GUI_INPUT_INCREASE_BRIGHTNESS;
+	}
+	if (activeKeys & KEY_CSTICK_DOWN) {
+		keys |= 1 << GBA_GUI_INPUT_DECREASE_BRIGHTNESS;
 	}
 	return keys;
 }

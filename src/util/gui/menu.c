@@ -21,7 +21,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 
 	GUIInvalidateKeys(params);
 	while (true) {
-		int newInput = 0;
+		uint32_t newInput = 0;
 		GUIPollInput(params, &newInput, 0);
 
 		if (newInput & (1 << GUI_INPUT_UP) && menu->index > 0) {

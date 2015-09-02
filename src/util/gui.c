@@ -10,9 +10,9 @@ void GUIInit(struct GUIParams* params) {
 	strncpy(params->currentPath, params->basePath, PATH_MAX);
 }
 
-void GUIPollInput(struct GUIParams* params, int* newInputOut, int* heldInput) {
-	int input = params->pollInput();
-	int newInput = 0;
+void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* heldInput) {
+	uint32_t input = params->pollInput();
+	uint32_t newInput = 0;
 	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
 		if (input & (1 << i)) {
 			++params->inputHistory[i];

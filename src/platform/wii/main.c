@@ -33,7 +33,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 
 static void _drawStart(void);
 static void _drawEnd(void);
-static int _pollInput(void);
+static uint32_t _pollInput(void);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
@@ -224,7 +224,7 @@ static void _drawEnd(void) {
 	VIDEO_Flush();
 }
 
-static int _pollInput(void) {
+static uint32_t _pollInput(void) {
 	PAD_ScanPads();
 	u16 padkeys = PAD_ButtonsHeld(0);
 

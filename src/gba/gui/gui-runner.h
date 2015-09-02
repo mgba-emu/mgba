@@ -9,10 +9,19 @@
 #include "gba/context/context.h"
 #include "util/gui.h"
 
+enum GBAGUIInput {
+	GBA_GUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
+	GBA_GUI_INPUT_DECREASE_BRIGHTNESS
+};
 
 struct GBAGUIBackground {
 	struct GUIBackground d;
 	struct GBAGUIRunner* p;
+};
+
+struct GBAGUIRunnerLux {
+	struct GBALuminanceSource d;
+	int luxLevel;
 };
 
 struct GBAGUIRunner {
@@ -20,6 +29,7 @@ struct GBAGUIRunner {
 	struct GUIParams params;
 
 	struct GBAGUIBackground background;
+	struct GBAGUIRunnerLux luminanceSource;
 
 	void (*setup)(struct GBAGUIRunner*);
 	void (*teardown)(struct GBAGUIRunner*);

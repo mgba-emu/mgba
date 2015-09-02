@@ -56,7 +56,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 	while ((de = dir->listNext(dir))) {
 		++i;
 		if (!(i % SCANNING_THRESHOLD)) {
-			int input = 0;
+			uint32_t input = 0;
 			GUIPollInput(params, &input, 0);
 			if (input & (1 << GUI_INPUT_CANCEL)) {
 				return false;

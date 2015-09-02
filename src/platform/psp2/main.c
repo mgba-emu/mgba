@@ -30,7 +30,7 @@ static void _drawEnd(void) {
 	vita2d_swap_buffers();
 }
 
-static int _pollInput(void) {
+static uint32_t _pollInput(void) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 	int input = 0;

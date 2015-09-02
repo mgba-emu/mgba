@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
+#include "gba/interface.h"
 #include "gba/serialize.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -36,9 +37,26 @@ static void _drawBackground(struct GUIBackground* background) {
 	}
 }
 
+static void _updateLux(struct GBALuminanceSource* lux) {
+	UNUSED(lux);
+}
+
+static uint8_t _readLux(struct GBALuminanceSource* lux) {
+	struct GBAGUIRunnerLux* runnerLux = (struct GBAGUIRunnerLux*) lux;
+	int value = 0x16;
+	if (runnerLux->luxLevel > 0) {
+		value += GBA_LUX_LEVELS[runnerLux->luxLevel - 1];
+	}
+	return 0xFF - value;
+}
+
 void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
 	GBAContextInit(&runner->context, port);
+	runner->luminanceSource.d.readLuminance = _readLux;
+	runner->luminanceSource.d.sample = _updateLux;
+	runner->luminanceSource.luxLevel = 0;
+	runner->context.gba->luminanceSource = &runner->luminanceSource.d;
 	runner->background.d.draw = _drawBackground;
 	runner->background.p = runner;
 	if (runner->setup) {
@@ -139,9 +157,20 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		bool running = true;
 		while (running) {
 			while (true) {
-				int guiKeys = runner->params.pollInput();
+				uint32_t guiKeys;
+				GUIPollInput(&runner->params, &guiKeys, 0);
 				if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
 					break;
+				}
+				if (guiKeys & (1 << GBA_GUI_INPUT_INCREASE_BRIGHTNESS)) {
+					if (runner->luminanceSource.luxLevel < 10) {
+						++runner->luminanceSource.luxLevel;
+					}
+				}
+				if (guiKeys & (1 << GBA_GUI_INPUT_DECREASE_BRIGHTNESS)) {
+					if (runner->luminanceSource.luxLevel > 0) {
+						--runner->luminanceSource.luxLevel;
+					}
 				}
 				uint16_t keys = runner->pollGameInput(runner);
 				if (runner->prepareForFrame) {
@@ -156,7 +185,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			}
 
 			GUIInvalidateKeys(&runner->params);
-			int keys = -1; // Huge hack to avoid an extra variable!
+			uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
 			struct GUIMenuItem item;
 			enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
 			if (reason == GUI_MENU_EXIT_ACCEPT) {
