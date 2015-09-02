@@ -40,7 +40,6 @@ static void _guiFinish(void);
 static void _setup(struct GBAGUIRunner* runner);
 static void _gameLoaded(struct GBAGUIRunner* runner);
 static void _gameUnloaded(struct GBAGUIRunner* runner);
-static void _prepareForFrame(struct GBAGUIRunner* runner);
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
 
@@ -169,7 +168,7 @@ int main() {
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
-		.prepareForFrame = _prepareForFrame,
+		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
 		.pollGameInput = _pollGameInput
 	};
@@ -311,8 +310,9 @@ void _setup(struct GBAGUIRunner* runner) {
 	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000);
+	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 #endif
 }
 
@@ -335,7 +335,7 @@ void _gameLoaded(struct GBAGUIRunner* runner) {
 	}
 }
 
-void _prepareForFrame(struct GBAGUIRunner* runner) {
+void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	int available = blip_samples_avail(runner->context.gba->audio.left);
 	if (available + audioBufferSize > SAMPLES) {
@@ -352,10 +352,7 @@ void _prepareForFrame(struct GBAGUIRunner* runner) {
 		AUDIO_StartDMA();
 	}
 #endif
-}
 
-void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
-	UNUSED(runner);
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
 		color |= 0xC0;
