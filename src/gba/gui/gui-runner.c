@@ -12,10 +12,21 @@
 #include "util/vfs.h"
 
 enum {
-	RUNNER_CONTINUE,
-	RUNNER_EXIT,
-	RUNNER_SAVE_STATE,
-	RUNNER_LOAD_STATE,
+	RUNNER_CONTINUE = 1,
+	RUNNER_EXIT = 2,
+	RUNNER_SAVE_STATE = 3,
+	RUNNER_LOAD_STATE = 4,
+	RUNNER_COMMAND_MASK = 0xFFFF,
+
+	RUNNER_STATE_1 = 0x10000,
+	RUNNER_STATE_2 = 0x20000,
+	RUNNER_STATE_3 = 0x30000,
+	RUNNER_STATE_4 = 0x40000,
+	RUNNER_STATE_5 = 0x50000,
+	RUNNER_STATE_6 = 0x60000,
+	RUNNER_STATE_7 = 0x70000,
+	RUNNER_STATE_8 = 0x80000,
+	RUNNER_STATE_9 = 0x90000,
 };
 
 static void _drawBackground(struct GUIBackground* background) {
@@ -48,12 +59,44 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		.index = 0,
 		.background = &runner->background.d
 	};
+	struct GUIMenu stateSaveMenu = {
+		.title = "Save state",
+		.index = 0,
+		.background = &runner->background.d
+	};
+	struct GUIMenu stateLoadMenu = {
+		.title = "Load state",
+		.index = 0,
+		.background = &runner->background.d
+	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
+	GUIMenuItemListInit(&stateSaveMenu.items, 9);
+	GUIMenuItemListInit(&stateLoadMenu.items, 9);
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = (void*) RUNNER_CONTINUE };
 #if !(defined(__POWERPC__) || defined(__PPC__))
 	// PPC doesn't have working savestates yet
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Save state", .data = (void*) RUNNER_SAVE_STATE };
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Load state", .data = (void*) RUNNER_LOAD_STATE };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Save state", .submenu = &stateSaveMenu };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Load state", .submenu = &stateLoadMenu };
+
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_1) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_2) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_3) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_4) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_5) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_6) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_7) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_8) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE_9) };
+
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_1) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_2) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_3) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_4) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_5) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_6) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_7) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_8) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_9) };
 #endif
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
@@ -118,20 +161,20 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
 			if (reason == GUI_MENU_EXIT_ACCEPT) {
 				struct VFile* vf;
-				switch ((int) item.data) {
+				switch (((int) item.data) & RUNNER_COMMAND_MASK) {
 				case RUNNER_EXIT:
 					running = false;
 					keys = 0;
 					break;
 				case RUNNER_SAVE_STATE:
-					vf = GBAGetState(runner->context.gba, 0, 1, true);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, true);
 					if (vf) {
 						GBASaveStateNamed(runner->context.gba, vf, true);
 						vf->close(vf);
 					}
 					break;
 				case RUNNER_LOAD_STATE:
-					vf = GBAGetState(runner->context.gba, 0, 1, false);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, false);
 					if (vf) {
 						GBALoadStateNamed(runner->context.gba, vf);
 						vf->close(vf);
@@ -155,4 +198,6 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		GBAContextUnloadROM(&runner->context);
 	}
 	GUIMenuItemListDeinit(&pauseMenu.items);
+	GUIMenuItemListDeinit(&stateSaveMenu.items);
+	GUIMenuItemListDeinit(&stateLoadMenu.items);
 }
