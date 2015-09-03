@@ -184,6 +184,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				}
 			}
 
+			if (runner->paused) {
+				runner->paused(runner);
+			}
 			GUIInvalidateKeys(&runner->params);
 			uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
 			struct GUIMenuItem item;
@@ -218,6 +221,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			}
 			if (runner->params.guiFinish) {
 				runner->params.guiFinish();
+			}
+			if (runner->unpaused) {
+				runner->unpaused(runner);
 			}
 		}
 		GBAContextStop(&runner->context);

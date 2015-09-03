@@ -170,6 +170,8 @@ int main() {
 		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
+		.paused = _gameUnloaded,
+		.unpaused = 0,
 		.pollGameInput = _pollGameInput
 	};
 	GBAGUIInit(&runner, 0);
