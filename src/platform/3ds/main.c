@@ -18,7 +18,8 @@
 #include <3ds.h>
 #include <sf2d.h>
 
-#define AUDIO_SAMPLES 0x800
+#define AUDIO_SAMPLES 0x80
+#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 32)
 
 FS_archive sdmcArchive;
 
@@ -35,6 +36,7 @@ static struct GBAVideoSoftwareRenderer renderer;
 static struct GBAAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
+static size_t audioPos = 0;
 static sf2d_texture* tex;
 
 extern bool allocateRomBuffer(void);
@@ -81,13 +83,16 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	}
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double ratio = GBAAudioCalculateRatio(1, 60, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 0x8000 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000 * ratio);
+	double ratio = GBAAudioCalculateRatio(1, 59.826, 1);
+	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 44100 * ratio);
+	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 44100 * ratio);
 #endif
 	if (hasSound) {
-		memset(audioLeft, 0, AUDIO_SAMPLES * sizeof(int16_t));
-		memset(audioRight, 0, AUDIO_SAMPLES * sizeof(int16_t));
+		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		audioPos = 0;
+		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 44100, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 44100, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 	}
 }
 
@@ -184,21 +189,24 @@ static int32_t _readGyroZ(struct GBARotationSource* source) {
 
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
-	memset(audioLeft, 0, AUDIO_SAMPLES * sizeof(int16_t));
-	memset(audioRight, 0, AUDIO_SAMPLES * sizeof(int16_t));
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_read_samples(audio->left, audioLeft, AUDIO_SAMPLES, false);
-	blip_read_samples(audio->right, audioRight, AUDIO_SAMPLES, false);
+	blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+	blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
 #elif RESAMPLE_LIBRARY == RESAMPLE_NN
-	GBAAudioCopy(audio, audioLeft, audioRight, AUDIO_SAMPLES);
+	GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
 #endif
-	GSPGPU_FlushDataCache(0, (void*) audioLeft, AUDIO_SAMPLES * sizeof(int16_t));
-	GSPGPU_FlushDataCache(0, (void*) audioRight, AUDIO_SAMPLES * sizeof(int16_t));
-	csndPlaySound(0x8, SOUND_ONE_SHOT | SOUND_FORMAT_16BIT, 0x8000, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLES * sizeof(int16_t));
-	csndPlaySound(0x9, SOUND_ONE_SHOT | SOUND_FORMAT_16BIT, 0x8000, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLES * sizeof(int16_t));
-	CSND_SetPlayState(0x8, 1);
-	CSND_SetPlayState(0x9, 1);
-	csndExecCmds(false);
+	GSPGPU_FlushDataCache(0, (void*) &audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+	GSPGPU_FlushDataCache(0, (void*) &audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
+	if (audioPos == AUDIO_SAMPLE_BUFFER / 2) {
+		u8 playing = 0;
+		csndIsPlaying(0x8, &playing);
+		if (!playing) {
+			CSND_SetPlayState(0x8, 1);
+			CSND_SetPlayState(0x9, 1);
+			csndExecCmds(false);
+		}
+	}
 }
 
 int main() {
@@ -218,8 +226,8 @@ int main() {
 	}
 
 	if (hasSound) {
-		audioLeft = linearAlloc(AUDIO_SAMPLES * sizeof(int16_t));
-		audioRight = linearAlloc(AUDIO_SAMPLES * sizeof(int16_t));
+		audioLeft = linearAlloc(AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		audioRight = linearAlloc(AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 	}
 
 	sf2d_init();
