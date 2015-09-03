@@ -115,6 +115,8 @@ struct GBAVideoSoftwareRenderer {
 	color_t* outputBuffer;
 	int outputBufferStride;
 
+	uint32_t* temporaryBuffer;
+
 	GBARegisterDISPCNT dispcnt;
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
