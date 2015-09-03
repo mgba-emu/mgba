@@ -198,7 +198,7 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	GSPGPU_FlushDataCache(0, (void*) &audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 	GSPGPU_FlushDataCache(0, (void*) &audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
-	if (audioPos == AUDIO_SAMPLE_BUFFER / 2) {
+	if (audioPos == AUDIO_SAMPLE_BUFFER / 8) {
 		u8 playing = 0;
 		csndIsPlaying(0x8, &playing);
 		if (!playing) {
