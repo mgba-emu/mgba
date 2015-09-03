@@ -196,7 +196,7 @@ struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool writ
 #ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	unsigned stride;
-	void* pixels = 0;
+	const void* pixels = 0;
 	gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
 	if (!pixels) {
 		return false;
@@ -367,8 +367,8 @@ void GBARecordFrame(struct GBAThread* thread) {
 
 	if (thread->rewindScreenBuffer) {
 		unsigned stride;
-		uint8_t* pixels = 0;
-		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (void*) &pixels);
+		const uint8_t* pixels = 0;
+		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (const void**) &pixels);
 		if (pixels) {
 			size_t y;
 			for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {

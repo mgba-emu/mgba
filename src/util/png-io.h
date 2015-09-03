@@ -20,7 +20,7 @@ enum {
 
 png_structp PNGWriteOpen(struct VFile* source);
 png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height);
-bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, void* pixels);
+bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
 bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* data);
 void PNGWriteClose(png_structp png, png_infop info);
 

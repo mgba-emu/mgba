@@ -407,7 +407,7 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 
 static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
 	UNUSED(stream);
-	void* pixels;
+	const void* pixels;
 	unsigned stride;
 	renderer->getPixels(renderer, &stride, &pixels);
 	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);

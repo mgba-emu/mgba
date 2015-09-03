@@ -53,9 +53,9 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 		return;
 	}
 
-	uint8_t* pixels;
+	const uint8_t* pixels;
 	unsigned stride;
-	renderer->getPixels(renderer, &stride, (void**) &pixels);
+	renderer->getPixels(renderer, &stride, (const void**) &pixels);
 	size_t row;
 	for (row = 0; row < VIDEO_VERTICAL_PIXELS; ++row) {
 		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);

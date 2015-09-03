@@ -423,9 +423,9 @@ void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* 
 	if (!encoder->context) {
 		return;
 	}
-	uint8_t* pixels;
+	const uint8_t* pixels;
 	unsigned stride;
-	renderer->getPixels(renderer, &stride, (void**) &pixels);
+	renderer->getPixels(renderer, &stride, (const void**) &pixels);
 	stride *= BYTES_PER_PIXEL;
 
 	AVPacket packet;

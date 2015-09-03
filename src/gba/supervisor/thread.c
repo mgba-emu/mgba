@@ -757,7 +757,7 @@ struct GBAThread* GBAThreadGetContext(void) {
 #ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
-	void* pixels = 0;
+	const void* pixels = 0;
 	struct VFile* vf = VDirOptionalOpenIncrementFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);

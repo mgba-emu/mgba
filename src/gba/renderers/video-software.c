@@ -19,7 +19,7 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
-static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
 static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
@@ -558,7 +558,7 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 }
 
-static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels) {
+static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
 	*stride = softwareRenderer->outputBufferStride;
