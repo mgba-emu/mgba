@@ -29,7 +29,7 @@ enum GUIInput {
 };
 
 struct GUIBackground {
-	void (*draw)(struct GUIBackground*);
+	void (*draw)(struct GUIBackground*, void* context);
 };
 
 struct GUIParams {

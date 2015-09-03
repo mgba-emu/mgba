@@ -37,6 +37,7 @@ struct GBAGUIRunner {
 	void (*gameUnloaded)(struct GBAGUIRunner*);
 	void (*prepareForFrame)(struct GBAGUIRunner*);
 	void (*drawFrame)(struct GBAGUIRunner*, bool faded);
+	void (*drawScreenshot)(struct GBAGUIRunner*, const uint32_t* pixels, bool faded);
 	void (*paused)(struct GBAGUIRunner*);
 	void (*unpaused)(struct GBAGUIRunner*);
 	uint16_t (*pollGameInput)(struct GBAGUIRunner*);

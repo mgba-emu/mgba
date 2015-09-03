@@ -112,15 +112,39 @@ static void _gameUnloaded(struct GBAGUIRunner* runner) {
 }
 
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
+	UNUSED(runner);
+	GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
 	GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
+	gspWaitForPPF();
 	GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (!hasSound) {
 		blip_clear(runner->context.gba->audio.left);
 		blip_clear(runner->context.gba->audio.right);
 	}
 #endif
+}
+
+static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
+	UNUSED(runner);
+	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
+	unsigned y, x;
+	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+			u16 pixel = (*pixels >> 19) & 0x1F;
+			pixel |= (*pixels >> 5) & 0x7C0;
+			pixel |= (*pixels << 8) & 0xF800;
+			newPixels[y * 256 + x] = pixel;
+			++pixels;
+		}
+		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, 32);
+	}
+	GSPGPU_FlushDataCache(0, (void*) newPixels, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 2);
+	GX_SetDisplayTransfer(0, (void*) newPixels, GX_BUFFER_DIM(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
 	gspWaitForPPF();
+	linearFree(newPixels);
+	GSPGPU_FlushDataCache(0, (void*) tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
 	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
 }
 
@@ -264,6 +288,7 @@ int main() {
 		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
+		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
 		.pollGameInput = _pollGameInput

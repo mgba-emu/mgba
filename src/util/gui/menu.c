@@ -71,7 +71,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 
 		params->drawStart();
 		if (menu->background) {
-			menu->background->draw(menu->background);
+			menu->background->draw(menu->background, GUIMenuItemListGetPointer(&menu->items, menu->index)->data);
 		}
 		if (params->guiPrepare) {
 			params->guiPrepare();

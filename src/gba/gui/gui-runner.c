@@ -10,6 +10,8 @@
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
 #include "util/gui/menu.h"
+#include "util/memory.h"
+#include "util/png-io.h"
 #include "util/vfs.h"
 
 enum {
@@ -30,10 +32,43 @@ enum {
 	RUNNER_STATE_9 = 0x90000,
 };
 
-static void _drawBackground(struct GUIBackground* background) {
+static void _drawBackground(struct GUIBackground* background, void* context) {
+	UNUSED(context);
 	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
 	if (gbaBackground->p->drawFrame) {
 		gbaBackground->p->drawFrame(gbaBackground->p, true);
+	}
+}
+
+static void _drawState(struct GUIBackground* background, void* id) {
+	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
+	int stateId = ((int) id) >> 16;
+	if (gbaBackground->p->drawScreenshot) {
+		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, 0, stateId, false);
+		uint32_t* pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+		bool success = false;
+		if (vf && isPNG(vf) && pixels) {
+			png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+			png_infop info = png_create_info_struct(png);
+			png_infop end = png_create_info_struct(png);
+			if (png && info && end) {
+				success = PNGReadHeader(png, info);
+				success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
+				success = success && PNGReadFooter(png, end);
+			}
+			PNGReadClose(png, info, end);
+		}
+		if (vf) {
+			vf->close(vf);
+		}
+		if (success) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, true);
+		} else if (gbaBackground->p->drawFrame) {
+			gbaBackground->p->drawFrame(gbaBackground->p, true);
+		}
+		if (pixels) {
+			mappedMemoryFree(pixels, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+		}
 	}
 }
 
@@ -72,6 +107,12 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 }
 
 void GBAGUIRunloop(struct GBAGUIRunner* runner) {
+	struct GBAGUIBackground drawState = {
+		.d = {
+			.draw = _drawState
+		},
+		.p = runner
+	};
 	struct GUIMenu pauseMenu = {
 		.title = "Game Paused",
 		.index = 0,
@@ -80,12 +121,12 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	struct GUIMenu stateSaveMenu = {
 		.title = "Save state",
 		.index = 0,
-		.background = &runner->background.d
+		.background = &drawState.d
 	};
 	struct GUIMenu stateLoadMenu = {
 		.title = "Load state",
 		.index = 0,
-		.background = &runner->background.d
+		.background = &drawState.d
 	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
 	GUIMenuItemListInit(&stateSaveMenu.items, 9);
