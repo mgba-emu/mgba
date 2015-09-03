@@ -10,10 +10,10 @@
 #include <3ds.h>
 
 void* anonymousMemoryMap(size_t size) {
-	return malloc(size);
+	return linearAlloc(size);
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
 	UNUSED(size);
-	free(memory);
+	linearFree(memory);
 }
