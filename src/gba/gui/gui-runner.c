@@ -44,8 +44,16 @@ static void _drawState(struct GUIBackground* background, void* id) {
 	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
 	int stateId = ((int) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
+		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
+			return;
+		}
 		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, 0, stateId, false);
-		uint32_t* pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+		uint32_t* pixels = gbaBackground->screenshot;
+		if (!pixels) {
+			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+			gbaBackground->screenshot = pixels;
+		}
 		bool success = false;
 		if (vf && isPNG(vf) && pixels) {
 			png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
@@ -63,11 +71,9 @@ static void _drawState(struct GUIBackground* background, void* id) {
 		}
 		if (success) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, true);
+			gbaBackground->screenshotId = (int) id;
 		} else if (gbaBackground->p->drawFrame) {
 			gbaBackground->p->drawFrame(gbaBackground->p, true);
-		}
-		if (pixels) {
-			mappedMemoryFree(pixels, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 		}
 	}
 }
@@ -111,7 +117,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		.d = {
 			.draw = _drawState
 		},
-		.p = runner
+		.p = runner,
+		.screenshot = 0,
+		.screenshotId = 0
 	};
 	struct GUIMenu pauseMenu = {
 		.title = "Game Paused",
@@ -165,8 +173,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			if (runner->params.guiFinish) {
 				runner->params.guiFinish();
 			}
-			GUIMenuItemListDeinit(&pauseMenu.items);
-			return;
+			break;
 		}
 
 		if (runner->params.guiPrepare) {
@@ -272,6 +279,10 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			runner->gameUnloaded(runner);
 		}
 		GBAContextUnloadROM(&runner->context);
+		drawState.screenshotId = 0;
+	}
+	if (drawState.screenshot) {
+		mappedMemoryFree(drawState.screenshot, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 	}
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);

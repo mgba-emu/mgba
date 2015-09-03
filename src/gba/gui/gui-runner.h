@@ -17,6 +17,9 @@ enum GBAGUIInput {
 struct GBAGUIBackground {
 	struct GUIBackground d;
 	struct GBAGUIRunner* p;
+
+	uint32_t* screenshot;
+	int screenshotId;
 };
 
 struct GBAGUIRunnerLux {
