@@ -83,16 +83,16 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	}
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double ratio = GBAAudioCalculateRatio(1, 59.826, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 44100 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 44100 * ratio);
+	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
+	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
 #endif
 	if (hasSound) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		audioPos = 0;
-		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 44100, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 44100, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 	}
 }
 

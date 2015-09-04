@@ -312,7 +312,7 @@ void _setup(struct GBAGUIRunner* runner) {
 	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
 	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 #endif
