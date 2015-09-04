@@ -6,14 +6,14 @@
 #include "ring-fifo.h"
 
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc) {
-	buffer->data = malloc(capacity);
+	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;
 	buffer->maxalloc = maxalloc;
 	RingFIFOClear(buffer);
 }
 
 void RingFIFODeinit(struct RingFIFO* buffer) {
-	free(buffer->data);
+	memoryMapFree(buffer->data, buffer->capacity);
 	buffer->data = 0;
 }
 
