@@ -67,7 +67,7 @@ static void _setup(struct GBAGUIRunner* runner) {
 	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = linearAlloc(256 * VIDEO_VERTICAL_PIXELS * 2);
+	renderer.outputBuffer = linearMemAlign(256 * 256 * 2, 0x100);
 	renderer.outputBufferStride = 256;
 	runner->context.renderer = &renderer.d;
 
@@ -115,8 +115,6 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
 	GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
-	gspWaitForPPF();
-	GSPGPU_FlushDataCache(0, tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
 	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (!hasSound) {
@@ -128,7 +126,7 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 
 static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
-	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
+	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x100);
 	unsigned y, x;
 	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -256,8 +254,7 @@ int main() {
 
 	sf2d_init();
 	sf2d_set_clear_color(0);
-	tex = sf2d_create_texture(256, 256, TEXFMT_RGB565, SF2D_PLACE_RAM);
-	memset(tex->data, 0, 256 * 256 * 2);
+	tex = sf2d_create_texture(256, 256, TEXFMT_RGB565, SF2D_PLACE_VRAM);
 
 	sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
