@@ -18,8 +18,18 @@
 #include <3ds.h>
 #include <sf2d.h>
 
+static enum ScreenMode {
+	SM_PA_BOTTOM,
+	SM_AF_BOTTOM,
+	SM_SF_BOTTOM,
+	SM_PA_TOP,
+	SM_AF_TOP,
+	SM_SF_TOP,
+	SM_MAX
+} screenMode = SM_PA_BOTTOM;
+
 #define AUDIO_SAMPLES 0x80
-#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 32)
+#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
 
 FS_archive sdmcArchive;
 
@@ -45,7 +55,11 @@ static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const ch
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
 
 static void _drawStart(void) {
-	sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+	if (screenMode < SM_PA_TOP) {
+		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+	} else {
+		sf2d_start_frame(GFX_TOP, GFX_LEFT);
+	}
 }
 
 static void _drawEnd(void) {
@@ -111,11 +125,34 @@ static void _gameUnloaded(struct GBAGUIRunner* runner) {
 	}
 }
 
+static void _drawTex(bool faded) {
+	switch (screenMode) {
+	case SM_PA_TOP:
+		sf2d_draw_texture_scale_blend(tex, 80, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	case SM_PA_BOTTOM:
+		sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	case SM_AF_TOP:
+		sf2d_draw_texture_scale_blend(tex, 20, 384, 1.5, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	case SM_AF_BOTTOM:
+		sf2d_draw_texture_scale_blend(tex, 0, 368 - 40 / 3, 4 / 3.0, -4 / 3.0, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	case SM_SF_TOP:
+		sf2d_draw_texture_scale_blend(tex, 0, 384, 5 / 3.0, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	case SM_SF_BOTTOM:
+		sf2d_draw_texture_scale_blend(tex, 0, 384, 4 / 3.0, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		break;
+	}
+}
+
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
 	GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
-	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+	_drawTex(faded);
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (!hasSound) {
 		blip_clear(runner->context.gba->audio.left);
@@ -140,10 +177,8 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 	}
 	GSPGPU_FlushDataCache(0, (void*) newPixels, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 2);
 	GX_SetDisplayTransfer(0, (void*) newPixels, GX_BUFFER_DIM(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
-	gspWaitForPPF();
 	linearFree(newPixels);
-	GSPGPU_FlushDataCache(0, (void*) tex->data, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+	_drawTex(faded);
 }
 
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
@@ -153,12 +188,25 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	return activeKeys;
 }
 
+static void _incrementScreenMode(struct GBAGUIRunner* runner) {
+	UNUSED(runner);
+	// Clear the buffer
+	_drawStart();
+	_drawEnd();
+	_drawStart();
+	_drawEnd();
+	screenMode = (screenMode + 1) % SM_MAX;
+}
+
 static uint32_t _pollInput(void) {
 	hidScanInput();
 	uint32_t keys = 0;
 	int activeKeys = hidKeysHeld();
 	if (activeKeys & KEY_X) {
 		keys |= 1 << GUI_INPUT_CANCEL;
+	}
+	if (activeKeys & KEY_Y) {
+		keys |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
 	}
 	if (activeKeys & KEY_B) {
 		keys |= 1 << GUI_INPUT_BACK;
@@ -220,7 +268,7 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	GSPGPU_FlushDataCache(0, (void*) &audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 	GSPGPU_FlushDataCache(0, (void*) &audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
-	if (audioPos == AUDIO_SAMPLE_BUFFER / 8) {
+	if (audioPos == AUDIO_SAMPLES * 3) {
 		u8 playing = 0;
 		csndIsPlaying(0x8, &playing);
 		if (!playing) {
@@ -288,6 +336,7 @@ int main() {
 		.drawScreenshot = _drawScreenshot,
 		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
+		.incrementScreenMode = _incrementScreenMode,
 		.pollGameInput = _pollGameInput
 	};
 	GBAGUIInit(&runner, 0);

@@ -17,6 +17,7 @@ void GBAPSP2LoadROM(struct GBAGUIRunner* runner);
 void GBAPSP2UnloadROM(struct GBAGUIRunner* runner);
 void GBAPSP2PrepareForFrame(struct GBAGUIRunner* runner);
 void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded);
+void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner);
 uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner);
 
 #endif

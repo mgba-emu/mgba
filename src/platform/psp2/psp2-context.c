@@ -29,12 +29,12 @@
 
 #include <vita2d.h>
 
-enum ScreenMode {
+static enum ScreenMode {
 	SM_BACKDROP,
 	SM_PLAIN,
 	SM_FULL,
 	SM_MAX
-};
+} screenMode;
 
 static struct GBAVideoSoftwareRenderer renderer;
 static vita2d_texture* tex;
@@ -43,8 +43,6 @@ static struct GBASceRotationSource {
 	struct GBARotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
-
-static int screenMode = 0;
 
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
@@ -239,6 +237,10 @@ void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	}
+}
+
+void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner) {
+	screenMode = (screenMode + 1) % SM_MAX;
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

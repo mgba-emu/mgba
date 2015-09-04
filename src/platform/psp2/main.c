@@ -37,6 +37,9 @@ static uint32_t _pollInput(void) {
 	if (pad.buttons & PSP2_CTRL_TRIANGLE) {
 		input |= 1 << GUI_INPUT_CANCEL;
 	}
+	if (pad.buttons & PSP2_CTRL_SQUARE) {
+		input |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
+	}
 	if (pad.buttons & PSP2_CTRL_CIRCLE) {
 		input |= 1 << GUI_INPUT_BACK;
 	}
@@ -78,6 +81,9 @@ int main() {
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.paused = 0,
+		.unpaused = 0,
+		.incrementScreenMode = GBAPSP2IncrementScreenMode,
 		.pollGameInput = GBAPSP2PollInput
 	};
 

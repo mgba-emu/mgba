@@ -220,6 +220,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 						--runner->luminanceSource.luxLevel;
 					}
 				}
+				if (guiKeys & (1 << GBA_GUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
+					runner->incrementScreenMode(runner);
+				}
 				uint16_t keys = runner->pollGameInput(runner);
 				if (runner->prepareForFrame) {
 					runner->prepareForFrame(runner);
