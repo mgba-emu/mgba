@@ -98,7 +98,7 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	if (!thread->stack) {
 		return 1;
 	}
-	return svcCreateThread(&thread->handle, entry, (u32) context, &thread->stack[0x8000], 0x1F, 1);
+	return svcCreateThread(&thread->handle, entry, (u32) context, (u32*) &thread->stack[0x8000], 0x1F, 1);
 }
 
 static inline int ThreadJoin(Thread thread) {
@@ -107,8 +107,9 @@ static inline int ThreadJoin(Thread thread) {
 	return 0;
 }
 
-static void ThreadSetName(const char* name) {
-
+static inline void ThreadSetName(const char* name) {
+	UNUSED(name);
+	// Unimplemented
 }
 
 #endif
