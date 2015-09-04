@@ -69,7 +69,7 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	ConditionInit(&proxyRenderer->fromThreadCond);
 	ConditionInit(&proxyRenderer->toThreadCond);
 	MutexInit(&proxyRenderer->mutex);
-	RingFIFOInit(&proxyRenderer->dirtyQueue, 0x200000, 0x1000);
+	RingFIFOInit(&proxyRenderer->dirtyQueue, 0x40000, 0x1000);
 	proxyRenderer->threadState = PROXY_THREAD_STOPPED;
 
 	proxyRenderer->vramProxy = anonymousMemoryMap(SIZE_VRAM);
@@ -299,16 +299,23 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 				break;
 			default:
 				// FIFO was corrupted
-				abort();
+				proxyRenderer->threadState = PROXY_THREAD_STOPPED;
 				break;
 			}
 		}
 		MutexLock(&proxyRenderer->mutex);
-		proxyRenderer->threadState = PROXY_THREAD_IDLE;
 		ConditionWake(&proxyRenderer->fromThreadCond);
+		if (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
+			proxyRenderer->threadState = PROXY_THREAD_IDLE;
+		} else {
+			break;
+		}
 	}
 	MutexUnlock(&proxyRenderer->mutex);
 
+#ifdef _3DS
+	svcExitThread();
+#endif
 	return 0;
 }
 
