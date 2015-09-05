@@ -33,10 +33,10 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
                    COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw)
 
 add_custom_target(${BINARY_NAME}.3dsx ALL
-	              ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
-	              DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
+                  ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
+                  DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
 
 add_custom_target(run ${3DSLINK} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
                   DEPENDS ${BINARY_NAME}.3dsx)
 
-install(FILES ${BINARY_NAME}.3dsx ${BINARY_NAME}.smdh DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.smdh DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
