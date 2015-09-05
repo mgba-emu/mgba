@@ -80,7 +80,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				return GUI_MENU_EXIT_ACCEPT;
 			}
 		}
-		if ((cursorOverItem == 1 && cursor == GUI_CURSOR_UP)) {
+		if (cursorOverItem == 1 && (cursor == GUI_CURSOR_UP || cursor == GUI_CURSOR_NOT_PRESENT)) {
 			cursorOverItem = 2;
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {

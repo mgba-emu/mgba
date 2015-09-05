@@ -238,7 +238,7 @@ static uint32_t _pollInput(void) {
 static enum GUICursorState _pollCursor(int* x, int* y) {
 	hidScanInput();
 	if (!(hidKeysHeld() & KEY_TOUCH)) {
-		return GUI_CURSOR_UP;
+		return GUI_CURSOR_NOT_PRESENT;
 	}
 	touchPosition pos;
 	hidTouchRead(&pos);

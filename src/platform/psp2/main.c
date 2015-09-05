@@ -68,7 +68,7 @@ static enum GUICursorState _pollCursor(int* x, int* y) {
 	SceTouchData touch;
 	sceTouchPeek(0, &touch, 1);
 	if (touch.reportNum < 1) {
-		return GUI_CURSOR_UP;
+		return GUI_CURSOR_NOT_PRESENT;
 	}
 	*x = touch.report[0].x / 2;
 	*y = touch.report[0].y / 2;

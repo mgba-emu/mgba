@@ -43,7 +43,7 @@ enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y) {
 			params->cursorState = GUI_CURSOR_DRAGGING;
 			return GUI_CURSOR_DRAGGING;
 		}
-		if (state == GUI_CURSOR_UP) {
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
 			params->cursorState = GUI_CURSOR_UP;
 			return GUI_CURSOR_CLICKED;
 		}
