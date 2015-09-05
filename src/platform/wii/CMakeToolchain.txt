@@ -37,6 +37,7 @@ set(CMAKE_SHARED_LINKER_FLAGS ${link_flags} CACHE INTERNAL "shared link flags")
 set(ELF2DOL ${toolchain_bin_dir}/elf2dol)
 set(GXTEXCONV ${toolchain_bin_dir}/gxtexconv)
 set(RAW2C ${toolchain_bin_dir}/raw2c)
+set(WIILOAD ${toolchain_bin_dir}/wiiload)
 
 set(WII ON)
 add_definitions(-DGEKKO)
