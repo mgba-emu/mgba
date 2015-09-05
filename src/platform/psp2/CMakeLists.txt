@@ -24,7 +24,8 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_target(${BINARY_NAME}.velf ALL
-                  ${FIXUP} ${BINARY_NAME}.elf ${BINARY_NAME}.velf ${NIDDB}
+                  ${STRIP} --strip-unneeded -go ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.elf
+                  COMMAND ${FIXUP} ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.velf ${NIDDB}
                   DEPENDS ${BINARY_NAME}.elf)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.velf DESTINATION . COMPONENT ${BINARY_NAME}-psp2)
