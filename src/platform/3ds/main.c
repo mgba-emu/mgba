@@ -81,7 +81,7 @@ static void _setup(struct GBAGUIRunner* runner) {
 	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = linearMemAlign(256 * 256 * 2, 0x100);
+	renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
 	renderer.outputBufferStride = 256;
 	runner->context.renderer = &renderer.d;
 
@@ -163,7 +163,7 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 
 static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
-	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x100);
+	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
 	unsigned y, x;
 	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -308,8 +308,8 @@ int main() {
 	}
 
 	if (hasSound) {
-		audioLeft = linearAlloc(AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		audioRight = linearAlloc(AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		audioLeft = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
+		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}
 
 	sf2d_init();
