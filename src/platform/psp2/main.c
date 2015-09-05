@@ -15,6 +15,7 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
+#include <psp2/touch.h>
 
 #include <vita2d.h>
 
@@ -63,15 +64,27 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-int main() {
-	printf("%s initializing", projectName);
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	SceTouchData touch;
+	sceTouchPeek(0, &touch, 1);
+	if (touch.reportNum < 1) {
+		return GUI_CURSOR_UP;
+	}
+	*x = touch.report[0].x / 2;
+	*y = touch.report[0].y / 2;
+	return GUI_CURSOR_DOWN;
+}
 
+
+int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
 	struct GBAGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd, _pollInput, 0, 0,
+			font, "cache0:", _drawStart, _drawEnd,
+			_pollInput, _pollCursor,
+			0, 0,
 
 			GUI_PARAMS_TRAIL
 		},

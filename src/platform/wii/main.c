@@ -34,6 +34,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 static void _drawStart(void);
 static void _drawEnd(void);
 static uint32_t _pollInput(void);
+static enum GUICursorState _pollCursor(int* x, int* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
@@ -68,6 +69,7 @@ int main() {
 	VIDEO_Init();
 	PAD_Init();
 	WPAD_Init();
+	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC_IR);
 	AUDIO_Init(0);
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback(_audioDMA);
@@ -159,7 +161,8 @@ int main() {
 		.params = {
 			352, 230,
 			font, "/",
-			_drawStart, _drawEnd, _pollInput,
+			_drawStart, _drawEnd,
+			_pollInput, _pollCursor,
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
@@ -254,7 +257,7 @@ static uint32_t _pollInput(void) {
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
 		keys |= 1 << GUI_INPUT_SELECT;
 	}
-	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) ||
+	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) || (wiiPad & WPAD_BUTTON_B) ||
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
 		keys |= 1 << GUI_INPUT_BACK;
 	}
@@ -279,6 +282,22 @@ static uint32_t _pollInput(void) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
 	return keys;
+}
+
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	ir_t ir;
+	WPAD_IR(0, &ir);
+	if (!ir.smooth_valid) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	*x = ir.sx;
+	*y = ir.sy;
+	WPAD_ScanPads();
+	u32 wiiPad = WPAD_ButtonsHeld(0);
+	if (wiiPad & WPAD_BUTTON_A) {
+		return GUI_CURSOR_DOWN;
+	}
+	return GUI_CURSOR_UP;
 }
 
 void _guiPrepare(void) {
@@ -324,7 +343,6 @@ void _gameUnloaded(struct GBAGUIRunner* runner) {
 }
 
 void _gameLoaded(struct GBAGUIRunner* runner) {
-	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
 	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {

@@ -235,6 +235,18 @@ static uint32_t _pollInput(void) {
 	return keys;
 }
 
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	hidScanInput();
+	if (!(hidKeysHeld() & KEY_TOUCH)) {
+		return GUI_CURSOR_UP;
+	}
+	touchPosition pos;
+	hidTouchRead(&pos);
+	*x = pos.px;
+	*y = pos.py;
+	return GUI_CURSOR_DOWN;
+}
+
 static void _sampleRotation(struct GBARotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	// Work around ctrulib getting the entries wrong
@@ -322,7 +334,8 @@ int main() {
 		.params = {
 			320, 240,
 			font, "/",
-			_drawStart, _drawEnd, _pollInput,
+			_drawStart, _drawEnd,
+			_pollInput, _pollCursor,
 			0, 0,
 
 			GUI_PARAMS_TRAIL
