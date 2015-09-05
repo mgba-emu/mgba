@@ -10,8 +10,8 @@ set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
 
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.c ${CMAKE_CURRENT_BINARY_DIR}/backdrop.c PROPERTIES GENERATED ON)
-add_executable(${BINARY_NAME}.elf ${PLATFORM_SRC} ${GUI_SRC} ${CMAKE_CURRENT_BINARY_DIR}/font.o ${CMAKE_BINARY_DIR}/backdrop.o main.c)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.o ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o PROPERTIES GENERATED ON)
+add_executable(${BINARY_NAME}.elf ${PLATFORM_SRC} ${GUI_SRC} ${CMAKE_CURRENT_BINARY_DIR}/font.o ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o main.c)
 set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
@@ -19,9 +19,9 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.o
                    COMMAND ${OBJCOPY_CMD} font.png ${CMAKE_CURRENT_BINARY_DIR}/font.o
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.c
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
                    COMMAND ${OBJCOPY_CMD} backdrop.png ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
-                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_custom_target(${BINARY_NAME}.velf ALL
                   ${FIXUP} ${BINARY_NAME}.elf ${BINARY_NAME}.velf ${NIDDB}
