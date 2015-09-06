@@ -27,16 +27,32 @@ set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DE
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${OS_LIB})
 
 add_custom_command(OUTPUT ${BINARY_NAME}.smdh
-                   COMMAND ${SMDHTOOL} --create "${PROJECT_NAME}" "${SUMMARY}" "endrift" ${CMAKE_SOURCE_DIR}/res/mgba-48.png ${BINARY_NAME}.smdh)
+                   COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${CMAKE_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
+                   DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba-48.png)
+
+add_custom_command(OUTPUT ${BINARY_NAME}.bnr
+                   COMMAND ${BANNERTOOL} makebanner -i ${CMAKE_CURRENT_SOURCE_DIR}/logo.png -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/logo.png ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw)
+                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw
+                   DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw)
 
 add_custom_target(${BINARY_NAME}.3dsx ALL
                   ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
                   DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
 
+add_custom_target(${BINARY_NAME}.cia ALL
+                  ${STRIP} -o ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.elf
+                  COMMAND ${MAKEROM} -f cia -o ${BINARY_NAME}.cia -rsf cia.rsf -target t -exefslogo -elf ${BINARY_NAME}-stripped.elf -icon ${BINARY_NAME}.smdh -banner ${BINARY_NAME}.bnr
+                  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf ${BINARY_NAME}.elf ${BINARY_NAME}.smdh ${BINARY_NAME}.bnr)
+
 add_custom_target(run ${3DSLINK} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
                   DEPENDS ${BINARY_NAME}.3dsx)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.smdh DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cia.rsf.in ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf)
+install(FILES
+	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
+	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.smdh
+	    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.cia
+	    DESTINATION . COMPONENT ${BINARY_NAME}-3ds)

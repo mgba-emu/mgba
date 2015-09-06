@@ -37,8 +37,11 @@ set(CMAKE_SHARED_LINKER_FLAGS ${link_flags} CACHE INTERNAL "shared link flags")
 
 set(3DSLINK ${toolchain_bin_dir}/3dslink)
 set(3DSXTOOL ${toolchain_bin_dir}/3dsxtool)
+set(BANNERTOOL ${toolchain_bin_dir}/bannertool)
+set(MAKEROM ${toolchain_bin_dir}/makerom)
 set(RAW2C ${toolchain_bin_dir}/raw2c)
 set(SMDHTOOL ${toolchain_bin_dir}/smdhtool)
+set(STRIP ${cross_prefix}strip)
 
 set(3DS ON)
 add_definitions(-D_3DS -DARM11)
