@@ -7,9 +7,9 @@
 #include "util/gui/font-metrics.h"
 #include "util/png-io.h"
 #include "util/vfs.h"
-#include "font.h"
 
 #include <sf2d.h>
+#include "font_raw.h"
 
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
@@ -25,7 +25,7 @@ struct GUIFont* GUIFontCreate(void) {
 		return 0;
 	}
 	guiFont->tex = sf2d_create_texture(256, 128, TEXFMT_RGB5A1, SF2D_PLACE_RAM);
-	memcpy(guiFont->tex->data, font, font_size);
+	memcpy(guiFont->tex->data, font_raw, font_raw_size);
 	guiFont->tex->tiled = 1;
 	return guiFont;
 }
