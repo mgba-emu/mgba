@@ -116,6 +116,8 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 	free(config->port);
 }
 
+#ifndef __LIBRETRO__
+//libretro prefers if cores are standalone, not reading INI files
 bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
@@ -138,8 +140,6 @@ bool GBAConfigSavePath(const struct GBAConfig* config, const char* path) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
-#ifndef __LIBRETRO__
-//libretro prefers if cores are standalone, not reading INI files
 void GBAConfigMakePortable(const struct GBAConfig* config) {
 	struct VFile* portable = 0;
 #ifdef _WIN32

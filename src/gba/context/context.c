@@ -30,10 +30,11 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	}
 
 	GBAConfigInit(&context->config, port);
+#ifndef __LIBRETRO__
 	if (port) {
 		GBAConfigLoad(&context->config);
 	}
-
+#endif
 	GBACreate(context->gba);
 	ARMSetComponents(context->cpu, &context->gba->d, 0, context->components);
 	ARMInit(context->cpu);
