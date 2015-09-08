@@ -193,6 +193,7 @@ void retro_init(void) {
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+	free(renderer.outputBuffer);
 }
 
 void retro_run(void) {
