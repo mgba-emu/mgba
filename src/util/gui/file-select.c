@@ -46,7 +46,7 @@ static void _upDirectory(char* currentPath) {
 }
 
 static int _strpcmp(const void* a, const void* b) {
-	return strcmp(((const struct GUIMenuItem*) a)->title, ((const struct GUIMenuItem*) b)->title);
+	return strcasecmp(((const struct GUIMenuItem*) a)->title, ((const struct GUIMenuItem*) b)->title);
 }
 
 static bool _refreshDirectory(struct GUIParams* params, const char* currentPath, struct GUIMenuItemList* currentFiles, bool (*filter)(struct VFile*)) {
