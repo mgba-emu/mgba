@@ -158,7 +158,6 @@ void retro_init(void) {
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
-		.logLevel = 0,
 		.idleOptimization = IDLE_LOOP_REMOVE
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);

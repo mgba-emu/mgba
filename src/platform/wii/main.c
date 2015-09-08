@@ -22,8 +22,6 @@
 
 #define SAMPLES 1024
 
-static void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
-
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
 static void _sampleRotation(struct GBARotationSource* source);
@@ -47,7 +45,6 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBARumble rumble;
 static struct GBARotationSource rotation;
-static FILE* logfile;
 static GXRModeObj* mode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
@@ -148,8 +145,6 @@ int main() {
 
 	fatInitDefault();
 
-	logfile = fopen("/mgba.log", "w");
-
 	rumble.setRumble = _setRumble;
 
 	rotation.sample = _sampleRotation;
@@ -177,28 +172,16 @@ int main() {
 		.unpaused = 0,
 		.pollGameInput = _pollGameInput
 	};
-	GBAGUIInit(&runner, 0);
+	GBAGUIInit(&runner, "wii");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 
-	fclose(logfile);
 	free(fifo);
 
 	free(renderer.outputBuffer);
 	GUIFontDestroy(font);
 
 	return 0;
-}
-
-void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
-	UNUSED(thread);
-	UNUSED(level);
-	if (!logfile) {
-		return;
-	}
-	vfprintf(logfile, format, args);
-	fprintf(logfile, "\n");
-	fflush(logfile);
 }
 
 static void _audioDMA(void) {
@@ -313,13 +296,6 @@ void _guiFinish(void) {
 }
 
 void _setup(struct GBAGUIRunner* runner) {
-	struct GBAOptions opts = {
-		.useBios = true,
-		.logLevel = 0,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
-	runner->context.gba->logHandler = GBAWiiLog;
 	runner->context.gba->rumble = &rumble;
 	runner->context.gba->rotationSource = &rotation;
 

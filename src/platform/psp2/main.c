@@ -100,7 +100,7 @@ int main() {
 		.pollGameInput = GBAPSP2PollInput
 	};
 
-	GBAGUIInit(&runner, 0);
+	GBAGUIInit(&runner, "psvita");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 

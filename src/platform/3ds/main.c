@@ -39,7 +39,6 @@ static struct GBA3DSRotationSource {
 	angularRate gyro;
 } rotation;
 
-static struct VFile* logFile;
 static bool hasSound;
 // TODO: Move into context
 static struct GBAVideoSoftwareRenderer renderer;
@@ -50,7 +49,6 @@ static size_t audioPos = 0;
 static sf2d_texture* tex;
 
 extern bool allocateRomBuffer(void);
-static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
 
@@ -68,13 +66,6 @@ static void _drawEnd(void) {
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
-	struct GBAOptions opts = {
-		.useBios = true,
-		.logLevel = 0,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
-	runner->context.gba->logHandler = GBA3DSLog;
 	runner->context.gba->rotationSource = &rotation.d;
 	if (hasSound) {
 		runner->context.gba->stream = &stream;
@@ -323,7 +314,6 @@ int main() {
 	};
 	FSUSER_OpenArchive(0, &sdmcArchive);
 
-	logFile = VFileOpen("/mgba.log", O_WRONLY | O_CREAT | O_TRUNC);
 	struct GUIFont* font = GUIFontCreate();
 
 	if (!font) {
@@ -352,16 +342,13 @@ int main() {
 		.incrementScreenMode = _incrementScreenMode,
 		.pollGameInput = _pollGameInput
 	};
-	GBAGUIInit(&runner, 0);
+
+	GBAGUIInit(&runner, "3ds");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 
 cleanup:
 	linearFree(renderer.outputBuffer);
-
-	if (logFile) {
-		logFile->close(logFile);
-	}
 
 	sf2d_free_texture(tex);
 	sf2d_fini();
@@ -372,19 +359,4 @@ cleanup:
 	}
 	csndExit();
 	return 0;
-}
-
-static void GBA3DSLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
-	UNUSED(thread);
-	UNUSED(level);
-	if (!logFile) {
-		return;
-	}
-	char out[256];
-	size_t len = vsnprintf(out, sizeof(out), format, args);
-	if (len >= sizeof(out)) {
-		len = sizeof(out) - 1;
-	}
-	out[len] = '\n';
-	logFile->write(logFile, out, len + 1);
 }

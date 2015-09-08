@@ -139,7 +139,6 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
 	struct GBAOptions opts = {
 		.useBios = true,
-		.logLevel = 0,
 		.idleOptimization = IDLE_LOOP_DETECT
 	};
 	GBAConfigLoadDefaults(&runner->context.config, &opts);
