@@ -183,7 +183,7 @@ void retro_init(void) {
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	context->renderer = &renderer.d;
+	context.renderer = &renderer.d;
 
 	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
