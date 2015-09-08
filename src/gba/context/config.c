@@ -22,6 +22,10 @@
 #include <psp2/io/stat.h>
 #endif
 
+#ifdef _3DS
+#include "platform/3ds/3ds-vfs.h"
+#endif
+
 #define SECTION_NAME_MAX 128
 
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
@@ -151,7 +155,7 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
 	StringCchCatA(out, MAX_PATH, "\\portable.ini");
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#elif defined(PSP2)
+#elif defined(PSP2) || defined(_3DS) || defined(GEKKO)
 	// Already portable
 #else
 	char out[PATH_MAX];
@@ -189,8 +193,15 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	UNUSED(portable);
-	snprintf(out, outLength, "cache0:/%s", binaryName);
+	snprintf(out, outLength, "cache0:/%s", projectName);
 	sceIoMkdir(out, 0777);
+#elif defined(GEKKO)
+	UNUSED(portable);
+	snprintf(out, outLength, "/%s", projectName);
+	mkdir(out, 0777);
+#elif defined(_3DS)
+	snprintf(out, outLength, "/%s", projectName);
+	FSUSER_CreateDirectory(0, sdmcArchive, FS_makePath(PATH_CHAR, out));
 #else
 	getcwd(out, outLength);
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
