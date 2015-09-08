@@ -204,6 +204,7 @@ void retro_deinit(void) {
 		bios = 0;
 	}
 	GBADestroy(&gba);
+	free(renderer.outputBuffer);
 }
 
 void retro_run(void) {
