@@ -19,6 +19,7 @@ Misc:
  - GBA: Better memory handling with PNG savestates
  - GBA Audio: Allow GBAAVStream to have no video callback
  - ARM7: Force disable LTO on two files to work around a GCC bug
+ - Libretro: Use anonymous memory mappers for large blocks of memory
 
 0.3.0: (2015-08-16)
 Features:

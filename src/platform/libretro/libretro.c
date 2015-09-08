@@ -11,6 +11,7 @@
 #include "gba/serialize.h"
 #include "gba/context/context.h"
 #include "util/circle-buffer.h"
+#include "util/memory.h"
 #include "util/vfs.h"
 
 #define SAMPLES 1024
@@ -37,6 +38,7 @@ static void _updateLux(struct GBALuminanceSource* lux);
 static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static void* data;
+static size_t dataSize;
 static void* savedata;
 static struct GBAAVStream stream;
 static int rumbleLevel;
@@ -246,7 +248,8 @@ void retro_reset(void) {
 bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* rom;
 	if (game->data) {
-		data = malloc(game->size);
+		data = anonymousMemoryMap(game->size);
+		dataSize = game->size;
 		memcpy(data, game->data, game->size);
 		rom = VFileFromMemory(data, game->size);
 	} else {
@@ -258,11 +261,11 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 	if (!GBAIsROM(rom)) {
 		rom->close(rom);
-		free(data);
+		mappedMemoryFree(data, game->size);
 		return false;
 	}
 
-	savedata = malloc(SIZE_CART_FLASH1M);
+	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	GBAContextLoadROMFromVFile(&context, rom, save);
@@ -272,9 +275,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 void retro_unload_game(void) {
 	GBAContextStop(&context);
-	free(data);
+	mappedMemoryFree(data, dataSize);
 	data = 0;
-	free(savedata);
+	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
 	savedata = 0;
 	CircleBufferDeinit(&rumbleHistory);
 }
