@@ -6,6 +6,7 @@ Bugfixes:
  - Qt: Reenable double buffering, as disabling it broke some Windows configs
  - GBA Video: Start on the scanline BIOS finishes on if no BIOS is loaded
  - GBA: Deinit savegame when unloading a ROM
+ - GBA: Fix BIOS check on big endian
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
