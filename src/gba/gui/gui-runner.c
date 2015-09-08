@@ -109,6 +109,9 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
+	if (runner->context.config.port) {
+		GBAConfigSave(&runner->context.config);
+	}
 	GBAContextDeinit(&runner->context);
 }
 
