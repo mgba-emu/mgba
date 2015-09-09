@@ -22,10 +22,14 @@ ShortcutView::ShortcutView(QWidget* parent)
 	m_ui.keyEdit->setValueKey(0);
 
 	connect(m_ui.gamepadButton, &QAbstractButton::pressed, [this]() {
+		bool signalsBlocked = m_ui.keyEdit->blockSignals(true);
 		m_ui.keyEdit->setValueButton(-1);
+		m_ui.keyEdit->blockSignals(signalsBlocked);
 	});
 	connect(m_ui.keyboardButton, &QAbstractButton::pressed, [this]() {
+		bool signalsBlocked = m_ui.keyEdit->blockSignals(true);
 		m_ui.keyEdit->setValueKey(0);
+		m_ui.keyEdit->blockSignals(signalsBlocked);
 	});
 	connect(m_ui.keyEdit, SIGNAL(valueChanged(int)), this, SLOT(updateButton(int)));
 	connect(m_ui.keyEdit, SIGNAL(axisChanged(int, int)), this, SLOT(updateAxis(int, int)));
