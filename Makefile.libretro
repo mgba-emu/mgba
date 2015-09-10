@@ -4,10 +4,10 @@ HAVE_VFS_FD := 1
 CORE_DIR := .
 BUILD_DIR := libretro-build
 
-ifeq ($(platform),wii_ppc)
-include $(BUILD_DIR)/Makefile.wii_ppc
-else ifeq ($(platform),windows_x86)
+ifeq ($(platform),windows_x86)
 include $(BUILD_DIR)/Makefile.windows_x86
+#else ifeq ($(platform),wii_ppc)
+#include $(BUILD_DIR)/Makefile.wii_ppc
 else ifeq ($(platform),android_armeabi)
 include $(BUILD_DIR)/Makefile.android_armeabi
 else ifeq ($(platform),android_arm64-v8a)
