@@ -51,6 +51,10 @@ Display::Display(QWidget* parent)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
+	m_mouseTimer.setSingleShot(true);
+	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);
+	setMouseTracking(true);
 }
 
 void Display::resizeEvent(QResizeEvent*) {
@@ -68,4 +72,13 @@ void Display::filter(bool filter) {
 
 void Display::showMessage(const QString& message) {
 	m_messagePainter.showMessage(message);
+	if (!isDrawing()) {
+		forceDraw();
+	}
+}
+
+void Display::mouseMoveEvent(QMouseEvent*) {
+	emit showCursor();
+	m_mouseTimer.stop();
+	m_mouseTimer.start();
 }

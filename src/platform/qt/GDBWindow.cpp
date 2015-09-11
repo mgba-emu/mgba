@@ -18,7 +18,7 @@
 using namespace QGBA;
 
 GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
-	: QWidget(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_gdbController(controller)
 {
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);

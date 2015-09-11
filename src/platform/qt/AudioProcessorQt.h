@@ -20,6 +20,7 @@ public:
 	AudioProcessorQt(QObject* parent = nullptr);
 
 	virtual void setInput(GBAThread* input);
+	virtual unsigned sampleRate() const override;
 
 public slots:
 	virtual void start();
@@ -28,9 +29,12 @@ public slots:
 	virtual void setBufferSamples(int samples);
 	virtual void inputParametersChanged();
 
+	virtual void requestSampleRate(unsigned) override;
+
 private:
 	QAudioOutput* m_audioOutput;
 	AudioDevice* m_device;
+	unsigned m_sampleRate;
 };
 
 }

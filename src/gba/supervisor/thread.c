@@ -9,7 +9,7 @@
 #include "gba/gba.h"
 #include "gba/cheats.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 #include "gba/rr/mgm.h"
 #include "gba/rr/vbm.h"
 
@@ -96,6 +96,18 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 	}
 }
 
+struct GBAThreadStop {
+	struct GBAStopCallback d;
+	struct GBAThread* p;
+};
+
+static void _stopCallback(struct GBAStopCallback* stop) {
+	struct GBAThreadStop* callback = (struct GBAThreadStop*) stop;
+	if (callback->p->stopCallback(callback->p)) {
+		_changeState(callback->p, THREAD_EXITING, false);
+	}
+}
+
 static THREAD_ENTRY _GBAThreadRun(void* context) {
 #ifdef USE_PTHREADS
 	pthread_once(&_contextOnce, _createTLS);
@@ -129,6 +141,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+
+	struct GBAThreadStop stop;
+	if (threadContext->stopCallback) {
+		stop.d.stop = _stopCallback;
+		stop.p = threadContext;
+		gba.stopCallback = &stop.d;
+	}
+
 	gba.idleOptimization = threadContext->idleOptimization;
 #ifdef USE_PTHREADS
 	pthread_setspecific(_contextKey, threadContext);
@@ -205,7 +225,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBARRInitPlay(&gba);
 	}
 
-	if (threadContext->skipBios) {
+	if (threadContext->skipBios && gba.memory.rom) {
 		GBASkipBIOS(&cpu);
 	}
 
@@ -285,7 +305,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			ARMReset(&cpu);
-			if (threadContext->skipBios) {
+			if (threadContext->skipBios && gba.memory.rom) {
 				GBASkipBIOS(&cpu);
 			}
 		}
@@ -398,6 +418,16 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	}
 
 	threadContext->save = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "sram", ".sav", O_CREAT | O_RDWR);
+
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ups", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".ips", O_RDONLY);
+	}
+	if (!threadContext->patch) {
+		threadContext->patch = VDirOptionalOpenFile(threadContext->stateDir, threadContext->fname, "patch", ".bps", O_RDONLY);
+	}
 
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
@@ -722,16 +752,12 @@ struct GBAThread* GBAThreadGetContext(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
 }
-#else
-struct GBAThread* GBAThreadGetContext(void) {
-	return 0;
-}
 #endif
 
 #ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
 	unsigned stride;
-	void* pixels = 0;
+	const void* pixels = 0;
 	struct VFile* vf = VDirOptionalOpenIncrementFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
 	png_structp png = PNGWriteOpen(vf);

@@ -43,6 +43,7 @@ static void* _vfzMap(struct VFile* vf, size_t size, int flags);
 static void _vfzUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfzTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfzSize(struct VFile* vf);
+static bool _vfzSync(struct VFile* vf, const void* buffer, size_t size);
 
 static bool _vdzClose(struct VDir* vd);
 static void _vdzRewind(struct VDir* vd);
@@ -50,6 +51,7 @@ static struct VDirEntry* _vdzListNext(struct VDir* vd);
 static struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vdezName(struct VDirEntry* vde);
+static enum VFSType _vdezType(struct VDirEntry* vde);
 
 struct VDir* VDirOpenZip(const char* path, int flags) {
 	int zflags = 0;
@@ -73,6 +75,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	vd->z = z;
 
 	vd->dirent.d.name = _vdezName;
+	vd->dirent.d.type = _vdezType;
 	vd->dirent.index = -1;
 	vd->dirent.z = z;
 
@@ -289,8 +292,16 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	vfz->d.unmap = _vfzUnmap;
 	vfz->d.truncate = _vfzTruncate;
 	vfz->d.size = _vfzSize;
+	vfz->d.sync = _vfzSync;
 
 	return &vfz->d;
+}
+
+bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {
+	UNUSED(vf);
+	UNUSED(memory);
+	UNUSED(size);
+	return false;
 }
 
 const char* _vdezName(struct VDirEntry* vde) {
@@ -300,6 +311,12 @@ const char* _vdezName(struct VDirEntry* vde) {
 		return 0;
 	}
 	return s.name;
+}
+
+static enum VFSType _vdezType(struct VDirEntry* vde) {
+	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
+	UNUSED(vdez);
+	return VFS_UNKNOWN;
 }
 
 #endif

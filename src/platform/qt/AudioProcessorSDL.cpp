@@ -15,7 +15,7 @@ using namespace QGBA;
 
 AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
 	: AudioProcessor(parent)
-	, m_audio()
+	, m_audio{ 2048, 44100 }
 {
 }
 
@@ -53,4 +53,20 @@ void AudioProcessorSDL::setBufferSamples(int samples) {
 }
 
 void AudioProcessorSDL::inputParametersChanged() {
+}
+
+void AudioProcessorSDL::requestSampleRate(unsigned rate) {
+	m_audio.sampleRate = rate;
+	if (m_audio.thread) {
+		GBASDLDeinitAudio(&m_audio);
+		GBASDLInitAudio(&m_audio, input());
+	}
+}
+
+unsigned AudioProcessorSDL::sampleRate() const {
+	if (m_audio.thread) {
+		return m_audio.obtainedSpec.freq;
+	} else {
+		return 0;
+	}
 }

@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 
 enum DebuggerType {
 	DEBUGGER_NONE = 0,
@@ -42,6 +42,7 @@ struct SubParser {
 
 struct GraphicsOpts {
 	int multiplier;
+	bool fullscreen;
 };
 
 struct GBAThread;

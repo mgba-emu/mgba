@@ -14,7 +14,7 @@
 #endif
 
 #include "gba/gba.h"
-#include "gba/supervisor/config.h"
+#include "gba/context/config.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
 #include "platform/commandline.h"
@@ -75,6 +75,8 @@ int main(int argc, char** argv) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	renderer.player.fullscreen = opts.fullscreen;
 	renderer.player.windowUpdated = 0;
+#else
+	renderer.fullscreen = opts.fullscreen;
 #endif
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
@@ -86,6 +88,8 @@ int main(int argc, char** argv) {
 
 #ifdef BUILD_GL
 	GBASDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2)
+	GBASDLGLES2Create(&renderer);
 #else
 	GBASDLSWCreate(&renderer);
 #endif
@@ -110,6 +114,10 @@ int main(int argc, char** argv) {
 	bool didFail = false;
 
 	renderer.audio.samples = context.audioBuffers;
+	renderer.audio.sampleRate = 44100;
+	if (opts.sampleRate) {
+		renderer.audio.sampleRate = opts.sampleRate;
+	}
 	if (!GBASDLInitAudio(&renderer.audio, &context)) {
 		didFail = true;
 	}

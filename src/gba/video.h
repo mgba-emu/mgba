@@ -161,12 +161,13 @@ struct GBAVideoRenderer {
 	void (*deinit)(struct GBAVideoRenderer* renderer);
 
 	uint16_t (*writeVideoRegister)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
+	void (*writeVRAM)(struct GBAVideoRenderer* renderer, uint32_t address);
 	void (*writePalette)(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 	void (*writeOAM)(struct GBAVideoRenderer* renderer, uint32_t oam);
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 
-	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
 	void (*putPixels)(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
 
 	uint16_t* palette;

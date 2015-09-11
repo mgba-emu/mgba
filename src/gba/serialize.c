@@ -7,7 +7,7 @@
 
 #include "gba/audio.h"
 #include "gba/io.h"
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
 
@@ -87,6 +87,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
+	if (state->cpu.nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: Next event is negative");
+		error = true;
+	}
 	if (state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
@@ -97,6 +101,10 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	}
 	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
+		error = true;
+	}
+	if (state->timers[0].nextEvent < 0 || state->timers[1].nextEvent < 0 || state->timers[2].nextEvent < 0 || state->timers[3].nextEvent < 0) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: timer nextEvent is negative");
 		error = true;
 	}
 	if (state->audio.eventDiff < 0) {
@@ -188,7 +196,7 @@ struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool writ
 #ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	unsigned stride;
-	void* pixels = 0;
+	const void* pixels = 0;
 	gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
 	if (!pixels) {
 		return false;
@@ -198,27 +206,27 @@ static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	if (!state) {
 		return false;
 	}
+	GBASerialize(gba, state);
+	uLongf len = compressBound(sizeof(*state));
+	void* buffer = malloc(len);
+	if (!buffer) {
+		GBADeallocateState(state);
+		return false;
+	}
+	compress(buffer, &len, (const Bytef*) state, sizeof(*state));
+	GBADeallocateState(state);
+
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	if (!png || !info) {
 		PNGWriteClose(png, info);
-		GBADeallocateState(state);
+		free(buffer);
 		return false;
 	}
-	uLongf len = compressBound(sizeof(*state));
-	void* buffer = malloc(len);
-	if (!buffer) {
-		PNGWriteClose(png, info);
-		GBADeallocateState(state);
-		return false;
-	}
-	GBASerialize(gba, state);
-	compress(buffer, &len, (const Bytef*) state, sizeof(*state));
 	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
 	PNGWriteCustomChunk(png, "gbAs", len, buffer);
 	PNGWriteClose(png, info);
 	free(buffer);
-	GBADeallocateState(state);
 	return true;
 }
 
@@ -226,12 +234,14 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	if (strcmp((const char*) chunk->name, "gbAs") != 0) {
 		return 0;
 	}
-	struct GBASerializedState state;
-	uLongf len = sizeof(state);
-	uncompress((Bytef*) &state, &len, chunk->data, chunk->size);
-	if (!GBADeserialize(png_get_user_chunk_ptr(png), &state)) {
+	struct GBASerializedState* state = GBAAllocateState();
+	uLongf len = sizeof(*state);
+	uncompress((Bytef*) state, &len, chunk->data, chunk->size);
+	if (!GBADeserialize(png_get_user_chunk_ptr(png), state)) {
+		GBADeallocateState(state);
 		longjmp(png_jmpbuf(png), 1);
 	}
+	GBADeallocateState(state);
 	return 1;
 }
 
@@ -244,6 +254,10 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 		return false;
 	}
 	uint32_t* pixels = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	if (!pixels) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
 
 	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
 	bool success = PNGReadHeader(png, info);
@@ -260,6 +274,7 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 }
 #endif
 
+#ifndef _3DS
 bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, bool screenshot) {
 	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
 	if (!vf) {
@@ -290,9 +305,14 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 	}
 	return success;
 }
+#endif
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
+#ifdef USE_PNG
 	if (!screenshot) {
+#else
+	UNUSED(screenshot);
+#endif
 		vf->truncate(vf, sizeof(struct GBASerializedState));
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 		if (!state) {
@@ -301,8 +321,8 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 		GBASerialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		return true;
-	}
 #ifdef USE_PNG
+	}
 	else {
 		return _savePNGState(gba, vf);
 	}
@@ -347,8 +367,8 @@ void GBARecordFrame(struct GBAThread* thread) {
 
 	if (thread->rewindScreenBuffer) {
 		unsigned stride;
-		uint8_t* pixels = 0;
-		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (void*) &pixels);
+		const uint8_t* pixels = 0;
+		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (const void**) &pixels);
 		if (pixels) {
 			size_t y;
 			for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {

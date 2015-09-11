@@ -10,8 +10,8 @@
 
 #include "gba/gba.h"
 #include "gba/input.h"
-#include "gba/supervisor/overrides.h"
-#include "gba/supervisor/sync.h"
+#include "gba/context/overrides.h"
+#include "gba/context/sync.h"
 
 #include "util/threading.h"
 
@@ -21,6 +21,7 @@ struct GBACheatSet;
 struct GBAOptions;
 
 typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+typedef bool (*ThreadStopCallback)(struct GBAThread* threadContext);
 
 enum ThreadState {
 	THREAD_INITIALIZED = -1,
@@ -86,6 +87,7 @@ struct GBAThread {
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
+	ThreadStopCallback stopCallback;
 	void* userData;
 	void (*run)(struct GBAThread*);
 

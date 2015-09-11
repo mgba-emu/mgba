@@ -6,12 +6,12 @@
 #ifndef QGBA_OVERRIDE_VIEW
 #define QGBA_OVERRIDE_VIEW
 
-#include <QWidget>
+#include <QDialog>
 
 #include "ui_OverrideView.h"
 
 extern "C" {
-#include "gba/supervisor/overrides.h"
+#include "gba/context/overrides.h"
 }
 
 struct GBAThread;
@@ -21,7 +21,7 @@ namespace QGBA {
 class ConfigController;
 class GameController;
 
-class OverrideView : public QWidget {
+class OverrideView : public QDialog {
 Q_OBJECT
 
 public:

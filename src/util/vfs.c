@@ -5,6 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+#ifdef PSP2
+#include "platform/psp2/sce-vfs.h"
+#endif
+#ifdef _3DS
+#include "platform/3ds/3ds-vfs.h"
+#endif
+
 struct VFile* VFileOpen(const char* path, int flags) {
 #ifdef USE_VFS_FILE
 	const char* chflags;
@@ -30,6 +37,58 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		break;
 	}
 	return VFileFOpen(path, chflags);
+#elif defined(PSP2)
+	int sceFlags = PSP2_O_RDONLY;
+	switch (flags & O_ACCMODE) {
+	case O_WRONLY:
+		sceFlags = PSP2_O_WRONLY;
+		break;
+	case O_RDWR:
+		sceFlags = PSP2_O_RDWR;
+		break;
+	case O_RDONLY:
+		sceFlags = PSP2_O_RDONLY;
+		break;
+	}
+
+	if (flags & O_APPEND) {
+		sceFlags |= PSP2_O_APPEND;
+	}
+	if (flags & O_TRUNC) {
+		sceFlags |= PSP2_O_TRUNC;
+	}
+	if (flags & O_CREAT) {
+		sceFlags |= PSP2_O_CREAT;
+	}
+	return VFileOpenSce(path, sceFlags, 0666);
+#elif defined(USE_VFS_3DS)
+	int ctrFlags = FS_OPEN_READ;
+	switch (flags & O_ACCMODE) {
+	case O_WRONLY:
+		ctrFlags = FS_OPEN_WRITE;
+		break;
+	case O_RDWR:
+		ctrFlags = FS_OPEN_READ | FS_OPEN_WRITE;
+		break;
+	case O_RDONLY:
+		ctrFlags = FS_OPEN_READ;
+		break;
+	}
+
+	if (flags & O_CREAT) {
+		ctrFlags |= FS_OPEN_CREATE;
+	}
+	struct VFile* vf = VFileOpen3DS(&sdmcArchive, path, ctrFlags);
+	if (!vf) {
+		return 0;
+	}
+	if (flags & O_TRUNC) {
+		vf->truncate(vf, 0);
+	}
+	if (flags & O_APPEND) {
+		vf->seek(vf, vf->size(vf), SEEK_SET);
+	}
+	return vf;
 #else
 	return VFileOpenFD(path, flags);
 #endif

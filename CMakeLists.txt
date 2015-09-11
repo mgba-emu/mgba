@@ -9,6 +9,7 @@ endif()
 set(USE_CLI_DEBUGGER ON CACHE BOOL "Whether or not to enable the CLI-mode ARM debugger")
 set(USE_GDB_STUB ON CACHE BOOL "Whether or not to enable the GDB stub ARM debugger")
 set(USE_FFMPEG ON CACHE BOOL "Whether or not to enable FFmpeg support")
+set(USE_ZLIB ON CACHE BOOL "Whether or not to enable zlib support")
 set(USE_PNG ON CACHE BOOL "Whether or not to enable PNG support")
 set(USE_LIBZIP ON CACHE BOOL "Whether or not to enable ZIP support")
 set(USE_MAGICK ON CACHE BOOL "Whether or not to enable ImageMagick support")
@@ -18,15 +19,20 @@ set(BUILD_QT ON CACHE BOOL "Build Qt frontend")
 set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
 set(BUILD_LIBRETRO OFF CACHE BOOL "Build libretro core")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
+set(BUILD_TEST OFF CACHE BOOL "Build testing harness")
 set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
 set(BUILD_SHARED ON CACHE BOOL "Build a shared library")
 set(BUILD_GL ON CACHE STRING "Build with OpenGL")
+set(BUILD_GLES2 OFF CACHE STRING "Build with OpenGL|ES 2")
+set(DISABLE_DEPS OFF CACHE BOOL "Build without dependencies")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
+file(GLOB GBA_CTX_SRC ${CMAKE_SOURCE_DIR}/src/gba/context/*.c)
 file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
+file(GLOB GUI_SRC ${CMAKE_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_SOURCE_DIR}/src/gba/gui/*.c)
 file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB SIO_SRC ${CMAKE_SOURCE_DIR}/src/gba/sio/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
@@ -34,7 +40,7 @@ list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 set(VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
-source_group("GBA supervisor" FILES ${GBA_CHEATS_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_CTX_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -43,14 +49,26 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (e.g. Release or Debug)" FORCE)
 endif()
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${LIBDIR}")
 
 include(GNUInstallDirs)
+
+if (NOT DEFINED LIBDIR)
+	set(LIBDIR "lib")
+endif()
+
+if (NOT DEFINED MANDIR)
+	set(MANDIR ${CMAKE_INSTALL_MANDIR})
+endif()
 
 # Function definitions
 include(FindPkgConfig)
 function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 	if (NOT ${FEATURE_NAME})
+		return()
+	endif()
+	if (DISABLE_DEPS)
+		set(${FEATURE_NAME} OFF PARENT_SCOPE)
 		return()
 	endif()
 	foreach(REQUIRE ${FEATURE_REQUIRES})
@@ -76,51 +94,16 @@ function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 endfunction()
 
 # Version information
-set(LIB_VERSION_MAJOR 0)
-set(LIB_VERSION_MINOR 3)
-set(LIB_VERSION_PATCH 0)
-set(LIB_VERSION_ABI 0.3)
-set(LIB_VERSION_STRING ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH})
-
-execute_process(COMMAND git describe --always --abbrev=40 --dirty OUTPUT_VARIABLE GIT_COMMIT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --always --dirty OUTPUT_VARIABLE GIT_COMMIT_SHORT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git symbolic-ref --short HEAD OUTPUT_VARIABLE GIT_BRANCH ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git rev-list HEAD --count OUTPUT_VARIABLE GIT_REV ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND git describe --tag --exact-match OUTPUT_VARIABLE GIT_TAG ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(GIT_REV STREQUAL "")
-	set(GIT_REV -1)
-endif()
-if(NOT GIT_TAG STREQUAL "")
-	set(VERSION_STRING ${GIT_TAG})
-elseif(GIT_BRANCH STREQUAL "")
-	set(VERSION_STRING ${LIB_VERSION_STRING})
-else()
-	if(GIT_BRANCH STREQUAL "master")
-		set(VERSION_STRING ${GIT_REV}-${GIT_COMMIT_SHORT})
-	else()
-		set(VERSION_STRING ${GIT_BRANCH}-${GIT_REV}-${GIT_COMMIT_SHORT})
-	endif()
-
-	if(NOT LIB_VERSION_ABI STREQUAL GIT_BRANCH)
-		set(VERSION_STRING ${LIB_VERSION_ABI}-${VERSION_STRING})
-	endif()
-endif()
-
 add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/src/util/version.c.in
 	COMMAND ${CMAKE_COMMAND}
-	-DGIT_COMMIT=${GIT_COMMIT}
-	-DGIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
-	-DGIT_BRANCH=${GIT_BRANCH}
-	-DGIT_REV=${GIT_REV}
 	-DBINARY_NAME=${BINARY_NAME}
-	-DPROJECT_NAME=${PROJECT_NAME}
-	-DVERSION_STRING=${VERSION_STRING}
-	-D${BINARY_NAME}_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+	-DCONFIG_FILE=${CMAKE_SOURCE_DIR}/src/util/version.c.in
+	-DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/version.c
 	-P ${CMAKE_SOURCE_DIR}/version.cmake
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include(${CMAKE_SOURCE_DIR}/version.cmake)
+configure_file(${CMAKE_SOURCE_DIR}/src/util/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 list(APPEND UTIL_SRC ${CMAKE_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_BINARY_DIR}/version.c)
 
@@ -142,27 +125,6 @@ elseif(BUILD_PGO AND PGO_STAGE_2)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${PGO_POST_FLAGS}")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${PGO_POST_FLAGS}")
 endif()
-
-# Feature dependencies
-set(FEATURES)
-if(CMAKE_SYSTEM_NAME MATCHES .*BSD)
-	set(LIBEDIT_LIBRARIES -ledit)
-	if (CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
-		list(APPEND LIBEDIT_LIBRARIES -ltermcap)
-	endif()
-else()
-	find_feature(USE_CLI_DEBUGGER "libedit")
-endif()
-if(BUILD_GL)
-	find_package(OpenGL QUIET)
-	if(NOT OPENGL_FOUND)
-		set(BUILD_GL OFF)
-	endif()
-endif()
-find_feature(USE_FFMPEG "libavcodec;libavformat;libavresample;libavutil;libswscale")
-find_feature(USE_PNG "ZLIB;PNG")
-find_feature(USE_LIBZIP "libzip")
-find_feature(USE_MAGICK "MagickWand")
 
 # Platform support
 if(WIN32)
@@ -192,19 +154,25 @@ if(APPLE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 endif()
 
-if(NOT HAIKU AND NOT MSVC)
-	list(APPEND OS_LIB m)
+if(NOT HAIKU AND NOT MSVC AND NOT PSP2)
+	set(M_LIBRARY m)
 endif()
+list(APPEND OS_LIB ${M_LIBRARY})
 
 if(APPLE OR CMAKE_C_COMPILER_ID STREQUAL "GNU" AND BUILD_LTO)
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+	set_source_files_properties(${CMAKE_SOURCE_DIR}/src/arm/isa-arm.c ${CMAKE_SOURCE_DIR}/src/arm/isa-thumb.c PROPERTIES COMPILE_FLAGS -fno-lto)
 endif()
 
 if(BUILD_BBB OR BUILD_RASPI OR BUILD_PANDORA)
 	if(NOT BUILD_EGL)
 		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
 	endif()
+endif()
+
+if(BUILD_RASPI)
+	set(BUILD_GL OFF CACHE BOOL "OpenGL not supported" FORCE)
 endif()
 
 if(BUILD_PANDORA)
@@ -215,20 +183,30 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
 
+if(PSP2)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
+endif()
+
 include(CheckFunctionExists)
 check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
-check_function_exists(snprintf_l HAVE_SNPRINTF_L)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	# The strtof_l on Linux not actually exposed nor actually strtof_l
-	set(HAVE_STRTOF_L OFF)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
+	check_function_exists(snprintf_l HAVE_SNPRINTF_L)
+	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+		# The strtof_l on Linux not actually exposed nor actually strtof_l
+		set(HAVE_STRTOF_L OFF)
+	else()
+		check_function_exists(strtof_l HAVE_STRTOF_L)
+	endif()
+	check_function_exists(newlocale HAVE_NEWLOCALE)
+	check_function_exists(freelocale HAVE_FREELOCALE)
+	check_function_exists(uselocale HAVE_USELOCALE)
+	check_function_exists(setlocale HAVE_SETLOCALE)
 else()
-	check_function_exists(strtof_l HAVE_STRTOF_L)
+	set(DISABLE_DEPS ON CACHE BOOL "This platform cannot build with dependencies" FORCE)
+	set(DISABLE_FRONTENDS ON)
+	set(MINIMAL_CORE ON)
 endif()
-check_function_exists(newlocale HAVE_NEWLOCALE)
-check_function_exists(freelocale HAVE_FREELOCALE)
-check_function_exists(uselocale HAVE_USELOCALE)
-check_function_exists(setlocale HAVE_SETLOCALE)
 
 if(HAVE_STRDUP)
 	add_definitions(-DHAVE_STRDUP)
@@ -252,10 +230,48 @@ if(HAVE_SETLOCALE)
 	add_definitions(-DHAVE_SETLOCALE)
 endif()
 
+# Feature dependencies
+set(FEATURES)
+if(CMAKE_SYSTEM_NAME MATCHES .*BSD)
+	set(LIBEDIT_LIBRARIES -ledit)
+	if (CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
+		list(APPEND LIBEDIT_LIBRARIES -ltermcap)
+	endif()
+else()
+	find_feature(USE_CLI_DEBUGGER "libedit")
+endif()
+if(BUILD_GL)
+	find_package(OpenGL QUIET)
+	if(NOT OPENGL_FOUND)
+		set(BUILD_GL OFF CACHE BOOL "OpenGL not found" FORCE)
+	endif()
+endif()
+if(BUILD_GLES2 AND NOT BUILD_RASPI)
+	find_path(OPENGLES2_INCLUDE_DIR NAMES GLES2/gl2.h)
+	find_library(OPENGLES2_LIBRARY NAMES GLESv2 GLESv2_CM)
+	if(NOT OPENGLES2_INCLUDE_DIR OR NOT OPENGLES2_LIBRARY)
+		set(BUILD_GLES2 OFF CACHE BOOL "OpenGL|ES 2 not found" FORCE)
+	endif()
+endif()
+set(WANT_ZLIB ${USE_ZLIB})
+set(WANT_PNG ${USE_PNG})
+find_feature(USE_FFMPEG "libavcodec;libavformat;libavresample;libavutil;libswscale")
+if(NOT PSP2)
+	find_feature(USE_ZLIB "ZLIB")
+	find_feature(USE_PNG "PNG")
+endif()
+find_feature(USE_LIBZIP "libzip")
+find_feature(USE_MAGICK "MagickWand")
+
 # Features
 set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)
 set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
+
+if(DISABLE_DEPS)
+	set(USE_LZMA OFF)
+	set(USE_GDB_STUB OFF)
+endif()
 
 if(USE_CLI_DEBUGGER)
 	list(APPEND FEATURES CLI_DEBUGGER)
@@ -321,11 +337,46 @@ if(USE_MAGICK)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libmagickwand${MAGICKWAND_DEB_VERSION}")
 endif()
 
+if(WANT_ZLIB AND NOT USE_ZLIB)
+	set(SKIP_INSTALL_ALL ON)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/third-party/zlib zlib)
+	set_property(TARGET zlibstatic PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/zlib;${CMAKE_SOURCE_DIR}/src/third-party/zlib)
+	set_property(TARGET zlib PROPERTY EXCLUDE_FROM_ALL ON)
+	set_property(TARGET example PROPERTY EXCLUDE_FROM_ALL ON)
+	set_property(TARGET minigzip PROPERTY EXCLUDE_FROM_ALL ON)
+	set(ZLIB_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/src/third-party/zlib ${CMAKE_BINARY_DIR}/zlib)
+	set(ZLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/third-party/zlib ${CMAKE_BINARY_DIR}/zlib)
+	set(ZLIB_LIBRARY zlibstatic)
+	list(APPEND DEPENDENCY_LIB zlibstatic)
+	set(USE_ZLIB ON)
+endif()
+
+if(USE_ZLIB)
+	list(APPEND FEATURES ZLIB)
+	include_directories(AFTER ${ZLIB_INCLUDE_DIRS})
+	list(APPEND DEPENDENCY_LIB ${ZLIB_LIBRARIES})
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},zlib1g")
+endif()
+
+if(WANT_PNG AND USE_ZLIB AND NOT USE_PNG)
+	set(PNG_STATIC ON CACHE BOOL "" FORCE)
+	set(PNG_SHARED OFF CACHE BOOL "" FORCE)
+	set(PNG_TESTS OFF CACHE BOOL "" FORCE)
+	set(SKIP_INSTALL_ALL ON)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/third-party/libpng libpng)
+	set_property(TARGET png16_static PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/libpng;${CMAKE_SOURCE_DIR}/src/third-party/libpng;${ZLIB_INCLUDE_DIRS})
+	set(PNG_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/src/third-party/libpng ${CMAKE_BINARY_DIR}/libpng)
+	list(APPEND DEPENDENCY_LIB png16_static)
+	set(USE_PNG ON)
+endif()
+
 if(USE_PNG)
 	list(APPEND FEATURES PNG)
-	include_directories(AFTER ${PNG_INCLUDE_DIRS})
-	list(APPEND DEPENDENCY_LIB ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libpng12-0,zlib1g")
+	if(NOT PSP2)
+		include_directories(AFTER ${PNG_INCLUDE_DIRS})
+		list(APPEND DEPENDENCY_LIB ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
+		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libpng12-0")
+	endif()
 endif()
 
 if(USE_LIBZIP)
@@ -363,33 +414,50 @@ if (USE_LZMA)
 	list(APPEND FEATURES LZMA)
 endif()
 
-set(FEATURE_DEFINES)
 foreach(FEATURE IN LISTS FEATURES)
-	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
+	add_definitions("-DUSE_${FEATURE}")
 endforeach()
 
 source_group("Virtual files" FILES ${VFS_SRC})
 source_group("Extra features" FILES ${FEATURE_SRC})
 source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
 
+# Platform binaries
+if(3DS)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/3ds ${CMAKE_BINARY_DIR}/3ds)
+endif()
+
+if(WII)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/wii ${CMAKE_BINARY_DIR}/wii)
+endif()
+
+if(PSP2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
+endif()
+
 # Binaries
 set(CORE_SRC
 	${ARM_SRC}
 	${GBA_SRC}
 	${GBA_CHEATS_SRC}
-	${GBA_RR_SRC}
-	${GBA_SV_SRC}
+	${GBA_CTX_SRC}
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
-	${SIO_SRC}
 	${UTIL_SRC}
 	${VFS_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 
-set(SRC
-	${CORE_SRC}
-	${FEATURE_SRC})
+if(NOT MINIMAL_CORE)
+	set(SRC
+		${CORE_SRC}
+		${GBA_RR_SRC}
+		${GBA_SV_SRC}
+		${SIO_SRC}
+		${FEATURE_SRC})
+else()
+	set(SRC ${CORE_SRC})
+endif()
 
 if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
 	set(BUILD_SHARED ON)
@@ -397,10 +465,11 @@ endif()
 
 if(BUILD_SHARED)
 	add_library(${BINARY_NAME} SHARED ${SRC})
+	set_target_properties(${BINARY_NAME} PROPERTIES SOVERSION ${LIB_VERSION_ABI})
 	if(BUILD_STATIC)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
-		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
-		install(TARGETS ${BINARY_NAME}-static DESTINATION lib COMPONENT lib${BINARY_NAME})
+		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES}")
+		install(TARGETS ${BINARY_NAME}-static DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 		add_dependencies(${BINARY_NAME}-static version-info)
 	endif()
 else()
@@ -410,7 +479,7 @@ endif()
 add_dependencies(${BINARY_NAME} version-info)
 
 target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
-install(TARGETS ${BINARY_NAME} DESTINATION lib COMPONENT lib${BINARY_NAME})
+install(TARGETS ${BINARY_NAME} LIBRARY DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME} NAMELINK_SKIP ARCHIVE DESTINATION ${LIBDIR} RUNTIME DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 if(UNIX AND NOT APPLE)
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-16.png DESTINATION share/icons/hicolor/16x16/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-24.png DESTINATION share/icons/hicolor/24x24/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
@@ -422,16 +491,25 @@ if(UNIX AND NOT APPLE)
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-256.png DESTINATION share/icons/hicolor/256x256/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-512.png DESTINATION share/icons/hicolor/512x512/apps RENAME mgba.png COMPONENT lib${BINARY_NAME})
 endif()
-set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
+set_target_properties(${BINARY_NAME} PROPERTIES VERSION ${LIB_VERSION_STRING} SOVERSION ${LIB_VERSION_ABI} COMPILE_DEFINITIONS "${OS_DEFINES}")
 
 if(BUILD_GL)
 	add_definitions(-DBUILD_GL)
 endif()
 
+if(BUILD_GLES2)
+	add_definitions(-DBUILD_GLES2)
+endif()
+
+if(DISABLE_FRONTENDS)
+	set(BUILD_SDL OFF)
+	set(BUILD_QT OFF)
+endif()
+
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5")
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 endif()
 
@@ -445,7 +523,7 @@ if(BUILD_QT)
 endif()
 
 if(BUILD_PERF)
-	set(PERF_SRC ${CMAKE_SOURCE_DIR}/src/platform/perf-main.c)
+	set(PERF_SRC ${CMAKE_SOURCE_DIR}/src/platform/test/perf-main.c)
 	if(UNIX AND NOT APPLE)
 		list(APPEND PERF_LIB rt)
 	endif()
@@ -454,6 +532,12 @@ if(BUILD_PERF)
 	target_link_libraries(${BINARY_NAME}-perf ${BINARY_NAME} ${PERF_LIB})
 	install(TARGETS ${BINARY_NAME}-perf DESTINATION bin COMPONENT ${BINARY_NAME}-perf)
 	install(FILES ${CMAKE_SOURCE_DIR}/tools/perf.py DESTINATION "${CMAKE_INSTALL_LIBDIR}/${BINARY_NAME}" COMPONENT ${BINARY_NAME}-perf)
+endif()
+
+if(BUILD_TEST)
+	add_executable(${BINARY_NAME}-fuzz ${CMAKE_SOURCE_DIR}/src/platform/test/fuzz-main.c)
+	target_link_libraries(${BINARY_NAME}-fuzz ${BINARY_NAME})
+	install(TARGETS ${BINARY_NAME}-fuzz DESTINATION bin COMPONENT ${BINARY_NAME}-test)
 endif()
 
 # Packaging
@@ -493,6 +577,7 @@ message(STATUS "	Qt: ${BUILD_QT}")
 message(STATUS "	SDL (${SDL_VERSION}): ${BUILD_SDL}")
 message(STATUS "	Libretro core: ${BUILD_LIBRETRO}")
 message(STATUS "	Profiling: ${BUILD_PERF}")
+message(STATUS "	Test harness: ${BUILD_TEST}")
 message(STATUS "Library summary:")
 message(STATUS "	Static: ${BUILD_STATIC}")
 message(STATUS "	Shared: ${BUILD_SHARED}")

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/common.h"
 
-#include "gba/supervisor/rr.h"
+#include "gba/rr/rr.h"
 
 struct GBAVBMContext {
 	struct GBARRContext d;

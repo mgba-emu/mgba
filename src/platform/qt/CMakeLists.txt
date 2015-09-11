@@ -28,17 +28,31 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5Multimedia)
+if(NOT WIN32 OR NOT BUILD_SDL)
+	find_package(Qt5Multimedia)
+endif()
 find_package(Qt5OpenGL)
 find_package(Qt5Widgets)
 
-if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT OPENGL_FOUND)
+if(NOT BUILD_GL AND NOT BUILD_GLES2)
+	message(WARNING "OpenGL is required to build the Qt port")
+	set(BUILD_QT OFF PARENT_SCOPE)
+	return()
+endif()
+
+if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
 endif()
 
+if(BUILD_GL)
 list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+endif()
+
+if(BUILD_GLES2)
+list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+endif()
 
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
@@ -47,6 +61,7 @@ if(QT_TYPE STREQUAL STATIC_LIBRARY)
 endif()
 
 set(SOURCE_FILES
+	AboutScreen.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -61,6 +76,7 @@ set(SOURCE_FILES
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
 	InputController.cpp
+	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
 	LogController.cpp
@@ -82,6 +98,7 @@ set(SOURCE_FILES
 	VideoView.cpp)
 
 qt5_wrap_ui(UI_FILES
+	AboutScreen.ui
 	CheatsView.ui
 	GIFView.ui
 	LoadSaveState.ui
@@ -141,7 +158,7 @@ add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
-target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${OPENGL_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})
+target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 
 install(TARGETS ${BINARY_NAME}-qt
@@ -150,8 +167,11 @@ install(TARGETS ${BINARY_NAME}-qt
 if(UNIX AND NOT APPLE)
 	find_program(DESKTOP_FILE_INSTALL desktop-file-install)
 	if(DESKTOP_FILE_INSTALL)
-		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop\" --dir \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/share/applications/\")")
+		install(CODE "execute_process(COMMAND ${DESKTOP_FILE_INSTALL} \"${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop\" --dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/applications/\")")
 	endif()
+endif()
+if(UNIX)
+	install(FILES ${CMAKE_SOURCE_DIR}/doc/mgba-qt.6 DESTINATION ${MANDIR}/man6 COMPONENT ${BINARY_NAME}-qt)
 endif()
 if(APPLE OR WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES OUTPUT_NAME ${PROJECT_NAME})

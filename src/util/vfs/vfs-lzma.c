@@ -56,6 +56,7 @@ static void* _vf7zMap(struct VFile* vf, size_t size, int flags);
 static void _vf7zUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vf7zTruncate(struct VFile* vf, size_t size);
 static ssize_t _vf7zSize(struct VFile* vf);
+static bool _vf7zSync(struct VFile* vf, const void* buffer, size_t size);
 
 static bool _vd7zClose(struct VDir* vd);
 static void _vd7zRewind(struct VDir* vd);
@@ -63,6 +64,7 @@ static struct VDirEntry* _vd7zListNext(struct VDir* vd);
 static struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode);
 
 static const char* _vde7zName(struct VDirEntry* vde);
+static enum VFSType _vde7zType(struct VDirEntry* vde);
 
 struct VDir* VDirOpen7z(const char* path, int flags) {
 	if (flags & O_WRONLY || flags & O_CREAT) {
@@ -94,6 +96,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	SzArEx_Init(&vd->db);
 	SRes res = SzArEx_Open(&vd->db, &vd->lookStream.s, &vd->allocImp, &vd->allocTempImp);
 	if (res != SZ_OK) {
+		File_Close(&vd->archiveStream.file);
 		free(vd);
 		return 0;
 	}
@@ -102,6 +105,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	vd->dirent.utf8 = 0;
 	vd->dirent.vd = vd;
 	vd->dirent.d.name = _vde7zName;
+	vd->dirent.d.type = _vde7zType;
 
 	vd->d.close = _vd7zClose;
 	vd->d.rewind = _vd7zRewind;
@@ -114,6 +118,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 bool _vf7zClose(struct VFile* vf) {
 	struct VFile7z* vf7z = (struct VFile7z*) vf;
 	IAlloc_Free(&vf7z->vd->allocImp, vf7z->outBuffer);
+	File_Close(&vf7z->vd->archiveStream.file);
 	return true;
 }
 
@@ -291,8 +296,16 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	vf->d.unmap = _vf7zUnmap;
 	vf->d.truncate = _vf7zTruncate;
 	vf->d.size = _vf7zSize;
+	vf->d.sync = _vf7zSync;
 
 	return &vf->d;
+}
+
+bool _vf7zSync(struct VFile* vf, const void* memory, size_t size) {
+	UNUSED(vf);
+	UNUSED(memory);
+	UNUSED(size);
+	return false;
 }
 
 const char* _vde7zName(struct VDirEntry* vde) {
@@ -306,6 +319,14 @@ const char* _vde7zName(struct VDirEntry* vde) {
 	}
 
 	return vde7z->utf8;
+}
+
+static enum VFSType _vde7zType(struct VDirEntry* vde) {
+	struct VDirEntry7z* vde7z = (struct VDirEntry7z*) vde;
+	if (SzArEx_IsDir(&vde7z->vd->db, vde7z->index)) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }
 
 #endif

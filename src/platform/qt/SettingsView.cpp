@@ -13,8 +13,8 @@
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
- 	: QWidget(parent)
- 	, m_controller(controller)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+	, m_controller(controller)
 {
 	m_ui.setupUi(this);
 
@@ -22,6 +22,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
+	loadSetting("sampleRate", m_ui.sampleRate);
 	loadSetting("videoSync", m_ui.videoSync);
 	loadSetting("audioSync", m_ui.audioSync);
 	loadSetting("frameskip", m_ui.frameskip);
@@ -35,6 +36,19 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
+
+	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
+	if (fastForwardRatio <= 0) {
+		m_ui.fastForwardUnbounded->setChecked(true);
+		m_ui.fastForwardRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardUnbounded->setChecked(false);
+		m_ui.fastForwardRatio->setEnabled(true);
+		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+	connect(m_ui.fastForwardUnbounded, &QAbstractButton::toggled, [this](bool checked) {
+		m_ui.fastForwardRatio->setEnabled(!checked);
+	});
 
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {
@@ -75,6 +89,11 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* button) {
+		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
+			updateConfig();
+		}
+	});
 }
 
 void SettingsView::selectBios() {
@@ -89,6 +108,7 @@ void SettingsView::updateConfig() {
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("audioBuffers", m_ui.audioBufferSize);
+	saveSetting("sampleRate", m_ui.sampleRate);
 	saveSetting("videoSync", m_ui.videoSync);
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
@@ -102,6 +122,12 @@ void SettingsView::updateConfig() {
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
+
+	if (m_ui.fastForwardUnbounded->isChecked()) {
+		saveSetting("fastForwardRatio", "-1");
+	} else {
+		saveSetting("fastForwardRatio", m_ui.fastForwardRatio);
+	}
 
 	switch (m_ui.idleOptimization->currentIndex() + IDLE_LOOP_IGNORE) {
 	case IDLE_LOOP_IGNORE:
@@ -144,7 +170,7 @@ void SettingsView::saveSetting(const char* key, const QComboBox* field) {
 }
 
 void SettingsView::saveSetting(const char* key, const QDoubleSpinBox* field) {
-	saveSetting(key, field->cleanText());
+	saveSetting(key, field->value());
 }
 
 void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
@@ -152,14 +178,14 @@ void SettingsView::saveSetting(const char* key, const QLineEdit* field) {
 }
 
 void SettingsView::saveSetting(const char* key, const QSlider* field) {
-	saveSetting(key, QString::number(field->value()));
+	saveSetting(key, field->value());
 }
 
 void SettingsView::saveSetting(const char* key, const QSpinBox* field) {
-	saveSetting(key, field->cleanText());
+	saveSetting(key, field->value());
 }
 
-void SettingsView::saveSetting(const char* key, const QString& field) {
+void SettingsView::saveSetting(const char* key, const QVariant& field) {
 	m_controller->setOption(key, field);
 	m_controller->updateOption(key);
 }

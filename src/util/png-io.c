@@ -48,12 +48,12 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 	return info;
 }
 
-bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, void* pixels) {
+bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
 	png_bytep row = malloc(sizeof(png_bytep) * width * 3);
 	if (!row) {
 		return false;
 	}
-	png_bytep pixelData = pixels;
+	const png_byte* pixelData = pixels;
 	if (setjmp(png_jmpbuf(png))) {
 		free(row);
 		return false;
@@ -81,7 +81,7 @@ bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* d
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
 	}
-	png_write_chunk(png, (const png_bytep) realName, data, size);
+	png_write_chunk(png, (png_bytep) realName, data, size);
 	return true;
 }
 
@@ -117,7 +117,7 @@ bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler
 		return false;
 	}
 	png_set_read_user_chunk_fn(png, context, handler);
-	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (const png_bytep) chunkName, 1);
+	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_bytep) chunkName, 1);
 	return true;
 }
 

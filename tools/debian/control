@@ -1,0 +1,78 @@
+Source: mgba
+Section: otherosfs
+Priority: extra
+Maintainer: Sérgio Benjamim <sergio_br2@yahoo.com.br>
+Build-Depends: cmake (>= 2.8.11),
+               debhelper (>= 9),
+               libavcodec-dev,
+               libavformat-dev,
+               libavresample-dev,
+               libavutil-dev,
+               libedit-dev,
+               libmagickwand-dev,
+               libpng-dev,
+               libqt5opengl5-dev,
+               libsdl2-dev,
+               libswscale-dev,
+               libzip-dev,
+               pkg-config,
+               qtbase5-dev,
+               qtmultimedia5-dev,
+               zlib1g-dev
+Standards-Version: 3.9.6
+Homepage: http://mgba.io/
+
+Package: libmgba
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Game Boy Advance emulator (common library for mGBA)
+ mGBA is a new emulator for running Game Boy Advance games. It aims to be faster
+ and more accurate than many existing Game Boy Advance emulators, as well as
+ adding features that other emulators lack.
+ .
+ This package provides the common library for mGBA.
+ .
+ Game Boy Advance is a registered trademark of Nintendo of America Inc. mGBA is
+ not affiliated with or endorsed by any of the companies mentioned.
+
+Package: mgba-qt
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Game Boy Advance emulator (Qt frontend for mGBA)
+ mGBA is a new emulator for running Game Boy Advance games. It aims to be faster
+ and more accurate than many existing Game Boy Advance emulators, as well as
+ adding features that other emulators lack.
+ .
+ This package provides the Qt GUI frontend for mGBA.
+ .
+ Game Boy Advance is a registered trademark of Nintendo of America Inc. mGBA is
+ not affiliated with or endorsed by any of the companies mentioned.
+
+Package: mgba-sdl
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Game Boy Advance emulator (SDL frontend for mGBA)
+ mGBA is a new emulator for running Game Boy Advance games. It aims to be faster
+ and more accurate than many existing Game Boy Advance emulators, as well as
+ adding features that other emulators lack.
+ .
+ This package provides the SDL UI console for mGBA.
+ .
+ Game Boy Advance is a registered trademark of Nintendo of America Inc. mGBA is
+ not affiliated with or endorsed by any of the companies mentioned.
+
+Package: libretro-mgba
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Libretro wrapper for mGBA
+ This wrapper makes mGBA API compatible with libretro, thus allowing its use
+ with libretro frontends, such as RetroArch.
+ .
+ mGBA is a new emulator for running Game Boy Advance games. It aims to be faster
+ and more accurate than many existing Game Boy Advance emulators, as well as
+ adding features that other emulators lack.
+ .
+ Game Boy Advance is a registered trademark of Nintendo of America Inc. mGBA is
+ not affiliated with or endorsed by any of the companies mentioned.

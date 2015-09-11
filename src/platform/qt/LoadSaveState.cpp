@@ -23,9 +23,10 @@ using namespace QGBA;
 LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
-	, m_currentFocus(0)
+	, m_currentFocus(controller->stateSlot() - 1)
 	, m_mode(LoadSave::LOAD)
 {
+	setAttribute(Qt::WA_TranslucentBackground);
 	m_ui.setupUi(this);
 
 	m_slots[0] = m_ui.state1;
@@ -43,6 +44,13 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 		loadState(i + 1);
 		m_slots[i]->installEventFilter(this);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
+	}
+
+	if (m_currentFocus >= 9) {
+		m_currentFocus = 0;
+	}
+	if (m_currentFocus < 0) {
+		m_currentFocus = 0;
 	}
 
 	QAction* escape = new QAction(this);
@@ -201,6 +209,5 @@ void LoadSaveState::showEvent(QShowEvent* event) {
 void LoadSaveState::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
 	QRect full(QPoint(), size());
-	painter.drawPixmap(full, m_currentImage);
 	painter.fillRect(full, QColor(0, 0, 0, 128));
 }

@@ -29,6 +29,12 @@ enum {
 	MAP_WRITE = 2
 };
 
+enum VFSType {
+	VFS_UNKNOWN = 0,
+	VFS_FILE,
+	VFS_DIRECTORY
+};
+
 struct VFile {
 	bool (*close)(struct VFile* vf);
 	off_t (*seek)(struct VFile* vf, off_t offset, int whence);
@@ -39,10 +45,12 @@ struct VFile {
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
 	ssize_t (*size)(struct VFile* vf);
+	bool (*sync)(struct VFile* vf, const void* buffer, size_t size);
 };
 
 struct VDirEntry {
 	const char* (*name)(struct VDirEntry* vde);
+	enum VFSType (*type)(struct VDirEntry* vde);
 };
 
 struct VDir {

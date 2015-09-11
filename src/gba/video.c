@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video.h"
 
+#include "gba/context/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/rr/rr.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/rr.h"
-#include "gba/supervisor/sync.h"
 
 #include "util/memory.h"
 
@@ -17,11 +17,12 @@ static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
+static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoDummyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer);
-static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
 
 const int GBAVideoObjSizes[16][2] = {
 	{ 8, 8 },
@@ -47,6 +48,7 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.reset = GBAVideoDummyRendererReset,
 	.deinit = GBAVideoDummyRendererDeinit,
 	.writeVideoRegister = GBAVideoDummyRendererWriteVideoRegister,
+	.writeVRAM = GBAVideoDummyRendererWriteVRAM,
 	.writePalette = GBAVideoDummyRendererWritePalette,
 	.writeOAM = GBAVideoDummyRendererWriteOAM,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
@@ -60,12 +62,18 @@ void GBAVideoInit(struct GBAVideo* video) {
 }
 
 void GBAVideoReset(struct GBAVideo* video) {
-	video->vcount = VIDEO_VERTICAL_TOTAL_PIXELS - 1;
+	if (video->p->memory.fullBios) {
+		video->vcount = 0;
+	} else {
+		// TODO: Verify exact scanline hardware
+		video->vcount = 0x7E;
+	}
+	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
 	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
 	video->nextEvent = video->nextHblank;
-	video->eventDiff = video->nextEvent;
+	video->eventDiff = 0;
 
 	video->nextHblankIRQ = 0;
 	video->nextVblankIRQ = 0;
@@ -222,6 +230,12 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 	return value;
 }
 
+static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
+	UNUSED(renderer);
+	UNUSED(address);
+	// Nothing to do
+}
+
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	UNUSED(renderer);
 	UNUSED(address);
@@ -246,7 +260,7 @@ static void GBAVideoDummyRendererFinishFrame(struct GBAVideoRenderer* renderer) 
 	// Nothing to do
 }
 
-static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels) {
+static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels) {
 	UNUSED(renderer);
 	UNUSED(stride);
 	UNUSED(pixels);
