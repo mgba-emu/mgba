@@ -122,12 +122,14 @@ int32_t GBASIODolphinProcessEvents(struct GBASIODriver* driver, int32_t cycles) 
 			if (SocketPoll(1, &r, 0, 0, 1) == 1 && SocketRecv(dol->clock, &clockSlice, 4) == 4) {
 				clockSlice = ntohl(clockSlice);
 				dol->clockSlice += clockSlice;
+			} else {
+				dol->clockSlice = ((-(dol->clockSlice - 1) / CLOCK_GRAIN) + 1) * CLOCK_GRAIN;
 			}
 		}
 
 		if (SocketRecv(dol->data, &command, 1) == 1) {
 			dol->nextEvent += _processCommand(dol, command);
-		} else if (dol->clockSlice > 128) {
+		} else if (clockSlice > 0 && clockSlice < CLOCK_GRAIN) {
 			dol->nextEvent += clockSlice;
 		} else {
 			dol->nextEvent += CLOCK_GRAIN;
