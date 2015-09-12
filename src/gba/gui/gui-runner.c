@@ -173,9 +173,6 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	while (true) {
 		char path[256];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
-			}
 			break;
 		}
 
@@ -272,9 +269,6 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			}
 			while (keys) {
 				GUIPollInput(&runner->params, 0, &keys);
-			}
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
 			}
 			if (runner->unpaused) {
 				runner->unpaused(runner);
