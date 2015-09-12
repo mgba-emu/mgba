@@ -23,7 +23,7 @@ list(APPEND GUI_SRC ${CMAKE_CURRENT_BINARY_DIR}/font.c ${CMAKE_CURRENT_SOURCE_DI
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.c PROPERTIES GENERATED ON)
 add_executable(${BINARY_NAME}.elf ${GUI_SRC} main.c ctru-heap.c)
-set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES}")
+set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${OS_LIB})
 
 add_custom_command(OUTPUT ${BINARY_NAME}.smdh
