@@ -267,7 +267,13 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 					break;
 				}
 			}
-			while (keys) {
+			int frames = 0;
+			GUIPollInput(&runner->params, 0, &keys);
+			while (keys && frames < 30) {
+				++frames;
+				runner->params.drawStart();
+				runner->drawFrame(runner, true);
+				runner->params.drawEnd();
 				GUIPollInput(&runner->params, 0, &keys);
 			}
 			if (runner->unpaused) {
