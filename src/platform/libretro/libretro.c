@@ -30,7 +30,6 @@ static retro_set_rumble_state_t rumbleCallback;
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
-static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _setRumble(struct GBARumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
@@ -155,7 +154,7 @@ void retro_init(void) {
 
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
-	stream.postVideoFrame = _postVideoFrame;
+	stream.postVideoFrame = 0;
 
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
@@ -235,6 +234,7 @@ void retro_run(void) {
 	}
 
 	GBAContextFrame(&context, keys);
+	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * renderer.outputBufferStride);
 }
 
 void retro_reset(void) {
@@ -406,14 +406,6 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	}
 #endif
 	audioCallback(samples, SAMPLES);
-}
-
-static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
-	UNUSED(stream);
-	const void* pixels;
-	unsigned stride;
-	renderer->getPixels(renderer, &stride, &pixels);
-	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);
 }
 
 static void _setRumble(struct GBARumble* rumble, int enable) {
