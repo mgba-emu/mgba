@@ -688,7 +688,9 @@ bool GBAIsBIOS(struct VFile* vf) {
 	}
 	int i;
 	for (i = 0; i < 7; ++i) {
-		if ((interruptTable[i] & 0xFFFF0000) != 0xEA000000) {
+		uint32_t interrupt;
+		LOAD_32(interrupt, i * sizeof(uint32_t), interruptTable);
+		if ((interrupt & 0xFFFF0000) != 0xEA000000) {
 			return false;
 		}
 	}

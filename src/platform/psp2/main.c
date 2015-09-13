@@ -15,6 +15,7 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
+#include <psp2/touch.h>
 
 #include <vita2d.h>
 
@@ -36,6 +37,9 @@ static uint32_t _pollInput(void) {
 	int input = 0;
 	if (pad.buttons & PSP2_CTRL_TRIANGLE) {
 		input |= 1 << GUI_INPUT_CANCEL;
+	}
+	if (pad.buttons & PSP2_CTRL_SQUARE) {
+		input |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
 	}
 	if (pad.buttons & PSP2_CTRL_CIRCLE) {
 		input |= 1 << GUI_INPUT_BACK;
@@ -60,15 +64,27 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-int main() {
-	printf("%s initializing", projectName);
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	SceTouchData touch;
+	sceTouchPeek(0, &touch, 1);
+	if (touch.reportNum < 1) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	*x = touch.report[0].x / 2;
+	*y = touch.report[0].y / 2;
+	return GUI_CURSOR_DOWN;
+}
 
+
+int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
 	struct GBAGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd, _pollInput, 0, 0,
+			font, "cache0:", _drawStart, _drawEnd,
+			_pollInput, _pollCursor,
+			0, 0,
 
 			GUI_PARAMS_TRAIL
 		},
@@ -78,10 +94,13 @@ int main() {
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.paused = 0,
+		.unpaused = 0,
+		.incrementScreenMode = GBAPSP2IncrementScreenMode,
 		.pollGameInput = GBAPSP2PollInput
 	};
 
-	GBAGUIInit(&runner, 0);
+	GBAGUIInit(&runner, "psvita");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 

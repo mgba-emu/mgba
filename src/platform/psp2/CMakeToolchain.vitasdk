@@ -33,6 +33,7 @@ set(PKG_CONFIG_EXECUTABLE "/dev/null" CACHE INTERNAL "" FORCE)
 set(FIXUP ${toolchain_bin_dir}/vita-elf-create)
 set(OBJCOPY ${cross_prefix}objcopy)
 set(NIDDB ${VITASDK}/db.json)
+set(STRIP ${cross_prefix}strip)
 
 set(PSP2 ON)
 add_definitions(-DPSP2)

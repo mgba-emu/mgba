@@ -167,7 +167,7 @@ struct GBAVideoRenderer {
 	void (*drawScanline)(struct GBAVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBAVideoRenderer* renderer);
 
-	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, void** pixels);
+	void (*getPixels)(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
 	void (*putPixels)(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
 
 	uint16_t* palette;

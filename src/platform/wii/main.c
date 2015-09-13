@@ -22,8 +22,6 @@
 
 #define SAMPLES 1024
 
-static void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
-
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
 static void _sampleRotation(struct GBARotationSource* source);
@@ -34,6 +32,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 static void _drawStart(void);
 static void _drawEnd(void);
 static uint32_t _pollInput(void);
+static enum GUICursorState _pollCursor(int* x, int* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
@@ -46,7 +45,6 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBARumble rumble;
 static struct GBARotationSource rotation;
-static FILE* logfile;
 static GXRModeObj* mode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
@@ -68,6 +66,7 @@ int main() {
 	VIDEO_Init();
 	PAD_Init();
 	WPAD_Init();
+	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC_IR);
 	AUDIO_Init(0);
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback(_audioDMA);
@@ -146,8 +145,6 @@ int main() {
 
 	fatInitDefault();
 
-	logfile = fopen("/mgba.log", "w");
-
 	rumble.setRumble = _setRumble;
 
 	rotation.sample = _sampleRotation;
@@ -159,7 +156,8 @@ int main() {
 		.params = {
 			352, 230,
 			font, "/",
-			_drawStart, _drawEnd, _pollInput,
+			_drawStart, _drawEnd,
+			_pollInput, _pollCursor,
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
@@ -170,30 +168,20 @@ int main() {
 		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
+		.paused = _gameUnloaded,
+		.unpaused = 0,
 		.pollGameInput = _pollGameInput
 	};
-	GBAGUIInit(&runner, 0);
+	GBAGUIInit(&runner, "wii");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 
-	fclose(logfile);
 	free(fifo);
 
 	free(renderer.outputBuffer);
 	GUIFontDestroy(font);
 
 	return 0;
-}
-
-void GBAWiiLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
-	UNUSED(thread);
-	UNUSED(level);
-	if (!logfile) {
-		return;
-	}
-	vfprintf(logfile, format, args);
-	fprintf(logfile, "\n");
-	fflush(logfile);
 }
 
 static void _audioDMA(void) {
@@ -252,7 +240,7 @@ static uint32_t _pollInput(void) {
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
 		keys |= 1 << GUI_INPUT_SELECT;
 	}
-	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) ||
+	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) || (wiiPad & WPAD_BUTTON_B) ||
 	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
 		keys |= 1 << GUI_INPUT_BACK;
 	}
@@ -279,6 +267,22 @@ static uint32_t _pollInput(void) {
 	return keys;
 }
 
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	ir_t ir;
+	WPAD_IR(0, &ir);
+	if (!ir.smooth_valid) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	*x = ir.sx;
+	*y = ir.sy;
+	WPAD_ScanPads();
+	u32 wiiPad = WPAD_ButtonsHeld(0);
+	if (wiiPad & WPAD_BUTTON_A) {
+		return GUI_CURSOR_DOWN;
+	}
+	return GUI_CURSOR_UP;
+}
+
 void _guiPrepare(void) {
 	Mtx44 proj;
 	guOrtho(proj, -20, 240, 0, 352, 0, 300);
@@ -292,13 +296,6 @@ void _guiFinish(void) {
 }
 
 void _setup(struct GBAGUIRunner* runner) {
-	struct GBAOptions opts = {
-		.useBios = true,
-		.logLevel = 0,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
-	runner->context.gba->logHandler = GBAWiiLog;
 	runner->context.gba->rumble = &rumble;
 	runner->context.gba->rotationSource = &rotation;
 
@@ -310,7 +307,7 @@ void _setup(struct GBAGUIRunner* runner) {
 	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
 	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 #endif
@@ -322,7 +319,6 @@ void _gameUnloaded(struct GBAGUIRunner* runner) {
 }
 
 void _gameLoaded(struct GBAGUIRunner* runner) {
-	WPAD_SetDataFormat(0, WPAD_FMT_BTNS_ACC);
 	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {

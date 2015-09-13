@@ -31,6 +31,37 @@ void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* hel
 	}
 }
 
+enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y) {
+	if (!params->pollCursor) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	enum GUICursorState state = params->pollCursor(x, y);
+	if (params->cursorState == GUI_CURSOR_DOWN) {
+		int dragX = *x - params->cx;
+		int dragY = *y - params->cy;
+		if (dragX * dragX + dragY * dragY > 25) {
+			params->cursorState = GUI_CURSOR_DRAGGING;
+			return GUI_CURSOR_DRAGGING;
+		}
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_CLICKED;
+		}
+	} else {
+		params->cx = *x;
+		params->cy = *y;
+	}
+	if (params->cursorState == GUI_CURSOR_DRAGGING) {
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_UP;
+		}
+		return GUI_CURSOR_DRAGGING;
+	}
+	params->cursorState = state;
+	return params->cursorState;
+}
+
 void GUIInvalidateKeys(struct GUIParams* params) {
 	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
 		params->inputHistory[i] = 0;

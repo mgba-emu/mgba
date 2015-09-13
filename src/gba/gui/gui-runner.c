@@ -10,6 +10,8 @@
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
 #include "util/gui/menu.h"
+#include "util/memory.h"
+#include "util/png-io.h"
 #include "util/vfs.h"
 
 enum {
@@ -30,10 +32,49 @@ enum {
 	RUNNER_STATE_9 = 0x90000,
 };
 
-static void _drawBackground(struct GUIBackground* background) {
+static void _drawBackground(struct GUIBackground* background, void* context) {
+	UNUSED(context);
 	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
 	if (gbaBackground->p->drawFrame) {
 		gbaBackground->p->drawFrame(gbaBackground->p, true);
+	}
+}
+
+static void _drawState(struct GUIBackground* background, void* id) {
+	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
+	int stateId = ((int) id) >> 16;
+	if (gbaBackground->p->drawScreenshot) {
+		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
+			return;
+		}
+		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, 0, stateId, false);
+		uint32_t* pixels = gbaBackground->screenshot;
+		if (!pixels) {
+			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+			gbaBackground->screenshot = pixels;
+		}
+		bool success = false;
+		if (vf && isPNG(vf) && pixels) {
+			png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+			png_infop info = png_create_info_struct(png);
+			png_infop end = png_create_info_struct(png);
+			if (png && info && end) {
+				success = PNGReadHeader(png, info);
+				success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
+				success = success && PNGReadFooter(png, end);
+			}
+			PNGReadClose(png, info, end);
+		}
+		if (vf) {
+			vf->close(vf);
+		}
+		if (success) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, true);
+			gbaBackground->screenshotId = (int) id;
+		} else if (gbaBackground->p->drawFrame) {
+			gbaBackground->p->drawFrame(gbaBackground->p, true);
+		}
 	}
 }
 
@@ -68,10 +109,21 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
+	if (runner->context.config.port) {
+		GBAConfigSave(&runner->context.config);
+	}
 	GBAContextDeinit(&runner->context);
 }
 
 void GBAGUIRunloop(struct GBAGUIRunner* runner) {
+	struct GBAGUIBackground drawState = {
+		.d = {
+			.draw = _drawState
+		},
+		.p = runner,
+		.screenshot = 0,
+		.screenshotId = 0
+	};
 	struct GUIMenu pauseMenu = {
 		.title = "Game Paused",
 		.index = 0,
@@ -80,12 +132,12 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	struct GUIMenu stateSaveMenu = {
 		.title = "Save state",
 		.index = 0,
-		.background = &runner->background.d
+		.background = &drawState.d
 	};
 	struct GUIMenu stateLoadMenu = {
 		.title = "Load state",
 		.index = 0,
-		.background = &runner->background.d
+		.background = &drawState.d
 	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
 	GUIMenuItemListInit(&stateSaveMenu.items, 9);
@@ -121,11 +173,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	while (true) {
 		char path[256];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
-			}
-			GUIMenuItemListDeinit(&pauseMenu.items);
-			return;
+			break;
 		}
 
 		if (runner->params.guiPrepare) {
@@ -172,6 +220,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 						--runner->luminanceSource.luxLevel;
 					}
 				}
+				if (guiKeys & (1 << GBA_GUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
+					runner->incrementScreenMode(runner);
+				}
 				uint16_t keys = runner->pollGameInput(runner);
 				if (runner->prepareForFrame) {
 					runner->prepareForFrame(runner);
@@ -184,6 +235,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				}
 			}
 
+			if (runner->paused) {
+				runner->paused(runner);
+			}
 			GUIInvalidateKeys(&runner->params);
 			uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
 			struct GUIMenuItem item;
@@ -213,11 +267,17 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 					break;
 				}
 			}
-			while (keys) {
+			int frames = 0;
+			GUIPollInput(&runner->params, 0, &keys);
+			while (keys && frames < 30) {
+				++frames;
+				runner->params.drawStart();
+				runner->drawFrame(runner, true);
+				runner->params.drawEnd();
 				GUIPollInput(&runner->params, 0, &keys);
 			}
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
+			if (runner->unpaused) {
+				runner->unpaused(runner);
 			}
 		}
 		GBAContextStop(&runner->context);
@@ -225,6 +285,10 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			runner->gameUnloaded(runner);
 		}
 		GBAContextUnloadROM(&runner->context);
+		drawState.screenshotId = 0;
+	}
+	if (drawState.screenshot) {
+		mappedMemoryFree(drawState.screenshot, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 	}
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);

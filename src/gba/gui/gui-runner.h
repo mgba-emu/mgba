@@ -11,12 +11,16 @@
 
 enum GBAGUIInput {
 	GBA_GUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
-	GBA_GUI_INPUT_DECREASE_BRIGHTNESS
+	GBA_GUI_INPUT_DECREASE_BRIGHTNESS,
+	GBA_GUI_INPUT_SCREEN_MODE,
 };
 
 struct GBAGUIBackground {
 	struct GUIBackground d;
 	struct GBAGUIRunner* p;
+
+	uint32_t* screenshot;
+	int screenshotId;
 };
 
 struct GBAGUIRunnerLux {
@@ -37,6 +41,10 @@ struct GBAGUIRunner {
 	void (*gameUnloaded)(struct GBAGUIRunner*);
 	void (*prepareForFrame)(struct GBAGUIRunner*);
 	void (*drawFrame)(struct GBAGUIRunner*, bool faded);
+	void (*drawScreenshot)(struct GBAGUIRunner*, const uint32_t* pixels, bool faded);
+	void (*paused)(struct GBAGUIRunner*);
+	void (*unpaused)(struct GBAGUIRunner*);
+	void (*incrementScreenMode)(struct GBAGUIRunner*);
 	uint16_t (*pollGameInput)(struct GBAGUIRunner*);
 };
 

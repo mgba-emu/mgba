@@ -15,6 +15,8 @@
 #include "platform/windows/threading.h"
 #elif PSP2
 #include "platform/psp2/threading.h"
+#elif _3DS
+#include "platform/3ds/threading.h"
 #else
 #define DISABLE_THREADING
 #endif
