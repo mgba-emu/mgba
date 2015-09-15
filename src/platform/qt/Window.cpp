@@ -684,6 +684,10 @@ void Window::openStateWindow(LoadSave ls) {
 	if (m_stateWindow) {
 		return;
 	}
+	MultiplayerController* multiplayer = m_controller->multiplayerController();
+	if (multiplayer && multiplayer->attached() > 1) {
+		return;
+	}
 	bool wasPaused = m_controller->isPaused();
 	m_stateWindow = new LoadSaveState(m_controller);
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(close()));
