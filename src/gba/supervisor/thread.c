@@ -16,7 +16,6 @@
 #include "debugger/debugger.h"
 
 #include "util/patch.h"
-#include "util/png-io.h"
 #include "util/vfs.h"
 
 #include "platform/commandline.h"
@@ -754,22 +753,9 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
-#ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
-	unsigned stride;
-	const void* pixels = 0;
-	struct VFile* vf = VDirOptionalOpenIncrementFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
-	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
-	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	bool success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
-	PNGWriteClose(png, info);
-	vf->close(vf);
-	if (success) {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "Screenshot saved");
-	}
+	GBATakeScreenshot(threadContext->gba, threadContext->stateDir);
 }
-#endif
 
 #else
 struct GBAThread* GBAThreadGetContext(void) {
