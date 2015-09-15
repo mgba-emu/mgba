@@ -18,6 +18,11 @@
 #error "Can't compile the libretro core as anything other than libretro."
 #endif
 
+#ifdef _3DS
+#include <3ds.h>
+FS_archive sdmcArchive;
+#endif
+
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
 

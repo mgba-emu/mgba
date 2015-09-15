@@ -176,7 +176,7 @@ else ifeq ($(platform), psp1)
 	STATIC_LINKING = 1
 	DEFINES += -std=c99
 
-# PSP
+# Vita
 else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_vita.a
 	CC = arm-vita-eabi-gcc$(EXE_EXT)
@@ -184,6 +184,25 @@ else ifeq ($(platform), vita)
 	PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER -DPSP2
 	STATIC_LINKING = 1
 	DEFINES += -std=c99
+
+
+# CTR(3DS)
+else ifeq ($(platform), ctr)
+	TARGET := $(TARGET_NAME)_libretro_ctr.a
+	CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
+	AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
+	PLATFORM_DEFINES := -DARM11 -D_3DS
+
+	CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
+	CFLAGS += -Wall -mword-relocations
+	CFLAGS += -fomit-frame-pointer -ffast-math
+	CFLAGS += -I$(CTRULIB)/include
+	DEFINES += -std=c99
+
+	PLATFORM_DEFINES += -DUSE_VFS_3DS
+	CFLAGS += -DDISABLE_THREADING
+	STATIC_LINKING = 1
+
 
 # Xbox 360
 else ifeq ($(platform), xenon)

@@ -406,7 +406,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	if (gba->pristineRomSize > SIZE_CART0) {
 		gba->pristineRomSize = SIZE_CART0;
 	}
-#ifdef _3DS
+#if defined(_3DS) && !defined(__LIBRETRO__)
 	gba->pristineRom = 0;
 	if (gba->pristineRomSize <= romBufferSize) {
 		gba->pristineRom = romBuffer;
