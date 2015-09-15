@@ -37,6 +37,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	ARMInit(context->cpu);
 
 	GBAConfigInit(&context->config, port);
+#ifndef __LIBRETRO__
 	if (port) {
 		if (!_logFile) {
 			char logPath[PATH_MAX];
@@ -59,7 +60,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		GBAConfigLoadDefaults(&context->config, &opts);
 		GBAConfigLoad(&context->config);
 	}
-
+#endif
 	context->gba->sync = 0;
 	return true;
 }
