@@ -19,6 +19,7 @@ enum {
 	RUNNER_EXIT = 2,
 	RUNNER_SAVE_STATE = 3,
 	RUNNER_LOAD_STATE = 4,
+	RUNNER_SCREENSHOT = 5,
 	RUNNER_COMMAND_MASK = 0xFFFF,
 
 	RUNNER_STATE_1 = 0x10000,
@@ -168,6 +169,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_8) };
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_9) };
 #endif
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
 	while (true) {
@@ -262,6 +264,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 						GBALoadStateNamed(runner->context.gba, vf);
 						vf->close(vf);
 					}
+					break;
+				case RUNNER_SCREENSHOT:
+					GBATakeScreenshot(runner->context.gba, 0);
 					break;
 				case RUNNER_CONTINUE:
 					break;
