@@ -345,12 +345,10 @@ void GBAAudioWriteSOUND1CNT_X(struct GBAAudio* audio, uint16_t value) {
 			audio->nextCh1 = 0;
 		}
 		audio->playingCh1 = 1;
-		if (audio->ch1.envelope.stepTime) {
-			audio->ch1.envelope.nextStep = 0;
-		} else {
-			audio->ch1.envelope.nextStep = INT_MAX;
-		}
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
+		if (audio->ch1.envelope.currentVolume > 0) {
+			audio->ch1.envelope.dead = 0;
+		}
 		if (audio->ch1.envelope.stepTime) {
 			audio->ch1.envelope.nextStep = 0;
 		} else {
@@ -372,6 +370,9 @@ void GBAAudioWriteSOUND2CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	if (GBAAudioRegisterControlIsRestart(value)) {
 		audio->playingCh2 = 1;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
+		if (audio->ch2.envelope.currentVolume > 0) {
+			audio->ch2.envelope.dead = 0;
+		}
 		if (audio->ch2.envelope.stepTime) {
 			audio->ch2.envelope.nextStep = 0;
 		} else {
@@ -419,6 +420,9 @@ void GBAAudioWriteSOUND4CNT_HI(struct GBAAudio* audio, uint16_t value) {
 	if (GBAAudioRegisterCh4ControlIsRestart(value)) {
 		audio->playingCh4 = 1;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
+		if (audio->ch4.envelope.currentVolume > 0) {
+			audio->ch4.envelope.dead = 0;
+		}
 		if (audio->ch4.envelope.stepTime) {
 			audio->ch4.envelope.nextStep = 0;
 		} else {

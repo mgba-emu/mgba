@@ -9,6 +9,7 @@ Bugfixes:
  - GBA: Fix BIOS check on big endian
  - Libretro: Fix a memory leak with the render buffer
  - GBA Audio: Fix 8-bit writes to audio channel 3 and 4 registers
+ - GBA Audio: Fix audio channels being silenced at the wrong time
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
