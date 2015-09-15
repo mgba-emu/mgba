@@ -11,6 +11,7 @@ Bugfixes:
  - GBA Audio: Fix 8-bit writes to audio channel 3 and 4 registers
  - GBA Audio: Fix audio channels being silenced at the wrong time
  - VFS: Fix return values of VFileFILE.read and .write
+ - Util: Fix PowerPC PNG read/write pixel order
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper

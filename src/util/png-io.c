@@ -65,9 +65,15 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 	for (i = 0; i < height; ++i) {
 		unsigned x;
 		for (x = 0; x < width; ++x) {
+#if defined(__POWERPC__) || defined(__PPC__)
+			row[x * 3] = pixelData[stride * i * 4 + x * 4 + 3];
+			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
+			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 1];
+#else
 			row[x * 3] = pixelData[stride * i * 4 + x * 4];
 			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
 			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
+#endif
 		}
 		png_write_row(png, row);
 	}
@@ -167,9 +173,16 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 		png_read_row(png, row, 0);
 		unsigned x;
 		for (x = 0; x < pngWidth; ++x) {
+
+#if defined(__POWERPC__) || defined(__PPC__)
+			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 3];
+			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 1];
+			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 2];
+#else
 			pixelData[stride * i * 4 + x * 4] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 1];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 2];
+#endif
 		}
 	}
 	free(row);
