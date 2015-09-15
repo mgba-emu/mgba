@@ -74,7 +74,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				params->guiPrepare();
 			}
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %lu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -104,7 +104,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				params->guiPrepare();
 			}
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %lu of %lu)", i, items);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %zu of %zu)", i, items);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}

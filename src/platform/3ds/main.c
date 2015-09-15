@@ -122,6 +122,7 @@ static void _drawTex(bool faded) {
 		sf2d_draw_texture_scale_blend(tex, 80, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
 		break;
 	case SM_PA_BOTTOM:
+	default:
 		sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
 		break;
 	case SM_AF_TOP:
@@ -141,8 +142,8 @@ static void _drawTex(bool faded) {
 
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
-	GSPGPU_FlushDataCache(0, renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	GX_SetDisplayTransfer(0, renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
+	GSPGPU_FlushDataCache(0, (u8*) renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	GX_SetDisplayTransfer(0, (u32*) renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
 	_drawTex(faded);
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (!hasSound) {
@@ -173,6 +174,7 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 }
 
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
+	UNUSED(runner);
 	hidScanInput();
 	uint32_t activeKeys = hidKeysHeld() & 0xF00003FF;
 	activeKeys |= activeKeys >> 24;
