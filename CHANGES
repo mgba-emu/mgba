@@ -23,6 +23,7 @@ Misc:
  - ARM7: Force disable LTO on two files to work around a GCC bug
  - Libretro: Use anonymous memory mappers for large blocks of memory
  - Qt: Add 'Apply' button to settings window
+ - Qt: Prevent savestate window from opening while in multiplayer
 
 0.3.0: (2015-08-16)
 Features:
