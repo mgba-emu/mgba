@@ -43,6 +43,9 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 	if (!info) {
 		return 0;
 	}
+	if (setjmp(png_jmpbuf(png))) {
+		return 0;
+	}
 	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 	png_write_info(png, info);
 	return info;
