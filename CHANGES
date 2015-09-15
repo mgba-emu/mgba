@@ -8,6 +8,7 @@ Bugfixes:
  - GBA: Deinit savegame when unloading a ROM
  - GBA: Fix BIOS check on big endian
  - Libretro: Fix a memory leak with the render buffer
+ - GBA Audio: Fix 8-bit writes to audio channel 3 and 4 registers
 Misc:
  - Qt: Remove useless help icons in dialogs
  - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
