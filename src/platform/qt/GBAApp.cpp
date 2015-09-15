@@ -75,6 +75,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	w->show();
 
 	w->controller()->setMultiplayerController(&m_multiplayer);
+	w->multiplayerChanged();
 }
 
 bool GBAApp::event(QEvent* event) {
@@ -99,6 +100,7 @@ Window* GBAApp::newWindow() {
 	w->loadConfig();
 	w->show();
 	w->controller()->setMultiplayerController(&m_multiplayer);
+	w->multiplayerChanged();
 	return w;
 }
 

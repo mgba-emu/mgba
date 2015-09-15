@@ -17,6 +17,7 @@ Misc:
  - GBA Audio: Allow GBAAVStream to have no video callback
  - ARM7: Force disable LTO on two files to work around a GCC bug
  - Qt: Prevent savestate window from opening while in multiplayer
+ - Qt: Disable menu items in multiplayer that don't make sense to have enabled
 
 0.3.0: (2015-08-16)
 Features:

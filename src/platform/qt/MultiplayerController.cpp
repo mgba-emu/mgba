@@ -35,6 +35,7 @@ bool MultiplayerController::attachGame(GameController* controller) {
 	}
 	thread->sioDrivers.multiplayer = &node->d;
 	controller->threadContinue();
+	emit gameAttached();
 	return true;
 }
 
@@ -60,6 +61,7 @@ void MultiplayerController::detachGame(GameController* controller) {
 	}
 	MutexUnlock(&m_lockstep.mutex);
 	controller->threadContinue();
+	emit gameDetached();
 }
 
 int MultiplayerController::attached() {
