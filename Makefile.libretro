@@ -181,7 +181,7 @@ else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_vita.a
 	CC = arm-vita-eabi-gcc$(EXE_EXT)
 	AR = arm-vita-eabi-ar$(EXE_EXT)
-	PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER
+	PLATFORM_DEFINES := -DVITA -DCC_RESAMPLER -DPSP2
 	STATIC_LINKING = 1
 	DEFINES += -std=c99
 

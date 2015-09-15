@@ -56,7 +56,11 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/util/crc32.c
 
 ifeq ($(HAVE_VFS_FD),1)
+ifeq ($(platform), vita)
+SOURCES_C += $(CORE_DIR)/src/platform/psp2/sce-vfs.c
+else
 SOURCES_C += $(CORE_DIR)/src/util/vfs/vfs-fd.c
+endif
 else
 SOURCES_C += $(CORE_DIR)/src/util/vfs/vfs-file.c
 endif
