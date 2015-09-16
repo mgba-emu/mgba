@@ -6,6 +6,7 @@
 #include "formatting.h"
 
 #include <float.h>
+#include <time.h>
 
 int ftostr_l(char* restrict str, size_t size, float f, locale_t locale) {
 #ifdef HAVE_SNPRINTF_L
