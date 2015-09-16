@@ -27,6 +27,7 @@ public:
 	void detachGame(GameController*);
 
 	int attached();
+	int playerId(GameController*);
 
 signals:
 	void gameAttached();

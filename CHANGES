@@ -27,6 +27,7 @@ Misc:
  - Qt: Add 'Apply' button to settings window
  - Qt: Prevent savestate window from opening while in multiplayer
  - Qt: Disable menu items in multiplayer that don't make sense to have enabled
+ - Qt: Dropping multiplayer windows works more cleanly now
 
 0.3.0: (2015-08-16)
 Features:

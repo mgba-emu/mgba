@@ -279,6 +279,7 @@ void Window::multiplayerChanged() {
 		attached = multiplayer->attached();
 		connect(multiplayer, SIGNAL(gameAttached()), this, SLOT(multiplayerChanged()));
 		connect(multiplayer, SIGNAL(gameDetached()), this, SLOT(multiplayerChanged()));
+		m_playerId = multiplayer->playerId(m_controller);
 	}
 	if (m_controller->isLoaded()) {
 		for (QAction* action : m_nonMpActions) {
