@@ -94,6 +94,7 @@ int main() {
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.drawScreenshot = GBAPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
 		.incrementScreenMode = GBAPSP2IncrementScreenMode,
