@@ -68,7 +68,7 @@ static void _drawEnd(void) {
 	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
 	ctrGpuEndFrame(outputFramebuffer, width, height);
 	gfxSwapBuffersGpu();
-	gspWaitForVBlank();
+	gspWaitForEvent(GSPEVENT_VBlank0, false);
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
