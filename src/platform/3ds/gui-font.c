@@ -26,18 +26,20 @@ struct GUIFont* GUIFontCreate(void) {
 
 	struct ctrTexture* tex = &guiFont->texture;
 	ctrTexture_Init(tex);
-	tex->data = linearAlloc(256 * 128 * 2);
+	tex->data = vramAlloc(256 * 128 * 2);
 	tex->format = GPU_RGBA5551;
 	tex->width = 256;
 	tex->height = 128;
-	memcpy(tex->data, font, font_size);
-	GSPGPU_FlushDataCache(NULL, tex->data, font_size);
+
+	GSPGPU_FlushDataCache(NULL, (u8*)font, font_size);
+	GX_RequestDma(NULL, (u32*)font, tex->data, font_size);
+	gspWaitForDMA();
 
 	return guiFont;
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
-	linearFree(font->texture.data);
+	vramFree(font->texture.data);
 	free(font);
 }
 

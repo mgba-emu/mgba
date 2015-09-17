@@ -363,8 +363,14 @@ int main() {
 	gbaOutputTexture.filter = GPU_LINEAR;
 	gbaOutputTexture.width = 256;
 	gbaOutputTexture.height = 256;
-	gbaOutputTexture.data = linearAlloc(256 * 256 * 2);
-	memset(gbaOutputTexture.data, 0, 256 * 256 * 2);
+	gbaOutputTexture.data = vramAlloc(256 * 256 * 2);
+	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
+
+	// Zero texture data to make sure no garbage around the border interferes with filtering
+	GX_SetMemoryFill(NULL,
+			gbaOutputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
+			NULL, 0, NULL, 0);
+	gspWaitForPSC0();
 
 	sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
@@ -410,7 +416,7 @@ cleanup:
 	linearFree(renderer.outputBuffer);
 
 	ctrDeinitGpu();
-	linearFree(gbaOutputTexture.data);
+	vramFree(gbaOutputTexture.data);
 
 	gfxExit();
 
