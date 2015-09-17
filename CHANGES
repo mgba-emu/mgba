@@ -13,6 +13,7 @@ Bugfixes:
  - VFS: Fix return values of VFileFILE.read and .write
  - Util: Fix PowerPC PNG read/write pixel order
  - GBA Video: Fix edge case with sprite blend modes and semitransparency
+ - GBA Video: Fix objwin and blending interaction on sprites
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
