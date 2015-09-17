@@ -12,6 +12,7 @@ Bugfixes:
  - GBA Audio: Fix audio channels being silenced at the wrong time
  - VFS: Fix return values of VFileFILE.read and .write
  - GBA Video: Fix edge case with sprite blend modes and semitransparency
+ - GBA Video: Fix objwin and blending interaction on sprites
 Misc:
  - Qt: Remove useless help icons in dialogs
  - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
