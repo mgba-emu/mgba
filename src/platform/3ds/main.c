@@ -14,9 +14,9 @@
 #include "util/memory.h"
 
 #include "3ds-vfs.h"
+#include "ctr-gpu.h"
 
 #include <3ds.h>
-#include <sf2d.h>
 
 static enum ScreenMode {
 	SM_PA_BOTTOM,
@@ -46,23 +46,29 @@ static struct GBAAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
 static size_t audioPos = 0;
-static sf2d_texture* tex;
+static struct ctrTexture gbaOutputTexture;
 
 extern bool allocateRomBuffer(void);
 
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
 
 static void _drawStart(void) {
+	ctrGpuBeginFrame();
 	if (screenMode < SM_PA_TOP) {
-		sf2d_start_frame(GFX_BOTTOM, GFX_LEFT);
+		ctrSetViewportSize(320, 240);
 	} else {
-		sf2d_start_frame(GFX_TOP, GFX_LEFT);
+		ctrSetViewportSize(400, 240);
 	}
 }
 
 static void _drawEnd(void) {
-	sf2d_end_frame();
-	sf2d_swapbuffers();
+	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
+	u16 width = 0, height = 0;
+
+	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
+	ctrGpuEndFrame(outputFramebuffer, width, height);
+	gfxSwapBuffersGpu();
+	gspWaitForEvent(GSPEVENT_VBlank0, false);
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
@@ -117,64 +123,105 @@ static void _gameUnloaded(struct GBAGUIRunner* runner) {
 }
 
 static void _drawTex(bool faded) {
+	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
+
+	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
+	int screen_h = 240;
+
+	int w, h;
+
 	switch (screenMode) {
 	case SM_PA_TOP:
-		sf2d_draw_texture_scale_blend(tex, 80, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
-		break;
 	case SM_PA_BOTTOM:
 	default:
-		sf2d_draw_texture_scale_blend(tex, 40, 296, 1, -1, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		w = VIDEO_HORIZONTAL_PIXELS;
+		h = VIDEO_VERTICAL_PIXELS;
 		break;
 	case SM_AF_TOP:
-		sf2d_draw_texture_scale_blend(tex, 20, 384, 1.5, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		w = 360;
+		h = 240;
 		break;
 	case SM_AF_BOTTOM:
-		sf2d_draw_texture_scale_blend(tex, 0, 368 - 40 / 3, 4 / 3.0, -4 / 3.0, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		// Largest possible size with 3:2 aspect ratio and integer dimensions
+		w = 318;
+		h = 212;
 		break;
 	case SM_SF_TOP:
-		sf2d_draw_texture_scale_blend(tex, 0, 384, 5 / 3.0, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
-		break;
 	case SM_SF_BOTTOM:
-		sf2d_draw_texture_scale_blend(tex, 0, 384, 4 / 3.0, -1.5, 0xFFFFFF3F | (faded ? 0 : 0xC0));
+		w = screen_w;
+		h = screen_h;
 		break;
 	}
+
+	int x = (screen_w - w) / 2;
+	int y = (screen_h - h) / 2;
+
+	ctrAddRectScaled(color, x, y, w, h, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 }
 
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
-	GSPGPU_FlushDataCache(0, (u8*) renderer.outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	GX_SetDisplayTransfer(0, (u32*) renderer.outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
-	_drawTex(faded);
+
+	void* outputBuffer = renderer.outputBuffer;
+	struct ctrTexture* tex = &gbaOutputTexture;
+
+	GSPGPU_FlushDataCache(NULL, outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	GX_SetDisplayTransfer(NULL,
+			outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+			tex->data, GX_BUFFER_DIM(256, 256),
+			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
+				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
+				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
+
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (!hasSound) {
 		blip_clear(runner->context.gba->audio.left);
 		blip_clear(runner->context.gba->audio.right);
 	}
 #endif
+
+	gspWaitForPPF();
+	ctrActivateTexture(tex);
+	_drawTex(faded);
 }
 
 static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
-	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
-	unsigned y, x;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			u16 pixel = (*pixels >> 19) & 0x1F;
-			pixel |= (*pixels >> 5) & 0x7C0;
-			pixel |= (*pixels << 8) & 0xF800;
-			newPixels[y * 256 + x] = pixel;
-			++pixels;
+
+	struct ctrTexture* tex = &gbaOutputTexture;
+
+	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * sizeof(u32), 0x100);
+
+	// Convert image from RGBX8 to BGR565
+	for (unsigned y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+		for (unsigned x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+			// 0xXXBBGGRR -> 0bRRRRRGGGGGGBBBBB
+			u32 p = *pixels++;
+			newPixels[y * 256 + x] =
+				(p << 24 >> (24 + 3) << 11) | // R
+				(p << 16 >> (24 + 2) <<  5) | // G
+				(p <<  8 >> (24 + 3) <<  0);  // B
 		}
-		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, 32);
+		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, (256 - VIDEO_HORIZONTAL_PIXELS) * sizeof(u32));
 	}
-	GSPGPU_FlushDataCache(0, (void*) newPixels, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 2);
-	GX_SetDisplayTransfer(0, (void*) newPixels, GX_BUFFER_DIM(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS), tex->data, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS), 0x000002202);
+
+	GSPGPU_FlushDataCache(NULL, (void*)newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
+	GX_SetDisplayTransfer(NULL,
+			(void*)newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+			tex->data, GX_BUFFER_DIM(256, 256),
+			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
+				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
+				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
+	gspWaitForPPF();
 	linearFree(newPixels);
+
+	ctrActivateTexture(tex);
 	_drawTex(faded);
 }
 
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	UNUSED(runner);
+
 	hidScanInput();
 	uint32_t activeKeys = hidKeysHeld() & 0xF00003FF;
 	activeKeys |= activeKeys >> 24;
@@ -305,9 +352,25 @@ int main() {
 		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}
 
-	sf2d_init();
-	sf2d_set_clear_color(0);
-	tex = sf2d_create_texture(256, 256, TEXFMT_RGB565, SF2D_PLACE_VRAM);
+	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
+
+	if (ctrInitGpu() < 0) {
+		goto cleanup;
+	}
+
+	ctrTexture_Init(&gbaOutputTexture);
+	gbaOutputTexture.format = GPU_RGB565;
+	gbaOutputTexture.filter = GPU_LINEAR;
+	gbaOutputTexture.width = 256;
+	gbaOutputTexture.height = 256;
+	gbaOutputTexture.data = vramAlloc(256 * 256 * 2);
+	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
+
+	// Zero texture data to make sure no garbage around the border interferes with filtering
+	GX_SetMemoryFill(NULL,
+			gbaOutputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
+			NULL, 0, NULL, 0);
+	gspWaitForPSC0();
 
 	sdmcArchive = (FS_archive) {
 		ARCH_SDMC,
@@ -352,8 +415,10 @@ int main() {
 cleanup:
 	linearFree(renderer.outputBuffer);
 
-	sf2d_free_texture(tex);
-	sf2d_fini();
+	ctrDeinitGpu();
+	vramFree(gbaOutputTexture.data);
+
+	gfxExit();
 
 	if (hasSound) {
 		linearFree(audioLeft);
