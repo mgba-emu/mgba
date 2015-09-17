@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+#include "util/string.h"
+
 #ifdef PSP2
 #include "platform/psp2/sce-vfs.h"
 #endif
