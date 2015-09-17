@@ -42,7 +42,7 @@ static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* render
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = current & 0x00FFFFFF;
+			color = current & (0x00FFFFFF | FLAG_TARGET_1);
 		}
 	} else {
 		color = (color & ~FLAG_TARGET_2) | (current & FLAG_OBJWIN);
@@ -55,7 +55,7 @@ static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* rend
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = current & 0x00FFFFFF;
+			color = current & (0x00FFFFFF | FLAG_TARGET_1);
 		}
 	} else {
 		color = color & ~FLAG_TARGET_2;
@@ -67,16 +67,20 @@ static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* rend
                                            uint32_t current) {
 	UNUSED(renderer);
 	if (color < current) {
-		*pixel = color | (current & FLAG_OBJWIN);
+		color |= (current & FLAG_OBJWIN);
+	} else {
+		color = current & (0x00FFFFFF | FLAG_TARGET_1);
 	}
+	*pixel = color;
 }
 
 static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color,
                                              uint32_t current) {
 	UNUSED(renderer);
-	if (color < current) {
-		*pixel = color;
+	if (color >= current) {
+		color = current & (0x00FFFFFF | FLAG_TARGET_1);
 	}
+	*pixel = color;
 }
 
 #define COMPOSITE_16_OBJWIN(BLEND)                                                                              \
@@ -180,10 +184,6 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	objwinFlags |= flags;                                                                                             \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                          \
 	                          GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));                         \
-	if (renderer->blda == 0x10 && renderer->bldb == 0) {                                                              \
-		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                                    \
-		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                              \
-	}                                                                                                                 \
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
 	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
 	color_t* palette = renderer->normalPalette;                                                                       \

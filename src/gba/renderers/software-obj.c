@@ -126,7 +126,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		target2 |= renderer->bg[1].target2 << (renderer->bg[1].priority);
 		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
 		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
-		if (GBAObjAttributesCGetPriority(sprite->c) < target2) {
+		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) < target2) {
 			variant = 0;
 		}
 	}

@@ -473,10 +473,6 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed));
 	objwinFlags |= flags;
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
-	if (renderer->blda == 0x10 && renderer->bldb == 0) {
-		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
-		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2); \
-	}
 
 	uint32_t screenBase;
 	uint32_t charBase;
