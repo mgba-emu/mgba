@@ -229,6 +229,7 @@ void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	switch (screenMode) {
 	case SM_BACKDROP:
+	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
@@ -249,6 +250,7 @@ void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, 
 	}
 	switch (screenMode) {
 	case SM_BACKDROP:
+	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:

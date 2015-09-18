@@ -26,7 +26,7 @@ static enum ScreenMode {
 	SM_AF_TOP,
 	SM_SF_TOP,
 	SM_MAX
-} screenMode = SM_PA_BOTTOM;
+} screenMode = SM_PA_TOP;
 
 #define AUDIO_SAMPLES 0x80
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
