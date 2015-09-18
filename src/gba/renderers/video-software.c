@@ -548,14 +548,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if (color & FLAG_TARGET_1 && !(color & FLAG_UNWRITTEN)) {
+					if ((color & 0xFF000000) == FLAG_REBLEND) {
 						softwareRenderer->row[x] = _darken(color, softwareRenderer->bldy);
 					}
 				}
 			} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if (color & FLAG_TARGET_1 && !(color & FLAG_UNWRITTEN)) {
+					if ((color & 0xFF000000) == FLAG_REBLEND) {
 						softwareRenderer->row[x] = _brighten(color, softwareRenderer->bldy);
 					}
 				}
