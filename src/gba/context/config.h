@@ -59,6 +59,9 @@ void GBAConfigMakePortable(const struct GBAConfig*);
 void GBAConfigDirectory(char* out, size_t outLength);
 
 const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);
+bool GBAConfigGetIntValue(const struct GBAConfig*, const char* key, int* value);
+bool GBAConfigGetUIntValue(const struct GBAConfig*, const char* key, unsigned* value);
+bool GBAConfigGetFloatValue(const struct GBAConfig*, const char* key, float* value);
 
 void GBAConfigSetValue(struct GBAConfig*, const char* key, const char* value);
 void GBAConfigSetIntValue(struct GBAConfig*, const char* key, int value);

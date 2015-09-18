@@ -224,6 +224,18 @@ const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
 	return _lookupValue(config, key);
 }
 
+bool GBAConfigGetIntValue(const struct GBAConfig* config, const char* key, int* value) {
+	return _lookupIntValue(config, key, value);
+}
+
+bool GBAConfigGetUIntValue(const struct GBAConfig* config, const char* key, unsigned* value) {
+	return _lookupUIntValue(config, key, value);
+}
+
+bool GBAConfigGetFloatValue(const struct GBAConfig* config, const char* key, float* value) {
+	return _lookupFloatValue(config, key, value);
+}
+
 void GBAConfigSetValue(struct GBAConfig* config, const char* key, const char* value) {
 	ConfigurationSetValue(&config->configTable, config->port, key, value);
 }
