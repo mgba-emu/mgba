@@ -263,7 +263,13 @@ void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, 
 }
 
 void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner) {
-	screenMode = (screenMode + 1) % SM_MAX;
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+	} else {
+		screenMode = (screenMode + 1) % SM_MAX;
+		GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	}
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

@@ -35,6 +35,9 @@ struct GBAGUIRunner {
 	struct GBAGUIBackground background;
 	struct GBAGUIRunnerLux luminanceSource;
 
+	struct GUIMenuItem* configExtra;
+	size_t nConfigExtra;
+
 	void (*setup)(struct GBAGUIRunner*);
 	void (*teardown)(struct GBAGUIRunner*);
 	void (*gameLoaded)(struct GBAGUIRunner*);

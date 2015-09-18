@@ -56,8 +56,8 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 			.idleOptimization = IDLE_LOOP_DETECT,
 			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
 		};
-		GBAConfigLoadDefaults(&context->config, &opts);
 		GBAConfigLoad(&context->config);
+		GBAConfigLoadDefaults(&context->config, &opts);
 	}
 
 	context->gba->sync = 0;

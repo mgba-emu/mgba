@@ -137,7 +137,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 	_refreshDirectory(params, params->currentPath, &menu.items, filter);
 
 	while (true) {
-		struct GUIMenuItem item;
+		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(params, &menu, &item);
 		params->fileIndex = menu.index;
 		if (reason == GUI_MENU_EXIT_CANCEL) {
@@ -155,7 +155,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				if (params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
-				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item.title);
+				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item->title);
 
 				struct GUIMenuItemList newFiles;
 				GUIMenuItemListInit(&newFiles, 0);

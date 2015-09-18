@@ -11,6 +11,7 @@
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
+#include "util/gui/menu.h"
 #include "util/memory.h"
 
 #include "3ds-vfs.h"
@@ -81,6 +82,11 @@ static void _setup(struct GBAGUIRunner* runner) {
 	renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
 	renderer.outputBufferStride = 256;
 	runner->context.renderer = &renderer.d;
+
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
 
 	GBAAudioResizeBuffer(&runner->context.gba->audio, AUDIO_SAMPLES);
 }
@@ -235,7 +241,13 @@ static void _incrementScreenMode(struct GBAGUIRunner* runner) {
 	_drawEnd();
 	_drawStart();
 	_drawEnd();
-	screenMode = (screenMode + 1) % SM_MAX;
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+	} else {
+		screenMode = (screenMode + 1) % SM_MAX;
+		GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	}
 }
 
 static uint32_t _pollInput(void) {
@@ -395,6 +407,24 @@ int main() {
 
 			GUI_PARAMS_TRAIL
 		},
+		.configExtra = (struct GUIMenuItem[]) {
+			{ 
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = SM_PA_TOP,
+				.validStates = (const char*[]) {
+					"Pixel-Accurate/Bottom",
+					"Aspect-Ratio Fit/Bottom",
+					"Stretched/Bottom",
+					"Pixel-Accurate/Top",
+					"Aspect-Ratio Fit/Top",
+					"Stretched/Top",
+					0
+				}
+			}
+		},
+		.nConfigExtra = 1,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,

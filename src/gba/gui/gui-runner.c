@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
+#include "gba/gui/gui-config.h"
 #include "gba/interface.h"
 #include "gba/serialize.h"
 #include "util/gui/file-select.h"
@@ -176,6 +177,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_9) };
 #endif
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = (void*) RUNNER_CONFIG };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
 	while (true) {
@@ -248,24 +250,24 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			}
 			GUIInvalidateKeys(&runner->params);
 			uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
-			struct GUIMenuItem item;
+			struct GUIMenuItem* item;
 			enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
 			if (reason == GUI_MENU_EXIT_ACCEPT) {
 				struct VFile* vf;
-				switch (((int) item.data) & RUNNER_COMMAND_MASK) {
+				switch (((int) item->data) & RUNNER_COMMAND_MASK) {
 				case RUNNER_EXIT:
 					running = false;
 					keys = 0;
 					break;
 				case RUNNER_SAVE_STATE:
-					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, true);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, true);
 					if (vf) {
 						GBASaveStateNamed(runner->context.gba, vf, true);
 						vf->close(vf);
 					}
 					break;
 				case RUNNER_LOAD_STATE:
-					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, false);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, false);
 					if (vf) {
 						GBALoadStateNamed(runner->context.gba, vf);
 						vf->close(vf);
@@ -273,6 +275,9 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 					break;
 				case RUNNER_SCREENSHOT:
 					GBATakeScreenshot(runner->context.gba, 0);
+					break;
+				case RUNNER_CONFIG:
+					GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
 					break;
 				case RUNNER_CONTINUE:
 					break;
