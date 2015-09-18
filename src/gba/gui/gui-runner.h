@@ -7,6 +7,7 @@
 #define GUI_RUNNER_H
 
 #include "gba/context/context.h"
+#include "util/circle-buffer.h"
 #include "util/gui.h"
 
 enum GBAGUIInput {
@@ -37,6 +38,11 @@ struct GBAGUIRunner {
 
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
+
+	float fps;
+	int64_t lastFpsCheck;
+	int32_t totalDelta;
+	struct CircleBuffer fpsBuffer;
 
 	void (*setup)(struct GBAGUIRunner*);
 	void (*teardown)(struct GBAGUIRunner*);

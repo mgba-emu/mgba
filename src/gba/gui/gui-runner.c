@@ -108,6 +108,10 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	runner->context.gba->luminanceSource = &runner->luminanceSource.d;
 	runner->background.d.draw = _drawBackground;
 	runner->background.p = runner;
+	runner->fps = 0;
+	runner->lastFpsCheck = 0;
+	runner->totalDelta = 0;
+	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
 	if (runner->setup) {
 		runner->setup(runner);
 	}
@@ -120,6 +124,7 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 	if (runner->context.config.port) {
 		GBAConfigSave(&runner->context.config);
 	}
+	CircleBufferDeinit(&runner->fpsBuffer);
 	GBAContextDeinit(&runner->context);
 }
 
@@ -212,8 +217,16 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		if (runner->gameLoaded) {
 			runner->gameLoaded(runner);
 		}
+
 		bool running = true;
 		while (running) {
+			CircleBufferClear(&runner->fpsBuffer);
+			runner->totalDelta = 0;
+			runner->fps = 0;
+			struct timeval tv;
+			gettimeofday(&tv, 0);
+			runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
+
 			while (true) {
 				uint32_t guiKeys;
 				GUIPollInput(&runner->params, &guiKeys, 0);
@@ -239,9 +252,37 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				}
 				GBAContextFrame(&runner->context, keys);
 				if (runner->drawFrame) {
+					int drawFps = false;
+					GBAConfigGetIntValue(&runner->context.config, "fpsCounter", &drawFps);
+
 					runner->params.drawStart();
 					runner->drawFrame(runner, false);
+					if (drawFps) {
+						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_TEXT_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					}
 					runner->params.drawEnd();
+
+					if (runner->context.gba->video.frameCounter % FPS_GRANULARITY == 0) {
+						if (drawFps) {
+							struct timeval tv;
+							gettimeofday(&tv, 0);
+							uint64_t t = 1000000LL * tv.tv_sec + tv.tv_usec;
+							uint64_t delta = t - runner->lastFpsCheck;
+							runner->lastFpsCheck = t;
+							if (delta > 0x7FFFFFFFLL) {
+								CircleBufferClear(&runner->fpsBuffer);
+								runner->fps = 0;
+							}
+							if (CircleBufferSize(&runner->fpsBuffer) == CircleBufferCapacity(&runner->fpsBuffer)) {
+								int32_t last;
+								CircleBufferRead32(&runner->fpsBuffer, &last);
+								runner->totalDelta -= last;
+							}
+							CircleBufferWrite32(&runner->fpsBuffer, delta);
+							runner->totalDelta += delta;
+							runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
+						}
+					}
 				}
 			}
 

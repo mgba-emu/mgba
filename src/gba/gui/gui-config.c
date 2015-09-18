@@ -17,6 +17,24 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 	};
 	GUIMenuItemListInit(&menu.items, 0);
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Frameskip",
+		.data = "frameskip",
+		.submenu = 0,
+		.state = 0,
+		.validStates = (const char*[]) {
+			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 0
+		}
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Show framerate",
+		.data = "fpsCounter",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On", 0
+		}
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Use BIOS if found",
 		.data = "useBios",
 		.submenu = 0,
