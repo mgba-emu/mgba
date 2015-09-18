@@ -74,6 +74,7 @@ enum {
 #define FLAG_TARGET_1       0x02000000
 #define FLAG_TARGET_2       0x01000000
 #define FLAG_OBJWIN         0x01000000
+#define FLAG_REBLEND        0x01000000
 #define FLAG_ORDER_MASK     0xF8000000
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
