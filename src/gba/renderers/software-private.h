@@ -184,6 +184,10 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	objwinFlags |= flags;                                                                                             \
 	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                          \
 	                          GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));                         \
+	if (renderer->blendEffect == BLEND_ALPHA && renderer->blda == 0x10 && renderer->bldb == 0) {                      \
+		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                                    \
+		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                              \
+	}                                                                                                                 \
 	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
 	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
 	color_t* palette = renderer->normalPalette;                                                                       \
