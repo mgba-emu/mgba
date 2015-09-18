@@ -258,7 +258,13 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 					runner->params.drawStart();
 					runner->drawFrame(runner, false);
 					if (drawFps) {
+						if (runner->params.guiPrepare) {
+							runner->params.guiPrepare();
+						}
 						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_TEXT_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+						if (runner->params.guiPrepare) {
+							runner->params.guiFinish();
+						}
 					}
 					runner->params.drawEnd();
 

@@ -48,6 +48,7 @@ static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
 static size_t audioPos = 0;
 static struct ctrTexture gbaOutputTexture;
+static bool guiDrawn;
 
 extern bool allocateRomBuffer(void);
 
@@ -60,16 +61,46 @@ static void _drawStart(void) {
 	} else {
 		ctrSetViewportSize(400, 240);
 	}
+	guiDrawn = false;
 }
 
 static void _drawEnd(void) {
+	if (!guiDrawn) {
+		int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
+		u16 width = 0, height = 0;
+
+		void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
+		ctrGpuEndFrame(outputFramebuffer, width, height);
+	}
+	gfxSwapBuffersGpu();
+	gspWaitForEvent(GSPEVENT_VBlank0, false);
+}
+
+static void _guiPrepare(void) {
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
+	if (screen == GFX_BOTTOM) {
+		return;
+	}
+
 	u16 width = 0, height = 0;
 
 	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
 	ctrGpuEndFrame(outputFramebuffer, width, height);
-	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPEVENT_VBlank0, false);
+	guiDrawn = true;
+
+	ctrGpuBeginFrame();
+	ctrSetViewportSize(320, 240);
+}
+
+static void _guiFinish(void) {
+	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
+	if (screen == GFX_BOTTOM) {
+		return;
+	}
+
+	u16 width = 0, height = 0;
+	void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
+	ctrGpuEndFrame(outputFramebuffer, width, height);
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
@@ -403,7 +434,7 @@ int main() {
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
-			0, 0,
+			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
 		},
