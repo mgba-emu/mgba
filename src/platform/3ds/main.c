@@ -85,6 +85,21 @@ static void _drawEnd(void) {
 	gspWaitForEvent(GSPEVENT_VBlank0, false);
 }
 
+static int _batteryState(void) {
+	u8 charge;
+	u8 adapter;
+	PTMU_GetBatteryLevel(0, &charge);
+	PTMU_GetBatteryChargeState(0, &adapter);
+	int state = 0;
+	if (adapter) {
+		state |= BATTERY_CHARGING;
+	}
+	if (charge > 0) {
+		--charge;
+	}
+	return state | charge;
+}
+
 static void _guiPrepare(void) {
 	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME;
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
@@ -385,6 +400,7 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 }
 
 int main() {
+	ptmInit();
 	hasSound = !csndInit();
 
 	rotation.d.sample = _sampleRotation;
@@ -444,12 +460,13 @@ int main() {
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
+			_batteryState,
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
 		},
 		.configExtra = (struct GUIMenuItem[]) {
-			{ 
+			{
 				.title = "Screen mode",
 				.data = "screenMode",
 				.submenu = 0,
@@ -496,5 +513,6 @@ cleanup:
 		linearFree(audioRight);
 	}
 	csndExit();
+	ptmExit();
 	return 0;
 }

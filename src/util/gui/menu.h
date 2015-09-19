@@ -22,6 +22,7 @@ DECLARE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 struct GUIBackground;
 struct GUIMenu {
 	const char* title;
+	const char* subtitle;
 	struct GUIMenuItemList items;
 	size_t index;
 	struct GUIBackground* background;
@@ -35,5 +36,8 @@ enum GUIMenuExitReason {
 
 struct GUIParams;
 enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item);
+
+void GUIDrawBattery(struct GUIParams* params);
+void GUIDrawClock(struct GUIParams* params);
 
 #endif

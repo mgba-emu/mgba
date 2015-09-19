@@ -36,6 +36,16 @@ enum GUICursorState {
 	GUI_CURSOR_DRAGGING
 };
 
+enum {
+	BATTERY_EMPTY = 0,
+	BATTERY_LOW = 1,
+	BATTERY_HALF = 2,
+	BATTERY_HIGH = 3,
+	BATTERY_FULL = 4,
+
+	BATTERY_CHARGING = 8
+};
+
 struct GUIBackground {
 	void (*draw)(struct GUIBackground*, void* context);
 };
@@ -50,6 +60,7 @@ struct GUIParams {
 	void (*drawEnd)(void);
 	uint32_t (*pollInput)(void);
 	enum GUICursorState (*pollCursor)(int* x, int* y);
+	int (*batteryState)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
 

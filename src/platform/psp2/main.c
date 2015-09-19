@@ -85,6 +85,7 @@ int main() {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
 			font, "cache0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
+			0,
 			0, 0,
 
 			GUI_PARAMS_TRAIL
