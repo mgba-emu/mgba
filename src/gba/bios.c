@@ -63,7 +63,12 @@ static void _RegisterRamReset(struct GBA* gba) {
 		memset(gba->video.oam.raw, 0, SIZE_OAM);
 	}
 	if (registers & 0x20) {
-		GBALog(gba, GBA_LOG_STUB, "RegisterRamReset on SIO unimplemented");
+		cpu->memory.store16(cpu, BASE_IO | REG_SIOCNT, 0x0000, 0);
+		cpu->memory.store16(cpu, BASE_IO | REG_RCNT, RCNT_INITIAL, 0);
+		cpu->memory.store16(cpu, BASE_IO | REG_SIOMLT_SEND, 0, 0);
+		cpu->memory.store16(cpu, BASE_IO | REG_JOYCNT, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS, 0, 0);
 	}
 	if (registers & 0x40) {
 		GBALog(gba, GBA_LOG_STUB, "RegisterRamReset on Audio unimplemented");

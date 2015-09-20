@@ -432,3 +432,25 @@ int GBARewind(struct GBAThread* thread, int nStates) {
 void GBARewindAll(struct GBAThread* thread) {
 	GBARewind(thread, thread->rewindBufferSize);
 }
+
+void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
+#ifdef USE_PNG
+	unsigned stride;
+	const void* pixels = 0;
+	struct VFile* vf = VDirOptionalOpenIncrementFile(dir, gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	bool success = false;
+	if (vf) {
+		gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
+		png_structp png = PNGWriteOpen(vf);
+		png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
+		PNGWriteClose(png, info);
+		vf->close(vf);
+	}
+	if (success) {
+		GBALog(gba, GBA_LOG_STATUS, "Screenshot saved");
+		return;
+	}
+#endif
+	GBALog(gba, GBA_LOG_STATUS, "Failed to take screenshot");
+}

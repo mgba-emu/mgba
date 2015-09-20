@@ -8,15 +8,14 @@
 #include "util/png-io.h"
 #include "util/vfs.h"
 #include "font.h"
-
-#include <sf2d.h>
+#include "ctr-gpu.h"
 
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
 #define GLYPH_HEIGHT 12
 
 struct GUIFont {
-	sf2d_texture* tex;
+	struct ctrTexture texture;
 };
 
 struct GUIFont* GUIFontCreate(void) {
@@ -24,14 +23,23 @@ struct GUIFont* GUIFontCreate(void) {
 	if (!guiFont) {
 		return 0;
 	}
-	guiFont->tex = sf2d_create_texture(256, 128, TEXFMT_RGB5A1, SF2D_PLACE_RAM);
-	memcpy(guiFont->tex->data, font, font_size);
-	guiFont->tex->tiled = 1;
+
+	struct ctrTexture* tex = &guiFont->texture;
+	ctrTexture_Init(tex);
+	tex->data = vramAlloc(256 * 128 * 2);
+	tex->format = GPU_RGBA5551;
+	tex->width = 256;
+	tex->height = 128;
+
+	GSPGPU_FlushDataCache(NULL, (u8*)font, font_size);
+	GX_RequestDma(NULL, (u32*)font, tex->data, font_size);
+	gspWaitForDMA();
+
 	return guiFont;
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
-	sf2d_free_texture(font->tex);
+	vramFree(font->texture.data);
 	free(font);
 }
 
@@ -48,18 +56,18 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width;
 }
 
-void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
+void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
+	ctrActivateTexture(&font->texture);
+
 	if (glyph > 0x7F) {
 		glyph = 0;
 	}
-	color = (color >> 24) | (color << 8);
+
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	sf2d_draw_texture_part_blend(font->tex,
-	                             x - metric.padding.left,
-	                             y - GLYPH_HEIGHT,
-	                             (glyph & 15) * CELL_WIDTH,
-	                             (glyph >> 4) * CELL_HEIGHT,
-	                             CELL_WIDTH,
-	                             CELL_HEIGHT,
-	                             color);
+	u16 x = glyph_x - metric.padding.left;
+	u16 y = glyph_y - GLYPH_HEIGHT;
+	u16 u = (glyph % 16u) * CELL_WIDTH;
+	u16 v = (glyph / 16u) * CELL_HEIGHT;
+
+	ctrAddRect(color, x, y, u, v, CELL_WIDTH, CELL_HEIGHT);
 }

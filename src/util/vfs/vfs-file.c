@@ -79,12 +79,12 @@ off_t _vffSeek(struct VFile* vf, off_t offset, int whence) {
 
 ssize_t _vffRead(struct VFile* vf, void* buffer, size_t size) {
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
-	return fread(buffer, size, 1, vff->file);
+	return fread(buffer, 1, size, vff->file);
 }
 
 ssize_t _vffWrite(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
-	return fwrite(buffer, size, 1, vff->file);
+	return fwrite(buffer, 1, size, vff->file);
 }
 
 static void* _vffMap(struct VFile* vf, size_t size, int flags) {

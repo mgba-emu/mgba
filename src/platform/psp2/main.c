@@ -10,6 +10,7 @@
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
+#include "util/gui/menu.h"
 
 #include <psp2/ctrl.h>
 #include <psp2/kernel/processmgr.h>
@@ -88,12 +89,28 @@ int main() {
 
 			GUI_PARAMS_TRAIL
 		},
+		.configExtra = (struct GUIMenuItem[]) {
+			{ 
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"With Background",
+					"Without Background",
+					"Stretched",
+					0
+				}
+			}
+		},
+		.nConfigExtra = 1,
 		.setup = GBAPSP2Setup,
 		.teardown = GBAPSP2Teardown,
 		.gameLoaded = GBAPSP2LoadROM,
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.drawScreenshot = GBAPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
 		.incrementScreenMode = GBAPSP2IncrementScreenMode,

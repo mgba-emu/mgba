@@ -57,11 +57,11 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 			.idleOptimization = IDLE_LOOP_DETECT,
 			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
 		};
-		GBAConfigLoadDefaults(&context->config, &opts);
 		GBAConfigLoad(&context->config);
-	}
+		GBAConfigLoadDefaults(&context->config, &opts);
+   }
 #endif
-	context->gba->sync = 0;
+   context->gba->sync = &context->sync;
 	return true;
 }
 
@@ -191,6 +191,11 @@ void GBAContextFrame(struct GBAContext* context, uint16_t keys) {
 	int frameCounter = context->gba->video.frameCounter;
 	while (frameCounter == context->gba->video.frameCounter) {
 		ARMRunLoop(context->cpu);
+	}
+	if (context->sync.videoFrameSkip < 0) {
+		int frameskip = 0;
+		GBAConfigGetIntValue(&context->config, "frameskip", &frameskip);
+		context->sync.videoFrameSkip = frameskip;
 	}
 }
 

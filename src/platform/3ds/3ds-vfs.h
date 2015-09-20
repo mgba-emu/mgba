@@ -8,8 +8,6 @@
 
 #include "util/vfs.h"
 
-#define asm __asm__
-
 #include <3ds.h>
 
 extern FS_archive sdmcArchive;

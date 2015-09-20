@@ -38,6 +38,7 @@ static enum ScreenMode {
 
 static struct GBAVideoSoftwareRenderer renderer;
 static vita2d_texture* tex;
+static vita2d_texture* screenshot;
 static Thread audioThread;
 static struct GBASceRotationSource {
 	struct GBARotationSource d;
@@ -159,6 +160,7 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
+	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = vita2d_texture_get_datap(tex);
@@ -220,13 +222,14 @@ void GBAPSP2UnloadROM(struct GBAGUIRunner* runner) {
 void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
 	UNUSED(runner);
 	vita2d_free_texture(tex);
-	vita2d_free_texture(backdrop);
+	vita2d_free_texture(screenshot);
 }
 
 void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	switch (screenMode) {
 	case SM_BACKDROP:
+	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
@@ -238,8 +241,35 @@ void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 	}
 }
 
+void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
+	UNUSED(runner);
+	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
+	int y;
+	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
+		memcpy(&texpixels[256 * y], &pixels[VIDEO_HORIZONTAL_PIXELS * y], VIDEO_HORIZONTAL_PIXELS * 4);
+	}
+	switch (screenMode) {
+	case SM_BACKDROP:
+	default:
+		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		// Fall through
+	case SM_PLAIN:
+		vita2d_draw_texture_tint_part_scale(screenshot, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		break;
+	case SM_FULL:
+		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		break;
+	}
+}
+
 void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner) {
-	screenMode = (screenMode + 1) % SM_MAX;
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+	} else {
+		screenMode = (screenMode + 1) % SM_MAX;
+		GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	}
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

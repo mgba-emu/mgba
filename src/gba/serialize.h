@@ -345,4 +345,6 @@ void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int new
 int GBARewind(struct GBAThread* thread, int nStates);
 void GBARewindAll(struct GBAThread* thread);
 
+void GBATakeScreenshot(struct GBA* gba, struct VDir* dir);
+
 #endif

@@ -12,6 +12,8 @@ struct GUIMenu;
 struct GUIMenuItem {
 	const char* title;
 	void* data;
+	unsigned state;
+	const char** validStates;
 	struct GUIMenu* submenu;
 };
 
@@ -32,6 +34,6 @@ enum GUIMenuExitReason {
 };
 
 struct GUIParams;
-enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem* item);
+enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item);
 
 #endif

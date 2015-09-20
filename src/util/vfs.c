@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "vfs.h"
 
+#include "util/string.h"
+
 #ifdef PSP2
 #include "platform/psp2/sce-vfs.h"
 #endif
@@ -166,4 +168,96 @@ struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const
 		vf = dir->openFile(dir, path, mode);
 	}
 	return vf;
+}
+
+struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode) {
+	char path[PATH_MAX];
+	path[PATH_MAX - 1] = '\0';
+	char realPrefix[PATH_MAX];
+	realPrefix[PATH_MAX - 1] = '\0';
+	if (!dir) {
+		if (!realPath) {
+			return 0;
+		}
+		const char* separatorPoint = strrchr(realPath, '/');
+		const char* dotPoint;
+		size_t len;
+		if (!separatorPoint) {
+			strcpy(path, "./");
+			separatorPoint = realPath;
+			dotPoint = strrchr(realPath, '.');
+		} else {
+			path[0] = '\0';
+			dotPoint = strrchr(separatorPoint, '.');
+
+			if (separatorPoint - realPath + 1 >= PATH_MAX - 1) {
+				return 0;
+			}
+
+			len = separatorPoint - realPath;
+			strncat(path, realPath, len);
+			path[len] = '\0';
+			++separatorPoint;
+		}
+
+		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
+			return 0;
+		}
+
+		if (dotPoint >= separatorPoint) {
+			len = dotPoint - separatorPoint;
+		} else {
+			len = PATH_MAX - 1;
+		}
+
+		strncpy(realPrefix, separatorPoint, len);
+		realPrefix[len] = '\0';
+
+		prefix = realPrefix;
+		dir = VDirOpen(path);
+	}
+	if (!dir) {
+		// This shouldn't be possible
+		return 0;
+	}
+	dir->rewind(dir);
+	struct VDirEntry* dirent;
+	size_t prefixLen = strlen(prefix);
+	size_t infixLen = strlen(infix);
+	unsigned next = 0;
+	while ((dirent = dir->listNext(dir))) {
+		const char* filename = dirent->name(dirent);
+		char* dotPoint = strrchr(filename, '.');
+		size_t len = strlen(filename);
+		if (dotPoint) {
+			len = (dotPoint - filename);
+		}
+		const char* separator = strnrstr(filename, infix, len);
+		if (!separator) {
+			continue;
+		}
+		len = separator - filename;
+		if (len != prefixLen) {
+			continue;
+		}
+		if (strncmp(filename, prefix, prefixLen) == 0) {
+			int nlen;
+			separator += infixLen;
+			snprintf(path, PATH_MAX - 1, "%%u%s%%n", suffix);
+			unsigned increment;
+			if (sscanf(separator, path, &increment, &nlen) < 1) {
+				continue;
+			}
+			len = strlen(separator);
+			if (nlen < (ssize_t) len) {
+				continue;
+			}
+			if (next <= increment) {
+				next = increment + 1;
+			}
+		}
+	}
+	snprintf(path, PATH_MAX - 1, "%s%s%u%s", prefix, infix, next, suffix);
+	path[PATH_MAX - 1] = '\0';
+	return dir->openFile(dir, path, mode);
 }

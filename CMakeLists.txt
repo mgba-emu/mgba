@@ -190,6 +190,7 @@ endif()
 include(CheckFunctionExists)
 check_function_exists(strdup HAVE_STRDUP)
 check_function_exists(strndup HAVE_STRNDUP)
+check_function_exists(localtime_r HAVE_LOCALTIME_R)
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
 	check_function_exists(snprintf_l HAVE_SNPRINTF_L)
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -214,6 +215,10 @@ endif()
 
 if(HAVE_STRNDUP)
 	add_definitions(-DHAVE_STRNDUP)
+endif()
+
+if(HAVE_LOCALTIME_R)
+	add_definitions(-DHAVE_LOCALTIME_R)
 endif()
 
 if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE)

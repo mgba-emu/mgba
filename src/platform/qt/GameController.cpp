@@ -534,6 +534,9 @@ void GameController::startRewinding() {
 	if (!m_gameOpen || m_rewindTimer.isActive()) {
 		return;
 	}
+	if (m_multiplayer && m_multiplayer->attached() > 1) {
+		return;
+	}
 	m_wasPaused = isPaused();
 	if (!GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadPause(&m_threadContext);

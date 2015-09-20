@@ -27,4 +27,8 @@ float strtof_l(const char* restrict str, char** restrict end, locale_t locale);
 int ftostr_u(char* restrict str, size_t size, float f);
 float strtof_u(const char* restrict str, char** restrict end);
 
+#ifndef HAVE_LOCALTIME_R
+struct tm* localtime_r(const time_t* timep, struct tm* result);
+#endif
+
 #endif

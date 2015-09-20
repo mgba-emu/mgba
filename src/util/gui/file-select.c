@@ -74,7 +74,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				params->guiPrepare();
 			}
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %lu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -104,7 +104,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				params->guiPrepare();
 			}
 			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %lu of %lu)", i, items);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %zu of %zu)", i, items);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -137,7 +137,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 	_refreshDirectory(params, params->currentPath, &menu.items, filter);
 
 	while (true) {
-		struct GUIMenuItem item;
+		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(params, &menu, &item);
 		params->fileIndex = menu.index;
 		if (reason == GUI_MENU_EXIT_CANCEL) {
@@ -155,7 +155,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				if (params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
-				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item.title);
+				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item->title);
 
 				struct GUIMenuItemList newFiles;
 				GUIMenuItemListInit(&newFiles, 0);

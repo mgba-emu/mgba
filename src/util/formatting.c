@@ -6,6 +6,7 @@
 #include "formatting.h"
 
 #include <float.h>
+#include <time.h>
 
 int ftostr_l(char* restrict str, size_t size, float f, locale_t locale) {
 #ifdef HAVE_SNPRINTF_L
@@ -70,3 +71,30 @@ float strtof_u(const char* restrict str, char** restrict end) {
 #endif
 	return res;
 }
+
+#ifndef HAVE_LOCALTIME_R
+#ifdef PSP2
+#include <psp2/rtc.h>
+#endif
+
+struct tm* localtime_r(const time_t* t, struct tm* date) {
+#ifdef _WIN32
+	localtime_s(date, t);
+	return date;
+#elif defined(PSP2)
+	SceRtcTime sceRtc;
+	sceRtcSetTime_t(&sceRtc, *t);
+	date->tm_year = sceRtc.year;
+	date->tm_mon = sceRtc.month;
+	date->tm_mday = sceRtc.day;
+	date->tm_hour = sceRtc.hour;
+	date->tm_min = sceRtc.minutes;
+	date->tm_sec = sceRtc.seconds;
+	date->tm_wday = sceRtcGetDayOfWeek(sceRtc.year, sceRtc.month, sceRtc.day);
+	return date;
+#else
+#warning localtime_r not emulated on this platform
+	return 0;
+#endif
+}
+#endif

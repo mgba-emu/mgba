@@ -7,11 +7,8 @@
 
 #include "gba/io.h"
 #include "gba/serialize.h"
+#include "util/formatting.h"
 #include "util/hash.h"
-
-#ifdef PSP2
-#include <psp2/rtc.h>
-#endif
 
 const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
 
@@ -279,25 +276,9 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 		t = rtc->unixTime(rtc);
 	} else {
 		t = time(0);
-	}
-	struct tm date;
-#if defined(_WIN32)
-	date = *localtime(&t);
-#elif defined(__CELLOS_LV2__)
-   memcpy(&date, localtime(&t), sizeof(date));
-#elif defined(PSP2)
-	SceRtcTime sceRtc;
-	sceRtcSetTime_t(&sceRtc, t);
-	date.tm_year = sceRtc.year;
-	date.tm_mon = sceRtc.month;
-	date.tm_mday = sceRtc.day;
-	date.tm_hour = sceRtc.hour;
-	date.tm_min = sceRtc.minutes;
-	date.tm_sec = sceRtc.seconds;
-	date.tm_wday = sceRtcGetDayOfWeek(sceRtc.year, sceRtc.month, sceRtc.day);
-#else
+   }
+   struct tm date;
 	localtime_r(&t, &date);
-#endif
 	hw->rtc.time[0] = _rtcBCD(date.tm_year - 100);
 	hw->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
 	hw->rtc.time[2] = _rtcBCD(date.tm_mday);
