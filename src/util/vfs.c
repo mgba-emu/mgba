@@ -169,7 +169,7 @@ struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const
 	}
 	return vf;
 }
-
+#ifndef __LIBRETRO__
 struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode) {
 	char path[PATH_MAX];
 	path[PATH_MAX - 1] = '\0';
@@ -261,3 +261,4 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 	path[PATH_MAX - 1] = '\0';
 	return dir->openFile(dir, path, mode);
 }
+#endif
