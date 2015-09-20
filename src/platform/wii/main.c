@@ -158,6 +158,7 @@ int main() {
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
+			0,
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL

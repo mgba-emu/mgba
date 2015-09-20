@@ -1,3 +1,8 @@
+find_program(FIXUP vita-elf-create)
+find_program(OBJCOPY ${cross_prefix}objcopy)
+find_file(NIDDB db.json PATHS ${VITASDK})
+find_program(STRIP ${cross_prefix}strip)
+
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/psp2/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})

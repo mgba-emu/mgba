@@ -1,3 +1,8 @@
+find_program(ELF2DOL elf2dol)
+find_program(GXTEXCONV gxtexconv)
+find_program(RAW2C raw2c)
+find_program(WIILOAD wiiload)
+
 set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE)
 list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 

@@ -106,6 +106,9 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		}
 		unsigned y = lineHeight;
 		GUIFontPrint(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, menu->title);
+		if (menu->subtitle) {
+			GUIFontPrint(params->font, 0, y * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, menu->subtitle);
+		}
 		y += 2 * lineHeight;
 		size_t i;
 		for (i = start; i < GUIMenuItemListSize(&menu->items); ++i) {
@@ -125,10 +128,102 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				break;
 			}
 		}
+
+		GUIDrawBattery(params);
+		GUIDrawClock(params);
+
 		if (params->guiFinish) {
 			params->guiFinish();
 		}
 		params->drawEnd();
 	}
 	return GUI_MENU_EXIT_CANCEL;
+}
+
+enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y) {
+	if (!params->pollCursor) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	enum GUICursorState state = params->pollCursor(x, y);
+	if (params->cursorState == GUI_CURSOR_DOWN) {
+		int dragX = *x - params->cx;
+		int dragY = *y - params->cy;
+		if (dragX * dragX + dragY * dragY > 25) {
+			params->cursorState = GUI_CURSOR_DRAGGING;
+			return GUI_CURSOR_DRAGGING;
+		}
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_CLICKED;
+		}
+	} else {
+		params->cx = *x;
+		params->cy = *y;
+	}
+	if (params->cursorState == GUI_CURSOR_DRAGGING) {
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_UP;
+		}
+		return GUI_CURSOR_DRAGGING;
+	}
+	params->cursorState = state;
+	return params->cursorState;
+}
+
+void GUIInvalidateKeys(struct GUIParams* params) {
+	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+		params->inputHistory[i] = 0;
+	}
+}
+
+void GUIDrawBattery(struct GUIParams* params) {
+	if (!params->batteryState) {
+		return;
+	}
+	int state = params->batteryState();
+	uint32_t color = 0xFF000000;
+	if (state == (BATTERY_CHARGING | BATTERY_FULL)) {
+		color |= 0xFF2020;
+	} else if (state & BATTERY_CHARGING) {
+		color |= 0x20FF20;
+	} else if (state >= BATTERY_HALF) {
+		color |= 0xFFFFFF;
+	} else if (state == BATTERY_LOW) {
+		color |= 0x20FFFF;
+	} else {
+		color |= 0x2020FF;
+	}
+
+	const char* batteryText;
+	switch (state & ~BATTERY_CHARGING) {
+	case BATTERY_EMPTY:
+		batteryText = "[    ]";
+		break;
+	case BATTERY_LOW:
+		batteryText = "[I   ]";
+		break;
+	case BATTERY_HALF:
+		batteryText = "[II  ]";
+		break;
+	case BATTERY_HIGH:
+		batteryText = "[III ]";
+		break;
+	case BATTERY_FULL:
+		batteryText = "[IIII]";
+		break;
+	default:
+		batteryText = "[????]";
+		break;
+	}
+
+	GUIFontPrint(params->font, params->width, GUIFontHeight(params->font), GUI_TEXT_RIGHT, color, batteryText);
+}
+
+void GUIDrawClock(struct GUIParams* params) {
+	char buffer[32];
+	time_t t = time(0);
+	struct tm* tm = localtime(&t);
+	strftime(buffer, sizeof(buffer), "%H:%M:%S", tm);
+	GUIFontPrint(params->font, params->width / 2, GUIFontHeight(params->font), GUI_TEXT_CENTER, 0xFFFFFFFF, buffer);
 }

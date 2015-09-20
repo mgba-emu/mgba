@@ -28,8 +28,10 @@ inline void ctrTexture_Init(struct ctrTexture* tex) {
 Result ctrInitGpu(void);
 void ctrDeinitGpu(void);
 
-void ctrGpuBeginFrame(void);
-void ctrGpuEndFrame(void* outputFramebuffer, int w, int h);
+void ctrGpuBeginDrawing(void);
+void ctrGpuBeginFrame(int screen);
+void ctrGpuEndFrame(int screen, void* outputFramebuffer, int w, int h);
+void ctrGpuEndDrawing(void);
 
 void ctrSetViewportSize(s16 w, s16 h);
 

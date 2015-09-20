@@ -1,6 +1,14 @@
 set(USE_VFS_3DS ON CACNE BOOL "Use 3DS-specific file support")
 mark_as_advanced(USE_VFS_3DS)
 
+find_program(3DSLINK 3dslink)
+find_program(3DSXTOOL 3dsxtool)
+find_program(BANNERTOOL bannertool)
+find_program(MAKEROM makerom)
+find_program(PICASSO picasso)
+find_program(RAW2C raw2c)
+find_program(STRIP ${cross_prefix}strip)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format" PARENT_SCOPE)
 set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5)
 
