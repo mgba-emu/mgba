@@ -31,12 +31,14 @@ static struct ctrUIVertex* ctrVertexBuffer = NULL;
 static u16* ctrIndexBuffer = NULL;
 static u16 ctrNumQuads = 0;
 
-static void* gpuColorBuffer = NULL;
+static void* gpuColorBuffer[2] = { NULL, NULL };
 static u32* gpuCommandList = NULL;
 static void* screenTexture = NULL;
 
 static shaderProgram_s gpuShader;
 static DVLB_s* passthroughShader = NULL;
+
+static int pendingEvents = 0;
 
 static const struct ctrTexture* activeTexture = NULL;
 
@@ -83,6 +85,17 @@ static u32 _f31FromFloat(float f) {
 	}
 
 	return sign << 30 | exponent << 23 | mantissa;
+}
+
+void ctrClearPending(int events) {
+	int toClear = events & pendingEvents;
+	if (toClear & (1 << GSPEVENT_PSC0)) {
+		gspWaitForPSC0();
+	}
+	if (toClear & (1 << GSPEVENT_PPF)) {
+		gspWaitForPPF();
+	}
+	pendingEvents ^= toClear;
 }
 
 // Replacements for the limiting GPU_SetViewport function in ctrulib
@@ -145,10 +158,11 @@ Result ctrInitGpu() {
 	Result res = -1;
 
 	// Allocate buffers
-	gpuColorBuffer = vramAlloc(400 * 240 * 4);
+	gpuColorBuffer[0] = vramAlloc(400 * 240 * 4);
+	gpuColorBuffer[1] = vramAlloc(320 * 240 * 4);
 	gpuCommandList = linearAlloc(COMMAND_LIST_LENGTH * sizeof(u32));
 	ctrVertexBuffer = linearAlloc(VERTEX_INDEX_BUFFER_SIZE);
-	if (gpuColorBuffer == NULL || gpuCommandList == NULL || ctrVertexBuffer == NULL) {
+	if (gpuColorBuffer[0] == NULL || gpuColorBuffer[1] == NULL || gpuCommandList == NULL || ctrVertexBuffer == NULL) {
 		res = -1;
 		goto error_allocs;
 	}
@@ -197,9 +211,14 @@ error_allocs:
 		gpuCommandList = NULL;
 	}
 
-	if (gpuColorBuffer != NULL) {
-		vramFree(gpuColorBuffer);
-		gpuColorBuffer = NULL;
+	if (gpuColorBuffer[0] != NULL) {
+		vramFree(gpuColorBuffer[0]);
+		gpuColorBuffer[0] = NULL;
+	}
+
+	if (gpuColorBuffer[1] != NULL) {
+		vramFree(gpuColorBuffer[1]);
+		gpuColorBuffer[1] = NULL;
 	}
 	return res;
 }
@@ -221,21 +240,30 @@ void ctrDeinitGpu() {
 	linearFree(gpuCommandList);
 	gpuCommandList = NULL;
 
-	vramFree(gpuColorBuffer);
-	gpuColorBuffer = NULL;
+	vramFree(gpuColorBuffer[0]);
+	gpuColorBuffer[0] = NULL;
+
+	vramFree(gpuColorBuffer[1]);
+	gpuColorBuffer[1] = NULL;
 }
 
-void ctrGpuBeginFrame(void) {
+void ctrGpuBeginFrame(int screen) {
+	if (screen > 1) {
+		return;
+	}
+
+	int fw;
+	if (screen == 0) {
+		fw = 400;
+	} else {
+		fw = 320;
+	}
+
+	_GPU_SetFramebuffer(osConvertVirtToPhys((u32)gpuColorBuffer[screen]), 0, 240, fw);
+}
+
+void ctrGpuBeginDrawing(void) {
 	shaderProgramUse(&gpuShader);
-
-	void* gpuColorBufferEnd = (char*)gpuColorBuffer + 240 * 400 * 4;
-
-	GX_SetMemoryFill(NULL,
-			gpuColorBuffer, 0x00000000, gpuColorBufferEnd, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER,
-			NULL, 0, NULL, 0);
-	gspWaitForPSC0();
-
-	_GPU_SetFramebuffer(osConvertVirtToPhys((u32)gpuColorBuffer), 0, 240, 400);
 
 	// Disable depth and stencil testing
 	GPU_SetDepthTestAndWriteMask(false, GPU_ALWAYS, GPU_WRITE_COLOR);
@@ -286,20 +314,47 @@ void ctrGpuBeginFrame(void) {
 			bufferOffsets, arrayTargetAttributes, numAttributesInArray);
 }
 
-void ctrGpuEndFrame(void* outputFramebuffer, int w, int h) {
+void ctrGpuEndFrame(int screen, void* outputFramebuffer, int w, int h) {
+	if (screen > 1) {
+		return;
+	}
+
+	int fw;
+	if (screen == 0) {
+		fw = 400;
+	} else {
+		fw = 320;
+	}
+
 	ctrFlushBatch();
 
-	void* colorBuffer = (u8*)gpuColorBuffer + ((400 - w) * 240 * 4);
+	void* colorBuffer = (u8*)gpuColorBuffer[screen] + ((fw - w) * 240 * 4);
 
 	const u32 GX_CROP_INPUT_LINES = (1 << 2);
 
+	ctrClearPending(1 << GSPEVENT_PSC0);
+	ctrClearPending(1 << GSPEVENT_PPF);
+
 	GX_SetDisplayTransfer(NULL,
-			colorBuffer,       GX_BUFFER_DIM(240, 400),
+			colorBuffer,       GX_BUFFER_DIM(240, fw),
 			outputFramebuffer, GX_BUFFER_DIM(h, w),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
 				GX_CROP_INPUT_LINES);
-	gspWaitForPPF();
+	pendingEvents |= (1 << GSPEVENT_PPF);
+}
+
+void ctrGpuEndDrawing(void) {
+	ctrClearPending(1 << GSPEVENT_PPF);
+	gfxSwapBuffersGpu();
+	gspWaitForEvent(GSPEVENT_VBlank0, false);
+
+	void* gpuColorBuffer0End = (char*)gpuColorBuffer[0] + 240 * 400 * 4;
+	void* gpuColorBuffer1End = (char*)gpuColorBuffer[1] + 240 * 320 * 4;
+	GX_SetMemoryFill(NULL,
+		gpuColorBuffer[0], 0x00000000, gpuColorBuffer0End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER,
+		gpuColorBuffer[1], 0x00000000, gpuColorBuffer1End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER);
+	pendingEvents |= 1 << GSPEVENT_PSC0;
 }
 
 void ctrSetViewportSize(s16 w, s16 h) {
@@ -388,6 +443,8 @@ void ctrFlushBatch(void) {
 	if (ctrNumQuads == 0) {
 		return;
 	}
+
+	ctrClearPending((1 << GSPEVENT_PSC0));
 
 	GSPGPU_FlushDataCache(NULL, (u8*)ctrVertexBuffer, VERTEX_INDEX_BUFFER_SIZE);
 	GPU_DrawElements(GPU_UNKPRIM, (u32*)(osConvertVirtToPhys((u32)ctrIndexBuffer) - VRAM_BASE), ctrNumQuads * 6);

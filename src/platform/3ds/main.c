@@ -60,10 +60,12 @@ extern bool allocateRomBuffer(void);
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
 
 static void _drawStart(void) {
-	ctrGpuBeginFrame();
+	ctrGpuBeginDrawing();
 	if (screenMode < SM_PA_TOP || (guiDrawn & GUI_ACTIVE)) {
+		ctrGpuBeginFrame(GFX_BOTTOM);
 		ctrSetViewportSize(320, 240);
 	} else {
+		ctrGpuBeginFrame(GFX_TOP);
 		ctrSetViewportSize(400, 240);
 	}
 	guiDrawn &= ~GUI_THIS_FRAME;
@@ -78,11 +80,10 @@ static void _drawEnd(void) {
 
 	if (!(guiDrawn & GUI_THIS_FRAME) || screen == GFX_BOTTOM) {
 		void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-		ctrGpuEndFrame(outputFramebuffer, width, height);
+		ctrGpuEndFrame(screen, outputFramebuffer, width, height);
 	}
 
-	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPEVENT_VBlank0, false);
+	ctrGpuEndDrawing();
 }
 
 static int _batteryState(void) {
@@ -110,9 +111,9 @@ static void _guiPrepare(void) {
 	u16 width = 0, height = 0;
 
 	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(outputFramebuffer, width, height);
+	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
 
-	ctrGpuBeginFrame();
+	ctrGpuBeginFrame(GFX_BOTTOM);
 	ctrSetViewportSize(320, 240);
 }
 
@@ -125,7 +126,7 @@ static void _guiFinish(void) {
 
 	u16 width = 0, height = 0;
 	void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(outputFramebuffer, width, height);
+	ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
