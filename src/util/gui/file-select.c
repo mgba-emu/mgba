@@ -73,8 +73,8 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (params->guiPrepare) {
 				params->guiPrepare();
 			}
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
