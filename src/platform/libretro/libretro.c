@@ -249,24 +249,24 @@ void retro_run(void) {
 	GBAContextFrame(&context, keys);
 	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * renderer.outputBufferStride);
 
-   struct GBAAudio* audio = &context.gba->audio;
+	struct GBAAudio* audio = &context.gba->audio;
 
-   int16_t samples[SAMPLES * 2];
+	int16_t samples[SAMPLES * 2];
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-   int produced = blip_read_samples(audio->left, samples, SAMPLES, true);
-   blip_read_samples(audio->right, samples + 1, SAMPLES, true);
+	int produced = blip_read_samples(audio->left, samples, SAMPLES, true);
+	blip_read_samples(audio->right, samples + 1, SAMPLES, true);
 #else
-   int produced = CircleBufferSize(&audio->left) / 2;
-   int16_t samplesR[SAMPLES];
-   GBAAudioCopy(audio, &samples[SAMPLES], samplesR, produced);
-   size_t i;
-   for (i = 0; i < produced; ++i) {
-      samples[i * 2] = samples[SAMPLES + i];
-      samples[i * 2 + 1] = samplesR[i];
-   }
+	int produced = CircleBufferSize(&audio->left) / 2;
+	int16_t samplesR[SAMPLES];
+	GBAAudioCopy(audio, &samples[SAMPLES], samplesR, produced);
+	size_t i;
+	for (i = 0; i < produced; ++i) {
+		samples[i * 2] = samples[SAMPLES + i];
+		samples[i * 2 + 1] = samplesR[i];
+	}
 #endif
 
-   audioCallback(samples, produced);
+	audioCallback(samples, produced);
 }
 
 void retro_reset(void) {
