@@ -523,7 +523,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (softwareRenderer->target2Bd) {
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
-			uint32_t backdrop = FLAG_UNWRITTEN;
+			uint32_t backdrop = 0;
 			if (!softwareRenderer->target1Bd || softwareRenderer->blendEffect == BLEND_NONE || softwareRenderer->blendEffect == BLEND_ALPHA || !GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
 				backdrop |= softwareRenderer->normalPalette[0];
 			} else {
@@ -532,7 +532,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			int end = softwareRenderer->windows[w].endX;
 			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
-				if (color & FLAG_TARGET_1 && color & FLAG_UNWRITTEN) {
+				if (color & FLAG_TARGET_1) {
 					softwareRenderer->row[x] = _mix(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
 				}
 			}
