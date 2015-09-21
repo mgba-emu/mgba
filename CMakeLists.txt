@@ -183,8 +183,12 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
 
-if(PSP2)
+if(PSP2 OR WII)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
+endif()
+
+if(WII)
+	add_definitions(-U__STRICT_ANSI__)
 endif()
 
 include(CheckFunctionExists)
