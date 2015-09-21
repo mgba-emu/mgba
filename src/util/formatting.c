@@ -83,7 +83,11 @@ struct tm* localtime_r(const time_t* t, struct tm* date) {
 	return date;
 #elif defined(PSP2)
 	SceRtcTime sceRtc;
+	uint64_t tick, localtick;
 	sceRtcSetTime_t(&sceRtc, *t);
+	sceRtcGetTick(&sceRtc, &tick);
+	sceRtcConvertUtcToLocalTime(&tick, &localtick);
+	sceRtcSetTick(&sceRtc, &localtick);
 	date->tm_year = sceRtc.year;
 	date->tm_mon = sceRtc.month;
 	date->tm_mday = sceRtc.day;
