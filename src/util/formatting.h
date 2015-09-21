@@ -28,6 +28,7 @@ int ftostr_u(char* restrict str, size_t size, float f);
 float strtof_u(const char* restrict str, char** restrict end);
 
 #ifndef HAVE_LOCALTIME_R
+#include <time.h>
 struct tm* localtime_r(const time_t* timep, struct tm* result);
 #endif
 
