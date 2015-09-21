@@ -16,6 +16,7 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
+#include <psp2/power.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
@@ -76,6 +77,16 @@ static enum GUICursorState _pollCursor(int* x, int* y) {
 	return GUI_CURSOR_DOWN;
 }
 
+static int _batteryState(void) {
+	int charge = scePowerGetBatteryLifePercent();
+	int adapter = scePowerIsPowerOnline();
+	int state = 0;
+	if (adapter) {
+		state |= BATTERY_CHARGING;
+	}
+	charge /= 25;
+	return state | charge;
+}
 
 int main() {
 	vita2d_init();
@@ -85,7 +96,7 @@ int main() {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
 			font, "cache0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
-			0,
+			_batteryState,
 			0, 0,
 
 			GUI_PARAMS_TRAIL
