@@ -42,6 +42,8 @@
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	unsigned tileData; \
+	unsigned widthMask = ~(width - 1); \
+	unsigned heightMask = ~(height - 1); \
 	for (; outX < x + totalWidth && outX < end; ++outX, ++inX) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
@@ -51,7 +53,7 @@
 		int localX = (xAccum >> 8) + (width >> 1); \
 		int localY = (yAccum >> 8) + (height >> 1); \
 		\
-		if (localX < 0 || localX >= width || localY < 0 || localY >= height) { \
+		if (localX & widthMask || localY & heightMask) { \
 			continue; \
 		} \
 		\
@@ -96,7 +98,7 @@
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
-#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80) + (localY & 0x7) * 8;
+#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
@@ -168,6 +170,7 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
+	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80;
 
 	uint32_t current;
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
