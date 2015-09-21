@@ -223,7 +223,8 @@ void GUIDrawBattery(struct GUIParams* params) {
 void GUIDrawClock(struct GUIParams* params) {
 	char buffer[32];
 	time_t t = time(0);
-	struct tm* tm = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%H:%M:%S", tm);
+	struct tm tm;
+	localtime_r(&t, &tm);
+	strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
 	GUIFontPrint(params->font, params->width / 2, GUIFontHeight(params->font), GUI_TEXT_CENTER, 0xFFFFFFFF, buffer);
 }
