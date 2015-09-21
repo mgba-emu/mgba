@@ -236,7 +236,12 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(16, OBJWIN);
 			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-				SPRITE_MOSAIC_LOOP(16, NORMAL);
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+					SPRITE_MOSAIC_LOOP(16, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(16, NORMAL);
+				}
 			} else if (objwinSlowPath) {
 				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 				SPRITE_NORMAL_LOOP(16, NORMAL_OBJWIN);
@@ -247,7 +252,12 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(256, OBJWIN);
 			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-				SPRITE_MOSAIC_LOOP(256, NORMAL);
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+					SPRITE_MOSAIC_LOOP(256, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(256, NORMAL);
+				}
 			} else if (objwinSlowPath) {
 				SPRITE_NORMAL_LOOP(256, NORMAL_OBJWIN);
 			} else {
