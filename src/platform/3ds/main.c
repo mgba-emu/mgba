@@ -52,7 +52,10 @@ static int guiDrawn;
 
 enum {
 	GUI_ACTIVE = 1,
-	GUI_THIS_FRAME = 2
+	GUI_THIS_FRAME = 2,
+	GUI_CLEANUP_1 = 4,
+	GUI_CLEANUP_2 = 8,
+	GUI_CLEANUP = GUI_CLEANUP_1 | GUI_CLEANUP_2
 };
 
 extern bool allocateRomBuffer(void);
@@ -74,13 +77,21 @@ static void _drawStart(void) {
 static void _drawEnd(void) {
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
 	u16 width = 0, height = 0;
-	if (guiDrawn & GUI_ACTIVE) {
-		screen = GFX_BOTTOM;
-	}
 
-	if (!(guiDrawn & GUI_THIS_FRAME) || screen == GFX_BOTTOM) {
-		void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-		ctrGpuEndFrame(screen, outputFramebuffer, width, height);
+	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
+	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
+
+	if (guiDrawn & (GUI_CLEANUP | GUI_THIS_FRAME | GUI_ACTIVE) && screen == GFX_TOP) {
+		if (!(guiDrawn & (GUI_THIS_FRAME | GUI_ACTIVE))) {
+			ctrGpuBeginFrame(GFX_BOTTOM);
+			if (guiDrawn & GUI_CLEANUP_1) {
+				guiDrawn &= ~GUI_CLEANUP_1;
+			} else if (guiDrawn & GUI_CLEANUP_2) {
+				guiDrawn &= ~GUI_CLEANUP_2;
+			}
+		}
+		void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
+		ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
 	}
 
 	ctrGpuEndDrawing();
@@ -102,31 +113,19 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME;
+	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME | GUI_CLEANUP;
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
 	if (screen == GFX_BOTTOM) {
 		return;
 	}
 
-	u16 width = 0, height = 0;
-
-	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
-
+	ctrFlushBatch();
 	ctrGpuBeginFrame(GFX_BOTTOM);
 	ctrSetViewportSize(320, 240);
 }
 
 static void _guiFinish(void) {
 	guiDrawn &= ~GUI_ACTIVE;
-	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
-	if (screen == GFX_BOTTOM) {
-		return;
-	}
-
-	u16 width = 0, height = 0;
-	void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
