@@ -49,13 +49,20 @@ static int16_t* audioRight = 0;
 static size_t audioPos = 0;
 static struct ctrTexture gbaOutputTexture;
 static int guiDrawn;
+static int screenCleanup;
 
 enum {
 	GUI_ACTIVE = 1,
 	GUI_THIS_FRAME = 2,
-	GUI_CLEANUP_1 = 4,
-	GUI_CLEANUP_2 = 8,
-	GUI_CLEANUP = GUI_CLEANUP_1 | GUI_CLEANUP_2
+};
+
+enum {
+	SCREEN_CLEANUP_TOP_1 = 1,
+	SCREEN_CLEANUP_TOP_2 = 2,
+	SCREEN_CLEANUP_TOP = SCREEN_CLEANUP_TOP_1 | SCREEN_CLEANUP_TOP_2,
+	SCREEN_CLEANUP_BOTTOM_1 = 4,
+	SCREEN_CLEANUP_BOTTOM_2 = 8,
+	SCREEN_CLEANUP_BOTTOM = SCREEN_CLEANUP_BOTTOM_1 | SCREEN_CLEANUP_BOTTOM_2,
 };
 
 extern bool allocateRomBuffer(void);
@@ -81,17 +88,31 @@ static void _drawEnd(void) {
 	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
 	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
 
-	if (guiDrawn & (GUI_CLEANUP | GUI_THIS_FRAME | GUI_ACTIVE) && screen == GFX_TOP) {
-		if (!(guiDrawn & (GUI_THIS_FRAME | GUI_ACTIVE))) {
+	if (screen != GFX_BOTTOM) {
+		if (guiDrawn & (GUI_THIS_FRAME | GUI_ACTIVE)) {
+			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
+			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
+		} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM) {
 			ctrGpuBeginFrame(GFX_BOTTOM);
-			if (guiDrawn & GUI_CLEANUP_1) {
-				guiDrawn &= ~GUI_CLEANUP_1;
-			} else if (guiDrawn & GUI_CLEANUP_2) {
-				guiDrawn &= ~GUI_CLEANUP_2;
+			if (screenCleanup & SCREEN_CLEANUP_BOTTOM_1) {
+				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_1;
+			} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM_2) {
+				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_2;
 			}
+			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
+			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
 		}
-		void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-		ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
+	}
+
+	if ((screenCleanup & SCREEN_CLEANUP_TOP) && screen != GFX_TOP) {
+		ctrGpuBeginFrame(GFX_TOP);
+		if (screenCleanup & SCREEN_CLEANUP_TOP_1) {
+			screenCleanup &= ~SCREEN_CLEANUP_TOP_1;
+		} else if (screenCleanup & SCREEN_CLEANUP_TOP_2) {
+			screenCleanup &= ~SCREEN_CLEANUP_TOP_2;
+		}
+		void* outputFramebuffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &height, &width);
+		ctrGpuEndFrame(GFX_TOP, outputFramebuffer, width, height);
 	}
 
 	ctrGpuEndDrawing();
@@ -113,7 +134,7 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME | GUI_CLEANUP;
+	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME;
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
 	if (screen == GFX_BOTTOM) {
 		return;
@@ -126,6 +147,7 @@ static void _guiPrepare(void) {
 
 static void _guiFinish(void) {
 	guiDrawn &= ~GUI_ACTIVE;
+	screenCleanup |= SCREEN_CLEANUP_BOTTOM;
 }
 
 static void _setup(struct GBAGUIRunner* runner) {
@@ -166,6 +188,11 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 		audioPos = 0;
 		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+	}
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+		screenCleanup |= SCREEN_CLEANUP_BOTTOM | SCREEN_CLEANUP_TOP;
 	}
 }
 
@@ -292,18 +319,9 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 
 static void _incrementScreenMode(struct GBAGUIRunner* runner) {
 	UNUSED(runner);
-	// Clear the buffer
-	_drawStart();
-	_drawEnd();
-	_drawStart();
-	_drawEnd();
-	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
-		screenMode = mode;
-	} else {
-		screenMode = (screenMode + 1) % SM_MAX;
-		GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
-	}
+	screenCleanup |= SCREEN_CLEANUP_TOP | SCREEN_CLEANUP_BOTTOM;
+	screenMode = (screenMode + 1) % SM_MAX;
+	GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
 }
 
 static uint32_t _pollInput(void) {
