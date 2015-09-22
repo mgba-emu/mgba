@@ -59,6 +59,7 @@ static struct GBAVideoRenderer dummyRenderer = {
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = &dummyRenderer;
 	video->vram = 0;
+	video->frameskip = 0;
 }
 
 void GBAVideoReset(struct GBAVideo* video) {
@@ -80,6 +81,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->nextVcounterIRQ = 0;
 
 	video->frameCounter = 0;
+	video->frameskipCounter = 0;
 
 	if (video->vram) {
 		mappedMemoryFree(video->vram, SIZE_VRAM);
@@ -154,7 +156,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				break;
 			case VIDEO_VERTICAL_PIXELS:
 				video->p->memory.io[REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
-				if (GBASyncDrawingFrame(video->p->sync)) {
+				if (video->frameskipCounter <= 0) {
 					video->renderer->finishFrame(video->renderer);
 				}
 				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
@@ -163,7 +165,10 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
 				}
 				GBAFrameEnded(video->p);
-				GBASyncPostFrame(video->p->sync);
+				--video->frameskipCounter;
+				if (video->frameskipCounter < 0) {
+					video->frameskipCounter = video->frameskip;
+				}
 				++video->frameCounter;
 				break;
 			case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
@@ -178,7 +183,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
 			video->nextHblankIRQ = video->nextHblank;
 
-			if (video->vcount < VIDEO_VERTICAL_PIXELS && GBASyncDrawingFrame(video->p->sync)) {
+			if (video->vcount < VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
 				video->renderer->drawScanline(video->renderer, video->vcount);
 			}
 

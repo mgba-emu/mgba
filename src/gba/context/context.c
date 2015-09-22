@@ -60,7 +60,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		GBAConfigLoadDefaults(&context->config, &opts);
 	}
 
-	context->gba->sync = &context->sync;
+	context->gba->sync = 0;
 	return true;
 }
 
@@ -190,11 +190,6 @@ void GBAContextFrame(struct GBAContext* context, uint16_t keys) {
 	int frameCounter = context->gba->video.frameCounter;
 	while (frameCounter == context->gba->video.frameCounter) {
 		ARMRunLoop(context->cpu);
-	}
-	if (context->sync.videoFrameSkip < 0) {
-		int frameskip = 0;
-		GBAConfigGetIntValue(&context->config, "frameskip", &frameskip);
-		context->sync.videoFrameSkip = frameskip;
 	}
 }
 

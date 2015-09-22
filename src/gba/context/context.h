@@ -24,7 +24,6 @@ struct GBAContext {
 	struct GBAConfig config;
 	struct GBAOptions opts;
 	struct GBAInputMap inputMap;
-	struct GBASync sync;
 };
 
 bool GBAContextInit(struct GBAContext* context, const char* port);

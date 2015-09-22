@@ -22,15 +22,12 @@ void GBASyncPostFrame(struct GBASync* sync) {
 
 	MutexLock(&sync->videoFrameMutex);
 	++sync->videoFramePending;
-	--sync->videoFrameSkip;
-	if (sync->videoFrameSkip < 0) {
-		do {
-			ConditionWake(&sync->videoFrameAvailableCond);
-			if (sync->videoFrameWait) {
-				ConditionWait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
-			}
-		} while (sync->videoFrameWait && sync->videoFramePending);
-	}
+	do {
+		ConditionWake(&sync->videoFrameAvailableCond);
+		if (sync->videoFrameWait) {
+			ConditionWait(&sync->videoFrameRequiredCond, &sync->videoFrameMutex);
+		}
+	} while (sync->videoFrameWait && sync->videoFramePending);
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
@@ -44,7 +41,7 @@ void GBASyncForceFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
+bool GBASyncWaitFrameStart(struct GBASync* sync) {
 	if (!sync) {
 		return true;
 	}
@@ -60,7 +57,6 @@ bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip) {
 		}
 	}
 	sync->videoFramePending = 0;
-	sync->videoFrameSkip = frameskip;
 	return true;
 }
 
@@ -70,14 +66,6 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 	}
 
 	MutexUnlock(&sync->videoFrameMutex);
-}
-
-bool GBASyncDrawingFrame(struct GBASync* sync) {
-	if (!sync) {
-		return true;
-	}
-
-	return sync->videoFrameSkip <= 0;
 }
 
 void GBASyncSetVideoSync(struct GBASync* sync, bool wait) {

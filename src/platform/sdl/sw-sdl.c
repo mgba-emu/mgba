@@ -93,7 +93,7 @@ void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+		if (GBASyncWaitFrameStart(&context->sync)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			SDL_UnlockTexture(renderer->sdlTex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);

@@ -140,6 +140,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+	gba.video.frameskip = threadContext->frameskip;
 
 	struct GBAThreadStop stop;
 	if (threadContext->stopCallback) {
@@ -386,7 +387,6 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->sync.videoFrameOn = true;
-	threadContext->sync.videoFrameSkip = 0;
 
 	threadContext->rewindBuffer = 0;
 	threadContext->rewindScreenBuffer = 0;

@@ -167,7 +167,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 	*frames = 0;
 	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
-		if (GBASyncWaitFrameStart(&context->sync, 0)) {
+		if (GBASyncWaitFrameStart(&context->sync)) {
 			++*frames;
 			++lastFrames;
 			if (!quiet) {

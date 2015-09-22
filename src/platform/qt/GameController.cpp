@@ -124,12 +124,8 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (GBASyncDrawingFrame(&controller->m_threadContext.sync)) {
-			memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
-		} else {
-			QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, nullptr));
-		}
+		memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
 			QMetaObject::invokeMethod(controller, "gamePaused", Q_ARG(GBAThread*, context));
@@ -773,7 +769,12 @@ void GameController::setAudioSync(bool set) {
 }
 
 void GameController::setFrameskip(int skip) {
+	threadInterrupt();
 	m_threadContext.frameskip = skip;
+	if (m_gameOpen) {
+		m_threadContext.gba->video.frameskip = skip;
+	}
+	threadContinue();
 }
 
 void GameController::setVolume(int volume) {

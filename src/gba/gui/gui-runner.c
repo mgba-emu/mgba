@@ -325,6 +325,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 					break;
 				case RUNNER_CONFIG:
 					GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
+					GBAConfigGetIntValue(&runner->context.config, "frameskip", &runner->context.gba->video.frameskip);
 					break;
 				case RUNNER_CONTINUE:
 					break;
