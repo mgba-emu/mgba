@@ -184,15 +184,15 @@ void GUIDrawBattery(struct GUIParams* params) {
 	int state = params->batteryState();
 	uint32_t color = 0xFF000000;
 	if (state == (BATTERY_CHARGING | BATTERY_FULL)) {
-		color |= 0xFF2020;
+		color |= 0xFFC060;
 	} else if (state & BATTERY_CHARGING) {
-		color |= 0x20FF20;
+		color |= 0x60FF60;
 	} else if (state >= BATTERY_HALF) {
 		color |= 0xFFFFFF;
 	} else if (state == BATTERY_LOW) {
-		color |= 0x20FFFF;
+		color |= 0x30FFFF;
 	} else {
-		color |= 0x2020FF;
+		color |= 0x3030FF;
 	}
 
 	const char* batteryText;
