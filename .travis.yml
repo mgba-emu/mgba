@@ -3,7 +3,7 @@ os:
   - osx
 
 env:
-  - CMAKE_MODULE_PATH=/usr/local/opt/qt
+  - CMAKE_MODULE_PATH=/usr/local/opt/qt5
 
 language: c
 compiler:
