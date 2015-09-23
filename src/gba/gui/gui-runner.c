@@ -209,6 +209,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Load failed!");
 				runner->params.drawEnd();
 			}
+			continue;
 		}
 		if (runner->params.guiFinish) {
 			runner->params.guiFinish();
