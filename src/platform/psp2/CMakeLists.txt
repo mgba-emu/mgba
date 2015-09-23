@@ -1,7 +1,7 @@
 find_program(FIXUP vita-elf-create)
 find_program(OBJCOPY ${cross_prefix}objcopy)
-find_file(NIDDB db.json PATHS ${VITASDK})
-find_file(EXTRADB extra.json PATHS ${VITASDK})
+find_file(NIDDB db.json PATHS ${VITASDK} ${VITASDK}/bin ${VITASDK}/share)
+find_file(EXTRADB extra.json PATHS ${VITASDK}${VITASDK}/bin ${VITASDK}/share)
 find_program(STRIP ${cross_prefix}strip)
 
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/psp2/psp2-*.c)
