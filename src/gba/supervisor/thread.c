@@ -683,16 +683,9 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
 	threadContext->rom = VFileOpen(fname, O_RDONLY);
 	threadContext->gameDir = 0;
-#if USE_LIBZIP
 	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpenZip(fname, 0);
+		threadContext->gameDir = VDirOpenArchive(fname);
 	}
-#endif
-#if USE_LZMA
-	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpen7z(fname, 0);
-	}
-#endif
 }
 
 static void _loadGameDir(struct GBAThread* threadContext) {
