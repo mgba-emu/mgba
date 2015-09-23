@@ -73,8 +73,8 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (params->guiPrepare) {
 				params->guiPrepare();
 			}
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %lu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -103,25 +103,49 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (params->guiPrepare) {
 				params->guiPrepare();
 			}
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %lu of %lu)", i, items);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %zu of %zu)", i, items);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
 			params->drawEnd();
 		}
-		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
-		if (!vf) {
+		if (!filter) {
 			++item;
 			continue;
 		}
-		if (filter && !filter(vf)) {
-			free(GUIMenuItemListGetPointer(currentFiles, item)->title);
-			GUIMenuItemListShift(currentFiles, item, 1);
-		} else {
-			++item;
+		struct VDir* vd = dir->openDir(dir, GUIMenuItemListGetPointer(currentFiles, item)->title);
+		if (vd) {
+			bool success = false;
+			struct VDirEntry* de;
+			while ((de = vd->listNext(vd)) && !success) {
+				struct VFile* vf2 = vd->openFile(vd, de->name(de), O_RDONLY);
+				if (!vf2) {
+					continue;
+				}
+				if (filter(vf2)) {
+					success = true;
+				}
+				vf2->close(vf2);
+			}
+			vd->close(vd);
+			if (success) {
+				++item;
+				continue;
+			}
 		}
-		vf->close(vf);
+		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
+		if (vf) {
+			if (filter(vf)) {
+				++item;
+			} else {
+				free(GUIMenuItemListGetPointer(currentFiles, item)->title);
+				GUIMenuItemListShift(currentFiles, item, 1);
+			}
+			vf->close(vf);
+			continue;
+		}
+		++item;
 	}
 	dir->close(dir);
 
@@ -130,14 +154,15 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 
 bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool (*filter)(struct VFile*)) {
 	struct GUIMenu menu = {
-		.title = params->currentPath,
+		.title = "Select file",
+		.subtitle = params->currentPath,
 		.index = params->fileIndex,
 	};
 	GUIMenuItemListInit(&menu.items, 0);
 	_refreshDirectory(params, params->currentPath, &menu.items, filter);
 
 	while (true) {
-		struct GUIMenuItem item;
+		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(params, &menu, &item);
 		params->fileIndex = menu.index;
 		if (reason == GUI_MENU_EXIT_CANCEL) {
@@ -155,25 +180,16 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				if (params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
-				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item.title);
+				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item->title);
 
 				struct GUIMenuItemList newFiles;
 				GUIMenuItemListInit(&newFiles, 0);
 				if (!_refreshDirectory(params, outPath, &newFiles, filter)) {
 					_cleanFiles(&newFiles);
 					GUIMenuItemListDeinit(&newFiles);
-					struct VFile* vf = VFileOpen(outPath, O_RDONLY);
-					if (!vf) {
-						continue;
-					}
-					if (!filter || filter(vf)) {
-						vf->close(vf);
-						_cleanFiles(&menu.items);
-						GUIMenuItemListDeinit(&menu.items);
-						return true;
-					}
-					vf->close(vf);
-					break;
+					_cleanFiles(&menu.items);
+					GUIMenuItemListDeinit(&menu.items);
+					return true;
 				} else {
 					_cleanFiles(&menu.items);
 					GUIMenuItemListDeinit(&menu.items);

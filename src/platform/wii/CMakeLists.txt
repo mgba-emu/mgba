@@ -1,3 +1,8 @@
+find_program(ELF2DOL elf2dol)
+find_program(GXTEXCONV gxtexconv)
+find_program(RAW2C raw2c)
+find_program(WIILOAD wiiload)
+
 set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE)
 list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 
@@ -14,7 +19,7 @@ list(APPEND GUI_SRC ${CMAKE_CURRENT_BINARY_DIR}/font.c ${CMAKE_CURRENT_SOURCE_DI
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.c PROPERTIES GENERATED ON)
 add_executable(${BINARY_NAME}.elf ${GUI_SRC} main.c)
-set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES}")
+set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c

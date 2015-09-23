@@ -49,6 +49,7 @@ static bool _vdzClose(struct VDir* vd);
 static void _vdzRewind(struct VDir* vd);
 static struct VDirEntry* _vdzListNext(struct VDir* vd);
 static struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode);
+static struct VDir* _vdzOpenDir(struct VDir* vd, const char* path);
 
 static const char* _vdezName(struct VDirEntry* vde);
 static enum VFSType _vdezType(struct VDirEntry* vde);
@@ -72,6 +73,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	vd->d.rewind = _vdzRewind;
 	vd->d.listNext = _vdzListNext;
 	vd->d.openFile = _vdzOpenFile;
+	vd->d.openDir = _vdzOpenDir;
 	vd->z = z;
 
 	vd->dirent.d.name = _vdezName;
@@ -295,6 +297,12 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	vfz->d.sync = _vfzSync;
 
 	return &vfz->d;
+}
+
+struct VDir* _vdzOpenDir(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	return 0;
 }
 
 bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {

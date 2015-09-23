@@ -114,7 +114,7 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+		if (GBASyncWaitFrameStart(&context->sync)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
 		v->drawFrame(v);

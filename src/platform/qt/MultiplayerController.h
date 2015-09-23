@@ -6,6 +6,8 @@
 #ifndef QGBA_MULTIPLAYER_CONTROLLER
 #define QGBA_MULTIPLAYER_CONTROLLER
 
+#include <QObject>
+
 extern "C" {
 #include "gba/sio/lockstep.h"
 }
@@ -14,7 +16,9 @@ namespace QGBA {
 
 class GameController;
 
-class MultiplayerController {
+class MultiplayerController : public QObject {
+Q_OBJECT
+
 public:
 	MultiplayerController();
 	~MultiplayerController();
@@ -23,6 +27,11 @@ public:
 	void detachGame(GameController*);
 
 	int attached();
+	int playerId(GameController*);
+
+signals:
+	void gameAttached();
+	void gameDetached();
 
 private:
 	GBASIOLockstep m_lockstep;

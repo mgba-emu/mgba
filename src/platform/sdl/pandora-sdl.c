@@ -71,7 +71,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
+		if (GBASyncWaitFrameStart(&context->sync)) {
 			int arg = 0;
 			ioctl(renderer->fb, FBIO_WAITFORVSYNC, &arg);
 

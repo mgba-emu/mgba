@@ -56,8 +56,8 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 			.idleOptimization = IDLE_LOOP_DETECT,
 			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
 		};
-		GBAConfigLoadDefaults(&context->config, &opts);
 		GBAConfigLoad(&context->config);
+		GBAConfigLoadDefaults(&context->config, &opts);
 	}
 
 	context->gba->sync = 0;
@@ -73,7 +73,25 @@ void GBAContextDeinit(struct GBAContext* context) {
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
-	context->rom = VFileOpen(path, O_RDONLY);
+	struct VDir* dir = VDirOpenArchive(path);
+	if (dir) {
+		struct VDirEntry* de;
+		while ((de = dir->listNext(dir))) {
+			struct VFile* vf = dir->openFile(dir, de->name(de), O_RDONLY);
+			if (!vf) {
+				continue;
+			}
+			if (GBAIsROM(vf)) {
+				context->rom = vf;
+				break;
+			}
+			vf->close(vf);
+		}
+		dir->close(dir);
+	} else {
+		context->rom = VFileOpen(path, O_RDONLY);
+	}
+
 	if (!context->rom) {
 		return false;
 	}

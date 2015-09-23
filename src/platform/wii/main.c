@@ -42,6 +42,9 @@ static void _gameUnloaded(struct GBAGUIRunner* runner);
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
 
+static s8 WPAD_StickX(u8 chan, u8 right);
+static s8 WPAD_StickY(u8 chan, u8 right);
+
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBARumble rumble;
 static struct GBARotationSource rotation;
@@ -158,6 +161,7 @@ int main() {
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
+			0,
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
@@ -224,16 +228,18 @@ static uint32_t _pollInput(void) {
 	int keys = 0;
 	int x = PAD_StickX(0);
 	int y = PAD_StickY(0);
-	if (x < -0x40) {
+	int w_x = WPAD_StickX(0,0);
+	int w_y = WPAD_StickY(0,0);
+	if (x < -0x40 || w_x < -0x40) {
 		keys |= 1 << GUI_INPUT_LEFT;
 	}
-	if (x > 0x40) {
+	if (x > 0x40 || w_x > 0x40) {
 		keys |= 1 << GUI_INPUT_RIGHT;
 	}
-	if (y < -0x40) {
+	if (y < -0x40 || w_y <- 0x40) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
-	if (y > 0x40) {
+	if (y > 0x40 || w_y > 0x40) {
 		keys |= 1 << GUI_INPUT_UP;
 	}
 	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
@@ -291,7 +297,9 @@ void _guiPrepare(void) {
 
 void _guiFinish(void) {
 	Mtx44 proj;
-	guOrtho(proj, -10, VIDEO_VERTICAL_PIXELS + 10, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+	short top = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? 10 : 20;
+	short bottom = VIDEO_VERTICAL_PIXELS + top;
+	guOrtho(proj, -top, bottom, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
@@ -447,16 +455,18 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	}
 	int x = PAD_StickX(0);
 	int y = PAD_StickY(0);
-	if (x < -0x40) {
+	int w_x = WPAD_StickX(0,0);
+	int w_y = WPAD_StickY(0,0);
+	if (x < -0x40 || w_x < -0x40) {
 		keys |= 1 << GBA_KEY_LEFT;
 	}
-	if (x > 0x40) {
+	if (x > 0x40 || w_x > 0x40) {
 		keys |= 1 << GBA_KEY_RIGHT;
 	}
-	if (y < -0x40) {
+	if (y < -0x40 || w_y <- 0x40) {
 		keys |= 1 << GBA_KEY_DOWN;
 	}
-	if (y > 0x40) {
+	if (y > 0x40 || w_y > 0x40) {
 		keys |= 1 << GBA_KEY_UP;
 	}
 	return keys;
@@ -503,4 +513,79 @@ int32_t _readTiltY(struct GBARotationSource* source) {
 int32_t _readGyroZ(struct GBARotationSource* source) {
 	UNUSED(source);
 	return gyroZ;
+}
+
+static s8 WPAD_StickX(u8 chan, u8 right) {
+	float mag = 0.0;
+	float ang = 0.0;
+	WPADData *data = WPAD_Data(chan);
+
+	switch (data->exp.type)	{
+	case WPAD_EXP_NUNCHUK:
+	case WPAD_EXP_GUITARHERO3:
+		if (right == 0) {
+			mag = data->exp.nunchuk.js.mag;
+			ang = data->exp.nunchuk.js.ang;
+		}
+		break;
+	case WPAD_EXP_CLASSIC:
+		if (right == 0) {
+			mag = data->exp.classic.ljs.mag;
+			ang = data->exp.classic.ljs.ang;
+		} else {
+			mag = data->exp.classic.rjs.mag;
+			ang = data->exp.classic.rjs.ang;
+		}
+		break;
+	default:
+		break;
+	}
+
+	/* calculate X value (angle need to be converted into radian) */
+	if (mag > 1.0) {
+		mag = 1.0;
+	} else if (mag < -1.0) {
+		mag = -1.0;
+	}
+	double val = mag * sinf(M_PI * ang / 180.0f);
+ 
+	return (s8)(val * 128.0f);
+}
+
+
+static s8 WPAD_StickY(u8 chan, u8 right) {
+	float mag = 0.0;
+	float ang = 0.0;
+	WPADData *data = WPAD_Data(chan);
+
+	switch (data->exp.type) {
+	case WPAD_EXP_NUNCHUK:
+	case WPAD_EXP_GUITARHERO3:
+		if (right == 0) {
+			mag = data->exp.nunchuk.js.mag;
+			ang = data->exp.nunchuk.js.ang;
+		}
+		break;
+	case WPAD_EXP_CLASSIC:
+		if (right == 0) {
+			mag = data->exp.classic.ljs.mag;
+			ang = data->exp.classic.ljs.ang;
+		} else {
+			mag = data->exp.classic.rjs.mag;
+			ang = data->exp.classic.rjs.ang;
+		}
+		break;
+	default:
+		break;
+	}
+
+	/* calculate X value (angle need to be converted into radian) */
+	if (mag > 1.0) { 
+		mag = 1.0;
+	} else if (mag < -1.0) {
+		mag = -1.0;
+	}
+	double val = mag * cosf(M_PI * ang / 180.0f);
+ 
+	return (s8)(val * 128.0f);
 }

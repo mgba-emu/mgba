@@ -62,6 +62,7 @@ static bool _vd7zClose(struct VDir* vd);
 static void _vd7zRewind(struct VDir* vd);
 static struct VDirEntry* _vd7zListNext(struct VDir* vd);
 static struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode);
+static struct VDir* _vd7zOpenDir(struct VDir* vd, const char* path);
 
 static const char* _vde7zName(struct VDirEntry* vde);
 static enum VFSType _vde7zType(struct VDirEntry* vde);
@@ -111,6 +112,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 	vd->d.rewind = _vd7zRewind;
 	vd->d.listNext = _vd7zListNext;
 	vd->d.openFile = _vd7zOpenFile;
+	vd->d.openDir = _vd7zOpenDir;
 
 	return &vd->d;
 }
@@ -299,6 +301,12 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	vf->d.sync = _vf7zSync;
 
 	return &vf->d;
+}
+
+struct VDir* _vd7zOpenDir(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	return 0;
 }
 
 bool _vf7zSync(struct VFile* vf, const void* memory, size_t size) {

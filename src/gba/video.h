@@ -199,6 +199,8 @@ struct GBAVideo {
 	union GBAOAM oam;
 
 	int32_t frameCounter;
+	int frameskip;
+	int frameskipCounter;
 };
 
 void GBAVideoInit(struct GBAVideo* video);

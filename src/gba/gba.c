@@ -682,15 +682,13 @@ bool GBAIsBIOS(struct VFile* vf) {
 	if (vf->seek(vf, 0, SEEK_SET) < 0) {
 		return false;
 	}
-	uint32_t interruptTable[7];
+	uint8_t interruptTable[7 * 4];
 	if (vf->read(vf, &interruptTable, sizeof(interruptTable)) != sizeof(interruptTable)) {
 		return false;
 	}
 	int i;
 	for (i = 0; i < 7; ++i) {
-		uint32_t interrupt;
-		LOAD_32(interrupt, i * sizeof(uint32_t), interruptTable);
-		if ((interrupt & 0xFFFF0000) != 0xEA000000) {
+		if (interruptTable[4 * i + 3] != 0xEA || interruptTable[4 * i + 2]) {
 			return false;
 		}
 	}

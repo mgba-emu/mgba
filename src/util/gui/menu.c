@@ -10,7 +10,7 @@
 
 DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 
-enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem* item) {
+enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item) {
 	size_t start = 0;
 	size_t lineHeight = GUIFontHeight(params->font);
 	size_t pageSize = params->height / lineHeight;
@@ -35,14 +35,24 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			++menu->index;
 		}
 		if (newInput & (1 << GUI_INPUT_LEFT)) {
-			if (menu->index >= pageSize) {
+			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
+			if (item->validStates) {
+				if (item->state > 0) {
+					--item->state;
+				}
+			} else if (menu->index >= pageSize) {
 				menu->index -= pageSize;
 			} else {
 				menu->index = 0;
 			}
 		}
 		if (newInput & (1 << GUI_INPUT_RIGHT)) {
-			if (menu->index + pageSize < GUIMenuItemListSize(&menu->items)) {
+			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
+			if (item->validStates) {
+				if (item->validStates[item->state + 1]) {
+					++item->state;
+				}
+			} else if (menu->index + pageSize < GUIMenuItemListSize(&menu->items)) {
 				menu->index += pageSize;
 			} else {
 				menu->index = GUIMenuItemListSize(&menu->items) - 1;
@@ -70,9 +80,9 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			break;
 		}
 		if (newInput & (1 << GUI_INPUT_SELECT) || (cursorOverItem == 2 && cursor == GUI_CURSOR_CLICKED)) {
-			*item = *GUIMenuItemListGetPointer(&menu->items, menu->index);
-			if (item->submenu) {
-				enum GUIMenuExitReason reason = GUIShowMenu(params, item->submenu, item);
+			*item = GUIMenuItemListGetPointer(&menu->items, menu->index);
+			if ((*item)->submenu) {
+				enum GUIMenuExitReason reason = GUIShowMenu(params, (*item)->submenu, item);
 				if (reason != GUI_MENU_EXIT_BACK) {
 					return reason;
 				}
@@ -96,6 +106,9 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		}
 		unsigned y = lineHeight;
 		GUIFontPrint(params->font, 0, y, GUI_TEXT_LEFT, 0xFFFFFFFF, menu->title);
+		if (menu->subtitle) {
+			GUIFontPrint(params->font, 0, y * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, menu->subtitle);
+		}
 		y += 2 * lineHeight;
 		size_t i;
 		for (i = start; i < GUIMenuItemListSize(&menu->items); ++i) {
@@ -105,16 +118,113 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				color = 0xFFFFFFFF;
 				bullet = '>';
 			}
-			GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, color, "%c %s", bullet, GUIMenuItemListGetPointer(&menu->items, i)->title);
+			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, i);
+			GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, color, "%c %s", bullet, item->title);
+			if (item->validStates) {
+				GUIFontPrintf(params->font, params->width, y, GUI_TEXT_RIGHT, color, "%s ", item->validStates[item->state]);
+			}
 			y += lineHeight;
 			if (y + lineHeight > params->height) {
 				break;
 			}
 		}
+
+		GUIDrawBattery(params);
+		GUIDrawClock(params);
+
 		if (params->guiFinish) {
 			params->guiFinish();
 		}
 		params->drawEnd();
 	}
 	return GUI_MENU_EXIT_CANCEL;
+}
+
+enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y) {
+	if (!params->pollCursor) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	enum GUICursorState state = params->pollCursor(x, y);
+	if (params->cursorState == GUI_CURSOR_DOWN) {
+		int dragX = *x - params->cx;
+		int dragY = *y - params->cy;
+		if (dragX * dragX + dragY * dragY > 25) {
+			params->cursorState = GUI_CURSOR_DRAGGING;
+			return GUI_CURSOR_DRAGGING;
+		}
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_CLICKED;
+		}
+	} else {
+		params->cx = *x;
+		params->cy = *y;
+	}
+	if (params->cursorState == GUI_CURSOR_DRAGGING) {
+		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
+			params->cursorState = GUI_CURSOR_UP;
+			return GUI_CURSOR_UP;
+		}
+		return GUI_CURSOR_DRAGGING;
+	}
+	params->cursorState = state;
+	return params->cursorState;
+}
+
+void GUIInvalidateKeys(struct GUIParams* params) {
+	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
+		params->inputHistory[i] = 0;
+	}
+}
+
+void GUIDrawBattery(struct GUIParams* params) {
+	if (!params->batteryState) {
+		return;
+	}
+	int state = params->batteryState();
+	uint32_t color = 0xFF000000;
+	if (state == (BATTERY_CHARGING | BATTERY_FULL)) {
+		color |= 0xFFC060;
+	} else if (state & BATTERY_CHARGING) {
+		color |= 0x60FF60;
+	} else if (state >= BATTERY_HALF) {
+		color |= 0xFFFFFF;
+	} else if (state == BATTERY_LOW) {
+		color |= 0x30FFFF;
+	} else {
+		color |= 0x3030FF;
+	}
+
+	const char* batteryText;
+	switch (state & ~BATTERY_CHARGING) {
+	case BATTERY_EMPTY:
+		batteryText = "[    ]";
+		break;
+	case BATTERY_LOW:
+		batteryText = "[I   ]";
+		break;
+	case BATTERY_HALF:
+		batteryText = "[II  ]";
+		break;
+	case BATTERY_HIGH:
+		batteryText = "[III ]";
+		break;
+	case BATTERY_FULL:
+		batteryText = "[IIII]";
+		break;
+	default:
+		batteryText = "[????]";
+		break;
+	}
+
+	GUIFontPrint(params->font, params->width, GUIFontHeight(params->font), GUI_TEXT_RIGHT, color, batteryText);
+}
+
+void GUIDrawClock(struct GUIParams* params) {
+	char buffer[32];
+	time_t t = time(0);
+	struct tm tm;
+	localtime_r(&t, &tm);
+	strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
+	GUIFontPrint(params->font, params->width / 2, GUIFontHeight(params->font), GUI_TEXT_CENTER, 0xFFFFFFFF, buffer);
 }

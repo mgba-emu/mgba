@@ -10,11 +10,13 @@
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
+#include "util/gui/menu.h"
 
 #include <psp2/ctrl.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
+#include <psp2/power.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
@@ -75,6 +77,16 @@ static enum GUICursorState _pollCursor(int* x, int* y) {
 	return GUI_CURSOR_DOWN;
 }
 
+static int _batteryState(void) {
+	int charge = scePowerGetBatteryLifePercent();
+	int adapter = scePowerIsPowerOnline();
+	int state = 0;
+	if (adapter) {
+		state |= BATTERY_CHARGING;
+	}
+	charge /= 25;
+	return state | charge;
+}
 
 int main() {
 	vita2d_init();
@@ -84,16 +96,33 @@ int main() {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
 			font, "cache0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
+			_batteryState,
 			0, 0,
 
 			GUI_PARAMS_TRAIL
 		},
+		.configExtra = (struct GUIMenuItem[]) {
+			{ 
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"With Background",
+					"Without Background",
+					"Stretched",
+					0
+				}
+			}
+		},
+		.nConfigExtra = 1,
 		.setup = GBAPSP2Setup,
 		.teardown = GBAPSP2Teardown,
 		.gameLoaded = GBAPSP2LoadROM,
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.drawScreenshot = GBAPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
 		.incrementScreenMode = GBAPSP2IncrementScreenMode,

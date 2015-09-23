@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "gba/context/config.h"
+#include "gba/context/sync.h"
 #include "gba/input.h"
 
 struct GBAContext {

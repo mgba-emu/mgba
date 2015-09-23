@@ -58,6 +58,7 @@ struct VDir {
 	void (*rewind)(struct VDir* vd);
 	struct VDirEntry* (*listNext)(struct VDir* vd);
 	struct VFile* (*openFile)(struct VDir* vd, const char* name, int mode);
+	struct VDir* (*openDir)(struct VDir* vd, const char* name);
 };
 
 struct VFile* VFileOpen(const char* path, int flags);
@@ -69,6 +70,7 @@ struct VFile* VFileFromMemory(void* mem, size_t size);
 struct VFile* VFileFromFILE(FILE* file);
 
 struct VDir* VDirOpen(const char* path);
+struct VDir* VDirOpenArchive(const char* path);
 
 #ifdef USE_LIBZIP
 struct VDir* VDirOpenZip(const char* path, int flags);
