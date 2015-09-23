@@ -2,6 +2,9 @@ os:
   - linux
   - osx
 
+env:
+  - CMAKE_MODULE_PATH=/usr/local/opt/qt
+
 language: c
 compiler:
   - gcc

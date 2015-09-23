@@ -1,5 +1,6 @@
 #!/bin/sh
 if [ $TRAVIS_OS_NAME = "osx" ]; then
+	brew update
 	brew install qt5 ffmpeg imagemagick sdl2 libzip libpng
 else
 	sudo add-apt-repository ppa:smspillaz/cmake-2.8.12 -y
