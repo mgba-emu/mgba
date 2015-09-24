@@ -147,7 +147,10 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
 		return 0;
 	}
-	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj &&
+	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
+	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) &&
+	              GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_SEMITRANSPARENT;
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
 		int target2 = renderer->target2Bd << 4;
 		target2 |= renderer->bg[0].target2 << (renderer->bg[0].priority);
