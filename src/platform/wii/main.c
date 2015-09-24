@@ -51,7 +51,7 @@ static s8 WPAD_StickY(u8 chan, u8 right);
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBARumble rumble;
 static struct GBARotationSource rotation;
-static GXRModeObj* mode;
+static GXRModeObj* vmode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
 static GXTexObj tex;
@@ -61,7 +61,7 @@ static int32_t gyroZ;
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
 
-static void* framebuffer[2];
+static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
 
 static struct GBAStereoSample audioBuffer[3][SAMPLES] __attribute__((__aligned__(32)));
@@ -69,6 +69,33 @@ static volatile size_t audioBufferSize = 0;
 static volatile int currentAudioBuffer = 0;
 
 static struct GUIFont* font;
+
+static void reconfigureScreen(GXRModeObj* vmode) {
+	free(framebuffer[0]);
+	free(framebuffer[1]);
+
+	framebuffer[0] = SYS_AllocateFramebuffer(vmode);
+	framebuffer[1] = SYS_AllocateFramebuffer(vmode);
+
+	VIDEO_SetBlack(true);
+	VIDEO_Configure(vmode);
+	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
+	VIDEO_SetBlack(false);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if (vmode->viTVMode & VI_NON_INTERLACE) {
+		VIDEO_WaitVSync();
+	}
+	GX_SetViewport(0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
+
+	f32 yscale = GX_GetYScaleFactor(vmode->efbHeight, vmode->xfbHeight);
+	u32 xfbHeight = GX_SetDispCopyYScale(yscale);
+	GX_SetScissor(0, 0, vmode->viWidth, vmode->viWidth);
+	GX_SetDispCopySrc(0, 0, vmode->fbWidth, vmode->efbHeight);
+	GX_SetDispCopyDst(vmode->fbWidth, xfbHeight);
+	GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_TRUE, vmode->vfilter);
+	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+};
 
 int main() {
 	VIDEO_Init();
@@ -85,33 +112,15 @@ int main() {
 #error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
 #endif
 
-	mode = VIDEO_GetPreferredMode(0);
-	framebuffer[0] = SYS_AllocateFramebuffer(mode);
-	framebuffer[1] = SYS_AllocateFramebuffer(mode);
-
-	VIDEO_Configure(mode);
-	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
-	VIDEO_SetBlack(FALSE);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	if (mode->viTVMode & VI_NON_INTERLACE) {
-		VIDEO_WaitVSync();
-	}
+	vmode = VIDEO_GetPreferredMode(0);
 
 	GXColor bg = { 0, 0, 0, 0xFF };
 	void* fifo = memalign(32, 0x40000);
 	memset(fifo, 0, 0x40000);
 	GX_Init(fifo, 0x40000);
 	GX_SetCopyClear(bg, 0x00FFFFFF);
-	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
 
-	f32 yscale = GX_GetYScaleFactor(mode->efbHeight, mode->xfbHeight);
-	u32 xfbHeight = GX_SetDispCopyYScale(yscale);
-	GX_SetScissor(0, 0, mode->viWidth, mode->viWidth);
-	GX_SetDispCopySrc(0, 0, mode->fbWidth, mode->efbHeight);
-	GX_SetDispCopyDst(mode->fbWidth, xfbHeight);
-	GX_SetCopyFilter(mode->aa, mode->sample_pattern, GX_TRUE, mode->vfilter);
-	GX_SetFieldMode(mode->field_rendering, ((mode->viHeight == 2 * mode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+	reconfigureScreen(vmode);
 
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
@@ -192,6 +201,9 @@ int main() {
 	free(renderer.outputBuffer);
 	GUIFontDestroy(font);
 
+	free(framebuffer[0]);
+	free(framebuffer[1]);
+
 	return 0;
 }
 
@@ -216,7 +228,7 @@ static void _drawStart(void) {
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 
-	GX_SetViewport(0, 0, mode->fbWidth, mode->efbHeight, 0, 1);
+	GX_SetViewport(0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
 }
 
 static void _drawEnd(void) {
