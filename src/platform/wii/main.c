@@ -7,6 +7,7 @@
 
 #include <fat.h>
 #include <gccore.h>
+#include <ogc/machine/processor.h>
 #include <malloc.h>
 #include <wiiuse/wpad.h>
 
@@ -21,6 +22,8 @@
 #include "util/vfs.h"
 
 #define SAMPLES 1024
+
+static void _retraceCallback(u32 count);
 
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
@@ -55,6 +58,8 @@ static GXTexObj tex;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
+static uint32_t retraceCount;
+static uint32_t referenceRetraceCount;
 
 static void* framebuffer[2];
 static int whichFb = 0;
@@ -144,6 +149,8 @@ int main() {
 	memset(texmem, 0, 256 * 256 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, 256, 256, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 
+	VIDEO_SetPostRetraceCallback(_retraceCallback);
+
 	font = GUIFontCreate();
 
 	fatInitDefault();
@@ -199,7 +206,13 @@ static void _audioDMA(void) {
 }
 
 static void _drawStart(void) {
-	VIDEO_WaitVSync();
+	u32 level = 0;
+	_CPU_ISR_Disable(level);
+	if (referenceRetraceCount >= retraceCount) {
+		VIDEO_WaitVSync();
+	}
+	_CPU_ISR_Restore(level);
+
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 
@@ -214,6 +227,11 @@ static void _drawEnd(void) {
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
+
+	u32 level = 0;
+	_CPU_ISR_Disable(level);
+	++referenceRetraceCount;
+	_CPU_ISR_Restore(level);
 }
 
 static uint32_t _pollInput(void) {
@@ -337,6 +355,10 @@ void _gameLoaded(struct GBAGUIRunner* runner) {
 			sleep(1);
 		}
 	}
+	u32 level = 0;
+	_CPU_ISR_Disable(level);
+	referenceRetraceCount = retraceCount;
+	_CPU_ISR_Restore(level);
 }
 
 void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
@@ -463,7 +485,7 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	if (x > 0x40 || w_x > 0x40) {
 		keys |= 1 << GBA_KEY_RIGHT;
 	}
-	if (y < -0x40 || w_y <- 0x40) {
+	if (y < -0x40 || w_y < -0x40) {
 		keys |= 1 << GBA_KEY_DOWN;
 	}
 	if (y > 0x40 || w_y > 0x40) {
@@ -588,4 +610,11 @@ static s8 WPAD_StickY(u8 chan, u8 right) {
 	double val = mag * cosf(M_PI * ang / 180.0f);
  
 	return (s8)(val * 128.0f);
+}
+
+void _retraceCallback(u32 count) {
+	u32 level = 0;
+	_CPU_ISR_Disable(level);
+	retraceCount = count;
+	_CPU_ISR_Restore(level);
 }
