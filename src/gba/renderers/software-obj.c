@@ -149,15 +149,14 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	}
 	int variant = renderer->target1Obj &&
 	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
-	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN) &&
-	              GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_SEMITRANSPARENT;
+	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
 		int target2 = renderer->target2Bd << 4;
 		target2 |= renderer->bg[0].target2 << (renderer->bg[0].priority);
 		target2 |= renderer->bg[1].target2 << (renderer->bg[1].priority);
 		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
 		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
-		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) < target2) {
+		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) <= target2) {
 			variant = 0;
 		}
 	}
