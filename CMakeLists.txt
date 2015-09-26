@@ -531,7 +531,7 @@ endif()
 if(BUILD_LIBRETRO)
 	file(GLOB RETRO_SRC ${CMAKE_SOURCE_DIR}/src/platform/libretro/*.c)
 	add_library(${BINARY_NAME}_libretro SHARED ${CORE_SRC} ${RETRO_SRC})
-	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING")
+	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;${OS_DEFINES};${FUNCTION_DEFINES}")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 endif()
 
