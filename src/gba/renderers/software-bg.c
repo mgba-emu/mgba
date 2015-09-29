@@ -7,6 +7,35 @@
 
 #include "gba/gba.h"
 
+#define DRAW_BACKGROUND_MODE_2(BLEND, OBJWIN) \
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
+		x += background->dx; \
+		y += background->dy; \
+		\
+		if (!mosaicWait) { \
+			if (background->overflow) { \
+				localX = x & (sizeAdjusted - 1); \
+				localY = y & (sizeAdjusted - 1); \
+			} else if ((x | y) & ~(sizeAdjusted - 1)) { \
+				continue; \
+			} else { \
+				localX = x; \
+				localY = y; \
+			} \
+			mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
+			pixelData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
+			\
+			mosaicWait = mosaicH; \
+		} else { \
+			--mosaicWait; \
+		} \
+		\
+		uint32_t current = *pixel; \
+		if (pixelData && IS_WRITABLE(current)) {	\
+			COMPOSITE_256_ ## OBJWIN (BLEND); \
+		} \
+	}
+
 void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background, int inY) {
 	int sizeAdjusted = 0x8000 << background->size;
 
@@ -15,44 +44,22 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 	uint32_t screenBase = background->screenBase;
 	uint32_t charBase = background->charBase;
 	uint8_t mapData;
-	uint8_t tileData = 0;
+	uint8_t pixelData = 0;
 
 	int outX;
 	uint32_t* pixel;
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) {
-		x += background->dx;
-		y += background->dy;
 
-		if (!mosaicWait) {
-			if (background->overflow) {
-				localX = x & (sizeAdjusted - 1);
-				localY = y & (sizeAdjusted - 1);
-			} else if ((x | y) & ~(sizeAdjusted - 1)) {
-				continue;
-			} else {
-				localX = x;
-				localY = y;
-			}
-			mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)];
-			tileData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
-
-			mosaicWait = mosaicH;
+	if (!objwinSlowPath) {
+		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+			DRAW_BACKGROUND_MODE_2(NoBlend, NO_OBJWIN);
 		} else {
-			--mosaicWait;
+			DRAW_BACKGROUND_MODE_2(Blend, NO_OBJWIN);
 		}
-
-		uint32_t current = *pixel;
-		if (tileData && IS_WRITABLE(current)) {
-			if (!objwinSlowPath) {
-				_compositeBlendNoObjwin(renderer, pixel, palette[tileData] | flags, current);
-			} else if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {
-				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
-				unsigned mergedFlags = flags;
-				if (current & FLAG_OBJWIN) {
-					mergedFlags = objwinFlags;
-				}
-				_compositeBlendObjwin(renderer, pixel, currentPalette[tileData] | mergedFlags, current);
-			}
+	} else {
+		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+			DRAW_BACKGROUND_MODE_2(NoBlend, OBJWIN);
+		} else {
+			DRAW_BACKGROUND_MODE_2(Blend, OBJWIN);
 		}
 	}
 }

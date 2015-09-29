@@ -110,18 +110,42 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			}
 			params->drawEnd();
 		}
-		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
-		if (!vf) {
+		if (!filter) {
 			++item;
 			continue;
 		}
-		if (filter && !filter(vf)) {
-			free(GUIMenuItemListGetPointer(currentFiles, item)->title);
-			GUIMenuItemListShift(currentFiles, item, 1);
-		} else {
-			++item;
+		struct VDir* vd = dir->openDir(dir, GUIMenuItemListGetPointer(currentFiles, item)->title);
+		if (vd) {
+			bool success = false;
+			struct VDirEntry* de;
+			while ((de = vd->listNext(vd)) && !success) {
+				struct VFile* vf2 = vd->openFile(vd, de->name(de), O_RDONLY);
+				if (!vf2) {
+					continue;
+				}
+				if (filter(vf2)) {
+					success = true;
+				}
+				vf2->close(vf2);
+			}
+			vd->close(vd);
+			if (success) {
+				++item;
+				continue;
+			}
 		}
-		vf->close(vf);
+		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
+		if (vf) {
+			if (filter(vf)) {
+				++item;
+			} else {
+				free(GUIMenuItemListGetPointer(currentFiles, item)->title);
+				GUIMenuItemListShift(currentFiles, item, 1);
+			}
+			vf->close(vf);
+			continue;
+		}
+		++item;
 	}
 	dir->close(dir);
 
@@ -163,18 +187,9 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 				if (!_refreshDirectory(params, outPath, &newFiles, filter)) {
 					_cleanFiles(&newFiles);
 					GUIMenuItemListDeinit(&newFiles);
-					struct VFile* vf = VFileOpen(outPath, O_RDONLY);
-					if (!vf) {
-						continue;
-					}
-					if (!filter || filter(vf)) {
-						vf->close(vf);
-						_cleanFiles(&menu.items);
-						GUIMenuItemListDeinit(&menu.items);
-						return true;
-					}
-					vf->close(vf);
-					break;
+					_cleanFiles(&menu.items);
+					GUIMenuItemListDeinit(&menu.items);
+					return true;
 				} else {
 					_cleanFiles(&menu.items);
 					GUIMenuItemListDeinit(&menu.items);

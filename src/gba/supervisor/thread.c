@@ -142,6 +142,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+	gba.video.frameskip = threadContext->frameskip;
 
 	struct GBAThreadStop stop;
 	if (threadContext->stopCallback) {
@@ -388,7 +389,6 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->sync.videoFrameOn = true;
-	threadContext->sync.videoFrameSkip = 0;
 
 	threadContext->rewindBuffer = 0;
 	threadContext->rewindScreenBuffer = 0;
@@ -685,16 +685,9 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
 	threadContext->rom = VFileOpen(fname, O_RDONLY);
 	threadContext->gameDir = 0;
-#if USE_LIBZIP
 	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpenZip(fname, 0);
+		threadContext->gameDir = VDirOpenArchive(fname);
 	}
-#endif
-#if USE_LZMA
-	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpen7z(fname, 0);
-	}
-#endif
 }
 
 static void _loadGameDir(struct GBAThread* threadContext) {

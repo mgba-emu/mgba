@@ -13,7 +13,6 @@
 struct GBASync {
 	int videoFramePending;
 	bool videoFrameWait;
-	int videoFrameSkip;
 	bool videoFrameOn;
 	Mutex videoFrameMutex;
 	Condition videoFrameAvailableCond;
@@ -26,9 +25,8 @@ struct GBASync {
 
 void GBASyncPostFrame(struct GBASync* sync);
 void GBASyncForceFrame(struct GBASync* sync);
-bool GBASyncWaitFrameStart(struct GBASync* sync, int frameskip);
+bool GBASyncWaitFrameStart(struct GBASync* sync);
 void GBASyncWaitFrameEnd(struct GBASync* sync);
-bool GBASyncDrawingFrame(struct GBASync* sync);
 void GBASyncSetVideoSync(struct GBASync* sync, bool wait);
 
 void GBASyncProduceAudio(struct GBASync* sync, bool wait);

@@ -44,6 +44,7 @@ static bool _vd3dClose(struct VDir* vd);
 static void _vd3dRewind(struct VDir* vd);
 static struct VDirEntry* _vd3dListNext(struct VDir* vd);
 static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode);
+static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path);
 
 static const char* _vd3deName(struct VDirEntry* vde);
 static enum VFSType _vd3deType(struct VDirEntry* vde);
@@ -185,8 +186,9 @@ struct VDir* VDirOpen(const char* path) {
 
 	vd3d->d.close = _vd3dClose;
 	vd3d->d.rewind = _vd3dRewind;
-	vd3d->d.listNext = _vd3dListNext; //// Crashes here for no good reason
+	vd3d->d.listNext = _vd3dListNext;
 	vd3d->d.openFile = _vd3dOpenFile;
+	vd3d->d.openDir = _vd3dOpenDir;
 
 	vd3d->vde.d.name = _vd3deName;
 	vd3d->vde.d.type = _vd3deType;
@@ -233,6 +235,23 @@ static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode) 
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
 	return file;
+}
+
+static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vd3d->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s/%s", dir, path);
+
+	struct VDir* vd2 = VDirOpen(combined);
+	if (!vd2) {
+		vd2 = VDirOpenArchive(combined);
+	}
+	free(combined);
+	return vd2;
 }
 
 static const char* _vd3deName(struct VDirEntry* vde) {

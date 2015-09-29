@@ -96,6 +96,21 @@ struct VFile* VFileOpen(const char* path, int flags) {
 #endif
 }
 
+struct VDir* VDirOpenArchive(const char* path) {
+	struct VDir* dir = 0;
+#if USE_LIBZIP
+	if (!dir) {
+		dir = VDirOpenZip(path, 0);
+	}
+#endif
+#if USE_LZMA
+	if (!dir) {
+		dir = VDirOpen7z(path, 0);
+	}
+#endif
+	return dir;
+}
+
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
 	while (bytesRead < size - 1) {

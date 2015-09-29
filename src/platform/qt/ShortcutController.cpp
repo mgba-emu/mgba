@@ -311,9 +311,9 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		}
 		int key = keyEvent->key();
 		if (!isModifierKey(key)) {
-			key |= keyEvent->modifiers();
+			key |= (keyEvent->modifiers() & ~Qt::KeypadModifier);
 		} else {
-			key = toModifierKey(key | keyEvent->modifiers());
+			key = toModifierKey(key | (keyEvent->modifiers() & ~Qt::KeypadModifier));
 		}
 		auto item = m_heldKeys.find(key);
 		if (item != m_heldKeys.end()) {

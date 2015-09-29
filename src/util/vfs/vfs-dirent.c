@@ -14,6 +14,7 @@ static bool _vdClose(struct VDir* vd);
 static void _vdRewind(struct VDir* vd);
 static struct VDirEntry* _vdListNext(struct VDir* vd);
 static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
+static struct VDir* _vdOpenDir(struct VDir* vd, const char* path);
 
 static const char* _vdeName(struct VDirEntry* vde);
 static enum VFSType _vdeType(struct VDirEntry* vde);
@@ -48,6 +49,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->d.rewind = _vdRewind;
 	vd->d.listNext = _vdListNext;
 	vd->d.openFile = _vdOpenFile;
+	vd->d.openDir = _vdOpenDir;
 	vd->path = strdup(path);
 	vd->de = de;
 
@@ -95,6 +97,23 @@ struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode) {
 	struct VFile* file = VFileOpen(combined, mode);
 	free(combined);
 	return file;
+}
+
+struct VDir* _vdOpenDir(struct VDir* vd, const char* path) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vdde->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+
+	struct VDir* vd2 = VDirOpen(combined);
+	if (!vd2) {
+		vd2 = VDirOpenArchive(combined);
+	}
+	free(combined);
+	return vd2;
 }
 
 const char* _vdeName(struct VDirEntry* vde) {
