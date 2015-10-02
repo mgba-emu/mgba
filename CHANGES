@@ -32,6 +32,7 @@ Misc:
  - Qt: Disable menu items in multiplayer that don't make sense to have enabled
  - Qt: Dropping multiplayer windows works more cleanly now
  - GBA BIOS: Implement RegisterRamReset for SIO registers
+ - GBA: Additional savestate sanity checks
 
 0.3.0: (2015-08-16)
 Features:
