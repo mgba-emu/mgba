@@ -99,6 +99,17 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank is negative");
 		error = true;
 	}
+	if (state->video.nextEvent < state->cpu.cycles) {
+		uint16_t dispstat = state->io[REG_DISPSTAT >> 1];
+		if (GBARegisterDISPSTATIsInHblank(dispstat) && state->video.eventDiff + state->cpu.cycles > state->video.nextHblank) {
+			GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank will be negative");
+			error = true;
+		}
+		if (!GBARegisterDISPSTATIsInHblank(dispstat) && state->video.eventDiff + state->cpu.cycles > state->video.lastHblank + VIDEO_HBLANK_LENGTH) {
+			GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank will be negative");
+			error = true;
+		}
+	}
 	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
 		error = true;
