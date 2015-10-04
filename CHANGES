@@ -14,6 +14,7 @@ Bugfixes:
  - GBA Video: Fix edge case with sprite blend modes and semitransparency
  - GBA Video: Fix objwin and blending interaction on sprites
  - GBA Video: Fix OBJ semitransparency improperly interacting with other blending ops
+ - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
 Misc:
  - Qt: Remove useless help icons in dialogs
  - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
