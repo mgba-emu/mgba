@@ -16,6 +16,7 @@ Bugfixes:
  - GBA Video: Fix objwin and blending interaction on sprites
  - GBA Video: Fix OBJ semitransparency improperly interacting with other blending ops
  - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
+ - GBA Memory: Fix bad BIOS Load16 on big endian
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
