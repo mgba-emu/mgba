@@ -89,10 +89,10 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 	int i;
 	for (i = 0; i < 128; ++i) {
-		video->oam.raw[i * 4] = 0x0200;
-		video->oam.raw[i * 4 + 1] = 0x0000;
-		video->oam.raw[i * 4 + 2] = 0x0000;
-		video->oam.raw[i * 4 + 3] = 0x0000;
+		STORE_16(0x0200, i * 8 + 0, video->oam.raw);
+		STORE_16(0x0000, i * 8 + 2, video->oam.raw);
+		STORE_16(0x0000, i * 8 + 4, video->oam.raw);
+		STORE_16(0x0000, i * 8 + 6, video->oam.raw);
 	}
 
 	video->renderer->deinit(video->renderer);
@@ -283,12 +283,15 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
+	uint16_t value;
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {
-		GBAStore16(video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
+		LOAD_16(value, i, state->oam);
+		GBAStore16(video->p->cpu, BASE_OAM | i, value, 0);
 	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+		LOAD_16(value, i, state->pram);
+		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
 	}
 	video->nextEvent = state->video.nextEvent;
 	video->eventDiff = state->video.eventDiff;
