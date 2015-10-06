@@ -91,65 +91,8 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
-	if (state->cpu.nextEvent < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: Next event is negative");
-		error = true;
-	}
 	if (state->video.eventDiff < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
-		error = true;
-	}
-	if (state->video.nextHblank - state->video.eventDiff < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank is negative");
-		error = true;
-	}
-	if (state->video.nextEvent < state->cpu.cycles) {
-		uint16_t dispstat = state->io[REG_DISPSTAT >> 1];
-		if (GBARegisterDISPSTATIsInHblank(dispstat) && state->video.eventDiff + state->cpu.cycles > state->video.nextHblank) {
-			GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank will be negative");
-			error = true;
-		}
-		if (!GBARegisterDISPSTATIsInHblank(dispstat) && state->video.eventDiff + state->cpu.cycles > state->video.lastHblank + VIDEO_HBLANK_LENGTH) {
-			GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: nextHblank will be negative");
-			error = true;
-		}
-	}
-	if (state->timers[0].overflowInterval < 0 || state->timers[1].overflowInterval < 0 || state->timers[2].overflowInterval < 0 || state->timers[3].overflowInterval < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: overflowInterval is negative");
-		error = true;
-	}
-	if (state->timers[0].nextEvent < 0 || state->timers[1].nextEvent < 0 || state->timers[2].nextEvent < 0 || state->timers[3].nextEvent < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: timer nextEvent is negative");
-		error = true;
-	}
-	if (state->dma[0].nextEvent < 0 || state->dma[1].nextEvent < 0 || state->dma[2].nextEvent < 0 || state->dma[3].nextEvent < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: DMA nextEvent is negative");
-		error = true;
-	}
-	if (state->audio.eventDiff < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio eventDiff is negative");
-		error = true;
-	}
-	if (!state->audio.ch1Dead && (state->audio.ch1.envelopeNextStep < 0 ||
-		                          state->audio.ch1.waveNextStep < 0 ||
-		                          state->audio.ch1.sweepNextStep < 0 ||
-		                          state->audio.ch1.nextEvent < 0)) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 1 register is negative");
-		error = true;
-	}
-	if (!state->audio.ch2Dead && (state->audio.ch2.envelopeNextStep < 0 ||
-		                          state->audio.ch2.waveNextStep < 0 ||
-		                          state->audio.ch2.nextEvent < 0)) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 2 register is negative");
-		error = true;
-	}
-	if (state->audio.ch3.nextEvent < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 3 register is negative");
-		error = true;
-	}
-	if (!state->audio.ch4Dead && (state->audio.ch4.envelopeNextStep < 0 ||
-		                          state->audio.ch4.nextEvent < 0)) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: audio channel 4 register is negative");
 		error = true;
 	}
 	int region = (state->cpu.gprs[ARM_PC] >> BASE_OFFSET);
