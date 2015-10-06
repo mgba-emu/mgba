@@ -36,6 +36,7 @@ Misc:
  - GBA BIOS: Implement RegisterRamReset for SIO registers
  - GBA: Additional savestate sanity checks
  - All: Reset next event to cycles instead of zero to interrupt
+ - GBA Video: Remove lastHblank, as it is implied
 
 0.3.0: (2015-08-16)
 Features:

@@ -71,7 +71,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 	}
 	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
-	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
 	video->nextEvent = video->nextHblank;
 	video->eventDiff = 0;
@@ -120,7 +119,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 	video->eventDiff += cycles;
 	if (video->nextEvent <= 0) {
 		int32_t lastEvent = video->nextEvent;
-		video->lastHblank -= video->eventDiff;
 		video->nextHblank -= video->eventDiff;
 		video->nextHblankIRQ -= video->eventDiff;
 		video->nextVcounterIRQ -= video->eventDiff;
@@ -178,8 +176,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 		} else {
 			// Begin Hblank
 			dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-			video->lastHblank = video->nextHblank;
-			video->nextEvent = video->lastHblank + VIDEO_HBLANK_LENGTH;
+			video->nextEvent = video->nextHblank + VIDEO_HBLANK_LENGTH;
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
 			video->nextHblankIRQ = video->nextHblank;
 
@@ -278,7 +275,7 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
 	state->video.nextEvent = video->nextEvent;
 	state->video.eventDiff = video->eventDiff;
-	state->video.lastHblank = video->lastHblank;
+	state->video.lastHblank = video->nextHblank - VIDEO_HBLANK_LENGTH;
 	state->video.nextHblank = video->nextHblank;
 	state->video.nextHblankIRQ = video->nextHblankIRQ;
 	state->video.nextVblankIRQ = video->nextVblankIRQ;
@@ -300,7 +297,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	}
 	video->nextEvent = state->video.nextEvent;
 	video->eventDiff = state->video.eventDiff;
-	video->lastHblank = state->video.lastHblank;
 	video->nextHblank = state->video.nextHblank;
 	video->nextHblankIRQ = state->video.nextHblankIRQ;
 	video->nextVblankIRQ = state->video.nextVblankIRQ;
