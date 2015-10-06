@@ -35,6 +35,7 @@ Misc:
  - Qt: Dropping multiplayer windows works more cleanly now
  - GBA BIOS: Implement RegisterRamReset for SIO registers
  - GBA: Additional savestate sanity checks
+ - All: Reset next event to cycles instead of zero to interrupt
 
 0.3.0: (2015-08-16)
 Features:
