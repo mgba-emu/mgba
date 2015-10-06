@@ -37,6 +37,7 @@ Misc:
  - GBA: Additional savestate sanity checks
  - All: Reset next event to cycles instead of zero to interrupt
  - GBA Video: Remove lastHblank, as it is implied
+ - GBA: Check for cycle count being too high
 
 0.3.0: (2015-08-16)
 Features:
