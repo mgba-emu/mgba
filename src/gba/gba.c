@@ -552,12 +552,12 @@ void GBATestIRQ(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = 1;
-		gba->cpu->nextEvent = 0;
+		gba->cpu->nextEvent = gba->cpu->cycles;
 	}
 }
 
 void GBAHalt(struct GBA* gba) {
-	gba->cpu->nextEvent = 0;
+	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->cpu->halted = 1;
 }
 
@@ -565,7 +565,7 @@ void GBAStop(struct GBA* gba) {
 	if (!gba->stopCallback) {
 		return;
 	}
-	gba->cpu->nextEvent = 0;
+	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->stopCallback->stop(gba->stopCallback);
 }
 
