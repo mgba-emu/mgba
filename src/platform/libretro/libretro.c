@@ -193,7 +193,11 @@ void retro_init(void) {
 	}
 
 	GBAVideoSoftwareRendererCreate(&renderer);
+#ifdef _3DS
+   renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL, 0x80);
+#else
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+#endif
 	renderer.outputBufferStride = 256;
 	context.renderer = &renderer.d;
 
@@ -207,7 +211,11 @@ void retro_init(void) {
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+#ifdef _3DS
+   linearFree(renderer.outputBuffer);
+#else
 	free(renderer.outputBuffer);
+#endif
 }
 
 void retro_run(void) {
