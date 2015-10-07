@@ -15,6 +15,7 @@
 struct GBAConfig {
 	struct Configuration configTable;
 	struct Configuration defaultsTable;
+	struct Configuration overridesTable;
 	char* port;
 };
 
@@ -72,6 +73,11 @@ void GBAConfigSetDefaultValue(struct GBAConfig*, const char* key, const char* va
 void GBAConfigSetDefaultIntValue(struct GBAConfig*, const char* key, int value);
 void GBAConfigSetDefaultUIntValue(struct GBAConfig*, const char* key, unsigned value);
 void GBAConfigSetDefaultFloatValue(struct GBAConfig*, const char* key, float value);
+
+void GBAConfigSetOverrideValue(struct GBAConfig*, const char* key, const char* value);
+void GBAConfigSetOverrideIntValue(struct GBAConfig*, const char* key, int value);
+void GBAConfigSetOverrideUIntValue(struct GBAConfig*, const char* key, unsigned value);
+void GBAConfigSetOverrideFloatValue(struct GBAConfig*, const char* key, float value);
 
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts);
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts);

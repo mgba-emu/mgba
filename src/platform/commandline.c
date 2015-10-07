@@ -71,7 +71,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
 		switch (ch) {
 		case 'b':
-			GBAConfigSetDefaultValue(config, "bios", optarg);
+			GBAConfigSetOverrideValue(config, "bios", optarg);
 			break;
 		case 'c':
 			opts->cheatsFile = strdup(optarg);
@@ -99,13 +99,13 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 			opts->showHelp = true;
 			break;
 		case 'l':
-			GBAConfigSetDefaultValue(config, "logLevel", optarg);
+			GBAConfigSetOverrideValue(config, "logLevel", optarg);
 			break;
 		case 'p':
 			opts->patch = strdup(optarg);
 			break;
 		case 's':
-			GBAConfigSetDefaultValue(config, "frameskip", optarg);
+			GBAConfigSetOverrideValue(config, "frameskip", optarg);
 			break;
 		case 'v':
 			opts->movie = strdup(optarg);
@@ -154,7 +154,7 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 	switch (option) {
 	case 'f':
 		graphicsOpts->fullscreen = true;
-		GBAConfigSetDefaultIntValue(config, "fullscreen", 1);
+		GBAConfigSetOverrideIntValue(config, "fullscreen", 1);
 		return true;
 	case '1':
 	case '2':
@@ -166,8 +166,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 			return false;
 		}
 		graphicsOpts->multiplier = option - '0';
-		GBAConfigSetDefaultIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
-		GBAConfigSetDefaultIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
+		GBAConfigSetOverrideIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
+		GBAConfigSetOverrideIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
 		return true;
 	default:
 		return false;
