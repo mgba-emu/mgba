@@ -535,12 +535,12 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				value = ((uint8_t*) memory->bios)[address];
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
-				value = ((uint8_t*) &memory->biosPrefetch)[address & 3];
+				value = (memory->biosPrefetch >> ((address & 3) * 8)) & 0xFF;
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 			LOAD_BAD;
-			value = ((uint8_t*) &value)[address & 3];
+			value = (value >> ((address & 3) * 8)) & 0xFF;
 		}
 		break;
 	case REGION_WORKING_RAM:
@@ -602,7 +602,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 		LOAD_BAD;
-		value = ((uint8_t*) &value)[address & 3];
+		value = (value >> ((address & 3) * 8)) & 0xFF;
 		break;
 	}
 
