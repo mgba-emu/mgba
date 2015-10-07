@@ -165,6 +165,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBAFrameEnded(video->p);
 				--video->frameskipCounter;
 				if (video->frameskipCounter < 0) {
+					GBASyncPostFrame(video->p->sync);
 					video->frameskipCounter = video->frameskip;
 				}
 				++video->frameCounter;
