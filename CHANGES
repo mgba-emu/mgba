@@ -15,6 +15,8 @@ Bugfixes:
  - GBA Video: Fix edge case with sprite blend modes and semitransparency
  - GBA Video: Fix objwin and blending interaction on sprites
  - GBA Video: Fix OBJ semitransparency improperly interacting with other blending ops
+ - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
+ - GBA Memory: Fix bad BIOS Load16 on big endian
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
@@ -32,6 +34,7 @@ Misc:
  - Qt: Disable menu items in multiplayer that don't make sense to have enabled
  - Qt: Dropping multiplayer windows works more cleanly now
  - GBA BIOS: Implement RegisterRamReset for SIO registers
+ - GBA: Additional savestate sanity checks
 
 0.3.0: (2015-08-16)
 Features:
