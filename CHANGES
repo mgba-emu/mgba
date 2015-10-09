@@ -18,6 +18,7 @@ Bugfixes:
  - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
  - GBA Memory: Fix bad BIOS Load16 on big endian
  - GBA Memory: Fix bad Load8 on big endian
+ - ARM7: Fix instruction decoding of Thumb shifts
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
