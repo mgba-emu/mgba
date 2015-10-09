@@ -17,6 +17,7 @@ Bugfixes:
  - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
  - GBA Memory: Fix bad BIOS Load16 on big endian
  - GBA Memory: Fix bad Load8 on big endian
+ - ARM7: Fix instruction decoding of Thumb shifts
 Misc:
  - Qt: Remove useless help icons in dialogs
  - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
