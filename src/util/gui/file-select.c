@@ -116,23 +116,9 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 		}
 		struct VDir* vd = dir->openDir(dir, GUIMenuItemListGetPointer(currentFiles, item)->title);
 		if (vd) {
-			bool success = false;
-			struct VDirEntry* de;
-			while ((de = vd->listNext(vd)) && !success) {
-				struct VFile* vf2 = vd->openFile(vd, de->name(de), O_RDONLY);
-				if (!vf2) {
-					continue;
-				}
-				if (filter(vf2)) {
-					success = true;
-				}
-				vf2->close(vf2);
-			}
 			vd->close(vd);
-			if (success) {
-				++item;
-				continue;
-			}
+			++item;
+			continue;
 		}
 		struct VFile* vf = dir->openFile(dir, GUIMenuItemListGetPointer(currentFiles, item)->title, O_RDONLY);
 		if (vf) {
