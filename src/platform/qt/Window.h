@@ -84,6 +84,7 @@ public slots:
 
 	void openPaletteWindow();
 	void openMemoryWindow();
+	void openIOViewer();
 
 	void openAboutScreen();
 

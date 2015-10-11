@@ -1,4 +1,6 @@
 0.4.0: (Future)
+Features:
+ - I/O viewer
 Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
  - Qt: Fix install path of XDG desktop file with DESTDIR
