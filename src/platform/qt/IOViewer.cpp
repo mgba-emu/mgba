@@ -26,7 +26,7 @@ IOViewer::IOViewer(GameController* controller, QWidget* parent)
 		if (!reg) {
 			continue;
 		}
-		m_ui.regSelect->addItem(QString::asprintf("0x0400%04X: %s", i << 1, reg), i << 1);
+		m_ui.regSelect->addItem("0x0400" + QString("%1: %2").arg(i << 1, 4, 16, QChar('0')).toUpper().arg(reg), i << 1);
 	}
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -64,7 +64,7 @@ void IOViewer::update() {
 	}
 	m_controller->threadContinue();
 
-	m_ui.regValue->setText(QString::asprintf("0x%04X", m_value));
+	m_ui.regValue->setText("0x" + QString("%1").arg(m_value, 4, 16, QChar('0')).toUpper());
 	bool signalsBlocked;
 	signalsBlocked = m_ui.b0->blockSignals(true);
 	m_ui.b0->setChecked(m_value & 0x0001 ? Qt::Checked : Qt::Unchecked);
