@@ -134,7 +134,7 @@ void IOViewer::bitFlipped() {
 	m_value |= m_ui.bD->isChecked() << 0xD;
 	m_value |= m_ui.bE->isChecked() << 0xE;
 	m_value |= m_ui.bF->isChecked() << 0xF;
-	m_ui.regValue->setText(QString::asprintf("0x%04X", m_value));
+	m_ui.regValue->setText("0x" + QString("%1").arg(m_value, 4, 16, QChar('0')).toUpper());
 }
 
 void IOViewer::writeback() {
