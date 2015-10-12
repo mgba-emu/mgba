@@ -92,13 +92,13 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 		}
 
 		if (GBASyncWaitFrameStart(&context->sync)) {
-			int arg = 0;
-			ioctl(renderer->fb, FBIO_WAITFORVSYNC, &arg);
-
 			struct fb_var_screeninfo info;
 			ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
 			info.yoffset = VIDEO_VERTICAL_PIXELS * renderer->odd;
 			ioctl(renderer->fb, FBIOPAN_DISPLAY, &info);
+
+			int arg = 0;
+			ioctl(renderer->fb, FBIO_WAITFORVSYNC, &arg);
 
 			renderer->odd = !renderer->odd;
 			renderer->d.outputBuffer = renderer->base[renderer->odd];
