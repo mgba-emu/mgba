@@ -42,6 +42,7 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		return false;
 	}
 	context->samples = context->obtainedSpec.samples;
+	context->gba = 0;
 
 	if (threadContext) {
 		context->thread = threadContext;
