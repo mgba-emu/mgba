@@ -7,32 +7,60 @@
 
 #include "gba/gba.h"
 
-#define DRAW_BACKGROUND_MODE_2(BLEND, OBJWIN) \
-	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
-		x += background->dx; \
-		y += background->dy; \
-		\
+#define MODE_2_COORD_OVERFLOW \
+	localX = x & (sizeAdjusted - 1); \
+	localY = y & (sizeAdjusted - 1); \
+
+#define MODE_2_COORD_NO_OVERFLOW \
+	if ((x | y) & ~(sizeAdjusted - 1)) { \
+		continue; \
+	} else { \
+		localX = x; \
+		localY = y; \
+	}
+
+#define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
-			if (background->overflow) { \
-				localX = x & (sizeAdjusted - 1); \
-				localY = y & (sizeAdjusted - 1); \
-			} else if ((x | y) & ~(sizeAdjusted - 1)) { \
-				continue; \
-			} else { \
-				localX = x; \
-				localY = y; \
-			} \
+			COORD \
 			mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
 			pixelData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
 			\
 			mosaicWait = mosaicH; \
 		} else { \
 			--mosaicWait; \
-		} \
+		}
+
+#define MODE_2_NO_MOSAIC(COORD) \
+	COORD \
+	mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
+	pixelData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
+
+
+#define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
+	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
+		x += background->dx; \
+		y += background->dy; \
+		\
+		MOSAIC(COORD) \
 		\
 		uint32_t current = *pixel; \
 		if (pixelData && IS_WRITABLE(current)) {	\
 			COMPOSITE_256_ ## OBJWIN (BLEND); \
+		} \
+	}
+
+#define DRAW_BACKGROUND_MODE_2(BLEND, OBJWIN) \
+	if (background->overflow) { \
+		if (mosaicH > 1) { \
+			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
+		} else { \
+			MODE_2_LOOP(MODE_2_NO_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
+		} \
+	} else { \
+		if (mosaicH > 1) { \
+			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
+		} else { \
+			MODE_2_LOOP(MODE_2_NO_MOSAIC, MODE_2_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
 		} \
 	}
 
