@@ -41,19 +41,23 @@ bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContex
 		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
 		return false;
 	}
-	context->thread = threadContext;
 	context->samples = context->obtainedSpec.samples;
-	float ratio = GBAAudioCalculateRatio(0x8000, threadContext->fpsTarget, 44100);
-	threadContext->audioBuffers = context->samples / ratio;
-	if (context->samples > threadContext->audioBuffers) {
-		threadContext->audioBuffers = context->samples * 2;
-	}
+
+	if (threadContext) {
+		context->thread = threadContext;
+		float ratio = GBAAudioCalculateRatio(0x8000, threadContext->fpsTarget, 44100);
+		threadContext->audioBuffers = context->samples / ratio;
+		if (context->samples > threadContext->audioBuffers) {
+			threadContext->audioBuffers = context->samples * 2;
+		}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_PauseAudioDevice(context->deviceId, 0);
+		SDL_PauseAudioDevice(context->deviceId, 0);
 #else
-	SDL_PauseAudio(0);
+		SDL_PauseAudio(0);
 #endif
+	}
+
 	return true;
 }
 
@@ -89,12 +93,15 @@ void GBASDLResumeAudio(struct GBASDLAudio* context) {
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBASDLAudio* audioContext = context;
-	if (!context || !audioContext->thread || !audioContext->thread->gba) {
+	if (!context || (!audioContext->gba && (!audioContext->thread || !audioContext->thread->gba))) {
 		memset(data, 0, len);
 		return;
 	}
+	if (!audioContext->gba) {
+		audioContext->gba = audioContext->thread->gba;
+	}
 #if RESAMPLE_LIBRARY == RESAMPLE_NN
-	audioContext->ratio = GBAAudioCalculateRatio(audioContext->thread->gba->audio.sampleRate, audioContext->thread->fpsTarget, audioContext->obtainedSpec.freq);
+	audioContext->ratio = GBAAudioCalculateRatio(audioContext->gba->audio.sampleRate, audioContext->fpsTarget, audioContext->obtainedSpec.freq);
 	if (audioContext->ratio == INFINITY) {
 		memset(data, 0, len);
 		return;
@@ -102,23 +109,29 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBAStereoSample* ssamples = (struct GBAStereoSample*) data;
 	len /= 2 * audioContext->obtainedSpec.channels;
 	if (audioContext->obtainedSpec.channels == 2) {
-		GBAAudioResampleNN(&audioContext->thread->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
+		GBAAudioResampleNN(&audioContext->gba->audio, audioContext->ratio, &audioContext->drift, ssamples, len);
 	}
 #elif RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
-	GBASyncLockAudio(&audioContext->thread->sync);
-	blip_set_rates(audioContext->thread->gba->audio.left, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
-	blip_set_rates(audioContext->thread->gba->audio.right, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
+	double fauxClock = 1;
+	if (audioContext->thread) {
+		GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
+		GBASyncLockAudio(&audioContext->thread->sync);
+	}
+	blip_set_rates(audioContext->gba->audio.left, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
+	blip_set_rates(audioContext->gba->audio.right, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);
 	len /= 2 * audioContext->obtainedSpec.channels;
-	int available = blip_samples_avail(audioContext->thread->gba->audio.left);
+	int available = blip_samples_avail(audioContext->gba->audio.left);
 	if (available > len) {
 		available = len;
 	}
-	blip_read_samples(audioContext->thread->gba->audio.left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
+	blip_read_samples(audioContext->gba->audio.left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
 	if (audioContext->obtainedSpec.channels == 2) {
-		blip_read_samples(audioContext->thread->gba->audio.right, ((short*) data) + 1, available, 1);
+		blip_read_samples(audioContext->gba->audio.right, ((short*) data) + 1, available, 1);
 	}
-	GBASyncConsumeAudio(&audioContext->thread->sync);
+
+	if (audioContext->thread) {
+		GBASyncConsumeAudio(&audioContext->thread->sync);
+	}
 	if (available < len) {
 		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, (len - available) * audioContext->obtainedSpec.channels * sizeof(short));
 	}

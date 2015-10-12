@@ -41,7 +41,8 @@ Misc:
  - All: Reset next event to cycles instead of zero to interrupt
  - GBA Video: Remove lastHblank, as it is implied
  - GBA: Check for cycle count being too high
- - GBA Config: Add "override" layer for better one-time configuration`
+ - GBA Config: Add "override" layer for better one-time configuration
+ - SDL: Allow GBASDLAudio to be used without a thread context
 
 0.3.0: (2015-08-16)
 Features:
