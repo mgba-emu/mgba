@@ -12,17 +12,27 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-static bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer);
+#ifndef FBIO_WAITFORVSYNC
+#define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
+#endif
+
+static bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
 
 void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLGLInit;
-	renderer->deinit = GBASDLGLDeinit;
-	renderer->runloop = GBASDLGLRunloop;
+	renderer->init = GBASDLInit;
+	renderer->deinit = GBASDLDeinit;
+	renderer->runloop = GBASDLRunloop;
 }
 
-bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLInit;
+	renderer->deinit = GBASDLDeinit;
+	renderer->runloop = GBASDLRunloop;
+}
+
+bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	SDL_SetVideoMode(800, 480, 16, SDL_FULLSCREEN);
 
 	renderer->odd = 0;
@@ -73,7 +83,7 @@ bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
 
 	while (context->state < THREAD_EXITING) {
@@ -97,7 +107,7 @@ void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 	}
 }
 
-void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
 	munmap(renderer->base[0], VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 
 	struct omapfb_plane_info plane;
