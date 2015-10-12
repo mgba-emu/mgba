@@ -7,6 +7,7 @@
 #define QGBA_IOVIEWER
 
 #include <QDialog>
+#include <QList>
 
 #include "ui_IOViewer.h"
 
@@ -18,10 +19,25 @@ class IOViewer : public QDialog {
 Q_OBJECT
 
 public:
+	struct RegisterItem {
+		RegisterItem(const QString& description, uint start, uint size = 1, bool readonly = false)
+			: description(description)
+			, start(start)
+			, size(size)
+			, readonly(readonly) {}
+		uint start;
+		uint size;
+		bool readonly;
+		QString description;
+	};
+	typedef QList<RegisterItem> RegisterDescription;
+
 	IOViewer(GameController* controller, QWidget* parent = nullptr);
 
+	static const QList<RegisterDescription>& registerDescriptions();
+
 public slots:
-	void update();
+	void updateRegister();
 	void selectRegister(unsigned address);
 
 private slots:
@@ -31,10 +47,13 @@ private slots:
 	void selectRegister();
 
 private:
+	static QList<RegisterDescription> s_registers;
 	Ui::IOViewer m_ui;
 
 	unsigned m_register;
 	uint16_t m_value;
+
+	QCheckBox* m_b[16];
 
 	GameController* m_controller;
 };
