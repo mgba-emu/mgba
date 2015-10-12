@@ -12,7 +12,17 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+static bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer);
+
+void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLGLInit;
+	renderer->deinit = GBASDLGLDeinit;
+	renderer->runloop = GBASDLGLRunloop;
+}
+
+bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 	SDL_SetVideoMode(800, 480, 16, SDL_FULLSCREEN);
 
 	renderer->odd = 0;
@@ -63,7 +73,7 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
 
 	while (context->state < THREAD_EXITING) {
@@ -87,7 +97,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 	}
 }
 
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
 	munmap(renderer->base[0], VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 
 	struct omapfb_plane_info plane;
