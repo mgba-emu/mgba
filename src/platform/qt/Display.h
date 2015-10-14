@@ -52,7 +52,7 @@ public slots:
 	void showMessage(const QString& message);
 
 protected:
-	void resizeEvent(QResizeEvent*);
+	virtual void resizeEvent(QResizeEvent*) override;
 	virtual void mouseMoveEvent(QMouseEvent*) override;
 
 	MessagePainter* messagePainter() { return &m_messagePainter; }
