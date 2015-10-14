@@ -284,7 +284,7 @@ endif
 
 include $(BUILD_DIR)/Makefile.common
 
-OBJS := $(SOURCES_C:.c=.o)
+OBJS := $(SOURCES_C:.c=.o) $(SOURCES_ASM:.S=.o)
 
 DEFINES += $(PLATFORM_DEFINES) $(RETRODEFS)
 
@@ -294,6 +294,9 @@ LIBS :=
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
+%.o: %.S
+	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
+
 
 ifeq ($(platform), theos_ios)
 COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCLUDES) -I$(THEOS_INCLUDE_PATH) -Wno-error
