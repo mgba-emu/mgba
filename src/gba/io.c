@@ -730,7 +730,7 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
 		}
 
-		if (gba->timers[i].enable) {
+		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
 			gba->timersEnabled |= 1 << i;
 		}
 	}
