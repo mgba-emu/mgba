@@ -48,13 +48,13 @@ typedef intptr_t ssize_t;
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
-	void* _ptr = (ARR); \
+	const void* _ptr = (ARR); \
 	__asm__("lwbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define LOAD_16LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
-	void* _ptr = (ARR); \
+	const void* _ptr = (ARR); \
 	__asm__("lhbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
