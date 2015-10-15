@@ -712,20 +712,27 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
 		if (_isSpecialRegister[i >> 1]) {
-			gba->memory.io[i >> 1] = state->io[i >> 1];
+			LOAD_16(gba->memory.io[i >> 1], i, state->io);
 		} else if (_isValidRegister[i >> 1]) {
-			GBAIOWrite(gba, i, state->io[i >> 1]);
+			uint16_t reg;
+			LOAD_16(reg, i, state->io);
+			GBAIOWrite(gba, i, reg);
 		}
 	}
 
 	gba->timersEnabled = 0;
-	memcpy(gba->timers, state->timers, sizeof(gba->timers));
 	for (i = 0; i < 4; ++i) {
-		gba->memory.dma[i].reg = state->io[(REG_DMA0CNT_HI + i * 12) >> 1];
-		gba->memory.dma[i].nextSource = state->dma[i].nextSource;
-		gba->memory.dma[i].nextDest = state->dma[i].nextDest;
-		gba->memory.dma[i].nextCount = state->dma[i].nextCount;
-		gba->memory.dma[i].nextEvent = state->dma[i].nextEvent;
+		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
+		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
+		LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
+		LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
+		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
+		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
+		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
+		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
+		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
+		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
+		LOAD_32(gba->memory.dma[i].nextEvent, 0, &state->dma[i].nextEvent);
 		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
 			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
 		}
