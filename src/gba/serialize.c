@@ -63,13 +63,19 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	bool error = false;
-	if (state->versionMagic != GBA_SAVESTATE_MAGIC) {
-		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate");
+	int32_t check;
+	uint32_t ucheck;
+	LOAD_32(ucheck, 0, &state->versionMagic);
+	if (ucheck != GBA_SAVESTATE_MAGIC) {
+		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC, ucheck);
 		error = true;
 	}
-	if (state->biosChecksum != gba->biosChecksum) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS");
-		if (state->cpu.gprs[ARM_PC] < SIZE_BIOS && state->cpu.gprs[ARM_PC] >= 0x20) {
+	LOAD_32(ucheck, 0, &state->biosChecksum);
+	if (ucheck != gba->biosChecksum) {
+		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
+		uint32_t pc;
+		LOAD_32(pc, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
+		if (pc < SIZE_BIOS && pc >= 0x20) {
 			error = true;
 		}
 	}
@@ -80,46 +86,60 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a game, but no game loaded");
 		error = true;
 	}
-	if (state->romCrc32 != gba->romCrc32) {
+	LOAD_32(ucheck, 0, &state->romCrc32);
+	if (ucheck != gba->romCrc32) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
 	}
-	if (state->cpu.cycles < 0) {
+	LOAD_32(check, 0, &state->cpu.cycles);
+	if (check < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
-	if (state->cpu.cycles >= (int32_t) GBA_ARM7TDMI_FREQUENCY) {
+	if (check >= (int32_t) GBA_ARM7TDMI_FREQUENCY) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
-	if (state->video.eventDiff < 0) {
+	LOAD_32(check, 0, &state->video.eventDiff);
+	if (check < 0) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
 	}
-	int region = (state->cpu.gprs[ARM_PC] >> BASE_OFFSET);
-	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((state->cpu.gprs[ARM_PC] - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
+	LOAD_32(check, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
+	int region = (check >> BASE_OFFSET);
+	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((check - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
 		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
 		error = true;
 	}
 	if (error) {
 		return false;
 	}
-	memcpy(gba->cpu->gprs, state->cpu.gprs, sizeof(gba->cpu->gprs));
-	gba->cpu->cpsr = state->cpu.cpsr;
-	gba->cpu->spsr = state->cpu.spsr;
-	gba->cpu->cycles = state->cpu.cycles;
-	gba->cpu->nextEvent = state->cpu.nextEvent;
-	memcpy(gba->cpu->bankedRegisters, state->cpu.bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(gba->cpu->bankedSPSRs, state->cpu.bankedSPSRs, 6 * sizeof(int32_t));
+	size_t i;
+	for (i = 0; i < 16; ++i) {
+		LOAD_32(gba->cpu->gprs[i], i * sizeof(gba->cpu->gprs[0]), state->cpu.gprs);
+	}
+	LOAD_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
+	LOAD_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
+	LOAD_32(gba->cpu->cycles, 0, &state->cpu.cycles);
+	LOAD_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
+	for (i = 0; i < 6; ++i) {
+		int j;
+		for (j = 0; j < 7; ++j) {
+			LOAD_32(gba->cpu->bankedRegisters[i][j], (i * 7 + j) * sizeof(gba->cpu->bankedRegisters[0][0]), state->cpu.bankedRegisters);
+		}
+		LOAD_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
+	}
 	gba->cpu->privilegeMode = gba->cpu->cpsr.priv;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {
-		gba->memory.biosPrefetch = state->biosPrefetch;
+		LOAD_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);
 	}
 	if (gba->cpu->cpsr.t) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
-			gba->cpu->prefetch[0] = state->cpuPrefetch[0] & 0xFFFF;
-			gba->cpu->prefetch[1] = state->cpuPrefetch[1] & 0xFFFF;
+			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
+			LOAD_32(gba->cpu->prefetch[1], 2, state->cpuPrefetch);
+			gba->cpu->prefetch[0] &= 0xFFFF;
+			gba->cpu->prefetch[1] &= 0xFFFF;
 		} else {
 			// Maintain backwards compat
 			LOAD_16(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
@@ -128,8 +148,8 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	} else {
 		gba->cpu->executionMode = MODE_ARM;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
-			gba->cpu->prefetch[0] = state->cpuPrefetch[0];
-			gba->cpu->prefetch[1] = state->cpuPrefetch[1];
+			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
+			LOAD_32(gba->cpu->prefetch[1], 2, state->cpuPrefetch);
 		} else {
 			// Maintain backwards compat
 			LOAD_32(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
