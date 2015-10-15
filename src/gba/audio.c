@@ -848,18 +848,20 @@ static void _sample(struct GBAAudio* audio) {
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
-	state->audio.ch1Volume = audio->ch1.envelope.currentVolume;
-	state->audio.ch1Dead = audio->ch1.envelope.dead;
-	state->audio.ch1Hi = audio->ch1.control.hi;
+	state->audio.flags = 0;
+
+	state->audio.flags = GBASerializedAudioFlagsSetCh1Volume(state->audio.flags, audio->ch1.envelope.currentVolume);
+	state->audio.flags = GBASerializedAudioFlagsSetCh1Dead(state->audio.flags, audio->ch1.envelope.dead);
+	state->audio.flags = GBASerializedAudioFlagsSetCh1Hi(state->audio.flags, audio->ch1.control.hi);
 	state->audio.ch1.envelopeNextStep = audio->ch1.envelope.nextStep;
 	state->audio.ch1.waveNextStep = audio->ch1.control.nextStep;
 	state->audio.ch1.sweepNextStep = audio->ch1.nextSweep;
 	state->audio.ch1.endTime = audio->ch1.control.endTime;
 	state->audio.ch1.nextEvent = audio->nextCh1;
 
-	state->audio.ch2Volume = audio->ch2.envelope.currentVolume;
-	state->audio.ch2Dead = audio->ch2.envelope.dead;
-	state->audio.ch2Hi = audio->ch2.control.hi;
+	state->audio.flags = GBASerializedAudioFlagsSetCh2Volume(state->audio.flags, audio->ch2.envelope.currentVolume);
+	state->audio.flags = GBASerializedAudioFlagsSetCh2Dead(state->audio.flags, audio->ch2.envelope.dead);
+	state->audio.flags = GBASerializedAudioFlagsSetCh2Hi(state->audio.flags, audio->ch2.control.hi);
 	state->audio.ch2.envelopeNextStep = audio->ch2.envelope.nextStep;
 	state->audio.ch2.waveNextStep = audio->ch2.control.nextStep;
 	state->audio.ch2.endTime = audio->ch2.control.endTime;
@@ -869,8 +871,8 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	state->audio.ch3.endTime = audio->ch3.control.endTime;
 	state->audio.ch3.nextEvent = audio->nextCh3;
 
-	state->audio.ch4Volume = audio->ch4.envelope.currentVolume;
-	state->audio.ch4Dead = audio->ch4.envelope.dead;
+	state->audio.flags = GBASerializedAudioFlagsSetCh4Volume(state->audio.flags, audio->ch4.envelope.currentVolume);
+	state->audio.flags = GBASerializedAudioFlagsSetCh4Dead(state->audio.flags, audio->ch4.envelope.dead);
 	state->audio.ch4.envelopeNextStep = audio->ch4.envelope.nextStep;
 	state->audio.ch4.lfsr = audio->ch4.lfsr;
 	state->audio.ch4.endTime = audio->ch4.control.endTime;
@@ -886,37 +888,41 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 }
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
-	audio->ch1.envelope.currentVolume = state->audio.ch1Volume;
-	audio->ch1.envelope.dead = state->audio.ch1Dead;
-	audio->ch1.control.hi = state->audio.ch1Hi;
-	audio->ch1.envelope.nextStep = state->audio.ch1.envelopeNextStep;
-	audio->ch1.control.nextStep = state->audio.ch1.waveNextStep;
-	audio->ch1.nextSweep = state->audio.ch1.sweepNextStep;
-	audio->ch1.control.endTime = state->audio.ch1.endTime;
-	audio->nextCh1 = state->audio.ch1.nextEvent;
+	uint32_t flags;
+	LOAD_32(flags, 0, &state->audio.flags);
+	audio->ch1.envelope.currentVolume = GBASerializedAudioFlagsGetCh1Volume(flags);
+	audio->ch1.envelope.dead = GBASerializedAudioFlagsGetCh1Dead(flags);
+	audio->ch1.control.hi = GBASerializedAudioFlagsGetCh1Hi(flags);
+	LOAD_32(audio->ch1.envelope.nextStep, 0, &state->audio.ch1.envelopeNextStep);
+	LOAD_32(audio->ch1.control.nextStep, 0, &state->audio.ch1.waveNextStep);
+	LOAD_32(audio->ch1.nextSweep, 0, &state->audio.ch1.sweepNextStep);
+	LOAD_32(audio->ch1.control.endTime, 0, &state->audio.ch1.endTime);
+	LOAD_32(audio->nextCh1, 0, &state->audio.ch1.nextEvent);
 
-	audio->ch2.envelope.currentVolume = state->audio.ch2Volume;
-	audio->ch2.envelope.dead = state->audio.ch2Dead;
-	audio->ch2.control.hi = state->audio.ch2Hi;
-	audio->ch2.envelope.nextStep = state->audio.ch2.envelopeNextStep;
-	audio->ch2.control.nextStep = state->audio.ch2.waveNextStep;
-	audio->ch2.control.endTime = state->audio.ch2.endTime;
-	audio->nextCh2 = state->audio.ch2.nextEvent;
+	audio->ch2.envelope.currentVolume = GBASerializedAudioFlagsGetCh2Volume(flags);
+	audio->ch2.envelope.dead = GBASerializedAudioFlagsGetCh2Dead(flags);
+	audio->ch2.control.hi = GBASerializedAudioFlagsGetCh2Hi(flags);
+	LOAD_32(audio->ch2.envelope.nextStep, 0, &state->audio.ch2.envelopeNextStep);
+	LOAD_32(audio->ch2.control.nextStep, 0, &state->audio.ch2.waveNextStep);
+	LOAD_32(audio->ch2.control.endTime, 0, &state->audio.ch2.endTime);
+	LOAD_32(audio->nextCh2, 0, &state->audio.ch2.nextEvent);
 
+	// TODO: Big endian?
 	memcpy(audio->ch3.wavedata, state->audio.ch3.wavebanks, sizeof(audio->ch3.wavedata));
-	audio->ch3.control.endTime = state->audio.ch3.endTime;
-	audio->nextCh3 = state->audio.ch3.nextEvent;
+	LOAD_32(audio->ch3.control.endTime, 0, &state->audio.ch3.endTime);
+	LOAD_32(audio->nextCh3, 0, &state->audio.ch3.nextEvent);
 
-	audio->ch4.envelope.currentVolume = state->audio.ch4Volume;
-	audio->ch4.envelope.dead = state->audio.ch4Dead;
-	audio->ch4.envelope.nextStep = state->audio.ch4.envelopeNextStep;
-	audio->ch4.lfsr = state->audio.ch4.lfsr;
-	audio->ch4.control.endTime = state->audio.ch4.endTime;
-	audio->nextCh4 = state->audio.ch4.nextEvent;
+	audio->ch4.envelope.currentVolume = GBASerializedAudioFlagsGetCh4Volume(flags);
+	audio->ch4.envelope.dead = GBASerializedAudioFlagsGetCh4Dead(flags);
+	LOAD_32(audio->ch4.envelope.nextStep, 0, &state->audio.ch4.envelopeNextStep);
+	LOAD_32(audio->ch4.lfsr, 0, &state->audio.ch4.lfsr);
+	LOAD_32(audio->ch4.control.endTime, 0, &state->audio.ch4.endTime);
+	LOAD_32(audio->nextCh4, 0, &state->audio.ch4.nextEvent);
 
 	CircleBufferClear(&audio->chA.fifo);
 	CircleBufferClear(&audio->chB.fifo);
-	size_t fifoSize = state->audio.fifoSize;
+	uint32_t fifoSize;
+	LOAD_32(fifoSize, 0, &state->audio.fifoSize);
 	if (state->audio.fifoSize > CircleBufferCapacity(&audio->chA.fifo)) {
 		fifoSize = CircleBufferCapacity(&audio->chA.fifo);
 	}
@@ -926,9 +932,9 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 		CircleBufferWrite8(&audio->chB.fifo, state->audio.fifoB[i]);
 	}
 
-	audio->nextEvent = state->audio.nextEvent;
-	audio->eventDiff = state->audio.eventDiff;
-	audio->nextSample = state->audio.nextSample;
+	LOAD_32(audio->nextEvent, 0, &state->audio.nextEvent);
+	LOAD_32(audio->eventDiff, 0, &state->audio.eventDiff);
+	LOAD_32(audio->nextSample, 0, &state->audio.nextSample);
 }
 
 float GBAAudioCalculateRatio(float inputSampleRate, float desiredFPS, float desiredSampleRate) {

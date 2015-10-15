@@ -184,6 +184,16 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * Total size: 0x61000 (397,312) bytes
  */
 
+DECL_BITFIELD(GBASerializedAudioFlags, uint32_t);
+DECL_BITS(GBASerializedAudioFlags, Ch1Volume, 0, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch1Dead, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 5);
+DECL_BITS(GBASerializedAudioFlags, Ch2Volume, 8, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch2Dead, 12);
+DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 13);
+DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch4Dead, 20);
+
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
@@ -236,18 +246,7 @@ struct GBASerializedState {
 		int32_t eventDiff;
 		int32_t nextSample;
 		uint32_t fifoSize;
-		unsigned ch1Volume : 4;
-		unsigned ch1Dead : 1;
-		unsigned ch1Hi : 1;
-		unsigned : 2;
-		unsigned ch2Volume : 4;
-		unsigned ch2Dead : 1;
-		unsigned ch2Hi : 1;
-		unsigned : 2;
-		unsigned ch4Volume : 4;
-		unsigned ch4Dead : 1;
-		unsigned : 3;
-		unsigned : 8;
+		GBASerializedAudioFlags flags;
 	} audio;
 
 	struct {
