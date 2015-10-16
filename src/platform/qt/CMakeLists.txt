@@ -75,6 +75,7 @@ set(SOURCE_FILES
 	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
+	IOViewer.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
@@ -101,6 +102,7 @@ qt5_wrap_ui(UI_FILES
 	AboutScreen.ui
 	CheatsView.ui
 	GIFView.ui
+	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui
@@ -155,7 +157,7 @@ if(WIN32)
 	endif()
 endif()
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
-set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES}")
+set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})

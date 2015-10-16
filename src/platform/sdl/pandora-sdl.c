@@ -12,6 +12,26 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
+#ifndef FBIO_WAITFORVSYNC
+#define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
+#endif
+
+static bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
+static void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
+
+void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLInit;
+	renderer->deinit = GBASDLDeinit;
+	renderer->runloop = GBASDLRunloop;
+}
+
+void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = GBASDLInit;
+	renderer->deinit = GBASDLDeinit;
+	renderer->runloop = GBASDLRunloop;
+}
+
 bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	SDL_SetVideoMode(800, 480, 16, SDL_FULLSCREEN);
 
@@ -71,14 +91,14 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
-			int arg = 0;
-			ioctl(renderer->fb, FBIO_WAITFORVSYNC, &arg);
-
+		if (GBASyncWaitFrameStart(&context->sync)) {
 			struct fb_var_screeninfo info;
 			ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
 			info.yoffset = VIDEO_VERTICAL_PIXELS * renderer->odd;
 			ioctl(renderer->fb, FBIOPAN_DISPLAY, &info);
+
+			int arg = 0;
+			ioctl(renderer->fb, FBIO_WAITFORVSYNC, &arg);
 
 			renderer->odd = !renderer->odd;
 			renderer->d.outputBuffer = renderer->base[renderer->odd];

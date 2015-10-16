@@ -82,8 +82,11 @@ static inline int ThreadSetName(const char* name) {
 #elif defined(__FreeBSD__) || defined(__OpenBSD__)
 	pthread_set_name_np(pthread_self(), name);
 	return 0;
-#else
+#elif !defined(BUILD_PANDORA) // Pandora's glibc is too old
 	return pthread_setname_np(pthread_self(), name);
+#else
+	UNUSED(name);
+	return 0;
 #endif
 }
 

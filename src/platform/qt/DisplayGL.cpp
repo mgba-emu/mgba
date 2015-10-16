@@ -208,7 +208,7 @@ void PainterGL::draw() {
 	if (m_queue.isEmpty()) {
 		return;
 	}
-	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip) || !m_queue.isEmpty()) {
+	if (GBASyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
 		dequeue();
 		m_painter.begin(m_gl->context()->device());
 		performDraw();

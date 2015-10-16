@@ -71,6 +71,7 @@ enum {
 #define FLAG_INDEX          0x30000000
 #define FLAG_IS_BACKGROUND  0x08000000
 #define FLAG_UNWRITTEN      0xFC000000
+#define FLAG_REBLEND        0x04000000
 #define FLAG_TARGET_1       0x02000000
 #define FLAG_TARGET_2       0x01000000
 #define FLAG_OBJWIN         0x01000000

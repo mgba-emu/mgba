@@ -31,6 +31,7 @@ struct GBASDLAudio {
 #endif
 
 	struct GBAThread* thread;
+	struct GBA* gba;
 };
 
 bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContext);

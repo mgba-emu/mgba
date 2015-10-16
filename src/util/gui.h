@@ -28,6 +28,24 @@ enum GUIInput {
 	GUI_INPUT_MAX = 0x20
 };
 
+enum GUICursorState {
+	GUI_CURSOR_NOT_PRESENT,
+	GUI_CURSOR_UP,
+	GUI_CURSOR_DOWN,
+	GUI_CURSOR_CLICKED,
+	GUI_CURSOR_DRAGGING
+};
+
+enum {
+	BATTERY_EMPTY = 0,
+	BATTERY_LOW = 1,
+	BATTERY_HALF = 2,
+	BATTERY_HIGH = 3,
+	BATTERY_FULL = 4,
+
+	BATTERY_CHARGING = 8
+};
+
 struct GUIBackground {
 	void (*draw)(struct GUIBackground*, void* context);
 };
@@ -41,21 +59,26 @@ struct GUIParams {
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
 	uint32_t (*pollInput)(void);
+	enum GUICursorState (*pollCursor)(int* x, int* y);
+	int (*batteryState)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
 
 	// State
 	int inputHistory[GUI_INPUT_MAX];
+	enum GUICursorState cursorState;
+	int cx, cy;
 
 	// Directories
 	char currentPath[PATH_MAX];
 	size_t fileIndex;
 };
 
-#define GUI_PARAMS_TRAIL {}, "", 0
+#define GUI_PARAMS_TRAIL {}, GUI_CURSOR_NOT_PRESENT, 0, 0, "", 0
 
 void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);
+enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y);
 void GUIInvalidateKeys(struct GUIParams* params);
 
 #endif

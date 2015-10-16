@@ -86,7 +86,7 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 	case MODE_THUMB:
 		cpu->cpsr.t = 1;
 	}
-	cpu->nextEvent = 0;
+	cpu->nextEvent = cpu->cycles;
 }
 
 static inline void _ARMReadCPSR(struct ARMCore* cpu) {

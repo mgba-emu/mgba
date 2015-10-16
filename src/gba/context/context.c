@@ -10,10 +10,14 @@
 #include "util/memory.h"
 #include "util/vfs.h"
 
+static struct VFile* _logFile = 0;
+static void _GBAContextLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
+
 bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->gba = anonymousMemoryMap(sizeof(struct GBA));
 	context->cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	context->rom = 0;
+	context->bios = 0;
 	context->fname = 0;
 	context->save = 0;
 	context->renderer = 0;
@@ -28,15 +32,33 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		}
 		return false;
 	}
-
-	GBAConfigInit(&context->config, port);
-	if (port) {
-		GBAConfigLoad(&context->config);
-	}
-
 	GBACreate(context->gba);
 	ARMSetComponents(context->cpu, &context->gba->d, 0, context->components);
 	ARMInit(context->cpu);
+
+	GBAConfigInit(&context->config, port);
+	if (port) {
+		if (!_logFile) {
+			char logPath[PATH_MAX];
+			GBAConfigDirectory(logPath, PATH_MAX);
+			strncat(logPath, PATH_SEP "log", PATH_MAX - strlen(logPath));
+			_logFile = VFileOpen(logPath, O_WRONLY | O_CREAT | O_TRUNC);
+		}
+		context->gba->logHandler = _GBAContextLog;
+
+		char biosPath[PATH_MAX];
+		GBAConfigDirectory(biosPath, PATH_MAX);
+		strncat(biosPath, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(biosPath));
+
+		struct GBAOptions opts = {
+			.bios = biosPath,
+			.useBios = true,
+			.idleOptimization = IDLE_LOOP_DETECT,
+			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
+		};
+		GBAConfigLoad(&context->config);
+		GBAConfigLoadDefaults(&context->config, &opts);
+	}
 
 	context->gba->sync = 0;
 	return true;
@@ -51,7 +73,25 @@ void GBAContextDeinit(struct GBAContext* context) {
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
-	context->rom = VFileOpen(path, O_RDONLY);
+	struct VDir* dir = VDirOpenArchive(path);
+	if (dir) {
+		struct VDirEntry* de;
+		while ((de = dir->listNext(dir))) {
+			struct VFile* vf = dir->openFile(dir, de->name(de), O_RDONLY);
+			if (!vf) {
+				continue;
+			}
+			if (GBAIsROM(vf)) {
+				context->rom = vf;
+				break;
+			}
+			vf->close(vf);
+		}
+		dir->close(dir);
+	} else {
+		context->rom = VFileOpen(path, O_RDONLY);
+	}
+
 	if (!context->rom) {
 		return false;
 	}
@@ -130,6 +170,10 @@ bool GBAContextStart(struct GBAContext* context) {
 	}
 
 	GBAConfigMap(&context->config, &opts);
+
+	if (!context->bios && opts.bios) {
+		GBAContextLoadBIOS(context, opts.bios);
+	}
 	if (opts.useBios && context->bios) {
 		GBALoadBIOS(context->gba, context->bios);
 	}
@@ -165,4 +209,20 @@ void GBAContextFrame(struct GBAContext* context, uint16_t keys) {
 	while (frameCounter == context->gba->video.frameCounter) {
 		ARMRunLoop(context->cpu);
 	}
+}
+
+static void _GBAContextLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
+	UNUSED(thread);
+	UNUSED(level);
+	// TODO: Make this local
+	if (!_logFile) {
+		return;
+	}
+	char out[256];
+	size_t len = vsnprintf(out, sizeof(out), format, args);
+	if (len >= sizeof(out)) {
+		len = sizeof(out) - 1;
+	}
+	out[len] = '\n';
+	_logFile->write(_logFile, out, len + 1);
 }

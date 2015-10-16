@@ -42,6 +42,8 @@
 
 #define SPRITE_TRANSFORMED_LOOP(DEPTH, TYPE) \
 	unsigned tileData; \
+	unsigned widthMask = ~(width - 1); \
+	unsigned heightMask = ~(height - 1); \
 	for (; outX < x + totalWidth && outX < end; ++outX, ++inX) { \
 		if (!(renderer->row[outX] & FLAG_UNWRITTEN)) { \
 			continue; \
@@ -51,7 +53,7 @@
 		int localX = (xAccum >> 8) + (width >> 1); \
 		int localY = (yAccum >> 8) + (height >> 1); \
 		\
-		if (localX < 0 || localX >= width || localY < 0 || localY >= height) { \
+		if (localX & widthMask || localY & heightMask) { \
 			continue; \
 		} \
 		\
@@ -75,6 +77,19 @@
 		} \
 	}
 
+#define SPRITE_DRAW_PIXEL_16_NORMAL_OBJWIN(localX) \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
+	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
+	current = renderer->spriteLayer[outX]; \
+	if ((current & FLAG_ORDER_MASK) > flags) { \
+		if (tileData) { \
+			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
+			renderer->spriteLayer[outX] = color | flags; \
+		} else if (current != FLAG_UNWRITTEN) { \
+			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+		} \
+	}
+
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
 	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
 	tileData = (tileData >> ((localX & 3) << 2)) & 0xF; \
@@ -83,7 +98,7 @@
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
-#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * (GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80) + (localY & 0x7) * 8;
+#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 8;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
 	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase); \
@@ -92,6 +107,19 @@
 	if ((current & FLAG_ORDER_MASK) > flags) { \
 		if (tileData) { \
 			renderer->spriteLayer[outX] = palette[tileData] | flags; \
+		} else if (current != FLAG_UNWRITTEN) { \
+			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
+		} \
+	}
+
+#define SPRITE_DRAW_PIXEL_256_NORMAL_OBJWIN(localX) \
+	LOAD_16(tileData, ((yBase + charBase + xBase) & 0x7FFE), vramBase);  \
+	tileData = (tileData >> ((localX & 1) << 3)) & 0xFF; \
+	current = renderer->spriteLayer[outX]; \
+	if ((current & FLAG_ORDER_MASK) > flags) { \
+		if (tileData) { \
+			unsigned color = (renderer->row[outX] & FLAG_OBJWIN) ? objwinPalette[tileData] : palette[tileData]; \
+			renderer->spriteLayer[outX] = color | flags; \
 		} else if (current != FLAG_UNWRITTEN) { \
 			renderer->spriteLayer[outX] = (current & ~FLAG_ORDER_MASK) | GBAObjAttributesCGetPriority(sprite->c) << OFFSET_PRIORITY; \
 		} \
@@ -119,23 +147,32 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
 		return 0;
 	}
-	int variant = renderer->target1Obj && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
+	int variant = renderer->target1Obj &&
+	              GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&
+	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) {
 		int target2 = renderer->target2Bd << 4;
 		target2 |= renderer->bg[0].target2 << (renderer->bg[0].priority);
 		target2 |= renderer->bg[1].target2 << (renderer->bg[1].priority);
 		target2 |= renderer->bg[2].target2 << (renderer->bg[2].priority);
 		target2 |= renderer->bg[3].target2 << (renderer->bg[3].priority);
-		if (GBAObjAttributesCGetPriority(sprite->c) < target2) {
+		if ((1 << GBAObjAttributesCGetPriority(sprite->c)) <= target2) {
 			variant = 0;
 		}
 	}
 	color_t* palette = &renderer->normalPalette[0x100];
+	color_t* objwinPalette = palette;
+	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt) && GBAWindowControlGetBlendEnable(renderer->objwin.packed) != GBAWindowControlIsBlendEnable(renderer->currentWindow.packed);
+
 	if (variant) {
 		palette = &renderer->variantPalette[0x100];
+		if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
+			objwinPalette = palette;
+		}
 	}
 
 	int inY = y - (int) GBAObjAttributesAGetY(sprite->a);
+	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? width : 0x80;
 
 	uint32_t current;
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
@@ -159,12 +196,17 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			palette = &palette[GBAObjAttributesCGetPalette(sprite->c) << 4];
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(16, OBJWIN);
+			} else if (objwinSlowPath) {
+				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+				SPRITE_TRANSFORMED_LOOP(16, NORMAL_OBJWIN);
 			} else {
 				SPRITE_TRANSFORMED_LOOP(16, NORMAL);
 			}
 		} else {
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_TRANSFORMED_LOOP(256, OBJWIN);
+			} else if (objwinSlowPath) {
+				SPRITE_TRANSFORMED_LOOP(256, NORMAL_OBJWIN);
 			} else {
 				SPRITE_TRANSFORMED_LOOP(256, NORMAL);
 			}
@@ -199,7 +241,15 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(16, OBJWIN);
 			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-				SPRITE_MOSAIC_LOOP(16, NORMAL);
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+					SPRITE_MOSAIC_LOOP(16, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(16, NORMAL);
+				}
+			} else if (objwinSlowPath) {
+				objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+				SPRITE_NORMAL_LOOP(16, NORMAL_OBJWIN);
 			} else {
 				SPRITE_NORMAL_LOOP(16, NORMAL);
 			}
@@ -207,7 +257,14 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			if (flags & FLAG_OBJWIN) {
 				SPRITE_NORMAL_LOOP(256, OBJWIN);
 			} else if (GBAObjAttributesAIsMosaic(sprite->a)) {
-				SPRITE_MOSAIC_LOOP(256, NORMAL);
+				if (objwinSlowPath) {
+					objwinPalette = &objwinPalette[GBAObjAttributesCGetPalette(sprite->c) << 4];
+					SPRITE_MOSAIC_LOOP(256, NORMAL_OBJWIN);
+				} else {
+					SPRITE_MOSAIC_LOOP(256, NORMAL);
+				}
+			} else if (objwinSlowPath) {
+				SPRITE_NORMAL_LOOP(256, NORMAL_OBJWIN);
 			} else {
 				SPRITE_NORMAL_LOOP(256, NORMAL);
 			}

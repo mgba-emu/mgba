@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
+#include "gba/gui/gui-config.h"
 #include "gba/interface.h"
 #include "gba/serialize.h"
 #include "util/gui/file-select.h"
@@ -14,11 +15,18 @@
 #include "util/png-io.h"
 #include "util/vfs.h"
 
+#include <sys/time.h>
+
+#define FPS_GRANULARITY 120
+#define FPS_BUFFER_SIZE 3
+
 enum {
 	RUNNER_CONTINUE = 1,
-	RUNNER_EXIT = 2,
-	RUNNER_SAVE_STATE = 3,
-	RUNNER_LOAD_STATE = 4,
+	RUNNER_EXIT,
+	RUNNER_SAVE_STATE,
+	RUNNER_LOAD_STATE,
+	RUNNER_SCREENSHOT,
+	RUNNER_CONFIG,
 	RUNNER_COMMAND_MASK = 0xFFFF,
 
 	RUNNER_STATE_1 = 0x10000,
@@ -100,6 +108,10 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	runner->context.gba->luminanceSource = &runner->luminanceSource.d;
 	runner->background.d.draw = _drawBackground;
 	runner->background.p = runner;
+	runner->fps = 0;
+	runner->lastFpsCheck = 0;
+	runner->totalDelta = 0;
+	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
 	if (runner->setup) {
 		runner->setup(runner);
 	}
@@ -109,6 +121,10 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
+	if (runner->context.config.port) {
+		GBAConfigSave(&runner->context.config);
+	}
+	CircleBufferDeinit(&runner->fpsBuffer);
 	GBAContextDeinit(&runner->context);
 }
 
@@ -165,14 +181,13 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_8) };
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE_9) };
 #endif
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = (void*) RUNNER_CONFIG };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
 	while (true) {
 		char path[256];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
-			}
 			break;
 		}
 
@@ -194,6 +209,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Load failed!");
 				runner->params.drawEnd();
 			}
+			continue;
 		}
 		if (runner->params.guiFinish) {
 			runner->params.guiFinish();
@@ -202,8 +218,16 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		if (runner->gameLoaded) {
 			runner->gameLoaded(runner);
 		}
+
 		bool running = true;
 		while (running) {
+			CircleBufferClear(&runner->fpsBuffer);
+			runner->totalDelta = 0;
+			runner->fps = 0;
+			struct timeval tv;
+			gettimeofday(&tv, 0);
+			runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
+
 			while (true) {
 				uint32_t guiKeys;
 				GUIPollInput(&runner->params, &guiKeys, 0);
@@ -229,9 +253,43 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				}
 				GBAContextFrame(&runner->context, keys);
 				if (runner->drawFrame) {
+					int drawFps = false;
+					GBAConfigGetIntValue(&runner->context.config, "fpsCounter", &drawFps);
+
 					runner->params.drawStart();
 					runner->drawFrame(runner, false);
+					if (drawFps) {
+						if (runner->params.guiPrepare) {
+							runner->params.guiPrepare();
+						}
+						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_TEXT_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+						if (runner->params.guiPrepare) {
+							runner->params.guiFinish();
+						}
+					}
 					runner->params.drawEnd();
+
+					if (runner->context.gba->video.frameCounter % FPS_GRANULARITY == 0) {
+						if (drawFps) {
+							struct timeval tv;
+							gettimeofday(&tv, 0);
+							uint64_t t = 1000000LL * tv.tv_sec + tv.tv_usec;
+							uint64_t delta = t - runner->lastFpsCheck;
+							runner->lastFpsCheck = t;
+							if (delta > 0x7FFFFFFFLL) {
+								CircleBufferClear(&runner->fpsBuffer);
+								runner->fps = 0;
+							}
+							if (CircleBufferSize(&runner->fpsBuffer) == CircleBufferCapacity(&runner->fpsBuffer)) {
+								int32_t last;
+								CircleBufferRead32(&runner->fpsBuffer, &last);
+								runner->totalDelta -= last;
+							}
+							CircleBufferWrite32(&runner->fpsBuffer, delta);
+							runner->totalDelta += delta;
+							runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
+						}
+					}
 				}
 			}
 
@@ -240,38 +298,48 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 			}
 			GUIInvalidateKeys(&runner->params);
 			uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
-			struct GUIMenuItem item;
+			struct GUIMenuItem* item;
 			enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
 			if (reason == GUI_MENU_EXIT_ACCEPT) {
 				struct VFile* vf;
-				switch (((int) item.data) & RUNNER_COMMAND_MASK) {
+				switch (((int) item->data) & RUNNER_COMMAND_MASK) {
 				case RUNNER_EXIT:
 					running = false;
 					keys = 0;
 					break;
 				case RUNNER_SAVE_STATE:
-					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, true);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, true);
 					if (vf) {
 						GBASaveStateNamed(runner->context.gba, vf, true);
 						vf->close(vf);
 					}
 					break;
 				case RUNNER_LOAD_STATE:
-					vf = GBAGetState(runner->context.gba, 0, ((int) item.data) >> 16, false);
+					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, false);
 					if (vf) {
 						GBALoadStateNamed(runner->context.gba, vf);
 						vf->close(vf);
 					}
 					break;
+				case RUNNER_SCREENSHOT:
+					GBATakeScreenshot(runner->context.gba, 0);
+					break;
+				case RUNNER_CONFIG:
+					GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
+					GBAConfigGetIntValue(&runner->context.config, "frameskip", &runner->context.gba->video.frameskip);
+					break;
 				case RUNNER_CONTINUE:
 					break;
 				}
 			}
-			while (keys) {
+			int frames = 0;
+			GUIPollInput(&runner->params, 0, &keys);
+			while (keys && frames < 30) {
+				++frames;
+				runner->params.drawStart();
+				runner->drawFrame(runner, true);
+				runner->params.drawEnd();
 				GUIPollInput(&runner->params, 0, &keys);
-			}
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
 			}
 			if (runner->unpaused) {
 				runner->unpaused(runner);

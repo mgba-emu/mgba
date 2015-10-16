@@ -22,6 +22,8 @@
 #include <3ds/types.h>
 #include <3ds/svc.h>
 
+#include "util/common.h"
+
 extern char* fake_heap_start;
 extern char* fake_heap_end;
 u32 __linear_heap;
@@ -69,6 +71,8 @@ void __system_allocateHeaps() {
 
 void __attribute__((noreturn)) __libctru_exit(int rc)
 {
+	UNUSED(rc);
+
 	u32 tmp=0;
 
 	// Unmap the linear heap

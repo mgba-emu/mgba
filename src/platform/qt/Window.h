@@ -69,6 +69,8 @@ public slots:
 
 	void replaceROM();
 
+	void multiplayerChanged();
+
 	void importSharkport();
 	void exportSharkport();
 
@@ -82,6 +84,7 @@ public slots:
 
 	void openPaletteWindow();
 	void openMemoryWindow();
+	void openIOViewer();
 
 	void openAboutScreen();
 
@@ -149,6 +152,7 @@ private:
 	GameController* m_controller;
 	Display* m_display;
 	QList<QAction*> m_gameActions;
+	QList<QAction*> m_nonMpActions;
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;

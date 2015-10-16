@@ -10,23 +10,32 @@
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
+#include "util/gui/menu.h"
 
 #include <psp2/ctrl.h>
+#include <psp2/display.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
+#include <psp2/power.h>
+#include <psp2/touch.h>
 
 #include <vita2d.h>
 
 PSP2_MODULE_INFO(0, 0, "mGBA");
 
 static void _drawStart(void) {
+	vita2d_set_vblank_wait(false);
 	vita2d_start_drawing();
 	vita2d_clear_screen();
 }
 
 static void _drawEnd(void) {
+	static int oldVCount = 0;
+	int vcount = oldVCount;
 	vita2d_end_drawing();
+	oldVCount = sceDisplayGetVcount();
+	vita2d_set_vblank_wait(oldVCount == vcount);
 	vita2d_swap_buffers();
 }
 
@@ -63,31 +72,70 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-int main() {
-	printf("%s initializing", projectName);
+static enum GUICursorState _pollCursor(int* x, int* y) {
+	SceTouchData touch;
+	sceTouchPeek(0, &touch, 1);
+	if (touch.reportNum < 1) {
+		return GUI_CURSOR_NOT_PRESENT;
+	}
+	*x = touch.report[0].x / 2;
+	*y = touch.report[0].y / 2;
+	return GUI_CURSOR_DOWN;
+}
 
+static int _batteryState(void) {
+	int charge = scePowerGetBatteryLifePercent();
+	int adapter = scePowerIsPowerOnline();
+	int state = 0;
+	if (adapter) {
+		state |= BATTERY_CHARGING;
+	}
+	charge /= 25;
+	return state | charge;
+}
+
+int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
 	struct GBAGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd, _pollInput, 0, 0,
+			font, "cache0:", _drawStart, _drawEnd,
+			_pollInput, _pollCursor,
+			_batteryState,
+			0, 0,
 
 			GUI_PARAMS_TRAIL
 		},
+		.configExtra = (struct GUIMenuItem[]) {
+			{ 
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"With Background",
+					"Without Background",
+					"Stretched",
+					0
+				}
+			}
+		},
+		.nConfigExtra = 1,
 		.setup = GBAPSP2Setup,
 		.teardown = GBAPSP2Teardown,
 		.gameLoaded = GBAPSP2LoadROM,
 		.gameUnloaded = GBAPSP2UnloadROM,
 		.prepareForFrame = GBAPSP2PrepareForFrame,
 		.drawFrame = GBAPSP2Draw,
+		.drawScreenshot = GBAPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
 		.incrementScreenMode = GBAPSP2IncrementScreenMode,
 		.pollGameInput = GBAPSP2PollInput
 	};
 
-	GBAGUIInit(&runner, 0);
+	GBAGUIInit(&runner, "psvita");
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 

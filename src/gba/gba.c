@@ -574,12 +574,12 @@ void GBATestIRQ(struct ARMCore* cpu) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (gba->memory.io[REG_IME >> 1] && gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
 		gba->springIRQ = 1;
-		gba->cpu->nextEvent = 0;
+		gba->cpu->nextEvent = gba->cpu->cycles;
 	}
 }
 
 void GBAHalt(struct GBA* gba) {
-	gba->cpu->nextEvent = 0;
+	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->cpu->halted = 1;
 }
 
@@ -587,7 +587,7 @@ void GBAStop(struct GBA* gba) {
 	if (!gba->stopCallback) {
 		return;
 	}
-	gba->cpu->nextEvent = 0;
+	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->stopCallback->stop(gba->stopCallback);
 }
 
@@ -682,13 +682,13 @@ bool GBAIsBIOS(struct VFile* vf) {
 	if (vf->seek(vf, 0, SEEK_SET) < 0) {
 		return false;
 	}
-	uint32_t interruptTable[7];
+	uint8_t interruptTable[7 * 4];
 	if (vf->read(vf, &interruptTable, sizeof(interruptTable)) != sizeof(interruptTable)) {
 		return false;
 	}
 	int i;
 	for (i = 0; i < 7; ++i) {
-		if ((interruptTable[i] & 0xFFFF0000) != 0xEA000000) {
+		if (interruptTable[4 * i + 3] != 0xEA || interruptTable[4 * i + 2]) {
 			return false;
 		}
 	}

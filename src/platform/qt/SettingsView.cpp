@@ -89,6 +89,11 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 
 	connect(m_ui.biosBrowse, SIGNAL(clicked()), this, SLOT(selectBios()));
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(updateConfig()));
+	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* button) {
+		if (m_ui.buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) {
+			updateConfig();
+		}
+	});
 }
 
 void SettingsView::selectBios() {

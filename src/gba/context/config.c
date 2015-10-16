@@ -22,10 +22,24 @@
 #include <psp2/io/stat.h>
 #endif
 
+#ifdef _3DS
+#include "platform/3ds/3ds-vfs.h"
+#endif
+
 #define SECTION_NAME_MAX 128
 
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
 	const char* value;
+	if (config->port) {
+		value = ConfigurationGetValue(&config->overridesTable, config->port, key);
+		if (value) {
+			return value;
+		}
+	}
+	value = ConfigurationGetValue(&config->overridesTable, 0, key);
+	if (value) {
+		return value;
+	}
 	if (config->port) {
 		value = ConfigurationGetValue(&config->configTable, config->port, key);
 		if (value) {
@@ -102,6 +116,7 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
+	ConfigurationInit(&config->overridesTable);
 	if (port) {
 		config->port = malloc(strlen("ports.") + strlen(port) + 1);
 		snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
@@ -113,6 +128,7 @@ void GBAConfigInit(struct GBAConfig* config, const char* port) {
 void GBAConfigDeinit(struct GBAConfig* config) {
 	ConfigurationDeinit(&config->configTable);
 	ConfigurationDeinit(&config->defaultsTable);
+	ConfigurationDeinit(&config->overridesTable);
 	free(config->port);
 }
 
@@ -151,7 +167,7 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, MAX_PATH, 0, 0);
 	StringCchCatA(out, MAX_PATH, "\\portable.ini");
 	portable = VFileOpen(out, O_WRONLY | O_CREAT);
-#elif defined(PSP2)
+#elif defined(PSP2) || defined(_3DS) || defined(GEKKO)
 	// Already portable
 #else
 	char out[PATH_MAX];
@@ -189,8 +205,15 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	UNUSED(portable);
-	snprintf(out, outLength, "cache0:/%s", binaryName);
+	snprintf(out, outLength, "cache0:/%s", projectName);
 	sceIoMkdir(out, 0777);
+#elif defined(GEKKO)
+	UNUSED(portable);
+	snprintf(out, outLength, "/%s", projectName);
+	mkdir(out, 0777);
+#elif defined(_3DS)
+	snprintf(out, outLength, "/%s", projectName);
+	FSUSER_CreateDirectory(0, sdmcArchive, FS_makePath(PATH_CHAR, out));
 #else
 	getcwd(out, outLength);
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
@@ -211,6 +234,18 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 
 const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
 	return _lookupValue(config, key);
+}
+
+bool GBAConfigGetIntValue(const struct GBAConfig* config, const char* key, int* value) {
+	return _lookupIntValue(config, key, value);
+}
+
+bool GBAConfigGetUIntValue(const struct GBAConfig* config, const char* key, unsigned* value) {
+	return _lookupUIntValue(config, key, value);
+}
+
+bool GBAConfigGetFloatValue(const struct GBAConfig* config, const char* key, float* value) {
+	return _lookupFloatValue(config, key, value);
 }
 
 void GBAConfigSetValue(struct GBAConfig* config, const char* key, const char* value) {
@@ -243,6 +278,22 @@ void GBAConfigSetDefaultUIntValue(struct GBAConfig* config, const char* key, uns
 
 void GBAConfigSetDefaultFloatValue(struct GBAConfig* config, const char* key, float value) {
 	ConfigurationSetFloatValue(&config->defaultsTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideValue(struct GBAConfig* config, const char* key, const char* value) {
+	ConfigurationSetValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideIntValue(struct GBAConfig* config, const char* key, int value) {
+	ConfigurationSetIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+	ConfigurationSetUIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideFloatValue(struct GBAConfig* config, const char* key, float value) {
+	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {

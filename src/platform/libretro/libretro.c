@@ -11,6 +11,7 @@
 #include "gba/serialize.h"
 #include "gba/context/context.h"
 #include "util/circle-buffer.h"
+#include "util/memory.h"
 #include "util/vfs.h"
 
 #define SAMPLES 1024
@@ -29,7 +30,6 @@ static retro_set_rumble_state_t rumbleCallback;
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
-static void _postVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
 static void _setRumble(struct GBARumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
@@ -37,6 +37,7 @@ static void _updateLux(struct GBALuminanceSource* lux);
 static struct GBAContext context;
 static struct GBAVideoSoftwareRenderer renderer;
 static void* data;
+static size_t dataSize;
 static void* savedata;
 static struct GBAAVStream stream;
 static int rumbleLevel;
@@ -153,12 +154,11 @@ void retro_init(void) {
 
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
-	stream.postVideoFrame = _postVideoFrame;
+	stream.postVideoFrame = 0;
 
 	GBAContextInit(&context, 0);
 	struct GBAOptions opts = {
 		.useBios = true,
-		.logLevel = 0,
 		.idleOptimization = IDLE_LOOP_REMOVE
 	};
 	GBAConfigLoadDefaults(&context.config, &opts);
@@ -182,7 +182,7 @@ void retro_init(void) {
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer.outputBufferStride = 256;
-	context->renderer = &renderer.d;
+	context.renderer = &renderer.d;
 
 	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
@@ -194,6 +194,7 @@ void retro_init(void) {
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+	free(renderer.outputBuffer);
 }
 
 void retro_run(void) {
@@ -233,6 +234,7 @@ void retro_run(void) {
 	}
 
 	GBAContextFrame(&context, keys);
+	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * renderer.outputBufferStride);
 }
 
 void retro_reset(void) {
@@ -246,7 +248,8 @@ void retro_reset(void) {
 bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* rom;
 	if (game->data) {
-		data = malloc(game->size);
+		data = anonymousMemoryMap(game->size);
+		dataSize = game->size;
 		memcpy(data, game->data, game->size);
 		rom = VFileFromMemory(data, game->size);
 	} else {
@@ -258,11 +261,11 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 	if (!GBAIsROM(rom)) {
 		rom->close(rom);
-		free(data);
+		mappedMemoryFree(data, game->size);
 		return false;
 	}
 
-	savedata = malloc(SIZE_CART_FLASH1M);
+	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	GBAContextLoadROMFromVFile(&context, rom, save);
@@ -272,9 +275,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 
 void retro_unload_game(void) {
 	GBAContextStop(&context);
-	free(data);
+	mappedMemoryFree(data, dataSize);
 	data = 0;
-	free(savedata);
+	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
 	savedata = 0;
 	CircleBufferDeinit(&rumbleHistory);
 }
@@ -403,14 +406,6 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	}
 #endif
 	audioCallback(samples, SAMPLES);
-}
-
-static void _postVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
-	UNUSED(stream);
-	const void* pixels;
-	unsigned stride;
-	renderer->getPixels(renderer, &stride, &pixels);
-	videoCallback(pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * stride);
 }
 
 static void _setRumble(struct GBARumble* rumble, int enable) {

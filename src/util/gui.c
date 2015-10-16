@@ -30,9 +30,3 @@ void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* hel
 		*heldInput = input;
 	}
 }
-
-void GUIInvalidateKeys(struct GUIParams* params) {
-	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
-		params->inputHistory[i] = 0;
-	}
-}

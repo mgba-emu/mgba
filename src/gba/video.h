@@ -185,7 +185,6 @@ struct GBAVideo {
 	// VCOUNT
 	int vcount;
 
-	int32_t lastHblank;
 	int32_t nextHblank;
 	int32_t nextEvent;
 	int32_t eventDiff;
@@ -199,6 +198,8 @@ struct GBAVideo {
 	union GBAOAM oam;
 
 	int32_t frameCounter;
+	int frameskip;
+	int frameskipCounter;
 };
 
 void GBAVideoInit(struct GBAVideo* video);

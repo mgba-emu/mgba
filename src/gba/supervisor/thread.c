@@ -16,7 +16,6 @@
 #include "debugger/debugger.h"
 
 #include "util/patch.h"
-#include "util/png-io.h"
 #include "util/vfs.h"
 
 #include "platform/commandline.h"
@@ -141,6 +140,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	gba.logLevel = threadContext->logLevel;
 	gba.logHandler = threadContext->logHandler;
 	gba.stream = threadContext->stream;
+	gba.video.frameskip = threadContext->frameskip;
 
 	struct GBAThreadStop stop;
 	if (threadContext->stopCallback) {
@@ -387,7 +387,6 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 	threadContext->activeKeys = 0;
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->sync.videoFrameOn = true;
-	threadContext->sync.videoFrameSkip = 0;
 
 	threadContext->rewindBuffer = 0;
 	threadContext->rewindScreenBuffer = 0;
@@ -684,16 +683,9 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
 	threadContext->rom = VFileOpen(fname, O_RDONLY);
 	threadContext->gameDir = 0;
-#if USE_LIBZIP
 	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpenZip(fname, 0);
+		threadContext->gameDir = VDirOpenArchive(fname);
 	}
-#endif
-#if USE_LZMA
-	if (!threadContext->gameDir) {
-		threadContext->gameDir = VDirOpen7z(fname, 0);
-	}
-#endif
 }
 
 static void _loadGameDir(struct GBAThread* threadContext) {
@@ -754,22 +746,9 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
-#ifdef USE_PNG
 void GBAThreadTakeScreenshot(struct GBAThread* threadContext) {
-	unsigned stride;
-	const void* pixels = 0;
-	struct VFile* vf = VDirOptionalOpenIncrementFile(threadContext->stateDir, threadContext->gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
-	threadContext->gba->video.renderer->getPixels(threadContext->gba->video.renderer, &stride, &pixels);
-	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-	bool success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
-	PNGWriteClose(png, info);
-	vf->close(vf);
-	if (success) {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "Screenshot saved");
-	}
+	GBATakeScreenshot(threadContext->gba, threadContext->stateDir);
 }
-#endif
 
 #else
 struct GBAThread* GBAThreadGetContext(void) {
