@@ -158,7 +158,6 @@ uint16_t GBAVideoThreadProxyRendererWriteVideoRegister(struct GBAVideoRenderer* 
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	ConditionWake(&proxyRenderer->toThreadCond);
 	return value;
 }
 
@@ -180,7 +179,6 @@ void GBAVideoThreadProxyRendererWritePalette(struct GBAVideoRenderer* renderer, 
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	ConditionWake(&proxyRenderer->toThreadCond);
 }
 
 void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -198,7 +196,6 @@ void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	ConditionWake(&proxyRenderer->toThreadCond);
 }
 
 void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
@@ -228,7 +225,9 @@ void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	ConditionWake(&proxyRenderer->toThreadCond);
+	if (!(y & 15)) {
+		ConditionWake(&proxyRenderer->toThreadCond);
+	}
 }
 
 void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
