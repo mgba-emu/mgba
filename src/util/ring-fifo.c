@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ring-fifo.h"
 
+#include "util/memory.h"
+
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc) {
 	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;
@@ -13,7 +15,7 @@ void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc) {
 }
 
 void RingFIFODeinit(struct RingFIFO* buffer) {
-	memoryMapFree(buffer->data, buffer->capacity);
+	mappedMemoryFree(buffer->data, buffer->capacity);
 	buffer->data = 0;
 }
 
