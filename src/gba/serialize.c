@@ -265,10 +265,39 @@ bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, b
 	bool success = GBASaveStateNamed(threadContext->gba, vf, screenshot);
 	vf->close(vf);
 	if (success) {
+#if SAVESTATE_DEBUG
+		vf = GBAGetState(threadContext->gba, dir, slot, false);
+		if (vf) {
+			struct GBA* backup = anonymousMemoryMap(sizeof(*backup));
+			memcpy(backup, threadContext->gba, sizeof(*backup));
+			memset(threadContext->gba->memory.io, 0, sizeof(threadContext->gba->memory.io));
+			memset(threadContext->gba->timers, 0, sizeof(threadContext->gba->timers));
+			GBALoadStateNamed(threadContext->gba, vf);
+			if (memcmp(backup, threadContext->gba, sizeof(*backup))) {
+				char suffix[16] = { '\0' };
+				struct VFile* vf2;
+				snprintf(suffix, sizeof(suffix), ".dump.0.%d", slot);
+				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
+				if (vf2) {
+					vf2->write(vf2, backup, sizeof(*backup));
+					vf2->close(vf2);
+				}
+				snprintf(suffix, sizeof(suffix), ".dump.1.%d", slot);
+				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
+				if (vf2) {
+					vf2->write(vf2, threadContext->gba, sizeof(*threadContext->gba));
+					vf2->close(vf2);
+				}
+			}
+			mappedMemoryFree(backup, sizeof(*backup));
+			vf->close(vf);
+		}
+#endif
 		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i saved", slot);
 	} else {
 		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to save", slot);
 	}
+
 	return success;
 }
 
