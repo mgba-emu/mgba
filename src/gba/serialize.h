@@ -194,6 +194,19 @@ DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 13);
 DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
 DECL_BIT(GBASerializedAudioFlags, Ch4Dead, 20);
 
+DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
+DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
+DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
+DECL_BIT(GBASerializedHWFlags1, LightEdge, 2);
+DECL_BITS(GBASerializedHWFlags1, LightCounter, 4, 12);
+
+DECL_BITFIELD(GBASerializedHWFlags2, uint8_t);
+DECL_BITS(GBASerializedHWFlags2, TiltState, 0, 2);
+DECL_BITS(GBASerializedHWFlags2, GbpInputsPosted, 2, 2);
+DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 5);
+
+DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
+
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
@@ -274,21 +287,14 @@ struct GBASerializedState {
 		uint16_t pinDirection;
 		struct GBARTC rtc;
 		uint8_t devices;
-		// Do not change these to uint16_t, this breaks bincompat with some older compilers
-		unsigned gyroSample : 16;
-		unsigned tiltSampleX : 16;
-		unsigned tiltSampleY : 16;
-		unsigned readWrite : 1;
-		unsigned gyroEdge : 1;
-		unsigned lightEdge : 1;
-		unsigned : 1;
-		unsigned lightCounter : 12;
-		unsigned lightSample : 8;
-		unsigned tiltState : 2;
-		unsigned gbpInputsPosted : 2;
-		unsigned gbpTxPosition : 5;
-		unsigned : 15;
-		uint32_t gbpNextEvent : 32;
+		uint16_t gyroSample;
+		uint16_t tiltSampleX;
+		uint16_t tiltSampleY;
+		GBASerializedHWFlags1 flags1;
+		uint8_t lightSample;
+		GBASerializedHWFlags2 flags2;
+		GBASerializedHWFlags3 flags3;
+		uint32_t gbpNextEvent;
 	} hw;
 
 	uint32_t reservedHardware[6];
