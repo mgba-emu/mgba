@@ -201,7 +201,6 @@ GameController::GameController(QObject* parent)
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
-	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
@@ -428,6 +427,7 @@ void GameController::closeGame() {
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
 	}
+	m_audioProcessor->pause();
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
 	if (m_threadContext.fname) {
@@ -876,7 +876,6 @@ void GameController::reloadAudioDriver() {
 	}
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
-	connect(this, SIGNAL(gameStopped(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	if (isLoaded()) {
