@@ -86,6 +86,7 @@ typedef intptr_t ssize_t;
 #define INS_BITS(SRC, START, END, BITS) (CLEAR_BITS(SRC, START, END) | (((BITS) << (START)) & MAKE_MASK(START, END)))
 #define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
 #define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
+#define TEST_FILL_BITS(SRC, START, END, TEST) ((TEST) ? (FILL_BITS(SRC, START, END)) : (CLEAR_BITS(SRC, START, END)))
 
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
@@ -112,6 +113,9 @@ typedef intptr_t ssize_t;
 	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
+	} \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## TestFill ## FIELD (TYPE src, bool test) { \
+		return TEST_FILL_BITS(src, (START), (START) + (SIZE), test); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)

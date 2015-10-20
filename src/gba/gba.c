@@ -252,7 +252,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		struct GBATimer* nextTimer;
 
 		timer = &gba->timers[0];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			while (timer->nextEvent <= 0) {
@@ -261,7 +261,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER0);
 				}
 
@@ -276,7 +276,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				}
 
 				nextTimer = &gba->timers[1];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM1CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM1CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -287,7 +287,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[1];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -296,7 +296,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM1CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER1);
 				}
 
@@ -310,12 +310,12 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 					}
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 
 				nextTimer = &gba->timers[2];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM2CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM2CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -328,7 +328,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[2];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -337,16 +337,16 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM2CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER2);
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 
 				nextTimer = &gba->timers[3];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM3CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM3CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -359,7 +359,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[3];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -368,11 +368,11 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM3CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER3);
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 			}
@@ -481,47 +481,47 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
-	if (currentTimer->enable && !currentTimer->countUp) {
+	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		int32_t prefetchSkew = 0;
 		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
 			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
 		}
 		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> GBATimerFlagsGetPrescaleBits(currentTimer->flags));
 	}
 }
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
-	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << GBATimerFlagsGetPrescaleBits(gba->timers[timer].flags);
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	GBATimerUpdateRegister(gba, timer);
 
-	int oldPrescale = currentTimer->prescaleBits;
+	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(currentTimer->flags);
 	switch (control & 0x0003) {
 	case 0x0000:
-		currentTimer->prescaleBits = 0;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 0);
 		break;
 	case 0x0001:
-		currentTimer->prescaleBits = 6;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 6);
 		break;
 	case 0x0002:
-		currentTimer->prescaleBits = 8;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 8);
 		break;
 	case 0x0003:
-		currentTimer->prescaleBits = 10;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 10);
 		break;
 	}
-	currentTimer->countUp = !!(control & 0x0004);
-	currentTimer->doIrq = !!(control & 0x0040);
-	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << currentTimer->prescaleBits;
-	int wasEnabled = currentTimer->enable;
-	currentTimer->enable = !!(control & 0x0080);
-	if (!wasEnabled && currentTimer->enable) {
-		if (!currentTimer->countUp) {
+	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, control & 0x0004);
+	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
+	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << GBATimerFlagsGetPrescaleBits(currentTimer->flags);
+	bool wasEnabled = GBATimerFlagsIsEnable(currentTimer->flags);
+	currentTimer->flags = GBATimerFlagsTestFillEnable(currentTimer->flags, control & 0x0080);
+	if (!wasEnabled && GBATimerFlagsIsEnable(currentTimer->flags)) {
+		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
 			currentTimer->nextEvent = gba->cpu->cycles + currentTimer->overflowInterval;
 		} else {
 			currentTimer->nextEvent = INT_MAX;
@@ -530,12 +530,12 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->oldReload = currentTimer->reload;
 		currentTimer->lastEvent = gba->cpu->cycles;
 		gba->timersEnabled |= 1 << timer;
-	} else if (wasEnabled && !currentTimer->enable) {
-		if (!currentTimer->countUp) {
+	} else if (wasEnabled && !GBATimerFlagsIsEnable(currentTimer->flags)) {
+		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
 			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> oldPrescale);
 		}
 		gba->timersEnabled &= ~(1 << timer);
-	} else if (currentTimer->prescaleBits != oldPrescale && !currentTimer->countUp) {
+	} else if (GBATimerFlagsGetPrescaleBits(currentTimer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		// FIXME: this might be before present
 		currentTimer->nextEvent = currentTimer->lastEvent + currentTimer->overflowInterval;
 	}

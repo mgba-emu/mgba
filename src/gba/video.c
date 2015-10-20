@@ -274,14 +274,13 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	state->video.nextEvent = video->nextEvent;
-	state->video.eventDiff = video->eventDiff;
-	state->video.lastHblank = video->nextHblank - VIDEO_HBLANK_LENGTH;
-	state->video.nextHblank = video->nextHblank;
-	state->video.nextHblankIRQ = video->nextHblankIRQ;
-	state->video.nextVblankIRQ = video->nextVblankIRQ;
-	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
-	state->video.frameCounter = video->frameCounter;
+	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
+	STORE_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	STORE_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	STORE_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
@@ -296,12 +295,12 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		LOAD_16(value, i, state->pram);
 		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
 	}
-	video->nextEvent = state->video.nextEvent;
-	video->eventDiff = state->video.eventDiff;
-	video->nextHblank = state->video.nextHblank;
-	video->nextHblankIRQ = state->video.nextHblankIRQ;
-	video->nextVblankIRQ = state->video.nextVblankIRQ;
-	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
-	video->frameCounter = state->video.frameCounter;
-	video->vcount = state->io[REG_VCOUNT >> 1];
+	LOAD_32(video->nextEvent, 0, &state->video.nextEvent);
+	LOAD_32(video->eventDiff, 0, &state->video.eventDiff);
+	LOAD_32(video->nextHblank, 0, &state->video.nextHblank);
+	LOAD_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	LOAD_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
+	LOAD_16(video->vcount, REG_VCOUNT, state->io);
 }

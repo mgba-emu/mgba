@@ -59,16 +59,19 @@ struct GBAThread;
 struct Patch;
 struct VFile;
 
+DECL_BITFIELD(GBATimerFlags, uint32_t);
+DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
+DECL_BIT(GBATimerFlags, CountUp, 4);
+DECL_BIT(GBATimerFlags, DoIrq, 5);
+DECL_BIT(GBATimerFlags, Enable, 6);
+
 struct GBATimer {
 	uint16_t reload;
 	uint16_t oldReload;
 	int32_t lastEvent;
 	int32_t nextEvent;
 	int32_t overflowInterval;
-	unsigned prescaleBits : 4;
-	unsigned countUp : 1;
-	unsigned doIrq : 1;
-	unsigned enable : 1;
+	GBATimerFlags flags;
 };
 
 struct GBA {
