@@ -73,6 +73,15 @@ typedef intptr_t ssize_t;
 	void* _ptr = (ARR); \
 	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
+#elif defined __BIG_ENDIAN__
+#if defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(((uint16_t*) ARR)[(ADDR) >> 1])
+#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = __builtin_bswap32(SRC)
+#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = __builtin_bswap16(SRC)
+#else
+#error Big endian build not supported on this platform.
+#endif
 #else
 #define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
 #define LOAD_16LE(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
