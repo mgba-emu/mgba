@@ -594,23 +594,32 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	GBASerializedHWFlags1 flags1 = 0;
 	GBASerializedHWFlags2 flags2 = 0;
 	flags1 = GBASerializedHWFlags1SetReadWrite(flags1, hw->readWrite);
-	state->hw.pinState = hw->pinState;
-	state->hw.pinDirection = hw->direction;
+	STORE_16(hw->pinState, 0, &state->hw.pinState);
+	STORE_16(hw->direction, 0, &state->hw.pinDirection);
 	state->hw.devices = hw->devices;
-	state->hw.rtc = hw->rtc;
-	state->hw.gyroSample = hw->gyroSample;
+
+	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtc.bytesRemaining);
+	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
+	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
+	STORE_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
+	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
+	STORE_32(hw->rtc.command, 0, &state->hw.rtc.command);
+	STORE_32(hw->rtc.control, 0, &state->hw.rtc.control);
+	memcpy(state->hw.rtc.time, hw->rtc.time, sizeof(state->hw.rtc.time));
+
+	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	flags1 = GBASerializedHWFlags1SetGyroEdge(flags1, hw->gyroEdge);
-	state->hw.tiltSampleX = hw->tiltX;
-	state->hw.tiltSampleY = hw->tiltY;
+	STORE_16(hw->tiltX, 0, &state->hw.tiltSampleX);
+	STORE_16(hw->tiltY, 0, &state->hw.tiltSampleY);
 	flags2 = GBASerializedHWFlags2SetTiltState(flags2, hw->tiltState);
 	flags2 = GBASerializedHWFlags1SetLightCounter(flags2, hw->lightCounter);
 	state->hw.lightSample = hw->lightSample;
 	flags1 = GBASerializedHWFlags1SetLightEdge(flags1, hw->lightEdge);
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->gbpInputsPosted);
 	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->gbpTxPosition);
-	state->hw.gbpNextEvent = hw->gbpNextEvent;
-	state->hw.flags1 = flags1;
-	state->hw.flags2 = flags2;
+	STORE_32(hw->gbpNextEvent, 0, &state->hw.gbpNextEvent);
+	STORE_32(flags1, 0, &state->hw.flags1);
+	STORE_32(flags2, 0, &state->hw.flags2);
 }
 
 void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {
