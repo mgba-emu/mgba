@@ -272,13 +272,8 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, un
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
-	int i;
-	for (i = 0; i < SIZE_OAM; i += 2) {
-		STORE_16(video->oam.raw[i >> 1], i, state->oam);
-	}
-	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		STORE_16(video->palette[i >> 1], i, state->pram);
-	}
+	memcpy(state->oam, video->oam.raw, SIZE_OAM);
+	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
 	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
 	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
 	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
