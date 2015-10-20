@@ -272,16 +272,20 @@ static void GBAVideoDummyRendererGetPixels(struct GBAVideoRenderer* renderer, un
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
-	memcpy(state->oam, video->oam.raw, SIZE_OAM);
-	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	state->video.nextEvent = video->nextEvent;
-	state->video.eventDiff = video->eventDiff;
-	state->video.lastHblank = video->nextHblank - VIDEO_HBLANK_LENGTH;
-	state->video.nextHblank = video->nextHblank;
-	state->video.nextHblankIRQ = video->nextHblankIRQ;
-	state->video.nextVblankIRQ = video->nextVblankIRQ;
-	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
-	state->video.frameCounter = video->frameCounter;
+	int i;
+	for (i = 0; i < SIZE_OAM; i += 2) {
+		STORE_16(video->oam.raw[i >> 1], i, state->oam);
+	}
+	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
+		STORE_16(video->palette[i >> 1], i, state->pram);
+	}
+	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
+	STORE_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	STORE_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	STORE_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {

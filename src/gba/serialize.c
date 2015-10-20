@@ -25,9 +25,9 @@
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
-	state->versionMagic = GBA_SAVESTATE_MAGIC;
-	state->biosChecksum = gba->biosChecksum;
-	state->romCrc32 = gba->romCrc32;
+	STORE_32(GBA_SAVESTATE_MAGIC, 0, &state->versionMagic);
+	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
+	STORE_32(gba->romCrc32, 0, &state->romCrc32);
 
 	if (gba->memory.rom) {
 		state->id = ((struct GBACartridge*) gba->memory.rom)->id;
@@ -37,17 +37,25 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 		memset(state->title, 0, sizeof(state->title));
 	}
 
-	memcpy(state->cpu.gprs, gba->cpu->gprs, sizeof(state->cpu.gprs));
-	state->cpu.cpsr = gba->cpu->cpsr;
-	state->cpu.spsr = gba->cpu->spsr;
-	state->cpu.cycles = gba->cpu->cycles;
-	state->cpu.nextEvent = gba->cpu->nextEvent;
-	memcpy(state->cpu.bankedRegisters, gba->cpu->bankedRegisters, 6 * 7 * sizeof(int32_t));
-	memcpy(state->cpu.bankedSPSRs, gba->cpu->bankedSPSRs, 6 * sizeof(int32_t));
+	int i;
+	for (i = 0; i < 16; ++i) {
+		STORE_32(gba->cpu->gprs[i], i * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
+	}
+	STORE_32(gba->cpu->cpsr.packed, 0, &state->cpu.cpsr.packed);
+	STORE_32(gba->cpu->spsr.packed, 0, &state->cpu.spsr.packed);
+	STORE_32(gba->cpu->cycles, 0, &state->cpu.cycles);
+	STORE_32(gba->cpu->nextEvent, 0, &state->cpu.nextEvent);
+	for (i = 0; i < 6; ++i) {
+		int j;
+		for (j = 0; j < 7; ++j) {
+			STORE_32(gba->cpu->bankedRegisters[i][j], (i * 7 + j) * sizeof(gba->cpu->bankedRegisters[0][0]), state->cpu.bankedRegisters);
+		}
+		STORE_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
+	}
 
 	state->biosPrefetch = gba->memory.biosPrefetch;
-	state->cpuPrefetch[0] = gba->cpu->prefetch[0];
-	state->cpuPrefetch[1] = gba->cpu->prefetch[1];
+	STORE_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
+	STORE_32(gba->cpu->prefetch[1], 4, state->cpuPrefetch);
 
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
@@ -137,7 +145,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
 			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
-			LOAD_32(gba->cpu->prefetch[1], 2, state->cpuPrefetch);
+			LOAD_32(gba->cpu->prefetch[1], 4, state->cpuPrefetch);
 			gba->cpu->prefetch[0] &= 0xFFFF;
 			gba->cpu->prefetch[1] &= 0xFFFF;
 		} else {
@@ -149,7 +157,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		gba->cpu->executionMode = MODE_ARM;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
 			LOAD_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
-			LOAD_32(gba->cpu->prefetch[1], 2, state->cpuPrefetch);
+			LOAD_32(gba->cpu->prefetch[1], 4, state->cpuPrefetch);
 		} else {
 			// Maintain backwards compat
 			LOAD_32(gba->cpu->prefetch[0], (gba->cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
