@@ -207,6 +207,10 @@ DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 5);
 
 DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
 
+DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
+DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
+DECL_BIT(GBASerializedSavedataFlags, FlashBank, 4);
+
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;
@@ -300,13 +304,10 @@ struct GBASerializedState {
 	uint32_t reservedHardware[6];
 
 	struct {
-		unsigned type : 8;
-		unsigned command : 8;
-		unsigned flashState : 2;
-		unsigned : 2;
-		unsigned flashBank : 1;
-		unsigned : 3;
-		unsigned : 8;
+		uint8_t type;
+		uint8_t command;
+		GBASerializedSavedataFlags flags;
+		uint8_t reserved;
 		int32_t readBitsRemaining;
 		uint32_t readAddress;
 		uint32_t writeAddress;

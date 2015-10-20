@@ -444,13 +444,15 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
 	state->savedata.type = savedata->type;
 	state->savedata.command = savedata->command;
-	state->savedata.flashState = savedata->flashState;
-	state->savedata.flashBank = savedata->currentBank == &savedata->data[0x10000];
-	state->savedata.readBitsRemaining = savedata->readBitsRemaining;
-	state->savedata.readAddress = savedata->readAddress;
-	state->savedata.writeAddress = savedata->writeAddress;
-	state->savedata.settlingSector = savedata->settling;
-	state->savedata.settlingDust = savedata->dust;
+	GBASerializedSavedataFlags flags = 0;
+	flags = GBASerializedSavedataFlagsSetFlashState(flags, savedata->flashState);
+	flags = GBASerializedSavedataFlagsTestFillFlashBank(flags, savedata->currentBank == &savedata->data[0x10000]);
+	state->savedata.flags = flags;
+	STORE_32(savedata->readBitsRemaining, 0, &state->savedata.readBitsRemaining);
+	STORE_32(savedata->readAddress, 0, &state->savedata.readAddress);
+	STORE_32(savedata->writeAddress, 0, &state->savedata.writeAddress);
+	STORE_16(savedata->settling, 0, &state->savedata.settlingSector);
+	STORE_16(savedata->dust, 0, &state->savedata.settlingDust);
 
 	UNUSED(includeData); // TODO
 }
@@ -463,15 +465,16 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 		GBASavedataForceType(savedata, state->savedata.type, savedata->realisticTiming);
 	}
 	savedata->command = state->savedata.command;
-	savedata->flashState = state->savedata.flashState;
-	savedata->readBitsRemaining = state->savedata.readBitsRemaining;
-	savedata->readAddress = state->savedata.readAddress;
-	savedata->writeAddress = state->savedata.writeAddress;
-	savedata->settling = state->savedata.settlingSector;
-	savedata->dust = state->savedata.settlingDust;
+	GBASerializedSavedataFlags flags = state->savedata.flags;
+	savedata->flashState = GBASerializedSavedataFlagsGetFlashState(flags);
+	LOAD_32(savedata->readBitsRemaining, 0, &state->savedata.readBitsRemaining);
+	LOAD_32(savedata->readAddress, 0, &state->savedata.readAddress);
+	LOAD_32(savedata->writeAddress, 0, &state->savedata.writeAddress);
+	LOAD_16(savedata->settling, 0, &state->savedata.settlingSector);
+	LOAD_16(savedata->dust, 0, &state->savedata.settlingDust);
 
 	if (savedata->type == SAVEDATA_FLASH1M) {
-		_flashSwitchBank(savedata, state->savedata.flashBank);
+		_flashSwitchBank(savedata, GBASerializedSavedataFlagsGetFlashBank(flags));
 	}
 
 	UNUSED(includeData); // TODO
