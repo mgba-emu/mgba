@@ -848,43 +848,46 @@ static void _sample(struct GBAAudio* audio) {
 }
 
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state) {
-	state->audio.flags = 0;
+	uint32_t flags = 0;
 
-	state->audio.flags = GBASerializedAudioFlagsSetCh1Volume(state->audio.flags, audio->ch1.envelope.currentVolume);
-	state->audio.flags = GBASerializedAudioFlagsSetCh1Dead(state->audio.flags, audio->ch1.envelope.dead);
-	state->audio.flags = GBASerializedAudioFlagsSetCh1Hi(state->audio.flags, audio->ch1.control.hi);
-	state->audio.ch1.envelopeNextStep = audio->ch1.envelope.nextStep;
-	state->audio.ch1.waveNextStep = audio->ch1.control.nextStep;
-	state->audio.ch1.sweepNextStep = audio->ch1.nextSweep;
-	state->audio.ch1.endTime = audio->ch1.control.endTime;
-	state->audio.ch1.nextEvent = audio->nextCh1;
+	flags = GBASerializedAudioFlagsSetCh1Volume(flags, audio->ch1.envelope.currentVolume);
+	flags = GBASerializedAudioFlagsSetCh1Dead(flags, audio->ch1.envelope.dead);
+	flags = GBASerializedAudioFlagsSetCh1Hi(flags, audio->ch1.control.hi);
+	STORE_32(audio->ch1.envelope.nextStep, 0, &state->audio.ch1.envelopeNextStep);
+	STORE_32(audio->ch1.control.nextStep, 0, &state->audio.ch1.waveNextStep);
+	STORE_32(audio->ch1.nextSweep, 0, &state->audio.ch1.sweepNextStep);
+	STORE_32(audio->ch1.control.endTime, 0, &state->audio.ch1.endTime);
+	STORE_32(audio->nextCh1, 0, &state->audio.ch1.nextEvent);
 
-	state->audio.flags = GBASerializedAudioFlagsSetCh2Volume(state->audio.flags, audio->ch2.envelope.currentVolume);
-	state->audio.flags = GBASerializedAudioFlagsSetCh2Dead(state->audio.flags, audio->ch2.envelope.dead);
-	state->audio.flags = GBASerializedAudioFlagsSetCh2Hi(state->audio.flags, audio->ch2.control.hi);
-	state->audio.ch2.envelopeNextStep = audio->ch2.envelope.nextStep;
-	state->audio.ch2.waveNextStep = audio->ch2.control.nextStep;
-	state->audio.ch2.endTime = audio->ch2.control.endTime;
-	state->audio.ch2.nextEvent = audio->nextCh2;
+	flags = GBASerializedAudioFlagsSetCh2Volume(flags, audio->ch2.envelope.currentVolume);
+	flags = GBASerializedAudioFlagsSetCh2Dead(flags, audio->ch2.envelope.dead);
+	flags = GBASerializedAudioFlagsSetCh2Hi(flags, audio->ch2.control.hi);
+	STORE_32(audio->ch2.envelope.nextStep, 0, &state->audio.ch2.envelopeNextStep);
+	STORE_32(audio->ch2.control.nextStep, 0, &state->audio.ch2.waveNextStep);
+	STORE_32(audio->ch2.control.endTime, 0, &state->audio.ch2.endTime);
+	STORE_32(audio->nextCh2, 0, &state->audio.ch2.nextEvent);
 
 	memcpy(state->audio.ch3.wavebanks, audio->ch3.wavedata, sizeof(state->audio.ch3.wavebanks));
-	state->audio.ch3.endTime = audio->ch3.control.endTime;
-	state->audio.ch3.nextEvent = audio->nextCh3;
+	STORE_32(audio->ch3.control.endTime, 0, &state->audio.ch3.endTime);
+	STORE_32(audio->nextCh3, 0, &state->audio.ch3.nextEvent);
 
-	state->audio.flags = GBASerializedAudioFlagsSetCh4Volume(state->audio.flags, audio->ch4.envelope.currentVolume);
-	state->audio.flags = GBASerializedAudioFlagsSetCh4Dead(state->audio.flags, audio->ch4.envelope.dead);
-	state->audio.ch4.envelopeNextStep = audio->ch4.envelope.nextStep;
-	state->audio.ch4.lfsr = audio->ch4.lfsr;
-	state->audio.ch4.endTime = audio->ch4.control.endTime;
-	state->audio.ch4.nextEvent = audio->nextCh4;
+	state->audio.flags = GBASerializedAudioFlagsSetCh4Volume(flags, audio->ch4.envelope.currentVolume);
+	state->audio.flags = GBASerializedAudioFlagsSetCh4Dead(flags, audio->ch4.envelope.dead);
+	STORE_32(audio->ch4.envelope.nextStep, 0, &state->audio.ch4.envelopeNextStep);
+	STORE_32(audio->ch4.lfsr, 0, &state->audio.ch4.lfsr);
+	STORE_32(audio->ch4.control.endTime, 0, &state->audio.ch4.endTime);
+	STORE_32(audio->nextCh4, 0, &state->audio.ch4.nextEvent);
+
+	STORE_32(flags, 0, &state->audio.flags);
 
 	CircleBufferDump(&audio->chA.fifo, state->audio.fifoA, sizeof(state->audio.fifoA));
 	CircleBufferDump(&audio->chB.fifo, state->audio.fifoB, sizeof(state->audio.fifoB));
-	state->audio.fifoSize = CircleBufferSize(&audio->chA.fifo);
+	uint32_t fifoSize = CircleBufferSize(&audio->chA.fifo);
+	STORE_32(fifoSize, 0, &state->audio.fifoSize);
 
-	state->audio.nextEvent = audio->nextEvent;
-	state->audio.eventDiff = audio->eventDiff;
-	state->audio.nextSample = audio->nextSample;
+	STORE_32(audio->nextEvent, 0, &state->audio.nextEvent);
+	STORE_32(audio->eventDiff, 0, &state->audio.eventDiff);
+	STORE_32(audio->nextSample, 0, &state->audio.nextSample);
 }
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
