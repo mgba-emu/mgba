@@ -1,5 +1,6 @@
 0.4.0: (Future)
 Features:
+ - Officially supported ports for the Nintendo 3DS, Wii, and PlayStation Vita
  - I/O viewer
 Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
@@ -43,6 +44,7 @@ Misc:
  - GBA: Check for cycle count being too high
  - GBA Config: Add "override" layer for better one-time configuration
  - SDL: Allow GBASDLAudio to be used without a thread context
+ - All: Improved PowerPC support
 
 0.3.0: (2015-08-16)
 Features:
