@@ -176,6 +176,7 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
 		HIDUSER_EnableGyroscope();
 	}
+	osSetSpeedupEnable(true);
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
@@ -202,6 +203,7 @@ static void _gameUnloaded(struct GBAGUIRunner* runner) {
 		CSND_SetPlayState(9, 0);
 		csndExecCmds(false);
 	}
+	osSetSpeedupEnable(false);
 
 	if (runner->context.gba->memory.hw.devices & HW_TILT) {
 		HIDUSER_DisableAccelerometer();
