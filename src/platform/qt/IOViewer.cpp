@@ -60,8 +60,8 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Priority"), 0, 2 },
 		{ tr("Tile data base (* 16kB)"), 2, 2 },
-		{ tr("Enable mosaic"), 3 },
-		{ tr("Enable 256-color"), 3 },
+		{ tr("Enable mosaic"), 6 },
+		{ tr("Enable 256-color"), 7 },
 		{ tr("Tile map base (* 2kB)"), 8, 5 },
 		{ tr("Background dimensions"), 14, 2 },
 	});
@@ -69,8 +69,8 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Priority"), 0, 2 },
 		{ tr("Tile data base (* 16kB)"), 2, 2 },
-		{ tr("Enable mosaic"), 3 },
-		{ tr("Enable 256-color"), 3 },
+		{ tr("Enable mosaic"), 6 },
+		{ tr("Enable 256-color"), 7 },
 		{ tr("Tile map base (* 2kB)"), 8, 5 },
 		{ tr("Background dimensions"), 14, 2 },
 	});
@@ -78,20 +78,20 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Priority"), 0, 2 },
 		{ tr("Tile data base (* 16kB)"), 2, 2 },
-		{ tr("Enable mosaic"), 3 },
-		{ tr("Enable 256-color"), 3 },
+		{ tr("Enable mosaic"), 6 },
+		{ tr("Enable 256-color"), 7 },
 		{ tr("Tile map base (* 2kB)"), 8, 5 },
-		{ tr("Overflow wraps"), 9 },
+		{ tr("Overflow wraps"), 13 },
 		{ tr("Background dimensions"), 14, 2 },
 	});
 	// 0x0400000E: BG3CNT
 	s_registers.append({
 		{ tr("Priority"), 0, 2 },
 		{ tr("Tile data base (* 16kB)"), 2, 2 },
-		{ tr("Enable mosaic"), 3 },
-		{ tr("Enable 256-color"), 3 },
+		{ tr("Enable mosaic"), 6 },
+		{ tr("Enable 256-color"), 7 },
 		{ tr("Tile map base (* 2kB)"), 8, 5 },
-		{ tr("Overflow wraps"), 9 },
+		{ tr("Overflow wraps"), 13 },
 		{ tr("Background dimensions"), 14, 2 },
 	});
 	// 0x04000010: BG0HOFS
