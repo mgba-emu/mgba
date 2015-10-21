@@ -31,6 +31,7 @@ Misc:
  - GBA: Additional savestate sanity checks
  - GBA: Check for cycle count being too high
  - All: Reset next event to cycles instead of zero to interrupt
+ - All: Add --version flag
 
 0.3.0: (2015-08-16)
 Features:

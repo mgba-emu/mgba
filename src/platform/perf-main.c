@@ -77,6 +77,13 @@ int main(int argc, char** argv) {
 		GBAConfigDeinit(&config);
 		return !parsed;
 	}
+	if (args.showVersion) {
+		version(argv[0]);
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
+		return 0;
+	}
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;

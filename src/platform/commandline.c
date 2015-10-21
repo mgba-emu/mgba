@@ -47,6 +47,7 @@ static const struct option _options[] = {
 	{ "help",      no_argument, 0, 'h' },
 	{ "movie",     required_argument, 0, 'v' },
 	{ "patch",     required_argument, 0, 'p' },
+	{ "version",   no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -68,8 +69,17 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
 	}
-	while ((ch = getopt_long(argc, argv, options, _options, 0)) != -1) {
+	int index = 0;
+	while ((ch = getopt_long(argc, argv, options, _options, &index)) != -1) {
+		const struct option* opt = &_options[index];
 		switch (ch) {
+		case '\0':
+			if (strcmp(opt->name, "version") == 0) {
+				opts->showVersion = true;
+			} else {
+				return false;
+			}
+			break;
 		case 'b':
 			GBAConfigSetDefaultValue(config, "bios", optarg);
 			break;
@@ -122,7 +132,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 	argc -= optind;
 	argv += optind;
 	if (argc != 1) {
-		return opts->showHelp;
+		return opts->showHelp || opts->showVersion;
 	}
 	opts->fname = strdup(argv[0]);
 	return true;
@@ -226,7 +236,12 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("  -v, --movie FILE    Play back a movie of recorded input");
 	puts("  -p, --patch FILE    Apply a specified patch file when running");
 	puts("  -s, --frameskip N   Skip every N frames");
+	puts("  --version           Print version and exit");
 	if (extraOptions) {
 		puts(extraOptions);
 	}
+}
+
+void version(const char* arg0) {
+	printf("%s %s (%s)\n", arg0, projectVersion, gitCommit);
 }

@@ -67,6 +67,13 @@ int main(int argc, char** argv) {
 		GBAConfigDeinit(&config);
 		return !parsed;
 	}
+	if (args.showVersion) {
+		version(argv[0]);
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
+		return 0;
+	}
 
 	GBAConfigMap(&config, &opts);
 
