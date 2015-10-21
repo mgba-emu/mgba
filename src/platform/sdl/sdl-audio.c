@@ -97,7 +97,7 @@ void GBASDLResumeAudio(struct GBASDLAudio* context) {
 
 static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 	struct GBASDLAudio* audioContext = context;
-	if (!context || (!audioContext->thread && !audioContext->gba)) {
+	if (!context || ((!audioContext->thread || !audioContext->thread->gba) && !audioContext->gba)) {
 		memset(data, 0, len);
 		return;
 	}
