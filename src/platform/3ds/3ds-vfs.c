@@ -56,7 +56,7 @@ struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	}
 
 	FS_path newPath = FS_makePath(PATH_CHAR, path);
-	Result res = FSUSER_OpenFile(0, &vf3d->handle, *archive, newPath, flags, FS_ATTRIBUTE_NONE);
+	Result res = FSUSER_OpenFile(&vf3d->handle, *archive, newPath, flags, FS_ATTRIBUTE_NONE);
 	if (res & 0xFFFC03FF) {
 		free(vf3d);
 		return 0;
@@ -176,7 +176,7 @@ struct VDir* VDirOpen(const char* path) {
 	}
 
 	FS_path newPath = FS_makePath(PATH_CHAR, path);
-	Result res = FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+	Result res = FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 	if (res & 0xFFFC03FF) {
 		free(vd3d);
 		return 0;
@@ -208,7 +208,7 @@ static void _vd3dRewind(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	FSDIR_Close(vd3d->handle);
 	FS_path newPath = FS_makePath(PATH_CHAR, vd3d->path);
-	FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+	FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 }
 
 static struct VDirEntry* _vd3dListNext(struct VDir* vd) {
