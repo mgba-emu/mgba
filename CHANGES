@@ -47,6 +47,7 @@ Misc:
  - SDL: Allow GBASDLAudio to be used without a thread context
  - All: Improved PowerPC support
  - All: Add --version flag
+ - All: Fix some undefined behavior warnings
 
 0.3.0: (2015-08-16)
 Features:

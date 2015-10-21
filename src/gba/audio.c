@@ -523,7 +523,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 			channel->dmaSource = 0;
 		}
 	}
-	CircleBufferRead8(&channel->fifo, &channel->sample);
+	CircleBufferRead8(&channel->fifo, (int8_t*) &channel->sample);
 }
 
 #if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF

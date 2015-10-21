@@ -177,7 +177,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int32_t localX;                                                                                                   \
 	int32_t localY;                                                                                                   \
                                                                                                                       \
-	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_2 * background->target2;                                                                     \
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                 \
 	                                   GBAWindowControlIsBlendEnable(renderer->objwin.packed));                       \

@@ -23,9 +23,9 @@ struct GBAVideoSoftwareSprite {
 };
 
 struct GBAVideoSoftwareBackground {
-	int index;
+	unsigned index;
 	int enabled;
-	int priority;
+	unsigned priority;
 	uint32_t charBase;
 	int mosaic;
 	int multipalette;

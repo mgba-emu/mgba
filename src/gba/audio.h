@@ -135,7 +135,7 @@ struct GBAAudioChannel4 {
 struct GBAAudioFIFO {
 	struct CircleBuffer fifo;
 	int dmaSource;
-	int8_t sample;
+	uint8_t sample;
 };
 
 DECL_BITFIELD(GBARegisterSOUNDCNT_LO, uint16_t);
