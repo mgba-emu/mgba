@@ -96,6 +96,10 @@ void GBAMemoryReset(struct GBA* gba) {
 		mappedMemoryFree(gba->memory.wram, SIZE_WORKING_RAM);
 	}
 	gba->memory.wram = anonymousMemoryMap(SIZE_WORKING_RAM);
+	if (gba->pristineRom && !gba->memory.rom) {
+		// Multiboot
+		memcpy(gba->memory.wram, gba->pristineRom, gba->pristineRomSize);
+	}
 
 	if (gba->memory.iwram) {
 		mappedMemoryFree(gba->memory.iwram, SIZE_WORKING_IRAM);

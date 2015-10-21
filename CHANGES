@@ -2,6 +2,7 @@
 Features:
  - Officially supported ports for the Nintendo 3DS, Wii, and PlayStation Vita
  - I/O viewer
+ - Booting of multiboot images
 Bugfixes:
  - Qt: Windows no longer spawn in the top left on first launch
  - Qt: Fix install path of XDG desktop file with DESTDIR

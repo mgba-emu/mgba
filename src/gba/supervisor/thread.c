@@ -167,10 +167,14 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	}
 
 	if (threadContext->rom) {
-		GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
+		if (GBAIsMB(threadContext->rom)) {
+			GBALoadMB(&gba, threadContext->rom, threadContext->fname);
+		} else {
+			GBALoadROM(&gba, threadContext->rom, threadContext->save, threadContext->fname);
+		}
 
 		struct GBACartridgeOverride override;
-		const struct GBACartridge* cart = (const struct GBACartridge*) gba.memory.rom;
+		const struct GBACartridge* cart = (const struct GBACartridge*) gba.pristineRom;
 		memcpy(override.id, &cart->id, sizeof(override.id));
 		if (GBAOverrideFind(threadContext->overrides, &override)) {
 			GBAOverrideApply(&gba, &override);
@@ -225,8 +229,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		GBARRInitPlay(&gba);
 	}
 
-	if (threadContext->skipBios && gba.memory.rom) {
-		GBASkipBIOS(&cpu);
+	if (threadContext->skipBios && gba.pristineRom) {
+		GBASkipBIOS(&gba);
 	}
 
 	if (!threadContext->cheats) {
@@ -305,8 +309,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			ARMReset(&cpu);
-			if (threadContext->skipBios && gba.memory.rom) {
-				GBASkipBIOS(&cpu);
+			if (threadContext->skipBios && gba.pristineRom) {
+				GBASkipBIOS(&gba);
 			}
 		}
 	}

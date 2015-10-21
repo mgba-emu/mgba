@@ -27,6 +27,9 @@ const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 static const size_t GBA_ROM_MAGIC_OFFSET = 3;
 static const uint8_t GBA_ROM_MAGIC[] = { 0xEA };
 
+static const size_t GBA_MB_MAGIC_OFFSET = 0xC3;
+static const uint8_t GBA_MB_MAGIC[] = { 0xEA };
+
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
@@ -181,9 +184,14 @@ void GBAReset(struct ARMCore* cpu) {
 	memset(gba->timers, 0, sizeof(gba->timers));
 }
 
-void GBASkipBIOS(struct ARMCore* cpu) {
+void GBASkipBIOS(struct GBA* gba) {
+	struct ARMCore* cpu = gba->cpu;
 	if (cpu->gprs[ARM_PC] == BASE_RESET + WORD_SIZE_ARM) {
-		cpu->gprs[ARM_PC] = BASE_CART0;
+		if (gba->memory.rom) {
+			cpu->gprs[ARM_PC] = BASE_CART0;
+		} else {
+			cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+		}
 		int currentCycles = 0;
 		ARM_WRITE_PC;
 	}
@@ -396,6 +404,35 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = 0;
 	ARMHotplugDetach(gba->cpu, GBA_COMPONENT_DEBUGGER);
 	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = 0;
+}
+
+bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
+	GBAUnloadROM(gba);
+	gba->romVf = vf;
+	gba->pristineRomSize = vf->size(vf);
+	vf->seek(vf, 0, SEEK_SET);
+	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
+		gba->pristineRomSize = SIZE_WORKING_RAM;
+	}
+#ifdef _3DS
+	gba->pristineRom = 0;
+	if (gba->pristineRomSize <= romBufferSize) {
+		gba->pristineRom = romBuffer;
+		vf->read(vf, romBuffer, gba->pristineRomSize);
+	}
+#else
+	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+#endif
+	if (!gba->pristineRom) {
+		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
+		return false;
+	}
+	gba->yankedRomSize = 0;
+	gba->activeFile = fname;
+	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
+	gba->romCrc32 = doCrc32(gba->pristineRom, gba->pristineRomSize);
+	return true;
 }
 
 bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
@@ -675,7 +712,24 @@ bool GBAIsROM(struct VFile* vf) {
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
+	if (GBAIsBIOS(vf)) {
+		return false;
+	}
 	return memcmp(signature, GBA_ROM_MAGIC, sizeof(signature)) == 0;
+}
+
+bool GBAIsMB(struct VFile* vf) {
+	if (!GBAIsROM(vf)) {
+		return false;
+	}
+	if (vf->seek(vf, GBA_MB_MAGIC_OFFSET, SEEK_SET) < 0) {
+		return false;
+	}
+	uint8_t signature[sizeof(GBA_MB_MAGIC)];
+	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
+		return false;
+	}
+	return memcmp(signature, GBA_MB_MAGIC, sizeof(signature)) == 0;
 }
 
 bool GBAIsBIOS(struct VFile* vf) {
@@ -704,11 +758,15 @@ void GBAGetGameCode(struct GBA* gba, char* out) {
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
-	if (!gba->memory.rom) {
-		strncpy(out, "(BIOS)", 12);
+	if (gba->memory.rom) {
+		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 		return;
 	}
-	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
+	if (gba->pristineRom) {
+		memcpy(out, &((struct GBACartridge*) gba->pristineRom)->title, 12);
+		return;
+	}
+	strncpy(out, "(BIOS)", 12);
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {

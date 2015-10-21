@@ -149,7 +149,7 @@ void GBACreate(struct GBA* gba);
 void GBADestroy(struct GBA* gba);
 
 void GBAReset(struct ARMCore* cpu);
-void GBASkipBIOS(struct ARMCore* cpu);
+void GBASkipBIOS(struct GBA* gba);
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer);
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
@@ -175,7 +175,10 @@ void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
+bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname);
+
 bool GBAIsROM(struct VFile* vf);
+bool GBAIsMB(struct VFile* vf);
 bool GBAIsBIOS(struct VFile* vf);
 void GBAGetGameCode(struct GBA* gba, char* out);
 void GBAGetGameTitle(struct GBA* gba, char* out);
