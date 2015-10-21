@@ -9,6 +9,7 @@
 
 #include <QFontDatabase>
 #include <QGridLayout>
+#include <QRadioButton>
 #include <QSpinBox>
 
 extern "C" {
@@ -261,11 +262,48 @@ void IOViewer::selectRegister(unsigned address) {
 						sbox->blockSignals(signalsBlocked);
 					});
 					connect(sbox, &QObject::destroyed, [connection, this, b, &ri]() {
+						bool signalsBlocked = m_b[ri.start + b]->blockSignals(true);
 						m_b[ri.start + b]->disconnect(connection);
+						m_b[ri.start + b]->blockSignals(signalsBlocked);
 					});
 				}
 			} else {
-
+				QButtonGroup* group = new QButtonGroup(box);
+				group->setExclusive(true);
+				for (int o = 0; o < 1 << ri.size; ++o) {
+					if (ri.items.at(o).isNull()) {
+						continue;
+					}
+					++i;
+					QRadioButton* button = new QRadioButton(ri.items.at(o));
+					button->setEnabled(!ri.readonly);
+					box->addWidget(button, i, 0, 1, 2, Qt::AlignLeft);
+					group->addButton(button, o);
+				}
+				for (int b = 0; b < ri.size; ++b) {
+					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [group, this, &ri](bool) {
+						unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+						for (int i = 0; i < 1 << ri.size; ++i) {
+							QAbstractButton* button = group->button(i);
+							if (!button) {
+								continue;
+							}
+							bool signalsBlocked = button->blockSignals(true);
+							button->setChecked(i == v);
+							button->blockSignals(signalsBlocked);
+						}
+					});
+					connect(group, &QObject::destroyed, [connection, this, b, &ri]() {
+						m_b[ri.start + b]->disconnect(connection);
+					});
+				}
+				connect(group, static_cast<void (QButtonGroup::*)(int, bool)>(&QButtonGroup::buttonToggled), [this, &ri](int v) {
+					for (int i = 0; i < ri.size; ++i) {
+						bool signalsBlocked = m_b[ri.start + i]->blockSignals(true);
+						m_b[ri.start + i]->setChecked(v & (1 << i));
+						m_b[ri.start + i]->blockSignals(signalsBlocked);
+					}
+				});
 			}
 			++i;
 		}
