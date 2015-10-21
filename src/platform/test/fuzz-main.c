@@ -70,8 +70,7 @@ int main(int argc, char** argv) {
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		GBAContextDeinit(&context);
 		return 0;
 	}
 
