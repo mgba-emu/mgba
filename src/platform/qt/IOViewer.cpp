@@ -8,7 +8,8 @@
 #include "GameController.h"
 
 #include <QFontDatabase>
-#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QSpinBox>
 
 extern "C" {
 #include "gba/io.h"
@@ -25,7 +26,16 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	}
 	// 0x04000000: DISPCNT
 	s_registers.append({
-		{ tr("Background mode"), 0, 3 },
+		{ tr("Background mode"), 0, 3, {
+			tr("Mode 0: 4 tile layers"),
+			tr("Mode 1: 2 tile layers + 1 rotated/scaled tile layer"),
+			tr("Mode 2: 2 rotated/scaled tile layers"),
+			tr("Mode 3: Full 15-bit bitmap"),
+			tr("Mode 4: Full 8-bit bitmap"),
+			tr("Mode 5: Small 15-bit bitmap"),
+			QString(),
+			QString()
+		} },
 		{ tr("CGB Mode"), 3, 1, true },
 		{ tr("Frame select"), 4 },
 		{ tr("Unlocked HBlank"), 5 },
@@ -208,7 +218,7 @@ void IOViewer::writeback() {
 
 void IOViewer::selectRegister(unsigned address) {
 	m_register = address;
-	QLayout* box = m_ui.regDescription->layout();
+	QGridLayout* box = static_cast<QGridLayout*>(m_ui.regDescription->layout());
 	if (box) {
 		// I can't believe there isn't a real way to do this...
 		while (!box->isEmpty()) {
@@ -219,18 +229,45 @@ void IOViewer::selectRegister(unsigned address) {
 			delete item;
 		}
 	} else {
-		box = new QVBoxLayout;
+		box = new QGridLayout;
 	}
 	if (registerDescriptions().count() > address >> 1) {
 		// TODO: Remove the check when done filling in register information
 		const RegisterDescription& description = registerDescriptions().at(address >> 1);
+		int i = 0;
 		for (const RegisterItem& ri : description) {
-			QCheckBox* check = new QCheckBox;
-			check->setText(ri.description);
-			check->setEnabled(!ri.readonly);
-			box->addWidget(check);
-			connect(m_b[ri.start], SIGNAL(toggled(bool)), check, SLOT(setChecked(bool)));
-			connect(check, SIGNAL(toggled(bool)), m_b[ri.start], SLOT(setChecked(bool)));
+			QLabel* label = new QLabel(ri.description);
+			box->addWidget(label, i, 0);
+			if (ri.size == 1) {
+				QCheckBox* check = new QCheckBox;
+				check->setEnabled(!ri.readonly);
+				box->addWidget(check, i, 1, Qt::AlignRight);
+				connect(check, SIGNAL(toggled(bool)), m_b[ri.start], SLOT(setChecked(bool)));
+				connect(m_b[ri.start], SIGNAL(toggled(bool)), check, SLOT(setChecked(bool)));
+			} else if (ri.items.empty()) {
+				QSpinBox* sbox = new QSpinBox;
+				sbox->setEnabled(!ri.readonly);
+				sbox->setMaximum((1 << ri.size) - 1);
+				box->addWidget(sbox, i, 1, Qt::AlignRight);
+				for (int b = 0; b < ri.size; ++b) {
+					connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, b, &ri](int v) {
+						m_b[ri.start + b]->setChecked(v & (1 << b));
+					});
+					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [sbox, this, b](bool t) {
+						int v = sbox->value() & ~(1 << b);
+						v |= t << b;
+						bool signalsBlocked = sbox->blockSignals(true);
+						sbox->setValue(v);
+						sbox->blockSignals(signalsBlocked);
+					});
+					connect(sbox, &QObject::destroyed, [connection, this, b, &ri]() {
+						m_b[ri.start + b]->disconnect(connection);
+					});
+				}
+			} else {
+
+			}
+			++i;
 		}
 	}
 	m_ui.regDescription->setLayout(box);
