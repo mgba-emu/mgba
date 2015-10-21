@@ -67,6 +67,13 @@ int main(int argc, char** argv) {
 		GBAContextDeinit(&context);
 		return !parsed;
 	}
+	if (args.showVersion) {
+		version(argv[0]);
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
+		return 0;
+	}
 
 	struct GBAVideoSoftwareRenderer renderer;
 	renderer.outputBuffer = 0;
