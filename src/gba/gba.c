@@ -42,7 +42,7 @@ static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum E
 static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 
-#ifdef _3DS
+#if defined(_3DS) && !defined(__LIBRETRO__)
 extern uint32_t* romBuffer;
 extern size_t romBufferSize;
 #endif
@@ -414,7 +414,7 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
 	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
 		gba->pristineRomSize = SIZE_WORKING_RAM;
 	}
-#ifdef _3DS
+#if defined(_3DS) && !defined(__LIBRETRO__)
 	gba->pristineRom = 0;
 	if (gba->pristineRomSize <= romBufferSize) {
 		gba->pristineRom = romBuffer;
