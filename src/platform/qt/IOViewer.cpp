@@ -137,6 +137,171 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Vertical offset"), 0, 9 },
 	});
+	// 0x04000020: BG2PA
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000022: BG2PB
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000024: BG2PC
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000026: BG2PD
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000028: BG2X_LO
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part (bottom)"), 8, 8 },
+	});
+	// 0x0400002A: BG2X_HI
+	s_registers.append({
+		{ tr("Integer part (top)"), 0, 12 },
+	});
+	// 0x0400002C: BG2Y_LO
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part (bottom)"), 8, 8 },
+	});
+	// 0x0400002E: BG2Y_HI
+	s_registers.append({
+		{ tr("Integer part (top)"), 0, 12 },
+	});
+	// 0x04000030: BG3PA
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000032: BG3PB
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000034: BG3PC
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000036: BG3PD
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part"), 8, 8 },
+	});
+	// 0x04000038: BG3X_LO
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part (bottom)"), 8, 8 },
+	});
+	// 0x0400003A: BG3X_HI
+	s_registers.append({
+		{ tr("Integer part (top)"), 0, 12 },
+	});
+	// 0x0400003C: BG3Y_LO
+	s_registers.append({
+		{ tr("Fractional part"), 0, 8 },
+		{ tr("Integer part (bottom)"), 8, 8 },
+	});
+	// 0x0400003E: BG3Y_HI
+	s_registers.append({
+		{ tr("Integer part (top)"), 0, 12 },
+	});
+	// 0x04000040: WIN0H
+	s_registers.append({
+		{ tr("End x"), 0, 8 },
+		{ tr("Start x"), 8, 8 },
+	});
+	// 0x04000042: WIN1H
+	s_registers.append({
+		{ tr("End x"), 0, 8 },
+		{ tr("Start x"), 8, 8 },
+	});
+	// 0x04000044: WIN0V
+	s_registers.append({
+		{ tr("End y"), 0, 8 },
+		{ tr("Start y"), 8, 8 },
+	});
+	// 0x04000046: WIN1V
+	s_registers.append({
+		{ tr("End y"), 0, 8 },
+		{ tr("Start y"), 8, 8 },
+	});
+	// 0x04000048: WININ
+	s_registers.append({
+		{ tr("Window 0 enable BG 0"), 0 },
+		{ tr("Window 0 enable BG 1"), 1 },
+		{ tr("Window 0 enable BG 2"), 2 },
+		{ tr("Window 0 enable BG 3"), 3 },
+		{ tr("Window 0 enable OBJ"), 4 },
+		{ tr("Window 0 enable blend"), 5 },
+		{ tr("Window 1 enable BG 0"), 8 },
+		{ tr("Window 1 enable BG 1"), 9 },
+		{ tr("Window 1 enable BG 2"), 10 },
+		{ tr("Window 1 enable BG 3"), 11 },
+		{ tr("Window 1 enable OBJ"), 12 },
+		{ tr("Window 1 enable blend"), 13 },
+	});
+	// 0x0400004A: WINOUT
+	s_registers.append({
+		{ tr("Outside window enable BG 0"), 0 },
+		{ tr("Outside window enable BG 1"), 1 },
+		{ tr("Outside window enable BG 2"), 2 },
+		{ tr("Outside window enable BG 3"), 3 },
+		{ tr("Outside window enable OBJ"), 4 },
+		{ tr("Outside window enable blend"), 5 },
+		{ tr("OBJ window enable BG 0"), 8 },
+		{ tr("OBJ window enable BG 1"), 9 },
+		{ tr("OBJ window enable BG 2"), 10 },
+		{ tr("OBJ window enable BG 3"), 11 },
+		{ tr("OBJ window enable OBJ"), 12 },
+		{ tr("OBJ window enable blend"), 13 },
+	});
+	// 0x0400004C: MOSAIC
+	s_registers.append({
+		{ tr("Background mosaic size vertical"), 0, 4 },
+		{ tr("Background mosaic size horizontal"), 4, 4 },
+		{ tr("Object mosaic size vertical"), 8, 4 },
+		{ tr("Object mosaic size horizontal"), 12, 4 },
+	});
+	// 0x0400004E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000050: BLDCNT
+	s_registers.append({
+		{ tr("BG 0 target 1"), 0 },
+		{ tr("BG 1 target 1"), 1 },
+		{ tr("BG 2 target 1"), 2 },
+		{ tr("BG 3 target 1"), 3 },
+		{ tr("OBJ target 1"), 4 },
+		{ tr("Backdrop target 1"), 5 },
+		{ tr("Blend mode"), 6, 2, {
+			tr("Disabled"),
+			tr("Additive blending"),
+			tr("Brighten"),
+			tr("Darken"),
+		} },
+		{ tr("BG 0 target 2"), 8 },
+		{ tr("BG 1 target 2"), 9 },
+		{ tr("BG 2 target 2"), 10 },
+		{ tr("BG 3 target 2"), 11 },
+		{ tr("OBJ target 2"), 12 },
+		{ tr("Backdrop target 2"), 13 },
+	});
+	// 0x04000052: BLDALPHA
+	s_registers.append({
+		{ tr("Blend A (target 1)"), 0, 5 },
+		{ tr("Blend B (target 2)"), 8, 5 },
+	});
+	// 0x04000054: BLDY
+	s_registers.append({
+		{ tr("Blend Y"), 0, 5 },
+	});
 	return s_registers;
 }
 
