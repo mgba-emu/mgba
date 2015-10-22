@@ -24,6 +24,7 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MultiplayerController.h"
@@ -372,6 +373,11 @@ void Window::openPaletteWindow() {
 void Window::openMemoryWindow() {
 	MemoryView* memoryWindow = new MemoryView(m_controller);
 	openView(memoryWindow);
+}
+
+void Window::openIOViewer() {
+	IOViewer* ioViewer = new IOViewer(m_controller);
+	openView(ioViewer);
 }
 
 void Window::openAboutScreen() {
@@ -1163,6 +1169,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
+
+	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
+	connect(ioViewer, SIGNAL(triggered()), this, SLOT(openIOViewer()));
+	m_gameActions.append(ioViewer);
+	addControlledAction(toolsMenu, ioViewer, "ioViewer");
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {

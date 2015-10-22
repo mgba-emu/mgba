@@ -75,6 +75,7 @@ set(SOURCE_FILES
 	GameController.cpp
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
+	IOViewer.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
@@ -101,6 +102,7 @@ qt5_wrap_ui(UI_FILES
 	AboutScreen.ui
 	CheatsView.ui
 	GIFView.ui
+	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui
 	MemoryView.ui

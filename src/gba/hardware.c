@@ -591,41 +591,65 @@ int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
 // == Serialization
 
 void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
-	state->hw.readWrite = hw->readWrite;
-	state->hw.pinState = hw->pinState;
-	state->hw.pinDirection = hw->direction;
+	GBASerializedHWFlags1 flags1 = 0;
+	GBASerializedHWFlags2 flags2 = 0;
+	flags1 = GBASerializedHWFlags1SetReadWrite(flags1, hw->readWrite);
+	STORE_16(hw->pinState, 0, &state->hw.pinState);
+	STORE_16(hw->direction, 0, &state->hw.pinDirection);
 	state->hw.devices = hw->devices;
-	state->hw.rtc = hw->rtc;
-	state->hw.gyroSample = hw->gyroSample;
-	state->hw.gyroEdge = hw->gyroEdge;
-	state->hw.tiltSampleX = hw->tiltX;
-	state->hw.tiltSampleY = hw->tiltY;
-	state->hw.tiltState = hw->tiltState;
-	state->hw.lightCounter = hw->lightCounter;
+
+	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtc.bytesRemaining);
+	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
+	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
+	STORE_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
+	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
+	STORE_32(hw->rtc.command, 0, &state->hw.rtc.command);
+	STORE_32(hw->rtc.control, 0, &state->hw.rtc.control);
+	memcpy(state->hw.rtc.time, hw->rtc.time, sizeof(state->hw.rtc.time));
+
+	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
+	flags1 = GBASerializedHWFlags1SetGyroEdge(flags1, hw->gyroEdge);
+	STORE_16(hw->tiltX, 0, &state->hw.tiltSampleX);
+	STORE_16(hw->tiltY, 0, &state->hw.tiltSampleY);
+	flags2 = GBASerializedHWFlags2SetTiltState(flags2, hw->tiltState);
+	flags2 = GBASerializedHWFlags1SetLightCounter(flags2, hw->lightCounter);
 	state->hw.lightSample = hw->lightSample;
-	state->hw.lightEdge = hw->lightEdge;
-	state->hw.gbpInputsPosted = hw->gbpInputsPosted;
-	state->hw.gbpTxPosition = hw->gbpTxPosition;
-	state->hw.gbpNextEvent = hw->gbpNextEvent;
+	flags1 = GBASerializedHWFlags1SetLightEdge(flags1, hw->lightEdge);
+	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->gbpInputsPosted);
+	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->gbpTxPosition);
+	STORE_32(hw->gbpNextEvent, 0, &state->hw.gbpNextEvent);
+	STORE_32(flags1, 0, &state->hw.flags1);
+	STORE_32(flags2, 0, &state->hw.flags2);
 }
 
 void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {
-	hw->readWrite = state->hw.readWrite;
-	hw->pinState = state->hw.pinState;
-	hw->direction = state->hw.pinDirection;
+	GBASerializedHWFlags1 flags1;
+	LOAD_16(flags1, 0, &state->hw.flags1);
+	hw->readWrite = GBASerializedHWFlags1GetReadWrite(flags1);
+	LOAD_16(hw->pinState, 0, &state->hw.pinState);
+	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
-	hw->rtc = state->hw.rtc;
-	hw->gyroSample = state->hw.gyroSample;
-	hw->gyroEdge = state->hw.gyroEdge;
-	hw->tiltX = state->hw.tiltSampleX;
-	hw->tiltY = state->hw.tiltSampleY;
-	hw->tiltState = state->hw.tiltState;
-	hw->lightCounter = state->hw.lightCounter;
+
+	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtc.bytesRemaining);
+	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtc.transferStep);
+	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtc.bitsRead);
+	LOAD_32(hw->rtc.bits, 0, &state->hw.rtc.bits);
+	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtc.commandActive);
+	LOAD_32(hw->rtc.command, 0, &state->hw.rtc.command);
+	LOAD_32(hw->rtc.control, 0, &state->hw.rtc.control);
+	memcpy(hw->rtc.time, state->hw.rtc.time, sizeof(hw->rtc.time));
+
+	LOAD_16(hw->gyroSample, 0, &state->hw.gyroSample);
+	hw->gyroEdge = GBASerializedHWFlags1GetGyroEdge(flags1);
+	LOAD_16(hw->tiltX, 0, &state->hw.tiltSampleX);
+	LOAD_16(hw->tiltY, 0, &state->hw.tiltSampleY);
+	hw->tiltState = GBASerializedHWFlags2GetTiltState(state->hw.flags2);
+	hw->lightCounter = GBASerializedHWFlags1GetLightCounter(flags1);
 	hw->lightSample = state->hw.lightSample;
-	hw->lightEdge = state->hw.lightEdge;
-	hw->gbpInputsPosted = state->hw.gbpInputsPosted;
-	hw->gbpTxPosition = state->hw.gbpTxPosition;
-	hw->gbpNextEvent = state->hw.gbpNextEvent;
+	hw->lightEdge = GBASerializedHWFlags1GetLightEdge(flags1);
+	hw->gbpInputsPosted = GBASerializedHWFlags2GetGbpInputsPosted(state->hw.flags2);
+	hw->gbpTxPosition = GBASerializedHWFlags2GetGbpTxPosition(state->hw.flags2);
+	LOAD_32(hw->gbpNextEvent, 0, &state->hw.gbpNextEvent);
 	if (hw->devices & HW_GB_PLAYER) {
 		GBASIOSetDriver(&hw->p->sio, &hw->gbpDriver.d, SIO_NORMAL_32);
 	}

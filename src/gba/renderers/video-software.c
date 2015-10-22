@@ -772,7 +772,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		}
 	}
 
-	int priority;
+	unsigned priority;
 	for (priority = 0; priority < 4; ++priority) {
 		renderer->end = 0;
 		for (w = 0; w < renderer->nWindows; ++w) {

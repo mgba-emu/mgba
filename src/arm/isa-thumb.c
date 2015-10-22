@@ -309,7 +309,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 	DEFINE_INSTRUCTION_THUMB(B ## COND, \
 		if (ARM_COND_ ## COND) { \
 			int8_t immediate = opcode; \
-			cpu->gprs[ARM_PC] += immediate << 1; \
+			cpu->gprs[ARM_PC] += (int32_t) immediate << 1; \
 			THUMB_WRITE_PC; \
 		})
 

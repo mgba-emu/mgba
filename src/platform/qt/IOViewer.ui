@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>IOViewer</class>
+ <widget class="QWidget" name="IOViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>343</width>
+    <height>342</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>I/O Viewer</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <item>
+    <widget class="QComboBox" name="regSelect"/>
+   </item>
+   <item alignment="Qt::AlignRight|Qt::AlignTop">
+    <widget class="QLabel" name="regValue">
+     <property name="text">
+      <string>0x0000</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="12" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b3"/>
+     </item>
+     <item row="0" column="11" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b4"/>
+     </item>
+     <item row="0" column="13" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b2"/>
+     </item>
+     <item row="0" column="15" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b0"/>
+     </item>
+     <item row="1" column="13" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l2">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="10" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b5"/>
+     </item>
+     <item row="0" column="14" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b1"/>
+     </item>
+     <item row="1" column="10" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l5">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>5</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="11" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l4">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>4</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="8" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l7">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>7</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="15" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l0">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="9" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b6"/>
+     </item>
+     <item row="1" column="6" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="l9">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>9</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="6" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b9"/>
+     </item>
+     <item row="1" column="14" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l1">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="12" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l3">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>3</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="bF"/>
+     </item>
+     <item row="1" column="7" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="l8">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>8</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="bD"/>
+     </item>
+     <item row="0" column="1" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="bE"/>
+     </item>
+     <item row="1" column="3" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lC">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>C</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lE">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>E</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="bC"/>
+     </item>
+     <item row="0" column="5">
+      <widget class="QCheckBox" name="bA"/>
+     </item>
+     <item row="1" column="9" alignment="Qt::AlignHCenter|Qt::AlignTop">
+      <widget class="QLabel" name="l6">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>6</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="7" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b8"/>
+     </item>
+     <item row="0" column="4" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="bB"/>
+     </item>
+     <item row="0" column="8" alignment="Qt::AlignHCenter">
+      <widget class="QCheckBox" name="b7"/>
+     </item>
+     <item row="1" column="2" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lD">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>D</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lF">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>F</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="5" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lA">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>A</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="lB">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>80</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>B</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="regDescription" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Close|QDialogButtonBox::Reset</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>regSelect</tabstop>
+  <tabstop>b0</tabstop>
+  <tabstop>b1</tabstop>
+  <tabstop>b2</tabstop>
+  <tabstop>b3</tabstop>
+  <tabstop>b4</tabstop>
+  <tabstop>b5</tabstop>
+  <tabstop>b6</tabstop>
+  <tabstop>b7</tabstop>
+  <tabstop>bE</tabstop>
+  <tabstop>b8</tabstop>
+  <tabstop>b9</tabstop>
+  <tabstop>bA</tabstop>
+  <tabstop>bB</tabstop>
+  <tabstop>bC</tabstop>
+  <tabstop>bD</tabstop>
+  <tabstop>bF</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

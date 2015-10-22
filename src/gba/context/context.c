@@ -185,7 +185,7 @@ bool GBAContextStart(struct GBAContext* context) {
 	ARMReset(context->cpu);
 
 	if (opts.skipBios) {
-		GBASkipBIOS(context->cpu);
+		GBASkipBIOS(context->gba);
 	}
 
 	struct GBACartridgeOverride override;

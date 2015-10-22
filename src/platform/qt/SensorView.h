@@ -30,7 +30,7 @@ public:
 
 protected:
 	bool eventFilter(QObject*, QEvent* event) override;
-	bool event(QEvent* event);
+	bool event(QEvent* event) override;
 
 private slots:
 	void updateSensors();

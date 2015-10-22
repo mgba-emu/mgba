@@ -55,13 +55,13 @@ typedef intptr_t ssize_t;
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
-	void* _ptr = (ARR); \
+	const void* _ptr = (ARR); \
 	__asm__("lwbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
 #define LOAD_16LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
-	void* _ptr = (ARR); \
+	const void* _ptr = (ARR); \
 	__asm__("lhbrx %0, %1, %2" : "=r"(DEST) : "b"(_ptr), "r"(_addr)); \
 }
 
@@ -76,6 +76,15 @@ typedef intptr_t ssize_t;
 	void* _ptr = (ARR); \
 	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
+#elif defined __BIG_ENDIAN__
+#if defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(((uint16_t*) ARR)[(ADDR) >> 1])
+#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = __builtin_bswap32(SRC)
+#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = __builtin_bswap16(SRC)
+#else
+#error Big endian build not supported on this platform.
+#endif
 #else
 #define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
 #define LOAD_16LE(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
@@ -89,6 +98,7 @@ typedef intptr_t ssize_t;
 #define INS_BITS(SRC, START, END, BITS) (CLEAR_BITS(SRC, START, END) | (((BITS) << (START)) & MAKE_MASK(START, END)))
 #define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
 #define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
+#define TEST_FILL_BITS(SRC, START, END, TEST) ((TEST) ? (FILL_BITS(SRC, START, END)) : (CLEAR_BITS(SRC, START, END)))
 
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
@@ -115,6 +125,9 @@ typedef intptr_t ssize_t;
 	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
+	} \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## TestFill ## FIELD (TYPE src, bool test) { \
+		return TEST_FILL_BITS(src, (START), (START) + (SIZE), test); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)

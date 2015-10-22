@@ -31,6 +31,16 @@
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
 	const char* value;
 	if (config->port) {
+		value = ConfigurationGetValue(&config->overridesTable, config->port, key);
+		if (value) {
+			return value;
+		}
+	}
+	value = ConfigurationGetValue(&config->overridesTable, 0, key);
+	if (value) {
+		return value;
+	}
+	if (config->port) {
 		value = ConfigurationGetValue(&config->configTable, config->port, key);
 		if (value) {
 			return value;
@@ -106,6 +116,7 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
+	ConfigurationInit(&config->overridesTable);
 	if (port) {
 		config->port = malloc(strlen("ports.") + strlen(port) + 1);
 		snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
@@ -117,6 +128,7 @@ void GBAConfigInit(struct GBAConfig* config, const char* port) {
 void GBAConfigDeinit(struct GBAConfig* config) {
 	ConfigurationDeinit(&config->configTable);
 	ConfigurationDeinit(&config->defaultsTable);
+	ConfigurationDeinit(&config->overridesTable);
 	free(config->port);
 }
 
@@ -269,6 +281,22 @@ void GBAConfigSetDefaultUIntValue(struct GBAConfig* config, const char* key, uns
 
 void GBAConfigSetDefaultFloatValue(struct GBAConfig* config, const char* key, float value) {
 	ConfigurationSetFloatValue(&config->defaultsTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideValue(struct GBAConfig* config, const char* key, const char* value) {
+	ConfigurationSetValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideIntValue(struct GBAConfig* config, const char* key, int value) {
+	ConfigurationSetIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+	ConfigurationSetUIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideFloatValue(struct GBAConfig* config, const char* key, float value) {
+	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {

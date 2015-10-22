@@ -185,7 +185,6 @@ struct GBAVideo {
 	// VCOUNT
 	int vcount;
 
-	int32_t lastHblank;
 	int32_t nextHblank;
 	int32_t nextEvent;
 	int32_t eventDiff;
