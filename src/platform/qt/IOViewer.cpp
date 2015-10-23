@@ -363,6 +363,7 @@ void IOViewer::updateRegister() {
 		m_b[i]->setChecked(value & (1 << i) ? Qt::Checked : Qt::Unchecked);
 	}
 	m_value = value;
+	emit valueChanged();
 }
 
 void IOViewer::bitFlipped() {
@@ -371,6 +372,7 @@ void IOViewer::bitFlipped() {
 		m_value |= m_b[i]->isChecked() << i;
 	}
 	m_ui.regValue->setText("0x" + QString("%1").arg(m_value, 4, 16, QChar('0')).toUpper());
+	emit valueChanged();
 }
 
 void IOViewer::writeback() {
@@ -415,23 +417,15 @@ void IOViewer::selectRegister(unsigned address) {
 				sbox->setEnabled(!ri.readonly);
 				sbox->setMaximum((1 << ri.size) - 1);
 				box->addWidget(sbox, i, 1, Qt::AlignRight);
-				for (int b = 0; b < ri.size; ++b) {
-					connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, b, &ri](int v) {
-						m_b[ri.start + b]->setChecked(v & (1 << b));
-					});
-					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [sbox, this, b](bool t) {
-						int v = sbox->value() & ~(1 << b);
-						v |= t << b;
-						bool signalsBlocked = sbox->blockSignals(true);
-						sbox->setValue(v);
-						sbox->blockSignals(signalsBlocked);
-					});
-					connect(sbox, &QObject::destroyed, [connection, this, b, &ri]() {
-						bool signalsBlocked = m_b[ri.start + b]->blockSignals(true);
-						m_b[ri.start + b]->disconnect(connection);
-						m_b[ri.start + b]->blockSignals(signalsBlocked);
-					});
-				}
+				auto connection = connect(this, &IOViewer::valueChanged, [sbox, &ri, this]() {
+					int v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+					bool signalsBlocked = sbox->blockSignals(true);
+					sbox->setValue(v);
+					sbox->blockSignals(signalsBlocked);
+				});
+				connect(sbox, &QObject::destroyed, [connection, this]() {
+					this->disconnect(connection);
+				});
 			} else {
 				QButtonGroup* group = new QButtonGroup(box);
 				group->setExclusive(true);
@@ -445,30 +439,23 @@ void IOViewer::selectRegister(unsigned address) {
 					box->addWidget(button, i, 0, 1, 2, Qt::AlignLeft);
 					group->addButton(button, o);
 				}
-				for (int b = 0; b < ri.size; ++b) {
-					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [group, this, &ri](bool) {
-						unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
-						for (int i = 0; i < 1 << ri.size; ++i) {
-							QAbstractButton* button = group->button(i);
-							if (!button) {
-								continue;
-							}
-							bool signalsBlocked = button->blockSignals(true);
-							button->setChecked(i == v);
-							button->blockSignals(signalsBlocked);
+
+				auto connection = connect(this, &IOViewer::valueChanged, [group, this, &ri]() {
+					unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+					for (int i = 0; i < 1 << ri.size; ++i) {
+						QAbstractButton* button = group->button(i);
+						if (!button) {
+							continue;
 						}
-					});
-					connect(group, &QObject::destroyed, [connection, this, b, &ri]() {
-						m_b[ri.start + b]->disconnect(connection);
-					});
-				}
-				connect(group, static_cast<void (QButtonGroup::*)(int, bool)>(&QButtonGroup::buttonToggled), [this, &ri](int v) {
-					for (int i = 0; i < ri.size; ++i) {
-						bool signalsBlocked = m_b[ri.start + i]->blockSignals(true);
-						m_b[ri.start + i]->setChecked(v & (1 << i));
-						m_b[ri.start + i]->blockSignals(signalsBlocked);
+						bool signalsBlocked = button->blockSignals(true);
+						button->setChecked(i == v);
+						button->blockSignals(signalsBlocked);
 					}
 				});
+				connect(group, &QObject::destroyed, [connection, this]() {
+					this->disconnect(connection);
+				});
+
 			}
 			++i;
 		}
