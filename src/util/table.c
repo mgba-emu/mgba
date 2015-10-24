@@ -121,6 +121,15 @@ void TableInsert(struct Table* table, uint32_t key, void* value) {
 	++list->nEntries;
 }
 
+size_t TableSize(const struct Table* table) {
+	size_t e = 0;
+	size_t i;
+	for (i = 0; i < table->tableSize; ++i) {
+		e += table->table[i].nEntries;
+	}
+	return e;
+}
+
 void TableRemove(struct Table* table, uint32_t key) {
 	struct TableList* list;
 	TABLE_LOOKUP_START(TABLE_COMPARATOR, list, key) {
