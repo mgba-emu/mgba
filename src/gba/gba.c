@@ -27,8 +27,8 @@ const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 static const size_t GBA_ROM_MAGIC_OFFSET = 3;
 static const uint8_t GBA_ROM_MAGIC[] = { 0xEA };
 
-static const size_t GBA_MB_MAGIC_OFFSET = 0xC3;
-static const uint8_t GBA_MB_MAGIC[] = { 0xEA };
+static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
+static const uint8_t GBA_MB_MAGIC[] = { 0x07, 0x00, 0x00, 0xEA };
 
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
