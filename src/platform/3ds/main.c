@@ -67,6 +67,34 @@ enum {
 
 extern bool allocateRomBuffer(void);
 
+static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size)
+{
+	u32 pleft = 0, pright = 0;
+
+	int loopMode = (flags >> 10) & 3;
+	if (!loopMode) {
+		flags |= SOUND_ONE_SHOT;
+	}
+
+	pleft = osConvertVirtToPhys((u32) left);
+	pright = osConvertVirtToPhys((u32) right);
+
+	u32 timer = CSND_TIMER(sampleRate);
+	if (timer < 0x0042) {
+		timer = 0x0042;
+	}
+	else if (timer > 0xFFFF) {
+		timer = 0xFFFF;
+	}
+	flags &= ~0xFFFF001F;
+	flags |= SOUND_ENABLE | (timer << 16);
+
+	u32 volumes = CSND_VOL(vol, -1.0);
+	CSND_SetChnRegs(flags | SOUND_CHANNEL(8), pleft, pleft, size, volumes, volumes);
+	volumes = CSND_VOL(vol, 1.0);
+	CSND_SetChnRegs(flags | SOUND_CHANNEL(9), pright, pright, size, volumes, volumes);
+}
+
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
 
 static void _drawStart(void) {
@@ -187,8 +215,8 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		audioPos = 0;
-		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		_csndPlaySound(SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, audioLeft, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		csndExecCmds(false);
 	}
 	unsigned mode;
 	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
