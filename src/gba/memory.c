@@ -330,7 +330,12 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			LOAD_32(value, address, memory->bios); \
 		} else { \
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load32: 0x%08X", address); \
-			value = memory->biosPrefetch; \
+			if (memory->activeDMA) { \
+				/* TODO: Test on hardware */ \
+				value = 0; \
+			} else { \
+				value = memory->biosPrefetch; \
+			} \
 		} \
 	} else { \
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
@@ -446,7 +451,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
+				if (memory->activeDMA) {
+					value = 0;
+				} else {
+					value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
+				}
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);

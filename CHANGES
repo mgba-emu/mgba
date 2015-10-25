@@ -6,6 +6,7 @@ Features:
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - Qt: Use safer isLoaded check in GameController
+ - GBA Memory: Fix DMAs from BIOS while not in BIOS
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
