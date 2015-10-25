@@ -618,8 +618,8 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->gbpInputsPosted);
 	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->gbpTxPosition);
 	STORE_32(hw->gbpNextEvent, 0, &state->hw.gbpNextEvent);
-	STORE_32(flags1, 0, &state->hw.flags1);
-	STORE_32(flags2, 0, &state->hw.flags2);
+	STORE_16(flags1, 0, &state->hw.flags1);
+	state->hw.flags2 = flags2;
 }
 
 void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {
