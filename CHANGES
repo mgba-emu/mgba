@@ -1,3 +1,7 @@
+0.3.2: (Future)
+Bugfixes:
+ - Qt: Use safer isLoaded check in GameController
+
 0.3.1: (2015-10-24)
 Bugfixes:
  - ARM7: Fix instruction decoding of Thumb shifts

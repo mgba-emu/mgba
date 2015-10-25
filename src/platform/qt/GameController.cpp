@@ -395,7 +395,7 @@ void GameController::loadPatch(const QString& path) {
 }
 
 void GameController::importSharkport(const QString& path) {
-	if (!m_gameOpen) {
+	if (!isLoaded()) {
 		return;
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
@@ -410,7 +410,7 @@ void GameController::importSharkport(const QString& path) {
 }
 
 void GameController::exportSharkport(const QString& path) {
-	if (!m_gameOpen) {
+	if (!isLoaded()) {
 		return;
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
@@ -466,7 +466,7 @@ bool GameController::isPaused() {
 }
 
 void GameController::setPaused(bool paused) {
-	if (!m_gameOpen || m_rewindTimer.isActive() || paused == GBAThreadIsPaused(&m_threadContext)) {
+	if (!isLoaded() || m_rewindTimer.isActive() || paused == GBAThreadIsPaused(&m_threadContext)) {
 		return;
 	}
 	if (paused) {
@@ -618,7 +618,7 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 		return;
 	}
 	m_audioChannels[channel] = enable;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		switch (channel) {
 		case 0:
 		case 1:
@@ -641,7 +641,7 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 		return;
 	}
 	m_videoLayers[layer] = enable;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		switch (layer) {
 		case 0:
 		case 1:
@@ -779,7 +779,7 @@ void GameController::setFrameskip(int skip) {
 void GameController::setVolume(int volume) {
 	threadInterrupt();
 	m_threadContext.volume = volume;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		m_threadContext.gba->audio.masterVolume = volume;
 	}
 	threadContinue();
@@ -788,7 +788,7 @@ void GameController::setVolume(int volume) {
 void GameController::setMute(bool mute) {
 	threadInterrupt();
 	m_threadContext.mute = mute;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		m_threadContext.gba->audio.masterVolume = mute ? 0 : m_threadContext.volume;
 	}
 	threadContinue();
@@ -836,7 +836,7 @@ void GameController::enableTurbo() {
 void GameController::setAVStream(GBAAVStream* stream) {
 	threadInterrupt();
 	m_threadContext.stream = stream;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		m_threadContext.gba->stream = stream;
 	}
 	threadContinue();
@@ -845,7 +845,7 @@ void GameController::setAVStream(GBAAVStream* stream) {
 void GameController::clearAVStream() {
 	threadInterrupt();
 	m_threadContext.stream = nullptr;
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		m_threadContext.gba->stream = nullptr;
 	}
 	threadContinue();
