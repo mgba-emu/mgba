@@ -5,6 +5,7 @@ Features:
  - Booting of multiboot images
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
+ - Qt: Use safer isLoaded check in GameController
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
