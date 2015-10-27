@@ -20,6 +20,7 @@ Misc:
  - SDL: Allow GBASDLAudio to be used without a thread context
  - All: Improved PowerPC support
  - All: Fix some undefined behavior warnings
+ - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
 0.3.1: (2015-10-24)
 Bugfixes:
