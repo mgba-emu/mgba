@@ -1,6 +1,7 @@
 0.3.2: (Future)
 Bugfixes:
  - Qt: Use safer isLoaded check in GameController
+ - GBA: Fix idle skip state being retained between games
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
