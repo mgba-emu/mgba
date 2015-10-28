@@ -212,12 +212,10 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 		if (runner->params.guiFinish) {
 			runner->params.guiFinish();
 		}
-		GBAContextStart(&runner->context);
+		bool running = GBAContextStart(&runner->context);
 		if (runner->gameLoaded) {
 			runner->gameLoaded(runner);
 		}
-
-		bool running = true;
 		while (running) {
 			CircleBufferClear(&runner->fpsBuffer);
 			runner->totalDelta = 0;
@@ -261,7 +259,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 							runner->params.guiPrepare();
 						}
 						GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_TEXT_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
-						if (runner->params.guiPrepare) {
+						if (runner->params.guiFinish) {
 							runner->params.guiFinish();
 						}
 					}
