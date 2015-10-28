@@ -288,7 +288,7 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->playingCh1;
 			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->playingCh2 << 1;
 			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->playingCh3 << 2;
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->playingCh4 << 2;
+			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->playingCh4 << 3;
 		}
 
 		audio->nextSample -= audio->eventDiff;
