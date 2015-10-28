@@ -205,7 +205,7 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	if (m_queue.isEmpty()) {
+	if (m_queue.isEmpty() || !GBAThreadIsActive(m_context)) {
 		return;
 	}
 	if (GBASyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
