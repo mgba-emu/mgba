@@ -4,6 +4,7 @@ Bugfixes:
  - GBA: Fix idle skip state being retained between games
  - Qt: Fix a race condition in PainterGL that could lead to a crash
  - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
+ - GBA Video: Fix _mix for 15-bit color
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
