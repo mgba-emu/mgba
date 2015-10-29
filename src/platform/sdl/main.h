@@ -62,8 +62,9 @@ struct SDLSoftwareRenderer {
 
 #ifdef BUILD_GL
 	struct GBAGLContext gl;
-#elif BUILD_GLES2
-	struct GBAGLES2Context gl;
+#endif
+#ifdef BUILD_GLES2
+	struct GBAGLES2Context gl2;
 #endif
 
 #ifdef USE_PIXMAN
