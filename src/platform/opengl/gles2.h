@@ -6,7 +6,15 @@
 #ifndef GLES2_H
 #define GLES2_H
 
+#ifdef BUILD_GL
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+#else
 #include <GLES2/gl2.h>
+#endif
 
 #include "platform/video-backend.h"
 

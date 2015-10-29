@@ -53,6 +53,10 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
+	context->program = glCreateProgram();
+	context->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	context->vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
 	glShaderSource(context->fragmentShader, 1, (const GLchar**) &_fragmentShader, 0);
 	glShaderSource(context->vertexShader, 1, (const GLchar**) &_vertexShader, 0);
 	glAttachShader(context->program, context->vertexShader);
@@ -73,6 +77,9 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 static void GBAGLES2ContextDeinit(struct VideoBackend* v) {
 	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
 	glDeleteTextures(1, &context->tex);
+	glDeleteShader(context->fragmentShader);
+	glDeleteShader(context->vertexShader);
+	glDeleteProgram(context->program);
 }
 
 static void GBAGLES2ContextResized(struct VideoBackend* v, int w, int h) {
