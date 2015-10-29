@@ -47,11 +47,14 @@ if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
 endif()
 
 if(BUILD_GL)
-list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+	if(NOT WIN32)
+		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+	endif()
 endif()
 
 if(BUILD_GLES2)
-list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
 endif()
 
 get_target_property(QT_TYPE Qt5::Core TYPE)
