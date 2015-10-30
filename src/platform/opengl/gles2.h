@@ -18,18 +18,37 @@
 
 #include "platform/video-backend.h"
 
+struct GBAGLES2Shader {
+	unsigned width;
+	unsigned height;
+	GLuint tex;
+	GLuint fbo;
+	GLuint fragmentShader;
+	GLuint program;
+	GLuint texLocation;
+	GLuint positionLocation;
+};
+
 struct GBAGLES2Context {
 	struct VideoBackend d;
 
 	GLuint tex;
 	GLuint fragmentShader;
 	GLuint vertexShader;
+	GLuint nullVertexShader;
 	GLuint program;
 	GLuint bufferObject;
 	GLuint texLocation;
 	GLuint positionLocation;
+
+	struct GBAGLES2Shader* shader;
 };
 
 void GBAGLES2ContextCreate(struct GBAGLES2Context*);
+
+void GBAGLES2ShaderInit(struct GBAGLES2Shader*, const char*, int width, int height, bool filter);
+void GBAGLES2ShaderDeinit(struct GBAGLES2Shader*);
+void GBAGLES2ShaderAttach(struct GBAGLES2Context*, struct GBAGLES2Shader*);
+void GBAGLES2ShaderDetach(struct GBAGLES2Context*);
 
 #endif
