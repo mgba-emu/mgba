@@ -13,7 +13,7 @@ static const char* const _vertexShader =
 
 	"void main() {\n"
 	"	gl_Position = position;\n"
-	"	texCoord = (position.st + vec2(1.0, -1.0)) * vec2(0.46875, -0.3125);\n"
+	"	texCoord = (position.st + vec2(1.0, -1.0)) * vec2(0.5, -0.5);\n"
 	"}";
 
 static const char* const _nullVertexShader =
@@ -54,12 +54,12 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
 #endif
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
 	context->program = glCreateProgram();
@@ -153,15 +153,17 @@ void GBAGLES2ContextDrawFrame(struct VideoBackend* v) {
 void GBAGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
 	glBindTexture(GL_TEXTURE_2D, context->tex);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 256);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 }
 
 void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
@@ -177,9 +179,9 @@ void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
 	context->shader = 0;
 }
 
-void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* src, int width, int height, bool filter) {
-	shader->width = width > 0 ? width : 256;
-	shader->height = height > 0 ? height : 256;
+void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* src, int width, int height) {
+	shader->width = width > 0 ? width : VIDEO_HORIZONTAL_PIXELS;
+	shader->height = height > 0 ? height : VIDEO_VERTICAL_PIXELS;
 	glGenFramebuffers(1, &shader->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
 
