@@ -28,10 +28,14 @@ static const char* const _nullVertexShader =
 static const char* const _fragmentShader =
 	"varying vec2 texCoord;\n"
 	"uniform sampler2D tex;\n"
+	"uniform float gamma;\n"
+	"uniform vec3 scale;\n"
+	"uniform vec3 bias;\n"
 
 	"void main() {\n"
 	"	vec4 color = texture2D(tex, texCoord);\n"
 	"	color.a = 1.;\n"
+	"	color.rgb = scale * pow(color.rgb, vec3(gamma, gamma, gamma)) + bias;\n"
 	"	gl_FragColor = color;"
 	"}";
 
@@ -47,8 +51,6 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
 	glGenTextures(1, &context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -86,6 +88,9 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	glGetProgramInfoLog(context->program, 1024, 0, log);
 	printf("%s\n", log);
 	context->texLocation = glGetUniformLocation(context->program, "tex");
+	context->gammaLocation = glGetUniformLocation(context->program, "gamma");
+	context->biasLocation = glGetUniformLocation(context->program, "bias");
+	context->scaleLocation = glGetUniformLocation(context->program, "scale");
 	context->positionLocation = glGetAttribLocation(context->program, "position");
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 }
@@ -125,13 +130,19 @@ void GBAGLES2ContextDrawFrame(struct VideoBackend* v) {
 	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, v->filter ? GL_LINEAR : GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, v->filter ? GL_LINEAR : GL_NEAREST);
 
 	if (context->shader) {
 		GLint viewport[4];
+		if (context->shader->blend) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		} else {
+			glDisable(GL_BLEND);
+		}
 		glGetIntegerv(GL_VIEWPORT, viewport);
 		glViewport(0, 0, context->shader->width, context->shader->height);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, context->shader->filter ? GL_LINEAR : GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, context->shader->filter ? GL_LINEAR : GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER, context->shader->fbo);
 		glUseProgram(context->shader->program);
 		glUniform1i(context->shader->texLocation, 0);
@@ -142,11 +153,19 @@ void GBAGLES2ContextDrawFrame(struct VideoBackend* v) {
 		glBindTexture(GL_TEXTURE_2D, context->shader->tex);
 		glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, v->filter ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, v->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(context->program);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glUniform1i(context->texLocation, 0);
+	glUniform1f(context->gammaLocation, context->gamma);
+	glUniform3f(context->biasLocation, context->bias[0], context->bias[1], context->bias[2]);
+	glUniform3f(context->scaleLocation, context->scale[0], context->scale[1], context->scale[2]);
 	glVertexAttribPointer(context->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(context->positionLocation);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glDisable(GL_BLEND);
 	glUseProgram(0);
 }
 
@@ -177,18 +196,27 @@ void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
 	context->d.setMessage = 0;
 	context->d.clearMessage = 0;
 	context->shader = 0;
+	context->gamma = 1.0f;
+	context->bias[0] = 0.0f;
+	context->bias[1] = 0.0f;
+	context->bias[2] = 0.0f;
+	context->scale[0] = 1.0f;
+	context->scale[1] = 1.0f;
+	context->scale[2] = 1.0f;
 }
 
 void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* src, int width, int height) {
 	shader->width = width > 0 ? width : VIDEO_HORIZONTAL_PIXELS;
 	shader->height = height > 0 ? height : VIDEO_VERTICAL_PIXELS;
+	shader->filter = false;
+	shader->blend = false;
 	glGenFramebuffers(1, &shader->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
 
 	glGenTextures(1, &shader->tex);
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter ? GL_LINEAR : GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width, shader->height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
