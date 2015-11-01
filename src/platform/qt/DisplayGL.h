@@ -68,7 +68,7 @@ class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlag = QGLFormat::OpenGL_Version_1_1);
+	PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags = QGLFormat::OpenGL_Version_1_1);
 	~PainterGL();
 
 	void setContext(GBAThread*);

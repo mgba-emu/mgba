@@ -28,12 +28,7 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	, m_drawThread(nullptr)
 	, m_context(nullptr)
 {
-	QGLFormat::OpenGLVersionFlag glVersion = QGLFormat::OpenGL_Version_1_4;
-	QGLFormat::OpenGLVersionFlags supported = QGLFormat::openGLVersionFlags();
-	if (supported & QGLFormat::OpenGL_Version_2_1) {
-		glVersion = QGLFormat::OpenGL_Version_2_1;
-	}
-	m_painter = new PainterGL(m_gl, glVersion);
+	m_painter = new PainterGL(m_gl, QGLFormat::openGLVersionFlags());
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
 }
@@ -147,7 +142,7 @@ void DisplayGL::resizePainter() {
 	}
 }
 
-PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlag glVersion)
+PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 	: m_gl(parent)
 	, m_active(false)
 	, m_context(nullptr)
@@ -156,27 +151,22 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlag glVersion)
 #ifdef BUILD_GL
 	GBAGLContext* glBackend;
 #endif
-#if !defined(_WIN32)
+#ifndef _WIN32
 	GBAGLES2Context* gl2Backend;
 #endif
 
-	switch (glVersion) {
-	default:
-#if !defined(_WIN32)
+#ifndef _WIN32
+	if (glVersion & QGLFormat::OpenGL_Version_3_0) {
 		gl2Backend = new GBAGLES2Context;
 		GBAGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
-		break;
+	} else {
+#else
+	{
 #endif
-	case QGLFormat::OpenGL_Version_1_1:
-	case QGLFormat::OpenGL_Version_1_2:
-	case QGLFormat::OpenGL_Version_1_3:
-	case QGLFormat::OpenGL_Version_1_4:
-	case QGLFormat::OpenGL_Version_1_5:
 		glBackend = new GBAGLContext;
 		GBAGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
-		break;
 	}
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
@@ -199,6 +189,7 @@ PainterGL::~PainterGL() {
 		delete[] item;
 	}
 	delete m_backend;
+	m_backend = nullptr;
 }
 
 void PainterGL::setContext(GBAThread* context) {
