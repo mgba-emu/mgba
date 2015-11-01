@@ -11,6 +11,7 @@
 #include <OpenGL/gl3.h>
 #else
 #include <GL/gl.h>
+#include <GL/glext.h>
 #endif
 #else
 #include <GLES2/gl2.h>
