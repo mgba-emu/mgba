@@ -257,7 +257,7 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
 	if (!vd3de->utf8Name[0]) {
-		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->ent.name));
+		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
 	}
 	return vd3de->utf8Name;
 }
