@@ -39,7 +39,7 @@ char* strnrstr(const char* restrict haystack, const char* restrict needle, size_
 	return last;
 }
 
-static uint32_t _utf16Char(const uint16_t** unicode, size_t* length) {
+uint32_t utf16Char(const uint16_t** unicode, size_t* length) {
 	if (*length < 2) {
 		*length = 0;
 		return 0;
@@ -69,7 +69,7 @@ static uint32_t _utf16Char(const uint16_t** unicode, size_t* length) {
 	return (highSurrogate << 10) + lowSurrogate + 0x10000;
 }
 
-static uint32_t _utf8Char(const char** unicode, size_t* length) {
+uint32_t utf8Char(const char** unicode, size_t* length) {
 	if (*length == 0) {
 		return 0;
 	}
@@ -150,8 +150,8 @@ int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t u
 		if (char1 > char2) {
 			return 1;
 		}
-		char1 = _utf16Char(&utf16, &utf16Length);
-		char2 = _utf8Char(&utf8, &utf8Length);
+		char1 = utf16Char(&utf16, &utf16Length);
+		char2 = utf8Char(&utf8, &utf8Length);
 	}
 	if (utf16Length == 0 && utf8Length > 0) {
 		return -1;
@@ -172,7 +172,7 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 		if (length == 0) {
 			break;
 		}
-		uint32_t unichar = _utf16Char(&utf16, &length);
+		uint32_t unichar = utf16Char(&utf16, &length);
 		size_t bytes = _toUtf8(unichar, buffer);
 		utf8Length += bytes;
 		if (utf8Length < utf8TotalBytes) {
