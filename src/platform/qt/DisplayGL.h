@@ -8,6 +8,11 @@
 
 #include "Display.h"
 
+#ifdef USE_EPOXY
+#include <epoxy/gl.h>
+#include <epoxy/wgl.h>
+#endif
+
 #include <QGLWidget>
 #include <QList>
 #include <QMouseEvent>

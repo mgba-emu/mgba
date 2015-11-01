@@ -14,8 +14,11 @@ extern "C" {
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif
-#if !defined(_WIN32)
+#if !defined(_WIN32) || defined(USE_EPOXY)
 #include "platform/opengl/gles2.h"
+#ifdef _WIN32 
+#include <epoxy/wgl.h>
+#endif
 #endif
 }
 
@@ -151,11 +154,11 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 #ifdef BUILD_GL
 	GBAGLContext* glBackend;
 #endif
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(USE_EPOXY)
 	GBAGLES2Context* gl2Backend;
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(USE_EPOXY)
 	if (glVersion & QGLFormat::OpenGL_Version_3_0) {
 		gl2Backend = new GBAGLES2Context;
 		GBAGLES2ContextCreate(gl2Backend);
@@ -223,6 +226,9 @@ void PainterGL::filter(bool filter) {
 
 void PainterGL::start() {
 	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
 	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
 	m_gl->doneCurrent();
 	m_active = true;
@@ -257,6 +263,9 @@ void PainterGL::forceDraw() {
 void PainterGL::stop() {
 	m_active = false;
 	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
 	dequeueAll();
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);

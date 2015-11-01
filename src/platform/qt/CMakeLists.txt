@@ -48,7 +48,7 @@ endif()
 
 if(BUILD_GL)
 	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
-	if(NOT WIN32)
+	if(NOT WIN32 OR USE_EPOXY)
 		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
 	endif()
 endif()
