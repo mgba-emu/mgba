@@ -11,6 +11,7 @@
 #include <OpenGL/gl3.h>
 #else
 #include <GL/gl.h>
+#define GL_GLEXT_PROTOTYPES
 #include <GL/glext.h>
 #endif
 #else
