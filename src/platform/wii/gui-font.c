@@ -48,7 +48,7 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	UNUSED(font);
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 	return defaultFontMetrics[glyph].width;
 }
@@ -66,7 +66,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left;

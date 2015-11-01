@@ -60,7 +60,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	ctrActivateTexture(&font->texture);
 
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
