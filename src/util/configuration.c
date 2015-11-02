@@ -31,13 +31,25 @@ static int _iniRead(void* configuration, const char* section, const char* key, c
 }
 
 static void _keyHandler(const char* key, void* value, void* user) {
-	fprintf(user, "%s=%s\n", key, (const char*) value);
+	char line[256];
+	struct VFile* vf = user;
+	size_t len = snprintf(line, sizeof(line), "%s=%s\n", key, (const char*) value);
+	if (len >= sizeof(line)) {
+		len = sizeof(line) - 1;
+	}
+	vf->write(vf, line, len);
 }
 
 static void _sectionHandler(const char* key, void* section, void* user) {
-	fprintf(user, "[%s]\n", key);
+	char line[256];
+	struct VFile* vf = user;
+	size_t len = snprintf(line, sizeof(line), "[%s]\n", key);
+	if (len >= sizeof(line)) {
+		len = sizeof(line) - 1;
+	}
+	vf->write(vf, line, len);
 	HashTableEnumerate(section, _keyHandler, user);
-	fprintf(user, "\n");
+	vf->write(vf, "\n", 1);
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
@@ -115,36 +127,53 @@ const char* ConfigurationGetValue(const struct Configuration* configuration, con
 	return HashTableLookup(currentSection, key);
 }
 
+static char* _vfgets(char* stream, int size, void* user) {
+	struct VFile* vf = user;
+	if (vf->readline(vf, stream, size) > 0) {
+		return stream;
+	}
+	return 0;
+}
+
 bool ConfigurationRead(struct Configuration* configuration, const char* path) {
 	HashTableClear(&configuration->root);
 	HashTableClear(&configuration->sections);
-	return ini_parse(path, _iniRead, configuration) == 0;
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	return ini_parse_stream(_vfgets, vf, _iniRead, configuration) == 0;
 }
 
 bool ConfigurationWrite(const struct Configuration* configuration, const char* path) {
-	FILE* file = fopen(path, "w");
-	if (!file) {
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
 		return false;
 	}
-	HashTableEnumerate(&configuration->root, _keyHandler, file);
-	HashTableEnumerate(&configuration->sections, _sectionHandler, file);
-	fclose(file);
+	HashTableEnumerate(&configuration->root, _keyHandler, vf);
+	HashTableEnumerate(&configuration->sections, _sectionHandler, vf);
+	vf->close(vf);
 	return true;
 }
 
 bool ConfigurationWriteSection(const struct Configuration* configuration, const char* path, const char* section) {
 	const struct Table* currentSection = &configuration->root;
-	FILE* file = fopen(path, "w");
-	if (!file) {
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_APPEND);
+	if (!vf) {
 		return false;
 	}
 	if (section) {
 		currentSection = HashTableLookup(&configuration->sections, section);
-		fprintf(file, "[%s]\n", section);
+		char line[256];
+		size_t len = snprintf(line, sizeof(line), "[%s]\n", section);
+		if (len >= sizeof(line)) {
+			len = sizeof(line) - 1;
+		}
+		vf->write(vf, line, len);
 	}
 	if (currentSection) {
-		HashTableEnumerate(currentSection, _sectionHandler, file);
+		HashTableEnumerate(currentSection, _sectionHandler, vf);
 	}
-	fclose(file);
+	vf->close(vf);
 	return true;
 }
