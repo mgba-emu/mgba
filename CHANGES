@@ -13,6 +13,7 @@ Bugfixes:
  - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
  - GBA Video: Fix _mix for 15-bit color
  - VFS: Fix VFileReadline and remove _vfdReadline
+ - Qt: Fix font size in memory viewer
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper

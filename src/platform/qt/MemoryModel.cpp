@@ -34,7 +34,11 @@ MemoryModel::MemoryModel(QWidget* parent)
 {
 	m_font.setFamily("Source Code Pro");
 	m_font.setStyleHint(QFont::Monospace);
+#ifdef Q_OS_MAC
 	m_font.setPointSize(12);
+#else
+	m_font.setPointSize(10);
+#endif
 	QFontMetrics metrics(m_font);
 	m_cellHeight = metrics.height();
 	m_letterWidth = metrics.averageCharWidth();
