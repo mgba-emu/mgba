@@ -39,6 +39,7 @@
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -221,6 +222,14 @@ void Window::loadConfig() {
 
 	if (opts->fullscreen) {
 		enterFullScreen();
+	}
+
+	if (opts->shader) {
+		struct VDir* shader = VDirOpen(opts->shader);
+		if (shader) {
+			m_display->setShaders(shader);
+			shader->close(shader);
+		}
 	}
 
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);

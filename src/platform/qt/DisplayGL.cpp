@@ -40,6 +40,10 @@ DisplayGL::~DisplayGL() {
 	delete m_painter;
 }
 
+bool DisplayGL::supportsShaders() const {
+	return m_painter->supportsShaders();
+}
+
 void DisplayGL::startDrawing(GBAThread* thread) {
 	if (m_drawThread) {
 		return;
@@ -133,6 +137,10 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 	}
 }
 
+void DisplayGL::setShaders(struct VDir* shaders) {
+	QMetaObject::invokeMethod(m_painter, "setShaders", Q_ARG(struct VDir*, shaders));
+}
+
 void DisplayGL::resizeEvent(QResizeEvent* event) {
 	Display::resizeEvent(event);
 	resizePainter();
@@ -148,7 +156,10 @@ void DisplayGL::resizePainter() {
 PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 	: m_gl(parent)
 	, m_active(false)
+	, m_started(false)
 	, m_context(nullptr)
+	, m_shaders(nullptr)
+	, m_nShaders(0)
 	, m_messagePainter(nullptr)
 {
 #ifdef BUILD_GL
@@ -163,6 +174,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 		gl2Backend = new GBAGLES2Context;
 		GBAGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
+		m_supportsShaders = true;
 	} else {
 #else
 	{
@@ -170,6 +182,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 		glBackend = new GBAGLContext;
 		GBAGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
+		m_supportsShaders = false;
 	}
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
@@ -205,21 +218,21 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
-	if (m_active) {
+	if (m_started && !m_active) {
 		forceDraw();
 	}
 }
 
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend->lockAspectRatio = lock;
-	if (m_active) {
+	if (m_started && !m_active) {
 		forceDraw();
 	}
 }
 
 void PainterGL::filter(bool filter) {
 	m_backend->filter = filter;
-	if (m_active) {
+	if (m_started && !m_active) {
 		forceDraw();
 	}
 }
@@ -230,8 +243,16 @@ void PainterGL::start() {
 	epoxy_handle_external_wglMakeCurrent();
 #endif
 	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
+
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	if (m_shaders) {
+		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), m_shaders, m_nShaders);
+	}
+#endif
+
 	m_gl->doneCurrent();
 	m_active = true;
+	m_started = true;
 }
 
 void PainterGL::draw() {
@@ -262,6 +283,7 @@ void PainterGL::forceDraw() {
 
 void PainterGL::stop() {
 	m_active = false;
+	m_started = false;
 	m_gl->makeCurrent();
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
@@ -330,4 +352,24 @@ void PainterGL::dequeueAll() {
 		m_backend->postFrame(m_backend, buffer);
 	}
 	m_mutex.unlock();
+}
+
+void PainterGL::setShaders(struct VDir* dir) {
+	if (!supportsShaders()) {
+		return;
+	}
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	if (m_shaders) {
+		GBAGLES2ShaderDetach(reinterpret_cast<GBAGLES2Context*>(m_backend));
+	}
+	GBAGLES2ShaderLoad(&m_shaders, &m_nShaders, nullptr, dir);
+	if (m_started) {
+		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), m_shaders, m_nShaders);
+	}
+	m_gl->doneCurrent();
+#endif
 }

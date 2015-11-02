@@ -11,6 +11,7 @@
 #include "MessagePainter.h"
 
 struct GBAThread;
+struct VDir;
 
 namespace QGBA {
 
@@ -34,6 +35,7 @@ public:
 	bool isFiltered() const { return m_filter; }
 
 	virtual bool isDrawing() const = 0;
+	virtual bool supportsShaders() const = 0;
 
 signals:
 	void showCursor();
@@ -48,6 +50,7 @@ public slots:
 	virtual void lockAspectRatio(bool lock);
 	virtual void filter(bool filter);
 	virtual void framePosted(const uint32_t*) = 0;
+	virtual void setShaders(struct VDir*) = 0;
 
 	void showMessage(const QString& message);
 

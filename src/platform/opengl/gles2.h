@@ -84,11 +84,21 @@ struct GBAGLES2Context {
 	size_t nShaders;
 };
 
+struct GBAGLES2ShaderMetadata {
+	const char* name;
+	const char* author;
+	const char* description;
+};
+
 void GBAGLES2ContextCreate(struct GBAGLES2Context*);
 
 void GBAGLES2ShaderInit(struct GBAGLES2Shader*, const char* vs, const char* fs, int width, int height, struct GBAGLES2Uniform* uniforms, size_t nUniforms);
 void GBAGLES2ShaderDeinit(struct GBAGLES2Shader*);
 void GBAGLES2ShaderAttach(struct GBAGLES2Context*, struct GBAGLES2Shader*, size_t nShaders);
 void GBAGLES2ShaderDetach(struct GBAGLES2Context*);
+
+struct VDir;
+bool GBAGLES2ShaderLoad(struct GBAGLES2Shader**, size_t* nShaders, struct GBAGLES2ShaderMetadata*, struct VDir*);
+void GBAGLES2ShaderFree(struct GBAGLES2Shader*, size_t nShaders);
 
 #endif

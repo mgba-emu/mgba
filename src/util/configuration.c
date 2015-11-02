@@ -136,12 +136,16 @@ static char* _vfgets(char* stream, int size, void* user) {
 }
 
 bool ConfigurationRead(struct Configuration* configuration, const char* path) {
-	HashTableClear(&configuration->root);
-	HashTableClear(&configuration->sections);
 	struct VFile* vf = VFileOpen(path, O_RDONLY);
 	if (!vf) {
 		return false;
 	}
+	return ConfigurationReadVFile(configuration, vf);
+}
+
+bool ConfigurationReadVFile(struct Configuration* configuration, struct VFile* vf) {
+	HashTableClear(&configuration->root);
+	HashTableClear(&configuration->sections);
 	return ini_parse_stream(_vfgets, vf, _iniRead, configuration) == 0;
 }
 

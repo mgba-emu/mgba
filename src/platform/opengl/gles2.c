@@ -6,6 +6,10 @@
 #include "gles2.h"
 
 #include "gba/video.h"
+#include "util/configuration.h"
+#include "util/vfs.h"
+
+#define MAX_PASSES 8
 
 static const char* const _vertexShader =
 	"attribute vec4 position;\n"
@@ -351,4 +355,130 @@ void GBAGLES2ShaderDetach(struct GBAGLES2Context* context) {
 		return;
 	}
 	context->shaders = 0;
+}
+
+static bool _lookupIntValue(const struct Configuration* config, const char* section, const char* key, int* out) {
+	const char* charValue = ConfigurationGetValue(config, section, key);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	unsigned long value = strtol(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
+bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struct GBAGLES2ShaderMetadata* metadata, struct VDir* dir) {
+	struct VFile* manifest = dir->openFile(dir, "manifest.ini", O_RDONLY);
+	if (!manifest) {
+		return false;
+	}
+	bool success = false;
+	struct Configuration description;
+	ConfigurationInit(&description);
+	if (ConfigurationReadVFile(&description, manifest)) {
+		int inShaders;
+		success = _lookupIntValue(&description, "shader", "passes", &inShaders);
+		if (inShaders > MAX_PASSES || inShaders < 1) {
+			success = false;
+		}
+		if (success) {
+			if (metadata) {
+				metadata->name = ConfigurationGetValue(&description, "shader", "name");
+				if (metadata->name) {
+					metadata->name = strdup(metadata->name);
+				}
+				metadata->author = ConfigurationGetValue(&description, "shader", "author");
+				if (metadata->author) {
+					metadata->author = strdup(metadata->author);
+				}
+				metadata->description = ConfigurationGetValue(&description, "shader", "description");
+				if (metadata->description) {
+					metadata->description = strdup(metadata->description);
+				}
+			}
+			struct GBAGLES2Shader* shaderBlock = malloc(sizeof(struct GBAGLES2Shader) * inShaders);
+			int n;
+			for (n = 0; n < inShaders; ++n) {
+				char passName[12];
+				snprintf(passName, sizeof(passName), "pass.%u", n);
+				const char* fs = ConfigurationGetValue(&description, passName, "fragmentShader");
+				const char* vs = ConfigurationGetValue(&description, passName, "vertexShader");
+				if (fs && (fs[0] == '.' || strstr(fs, PATH_SEP))) {
+					success = false;
+					break;
+				}
+				if (vs && (vs[0] == '.' || strstr(vs, PATH_SEP))) {
+					success = false;
+					break;
+				}
+				char* fssrc = 0;
+				char* vssrc = 0;
+				if (fs) {
+					struct VFile* fsf = dir->openFile(dir, fs, O_RDONLY);
+					if (!fsf) {
+						success = false;
+						break;
+					}
+					fssrc = malloc(fsf->size(fsf));
+					fsf->read(fsf, fssrc, fsf->size(fsf));
+					fsf->close(fsf);
+				}
+				if (vs) {
+					struct VFile* vsf = dir->openFile(dir, vs, O_RDONLY);
+					if (!vsf) {
+						success = false;
+						free(fssrc);
+						break;
+					}
+					vssrc = malloc(vsf->size(vsf));
+					vsf->read(vsf, vssrc, vsf->size(vsf));
+					vsf->close(vsf);
+				}
+				int width = 0;
+				int height = 0;
+				_lookupIntValue(&description, passName, "width", &width);
+				_lookupIntValue(&description, passName, "height", &height);
+				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, 0, 0);
+				int b = 0;
+				_lookupIntValue(&description, passName, "blend", &b);
+				if (b) {
+					shaderBlock[n].blend = b;
+				}
+				b = 0;
+				_lookupIntValue(&description, passName, "filter", &b);
+				if (b) {
+					shaderBlock[n].filter = b;
+				}
+				free(fssrc);
+				free(vssrc);
+			}
+			if (success) {
+				*nShaders = inShaders;
+				*shaders = shaderBlock;
+			} else {
+				inShaders = n;
+				for (n = 0; n < inShaders; ++n) {
+					GBAGLES2ShaderDeinit(&shaderBlock[n]);
+				}
+			}
+		}
+	}
+	ConfigurationDeinit(&description);
+	return success;
+}
+
+void GBAGLES2ShaderFree(struct GBAGLES2Shader* shaders, size_t nShaders) {
+	size_t n;
+	for (n = 0; n < nShaders; ++n) {
+		GBAGLES2ShaderDeinit(&shaders[n]);
+		size_t u;
+		for (u = 0; u < shaders[n].nUniforms; ++u) {
+			free((void*) shaders[n].uniforms[u].name);
+		}
+	}
+	free(shaders);
 }
