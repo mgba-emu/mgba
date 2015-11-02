@@ -302,6 +302,247 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Blend Y"), 0, 5 },
 	});
+	// 0x04000056: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000058: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000060: SOUND1CNT_LO
+	s_registers.append({
+		{ tr("Sweep shifts"), 0, 3 },
+		{ tr("Sweep subtract"), 3 },
+		{ tr("Sweep time (in 1/128s)"), 4, 3 },
+	});
+	// 0x04000062: SOUND1CNT_HI
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x04000064: SOUND1CNT_X
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x04000066: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000068: SOUND2CNT_LO
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x0400006A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400006C: SOUND2CNT_HI
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x0400006E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000070: SOUND3CNT_LO
+	s_registers.append({
+		{ tr("Double-size wave table"), 5 },
+		{ tr("Active wave table"),  6 },
+		{ tr("Enable channel 3"), 7 },
+	});
+	// 0x04000072: SOUND3CNT_HI
+	s_registers.append({
+		{ tr("Sound length"), 0, 8 },
+		{ tr("Volume"),  13, 3, {
+			tr("0%"),
+			tr("100%"),
+			tr("50%"),
+			tr("25%"),
+			tr("75%"),
+			tr("75%"),
+			tr("75%"),
+			tr("75%")
+		} },
+	});
+	// 0x04000074: SOUND3CNT_X
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x04000076: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000078: SOUND4CNT_LO
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x0400007A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400007C: SOUND4CNT_HI
+	s_registers.append({
+		{ tr("Clock divider"), 0, 3 },
+		{ tr("Register stages"), 3, 1, {
+			tr("15"),
+			tr("7"),
+		} },
+		{ tr("Shifter frequency"), 4, 4 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x0400007E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000080: SOUNDCNT_LO
+	s_registers.append({
+		{ tr("PSG volume right"), 0, 3 },
+		{ tr("PSG volume left"), 4, 3 },
+		{ tr("Enable channel 1 right"), 8 },
+		{ tr("Enable channel 2 right"), 9 },
+		{ tr("Enable channel 3 right"), 10 },
+		{ tr("Enable channel 4 right"), 11 },
+		{ tr("Enable channel 1 left"), 12 },
+		{ tr("Enable channel 2 left"), 13 },
+		{ tr("Enable channel 3 left"), 14 },
+		{ tr("Enable channel 4 left"), 15 },
+	});
+	// 0x04000082: SOUNDCNT_HI
+	s_registers.append({
+		{ tr("PSG master volume"), 0, 2, {
+			tr("25%"),
+			tr("50%"),
+			tr("100%"),
+			QString()
+		} },
+		{ tr("Loud channel A"), 2 },
+		{ tr("Loud channel B"), 3 },
+		{ tr("Enable channel A right"), 8 },
+		{ tr("Enable channel A left"), 9 },
+		{ tr("Channel A timer"), 10, 1, {
+			tr("0"),
+			tr("1"),
+		} },
+		{ tr("Channel A reset"), 11 },
+		{ tr("Enable channel B right"), 12 },
+		{ tr("Enable channel B left"), 13 },
+		{ tr("Channel B timer"), 14, 1, {
+			tr("0"),
+			tr("1"),
+		} },
+		{ tr("Channel B reset"), 15 },
+	});
+	// 0x04000084: SOUNDCNT_LO
+	s_registers.append({
+		{ tr("Active channel 1"), 0, 1, true },
+		{ tr("Active channel 2"), 1, 1, true },
+		{ tr("Active channel 3"), 2, 1, true },
+		{ tr("Active channel 4"), 3, 1, true },
+		{ tr("Enable audio"), 7 },
+	});
+	// 0x04000086: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000088: SOUNDBIAS
+	s_registers.append({
+		{ tr("Bias"), 0, 10 },
+		{ tr("Resolution"), 14, 2 },
+	});
+	// 0x0400008A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400008C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400008E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000090: WAVE_RAM0_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000092: WAVE_RAM0_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000094: WAVE_RAM1_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000096: WAVE_RAM1_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000098: WAVE_RAM2_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009A: WAVE_RAM2_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009C: WAVE_RAM3_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009E: WAVE_RAM0_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x040000A0: FIFO_A_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A2: FIFO_A_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A4: FIFO_B_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A6: FIFO_B_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000AA: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000AC: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000AE: Unused
+	s_registers.append(RegisterDescription());
 	return s_registers;
 }
 
