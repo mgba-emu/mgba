@@ -12,6 +12,7 @@ Bugfixes:
  - Qt: Fix a race condition in PainterGL that could lead to a crash
  - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
  - GBA Video: Fix _mix for 15-bit color
+ - VFS: Fix VFileReadline and remove _vfdReadline
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
