@@ -5,6 +5,7 @@ Bugfixes:
  - Qt: Fix a race condition in PainterGL that could lead to a crash
  - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
  - GBA Video: Fix _mix for 15-bit color
+ - Qt: Fix font size in memory viewer
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
