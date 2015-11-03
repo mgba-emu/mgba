@@ -67,7 +67,7 @@ struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	vf3d->d.close = _vf3dClose;
 	vf3d->d.seek = _vf3dSeek;
 	vf3d->d.read = _vf3dRead;
-	vf3d->d.readline = 0;
+	vf3d->d.readline = VFileReadline;
 	vf3d->d.write = _vf3dWrite;
 	vf3d->d.map = _vf3dMap;
 	vf3d->d.unmap = _vf3dUnmap;
