@@ -119,7 +119,7 @@ static void GBAGLES2ContextResized(struct VideoBackend* v, int w, int h) {
 			drawH = w * 2 / 3;
 		}
 	}
-	glViewport(0, 0, 240, 160);
+	glViewport(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
@@ -140,13 +140,26 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 	} else {
 		glDisable(GL_BLEND);
 	}
+
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glViewport(0, 0, shader->width ? shader->width : viewport[2], shader->height ? shader->height : viewport[3]);
+	int drawW = shader->width;
+	int drawH = shader->height;
+	int padW = 0;
+	int padH = 0;
+	if (!shader->width) {
+		drawW = viewport[2];
+		padW = viewport[0];
+	}
+	if (!shader->height) {
+		drawH = viewport[3];
+		padH = viewport[1];
+	}
+	glViewport(padW, padH, drawW, drawH);
 	if (!shader->width || !shader->height) {
 		GLint oldTex;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTex);
 		glBindTexture(GL_TEXTURE_2D, shader->tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width ? shader->width : viewport[2], shader->height ? shader->height : viewport[3], 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		glBindTexture(GL_TEXTURE_2D, oldTex);
 	}
 
