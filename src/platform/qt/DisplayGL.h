@@ -10,7 +10,6 @@
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
-#include <epoxy/wgl.h>
 #endif
 
 #include <QGLWidget>
