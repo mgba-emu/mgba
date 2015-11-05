@@ -254,6 +254,7 @@ void Window::selectROM() {
 #ifdef USE_LZMA
 		"*.7z",
 #endif
+		"*.mb",
 		"*.rom",
 		"*.bin"};
 	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
