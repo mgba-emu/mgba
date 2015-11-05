@@ -80,6 +80,9 @@ void MemoryView::updateStatus() {
 		m_ui.uintVal->clear();
 		return;
 	}
+	if (!m_controller->isLoaded()) {
+		return;
+	}
 	ARMCore* cpu = m_controller->thread()->cpu;
 	union {
 		uint32_t u32;
