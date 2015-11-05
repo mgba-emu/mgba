@@ -166,8 +166,8 @@ uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum 
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
 
-void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address);
-void GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address);
+uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address);
+uint32_t GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address);
 void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count);
 uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control);
 

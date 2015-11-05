@@ -535,28 +535,28 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 		GBAAudioWriteFIFO(&gba->audio, address, value);
 		break;
 	case REG_DMA0SAD_LO:
-		GBAMemoryWriteDMASAD(gba, 0, value);
+		value = GBAMemoryWriteDMASAD(gba, 0, value);
 		break;
 	case REG_DMA0DAD_LO:
-		GBAMemoryWriteDMADAD(gba, 0, value);
+		value = GBAMemoryWriteDMADAD(gba, 0, value);
 		break;
 	case REG_DMA1SAD_LO:
-		GBAMemoryWriteDMASAD(gba, 1, value);
+		value = GBAMemoryWriteDMASAD(gba, 1, value);
 		break;
 	case REG_DMA1DAD_LO:
-		GBAMemoryWriteDMADAD(gba, 1, value);
+		value = GBAMemoryWriteDMADAD(gba, 1, value);
 		break;
 	case REG_DMA2SAD_LO:
-		GBAMemoryWriteDMASAD(gba, 2, value);
+		value = GBAMemoryWriteDMASAD(gba, 2, value);
 		break;
 	case REG_DMA2DAD_LO:
-		GBAMemoryWriteDMADAD(gba, 2, value);
+		value = GBAMemoryWriteDMADAD(gba, 2, value);
 		break;
 	case REG_DMA3SAD_LO:
-		GBAMemoryWriteDMASAD(gba, 3, value);
+		value = GBAMemoryWriteDMASAD(gba, 3, value);
 		break;
 	case REG_DMA3DAD_LO:
-		GBAMemoryWriteDMADAD(gba, 3, value);
+		value = GBAMemoryWriteDMADAD(gba, 3, value);
 		break;
 	default:
 		GBAIOWrite(gba, address, value & 0xFFFF);

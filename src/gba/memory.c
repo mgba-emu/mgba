@@ -330,12 +330,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			LOAD_32(value, address, memory->bios); \
 		} else { \
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load32: 0x%08X", address); \
-			if (memory->activeDMA) { \
-				/* TODO: Test on hardware */ \
-				value = 0; \
-			} else { \
-				value = memory->biosPrefetch; \
-			} \
+			value = memory->biosPrefetch; \
 		} \
 	} else { \
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
@@ -451,11 +446,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 				LOAD_16(value, address, memory->bios);
 			} else {
 				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
-				if (memory->activeDMA) {
-					value = 0;
-				} else {
-					value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
-				}
+				value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
 			}
 		} else {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
@@ -1320,14 +1311,20 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 }
 
-void GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
+uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	memory->dma[dma].source = address & 0x0FFFFFFE;
+	if ((dma >= 1 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+		memory->dma[dma].source = address & 0x0FFFFFFE;
+	}
+	return memory->dma[dma].source;
 }
 
-void GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address) {
+uint32_t GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	memory->dma[dma].dest = address & 0x0FFFFFFE;
+	if ((dma >= 1 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+		memory->dma[dma].dest = address & 0x0FFFFFFE;
+	}
+	return memory->dma[dma].dest;
 }
 
 void GBAMemoryWriteDMACNT_LO(struct GBA* gba, int dma, uint16_t count) {
