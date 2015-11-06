@@ -15,6 +15,7 @@ Bugfixes:
  - Qt: Fix font size in memory viewer
  - GBA Memory: Fix DMA register writing behavior
  - Qt: Fix a crash in the memory viewer
+ - GBA BIOS: Fix misaligned CpuSet
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
