@@ -160,6 +160,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 	, m_context(nullptr)
 	, m_shaders(nullptr)
 	, m_nShaders(0)
+	, m_backend(nullptr)
 	, m_messagePainter(nullptr)
 {
 #ifdef BUILD_GL
@@ -175,15 +176,17 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 		GBAGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
 		m_supportsShaders = true;
-	} else {
-#else
-	{
+	}
 #endif
+
+#ifdef BUILD_GL
+	 if (!m_backend) {
 		glBackend = new GBAGLContext;
 		GBAGLContextCreate(glBackend);
 		m_backend = &glBackend->d;
 		m_supportsShaders = false;
 	}
+#endif
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
 		painter->m_gl->swapBuffers();
