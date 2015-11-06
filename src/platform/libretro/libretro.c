@@ -443,6 +443,7 @@ static void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 	CircleBufferWrite8(&rumbleHistory, enable);
 	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
+	rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleLevel * 0xFFFF / RUMBLE_PWM);
 }
 
 static void _updateLux(struct GBALuminanceSource* lux) {
