@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba.h"
 
+#include "arm/decoder.h"
+#include "arm/isa-inlines.h"
+
 #include "gba/bios.h"
 #include "gba/cheats.h"
 #include "gba/io.h"
@@ -12,8 +15,6 @@
 #include "gba/supervisor/thread.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
-
-#include "isa-inlines.h"
 
 #include "util/crc32.h"
 #include "util/memory.h"
@@ -27,8 +28,7 @@ const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 static const size_t GBA_ROM_MAGIC_OFFSET = 3;
 static const uint8_t GBA_ROM_MAGIC[] = { 0xEA };
 
-static const size_t GBA_MB_MAGIC_OFFSET = 0xC1;
-static const uint8_t GBA_MB_MAGIC[] = { 0x00, 0x00, 0xEA };
+static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
 
 static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
@@ -727,11 +727,24 @@ bool GBAIsMB(struct VFile* vf) {
 	if (vf->seek(vf, GBA_MB_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
-	uint8_t signature[sizeof(GBA_MB_MAGIC)];
+	uint8_t signature[sizeof(uint32_t)];
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
-	return memcmp(signature, GBA_MB_MAGIC, sizeof(signature)) == 0;
+	uint32_t opcode;
+	LOAD_32(opcode, 0, signature);
+	struct ARMInstructionInfo info;
+	ARMDecodeARM(opcode, &info);
+	if (info.branchType != ARM_BRANCH) {
+		return false;
+	}
+	if (info.op1.immediate <= 0) {
+		return false;
+	} else if (info.op1.immediate != 24) {
+		return true;
+	}
+	// Found a libgba-linked cart...these are a bit harder to detect.
+	return false;
 }
 
 bool GBAIsBIOS(struct VFile* vf) {
