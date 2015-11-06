@@ -177,10 +177,13 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 			glUniform1f(uniform->location, uniform->value.f);
 			break;
 		case GL_INT:
-			glUniform1f(uniform->location, uniform->value.i);
+			glUniform1i(uniform->location, uniform->value.i);
 			break;
 		case GL_UNSIGNED_INT:
-			glUniform1f(uniform->location, uniform->value.ui);
+			glUniform1ui(uniform->location, uniform->value.ui);
+			break;
+		case GL_BOOL:
+			glUniform1i(uniform->location, uniform->value.b);
 			break;
 		case GL_FLOAT_VEC2:
 			glUniform2fv(uniform->location, 1, uniform->value.fvec2);
@@ -200,41 +203,23 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 		case GL_INT_VEC4:
 			glUniform4iv(uniform->location, 1, uniform->value.ivec4);
 			break;
-		case GL_UNSIGNED_INT_VEC2:
-			glUniform2uiv(uniform->location, 1, uniform->value.uivec2);
+		case GL_BOOL_VEC2:
+			glUniform2i(uniform->location, uniform->value.bvec2[0], uniform->value.bvec2[1]);
 			break;
-		case GL_UNSIGNED_INT_VEC3:
-			glUniform3uiv(uniform->location, 1, uniform->value.uivec3);
+		case GL_BOOL_VEC3:
+			glUniform3i(uniform->location, uniform->value.bvec3[0], uniform->value.bvec3[1], uniform->value.bvec3[2]);
 			break;
-		case GL_UNSIGNED_INT_VEC4:
-			glUniform4uiv(uniform->location, 1, uniform->value.uivec4);
+		case GL_BOOL_VEC4:
+			glUniform4i(uniform->location, uniform->value.bvec4[0], uniform->value.bvec4[1], uniform->value.bvec4[2], uniform->value.bvec4[3]);
 			break;
 		case GL_FLOAT_MAT2:
 			glUniformMatrix2fv(uniform->location, 1, GL_FALSE, uniform->value.fmat2x2);
 			break;
-		case GL_FLOAT_MAT2x3:
-			glUniformMatrix2x3fv(uniform->location, 1, GL_FALSE, uniform->value.fmat2x3);
-			break;
-		case GL_FLOAT_MAT2x4:
-			glUniformMatrix2x4fv(uniform->location, 1, GL_FALSE, uniform->value.fmat2x4);
-			break;
-		case GL_FLOAT_MAT3x2:
-			glUniformMatrix3x2fv(uniform->location, 1, GL_FALSE, uniform->value.fmat3x2);
-			break;
 		case GL_FLOAT_MAT3:
 			glUniformMatrix3fv(uniform->location, 1, GL_FALSE, uniform->value.fmat3x3);
 			break;
-		case GL_FLOAT_MAT3x4:
-			glUniformMatrix3x4fv(uniform->location, 1, GL_FALSE, uniform->value.fmat3x4);
-			break;
-		case GL_FLOAT_MAT4x2:
-			glUniformMatrix2fv(uniform->location, 1, GL_FALSE, uniform->value.fmat4x2);
-			break;
-		case GL_FLOAT_MAT4x3:
-			glUniformMatrix2x3fv(uniform->location, 1, GL_FALSE, uniform->value.fmat4x3);
-			break;
 		case GL_FLOAT_MAT4:
-			glUniformMatrix2x4fv(uniform->location, 1, GL_FALSE, uniform->value.fmat4x4);
+			glUniformMatrix4fv(uniform->location, 1, GL_FALSE, uniform->value.fmat4x4);
 			break;
 		}
 	}

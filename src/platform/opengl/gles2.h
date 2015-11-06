@@ -26,23 +26,18 @@ union GBAGLES2UniformValue {
 	GLfloat f;
 	GLint i;
 	GLuint ui;
+	GLboolean b;
 	GLfloat fvec2[2];
 	GLfloat fvec3[3];
 	GLfloat fvec4[4];
 	GLint ivec2[2];
 	GLint ivec3[3];
 	GLint ivec4[4];
-	GLuint uivec2[2];
-	GLuint uivec3[3];
-	GLuint uivec4[4];
+	GLboolean bvec2[2];
+	GLboolean bvec3[3];
+	GLboolean bvec4[4];
 	GLfloat fmat2x2[4];
-	GLfloat fmat2x3[6];
-	GLfloat fmat2x4[8];
-	GLfloat fmat3x2[6];
 	GLfloat fmat3x3[9];
-	GLfloat fmat3x4[12];
-	GLfloat fmat4x2[8];
-	GLfloat fmat4x3[12];
 	GLfloat fmat4x4[16];
 };
 
