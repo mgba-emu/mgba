@@ -1313,16 +1313,18 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 
 uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	if ((dma >= 1 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
-		memory->dma[dma].source = address & 0x0FFFFFFE;
+	address &= 0x0FFFFFFE;
+	if ((dma > 0 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+		memory->dma[dma].source = address;
 	}
 	return memory->dma[dma].source;
 }
 
 uint32_t GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	if ((dma >= 1 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
-		memory->dma[dma].dest = address & 0x0FFFFFFE;
+	address &= 0x0FFFFFFE;
+	if ((dma > 2 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+		memory->dma[dma].dest = address;
 	}
 	return memory->dma[dma].dest;
 }
