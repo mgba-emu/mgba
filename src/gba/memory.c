@@ -1326,10 +1326,24 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
 }
 
+static bool _isValidDMASAD(int dma, uint32_t address) {
+	if (dma == 0 && address >= BASE_CART0 && address < BASE_CART_SRAM) {
+		return false;
+	}
+	return address >= BASE_WORKING_RAM && address < 0x10000000;
+}
+
+static bool _isValidDMADAD(int dma, uint32_t address) {
+	if (dma < 3 && address >= BASE_CART0 && address < 0x10000000) {
+		return false;
+	}
+	return address >= BASE_WORKING_RAM && address < 0x10000000;
+}
+
 uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
 	address &= 0x0FFFFFFE;
-	if ((dma > 0 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+	if (_isValidDMASAD(dma, address)) {
 		memory->dma[dma].source = address;
 	}
 	return memory->dma[dma].source;
@@ -1338,7 +1352,7 @@ uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
 uint32_t GBAMemoryWriteDMADAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
 	address &= 0x0FFFFFFE;
-	if ((dma > 2 || address < BASE_CART0) && address >= BASE_WORKING_RAM && address < BASE_CART_SRAM) {
+	if (_isValidDMADAD(dma, address)) {
 		memory->dma[dma].dest = address;
 	}
 	return memory->dma[dma].dest;
