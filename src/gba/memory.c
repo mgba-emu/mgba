@@ -1095,7 +1095,9 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	}
 
 	uint32_t addressMisalign = address & 0x3;
-	address &= 0xFFFFFFFC;
+	if (address >> BASE_OFFSET < REGION_CART_SRAM) {
+		address &= 0xFFFFFFFC;
+	}
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_BIOS:
@@ -1208,7 +1210,9 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	}
 
 	uint32_t addressMisalign = address & 0x3;
-	address &= 0xFFFFFFFC;
+	if (address >> BASE_OFFSET < REGION_CART_SRAM) {
+		address &= 0xFFFFFFFC;
+	}
 
 	switch (address >> BASE_OFFSET) {
 	case REGION_WORKING_RAM:

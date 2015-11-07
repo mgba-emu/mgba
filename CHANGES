@@ -11,6 +11,7 @@ Bugfixes:
  - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
  - GBA Memory: Fix DMA behavior for SRAM accesses
  - GBA Memory: Fix Store8 to OBJ VRAM
+ - GBA Memory: Fix alignment of LDM/STM on SRAM
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
