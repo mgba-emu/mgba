@@ -17,6 +17,7 @@ Bugfixes:
  - Qt: Fix a crash in the memory viewer
  - GBA BIOS: Fix misaligned CpuSet
  - Libretro: Fix problems with rumble not turning off
+ - ARM7: Fix sign of unaligned LDRSH
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
