@@ -19,6 +19,7 @@ Bugfixes:
  - Libretro: Fix problems with rumble not turning off
  - ARM7: Fix sign of unaligned LDRSH
  - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
+ - GBA Memory: Fix DMA behavior for SRAM accesses
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
