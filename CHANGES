@@ -21,6 +21,7 @@ Bugfixes:
  - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
  - GBA Memory: Fix DMA behavior for SRAM accesses
  - GBA Memory: Fix Store8 to OBJ VRAM
+ - GBA Memory: Fix alignment of LDM/STM on SRAM
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
