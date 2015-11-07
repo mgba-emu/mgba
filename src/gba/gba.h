@@ -85,7 +85,7 @@ struct GBA {
 	struct ARMDebugger* debugger;
 
 	uint32_t bus;
-	bool performingDMA;
+	int performingDMA;
 
 	int timersEnabled;
 	struct GBATimer timers[4];

@@ -586,6 +586,9 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
 			GBASavedataInitSRAM(&memory->savedata);
 		}
+		if (gba->performingDMA == 1) {
+			break;
+		}
 		if (memory->savedata.type == SAVEDATA_SRAM) {
 			value = memory->savedata.data[address & (SIZE_CART_SRAM - 1)];
 		} else if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
@@ -1464,7 +1467,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 	}
 
-	gba->performingDMA = true;
+	gba->performingDMA = 1 | (number << 1);
 	int32_t word;
 	if (width == 4) {
 		word = cpu->memory.load32(cpu, source, 0);
@@ -1501,7 +1504,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			--wordsRemaining;
 		}
 	}
-	gba->performingDMA = false;
+	gba->performingDMA = 0;
 
 	if (!wordsRemaining) {
 		if (!GBADMARegisterIsRepeat(info->reg) || GBADMARegisterGetTiming(info->reg) == DMA_TIMING_NOW) {
