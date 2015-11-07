@@ -798,7 +798,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case REGION_VRAM:
-		if (address >= 0x06018000) {
+		if ((address & 0x0001FFFF) >= 0x00010000) {
 			// TODO: check BG mode
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
 			break;

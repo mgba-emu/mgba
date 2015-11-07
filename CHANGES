@@ -10,6 +10,7 @@ Bugfixes:
  - Libretro: Fix problems with rumble not turning off
  - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
  - GBA Memory: Fix DMA behavior for SRAM accesses
+ - GBA Memory: Fix Store8 to OBJ VRAM
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
