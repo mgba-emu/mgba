@@ -568,7 +568,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		break;
 	case REGION_OAM:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Load8: 0x%08X", address);
+		value = ((uint8_t*) gba->video.oam.raw)[address & (SIZE_OAM - 1)];
 		break;
 	case REGION_CART0:
 	case REGION_CART0_EX:
@@ -661,7 +661,14 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
-	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+	if (address & 0x3) { \
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Unaligned SRAM Store32: 0x%08X", address); \
+		value = 0; \
+	} \
+	GBAStore8(cpu, address & ~0x3, value, cycleCounter); \
+	GBAStore8(cpu, (address & ~0x3) | 1, value, cycleCounter); \
+	GBAStore8(cpu, (address & ~0x3) | 2, value, cycleCounter); \
+	GBAStore8(cpu, (address & ~0x3) | 3, value, cycleCounter);
 
 #define STORE_BAD \
 	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
@@ -767,7 +774,8 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store16: 0x%08X", address);
+		GBAStore8(cpu, (address & ~0x1), value, cycleCounter);
+		GBAStore8(cpu, (address & ~0x1) | 1, value, cycleCounter);
 		break;
 	default:
 		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store16: 0x%08X", address);
@@ -800,7 +808,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		GBAIOWrite8(gba, address & (SIZE_IO - 1), value);
 		break;
 	case REGION_PALETTE_RAM:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
+		GBAStore16(cpu, address & ~1, ((uint8_t) value) | ((uint8_t) value << 8), cycleCounter);
 		break;
 	case REGION_VRAM:
 		if (address >= 0x06018000) {
