@@ -1330,14 +1330,11 @@ static bool _isValidDMASAD(int dma, uint32_t address) {
 	if (dma == 0 && address >= BASE_CART0 && address < BASE_CART_SRAM) {
 		return false;
 	}
-	return address >= BASE_WORKING_RAM && address < 0x10000000;
+	return address >= BASE_WORKING_RAM;
 }
 
 static bool _isValidDMADAD(int dma, uint32_t address) {
-	if (dma < 3 && address >= BASE_CART0 && address < 0x10000000) {
-		return false;
-	}
-	return address >= BASE_WORKING_RAM && address < 0x10000000;
+	return dma == 3 || address < BASE_CART0;
 }
 
 uint32_t GBAMemoryWriteDMASAD(struct GBA* gba, int dma, uint32_t address) {
