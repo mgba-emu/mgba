@@ -139,6 +139,7 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glDisable(GL_BLEND);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -224,7 +225,6 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 		}
 	}
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
@@ -241,6 +241,7 @@ void GBAGLES2ContextDrawFrame(struct VideoBackend* v) {
 		_drawShader(&context->shaders[n]);
 	}
 	_drawShader(&context->finalShader);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(0);
 }
 
@@ -313,13 +314,19 @@ void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const cha
 	char log[1024];
 	glCompileShader(shader->fragmentShader);
 	glGetShaderInfoLog(shader->fragmentShader, 1024, 0, log);
-	printf("%s\n", log);
+	if (log[0]) {
+		printf("%s\n", log);
+	}
 	glCompileShader(shader->vertexShader);
 	glGetShaderInfoLog(shader->vertexShader, 1024, 0, log);
-	printf("%s\n", log);
+	if (log[0]) {
+		printf("%s\n", log);
+	}
 	glLinkProgram(shader->program);
 	glGetProgramInfoLog(shader->program, 1024, 0, log);
-	printf("%s\n", log);
+	if (log[0]) {
+		printf("%s\n", log);
+	}
 
 	shader->texLocation = glGetUniformLocation(shader->program, "tex");
 	shader->positionLocation = glGetAttribLocation(shader->program, "position");
