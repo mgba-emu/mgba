@@ -7,6 +7,8 @@
 
 #include "gba/video.h"
 #include "util/configuration.h"
+#include "util/formatting.h"
+#include "util/vector.h"
 #include "util/vfs.h"
 
 #define MAX_PASSES 8
@@ -59,7 +61,6 @@ static const GLfloat _vertices[] = {
 	1.f, 1.f,
 	1.f, -1.f,
 };
-
 
 static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
@@ -179,9 +180,6 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 			break;
 		case GL_INT:
 			glUniform1i(uniform->location, uniform->value.i);
-			break;
-		case GL_UNSIGNED_INT:
-			glUniform1ui(uniform->location, uniform->value.ui);
 			break;
 		case GL_BOOL:
 			glUniform1i(uniform->location, uniform->value.b);
@@ -353,6 +351,12 @@ void GBAGLES2ShaderAttach(struct GBAGLES2Context* context, struct GBAGLES2Shader
 	}
 	context->shaders = shaders;
 	context->nShaders = nShaders;
+	size_t i;
+	for (i = 0; i < nShaders; ++i) {
+		glBindFramebuffer(GL_FRAMEBUFFER, context->shaders[i].fbo);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GBAGLES2ShaderDetach(struct GBAGLES2Context* context) {
@@ -373,6 +377,211 @@ static bool _lookupIntValue(const struct Configuration* config, const char* sect
 		return false;
 	}
 	*out = value;
+	return true;
+}
+
+static bool _lookupFloatValue(const struct Configuration* config, const char* section, const char* key, float* out) {
+	const char* charValue = ConfigurationGetValue(config, section, key);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	float value = strtof_u(charValue, &end);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
+static bool _lookupBoolValue(const struct Configuration* config, const char* section, const char* key, GLboolean* out) {
+	const char* charValue = ConfigurationGetValue(config, section, key);
+	if (!charValue) {
+		return false;
+	}
+	if (!strcmp(charValue, "true")) {
+		*out = GL_TRUE;
+		return true;
+	}
+	if (!strcmp(charValue, "false")) {
+		*out = GL_FALSE;
+		return true;
+	}
+	char* end;
+	unsigned long value = strtol(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
+DECLARE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
+DEFINE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
+
+static void _uniformHandler(const char* sectionName, void* user) {
+	struct GBAGLES2UniformList* uniforms = user;
+	if (strstr(sectionName, "uniform.") != sectionName) {
+		return;
+	}
+	struct GBAGLES2Uniform* u = GBAGLES2UniformListAppend(uniforms);
+	u->name = sectionName;
+}
+
+static bool _loadUniform(struct Configuration* description, struct GBAGLES2Uniform* uniform) {
+	const char* type = ConfigurationGetValue(description, uniform->name, "type");
+	if (!strcmp(type, "float")) {
+		uniform->type = GL_FLOAT;
+		uniform->value.f = 0;
+		_lookupFloatValue(description, uniform->name, "default", &uniform->value.f);
+	} else if (!strcmp(type, "float2")) {
+		uniform->type = GL_FLOAT_VEC2;
+		uniform->value.fvec2[0] = 0;
+		uniform->value.fvec2[1] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec2[0]);
+		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec2[1]);
+	} else if (!strcmp(type, "float3")) {
+		uniform->type = GL_FLOAT_VEC3;
+		uniform->value.fvec3[0] = 0;
+		uniform->value.fvec3[1] = 0;
+		uniform->value.fvec3[2] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec3[0]);
+		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec3[1]);
+		_lookupFloatValue(description, uniform->name, "default[2]", &uniform->value.fvec3[2]);
+	} else if (!strcmp(type, "float4")) {
+		uniform->type = GL_FLOAT_VEC4;
+		uniform->value.fvec4[0] = 0;
+		uniform->value.fvec4[1] = 0;
+		uniform->value.fvec4[2] = 0;
+		uniform->value.fvec4[3] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec4[0]);
+		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec4[1]);
+		_lookupFloatValue(description, uniform->name, "default[2]", &uniform->value.fvec4[2]);
+		_lookupFloatValue(description, uniform->name, "default[3]", &uniform->value.fvec4[3]);
+	} else if (!strcmp(type, "float2x2")) {
+		uniform->type = GL_FLOAT_MAT2;
+		uniform->value.fmat2x2[0] = 0;
+		uniform->value.fmat2x2[1] = 0;
+		uniform->value.fmat2x2[2] = 0;
+		uniform->value.fmat2x2[3] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat2x2[0]);
+		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat2x2[1]);
+		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat2x2[2]);
+		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat2x2[3]);
+	} else if (!strcmp(type, "float3x3")) {
+		uniform->type = GL_FLOAT_MAT3;
+		uniform->value.fmat3x3[0] = 0;
+		uniform->value.fmat3x3[1] = 0;
+		uniform->value.fmat3x3[2] = 0;
+		uniform->value.fmat3x3[3] = 0;
+		uniform->value.fmat3x3[4] = 0;
+		uniform->value.fmat3x3[5] = 0;
+		uniform->value.fmat3x3[6] = 0;
+		uniform->value.fmat3x3[7] = 0;
+		uniform->value.fmat3x3[8] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat3x3[0]);
+		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat3x3[1]);
+		_lookupFloatValue(description, uniform->name, "default[0,2]", &uniform->value.fmat3x3[2]);
+		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat3x3[3]);
+		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat3x3[4]);
+		_lookupFloatValue(description, uniform->name, "default[1,2]", &uniform->value.fmat3x3[5]);
+		_lookupFloatValue(description, uniform->name, "default[2,0]", &uniform->value.fmat3x3[6]);
+		_lookupFloatValue(description, uniform->name, "default[2,1]", &uniform->value.fmat3x3[7]);
+		_lookupFloatValue(description, uniform->name, "default[2,2]", &uniform->value.fmat3x3[8]);
+	} else if (!strcmp(type, "float4x4")) {
+		uniform->type = GL_FLOAT_MAT4;
+		uniform->value.fmat4x4[0] = 0;
+		uniform->value.fmat4x4[1] = 0;
+		uniform->value.fmat4x4[2] = 0;
+		uniform->value.fmat4x4[3] = 0;
+		uniform->value.fmat4x4[4] = 0;
+		uniform->value.fmat4x4[5] = 0;
+		uniform->value.fmat4x4[6] = 0;
+		uniform->value.fmat4x4[7] = 0;
+		uniform->value.fmat4x4[8] = 0;
+		uniform->value.fmat4x4[9] = 0;
+		uniform->value.fmat4x4[10] = 0;
+		uniform->value.fmat4x4[11] = 0;
+		uniform->value.fmat4x4[12] = 0;
+		uniform->value.fmat4x4[13] = 0;
+		uniform->value.fmat4x4[14] = 0;
+		uniform->value.fmat4x4[15] = 0;
+		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat4x4[0]);
+		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat4x4[1]);
+		_lookupFloatValue(description, uniform->name, "default[0,2]", &uniform->value.fmat4x4[2]);
+		_lookupFloatValue(description, uniform->name, "default[0,3]", &uniform->value.fmat4x4[3]);
+		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat4x4[4]);
+		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat4x4[5]);
+		_lookupFloatValue(description, uniform->name, "default[1,2]", &uniform->value.fmat4x4[6]);
+		_lookupFloatValue(description, uniform->name, "default[1,3]", &uniform->value.fmat4x4[7]);
+		_lookupFloatValue(description, uniform->name, "default[2,0]", &uniform->value.fmat4x4[8]);
+		_lookupFloatValue(description, uniform->name, "default[2,1]", &uniform->value.fmat4x4[9]);
+		_lookupFloatValue(description, uniform->name, "default[2,2]", &uniform->value.fmat4x4[10]);
+		_lookupFloatValue(description, uniform->name, "default[2,3]", &uniform->value.fmat4x4[11]);
+		_lookupFloatValue(description, uniform->name, "default[3,0]", &uniform->value.fmat4x4[12]);
+		_lookupFloatValue(description, uniform->name, "default[3,1]", &uniform->value.fmat4x4[13]);
+		_lookupFloatValue(description, uniform->name, "default[3,2]", &uniform->value.fmat4x4[14]);
+		_lookupFloatValue(description, uniform->name, "default[3,3]", &uniform->value.fmat4x4[15]);
+	} else if (!strcmp(type, "int")) {
+		uniform->type = GL_INT;
+		uniform->value.i = 0;
+		_lookupIntValue(description, uniform->name, "default", &uniform->value.i);
+	} else if (!strcmp(type, "int2")) {
+		uniform->type = GL_INT_VEC2;
+		uniform->value.ivec2[0] = 0;
+		uniform->value.ivec2[1] = 0;
+		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec2[0]);
+		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec2[1]);
+	} else if (!strcmp(type, "int3")) {
+		uniform->type = GL_INT_VEC3;
+		uniform->value.ivec3[0] = 0;
+		uniform->value.ivec3[1] = 0;
+		uniform->value.ivec3[2] = 0;
+		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec3[0]);
+		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec3[1]);
+		_lookupIntValue(description, uniform->name, "default[2]", &uniform->value.ivec3[2]);
+	} else if (!strcmp(type, "int4")) {
+		uniform->type = GL_INT_VEC4;
+		uniform->value.ivec4[0] = 0;
+		uniform->value.ivec4[1] = 0;
+		uniform->value.ivec4[2] = 0;
+		uniform->value.ivec4[3] = 0;
+		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec4[0]);
+		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec4[1]);
+		_lookupIntValue(description, uniform->name, "default[2]", &uniform->value.ivec4[2]);
+		_lookupIntValue(description, uniform->name, "default[3]", &uniform->value.ivec4[3]);
+	} else if (!strcmp(type, "bool")) {
+		uniform->type = GL_BOOL;
+		uniform->value.b = 0;
+		_lookupBoolValue(description, uniform->name, "default", &uniform->value.b);
+	} else if (!strcmp(type, "int2")) {
+		uniform->type = GL_BOOL_VEC2;
+		uniform->value.bvec2[0] = 0;
+		uniform->value.bvec2[1] = 0;
+		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec2[0]);
+		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec2[1]);
+	} else if (!strcmp(type, "int3")) {
+		uniform->type = GL_BOOL_VEC3;
+		uniform->value.bvec3[0] = 0;
+		uniform->value.bvec3[1] = 0;
+		uniform->value.bvec3[2] = 0;
+		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec3[0]);
+		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec3[1]);
+		_lookupBoolValue(description, uniform->name, "default[2]", &uniform->value.bvec3[2]);
+	} else if (!strcmp(type, "int4")) {
+		uniform->type = GL_BOOL_VEC4;
+		uniform->value.bvec4[0] = 0;
+		uniform->value.bvec4[1] = 0;
+		uniform->value.bvec4[2] = 0;
+		uniform->value.bvec4[3] = 0;
+		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec4[0]);
+		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec4[1]);
+		_lookupBoolValue(description, uniform->name, "default[2]", &uniform->value.bvec4[2]);
+		_lookupBoolValue(description, uniform->name, "default[3]", &uniform->value.bvec4[3]);
+	} else {
+		return false;
+	}
+	uniform->name = strdup(uniform->name + strlen("uniform."));
 	return true;
 }
 
@@ -428,7 +637,8 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 						success = false;
 						break;
 					}
-					fssrc = malloc(fsf->size(fsf));
+					fssrc = malloc(fsf->size(fsf) + 1);
+					fssrc[fsf->size(fsf)] = '\0';
 					fsf->read(fsf, fssrc, fsf->size(fsf));
 					fsf->close(fsf);
 				}
@@ -439,7 +649,8 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 						free(fssrc);
 						break;
 					}
-					vssrc = malloc(vsf->size(vsf));
+					vssrc = malloc(vsf->size(vsf) + 1);
+					vssrc[vsf->size(vsf)] = '\0';
 					vsf->read(vsf, vssrc, vsf->size(vsf));
 					vsf->close(vsf);
 				}
@@ -447,7 +658,24 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 				int height = 0;
 				_lookupIntValue(&description, passName, "width", &width);
 				_lookupIntValue(&description, passName, "height", &height);
-				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, 0, 0);
+
+				struct GBAGLES2UniformList uniformVector;
+				GBAGLES2UniformListInit(&uniformVector, 0);
+				ConfigurationEnumerateSections(&description, _uniformHandler, &uniformVector);
+				size_t u;
+				for (u = 0; u < GBAGLES2UniformListSize(&uniformVector); ++u) {
+					struct GBAGLES2Uniform* uniform = GBAGLES2UniformListGetPointer(&uniformVector, u);
+					if (!_loadUniform(&description, uniform)) {
+						GBAGLES2UniformListUnshift(&uniformVector, u, 1);
+						--u;
+					}
+				}
+				u = GBAGLES2UniformListSize(&uniformVector);
+				struct GBAGLES2Uniform* uniformBlock = malloc(sizeof(*uniformBlock) * u);
+				memcpy(uniformBlock, GBAGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				GBAGLES2UniformListDeinit(&uniformVector);
+
+				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, uniformBlock, u);
 				int b = 0;
 				_lookupIntValue(&description, passName, "blend", &b);
 				if (b) {

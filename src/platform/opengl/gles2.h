@@ -25,7 +25,6 @@
 union GBAGLES2UniformValue {
 	GLfloat f;
 	GLint i;
-	GLuint ui;
 	GLboolean b;
 	GLfloat fvec2[2];
 	GLfloat fvec3[3];

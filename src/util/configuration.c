@@ -13,6 +13,11 @@
 
 #include <float.h>
 
+struct ConfigurationSectionHandlerData {
+	void (*handler)(const char* section, void* data);
+	void* data;
+};
+
 static void _tableDeinit(void* table) {
 	TableDeinit(table);
 	free(table);
@@ -50,6 +55,12 @@ static void _sectionHandler(const char* key, void* section, void* user) {
 	vf->write(vf, line, len);
 	HashTableEnumerate(section, _keyHandler, user);
 	vf->write(vf, "\n", 1);
+}
+
+static void _sectionEnumHandler(const char* key, void* section, void* user) {
+	struct ConfigurationSectionHandlerData* data = user;
+	UNUSED(section);
+	data->handler(key, data->data);
 }
 
 void ConfigurationInit(struct Configuration* configuration) {
@@ -180,4 +191,9 @@ bool ConfigurationWriteSection(const struct Configuration* configuration, const 
 	}
 	vf->close(vf);
 	return true;
+}
+
+void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user) {
+	struct ConfigurationSectionHandlerData handlerData = { handler, user };
+	HashTableEnumerate(&configuration->sections, _sectionEnumHandler, &handlerData);
 }
