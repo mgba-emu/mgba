@@ -636,6 +636,38 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA3CNT_LO:
 		// Write-only register
 		return 0;
+	case REG_BG0HOFS:
+	case REG_BG0VOFS:
+	case REG_BG1HOFS:
+	case REG_BG1VOFS:
+	case REG_BG2HOFS:
+	case REG_BG2VOFS:
+	case REG_BG3HOFS:
+	case REG_BG3VOFS:
+	case REG_BG2PA:
+	case REG_BG2PB:
+	case REG_BG2PC:
+	case REG_BG2PD:
+	case REG_BG2X_LO:
+	case REG_BG2X_HI:
+	case REG_BG2Y_LO:
+	case REG_BG2Y_HI:
+	case REG_BG3PA:
+	case REG_BG3PB:
+	case REG_BG3PC:
+	case REG_BG3PD:
+	case REG_BG3X_LO:
+	case REG_BG3X_HI:
+	case REG_BG3Y_LO:
+	case REG_BG3Y_HI:
+	case REG_WIN0H:
+	case REG_WIN1H:
+	case REG_WIN0V:
+	case REG_WIN1V:
+	case REG_MOSAIC:
+	case REG_BLDY:
+		// Write-only register
+		return GBALoad16(gba->cpu, 0x01000000, 0); // Simulate a bad load
 	case REG_DISPCNT:
 	case REG_DISPSTAT:
 	case REG_VCOUNT:
