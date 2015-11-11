@@ -239,7 +239,48 @@ static const int _isValidRegister[REG_MAX >> 1] = {
 	1, 1, 1, 0, 1
 };
 
-static const int _isSpecialRegister[REG_MAX >> 1] = {
+static const int _isRSpecialRegister[REG_MAX >> 1] = {
+	// Video
+	0, 0, 1, 1, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	// Audio
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 0, 0, 0, 0,
+	// DMA
+	0, 0, 0, 0, 0, 1, 0, 0,
+	0, 0, 0, 1, 0, 0, 0, 0,
+	0, 1, 0, 0, 0, 0, 0, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Timers
+	1, 1, 1, 1, 1, 1, 1, 1,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// SIO
+	1, 1, 1, 1, 1, 0, 0, 0,
+	1, 1, 1, 0, 0, 0, 0, 0,
+	1, 0, 0, 0, 0, 0, 0, 0,
+	1, 0, 1, 0, 1, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Interrupts
+};
+
+static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	// Video
 	0, 0, 1, 1, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -667,6 +708,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_MOSAIC:
 	case REG_BLDY:
 		// Write-only register
+		GBALog(gba, GBA_LOG_GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return GBALoad16(gba->cpu, 0x01000000, 0); // Simulate a bad load
 	case REG_DISPCNT:
 	case REG_DISPSTAT:
@@ -713,7 +755,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
 		if (address >= REG_MAX) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Read from unused I/O register: %03X", address);
-			return 0; // TODO: Reuse LOAD_BAD
+			return GBALoad16(gba->cpu, 0x01000000, 0);
 		}
 		break;
 	}
@@ -723,7 +765,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
-		if (_isSpecialRegister[i >> 1]) {
+		if (_isRSpecialRegister[i >> 1]) {
 			STORE_16(gba->memory.io[i >> 1], i, state->io);
 		} else if (_isValidRegister[i >> 1]) {
 			uint16_t reg = GBAIORead(gba, i);
@@ -751,7 +793,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
-		if (_isSpecialRegister[i >> 1]) {
+		if (_isWSpecialRegister[i >> 1]) {
 			LOAD_16(gba->memory.io[i >> 1], i, state->io);
 		} else if (_isValidRegister[i >> 1]) {
 			uint16_t reg;
