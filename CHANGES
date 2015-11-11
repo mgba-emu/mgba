@@ -22,6 +22,7 @@ Bugfixes:
  - GBA Memory: Fix DMA behavior for SRAM accesses
  - GBA Memory: Fix Store8 to OBJ VRAM
  - GBA Memory: Fix alignment of LDM/STM on SRAM
+ - GBA: Initialize uninitialized pristineRom and pristineRomSize members
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
