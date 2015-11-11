@@ -727,6 +727,9 @@ bool GBAIsMB(struct VFile* vf) {
 	if (!GBAIsROM(vf)) {
 		return false;
 	}
+	if (vf->size(vf) > SIZE_WORKING_RAM) {
+		return false;
+	}
 	if (vf->seek(vf, GBA_MB_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
