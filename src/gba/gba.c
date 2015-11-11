@@ -93,6 +93,9 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->hardCrash = true;
 
 	gba->performingDMA = false;
+
+	gba->pristineRom = 0;
+	gba->pristineRomSize = 0;
 }
 
 void GBAUnloadROM(struct GBA* gba) {
