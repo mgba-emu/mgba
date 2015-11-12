@@ -347,7 +347,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		// Audio
 		case REG_SOUND1CNT_LO:
 			GBAAudioWriteSOUND1CNT_LO(&gba->audio, value);
-			value &= 0x00FF;
+			value &= 0x007F;
 			break;
 		case REG_SOUND1CNT_HI:
 			GBAAudioWriteSOUND1CNT_HI(&gba->audio, value);
@@ -386,6 +386,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		case REG_SOUNDCNT_LO:
 			GBAAudioWriteSOUNDCNT_LO(&gba->audio, value);
+			value &= 0xFF77;
 			break;
 		case REG_SOUNDCNT_HI:
 			GBAAudioWriteSOUNDCNT_HI(&gba->audio, value);
@@ -750,17 +751,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_POSTFLG:
 		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
 		break;
-	case REG_DISPCNT:
-	case REG_DISPSTAT:
-	case REG_VCOUNT:
-	case REG_BG0CNT:
-	case REG_BG1CNT:
-	case REG_BG2CNT:
-	case REG_BG3CNT:
-	case REG_WININ:
-	case REG_WINOUT:
-	case REG_BLDCNT:
-	case REG_BLDALPHA:
 	case REG_SOUND1CNT_LO:
 	case REG_SOUND1CNT_HI:
 	case REG_SOUND1CNT_X:
@@ -773,6 +763,22 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
 	case REG_SOUNDCNT_HI:
+		if (!GBARegisterSOUNDCNT_XIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
+			// TODO: Is writing allowed when the circuit is disabled?
+			return 0;
+		}
+		// Fall through
+	case REG_DISPCNT:
+	case REG_DISPSTAT:
+	case REG_VCOUNT:
+	case REG_BG0CNT:
+	case REG_BG1CNT:
+	case REG_BG2CNT:
+	case REG_BG3CNT:
+	case REG_WININ:
+	case REG_WINOUT:
+	case REG_BLDCNT:
+	case REG_BLDALPHA:
 	case REG_SOUNDCNT_X:
 	case REG_WAVE_RAM0_LO:
 	case REG_WAVE_RAM0_HI:
