@@ -374,6 +374,13 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	value |= value << 8; \
 	value |= value << 16;
 
+uint32_t GBALoadBad(struct ARMCore* cpu) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	uint32_t value = 0;
+	LOAD_BAD;
+	return value;
+}
+
 uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
@@ -1364,6 +1371,7 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	struct GBAMemory* memory = &gba->memory;
 	struct GBADMA* currentDma = &memory->dma[dma];
 	int wasEnabled = GBADMARegisterIsEnable(currentDma->reg);
+	control &= 0xFFE0;
 	currentDma->reg = control;
 
 	if (GBADMARegisterIsDRQ(currentDma->reg)) {
