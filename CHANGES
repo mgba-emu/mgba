@@ -14,6 +14,7 @@ Bugfixes:
  - GBA Memory: Fix alignment of LDM/STM on SRAM
  - GBA: Initialize uninitialized pristineRom and pristineRomSize members
  - GBA Memory: Fix unaligned out-of-bounds ROM loads
+ - Qt: Add additional checks in CheatModel to prevent crashes
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
