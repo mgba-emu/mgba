@@ -43,6 +43,7 @@ Misc:
  - Util: Use VFile for configuration
  - GBA Memory: Implement several unimplemented memory access types
  - GBA: Implement bad I/O register loading
+ - GBA Memory: Add GBAView* functions for viewing memory directly without bus issues
 
 0.3.1: (2015-10-24)
 Bugfixes:

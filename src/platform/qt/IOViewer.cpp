@@ -779,7 +779,7 @@ void IOViewer::updateRegister() {
 	uint16_t value = 0;
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		value = GBAIORead(m_controller->thread()->gba, m_register);
+		value = GBAView16(m_controller->thread()->cpu, BASE_IO | m_register);
 	}
 	m_controller->threadContinue();
 

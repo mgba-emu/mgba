@@ -869,6 +869,117 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	}
 }
 
+uint32_t GBAView32(struct ARMCore* cpu, uint32_t address) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	uint32_t value = 0;
+	address &= ~3;
+	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		if (address < SIZE_BIOS) {
+			LOAD_32(value, address, gba->memory.bios);
+		}
+		break;
+	case REGION_WORKING_RAM:
+	case REGION_WORKING_IRAM:
+	case REGION_PALETTE_RAM:
+	case REGION_VRAM:
+	case REGION_OAM:
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		value = GBALoad32(cpu, address, 0);
+		break;
+	case REGION_IO:
+		if ((address & OFFSET_MASK) < REG_MAX) {
+			value = gba->memory.io[(address & OFFSET_MASK) >> 1];
+			value |= gba->memory.io[((address & OFFSET_MASK) >> 1) + 1] << 16;
+		}
+		break;
+	case REGION_CART_SRAM:
+		value = GBALoad8(cpu, address, 0);
+		value |= GBALoad8(cpu, address + 1, 0) << 8;
+		value |= GBALoad8(cpu, address + 2, 0) << 16;
+		value |= GBALoad8(cpu, address + 3, 0) << 24;
+		break;
+	default:
+		break;
+	}
+	return value;
+}
+
+uint16_t GBAView16(struct ARMCore* cpu, uint32_t address) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	uint16_t value = 0;
+	address &= ~1;
+	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		if (address < SIZE_BIOS) {
+			LOAD_16(value, address, gba->memory.bios);
+		}
+		break;
+	case REGION_WORKING_RAM:
+	case REGION_WORKING_IRAM:
+	case REGION_PALETTE_RAM:
+	case REGION_VRAM:
+	case REGION_OAM:
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+		value = GBALoad16(cpu, address, 0);
+		break;
+	case REGION_IO:
+		if ((address & OFFSET_MASK) < REG_MAX) {
+			value = gba->memory.io[(address & OFFSET_MASK) >> 1];
+		}
+		break;
+	case REGION_CART_SRAM:
+		value = GBALoad8(cpu, address, 0);
+		value |= GBALoad8(cpu, address + 1, 0) << 8;
+		break;
+	default:
+		break;
+	}
+	return value;
+}
+
+uint8_t GBAView8(struct ARMCore* cpu, uint32_t address) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+	uint8_t value = 0;
+	switch (address >> BASE_OFFSET) {
+	case REGION_BIOS:
+		if (address < SIZE_BIOS) {
+			value = ((uint8_t*) gba->memory.bios)[address];
+		}
+		break;
+	case REGION_WORKING_RAM:
+	case REGION_WORKING_IRAM:
+	case REGION_CART0:
+	case REGION_CART0_EX:
+	case REGION_CART1:
+	case REGION_CART1_EX:
+	case REGION_CART2:
+	case REGION_CART2_EX:
+	case REGION_CART_SRAM:
+		value = GBALoad8(cpu, address, 0);
+		break;
+	case REGION_IO:
+	case REGION_PALETTE_RAM:
+	case REGION_VRAM:
+	case REGION_OAM:
+		value = GBAView16(cpu, address) >> ((address & 1) * 8);
+		break;
+	default:
+		break;
+	}
+	return value;
+}
+
 void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* old) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
