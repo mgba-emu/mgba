@@ -537,12 +537,195 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 		{ tr("Sample"), 0, 8 },
 		{ tr("Sample"), 8, 8 },
 	});
+	// 0x040000A8: Unused
+	s_registers.append(RegisterDescription());
 	// 0x040000AA: Unused
 	s_registers.append(RegisterDescription());
 	// 0x040000AC: Unused
 	s_registers.append(RegisterDescription());
 	// 0x040000AE: Unused
 	s_registers.append(RegisterDescription());
+	// 0x040000B0: DMA0SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000B2: DMA0SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000B4: DMA0DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000B6: DMA0DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000B8: DMA0CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000BA: DMA0CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			QString(),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000BC: DMA1SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000BE: DMA1SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000C0: DMA1DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000C2: DMA1DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000C4: DMA1CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000C6: DMA1CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000C8: DMA2SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000CA: DMA2SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000CC: DMA2DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000CE: DMA2DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000D0: DMA2CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000D2: DMA2CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000D4: DMA3SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000D6: DMA3SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000D8: DMA3DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000DA: DMA3DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000DC: DMA3CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000DE: DMA3CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Video Capture"),
+		} },
+		{ tr("DRQ"), 8 },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
 	return s_registers;
 }
 
