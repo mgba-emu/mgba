@@ -393,7 +393,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			break;
 		case REG_SOUNDCNT_X:
 			GBAAudioWriteSOUNDCNT_X(&gba->audio, value);
-			value &= 0x00F0;
+			value &= 0x0080;
 			value |= gba->memory.io[REG_SOUNDCNT_X >> 1] & 0xF;
 			break;
 		case REG_SOUNDBIAS:
