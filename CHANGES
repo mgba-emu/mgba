@@ -25,6 +25,7 @@ Bugfixes:
  - GBA: Initialize uninitialized pristineRom and pristineRomSize members
  - GBA Memory: Fix unaligned out-of-bounds ROM loads
  - GBA: Fix warnings when creating and loading savestates
+ - Qt: Add additional checks in CheatModel to prevent crashes
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
