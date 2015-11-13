@@ -76,7 +76,7 @@ static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState
 			MutexUnlock(&threadContext->sync.videoFrameMutex);
 		}
 
-		if (!MutexLock(&threadContext->sync.audioBufferMutex)) {
+		if (!MutexTryLock(&threadContext->sync.audioBufferMutex)) {
 			ConditionWake(&threadContext->sync.audioRequiredCond);
 			MutexUnlock(&threadContext->sync.audioBufferMutex);
 		}
