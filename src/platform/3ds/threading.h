@@ -37,6 +37,10 @@ static inline int MutexLock(Mutex* mutex) {
 	return svcWaitSynchronization(*mutex, U64_MAX);
 }
 
+static inline int MutexTryLock(Mutex* mutex) {
+	return svcWaitSynchronization(*mutex, 10);
+}
+
 static inline int MutexUnlock(Mutex* mutex) {
 	return svcReleaseMutex(*mutex);
 }

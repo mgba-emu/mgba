@@ -41,6 +41,11 @@ static inline int MutexLock(Mutex* mutex) {
 	return 0;
 }
 
+static inline int MutexTryLock(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
 static inline int MutexUnlock(Mutex* mutex) {
 	UNUSED(mutex);
 	return 0;
