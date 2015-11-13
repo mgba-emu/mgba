@@ -7,9 +7,9 @@
 
 #include "GameController.h"
 
+#include <QComboBox>
 #include <QFontDatabase>
 #include <QGridLayout>
-#include <QRadioButton>
 #include <QSpinBox>
 
 extern "C" {
@@ -840,7 +840,17 @@ void IOViewer::selectRegister(unsigned address) {
 				QSpinBox* sbox = new QSpinBox;
 				sbox->setEnabled(!ri.readonly);
 				sbox->setMaximum((1 << ri.size) - 1);
+				sbox->setAccelerated(true);
 				box->addWidget(sbox, i, 1, Qt::AlignRight);
+
+				connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [sbox, this, &ri](int v) {
+					for (int o = 0; o < ri.size; ++o) {
+						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						m_b[o + ri.start]->setChecked(v & (1 << o));
+						m_b[o + ri.start]->blockSignals(signalsBlocked);
+					}
+				});
+
 				auto connection = connect(this, &IOViewer::valueChanged, [sbox, &ri, this]() {
 					int v = (m_value >> ri.start) & ((1 << ri.size) - 1);
 					bool signalsBlocked = sbox->blockSignals(true);
@@ -851,32 +861,35 @@ void IOViewer::selectRegister(unsigned address) {
 					this->disconnect(connection);
 				});
 			} else {
-				QButtonGroup* group = new QButtonGroup(box);
-				group->setExclusive(true);
+				QComboBox* cbox = new QComboBox;
+				cbox->setEnabled(!ri.readonly);
+				++i;
+				box->addWidget(cbox, i, 0, 1, 2, Qt::AlignRight);
 				for (int o = 0; o < 1 << ri.size; ++o) {
 					if (ri.items.at(o).isNull()) {
 						continue;
 					}
-					++i;
-					QRadioButton* button = new QRadioButton(ri.items.at(o));
-					button->setEnabled(!ri.readonly);
-					box->addWidget(button, i, 0, 1, 2, Qt::AlignLeft);
-					group->addButton(button, o);
+					cbox->addItem(ri.items.at(o), o);
 				}
 
-				auto connection = connect(this, &IOViewer::valueChanged, [group, this, &ri]() {
-					unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
-					for (int i = 0; i < 1 << ri.size; ++i) {
-						QAbstractButton* button = group->button(i);
-						if (!button) {
-							continue;
-						}
-						bool signalsBlocked = button->blockSignals(true);
-						button->setChecked(i == v);
-						button->blockSignals(signalsBlocked);
+				connect(cbox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [cbox, this, &ri](int index) {
+					unsigned v = cbox->itemData(index).toUInt();
+					for (int o = 0; o < ri.size; ++o) {
+						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						m_b[o + ri.start]->setChecked(v & (1 << o));
+						m_b[o + ri.start]->blockSignals(signalsBlocked);
 					}
 				});
-				connect(group, &QObject::destroyed, [connection, this]() {
+
+				auto connection = connect(this, &IOViewer::valueChanged, [cbox, this, &ri]() {
+					unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+					for (int i = 0; i < 1 << ri.size; ++i) {
+						if (cbox->itemData(i) == v) {
+							cbox->setCurrentIndex(i);
+						}
+					}
+				});
+				connect(cbox, &QObject::destroyed, [connection, this]() {
 					this->disconnect(connection);
 				});
 
