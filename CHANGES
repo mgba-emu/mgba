@@ -15,6 +15,7 @@ Bugfixes:
  - GBA: Initialize uninitialized pristineRom and pristineRomSize members
  - GBA Memory: Fix unaligned out-of-bounds ROM loads
  - Qt: Add additional checks in CheatModel to prevent crashes
+ - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
