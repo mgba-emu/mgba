@@ -291,7 +291,7 @@ static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	// Audio
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 1, 0, 0, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
 	// DMA
@@ -874,6 +874,7 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			gba->timersEnabled |= 1 << i;
 		}
 	}
+	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
 	GBAMemoryUpdateDMAs(gba, 0);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }
