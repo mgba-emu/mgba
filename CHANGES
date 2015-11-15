@@ -4,6 +4,7 @@ Features:
  - I/O viewer
  - Booting of multiboot images
  - Customization of GIF recording
+ - Libretro: Cheat code support
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - Qt: Use safer isLoaded check in GameController

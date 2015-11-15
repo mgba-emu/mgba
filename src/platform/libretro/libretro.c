@@ -7,6 +7,7 @@
 
 #include "util/common.h"
 
+#include "gba/cheats.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "gba/context/context.h"
@@ -45,6 +46,8 @@ static struct CircleBuffer rumbleHistory;
 static struct GBARumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
+static struct GBACheatDevice cheats;
+static struct GBACheatSet cheatSet;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -190,10 +193,18 @@ void retro_init(void) {
 	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 #endif
+
+	GBACheatDeviceCreate(&cheats);
+	GBACheatSetInit(&cheatSet, "libretro");
+	GBACheatAddSet(&cheats, &cheatSet);
+	GBACheatAttachDevice(context.gba, &cheats);
 }
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+	GBACheatRemoveSet(&cheats, &cheatSet);
+	GBACheatDeviceDestroy(&cheats);
+	GBACheatSetDeinit(&cheatSet);
 	free(renderer.outputBuffer);
 }
 
@@ -303,14 +314,14 @@ bool retro_unserialize(const void* data, size_t size) {
 }
 
 void retro_cheat_reset(void) {
-	// TODO: Cheats
+	GBACheatSetDeinit(&cheatSet);
+	GBACheatSetInit(&cheatSet, "libretro");
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char* code) {
-	// TODO: Cheats
 	UNUSED(index);
 	UNUSED(enabled);
-	UNUSED(code);
+	GBACheatAddLine(&cheatSet, code);
 }
 
 unsigned retro_get_region(void) {
