@@ -428,160 +428,262 @@ static void _uniformHandler(const char* sectionName, void* user) {
 	u->name = sectionName;
 }
 
+
+static void _loadValue(struct Configuration* description, const char* name, GLenum type, const char* field, union GBAGLES2UniformValue* value) {
+	char fieldName[16];
+	switch (type) {
+	case GL_FLOAT:
+		value->f = 0;
+		_lookupFloatValue(description, name, field, &value->f);
+		break;
+	case GL_FLOAT_VEC2:
+		value->fvec2[0] = 0;
+		value->fvec2[1] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec2[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec2[1]);
+		break;
+	case GL_FLOAT_VEC3:
+		value->fvec3[0] = 0;
+		value->fvec3[1] = 0;
+		value->fvec3[2] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec3[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec3[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec3[2]);
+		break;
+	case GL_FLOAT_VEC4:
+		value->fvec4[0] = 0;
+		value->fvec4[1] = 0;
+		value->fvec4[2] = 0;
+		value->fvec4[3] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec4[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec4[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec4[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fvec4[3]);
+		break;
+	case GL_FLOAT_MAT2:
+		value->fmat2x2[0] = 0;
+		value->fmat2x2[1] = 0;
+		value->fmat2x2[2] = 0;
+		value->fmat2x2[3] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat2x2[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat2x2[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat2x2[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat2x2[3]);
+		break;
+	case GL_FLOAT_MAT3:
+		value->fmat3x3[0] = 0;
+		value->fmat3x3[1] = 0;
+		value->fmat3x3[2] = 0;
+		value->fmat3x3[3] = 0;
+		value->fmat3x3[4] = 0;
+		value->fmat3x3[5] = 0;
+		value->fmat3x3[6] = 0;
+		value->fmat3x3[7] = 0;
+		value->fmat3x3[8] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[3]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[4]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[5]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[6]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[7]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat3x3[8]);
+		break;
+	case GL_FLOAT_MAT4:
+		value->fmat4x4[0] = 0;
+		value->fmat4x4[1] = 0;
+		value->fmat4x4[2] = 0;
+		value->fmat4x4[3] = 0;
+		value->fmat4x4[4] = 0;
+		value->fmat4x4[5] = 0;
+		value->fmat4x4[6] = 0;
+		value->fmat4x4[7] = 0;
+		value->fmat4x4[8] = 0;
+		value->fmat4x4[9] = 0;
+		value->fmat4x4[10] = 0;
+		value->fmat4x4[11] = 0;
+		value->fmat4x4[12] = 0;
+		value->fmat4x4[13] = 0;
+		value->fmat4x4[14] = 0;
+		value->fmat4x4[15] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[0,3]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[3]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[4]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[5]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[6]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1,3]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[7]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[8]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[9]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[10]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2,3]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[11]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3,0]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[12]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3,1]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[13]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3,2]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[14]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3,3]", field);
+		_lookupFloatValue(description, name, fieldName, &value->fmat4x4[15]);
+		break;
+	case GL_INT:
+		value->i = 0;
+		_lookupIntValue(description, name, field, &value->i);
+		break;
+	case GL_INT_VEC2:
+		value->ivec2[0] = 0;
+		value->ivec2[1] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec2[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec2[1]);
+		break;
+	case GL_INT_VEC3:
+		value->ivec3[0] = 0;
+		value->ivec3[1] = 0;
+		value->ivec3[2] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec3[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec3[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec3[2]);
+		break;
+	case GL_INT_VEC4:
+		value->ivec4[0] = 0;
+		value->ivec4[1] = 0;
+		value->ivec4[2] = 0;
+		value->ivec4[3] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec4[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec4[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec4[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3]", field);
+		_lookupIntValue(description, name, fieldName, &value->ivec4[3]);
+		break;
+	case GL_BOOL:
+		value->b = 0;
+		_lookupBoolValue(description, name, field, &value->b);
+		break;
+	case GL_BOOL_VEC2:
+		value->bvec2[0] = 0;
+		value->bvec2[1] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec2[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec2[1]);
+		break;
+	case GL_BOOL_VEC3:
+		value->bvec3[0] = 0;
+		value->bvec3[1] = 0;
+		value->bvec3[2] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec3[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec3[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec3[2]);
+		break;
+	case GL_BOOL_VEC4:
+		value->bvec4[0] = 0;
+		value->bvec4[1] = 0;
+		value->bvec4[2] = 0;
+		value->bvec4[3] = 0;
+		snprintf(fieldName, sizeof(fieldName), "%s[0]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec4[0]);
+		snprintf(fieldName, sizeof(fieldName), "%s[1]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec4[1]);
+		snprintf(fieldName, sizeof(fieldName), "%s[2]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec4[2]);
+		snprintf(fieldName, sizeof(fieldName), "%s[3]", field);
+		_lookupBoolValue(description, name, fieldName, &value->bvec4[3]);
+		break;
+	}
+}
+
 static bool _loadUniform(struct Configuration* description, struct GBAGLES2Uniform* uniform) {
 	const char* type = ConfigurationGetValue(description, uniform->name, "type");
 	if (!strcmp(type, "float")) {
 		uniform->type = GL_FLOAT;
-		uniform->value.f = 0;
-		_lookupFloatValue(description, uniform->name, "default", &uniform->value.f);
 	} else if (!strcmp(type, "float2")) {
 		uniform->type = GL_FLOAT_VEC2;
-		uniform->value.fvec2[0] = 0;
-		uniform->value.fvec2[1] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec2[0]);
-		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec2[1]);
 	} else if (!strcmp(type, "float3")) {
 		uniform->type = GL_FLOAT_VEC3;
-		uniform->value.fvec3[0] = 0;
-		uniform->value.fvec3[1] = 0;
-		uniform->value.fvec3[2] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec3[0]);
-		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec3[1]);
-		_lookupFloatValue(description, uniform->name, "default[2]", &uniform->value.fvec3[2]);
 	} else if (!strcmp(type, "float4")) {
 		uniform->type = GL_FLOAT_VEC4;
-		uniform->value.fvec4[0] = 0;
-		uniform->value.fvec4[1] = 0;
-		uniform->value.fvec4[2] = 0;
-		uniform->value.fvec4[3] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0]", &uniform->value.fvec4[0]);
-		_lookupFloatValue(description, uniform->name, "default[1]", &uniform->value.fvec4[1]);
-		_lookupFloatValue(description, uniform->name, "default[2]", &uniform->value.fvec4[2]);
-		_lookupFloatValue(description, uniform->name, "default[3]", &uniform->value.fvec4[3]);
 	} else if (!strcmp(type, "float2x2")) {
 		uniform->type = GL_FLOAT_MAT2;
-		uniform->value.fmat2x2[0] = 0;
-		uniform->value.fmat2x2[1] = 0;
-		uniform->value.fmat2x2[2] = 0;
-		uniform->value.fmat2x2[3] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat2x2[0]);
-		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat2x2[1]);
-		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat2x2[2]);
-		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat2x2[3]);
 	} else if (!strcmp(type, "float3x3")) {
 		uniform->type = GL_FLOAT_MAT3;
-		uniform->value.fmat3x3[0] = 0;
-		uniform->value.fmat3x3[1] = 0;
-		uniform->value.fmat3x3[2] = 0;
-		uniform->value.fmat3x3[3] = 0;
-		uniform->value.fmat3x3[4] = 0;
-		uniform->value.fmat3x3[5] = 0;
-		uniform->value.fmat3x3[6] = 0;
-		uniform->value.fmat3x3[7] = 0;
-		uniform->value.fmat3x3[8] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat3x3[0]);
-		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat3x3[1]);
-		_lookupFloatValue(description, uniform->name, "default[0,2]", &uniform->value.fmat3x3[2]);
-		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat3x3[3]);
-		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat3x3[4]);
-		_lookupFloatValue(description, uniform->name, "default[1,2]", &uniform->value.fmat3x3[5]);
-		_lookupFloatValue(description, uniform->name, "default[2,0]", &uniform->value.fmat3x3[6]);
-		_lookupFloatValue(description, uniform->name, "default[2,1]", &uniform->value.fmat3x3[7]);
-		_lookupFloatValue(description, uniform->name, "default[2,2]", &uniform->value.fmat3x3[8]);
 	} else if (!strcmp(type, "float4x4")) {
 		uniform->type = GL_FLOAT_MAT4;
-		uniform->value.fmat4x4[0] = 0;
-		uniform->value.fmat4x4[1] = 0;
-		uniform->value.fmat4x4[2] = 0;
-		uniform->value.fmat4x4[3] = 0;
-		uniform->value.fmat4x4[4] = 0;
-		uniform->value.fmat4x4[5] = 0;
-		uniform->value.fmat4x4[6] = 0;
-		uniform->value.fmat4x4[7] = 0;
-		uniform->value.fmat4x4[8] = 0;
-		uniform->value.fmat4x4[9] = 0;
-		uniform->value.fmat4x4[10] = 0;
-		uniform->value.fmat4x4[11] = 0;
-		uniform->value.fmat4x4[12] = 0;
-		uniform->value.fmat4x4[13] = 0;
-		uniform->value.fmat4x4[14] = 0;
-		uniform->value.fmat4x4[15] = 0;
-		_lookupFloatValue(description, uniform->name, "default[0,0]", &uniform->value.fmat4x4[0]);
-		_lookupFloatValue(description, uniform->name, "default[0,1]", &uniform->value.fmat4x4[1]);
-		_lookupFloatValue(description, uniform->name, "default[0,2]", &uniform->value.fmat4x4[2]);
-		_lookupFloatValue(description, uniform->name, "default[0,3]", &uniform->value.fmat4x4[3]);
-		_lookupFloatValue(description, uniform->name, "default[1,0]", &uniform->value.fmat4x4[4]);
-		_lookupFloatValue(description, uniform->name, "default[1,1]", &uniform->value.fmat4x4[5]);
-		_lookupFloatValue(description, uniform->name, "default[1,2]", &uniform->value.fmat4x4[6]);
-		_lookupFloatValue(description, uniform->name, "default[1,3]", &uniform->value.fmat4x4[7]);
-		_lookupFloatValue(description, uniform->name, "default[2,0]", &uniform->value.fmat4x4[8]);
-		_lookupFloatValue(description, uniform->name, "default[2,1]", &uniform->value.fmat4x4[9]);
-		_lookupFloatValue(description, uniform->name, "default[2,2]", &uniform->value.fmat4x4[10]);
-		_lookupFloatValue(description, uniform->name, "default[2,3]", &uniform->value.fmat4x4[11]);
-		_lookupFloatValue(description, uniform->name, "default[3,0]", &uniform->value.fmat4x4[12]);
-		_lookupFloatValue(description, uniform->name, "default[3,1]", &uniform->value.fmat4x4[13]);
-		_lookupFloatValue(description, uniform->name, "default[3,2]", &uniform->value.fmat4x4[14]);
-		_lookupFloatValue(description, uniform->name, "default[3,3]", &uniform->value.fmat4x4[15]);
 	} else if (!strcmp(type, "int")) {
 		uniform->type = GL_INT;
-		uniform->value.i = 0;
-		_lookupIntValue(description, uniform->name, "default", &uniform->value.i);
 	} else if (!strcmp(type, "int2")) {
 		uniform->type = GL_INT_VEC2;
-		uniform->value.ivec2[0] = 0;
-		uniform->value.ivec2[1] = 0;
-		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec2[0]);
-		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec2[1]);
 	} else if (!strcmp(type, "int3")) {
 		uniform->type = GL_INT_VEC3;
-		uniform->value.ivec3[0] = 0;
-		uniform->value.ivec3[1] = 0;
-		uniform->value.ivec3[2] = 0;
-		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec3[0]);
-		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec3[1]);
-		_lookupIntValue(description, uniform->name, "default[2]", &uniform->value.ivec3[2]);
 	} else if (!strcmp(type, "int4")) {
 		uniform->type = GL_INT_VEC4;
-		uniform->value.ivec4[0] = 0;
-		uniform->value.ivec4[1] = 0;
-		uniform->value.ivec4[2] = 0;
-		uniform->value.ivec4[3] = 0;
-		_lookupIntValue(description, uniform->name, "default[0]", &uniform->value.ivec4[0]);
-		_lookupIntValue(description, uniform->name, "default[1]", &uniform->value.ivec4[1]);
-		_lookupIntValue(description, uniform->name, "default[2]", &uniform->value.ivec4[2]);
-		_lookupIntValue(description, uniform->name, "default[3]", &uniform->value.ivec4[3]);
 	} else if (!strcmp(type, "bool")) {
 		uniform->type = GL_BOOL;
-		uniform->value.b = 0;
-		_lookupBoolValue(description, uniform->name, "default", &uniform->value.b);
 	} else if (!strcmp(type, "int2")) {
 		uniform->type = GL_BOOL_VEC2;
-		uniform->value.bvec2[0] = 0;
-		uniform->value.bvec2[1] = 0;
-		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec2[0]);
-		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec2[1]);
 	} else if (!strcmp(type, "int3")) {
 		uniform->type = GL_BOOL_VEC3;
-		uniform->value.bvec3[0] = 0;
-		uniform->value.bvec3[1] = 0;
-		uniform->value.bvec3[2] = 0;
-		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec3[0]);
-		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec3[1]);
-		_lookupBoolValue(description, uniform->name, "default[2]", &uniform->value.bvec3[2]);
 	} else if (!strcmp(type, "int4")) {
 		uniform->type = GL_BOOL_VEC4;
-		uniform->value.bvec4[0] = 0;
-		uniform->value.bvec4[1] = 0;
-		uniform->value.bvec4[2] = 0;
-		uniform->value.bvec4[3] = 0;
-		_lookupBoolValue(description, uniform->name, "default[0]", &uniform->value.bvec4[0]);
-		_lookupBoolValue(description, uniform->name, "default[1]", &uniform->value.bvec4[1]);
-		_lookupBoolValue(description, uniform->name, "default[2]", &uniform->value.bvec4[2]);
-		_lookupBoolValue(description, uniform->name, "default[3]", &uniform->value.bvec4[3]);
 	} else {
 		return false;
 	}
+	_loadValue(description, uniform->name, uniform->type, "default", &uniform->value);
+	_loadValue(description, uniform->name, uniform->type, "min", &uniform->min);
+	_loadValue(description, uniform->name, uniform->type, "max", &uniform->max);
 	uniform->name = strdup(uniform->name + strlen("uniform."));
+	const char* readable = ConfigurationGetValue(description, uniform->name, "readableName");
+	if (readable) {
+		uniform->readableName = strdup(readable);
+	} else {
+		uniform->readableName = 0;
+	}
 	return true;
 }
 
@@ -711,6 +813,7 @@ void GBAGLES2ShaderFree(struct GBAGLES2Shader* shaders, size_t nShaders) {
 		size_t u;
 		for (u = 0; u < shaders[n].nUniforms; ++u) {
 			free((void*) shaders[n].uniforms[u].name);
+			free((void*) shaders[n].uniforms[u].readableName);
 		}
 	}
 	free(shaders);

@@ -45,6 +45,9 @@ struct GBAGLES2Uniform {
 	GLenum type;
 	union GBAGLES2UniformValue value;
 	GLuint location;
+	union GBAGLES2UniformValue min;
+	union GBAGLES2UniformValue max;
+	const char* readableName;
 };
 
 struct GBAGLES2Shader {
