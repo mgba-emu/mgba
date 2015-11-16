@@ -195,9 +195,9 @@ void retro_init(void) {
 #endif
 
 	GBACheatDeviceCreate(&cheats);
+	GBACheatAttachDevice(context.gba, &cheats);
 	GBACheatSetInit(&cheatSet, "libretro");
 	GBACheatAddSet(&cheats, &cheatSet);
-	GBACheatAttachDevice(context.gba, &cheats);
 }
 
 void retro_deinit(void) {
@@ -321,7 +321,24 @@ void retro_cheat_reset(void) {
 void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	UNUSED(index);
 	UNUSED(enabled);
-	GBACheatAddLine(&cheatSet, code);
+	// Convert the super wonky unportable libretro format to something normal
+	char realCode[] = "XXXXXXXX XXXXXXXX";
+	size_t len = strlen(code) + 1; // Include null terminator
+	size_t i, pos;
+	for (i = 0, pos = 0; i < len; ++i) {
+		if (isspace((int) code[i]) || code[i] == '+') {
+			realCode[pos] = ' ';
+		} else {
+			realCode[pos] = code[i];
+		}
+		if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
+			realCode[pos] = '\0';
+			GBACheatAddLine(&cheatSet, realCode);
+			pos = 0;
+			continue;
+		}
+		++pos;
+	}
 }
 
 unsigned retro_get_region(void) {
