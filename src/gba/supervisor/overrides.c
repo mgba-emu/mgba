@@ -136,6 +136,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AX4E", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 	{ "AX4P", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 
+	// Super Monkey Ball Jr.
+	{ "ALUE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+	{ "ALUP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+
 	// Top Gun - Combat Zones
 	{ "A2YE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },
 
