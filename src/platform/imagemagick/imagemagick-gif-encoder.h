@@ -21,11 +21,13 @@ struct ImageMagickGIFEncoder {
 
 	unsigned currentFrame;
 	int frameskip;
+	int delayMs;
 };
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder*);
+void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int frameskip, int delayMs);
 bool ImageMagickGIFEncoderOpen(struct ImageMagickGIFEncoder*, const char* outfile);
-void ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder*);
+bool ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder*);
 bool ImageMagickGIFEncoderIsOpen(struct ImageMagickGIFEncoder*);
 
 #endif

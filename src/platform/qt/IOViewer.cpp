@@ -7,9 +7,9 @@
 
 #include "GameController.h"
 
+#include <QComboBox>
 #include <QFontDatabase>
 #include <QGridLayout>
-#include <QRadioButton>
 #include <QSpinBox>
 
 extern "C" {
@@ -302,6 +302,724 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions() {
 	s_registers.append({
 		{ tr("Blend Y"), 0, 5 },
 	});
+	// 0x04000056: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000058: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400005E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000060: SOUND1CNT_LO
+	s_registers.append({
+		{ tr("Sweep shifts"), 0, 3 },
+		{ tr("Sweep subtract"), 3 },
+		{ tr("Sweep time (in 1/128s)"), 4, 3 },
+	});
+	// 0x04000062: SOUND1CNT_HI
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x04000064: SOUND1CNT_X
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x04000066: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000068: SOUND2CNT_LO
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Duty cycle"),  6, 2 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x0400006A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400006C: SOUND2CNT_HI
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x0400006E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000070: SOUND3CNT_LO
+	s_registers.append({
+		{ tr("Double-size wave table"), 5 },
+		{ tr("Active wave table"),  6 },
+		{ tr("Enable channel 3"), 7 },
+	});
+	// 0x04000072: SOUND3CNT_HI
+	s_registers.append({
+		{ tr("Sound length"), 0, 8 },
+		{ tr("Volume"),  13, 3, {
+			tr("0%"),
+			tr("100%"),
+			tr("50%"),
+			tr("25%"),
+			tr("75%"),
+			tr("75%"),
+			tr("75%"),
+			tr("75%")
+		} },
+	});
+	// 0x04000074: SOUND3CNT_X
+	s_registers.append({
+		{ tr("Sound frequency"), 0, 11 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x04000076: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000078: SOUND4CNT_LO
+	s_registers.append({
+		{ tr("Sound length"), 0, 6 },
+		{ tr("Envelope step time"), 8, 3 },
+		{ tr("Envelope increase"), 11 },
+		{ tr("Initial volume"), 12, 4 },
+	});
+	// 0x0400007A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400007C: SOUND4CNT_HI
+	s_registers.append({
+		{ tr("Clock divider"), 0, 3 },
+		{ tr("Register stages"), 3, 1, {
+			tr("15"),
+			tr("7"),
+		} },
+		{ tr("Shifter frequency"), 4, 4 },
+		{ tr("Timed"),  14 },
+		{ tr("Reset"), 15 },
+	});
+	// 0x0400007E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000080: SOUNDCNT_LO
+	s_registers.append({
+		{ tr("PSG volume right"), 0, 3 },
+		{ tr("PSG volume left"), 4, 3 },
+		{ tr("Enable channel 1 right"), 8 },
+		{ tr("Enable channel 2 right"), 9 },
+		{ tr("Enable channel 3 right"), 10 },
+		{ tr("Enable channel 4 right"), 11 },
+		{ tr("Enable channel 1 left"), 12 },
+		{ tr("Enable channel 2 left"), 13 },
+		{ tr("Enable channel 3 left"), 14 },
+		{ tr("Enable channel 4 left"), 15 },
+	});
+	// 0x04000082: SOUNDCNT_HI
+	s_registers.append({
+		{ tr("PSG master volume"), 0, 2, {
+			tr("25%"),
+			tr("50%"),
+			tr("100%"),
+			QString()
+		} },
+		{ tr("Loud channel A"), 2 },
+		{ tr("Loud channel B"), 3 },
+		{ tr("Enable channel A right"), 8 },
+		{ tr("Enable channel A left"), 9 },
+		{ tr("Channel A timer"), 10, 1, {
+			tr("0"),
+			tr("1"),
+		} },
+		{ tr("Channel A reset"), 11 },
+		{ tr("Enable channel B right"), 12 },
+		{ tr("Enable channel B left"), 13 },
+		{ tr("Channel B timer"), 14, 1, {
+			tr("0"),
+			tr("1"),
+		} },
+		{ tr("Channel B reset"), 15 },
+	});
+	// 0x04000084: SOUNDCNT_LO
+	s_registers.append({
+		{ tr("Active channel 1"), 0, 1, true },
+		{ tr("Active channel 2"), 1, 1, true },
+		{ tr("Active channel 3"), 2, 1, true },
+		{ tr("Active channel 4"), 3, 1, true },
+		{ tr("Enable audio"), 7 },
+	});
+	// 0x04000086: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000088: SOUNDBIAS
+	s_registers.append({
+		{ tr("Bias"), 0, 10 },
+		{ tr("Resolution"), 14, 2 },
+	});
+	// 0x0400008A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400008C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400008E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000090: WAVE_RAM0_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000092: WAVE_RAM0_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000094: WAVE_RAM1_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000096: WAVE_RAM1_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x04000098: WAVE_RAM2_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009A: WAVE_RAM2_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009C: WAVE_RAM3_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x0400009E: WAVE_RAM0_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 4 },
+		{ tr("Sample"), 4, 4 },
+		{ tr("Sample"), 8, 4 },
+		{ tr("Sample"), 12, 4 },
+	});
+	// 0x040000A0: FIFO_A_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A2: FIFO_A_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A4: FIFO_B_LO
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A6: FIFO_B_HI
+	s_registers.append({
+		{ tr("Sample"), 0, 8 },
+		{ tr("Sample"), 8, 8 },
+	});
+	// 0x040000A8: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000AA: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000AC: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000AE: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000B0: DMA0SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000B2: DMA0SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000B4: DMA0DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000B6: DMA0DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000B8: DMA0CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000BA: DMA0CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			QString(),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000BC: DMA1SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000BE: DMA1SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000C0: DMA1DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000C2: DMA1DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000C4: DMA1CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000C6: DMA1CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000C8: DMA2SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000CA: DMA2SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000CC: DMA2DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000CE: DMA2DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000D0: DMA2CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000D2: DMA2CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			QString(),
+		} },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000D4: DMA3SAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000D6: DMA3SAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000D8: DMA3DAD_LO
+	s_registers.append({
+		{ tr("Address (bottom)"), 0, 16 },
+	});
+	// 0x040000DA: DMA3DAD_HI
+	s_registers.append({
+		{ tr("Address (top)"), 0, 16 },
+	});
+	// 0x040000DC: DMA3CNT_LO
+	s_registers.append({
+		{ tr("Word count"), 0, 16 },
+	});
+	// 0x040000DE: DMA3CNT_HI
+	s_registers.append({
+		{ tr("Destination offset"), 5, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Increment and reload"),
+		} },
+		{ tr("Source offset"), 7, 2, {
+			tr("Increment"),
+			tr("Decrement"),
+			tr("Fixed"),
+			tr("Video Capture"),
+		} },
+		{ tr("DRQ"), 8 },
+		{ tr("Repeat"), 9 },
+		{ tr("32-bit"), 10 },
+		{ tr("Start timing"), 12, 2, {
+			tr("Immediate"),
+			tr("VBlank"),
+			tr("HBlank"),
+			tr("Audio FIFO"),
+		} },
+		{ tr("IRQ"), 14 },
+		{ tr("Enable"), 15 },
+	});
+	// 0x040000E0: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000E2: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000E4: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000E6: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000E8: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000EA: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000EC: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000EE: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000F0: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000F2: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000F4: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000F6: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000F8: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000FA: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000FC: Unused
+	s_registers.append(RegisterDescription());
+	// 0x040000FE: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000100: TM0CNT_LO
+	s_registers.append({
+		{ tr("Value"), 0, 16 },
+	});
+	// 0x04000102: TM0CNT_HI
+	s_registers.append({
+		{ tr("Scale"), 0, 2, {
+			tr("1"),
+			tr("1/64"),
+			tr("1/256"),
+			tr("1/1024"),
+		} },
+		{ tr("IRQ"), 6 },
+		{ tr("Enable"), 7 },
+	});
+	// 0x04000104: TM1CNT_LO
+	s_registers.append({
+		{ tr("Value"), 0, 16 },
+	});
+	// 0x04000106: TM1CNT_HI
+	s_registers.append({
+		{ tr("Scale"), 0, 2, {
+			tr("1"),
+			tr("1/64"),
+			tr("1/256"),
+			tr("1/1024"),
+		} },
+		{ tr("Cascade"), 2 },
+		{ tr("IRQ"), 6 },
+		{ tr("Enable"), 7 },
+	});
+	// 0x04000108: TM2CNT_LO
+	s_registers.append({
+		{ tr("Value"), 0, 16 },
+	});
+	// 0x0400010A: TM2CNT_HI
+	s_registers.append({
+		{ tr("Scale"), 0, 2, {
+			tr("1"),
+			tr("1/64"),
+			tr("1/256"),
+			tr("1/1024"),
+		} },
+		{ tr("Cascade"), 2 },
+		{ tr("IRQ"), 6 },
+		{ tr("Enable"), 7 },
+	});
+	// 0x0400010C: TM3CNT_LO
+	s_registers.append({
+		{ tr("Value"), 0, 16 },
+	});
+	// 0x0400010E: TM3CNT_HI
+	s_registers.append({
+		{ tr("Scale"), 0, 2, {
+			tr("1"),
+			tr("1/64"),
+			tr("1/256"),
+			tr("1/1024"),
+		} },
+		{ tr("Cascade"), 2 },
+		{ tr("IRQ"), 6 },
+		{ tr("Enable"), 7 },
+	});
+	// 0x04000110: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000112: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000114: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000116: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000118: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400011A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400011C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400011E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000120: SIOMULTI0
+	s_registers.append(RegisterDescription());
+	// 0x04000122: SIOMULTI1
+	s_registers.append(RegisterDescription());
+	// 0x04000124: SIOMULTI2
+	s_registers.append(RegisterDescription());
+	// 0x04000126: SIOMULTI3
+	s_registers.append(RegisterDescription());
+	// 0x04000128: SIOCNT
+	s_registers.append(RegisterDescription());
+	// 0x0400012A: SIOMLT_SEND
+	s_registers.append(RegisterDescription());
+	// 0x0400012C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400012E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000130: KEYINPUT
+	s_registers.append({
+		{ tr("A"), 0 },
+		{ tr("B"), 1 },
+		{ tr("Select"), 2 },
+		{ tr("Start"), 3 },
+		{ tr("Right"), 4 },
+		{ tr("Left"), 5 },
+		{ tr("Up"), 6 },
+		{ tr("Down"), 7 },
+		{ tr("R"), 8 },
+		{ tr("L"), 9 },
+	});
+	// 0x04000132: KEYCNT
+	s_registers.append({
+		{ tr("A"), 0 },
+		{ tr("B"), 1 },
+		{ tr("Select"), 2 },
+		{ tr("Start"), 3 },
+		{ tr("Right"), 4 },
+		{ tr("Left"), 5 },
+		{ tr("Up"), 6 },
+		{ tr("Down"), 7 },
+		{ tr("R"), 8 },
+		{ tr("L"), 9 },
+		{ tr("IRQ"), 14 },
+		{ tr("Condition"), 15 },
+	});
+	// 0x04000134: RCNT
+	s_registers.append({
+		{ tr("SC"), 0 },
+		{ tr("SD"), 1 },
+		{ tr("SI"), 2 },
+		{ tr("SO"), 3 },
+	});
+	// 0x04000136: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000138: SIOCNT
+	s_registers.append(RegisterDescription());
+	// 0x0400013A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400013C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400013E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000140: JOYCNT
+	s_registers.append(RegisterDescription());
+	// 0x04000142: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000144: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000146: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000148: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400014A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400014C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400014E: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000150: JOY_RECV_LO
+	s_registers.append(RegisterDescription());
+	// 0x04000152: JOY_RECV_HI
+	s_registers.append(RegisterDescription());
+	// 0x04000154: JOY_TRANS_LO
+	s_registers.append(RegisterDescription());
+	// 0x04000156: JOY_TRANS_HI
+	s_registers.append(RegisterDescription());
+	// 0x04000158: JOYSTAT
+	s_registers.append(RegisterDescription());
+	// 0x0400015A: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400015C: Unused
+	s_registers.append(RegisterDescription());
+	// 0x0400015E: Unused
+	s_registers.append(RegisterDescription());
+	for (int i = 0x160; i < 0x200; i += 2) {
+		// Unused
+		s_registers.append(RegisterDescription());
+	}
+	// 0x04000200: IE
+	s_registers.append({
+		{ tr("VBlank"), 0 },
+		{ tr("HBlank"), 1 },
+		{ tr("VCounter"), 2 },
+		{ tr("Timer 0"), 3 },
+		{ tr("Timer 1"), 4 },
+		{ tr("Timer 2"), 5 },
+		{ tr("Timer 3"), 6 },
+		{ tr("SIO"), 7 },
+		{ tr("DMA 0"), 8 },
+		{ tr("DMA 1"), 9 },
+		{ tr("DMA 2"), 10 },
+		{ tr("DMA 3"), 11 },
+		{ tr("Keypad"), 12 },
+		{ tr("Gamepak"), 13 },
+	});
+	// 0x04000202: IF
+	s_registers.append({
+		{ tr("VBlank"), 0 },
+		{ tr("HBlank"), 1 },
+		{ tr("VCounter"), 2 },
+		{ tr("Timer 0"), 3 },
+		{ tr("Timer 1"), 4 },
+		{ tr("Timer 2"), 5 },
+		{ tr("Timer 3"), 6 },
+		{ tr("SIO"), 7 },
+		{ tr("DMA 0"), 8 },
+		{ tr("DMA 1"), 9 },
+		{ tr("DMA 2"), 10 },
+		{ tr("DMA 3"), 11 },
+		{ tr("Keypad"), 12 },
+		{ tr("Gamepak"), 13 },
+	});
+	// 0x04000204: WAITCNT
+	s_registers.append({
+		{ tr("SRAM wait"), 0, 2, {
+			tr("4"),
+			tr("3"),
+			tr("2"),
+			tr("8"),
+		} },
+		{ tr("Cart 0 non-sequential"), 2, 2, {
+			tr("4"),
+			tr("3"),
+			tr("2"),
+			tr("8"),
+		} },
+		{ tr("Cart 0 sequential"), 4, 1, {
+			tr("2"),
+			tr("1"),
+		} },
+		{ tr("Cart 1 non-sequential"), 5, 2, {
+			tr("4"),
+			tr("3"),
+			tr("2"),
+			tr("8"),
+		} },
+		{ tr("Cart 1 sequential"), 7, 1, {
+			tr("4"),
+			tr("1"),
+		} },
+		{ tr("Cart 2 non-sequential"), 8, 2, {
+			tr("4"),
+			tr("3"),
+			tr("2"),
+			tr("8"),
+		} },
+		{ tr("Cart 2 sequential"), 10, 1, {
+			tr("8"),
+			tr("1"),
+		} },
+		{ tr("PHI terminal"), 11, 2, {
+			tr("Disable"),
+			tr("4.19MHz"),
+			tr("8.38MHz"),
+			tr("16.78MHz"),
+		} },
+		{ tr("Gamepak prefetch"), 14 },
+	});
+	// 0x04000206: Unused
+	s_registers.append(RegisterDescription());
+	// 0x04000208: IME
+	s_registers.append({
+		{ tr("Enable IRQs"), 0 },
+	});
 	return s_registers;
 }
 
@@ -355,7 +1073,7 @@ void IOViewer::updateRegister() {
 	uint16_t value = 0;
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		value = GBAIORead(m_controller->thread()->gba, m_register);
+		value = GBAView16(m_controller->thread()->cpu, BASE_IO | m_register);
 	}
 	m_controller->threadContinue();
 
@@ -363,6 +1081,7 @@ void IOViewer::updateRegister() {
 		m_b[i]->setChecked(value & (1 << i) ? Qt::Checked : Qt::Unchecked);
 	}
 	m_value = value;
+	emit valueChanged();
 }
 
 void IOViewer::bitFlipped() {
@@ -371,6 +1090,7 @@ void IOViewer::bitFlipped() {
 		m_value |= m_b[i]->isChecked() << i;
 	}
 	m_ui.regValue->setText("0x" + QString("%1").arg(m_value, 4, 16, QChar('0')).toUpper());
+	emit valueChanged();
 }
 
 void IOViewer::writeback() {
@@ -414,61 +1134,59 @@ void IOViewer::selectRegister(unsigned address) {
 				QSpinBox* sbox = new QSpinBox;
 				sbox->setEnabled(!ri.readonly);
 				sbox->setMaximum((1 << ri.size) - 1);
+				sbox->setAccelerated(true);
 				box->addWidget(sbox, i, 1, Qt::AlignRight);
-				for (int b = 0; b < ri.size; ++b) {
-					connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, b, &ri](int v) {
-						m_b[ri.start + b]->setChecked(v & (1 << b));
-					});
-					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [sbox, this, b](bool t) {
-						int v = sbox->value() & ~(1 << b);
-						v |= t << b;
-						bool signalsBlocked = sbox->blockSignals(true);
-						sbox->setValue(v);
-						sbox->blockSignals(signalsBlocked);
-					});
-					connect(sbox, &QObject::destroyed, [connection, this, b, &ri]() {
-						bool signalsBlocked = m_b[ri.start + b]->blockSignals(true);
-						m_b[ri.start + b]->disconnect(connection);
-						m_b[ri.start + b]->blockSignals(signalsBlocked);
-					});
-				}
+
+				connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [sbox, this, &ri](int v) {
+					for (int o = 0; o < ri.size; ++o) {
+						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						m_b[o + ri.start]->setChecked(v & (1 << o));
+						m_b[o + ri.start]->blockSignals(signalsBlocked);
+					}
+				});
+
+				auto connection = connect(this, &IOViewer::valueChanged, [sbox, &ri, this]() {
+					int v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+					bool signalsBlocked = sbox->blockSignals(true);
+					sbox->setValue(v);
+					sbox->blockSignals(signalsBlocked);
+				});
+				connect(sbox, &QObject::destroyed, [connection, this]() {
+					this->disconnect(connection);
+				});
 			} else {
-				QButtonGroup* group = new QButtonGroup(box);
-				group->setExclusive(true);
+				QComboBox* cbox = new QComboBox;
+				cbox->setEnabled(!ri.readonly);
+				++i;
+				box->addWidget(cbox, i, 0, 1, 2, Qt::AlignRight);
 				for (int o = 0; o < 1 << ri.size; ++o) {
 					if (ri.items.at(o).isNull()) {
 						continue;
 					}
-					++i;
-					QRadioButton* button = new QRadioButton(ri.items.at(o));
-					button->setEnabled(!ri.readonly);
-					box->addWidget(button, i, 0, 1, 2, Qt::AlignLeft);
-					group->addButton(button, o);
+					cbox->addItem(ri.items.at(o), o);
 				}
-				for (int b = 0; b < ri.size; ++b) {
-					auto connection = connect(m_b[ri.start + b], &QCheckBox::toggled, [group, this, &ri](bool) {
-						unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
-						for (int i = 0; i < 1 << ri.size; ++i) {
-							QAbstractButton* button = group->button(i);
-							if (!button) {
-								continue;
-							}
-							bool signalsBlocked = button->blockSignals(true);
-							button->setChecked(i == v);
-							button->blockSignals(signalsBlocked);
-						}
-					});
-					connect(group, &QObject::destroyed, [connection, this, b, &ri]() {
-						m_b[ri.start + b]->disconnect(connection);
-					});
-				}
-				connect(group, static_cast<void (QButtonGroup::*)(int, bool)>(&QButtonGroup::buttonToggled), [this, &ri](int v) {
-					for (int i = 0; i < ri.size; ++i) {
-						bool signalsBlocked = m_b[ri.start + i]->blockSignals(true);
-						m_b[ri.start + i]->setChecked(v & (1 << i));
-						m_b[ri.start + i]->blockSignals(signalsBlocked);
+
+				connect(cbox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [cbox, this, &ri](int index) {
+					unsigned v = cbox->itemData(index).toUInt();
+					for (int o = 0; o < ri.size; ++o) {
+						bool signalsBlocked = m_b[o + ri.start]->blockSignals(true);
+						m_b[o + ri.start]->setChecked(v & (1 << o));
+						m_b[o + ri.start]->blockSignals(signalsBlocked);
 					}
 				});
+
+				auto connection = connect(this, &IOViewer::valueChanged, [cbox, this, &ri]() {
+					unsigned v = (m_value >> ri.start) & ((1 << ri.size) - 1);
+					for (int i = 0; i < 1 << ri.size; ++i) {
+						if (cbox->itemData(i) == v) {
+							cbox->setCurrentIndex(i);
+						}
+					}
+				});
+				connect(cbox, &QObject::destroyed, [connection, this]() {
+					this->disconnect(connection);
+				});
+
 			}
 			++i;
 		}

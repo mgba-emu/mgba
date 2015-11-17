@@ -121,7 +121,7 @@ static void _GBASDLAudioCallback(void* context, Uint8* data, int len) {
 #elif RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double fauxClock = 1;
 	if (audioContext->thread) {
-		GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
+		fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
 		GBASyncLockAudio(&audioContext->thread->sync);
 	}
 	blip_set_rates(gba->audio.left, GBA_ARM7TDMI_FREQUENCY, audioContext->obtainedSpec.freq * fauxClock);

@@ -306,8 +306,8 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	if (c & 0x0020) {
 		c = (c & ~0x003F) | 0x001F;
 	}
-	if (c & 0x10000) {
-		c = (c & ~0x1F800) | 0xF800;
+	if (c & 0x8000) {
+		c = (c & ~0xF800) | 0x7C00;
 	}
 	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
 #endif

@@ -73,13 +73,15 @@ static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState
 	while (threadContext->state == oldState) {
 		MutexUnlock(&threadContext->stateMutex);
 
-		MutexLock(&threadContext->sync.videoFrameMutex);
-		ConditionWake(&threadContext->sync.videoFrameRequiredCond);
-		MutexUnlock(&threadContext->sync.videoFrameMutex);
+		if (!MutexTryLock(&threadContext->sync.videoFrameMutex)) {
+			ConditionWake(&threadContext->sync.videoFrameRequiredCond);
+			MutexUnlock(&threadContext->sync.videoFrameMutex);
+		}
 
-		MutexLock(&threadContext->sync.audioBufferMutex);
-		ConditionWake(&threadContext->sync.audioRequiredCond);
-		MutexUnlock(&threadContext->sync.audioBufferMutex);
+		if (!MutexTryLock(&threadContext->sync.audioBufferMutex)) {
+			ConditionWake(&threadContext->sync.audioRequiredCond);
+			MutexUnlock(&threadContext->sync.audioBufferMutex);
+		}
 
 		MutexLock(&threadContext->stateMutex);
 		ConditionWake(&threadContext->stateCond);

@@ -486,9 +486,7 @@ static const uint32_t _gbpTxData[] = {
 	0xB1BA4E45, 0xB1BA4F44,
 	0xB0BB4F44, 0xB0BB8002,
 	0x10000010, 0x20000013,
-	0x30000003, 0x30000003,
-	0x30000003, 0x30000003,
-	0x30000003, 0x00000000,
+	0x30000003
 };
 
 static const uint32_t _gbpRxData[] = {
@@ -498,9 +496,7 @@ static const uint32_t _gbpRxData[] = {
 	0x4E45B1BA, 0x4F44B1BA,
 	0x4F44B0BB, 0x8000B0BB,
 	0x10000010, 0x20000013,
-	0x40000004, 0x40000004,
-	0x40000004, 0x40000004,
-	0x40000004, 0x40000004
+	0x40000004
 };
 
 bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video) {
@@ -548,16 +544,17 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 	struct GBAGBPSIODriver* gbp = (struct GBAGBPSIODriver*) driver;
 	if (address == REG_SIOCNT) {
 		if (value & 0x0080) {
-			if (gbp->p->gbpTxPosition <= 16 && gbp->p->gbpTxPosition > 0) {
-				uint32_t rx = gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] | (gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
+			uint32_t rx = gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] | (gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
+			if (gbp->p->gbpTxPosition < 12 && gbp->p->gbpTxPosition > 0) {
 				uint32_t expected = _gbpRxData[gbp->p->gbpTxPosition];
 				// TODO: Check expected
-				uint32_t mask = 0;
-				if (gbp->p->gbpTxPosition == 15) {
-					mask = 0x22;
-					if (gbp->p->p->rumble) {
-						gbp->p->p->rumble->setRumble(gbp->p->p->rumble, (rx & mask) == mask);
-					}
+			} else if (gbp->p->gbpTxPosition >= 12) {
+				uint32_t mask = 0x33;
+				// 0x00 = Stop
+				// 0x11 = Hard Stop
+				// 0x22 = Start
+				if (gbp->p->p->rumble) {
+					gbp->p->p->rumble->setRumble(gbp->p->p->rumble, (rx & mask) == 0x22);
 				}
 			}
 			gbp->p->gbpNextEvent = 2048;
@@ -572,9 +569,11 @@ int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
 	gbp->p->gbpNextEvent -= cycles;
 	if (gbp->p->gbpNextEvent <= 0) {
 		uint32_t tx = 0;
-		if (gbp->p->gbpTxPosition <= 16) {
+		if (gbp->p->gbpTxPosition <= 12) {
 			tx = _gbpTxData[gbp->p->gbpTxPosition];
-			++gbp->p->gbpTxPosition;
+			if (gbp->p->gbpTxPosition < 12) {
+				++gbp->p->gbpTxPosition;
+			}
 		}
 		gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 		gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
@@ -618,8 +617,8 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->gbpInputsPosted);
 	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->gbpTxPosition);
 	STORE_32(hw->gbpNextEvent, 0, &state->hw.gbpNextEvent);
-	STORE_32(flags1, 0, &state->hw.flags1);
-	STORE_32(flags2, 0, &state->hw.flags2);
+	STORE_16(flags1, 0, &state->hw.flags1);
+	state->hw.flags2 = flags2;
 }
 
 void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASerializedState* state) {

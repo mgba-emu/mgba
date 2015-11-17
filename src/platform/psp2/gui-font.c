@@ -40,14 +40,14 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	UNUSED(font);
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 	return defaultFontMetrics[glyph].width * 2;
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
 	vita2d_draw_texture_tint_part_scale(font->tex, x, y + (-GLYPH_HEIGHT + metric.padding.top) * 2,

@@ -301,6 +301,7 @@ void GBAConfigSetOverrideFloatValue(struct GBAConfig* config, const char* key, f
 
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
+	_lookupCharValue(config, "shader", &opts->shader);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
 	_lookupIntValue(config, "volume", &opts->volume);
@@ -361,6 +362,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts) {
 	ConfigurationSetValue(&config->defaultsTable, 0, "bios", opts->bios);
+	ConfigurationSetValue(&config->defaultsTable, 0, "shader", opts->shader);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "useBios", opts->useBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "logLevel", opts->logLevel);
@@ -406,5 +408,7 @@ struct Configuration* GBAConfigGetOverrides(struct GBAConfig* config) {
 
 void GBAConfigFreeOpts(struct GBAOptions* opts) {
 	free(opts->bios);
+	free(opts->shader);
 	opts->bios = 0;
+	opts->shader = 0;
 }

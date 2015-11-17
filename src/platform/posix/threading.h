@@ -33,6 +33,10 @@ static inline int MutexLock(Mutex* mutex) {
 	return pthread_mutex_lock(mutex);
 }
 
+static inline int MutexTryLock(Mutex* mutex) {
+	return pthread_mutex_trylock(mutex);
+}
+
 static inline int MutexUnlock(Mutex* mutex) {
 	return pthread_mutex_unlock(mutex);
 }

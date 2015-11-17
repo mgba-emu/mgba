@@ -3,51 +3,86 @@ Features:
  - Officially supported ports for the Nintendo 3DS, Wii, and PlayStation Vita
  - I/O viewer
  - Booting of multiboot images
+ - Customization of GIF recording
+ - Libretro: Cheat code support
 Bugfixes:
- - Qt: Windows no longer spawn in the top left on first launch
- - Qt: Fix install path of XDG desktop file with DESTDIR
- - Qt: Fix drag and drop on Windows
- - Qt: Reenable double buffering, as disabling it broke some Windows configs
- - GBA Video: Start on the scanline BIOS finishes on if no BIOS is loaded
- - GBA: Deinit savegame when unloading a ROM
- - GBA: Fix BIOS check on big endian
- - Libretro: Fix a memory leak with the render buffer
- - GBA Audio: Fix 8-bit writes to audio channel 3 and 4 registers
- - GBA Audio: Fix audio channels being silenced at the wrong time
- - VFS: Fix return values of VFileFILE.read and .write
  - Util: Fix PowerPC PNG read/write pixel order
- - GBA Video: Fix edge case with sprite blend modes and semitransparency
- - GBA Video: Fix objwin and blending interaction on sprites
- - GBA Video: Fix OBJ semitransparency improperly interacting with other blending ops
- - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
- - GBA Memory: Fix bad BIOS Load16 on big endian
- - GBA Memory: Fix bad Load8 on big endian
- - ARM7: Fix instruction decoding of Thumb shifts
+ - Qt: Use safer isLoaded check in GameController
+ - GBA: Fix idle skip state being retained between games
+ - Qt: Fix a race condition in PainterGL that could lead to a crash
+ - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
+ - GBA Video: Fix _mix for 15-bit color
+ - VFS: Fix VFileReadline and remove _vfdReadline
+ - Qt: Fix font size in memory viewer
+ - GBA Memory: Fix DMA register writing behavior
+ - Qt: Fix a crash in the memory viewer
+ - GBA BIOS: Fix misaligned CpuSet
+ - Libretro: Fix problems with rumble not turning off
+ - ARM7: Fix sign of unaligned LDRSH
+ - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
+ - GBA Memory: Fix DMA behavior for SRAM accesses
+ - GBA Memory: Fix Store8 to OBJ VRAM
+ - GBA Memory: Fix alignment of LDM/STM on SRAM
+ - GBA: Initialize uninitialized pristineRom and pristineRomSize members
+ - GBA Memory: Fix unaligned out-of-bounds ROM loads
+ - GBA: Fix warnings when creating and loading savestates
+ - Qt: Add additional checks in CheatModel to prevent crashes
+ - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
+ - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
  - GBA Memory: Use a dynamically sized mask for ROM memory
- - Qt: Remove useless help icons in dialogs
  - ARM7: Combine shifter-immediate and shifter-register functions to reduce binary size
  - SDL: Support fullscreen in SDL 1.2
- - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
- - GBA: Better memory handling with PNG savestates
- - GBA Audio: Allow GBAAVStream to have no video callback
- - ARM7: Force disable LTO on two files to work around a GCC bug
  - Libretro: Use anonymous memory mappers for large blocks of memory
  - Qt: Add 'Apply' button to settings window
- - Qt: Prevent savestate window from opening while in multiplayer
- - Qt: Disable menu items in multiplayer that don't make sense to have enabled
- - Qt: Dropping multiplayer windows works more cleanly now
- - GBA BIOS: Implement RegisterRamReset for SIO registers
- - All: Reset next event to cycles instead of zero to interrupt
  - GBA Video: Remove lastHblank, as it is implied
- - GBA: Check for cycle count being too high
  - GBA Config: Add "override" layer for better one-time configuration
  - SDL: Allow GBASDLAudio to be used without a thread context
  - All: Improved PowerPC support
- - All: Add --version flag
  - All: Fix some undefined behavior warnings
+ - GBA Audio: Implement missing flags on SOUNDCNT_X register
+ - Util: Use VFile for configuration
+ - GBA Memory: Implement several unimplemented memory access types
+ - GBA: Implement bad I/O register loading
+ - GBA Memory: Add GBAView* functions for viewing memory directly without bus issues
+ - Util: Add MutexTryLock
+
+0.3.1: (2015-10-24)
+Bugfixes:
+ - ARM7: Fix instruction decoding of Thumb shifts
+ - GBA: Deinit savegame when unloading a ROM
+ - GBA: Fix BIOS check on big endian
+ - GBA: Fix autodetect problems with some bad dumps of Super Mario Advance 2
+ - GBA Audio: Fix 8-bit writes to audio channel 3 and 4 registers
+ - GBA Audio: Fix audio channels being silenced at the wrong time
+ - GBA Memory: Fix bad BIOS Load16 on big endian
+ - GBA Memory: Fix bad Load8 on big endian
+ - GBA Video: Start on the scanline BIOS finishes on if no BIOS is loaded
+ - GBA Video: Fix edge case with sprite blend modes and semitransparency
+ - GBA Video: Fix objwin and blending interaction on sprites
+ - GBA Video: Fix OBJ semitransparency improperly interacting with other blending ops
+ - Libretro: Fix a memory leak with the render buffer
+ - Qt: Windows no longer spawn in the top left on first launch
+ - Qt: Fix install path of XDG desktop file with DESTDIR
+ - Qt: Fix drag and drop on Windows
+ - Qt: Reenable double buffering, as disabling it broke some Windows configs
+ - VFS: Fix return values of VFileFILE.read and .write
+Misc:
+ - All: Reset next event to cycles instead of zero to interrupt
+ - All: Add --version flag
+ - ARM7: Force disable LTO on two files to work around a GCC bug
+ - GBA: Attempting to save a screenshot-style savestate should be allowed without libpng
+ - GBA: Better memory handling with PNG savestates
+ - GBA: Additional savestate sanity checks
+ - GBA: Check for cycle count being too high
+ - GBA Audio: Allow GBAAVStream to have no video callback
+ - GBA BIOS: Implement RegisterRamReset for SIO registers
+ - Qt: Remove useless help icons in dialogs
+ - Qt: Prevent savestate window from opening while in multiplayer
+ - Qt: Disable menu items in multiplayer that don't make sense to have enabled
+ - Qt: Dropping multiplayer windows works more cleanly now
 
 0.3.0: (2015-08-16)
 Features:

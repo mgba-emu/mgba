@@ -26,9 +26,9 @@ void GUIFontPrint(const struct GUIFont* font, int x, int y, enum GUITextAlignmen
 	default:
 		break;
 	}
-	size_t i;
-	for (i = 0; text[i]; ++i) {
-		char c = text[i];
+	size_t len = strlen(text);
+	while (len) {
+		uint32_t c = utf8Char(&text, &len);
 		GUIFontDrawGlyph(font, x, y, color, c);
 		x += GUIFontGlyphWidth(font, c);
 	}

@@ -147,8 +147,6 @@ b      3f
 # Halfword
 1:
 add    r3, r1, r3, lsr #11
-bic    r0, #1
-bic    r1, #1
 2:
 cmp    r1, r3
 ldrlth r2, [r0], #2

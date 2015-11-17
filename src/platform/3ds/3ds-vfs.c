@@ -67,7 +67,7 @@ struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	vf3d->d.close = _vf3dClose;
 	vf3d->d.seek = _vf3dSeek;
 	vf3d->d.read = _vf3dRead;
-	vf3d->d.readline = 0;
+	vf3d->d.readline = VFileReadline;
 	vf3d->d.write = _vf3dWrite;
 	vf3d->d.map = _vf3dMap;
 	vf3d->d.unmap = _vf3dUnmap;
@@ -257,7 +257,7 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
 	if (!vd3de->utf8Name[0]) {
-		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->ent.name));
+		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
 	}
 	return vd3de->utf8Name;
 }

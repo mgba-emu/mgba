@@ -62,7 +62,7 @@ struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	vfsce->d.close = _vfsceClose;
 	vfsce->d.seek = _vfsceSeek;
 	vfsce->d.read = _vfsceRead;
-	vfsce->d.readline = 0;
+	vfsce->d.readline = VFileReadline;
 	vfsce->d.write = _vfsceWrite;
 	vfsce->d.map = _vfsceMap;
 	vfsce->d.unmap = _vfsceUnmap;

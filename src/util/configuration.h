@@ -29,7 +29,10 @@ const char* ConfigurationGetValue(const struct Configuration*, const char* secti
 void ConfigurationClearValue(struct Configuration*, const char* section, const char* key);
 
 bool ConfigurationRead(struct Configuration*, const char* path);
+bool ConfigurationReadVFile(struct Configuration*, struct VFile* vf);
 bool ConfigurationWrite(const struct Configuration*, const char* path);
 bool ConfigurationWriteSection(const struct Configuration*, const char* path, const char* section);
+
+void ConfigurationEnumerateSections(const struct Configuration* configuration, void (*handler)(const char* sectionName, void* user), void* user);
 
 #endif

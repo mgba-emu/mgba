@@ -145,19 +145,19 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
 	case REG_BG0CNT:
-		value &= 0xFFCF;
+		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[0], value);
 		break;
 	case REG_BG1CNT:
-		value &= 0xFFCF;
+		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[1], value);
 		break;
 	case REG_BG2CNT:
-		value &= 0xFFCF;
+		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[2], value);
 		break;
 	case REG_BG3CNT:
-		value &= 0xFFCF;
+		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[3], value);
 		break;
 	case REG_BG0HOFS:
@@ -242,6 +242,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_BLDCNT:
 		GBAVideoSoftwareRendererWriteBLDCNT(softwareRenderer, value);
+		value &= 0x3FFF;
 		break;
 	case REG_BLDALPHA:
 		softwareRenderer->blda = value & 0x1F;
@@ -252,6 +253,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->bldb > 0x10) {
 			softwareRenderer->bldb = 0x10;
 		}
+		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
 		softwareRenderer->bldy = value & 0x1F;
@@ -313,10 +315,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WININ:
+		value &= 0x3F3F;
 		softwareRenderer->winN[0].control.packed = value;
 		softwareRenderer->winN[1].control.packed = value >> 8;
 		break;
 	case REG_WINOUT:
+		value &= 0x3F3F;
 		softwareRenderer->winout.packed = value;
 		softwareRenderer->objwin.packed = value >> 8;
 		break;

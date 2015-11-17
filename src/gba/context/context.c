@@ -33,7 +33,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		return false;
 	}
 	GBACreate(context->gba);
-	ARMSetComponents(context->cpu, &context->gba->d, 0, context->components);
+	ARMSetComponents(context->cpu, &context->gba->d, GBA_COMPONENT_MAX, context->components);
 	ARMInit(context->cpu);
 
 	GBAConfigInit(&context->config, port);

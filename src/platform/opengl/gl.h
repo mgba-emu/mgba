@@ -6,7 +6,9 @@
 #ifndef GL_H
 #define GL_H
 
-#ifdef __APPLE__
+#ifdef USE_EPOXY
+#include <epoxy/gl.h>
+#elif defined(__APPLE__)
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>

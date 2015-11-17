@@ -7,6 +7,7 @@
 
 #include "util/common.h"
 
+#include "gba/cheats.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "gba/context/context.h"
@@ -53,6 +54,8 @@ static struct CircleBuffer rumbleHistory;
 static struct GBARumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
+static struct GBACheatDevice cheats;
+static struct GBACheatSet cheatSet;
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -207,10 +210,18 @@ void retro_init(void) {
 	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 #endif
+
+	GBACheatDeviceCreate(&cheats);
+	GBACheatAttachDevice(context.gba, &cheats);
+	GBACheatSetInit(&cheatSet, "libretro");
+	GBACheatAddSet(&cheats, &cheatSet);
 }
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+	GBACheatRemoveSet(&cheats, &cheatSet);
+	GBACheatDeviceDestroy(&cheats);
+	GBACheatSetDeinit(&cheatSet);
 #ifdef _3DS
    linearFree(renderer.outputBuffer);
 #else
@@ -343,14 +354,31 @@ bool retro_unserialize(const void* data, size_t size) {
 }
 
 void retro_cheat_reset(void) {
-	// TODO: Cheats
+	GBACheatSetDeinit(&cheatSet);
+	GBACheatSetInit(&cheatSet, "libretro");
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char* code) {
-	// TODO: Cheats
 	UNUSED(index);
 	UNUSED(enabled);
-	UNUSED(code);
+	// Convert the super wonky unportable libretro format to something normal
+	char realCode[] = "XXXXXXXX XXXXXXXX";
+	size_t len = strlen(code) + 1; // Include null terminator
+	size_t i, pos;
+	for (i = 0, pos = 0; i < len; ++i) {
+		if (isspace((int) code[i]) || code[i] == '+') {
+			realCode[pos] = ' ';
+		} else {
+			realCode[pos] = code[i];
+		}
+		if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
+			realCode[pos] = '\0';
+			GBACheatAddLine(&cheatSet, realCode);
+			pos = 0;
+			continue;
+		}
+		++pos;
+	}
 }
 
 unsigned retro_get_region(void) {
@@ -454,6 +482,7 @@ static void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 	CircleBufferWrite8(&rumbleHistory, enable);
 	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
+	rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleLevel * 0xFFFF / RUMBLE_PWM);
 }
 
 static void _updateLux(struct GBALuminanceSource* lux) {

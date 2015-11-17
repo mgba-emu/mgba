@@ -39,6 +39,7 @@
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -223,6 +224,14 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
+	if (opts->shader) {
+		struct VDir* shader = VDirOpen(opts->shader);
+		if (shader) {
+			m_display->setShaders(shader);
+			shader->close(shader);
+		}
+	}
+
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 
 	m_mruFiles = m_config->getMRU();
@@ -245,6 +254,7 @@ void Window::selectROM() {
 #ifdef USE_LZMA
 		"*.7z",
 #endif
+		"*.mb",
 		"*.rom",
 		"*.bin"};
 	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));

@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #ifdef _WIN32
+#include <windows.h>
 typedef HWND WHandle;
 #else
 typedef void* WHandle;

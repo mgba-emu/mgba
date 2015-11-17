@@ -220,9 +220,15 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0xB:
 	case 0xC:
-		if (cpu->gprs[0] >> BASE_OFFSET == REGION_BIOS) {
+		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
 			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot CpuSet from BIOS");
 			return;
+		}
+		if (cpu->gprs[0] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet source");
+		}
+		if (cpu->gprs[1] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
+			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet destination");
 		}
 		ARMRaiseSWI(cpu);
 		break;

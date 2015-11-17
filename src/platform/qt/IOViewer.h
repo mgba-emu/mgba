@@ -43,6 +43,9 @@ public:
 
 	static const QList<RegisterDescription>& registerDescriptions();
 
+signals:
+	void valueChanged();
+
 public slots:
 	void updateRegister();
 	void selectRegister(unsigned address);

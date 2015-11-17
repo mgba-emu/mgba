@@ -119,7 +119,7 @@ ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 			break;
 		}
 		bytesRead += newRead;
-		if (buffer[bytesRead] == '\n') {
+		if (buffer[bytesRead - newRead] == '\n') {
 			break;
 		}
 	}

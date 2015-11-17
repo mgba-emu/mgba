@@ -141,7 +141,7 @@ mGBA is Copyright © 2013 – 2015 Jeffrey Pfau. It is distributed under the [Mo
 
 mGBA contains the following third-party libraries:
 
-- [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
+- [inih](https://code.google.com/p/inih/), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
 - [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) implementation by Austin Appleby, which is public domain.

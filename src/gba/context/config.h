@@ -38,6 +38,7 @@ struct GBAOptions {
 	bool lockAspectRatio;
 	bool resampleVideo;
 	bool suspendScreensaver;
+	char* shader;
 
 	int volume;
 	bool mute;

@@ -96,18 +96,18 @@ bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	renderer->d.outputBuffer = memalign(16, 256 * 256 * 4);
 	renderer->d.outputBufferStride = 256;
 
-	GBAGLES2ContextCreate(&renderer->gl);
-	renderer->gl.d.user = renderer;
-	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
-	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = GBASDLGLCommonSwap;
-	renderer->gl.d.init(&renderer->gl.d, 0);
+	GBAGLES2ContextCreate(&renderer->gl2);
+	renderer->gl2.d.user = renderer;
+	renderer->gl2.d.lockAspectRatio = renderer->lockAspectRatio;
+	renderer->gl2.d.filter = renderer->filter;
+	renderer->gl2.d.swap = GBASDLGLCommonSwap;
+	renderer->gl2.d.init(&renderer->gl2.d, 0);
 	return true;
 }
 
 void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
-	struct VideoBackend* v = &renderer->gl.d;
+	struct VideoBackend* v = &renderer->gl2.d;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
@@ -117,8 +117,8 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 		if (GBASyncWaitFrameStart(&context->sync)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
-		v->drawFrame(v);
 		GBASyncWaitFrameEnd(&context->sync);
+		v->drawFrame(v);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
 #else
@@ -128,8 +128,8 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 }
 
 void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer) {
-	if (renderer->gl.d.deinit) {
-		renderer->gl.d.deinit(&renderer->gl.d);
+	if (renderer->gl2.d.deinit) {
+		renderer->gl2.d.deinit(&renderer->gl2.d);
 	}
 #ifdef BUILD_RASPI
 	eglMakeCurrent(renderer->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
