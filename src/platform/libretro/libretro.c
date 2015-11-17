@@ -24,11 +24,7 @@
 FS_archive sdmcArchive;
 #endif
 
-#ifdef GEKKO
-#define SAMPLES 128
-#else
 #define SAMPLES 1024
-#endif
 #define RUMBLE_PWM 35
 
 #define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
