@@ -28,6 +28,7 @@ Bugfixes:
  - GBA: Fix warnings when creating and loading savestates
  - Qt: Add additional checks in CheatModel to prevent crashes
  - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
+ - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper

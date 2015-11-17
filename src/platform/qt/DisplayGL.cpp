@@ -16,7 +16,7 @@ extern "C" {
 #endif
 #if !defined(_WIN32) || defined(USE_EPOXY)
 #include "platform/opengl/gles2.h"
-#ifdef _WIN32 
+#ifdef _WIN32
 #include <epoxy/wgl.h>
 #endif
 #endif
@@ -264,10 +264,10 @@ void PainterGL::draw() {
 	}
 	if (GBASyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
 		dequeue();
+		GBASyncWaitFrameEnd(&m_context->sync);
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
-		GBASyncWaitFrameEnd(&m_context->sync);
 		m_backend->swap(m_backend);
 	} else {
 		GBASyncWaitFrameEnd(&m_context->sync);
