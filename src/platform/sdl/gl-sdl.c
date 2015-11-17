@@ -64,8 +64,8 @@ void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
-		v->drawFrame(v);
 		GBASyncWaitFrameEnd(&context->sync);
+		v->drawFrame(v);
 		v->swap(v);
 	}
 }

@@ -210,10 +210,10 @@ void PainterGL::draw() {
 	}
 	if (GBASyncWaitFrameStart(&m_context->sync, m_context->frameskip) || !m_queue.isEmpty()) {
 		dequeue();
+		GBASyncWaitFrameEnd(&m_context->sync);
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
-		GBASyncWaitFrameEnd(&m_context->sync);
 		m_backend.d.swap(&m_backend.d);
 	} else {
 		GBASyncWaitFrameEnd(&m_context->sync);

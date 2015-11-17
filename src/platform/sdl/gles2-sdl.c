@@ -117,8 +117,8 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 		if (GBASyncWaitFrameStart(&context->sync, context->frameskip)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
-		v->drawFrame(v);
 		GBASyncWaitFrameEnd(&context->sync);
+		v->drawFrame(v);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
 #else
