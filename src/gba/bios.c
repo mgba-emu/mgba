@@ -213,7 +213,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case 0x8:
-		cpu->gprs[0] = sqrt(cpu->gprs[0]);
+		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
 	case 0xA:
 		cpu->gprs[0] = atan2f(cpu->gprs[1] / 16384.f, cpu->gprs[0] / 16384.f) / (2 * M_PI) * 0x10000;
