@@ -19,6 +19,7 @@ Bugfixes:
  - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
  - GBA BIOS: Fix Sqrt sign
  - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
+ - Qt: Fix race condition with setting sample rate
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 

@@ -597,7 +597,7 @@ void GameController::setAudioBufferSamples(int samples) {
 		threadInterrupt();
 		redoSamples(samples);
 		threadContinue();
-		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Qt::BlockingQueuedConnection, Q_ARG(int, samples));
 	}
 }
 
