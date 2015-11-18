@@ -18,6 +18,7 @@ Bugfixes:
  - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
  - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
  - GBA BIOS: Fix Sqrt sign
+ - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 

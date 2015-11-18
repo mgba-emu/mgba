@@ -476,8 +476,8 @@ static void _unHuffman(struct GBA* gba) {
 
 static void _unRl(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
-	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
-	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
+	uint32_t source = cpu->gprs[0];
+	int remaining = (cpu->memory.load32(cpu, source & 0xFFFFFFFC, 0) & 0xFFFFFF00) >> 8;
 	int padding = (4 - remaining) & 0x3;
 	// We assume the signature byte (0x30) is correct
 	int blockheader;
