@@ -1507,8 +1507,8 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct ARMCore* cpu = gba->cpu;
 	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
-		info->nextEvent = cpu->cycles;
-		GBAMemoryUpdateDMAs(gba, 0);
+		info->nextEvent = cpu->cycles + 2;
+		GBAMemoryUpdateDMAs(gba, -1);
 		break;
 	case DMA_TIMING_HBLANK:
 		// Handled implicitly

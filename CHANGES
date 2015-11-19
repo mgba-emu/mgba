@@ -33,6 +33,7 @@ Bugfixes:
  - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
  - Qt: Fix race condition with setting sample rate
  - GBA Memory: Fix timing of DMAs
+ - GBA Memory: Fix DMAs triggering two cycles early
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
