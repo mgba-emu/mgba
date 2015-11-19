@@ -19,7 +19,8 @@ enum LockstepState {
 struct GBASIOLockstep {
 	struct GBASIOLockstepNode* players[MAX_GBAS];
 	int attached;
-	int loaded;
+	int loadedMulti;
+	int loadedNormal;
 
 	uint16_t multiRecv[MAX_GBAS];
 	bool transferActive;
@@ -37,8 +38,10 @@ struct GBASIOLockstepNode {
 
 	int32_t nextEvent;
 	uint16_t multiSend;
+	bool normalSO;
 	enum LockstepState state;
 	int id;
+	enum GBASIOMode mode;
 };
 
 void GBASIOLockstepInit(struct GBASIOLockstep*);

@@ -32,6 +32,7 @@ struct GBASIO {
 	struct GBASIODriver* activeDriver;
 
 	uint16_t rcnt;
+	// TODO: Convert to bitfields
 	union {
 		struct {
 			unsigned sc : 1;
