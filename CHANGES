@@ -20,6 +20,7 @@ Bugfixes:
  - GBA BIOS: Fix Sqrt sign
  - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
  - Qt: Fix race condition with setting sample rate
+ - GBA Memory: Fix timing of DMAs
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
