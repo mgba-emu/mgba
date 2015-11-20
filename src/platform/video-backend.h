@@ -32,4 +32,12 @@ struct VideoBackend {
 	bool lockAspectRatio;
 };
 
+struct VideoShader {
+	const char* name;
+	const char* author;
+	const char* description;
+	void* passes;
+	size_t nPasses;
+};
+
 #endif
