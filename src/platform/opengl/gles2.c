@@ -683,13 +683,13 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 	_loadValue(description, uniform->name, uniform->type, "default", &uniform->value);
 	_loadValue(description, uniform->name, uniform->type, "min", &uniform->min);
 	_loadValue(description, uniform->name, uniform->type, "max", &uniform->max);
-	uniform->name = strdup(uniform->name + strlen("uniform."));
 	const char* readable = ConfigurationGetValue(description, uniform->name, "readableName");
 	if (readable) {
 		uniform->readableName = strdup(readable);
 	} else {
 		uniform->readableName = 0;
 	}
+	uniform->name = strdup(uniform->name + strlen("uniform."));
 	return true;
 }
 
