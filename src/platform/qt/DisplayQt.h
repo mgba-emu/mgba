@@ -22,7 +22,8 @@ public:
 	DisplayQt(QWidget* parent = nullptr);
 
 	bool isDrawing() const override { return m_isDrawing; }
-	bool supportsShaders() const override { return 0; }
+	bool supportsShaders() const override { return false; }
+	VideoShader* shaders() override { return nullptr; }
 
 public slots:
 	void startDrawing(GBAThread* context) override;

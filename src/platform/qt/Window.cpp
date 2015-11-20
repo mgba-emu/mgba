@@ -33,6 +33,7 @@
 #include "PaletteView.h"
 #include "SensorView.h"
 #include "SettingsView.h"
+#include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "ShortcutView.h"
 #include "VideoView.h"
@@ -393,6 +394,11 @@ void Window::openIOViewer() {
 void Window::openAboutScreen() {
 	AboutScreen* about = new AboutScreen();
 	openView(about);
+}
+
+void Window::openShaderWindow() {
+	ShaderSelector* shaderView = new ShaderSelector(m_display);
+	openView(shaderView);
 }
 
 #ifdef BUILD_SDL
@@ -1047,6 +1053,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
+
+	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
+	connect(shaderView, SIGNAL(triggered()), this, SLOT(openShaderWindow()));
+	if (!m_display->supportsShaders()) {
+		shaderView->setEnabled(false);
+	}
+	addControlledAction(avMenu, shaderView, "shaderSelector");
 
 	avMenu->addSeparator();
 

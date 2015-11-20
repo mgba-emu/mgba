@@ -12,6 +12,7 @@
 
 struct GBAThread;
 struct VDir;
+struct VideoShader;
 
 namespace QGBA {
 
@@ -36,6 +37,7 @@ public:
 
 	virtual bool isDrawing() const = 0;
 	virtual bool supportsShaders() const = 0;
+	virtual VideoShader* shaders() = 0;
 
 signals:
 	void showCursor();

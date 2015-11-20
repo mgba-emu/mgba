@@ -94,6 +94,7 @@ set(SOURCE_FILES
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
+	ShaderSelector.cpp
 	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
@@ -113,6 +114,7 @@ qt5_wrap_ui(UI_FILES
 	PaletteView.ui
 	SensorView.ui
 	SettingsView.ui
+	ShaderSelector.ui
 	ShortcutView.ui
 	VideoView.ui)
 

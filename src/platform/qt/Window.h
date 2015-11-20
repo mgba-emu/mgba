@@ -88,6 +88,8 @@ public slots:
 
 	void openAboutScreen();
 
+	void openShaderWindow();
+
 #ifdef BUILD_SDL
 	void openGamepadWindow();
 #endif
