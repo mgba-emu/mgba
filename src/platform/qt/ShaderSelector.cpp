@@ -65,7 +65,6 @@ void ShaderSelector::refreshShaders() {
 		page->setLayout(layout);
 		for (size_t u = 0 ; u < shaders[p].nUniforms; ++u) {
 			QGridLayout* settings = new QGridLayout;
-			std::function<void (size_t, size_t)> bind;
 			GBAGLES2Uniform* uniform = &shaders[p].uniforms[u];
 			switch (uniform->type) {
 			case GL_FLOAT:
