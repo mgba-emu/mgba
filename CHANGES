@@ -22,6 +22,7 @@ Bugfixes:
  - Qt: Fix race condition with setting sample rate
  - GBA Memory: Fix timing of DMAs
  - ARM7: Fix STRT/STRBT
+ - ARM7: Implement undefined STRH/LDRH versions
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
