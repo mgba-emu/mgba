@@ -538,14 +538,14 @@ DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 
