@@ -747,6 +747,9 @@ bool GBAIsMB(struct VFile* vf) {
 	}
 	if (info.op1.immediate <= 0) {
 		return false;
+	} else if (info.op1.immediate == 28) {
+		// Ancient toolchain that is known to throw MB detection for a loop
+		return false;
 	} else if (info.op1.immediate != 24) {
 		return true;
 	}
