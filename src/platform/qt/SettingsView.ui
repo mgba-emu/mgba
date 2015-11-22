@@ -378,9 +378,6 @@
          <property name="text">
           <string>Use BIOS file</string>
          </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
         </widget>
        </item>
        <item row="3" column="0" colspan="2">
