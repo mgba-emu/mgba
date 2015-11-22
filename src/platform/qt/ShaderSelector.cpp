@@ -106,55 +106,13 @@ void ShaderSelector::refreshShaders() {
 	}
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
+	m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader)), tr("Preprocessing"));
 	GBAGLES2Shader* shaders = static_cast<GBAGLES2Shader*>(m_shaders->passes);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
-		QWidget* page = new QWidget;
-		QFormLayout* layout = new QFormLayout;
-		page->setLayout(layout);
-		for (size_t u = 0 ; u < shaders[p].nUniforms; ++u) {
-			QGridLayout* settings = new QGridLayout;
-			GBAGLES2Uniform* uniform = &shaders[p].uniforms[u];
-			switch (uniform->type) {
-			case GL_FLOAT:
-				addUniform(settings, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
-				break;
-			case GL_FLOAT_VEC2:
-				addUniform(settings, &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
-				addUniform(settings, &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
-				break;
-			case GL_FLOAT_VEC3:
-				addUniform(settings, &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
-				addUniform(settings, &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
-				addUniform(settings, &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
-				break;
-			case GL_FLOAT_VEC4:
-				addUniform(settings, &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
-				addUniform(settings, &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
-				addUniform(settings, &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
-				addUniform(settings, &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
-				break;
-			case GL_INT:
-				addUniform(settings, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
-				break;
-			case GL_INT_VEC2:
-				addUniform(settings, &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
-				addUniform(settings, &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
-				break;
-			case GL_INT_VEC3:
-				addUniform(settings, &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
-				addUniform(settings, &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
-				addUniform(settings, &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
-				break;
-			case GL_INT_VEC4:
-				addUniform(settings, &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
-				addUniform(settings, &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
-				addUniform(settings, &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
-				addUniform(settings, &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
-				break;
-			}
-			layout->addRow(shaders[p].uniforms[u].readableName, settings);
+		QWidget* page = makePage(&shaders[p]);
+		if (page) {
+			m_ui.passes->addTab(page, tr("Pass %1").arg(p + 1));
 		}
-		m_ui.passes->addTab(page, tr("Pass %1").arg(p + 1));
 	}
 #endif
 }
@@ -190,4 +148,57 @@ void ShaderSelector::addUniform(QGridLayout* settings, int* value, int min, int 
 		*value = v;
 		// TODO: Config
 	});
+}
+
+QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader) {
+	if (!shader->nUniforms) {
+		return nullptr;
+	}
+	QWidget* page = new QWidget;
+	QFormLayout* layout = new QFormLayout;
+	page->setLayout(layout);
+	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
+		QGridLayout* settings = new QGridLayout;
+		GBAGLES2Uniform* uniform = &shader->uniforms[u];
+		switch (uniform->type) {
+		case GL_FLOAT:
+			addUniform(settings, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
+			break;
+		case GL_FLOAT_VEC2:
+			addUniform(settings, &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
+			addUniform(settings, &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
+			break;
+		case GL_FLOAT_VEC3:
+			addUniform(settings, &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
+			addUniform(settings, &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
+			addUniform(settings, &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
+			break;
+		case GL_FLOAT_VEC4:
+			addUniform(settings, &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
+			addUniform(settings, &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
+			addUniform(settings, &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
+			addUniform(settings, &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
+			break;
+		case GL_INT:
+			addUniform(settings, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
+			break;
+		case GL_INT_VEC2:
+			addUniform(settings, &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
+			addUniform(settings, &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
+			break;
+		case GL_INT_VEC3:
+			addUniform(settings, &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
+			addUniform(settings, &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
+			addUniform(settings, &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
+			break;
+		case GL_INT_VEC4:
+			addUniform(settings, &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
+			addUniform(settings, &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
+			addUniform(settings, &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
+			addUniform(settings, &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
+			break;
+		}
+		layout->addRow(shader->uniforms[u].readableName, settings);
+	}
+	return page;
 }

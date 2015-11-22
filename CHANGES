@@ -5,6 +5,7 @@ Features:
  - Booting of multiboot images
  - Customization of GIF recording
  - Libretro: Cheat code support
+ - Support for GLSL shaders
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - Qt: Use safer isLoaded check in GameController

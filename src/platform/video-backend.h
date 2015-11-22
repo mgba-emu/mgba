@@ -36,6 +36,7 @@ struct VideoShader {
 	const char* name;
 	const char* author;
 	const char* description;
+	void* preprocessShader;
 	void* passes;
 	size_t nPasses;
 };

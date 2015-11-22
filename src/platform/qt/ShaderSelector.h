@@ -10,6 +10,7 @@
 
 #include "ui_ShaderSelector.h"
 
+struct GBAGLES2Shader;
 class QGridLayout;
 struct VideoShader;
 
@@ -36,6 +37,7 @@ private slots:
 private:
 	void addUniform(QGridLayout*, float* value, float min, float max, int y, int x);
 	void addUniform(QGridLayout*, int* value, int min, int max, int y, int x);
+	QWidget* makePage(GBAGLES2Shader*);
 
 	Ui::ShaderSelector m_ui;
 	Display* m_display;
