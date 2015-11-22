@@ -148,7 +148,15 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 }
 
 void DisplayGL::setShaders(struct VDir* shaders) {
-	QMetaObject::invokeMethod(m_painter, "setShaders", Q_ARG(struct VDir*, shaders));
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
+	} else {
+		m_painter->setShaders(shaders);
+	}
+}
+
+void DisplayGL::clearShaders() {
+	QMetaObject::invokeMethod(m_painter, "clearShaders");
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
@@ -385,6 +393,23 @@ void PainterGL::setShaders(struct VDir* dir) {
 	GBAGLES2ShaderLoad(&m_shader, dir);
 	if (m_started) {
 		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), static_cast<GBAGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	}
+	m_gl->doneCurrent();
+#endif
+}
+
+void PainterGL::clearShaders() {
+	if (!supportsShaders()) {
+		return;
+	}
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	if (m_shader.passes) {
+		GBAGLES2ShaderDetach(reinterpret_cast<GBAGLES2Context*>(m_backend));
+		GBAGLES2ShaderFree(&m_shader);
 	}
 	m_gl->doneCurrent();
 #endif

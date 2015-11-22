@@ -53,6 +53,7 @@ public slots:
 	virtual void filter(bool filter);
 	virtual void framePosted(const uint32_t*) = 0;
 	virtual void setShaders(struct VDir*) = 0;
+	virtual void clearShaders() = 0;
 
 	void showMessage(const QString& message);
 
@@ -61,7 +62,6 @@ protected:
 	virtual void mouseMoveEvent(QMouseEvent*) override;
 
 	MessagePainter* messagePainter() { return &m_messagePainter; }
-
 
 private:
 	static Driver s_driver;

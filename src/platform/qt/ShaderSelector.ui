@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>378</width>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
      <item>
       <widget class="QLabel" name="shaderName">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Name</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -42,7 +42,7 @@
      <item>
       <widget class="QLabel" name="author">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Author</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -59,7 +59,7 @@
       </font>
      </property>
      <property name="text">
-      <string>TextLabel</string>
+      <string>Description</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -79,6 +79,24 @@
       <number>-1</number>
      </property>
     </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="unload">
+       <property name="text">
+        <string>Unload Shader</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="load">
+       <property name="text">
+        <string>Load New Shader</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

@@ -6,6 +6,8 @@
 #include "ShaderSelector.h"
 
 #include "Display.h"
+#include "GBAApp.h"
+#include "VFileDevice.h"
 
 #include <QCheckBox>
 #include <QDoubleSpinBox>
@@ -30,6 +32,9 @@ ShaderSelector::ShaderSelector(Display* display, QWidget* parent)
 	m_ui.setupUi(this);
 
 	refreshShaders();
+
+	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(selectShader()));
+	connect(m_ui.unload, SIGNAL(clicked()), this, SLOT(clearShader()));
 }
 
 ShaderSelector::~ShaderSelector() {
@@ -47,15 +52,58 @@ void ShaderSelector::clear() {
 	}
 }
 
+void ShaderSelector::selectShader() {
+	QFileDialog *dialog = GBAApp::app()->getOpenFileDialog(nullptr, tr("Load shader"), tr("%1 Shader (%.shader)").arg(projectName));
+	dialog->setFileMode(QFileDialog::Directory);
+	dialog->exec();
+	QStringList names = dialog->selectedFiles();
+	if (names.count() == 1) {
+		loadShader(names[0]);
+	}
+	delete dialog;
+	refreshShaders();
+}
+
+void ShaderSelector::loadShader(const QString& path) {
+	VDir* shader = VFileDevice::openDir(path);
+	if (!shader) {
+		shader = VFileDevice::openArchive(path);
+	}
+	if (!shader) {
+		return;
+	}
+	m_display->setShaders(shader);
+	shader->close(shader);
+	// TODO: Config
+}
+
+void ShaderSelector::clearShader() {
+	m_display->clearShaders();
+	refreshShaders();
+	// TODO: Config
+}
+
 void ShaderSelector::refreshShaders() {
 	clear();
 	m_shaders = m_display->shaders();
 	if (!m_shaders) {
 		return;
 	}
-	m_ui.shaderName->setText(m_shaders->name);
-	m_ui.description->setText(m_shaders->description);
-	m_ui.author->setText(tr("by %1").arg(m_shaders->author));
+	if (m_shaders->name) {
+		m_ui.shaderName->setText(m_shaders->name);
+	} else {
+		m_ui.shaderName->setText(tr("No shader loaded"));
+	}
+	if (m_shaders->description) {
+		m_ui.description->setText(m_shaders->description);
+	} else {
+		m_ui.description->clear();
+	}
+	if (m_shaders->author) {
+		m_ui.author->setText(tr("by %1").arg(m_shaders->author));
+	} else {
+		m_ui.author->clear();
+	}
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	GBAGLES2Shader* shaders = static_cast<GBAGLES2Shader*>(m_shaders->passes);
@@ -124,6 +172,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, float* value, float min, 
 	settings->addWidget(f, y, x);
 	connect(f, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [value](double v) {
 		*value = v;
+		// TODO: Config
 	});
 }
 
@@ -139,5 +188,6 @@ void ShaderSelector::addUniform(QGridLayout* settings, int* value, int min, int 
 	settings->addWidget(i, y, x);
 	connect(i, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [value](int v) {
 		*value = v;
+		// TODO: Config
 	});
 }

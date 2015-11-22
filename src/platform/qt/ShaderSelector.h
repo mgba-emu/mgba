@@ -28,6 +28,11 @@ public slots:
 	void refreshShaders();
 	void clear();
 
+private slots:
+	void selectShader();
+	void loadShader(const QString& path);
+	void clearShader();
+
 private:
 	void addUniform(QGridLayout*, float* value, float min, float max, int y, int x);
 	void addUniform(QGridLayout*, int* value, int min, int max, int y, int x);
