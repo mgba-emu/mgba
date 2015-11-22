@@ -364,6 +364,7 @@ void GBAGLES2ShaderDetach(struct GBAGLES2Context* context) {
 		return;
 	}
 	context->shaders = 0;
+	context->nShaders = 0;
 }
 
 static bool _lookupIntValue(const struct Configuration* config, const char* section, const char* key, int* out) {
@@ -814,6 +815,9 @@ void GBAGLES2ShaderFree(struct VideoShader* shader) {
 	free((void*) shader->name);
 	free((void*) shader->author);
 	free((void*) shader->description);
+	shader->name = 0;
+	shader->author = 0;
+	shader->description = 0;
 	struct GBAGLES2Shader* shaders = shader->passes;
 	size_t n;
 	for (n = 0; n < shader->nPasses; ++n) {
@@ -825,4 +829,6 @@ void GBAGLES2ShaderFree(struct VideoShader* shader) {
 		}
 	}
 	free(shaders);
+	shader->passes = 0;
+	shader->nPasses = 0;
 }
