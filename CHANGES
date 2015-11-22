@@ -23,6 +23,7 @@ Bugfixes:
  - GBA Memory: Fix timing of DMAs
  - ARM7: Fix STRT/STRBT
  - ARM7: Implement undefined STRH/LDRH/LDRSH/LDRSB versions
+ - ARM7: Fix bank switching with LDR[B]T/STR[B]T
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
 
