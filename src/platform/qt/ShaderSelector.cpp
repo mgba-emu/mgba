@@ -6,11 +6,11 @@
 #include "ShaderSelector.h"
 
 #include "Display.h"
-#include "GBAApp.h"
 #include "VFileDevice.h"
 
 #include <QCheckBox>
 #include <QDoubleSpinBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QSpinBox>
@@ -53,15 +53,23 @@ void ShaderSelector::clear() {
 }
 
 void ShaderSelector::selectShader() {
-	QFileDialog *dialog = GBAApp::app()->getOpenFileDialog(nullptr, tr("Load shader"), tr("%1 Shader (%.shader)").arg(projectName));
-	dialog->setFileMode(QFileDialog::Directory);
-	dialog->exec();
-	QStringList names = dialog->selectedFiles();
+#ifdef QT_SHADER_DIR
+	QFileDialog dialog(nullptr, tr("Load shader"), QT_SHADER_DIR, tr("%1 Shader (%.shader)").arg(projectName));
+#else
+	QString path = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_MAC
+	path += QLatin1String("/../Resources");
+#endif
+	path += QLatin1String("/shaders");
+	QFileDialog dialog(nullptr, tr("Load shader"), path, tr("%1 Shader (%.shader)").arg(projectName));
+#endif
+	dialog.setFileMode(QFileDialog::Directory);
+	dialog.exec();
+	QStringList names = dialog.selectedFiles();
 	if (names.count() == 1) {
 		loadShader(names[0]);
+		refreshShaders();
 	}
-	delete dialog;
-	refreshShaders();
 }
 
 void ShaderSelector::loadShader(const QString& path) {
