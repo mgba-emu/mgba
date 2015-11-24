@@ -21,7 +21,7 @@
 
 #ifdef _3DS
 #include <3ds.h>
-FS_archive sdmcArchive;
+FS_Archive sdmcArchive;
 #endif
 
 #define SAMPLES 1024
