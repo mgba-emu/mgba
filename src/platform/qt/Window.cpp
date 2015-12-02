@@ -1025,6 +1025,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 
+	ConfigOption* mute = m_config->addOption("mute");
+	mute->addBoolean(tr("Mute"), avMenu);
+	mute->connect([this](const QVariant& value) {
+		m_controller->setMute(value.toBool());
+	}, this);
+	m_config->updateOption("mute");
+
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
 	fpsTargetOption->connect([this](const QVariant& value) {
@@ -1178,11 +1185,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* volume = m_config->addOption("volume");
 	volume->connect([this](const QVariant& value) {
 		m_controller->setVolume(value.toInt());
-	}, this);
-
-	ConfigOption* mute = m_config->addOption("mute");
-	mute->connect([this](const QVariant& value) {
-		m_controller->setMute(value.toBool());
 	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
