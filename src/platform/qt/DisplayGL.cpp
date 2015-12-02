@@ -237,12 +237,17 @@ PainterGL::~PainterGL() {
 	for (auto item : m_free) {
 		delete[] item;
 	}
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shader.passes) {
 		GBAGLES2ShaderFree(&m_shader);
 	}
 #endif
 	m_backend->deinit(m_backend);
+	m_gl->doneCurrent();
 	delete m_backend;
 	m_backend = nullptr;
 }
