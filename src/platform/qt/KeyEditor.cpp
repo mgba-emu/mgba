@@ -22,6 +22,7 @@ KeyEditor::KeyEditor(QWidget* parent)
 {
 	setAlignment(Qt::AlignCenter);
 	setFocusPolicy(Qt::ClickFocus);
+	m_lastKey.setSingleShot(true);
 }
 
 void KeyEditor::setValue(int key) {
@@ -77,28 +78,47 @@ QSize KeyEditor::sizeHint() const {
 
 void KeyEditor::keyPressEvent(QKeyEvent* event) {
 	if (!m_button) {
-		if (m_key < 0) {
+		if (m_key < 0 || !m_lastKey.isActive()) {
 			m_key = 0;
 		}
-		if (ShortcutController::isModifierKey(event->key())) {
-			switch (event->key()) {
-			case Qt::Key_Shift:
-				setValue(m_key | Qt::ShiftModifier);
-				break;
-			case Qt::Key_Control:
-				setValue(m_key | Qt::ControlModifier);
-				break;
-			case Qt::Key_Alt:
-				setValue(m_key | Qt::AltModifier);
-				break;
-			case Qt::Key_Meta:
-				setValue(m_key | Qt::MetaModifier);
-				break;
-			default:
-				setValue(m_key);
+		m_lastKey.start(KEY_TIME);
+		if (m_key) {
+			if (ShortcutController::isModifierKey(m_key)) {
+				switch (event->key()) {
+				case Qt::Key_Shift:
+					setValue(Qt::ShiftModifier);
+					break;
+				case Qt::Key_Control:
+					setValue(Qt::ControlModifier);
+					break;
+				case Qt::Key_Alt:
+					setValue(Qt::AltModifier);
+					break;
+				case Qt::Key_Meta:
+					setValue(Qt::MetaModifier);
+					break;
+				}
+			}
+			if (ShortcutController::isModifierKey(event->key())) {
+				switch (event->key()) {
+				case Qt::Key_Shift:
+					setValue(m_key | Qt::ShiftModifier);
+					break;
+				case Qt::Key_Control:
+					setValue(m_key | Qt::ControlModifier);
+					break;
+				case Qt::Key_Alt:
+					setValue(m_key | Qt::AltModifier);
+					break;
+				case Qt::Key_Meta:
+					setValue(m_key | Qt::MetaModifier);
+					break;
+				}
+			} else {
+				setValue(event->key() | (m_key & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)));
 			}
 		} else {
-			setValue(event->key() | (m_key & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)));
+			setValue(event->key());
 		}
 	}
 	event->accept();

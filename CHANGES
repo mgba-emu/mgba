@@ -60,6 +60,7 @@ Misc:
  - Util: Add MutexTryLock
  - Qt: Gray out "Skip BIOS intro" while "Use BIOS file" is unchecked
  - Qt: Add mute option to menu
+ - Qt: Allow use of modifier keys as input
 
 0.3.1: (2015-10-24)
 Bugfixes:
