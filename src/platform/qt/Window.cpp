@@ -200,6 +200,8 @@ void Window::rotateFrame(int angleDeg) {
 
 	m_screenWidget->setSizeHint(newSize);
 	m_rotation = angleDeg;
+	newSize -= m_screenWidget->size();
+	newSize += size();
 	resize(newSize);
 	m_display->rotate(angleDeg);
 }
