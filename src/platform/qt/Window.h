@@ -49,6 +49,7 @@ public:
 	void argumentsPassed(GBAArguments*);
 
 	void resizeFrame(int width, int height);
+	void rotateFrame(int angleDeg);
 
 signals:
 	void startDrawing(GBAThread*);
@@ -170,6 +171,7 @@ private:
 	ShortcutController* m_shortcutController;
 	int m_playerId;
 	bool m_fullscreenOnStart;
+	int m_rotation;
 
 	bool m_hitUnimplementedBiosCall;
 

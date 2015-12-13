@@ -33,6 +33,7 @@ public:
 	static void setDriver(Driver driver) { s_driver = driver; }
 
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
+	int getRotation() const { return m_rotation; }
 	bool isFiltered() const { return m_filter; }
 
 	virtual bool isDrawing() const = 0;
@@ -51,6 +52,7 @@ public slots:
 	virtual void forceDraw() = 0;
 	virtual void lockAspectRatio(bool lock);
 	virtual void filter(bool filter);
+	virtual void rotate(int ang);
 	virtual void framePosted(const uint32_t*) = 0;
 	virtual void setShaders(struct VDir*) = 0;
 	virtual void clearShaders() = 0;
@@ -70,6 +72,7 @@ private:
 	MessagePainter m_messagePainter;
 	bool m_lockAspectRatio;
 	bool m_filter;
+	int m_rotation;
 	QTimer m_mouseTimer;
 };
 

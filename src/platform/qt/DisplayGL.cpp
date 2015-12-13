@@ -71,12 +71,13 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_painter->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
 	m_drawThread->start();
-	GBASyncSetVideoSync(&m_context->sync, false);
 
+	GBASyncSetVideoSync(&m_context->sync, false);
 	lockAspectRatio(isAspectRatioLocked());
 	filter(isFiltered());
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 	resizePainter();
+	rotate(getRotation());
 }
 
 void DisplayGL::stopDrawing() {
@@ -137,6 +138,13 @@ void DisplayGL::filter(bool filter) {
 	Display::filter(filter);
 	if (m_drawThread) {
 		QMetaObject::invokeMethod(m_painter, "filter", Q_ARG(bool, filter));
+	}
+}
+
+void DisplayGL::rotate(int ang) {
+	Display::rotate(ang);
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "rotate", Q_ARG(int, ang));
 	}
 }
 
@@ -262,6 +270,13 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 
 void PainterGL::resize(const QSize& size) {
 	m_size = size;
+	if (m_started && !m_active) {
+		forceDraw();
+	}
+}
+
+void PainterGL::rotate(int ang) {
+	m_backend->rotation = ang;
 	if (m_started && !m_active) {
 		forceDraw();
 	}

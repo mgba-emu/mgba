@@ -34,6 +34,10 @@ void DisplayQt::filter(bool filter) {
 	update();
 }
 
+void DisplayQt::rotate(int angle) {
+	update();
+}
+
 void DisplayQt::framePosted(const uint32_t* buffer) {
 	update();
 	if (const_cast<const QImage&>(m_backing).bits() == reinterpret_cast<const uchar*>(buffer)) {

@@ -150,7 +150,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
-
+	m_rotation = 0;
 	m_shortcutController->setConfigController(m_config);
 	setupMenu(menuBar());
 }
@@ -185,6 +185,23 @@ void Window::resizeFrame(int width, int height) {
 	newSize -= m_screenWidget->size();
 	newSize += size();
 	resize(newSize);
+}
+
+void Window::rotateFrame(int angleDeg) {
+
+	QSize newSize = m_screenWidget->size();
+
+	if (abs(m_rotation) != 90 && abs(angleDeg) == 90) {
+		newSize.transpose();
+	}
+	else if (abs(m_rotation) == 90 && abs(angleDeg) != 90) {
+		newSize.transpose();
+	}
+
+	m_screenWidget->setSizeHint(newSize);
+	m_rotation = angleDeg;
+	resize(newSize);
+	m_display->rotate(angleDeg);
 }
 
 void Window::setConfig(ConfigController* config) {
@@ -1053,6 +1070,17 @@ void Window::setupMenu(QMenuBar* menubar) {
 		skip->addValue(QString::number(i), i, skipMenu);
 	}
 	m_config->updateOption("frameskip");
+
+	QMenu* rotateMenu = avMenu->addMenu("Rotate screen");
+	ConfigOption* rotateOption = m_config->addOption("rotation");
+	rotateOption->connect([this](const QVariant& value) {
+		rotateFrame(value.toInt() * 90);
+	}, this);
+	rotateOption->addValue("None", 0, rotateMenu);
+	rotateOption->addValue("90° (CW)", -1, rotateMenu);
+	rotateOption->addValue("90° (CCW)", 1, rotateMenu);
+	rotateOption->addValue("180°", 2, rotateMenu);
+	m_config->updateOption("rotation");
 
 	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
 	connect(shaderView, SIGNAL(triggered()), this, SLOT(openShaderWindow()));
