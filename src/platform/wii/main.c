@@ -381,8 +381,9 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	}
 	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 	if (available > 0) {
-		blip_read_samples(runner->context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
-		blip_read_samples(runner->context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		// These appear to be reversed for AUDIO_InitDMA
+		blip_read_samples(runner->context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		blip_read_samples(runner->context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
 		audioBufferSize += available;
 	}
 	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
