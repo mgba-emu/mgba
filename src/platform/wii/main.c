@@ -19,7 +19,20 @@
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
+#include "util/gui/menu.h"
 #include "util/vfs.h"
+
+static enum ScreenMode {
+	SM_PA,
+	SM_SF,
+	SM_MAX
+} screenMode = SM_PA;
+
+enum FilterMode {
+	FM_NEAREST,
+	FM_LINEAR,
+	FM_MAX
+};
 
 #define SAMPLES 1024
 
@@ -42,6 +55,7 @@ static void _guiFinish(void);
 static void _setup(struct GBAGUIRunner* runner);
 static void _gameLoaded(struct GBAGUIRunner* runner);
 static void _gameUnloaded(struct GBAGUIRunner* runner);
+static void _unpaused(struct GBAGUIRunner* runner);
 static void _drawFrame(struct GBAGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
 
@@ -60,6 +74,7 @@ static int32_t tiltY;
 static int32_t gyroZ;
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
+static int scaleFactor;
 
 static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
@@ -95,6 +110,14 @@ static void reconfigureScreen(GXRModeObj* vmode) {
 	GX_SetDispCopyDst(vmode->fbWidth, xfbHeight);
 	GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_TRUE, vmode->vfilter);
 	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+
+	int hfactor = vmode->fbWidth / VIDEO_HORIZONTAL_PIXELS;
+	int vfactor = vmode->efbHeight / VIDEO_VERTICAL_PIXELS;
+	if (hfactor > vfactor) {
+		scaleFactor = vfactor;
+	} else {
+		scaleFactor = hfactor;
+	}
 };
 
 int main() {
@@ -173,7 +196,7 @@ int main() {
 
 	struct GBAGUIRunner runner = {
 		.params = {
-			352, 230,
+			vmode->fbWidth * 0.9, vmode->efbHeight * 0.9,
 			font, "/",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -182,6 +205,31 @@ int main() {
 
 			GUI_PARAMS_TRAIL
 		},
+		.configExtra = (struct GUIMenuItem[]) {
+			{
+				.title = "Screen mode",
+				.data = "screenMode",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Pixel-Accurate",
+					"Stretched",
+					0
+				}
+			},
+			{
+				.title = "Filtering",
+				.data = "filter",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Pixelated",
+					"Resampled",
+					0
+				}
+			}
+		},
+		.nConfigExtra = 2,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
@@ -189,7 +237,7 @@ int main() {
 		.prepareForFrame = 0,
 		.drawFrame = _drawFrame,
 		.paused = _gameUnloaded,
-		.unpaused = 0,
+		.unpaused = _unpaused,
 		.pollGameInput = _pollGameInput
 	};
 	GBAGUIInit(&runner, "wii");
@@ -319,18 +367,30 @@ static enum GUICursorState _pollCursor(int* x, int* y) {
 	return GUI_CURSOR_UP;
 }
 
-void _guiPrepare(void) {
+void _reproj(int w, int h) {
 	Mtx44 proj;
-	guOrtho(proj, -20, 240, 0, 352, 0, 300);
+	int top = (vmode->efbHeight - h) / 2;
+	int left = (vmode->fbWidth - w) / 2;
+	guOrtho(proj, -top, top + h, -left, left + w, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
+void _guiPrepare(void) {
+	int w = vmode->fbWidth * 0.9;
+	int h = vmode->efbHeight * 0.9;
+	_reproj(w, h);
+}
+
 void _guiFinish(void) {
-	Mtx44 proj;
-	short top = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? 10 : 20;
-	short bottom = VIDEO_VERTICAL_PIXELS + top;
-	guOrtho(proj, -top, bottom, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+	if (screenMode == SM_PA) {
+		_reproj(VIDEO_HORIZONTAL_PIXELS * scaleFactor, VIDEO_VERTICAL_PIXELS * scaleFactor);
+	} else {
+		Mtx44 proj;
+		short top = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? 10 : 20;
+		short bottom = VIDEO_VERTICAL_PIXELS + top;
+		guOrtho(proj, -top, bottom, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
+		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+	}
 }
 
 void _setup(struct GBAGUIRunner* runner) {
@@ -367,10 +427,31 @@ void _gameLoaded(struct GBAGUIRunner* runner) {
 			sleep(1);
 		}
 	}
+	_unpaused(runner);
+}
+
+void _unpaused(struct GBAGUIRunner* runner) {
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
 	referenceRetraceCount = retraceCount;
 	_CPU_ISR_Restore(level);
+
+	unsigned mode;
+	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
+	if (GBAConfigGetUIntValue(&runner->context.config, "filter", &mode) && mode < FM_MAX) {
+		switch (mode) {
+		case FM_NEAREST:
+		default:
+			GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
+			break;
+		case FM_LINEAR:
+			GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
+			break;
+		}
+	}
+	_guiFinish();
 }
 
 void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
@@ -419,16 +500,21 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	GX_InvalidateTexAll();
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
+	s16 vertSize = 256;
+	if (screenMode == SM_PA) {
+		vertSize *= scaleFactor;
+	}
+
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(0, 256);
+	GX_Position2s16(0, vertSize);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(0, 1);
 
-	GX_Position2s16(256, 256);
+	GX_Position2s16(vertSize, vertSize);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(1, 1);
 
-	GX_Position2s16(256, 0);
+	GX_Position2s16(vertSize, 0);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(1, 0);
 
