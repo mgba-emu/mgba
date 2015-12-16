@@ -474,6 +474,7 @@ void GameController::setPaused(bool paused) {
 }
 
 void GameController::reset() {
+	setPaused(false);
 	GBAThreadReset(&m_threadContext);
 }
 
