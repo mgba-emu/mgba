@@ -3,7 +3,7 @@ os:
   - osx
 
 env:
-  - CMAKE_PREFIX_PATH=/usr/local/opt/qt5
+  - CMAKE_PREFIX_PATH=/usr/local/opt/qt4
 
 language: c
 compiler:
@@ -11,6 +11,7 @@ compiler:
   - clang
 
 sudo: required
+dist: trusty
 
 before_install:
   - ./.travis-deps.sh
