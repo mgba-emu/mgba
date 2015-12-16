@@ -474,8 +474,15 @@ void GameController::setPaused(bool paused) {
 }
 
 void GameController::reset() {
+	if (!m_gameOpen) {
+		return;
+	}
+	bool wasPaused = isPaused();
 	setPaused(false);
 	GBAThreadReset(&m_threadContext);
+	if (wasPaused) {
+		setPaused(true);
+	}
 }
 
 void GameController::threadInterrupt() {

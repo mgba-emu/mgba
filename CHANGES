@@ -40,6 +40,7 @@ Bugfixes:
  - ARM7: Fix bank switching with LDR[B]T/STR[B]T
  - Qt: Fix crash when closing multiplayer windows
  - GBA Video: Fix OAM and palette initialization
+ - Qt: Fix resetting while paused
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
