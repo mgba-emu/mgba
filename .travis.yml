@@ -2,9 +2,6 @@ os:
   - linux
   - osx
 
-env:
-  - CMAKE_PREFIX_PATH=/usr/local/opt/qt4
-
 language: c
 compiler:
   - gcc
@@ -16,4 +13,4 @@ dist: trusty
 before_install:
   - ./.travis-deps.sh
 
-script: mkdir build && cd build && cmake .. && make
+script: mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 .. && make
