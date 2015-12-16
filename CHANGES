@@ -26,6 +26,7 @@ Bugfixes:
  - ARM7: Fix bank switching with LDR[B]T/STR[B]T
  - Qt: Fix crash when closing multiplayer windows
  - GBA Video: Fix OAM and palette initialization
+ - Qt: Fix resetting while paused
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
  - Qt: Add mute option to menu
