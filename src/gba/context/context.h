@@ -37,6 +37,7 @@ void GBAContextUnloadROM(struct GBAContext* context);
 
 bool GBAContextStart(struct GBAContext* context);
 void GBAContextStop(struct GBAContext* context);
+void GBAContextReset(struct GBAContext* context);
 void GBAContextFrame(struct GBAContext* context, uint16_t keys);
 
 #endif

@@ -180,8 +180,9 @@ bool GBAContextStart(struct GBAContext* context) {
 	context->gba->logLevel = opts.logLevel;
 	context->gba->idleOptimization = opts.idleOptimization;
 
-	ARMReset(context->cpu);
+	GBAContextReset(context);
 
+	// TODO: Move this into GBAContextReset
 	if (opts.skipBios) {
 		GBASkipBIOS(context->gba);
 	}
@@ -194,6 +195,10 @@ bool GBAContextStart(struct GBAContext* context) {
 	}
 	GBAConfigFreeOpts(&opts);
 	return true;
+}
+
+void GBAContextReset(struct GBAContext* context) {
+	ARMReset(context->cpu);
 }
 
 void GBAContextStop(struct GBAContext* context) {
