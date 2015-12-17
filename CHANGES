@@ -1,31 +1,31 @@
-0.3.2: (Future)
+0.3.2: (2015-12-16)
 Bugfixes:
- - Qt: Use safer isLoaded check in GameController
- - GBA: Fix idle skip state being retained between games
- - Qt: Fix a race condition in PainterGL that could lead to a crash
- - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
- - GBA Video: Fix _mix for 15-bit color
- - Qt: Fix font size in memory viewer
- - Qt: Fix a crash in the memory viewer
- - Libretro: Fix problems with rumble not turning off
- - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
- - GBA Memory: Fix DMA behavior for SRAM accesses
- - GBA Memory: Fix Store8 to OBJ VRAM
- - GBA Memory: Fix alignment of LDM/STM on SRAM
- - GBA: Initialize uninitialized pristineRom and pristineRomSize members
- - GBA Memory: Fix unaligned out-of-bounds ROM loads
- - Qt: Add additional checks in CheatModel to prevent crashes
- - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
- - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
- - GBA BIOS: Fix Sqrt sign
- - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
- - Qt: Fix race condition with setting sample rate
- - GBA Memory: Fix timing of DMAs
  - ARM7: Fix STRT/STRBT
  - ARM7: Implement undefined STRH/LDRH/LDRSH/LDRSB versions
  - ARM7: Fix bank switching with LDR[B]T/STR[B]T
- - Qt: Fix crash when closing multiplayer windows
+ - Libretro: Fix problems with rumble not turning off
+ - GBA: Fix idle skip state being retained between games
+ - GBA: Initialize uninitialized pristineRom and pristineRomSize members
+ - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
+ - GBA BIOS: Fix Sqrt sign
+ - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
+ - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
+ - GBA Memory: Fix DMA behavior for SRAM accesses
+ - GBA Memory: Fix Store8 to OBJ VRAM
+ - GBA Memory: Fix alignment of LDM/STM on SRAM
+ - GBA Memory: Fix unaligned out-of-bounds ROM loads
+ - GBA Memory: Fix timing of DMAs
+ - GBA Video: Fix _mix for 15-bit color
  - GBA Video: Fix OAM and palette initialization
+ - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
+ - Qt: Use safer isLoaded check in GameController
+ - Qt: Fix a race condition in PainterGL that could lead to a crash
+ - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
+ - Qt: Fix font size in memory viewer
+ - Qt: Fix a crash in the memory viewer
+ - Qt: Add additional checks in CheatModel to prevent crashes
+ - Qt: Fix race condition with setting sample rate
+ - Qt: Fix crash when closing multiplayer windows
  - Qt: Fix resetting while paused
 Misc:
  - GBA Audio: Implement missing flags on SOUNDCNT_X register
