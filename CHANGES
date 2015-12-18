@@ -8,39 +8,12 @@ Features:
  - Support for GLSL shaders
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
- - Qt: Use safer isLoaded check in GameController
- - GBA: Fix idle skip state being retained between games
- - Qt: Fix a race condition in PainterGL that could lead to a crash
- - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
- - GBA Video: Fix _mix for 15-bit color
  - VFS: Fix VFileReadline and remove _vfdReadline
- - Qt: Fix font size in memory viewer
  - GBA Memory: Fix DMA register writing behavior
- - Qt: Fix a crash in the memory viewer
  - GBA BIOS: Fix misaligned CpuSet
- - Libretro: Fix problems with rumble not turning off
  - ARM7: Fix sign of unaligned LDRSH
- - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
- - GBA Memory: Fix DMA behavior for SRAM accesses
- - GBA Memory: Fix Store8 to OBJ VRAM
- - GBA Memory: Fix alignment of LDM/STM on SRAM
- - GBA: Initialize uninitialized pristineRom and pristineRomSize members
- - GBA Memory: Fix unaligned out-of-bounds ROM loads
  - GBA: Fix warnings when creating and loading savestates
- - Qt: Add additional checks in CheatModel to prevent crashes
- - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
- - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
- - GBA BIOS: Fix Sqrt sign
- - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
- - Qt: Fix race condition with setting sample rate
- - GBA Memory: Fix timing of DMAs
  - GBA Memory: Fix DMAs triggering two cycles early
- - ARM7: Fix STRT/STRBT
- - ARM7: Implement undefined STRH/LDRH/LDRSH/LDRSB versions
- - ARM7: Fix bank switching with LDR[B]T/STR[B]T
- - Qt: Fix crash when closing multiplayer windows
- - GBA Video: Fix OAM and palette initialization
- - Qt: Fix resetting while paused
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
@@ -54,15 +27,46 @@ Misc:
  - SDL: Allow GBASDLAudio to be used without a thread context
  - All: Improved PowerPC support
  - All: Fix some undefined behavior warnings
- - GBA Audio: Implement missing flags on SOUNDCNT_X register
  - Util: Use VFile for configuration
  - GBA Memory: Implement several unimplemented memory access types
  - GBA: Implement bad I/O register loading
  - GBA Memory: Add GBAView* functions for viewing memory directly without bus issues
  - Util: Add MutexTryLock
  - Qt: Gray out "Skip BIOS intro" while "Use BIOS file" is unchecked
- - Qt: Add mute option to menu
  - Qt: Allow use of modifier keys as input
+
+0.3.2: (2015-12-16)
+Bugfixes:
+ - ARM7: Fix STRT/STRBT
+ - ARM7: Implement undefined STRH/LDRH/LDRSH/LDRSB versions
+ - ARM7: Fix bank switching with LDR[B]T/STR[B]T
+ - Libretro: Fix problems with rumble not turning off
+ - GBA: Fix idle skip state being retained between games
+ - GBA: Initialize uninitialized pristineRom and pristineRomSize members
+ - GBA BIOS: Fix CpuSet on 0x01XXXXXX addresses
+ - GBA BIOS: Fix Sqrt sign
+ - GBA BIOS: Fix misaligned RLUnCompReadNormalWrite*
+ - GBA Hardware: Fix Game Boy Player rumble in Pokemon Pinball
+ - GBA Memory: Fix DMA behavior for SRAM accesses
+ - GBA Memory: Fix Store8 to OBJ VRAM
+ - GBA Memory: Fix alignment of LDM/STM on SRAM
+ - GBA Memory: Fix unaligned out-of-bounds ROM loads
+ - GBA Memory: Fix timing of DMAs
+ - GBA Video: Fix _mix for 15-bit color
+ - GBA Video: Fix OAM and palette initialization
+ - OpenGL: Fix fast-forward on some OpenGL drivers where it may block early
+ - Qt: Use safer isLoaded check in GameController
+ - Qt: Fix a race condition in PainterGL that could lead to a crash
+ - Qt: Fix clear button/analog buttons in gamepad mapper on some platforms
+ - Qt: Fix font size in memory viewer
+ - Qt: Fix a crash in the memory viewer
+ - Qt: Add additional checks in CheatModel to prevent crashes
+ - Qt: Fix race condition with setting sample rate
+ - Qt: Fix crash when closing multiplayer windows
+ - Qt: Fix resetting while paused
+Misc:
+ - GBA Audio: Implement missing flags on SOUNDCNT_X register
+ - Qt: Add mute option to menu
 
 0.3.1: (2015-10-24)
 Bugfixes:
