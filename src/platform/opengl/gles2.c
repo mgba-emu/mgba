@@ -439,7 +439,9 @@ DEFINE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
 
 static void _uniformHandler(const char* sectionName, void* user) {
 	struct GBAGLES2UniformList* uniforms = user;
-	if (strstr(sectionName, "uniform.") != sectionName) {
+	unsigned passId;
+	int sentinel;
+	if (sscanf(sectionName, "pass.%u.uniform.%n", &passId, &sentinel) < 1) {
 		return;
 	}
 	struct GBAGLES2Uniform* u = GBAGLES2UniformListAppend(uniforms);
@@ -658,13 +660,14 @@ static void _loadValue(struct Configuration* description, const char* name, GLen
 }
 
 static bool _loadUniform(struct Configuration* description, size_t pass, struct GBAGLES2Uniform* uniform) {
-	char passId[12];
-	snprintf(passId, sizeof(passId), "pass[%zu]", pass);
-	GLboolean inPass;
-	if (_lookupBoolValue(description, uniform->name, passId, &inPass) && !inPass) {
+	unsigned passId;
+	if (sscanf(uniform->name, "pass.%u.uniform.", &passId) < 1 || passId != pass) {
 		return false;
 	}
 	const char* type = ConfigurationGetValue(description, uniform->name, "type");
+	if (!type) {
+		return false;
+	}
 	if (!strcmp(type, "float")) {
 		uniform->type = GL_FLOAT;
 	} else if (!strcmp(type, "float2")) {
@@ -707,7 +710,7 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 	} else {
 		uniform->readableName = 0;
 	}
-	uniform->name = strdup(uniform->name + strlen("uniform."));
+	uniform->name = strdup(strstr(uniform->name, "uniform.") + strlen("uniform."));
 	return true;
 }
 
