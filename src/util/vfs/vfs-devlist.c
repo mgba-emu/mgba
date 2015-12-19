@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/vfs.h"
 
-#include <fat.h>
+#include <sys/iosupport.h>
 
 static bool _vdlClose(struct VDir* vd);
 static void _vdlRewind(struct VDir* vd);
@@ -15,11 +15,6 @@ static struct VDir* _vdlOpenDir(struct VDir* vd, const char* path);
 
 static const char* _vdleName(struct VDirEntry* vde);
 static enum VFSType _vdleType(struct VDirEntry* vde);
-
-extern const struct {
-	const char* name; 
-	const DISC_INTERFACE* (*getInterface)(void);
-} _FAT_disc_interfaces[];
 
 struct VDirEntryDevList {
 	struct VDirEntry d;
@@ -63,7 +58,7 @@ static void _vdlRewind(struct VDir* vd) {
 	struct VDirDevList* vdl = (struct VDirDevList*) vd;
 	free(vdl->vde.name);
 	vdl->vde.name = 0;
-	vdl->vde.index = 0;
+	vdl->vde.index = 3;
 }
 
 static struct VDirEntry* _vdlListNext(struct VDir* vd) {
@@ -73,19 +68,17 @@ static struct VDirEntry* _vdlListNext(struct VDir* vd) {
 		free(vdl->vde.name);
 		vdl->vde.name = 0;
 	}
-	while (true) {
-		if (!_FAT_disc_interfaces[vdl->vde.index].name || !_FAT_disc_interfaces[vdl->vde.index].getInterface) {
-			return 0;
-		}
-		const DISC_INTERFACE* iface = _FAT_disc_interfaces[vdl->vde.index].getInterface();
-		if (iface && iface->isInserted()) {
-			vdl->vde.name = malloc(strlen(_FAT_disc_interfaces[vdl->vde.index].name) + 3);
-			sprintf(vdl->vde.name, "%s:", _FAT_disc_interfaces[vdl->vde.index].name);
+	while (vdl->vde.index < STD_MAX) {
+		const devoptab_t *devops = devoptab_list[vdl->vde.index];
+		if (devops->dirStateSize > 0) {
+			vdl->vde.name = malloc(strlen(devops->name) + 3);
+			sprintf(vdl->vde.name, "%s:", devops->name);
 			return &vdl->vde.d;
 		}
 
 		++vdl->vde.index;
 	}
+	return 0;
 }
 
 static struct VFile* _vdlOpenFile(struct VDir* vd, const char* path, int mode) {
