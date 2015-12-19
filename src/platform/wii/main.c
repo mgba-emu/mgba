@@ -9,6 +9,7 @@
 #include <gccore.h>
 #include <ogc/machine/processor.h>
 #include <malloc.h>
+#include <unistd.h>
 #include <wiiuse/wpad.h>
 
 #include "util/common.h"
