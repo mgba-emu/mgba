@@ -186,7 +186,7 @@ int main() {
 
 	font = GUIFontCreate();
 
-	fatInit(4, false);
+	fatInitDefault();
 
 	rumble.setRumble = _setRumble;
 
