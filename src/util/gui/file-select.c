@@ -32,6 +32,7 @@ static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
 static void _upDirectory(char* currentPath) {
 	char* end = strrchr(currentPath, '/');
 	if (!end) {
+		currentPath[0] = '\0';
 		return;
 	}
 	if (end == currentPath) {
@@ -163,7 +164,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 			} else {
 				size_t len = strlen(params->currentPath);
 				const char* sep = PATH_SEP;
-				if (params->currentPath[len - 1] == *sep) {
+				if (!len || params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
 				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item->title);

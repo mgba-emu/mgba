@@ -209,7 +209,7 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	sceIoMkdir(out, 0777);
 #elif defined(GEKKO)
 	UNUSED(portable);
-	snprintf(out, outLength, "/%s", projectName);
+	snprintf(out, outLength, "sd:/%s", projectName);
 	mkdir(out, 0777);
 #elif defined(_3DS)
 	snprintf(out, outLength, "/%s", projectName);

@@ -185,7 +185,7 @@ int main() {
 
 	font = GUIFontCreate();
 
-	fatInitDefault();
+	fatInit(4, false);
 
 	rumble.setRumble = _setRumble;
 
@@ -197,7 +197,7 @@ int main() {
 	struct GBAGUIRunner runner = {
 		.params = {
 			vmode->fbWidth * 0.9, vmode->efbHeight * 0.9,
-			font, "/",
+			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			0,
