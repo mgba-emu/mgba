@@ -82,6 +82,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	updateTitle();
 
 	m_display = Display::create(this);
+	m_shaderView = new ShaderSelector(m_display, m_config);
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -134,6 +135,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
+	connect(this, SIGNAL(shutdown()), m_shaderView, SLOT(hide()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
@@ -229,6 +231,7 @@ void Window::loadConfig() {
 		struct VDir* shader = VDirOpen(opts->shader);
 		if (shader) {
 			m_display->setShaders(shader);
+			m_shaderView->refreshShaders();
 			shader->close(shader);
 		}
 	}
@@ -394,11 +397,6 @@ void Window::openIOViewer() {
 void Window::openAboutScreen() {
 	AboutScreen* about = new AboutScreen();
 	openView(about);
-}
-
-void Window::openShaderWindow() {
-	ShaderSelector* shaderView = new ShaderSelector(m_display);
-	openView(shaderView);
 }
 
 #ifdef BUILD_SDL
@@ -1055,7 +1053,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("frameskip");
 
 	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
-	connect(shaderView, SIGNAL(triggered()), this, SLOT(openShaderWindow()));
+	connect(shaderView, SIGNAL(triggered()), m_shaderView, SLOT(show()));
 	if (!m_display->supportsShaders()) {
 		shaderView->setEnabled(false);
 	}

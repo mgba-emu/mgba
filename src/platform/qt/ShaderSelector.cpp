@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ShaderSelector.h"
 
+#include "ConfigController.h"
 #include "Display.h"
 #include "VFileDevice.h"
 
@@ -25,9 +26,11 @@ extern "C" {
 
 using namespace QGBA;
 
-ShaderSelector::ShaderSelector(Display* display, QWidget* parent)
+ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidget* parent)
 	: QDialog(parent)
 	, m_display(display)
+	, m_config(config)
+	, m_shaderPath("")
 {
 	m_ui.setupUi(this);
 
@@ -35,6 +38,7 @@ ShaderSelector::ShaderSelector(Display* display, QWidget* parent)
 
 	connect(m_ui.load, SIGNAL(clicked()), this, SLOT(selectShader()));
 	connect(m_ui.unload, SIGNAL(clicked()), this, SLOT(clearShader()));
+	connect(m_ui.buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(buttonPressed(QAbstractButton*)));
 }
 
 ShaderSelector::~ShaderSelector() {
@@ -82,13 +86,14 @@ void ShaderSelector::loadShader(const QString& path) {
 	}
 	m_display->setShaders(shader);
 	shader->close(shader);
-	// TODO: Config
+	m_shaderPath = path;
 }
 
 void ShaderSelector::clearShader() {
 	m_display->clearShaders();
 	refreshShaders();
-	// TODO: Config
+	m_shaderPath = "";
+	m_config->setOption("shader", nullptr);
 }
 
 void ShaderSelector::refreshShaders() {
@@ -113,11 +118,16 @@ void ShaderSelector::refreshShaders() {
 		m_ui.author->clear();
 	}
 
+	disconnect(this, SIGNAL(saved()), 0, 0);
+	disconnect(this, SIGNAL(reset()), 0, 0);
+	disconnect(this, SIGNAL(resetToDefault()), 0, 0);
+
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader)), tr("Preprocessing"));
+	m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
 	GBAGLES2Shader* shaders = static_cast<GBAGLES2Shader*>(m_shaders->passes);
+	QFileInfo fi(m_shaderPath);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
-		QWidget* page = makePage(&shaders[p]);
+		QWidget* page = makePage(&shaders[p], fi.baseName(), p);
 		if (page) {
 			m_ui.passes->addTab(page, tr("Pass %1").arg(p + 1));
 		}
@@ -125,12 +135,18 @@ void ShaderSelector::refreshShaders() {
 #endif
 }
 
-void ShaderSelector::addUniform(QGridLayout* settings, float* value, float min, float max, int y, int x) {
+void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, const QString& name, float* value, float min, float max, int y, int x) {
 	QDoubleSpinBox* f = new QDoubleSpinBox;
 	f->setDecimals(3);
 	if (min < max) {
 		f->setMinimum(min);
 		f->setMaximum(max);
+	}
+	float def = *value;
+	bool ok = false;
+	float v = m_config->getQtOption(name, section).toFloat(&ok);
+	if (ok) {
+		*value = v;
 	}
 	f->setValue(*value);
 	f->setSingleStep(0.001);
@@ -138,15 +154,33 @@ void ShaderSelector::addUniform(QGridLayout* settings, float* value, float min, 
 	settings->addWidget(f, y, x);
 	connect(f, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [value](double v) {
 		*value = v;
-		// TODO: Config
+	});
+	connect(this, &ShaderSelector::saved, [this, section, name, f]() {
+		m_config->setQtOption(name, f->value(), section);
+	});
+	connect(this, &ShaderSelector::reset, [this, section, name, f]() {
+		bool ok = false;
+		float v = m_config->getQtOption(name, section).toFloat(&ok);
+		if (ok) {
+			f->setValue(v);
+		}
+	});
+	connect(this, &ShaderSelector::resetToDefault, [def, section, name, f]() {
+		f->setValue(def);
 	});
 }
 
-void ShaderSelector::addUniform(QGridLayout* settings, int* value, int min, int max, int y, int x) {
+void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, const QString& name, int* value, int min, int max, int y, int x) {
 	QSpinBox* i = new QSpinBox;
 	if (min < max) {
 		i->setMinimum(min);
 		i->setMaximum(max);
+	}
+	int def = *value;
+	bool ok = false;
+	int v = m_config->getQtOption(name, section).toInt(&ok);
+	if (ok) {
+		*value = v;
 	}
 	i->setValue(*value);
 	i->setSingleStep(1);
@@ -154,11 +188,23 @@ void ShaderSelector::addUniform(QGridLayout* settings, int* value, int min, int 
 	settings->addWidget(i, y, x);
 	connect(i, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [value](int v) {
 		*value = v;
-		// TODO: Config
+	});
+	connect(this, &ShaderSelector::saved, [this, section, name, i]() {
+		m_config->setQtOption(name, i->value(), section);
+	});
+	connect(this, &ShaderSelector::reset, [this, section, name, i]() {
+		bool ok = false;
+		int v = m_config->getQtOption(name, section).toInt(&ok);
+		if (ok) {
+			i->setValue(v);
+		}
+	});
+	connect(this, &ShaderSelector::resetToDefault, [def, section, name, i]() {
+		i->setValue(def);
 	});
 }
 
-QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader) {
+QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader, const QString& name, int pass) {
 	if (!shader->nUniforms) {
 		return nullptr;
 	}
@@ -168,45 +214,64 @@ QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader) {
 	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
 		QGridLayout* settings = new QGridLayout;
 		GBAGLES2Uniform* uniform = &shader->uniforms[u];
+		QString section = QString("shader.%1.%2").arg(name).arg(pass);
+		QString name = QLatin1String(uniform->name);
 		switch (uniform->type) {
 		case GL_FLOAT:
-			addUniform(settings, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
+			addUniform(settings, section, name, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
 			break;
 		case GL_FLOAT_VEC2:
-			addUniform(settings, &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
-			addUniform(settings, &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
 			break;
 		case GL_FLOAT_VEC3:
-			addUniform(settings, &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
-			addUniform(settings, &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
-			addUniform(settings, &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
 			break;
 		case GL_FLOAT_VEC4:
-			addUniform(settings, &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
-			addUniform(settings, &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
-			addUniform(settings, &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
-			addUniform(settings, &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
+			addUniform(settings, section, name + "[3]", &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
 			break;
 		case GL_INT:
-			addUniform(settings, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
+			addUniform(settings, section, name, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
 			break;
 		case GL_INT_VEC2:
-			addUniform(settings, &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
-			addUniform(settings, &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
 			break;
 		case GL_INT_VEC3:
-			addUniform(settings, &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
-			addUniform(settings, &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
-			addUniform(settings, &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
 			break;
 		case GL_INT_VEC4:
-			addUniform(settings, &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
-			addUniform(settings, &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
-			addUniform(settings, &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
-			addUniform(settings, &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
+			addUniform(settings, section, name + "[3]", &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
 			break;
 		}
 		layout->addRow(shader->uniforms[u].readableName, settings);
 	}
 	return page;
+}
+
+void ShaderSelector::buttonPressed(QAbstractButton* button) {
+	switch (m_ui.buttonBox->standardButton(button)) {
+	case QDialogButtonBox::Reset:
+		emit reset();
+		break;
+	case QDialogButtonBox::Save:
+		m_config->setOption("shader", m_shaderPath);
+		emit saved();
+		break;
+ 	case QDialogButtonBox::RestoreDefaults:
+		emit resetToDefault();
+		break;
+	default:
+		break;
+	}
 }
