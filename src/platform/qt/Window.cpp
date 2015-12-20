@@ -258,6 +258,7 @@ void Window::selectROM() {
 #ifdef USE_LZMA
 		"*.7z",
 #endif
+		"*.agb",
 		"*.mb",
 		"*.rom",
 		"*.bin"};
