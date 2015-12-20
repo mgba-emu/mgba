@@ -31,6 +31,7 @@
 #include "MemoryView.h"
 #include "OverrideView.h"
 #include "PaletteView.h"
+#include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
 #include "ShaderSelector.h"
@@ -400,6 +401,11 @@ void Window::openAboutScreen() {
 	openView(about);
 }
 
+void Window::openROMInfo() {
+	ROMInfo* romInfo = new ROMInfo(m_controller);
+	openView(romInfo);
+}
+
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
 	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
@@ -766,6 +772,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
+
+	QAction* romInfo = new QAction(tr("ROM &info..."), fileMenu);
+	connect(romInfo, SIGNAL(triggered()), this, SLOT(openROMInfo()));
+	m_gameActions.append(romInfo);
+	addControlledAction(fileMenu, romInfo, "romInfo");
 
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 

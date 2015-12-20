@@ -88,6 +88,7 @@ public slots:
 	void openIOViewer();
 
 	void openAboutScreen();
+	void openROMInfo();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();

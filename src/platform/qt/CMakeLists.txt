@@ -91,6 +91,7 @@ set(SOURCE_FILES
 	MultiplayerController.cpp
 	OverrideView.cpp
 	PaletteView.cpp
+	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
@@ -112,6 +113,7 @@ qt5_wrap_ui(UI_FILES
 	MemoryView.ui
 	OverrideView.ui
 	PaletteView.ui
+	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui
 	ShaderSelector.ui

@@ -6,6 +6,7 @@ Features:
  - Customization of GIF recording
  - Libretro: Cheat code support
  - Support for GLSL shaders
+ - ROM information view
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
