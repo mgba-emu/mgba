@@ -12,6 +12,8 @@
 #include "ConfigController.h"
 #include "MultiplayerController.h"
 
+struct NoIntroDB;
+
 extern "C" {
 #include "gba/sio.h"
 }
@@ -36,6 +38,8 @@ public:
 	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 
+	const NoIntroDB* noIntroDB() const { return m_db; }
+
 public slots:
 	void interruptAll();
 	void continueAll();
@@ -59,6 +63,7 @@ private:
 	ConfigController m_configController;
 	Window* m_windows[MAX_GBAS];
 	MultiplayerController m_multiplayer;
+	NoIntroDB* m_db;
 };
 
 }

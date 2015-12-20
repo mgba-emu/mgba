@@ -41,6 +41,7 @@
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/nointro.h"
 #include "util/vfs.h"
 }
 
@@ -604,7 +605,6 @@ void Window::gameStarted(GBAThread* context) {
 	MutexLock(&context->stateMutex);
 	if (context->state < THREAD_EXITING) {
 		emit startDrawing(context);
-		GBAGetGameTitle(context->gba, title);
 	} else {
 		MutexUnlock(&context->stateMutex);
 		return;
@@ -715,10 +715,15 @@ void Window::updateTitle(float fps) {
 
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		char gameTitle[13] = { '\0' };
-		GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
-
-		title = (gameTitle);
+		const NoIntroDB* db = GBAApp::app()->noIntroDB();
+		NoIntroGame game;
+		if (db && NoIntroDBLookupGameByCRC(db, m_controller->thread()->gba->romCrc32, &game)) {
+			title = QLatin1String(game.name);
+		} else {
+			char gameTitle[13] = { '\0' };
+			GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
+			title = gameTitle;
+		}
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {

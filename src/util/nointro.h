@@ -24,6 +24,6 @@ struct VFile;
 
 struct NoIntroDB* NoIntroDBLoad(struct VFile* vf);
 void NoIntroDBDestroy(struct NoIntroDB* db);
-bool NoIntroDBLookupGame(const struct NoIntroDB* db, const void* data, size_t len, struct NoIntroGame* info);
+bool NoIntroDBLookupGameByCRC(const struct NoIntroDB* db, uint32_t crc32, struct NoIntroGame* game);
 
 #endif

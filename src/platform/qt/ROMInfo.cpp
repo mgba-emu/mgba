@@ -5,7 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ROMInfo.h"
 
+#include "GBAApp.h"
 #include "GameController.h"
+
+extern "C" {
+#include "util/nointro.h"
+}
 
 using namespace QGBA;
 
@@ -16,6 +21,8 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent) {
 		return;
 	}
 
+	const NoIntroDB* db = GBAApp::app()->noIntroDB();
+
 	controller->threadInterrupt();
 	GBA* gba = controller->thread()->gba;
 	char title[13] = {};
@@ -25,5 +32,15 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent) {
 	m_ui.title->setText(QLatin1String(title));
 	m_ui.size->setText(QString::number(gba->pristineRomSize));
 	m_ui.crc->setText(QString::number(gba->romCrc32, 16));
+	if (db) {
+		NoIntroGame game;
+		if (NoIntroDBLookupGameByCRC(db, gba->romCrc32, &game)) {
+			m_ui.name->setText(game.name);
+		} else {
+			m_ui.name->setText(tr("(unknown)"));
+		}
+	} else {
+		m_ui.name->setText(tr("(no database present)"));
+	}
 	controller->threadContinue();
 }

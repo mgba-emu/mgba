@@ -108,6 +108,48 @@ static void _dbDeinit(void* value) {
 	NoIntroCategoryDeinit(category);
 }
 
+static bool _itemToGame(const struct NoIntroItem* item, struct NoIntroGame* game) {
+	if (item->type != NI_HASH) {
+		return false;
+	}
+	struct NoIntroItem* subitem;
+	struct NoIntroItem* rom;
+
+	memset(game, 0, sizeof(*game));
+	subitem = HashTableLookup(&item->hash, "name");
+	if (subitem && subitem->type == NI_STRING) {
+		game->name = subitem->string;
+	}
+	subitem = HashTableLookup(&item->hash, "description");
+	if (subitem && subitem->type == NI_STRING) {
+		game->description = subitem->string;
+	}
+
+	rom = HashTableLookup(&item->hash, "rom");
+	if (!rom || rom->type != NI_HASH) {
+		return false;
+	}
+	subitem = HashTableLookup(&rom->hash, "name");
+	if (subitem && subitem->type == NI_STRING) {
+		game->romName = subitem->string;
+	}
+	subitem = HashTableLookup(&rom->hash, "size");
+	if (subitem && subitem->type == NI_STRING) {
+		char* end;
+		game->size = strtoul(subitem->string, &end, 0);
+		if (!end || *end) {
+			game->size = 0;
+		}
+	}
+	// TODO: md5, sha1
+	subitem = HashTableLookup(&rom->hash, "flags");
+	if (subitem && subitem->type == NI_STRING && strcmp(subitem->string, "verified")) {
+		game->verified = true;
+	}
+
+	return true;
+}
+
 struct NoIntroDB* NoIntroDBLoad(struct VFile* vf) {
 	struct NoIntroDB* db = malloc(sizeof(*db));
 	HashTableInit(&db->categories, 0, _dbDeinit);
@@ -224,15 +266,13 @@ void NoIntroDBDestroy(struct NoIntroDB* db) {
 	HashTableDeinit(&db->categories);
 }
 
-bool NoIntroDBLookupGame(const struct NoIntroDB* db, const void* data, size_t len, struct NoIntroGame* info) {
+bool NoIntroDBLookupGameByCRC(const struct NoIntroDB* db, uint32_t crc32, struct NoIntroGame* game) {
 	if (!db) {
 		return false;
 	}
-	uint32_t crc = doCrc32(data, len);
-	struct NoIntroItem* item = TableLookup(&db->gameCrc, crc);
+	struct NoIntroItem* item = TableLookup(&db->gameCrc, crc32);
 	if (item) {
-		// TODO
-		return true;
+		return _itemToGame(item, game);
 	}
 	return false;
 }
