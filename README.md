@@ -5,7 +5,7 @@ mGBA is a new emulator for running Game Boy Advance games. It aims to be faster 
 
 Up-to-date news and downloads can be found at [mgba.io](http://mgba.io/).
 
-![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)
+[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
 Features
 --------
