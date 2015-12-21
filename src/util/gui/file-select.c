@@ -24,7 +24,7 @@ static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
 	size_t size = GUIMenuItemListSize(currentFiles);
 	size_t i;
 	for (i = 1; i < size; ++i) {
-		free(GUIMenuItemListGetPointer(currentFiles, i)->title);
+		free((char*) GUIMenuItemListGetPointer(currentFiles, i)->title);
 	}
 	GUIMenuItemListClear(currentFiles);
 }
@@ -126,7 +126,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (filter(vf)) {
 				++item;
 			} else {
-				free(GUIMenuItemListGetPointer(currentFiles, item)->title);
+				free((char*) GUIMenuItemListGetPointer(currentFiles, item)->title);
 				GUIMenuItemListShift(currentFiles, item, 1);
 			}
 			vf->close(vf);
