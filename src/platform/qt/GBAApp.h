@@ -38,7 +38,8 @@ public:
 	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 
-	const NoIntroDB* noIntroDB() const { return m_db; }
+	const NoIntroDB* gameDB() const { return m_db; }
+	bool reloadGameDB();
 
 public slots:
 	void interruptAll();

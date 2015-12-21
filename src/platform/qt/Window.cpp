@@ -17,6 +17,7 @@
 #include "AboutScreen.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
+#include "DatDownloadView.h"
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
@@ -407,6 +408,12 @@ void Window::openROMInfo() {
 	openView(romInfo);
 }
 
+void Window::openDatDownloadWindow() {
+	DatDownloadView* datView = new DatDownloadView();
+	datView->show();
+	datView->start();
+}
+
 #ifdef BUILD_SDL
 void Window::openGamepadWindow() {
 	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
@@ -715,7 +722,7 @@ void Window::updateTitle(float fps) {
 
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		const NoIntroDB* db = GBAApp::app()->noIntroDB();
+		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game;
 		if (db && NoIntroDBLookupGameByCRC(db, m_controller->thread()->gba->romCrc32, &game)) {
 			title = QLatin1String(game.name);
@@ -1186,6 +1193,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
+
+	QAction* updateDat = new QAction(tr("Update game database..."), toolsMenu);
+	connect(updateDat, SIGNAL(triggered()), this, SLOT(openDatDownloadWindow()));
+	addControlledAction(toolsMenu, updateDat, "updateDat");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),

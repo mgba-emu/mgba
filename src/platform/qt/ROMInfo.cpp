@@ -21,7 +21,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent) {
 		return;
 	}
 
-	const NoIntroDB* db = GBAApp::app()->noIntroDB();
+	const NoIntroDB* db = GBAApp::app()->gameDB();
 
 	controller->threadInterrupt();
 	GBA* gba = controller->thread()->gba;

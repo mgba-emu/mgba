@@ -69,6 +69,7 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
+	DatDownloadView.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
@@ -106,6 +107,7 @@ set(SOURCE_FILES
 qt5_wrap_ui(UI_FILES
 	AboutScreen.ui
 	CheatsView.ui
+	DatDownloadView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
