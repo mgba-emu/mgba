@@ -35,15 +35,12 @@ static void _upDirectory(char* currentPath) {
 		currentPath[0] = '\0';
 		return;
 	}
-	if (end == currentPath) {
-		end[1] = '\0';
-		return;
+	if (!end[1]) {
+		// Trailing slash
+		end[0] = '\0';
+		return _upDirectory(currentPath);
 	}
-	end[0] = '\0';
-	if (end[1]) {
-		return;
-	}
-	// TODO: What if there was a trailing slash?
+	end[1] = '\0';
 }
 
 static int _strpcmp(const void* a, const void* b) {
@@ -85,7 +82,15 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 		if (name[0] == '.') {
 			continue;
 		}
-		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = strdup(name) };
+		if (de->type(de) == VFS_DIRECTORY) {
+			size_t len = strlen(name) + 2;
+			char* n2 = malloc(len);
+			snprintf(n2, len, "%s/", name);
+			name = n2;
+		} else {
+			name = strdup(name);
+		}
+		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name };
 		++items;
 	}
 	qsort(GUIMenuItemListGetPointer(currentFiles, 1), GUIMenuItemListSize(currentFiles) - 1, sizeof(struct GUIMenuItem), _strpcmp);
