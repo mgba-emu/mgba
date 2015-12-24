@@ -123,7 +123,9 @@ void ShaderSelector::refreshShaders() {
 	disconnect(this, SIGNAL(resetToDefault()), 0, 0);
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
+	if (m_shaders->preprocessShader) {
+		m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
+	}
 	GBAGLES2Shader* shaders = static_cast<GBAGLES2Shader*>(m_shaders->passes);
 	QFileInfo fi(m_shaderPath);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
