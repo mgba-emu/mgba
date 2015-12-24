@@ -174,11 +174,21 @@ QFileDialog* GBAApp::getSaveFileDialog(QWidget* owner, const QString& title, con
 	return dialog;
 }
 
+QString GBAApp::dataDir() {
+#ifdef DATA_DIR
+	QString path = QString::fromUtf8(DATA_DIR);
+#else
+	QString path = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_MAC
+	path += QLatin1String("/../Resources");
+#endif
+#endif
+	return path;
+}
+
 bool GBAApp::reloadGameDB() {
 	NoIntroDB* db = nullptr;
-	char path[PATH_MAX];
-	GBAConfigDirectory(path, sizeof(path));
-	VFile* vf = VFileDevice::open(QString::fromUtf8(path) + "/nointro.dat", O_RDONLY);
+	VFile* vf = VFileDevice::open(dataDir() + "/nointro.dat", O_RDONLY);
 	if (vf) {
 		db = NoIntroDBLoad(vf);
 		vf->close(vf);
@@ -186,7 +196,11 @@ bool GBAApp::reloadGameDB() {
 	if (db && m_db) {
 		NoIntroDBDestroy(m_db);
 	}
-	m_db = db;
+	if (db) {
+		m_db = db;
+		return true;
+	}
+	return false;
 }
 
 GBAApp::FileDialog::FileDialog(GBAApp* app, QWidget* parent, const QString& caption, const QString& filter)

@@ -6,6 +6,7 @@
 #include "ShaderSelector.h"
 
 #include "ConfigController.h"
+#include "GBAApp.h"
 #include "Display.h"
 #include "VFileDevice.h"
 
@@ -57,16 +58,9 @@ void ShaderSelector::clear() {
 }
 
 void ShaderSelector::selectShader() {
-#ifdef QT_SHADER_DIR
-	QFileDialog dialog(nullptr, tr("Load shader"), QT_SHADER_DIR, tr("%1 Shader (%.shader)").arg(projectName));
-#else
-	QString path = QCoreApplication::applicationDirPath();
-#ifdef Q_OS_MAC
-	path += QLatin1String("/../Resources");
-#endif
+	QString path(GBAApp::dataDir());
 	path += QLatin1String("/shaders");
 	QFileDialog dialog(nullptr, tr("Load shader"), path, tr("%1 Shader (%.shader)").arg(projectName));
-#endif
 	dialog.setFileMode(QFileDialog::Directory);
 	dialog.exec();
 	QStringList names = dialog.selectedFiles();

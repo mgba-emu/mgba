@@ -89,7 +89,6 @@ public slots:
 
 	void openAboutScreen();
 	void openROMInfo();
-	void openDatDownloadWindow();
 
 #ifdef BUILD_SDL
 	void openGamepadWindow();

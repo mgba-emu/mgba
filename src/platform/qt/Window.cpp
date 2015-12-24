@@ -17,7 +17,6 @@
 #include "AboutScreen.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
-#include "DatDownloadView.h"
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
@@ -406,12 +405,6 @@ void Window::openAboutScreen() {
 void Window::openROMInfo() {
 	ROMInfo* romInfo = new ROMInfo(m_controller);
 	openView(romInfo);
-}
-
-void Window::openDatDownloadWindow() {
-	DatDownloadView* datView = new DatDownloadView();
-	datView->show();
-	datView->start();
 }
 
 #ifdef BUILD_SDL
@@ -1193,10 +1186,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(gdbWindow, SIGNAL(triggered()), this, SLOT(gdbOpen()));
 	addControlledAction(toolsMenu, gdbWindow, "gdbWindow");
 #endif
-
-	QAction* updateDat = new QAction(tr("Update game database..."), toolsMenu);
-	connect(updateDat, SIGNAL(triggered()), this, SLOT(openDatDownloadWindow()));
-	addControlledAction(toolsMenu, updateDat, "updateDat");
 
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),

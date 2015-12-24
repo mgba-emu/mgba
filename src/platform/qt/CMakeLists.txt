@@ -70,7 +70,6 @@ set(SOURCE_FILES
 	CheatsModel.cpp
 	CheatsView.cpp
 	ConfigController.cpp
-	DatDownloadView.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
@@ -108,7 +107,6 @@ set(SOURCE_FILES
 qt5_wrap_ui(UI_FILES
 	AboutScreen.ui
 	CheatsView.ui
-	DatDownloadView.ui
 	GIFView.ui
 	IOViewer.ui
 	LoadSaveState.ui
@@ -168,13 +166,14 @@ if(WIN32)
 	endif()
 endif()
 if(APPLE)
-	set(SHADER_DIR Applications/${PROJECT_NAME}.app/Contents/Resources)
+	set(DATA_DIR Applications/${PROJECT_NAME}.app/Contents/Resources)
 else()
-	set(SHADER_DIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
+	set(DATA_DIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
 endif()
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${SHADER_DIR} COMPONENT ${BINARY_NAME}-qt)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATA_DIR} COMPONENT ${BINARY_NAME}-qt)
+install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATA_DIR} COMPONENT ${BINARY_NAME}-qt)
 if(NOT WIN32 AND NOT APPLE)
-	list(APPEND QT_DEFINES QT_SHADER_DIR="${SHADER_DIR}/shaders")
+	list(APPEND QT_DEFINES DATA_DIR="${DATA_DIR}")
 endif()
 
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})

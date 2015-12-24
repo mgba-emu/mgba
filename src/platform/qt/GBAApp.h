@@ -30,6 +30,8 @@ public:
 	GBAApp(int& argc, char* argv[]);
 	static GBAApp* app();
 
+	static QString dataDir();
+
 	Window* newWindow();
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
