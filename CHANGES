@@ -7,6 +7,7 @@ Features:
  - Libretro: Cheat code support
  - Support for GLSL shaders
  - ROM information view
+ - Support for VBA-style cheat codes
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline

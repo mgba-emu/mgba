@@ -211,6 +211,8 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet*, const char* line);
 bool GBACheatAddProActionReplay(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddProActionReplayLine(struct GBACheatSet*, const char* line);
 
+bool GBACheatAddVBALine(struct GBACheatSet*, const char* line);
+
 bool GBACheatAddAutodetect(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 
 bool GBACheatParseFile(struct GBACheatDevice*, struct VFile*);
