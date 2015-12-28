@@ -24,6 +24,10 @@
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
+struct GBAExtdata {
+	struct GBAExtdataItem data[EXTDATA_MAX];
+};
+
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(GBA_SAVESTATE_MAGIC, 0, &state->versionMagic);
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
@@ -224,18 +228,13 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 	if (strcmp((const char*) chunk->name, "gbAs") != 0) {
 		return 0;
 	}
-	struct GBASerializedState* state = GBAAllocateState();
+	struct GBASerializedState* state = png_get_user_chunk_ptr(png);
 	uLongf len = sizeof(*state);
 	uncompress((Bytef*) state, &len, chunk->data, chunk->size);
-	if (!GBADeserialize(png_get_user_chunk_ptr(png), state)) {
-		GBADeallocateState(state);
-		longjmp(png_jmpbuf(png), 1);
-	}
-	GBADeallocateState(state);
 	return 1;
 }
 
-static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
+static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtdata* extdata) {
 	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 	png_infop info = png_create_info_struct(png);
 	png_infop end = png_create_info_struct(png);
@@ -249,18 +248,27 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 		return false;
 	}
 
-	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
+	struct GBASerializedState* state = GBAAllocateState();
+
+	PNGInstallChunkHandler(png, state, _loadPNGChunkHandler, "gbAs");
 	bool success = PNGReadHeader(png, info);
 	success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
-	if (success) {
-		gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
-		GBASyncForceFrame(gba->sync);
-	}
 
-	free(pixels);
-	return success;
+	if (success && extdata) {
+		struct GBAExtdataItem item = {
+			.size = VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4,
+			.data = pixels,
+			.clean = free
+		};
+		GBAExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
+	} else {
+		free(pixels);
+		GBADeallocateState(state);
+		return 0;
+	}
+	return state;
 }
 #endif
 
@@ -349,22 +357,74 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
 	return false;
 }
 
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
+struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata) {
 #ifdef USE_PNG
 	if (isPNG(vf)) {
-		return _loadPNGState(gba, vf);
+		return _loadPNGState(vf, extdata);
 	}
 #endif
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}
-	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
+	struct GBASerializedState* state = GBAAllocateState();
+	if (vf->read(vf, state, sizeof(*state)) != sizeof(*state)) {
+		GBADeallocateState(state);
+		return 0;
+	}
+	return state;
+}
+
+bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
+	struct GBAExtdata extdata;
+	GBAExtdataInit(&extdata);
+	struct GBASerializedState* state = GBAExtractState(vf, &extdata);
 	if (!state) {
 		return false;
 	}
 	bool success = GBADeserialize(gba, state);
-	vf->unmap(vf, state, sizeof(struct GBASerializedState));
+	GBADeallocateState(state);
+
+	struct GBAExtdataItem screenshot;
+	if (GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &screenshot)) {
+		gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, screenshot.data);
+		GBASyncForceFrame(gba->sync);
+	}
+	GBAExtdataDeinit(&extdata);
 	return success;
+}
+
+bool GBAExtdataInit(struct GBAExtdata* extdata) {
+	memset(extdata->data, 0, sizeof(extdata->data));
+	return true;
+}
+
+void GBAExtdataDeinit(struct GBAExtdata* extdata) {
+	size_t i;
+	for (i = 1; i < EXTDATA_MAX; ++i) {
+		if (extdata->data[i].data && extdata->data[i].clean) {
+			extdata->data[i].clean(extdata->data[i].data);
+		}
+	}
+}
+
+void GBAExtdataPut(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
+	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
+		return;
+	}
+
+	if (extdata->data[tag].data && extdata->data[tag].clean) {
+		extdata->data[tag].clean(extdata->data[tag].data);
+	}
+	extdata->data[tag] = *item;
+}
+
+bool GBAExtdataGet(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
+	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
+		return false;
+	}
+
+	*item = extdata->data[tag];
+	return true;
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

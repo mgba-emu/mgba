@@ -330,6 +330,19 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
+enum GBAExtdataTag {
+	EXTDATA_NONE = 0,
+	EXTDATA_SCREENSHOT = 1,
+	EXTDATA_MAX
+};
+
+struct GBAExtdata;
+struct GBAExtdataItem {
+	uint64_t size;
+	void* data;
+	void (*clean)(void*);
+};
+
 struct VDir;
 struct GBAThread;
 
@@ -343,6 +356,12 @@ struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool writ
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot);
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf);
 
+bool GBAExtdataInit(struct GBAExtdata*);
+void GBAExtdataDeinit(struct GBAExtdata*);
+void GBAExtdataPut(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
+bool GBAExtdataGet(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
+
+struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 
