@@ -8,6 +8,7 @@ Features:
  - Support for GLSL shaders
  - ROM information view
  - Support for VBA-style cheat codes
+ - Savestates now store creation timestamps
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
@@ -36,6 +37,7 @@ Misc:
  - Util: Add MutexTryLock
  - Qt: Gray out "Skip BIOS intro" while "Use BIOS file" is unchecked
  - Qt: Allow use of modifier keys as input
+ - Qt: Optimize log viewer
 
 0.3.2: (2015-12-16)
 Bugfixes:
