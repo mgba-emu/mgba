@@ -9,6 +9,7 @@ Features:
  - ROM information view
  - Support for VBA-style cheat codes
  - Savestates now store creation timestamps
+ - Key autofire
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline

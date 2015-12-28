@@ -50,6 +50,8 @@ GameController::GameController(QObject* parent)
 	, m_wasPaused(false)
 	, m_audioChannels{ true, true, true, true, true, true }
 	, m_videoLayers{ true, true, true, true, true }
+	, m_autofire{}
+	, m_autofireStatus{}
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
@@ -204,6 +206,7 @@ GameController::GameController(QObject* parent)
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
+	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
 }
 
 GameController::~GameController() {
@@ -596,6 +599,14 @@ void GameController::clearKeys() {
 	updateKeys();
 }
 
+void GameController::setAutofire(int key, bool enable) {
+	if (key >= GBA_KEY_MAX || key < 0) {
+		return;
+	}
+	m_autofire[key] = enable;
+	m_autofireStatus[key] = 0;
+}
+
 void GameController::setAudioBufferSamples(int samples) {
 	if (m_audioProcessor) {
 		threadInterrupt();
@@ -978,4 +989,19 @@ void GameController::pollEvents() {
 
 	m_activeButtons = m_inputController->pollEvents();
 	updateKeys();
+}
+
+void GameController::updateAutofire() {
+	// TODO: Move all key events onto the CPU thread...somehow
+	for (int k = 0; k < GBA_KEY_MAX; ++k) {
+		if (!m_autofire[k]) {
+			continue;
+		}
+		m_autofireStatus[k] ^= 1;
+		if (m_autofireStatus[k]) {
+			keyPressed(k);
+		} else {
+			keyReleased(k);
+		}
+	}
 }
