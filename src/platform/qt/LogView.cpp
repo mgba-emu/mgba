@@ -69,7 +69,12 @@ LogView::LogView(LogController* log, QWidget* parent)
 }
 
 void LogView::postLog(int level, const QString& log) {
-	m_ui.view->appendPlainText(QString("%1:\t%2").arg(LogController::toString(level)).arg(log));
+	QString line = QString("%1:\t%2").arg(LogController::toString(level)).arg(log);
+	if (isVisible()) {
+		m_ui.view->appendPlainText(line);
+	} else {
+		m_pendingLines.enqueue(line);
+	}
 	++m_lines;
 	if (m_lines > m_lineLimit) {
 		clearLine();
@@ -140,11 +145,21 @@ void LogView::setMaxLines(int limit) {
 	}
 }
 
+void LogView::showEvent(QShowEvent*) {
+	while (!m_pendingLines.isEmpty()) {
+		m_ui.view->appendPlainText(m_pendingLines.dequeue());
+	}
+}
+
 void LogView::clearLine() {
-	QTextCursor cursor(m_ui.view->document());
-	cursor.setPosition(0);
-	cursor.select(QTextCursor::BlockUnderCursor);
-	cursor.removeSelectedText();
-	cursor.deleteChar();
+	if (m_ui.view->document()->isEmpty()) {
+		m_pendingLines.dequeue();
+	} else {
+		QTextCursor cursor(m_ui.view->document());
+		cursor.setPosition(0);
+		cursor.select(QTextCursor::BlockUnderCursor);
+		cursor.removeSelectedText();
+		cursor.deleteChar();
+	}
 	--m_lines;
 }
