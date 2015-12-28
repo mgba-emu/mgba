@@ -108,7 +108,7 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (GBALoadState(context, context->stateDir, 0)) {
+		if (GBALoadState(context, context->stateDir, 0, SAVESTATE_SCREENSHOT)) {
 			VFile* vf = GBAGetState(context->gba, context->stateDir, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
@@ -701,7 +701,7 @@ void GameController::loadState(int slot) {
 			controller->m_backupLoadState = new GBASerializedState;
 		}
 		GBASerialize(context->gba, controller->m_backupLoadState);
-		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
+		if (GBALoadState(context, context->stateDir, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
 		}
@@ -720,7 +720,7 @@ void GameController::saveState(int slot) {
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
+		GBASaveState(context, context->stateDir, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
 	});
 }
 

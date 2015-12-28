@@ -333,12 +333,16 @@ struct GBASerializedState {
 enum GBAExtdataTag {
 	EXTDATA_NONE = 0,
 	EXTDATA_SCREENSHOT = 1,
+	EXTDATA_SAVEDATA = 2,
 	EXTDATA_MAX
 };
 
+#define SAVESTATE_SCREENSHOT 1
+#define SAVESTATE_SAVEDATA   2
+
 struct GBAExtdata;
 struct GBAExtdataItem {
-	uint64_t size;
+	int32_t size;
 	void* data;
 	void (*clean)(void*);
 };
@@ -349,17 +353,19 @@ struct GBAThread;
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
-bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);
+bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
+bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
 
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot);
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf);
+bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
+bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 
 bool GBAExtdataInit(struct GBAExtdata*);
 void GBAExtdataDeinit(struct GBAExtdata*);
 void GBAExtdataPut(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
 bool GBAExtdataGet(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
+bool GBAExtdataSerialize(struct GBAExtdata* extpdata, struct VFile* vf);
+bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf);
 
 struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);

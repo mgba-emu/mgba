@@ -123,6 +123,33 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
+bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
+	if (savedata->data) {
+		switch (savedata->type) {
+		case SAVEDATA_SRAM:
+			return in->read(in, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
+		case SAVEDATA_FLASH512:
+			return in->read(in, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
+		case SAVEDATA_FLASH1M:
+			return in->read(in, savedata->data, SIZE_CART_FLASH1M) == SIZE_CART_FLASH1M;
+		case SAVEDATA_EEPROM:
+			return in->read(in, savedata->data, SIZE_CART_EEPROM) == SIZE_CART_EEPROM;
+		case SAVEDATA_AUTODETECT:
+		case SAVEDATA_FORCE_NONE:
+			return true;
+		}
+	} else if (savedata->vf) {
+		off_t read = 0;
+		uint8_t buffer[2048];
+		do {
+			in->read(in, buffer, read);
+			read = savedata->vf->write(savedata->vf, buffer, sizeof(buffer));
+		} while (read == sizeof(buffer));
+		return read >= 0;
+	}
+	return true;
+}
+
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming) {
 	if (savedata->type != SAVEDATA_AUTODETECT) {
 		struct VFile* vf = savedata->vf;
@@ -441,7 +468,7 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 	}
 }
 
-void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData) {
+void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state) {
 	state->savedata.type = savedata->type;
 	state->savedata.command = savedata->command;
 	GBASerializedSavedataFlags flags = 0;
@@ -453,11 +480,9 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 	STORE_32(savedata->writeAddress, 0, &state->savedata.writeAddress);
 	STORE_16(savedata->settling, 0, &state->savedata.settlingSector);
 	STORE_16(savedata->dust, 0, &state->savedata.settlingDust);
-
-	UNUSED(includeData); // TODO
 }
 
-void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state, bool includeData) {
+void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state) {
 	if (state->savedata.type == SAVEDATA_FORCE_NONE) {
 		return;
 	}
@@ -476,8 +501,6 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		_flashSwitchBank(savedata, GBASerializedSavedataFlagsGetFlashBank(flags));
 	}
-
-	UNUSED(includeData); // TODO
 }
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {

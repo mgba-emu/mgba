@@ -311,14 +311,14 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 				case RUNNER_SAVE_STATE:
 					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, true);
 					if (vf) {
-						GBASaveStateNamed(runner->context.gba, vf, true);
+						GBASaveStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
 						vf->close(vf);
 					}
 					break;
 				case RUNNER_LOAD_STATE:
 					vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, false);
 					if (vf) {
-						GBALoadStateNamed(runner->context.gba, vf);
+						GBALoadStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
 						vf->close(vf);
 					}
 					break;

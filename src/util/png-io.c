@@ -126,7 +126,16 @@ bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler
 		return false;
 	}
 	png_set_read_user_chunk_fn(png, context, handler);
-	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_bytep) chunkName, 1);
+	int len = strlen(chunkName);
+	int chunks = 0;
+	char* chunkList = strdup(chunkName);
+	int i;
+	for (i = 4; i <= len; i += 5) {
+		chunkList[i] = '\0';
+		++chunks;
+	}
+	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_bytep) chunkList, chunks);
+	free(chunkList);
 	return true;
 }
 

@@ -27,7 +27,7 @@ void GBARRInitRecord(struct GBA* gba) {
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
 		struct VFile* vf = gba->rr->openSavestate(gba->rr, O_TRUNC | O_CREAT | O_RDWR);
-		GBASaveStateNamed(gba, vf, false);
+		GBASaveStateNamed(gba, vf, 0);
 		vf->close(vf);
 	} else {
 		ARMReset(gba->cpu);
@@ -51,7 +51,7 @@ void GBARRInitPlay(struct GBA* gba) {
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
 		struct VFile* vf = gba->rr->openSavestate(gba->rr, O_RDONLY);
-		GBALoadStateNamed(gba, vf);
+		GBALoadStateNamed(gba, vf, SAVESTATE_SCREENSHOT);
 		vf->close(vf);
 	} else {
 		ARMReset(gba->cpu);
