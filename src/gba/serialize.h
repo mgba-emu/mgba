@@ -174,7 +174,9 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
  * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
- * 0x00304 - 0x003FF: Reserved (leave zero)
+ * 0x00304 - 0x0030F: Reserved (leave zero)
+ * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
+ * 0x00318 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -319,8 +321,11 @@ struct GBASerializedState {
 	uint32_t cpuPrefetch[2];
 
 	uint32_t associatedStreamId;
+	uint32_t reservedRr[3];
 
-	uint32_t reserved[63];
+	uint64_t creationUsec;
+
+	uint32_t reserved[58];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
@@ -340,11 +345,14 @@ enum GBAExtdataTag {
 #define SAVESTATE_SCREENSHOT 1
 #define SAVESTATE_SAVEDATA   2
 
-struct GBAExtdata;
 struct GBAExtdataItem {
 	int32_t size;
 	void* data;
 	void (*clean)(void*);
+};
+
+struct GBAExtdata {
+	struct GBAExtdataItem data[EXTDATA_MAX];
 };
 
 struct VDir;

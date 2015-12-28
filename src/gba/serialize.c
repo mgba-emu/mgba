@@ -15,6 +15,7 @@
 #include "util/vfs.h"
 
 #include <fcntl.h>
+#include <sys/time.h>
 
 #ifdef USE_PNG
 #include "util/png-io.h"
@@ -23,10 +24,6 @@
 #endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
-
-struct GBAExtdata {
-	struct GBAExtdataItem data[EXTDATA_MAX];
-};
 
 struct GBABundledState {
 	struct GBASerializedState* state;
@@ -78,6 +75,14 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
 
+	struct timeval tv;
+	if (!gettimeofday(&tv, 0)) {
+		uint64_t usec = tv.tv_usec;
+		usec += tv.tv_sec * 1000000LL;
+		STORE_64(usec, 0, &state->creationUsec);
+	} else {
+		state->creationUsec = 0;
+	}
 	state->associatedStreamId = 0;
 	if (gba->rr) {
 		gba->rr->stateSaved(gba->rr, state);
@@ -324,7 +329,7 @@ static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtd
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
 
-	if (success && extdata) {
+	if (success) {
 		struct GBAExtdataItem item = {
 			.size = VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4,
 			.data = pixels,

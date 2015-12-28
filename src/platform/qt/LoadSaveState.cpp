@@ -10,6 +10,7 @@
 #include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
 
+#include <QDateTime>
 #include <QKeyEvent>
 #include <QPainter>
 
@@ -174,17 +175,39 @@ void LoadSaveState::loadState(int slot) {
 		m_slots[slot - 1]->setText(tr("Empty"));
 		return;
 	}
-	VFileDevice vdev(vf);
+
+	GBAExtdata extdata;
+	GBAExtdataInit(&extdata);
+	GBASerializedState* state = GBAExtractState(vf, &extdata);
+	vf->seek(vf, 0, SEEK_SET);
+	if (!state) {
+		m_slots[slot - 1]->setText(tr("Corrupted"));
+		GBAExtdataDeinit(&extdata);
+		return;
+	}
+
+	QDateTime creation(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL));
 	QImage stateImage;
-	stateImage.load(&vdev, "PNG");
+
+	GBAExtdataItem item;
+	if (GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
+		stateImage = QImage((uchar*) item.data, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_ARGB32).rgbSwapped();
+	}
+
 	if (!stateImage.isNull()) {
 		QPixmap statePixmap;
 		statePixmap.convertFromImage(stateImage);
 		m_slots[slot - 1]->setIcon(statePixmap);
-		m_slots[slot - 1]->setText(QString());
-	} else {
-		m_slots[slot - 1]->setText(tr("Slot %1").arg(slot));
 	}
+	if (creation.toMSecsSinceEpoch()) {
+		m_slots[slot - 1]->setText(creation.toString(Qt::DefaultLocaleShortDate));
+	} else if (stateImage.isNull()) {
+		m_slots[slot - 1]->setText(tr("Slot %1").arg(slot));
+	} else {
+		m_slots[slot - 1]->setText(QString());
+	}
+	vf->close(vf);
+	GBADeallocateState(state);
 }
 
 void LoadSaveState::triggerState(int slot) {
