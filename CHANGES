@@ -39,6 +39,7 @@ Misc:
  - Qt: Gray out "Skip BIOS intro" while "Use BIOS file" is unchecked
  - Qt: Allow use of modifier keys as input
  - Qt: Optimize log viewer
+ - GBA RR: Starting from savestate now embeds the savegame
 
 0.3.2: (2015-12-16)
 Bugfixes:
