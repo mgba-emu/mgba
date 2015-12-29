@@ -10,7 +10,7 @@ find_program(RAW2C raw2c)
 find_program(STRIP ${cross_prefix}strip)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format" PARENT_SCOPE)
-set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5)
+set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 IOAPI_NO_64)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 list(APPEND OS_LIB ctru)
