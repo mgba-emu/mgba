@@ -187,7 +187,7 @@ void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 
 	while (true) {
 		char path[256];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
+		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
 			break;
 		}
 
