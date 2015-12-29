@@ -41,6 +41,7 @@ Misc:
  - Qt: Allow use of modifier keys as input
  - Qt: Optimize log viewer
  - GBA RR: Starting from savestate now embeds the savegame
+ - Libretro: Add install target for libretro core
 
 0.3.2: (2015-12-16)
 Bugfixes:
