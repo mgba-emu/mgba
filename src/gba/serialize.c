@@ -285,7 +285,7 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 		LOAD_32(tag, 0, chunk->data);
 		LOAD_32(item.size, sizeof(uint32_t), chunk->data);
 		uLongf len = item.size;
-		if (item.size < 0) {
+		if (item.size < 0 || tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
 			return 0;
 		}
 		item.data = malloc(item.size);
