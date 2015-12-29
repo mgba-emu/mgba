@@ -78,10 +78,76 @@ static struct VDir* _vdzOpenDir(struct VDir* vd, const char* path);
 static const char* _vdezName(struct VDirEntry* vde);
 static enum VFSType _vdezType(struct VDirEntry* vde);
 
+#ifndef USE_LIBZIP
+static voidpf _vfmzOpen(voidpf opaque, const char* filename, int mode) {
+	UNUSED(opaque);
+	int flags = 0;
+	switch (mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) {
+	case ZLIB_FILEFUNC_MODE_READ:
+		flags = O_RDONLY;
+		break;
+	case ZLIB_FILEFUNC_MODE_WRITE:
+		flags = O_WRONLY;
+		break;
+	case ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE:
+		flags = O_RDWR;
+		break;
+	}
+	if (mode & ZLIB_FILEFUNC_MODE_CREATE) {
+		flags |= O_CREAT;
+	}
+	return VFileOpen(filename, flags);
+}
+
+static uLong _vfmzRead(voidpf opaque, voidpf stream, void* buf, uLong size) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	ssize_t r = vf->read(vf, buf, size);
+	if (r < 0) {
+		return 0;
+	}
+	return r;
+}
+
+int _vfmzClose(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->close(vf);
+}
+
+int _vfmzError(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, 0, SEEK_CUR) < 0;
+}
+
+long _vfmzTell(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, 0, SEEK_CUR);
+}
+
+long _vfmzSeek(voidpf opaque, voidpf stream, uLong offset, int origin) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, offset, origin) < 0;
+}
+#endif
+
 struct VDir* VDirOpenZip(const char* path, int flags) {
 #ifndef USE_LIBZIP
 	UNUSED(flags);
-	unzFile z = unzOpen(path);
+	zlib_filefunc_def ops = {
+		.zopen_file = _vfmzOpen,
+		.zread_file = _vfmzRead,
+		.zwrite_file = 0,
+		.ztell_file = _vfmzTell,
+		.zseek_file = _vfmzSeek,
+		.zclose_file = _vfmzClose,
+		.zerror_file = _vfmzError,
+		.opaque = 0
+	};
+	unzFile z = unzOpen2(path, &ops);
 	if (!z) {
 		return 0;
 	}
@@ -389,6 +455,8 @@ off_t _vfzSeek(struct VFile* vf, off_t offset, int whence) {
 	case SEEK_END:
 		pos = vfz->fileSize;
 		break;
+	default:
+		return -1;
 	}
 
 	if (pos < 0 || pos + offset < 0) {
