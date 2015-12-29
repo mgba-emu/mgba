@@ -17,6 +17,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->gba = anonymousMemoryMap(sizeof(struct GBA));
 	context->cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	context->rom = 0;
+	context->romDir = 0;
 	context->bios = 0;
 	context->fname = 0;
 	context->save = 0;
@@ -87,7 +88,11 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 			}
 			vf->close(vf);
 		}
-		dir->close(dir);
+		if (!context->rom) {
+			dir->close(dir);
+		} else {
+			context->romDir = dir;
+		}
 	} else {
 		context->rom = VFileOpen(path, O_RDONLY);
 	}
@@ -118,6 +123,10 @@ void GBAContextUnloadROM(struct GBAContext* context) {
 	if (context->rom) {
 		context->rom->close(context->rom);
 		context->rom = 0;
+	}
+	if (context->romDir) {
+		context->romDir->close(context->romDir);
+		context->romDir = 0;
 	}
 	if (context->save) {
 		context->save->close(context->save);

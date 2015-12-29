@@ -17,6 +17,7 @@ struct GBAContext {
 	struct ARMCore* cpu;
 	struct GBAVideoRenderer* renderer;
 	struct VFile* rom;
+	struct VDir* romDir;
 	const char* fname;
 	struct VFile* save;
 	struct VFile* bios;
