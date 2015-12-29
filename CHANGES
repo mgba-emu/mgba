@@ -19,6 +19,7 @@ Bugfixes:
  - GBA: Fix warnings when creating and loading savestates
  - GBA Memory: Fix DMAs triggering two cycles early
  - GBA Hardware: Fix GPIO on big endian
+ - Util: Fix excessive memory allocation when decoding a PNG
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper

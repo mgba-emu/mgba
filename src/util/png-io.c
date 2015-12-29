@@ -52,7 +52,7 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 }
 
 bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
-	png_bytep row = malloc(sizeof(png_bytep) * width * 3);
+	png_bytep row = malloc(sizeof(png_byte) * width * 3);
 	if (!row) {
 		return false;
 	}
