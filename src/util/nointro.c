@@ -75,6 +75,7 @@ static void _indexU32x(struct NoIntroDB* db, struct Table* table, const char* ca
 		}
 		TableInsert(table, key, item);
 	}
+	free(tmpKey);
 }
 
 static void _itemDeinit(void* value) {
