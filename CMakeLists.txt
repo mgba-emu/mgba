@@ -38,7 +38,8 @@ file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB SIO_SRC ${CMAKE_SOURCE_DIR}/src/gba/sio/lockstep.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND UTIL_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
-set(VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
+set(CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
+set(VFS_SRC)
 source_group("ARM core" FILES ${ARM_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
 source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_CTX_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
@@ -132,7 +133,7 @@ if(WIN32)
 	set(WIN32_VERSION "${LIB_VERSION_MAJOR},${LIB_VERSION_MINOR},${LIB_VERSION_PATCH}")
 	add_definitions(-D_WIN32_WINNT=0x0600)
 	list(APPEND OS_LIB ws2_32 shlwapi)
-	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+	list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/windows/*.c)
 	source_group("Windows-specific code" FILES ${OS_SRC})
 elseif(UNIX)
@@ -145,7 +146,7 @@ elseif(UNIX)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 	endif()
 
-	list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+	list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 	file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/posix/*.c)
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
@@ -454,7 +455,7 @@ foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
 
-source_group("Virtual files" FILES ${VFS_SRC})
+source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})
 source_group("Extra features" FILES ${FEATURE_SRC})
 source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
 
@@ -480,7 +481,7 @@ set(CORE_SRC
 	${DEBUGGER_SRC}
 	${RENDERER_SRC}
 	${UTIL_SRC}
-	${VFS_SRC}
+	${CORE_VFS_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 
@@ -490,9 +491,10 @@ if(NOT MINIMAL_CORE)
 		${GBA_RR_SRC}
 		${GBA_SV_SRC}
 		${SIO_SRC}
-		${FEATURE_SRC})
+		${FEATURE_SRC}
+		${VFS_SRC})
 else()
-	set(SRC ${CORE_SRC})
+	set(SRC ${CORE_SRC} ${VFS_SRC})
 endif()
 
 if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
@@ -500,7 +502,7 @@ if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
 endif()
 
 if(BUILD_SHARED)
-	add_library(${BINARY_NAME} SHARED ${SRC})
+	add_library(${BINARY_NAME} SHARED ${SRC} ${VFS_SRC})
 	if(BUILD_STATIC)
 		add_library(${BINARY_NAME}-static STATIC ${SRC})
 		set_target_properties(${BINARY_NAME}-static PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")

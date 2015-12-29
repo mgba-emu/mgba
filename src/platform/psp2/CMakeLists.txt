@@ -11,8 +11,8 @@ file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/psp2/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})
 
-list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
-set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
+list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
+set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 
 set(OS_LIB -lvita2d -lSceCtrl_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceMotion_stub -lScePower_stub -lSceTouch_stub -lSceCommonDialog_stub -lpng -lz -l${M_LIBRARY})
 set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)

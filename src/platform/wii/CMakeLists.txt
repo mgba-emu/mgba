@@ -4,7 +4,7 @@ find_program(RAW2C raw2c)
 find_program(WIILOAD wiiload)
 
 set(OS_DEFINES COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE IOAPI_NO_64)
-list(APPEND VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
+list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -12,7 +12,7 @@ file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/wii-*.c)
 list(APPEND OS_LIB wiiuse bte fat ogc)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("Wii-specific code" FILES ${OS_SRC})
-set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
+set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_BINARY_DIR}/font.c ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
