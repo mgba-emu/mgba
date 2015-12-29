@@ -74,7 +74,13 @@ void GBAContextDeinit(struct GBAContext* context) {
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
-	struct VDir* dir = VDirOpenArchive(path);
+	context->rom = VFileOpen(path, O_RDONLY);
+	struct VDir* dir = 0;
+	if (!GBAIsROM(context->rom)) {
+		context->rom->close(context->rom);
+		context->rom = 0;
+		dir = VDirOpenArchive(path);
+	}
 	if (dir) {
 		struct VDirEntry* de;
 		while ((de = dir->listNext(dir))) {
@@ -94,16 +100,9 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 			context->romDir = dir;
 		}
 	} else {
-		context->rom = VFileOpen(path, O_RDONLY);
 	}
 
 	if (!context->rom) {
-		return false;
-	}
-
-	if (!GBAIsROM(context->rom)) {
-		context->rom->close(context->rom);
-		context->rom = 0;
 		return false;
 	}
 
