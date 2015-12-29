@@ -72,7 +72,7 @@ struct VFile* VFileFromFILE(FILE* file);
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);
 
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
 
