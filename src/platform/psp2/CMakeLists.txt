@@ -4,6 +4,9 @@ find_file(NIDDB db.json PATHS ${VITASDK} ${VITASDK}/bin ${VITASDK}/share)
 find_file(EXTRADB extra.json PATHS ${VITASDK}${VITASDK}/bin ${VITASDK}/share)
 find_program(STRIP ${cross_prefix}strip)
 
+set(OS_DEFINES IOAPI_NO_64)
+set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
+
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/psp2/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})
