@@ -101,6 +101,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 
 	gba->realisticTiming = true;
 	gba->hardCrash = true;
+	gba->allowOpposingDirections = true;
 
 	gba->performingDMA = false;
 
