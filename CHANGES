@@ -10,6 +10,7 @@ Features:
  - Support for VBA-style cheat codes
  - Savestates now store creation timestamps
  - Key autofire
+ - Libretro: Allow blocking opposing directional input
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
