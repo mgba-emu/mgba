@@ -80,3 +80,22 @@ void GBADirectorySetDetachBase(struct GBADirectorySet* dirs) {
 		dirs->base = 0;
 	}
 }
+
+struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* path, bool (*filter)(struct VFile*)) {
+	dirs->archive = VDirOpenArchive(path);
+	struct VFile* file;
+	if (dirs->archive) {
+		file = VDirFindFirst(dirs->archive, filter);
+		if (!file) {
+			dirs->archive->close(dirs->archive);
+			dirs->archive = 0;
+		}
+	} else {
+		file = VFileOpen(path, O_RDONLY);
+		if (!filter(file)) {
+			file->close(file);
+			file = 0;
+		}
+	}
+	return file;
+}

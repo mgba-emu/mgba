@@ -17,11 +17,11 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->gba = anonymousMemoryMap(sizeof(struct GBA));
 	context->cpu = anonymousMemoryMap(sizeof(struct ARMCore));
 	context->rom = 0;
-	context->romDir = 0;
 	context->bios = 0;
 	context->fname = 0;
 	context->save = 0;
 	context->renderer = 0;
+	GBADirectorySetInit(&context->dirs);
 	memset(context->components, 0, sizeof(context->components));
 
 	if (!context->gba || !context->cpu) {
@@ -71,50 +71,31 @@ void GBAContextDeinit(struct GBAContext* context) {
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
 	GBAConfigDeinit(&context->config);
+	GBADirectorySetDeinit(&context->dirs);
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
-	context->rom = VFileOpen(path, O_RDONLY);
-	struct VDir* dir = 0;
-	if (!GBAIsROM(context->rom)) {
-		context->rom->close(context->rom);
-		context->rom = 0;
-		dir = VDirOpenArchive(path);
-	}
-	if (dir) {
-		struct VDirEntry* de;
-		while ((de = dir->listNext(dir))) {
-			struct VFile* vf = dir->openFile(dir, de->name(de), O_RDONLY);
-			if (!vf) {
-				continue;
-			}
-			if (GBAIsROM(vf)) {
-				context->rom = vf;
-				break;
-			}
-			vf->close(vf);
-		}
-		if (!context->rom) {
-			dir->close(dir);
-		} else {
-			context->romDir = dir;
-		}
-	} else {
-	}
-
+	context->rom = GBADirectorySetOpenPath(&context->dirs, path, GBAIsROM);
 	if (!context->rom) {
 		return false;
 	}
 
 	context->fname = path;
 	if (autoloadSave) {
-		context->save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
+		char dirname[PATH_MAX];
+		char basename[PATH_MAX];
+		separatePath(context->fname, dirname, basename, 0);
+		// TODO: Remove autoloadSave
+		GBADirectorySetAttachBase(&context->dirs, VDirOpen(dirname));
+		strncat(basename, ".sav", PATH_MAX - strlen(basename) - 1);
+		context->save = context->dirs.save->openFile(context->dirs.save, basename, O_RDWR | O_CREAT);
 	}
 	return true;
 }
 
 void GBAContextUnloadROM(struct GBAContext* context) {
 	GBAUnloadROM(context->gba);
+	GBADirectorySetDetachBase(&context->dirs);
 	if (context->bios) {
 		context->bios->close(context->bios);
 		context->bios = 0;
@@ -122,10 +103,6 @@ void GBAContextUnloadROM(struct GBAContext* context) {
 	if (context->rom) {
 		context->rom->close(context->rom);
 		context->rom = 0;
-	}
-	if (context->romDir) {
-		context->romDir->close(context->romDir);
-		context->romDir = 0;
 	}
 	if (context->save) {
 		context->save->close(context->save);

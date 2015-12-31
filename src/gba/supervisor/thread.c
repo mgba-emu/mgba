@@ -685,12 +685,7 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 }
 
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
-	threadContext->dirs.archive = VDirOpenArchive(fname);
-	if (threadContext->dirs.archive) {
-		threadContext->rom = VDirFindFirst(threadContext->dirs.archive, GBAIsROM);
-	} else {
-		threadContext->rom = VFileOpen(fname, O_RDONLY);
-	}
+	threadContext->rom = GBADirectorySetOpenPath(&threadContext->dirs, fname, GBAIsROM);
 }
 
 void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname) {

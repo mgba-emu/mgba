@@ -25,4 +25,6 @@ void GBADirectorySetDeinit(struct GBADirectorySet* dirs);
 void GBADirectorySetAttachBase(struct GBADirectorySet* dirs, struct VDir* base);
 void GBADirectorySetDetachBase(struct GBADirectorySet* dirs);
 
+struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
+
 #endif
