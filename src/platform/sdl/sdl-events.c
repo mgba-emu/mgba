@@ -423,7 +423,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLPlayer
 				case SDLK_F8:
 				case SDLK_F9:
 					GBAThreadInterrupt(context);
-					GBASaveState(context, context->stateDir, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					GBASaveState(context, context->dirs.state, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
 					GBAThreadContinue(context);
 					break;
 				default:
@@ -441,7 +441,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLPlayer
 				case SDLK_F8:
 				case SDLK_F9:
 					GBAThreadInterrupt(context);
-					GBALoadState(context, context->stateDir, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					GBALoadState(context, context->dirs.state, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
 					GBAThreadContinue(context);
 					break;
 				default:

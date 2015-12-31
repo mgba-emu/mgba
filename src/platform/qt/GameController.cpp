@@ -110,8 +110,8 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (GBALoadState(context, context->stateDir, 0, SAVESTATE_SCREENSHOT)) {
-			VFile* vf = GBAGetState(context->gba, context->stateDir, 0, true);
+		if (GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
+			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
 			}
@@ -139,7 +139,7 @@ GameController::GameController(QObject* parent)
 			return false;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (!GBASaveState(context, context->stateDir, 0, true)) {
+		if (!GBASaveState(context, context->dirs.state, 0, true)) {
 			return false;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
@@ -317,18 +317,12 @@ void GameController::openGame(bool biosOnly) {
 		m_threadContext.sync.audioWait = m_audioSync;
 	}
 
-	m_threadContext.gameDir = 0;
 	m_threadContext.bootBios = biosOnly;
 	if (biosOnly) {
 		m_threadContext.fname = nullptr;
 	} else {
 		m_threadContext.fname = strdup(m_fname.toUtf8().constData());
-		if (m_dirmode) {
-			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
-			m_threadContext.stateDir = m_threadContext.gameDir;
-		} else {
-			GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
-		}
+		GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
 	}
 
 	if (!m_bios.isNull() && m_useBios) {
@@ -712,7 +706,7 @@ void GameController::loadState(int slot) {
 			controller->m_backupLoadState = new GBASerializedState;
 		}
 		GBASerialize(context->gba, controller->m_backupLoadState);
-		if (GBALoadState(context, context->stateDir, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
+		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
 		}
@@ -725,13 +719,13 @@ void GameController::saveState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, false);
+		VFile* vf = GBAGetState(context->gba, context->dirs.state, controller->m_stateSlot, false);
 		if (vf) {
 			controller->m_backupSaveState.resize(vf->size(vf));
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		GBASaveState(context, context->stateDir, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
+		GBASaveState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
 	});
 }
 
@@ -759,7 +753,7 @@ void GameController::saveBackupState() {
 
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, true);
+		VFile* vf = GBAGetState(context->gba, context->dirs.state, controller->m_stateSlot, true);
 		if (vf) {
 			vf->write(vf, controller->m_backupSaveState.constData(), controller->m_backupSaveState.size());
 			vf->close(vf);

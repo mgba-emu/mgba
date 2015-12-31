@@ -82,10 +82,13 @@ struct VDir* VDirOpen7z(const char* path, int flags);
 
 struct VDir* VDeviceList(void);
 
+void separatePath(const char* path, char* dirname, char* basename, char* extension);
+
 struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix,
                                    int mode);
-struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix,
-                                            const char* infix, const char* suffix, int mode);
+
+struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*));
+struct VFile* VDirFindNextAvailable(struct VDir*, const char* basename, const char* infix, const char* suffix, int mode);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 

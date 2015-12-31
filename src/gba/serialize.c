@@ -198,9 +198,11 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 }
 
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
-	char suffix[5] = { '\0' };
-	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
-	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
+	char basename[PATH_MAX];
+	separatePath(gba->activeFile, 0, basename, 0);
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s.ss%i", basename, slot);
+	return dir->openFile(dir, path, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
 
 #ifdef USE_PNG
@@ -709,7 +711,9 @@ void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
 #ifdef USE_PNG
 	unsigned stride;
 	const void* pixels = 0;
-	struct VFile* vf = VDirOptionalOpenIncrementFile(dir, gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	char basename[PATH_MAX];
+	separatePath(gba->activeFile, 0, basename, 0);
+	struct VFile* vf = VDirFindNextAvailable(dir, basename, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	bool success = false;
 	if (vf) {
 		gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);

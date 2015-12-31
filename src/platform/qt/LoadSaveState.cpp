@@ -170,7 +170,7 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 
 void LoadSaveState::loadState(int slot) {
 	GBAThread* thread = m_controller->thread();
-	VFile* vf = GBAGetState(thread->gba, thread->stateDir, slot, false);
+	VFile* vf = GBAGetState(thread->gba, thread->dirs.state, slot, false);
 	if (!vf) {
 		m_slots[slot - 1]->setText(tr("Empty"));
 		return;
