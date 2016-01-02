@@ -18,6 +18,7 @@ set(USE_LZMA ON CACHE BOOL "Whether or not to enable 7-Zip support")
 set(BUILD_QT ON CACHE BOOL "Build Qt frontend")
 set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
 set(BUILD_LIBRETRO OFF CACHE BOOL "Build libretro core")
+set(BUILD_OPENEMU OFF CACHE BOOL "Build OpenEmu core")
 set(BUILD_PERF OFF CACHE BOOL "Build performance profiling tool")
 set(BUILD_TEST OFF CACHE BOOL "Build testing harness")
 set(BUILD_STATIC OFF CACHE BOOL "Build a static library")
@@ -556,6 +557,21 @@ if(BUILD_LIBRETRO)
 	set_target_properties(${BINARY_NAME}_libretro PROPERTIES PREFIX "" COMPILE_DEFINITIONS "COLOR_16_BIT;COLOR_5_6_5;DISABLE_THREADING;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=2")
 	target_link_libraries(${BINARY_NAME}_libretro ${OS_LIB})
 	install(TARGETS ${BINARY_NAME}_libretro LIBRARY DESTINATION ${LIBDIR} COMPONENT ${BINARY_NAME}_libretro NAMELINK_SKIP)
+endif()
+
+if(BUILD_OPENEMU)
+	find_library(FOUNDATION Foundation)
+	find_library(OPENEMUBASE OpenEmuBase)
+	file(GLOB OE_SRC ${CMAKE_SOURCE_DIR}/src/platform/openemu/*.m)
+	add_library(${BINARY_NAME}-openemu MODULE ${CORE_SRC} ${OE_SRC})
+	set_target_properties(${BINARY_NAME}-openemu PROPERTIES
+		MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/src/platform/openemu/Info.plist.in
+		BUNDLE TRUE
+		BUNDLE_EXTENSION oecoreplugin
+		OUTPUT_NAME ${PROJECT_NAME}EmuCore
+		COMPILE_DEFINITIONS "DISABLE_THREADING;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=2")
+	target_link_libraries(${BINARY_NAME}-openemu ${OS_LIB} ${FOUNDATION} ${OPENEMUBASE})
+	install(TARGETS ${BINARY_NAME}-openemu LIBRARY DESTINATION ${LIBDIR} COMPONENT ${BINARY_NAME}.oecoreplugin NAMELINK_SKIP)
 endif()
 
 if(BUILD_SDL)
