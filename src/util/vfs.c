@@ -173,7 +173,8 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 			dirname[len] = '\0';
 		}
 		path = separatorPoint + 1;
-
+	} else if (dirname) {
+		strcpy(dirname, ".");
 	}
 	if (basename) {
 		size_t len;
