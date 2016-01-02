@@ -11,6 +11,11 @@
 #include <3ds.h>
 #include <malloc.h>
 
+#ifdef _3DS
+// ctrulib already has a type called Thread
+#define Thread CustomThread
+#endif
+
 #define THREAD_ENTRY void
 typedef ThreadFunc ThreadEntry;
 

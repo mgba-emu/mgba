@@ -213,8 +213,9 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	snprintf(out, outLength, "/%s", projectName);
 	mkdir(out, 0777);
 #elif defined(_3DS)
+	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
-	FSUSER_CreateDirectory(0, sdmcArchive, FS_makePath(PATH_CHAR, out));
+	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
 #else
 	getcwd(out, outLength);
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
