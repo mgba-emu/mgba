@@ -38,6 +38,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	ARMInit(context->cpu);
 
 	GBAConfigInit(&context->config, port);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (port) {
 		if (!_logFile) {
 			char logPath[PATH_MAX];
@@ -60,6 +61,9 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		GBAConfigLoad(&context->config);
 		GBAConfigLoadDefaults(&context->config, &opts);
 	}
+#else
+	UNUSED(port);
+#endif
 
 	context->gba->sync = 0;
 	return true;
@@ -70,7 +74,9 @@ void GBAContextDeinit(struct GBAContext* context) {
 	GBADestroy(context->gba);
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigDeinit(&context->config);
+#endif
 	GBADirectorySetDeinit(&context->dirs);
 }
 
@@ -81,15 +87,18 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 	}
 
 	context->fname = path;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (autoloadSave) {
 		char dirname[PATH_MAX];
 		char basename[PATH_MAX];
 		separatePath(context->fname, dirname, basename, 0);
-		// TODO: Remove autoloadSave
 		GBADirectorySetAttachBase(&context->dirs, VDirOpen(dirname));
 		strncat(basename, ".sav", PATH_MAX - strlen(basename) - 1);
 		context->save = context->dirs.save->openFile(context->dirs.save, basename, O_RDWR | O_CREAT);
 	}
+#else
+	UNUSED(autoloadSave);
+#endif
 	return true;
 }
 
@@ -154,7 +163,9 @@ bool GBAContextStart(struct GBAContext* context) {
 		return false;
 	}
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigMap(&context->config, &opts);
+#endif
 
 	if (!context->bios && opts.bios) {
 		GBAContextLoadBIOS(context, opts.bios);
@@ -175,10 +186,14 @@ bool GBAContextStart(struct GBAContext* context) {
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) context->gba->memory.rom;
 	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(GBAConfigGetOverrides(&context->config), &override)) {
+	struct Configuration* overrides = 0;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	overrides = GBAConfigGetOverrides(&context->config);
+	GBAConfigFreeOpts(&opts);
+#endif
+	if (GBAOverrideFind(overrides, &override)) {
 		GBAOverrideApply(context->gba, &override);
 	}
-	GBAConfigFreeOpts(&opts);
 	return true;
 }
 

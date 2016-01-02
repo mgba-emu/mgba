@@ -52,6 +52,7 @@ struct GBAOptions {
 void GBAConfigInit(struct GBAConfig*, const char* port);
 void GBAConfigDeinit(struct GBAConfig*);
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool GBAConfigLoad(struct GBAConfig*);
 bool GBAConfigSave(const struct GBAConfig*);
 bool GBAConfigLoadPath(struct GBAConfig*, const char* path);
@@ -59,6 +60,7 @@ bool GBAConfigSavePath(const struct GBAConfig*, const char* path);
 
 void GBAConfigMakePortable(const struct GBAConfig*);
 void GBAConfigDirectory(char* out, size_t outLength);
+#endif
 
 const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);
 bool GBAConfigGetIntValue(const struct GBAConfig*, const char* key, int* value);

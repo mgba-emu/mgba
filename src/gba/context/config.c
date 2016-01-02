@@ -132,6 +132,7 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 	free(config->port);
 }
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
@@ -231,6 +232,7 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	mkdir(out, 0755);
 #endif
 }
+#endif
 
 const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
 	return _lookupValue(config, key);
