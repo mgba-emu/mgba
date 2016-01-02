@@ -92,7 +92,7 @@ struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* 
 		}
 	} else {
 		file = VFileOpen(path, O_RDONLY);
-		if (!filter(file)) {
+		if (file && !filter(file)) {
 			file->close(file);
 			file = 0;
 		}
