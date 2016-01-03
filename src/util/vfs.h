@@ -67,6 +67,8 @@ struct VFile* VFileOpenFD(const char* path, int flags);
 struct VFile* VFileFOpen(const char* path, const char* mode);
 struct VFile* VFileFromFD(int fd);
 struct VFile* VFileFromMemory(void* mem, size_t size);
+struct VFile* VFileFromConstMemory(const void* mem, size_t size);
+struct VFile* VFileMemChunk(const void* mem, size_t size);
 struct VFile* VFileFromFILE(FILE* file);
 
 struct VDir* VDirOpen(const char* path);
