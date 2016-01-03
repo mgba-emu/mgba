@@ -209,7 +209,7 @@
 - (NSData *)serializeStateWithError:(NSError **)outError
 {
 	struct VFile* vf = VFileMemChunk(nil, 0);
-	if (!GBASaveStateNamed(context.gba, vf, 0)) {
+	if (!GBASaveStateNamed(context.gba, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return nil;
@@ -225,7 +225,7 @@
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
 	struct VFile* vf = VFileFromConstMemory(state.bytes, state.length);
-	if (!GBALoadStateNamed(context.gba, vf, 0)) {
+	if (!GBALoadStateNamed(context.gba, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return NO;
