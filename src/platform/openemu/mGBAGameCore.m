@@ -93,10 +93,7 @@
 
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
-	UNUSED(error);
-
 	NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-	NSLog(batterySavesDirectory);
 	[[NSFileManager defaultManager] createDirectoryAtURL:[NSURL fileURLWithPath:batterySavesDirectory]
 	                                withIntermediateDirectories:YES
 	                                attributes:nil
@@ -107,9 +104,14 @@
 	context.dirs.save = VDirOpen([batterySavesDirectory UTF8String]);
 
 	if (!GBAContextLoadROM(&context, [path UTF8String], true)) {
+		*error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadROMError userInfo:nil];
 		return NO;
 	}
-	GBAContextStart(&context);
+
+	if (!GBAContextStart(&context)) {
+		*error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotStartCoreError userInfo:nil];
+		return NO;
+	}
 	return YES;
 }
 
@@ -213,10 +215,13 @@
 
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
-	UNUSED(outError);
 	// TODO VFileFromConstMemory
 	struct VFile* vf = VFileFromMemory((void*) state.bytes, state.length);
-	return GBALoadStateNamed(context.gba, vf, 0);
+	if (!GBALoadStateNamed(context.gba, vf, 0)) {
+		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
+		return NO;
+	}
+	return YES;
 }
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
