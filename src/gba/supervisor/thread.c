@@ -24,7 +24,9 @@
 
 static const float _defaultFPSTarget = 60.f;
 
-bool _reloadDirectories(struct GBAThread* threadContext) {
+#ifndef DISABLE_THREADING
+
+static bool _reloadDirectories(struct GBAThread* threadContext) {
 	GBADirectorySetDetachBase(&threadContext->dirs);
 
 	char basename[PATH_MAX];
@@ -55,7 +57,6 @@ bool _reloadDirectories(struct GBAThread* threadContext) {
 	return true;
 }
 
-#ifndef DISABLE_THREADING
 #ifdef USE_PTHREADS
 static pthread_key_t _contextKey;
 static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
