@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
+	<string>${PROJECT_NAME}</string>
 	<key>CFBundleIconFile</key>
 	<string>mGBA</string>
 	<key>CFBundleIdentifier</key>
@@ -25,6 +25,8 @@
 	<key>OEGameCoreOptions</key>
 	<dict>
 		<key>openemu.system.gba</key>
+		<dict>
+		</dict>
 	</dict>
 	<key>OEGameCorePlayerCount</key>
 	<string>1</string>

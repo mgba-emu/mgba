@@ -94,6 +94,18 @@
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
 	UNUSED(error);
+
+	NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
+	NSLog(batterySavesDirectory);
+	[[NSFileManager defaultManager] createDirectoryAtURL:[NSURL fileURLWithPath:batterySavesDirectory]
+	                                withIntermediateDirectories:YES
+	                                attributes:nil
+	                                error:nil];
+	if (context.dirs.save) {
+		context.dirs.save->close(context.dirs.save);
+	}
+	context.dirs.save = VDirOpen([batterySavesDirectory UTF8String]);
+
 	if (!GBAContextLoadROM(&context, [path UTF8String], true)) {
 		return NO;
 	}
@@ -124,7 +136,6 @@
 
 - (void)stopEmulation
 {
-	NSLog(@"Stopping");
 	GBAContextStop(&context);
 	[super stopEmulation];
 }
