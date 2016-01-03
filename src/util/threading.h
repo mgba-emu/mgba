@@ -22,7 +22,12 @@
 #endif
 #endif
 #ifdef DISABLE_THREADING
+#ifdef _3DS
+// ctrulib already has a type called Thread
+#include <3ds/thread.h>
+#else
 typedef void* Thread;
+#endif
 typedef void* Mutex;
 typedef void* Condition;
 
