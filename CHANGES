@@ -11,6 +11,7 @@ Features:
  - Savestates now store creation timestamps
  - Key autofire
  - Libretro: Allow blocking opposing directional input
+ - OpenEmu core for OS X
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
@@ -22,6 +23,7 @@ Bugfixes:
  - GBA Hardware: Fix GPIO on big endian
  - Util: Fix excessive memory allocation when decoding a PNG
  - GBA: Fix Iridion II savetype
+ - Libretro: Fix aspect ratio
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
