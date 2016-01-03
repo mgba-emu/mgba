@@ -50,6 +50,8 @@ GameController::GameController(QObject* parent)
 	, m_wasPaused(false)
 	, m_audioChannels{ true, true, true, true, true, true }
 	, m_videoLayers{ true, true, true, true, true }
+	, m_autofire{}
+	, m_autofireStatus{}
 	, m_inputController(nullptr)
 	, m_multiplayer(nullptr)
 	, m_stateSlot(1)
@@ -108,8 +110,8 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (GBALoadState(context, context->stateDir, 0)) {
-			VFile* vf = GBAGetState(context->gba, context->stateDir, 0, true);
+		if (GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
+			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
 			}
@@ -137,7 +139,7 @@ GameController::GameController(QObject* parent)
 			return false;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (!GBASaveState(context, context->stateDir, 0, true)) {
+		if (!GBASaveState(context, context->dirs.state, 0, true)) {
 			return false;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
@@ -204,6 +206,7 @@ GameController::GameController(QObject* parent)
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
+	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
 }
 
 GameController::~GameController() {
@@ -314,18 +317,12 @@ void GameController::openGame(bool biosOnly) {
 		m_threadContext.sync.audioWait = m_audioSync;
 	}
 
-	m_threadContext.gameDir = 0;
 	m_threadContext.bootBios = biosOnly;
 	if (biosOnly) {
 		m_threadContext.fname = nullptr;
 	} else {
 		m_threadContext.fname = strdup(m_fname.toUtf8().constData());
-		if (m_dirmode) {
-			m_threadContext.gameDir = VDirOpen(m_threadContext.fname);
-			m_threadContext.stateDir = m_threadContext.gameDir;
-		} else {
-			GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
-		}
+		GBAThreadLoadROM(&m_threadContext, m_threadContext.fname);
 	}
 
 	if (!m_bios.isNull() && m_useBios) {
@@ -474,7 +471,15 @@ void GameController::setPaused(bool paused) {
 }
 
 void GameController::reset() {
+	if (!m_gameOpen) {
+		return;
+	}
+	bool wasPaused = isPaused();
+	setPaused(false);
 	GBAThreadReset(&m_threadContext);
+	if (wasPaused) {
+		setPaused(true);
+	}
 }
 
 void GameController::threadInterrupt() {
@@ -588,12 +593,20 @@ void GameController::clearKeys() {
 	updateKeys();
 }
 
+void GameController::setAutofire(int key, bool enable) {
+	if (key >= GBA_KEY_MAX || key < 0) {
+		return;
+	}
+	m_autofire[key] = enable;
+	m_autofireStatus[key] = 0;
+}
+
 void GameController::setAudioBufferSamples(int samples) {
 	if (m_audioProcessor) {
 		threadInterrupt();
 		redoSamples(samples);
 		threadContinue();
-		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Q_ARG(int, samples));
+		QMetaObject::invokeMethod(m_audioProcessor, "setBufferSamples", Qt::BlockingQueuedConnection, Q_ARG(int, samples));
 	}
 }
 
@@ -693,7 +706,7 @@ void GameController::loadState(int slot) {
 			controller->m_backupLoadState = new GBASerializedState;
 		}
 		GBASerialize(context->gba, controller->m_backupLoadState);
-		if (GBALoadState(context, context->stateDir, controller->m_stateSlot)) {
+		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
 		}
@@ -706,13 +719,13 @@ void GameController::saveState(int slot) {
 	}
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, false);
+		VFile* vf = GBAGetState(context->gba, context->dirs.state, controller->m_stateSlot, false);
 		if (vf) {
 			controller->m_backupSaveState.resize(vf->size(vf));
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		GBASaveState(context, context->stateDir, controller->m_stateSlot, true);
+		GBASaveState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
 	});
 }
 
@@ -740,7 +753,7 @@ void GameController::saveBackupState() {
 
 	GBARunOnThread(&m_threadContext, [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		VFile* vf = GBAGetState(context->gba, context->stateDir, controller->m_stateSlot, true);
+		VFile* vf = GBAGetState(context->gba, context->dirs.state, controller->m_stateSlot, true);
 		if (vf) {
 			vf->write(vf, controller->m_backupSaveState.constData(), controller->m_backupSaveState.size());
 			vf->close(vf);
@@ -970,4 +983,19 @@ void GameController::pollEvents() {
 
 	m_activeButtons = m_inputController->pollEvents();
 	updateKeys();
+}
+
+void GameController::updateAutofire() {
+	// TODO: Move all key events onto the CPU thread...somehow
+	for (int k = 0; k < GBA_KEY_MAX; ++k) {
+		if (!m_autofire[k]) {
+			continue;
+		}
+		m_autofireStatus[k] ^= 1;
+		if (m_autofireStatus[k]) {
+			keyPressed(k);
+		} else {
+			keyReleased(k);
+		}
+	}
 }

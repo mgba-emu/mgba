@@ -44,6 +44,16 @@ bool DisplayGL::supportsShaders() const {
 	return m_painter->supportsShaders();
 }
 
+VideoShader* DisplayGL::shaders() {
+	VideoShader* shaders = nullptr;
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "shaders", Qt::BlockingQueuedConnection, Q_RETURN_ARG(VideoShader*, shaders));
+	} else {
+		shaders = m_painter->shaders();
+	}
+	return shaders;
+}
+
 void DisplayGL::startDrawing(GBAThread* thread) {
 	if (m_drawThread) {
 		return;
@@ -138,7 +148,15 @@ void DisplayGL::framePosted(const uint32_t* buffer) {
 }
 
 void DisplayGL::setShaders(struct VDir* shaders) {
-	QMetaObject::invokeMethod(m_painter, "setShaders", Q_ARG(struct VDir*, shaders));
+	if (m_drawThread) {
+		QMetaObject::invokeMethod(m_painter, "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
+	} else {
+		m_painter->setShaders(shaders);
+	}
+}
+
+void DisplayGL::clearShaders() {
+	QMetaObject::invokeMethod(m_painter, "clearShaders");
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
@@ -158,8 +176,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 	, m_active(false)
 	, m_started(false)
 	, m_context(nullptr)
-	, m_shaders(nullptr)
-	, m_nShaders(0)
+	, m_shader{}
 	, m_backend(nullptr)
 	, m_messagePainter(nullptr)
 {
@@ -191,6 +208,19 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
 		painter->m_gl->swapBuffers();
 	};
+
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	if (m_supportsShaders) {
+		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<GBAGLES2Context*>(m_backend)->initialShader);
+	}
+#endif
+	m_gl->doneCurrent();
+
 	m_backend->user = this;
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
@@ -207,6 +237,17 @@ PainterGL::~PainterGL() {
 	for (auto item : m_free) {
 		delete[] item;
 	}
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	if (m_shader.passes) {
+		GBAGLES2ShaderFree(&m_shader);
+	}
+#endif
+	m_backend->deinit(m_backend);
+	m_gl->doneCurrent();
 	delete m_backend;
 	m_backend = nullptr;
 }
@@ -245,11 +286,10 @@ void PainterGL::start() {
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	if (m_shaders) {
-		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), m_shaders, m_nShaders);
+	if (m_supportsShaders && m_shader.passes) {
+		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), static_cast<GBAGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 #endif
 
@@ -294,7 +334,6 @@ void PainterGL::stop() {
 	dequeueAll();
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);
-	m_backend->deinit(m_backend);
 	m_gl->doneCurrent();
 	m_gl->context()->moveToThread(m_gl->thread());
 	moveToThread(m_gl->thread());
@@ -366,13 +405,35 @@ void PainterGL::setShaders(struct VDir* dir) {
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	if (m_shaders) {
+	if (m_shader.passes) {
 		GBAGLES2ShaderDetach(reinterpret_cast<GBAGLES2Context*>(m_backend));
+		GBAGLES2ShaderFree(&m_shader);
 	}
-	GBAGLES2ShaderLoad(&m_shaders, &m_nShaders, nullptr, dir);
+	GBAGLES2ShaderLoad(&m_shader, dir);
 	if (m_started) {
-		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), m_shaders, m_nShaders);
+		GBAGLES2ShaderAttach(reinterpret_cast<GBAGLES2Context*>(m_backend), static_cast<GBAGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 	m_gl->doneCurrent();
 #endif
+}
+
+void PainterGL::clearShaders() {
+	if (!supportsShaders()) {
+		return;
+	}
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	if (m_shader.passes) {
+		GBAGLES2ShaderDetach(reinterpret_cast<GBAGLES2Context*>(m_backend));
+		GBAGLES2ShaderFree(&m_shader);
+	}
+	m_gl->doneCurrent();
+#endif
+}
+
+VideoShader* PainterGL::shaders() {
+	return &m_shader;
 }

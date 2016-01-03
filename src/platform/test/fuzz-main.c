@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 	}
 	if (savestate) {
 		if (!savestateOverlay) {
-			GBALoadStateNamed(context.gba, savestate);
+			GBALoadStateNamed(context.gba, savestate, 0);
 		} else {
 			struct GBASerializedState* state = GBAAllocateState();
 			savestate->read(savestate, state, sizeof(*state));

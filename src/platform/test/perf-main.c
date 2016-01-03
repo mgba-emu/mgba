@@ -238,7 +238,7 @@ static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, i
 }
 
 static void _loadSavestate(struct GBAThread* context) {
-	GBALoadStateNamed(context->gba, _savestate);
+	GBALoadStateNamed(context->gba, _savestate, 0);
 	_savestate->close(_savestate);
 	_savestate = 0;
 }

@@ -84,18 +84,35 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 
 	struct GBAGLES2Uniform* uniforms = malloc(sizeof(struct GBAGLES2Uniform) * 3);
 	uniforms[0].name = "gamma";
+	uniforms[0].readableName = "Gamma";
 	uniforms[0].type = GL_FLOAT;
 	uniforms[0].value.f = 1.0f;
+	uniforms[0].min.f = 0.1f;
+	uniforms[0].max.f = 3.0f;
 	uniforms[1].name = "scale";
+	uniforms[1].readableName = "Scale";
 	uniforms[1].type = GL_FLOAT_VEC3;
 	uniforms[1].value.fvec3[0] = 1.0f;
 	uniforms[1].value.fvec3[1] = 1.0f;
 	uniforms[1].value.fvec3[2] = 1.0f;
+	uniforms[1].min.fvec3[0] = -1.0f;
+	uniforms[1].min.fvec3[1] = -1.0f;
+	uniforms[1].min.fvec3[2] = -1.0f;
+	uniforms[1].max.fvec3[0] = 2.0f;
+	uniforms[1].max.fvec3[1] = 2.0f;
+	uniforms[1].max.fvec3[2] = 2.0f;
 	uniforms[2].name = "bias";
+	uniforms[2].readableName = "Bias";
 	uniforms[2].type = GL_FLOAT_VEC3;
 	uniforms[2].value.fvec3[0] = 0.0f;
 	uniforms[2].value.fvec3[1] = 0.0f;
 	uniforms[2].value.fvec3[2] = 0.0f;
+	uniforms[2].min.fvec3[0] = -1.0f;
+	uniforms[2].min.fvec3[1] = -1.0f;
+	uniforms[2].min.fvec3[2] = -1.0f;
+	uniforms[2].max.fvec3[0] = 1.0f;
+	uniforms[2].max.fvec3[1] = 1.0f;
+	uniforms[2].max.fvec3[2] = 1.0f;
 	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, uniforms, 3);
 	GBAGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, 0, 0);
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
@@ -364,6 +381,7 @@ void GBAGLES2ShaderDetach(struct GBAGLES2Context* context) {
 		return;
 	}
 	context->shaders = 0;
+	context->nShaders = 0;
 }
 
 static bool _lookupIntValue(const struct Configuration* config, const char* section, const char* key, int* out) {
@@ -421,7 +439,9 @@ DEFINE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
 
 static void _uniformHandler(const char* sectionName, void* user) {
 	struct GBAGLES2UniformList* uniforms = user;
-	if (strstr(sectionName, "uniform.") != sectionName) {
+	unsigned passId;
+	int sentinel;
+	if (sscanf(sectionName, "pass.%u.uniform.%n", &passId, &sentinel) < 1) {
 		return;
 	}
 	struct GBAGLES2Uniform* u = GBAGLES2UniformListAppend(uniforms);
@@ -639,8 +659,15 @@ static void _loadValue(struct Configuration* description, const char* name, GLen
 	}
 }
 
-static bool _loadUniform(struct Configuration* description, struct GBAGLES2Uniform* uniform) {
+static bool _loadUniform(struct Configuration* description, size_t pass, struct GBAGLES2Uniform* uniform) {
+	unsigned passId;
+	if (sscanf(uniform->name, "pass.%u.uniform.", &passId) < 1 || passId != pass) {
+		return false;
+	}
 	const char* type = ConfigurationGetValue(description, uniform->name, "type");
+	if (!type) {
+		return false;
+	}
 	if (!strcmp(type, "float")) {
 		uniform->type = GL_FLOAT;
 	} else if (!strcmp(type, "float2")) {
@@ -677,17 +704,17 @@ static bool _loadUniform(struct Configuration* description, struct GBAGLES2Unifo
 	_loadValue(description, uniform->name, uniform->type, "default", &uniform->value);
 	_loadValue(description, uniform->name, uniform->type, "min", &uniform->min);
 	_loadValue(description, uniform->name, uniform->type, "max", &uniform->max);
-	uniform->name = strdup(uniform->name + strlen("uniform."));
 	const char* readable = ConfigurationGetValue(description, uniform->name, "readableName");
 	if (readable) {
 		uniform->readableName = strdup(readable);
 	} else {
 		uniform->readableName = 0;
 	}
+	uniform->name = strdup(strstr(uniform->name, "uniform.") + strlen("uniform."));
 	return true;
 }
 
-bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struct GBAGLES2ShaderMetadata* metadata, struct VDir* dir) {
+bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	struct VFile* manifest = dir->openFile(dir, "manifest.ini", O_RDONLY);
 	if (!manifest) {
 		return false;
@@ -702,20 +729,6 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 			success = false;
 		}
 		if (success) {
-			if (metadata) {
-				metadata->name = ConfigurationGetValue(&description, "shader", "name");
-				if (metadata->name) {
-					metadata->name = strdup(metadata->name);
-				}
-				metadata->author = ConfigurationGetValue(&description, "shader", "author");
-				if (metadata->author) {
-					metadata->author = strdup(metadata->author);
-				}
-				metadata->description = ConfigurationGetValue(&description, "shader", "description");
-				if (metadata->description) {
-					metadata->description = strdup(metadata->description);
-				}
-			}
 			struct GBAGLES2Shader* shaderBlock = malloc(sizeof(struct GBAGLES2Shader) * inShaders);
 			int n;
 			for (n = 0; n < inShaders; ++n) {
@@ -767,8 +780,8 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 				size_t u;
 				for (u = 0; u < GBAGLES2UniformListSize(&uniformVector); ++u) {
 					struct GBAGLES2Uniform* uniform = GBAGLES2UniformListGetPointer(&uniformVector, u);
-					if (!_loadUniform(&description, uniform)) {
-						GBAGLES2UniformListUnshift(&uniformVector, u, 1);
+					if (!_loadUniform(&description, n, uniform)) {
+						GBAGLES2UniformListShift(&uniformVector, u, 1);
 						--u;
 					}
 				}
@@ -792,8 +805,20 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 				free(vssrc);
 			}
 			if (success) {
-				*nShaders = inShaders;
-				*shaders = shaderBlock;
+				shader->nPasses = inShaders;
+				shader->passes = shaderBlock;
+				shader->name = ConfigurationGetValue(&description, "shader", "name");
+				if (shader->name) {
+					shader->name = strdup(shader->name);
+				}
+				shader->author = ConfigurationGetValue(&description, "shader", "author");
+				if (shader->author) {
+					shader->author = strdup(shader->author);
+				}
+				shader->description = ConfigurationGetValue(&description, "shader", "description");
+				if (shader->description) {
+					shader->description = strdup(shader->description);
+				}
 			} else {
 				inShaders = n;
 				for (n = 0; n < inShaders; ++n) {
@@ -806,9 +831,16 @@ bool GBAGLES2ShaderLoad(struct GBAGLES2Shader** shaders, size_t* nShaders, struc
 	return success;
 }
 
-void GBAGLES2ShaderFree(struct GBAGLES2Shader* shaders, size_t nShaders) {
+void GBAGLES2ShaderFree(struct VideoShader* shader) {
+	free((void*) shader->name);
+	free((void*) shader->author);
+	free((void*) shader->description);
+	shader->name = 0;
+	shader->author = 0;
+	shader->description = 0;
+	struct GBAGLES2Shader* shaders = shader->passes;
 	size_t n;
-	for (n = 0; n < nShaders; ++n) {
+	for (n = 0; n < shader->nPasses; ++n) {
 		GBAGLES2ShaderDeinit(&shaders[n]);
 		size_t u;
 		for (u = 0; u < shaders[n].nUniforms; ++u) {
@@ -817,4 +849,6 @@ void GBAGLES2ShaderFree(struct GBAGLES2Shader* shaders, size_t nShaders) {
 		}
 	}
 	free(shaders);
+	shader->passes = 0;
+	shader->nPasses = 0;
 }

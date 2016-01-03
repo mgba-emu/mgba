@@ -7,7 +7,9 @@
 #define QGBA_KEY_EDITOR
 
 #include "GamepadAxisEvent.h"
+
 #include <QLineEdit>
+#include <QTimer>
 
 namespace QGBA {
 
@@ -41,12 +43,15 @@ protected:
 	virtual bool event(QEvent* event) override;
 
 private:
+	static const int KEY_TIME = 2000;
+
 	void updateButtonText();
 
 	int m_key;
 	int m_axis;
 	bool m_button;
 	GamepadAxisEvent::Direction m_direction;
+	QTimer m_lastKey;
 };
 
 }

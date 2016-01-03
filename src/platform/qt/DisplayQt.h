@@ -22,7 +22,8 @@ public:
 	DisplayQt(QWidget* parent = nullptr);
 
 	bool isDrawing() const override { return m_isDrawing; }
-	bool supportsShaders() const override { return 0; }
+	bool supportsShaders() const override { return false; }
+	VideoShader* shaders() override { return nullptr; }
 
 public slots:
 	void startDrawing(GBAThread* context) override;
@@ -34,6 +35,7 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override {}
+	void clearShaders() override {}
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;

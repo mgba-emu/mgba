@@ -26,17 +26,22 @@
 
 extern char* fake_heap_start;
 extern char* fake_heap_end;
-u32 __linear_heap;
-u32 __heapBase;
-static u32 __heap_size = 0x02400000;
-static u32 __linear_heap_size = 0x01400000;
+extern u32 __ctru_linear_heap;
+extern u32 __ctru_heap;
+extern u32 __ctru_heap_size;
+extern u32 __ctru_linear_heap_size;
+static u32 __custom_heap_size = 0x02400000;
+static u32 __custom_linear_heap_size = 0x01400000;
 
 extern void (*__system_retAddr)(void);
 
-void __destroy_handle_list(void);
+void envDestroyHandles(void);
+
 void __appExit();
 
 void __libc_fini_array(void);
+
+Result __sync_fini(void) __attribute__((weak));
 
 uint32_t* romBuffer;
 size_t romBufferSize;
@@ -58,36 +63,16 @@ bool allocateRomBuffer(void) {
 void __system_allocateHeaps() {
 	u32 tmp=0;
 
+	__ctru_heap_size = __custom_heap_size;
+	__ctru_linear_heap_size = __custom_linear_heap_size;
+
 	// Allocate the application heap
-	__heapBase = 0x08000000;
-	svcControlMemory(&tmp, __heapBase, 0x0, __heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE);
+	__ctru_heap = 0x08000000;
+	svcControlMemory(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE);
 
 	// Allocate the linear heap
-	svcControlMemory(&__linear_heap, 0x0, 0x0, __linear_heap_size, MEMOP_ALLOC_LINEAR, MEMPERM_READ | MEMPERM_WRITE);
+	svcControlMemory(&__ctru_linear_heap, 0x0, 0x0, __ctru_linear_heap_size, MEMOP_ALLOC_LINEAR, MEMPERM_READ | MEMPERM_WRITE);
 	// Set up newlib heap
-	fake_heap_start = (char*)__heapBase;
-	fake_heap_end = fake_heap_start + __heap_size;
-}
-
-void __attribute__((noreturn)) __libctru_exit(int rc)
-{
-	UNUSED(rc);
-
-	u32 tmp=0;
-
-	// Unmap the linear heap
-	svcControlMemory(&tmp, __linear_heap, 0x0, __linear_heap_size, MEMOP_FREE, 0x0);
-
-	// Unmap the application heap
-	svcControlMemory(&tmp, __heapBase, 0x0, __heap_size, MEMOP_FREE, 0x0);
-
-	// Close some handles
-	__destroy_handle_list();
-
-	// Jump to the loader if it provided a callback
-	if (__system_retAddr)
-		__system_retAddr();
-
-	// Since above did not jump, end this process
-	svcExitProcess();
+	fake_heap_start = (char*)__ctru_heap;
+	fake_heap_end = fake_heap_start + __ctru_heap_size;
 }

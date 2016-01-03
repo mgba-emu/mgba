@@ -4,14 +4,17 @@ find_file(NIDDB db.json PATHS ${VITASDK} ${VITASDK}/bin ${VITASDK}/share)
 find_file(EXTRADB extra.json PATHS ${VITASDK}${VITASDK}/bin ${VITASDK}/share)
 find_program(STRIP ${cross_prefix}strip)
 
+set(OS_DEFINES IOAPI_NO_64)
+set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
+
 file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/psp2/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})
 
-list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
-set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
+list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
+set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 
-set(OS_LIB -lvita2d -lSceCtrl_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceMotion_stub -lScePower_stub -lSceTouch_stub -lSceCommonDialog_stub -lpng -lz -l${M_LIBRARY})
+set(OS_LIB -lvita2d -lSceCtrl_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceMotion_stub -lScePower_stub -lSceTouch_stub -lSceCommonDialog_stub -l${M_LIBRARY})
 set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)

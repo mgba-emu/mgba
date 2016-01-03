@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <3ds.h>
+#include <3ds/gpu/gpu.h>
+#include <3ds/gpu/gx.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -42,57 +44,12 @@ static int pendingEvents = 0;
 
 static const struct ctrTexture* activeTexture = NULL;
 
-static u32 _f24FromFloat(float f) {
-	u32 i;
-	memcpy(&i, &f, 4);
-
-	u32 mantissa = (i << 9) >>  9;
-	s32 exponent = (i << 1) >> 24;
-	u32 sign     = (i << 0) >> 31;
-
-	// Truncate mantissa
-	mantissa >>= 7;
-
-	// Re-bias exponent
-	exponent = exponent - 127 + 63;
-	if (exponent < 0) {
-		// Underflow: flush to zero
-		return sign << 23;
-	} else if (exponent > 0x7F) {
-		// Overflow: saturate to infinity
-		return sign << 23 | 0x7F << 16;
-	}
-
-	return sign << 23 | exponent << 16 | mantissa;
-}
-
-static u32 _f31FromFloat(float f) {
-	u32 i;
-	memcpy(&i, &f, 4);
-
-	u32 mantissa = (i << 9) >>  9;
-	s32 exponent = (i << 1) >> 24;
-	u32 sign     = (i << 0) >> 31;
-
-	// Re-bias exponent
-	exponent = exponent - 127 + 63;
-	if (exponent < 0) {
-		// Underflow: flush to zero
-		return sign << 30;
-	} else if (exponent > 0x7F) {
-		// Overflow: saturate to infinity
-		return sign << 30 | 0x7F << 23;
-	}
-
-	return sign << 30 | exponent << 23 | mantissa;
-}
-
 void ctrClearPending(int events) {
 	int toClear = events & pendingEvents;
-	if (toClear & (1 << GSPEVENT_PSC0)) {
+	if (toClear & (1 << GSPGPU_EVENT_PSC0)) {
 		gspWaitForPSC0();
 	}
-	if (toClear & (1 << GSPEVENT_PPF)) {
+	if (toClear & (1 << GSPGPU_EVENT_PPF)) {
 		gspWaitForPPF();
 	}
 	pendingEvents ^= toClear;
@@ -103,39 +60,39 @@ static void _GPU_SetFramebuffer(intptr_t colorBuffer, intptr_t depthBuffer, u16 
 	u32 buf[4];
 
 	// Unknown
-	GPUCMD_AddWrite(GPUREG_0111, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_0110, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 0x00000001);
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 0x00000001);
 
 	// Set depth/color buffer address and dimensions
 	buf[0] = depthBuffer >> 3;
 	buf[1] = colorBuffer >> 3;
 	buf[2] = (0x01) << 24 | ((h-1) & 0xFFF) << 12 | (w & 0xFFF) << 0;
 	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHBUFFER_LOC, buf, 3);
-	GPUCMD_AddWrite(GPUREG_006E, buf[2]);
+	GPUCMD_AddWrite(GPUREG_RENDERBUF_DIM, buf[2]);
 
 	// Set depth/color buffer pixel format
 	GPUCMD_AddWrite(GPUREG_DEPTHBUFFER_FORMAT, 3 /* D248S */ );
 	GPUCMD_AddWrite(GPUREG_COLORBUFFER_FORMAT, 0 /* RGBA8 */ << 16 | 2 /* Unknown */);
-	GPUCMD_AddWrite(GPUREG_011B, 0); // Unknown
+	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_BLOCK32, 0); // Unknown
 
 	// Enable color/depth buffers
 	buf[0] = colorBuffer != 0 ? 0xF : 0x0;
 	buf[1] = buf[0];
 	buf[2] = depthBuffer != 0 ? 0x2 : 0x0;
 	buf[3] = buf[2];
-	GPUCMD_AddIncrementalWrites(GPUREG_0112, buf, 4);
+	GPUCMD_AddIncrementalWrites(GPUREG_COLORBUFFER_READ, buf, 4);
 }
 
 static void _GPU_SetViewportEx(u16 x, u16 y, u16 w, u16 h) {
 	u32 buf[4];
 
-	buf[0] = _f24FromFloat(w / 2.0f);
-	buf[1] = _f31FromFloat(2.0f / w) << 1;
-	buf[2] = _f24FromFloat(h / 2.0f);
-	buf[3] = _f31FromFloat(2.0f / h) << 1;
-	GPUCMD_AddIncrementalWrites(GPUREG_0041, buf, 4);
+	buf[0] = f32tof24(w / 2.0f);
+	buf[1] = f32tof31(2.0f / w) << 1;
+	buf[2] = f32tof24(h / 2.0f);
+	buf[3] = f32tof31(2.0f / h) << 1;
+	GPUCMD_AddIncrementalWrites(GPUREG_VIEWPORT_WIDTH, buf, 4);
 
-	GPUCMD_AddWrite(GPUREG_0068, (y & 0xFFFF) << 16 | (x & 0xFFFF) << 0);
+	GPUCMD_AddWrite(GPUREG_VIEWPORT_XY, (y & 0xFFFF) << 16 | (x & 0xFFFF) << 0);
 
 	buf[0] = 0;
 	buf[1] = 0;
@@ -259,7 +216,7 @@ void ctrGpuBeginFrame(int screen) {
 		fw = 320;
 	}
 
-	_GPU_SetFramebuffer(osConvertVirtToPhys((u32)gpuColorBuffer[screen]), 0, 240, fw);
+	_GPU_SetFramebuffer(osConvertVirtToPhys(gpuColorBuffer[screen]), 0, 240, fw);
 }
 
 void ctrGpuBeginDrawing(void) {
@@ -282,8 +239,8 @@ void ctrGpuBeginDrawing(void) {
 	GPU_SetAlphaTest(false, GPU_ALWAYS, 0);
 
 	// Unknown
-	GPUCMD_AddMaskedWrite(GPUREG_0062, 0x1, 0);
-	GPUCMD_AddWrite(GPUREG_0118, 0);
+	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 0x1, 0);
+	GPUCMD_AddWrite(GPUREG_EARLYDEPTH_TEST2, 0);
 
 	GPU_SetTexEnv(0,
 			GPU_TEVSOURCES(GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0), // RGB
@@ -299,7 +256,7 @@ void ctrGpuBeginDrawing(void) {
 	_setDummyTexEnv(5);
 
 	// Configure vertex attribute format
-	u32 bufferOffsets[] = { osConvertVirtToPhys((u32)ctrVertexBuffer) - VRAM_BASE };
+	u32 bufferOffsets[] = { osConvertVirtToPhys(ctrVertexBuffer) - VRAM_BASE };
 	u64 arrayTargetAttributes[] = { 0x210 };
 	u8 numAttributesInArray[] = { 3 };
 	GPU_SetAttributeBuffers(
@@ -332,29 +289,29 @@ void ctrGpuEndFrame(int screen, void* outputFramebuffer, int w, int h) {
 
 	const u32 GX_CROP_INPUT_LINES = (1 << 2);
 
-	ctrClearPending(1 << GSPEVENT_PSC0);
-	ctrClearPending(1 << GSPEVENT_PPF);
+	ctrClearPending(1 << GSPGPU_EVENT_PSC0);
+	ctrClearPending(1 << GSPGPU_EVENT_PPF);
 
-	GX_SetDisplayTransfer(NULL,
+	GX_DisplayTransfer(
 			colorBuffer,       GX_BUFFER_DIM(240, fw),
 			outputFramebuffer, GX_BUFFER_DIM(h, w),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
 				GX_CROP_INPUT_LINES);
-	pendingEvents |= (1 << GSPEVENT_PPF);
+	pendingEvents |= (1 << GSPGPU_EVENT_PPF);
 }
 
 void ctrGpuEndDrawing(void) {
-	ctrClearPending(1 << GSPEVENT_PPF);
+	ctrClearPending(1 << GSPGPU_EVENT_PPF);
 	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPEVENT_VBlank0, false);
+	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
 
 	void* gpuColorBuffer0End = (char*)gpuColorBuffer[0] + 240 * 400 * 4;
 	void* gpuColorBuffer1End = (char*)gpuColorBuffer[1] + 240 * 320 * 4;
-	GX_SetMemoryFill(NULL,
+	GX_MemoryFill(
 		gpuColorBuffer[0], 0x00000000, gpuColorBuffer0End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER,
 		gpuColorBuffer[1], 0x00000000, gpuColorBuffer1End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER);
-	pendingEvents |= 1 << GSPEVENT_PSC0;
+	pendingEvents |= 1 << GSPGPU_EVENT_PSC0;
 }
 
 void ctrSetViewportSize(s16 w, s16 h) {
@@ -382,7 +339,7 @@ void ctrActivateTexture(const struct ctrTexture* texture) {
 
 	GPU_SetTextureEnable(GPU_TEXUNIT0);
 	GPU_SetTexture(
-			GPU_TEXUNIT0, (u32*)osConvertVirtToPhys((u32)texture->data),
+			GPU_TEXUNIT0, (u32*)osConvertVirtToPhys(texture->data),
 			texture->width, texture->height,
 			GPU_TEXTURE_MAG_FILTER(texture->filter) | GPU_TEXTURE_MIN_FILTER(texture->filter) |
 				GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER),
@@ -444,15 +401,15 @@ void ctrFlushBatch(void) {
 		return;
 	}
 
-	ctrClearPending((1 << GSPEVENT_PSC0));
+	ctrClearPending((1 << GSPGPU_EVENT_PSC0));
 
-	GSPGPU_FlushDataCache(NULL, (u8*)ctrVertexBuffer, VERTEX_INDEX_BUFFER_SIZE);
-	GPU_DrawElements(GPU_UNKPRIM, (u32*)(osConvertVirtToPhys((u32)ctrIndexBuffer) - VRAM_BASE), ctrNumQuads * 6);
+	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_INDEX_BUFFER_SIZE);
+	GPU_DrawElements(GPU_GEOMETRY_PRIM, (u32*)(osConvertVirtToPhys(ctrIndexBuffer) - VRAM_BASE), ctrNumQuads * 6);
 
 	GPU_FinishDrawing();
 	GPUCMD_Finalize();
-	GSPGPU_FlushDataCache(NULL, (u8*)gpuCommandList, COMMAND_LIST_LENGTH * sizeof(u32));
-	GPUCMD_FlushAndRun(NULL);
+	GSPGPU_FlushDataCache((u8*)gpuCommandList, COMMAND_LIST_LENGTH * sizeof(u32));
+	GPUCMD_FlushAndRun();
 
 	gspWaitForP3D();
 

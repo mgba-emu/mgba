@@ -15,6 +15,7 @@
 #include "util/vfs.h"
 
 #include <fcntl.h>
+#include <sys/time.h>
 
 #ifdef USE_PNG
 #include "util/png-io.h"
@@ -23,6 +24,17 @@
 #endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
+
+struct GBABundledState {
+	struct GBASerializedState* state;
+	struct GBAExtdata* extdata;
+};
+
+struct GBAExtdataHeader {
+	uint32_t tag;
+	int32_t size;
+	int64_t offset;
+};
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(GBA_SAVESTATE_MAGIC, 0, &state->versionMagic);
@@ -61,8 +73,16 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
-	GBASavedataSerialize(&gba->memory.savedata, state, false);
+	GBASavedataSerialize(&gba->memory.savedata, state);
 
+	struct timeval tv;
+	if (!gettimeofday(&tv, 0)) {
+		uint64_t usec = tv.tv_usec;
+		usec += tv.tv_sec * 1000000LL;
+		STORE_64(usec, 0, &state->creationUsec);
+	} else {
+		state->creationUsec = 0;
+	}
 	state->associatedStreamId = 0;
 	if (gba->rr) {
 		gba->rr->stateSaved(gba->rr, state);
@@ -169,7 +189,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBAIODeserialize(gba, state);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
-	GBASavedataDeserialize(&gba->memory.savedata, state, false);
+	GBASavedataDeserialize(&gba->memory.savedata, state);
 
 	if (gba->rr) {
 		gba->rr->stateLoaded(gba->rr, state);
@@ -178,13 +198,15 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 }
 
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
-	char suffix[5] = { '\0' };
-	snprintf(suffix, sizeof(suffix), ".ss%d", slot);
-	return VDirOptionalOpenFile(dir, gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
+	char basename[PATH_MAX];
+	separatePath(gba->activeFile, 0, basename, 0);
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s.ss%i", basename, slot);
+	return dir->openFile(dir, path, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
 }
 
 #ifdef USE_PNG
-static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
+static bool _savePNGState(struct GBA* gba, struct VFile* vf, struct GBAExtdata* extdata) {
 	unsigned stride;
 	const void* pixels = 0;
 	gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
@@ -215,27 +237,75 @@ static bool _savePNGState(struct GBA* gba, struct VFile* vf) {
 	}
 	PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
 	PNGWriteCustomChunk(png, "gbAs", len, buffer);
+	if (extdata) {
+		uint32_t i;
+		for (i = 1; i < EXTDATA_MAX; ++i) {
+			if (!extdata->data[i].data) {
+				continue;
+			}
+			uLongf len = compressBound(extdata->data[i].size) + sizeof(uint32_t) * 2;
+			uint32_t* data = malloc(len);
+			if (!data) {
+				continue;
+			}
+			STORE_32(i, 0, data);
+			STORE_32(extdata->data[i].size, sizeof(uint32_t), data);
+			compress((Bytef*) (data + 2), &len, extdata->data[i].data, extdata->data[i].size);
+			PNGWriteCustomChunk(png, "gbAx", len + sizeof(uint32_t) * 2, data);
+			free(data);
+		}
+	}
 	PNGWriteClose(png, info);
 	free(buffer);
 	return true;
 }
 
 static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
-	if (strcmp((const char*) chunk->name, "gbAs") != 0) {
+	struct GBABundledState* bundle = png_get_user_chunk_ptr(png);
+	if (!bundle) {
 		return 0;
 	}
-	struct GBASerializedState* state = GBAAllocateState();
-	uLongf len = sizeof(*state);
-	uncompress((Bytef*) state, &len, chunk->data, chunk->size);
-	if (!GBADeserialize(png_get_user_chunk_ptr(png), state)) {
-		GBADeallocateState(state);
-		longjmp(png_jmpbuf(png), 1);
+	if (!strcmp((const char*) chunk->name, "gbAs")) {
+		struct GBASerializedState* state = bundle->state;
+		if (!state) {
+			return 0;
+		}
+		uLongf len = sizeof(*state);
+		uncompress((Bytef*) state, &len, chunk->data, chunk->size);
+		return 1;
 	}
-	GBADeallocateState(state);
-	return 1;
+	if (!strcmp((const char*) chunk->name, "gbAx")) {
+		struct GBAExtdata* extdata = bundle->extdata;
+		if (!extdata) {
+			return 0;
+		}
+		struct GBAExtdataItem item;
+		if (chunk->size < sizeof(uint32_t) * 2) {
+			return 0;
+		}
+		uint32_t tag;
+		LOAD_32(tag, 0, chunk->data);
+		LOAD_32(item.size, sizeof(uint32_t), chunk->data);
+		uLongf len = item.size;
+		if (item.size < 0 || tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
+			return 0;
+		}
+		item.data = malloc(item.size);
+		item.clean = free;
+		if (!item.data) {
+			return 0;
+		}
+		const uint8_t* data = chunk->data;
+		data += sizeof(uint32_t) * 2;
+		uncompress((Bytef*) item.data, &len, data, chunk->size);
+		item.size = len;
+		GBAExtdataPut(extdata, tag, &item);
+		return 1;
+	}
+	return 0;
 }
 
-static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
+static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtdata* extdata) {
 	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 	png_infop info = png_create_info_struct(png);
 	png_infop end = png_create_info_struct(png);
@@ -249,28 +319,40 @@ static bool _loadPNGState(struct GBA* gba, struct VFile* vf) {
 		return false;
 	}
 
-	PNGInstallChunkHandler(png, gba, _loadPNGChunkHandler, "gbAs");
+	struct GBASerializedState* state = GBAAllocateState();
+	struct GBABundledState bundle = {
+		.state = state,
+		.extdata = extdata
+	};
+
+	PNGInstallChunkHandler(png, &bundle, _loadPNGChunkHandler, "gbAs gbAx");
 	bool success = PNGReadHeader(png, info);
 	success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
-	if (success) {
-		gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, pixels);
-		GBASyncForceFrame(gba->sync);
-	}
 
-	free(pixels);
-	return success;
+	if (success) {
+		struct GBAExtdataItem item = {
+			.size = VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4,
+			.data = pixels,
+			.clean = free
+		};
+		GBAExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
+	} else {
+		free(pixels);
+		GBADeallocateState(state);
+		return 0;
+	}
+	return state;
 }
 #endif
 
-#ifndef _3DS
-bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, bool screenshot) {
+bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
 	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
 	if (!vf) {
 		return false;
 	}
-	bool success = GBASaveStateNamed(threadContext->gba, vf, screenshot);
+	bool success = GBASaveStateNamed(threadContext->gba, vf, flags);
 	vf->close(vf);
 	if (success) {
 #if SAVESTATE_DEBUG
@@ -280,7 +362,7 @@ bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, b
 			memcpy(backup, threadContext->gba, sizeof(*backup));
 			memset(threadContext->gba->memory.io, 0, sizeof(threadContext->gba->memory.io));
 			memset(threadContext->gba->timers, 0, sizeof(threadContext->gba->timers));
-			GBALoadStateNamed(threadContext->gba, vf);
+			GBALoadStateNamed(threadContext->gba, vf, flags);
 			if (memcmp(backup, threadContext->gba, sizeof(*backup))) {
 				char suffix[16] = { '\0' };
 				struct VFile* vf2;
@@ -309,13 +391,13 @@ bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, b
 	return success;
 }
 
-bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
+bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
 	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, false);
 	if (!vf) {
 		return false;
 	}
 	threadContext->rewindBufferSize = 0;
-	bool success = GBALoadStateNamed(threadContext->gba, vf);
+	bool success = GBALoadStateNamed(threadContext->gba, vf, flags);
 	vf->close(vf);
 	if (success) {
 		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i loaded", slot);
@@ -324,47 +406,220 @@ bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot) {
 	}
 	return success;
 }
-#endif
 
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot) {
+bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
+	struct GBAExtdata extdata;
+	GBAExtdataInit(&extdata);
+	if (flags & SAVESTATE_SAVEDATA) {
+		// TODO: A better way to do this would be nice
+		void* sram = malloc(SIZE_CART_FLASH1M);
+		struct VFile* svf = VFileFromMemory(sram, SIZE_CART_FLASH1M);
+		if (GBASavedataClone(&gba->memory.savedata, svf)) {
+			struct GBAExtdataItem item = {
+				.size = svf->seek(svf, 0, SEEK_CUR),
+				.data = sram,
+				.clean = free
+			};
+			GBAExtdataPut(&extdata, EXTDATA_SAVEDATA, &item);
+		} else {
+			free(sram);
+		}
+		svf->close(svf);
+	}
 #ifdef USE_PNG
-	if (!screenshot) {
+	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
-	UNUSED(screenshot);
+	UNUSED(flags);
 #endif
 		vf->truncate(vf, sizeof(struct GBASerializedState));
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 		if (!state) {
+			GBAExtdataDeinit(&extdata);
 			return false;
 		}
 		GBASerialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
+		vf->seek(vf, sizeof(struct GBASerializedState), SEEK_SET);
+		GBAExtdataSerialize(&extdata, vf);
+		GBAExtdataDeinit(&extdata);
 		return true;
 #ifdef USE_PNG
 	}
 	else {
-		return _savePNGState(gba, vf);
+		bool success = _savePNGState(gba, vf, &extdata);
+		GBAExtdataDeinit(&extdata);
+		return success;
 	}
 #endif
+	GBAExtdataDeinit(&extdata);
 	return false;
 }
 
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf) {
+struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata) {
 #ifdef USE_PNG
 	if (isPNG(vf)) {
-		return _loadPNGState(gba, vf);
+		return _loadPNGState(vf, extdata);
 	}
 #endif
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}
-	struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_READ);
+	struct GBASerializedState* state = GBAAllocateState();
+	if (vf->read(vf, state, sizeof(*state)) != sizeof(*state)) {
+		GBADeallocateState(state);
+		return 0;
+	}
+	if (extdata) {
+		GBAExtdataDeserialize(extdata, vf);
+	}
+	return state;
+}
+
+bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
+	struct GBAExtdata extdata;
+	GBAExtdataInit(&extdata);
+	struct GBASerializedState* state = GBAExtractState(vf, &extdata);
 	if (!state) {
 		return false;
 	}
 	bool success = GBADeserialize(gba, state);
-	vf->unmap(vf, state, sizeof(struct GBASerializedState));
+	GBADeallocateState(state);
+
+	struct GBAExtdataItem item;
+	if (flags & SAVESTATE_SCREENSHOT && GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
+		if (item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
+			gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, item.data);
+			GBASyncForceFrame(gba->sync);
+		} else {
+			GBALog(gba, GBA_LOG_WARN, "Savestate includes invalid screenshot");
+		}
+	}
+	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
+		struct VFile* svf = VFileFromMemory(item.data, item.size);
+		if (svf) {
+			GBASavedataLoad(&gba->memory.savedata, svf);
+			svf->close(svf);
+		}
+	}
+	GBAExtdataDeinit(&extdata);
 	return success;
+}
+
+bool GBAExtdataInit(struct GBAExtdata* extdata) {
+	memset(extdata->data, 0, sizeof(extdata->data));
+	return true;
+}
+
+void GBAExtdataDeinit(struct GBAExtdata* extdata) {
+	size_t i;
+	for (i = 1; i < EXTDATA_MAX; ++i) {
+		if (extdata->data[i].data && extdata->data[i].clean) {
+			extdata->data[i].clean(extdata->data[i].data);
+		}
+	}
+}
+
+void GBAExtdataPut(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
+	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
+		return;
+	}
+
+	if (extdata->data[tag].data && extdata->data[tag].clean) {
+		extdata->data[tag].clean(extdata->data[tag].data);
+	}
+	extdata->data[tag] = *item;
+}
+
+bool GBAExtdataGet(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
+	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
+		return false;
+	}
+
+	*item = extdata->data[tag];
+	return true;
+}
+
+bool GBAExtdataSerialize(struct GBAExtdata* extdata, struct VFile* vf) {
+	ssize_t position = vf->seek(vf, 0, SEEK_CUR);
+	ssize_t size = 2;
+	size_t i = 0;
+	for (i = 1; i < EXTDATA_MAX; ++i) {
+		if (extdata->data[i].data) {
+			size += sizeof(uint64_t) * 2;
+		}
+	}
+	if (size == 2) {
+		return true;
+	}
+	struct GBAExtdataHeader* header = malloc(size);
+	position += size;
+
+	size_t j;
+	for (i = 1, j = 0; i < EXTDATA_MAX; ++i) {
+		if (extdata->data[i].data) {
+			STORE_32(i, offsetof(struct GBAExtdataHeader, tag), &header[j]);
+			STORE_32(extdata->data[i].size, offsetof(struct GBAExtdataHeader, size), &header[j]);
+			STORE_64(position, offsetof(struct GBAExtdataHeader, offset), &header[j]);
+			position += extdata->data[i].size;
+			++j;
+		}
+	}
+	header[j].tag = 0;
+	header[j].size = 0;
+	header[j].offset = 0;
+
+	if (vf->write(vf, header, size) != size) {
+		free(header);
+		return false;
+	}
+	free(header);
+
+	for (i = 1; i < EXTDATA_MAX; ++i) {
+		if (extdata->data[i].data) {
+			if (vf->write(vf, extdata->data[i].data, extdata->data[i].size) != extdata->data[i].size) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf) {
+	while (true) {
+		struct GBAExtdataHeader buffer, header;
+		if (vf->read(vf, &buffer, sizeof(buffer)) != sizeof(buffer)) {
+			return false;
+		}
+		LOAD_32(header.tag, 0, &buffer.tag);
+		LOAD_32(header.size, 0, &buffer.size);
+		LOAD_64(header.offset, 0, &buffer.offset);
+
+		if (header.tag == EXTDATA_NONE) {
+			break;
+		}
+		if (header.tag >= EXTDATA_MAX) {
+			continue;
+		}
+		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
+		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
+			return false;
+		}
+		struct GBAExtdataItem item = {
+			.data = malloc(header.size),
+			.size = header.size,
+			.clean = free
+		};
+		if (!item.data) {
+			continue;
+		}
+		if (vf->read(vf, item.data, header.size) != header.size) {
+			free(item.data);
+			continue;
+		}
+		GBAExtdataPut(extdata, header.tag, &item);
+		vf->seek(vf, position, SEEK_SET);
+	};
+	return true;
 }
 
 struct GBASerializedState* GBAAllocateState(void) {
@@ -456,7 +711,9 @@ void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
 #ifdef USE_PNG
 	unsigned stride;
 	const void* pixels = 0;
-	struct VFile* vf = VDirOptionalOpenIncrementFile(dir, gba->activeFile, "screenshot", "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	char basename[PATH_MAX];
+	separatePath(gba->activeFile, 0, basename, 0);
+	struct VFile* vf = VDirFindNextAvailable(dir, basename, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
 	bool success = false;
 	if (vf) {
 		gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);

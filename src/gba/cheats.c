@@ -359,26 +359,67 @@ bool GBACheatSaveFile(struct GBACheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
+bool GBACheatAddVBALine(struct GBACheatSet* cheats, const char* line) {
+	uint32_t address;
+	uint8_t op;
+	uint32_t value = 0;
+	int width = 0;
+	const char* lineNext = hex32(line, &address);
+	if (!lineNext) {
+		return false;
+	}
+	if (lineNext[0] != ':') {
+		return false;
+	}
+	++lineNext;
+	while (width < 4) {
+		lineNext = hex8(lineNext, &op);
+		if (!lineNext) {
+			break;
+		}
+		value <<= 8;
+		value |= op;
+		++width;
+	}
+	if (width == 0 || width == 3) {
+		return false;
+	}
+
+	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
+	cheat->address = address;
+	cheat->operandOffset = 0;
+	cheat->addressOffset = 0;
+	cheat->repeat = 1;
+	cheat->type = CHEAT_ASSIGN;
+	cheat->width = width;
+	cheat->operand = value;
+	GBACheatRegisterLine(cheats, line);
+	return true;
+}
+
 bool GBACheatAddLine(struct GBACheatSet* cheats, const char* line) {
 	uint32_t op1;
 	uint16_t op2;
 	uint16_t op3;
-	line = hex32(line, &op1);
-	if (!line) {
+	const char* lineNext = hex32(line, &op1);
+	if (!lineNext) {
 		return false;
 	}
-	while (isspace((int) line[0])) {
-		++line;
+	if (lineNext[0] == ':') {
+		return GBACheatAddVBALine(cheats, line);
 	}
-	line = hex16(line, &op2);
-	if (!line) {
+	while (isspace((int) lineNext[0])) {
+		++lineNext;
+	}
+	lineNext = hex16(lineNext, &op2);
+	if (!lineNext) {
 		return false;
 	}
-	if (!line[0] || isspace((int) line[0])) {
+	if (!lineNext[0] || isspace((int) lineNext[0])) {
 		return GBACheatAddCodeBreaker(cheats, op1, op2);
 	}
-	line = hex16(line, &op3);
-	if (!line) {
+	lineNext = hex16(lineNext, &op3);
+	if (!lineNext) {
 		return false;
 	}
 	uint32_t realOp2 = op2;

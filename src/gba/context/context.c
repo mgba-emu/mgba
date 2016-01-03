@@ -21,6 +21,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->fname = 0;
 	context->save = 0;
 	context->renderer = 0;
+	GBADirectorySetInit(&context->dirs);
 	memset(context->components, 0, sizeof(context->components));
 
 	if (!context->gba || !context->cpu) {
@@ -37,7 +38,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	ARMInit(context->cpu);
 
 	GBAConfigInit(&context->config, port);
-#ifndef __LIBRETRO__
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (port) {
 		if (!_logFile) {
 			char logPath[PATH_MAX];
@@ -60,6 +61,8 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		GBAConfigLoad(&context->config);
 		GBAConfigLoadDefaults(&context->config, &opts);
    }
+#else
+	UNUSED(port);
 #endif
 
 	context->gba->sync = 0;
@@ -71,48 +74,37 @@ void GBAContextDeinit(struct GBAContext* context) {
 	GBADestroy(context->gba);
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigDeinit(&context->config);
+#endif
+	GBADirectorySetDeinit(&context->dirs);
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
-	struct VDir* dir = VDirOpenArchive(path);
-	if (dir) {
-		struct VDirEntry* de;
-		while ((de = dir->listNext(dir))) {
-			struct VFile* vf = dir->openFile(dir, de->name(de), O_RDONLY);
-			if (!vf) {
-				continue;
-			}
-			if (GBAIsROM(vf)) {
-				context->rom = vf;
-				break;
-			}
-			vf->close(vf);
-		}
-		dir->close(dir);
-	} else {
-		context->rom = VFileOpen(path, O_RDONLY);
-	}
-
+	context->rom = GBADirectorySetOpenPath(&context->dirs, path, GBAIsROM);
 	if (!context->rom) {
 		return false;
 	}
 
-	if (!GBAIsROM(context->rom)) {
-		context->rom->close(context->rom);
-		context->rom = 0;
-		return false;
-	}
-
 	context->fname = path;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (autoloadSave) {
-		context->save = VDirOptionalOpenFile(0, path, 0, ".sav", O_RDWR | O_CREAT);
+		char dirname[PATH_MAX];
+		char basename[PATH_MAX];
+		separatePath(context->fname, dirname, basename, 0);
+		GBADirectorySetAttachBase(&context->dirs, VDirOpen(dirname));
+		strncat(basename, ".sav", PATH_MAX - strlen(basename) - 1);
+		context->save = context->dirs.save->openFile(context->dirs.save, basename, O_RDWR | O_CREAT);
 	}
+#else
+	UNUSED(autoloadSave);
+#endif
 	return true;
 }
 
 void GBAContextUnloadROM(struct GBAContext* context) {
 	GBAUnloadROM(context->gba);
+	GBADirectorySetDetachBase(&context->dirs);
 	if (context->bios) {
 		context->bios->close(context->bios);
 		context->bios = 0;
@@ -171,7 +163,9 @@ bool GBAContextStart(struct GBAContext* context) {
 		return false;
 	}
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigMap(&context->config, &opts);
+#endif
 
 	if (!context->bios && opts.bios) {
 		GBAContextLoadBIOS(context, opts.bios);
@@ -182,8 +176,9 @@ bool GBAContextStart(struct GBAContext* context) {
 	context->gba->logLevel = opts.logLevel;
 	context->gba->idleOptimization = opts.idleOptimization;
 
-	ARMReset(context->cpu);
+	GBAContextReset(context);
 
+	// TODO: Move this into GBAContextReset
 	if (opts.skipBios) {
 		GBASkipBIOS(context->gba);
 	}
@@ -191,11 +186,19 @@ bool GBAContextStart(struct GBAContext* context) {
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) context->gba->memory.rom;
 	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(GBAConfigGetOverrides(&context->config), &override)) {
+	struct Configuration* overrides = 0;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	overrides = GBAConfigGetOverrides(&context->config);
+	GBAConfigFreeOpts(&opts);
+#endif
+	if (GBAOverrideFind(overrides, &override)) {
 		GBAOverrideApply(context->gba, &override);
 	}
-	GBAConfigFreeOpts(&opts);
 	return true;
+}
+
+void GBAContextReset(struct GBAContext* context) {
+	ARMReset(context->cpu);
 }
 
 void GBAContextStop(struct GBAContext* context) {

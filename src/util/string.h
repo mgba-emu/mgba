@@ -27,5 +27,6 @@ uint32_t utf16Char(const uint16_t** unicode, size_t* length);
 int hexDigit(char digit);
 const char* hex32(const char* line, uint32_t* out);
 const char* hex16(const char* line, uint16_t* out);
+const char* hex8(const char* line, uint8_t* out);
 
 #endif
