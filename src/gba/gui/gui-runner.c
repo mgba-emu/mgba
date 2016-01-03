@@ -57,7 +57,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
 			return;
 		}
-		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, 0, stateId, false);
+		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, gbaBackground->p->context.dirs.state, stateId, false);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
@@ -306,21 +306,21 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 				GBAContextReset(&runner->context);
 				break;
 			case RUNNER_SAVE_STATE:
-				vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, true);
+				vf = GBAGetState(runner->context.gba, runner->context.dirs.state, ((int) item->data) >> 16, true);
 				if (vf) {
 					GBASaveStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
 					vf->close(vf);
 				}
 				break;
 			case RUNNER_LOAD_STATE:
-				vf = GBAGetState(runner->context.gba, 0, ((int) item->data) >> 16, false);
+				vf = GBAGetState(runner->context.gba, runner->context.dirs.state, ((int) item->data) >> 16, false);
 				if (vf) {
 					GBALoadStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
 					vf->close(vf);
 				}
 				break;
 			case RUNNER_SCREENSHOT:
-				GBATakeScreenshot(runner->context.gba, 0);
+				GBATakeScreenshot(runner->context.gba, runner->context.dirs.screenshot);
 				break;
 			case RUNNER_CONFIG:
 				GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
