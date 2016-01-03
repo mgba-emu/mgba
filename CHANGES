@@ -21,6 +21,7 @@ Bugfixes:
  - GBA Memory: Fix DMAs triggering two cycles early
  - GBA Hardware: Fix GPIO on big endian
  - Util: Fix excessive memory allocation when decoding a PNG
+ - GBA: Fix Iridion II savetype
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
