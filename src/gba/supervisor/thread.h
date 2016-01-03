@@ -10,6 +10,7 @@
 
 #include "gba/gba.h"
 #include "gba/input.h"
+#include "gba/context/directories.h"
 #include "gba/context/overrides.h"
 #include "gba/context/sync.h"
 
@@ -47,8 +48,7 @@ struct GBAThread {
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
-	struct VDir* gameDir;
-	struct VDir* stateDir;
+	struct GBADirectorySet dirs;
 	struct VFile* rom;
 	struct VFile* save;
 	struct VFile* bios;

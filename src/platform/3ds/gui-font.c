@@ -31,8 +31,8 @@ struct GUIFont* GUIFontCreate(void) {
 	tex->width = 256;
 	tex->height = 128;
 
-	GSPGPU_FlushDataCache(NULL, (u8*)font, font_size);
-	GX_RequestDma(NULL, (u32*)font, tex->data, font_size);
+	GSPGPU_FlushDataCache(font, font_size);
+	GX_RequestDma((u32*) font, tex->data, font_size);
 	gspWaitForDMA();
 
 	return guiFont;

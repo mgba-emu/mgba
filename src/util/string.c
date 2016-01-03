@@ -276,3 +276,20 @@ const char* hex16(const char* line, uint16_t* out) {
 	*out = value;
 	return line;
 }
+
+const char* hex8(const char* line, uint8_t* out) {
+	uint8_t value = 0;
+	*out = 0;
+	int i;
+	for (i = 0; i < 2; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}

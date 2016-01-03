@@ -91,8 +91,7 @@ void InputController::setConfiguration(ConfigController* config) {
 #ifdef BUILD_SDL
 	GBASDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
-		GBASDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
-		m_playerAttached = true;
+		m_playerAttached = GBASDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
 	loadConfiguration(SDL_BINDING_BUTTON);
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));

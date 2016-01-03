@@ -87,9 +87,11 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 		GBALog(hw->p, GBA_LOG_WARN, "Invalid GPIO address");
 	}
 	if (hw->readWrite) {
-		uint16_t old = hw->gpioBase[0];
+		uint16_t old;
+		LOAD_16(old, 0, hw->gpioBase);
 		old &= ~hw->direction;
-		hw->gpioBase[0] = old | hw->pinState;
+		old |= hw->pinState;
+		STORE_16(old, 0, hw->gpioBase);
 	} else {
 		hw->gpioBase[0] = 0;
 	}
@@ -129,10 +131,11 @@ void _readPins(struct GBACartridgeHardware* hw) {
 
 void _outputPins(struct GBACartridgeHardware* hw, unsigned pins) {
 	if (hw->readWrite) {
-		uint16_t old = hw->gpioBase[0];
+		uint16_t old;
+		LOAD_16(old, 0, hw->gpioBase);
 		old &= hw->direction;
 		hw->pinState = old | (pins & ~hw->direction & 0xF);
-		hw->gpioBase[0] = hw->pinState;
+		STORE_16(hw->pinState, 0, hw->gpioBase);
 	}
 }
 

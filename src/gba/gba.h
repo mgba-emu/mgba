@@ -128,6 +128,7 @@ struct GBA {
 
 	bool realisticTiming;
 	bool hardCrash;
+	bool allowOpposingDirections;
 };
 
 struct GBACartridge {

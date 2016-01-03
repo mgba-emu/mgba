@@ -17,7 +17,7 @@ struct ctrTexture {
 	u16 height;
 };
 
-inline void ctrTexture_Init(struct ctrTexture* tex) {
+static inline void ctrTexture_Init(struct ctrTexture* tex) {
 	tex->data = NULL;
 	tex->format = GPU_RGB565;
 	tex->filter = GPU_NEAREST;

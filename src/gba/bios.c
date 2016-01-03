@@ -213,7 +213,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		_Div(gba, cpu->gprs[1], cpu->gprs[0]);
 		break;
 	case 0x8:
-		cpu->gprs[0] = sqrt(cpu->gprs[0]);
+		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
 	case 0xA:
 		cpu->gprs[0] = atan2f(cpu->gprs[1] / 16384.f, cpu->gprs[0] / 16384.f) / (2 * M_PI) * 0x10000;
@@ -482,8 +482,8 @@ static void _unHuffman(struct GBA* gba) {
 
 static void _unRl(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
-	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
-	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
+	uint32_t source = cpu->gprs[0];
+	int remaining = (cpu->memory.load32(cpu, source & 0xFFFFFFFC, 0) & 0xFFFFFF00) >> 8;
 	int padding = (4 - remaining) & 0x3;
 	// We assume the signature byte (0x30) is correct
 	int blockheader;

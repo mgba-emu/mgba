@@ -101,6 +101,7 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 
 	gba->realisticTiming = true;
 	gba->hardCrash = true;
+	gba->allowOpposingDirections = true;
 
 	gba->performingDMA = false;
 
@@ -734,18 +735,21 @@ bool GBAIsMB(struct VFile* vf) {
 	if (vf->seek(vf, GBA_MB_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
 	}
-	uint8_t signature[sizeof(uint32_t)];
+	uint32_t signature;
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
 	uint32_t opcode;
-	LOAD_32(opcode, 0, signature);
+	LOAD_32(opcode, 0, &signature);
 	struct ARMInstructionInfo info;
 	ARMDecodeARM(opcode, &info);
 	if (info.branchType != ARM_BRANCH) {
 		return false;
 	}
 	if (info.op1.immediate <= 0) {
+		return false;
+	} else if (info.op1.immediate == 28) {
+		// Ancient toolchain that is known to throw MB detection for a loop
 		return false;
 	} else if (info.op1.immediate != 24) {
 		return true;

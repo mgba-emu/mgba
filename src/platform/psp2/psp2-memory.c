@@ -46,7 +46,7 @@ void mappedMemoryFree(void* memory, size_t size) {
 		}
 		if (ptr == memory) {
 			sceKernelFreeMemBlock(uid);
-			SceUIDListUnshift(&uids, i, 1);
+			SceUIDListShift(&uids, i, 1);
 			return;
 		}
 	}

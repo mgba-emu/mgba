@@ -1507,8 +1507,8 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	struct ARMCore* cpu = gba->cpu;
 	switch (GBADMARegisterGetTiming(info->reg)) {
 	case DMA_TIMING_NOW:
-		info->nextEvent = cpu->cycles;
-		GBAMemoryUpdateDMAs(gba, 0);
+		info->nextEvent = cpu->cycles + 2;
+		GBAMemoryUpdateDMAs(gba, -1);
 		break;
 	case DMA_TIMING_HBLANK:
 		// Handled implicitly
@@ -1611,9 +1611,10 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 	uint32_t destRegion = dest >> BASE_OFFSET;
 	int32_t cycles = 2;
 
-	if (source == info->source) {
-		// TODO: support 4 cycles for ROM access
-		cycles += 2;
+	if (source == info->source && dest == info->dest && wordsRemaining == info->count) {
+		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
+			cycles += 2;
+		}
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
 			source &= 0xFFFFFFFC;

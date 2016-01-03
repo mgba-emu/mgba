@@ -55,6 +55,7 @@ struct VFile* VFileOpen3DS(FS_Archive* archive, const char* path, int flags) {
 		return 0;
 	}
 
+	// TODO: Use UTF-16
 	FS_Path newPath = fsMakePath(PATH_ASCII, path);
 	Result res = FSUSER_OpenFile(&vf3d->handle, *archive, newPath, flags, 0);
 	if (res & 0xFFFC03FF) {
@@ -175,6 +176,7 @@ struct VDir* VDirOpen(const char* path) {
 		return 0;
 	}
 
+	// TODO: Use UTF-16
 	FS_Path newPath = fsMakePath(PATH_ASCII, path);
 	Result res = FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 	if (res & 0xFFFC03FF) {
@@ -207,6 +209,7 @@ static bool _vd3dClose(struct VDir* vd) {
 static void _vd3dRewind(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	FSDIR_Close(vd3d->handle);
+	// TODO: Use UTF-16
 	FS_Path newPath = fsMakePath(PATH_ASCII, vd3d->path);
 	FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 }

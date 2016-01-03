@@ -42,5 +42,13 @@ void SavestateButton::paintEvent(QPaintEvent*) {
 		painter.fillRect(full, highlight);
 	}
 	painter.setPen(QPen(palette.text(), 0));
-	painter.drawText(full, Qt::AlignCenter, text());
+	if (icon().isNull()) {
+		painter.drawText(full, Qt::AlignCenter, text());
+	} else {
+		if (!hasFocus()) {
+			painter.setPen(QPen(palette.light(), 0));
+			painter.setCompositionMode(QPainter::CompositionMode_Exclusion);
+		}
+		painter.drawText(full, Qt::AlignHCenter | Qt::AlignBottom, text());
+	}
 }

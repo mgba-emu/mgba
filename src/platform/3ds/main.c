@@ -18,6 +18,7 @@
 #include "ctr-gpu.h"
 
 #include <3ds.h>
+#include <3ds/gpu/gx.h>
 
 static enum ScreenMode {
 	SM_PA_BOTTOM,
@@ -32,7 +33,7 @@ static enum ScreenMode {
 #define AUDIO_SAMPLES 0x80
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
 
-FS_archive sdmcArchive;
+FS_Archive sdmcArchive;
 
 static struct GBA3DSRotationSource {
 	struct GBARotationSource d;
@@ -76,8 +77,8 @@ static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, voi
 		flags |= SOUND_ONE_SHOT;
 	}
 
-	pleft = osConvertVirtToPhys((u32) left);
-	pright = osConvertVirtToPhys((u32) right);
+	pleft = osConvertVirtToPhys(left);
+	pright = osConvertVirtToPhys(right);
 
 	u32 timer = CSND_TIMER(sampleRate);
 	if (timer < 0x0042) {
@@ -149,8 +150,8 @@ static void _drawEnd(void) {
 static int _batteryState(void) {
 	u8 charge;
 	u8 adapter;
-	PTMU_GetBatteryLevel(0, &charge);
-	PTMU_GetBatteryChargeState(0, &adapter);
+	PTMU_GetBatteryLevel(&charge);
+	PTMU_GetBatteryChargeState(&adapter);
 	int state = 0;
 	if (adapter) {
 		state |= BATTERY_CHARGING;
@@ -284,8 +285,8 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	void* outputBuffer = renderer.outputBuffer;
 	struct ctrTexture* tex = &gbaOutputTexture;
 
-	GSPGPU_FlushDataCache(NULL, outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	GX_SetDisplayTransfer(NULL,
+	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	GX_DisplayTransfer(
 			outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -324,9 +325,9 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, (256 - VIDEO_HORIZONTAL_PIXELS) * sizeof(u32));
 	}
 
-	GSPGPU_FlushDataCache(NULL, (void*)newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
-	GX_SetDisplayTransfer(NULL,
-			(void*)newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+	GSPGPU_FlushDataCache(newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
+	GX_DisplayTransfer(
+			(u32*) newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -433,8 +434,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 #elif RESAMPLE_LIBRARY == RESAMPLE_NN
 	GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
 #endif
-	GSPGPU_FlushDataCache(0, (void*) &audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-	GSPGPU_FlushDataCache(0, (void*) &audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+	GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+	GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
 	if (audioPos == AUDIO_SAMPLES * 3) {
 		u8 playing = 0;
@@ -448,9 +449,6 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 }
 
 int main() {
-	ptmInit();
-	hasSound = !csndInit();
-
 	rotation.d.sample = _sampleRotation;
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
@@ -464,6 +462,9 @@ int main() {
 		return 1;
 	}
 
+	ptmuInit();
+	hasSound = !csndInit();
+
 	if (hasSound) {
 		audioLeft = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
@@ -472,6 +473,7 @@ int main() {
 	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
 
 	if (ctrInitGpu() < 0) {
+		gbaOutputTexture.data = 0;
 		goto cleanup;
 	}
 
@@ -483,18 +485,22 @@ int main() {
 	gbaOutputTexture.data = vramAlloc(256 * 256 * 2);
 	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
 
+	if (!gbaOutputTexture.data) {
+		goto cleanup;
+	}
+
 	// Zero texture data to make sure no garbage around the border interferes with filtering
-	GX_SetMemoryFill(NULL,
+	GX_MemoryFill(
 			gbaOutputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
 			NULL, 0, NULL, 0);
 	gspWaitForPSC0();
 
-	sdmcArchive = (FS_archive) {
-		ARCH_SDMC,
-		(FS_path) { PATH_EMPTY, 1, (const u8*)"" },
-		0, 0
+	sdmcArchive = (FS_Archive) {
+		ARCHIVE_SDMC,
+		(FS_Path) { PATH_EMPTY, 1, "" },
+		0
 	};
-	FSUSER_OpenArchive(0, &sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive);
 
 	struct GUIFont* font = GUIFontCreate();
 
@@ -549,10 +555,14 @@ int main() {
 	GBAGUIDeinit(&runner);
 
 cleanup:
-	linearFree(renderer.outputBuffer);
+	if (renderer.outputBuffer) {
+		linearFree(renderer.outputBuffer);
+	}
 
-	ctrDeinitGpu();
-	vramFree(gbaOutputTexture.data);
+	if (gbaOutputTexture.data) {
+		ctrDeinitGpu();
+		vramFree(gbaOutputTexture.data);
+	}
 
 	gfxExit();
 
@@ -560,7 +570,8 @@ cleanup:
 		linearFree(audioLeft);
 		linearFree(audioRight);
 	}
+
 	csndExit();
-	ptmExit();
+	ptmuExit();
 	return 0;
 }

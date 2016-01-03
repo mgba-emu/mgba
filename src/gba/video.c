@@ -88,13 +88,8 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->renderer->vram = video->vram;
 
-	int i;
-	for (i = 0; i < 128; ++i) {
-		STORE_16(0x0200, i * 8 + 0, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 2, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 4, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 6, video->oam.raw);
-	}
+	memset(video->palette, 0, sizeof(video->palette));
+	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer);

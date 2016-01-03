@@ -19,9 +19,11 @@
 #include <QThread>
 #include <QTimer>
 
+extern "C" {
+#include "platform/video-backend.h"
+}
+
 struct GBAThread;
-struct VideoBackend;
-struct GBAGLES2Shader;
 
 namespace QGBA {
 
@@ -45,6 +47,7 @@ public:
 
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override;
+	VideoShader* shaders() override;
 
 public slots:
 	void startDrawing(GBAThread* context) override;
@@ -56,6 +59,7 @@ public slots:
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override;
+	void clearShaders() override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override {}
@@ -96,6 +100,8 @@ public slots:
 	void filter(bool filter);
 
 	void setShaders(struct VDir*);
+	void clearShaders();
+	VideoShader* shaders();
 
 private:
 	void performDraw();
@@ -111,8 +117,7 @@ private:
 	bool m_started;
 	GBAThread* m_context;
 	bool m_supportsShaders;
-	GBAGLES2Shader* m_shaders;
-	size_t m_nShaders;
+	VideoShader m_shader;
 	VideoBackend* m_backend;
 	QSize m_size;
 	MessagePainter* m_messagePainter;
