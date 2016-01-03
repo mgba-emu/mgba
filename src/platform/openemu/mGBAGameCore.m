@@ -208,19 +208,29 @@
 
 - (NSData *)serializeStateWithError:(NSError **)outError
 {
-	UNUSED(outError);
-	// TODO memory VFile that self-manages memory
-	return nil;
+	struct VFile* vf = VFileMemChunk(nil, 0);
+	if (!GBASaveStateNamed(context.gba, vf, 0)) {
+		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
+		vf->close(vf);
+		return nil;
+	}
+	size_t size = vf->size(vf);
+	void* data = vf->map(vf, size, MAP_READ);
+	NSData *nsdata = [NSData dataWithBytes:data length:size];
+	vf->unmap(vf, data, size);
+	vf->close(vf);
+	return nsdata;
 }
 
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
-	// TODO VFileFromConstMemory
-	struct VFile* vf = VFileFromMemory((void*) state.bytes, state.length);
+	struct VFile* vf = VFileFromConstMemory(state.bytes, state.length);
 	if (!GBALoadStateNamed(context.gba, vf, 0)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
+		vf->close(vf);
 		return NO;
 	}
+	vf->close(vf);
 	return YES;
 }
 
@@ -228,12 +238,14 @@
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_CREAT | O_TRUNC | O_RDWR);
 	block(GBASaveStateNamed(context.gba, vf, 0), nil);
+	vf->close(vf);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_RDONLY);
 	block(GBALoadStateNamed(context.gba, vf, 0), nil);
+	vf->close(vf);
 }
 
 #pragma mark - Input
