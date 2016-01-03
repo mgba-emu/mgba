@@ -44,7 +44,7 @@ PLATLDXFLAGS   = -shared --sysroot=$(NDK_ROOT_DIR)/platforms/android-9/arch-x86 
 ################
 # libretro setup
 
-RETRODEFS     = -D__LIBRETRO__
+RETRODEFS     = -D__LIBRETRO__ -DMINIMAL_CORE=2
 RETROCFLAGS   =
 RETROCXXFLAGS =
 RETROLDFLAGS  =
