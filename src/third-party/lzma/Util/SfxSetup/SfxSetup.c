@@ -1,5 +1,5 @@
 /* SfxSetup.c - 7z SFX Setup
-2014-12-07 : Igor Pavlov : Public domain */
+2015-11-08 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -23,7 +23,7 @@
 
 #define k_EXE_ExtIndex 2
 
-static const char *kExts[] =
+static const char * const kExts[] =
 {
     "bat"
   , "cmd"
@@ -37,7 +37,7 @@ static const char *kExts[] =
   , "htm"
 };
 
-static const char *kNames[] =
+static const char * const kNames[] =
 {
     "setup"
   , "install"
@@ -63,7 +63,7 @@ static unsigned FindExt(const wchar_t *s, unsigned *extLen)
 
 #define MAKE_CHAR_UPPER(c) ((((c) >= 'a' && (c) <= 'z') ? (c) -= 0x20 : (c)))
 
-static unsigned FindItem(const char **items, unsigned num, const wchar_t *s, unsigned len)
+static unsigned FindItem(const char * const *items, unsigned num, const wchar_t *s, unsigned len)
 {
   unsigned i;
   for (i = 0; i < num; i++)
@@ -75,7 +75,7 @@ static unsigned FindItem(const char **items, unsigned num, const wchar_t *s, uns
       continue;
     for (j = 0; j < len; j++)
     {
-      unsigned c = item[j];
+      unsigned c = (Byte)item[j];
       if (c != s[j] && MAKE_CHAR_UPPER(c) != s[j])
         break;
     }
@@ -88,7 +88,7 @@ static unsigned FindItem(const char **items, unsigned num, const wchar_t *s, uns
 #ifdef _CONSOLE
 static BOOL WINAPI HandlerRoutine(DWORD ctrlType)
 {
-  ctrlType = ctrlType;
+  UNUSED_VAR(ctrlType);
   return TRUE;
 }
 #endif
@@ -144,7 +144,7 @@ static Bool FindSignature(CSzFile *stream, UInt64 *resPos)
     processed -= k7zStartHeaderSize;
     for (pos = 0; pos <= processed; pos++)
     {
-      for (; buf[pos] != '7' && pos <= processed; pos++);
+      for (; pos <= processed && buf[pos] != '7'; pos++);
       if (pos > processed)
         break;
       if (memcmp(buf + pos, k7zSignature, k7zSignatureSize) == 0)
@@ -182,6 +182,7 @@ static WRes RemoveDirWithSubItems(WCHAR *path)
   path[len] = L'\0';
   if (handle == INVALID_HANDLE_VALUE)
     return GetLastError();
+  
   for (;;)
   {
     if (wcscmp(fd.cFileName, L".") != 0 &&
@@ -199,9 +200,11 @@ static WRes RemoveDirWithSubItems(WCHAR *path)
         if (DeleteFileW(path) == 0)
           res = GetLastError();
       }
+    
       if (res != 0)
         break;
     }
+  
     if (!FindNextFileW(handle, &fd))
     {
       res = GetLastError();
@@ -210,6 +213,7 @@ static WRes RemoveDirWithSubItems(WCHAR *path)
       break;
     }
   }
+  
   path[len] = L'\0';
   FindClose(handle);
   if (res == 0)
@@ -248,14 +252,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   const wchar_t *cmdLineParams;
   const char *errorMessage = NULL;
   Bool useShellExecute = True;
+  DWORD exitCode = 0;
 
   #ifdef _CONSOLE
   SetConsoleCtrlHandler(HandlerRoutine, TRUE);
   #else
-  hInstance = hInstance;
-  hPrevInstance = hPrevInstance;
-  lpCmdLine = lpCmdLine;
-  nCmdShow = nCmdShow;
+  UNUSED_VAR(hInstance);
+  UNUSED_VAR(hPrevInstance);
+  UNUSED_VAR(lpCmdLine);
+  UNUSED_VAR(nCmdShow);
   #endif
 
   CrcGenerateTable();
@@ -315,7 +320,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         {
           unsigned t = value & 0xF;
           value >>= 4;
-          s[7 - k] = (char)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
+          s[7 - k] = (wchar_t)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
         }
         s[k] = '\0';
       }
@@ -584,6 +589,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     if (hProcess != 0)
     {
       WaitForSingleObject(hProcess, INFINITE);
+      if (!GetExitCodeProcess(hProcess, &exitCode))
+        exitCode = 1;
       CloseHandle(hProcess);
     }
     
@@ -596,7 +603,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   RemoveDirWithSubItems(path);
 
   if (res == SZ_OK)
-    return 0;
+    return (int)exitCode;
   
   {
     if (res == SZ_ERROR_UNSUPPORTED)
@@ -610,6 +617,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
       if (!errorMessage)
         errorMessage = "ERROR";
     }
+ 
     if (errorMessage)
       PrintErrorMessage(errorMessage);
   }

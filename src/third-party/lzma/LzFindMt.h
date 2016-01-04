@@ -1,5 +1,5 @@
 /* LzFindMt.h -- multithreaded Match finder for LZ algorithms
-2013-01-18 : Igor Pavlov : Public domain */
+2015-05-03 : Igor Pavlov : Public domain */
 
 #ifndef __LZ_FIND_MT_H
 #define __LZ_FIND_MT_H
@@ -75,7 +75,7 @@ typedef struct _CMatchFinderMt
   UInt32 matchMaxLen;
   UInt32 numHashBytes;
   UInt32 pos;
-  Byte *buffer;
+  const Byte *buffer;
   UInt32 cyclicBufferPos;
   UInt32 cyclicBufferSize; /* it must be historySize + 1 */
   UInt32 cutValue;
