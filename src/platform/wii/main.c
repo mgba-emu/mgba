@@ -147,7 +147,6 @@ int main() {
 	reconfigureScreen(vmode);
 
 	GX_SetCullMode(GX_CULL_NONE);
-	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
 
 	GX_ClearVtxDesc();
@@ -281,11 +280,10 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	GX_DrawDone();
-
 	whichFb = !whichFb;
 
 	GX_CopyDisp(framebuffer[whichFb], GX_TRUE);
+	GX_DrawDone();
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
 	VIDEO_Flush();
 
@@ -673,7 +671,6 @@ static s8 WPAD_StickX(u8 chan, u8 right) {
  
 	return (s8)(val * 128.0f);
 }
-
 
 static s8 WPAD_StickY(u8 chan, u8 right) {
 	float mag = 0.0;
