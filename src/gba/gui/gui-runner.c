@@ -360,7 +360,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 void GBAGUIRunloop(struct GBAGUIRunner* runner) {
 	while (true) {
 		char path[PATH_MAX];
-		if (!GUISelectFile(&runner->params, path, sizeof(path), GBAIsROM)) {
+		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
 			break;
 		}
 		GBAGUIRun(runner, path);
