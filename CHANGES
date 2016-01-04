@@ -51,6 +51,7 @@ Misc:
  - GBA RR: Starting from savestate now embeds the savegame
  - Libretro: Add install target for libretro core
  - 3DS: Update to new ctrulib API
+ - GBA RR: Add preliminary SRAM support for VBM loading
 
 0.3.2: (2015-12-16)
 Bugfixes:
