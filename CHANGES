@@ -12,6 +12,8 @@ Features:
  - Key autofire
  - Libretro: Allow blocking opposing directional input
  - OpenEmu core for OS X
+ - Libretro: Settings for using BIOS and skipping intro
+ - Libretro: Customizable idle loop removal
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
