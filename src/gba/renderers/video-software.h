@@ -122,6 +122,7 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
 	unsigned target1Obj;
