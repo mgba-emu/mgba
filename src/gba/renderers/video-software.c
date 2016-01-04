@@ -729,8 +729,6 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Obj = GBARegisterBLDCNTGetTarget2Obj(value);
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
-	renderer->anyTarget2 = value & 0x3F00;
-
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
 	}
