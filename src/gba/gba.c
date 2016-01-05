@@ -912,6 +912,13 @@ void GBAFrameEnded(struct GBA* gba) {
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
 	}
+
+	if (gba->rr && gba->rr->queryReset(gba->rr)) {
+		// TODO: Clean up reset scheduling
+		MutexLock(&thread->stateMutex);
+		thread->state = THREAD_RESETING;
+		MutexUnlock(&thread->stateMutex);
+	}
 }
 
 void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {

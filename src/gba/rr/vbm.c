@@ -27,6 +27,7 @@ static bool GBAVBMIsRecording(const struct GBARRContext*);
 
 static void GBAVBMNextFrame(struct GBARRContext*);
 static uint16_t GBAVBMQueryInput(struct GBARRContext*);
+static bool GBAVBMQueryReset(struct GBARRContext*);
 
 static void GBAVBMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state);
 static void GBAVBMStateLoaded(struct GBARRContext* rr, const struct GBASerializedState* state);
@@ -50,6 +51,7 @@ void GBAVBMContextCreate(struct GBAVBMContext* vbm) {
 	vbm->d.nextFrame = GBAVBMNextFrame;
 	vbm->d.logInput = 0;
 	vbm->d.queryInput = GBAVBMQueryInput;
+	vbm->d.queryReset = GBAVBMQueryReset;
 
 	vbm->d.stateSaved = GBAVBMStateSaved;
 	vbm->d.stateLoaded = GBAVBMStateLoaded;
@@ -116,6 +118,18 @@ uint16_t GBAVBMQueryInput(struct GBARRContext* rr) {
 	vbm->vbmFile->read(vbm->vbmFile, &input, sizeof(input));
 	vbm->vbmFile->seek(vbm->vbmFile, -sizeof(input), SEEK_CUR);
 	return input & 0x3FF;
+}
+
+bool GBAVBMQueryReset(struct GBARRContext* rr) {
+	if (!rr->isPlaying(rr)) {
+		return false;
+	}
+
+	struct GBAVBMContext* vbm = (struct GBAVBMContext*) rr;
+	uint16_t input;
+	vbm->vbmFile->read(vbm->vbmFile, &input, sizeof(input));
+	vbm->vbmFile->seek(vbm->vbmFile, -sizeof(input), SEEK_CUR);
+	return input & 0x800;
 }
 
 void GBAVBMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state) {

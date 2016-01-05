@@ -52,6 +52,7 @@ Misc:
  - Libretro: Add install target for libretro core
  - 3DS: Update to new ctrulib API
  - GBA RR: Add preliminary SRAM support for VBM loading
+ - GBA RR: Add support for resets in movies
 
 0.3.2: (2015-12-16)
 Bugfixes:
