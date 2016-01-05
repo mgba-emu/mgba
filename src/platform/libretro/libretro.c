@@ -29,6 +29,9 @@ FS_Archive sdmcArchive;
 
 #define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
 #define ALLOW_OPPOSING_DIRECTIONS "mgba_allow_opposing_directions"
+#define USE_BIOS "mgba_use_bios"
+#define SKIP_BIOS "mgba_skip_bios"
+#define IDLE_OPTIMIZATION "mgba_idle_optimization"
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -58,6 +61,41 @@ static int luxLevel;
 static struct GBACheatDevice cheats;
 static struct GBACheatSet cheatSet;
 
+static void _reloadSettings(void) {
+	struct GBAOptions opts = {
+		.useBios = true,
+		.idleOptimization = IDLE_LOOP_REMOVE
+	};
+
+	struct retro_variable var;
+
+	var.key = USE_BIOS;
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.useBios = strcmp(var.value, "yes") == 0;
+	}
+
+	var.key = SKIP_BIOS;
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.skipBios = strcmp(var.value, "yes") == 0;
+	}
+
+	var.key = IDLE_OPTIMIZATION;
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "don't remove") == 0) {
+			opts.idleOptimization = IDLE_LOOP_IGNORE;
+		} else if (strcmp(var.value, "remove known") == 0) {
+			opts.idleOptimization = IDLE_LOOP_REMOVE;
+		} else if (strcmp(var.value, "detect and remove") == 0) {
+			opts.idleOptimization = IDLE_LOOP_DETECT;
+		}
+	}
+
+	GBAConfigLoadDefaults(&context.config, &opts);
+}
+
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
 }
@@ -68,6 +106,9 @@ void retro_set_environment(retro_environment_t env) {
 	struct retro_variable vars[] = {
 		{ SOLAR_SENSOR_LEVEL, "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
 		{ ALLOW_OPPOSING_DIRECTIONS, "Allow opposing directional input; no|yes" },
+		{ USE_BIOS, "Use BIOS file if found; yes|no" },
+		{ SKIP_BIOS, "Skip BIOS intro; no|yes" },
+		{ IDLE_OPTIMIZATION, "Idle loop removal; remove known|detect and remove|don't remove" },
 		{ 0, 0 }
 	};
 
@@ -175,11 +216,6 @@ void retro_init(void) {
 	stream.postVideoFrame = 0;
 
 	GBAContextInit(&context, 0);
-	struct GBAOptions opts = {
-		.useBios = true,
-		.idleOptimization = IDLE_LOOP_REMOVE
-	};
-	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBARetroLog;
 	context.gba->stream = &stream;
 	if (rumbleCallback) {
@@ -333,6 +369,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
+	_reloadSettings();
 	GBAContextLoadROMFromVFile(&context, rom, save);
 	GBAContextStart(&context);
 	return true;

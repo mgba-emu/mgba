@@ -59,6 +59,7 @@ struct GBAGUIRunner {
 
 void GBAGUIInit(struct GBAGUIRunner*, const char* port);
 void GBAGUIDeinit(struct GBAGUIRunner*);
+void GBAGUIRun(struct GBAGUIRunner*, const char* path);
 void GBAGUIRunloop(struct GBAGUIRunner*);
 
 #endif

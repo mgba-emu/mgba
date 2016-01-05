@@ -1,5 +1,5 @@
 /* Aes.c -- AES encryption / decryption
-2013-11-12 : Igor Pavlov : Public domain */
+2015-02-23 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -7,7 +7,7 @@
 #include "CpuArch.h"
 
 static UInt32 T[256 * 4];
-static Byte Sbox[256] = {
+static const Byte Sbox[256] = {
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
   0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
   0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -40,7 +40,7 @@ AES_CODE_FUNC g_AesCtr_Code;
 static UInt32 D[256 * 4];
 static Byte InvS[256];
 
-static Byte Rcon[11] = { 0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
+static const Byte Rcon[11] = { 0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36 };
 
 #define xtime(x) ((((x) << 1) ^ (((x) & 0x80) != 0 ? 0x1B : 0)) & 0xFF)
 
@@ -56,6 +56,7 @@ void AesGenTables(void)
   unsigned i;
   for (i = 0; i < 256; i++)
     InvS[Sbox[i]] = (Byte)i;
+  
   for (i = 0; i < 256; i++)
   {
     {
@@ -82,9 +83,11 @@ void AesGenTables(void)
       D[0x300 + i] = Ui32(a9, aD, aB, aE);
     }
   }
+  
   g_AesCbc_Encode = AesCbc_Encode;
   g_AesCbc_Decode = AesCbc_Decode;
   g_AesCtr_Code = AesCtr_Code;
+  
   #ifdef MY_CPU_X86_OR_AMD64
   if (CPU_Is_Aes_Supported())
   {
@@ -95,34 +98,38 @@ void AesGenTables(void)
   #endif
 }
 
+
 #define HT(i, x, s) (T + (x << 8))[gb ## x(s[(i + x) & 3])]
+
 #define HT4(m, i, s, p) m[i] = \
     HT(i, 0, s) ^ \
     HT(i, 1, s) ^ \
     HT(i, 2, s) ^ \
     HT(i, 3, s) ^ w[p + i]
-/* such order (2031) in HT16 is for VC6/K8 speed optimization) */
+
 #define HT16(m, s, p) \
-    HT4(m, 2, s, p); \
     HT4(m, 0, s, p); \
-    HT4(m, 3, s, p); \
     HT4(m, 1, s, p); \
+    HT4(m, 2, s, p); \
+    HT4(m, 3, s, p); \
 
 #define FT(i, x) Sbox[gb ## x(m[(i + x) & 3])]
 #define FT4(i) dest[i] = Ui32(FT(i, 0), FT(i, 1), FT(i, 2), FT(i, 3)) ^ w[i];
 
+
 #define HD(i, x, s) (D + (x << 8))[gb ## x(s[(i - x) & 3])]
+
 #define HD4(m, i, s, p) m[i] = \
     HD(i, 0, s) ^ \
     HD(i, 1, s) ^ \
     HD(i, 2, s) ^ \
     HD(i, 3, s) ^ w[p + i];
-/* such order (0231) in HD16 is for VC6/K8 speed optimization) */
+
 #define HD16(m, s, p) \
     HD4(m, 0, s, p); \
+    HD4(m, 1, s, p); \
     HD4(m, 2, s, p); \
     HD4(m, 3, s, p); \
-    HD4(m, 1, s, p); \
 
 #define FD(i, x) InvS[gb ## x(m[(i - x) & 3])]
 #define FD4(i) dest[i] = Ui32(FD(i, 0), FD(i, 1), FD(i, 2), FD(i, 3)) ^ w[i];
@@ -169,7 +176,7 @@ void MY_FAST_CALL Aes_SetKey_Dec(UInt32 *w, const Byte *key, unsigned keySize)
 
 /* Aes_Encode and Aes_Decode functions work with little-endian words.
   src and dest are pointers to 4 UInt32 words.
-  arc and dest can point to same block */
+  src and dest can point to same block */
 
 static void Aes_Encode(const UInt32 *w, UInt32 *dest, const UInt32 *src)
 {
@@ -271,13 +278,17 @@ void MY_FAST_CALL AesCtr_Code(UInt32 *p, Byte *data, size_t numBlocks)
     UInt32 temp[4];
     Byte buf[16];
     int i;
+
     if (++p[0] == 0)
       p[1]++;
+    
     Aes_Encode(p + 4, temp, p);
+    
     SetUi32(buf,      temp[0]);
     SetUi32(buf + 4,  temp[1]);
     SetUi32(buf + 8,  temp[2]);
     SetUi32(buf + 12, temp[3]);
+    
     for (i = 0; i < 16; i++)
       *data++ ^= buf[i];
   }
