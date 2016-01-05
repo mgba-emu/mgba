@@ -729,8 +729,6 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Obj = GBARegisterBLDCNTGetTarget2Obj(value);
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
-	renderer->anyTarget2 = value & 0x3F00;
-
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
 	}
@@ -750,6 +748,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}
+		renderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(renderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
 		for (w = 0; w < renderer->nWindows; ++w) {
@@ -763,6 +762,9 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			int drawn;
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
+				if (renderer->spriteCyclesRemaining <= 0) {
+					break;
+				}
 				struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
 				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
 					localY = mosaicY;

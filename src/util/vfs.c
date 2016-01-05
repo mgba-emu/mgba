@@ -168,6 +168,8 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 			ptrdiff_t len = separatorPoint - path;
 			if (PATH_MAX <= len) {
 				len = PATH_MAX - 1;
+			} else if (!len) {
+				len = 1;
 			}
 			strncpy(dirname, path, len);
 			dirname[len] = '\0';

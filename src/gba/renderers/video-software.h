@@ -122,6 +122,7 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
 	unsigned target1Obj;
@@ -131,7 +132,6 @@ struct GBAVideoSoftwareRenderer {
 	enum BlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
-	int anyTarget2;
 
 	uint16_t blda;
 	uint16_t bldb;

@@ -194,7 +194,6 @@ if(PSP2 OR WII)
 endif()
 
 if(DEFINED 3DS OR DEFINED PSP2 OR DEFINED WII)
-	set(USE_LZMA OFF)
 	set(USE_GDB_STUB OFF)
 endif()
 
@@ -311,7 +310,6 @@ set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
 
 if(DISABLE_DEPS)
-	set(USE_LZMA OFF)
 	set(USE_GDB_STUB OFF)
 endif()
 
@@ -445,16 +443,18 @@ if (USE_LZMA)
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zCrcOpt.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zDec.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/CpuArch.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Delta.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/LzmaDec.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Lzma2Dec.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bra.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bra86.c
+		${CMAKE_SOURCE_DIR}/src/third-party/lzma/BraIA64.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Bcj2.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Ppmd7.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/Ppmd7Dec.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zFile.c
 		${CMAKE_SOURCE_DIR}/src/third-party/lzma/7zStream.c)
-	list(APPEND FEATURE_SRC ${LZMA_SRC})
+	list(APPEND VFS_SRC ${LZMA_SRC})
 	list(APPEND FEATURES LZMA)
 endif()
 

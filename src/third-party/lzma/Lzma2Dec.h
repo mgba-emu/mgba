@@ -1,5 +1,5 @@
 /* Lzma2Dec.h -- LZMA2 Decoder
-2013-01-18 : Igor Pavlov : Public domain */
+2015-05-13 : Igor Pavlov : Public domain */
 
 #ifndef __LZMA2_DEC_H
 #define __LZMA2_DEC_H
@@ -15,7 +15,7 @@ typedef struct
   CLzmaDec decoder;
   UInt32 packSize;
   UInt32 unpackSize;
-  int state;
+  unsigned state;
   Byte control;
   Bool needInitDic;
   Bool needInitState;

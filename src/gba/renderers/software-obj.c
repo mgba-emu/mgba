@@ -178,6 +178,10 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		int totalWidth = width << GBAObjAttributesAGetDoubleSize(sprite->a);
 		int totalHeight = height << GBAObjAttributesAGetDoubleSize(sprite->a);
+		renderer->spriteCyclesRemaining -= 10 + totalWidth * 2;
+		if (renderer->spriteCyclesRemaining <= 0) {
+			return 0;
+		}
 		struct GBAOAMMatrix mat;
 		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
 		LOAD_16(mat.b, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].b);
@@ -212,6 +216,10 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 			}
 		}
 	} else {
+		renderer->spriteCyclesRemaining -= width;
+		if (renderer->spriteCyclesRemaining <= 0) {
+			return 0;
+		}
 		int outX = x >= start ? x : start;
 		int condition = x + width;
 		int mosaicH = 1;
