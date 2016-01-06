@@ -10,9 +10,9 @@
 #include <malloc.h>
 #include <ogc/tpl.h>
 
-#define GLYPH_HEIGHT 12
-#define CELL_HEIGHT 16
-#define CELL_WIDTH 16
+#define GLYPH_HEIGHT 24
+#define CELL_HEIGHT 32
+#define CELL_WIDTH 32
 
 struct GUIFont {
 	TPLFile tdf;
@@ -50,7 +50,7 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	if (glyph > 0x7F) {
 		glyph = '?';
 	}
-	return defaultFontMetrics[glyph].width;
+	return defaultFontMetrics[glyph].width * 2;
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
@@ -69,23 +69,23 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left;
-	s16 ty = (glyph >> 4) * CELL_HEIGHT + metric.padding.top;
+	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left * 2;
+	s16 ty = (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2;
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top);
+	GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32(tx / 256.f, ty / 128.f);
+	GX_TexCoord2f32(tx / 512.f, ty / 256.f);
 
-	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + metric.padding.top);
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2, y - GLYPH_HEIGHT + metric.padding.top * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, ty / 128.f);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2) / 512.f, ty / 256.f);
 
-	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2) / 512.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2) / 256.f);
 
-	GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+	GX_TexCoord2f32(tx / 512.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2) / 256.f);
 	GX_End();
 }

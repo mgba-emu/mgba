@@ -25,7 +25,7 @@ set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DE
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.o
-                   COMMAND ${OBJCOPY_CMD} font.png ${CMAKE_CURRENT_BINARY_DIR}/font.o
+                   COMMAND ${OBJCOPY_CMD} font2x.png ${CMAKE_CURRENT_BINARY_DIR}/font.o
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o

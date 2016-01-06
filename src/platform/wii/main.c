@@ -196,7 +196,7 @@ int main() {
 
 	struct GBAGUIRunner runner = {
 		.params = {
-			vmode->fbWidth * 0.9, vmode->efbHeight * 0.9,
+			vmode->fbWidth * 1.6, vmode->efbHeight * 1.6,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -374,21 +374,22 @@ void _reproj(int w, int h) {
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
+void _reproj2(int w, int h) {
+	Mtx44 proj;
+	s16 top = 20;
+	guOrtho(proj, -top, top + h, 0, w, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+}
+
 void _guiPrepare(void) {
-	int w = vmode->fbWidth * 0.9;
-	int h = vmode->efbHeight * 0.9;
-	_reproj(w, h);
+	_reproj2(vmode->fbWidth * 1.6, vmode->efbHeight * 1.6);
 }
 
 void _guiFinish(void) {
 	if (screenMode == SM_PA) {
 		_reproj(VIDEO_HORIZONTAL_PIXELS * scaleFactor, VIDEO_VERTICAL_PIXELS * scaleFactor);
 	} else {
-		Mtx44 proj;
-		short top = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? 10 : 20;
-		short bottom = VIDEO_VERTICAL_PIXELS + top;
-		guOrtho(proj, -top, bottom, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+		_reproj2(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	}
 }
 

@@ -24,6 +24,7 @@ target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
                    COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
+                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/src/platform/wii/font.tpl
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(${BINARY_NAME}.dol ALL
