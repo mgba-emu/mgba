@@ -158,7 +158,7 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);
 	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
-	GBAInputMapLoad(&runner->context.inputMap, PSP2_INPUT, &runner->context.config);
+	GBAInputMapLoad(&runner->context.inputMap, PSP2_INPUT, GBAConfigGetInput(&runner->context.config));
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
@@ -221,7 +221,7 @@ void GBAPSP2UnloadROM(struct GBAGUIRunner* runner) {
 }
 
 void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
-	GBAInputMapSave(&runner->context.inputMap, PSP2_INPUT, &runner->context.config);
+	GBAInputMapSave(&runner->context.inputMap, PSP2_INPUT, GBAConfigGetInput(&runner->context.config));
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }
