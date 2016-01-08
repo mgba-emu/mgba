@@ -727,6 +727,8 @@ void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
 		GBALog(gba, GBA_LOG_STATUS, "Screenshot saved");
 		return;
 	}
+#else
+	UNUSED(dir);
 #endif
 	GBALog(gba, GBA_LOG_STATUS, "Failed to take screenshot");
 }

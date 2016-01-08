@@ -98,6 +98,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 
 struct VDir* VDirOpenArchive(const char* path) {
 	struct VDir* dir = 0;
+	UNUSED(path);
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 	if (!dir) {
 		dir = VDirOpenZip(path, 0);
