@@ -611,7 +611,7 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	if (angles != GBA_KEY_NONE) {
 		keys |= 1 << angles;
 	}
-	/*if (ext == WPAD_EXP_CLASSIC) {
+	if (ext == WPAD_EXP_CLASSIC) {
 		keys |= GBAInputMapKeyBits(&runner->context.inputMap, CLASSIC_INPUT, wiiPad, 0);
 		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
 		if (angles != GBA_KEY_NONE) {
@@ -621,7 +621,7 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 		if (angles != GBA_KEY_NONE) {
 			keys |= 1 << angles;
 		}
-	}*/
+	}
 
 	return keys;
 }
