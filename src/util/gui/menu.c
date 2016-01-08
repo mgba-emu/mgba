@@ -38,7 +38,13 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
 			if (item->validStates) {
 				if (item->state > 0) {
-					--item->state;
+					unsigned oldState = item->state;
+					do {
+						--item->state;
+					} while (!item->validStates[item->state] && item->state > 0);
+					if (!item->validStates[item->state]) {
+						item->state = oldState;
+					}
 				}
 			} else if (menu->index >= pageSize) {
 				menu->index -= pageSize;
@@ -49,8 +55,14 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		if (newInput & (1 << GUI_INPUT_RIGHT)) {
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
 			if (item->validStates) {
-				if (item->validStates[item->state + 1]) {
-					++item->state;
+				if (item->state < item->nStates - 1) {
+					unsigned oldState = item->state;
+					do {
+						++item->state;
+					} while (!item->validStates[item->state] && item->state < item->nStates - 1);
+					if (!item->validStates[item->state]) {
+						item->state = oldState;
+					}
 				}
 			} else if (menu->index + pageSize < GUIMenuItemListSize(&menu->items)) {
 				menu->index += pageSize;
@@ -120,7 +132,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			}
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, i);
 			GUIFontPrintf(params->font, 0, y, GUI_TEXT_LEFT, color, "%c %s", bullet, item->title);
-			if (item->validStates) {
+			if (item->validStates && item->validStates[item->state]) {
 				GUIFontPrintf(params->font, params->width, y, GUI_TEXT_RIGHT, color, "%s ", item->validStates[item->state]);
 			}
 			y += lineHeight;

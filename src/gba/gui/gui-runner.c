@@ -116,6 +116,13 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	if (runner->setup) {
 		runner->setup(runner);
 	}
+
+	if (runner->context.config.port && runner->keySources) {
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			GBAInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+		}
+	}
 }
 
 void GBAGUIDeinit(struct GBAGUIRunner* runner) {
@@ -123,6 +130,12 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 		runner->teardown(runner);
 	}
 	if (runner->context.config.port) {
+		if (runner->keySources) {
+			size_t i;
+			for (i = 0; runner->keySources[i].id; ++i) {
+				GBAInputMapSave(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+			}
+		}
 		GBAConfigSave(&runner->context.config);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);

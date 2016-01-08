@@ -48,7 +48,6 @@ static struct GBASceRotationSource {
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
 
-#define PSP2_INPUT 0x50535032
 #define PSP2_SAMPLES 64
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 19)
 
@@ -138,11 +137,6 @@ uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner) {
 
 void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
-	struct GBAOptions opts = {
-		.useBios = true,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_START, GBA_KEY_START);
@@ -158,7 +152,6 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);
 	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
-	GBAInputMapLoad(&runner->context.inputMap, PSP2_INPUT, GBAConfigGetInput(&runner->context.config));
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
@@ -221,7 +214,6 @@ void GBAPSP2UnloadROM(struct GBAGUIRunner* runner) {
 }
 
 void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
-	GBAInputMapSave(&runner->context.inputMap, PSP2_INPUT, GBAConfigGetInput(&runner->context.config));
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }

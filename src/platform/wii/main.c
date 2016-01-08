@@ -63,7 +63,6 @@ static void _guiPrepare(void);
 static void _guiFinish(void);
 
 static void _setup(struct GBAGUIRunner* runner);
-static void _teardown(struct GBAGUIRunner* runner);
 static void _gameLoaded(struct GBAGUIRunner* runner);
 static void _gameUnloaded(struct GBAGUIRunner* runner);
 static void _unpaused(struct GBAGUIRunner* runner);
@@ -215,6 +214,113 @@ int main() {
 
 			GUI_PARAMS_TRAIL
 		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "GameCube Input (1)",
+				.id = GCN1_INPUT,
+				.keyNames = (const char*[]) {
+					"D-Pad Left",
+					"D-Pad Right",
+					"D-Pad Down",
+					"D-Pad Up",
+					"Z",
+					"R",
+					"L",
+					0,
+					"A",
+					"B",
+					"X",
+					"Y",
+					"Start"
+				},
+				.nKeys = 13
+			},
+			{
+				.name = "GameCube Input (2)",
+				.id = GCN2_INPUT,
+				.keyNames = (const char*[]) {
+					"D-Pad Left",
+					"D-Pad Right",
+					"D-Pad Down",
+					"D-Pad Up",
+					"Z",
+					"R",
+					"L",
+					0,
+					"A",
+					"B",
+					"X",
+					"Y",
+					"Start"
+				},
+				.nKeys = 13
+			},
+			{
+				.name = "Wii Remote Input",
+				.id = WIIMOTE_INPUT,
+				.keyNames = (const char*[]) {
+					"2",
+					"1",
+					"B",
+					"A",
+					"Minus",
+					0,
+					0,
+					"Home",
+					"Left",
+					"Right",
+					"Down",
+					"Up",
+					"Plus",
+					0,
+					0,
+					0,
+					"Z",
+					"C",
+				},
+				.nKeys = 18
+			},
+			{
+				.name = "Classic Controller Input",
+				.id = CLASSIC_INPUT,
+				.keyNames = (const char*[]) {
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					"Up",
+					"Left",
+					"ZR",
+					"X",
+					"A",
+					"Y",
+					"B",
+					"ZL",
+					0,
+					"R",
+					"Plus",
+					"Home",
+					"Minus",
+					"L",
+					"Down",
+					"Right",
+				},
+				.nKeys = 32
+			},
+			{ .id = 0 }
+		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
@@ -224,8 +330,8 @@ int main() {
 				.validStates = (const char*[]) {
 					"Pixel-Accurate",
 					"Stretched",
-					0
-				}
+				},
+				.nStates = 2
 			},
 			{
 				.title = "Filtering",
@@ -235,13 +341,13 @@ int main() {
 				.validStates = (const char*[]) {
 					"Pixelated",
 					"Resampled",
-					0
-				}
+				},
+				.nStates = 2
 			}
 		},
 		.nConfigExtra = 2,
 		.setup = _setup,
-		.teardown = _teardown,
+		.teardown = 0,
 		.gameLoaded = _gameLoaded,
 		.gameUnloaded = _gameUnloaded,
 		.prepareForFrame = 0,
@@ -407,11 +513,6 @@ void _setup(struct GBAGUIRunner* runner) {
 	runner->context.gba->rumble = &rumble;
 	runner->context.gba->rotationSource = &rotation;
 
-	struct GBAOptions opts = {
-		.useBios = true,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
 	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
 	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_START, GBA_KEY_START);
@@ -452,10 +553,6 @@ void _setup(struct GBAGUIRunner* runner) {
 	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x40, -0x40 };
 	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
 	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
-	GBAInputMapLoad(&runner->context.inputMap, GCN1_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapLoad(&runner->context.inputMap, GCN2_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapLoad(&runner->context.inputMap, WIIMOTE_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapLoad(&runner->context.inputMap, CLASSIC_INPUT, GBAConfigGetInput(&runner->context.config));
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
@@ -469,13 +566,6 @@ void _setup(struct GBAGUIRunner* runner) {
 	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 #endif
-}
-
-void _teardown(struct GBAGUIRunner* runner) {
-	GBAInputMapSave(&runner->context.inputMap, GCN1_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapSave(&runner->context.inputMap, GCN2_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapSave(&runner->context.inputMap, WIIMOTE_INPUT, GBAConfigGetInput(&runner->context.config));
-	GBAInputMapSave(&runner->context.inputMap, CLASSIC_INPUT, GBAConfigGetInput(&runner->context.config));
 }
 
 void _gameUnloaded(struct GBAGUIRunner* runner) {
