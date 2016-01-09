@@ -33,6 +33,7 @@ struct GBARRContext {
 	void (*nextFrame)(struct GBARRContext*);
 	void (*logInput)(struct GBARRContext*, uint16_t input);
 	uint16_t (*queryInput)(struct GBARRContext*);
+	bool (*queryReset)(struct GBARRContext*);
 
 	void (*stateSaved)(struct GBARRContext*, struct GBASerializedState*);
 	void (*stateLoaded)(struct GBARRContext*, const struct GBASerializedState*);

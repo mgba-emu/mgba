@@ -28,6 +28,7 @@ set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC
+	${CMAKE_CURRENT_BINARY_DIR}/icons.c
 	${CMAKE_CURRENT_BINARY_DIR}/font.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader.h
@@ -38,6 +39,7 @@ list(APPEND GUI_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/ctr-gpu.h)
 
 set_source_files_properties(
+	${CMAKE_CURRENT_BINARY_DIR}/icons.c
 	${CMAKE_CURRENT_BINARY_DIR}/font.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader.h
@@ -58,6 +60,10 @@ add_custom_command(OUTPUT ${BINARY_NAME}.bnr
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
                    COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw
                    DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
+                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw
+                   DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw)
 
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h

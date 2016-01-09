@@ -11,7 +11,7 @@
 #ifdef _WIN32
 #include <io.h>
 #include <windows.h>
-#define PATH_SEP "\\"
+#define PATH_SEP "/" // Windows can handle slashes, and backslashes confuse some libraries
 #else
 #define PATH_SEP "/"
 #endif

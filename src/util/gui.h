@@ -59,7 +59,7 @@ struct GUIParams {
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
 	uint32_t (*pollInput)(void);
-	enum GUICursorState (*pollCursor)(int* x, int* y);
+	enum GUICursorState (*pollCursor)(unsigned* x, unsigned* y);
 	int (*batteryState)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
@@ -78,7 +78,7 @@ struct GUIParams {
 
 void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);
-enum GUICursorState GUIPollCursor(struct GUIParams* params, int* x, int* y);
+enum GUICursorState GUIPollCursor(struct GUIParams* params, unsigned* x, unsigned* y);
 void GUIInvalidateKeys(struct GUIParams* params);
 
 #endif

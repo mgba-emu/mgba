@@ -27,12 +27,6 @@ FS_Archive sdmcArchive;
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
 
-#define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
-#define ALLOW_OPPOSING_DIRECTIONS "mgba_allow_opposing_directions"
-#define USE_BIOS "mgba_use_bios"
-#define SKIP_BIOS "mgba_skip_bios"
-#define IDLE_OPTIMIZATION "mgba_idle_optimization"
-
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
 static retro_audio_sample_batch_t audioCallback;
@@ -69,26 +63,26 @@ static void _reloadSettings(void) {
 
 	struct retro_variable var;
 
-	var.key = USE_BIOS;
+	var.key = "mgba_use_bios";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.useBios = strcmp(var.value, "yes") == 0;
+		opts.useBios = strcmp(var.value, "ON") == 0;
 	}
 
-	var.key = SKIP_BIOS;
+	var.key = "mgba_skip_bios";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		opts.skipBios = strcmp(var.value, "yes") == 0;
+		opts.skipBios = strcmp(var.value, "ON") == 0;
 	}
 
-	var.key = IDLE_OPTIMIZATION;
+	var.key = "mgba_idle_optimization";
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-		if (strcmp(var.value, "don't remove") == 0) {
+		if (strcmp(var.value, "Don't Remove") == 0) {
 			opts.idleOptimization = IDLE_LOOP_IGNORE;
-		} else if (strcmp(var.value, "remove known") == 0) {
+		} else if (strcmp(var.value, "Remove Known") == 0) {
 			opts.idleOptimization = IDLE_LOOP_REMOVE;
-		} else if (strcmp(var.value, "detect and remove") == 0) {
+		} else if (strcmp(var.value, "Detect and Remove") == 0) {
 			opts.idleOptimization = IDLE_LOOP_DETECT;
 		}
 	}
@@ -104,11 +98,11 @@ void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
 
 	struct retro_variable vars[] = {
-		{ SOLAR_SENSOR_LEVEL, "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
-		{ ALLOW_OPPOSING_DIRECTIONS, "Allow opposing directional input; no|yes" },
-		{ USE_BIOS, "Use BIOS file if found; yes|no" },
-		{ SKIP_BIOS, "Skip BIOS intro; no|yes" },
-		{ IDLE_OPTIMIZATION, "Idle loop removal; remove known|detect and remove|don't remove" },
+		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
+		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
+		{ "mgba_use_bios", "Use BIOS file if found; ON|OFF" },
+		{ "mgba_skip_bios", "Skip BIOS intro; OFF|ON" },
+		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ 0, 0 }
 	};
 
@@ -272,7 +266,7 @@ void retro_run(void) {
 	inputPollCallback();
 
 	struct retro_variable var = {
-		.key = ALLOW_OPPOSING_DIRECTIONS,
+		.key = "mgba_allow_opposing_directions",
 		.value = 0
 	};
 
@@ -539,7 +533,7 @@ static void _setRumble(struct GBARumble* rumble, int enable) {
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
-		.key = SOLAR_SENSOR_LEVEL,
+		.key = "mgba_solar_sensor_level",
 		.value = 0
 	};
 

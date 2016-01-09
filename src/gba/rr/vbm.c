@@ -9,6 +9,10 @@
 #include "gba/serialize.h"
 #include "util/vfs.h"
 
+#ifdef USE_ZLIB
+#include <zlib.h>
+#endif
+
 static const char VBM_MAGIC[] = "VBM\x1A";
 
 static void GBAVBMContextDestroy(struct GBARRContext*);
@@ -23,6 +27,7 @@ static bool GBAVBMIsRecording(const struct GBARRContext*);
 
 static void GBAVBMNextFrame(struct GBARRContext*);
 static uint16_t GBAVBMQueryInput(struct GBARRContext*);
+static bool GBAVBMQueryReset(struct GBARRContext*);
 
 static void GBAVBMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state);
 static void GBAVBMStateLoaded(struct GBARRContext* rr, const struct GBASerializedState* state);
@@ -46,6 +51,7 @@ void GBAVBMContextCreate(struct GBAVBMContext* vbm) {
 	vbm->d.nextFrame = GBAVBMNextFrame;
 	vbm->d.logInput = 0;
 	vbm->d.queryInput = GBAVBMQueryInput;
+	vbm->d.queryReset = GBAVBMQueryReset;
 
 	vbm->d.stateSaved = GBAVBMStateSaved;
 	vbm->d.stateLoaded = GBAVBMStateLoaded;
@@ -114,6 +120,18 @@ uint16_t GBAVBMQueryInput(struct GBARRContext* rr) {
 	return input & 0x3FF;
 }
 
+bool GBAVBMQueryReset(struct GBARRContext* rr) {
+	if (!rr->isPlaying(rr)) {
+		return false;
+	}
+
+	struct GBAVBMContext* vbm = (struct GBAVBMContext*) rr;
+	uint16_t input;
+	vbm->vbmFile->read(vbm->vbmFile, &input, sizeof(input));
+	vbm->vbmFile->seek(vbm->vbmFile, -sizeof(input), SEEK_CUR);
+	return input & 0x800;
+}
+
 void GBAVBMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state) {
 	UNUSED(rr);
 	UNUSED(state);
@@ -125,9 +143,72 @@ void GBAVBMStateLoaded(struct GBARRContext* rr, const struct GBASerializedState*
 }
 
 struct VFile* GBAVBMOpenSavedata(struct GBARRContext* rr, int flags) {
-	UNUSED(rr);
 	UNUSED(flags);
+#ifndef USE_ZLIB
+	UNUSED(rr);
 	return 0;
+#else
+	struct GBAVBMContext* vbm = (struct GBAVBMContext*) rr;
+	off_t pos = vbm->vbmFile->seek(vbm->vbmFile, 0, SEEK_CUR);
+	uint32_t saveType, flashSize, sramOffset;
+	vbm->vbmFile->seek(vbm->vbmFile, 0x18, SEEK_SET);
+	vbm->vbmFile->read(vbm->vbmFile, &saveType, sizeof(saveType));
+	vbm->vbmFile->read(vbm->vbmFile, &flashSize, sizeof(flashSize));
+	vbm->vbmFile->seek(vbm->vbmFile, 0x38, SEEK_SET);
+	vbm->vbmFile->read(vbm->vbmFile, &sramOffset, sizeof(sramOffset));
+	if (!sramOffset) {
+		vbm->vbmFile->seek(vbm->vbmFile, pos, SEEK_SET);
+		return 0;
+	}
+	vbm->vbmFile->seek(vbm->vbmFile, sramOffset, SEEK_SET);
+	struct VFile* save = VFileMemChunk(0, 0);
+	size_t size;
+	switch (saveType) {
+	case 1:
+		size = SIZE_CART_SRAM;
+		break;
+	case 2:
+		size = flashSize;
+		if (size > SIZE_CART_FLASH1M) {
+			size = SIZE_CART_FLASH1M;
+		}
+		break;
+	case 3:
+		size = SIZE_CART_EEPROM;
+		break;
+	default:
+		size = SIZE_CART_FLASH1M;
+		break;
+	}
+	uLong zlen = vbm->inputOffset - sramOffset;
+	char buffer[8761];
+	char* zbuffer = malloc(zlen);
+	vbm->vbmFile->read(vbm->vbmFile, zbuffer, zlen);
+	z_stream zstr;
+	zstr.zalloc = Z_NULL;
+	zstr.zfree = Z_NULL;
+	zstr.opaque = Z_NULL;
+	zstr.avail_in = zlen;
+	zstr.next_in = (Bytef*) zbuffer;
+	zstr.avail_out = 0;
+	inflateInit2(&zstr, 31);
+	// Skip header, we know where the save file is
+	zstr.avail_out = sizeof(buffer);
+	zstr.next_out = (Bytef*) &buffer;
+	int err = inflate(&zstr, 0);
+	while (err != Z_STREAM_END && !zstr.avail_out) {
+		zstr.avail_out = sizeof(buffer);
+		zstr.next_out = (Bytef*) &buffer;
+		int err = inflate(&zstr, 0);
+		if (err < 0) {
+			break;
+		}
+		save->write(save, buffer, sizeof(buffer) - zstr.avail_out);
+	}
+	inflateEnd(&zstr);
+	vbm->vbmFile->seek(vbm->vbmFile, pos, SEEK_SET);
+	return save;
+#endif
 }
 
 struct VFile* GBAVBMOpenSavestate(struct GBARRContext* rr, int flags) {
@@ -163,12 +244,16 @@ bool GBAVBMSetStream(struct GBAVBMContext* vbm, struct VFile* vf) {
 
 	uint8_t flags;
 	vf->read(vf, &flags, sizeof(flags));
+	if (flags & 2) {
+#if USE_ZLIB
+		vbm->d.initFrom = INIT_FROM_SAVEGAME;
+#else
+		// zlib is needed to parse the savegame
+		return false;
+#endif
+	}
 	if (flags & 1) {
 		// Incompatible savestate format
-		return false;
-	}
-	if (flags & 2) {
-		// TODO: Implement SRAM loading
 		return false;
 	}
 

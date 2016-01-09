@@ -23,6 +23,15 @@
 #include "util/gui/menu.h"
 #include "util/vfs.h"
 
+#define GCN1_INPUT 0x47434E31
+#define GCN2_INPUT 0x47434E32
+#define WIIMOTE_INPUT 0x5749494D
+#define CLASSIC_INPUT 0x57494943
+
+static void _mapKey(struct GBAInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
+	GBAInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
+}
+
 static enum ScreenMode {
 	SM_PA,
 	SM_SF,
@@ -36,6 +45,7 @@ enum FilterMode {
 };
 
 #define SAMPLES 1024
+#define GUI_SCALE 1.35
 
 static void _retraceCallback(u32 count);
 
@@ -49,7 +59,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 static void _drawStart(void);
 static void _drawEnd(void);
 static uint32_t _pollInput(void);
-static enum GUICursorState _pollCursor(int* x, int* y);
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
@@ -196,7 +206,7 @@ int main() {
 
 	struct GBAGUIRunner runner = {
 		.params = {
-			vmode->fbWidth * 0.9, vmode->efbHeight * 0.9,
+			vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -204,6 +214,113 @@ int main() {
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
+		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "GameCube Input (1)",
+				.id = GCN1_INPUT,
+				.keyNames = (const char*[]) {
+					"D-Pad Left",
+					"D-Pad Right",
+					"D-Pad Down",
+					"D-Pad Up",
+					"Z",
+					"R",
+					"L",
+					0,
+					"A",
+					"B",
+					"X",
+					"Y",
+					"Start"
+				},
+				.nKeys = 13
+			},
+			{
+				.name = "GameCube Input (2)",
+				.id = GCN2_INPUT,
+				.keyNames = (const char*[]) {
+					"D-Pad Left",
+					"D-Pad Right",
+					"D-Pad Down",
+					"D-Pad Up",
+					"Z",
+					"R",
+					"L",
+					0,
+					"A",
+					"B",
+					"X",
+					"Y",
+					"Start"
+				},
+				.nKeys = 13
+			},
+			{
+				.name = "Wii Remote Input",
+				.id = WIIMOTE_INPUT,
+				.keyNames = (const char*[]) {
+					"2",
+					"1",
+					"B",
+					"A",
+					"Minus",
+					0,
+					0,
+					"Home",
+					"Left",
+					"Right",
+					"Down",
+					"Up",
+					"Plus",
+					0,
+					0,
+					0,
+					"Z",
+					"C",
+				},
+				.nKeys = 18
+			},
+			{
+				.name = "Classic Controller Input",
+				.id = CLASSIC_INPUT,
+				.keyNames = (const char*[]) {
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					"Up",
+					"Left",
+					"ZR",
+					"X",
+					"A",
+					"Y",
+					"B",
+					"ZL",
+					0,
+					"R",
+					"Plus",
+					"Home",
+					"Minus",
+					"L",
+					"Down",
+					"Right",
+				},
+				.nKeys = 32
+			},
+			{ .id = 0 }
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
@@ -214,8 +331,8 @@ int main() {
 				.validStates = (const char*[]) {
 					"Pixel-Accurate",
 					"Stretched",
-					0
-				}
+				},
+				.nStates = 2
 			},
 			{
 				.title = "Filtering",
@@ -225,8 +342,8 @@ int main() {
 				.validStates = (const char*[]) {
 					"Pixelated",
 					"Resampled",
-					0
-				}
+				},
+				.nStates = 2
 			}
 		},
 		.nConfigExtra = 2,
@@ -350,7 +467,7 @@ static uint32_t _pollInput(void) {
 	return keys;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	ir_t ir;
 	WPAD_IR(0, &ir);
 	if (!ir.smooth_valid) {
@@ -374,27 +491,69 @@ void _reproj(int w, int h) {
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
+void _reproj2(int w, int h) {
+	Mtx44 proj;
+	s16 top = 20;
+	guOrtho(proj, -top, top + h, 0, w, 0, 300);
+	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+}
+
 void _guiPrepare(void) {
-	int w = vmode->fbWidth * 0.9;
-	int h = vmode->efbHeight * 0.9;
-	_reproj(w, h);
+	_reproj2(vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE);
 }
 
 void _guiFinish(void) {
 	if (screenMode == SM_PA) {
 		_reproj(VIDEO_HORIZONTAL_PIXELS * scaleFactor, VIDEO_VERTICAL_PIXELS * scaleFactor);
 	} else {
-		Mtx44 proj;
-		short top = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? 10 : 20;
-		short bottom = VIDEO_VERTICAL_PIXELS + top;
-		guOrtho(proj, -top, bottom, 0, VIDEO_HORIZONTAL_PIXELS, 0, 300);
-		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+		_reproj2(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 	}
 }
 
 void _setup(struct GBAGUIRunner* runner) {
 	runner->context.gba->rumble = &rumble;
 	runner->context.gba->rotationSource = &rotation;
+
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_START, GBA_KEY_START);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_X, GBA_KEY_SELECT);
+	_mapKey(&runner->context.inputMap, GCN2_INPUT, PAD_BUTTON_Y, GBA_KEY_SELECT);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_UP, GBA_KEY_UP);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_DOWN, GBA_KEY_DOWN);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_LEFT, GBA_KEY_LEFT);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_RIGHT, GBA_KEY_RIGHT);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_TRIGGER_L, GBA_KEY_L);
+	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_TRIGGER_R, GBA_KEY_R);
+
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_2, GBA_KEY_A);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_1, GBA_KEY_B);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_PLUS, GBA_KEY_START);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_MINUS, GBA_KEY_SELECT);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_RIGHT, GBA_KEY_UP);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_LEFT, GBA_KEY_DOWN);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_UP, GBA_KEY_LEFT);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_DOWN, GBA_KEY_RIGHT);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_B, GBA_KEY_L);
+	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_A, GBA_KEY_R);
+
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_A, GBA_KEY_A);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_B, GBA_KEY_B);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_PLUS, GBA_KEY_START);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_MINUS, GBA_KEY_SELECT);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_UP, GBA_KEY_UP);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GBA_KEY_DOWN);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_LEFT, GBA_KEY_LEFT);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_RIGHT, GBA_KEY_RIGHT);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
+	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
+
+	struct GBAAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x40, -0x40 };
+	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 0, &desc);
+	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, &desc);
+	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x40, -0x40 };
+	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
+	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
@@ -530,65 +689,31 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	WPAD_ScanPads();
 	u32 wiiPad = WPAD_ButtonsHeld(0);
 	u32 ext = 0;
-	uint16_t keys = 0;
 	WPAD_Probe(0, &ext);
+	uint16_t keys = GBAInputMapKeyBits(&runner->context.inputMap, GCN1_INPUT, padkeys, 0);
+	keys |= GBAInputMapKeyBits(&runner->context.inputMap, GCN2_INPUT, padkeys, 0);
+	keys |= GBAInputMapKeyBits(&runner->context.inputMap, WIIMOTE_INPUT, wiiPad, 0);
 
-	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
-		keys |= 1 << GBA_KEY_A;
+	enum GBAKey angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 0, PAD_StickX(0));
+	if (angles != GBA_KEY_NONE) {
+		keys |= 1 << angles;
 	}
-	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
-		keys |= 1 << GBA_KEY_B;
+	angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 1, PAD_StickY(0));
+	if (angles != GBA_KEY_NONE) {
+		keys |= 1 << angles;
 	}
-	if ((padkeys & PAD_TRIGGER_L) || (wiiPad & WPAD_BUTTON_B) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_L))) {
-		keys |= 1 << GBA_KEY_L;
+	if (ext == WPAD_EXP_CLASSIC) {
+		keys |= GBAInputMapKeyBits(&runner->context.inputMap, CLASSIC_INPUT, wiiPad, 0);
+		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
+		if (angles != GBA_KEY_NONE) {
+			keys |= 1 << angles;
+		}
+		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
+		if (angles != GBA_KEY_NONE) {
+			keys |= 1 << angles;
+		}
 	}
-	if ((padkeys & PAD_TRIGGER_R) || (wiiPad & WPAD_BUTTON_A) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_FULL_R))) {
-		keys |= 1 << GBA_KEY_R;
-	}
-	if ((padkeys & PAD_BUTTON_START) || (wiiPad & WPAD_BUTTON_PLUS) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_PLUS))) {
-		keys |= 1 << GBA_KEY_START;
-	}
-	if ((padkeys & (PAD_BUTTON_X | PAD_BUTTON_Y)) || (wiiPad & WPAD_BUTTON_MINUS) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_MINUS))) {
-		keys |= 1 << GBA_KEY_SELECT;
-	}
-	if ((padkeys & PAD_BUTTON_LEFT) || (wiiPad & WPAD_BUTTON_UP) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_LEFT))) {
-		keys |= 1 << GBA_KEY_LEFT;
-	}
-	if ((padkeys & PAD_BUTTON_RIGHT) || (wiiPad & WPAD_BUTTON_DOWN) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_RIGHT))) {
-		keys |= 1 << GBA_KEY_RIGHT;
-	}
-	if ((padkeys & PAD_BUTTON_UP) || (wiiPad & WPAD_BUTTON_RIGHT) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_UP))) {
-		keys |= 1 << GBA_KEY_UP;
-	}
-	if ((padkeys & PAD_BUTTON_DOWN) || (wiiPad & WPAD_BUTTON_LEFT) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_DOWN))) {
-		keys |= 1 << GBA_KEY_DOWN;
-	}
-	int x = PAD_StickX(0);
-	int y = PAD_StickY(0);
-	int w_x = WPAD_StickX(0,0);
-	int w_y = WPAD_StickY(0,0);
-	if (x < -0x40 || w_x < -0x40) {
-		keys |= 1 << GBA_KEY_LEFT;
-	}
-	if (x > 0x40 || w_x > 0x40) {
-		keys |= 1 << GBA_KEY_RIGHT;
-	}
-	if (y < -0x40 || w_y < -0x40) {
-		keys |= 1 << GBA_KEY_DOWN;
-	}
-	if (y > 0x40 || w_y > 0x40) {
-		keys |= 1 << GBA_KEY_UP;
-	}
+
 	return keys;
 }
 
