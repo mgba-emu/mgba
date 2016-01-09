@@ -74,9 +74,7 @@ void GBAContextDeinit(struct GBAContext* context) {
 	GBADestroy(context->gba);
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigDeinit(&context->config);
-#endif
 	GBADirectorySetDeinit(&context->dirs);
 }
 
@@ -163,9 +161,7 @@ bool GBAContextStart(struct GBAContext* context) {
 		return false;
 	}
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBAConfigMap(&context->config, &opts);
-#endif
 
 	if (!context->bios && opts.bios) {
 		GBAContextLoadBIOS(context, opts.bios);
