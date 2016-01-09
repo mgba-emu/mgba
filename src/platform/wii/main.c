@@ -45,6 +45,7 @@ enum FilterMode {
 };
 
 #define SAMPLES 1024
+#define GUI_SCALE 1.35
 
 static void _retraceCallback(u32 count);
 
@@ -205,7 +206,7 @@ int main() {
 
 	struct GBAGUIRunner runner = {
 		.params = {
-			vmode->fbWidth * 1.6, vmode->efbHeight * 1.6,
+			vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -498,7 +499,7 @@ void _reproj2(int w, int h) {
 }
 
 void _guiPrepare(void) {
-	_reproj2(vmode->fbWidth * 1.6, vmode->efbHeight * 1.6);
+	_reproj2(vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE);
 }
 
 void _guiFinish(void) {
