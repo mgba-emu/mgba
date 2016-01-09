@@ -80,9 +80,9 @@ void GBAGLContextDrawFrame(struct VideoBackend* v) {
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glRotatef(v->rotation, 0.f, 0.f, 1.f);
 	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 	if (v->filter) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

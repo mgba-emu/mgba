@@ -33,6 +33,7 @@ public slots:
 	void forceDraw() override { update(); }
 	void lockAspectRatio(bool lock) override;
 	void filter(bool filter) override;
+	void rotate(int ang) override;
 	void framePosted(const uint32_t*) override;
 	void setShaders(struct VDir*) override {}
 	void clearShaders() override {}

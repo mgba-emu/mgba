@@ -50,6 +50,7 @@ public:
 	void argumentsPassed(GBAArguments*);
 
 	void resizeFrame(int width, int height);
+	void rotateFrame(int angleDeg);
 
 signals:
 	void startDrawing(GBAThread*);
@@ -171,6 +172,7 @@ private:
 	ShaderSelector* m_shaderView;
 	int m_playerId;
 	bool m_fullscreenOnStart;
+	int m_rotation;
 
 	bool m_hitUnimplementedBiosCall;
 

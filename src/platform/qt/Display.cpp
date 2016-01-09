@@ -70,6 +70,10 @@ void Display::filter(bool filter) {
 	m_filter = filter;
 }
 
+void Display::rotate(int ang) {
+	m_rotation = ang;
+}
+
 void Display::showMessage(const QString& message) {
 	m_messagePainter.showMessage(message);
 	if (!isDrawing()) {
