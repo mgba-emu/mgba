@@ -72,6 +72,10 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 void GBAContextDeinit(struct GBAContext* context) {
 	ARMDeinit(context->cpu);
 	GBADestroy(context->gba);
+	if (context->bios) {
+		context->bios->close(context->bios);
+		context->bios = 0;
+	}
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
 	GBAConfigDeinit(&context->config);
@@ -103,10 +107,6 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 void GBAContextUnloadROM(struct GBAContext* context) {
 	GBAUnloadROM(context->gba);
 	GBADirectorySetDetachBase(&context->dirs);
-	if (context->bios) {
-		context->bios->close(context->bios);
-		context->bios = 0;
-	}
 	if (context->rom) {
 		context->rom->close(context->rom);
 		context->rom = 0;
