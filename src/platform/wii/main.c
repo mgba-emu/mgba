@@ -131,7 +131,7 @@ static void reconfigureScreen(GXRModeObj* vmode) {
 	}
 };
 
-int main() {
+int main(int argc, char* argv[]) {
 	VIDEO_Init();
 	PAD_Init();
 	WPAD_Init();
@@ -358,7 +358,11 @@ int main() {
 		.pollGameInput = _pollGameInput
 	};
 	GBAGUIInit(&runner, "wii");
-	GBAGUIRunloop(&runner);
+	if (argc > 1) {
+		GBAGUIRun(&runner, argv[1]);
+	} else {
+		GBAGUIRunloop(&runner);
+	}
 	GBAGUIDeinit(&runner);
 
 	free(fifo);
