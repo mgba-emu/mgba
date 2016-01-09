@@ -95,7 +95,11 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 		map->numMaps = 1;
 		impl = &map->maps[0];
 		impl->type = type;
-		impl->map = calloc(GBA_KEY_MAX, sizeof(int));
+		impl->map = malloc(GBA_KEY_MAX * sizeof(int));
+		int i;
+		for (i = 0; i < GBA_KEY_MAX; ++i) {
+			impl->map[i] = GBA_KEY_NONE;
+		}
 		TableInit(&impl->axes, 2, free);
 	} else {
 		impl = _lookupMap(map, type);
@@ -110,7 +114,11 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 		}
 		if (impl) {
 			impl->type = type;
-			impl->map = calloc(GBA_KEY_MAX, sizeof(int));
+			impl->map = malloc(GBA_KEY_MAX * sizeof(int));
+			int i;
+			for (i = 0; i < GBA_KEY_MAX; ++i) {
+				impl->map[i] = GBA_KEY_NONE;
+			}
 		} else {
 			map->maps = realloc(map->maps, sizeof(*map->maps) * map->numMaps * 2);
 			for (m = map->numMaps * 2 - 1; m > map->numMaps; --m) {
@@ -120,7 +128,11 @@ static struct GBAInputMapImpl* _guaranteeMap(struct GBAInputMap* map, uint32_t t
 			map->numMaps *= 2;
 			impl = &map->maps[m];
 			impl->type = type;
-			impl->map = calloc(GBA_KEY_MAX, sizeof(int));
+			impl->map = malloc(GBA_KEY_MAX * sizeof(int));
+			int i;
+			for (i = 0; i < GBA_KEY_MAX; ++i) {
+				impl->map[i] = GBA_KEY_NONE;
+			}
 		}
 		TableInit(&impl->axes, 2, free);
 	}
@@ -378,18 +390,18 @@ void GBAInputUnbindKey(struct GBAInputMap* map, uint32_t type, enum GBAKey input
 		return;
 	}
 	if (impl) {
-		impl->map[input] = GBA_NO_MAPPING;
+		impl->map[input] = GBA_KEY_NONE;
 	}
 }
 
 int GBAInputQueryBinding(const struct GBAInputMap* map, uint32_t type, enum GBAKey input) {
 	if (input >= GBA_KEY_MAX) {
-		return 0;
+		return GBA_KEY_NONE;
 	}
 
 	const struct GBAInputMapImpl* impl = _lookupMapConst(map, type);
 	if (!impl || !impl->map) {
-		return 0;
+		return GBA_KEY_NONE;
 	}
 
 	return impl->map[input];

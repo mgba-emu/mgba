@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
 #define GUI_RUNNER_H
 
 #include "gba/context/context.h"
+#include "gba/gui/remap.h"
 #include "util/circle-buffer.h"
 #include "util/gui.h"
 
@@ -38,6 +39,8 @@ struct GBAGUIRunner {
 
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
+
+	struct GUIInputKeys* keySources;
 
 	float fps;
 	int64_t lastFpsCheck;

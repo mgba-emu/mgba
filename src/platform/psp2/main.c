@@ -72,7 +72,7 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
 	sceTouchPeek(0, &touch, 1);
 	if (touch.reportNum < 1) {
@@ -117,9 +117,35 @@ int main() {
 					"With Background",
 					"Without Background",
 					"Stretched",
-					0
-				}
+				},
+				.nStates = 3
 			}
+		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "Vita Input",
+				.id = PSP2_INPUT,
+				.keyNames = (const char*[]) {
+					"Select",
+					0,
+					0,
+					"Start",
+					"Up",
+					"Right",
+					"Down",
+					"Left",
+					"L",
+					"R",
+					0, // L2?
+					0, // R2?
+					"Triangle",
+					"Circle",
+					"Cross",
+					"Square"
+				},
+				.nKeys = 16
+			},
+			{ .id = 0 }
 		},
 		.nConfigExtra = 1,
 		.setup = GBAPSP2Setup,

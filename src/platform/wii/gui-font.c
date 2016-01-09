@@ -5,17 +5,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
 #include "util/gui/font-metrics.h"
+#include "icons.h"
 #include "font.h"
 
 #include <malloc.h>
 #include <ogc/tpl.h>
 
-#define GLYPH_HEIGHT 12
-#define CELL_HEIGHT 16
-#define CELL_WIDTH 16
+#define GLYPH_HEIGHT 24
+#define CELL_HEIGHT 32
+#define CELL_WIDTH 32
 
 struct GUIFont {
 	TPLFile tdf;
+	TPLFile iconsTdf;
 };
 
 struct GUIFont* GUIFontCreate(void) {
@@ -32,11 +34,21 @@ struct GUIFont* GUIFontCreate(void) {
 	}
 	memcpy(fontTpl, font, font_size);
 	TPL_OpenTPLFromMemory(&guiFont->tdf, fontTpl, font_size);
+
+	void* iconsTpl = memalign(32, icons_size);
+	if (!iconsTpl) {
+		TPL_CloseTPLFile(&guiFont->tdf);
+		free(guiFont);
+		return 0;
+	}
+	memcpy(iconsTpl, icons, icons_size);
+	TPL_OpenTPLFromMemory(&guiFont->iconsTdf, iconsTpl, icons_size);
 	return guiFont;
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
 	TPL_CloseTPLFile(&font->tdf);
+	TPL_CloseTPLFile(&font->iconsTdf);
 	free(font);
 }
 
@@ -50,7 +62,7 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	if (glyph > 0x7F) {
 		glyph = '?';
 	}
-	return defaultFontMetrics[glyph].width;
+	return defaultFontMetrics[glyph].width * 2;
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
@@ -69,23 +81,102 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, 
 		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left;
-	s16 ty = (glyph >> 4) * CELL_HEIGHT + metric.padding.top;
+	s16 tx = (glyph & 15) * CELL_WIDTH + metric.padding.left * 2;
+	s16 ty = (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2;
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top);
+	GX_Position2s16(x, y - GLYPH_HEIGHT + metric.padding.top * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32(tx / 256.f, ty / 128.f);
+	GX_TexCoord2f32(tx / 512.f, ty / 256.f);
 
-	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + metric.padding.top);
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2, y - GLYPH_HEIGHT + metric.padding.top * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, ty / 128.f);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2) / 512.f, ty / 256.f);
 
-	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right), y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_Position2s16(x + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right)) / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+	GX_TexCoord2f32((tx + CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2) / 512.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2) / 256.f);
 
-	GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom);
+	GX_Position2s16(x, y - GLYPH_HEIGHT + CELL_HEIGHT - metric.padding.bottom * 2);
 	GX_Color1u32(color);
-	GX_TexCoord2f32(tx / 256.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom)) / 128.f);
+	GX_TexCoord2f32(tx / 512.f, (ty + CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2) / 256.f);
+	GX_End();
+}
+
+void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
+	if (icon >= GUI_ICON_MAX) {
+		return;
+	}
+
+	color = (color >> 24) | (color << 8);
+	GXTexObj tex;
+
+	struct GUIFont* ncfont = font;
+	TPL_GetTexture(&ncfont->iconsTdf, 0, &tex);
+	GX_LoadTexObj(&tex, GX_TEXMAP0);
+
+	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+
+	struct GUIIconMetric metric = defaultIconMetrics[icon];
+	switch (align & GUI_ALIGN_HCENTER) {
+	case GUI_ALIGN_HCENTER:
+		x -= metric.width;
+		break;
+	case GUI_ALIGN_RIGHT:
+		x -= metric.width * 2;
+		break;
+	}
+	switch (align & GUI_ALIGN_VCENTER) {
+	case GUI_ALIGN_VCENTER:
+		y -= metric.height;
+		break;
+	case GUI_ALIGN_BOTTOM:
+		y -= metric.height * 2;
+		break;
+	}
+
+	float u[4];
+	float v[4];
+
+	switch (orient) {
+	case GUI_ORIENT_0:
+	default:
+		// TODO: Rotations
+		u[0] = u[3] = metric.x / 256.f;
+		u[1] = u[2] = (metric.x + metric.width) / 256.f;
+		v[0] = v[1] = (metric.y + metric.height) / 64.f;
+		v[2] = v[3] = metric.y / 64.f;
+		break;
+	case GUI_ORIENT_HMIRROR:
+		u[0] = u[3] = (metric.x + metric.width) / 256.f;
+		u[1] = u[2] = metric.x / 256.f;
+		v[0] = v[1] = (metric.y + metric.height) / 64.f;
+		v[2] = v[3] = metric.y / 64.f;
+		break;
+	case GUI_ORIENT_VMIRROR:
+		u[0] = u[3] = metric.x / 256.f;
+		u[1] = u[2] = (metric.x + metric.width) / 256.f;
+		v[0] = v[1] = metric.y / 64.f;
+		v[2] = v[3] = (metric.y + metric.height) / 64.f;
+		break;
+	}
+
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2s16(x, y + metric.height * 2);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[0], v[0]);
+
+	GX_Position2s16(x + metric.width * 2, y + metric.height * 2);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[1], v[1]);
+
+	GX_Position2s16(x + metric.width * 2, y);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[2], v[2]);
+
+	GX_Position2s16(x, y);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[3], v[3]);
 	GX_End();
 }

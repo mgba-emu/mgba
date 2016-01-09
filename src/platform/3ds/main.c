@@ -30,6 +30,8 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA_TOP;
 
+#define _3DS_INPUT 0x3344534B
+
 #define AUDIO_SAMPLES 0x80
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
 
@@ -67,6 +69,10 @@ enum {
 };
 
 extern bool allocateRomBuffer(void);
+
+static void _map3DSKey(struct GBAInputMap* map, int ctrKey, enum GBAKey key) {
+	GBAInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
+}
 
 static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size)
 {
@@ -184,6 +190,17 @@ static void _setup(struct GBAGUIRunner* runner) {
 	if (hasSound) {
 		runner->context.gba->stream = &stream;
 	}
+
+	_map3DSKey(&runner->context.inputMap, KEY_A, GBA_KEY_A);
+	_map3DSKey(&runner->context.inputMap, KEY_B, GBA_KEY_B);
+	_map3DSKey(&runner->context.inputMap, KEY_START, GBA_KEY_START);
+	_map3DSKey(&runner->context.inputMap, KEY_SELECT, GBA_KEY_SELECT);
+	_map3DSKey(&runner->context.inputMap, KEY_UP, GBA_KEY_UP);
+	_map3DSKey(&runner->context.inputMap, KEY_DOWN, GBA_KEY_DOWN);
+	_map3DSKey(&runner->context.inputMap, KEY_LEFT, GBA_KEY_LEFT);
+	_map3DSKey(&runner->context.inputMap, KEY_RIGHT, GBA_KEY_RIGHT);
+	_map3DSKey(&runner->context.inputMap, KEY_L, GBA_KEY_L);
+	_map3DSKey(&runner->context.inputMap, KEY_R, GBA_KEY_R);
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
@@ -343,9 +360,10 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	UNUSED(runner);
 
 	hidScanInput();
-	uint32_t activeKeys = hidKeysHeld() & 0xF00003FF;
-	activeKeys |= activeKeys >> 24;
-	return activeKeys;
+	uint32_t activeKeys = hidKeysHeld();
+	uint16_t keys = GBAInputMapKeyBits(&runner->context.inputMap, _3DS_INPUT, activeKeys, 0);
+	keys |= (activeKeys >> 24) & 0xF0;
+	return keys;
 }
 
 static void _incrementScreenMode(struct GBAGUIRunner* runner) {
@@ -392,7 +410,7 @@ static uint32_t _pollInput(void) {
 	return keys;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	hidScanInput();
 	if (!(hidKeysHeld() & KEY_TOUCH)) {
 		return GUI_CURSOR_NOT_PRESENT;
@@ -519,6 +537,44 @@ int main() {
 
 			GUI_PARAMS_TRAIL
 		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "3DS Input",
+				.id = _3DS_INPUT,
+				.keyNames = (const char*[]) {
+					"A",
+					"B",
+					"Select",
+					"Start",
+					"D-Pad Right",
+					"D-Pad Left",
+					"D-Pad Up",
+					"D-Pad Down",
+					"R",
+					"L",
+					"X",
+					"Y",
+					0,
+					0,
+					"ZL",
+					"ZR",
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					"C-Stick Right",
+					"C-Stick Left",
+					"C-Stick Up",
+					"C-Stick Down",
+				},
+				.nKeys = 28
+			},
+			{ .id = 0 }
+		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
@@ -532,8 +588,8 @@ int main() {
 					"Pixel-Accurate/Top",
 					"Aspect-Ratio Fit/Top",
 					"Stretched/Top",
-					0
-				}
+				},
+				.nStates = 6
 			}
 		},
 		.nConfigExtra = 1,

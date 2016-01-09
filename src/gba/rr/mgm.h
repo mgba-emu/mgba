@@ -20,6 +20,7 @@ enum GBAMGMTag {
 	TAG_INPUT = 0x01,
 	TAG_FRAME = 0x02,
 	TAG_LAG = 0x03,
+	TAG_RESET = 0x04,
 
 	// Stream chunking tags
 	TAG_BEGIN = 0x10,

@@ -30,6 +30,7 @@ static bool GBAMGMIsRecording(const struct GBARRContext*);
 static void GBAMGMNextFrame(struct GBARRContext*);
 static void GBAMGMLogInput(struct GBARRContext*, uint16_t input);
 static uint16_t GBAMGMQueryInput(struct GBARRContext*);
+static bool GBAMGMQueryReset(struct GBARRContext*);
 
 static void GBAMGMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state);
 static void GBAMGMStateLoaded(struct GBARRContext* rr, const struct GBASerializedState* state);
@@ -71,6 +72,7 @@ void GBAMGMContextCreate(struct GBAMGMContext* mgm) {
 	mgm->d.nextFrame = GBAMGMNextFrame;
 	mgm->d.logInput = GBAMGMLogInput;
 	mgm->d.queryInput = GBAMGMQueryInput;
+	mgm->d.queryReset = GBAMGMQueryReset;
 
 	mgm->d.stateSaved = GBAMGMStateSaved;
 	mgm->d.stateLoaded = GBAMGMStateLoaded;
@@ -324,6 +326,15 @@ uint16_t GBAMGMQueryInput(struct GBARRContext* rr) {
 	return mgm->currentInput;
 }
 
+bool GBAMGMQueryReset(struct GBARRContext* rr) {
+	if (!rr->isPlaying(rr)) {
+		return 0;
+	}
+
+	struct GBAMGMContext* mgm = (struct GBAMGMContext*) rr;
+	return mgm->peekedTag == TAG_RESET;
+}
+
 void GBAMGMStateSaved(struct GBARRContext* rr, struct GBASerializedState* state) {
 	struct GBAMGMContext* mgm = (struct GBAMGMContext*) rr;
 	if (rr->isRecording(rr)) {
@@ -441,6 +452,7 @@ enum GBAMGMTag _readTag(struct GBAMGMContext* mgm, struct VFile* vf) {
 	// Empty markers
 	case TAG_FRAME:
 	case TAG_LAG:
+	case TAG_RESET:
 	case TAG_BEGIN:
 	case TAG_END:
 	case TAG_INVALID:
