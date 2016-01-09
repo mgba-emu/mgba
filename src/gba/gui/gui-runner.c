@@ -203,7 +203,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 	if (runner->params.guiPrepare) {
 		runner->params.guiPrepare();
 	}
-	GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Loading...");
+	GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Loading...");
 	if (runner->params.guiFinish) {
 		runner->params.guiFinish();
 	}
@@ -216,7 +216,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 			if (runner->params.guiPrepare) {
 				runner->params.guiPrepare();
 			}
-			GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_TEXT_CENTER, 0xFFFFFFFF, "Load failed!");
+			GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Load failed!");
 			if (runner->params.guiFinish) {
 				runner->params.guiFinish();
 			}
@@ -270,7 +270,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 					if (runner->params.guiPrepare) {
 						runner->params.guiPrepare();
 					}
-					GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_TEXT_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
+					GUIFontPrintf(runner->params.font, 0, GUIFontHeight(runner->params.font), GUI_ALIGN_LEFT, 0x7FFFFFFF, "%.2f fps", runner->fps);
 					if (runner->params.guiFinish) {
 						runner->params.guiFinish();
 					}

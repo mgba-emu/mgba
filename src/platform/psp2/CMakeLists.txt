@@ -19,13 +19,23 @@ set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
 
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/font.o ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o PROPERTIES GENERATED ON)
-add_executable(${BINARY_NAME}.elf ${PLATFORM_SRC} ${GUI_SRC} ${CMAKE_CURRENT_BINARY_DIR}/font.o ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o main.c)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/icons.o
+                            ${CMAKE_CURRENT_BINARY_DIR}/font.o
+                            ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
+                            PROPERTIES GENERATED ON)
+add_executable(${BINARY_NAME}.elf ${PLATFORM_SRC} ${GUI_SRC} main.c
+               ${CMAKE_CURRENT_BINARY_DIR}/icons.o
+               ${CMAKE_CURRENT_BINARY_DIR}/font.o
+               ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o)
 set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.o
                    COMMAND ${OBJCOPY_CMD} font2x.png ${CMAKE_CURRENT_BINARY_DIR}/font.o
+                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.o
+                   COMMAND ${OBJCOPY_CMD} icons2x.png ${CMAKE_CURRENT_BINARY_DIR}/icons.o
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o

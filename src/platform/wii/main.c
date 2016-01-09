@@ -59,7 +59,7 @@ static int32_t _readGyroZ(struct GBARotationSource* source);
 static void _drawStart(void);
 static void _drawEnd(void);
 static uint32_t _pollInput(void);
-static enum GUICursorState _pollCursor(int* x, int* y);
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
@@ -467,7 +467,7 @@ static uint32_t _pollInput(void) {
 	return keys;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	ir_t ir;
 	WPAD_IR(0, &ir);
 	if (!ir.smooth_valid) {

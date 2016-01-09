@@ -72,7 +72,7 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
 	sceTouchPeek(0, &touch, 1);
 	if (touch.reportNum < 1) {
