@@ -9,10 +9,13 @@
 #include "ConfigController.h"
 #include "Display.h"
 #include "GBAApp.h"
+#include "GBAKeyEditor.h"
+#include "InputController.h"
+#include "ShortcutView.h"
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
@@ -94,6 +97,23 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 			updateConfig();
 		}
 	});
+
+	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
+	m_ui.tabWidget->addTab(editor, "Keyboard");
+	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+
+#ifdef BUILD_SDL
+	inputController->recalibrateAxes();
+	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
+	editor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+	m_ui.tabWidget->addTab(editor, "Controllers");
+	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+#endif
+
+	ShortcutView* shortcutView = new ShortcutView();
+	shortcutView->setController(shortcutController);
+	shortcutView->setInputController(inputController);
+	m_ui.tabWidget->addTab(shortcutView, "Shortcuts");
 }
 
 void SettingsView::selectBios() {

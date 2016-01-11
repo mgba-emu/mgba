@@ -75,10 +75,7 @@ public slots:
 	void importSharkport();
 	void exportSharkport();
 
-	void openKeymapWindow();
 	void openSettingsWindow();
-	void openShortcutWindow();
-
 	void openOverrideWindow();
 	void openSensorWindow();
 	void openCheatsWindow();
@@ -89,10 +86,6 @@ public slots:
 
 	void openAboutScreen();
 	void openROMInfo();
-
-#ifdef BUILD_SDL
-	void openGamepadWindow();
-#endif
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();

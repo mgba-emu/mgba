@@ -15,6 +15,7 @@ Features:
  - Libretro: Settings for using BIOS and skipping intro
  - Libretro: Customizable idle loop removal
  - Implemented cycle counting for sprite rendering
+ - Cleaner, unified settings window
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline

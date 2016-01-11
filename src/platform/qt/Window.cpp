@@ -20,7 +20,6 @@
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
-#include "GBAKeyEditor.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
@@ -36,7 +35,6 @@
 #include "SettingsView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
-#include "ShortcutView.h"
 #include "VideoView.h"
 
 extern "C" {
@@ -344,27 +342,12 @@ void Window::exportSharkport() {
 	}
 }
 
-void Window::openKeymapWindow() {
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, InputController::KEYBOARD);
-	openView(keyEditor);
-}
-
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	openView(settingsWindow);
-}
-
-void Window::openShortcutWindow() {
-#ifdef BUILD_SDL
-	m_inputController.recalibrateAxes();
-#endif
-	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setController(m_shortcutController);
-	shortcutView->setInputController(&m_inputController);
-	openView(shortcutView);
 }
 
 void Window::openOverrideWindow() {
@@ -406,14 +389,6 @@ void Window::openROMInfo() {
 	ROMInfo* romInfo = new ROMInfo(m_controller);
 	openView(romInfo);
 }
-
-#ifdef BUILD_SDL
-void Window::openGamepadWindow() {
-	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
-	openView(keyEditor);
-}
-#endif
 
 #ifdef USE_FFMPEG
 void Window::openVideoWindow() {
@@ -1190,18 +1165,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
 	                    "settings");
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())),
-	                    "shortcuts");
-
-	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
-	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
-	addControlledAction(toolsMenu, keymap, "remapKeyboard");
-
-#ifdef BUILD_SDL
-	QAction* gamepad = new QAction(tr("Remap gamepad..."), toolsMenu);
-	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
-	addControlledAction(toolsMenu, gamepad, "remapGamepad");
-#endif
 
 	toolsMenu->addSeparator();
 

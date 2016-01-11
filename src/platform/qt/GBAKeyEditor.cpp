@@ -105,9 +105,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	connect(setAll, SIGNAL(pressed()), this, SLOT(setAll()));
 	layout->addWidget(setAll);
 
-	QPushButton* save = new QPushButton(tr("Save"));
-	connect(save, SIGNAL(pressed()), this, SLOT(save()));
-	layout->addWidget(save);
 	layout->setSpacing(6);
 
 	m_keyOrder = QList<KeyEditor*>{

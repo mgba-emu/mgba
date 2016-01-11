@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>707</width>
-    <height>420</height>
+    <width>417</width>
+    <height>457</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,11 +24,17 @@
     <enum>QLayout::SetFixedSize</enum>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Audio/Video</string>
+      </attribute>
       <layout class="QFormLayout" name="formLayout">
        <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::ExpandingFieldsGrow</enum>
+        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
        </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label_14">
@@ -120,6 +126,50 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_14">
+         <item>
+          <widget class="QComboBox" name="sampleRate">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <property name="currentText" stdset="0">
+            <string>44100</string>
+           </property>
+           <property name="currentIndex">
+            <number>2</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>22050</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>32000</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>44100</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>48000</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Hz</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_17">
          <property name="text">
@@ -153,13 +203,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="label_10">
@@ -237,13 +280,6 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="Line" name="line_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
        <item row="9" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
@@ -283,61 +319,30 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_14">
-         <item>
-          <widget class="QComboBox" name="sampleRate">
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <property name="currentText" stdset="0">
-            <string>44100</string>
-           </property>
-           <property name="currentIndex">
-            <number>2</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>22050</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>32000</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>44100</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>48000</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Hz</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <item row="4" column="0" colspan="2">
+        <widget class="Line" name="line_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <widget class="Line" name="line_5">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     </widget>
+     <widget class="QWidget" name="tab_4">
+      <attribute name="title">
+       <string>Running</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
        </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QFormLayout" name="formLayout_4">
        <item row="0" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
@@ -366,35 +371,31 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="skipBios">
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="useBios">
          <property name="text">
-          <string>Skip BIOS intro</string>
+          <string>Use BIOS file</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="Line" name="line_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="rewind">
-         <property name="text">
-          <string>Enable rewind</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>Create rewind state:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="rewind">
+         <property name="text">
+          <string>Enable rewind</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_12">
          <item>
           <widget class="QLabel" name="label_5">
@@ -415,14 +416,14 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Rewind history:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_13">
          <item>
           <widget class="QSpinBox" name="rewindCapacity"/>
@@ -436,57 +437,14 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="0" colspan="2">
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="allowOpposingDirections">
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_18">
          <property name="text">
-          <string>Allow opposing input directions</string>
+          <string>Fast forward speed</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
-        <widget class="QCheckBox" name="suspendScreensaver">
-         <property name="text">
-          <string>Suspend screensaver</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>Idle loops</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QComboBox" name="idleOptimization">
-         <item>
-          <property name="text">
-           <string>Run all</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Remove known</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Detect and remove</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="9" column="1">
+       <item row="8" column="1">
         <widget class="QDoubleSpinBox" name="fastForwardRatio">
          <property name="enabled">
           <bool>false</bool>
@@ -508,14 +466,7 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_18">
-         <property name="text">
-          <string>Fast forward speed</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
+       <item row="9" column="1">
         <widget class="QCheckBox" name="fastForwardUnbounded">
          <property name="text">
           <string>Unbounded</string>
@@ -525,26 +476,80 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="Line" name="line_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="allowOpposingDirections">
+         <property name="text">
+          <string>Allow opposing input directions</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="useBios">
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="suspendScreensaver">
          <property name="text">
-          <string>Use BIOS file</string>
+          <string>Suspend screensaver</string>
          </property>
          <property name="checked">
           <bool>true</bool>
          </property>
         </widget>
        </item>
+       <item row="13" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Idle loops</string>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="1">
+        <widget class="QComboBox" name="idleOptimization">
+         <item>
+          <property name="text">
+           <string>Run all</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Remove known</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Detect and remove</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="skipBios">
+         <property name="text">
+          <string>Skip BIOS intro</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0" colspan="2">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
       </layout>
-     </item>
-    </layout>
+     </widget>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
