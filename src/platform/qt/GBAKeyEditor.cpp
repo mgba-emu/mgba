@@ -280,7 +280,7 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 #ifdef BUILD_SDL
-	if (m_type == SDL_BINDING_BUTTON) {
+	if (m_type == SDL_BINDING_BUTTON && keyEditor->axis() >= 0) {
 		m_controller->bindAxis(m_type, keyEditor->axis(), keyEditor->direction(), key);
 	}
 #endif

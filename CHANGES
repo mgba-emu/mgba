@@ -27,6 +27,7 @@ Bugfixes:
  - Util: Fix excessive memory allocation when decoding a PNG
  - GBA: Fix Iridion II savetype
  - Libretro: Fix aspect ratio
+ - Qt: Fix some potential crashes with the gamepad mapping
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
