@@ -100,21 +100,24 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 
 	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
-	m_ui.tabWidget->addTab(editor, "Keyboard");
+	m_ui.stackedWidget->addWidget(editor);
+	m_ui.tabs->addItem("Keyboard");
 	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
 
 #ifdef BUILD_SDL
 	inputController->recalibrateAxes();
 	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	editor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
-	m_ui.tabWidget->addTab(editor, "Controllers");
+	m_ui.stackedWidget->addWidget(editor);
+	m_ui.tabs->addItem("Controllers");
 	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
 #endif
 
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
-	m_ui.tabWidget->addTab(shortcutView, "Shortcuts");
+	m_ui.stackedWidget->addWidget(shortcutView);
+	m_ui.tabs->addItem("Shortcuts");
 }
 
 void SettingsView::selectBios() {

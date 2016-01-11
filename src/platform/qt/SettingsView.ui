@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
-    <height>478</height>
+    <width>565</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,19 +19,13 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
-   <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab_3">
-      <attribute name="title">
-       <string>Audio/Video</string>
-      </attribute>
+   <item row="1" column="1">
+    <widget class="QStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="stackedWidgetPage1">
       <layout class="QFormLayout" name="formLayout">
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
@@ -181,6 +175,12 @@
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QSlider" name="volume">
+           <property name="minimumSize">
+            <size>
+             <width>128</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="maximum">
             <number>256</number>
            </property>
@@ -203,6 +203,13 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="Line" name="line_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="label_10">
@@ -280,6 +287,13 @@
          </item>
         </layout>
        </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
        <item row="9" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
@@ -319,26 +333,9 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="Line" name="line_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="Line" name="line_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_4">
-      <attribute name="title">
-       <string>Running</string>
-      </attribute>
+     <widget class="QWidget" name="stackedWidgetPage2">
       <layout class="QFormLayout" name="formLayout_2">
        <property name="fieldGrowthPolicy">
         <enum>QFormLayout::FieldsStayAtSizeHint</enum>
@@ -558,7 +555,33 @@
      </widget>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
+    <widget class="QListWidget" name="tabs">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <item>
+      <property name="text">
+       <string>Audio/Video</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Running</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="standardButtons">
       <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
@@ -602,18 +625,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>useBios</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>skipBios</receiver>
-   <slot>setEnabled(bool)</slot>
+   <sender>tabs</sender>
+   <signal>currentRowChanged(int)</signal>
+   <receiver>stackedWidget</receiver>
+   <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>520</x>
-     <y>62</y>
+     <x>61</x>
+     <y>209</y>
     </hint>
     <hint type="destinationlabel">
-     <x>525</x>
-     <y>83</y>
+     <x>315</x>
+     <y>209</y>
     </hint>
    </hints>
   </connection>
