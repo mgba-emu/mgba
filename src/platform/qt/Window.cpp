@@ -72,6 +72,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 	, m_fullscreenOnStart(false)
+	, m_autoresume(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -140,6 +141,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
+	connect(&m_focusCheck, SIGNAL(timeout()), this, SLOT(focusCheck()));
 	connect(m_display, &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
 			m_screenWidget->setCursor(Qt::BlankCursor);
@@ -152,6 +154,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
+	m_focusCheck.setInterval(200);
 
 	m_shortcutController->setConfigController(m_config);
 	setupMenu(menuBar());
@@ -604,6 +607,7 @@ void Window::gameStarted(GBAThread* context) {
 
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
+	m_focusCheck.start();
 }
 
 void Window::gameStopped() {
@@ -618,6 +622,7 @@ void Window::gameStopped() {
 	m_screenWidget->unsetCursor();
 
 	m_fpsTimer.stop();
+	m_focusCheck.stop();
 }
 
 void Window::gameCrashed(const QString& errorMessage) {
@@ -1352,6 +1357,18 @@ QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& na
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;
+}
+
+void Window::focusCheck() {
+	if (!m_config->getOption("pauseOnFocusLost").toInt()) {
+		return;
+	}
+	if (QGuiApplication::focusWindow() && m_autoresume) {
+		m_controller->setPaused(false);
+	} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
+		m_autoresume = true;
+		m_controller->setPaused(true);
+	}
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

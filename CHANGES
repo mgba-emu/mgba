@@ -16,6 +16,7 @@ Features:
  - Libretro: Customizable idle loop removal
  - Implemented cycle counting for sprite rendering
  - Cleaner, unified settings window
+ - Added a setting for pausing when the emulator is not in focus
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline

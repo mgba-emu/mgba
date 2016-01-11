@@ -123,6 +123,7 @@ private slots:
 
 	void recordFrame();
 	void showFPS();
+	void focusCheck();
 
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
@@ -164,6 +165,8 @@ private:
 	ShaderSelector* m_shaderView;
 	int m_playerId;
 	bool m_fullscreenOnStart;
+	QTimer m_focusCheck;
+	bool m_autoresume;
 
 	bool m_hitUnimplementedBiosCall;
 

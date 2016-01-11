@@ -39,6 +39,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
+	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {
@@ -142,6 +143,7 @@ void SettingsView::updateConfig() {
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
+	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
