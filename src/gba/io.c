@@ -765,9 +765,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		return GBALoadBad(gba->cpu);
 
 	case REG_SOUNDBIAS:
-	case REG_JOYCNT:
-	case REG_JOY_RECV:
-	case REG_JOY_TRANS:
 	case REG_KEYCNT:
 	case REG_POSTFLG:
 		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
