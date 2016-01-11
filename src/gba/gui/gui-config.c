@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,8 +6,13 @@
 #include "gui-config.h"
 
 #include "gba/gui/gui-runner.h"
+#include "gba/gui/remap.h"
 #include "util/gui/file-select.h"
 #include "util/gui/menu.h"
+
+#ifndef GUI_MAX_INPUTS
+#define GUI_MAX_INPUTS 7
+#endif
 
 void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra) {
 	struct GUIMenu menu = {
@@ -22,8 +27,9 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		.submenu = 0,
 		.state = 0,
 		.validStates = (const char*[]) {
-			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 0
-		}
+			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+		},
+		.nStates = 10
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Show framerate",
@@ -31,8 +37,9 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		.submenu = 0,
 		.state = false,
 		.validStates = (const char*[]) {
-			"Off", "On", 0
-		}
+			"Off", "On"
+		},
+		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Use BIOS if found",
@@ -40,20 +47,38 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		.submenu = 0,
 		.state = true,
 		.validStates = (const char*[]) {
-			"Off", "On", 0
-		}
+			"Off", "On"
+		},
+		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Select BIOS path",
 		.data = "bios",
 	};
 	size_t i;
+	const char* mapNames[GUI_MAX_INPUTS + 1];
+	if (runner->keySources) {
+		for (i = 0; runner->keySources[i].id && i < GUI_MAX_INPUTS; ++i) {
+			mapNames[i] = runner->keySources[i].name;
+		}
+		if (i == 1) {
+			// Don't display a name if there's only one input source
+			i = 0;
+		}
+		*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+			.title = "Remap controls",
+			.data = "*REMAP",
+			.state = 0,
+			.validStates = i ? mapNames : 0,
+			.nStates = i
+		};
+	}
 	for (i = 0; i < nExtra; ++i) {
 		*GUIMenuItemListAppend(&menu.items) = extra[i];
 	}
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Save",
-		.data = "[SAVE]",
+		.data = "*SAVE",
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Cancel",
@@ -76,7 +101,7 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		if (reason != GUI_MENU_EXIT_ACCEPT || !item->data) {
 			break;
 		}
-		if (!strcmp(item->data, "[SAVE]")) {
+		if (!strcmp(item->data, "*SAVE")) {
 			if (biosPath[0]) {
 				GBAConfigSetValue(&runner->context.config, "bios", biosPath);
 			}
@@ -90,6 +115,10 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 			GBAConfigSave(&runner->context.config);
 			break;
 		}
+		if (!strcmp(item->data, "*REMAP")) {
+			GBAGUIRemapKeys(&runner->params, &runner->context.inputMap, &runner->keySources[item->state]);
+			continue;
+		}
 		if (!strcmp(item->data, "bios")) {
 			// TODO: show box if failed
 			if (!GUISelectFile(&runner->params, biosPath, sizeof(biosPath), GBAIsBIOS)) {
@@ -99,7 +128,7 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		}
 		if (item->validStates) {
 			++item->state;
-			if (!item->validStates[item->state]) {
+			if (item->state >= item->nStates) {
 				item->state = 0;
 			}
 		}

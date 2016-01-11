@@ -42,7 +42,7 @@ static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* render
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = (current & 0x00FFFFFF) | ((current >> 1) & FLAG_REBLEND);
+			color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 		}
 	} else {
 		color = (color & ~FLAG_TARGET_2) | (current & FLAG_OBJWIN);
@@ -55,7 +55,7 @@ static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* rend
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
 			color = _mix(renderer->blda, current, renderer->bldb, color);
 		} else {
-			color = (current & 0x00FFFFFF) | ((current >> 1) & FLAG_REBLEND);
+			color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 		}
 	} else {
 		color = color & ~FLAG_TARGET_2;
@@ -69,7 +69,7 @@ static inline void _compositeNoBlendObjwin(struct GBAVideoSoftwareRenderer* rend
 	if (color < current) {
 		color |= (current & FLAG_OBJWIN);
 	} else {
-		color = (current & 0x00FFFFFF) | ((current >> 1) & FLAG_REBLEND);
+		color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 	}
 	*pixel = color;
 }
@@ -78,13 +78,13 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
                                              uint32_t current) {
 	UNUSED(renderer);
 	if (color >= current) {
-		color = (current & 0x00FFFFFF) | ((current >> 1) & FLAG_REBLEND);
+		color = (current & 0x00FFFFFF) | ((current << 1) & FLAG_REBLEND);
 	}
 	*pixel = color;
 }
 
 #define COMPOSITE_16_OBJWIN(BLEND)                                                                              \
-	if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) {                                          \
+	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {                                          \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[paletteData | pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
@@ -97,7 +97,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	_composite ## BLEND ## NoObjwin(renderer, pixel, palette[pixelData] | flags, current);
 
 #define COMPOSITE_256_OBJWIN(BLEND) \
-	if (objwinForceEnable || !(current & FLAG_OBJWIN) == objwinOnly) { \
+	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) { \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
@@ -177,7 +177,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int32_t localX;                                                                                                   \
 	int32_t localY;                                                                                                   \
                                                                                                                       \
-	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_2 * background->target2;                                                                     \
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                 \
 	                                   GBAWindowControlIsBlendEnable(renderer->objwin.packed));                       \
@@ -306,8 +306,8 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 	if (c & 0x0020) {
 		c = (c & ~0x003F) | 0x001F;
 	}
-	if (c & 0x10000) {
-		c = (c & ~0x1F800) | 0xF800;
+	if (c & 0x8000) {
+		c = (c & ~0xF800) | 0x7C00;
 	}
 	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
 #endif

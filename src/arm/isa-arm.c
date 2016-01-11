@@ -516,7 +516,7 @@ DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDR, cpu->gprs[rd] = cpu->memory.load32(cpu, a
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(LDRB, cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRH, cpu->gprs[rd] = cpu->memory.load16(cpu, address, &currentCycles); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSB, cpu->gprs[rd] = ARM_SXT_8(cpu->memory.load8(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
-DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = ARM_SXT_16(cpu->memory.load16(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
+DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(LDRSH, cpu->gprs[rd] = address & 1 ? ARM_SXT_8(cpu->memory.load16(cpu, address, &currentCycles)) : ARM_SXT_16(cpu->memory.load16(cpu, address, &currentCycles)); ARM_LOAD_POST_BODY;)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STR, cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_INSTRUCTION_ARM(STRB, cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
 DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address, cpu->gprs[rd], &currentCycles); ARM_STORE_POST_BODY;)
@@ -524,28 +524,32 @@ DEFINE_LOAD_STORE_MODE_3_INSTRUCTION_ARM(STRH, cpu->memory.store16(cpu, address,
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory.load8(cpu, address, &currentCycles);
+	int32_t r = cpu->memory.load8(cpu, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
+	cpu->gprs[rd] = r;
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(LDRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->gprs[rd] = cpu->memory.load32(cpu, address, &currentCycles);
+	int32_t r = cpu->memory.load32(cpu, address, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
+	cpu->gprs[rd] = r;
 	ARM_LOAD_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRBT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
+	int32_t r = cpu->gprs[rd];
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory.store32(cpu, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store8(cpu, address, r, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 
 DEFINE_LOAD_STORE_T_INSTRUCTION_ARM(STRT,
 	enum PrivilegeMode priv = cpu->privilegeMode;
+	int32_t r = cpu->gprs[rd];
 	ARMSetPrivilegeMode(cpu, MODE_USER);
-	cpu->memory.store8(cpu, address, cpu->gprs[rd], &currentCycles);
+	cpu->memory.store32(cpu, address, r, &currentCycles);
 	ARMSetPrivilegeMode(cpu, priv);
 	ARM_STORE_POST_BODY;)
 

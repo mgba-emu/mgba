@@ -10,8 +10,8 @@
 
 #include <3ds.h>
 
-extern FS_archive sdmcArchive;
+extern FS_Archive sdmcArchive;
 
-struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags);
+struct VFile* VFileOpen3DS(FS_Archive* archive, const char* path, int flags);
 
 #endif

@@ -67,25 +67,35 @@ int main(int argc, char** argv) {
 		GBAContextDeinit(&context);
 		return !parsed;
 	}
+	if (args.showVersion) {
+		version(argv[0]);
+		freeArguments(&args);
+		GBAContextDeinit(&context);
+		return 0;
+	}
+
+	struct GBAVideoSoftwareRenderer renderer;
+	renderer.outputBuffer = 0;
+
+	if (!fuzzOpts.noVideo) {
+		GBAVideoSoftwareRendererCreate(&renderer);
+		renderer.outputBuffer = malloc(256 * 256 * 4);
+		renderer.outputBufferStride = 256;
+		context.renderer = &renderer.d;
+	}
+
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+	__AFL_INIT();
+#endif
 
 	struct VFile* rom = VFileOpen(args.fname, O_RDONLY);
 
 	context.gba->hardCrash = false;
 	GBAContextLoadROMFromVFile(&context, rom, 0);
 
-	struct GBAVideoSoftwareRenderer renderer;
-	renderer.outputBuffer = 0;
-
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
 	size_t overlayOffset;
-
-	if (!fuzzOpts.noVideo) {
-		GBAVideoSoftwareRendererCreate(&renderer);
-		renderer.outputBuffer = malloc(256 * 256 * 4);
-		renderer.outputBufferStride = 256;
-		context->renderer = &renderer.d;
-	}
 
 	GBAContextStart(&context);
 
@@ -102,7 +112,7 @@ int main(int argc, char** argv) {
 	}
 	if (savestate) {
 		if (!savestateOverlay) {
-			GBALoadStateNamed(context.gba, savestate);
+			GBALoadStateNamed(context.gba, savestate, 0);
 		} else {
 			struct GBASerializedState* state = GBAAllocateState();
 			savestate->read(savestate, state, sizeof(*state));
@@ -121,18 +131,21 @@ int main(int argc, char** argv) {
 
 	_GBAFuzzRunloop(&context, fuzzOpts.frames);
 
+	GBAContextStop(&context);
+	GBAContextUnloadROM(&context);
+
 	if (savestate) {
 		savestate->close(savestate);
 	}
 	if (savestateOverlay) {
 		savestateOverlay->close(savestateOverlay);
 	}
-	GBAContextStop(&context);
-	GBAContextDeinit(&context);
+
 	freeArguments(&args);
 	if (renderer.outputBuffer) {
 		free(renderer.outputBuffer);
 	}
+	GBAContextDeinit(&context);
 
 	return 0;
 }

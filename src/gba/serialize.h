@@ -174,7 +174,9 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x002F8 - 0x002FB: CPU prefecth (decode slot)
  * | 0x002FC - 0x002FF: CPU prefetch (fetch slot)
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
- * 0x00304 - 0x003FF: Reserved (leave zero)
+ * 0x00304 - 0x0030F: Reserved (leave zero)
+ * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
+ * 0x00318 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -183,6 +185,33 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * 0x21000 - 0x60FFF: WRAM
  * Total size: 0x61000 (397,312) bytes
  */
+
+DECL_BITFIELD(GBASerializedAudioFlags, uint32_t);
+DECL_BITS(GBASerializedAudioFlags, Ch1Volume, 0, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch1Dead, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 5);
+DECL_BITS(GBASerializedAudioFlags, Ch2Volume, 8, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch2Dead, 12);
+DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 13);
+DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
+DECL_BIT(GBASerializedAudioFlags, Ch4Dead, 20);
+
+DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
+DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
+DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
+DECL_BIT(GBASerializedHWFlags1, LightEdge, 2);
+DECL_BITS(GBASerializedHWFlags1, LightCounter, 4, 12);
+
+DECL_BITFIELD(GBASerializedHWFlags2, uint8_t);
+DECL_BITS(GBASerializedHWFlags2, TiltState, 0, 2);
+DECL_BITS(GBASerializedHWFlags2, GbpInputsPosted, 2, 2);
+DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 5);
+
+DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
+
+DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
+DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
+DECL_BIT(GBASerializedSavedataFlags, FlashBank, 4);
 
 struct GBASerializedState {
 	uint32_t versionMagic;
@@ -236,18 +265,7 @@ struct GBASerializedState {
 		int32_t eventDiff;
 		int32_t nextSample;
 		uint32_t fifoSize;
-		unsigned ch1Volume : 4;
-		unsigned ch1Dead : 1;
-		unsigned ch1Hi : 1;
-		unsigned : 2;
-		unsigned ch2Volume : 4;
-		unsigned ch2Dead : 1;
-		unsigned ch2Hi : 1;
-		unsigned : 2;
-		unsigned ch4Volume : 4;
-		unsigned ch4Dead : 1;
-		unsigned : 3;
-		unsigned : 8;
+		GBASerializedAudioFlags flags;
 	} audio;
 
 	struct {
@@ -275,33 +293,23 @@ struct GBASerializedState {
 		uint16_t pinDirection;
 		struct GBARTC rtc;
 		uint8_t devices;
-		// Do not change these to uint16_t, this breaks bincompat with some older compilers
-		unsigned gyroSample : 16;
-		unsigned tiltSampleX : 16;
-		unsigned tiltSampleY : 16;
-		unsigned readWrite : 1;
-		unsigned gyroEdge : 1;
-		unsigned lightEdge : 1;
-		unsigned : 1;
-		unsigned lightCounter : 12;
-		unsigned lightSample : 8;
-		unsigned tiltState : 2;
-		unsigned gbpInputsPosted : 2;
-		unsigned gbpTxPosition : 5;
-		unsigned : 15;
-		uint32_t gbpNextEvent : 32;
+		uint16_t gyroSample;
+		uint16_t tiltSampleX;
+		uint16_t tiltSampleY;
+		GBASerializedHWFlags1 flags1;
+		uint8_t lightSample;
+		GBASerializedHWFlags2 flags2;
+		GBASerializedHWFlags3 flags3;
+		uint32_t gbpNextEvent;
 	} hw;
 
 	uint32_t reservedHardware[6];
 
 	struct {
-		unsigned type : 8;
-		unsigned command : 8;
-		unsigned flashState : 2;
-		unsigned : 2;
-		unsigned flashBank : 1;
-		unsigned : 3;
-		unsigned : 8;
+		uint8_t type;
+		uint8_t command;
+		GBASerializedSavedataFlags flags;
+		uint8_t reserved;
 		int32_t readBitsRemaining;
 		uint32_t readAddress;
 		uint32_t writeAddress;
@@ -313,8 +321,11 @@ struct GBASerializedState {
 	uint32_t cpuPrefetch[2];
 
 	uint32_t associatedStreamId;
+	uint32_t reservedRr[3];
 
-	uint32_t reserved[63];
+	uint64_t creationUsec;
+
+	uint32_t reserved[58];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
@@ -324,19 +335,47 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
+enum GBAExtdataTag {
+	EXTDATA_NONE = 0,
+	EXTDATA_SCREENSHOT = 1,
+	EXTDATA_SAVEDATA = 2,
+	EXTDATA_MAX
+};
+
+#define SAVESTATE_SCREENSHOT 1
+#define SAVESTATE_SAVEDATA   2
+
+struct GBAExtdataItem {
+	int32_t size;
+	void* data;
+	void (*clean)(void*);
+};
+
+struct GBAExtdata {
+	struct GBAExtdataItem data[EXTDATA_MAX];
+};
+
 struct VDir;
 struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, bool screenshot);
-bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot);
+bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
+bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
 
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, bool screenshot);
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf);
+bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
+bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 
+bool GBAExtdataInit(struct GBAExtdata*);
+void GBAExtdataDeinit(struct GBAExtdata*);
+void GBAExtdataPut(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
+bool GBAExtdataGet(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
+bool GBAExtdataSerialize(struct GBAExtdata* extpdata, struct VFile* vf);
+bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf);
+
+struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 

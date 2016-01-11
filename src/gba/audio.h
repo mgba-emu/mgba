@@ -128,7 +128,7 @@ struct GBAAudioChannel4 {
 		int32_t endTime;
 	} control;
 
-	unsigned lfsr;
+	uint32_t lfsr;
 	int8_t sample;
 };
 

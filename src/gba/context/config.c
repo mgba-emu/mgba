@@ -31,6 +31,16 @@
 static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
 	const char* value;
 	if (config->port) {
+		value = ConfigurationGetValue(&config->overridesTable, config->port, key);
+		if (value) {
+			return value;
+		}
+	}
+	value = ConfigurationGetValue(&config->overridesTable, 0, key);
+	if (value) {
+		return value;
+	}
+	if (config->port) {
 		value = ConfigurationGetValue(&config->configTable, config->port, key);
 		if (value) {
 			return value;
@@ -106,6 +116,7 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
+	ConfigurationInit(&config->overridesTable);
 	if (port) {
 		config->port = malloc(strlen("ports.") + strlen(port) + 1);
 		snprintf(config->port, strlen("ports.") + strlen(port) + 1, "ports.%s", port);
@@ -117,9 +128,11 @@ void GBAConfigInit(struct GBAConfig* config, const char* port) {
 void GBAConfigDeinit(struct GBAConfig* config) {
 	ConfigurationDeinit(&config->configTable);
 	ConfigurationDeinit(&config->defaultsTable);
+	ConfigurationDeinit(&config->overridesTable);
 	free(config->port);
 }
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool GBAConfigLoad(struct GBAConfig* config) {
 	char path[PATH_MAX];
 	GBAConfigDirectory(path, PATH_MAX);
@@ -200,8 +213,9 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	snprintf(out, outLength, "/%s", projectName);
 	mkdir(out, 0777);
 #elif defined(_3DS)
+	UNUSED(portable);
 	snprintf(out, outLength, "/%s", projectName);
-	FSUSER_CreateDirectory(0, sdmcArchive, FS_makePath(PATH_CHAR, out));
+	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
 #else
 	getcwd(out, outLength);
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
@@ -219,6 +233,7 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 	mkdir(out, 0755);
 #endif
 }
+#endif
 
 const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
 	return _lookupValue(config, key);
@@ -268,8 +283,25 @@ void GBAConfigSetDefaultFloatValue(struct GBAConfig* config, const char* key, fl
 	ConfigurationSetFloatValue(&config->defaultsTable, config->port, key, value);
 }
 
+void GBAConfigSetOverrideValue(struct GBAConfig* config, const char* key, const char* value) {
+	ConfigurationSetValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideIntValue(struct GBAConfig* config, const char* key, int value) {
+	ConfigurationSetIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+	ConfigurationSetUIntValue(&config->overridesTable, config->port, key, value);
+}
+
+void GBAConfigSetOverrideFloatValue(struct GBAConfig* config, const char* key, float value) {
+	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
+}
+
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
+	_lookupCharValue(config, "shader", &opts->shader);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
 	_lookupIntValue(config, "volume", &opts->volume);
@@ -330,6 +362,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts) {
 	ConfigurationSetValue(&config->defaultsTable, 0, "bios", opts->bios);
+	ConfigurationSetValue(&config->defaultsTable, 0, "shader", opts->shader);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "useBios", opts->useBios);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "logLevel", opts->logLevel);
@@ -375,5 +408,7 @@ struct Configuration* GBAConfigGetOverrides(struct GBAConfig* config) {
 
 void GBAConfigFreeOpts(struct GBAOptions* opts) {
 	free(opts->bios);
+	free(opts->shader);
 	opts->bios = 0;
+	opts->shader = 0;
 }

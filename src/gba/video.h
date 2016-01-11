@@ -38,7 +38,8 @@ enum {
 
 	VIDEO_TOTAL_LENGTH = VIDEO_HORIZONTAL_LENGTH * VIDEO_VERTICAL_TOTAL_PIXELS,
 
-	REG_DISPSTAT_MASK = 0xFF38,
+	OBJ_HBLANK_FREE_LENGTH = 954,
+	OBJ_LENGTH = 1210,
 
 	BASE_TILE = 0x00010000
 };
@@ -185,7 +186,6 @@ struct GBAVideo {
 	// VCOUNT
 	int vcount;
 
-	int32_t lastHblank;
 	int32_t nextHblank;
 	int32_t nextEvent;
 	int32_t eventDiff;

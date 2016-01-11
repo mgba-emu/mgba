@@ -80,6 +80,9 @@ void MemoryView::updateStatus() {
 		m_ui.uintVal->clear();
 		return;
 	}
+	if (!m_controller->isLoaded()) {
+		return;
+	}
 	ARMCore* cpu = m_controller->thread()->cpu;
 	union {
 		uint32_t u32;
@@ -91,17 +94,17 @@ void MemoryView::updateStatus() {
 	} value;
 	switch (align) {
 	case 1:
-		value.u8 = cpu->memory.load8(cpu, m_selection.first, nullptr);
+		value.u8 = GBAView8(cpu, m_selection.first);
 		m_ui.sintVal->setText(QString::number(value.i8));
 		m_ui.uintVal->setText(QString::number(value.u8));
 		break;
 	case 2:
-		value.u16 = cpu->memory.load16(cpu, m_selection.first, nullptr);
+		value.u16 = GBAView16(cpu, m_selection.first);
 		m_ui.sintVal->setText(QString::number(value.i16));
 		m_ui.uintVal->setText(QString::number(value.u16));
 		break;
 	case 4:
-		value.u32 = cpu->memory.load32(cpu, m_selection.first, nullptr);
+		value.u32 = GBAView32(cpu, m_selection.first);
 		m_ui.sintVal->setText(QString::number(value.i32));
 		m_ui.uintVal->setText(QString::number(value.u32));
 		break;

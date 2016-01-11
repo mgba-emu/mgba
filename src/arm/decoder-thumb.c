@@ -18,7 +18,7 @@
 
 #define DEFINE_IMMEDIATE_5_DECODER_DATA_THUMB(NAME, MNEMONIC) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op3.immediate = (opcode >> 6) & 0x0007; \
+		info->op3.immediate = (opcode >> 6) & 0x001F; \
 		info->op1.reg = opcode & 0x0007; \
 		info->op2.reg = (opcode >> 3) & 0x0007; \
 		info->affectsCPSR = 1; \

@@ -19,26 +19,40 @@ void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->d.postAudioBuffer = 0;
 
 	encoder->frameskip = 2;
+	encoder->delayMs = -1;
+}
+
+void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int frameskip, int delayMs) {
+	if (ImageMagickGIFEncoderIsOpen(encoder)) {
+		return;
+	}
+	encoder->frameskip = frameskip;
+	encoder->delayMs = delayMs;
 }
 
 bool ImageMagickGIFEncoderOpen(struct ImageMagickGIFEncoder* encoder, const char* outfile) {
 	MagickWandGenesis();
 	encoder->wand = NewMagickWand();
+	MagickSetImageFormat(encoder->wand, "GIF");
+	MagickSetImageDispose(encoder->wand, PreviousDispose);
 	encoder->outfile = strdup(outfile);
 	encoder->frame = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 	encoder->currentFrame = 0;
 	return true;
 }
-void ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder* encoder) {
+
+bool ImageMagickGIFEncoderClose(struct ImageMagickGIFEncoder* encoder) {
 	if (!encoder->wand) {
-		return;
+		return false;
 	}
-	MagickWriteImages(encoder->wand, encoder->outfile, MagickTrue);
-	free(encoder->outfile);
-	free(encoder->frame);
+
+	MagickBooleanType success = MagickWriteImages(encoder->wand, encoder->outfile, MagickTrue);
 	DestroyMagickWand(encoder->wand);
 	encoder->wand = 0;
+	free(encoder->outfile);
+	free(encoder->frame);
 	MagickWandTerminus();
+	return success == MagickTrue;
 }
 
 bool ImageMagickGIFEncoderIsOpen(struct ImageMagickGIFEncoder* encoder) {
@@ -64,10 +78,17 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	MagickConstituteImage(encoder->wand, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, "RGBP", CharPixel, encoder->frame);
 	uint64_t ts = encoder->currentFrame;
 	uint64_t nts = encoder->currentFrame + encoder->frameskip + 1;
-	ts *= VIDEO_TOTAL_LENGTH * 100;
-	nts *= VIDEO_TOTAL_LENGTH * 100;
-	ts /= GBA_ARM7TDMI_FREQUENCY;
-	nts /= GBA_ARM7TDMI_FREQUENCY;
+	if (encoder->delayMs >= 0) {
+		ts *= encoder->delayMs;
+		nts *= encoder->delayMs;
+		ts /= 10;
+		nts /= 10;
+	} else {
+		ts *= VIDEO_TOTAL_LENGTH * 100;
+		nts *= VIDEO_TOTAL_LENGTH * 100;
+		ts /= GBA_ARM7TDMI_FREQUENCY;
+		nts /= GBA_ARM7TDMI_FREQUENCY;
+	}
 	MagickSetImageDelay(encoder->wand, nts - ts);
 	++encoder->currentFrame;
 }

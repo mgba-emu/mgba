@@ -13,6 +13,7 @@
 #include "util/gui/menu.h"
 
 #include <psp2/ctrl.h>
+#include <psp2/display.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
@@ -24,12 +25,17 @@
 PSP2_MODULE_INFO(0, 0, "mGBA");
 
 static void _drawStart(void) {
+	vita2d_set_vblank_wait(false);
 	vita2d_start_drawing();
 	vita2d_clear_screen();
 }
 
 static void _drawEnd(void) {
+	static int oldVCount = 0;
+	int vcount = oldVCount;
 	vita2d_end_drawing();
+	oldVCount = sceDisplayGetVcount();
+	vita2d_set_vblank_wait(oldVCount == vcount);
 	vita2d_swap_buffers();
 }
 
@@ -66,7 +72,7 @@ static uint32_t _pollInput(void) {
 	return input;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
 	sceTouchPeek(0, &touch, 1);
 	if (touch.reportNum < 1) {
@@ -111,9 +117,35 @@ int main() {
 					"With Background",
 					"Without Background",
 					"Stretched",
-					0
-				}
+				},
+				.nStates = 3
 			}
+		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "Vita Input",
+				.id = PSP2_INPUT,
+				.keyNames = (const char*[]) {
+					"Select",
+					0,
+					0,
+					"Start",
+					"Up",
+					"Right",
+					"Down",
+					"Left",
+					"L",
+					"R",
+					0, // L2?
+					0, // R2?
+					"Triangle",
+					"Circle",
+					"Cross",
+					"Square"
+				},
+				.nKeys = 16
+			},
+			{ .id = 0 }
 		},
 		.nConfigExtra = 1,
 		.setup = GBAPSP2Setup,

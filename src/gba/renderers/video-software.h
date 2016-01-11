@@ -23,9 +23,9 @@ struct GBAVideoSoftwareSprite {
 };
 
 struct GBAVideoSoftwareBackground {
-	int index;
+	unsigned index;
 	int enabled;
-	int priority;
+	unsigned priority;
 	uint32_t charBase;
 	int mosaic;
 	int multipalette;
@@ -71,10 +71,10 @@ enum {
 #define FLAG_INDEX          0x30000000
 #define FLAG_IS_BACKGROUND  0x08000000
 #define FLAG_UNWRITTEN      0xFC000000
+#define FLAG_REBLEND        0x04000000
 #define FLAG_TARGET_1       0x02000000
 #define FLAG_TARGET_2       0x01000000
 #define FLAG_OBJWIN         0x01000000
-#define FLAG_REBLEND        0x01000000
 #define FLAG_ORDER_MASK     0xF8000000
 
 #define IS_WRITABLE(PIXEL) ((PIXEL) & 0xFE000000)
@@ -122,6 +122,7 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
 	unsigned target1Obj;
@@ -131,7 +132,6 @@ struct GBAVideoSoftwareRenderer {
 	enum BlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
-	int anyTarget2;
 
 	uint16_t blda;
 	uint16_t bldb;

@@ -7,6 +7,7 @@
 
 #include "util/common.h"
 
+#include "gba/cheats.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "gba/context/context.h"
@@ -16,8 +17,6 @@
 
 #define SAMPLES 1024
 #define RUMBLE_PWM 35
-
-#define SOLAR_SENSOR_LEVEL "mgba_solar_sensor_level"
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -45,6 +44,43 @@ static struct CircleBuffer rumbleHistory;
 static struct GBARumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
+static struct GBACheatDevice cheats;
+static struct GBACheatSet cheatSet;
+
+static void _reloadSettings(void) {
+	struct GBAOptions opts = {
+		.useBios = true,
+		.idleOptimization = IDLE_LOOP_REMOVE
+	};
+
+	struct retro_variable var;
+
+	var.key = "mgba_use_bios";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.useBios = strcmp(var.value, "ON") == 0;
+	}
+
+	var.key = "mgba_skip_bios";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		opts.skipBios = strcmp(var.value, "ON") == 0;
+	}
+
+	var.key = "mgba_idle_optimization";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		if (strcmp(var.value, "Don't Remove") == 0) {
+			opts.idleOptimization = IDLE_LOOP_IGNORE;
+		} else if (strcmp(var.value, "Remove Known") == 0) {
+			opts.idleOptimization = IDLE_LOOP_REMOVE;
+		} else if (strcmp(var.value, "Detect and Remove") == 0) {
+			opts.idleOptimization = IDLE_LOOP_DETECT;
+		}
+	}
+
+	GBAConfigLoadDefaults(&context.config, &opts);
+}
 
 unsigned retro_api_version(void) {
    return RETRO_API_VERSION;
@@ -54,7 +90,11 @@ void retro_set_environment(retro_environment_t env) {
 	environCallback = env;
 
 	struct retro_variable vars[] = {
-		{ SOLAR_SENSOR_LEVEL, "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
+		{ "mgba_solar_sensor_level", "Solar sensor level; 0|1|2|3|4|5|6|7|8|9|10" },
+		{ "mgba_allow_opposing_directions", "Allow opposing directional input; OFF|ON" },
+		{ "mgba_use_bios", "Use BIOS file if found; ON|OFF" },
+		{ "mgba_skip_bios", "Skip BIOS intro; OFF|ON" },
+		{ "mgba_idle_optimization", "Idle loop removal; Remove Known|Detect and Remove|Don't Remove" },
 		{ 0, 0 }
 	};
 
@@ -94,6 +134,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
    info->geometry.base_height = VIDEO_VERTICAL_PIXELS;
    info->geometry.max_width = VIDEO_HORIZONTAL_PIXELS;
    info->geometry.max_height = VIDEO_VERTICAL_PIXELS;
+   info->geometry.aspect_ratio = 3.0 / 2.0;
    info->timing.fps =  GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
    info->timing.sample_rate = 32768;
 }
@@ -157,11 +198,6 @@ void retro_init(void) {
 	stream.postVideoFrame = 0;
 
 	GBAContextInit(&context, 0);
-	struct GBAOptions opts = {
-		.useBios = true,
-		.idleOptimization = IDLE_LOOP_REMOVE
-	};
-	GBAConfigLoadDefaults(&context.config, &opts);
 	context.gba->logHandler = GBARetroLog;
 	context.gba->stream = &stream;
 	if (rumbleCallback) {
@@ -190,16 +226,36 @@ void retro_init(void) {
 	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
 	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 #endif
+
+	GBACheatDeviceCreate(&cheats);
+	GBACheatAttachDevice(context.gba, &cheats);
+	GBACheatSetInit(&cheatSet, "libretro");
+	GBACheatAddSet(&cheats, &cheatSet);
 }
 
 void retro_deinit(void) {
 	GBAContextDeinit(&context);
+	GBACheatRemoveSet(&cheats, &cheatSet);
+	GBACheatDeviceDestroy(&cheats);
+	GBACheatSetDeinit(&cheatSet);
 	free(renderer.outputBuffer);
 }
 
 void retro_run(void) {
 	uint16_t keys;
 	inputPollCallback();
+
+	struct retro_variable var = {
+		.key = "mgba_allow_opposing_directions",
+		.value = 0
+	};
+
+	bool updated = false;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+			context.gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+		}
+	}
 
 	keys = 0;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)) << 0;
@@ -268,6 +324,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
+	_reloadSettings();
 	GBAContextLoadROMFromVFile(&context, rom, save);
 	GBAContextStart(&context);
 	return true;
@@ -303,14 +360,31 @@ bool retro_unserialize(const void* data, size_t size) {
 }
 
 void retro_cheat_reset(void) {
-	// TODO: Cheats
+	GBACheatSetDeinit(&cheatSet);
+	GBACheatSetInit(&cheatSet, "libretro");
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char* code) {
-	// TODO: Cheats
 	UNUSED(index);
 	UNUSED(enabled);
-	UNUSED(code);
+	// Convert the super wonky unportable libretro format to something normal
+	char realCode[] = "XXXXXXXX XXXXXXXX";
+	size_t len = strlen(code) + 1; // Include null terminator
+	size_t i, pos;
+	for (i = 0, pos = 0; i < len; ++i) {
+		if (isspace((int) code[i]) || code[i] == '+') {
+			realCode[pos] = ' ';
+		} else {
+			realCode[pos] = code[i];
+		}
+		if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
+			realCode[pos] = '\0';
+			GBACheatAddLine(&cheatSet, realCode);
+			pos = 0;
+			continue;
+		}
+		++pos;
+	}
 }
 
 unsigned retro_get_region(void) {
@@ -421,12 +495,13 @@ static void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 	CircleBufferWrite8(&rumbleHistory, enable);
 	rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleLevel * 0xFFFF / RUMBLE_PWM);
+	rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleLevel * 0xFFFF / RUMBLE_PWM);
 }
 
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
-		.key = SOLAR_SENSOR_LEVEL,
+		.key = "mgba_solar_sensor_level",
 		.value = 0
 	};
 

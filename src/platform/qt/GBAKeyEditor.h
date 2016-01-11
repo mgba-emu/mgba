@@ -37,6 +37,7 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override;
 	virtual bool event(QEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
 	void setNext();
@@ -57,7 +58,7 @@ private:
 	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
 	void bindKey(const KeyEditor*, GBAKey);
 
-	bool findFocus();
+	bool findFocus(KeyEditor* needle = nullptr);
 
 #ifdef BUILD_SDL
 	void lookupAxes(const GBAInputMap*);

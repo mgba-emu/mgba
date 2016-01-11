@@ -77,6 +77,13 @@ int main(int argc, char** argv) {
 		GBAConfigDeinit(&config);
 		return !parsed;
 	}
+	if (args.showVersion) {
+		version(argv[0]);
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
+		return 0;
+	}
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
@@ -231,7 +238,7 @@ static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, i
 }
 
 static void _loadSavestate(struct GBAThread* context) {
-	GBALoadStateNamed(context->gba, _savestate);
+	GBALoadStateNamed(context->gba, _savestate, 0);
 	_savestate->close(_savestate);
 	_savestate = 0;
 }

@@ -42,6 +42,10 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 		}
 	}
 
+	if (index.row() >= GBACheatSetsSize(&m_device->cheats)) {
+		return QVariant();
+	}
+
 	int row = index.row();
 	const GBACheatSet* cheats = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
 	switch (role) {
@@ -56,7 +60,7 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 }
 
 bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int role) {
-	if (!index.isValid() || index.parent().isValid()) {
+	if (!index.isValid() || index.parent().isValid() || index.row() > GBACheatSetsSize(&m_device->cheats)) {
 		return false;
 	}
 
@@ -139,11 +143,14 @@ GBACheatSet* CheatsModel::itemAt(const QModelIndex& index) {
 	if (index.parent().isValid()) {
 		return static_cast<GBACheatSet*>(index.internalPointer());
 	}
+	if (index.row() >= GBACheatSetsSize(&m_device->cheats)) {
+		return nullptr;
+	}
 	return *GBACheatSetsGetPointer(&m_device->cheats, index.row());
 }
 
 void CheatsModel::removeAt(const QModelIndex& index) {
-	if (!index.isValid() || index.parent().isValid()) {
+	if (!index.isValid() || index.parent().isValid() || index.row() >= GBACheatSetsSize(&m_device->cheats)) {
 		return;
 	}
 	int row = index.row();

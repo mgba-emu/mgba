@@ -52,7 +52,7 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
 }
 
 bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
-	png_bytep row = malloc(sizeof(png_bytep) * width * 3);
+	png_bytep row = malloc(sizeof(png_byte) * width * 3);
 	if (!row) {
 		return false;
 	}
@@ -65,7 +65,7 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 	for (i = 0; i < height; ++i) {
 		unsigned x;
 		for (x = 0; x < width; ++x) {
-#if defined(__POWERPC__) || defined(__PPC__)
+#ifdef __BIG_ENDIAN__
 			row[x * 3] = pixelData[stride * i * 4 + x * 4 + 3];
 			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
 			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 1];
@@ -126,7 +126,16 @@ bool PNGInstallChunkHandler(png_structp png, void* context, ChunkHandler handler
 		return false;
 	}
 	png_set_read_user_chunk_fn(png, context, handler);
-	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_bytep) chunkName, 1);
+	int len = strlen(chunkName);
+	int chunks = 0;
+	char* chunkList = strdup(chunkName);
+	int i;
+	for (i = 4; i <= len; i += 5) {
+		chunkList[i] = '\0';
+		++chunks;
+	}
+	png_set_keep_unknown_chunks(png, PNG_HANDLE_CHUNK_ALWAYS, (png_bytep) chunkList, chunks);
+	free(chunkList);
 	return true;
 }
 
@@ -173,15 +182,16 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 		png_read_row(png, row, 0);
 		unsigned x;
 		for (x = 0; x < pngWidth; ++x) {
-
-#if defined(__POWERPC__) || defined(__PPC__)
+#if __BIG_ENDIAN__
 			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 1];
 			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 2];
+			pixelData[stride * i * 4 + x * 4] = 0xFF;
 #else
 			pixelData[stride * i * 4 + x * 4] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 1];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 2];
+			pixelData[stride * i * 4 + x * 4 + 3] = 0xFF;
 #endif
 		}
 	}

@@ -98,7 +98,7 @@ DECL_BITFIELD(GPIOPin, uint16_t);
 
 struct GBACartridgeHardware {
 	struct GBA* p;
-	int devices;
+	uint32_t devices;
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 

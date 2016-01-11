@@ -7,8 +7,9 @@
 #include "util/gui/font-metrics.h"
 #include "util/png-io.h"
 #include "util/vfs.h"
+#include "platform/3ds/ctr-gpu.h"
+#include "icons.h"
 #include "font.h"
-#include "ctr-gpu.h"
 
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
@@ -16,6 +17,7 @@
 
 struct GUIFont {
 	struct ctrTexture texture;
+	struct ctrTexture icons;
 };
 
 struct GUIFont* GUIFontCreate(void) {
@@ -31,8 +33,19 @@ struct GUIFont* GUIFontCreate(void) {
 	tex->width = 256;
 	tex->height = 128;
 
-	GSPGPU_FlushDataCache(NULL, (u8*)font, font_size);
-	GX_RequestDma(NULL, (u32*)font, tex->data, font_size);
+	GSPGPU_FlushDataCache(font, font_size);
+	GX_RequestDma((u32*) font, tex->data, font_size);
+	gspWaitForDMA();
+
+	tex = &guiFont->icons;
+	ctrTexture_Init(tex);
+	tex->data = vramAlloc(256 * 64 * 2);
+	tex->format = GPU_RGBA5551;
+	tex->width = 256;
+	tex->height = 64;
+
+	GSPGPU_FlushDataCache(icons, icons_size);
+	GX_RequestDma((u32*) icons, tex->data, icons_size);
 	gspWaitForDMA();
 
 	return guiFont;
@@ -40,6 +53,7 @@ struct GUIFont* GUIFontCreate(void) {
 
 void GUIFontDestroy(struct GUIFont* font) {
 	vramFree(font->texture.data);
+	vramFree(font->icons.data);
 	free(font);
 }
 
@@ -60,7 +74,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	ctrActivateTexture(&font->texture);
 
 	if (glyph > 0x7F) {
-		glyph = 0;
+		glyph = '?';
 	}
 
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
@@ -70,4 +84,43 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	u16 v = (glyph / 16u) * CELL_HEIGHT;
 
 	ctrAddRect(color, x, y, u, v, CELL_WIDTH, CELL_HEIGHT);
+}
+
+void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
+	ctrActivateTexture(&font->icons);
+
+	if (icon >= GUI_ICON_MAX) {
+		return;
+	}
+
+	struct GUIIconMetric metric = defaultIconMetrics[icon];
+	switch (align & GUI_ALIGN_HCENTER) {
+	case GUI_ALIGN_HCENTER:
+		x -= metric.width / 2;
+		break;
+	case GUI_ALIGN_RIGHT:
+		x -= metric.width;
+		break;
+	}
+	switch (align & GUI_ALIGN_VCENTER) {
+	case GUI_ALIGN_VCENTER:
+		y -= metric.height / 2;
+		break;
+	case GUI_ALIGN_BOTTOM:
+		y -= metric.height;
+		break;
+	}
+	switch (orient) {
+	case GUI_ORIENT_HMIRROR:
+		ctrAddRectScaled(color, x + metric.width, y, -metric.width, metric.height, metric.x, metric.y, metric.width, metric.height);
+		break;
+	case GUI_ORIENT_VMIRROR:
+		ctrAddRectScaled(color, x, y + metric.height, metric.width, -metric.height, metric.x, metric.y, metric.width, metric.height);
+		break;
+	case GUI_ORIENT_0:
+	default:
+		// TODO: Rotation
+		ctrAddRect(color, x, y, metric.x, metric.y, metric.width, metric.height);
+		break;
+	}
 }

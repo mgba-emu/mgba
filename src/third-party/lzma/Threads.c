@@ -1,9 +1,9 @@
 /* Threads.c -- multithreading library
-2013-11-12 : Igor Pavlov : Public domain */
+2014-09-21 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
-#ifndef _WIN32_WCE
+#ifndef UNDER_CE
 #include <process.h>
 #endif
 

@@ -71,7 +71,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 	}
 	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
 
-	video->lastHblank = 0;
 	video->nextHblank = VIDEO_HDRAW_LENGTH;
 	video->nextEvent = video->nextHblank;
 	video->eventDiff = 0;
@@ -89,13 +88,8 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->renderer->vram = video->vram;
 
-	int i;
-	for (i = 0; i < 128; ++i) {
-		video->oam.raw[i * 4] = 0x0200;
-		video->oam.raw[i * 4 + 1] = 0x0000;
-		video->oam.raw[i * 4 + 2] = 0x0000;
-		video->oam.raw[i * 4 + 3] = 0x0000;
-	}
+	memset(video->palette, 0, sizeof(video->palette));
+	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer);
@@ -120,7 +114,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 	video->eventDiff += cycles;
 	if (video->nextEvent <= 0) {
 		int32_t lastEvent = video->nextEvent;
-		video->lastHblank -= video->eventDiff;
 		video->nextHblank -= video->eventDiff;
 		video->nextHblankIRQ -= video->eventDiff;
 		video->nextVcounterIRQ -= video->eventDiff;
@@ -167,6 +160,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBAFrameEnded(video->p);
 				--video->frameskipCounter;
 				if (video->frameskipCounter < 0) {
+					GBASyncPostFrame(video->p->sync);
 					video->frameskipCounter = video->frameskip;
 				}
 				++video->frameCounter;
@@ -178,8 +172,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 		} else {
 			// Begin Hblank
 			dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
-			video->lastHblank = video->nextHblank;
-			video->nextEvent = video->lastHblank + VIDEO_HBLANK_LENGTH;
+			video->nextEvent = video->nextHblank + VIDEO_HBLANK_LENGTH;
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
 			video->nextHblankIRQ = video->nextHblank;
 
@@ -276,32 +269,33 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	state->video.nextEvent = video->nextEvent;
-	state->video.eventDiff = video->eventDiff;
-	state->video.lastHblank = video->lastHblank;
-	state->video.nextHblank = video->nextHblank;
-	state->video.nextHblankIRQ = video->nextHblankIRQ;
-	state->video.nextVblankIRQ = video->nextVblankIRQ;
-	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
-	state->video.frameCounter = video->frameCounter;
+	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
+	STORE_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	STORE_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	STORE_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
 	memcpy(video->renderer->vram, state->vram, SIZE_VRAM);
+	uint16_t value;
 	int i;
 	for (i = 0; i < SIZE_OAM; i += 2) {
-		GBAStore16(video->p->cpu, BASE_OAM | i, state->oam[i >> 1], 0);
+		LOAD_16(value, i, state->oam);
+		GBAStore16(video->p->cpu, BASE_OAM | i, value, 0);
 	}
 	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
-		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, state->pram[i >> 1], 0);
+		LOAD_16(value, i, state->pram);
+		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
 	}
-	video->nextEvent = state->video.nextEvent;
-	video->eventDiff = state->video.eventDiff;
-	video->lastHblank = state->video.lastHblank;
-	video->nextHblank = state->video.nextHblank;
-	video->nextHblankIRQ = state->video.nextHblankIRQ;
-	video->nextVblankIRQ = state->video.nextVblankIRQ;
-	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
-	video->frameCounter = state->video.frameCounter;
-	video->vcount = state->io[REG_VCOUNT >> 1];
+	LOAD_32(video->nextEvent, 0, &state->video.nextEvent);
+	LOAD_32(video->eventDiff, 0, &state->video.eventDiff);
+	LOAD_32(video->nextHblank, 0, &state->video.nextHblank);
+	LOAD_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	LOAD_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
+	LOAD_16(video->vcount, REG_VCOUNT, state->io);
 }

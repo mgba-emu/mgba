@@ -11,7 +11,7 @@
 #ifdef _WIN32
 #include <io.h>
 #include <windows.h>
-#define PATH_SEP "\\"
+#define PATH_SEP "/" // Windows can handle slashes, and backslashes confuse some libraries
 #else
 #define PATH_SEP "/"
 #endif
@@ -67,12 +67,14 @@ struct VFile* VFileOpenFD(const char* path, int flags);
 struct VFile* VFileFOpen(const char* path, const char* mode);
 struct VFile* VFileFromFD(int fd);
 struct VFile* VFileFromMemory(void* mem, size_t size);
+struct VFile* VFileFromConstMemory(const void* mem, size_t size);
+struct VFile* VFileMemChunk(const void* mem, size_t size);
 struct VFile* VFileFromFILE(FILE* file);
 
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);
 
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
 
@@ -80,10 +82,12 @@ struct VDir* VDirOpenZip(const char* path, int flags);
 struct VDir* VDirOpen7z(const char* path, int flags);
 #endif
 
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix,
-                                   int mode);
-struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix,
-                                            const char* infix, const char* suffix, int mode);
+struct VDir* VDeviceList(void);
+
+void separatePath(const char* path, char* dirname, char* basename, char* extension);
+
+struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*));
+struct VFile* VDirFindNextAvailable(struct VDir*, const char* basename, const char* infix, const char* suffix, int mode);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 

@@ -13,7 +13,8 @@ struct GUIMenuItem {
 	const char* title;
 	void* data;
 	unsigned state;
-	const char** validStates;
+	const char* const* validStates;
+	unsigned nStates;
 	struct GUIMenu* submenu;
 };
 

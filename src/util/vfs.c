@@ -98,7 +98,8 @@ struct VFile* VFileOpen(const char* path, int flags) {
 
 struct VDir* VDirOpenArchive(const char* path) {
 	struct VDir* dir = 0;
-#if USE_LIBZIP
+	UNUSED(path);
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 	if (!dir) {
 		dir = VDirOpenZip(path, 0);
 	}
@@ -119,7 +120,7 @@ ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 			break;
 		}
 		bytesRead += newRead;
-		if (buffer[bytesRead] == '\n') {
+		if (buffer[bytesRead - newRead] == '\n') {
 			break;
 		}
 	}
@@ -157,92 +158,86 @@ ssize_t VFileRead16LE(struct VFile* vf, void* hword) {
 	return r;
 }
 
-struct VFile* VDirOptionalOpenFile(struct VDir* dir, const char* realPath, const char* prefix, const char* suffix, int mode) {
-	char path[PATH_MAX];
-	path[PATH_MAX - 1] = '\0';
-	struct VFile* vf;
-	if (!dir) {
-		if (!realPath) {
-			return 0;
-		}
-		char* dotPoint = strrchr(realPath, '.');
-		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
-			return 0;
-		}
-		if (dotPoint > strrchr(realPath, '/')) {
-			int len = dotPoint - realPath;
-			strncpy(path, realPath, len);
-			path[len] = 0;
-			strncat(path + len, suffix, PATH_MAX - len - 1);
-		} else {
-			snprintf(path, PATH_MAX - 1, "%s%s", realPath, suffix);
-		}
-		vf = VFileOpen(path, mode);
-	} else {
-		snprintf(path, PATH_MAX - 1, "%s%s", prefix, suffix);
-		vf = dir->openFile(dir, path, mode);
+void separatePath(const char* path, char* dirname, char* basename, char* extension) {
+	if (!path) {
+		return;
 	}
-	return vf;
-}
-
-struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPath, const char* prefix, const char* infix, const char* suffix, int mode) {
-	char path[PATH_MAX];
-	path[PATH_MAX - 1] = '\0';
-	char realPrefix[PATH_MAX];
-	realPrefix[PATH_MAX - 1] = '\0';
-	if (!dir) {
-		if (!realPath) {
-			return 0;
-		}
-		const char* separatorPoint = strrchr(realPath, '/');
-		const char* dotPoint;
-		size_t len;
-		if (!separatorPoint) {
-			strcpy(path, "./");
-			separatorPoint = realPath;
-			dotPoint = strrchr(realPath, '.');
-		} else {
-			path[0] = '\0';
-			dotPoint = strrchr(separatorPoint, '.');
-
-			if (separatorPoint - realPath + 1 >= PATH_MAX - 1) {
-				return 0;
+	char* dotPoint = strrchr(path, '.');
+	char* separatorPoint = strnrstr(path, PATH_SEP, strlen(path));
+	if (separatorPoint) {
+		if (dirname) {
+			ptrdiff_t len = separatorPoint - path;
+			if (PATH_MAX <= len) {
+				len = PATH_MAX - 1;
+			} else if (!len) {
+				len = 1;
 			}
-
-			len = separatorPoint - realPath;
-			strncat(path, realPath, len);
-			path[len] = '\0';
-			++separatorPoint;
+			strncpy(dirname, path, len);
+			dirname[len] = '\0';
 		}
-
-		if (dotPoint - realPath + 1 >= PATH_MAX - 1) {
-			return 0;
-		}
-
-		if (dotPoint >= separatorPoint) {
-			len = dotPoint - separatorPoint;
+		path = separatorPoint + 1;
+	} else if (dirname) {
+		strcpy(dirname, ".");
+	}
+	if (basename) {
+		size_t len;
+		if (dotPoint) {
+			len = dotPoint - path;
 		} else {
+			len = strlen(path);
+		}
+		if (PATH_MAX <= len) {
 			len = PATH_MAX - 1;
 		}
-
-		strncpy(realPrefix, separatorPoint, len);
-		realPrefix[len] = '\0';
-
-		prefix = realPrefix;
-		dir = VDirOpen(path);
+		strncpy(basename, path, len);
+		basename[len] = '\0';
 	}
+	if (extension) {
+		if (dotPoint) {
+			++dotPoint;
+			size_t len = strlen(dotPoint);
+			if (PATH_MAX <= len) {
+				len = PATH_MAX - 1;
+			}
+			strncpy(extension, dotPoint, len);
+			extension[len] = '\0';
+		} else {
+			extension[0] = '\0';
+		}
+	}
+}
+
+struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
+	dir->rewind(dir);
+	struct VDirEntry* dirent = dir->listNext(dir);
+	while (dirent) {
+		struct VFile* vf = dir->openFile(dir, dirent->name(dirent), O_RDONLY);
+		if (!vf) {
+			dirent = dir->listNext(dir);
+			continue;
+		}
+		if (filter(vf)) {
+			return vf;
+		}
+		vf->close(vf);
+		dirent = dir->listNext(dir);
+	}
+	return 0;
+}
+
+struct VFile* VDirFindNextAvailable(struct VDir* dir, const char* basename, const char* infix, const char* suffix, int mode) {
 	if (!dir) {
-		// This shouldn't be possible
 		return 0;
 	}
 	dir->rewind(dir);
 	struct VDirEntry* dirent;
-	size_t prefixLen = strlen(prefix);
+	size_t prefixLen = strlen(basename);
 	size_t infixLen = strlen(infix);
+	char path[PATH_MAX];
 	unsigned next = 0;
 	while ((dirent = dir->listNext(dir))) {
 		const char* filename = dirent->name(dirent);
-		char* dotPoint = strrchr(filename, '.');
+		const char* dotPoint = strrchr(filename, '.');
 		size_t len = strlen(filename);
 		if (dotPoint) {
 			len = (dotPoint - filename);
@@ -255,7 +250,7 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 		if (len != prefixLen) {
 			continue;
 		}
-		if (strncmp(filename, prefix, prefixLen) == 0) {
+		if (strncmp(filename, basename, prefixLen) == 0) {
 			int nlen;
 			separator += infixLen;
 			snprintf(path, PATH_MAX - 1, "%%u%s%%n", suffix);
@@ -272,7 +267,7 @@ struct VFile* VDirOptionalOpenIncrementFile(struct VDir* dir, const char* realPa
 			}
 		}
 	}
-	snprintf(path, PATH_MAX - 1, "%s%s%u%s", prefix, infix, next, suffix);
+	snprintf(path, PATH_MAX - 1, "%s%s%u%s", basename, infix, next, suffix);
 	path[PATH_MAX - 1] = '\0';
 	return dir->openFile(dir, path, mode);
 }

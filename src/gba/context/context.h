@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "gba/context/config.h"
+#include "gba/context/directories.h"
 #include "gba/context/sync.h"
 #include "gba/input.h"
 
@@ -20,6 +21,7 @@ struct GBAContext {
 	const char* fname;
 	struct VFile* save;
 	struct VFile* bios;
+	struct GBADirectorySet dirs;
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct GBAConfig config;
 	struct GBAOptions opts;
@@ -37,6 +39,7 @@ void GBAContextUnloadROM(struct GBAContext* context);
 
 bool GBAContextStart(struct GBAContext* context);
 void GBAContextStop(struct GBAContext* context);
+void GBAContextReset(struct GBAContext* context);
 void GBAContextFrame(struct GBAContext* context, uint16_t keys);
 
 #endif

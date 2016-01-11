@@ -20,7 +20,9 @@ Q_OBJECT
 public:
 	VFileDevice(VFile* vf, QObject* parent = nullptr);
 
-	static VFile* open(QString path, int mode);
+	static VFile* open(const QString& path, int mode);
+	static VDir* openDir(const QString& path);
+	static VDir* openArchive(const QString& path);
 
 protected:
 	virtual qint64 readData(char* data, qint64 maxSize) override;

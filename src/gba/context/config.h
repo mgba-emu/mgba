@@ -15,6 +15,7 @@
 struct GBAConfig {
 	struct Configuration configTable;
 	struct Configuration defaultsTable;
+	struct Configuration overridesTable;
 	char* port;
 };
 
@@ -37,6 +38,7 @@ struct GBAOptions {
 	bool lockAspectRatio;
 	bool resampleVideo;
 	bool suspendScreensaver;
+	char* shader;
 
 	int volume;
 	bool mute;
@@ -50,6 +52,7 @@ struct GBAOptions {
 void GBAConfigInit(struct GBAConfig*, const char* port);
 void GBAConfigDeinit(struct GBAConfig*);
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool GBAConfigLoad(struct GBAConfig*);
 bool GBAConfigSave(const struct GBAConfig*);
 bool GBAConfigLoadPath(struct GBAConfig*, const char* path);
@@ -57,6 +60,7 @@ bool GBAConfigSavePath(const struct GBAConfig*, const char* path);
 
 void GBAConfigMakePortable(const struct GBAConfig*);
 void GBAConfigDirectory(char* out, size_t outLength);
+#endif
 
 const char* GBAConfigGetValue(const struct GBAConfig*, const char* key);
 bool GBAConfigGetIntValue(const struct GBAConfig*, const char* key, int* value);
@@ -72,6 +76,11 @@ void GBAConfigSetDefaultValue(struct GBAConfig*, const char* key, const char* va
 void GBAConfigSetDefaultIntValue(struct GBAConfig*, const char* key, int value);
 void GBAConfigSetDefaultUIntValue(struct GBAConfig*, const char* key, unsigned value);
 void GBAConfigSetDefaultFloatValue(struct GBAConfig*, const char* key, float value);
+
+void GBAConfigSetOverrideValue(struct GBAConfig*, const char* key, const char* value);
+void GBAConfigSetOverrideIntValue(struct GBAConfig*, const char* key, int value);
+void GBAConfigSetOverrideUIntValue(struct GBAConfig*, const char* key, unsigned value);
+void GBAConfigSetOverrideFloatValue(struct GBAConfig*, const char* key, float value);
 
 void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts);
 void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts);

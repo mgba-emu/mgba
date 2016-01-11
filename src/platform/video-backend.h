@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #ifdef _WIN32
+#include <windows.h>
 typedef HWND WHandle;
 #else
 typedef void* WHandle;
@@ -29,6 +30,15 @@ struct VideoBackend {
 
 	bool filter;
 	bool lockAspectRatio;
+};
+
+struct VideoShader {
+	const char* name;
+	const char* author;
+	const char* description;
+	void* preprocessShader;
+	void* passes;
+	size_t nPasses;
 };
 
 #endif

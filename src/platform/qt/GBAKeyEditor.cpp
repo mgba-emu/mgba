@@ -126,6 +126,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	for (auto& key : m_keyOrder) {
 		connect(key, SIGNAL(valueChanged(int)), this, SLOT(setNext()));
 		connect(key, SIGNAL(axisChanged(int, int)), this, SLOT(setNext()));
+		key->installEventFilter(this);
 	}
 
 	m_currentKey = m_keyOrder.end();
@@ -181,9 +182,15 @@ bool GBAKeyEditor::event(QEvent* event) {
 	return QWidget::event(event);
 }
 
-void GBAKeyEditor::setNext() {
-	findFocus();
+bool GBAKeyEditor::eventFilter(QObject* obj, QEvent* event) {
+	if (event->type() != QEvent::FocusIn) {
+		return false;
+	}
+	findFocus(static_cast<KeyEditor*>(obj));
+	return true;
+}
 
+void GBAKeyEditor::setNext() {
 	if (m_currentKey == m_keyOrder.end()) {
 		return;
 	}
@@ -242,7 +249,7 @@ void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, G
 #ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON) {
 		int value = GBAInputQueryBinding(map, m_type, key);
-		if (value != GBA_NO_MAPPING) {
+		if (value != GBA_KEY_NONE) {
 			keyEditor->setValueButton(value);
 		}
 		return;
@@ -280,18 +287,18 @@ void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 	m_controller->bindKey(m_type, keyEditor->value(), key);
 }
 
-bool GBAKeyEditor::findFocus() {
+bool GBAKeyEditor::findFocus(KeyEditor* needle) {
 	if (m_currentKey != m_keyOrder.end() && (*m_currentKey)->hasFocus()) {
 		return true;
 	}
 
 	for (auto key = m_keyOrder.begin(); key != m_keyOrder.end(); ++key) {
-		if ((*key)->hasFocus()) {
+		if ((*key)->hasFocus() || needle == *key) {
 			m_currentKey = key;
 			return true;
 		}
 	}
-	return false;
+	return m_currentKey != m_keyOrder.end();
 }
 
 #ifdef BUILD_SDL

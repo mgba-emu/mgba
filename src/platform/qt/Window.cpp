@@ -24,20 +24,25 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MultiplayerController.h"
 #include "MemoryView.h"
 #include "OverrideView.h"
 #include "PaletteView.h"
+#include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
+#include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "ShortcutView.h"
 #include "VideoView.h"
 
 extern "C" {
 #include "platform/commandline.h"
+#include "util/nointro.h"
+#include "util/vfs.h"
 }
 
 using namespace QGBA;
@@ -79,6 +84,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	updateTitle();
 
 	m_display = Display::create(this);
+	m_shaderView = new ShaderSelector(m_display, m_config);
 
 	m_logo.setDevicePixelRatio(m_screenWidget->devicePixelRatio());
 	m_logo = m_logo; // Free memory left over in old pixmap
@@ -131,6 +137,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
+	connect(this, SIGNAL(shutdown()), m_shaderView, SLOT(hide()));
 	connect(this, SIGNAL(audioBufferSamplesChanged(int)), m_controller, SLOT(setAudioBufferSamples(int)));
 	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
@@ -222,6 +229,15 @@ void Window::loadConfig() {
 		enterFullScreen();
 	}
 
+	if (opts->shader) {
+		struct VDir* shader = VDirOpen(opts->shader);
+		if (shader) {
+			m_display->setShaders(shader);
+			m_shaderView->refreshShaders();
+			shader->close(shader);
+		}
+	}
+
 	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 
 	m_mruFiles = m_config->getMRU();
@@ -244,6 +260,8 @@ void Window::selectROM() {
 #ifdef USE_LZMA
 		"*.7z",
 #endif
+		"*.agb",
+		"*.mb",
 		"*.rom",
 		"*.bin"};
 	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
@@ -374,9 +392,19 @@ void Window::openMemoryWindow() {
 	openView(memoryWindow);
 }
 
+void Window::openIOViewer() {
+	IOViewer* ioViewer = new IOViewer(m_controller);
+	openView(ioViewer);
+}
+
 void Window::openAboutScreen() {
 	AboutScreen* about = new AboutScreen();
 	openView(about);
+}
+
+void Window::openROMInfo() {
+	ROMInfo* romInfo = new ROMInfo(m_controller);
+	openView(romInfo);
 }
 
 #ifdef BUILD_SDL
@@ -577,7 +605,6 @@ void Window::gameStarted(GBAThread* context) {
 	MutexLock(&context->stateMutex);
 	if (context->state < THREAD_EXITING) {
 		emit startDrawing(context);
-		GBAGetGameTitle(context->gba, title);
 	} else {
 		MutexUnlock(&context->stateMutex);
 		return;
@@ -688,10 +715,15 @@ void Window::updateTitle(float fps) {
 
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		char gameTitle[13] = { '\0' };
-		GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
-
-		title = (gameTitle);
+		const NoIntroDB* db = GBAApp::app()->gameDB();
+		NoIntroGame game;
+		if (db && NoIntroDBLookupGameByCRC(db, m_controller->thread()->gba->romCrc32, &game)) {
+			title = QLatin1String(game.name);
+		} else {
+			char gameTitle[13] = { '\0' };
+			GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
+			title = gameTitle;
+		}
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {
@@ -745,6 +777,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Replace ROM..."), this, SLOT(replaceROM())), "replaceROM");
+
+	QAction* romInfo = new QAction(tr("ROM &info..."), fileMenu);
+	connect(romInfo, SIGNAL(triggered()), this, SLOT(openROMInfo()));
+	m_gameActions.append(romInfo);
+	addControlledAction(fileMenu, romInfo, "romInfo");
 
 	m_mruMenu = fileMenu->addMenu(tr("Recent"));
 
@@ -1038,7 +1075,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("frameskip");
 
+	QAction* shaderView = new QAction(tr("Shader options..."), avMenu);
+	connect(shaderView, SIGNAL(triggered()), m_shaderView, SLOT(show()));
+	if (!m_display->supportsShaders()) {
+		shaderView->setEnabled(false);
+	}
+	addControlledAction(avMenu, shaderView, "shaderSelector");
+
 	avMenu->addSeparator();
+
+	ConfigOption* mute = m_config->addOption("mute");
+	mute->addBoolean(tr("Mute"), avMenu);
+	mute->connect([this](const QVariant& value) {
+		m_controller->setMute(value.toBool());
+	}, this);
+	m_config->updateOption("mute");
 
 	QMenu* target = avMenu->addMenu(tr("FPS target"));
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
@@ -1170,6 +1221,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
+	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
+	connect(ioViewer, SIGNAL(triggered()), this, SLOT(openIOViewer()));
+	m_gameActions.append(ioViewer);
+	addControlledAction(toolsMenu, ioViewer, "ioViewer");
+
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {
 		m_controller->setSkipBIOS(value.toBool());
@@ -1193,11 +1249,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* volume = m_config->addOption("volume");
 	volume->connect([this](const QVariant& value) {
 		m_controller->setVolume(value.toInt());
-	}, this);
-
-	ConfigOption* mute = m_config->addOption("mute");
-	mute->connect([this](const QVariant& value) {
-		m_controller->setMute(value.toBool());
 	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
@@ -1224,6 +1275,69 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(exitFullScreen, SIGNAL(triggered()), this, SLOT(exitFullScreen()));
 	exitFullScreen->setShortcut(QKeySequence("Esc"));
 	addHiddenAction(frameMenu, exitFullScreen, "exitFullScreen");
+
+	QMenu* autofireMenu = new QMenu(tr("Autofire"), this);
+	m_shortcutController->addMenu(autofireMenu);
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_A, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_A, false);
+	}, QKeySequence("W"), tr("Autofire A"), "autofireA");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_B, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_B, false);
+	}, QKeySequence("Q"), tr("Autofire B"), "autofireB");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_L, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_L, false);
+	}, QKeySequence(), tr("Autofire L"), "autofireL");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_R, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_R, false);
+	}, QKeySequence(), tr("Autofire R"), "autofireR");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_START, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_START, false);
+	}, QKeySequence(), tr("Autofire Start"), "autofireStart");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_SELECT, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_SELECT, false);
+	}, QKeySequence(), tr("Autofire Select"), "autofireSelect");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_UP, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_UP, false);
+	}, QKeySequence(), tr("Autofire Up"), "autofireUp");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_RIGHT, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_RIGHT, false);
+	}, QKeySequence(), tr("Autofire Right"), "autofireRight");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_DOWN, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_DOWN, false);
+	}, QKeySequence(), tr("Autofire Down"), "autofireDown");
+
+	m_shortcutController->addFunctions(autofireMenu, [this]() {
+		m_controller->setAutofire(GBA_KEY_LEFT, true);
+	}, [this]() {
+		m_controller->setAutofire(GBA_KEY_LEFT, false);
+	}, QKeySequence(), tr("Autofire Left"), "autofireLeft");
 
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);

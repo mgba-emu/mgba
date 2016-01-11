@@ -46,6 +46,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// F-Zero - Climax
 	{ "BFTJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE },
 
+	// Iridion II
+	{ "AI2E", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },
+	{ "AI2P", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },
+
 	// Golden Sun: The Lost Age
 	{ "AGFE", SAVEDATA_FLASH512, HW_NONE, 0x801353A },
 
@@ -128,7 +132,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Super Mario Advance 2
 	{ "AA2J", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
 	{ "AA2E", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
-	{ "AA2P", SAVEDATA_EEPROM, HW_NONE, 0x800052E },
+	{ "AA2P", SAVEDATA_AUTODETECT, HW_NONE, 0x800052E },
 
 	// Super Mario Advance 3
 	{ "A3AJ", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
@@ -139,6 +143,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AX4J", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 	{ "AX4E", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 	{ "AX4P", SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
+
+	// Super Monkey Ball Jr.
+	{ "ALUE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
+	{ "ALUP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
 
 	// Top Gun - Combat Zones
 	{ "A2YE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },

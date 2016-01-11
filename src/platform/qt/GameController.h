@@ -122,6 +122,7 @@ public slots:
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void clearKeys();
+	void setAutofire(int key, bool enable);
 	void setAudioBufferSamples(int samples);
 	void setAudioSampleRate(unsigned rate);
 	void setAudioChannelEnabled(int channel, bool enable = true);
@@ -165,6 +166,7 @@ private slots:
 	void crashGame(const QString& crashMessage);
 
 	void pollEvents();
+	void updateAutofire();
 
 private:
 	void updateKeys();
@@ -207,6 +209,9 @@ private:
 
 	bool m_audioChannels[6];
 	bool m_videoLayers[5];
+
+	bool m_autofire[GBA_KEY_MAX];
+	int m_autofireStatus[GBA_KEY_MAX];
 
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;

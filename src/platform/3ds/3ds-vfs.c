@@ -18,7 +18,7 @@ struct VFile3DS {
 
 struct VDirEntry3DS {
 	struct VDirEntry d;
-	FS_dirent ent;
+	FS_DirectoryEntry ent;
 	char utf8Name[256];
 };
 
@@ -49,14 +49,15 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path);
 static const char* _vd3deName(struct VDirEntry* vde);
 static enum VFSType _vd3deType(struct VDirEntry* vde);
 
-struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
+struct VFile* VFileOpen3DS(FS_Archive* archive, const char* path, int flags) {
 	struct VFile3DS* vf3d = malloc(sizeof(struct VFile3DS));
 	if (!vf3d) {
 		return 0;
 	}
 
-	FS_path newPath = FS_makePath(PATH_CHAR, path);
-	Result res = FSUSER_OpenFile(0, &vf3d->handle, *archive, newPath, flags, FS_ATTRIBUTE_NONE);
+	// TODO: Use UTF-16
+	FS_Path newPath = fsMakePath(PATH_ASCII, path);
+	Result res = FSUSER_OpenFile(&vf3d->handle, *archive, newPath, flags, 0);
 	if (res & 0xFFFC03FF) {
 		free(vf3d);
 		return 0;
@@ -67,7 +68,7 @@ struct VFile* VFileOpen3DS(FS_archive* archive, const char* path, int flags) {
 	vf3d->d.close = _vf3dClose;
 	vf3d->d.seek = _vf3dSeek;
 	vf3d->d.read = _vf3dRead;
-	vf3d->d.readline = 0;
+	vf3d->d.readline = VFileReadline;
 	vf3d->d.write = _vf3dWrite;
 	vf3d->d.map = _vf3dMap;
 	vf3d->d.unmap = _vf3dUnmap;
@@ -175,8 +176,9 @@ struct VDir* VDirOpen(const char* path) {
 		return 0;
 	}
 
-	FS_path newPath = FS_makePath(PATH_CHAR, path);
-	Result res = FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+	// TODO: Use UTF-16
+	FS_Path newPath = fsMakePath(PATH_ASCII, path);
+	Result res = FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 	if (res & 0xFFFC03FF) {
 		free(vd3d);
 		return 0;
@@ -207,8 +209,9 @@ static bool _vd3dClose(struct VDir* vd) {
 static void _vd3dRewind(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	FSDIR_Close(vd3d->handle);
-	FS_path newPath = FS_makePath(PATH_CHAR, vd3d->path);
-	FSUSER_OpenDirectory(0, &vd3d->handle, sdmcArchive, newPath);
+	// TODO: Use UTF-16
+	FS_Path newPath = fsMakePath(PATH_ASCII, vd3d->path);
+	FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 }
 
 static struct VDirEntry* _vd3dListNext(struct VDir* vd) {
@@ -257,14 +260,14 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
 	if (!vd3de->utf8Name[0]) {
-		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->ent.name));
+		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
 	}
 	return vd3de->utf8Name;
 }
 
 static enum VFSType _vd3deType(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
-	if (vd3de->ent.isDirectory) {
+	if (vd3de->ent.attributes & FS_ATTRIBUTE_DIRECTORY) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;

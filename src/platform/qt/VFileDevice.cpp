@@ -26,6 +26,13 @@ qint64 VFileDevice::size() const {
 	return m_vf->size(m_vf);
 }
 
-VFile* VFileDevice::open(QString path, int mode) {
+VFile* VFileDevice::open(const QString& path, int mode) {
 	return VFileOpen(path.toUtf8().constData(), mode);
+}
+
+VDir* VFileDevice::openDir(const QString& path) {
+	return VDirOpen(path.toUtf8().constData());
+}
+VDir* VFileDevice::openArchive(const QString& path) {
+	return VDirOpenArchive(path.toUtf8().constData());
 }

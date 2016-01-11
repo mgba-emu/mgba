@@ -48,7 +48,6 @@ static struct GBASceRotationSource {
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
 
-#define PSP2_INPUT 0x50535032
 #define PSP2_SAMPLES 64
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 19)
 
@@ -138,11 +137,6 @@ uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner) {
 
 void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
-	struct GBAOptions opts = {
-		.useBios = true,
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&runner->context.config, &opts);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
 	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_START, GBA_KEY_START);
@@ -220,7 +214,6 @@ void GBAPSP2UnloadROM(struct GBAGUIRunner* runner) {
 }
 
 void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
-	UNUSED(runner);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }

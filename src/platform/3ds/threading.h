@@ -11,6 +11,11 @@
 #include <3ds.h>
 #include <malloc.h>
 
+#ifdef _3DS
+// ctrulib already has a type called Thread
+#define Thread CustomThread
+#endif
+
 #define THREAD_ENTRY void
 typedef ThreadFunc ThreadEntry;
 
@@ -35,6 +40,10 @@ static inline int MutexDeinit(Mutex* mutex) {
 
 static inline int MutexLock(Mutex* mutex) {
 	return svcWaitSynchronization(*mutex, U64_MAX);
+}
+
+static inline int MutexTryLock(Mutex* mutex) {
+	return svcWaitSynchronization(*mutex, 10);
 }
 
 static inline int MutexUnlock(Mutex* mutex) {

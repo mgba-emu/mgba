@@ -31,6 +31,7 @@ struct GBAArguments {
 	enum DebuggerType debuggerType;
 	bool debugAtStart;
 	bool showHelp;
+	bool showVersion;
 };
 
 struct SubParser {
@@ -52,6 +53,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 void freeArguments(struct GBAArguments* opts);
 
 void usage(const char* arg0, const char* extraOptions);
+void version(const char* arg0);
 
 void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);
 struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context);

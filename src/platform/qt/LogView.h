@@ -6,6 +6,7 @@
 #ifndef QGBA_LOG_VIEW
 #define QGBA_LOG_VIEW
 
+#include <QQueue>
 #include <QWidget>
 
 #include "ui_LogView.h"
@@ -36,12 +37,16 @@ public slots:
 private slots:
 	void setMaxLines(int);
 
+protected:
+	virtual void showEvent(QShowEvent*) override;
+
 private:
 	static const int DEFAULT_LINE_LIMIT = 1000;
 
 	Ui::LogView m_ui;
 	int m_lines;
 	int m_lineLimit;
+	QQueue<QString> m_pendingLines;
 
 	void setLevel(int level, bool);
 
