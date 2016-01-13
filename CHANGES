@@ -15,6 +15,8 @@ Features:
  - Libretro: Settings for using BIOS and skipping intro
  - Libretro: Customizable idle loop removal
  - Implemented cycle counting for sprite rendering
+ - Cleaner, unified settings window
+ - Added a setting for pausing when the emulator is not in focus
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
@@ -27,6 +29,9 @@ Bugfixes:
  - Util: Fix excessive memory allocation when decoding a PNG
  - GBA: Fix Iridion II savetype
  - Libretro: Fix aspect ratio
+ - Qt: Fix some potential crashes with the gamepad mapping
+ - Debugger: Fix watchpoints in gdb
+ - ARM7: Fix decoding of some ARM ALU instructions with shifters
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
@@ -54,6 +59,7 @@ Misc:
  - GBA RR: Add preliminary SRAM support for VBM loading
  - GBA RR: Add support for resets in movies
  - GBA Input: Consolidate GBA_KEY_NONE and GBA_NO_MAPPING
+ - Debugger: Convert breakpoints and watchpoints from linked-lists to vectors
 
 0.3.2: (2015-12-16)
 Bugfixes:

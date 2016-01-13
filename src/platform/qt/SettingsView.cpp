@@ -9,10 +9,13 @@
 #include "ConfigController.h"
 #include "Display.h"
 #include "GBAApp.h"
+#include "GBAKeyEditor.h"
+#include "InputController.h"
+#include "ShortcutView.h"
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 {
@@ -36,6 +39,7 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
+	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {
@@ -94,6 +98,26 @@ SettingsView::SettingsView(ConfigController* controller, QWidget* parent)
 			updateConfig();
 		}
 	});
+
+	GBAKeyEditor* editor = new GBAKeyEditor(inputController, InputController::KEYBOARD, QString(), this);
+	m_ui.stackedWidget->addWidget(editor);
+	m_ui.tabs->addItem("Keyboard");
+	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+
+#ifdef BUILD_SDL
+	inputController->recalibrateAxes();
+	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
+	editor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+	m_ui.stackedWidget->addWidget(editor);
+	m_ui.tabs->addItem("Controllers");
+	connect(m_ui.buttonBox, SIGNAL(accepted()), editor, SLOT(save()));
+#endif
+
+	ShortcutView* shortcutView = new ShortcutView();
+	shortcutView->setController(shortcutController);
+	shortcutView->setInputController(inputController);
+	m_ui.stackedWidget->addWidget(shortcutView);
+	m_ui.tabs->addItem("Shortcuts");
 }
 
 void SettingsView::selectBios() {
@@ -122,6 +146,7 @@ void SettingsView::updateConfig() {
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
+	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");

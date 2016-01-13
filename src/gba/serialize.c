@@ -461,6 +461,7 @@ struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* 
 		return _loadPNGState(vf, extdata);
 	}
 #endif
+	vf->seek(vf, 0, SEEK_SET);
 	if (vf->size(vf) < (ssize_t) sizeof(struct GBASerializedState)) {
 		return false;
 	}

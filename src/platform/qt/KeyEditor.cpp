@@ -72,7 +72,7 @@ void KeyEditor::clearAxis() {
 
 QSize KeyEditor::sizeHint() const {
 	QSize hint = QLineEdit::sizeHint();
-	hint.setWidth(40);
+	hint.setWidth(50);
 	return hint;
 }
 
