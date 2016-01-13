@@ -161,12 +161,13 @@ void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) 
 	}
 }
 
-void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
+void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address, enum WatchpointType type) {
 	if (!debugger->watchpoints) {
 		ARMDebuggerInstallMemoryShim(debugger);
 	}
 	struct DebugWatchpoint* watchpoint = malloc(sizeof(struct DebugWatchpoint));
 	watchpoint->address = address;
+	watchpoint->type = type;
 	watchpoint->next = debugger->watchpoints;
 	debugger->watchpoints = watchpoint;
 }

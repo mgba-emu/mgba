@@ -32,7 +32,7 @@ struct DebugBreakpoint {
 enum WatchpointType {
 	WATCHPOINT_WRITE = 1,
 	WATCHPOINT_READ = 2,
-	WATCHPOINT_RW = 3
+	WATCHPOINT_RW = WATCHPOINT_WRITE | WATCHPOINT_READ
 };
 
 struct DebugWatchpoint {
@@ -101,7 +101,7 @@ void ARMDebuggerEnter(struct ARMDebugger*, enum DebuggerEntryReason, struct Debu
 void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address);
 bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode);
 void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address);
-void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address);
+void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address, enum WatchpointType type);
 void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address);
 
 #endif

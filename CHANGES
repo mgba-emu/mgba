@@ -30,6 +30,7 @@ Bugfixes:
  - GBA: Fix Iridion II savetype
  - Libretro: Fix aspect ratio
  - Qt: Fix some potential crashes with the gamepad mapping
+ - Debugger: Fix watchpoints in gdb
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper

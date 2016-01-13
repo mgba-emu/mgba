@@ -40,9 +40,9 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
+		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP); // TODO: Use hwbreak/swbreak if gdb supports it
 		break;
-	case DEBUGGER_ENTER_WATCHPOINT: // TODO: Make watchpoints raise with address
+	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
 			const char* type = 0;
 			switch (info->watchType) {
@@ -56,7 +56,7 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 				type = "awatch";
 				break;
 			}
-			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%s:%08X", SIGTRAP, type, info->address);
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%s:%08x;", SIGTRAP, type, info->address);
 		} else {
 			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
 		}
@@ -317,9 +317,17 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		_sendMessage(stub);
 		break;
 	case '2':
+		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_WRITE);
+		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+		_sendMessage(stub);
+		break;
 	case '3':
+		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_READ);
+		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+		_sendMessage(stub);
+		break;
 	case '4':
-		ARMDebuggerSetWatchpoint(&stub->d, address);
+		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_RW);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
