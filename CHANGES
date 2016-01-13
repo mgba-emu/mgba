@@ -58,6 +58,7 @@ Misc:
  - GBA RR: Add preliminary SRAM support for VBM loading
  - GBA RR: Add support for resets in movies
  - GBA Input: Consolidate GBA_KEY_NONE and GBA_NO_MAPPING
+ - Debugger: Convert breakpoints and watchpoints from linked-lists to vectors
 
 0.3.2: (2015-12-16)
 Bugfixes:

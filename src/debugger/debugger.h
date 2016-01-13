@@ -8,7 +8,8 @@
 
 #include "util/common.h"
 
-#include "arm.h"
+#include "arm/arm.h"
+#include "util/vector.h"
 
 extern const uint32_t ARM_DEBUGGER_ID;
 
@@ -20,7 +21,6 @@ enum DebuggerState {
 };
 
 struct DebugBreakpoint {
-	struct DebugBreakpoint* next;
 	uint32_t address;
 	bool isSw;
 	struct {
@@ -36,10 +36,12 @@ enum WatchpointType {
 };
 
 struct DebugWatchpoint {
-	struct DebugWatchpoint* next;
 	uint32_t address;
 	enum WatchpointType type;
 };
+
+DECLARE_VECTOR(DebugBreakpointList, struct DebugBreakpoint);
+DECLARE_VECTOR(DebugWatchpointList, struct DebugWatchpoint);
 
 enum DebuggerEntryReason {
 	DEBUGGER_ENTER_MANUAL,
@@ -75,9 +77,9 @@ struct ARMDebugger {
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 
-	struct DebugBreakpoint* breakpoints;
-	struct DebugBreakpoint* swBreakpoints;
-	struct DebugWatchpoint* watchpoints;
+	struct DebugBreakpointList breakpoints;
+	struct DebugBreakpointList swBreakpoints;
+	struct DebugWatchpointList watchpoints;
 	struct ARMMemory originalMemory;
 
 	struct DebugBreakpoint* currentBreakpoint;

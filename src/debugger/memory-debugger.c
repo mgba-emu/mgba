@@ -79,9 +79,11 @@ CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), addr
 
 static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, int width) {
 	--width;
-	struct DebugWatchpoint* watchpoints;
-	for (watchpoints = debugger->watchpoints; watchpoints; watchpoints = watchpoints->next) {
-		if (!((watchpoints->address ^ address) & ~width) && watchpoints->type & type) {
+	struct DebugWatchpoint* watchpoint;
+	size_t i;
+	for (i = 0; i < DebugWatchpointListSize(&debugger->watchpoints); ++i) {
+		watchpoint = DebugWatchpointListGetPointer(&debugger->watchpoints, i);
+		if (!((watchpoint->address ^ address) & ~width) && watchpoint->type & type) {
 			switch (width + 1) {
 			case 1:
 				info->oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
@@ -94,7 +96,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 				break;
 			}
 			info->address = address;
-			info->watchType = watchpoints->type;
+			info->watchType = watchpoint->type;
 			return true;
 		}
 	}
