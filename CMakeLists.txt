@@ -31,7 +31,9 @@ set(BUILD_GLES2 OFF CACHE STRING "Build with OpenGL|ES 2")
 set(USE_EPOXY ON CACHE STRING "Build with libepoxy")
 set(DISABLE_DEPS OFF CACHE BOOL "Build without dependencies")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
+file(GLOB LR35902_SRC ${CMAKE_SOURCE_DIR}/src/lr35902/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GB_SRC ${CMAKE_SOURCE_DIR}/src/gb/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
@@ -45,8 +47,10 @@ list(APPEND GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 set(CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 set(VFS_SRC)
 source_group("ARM core" FILES ${ARM_SRC})
+source_group("LR35902 core" FILES ${LR35902_SRC})
 source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
 source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_CTX_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("GB board" FILES ${GBA_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -492,7 +496,9 @@ endif()
 # Binaries
 set(CORE_SRC
 	${ARM_SRC}
+	${LR35902_SRC}
 	${GBA_SRC}
+	${GB_SRC}
 	${GBA_CHEATS_SRC}
 	${GBA_CTX_SRC}
 	${DEBUGGER_SRC}
@@ -621,6 +627,10 @@ if(BUILD_TEST)
 	target_link_libraries(${BINARY_NAME}-fuzz ${BINARY_NAME})
 	set_target_properties(${BINARY_NAME}-fuzz PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 	install(TARGETS ${BINARY_NAME}-fuzz DESTINATION bin COMPONENT ${BINARY_NAME}-test)
+
+	add_executable(${BINARY_NAME}-gb ${CMAKE_SOURCE_DIR}/src/platform/test/gb-main.c)
+	target_link_libraries(${BINARY_NAME}-gb ${BINARY_NAME})
+	set_target_properties(${BINARY_NAME}-gb PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 endif()
 
 # Packaging
