@@ -105,9 +105,6 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	connect(setAll, SIGNAL(pressed()), this, SLOT(setAll()));
 	layout->addWidget(setAll);
 
-	QPushButton* save = new QPushButton(tr("Save"));
-	connect(save, SIGNAL(pressed()), this, SLOT(save()));
-	layout->addWidget(save);
 	layout->setSpacing(6);
 
 	m_keyOrder = QList<KeyEditor*>{
@@ -280,7 +277,7 @@ void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
 #ifdef BUILD_SDL
-	if (m_type == SDL_BINDING_BUTTON) {
+	if (m_type == SDL_BINDING_BUTTON && keyEditor->axis() >= 0) {
 		m_controller->bindAxis(m_type, keyEditor->axis(), keyEditor->direction(), key);
 	}
 #endif

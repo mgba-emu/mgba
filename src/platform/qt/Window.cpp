@@ -20,7 +20,6 @@
 #include "Display.h"
 #include "GameController.h"
 #include "GBAApp.h"
-#include "GBAKeyEditor.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
@@ -36,7 +35,6 @@
 #include "SettingsView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
-#include "ShortcutView.h"
 #include "VideoView.h"
 
 extern "C" {
@@ -74,6 +72,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 	, m_fullscreenOnStart(false)
+	, m_autoresume(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -142,6 +141,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(this, SIGNAL(sampleRateChanged(unsigned)), m_controller, SLOT(setAudioSampleRate(unsigned)));
 	connect(this, SIGNAL(fpsTargetChanged(float)), m_controller, SLOT(setFPSTarget(float)));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(showFPS()));
+	connect(&m_focusCheck, SIGNAL(timeout()), this, SLOT(focusCheck()));
 	connect(m_display, &Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display) {
 			m_screenWidget->setCursor(Qt::BlankCursor);
@@ -154,6 +154,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 
 	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
+	m_focusCheck.setInterval(200);
 
 	m_shortcutController->setConfigController(m_config);
 	setupMenu(menuBar());
@@ -344,27 +345,12 @@ void Window::exportSharkport() {
 	}
 }
 
-void Window::openKeymapWindow() {
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, InputController::KEYBOARD);
-	openView(keyEditor);
-}
-
 void Window::openSettingsWindow() {
-	SettingsView* settingsWindow = new SettingsView(m_config);
+	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController);
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
 	openView(settingsWindow);
-}
-
-void Window::openShortcutWindow() {
-#ifdef BUILD_SDL
-	m_inputController.recalibrateAxes();
-#endif
-	ShortcutView* shortcutView = new ShortcutView();
-	shortcutView->setController(m_shortcutController);
-	shortcutView->setInputController(&m_inputController);
-	openView(shortcutView);
 }
 
 void Window::openOverrideWindow() {
@@ -406,14 +392,6 @@ void Window::openROMInfo() {
 	ROMInfo* romInfo = new ROMInfo(m_controller);
 	openView(romInfo);
 }
-
-#ifdef BUILD_SDL
-void Window::openGamepadWindow() {
-	const char* profile = m_inputController.profileForType(SDL_BINDING_BUTTON);
-	GBAKeyEditor* keyEditor = new GBAKeyEditor(&m_inputController, SDL_BINDING_BUTTON, profile);
-	openView(keyEditor);
-}
-#endif
 
 #ifdef USE_FFMPEG
 void Window::openVideoWindow() {
@@ -629,6 +607,7 @@ void Window::gameStarted(GBAThread* context) {
 
 	m_hitUnimplementedBiosCall = false;
 	m_fpsTimer.start();
+	m_focusCheck.start();
 }
 
 void Window::gameStopped() {
@@ -643,6 +622,7 @@ void Window::gameStopped() {
 	m_screenWidget->unsetCursor();
 
 	m_fpsTimer.stop();
+	m_focusCheck.stop();
 }
 
 void Window::gameCrashed(const QString& errorMessage) {
@@ -1190,18 +1170,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	toolsMenu->addSeparator();
 	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Settings..."), this, SLOT(openSettingsWindow())),
 	                    "settings");
-	addControlledAction(toolsMenu, toolsMenu->addAction(tr("Edit shortcuts..."), this, SLOT(openShortcutWindow())),
-	                    "shortcuts");
-
-	QAction* keymap = new QAction(tr("Remap keyboard..."), toolsMenu);
-	connect(keymap, SIGNAL(triggered()), this, SLOT(openKeymapWindow()));
-	addControlledAction(toolsMenu, keymap, "remapKeyboard");
-
-#ifdef BUILD_SDL
-	QAction* gamepad = new QAction(tr("Remap gamepad..."), toolsMenu);
-	connect(gamepad, SIGNAL(triggered()), this, SLOT(openGamepadWindow()));
-	addControlledAction(toolsMenu, gamepad, "remapGamepad");
-#endif
 
 	toolsMenu->addSeparator();
 
@@ -1389,6 +1357,18 @@ QAction* Window::addHiddenAction(QMenu* menu, QAction* action, const QString& na
 	action->setShortcutContext(Qt::WidgetShortcut);
 	addAction(action);
 	return action;
+}
+
+void Window::focusCheck() {
+	if (!m_config->getOption("pauseOnFocusLost").toInt()) {
+		return;
+	}
+	if (QGuiApplication::focusWindow() && m_autoresume) {
+		m_controller->setPaused(false);
+	} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
+		m_autoresume = true;
+		m_controller->setPaused(true);
+	}
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

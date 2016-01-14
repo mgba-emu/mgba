@@ -75,10 +75,7 @@ public slots:
 	void importSharkport();
 	void exportSharkport();
 
-	void openKeymapWindow();
 	void openSettingsWindow();
-	void openShortcutWindow();
-
 	void openOverrideWindow();
 	void openSensorWindow();
 	void openCheatsWindow();
@@ -89,10 +86,6 @@ public slots:
 
 	void openAboutScreen();
 	void openROMInfo();
-
-#ifdef BUILD_SDL
-	void openGamepadWindow();
-#endif
 
 #ifdef USE_FFMPEG
 	void openVideoWindow();
@@ -130,6 +123,7 @@ private slots:
 
 	void recordFrame();
 	void showFPS();
+	void focusCheck();
 
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
@@ -171,6 +165,8 @@ private:
 	ShaderSelector* m_shaderView;
 	int m_playerId;
 	bool m_fullscreenOnStart;
+	QTimer m_focusCheck;
+	bool m_autoresume;
 
 	bool m_hitUnimplementedBiosCall;
 

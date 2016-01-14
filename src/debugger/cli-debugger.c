@@ -536,7 +536,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetWatchpoint(&debugger->d, address);
+	ARMDebuggerSetWatchpoint(&debugger->d, address, WATCHPOINT_RW); // TODO: ro/wo
 }
 
 static void _breakIntoDefault(int signal) {

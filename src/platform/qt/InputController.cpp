@@ -399,14 +399,19 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	if (old) {
 		description = *old;
 	}
+	int deadzone = 0;
+	if (m_deadzones.size() > axis) {
+		deadzone = m_deadzones[axis];
+	}
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
-		description.deadLow = m_deadzones[axis] - AXIS_THRESHOLD;
+
+		description.deadLow = deadzone - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
-		description.deadHigh = m_deadzones[axis] + AXIS_THRESHOLD;
+		description.deadHigh = deadzone + AXIS_THRESHOLD;
 		break;
 	default:
 		return;

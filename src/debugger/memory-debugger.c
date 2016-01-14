@@ -11,7 +11,7 @@
 
 #include <string.h>
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, int width);
+static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
@@ -32,18 +32,18 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
-#define CREATE_WATCHPOINT_SHIM(NAME, WIDTH, RETURN, TYPES, ...) \
+#define CREATE_WATCHPOINT_SHIM(NAME, WIDTH, RETURN, TYPES, ACCESS_TYPE, ...) \
 	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		struct DebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WIDTH)) { \
+		if (_checkWatchpoints(debugger, address, &info, ACCESS_TYPE, WIDTH)) { \
 			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
-#define CREATE_MULTIPLE_WATCHPOINT_SHIM(NAME) \
+#define CREATE_MULTIPLE_WATCHPOINT_SHIM(NAME, ACCESS_TYPE) \
 	static uint32_t ARMDebuggerShim_ ## NAME (struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
@@ -60,28 +60,30 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 		unsigned i; \
 		for (i = 0; i < popcount; ++i) { \
 			struct DebuggerEntryInfo info; \
-			if (_checkWatchpoints(debugger, base + 4 * i, &info, 4)) { \
+			if (_checkWatchpoints(debugger, base + 4 * i, &info, ACCESS_TYPE, 4)) { \
 				ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 			} \
 		} \
 		return debugger->originalMemory.NAME(cpu, address, mask, direction, cycleCounter); \
 	}
 
-CREATE_WATCHPOINT_SHIM(load32, 4, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_WATCHPOINT_SHIM(load16, 2, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_WATCHPOINT_SHIM(load8, 1, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), address, cycleCounter)
-CREATE_WATCHPOINT_SHIM(store32, 4, void, (struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter), address, value, cycleCounter)
-CREATE_WATCHPOINT_SHIM(store16, 2, void, (struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter), address, value, cycleCounter)
-CREATE_WATCHPOINT_SHIM(store8, 1, void, (struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter), address, value, cycleCounter)
-CREATE_MULTIPLE_WATCHPOINT_SHIM(loadMultiple)
-CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple)
+CREATE_WATCHPOINT_SHIM(load32, 4, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), WATCHPOINT_READ, address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(load16, 2, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), WATCHPOINT_READ, address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(load8, 1, uint32_t, (struct ARMCore* cpu, uint32_t address, int* cycleCounter), WATCHPOINT_READ, address, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store32, 4, void, (struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter), WATCHPOINT_WRITE, address, value, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store16, 2, void, (struct ARMCore* cpu, uint32_t address, int16_t value, int* cycleCounter), WATCHPOINT_WRITE, address, value, cycleCounter)
+CREATE_WATCHPOINT_SHIM(store8, 1, void, (struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCounter), WATCHPOINT_WRITE, address, value, cycleCounter)
+CREATE_MULTIPLE_WATCHPOINT_SHIM(loadMultiple, WATCHPOINT_READ)
+CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple, WATCHPOINT_WRITE)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, int width) {
+static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, int width) {
 	--width;
-	struct DebugWatchpoint* watchpoints;
-	for (watchpoints = debugger->watchpoints; watchpoints; watchpoints = watchpoints->next) {
-		if (!((watchpoints->address ^ address) & ~width)) {
+	struct DebugWatchpoint* watchpoint;
+	size_t i;
+	for (i = 0; i < DebugWatchpointListSize(&debugger->watchpoints); ++i) {
+		watchpoint = DebugWatchpointListGetPointer(&debugger->watchpoints, i);
+		if (!((watchpoint->address ^ address) & ~width) && watchpoint->type & type) {
 			switch (width + 1) {
 			case 1:
 				info->a.b.oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
@@ -94,7 +96,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 				break;
 			}
 			info->address = address;
-			info->a.b.watchType = watchpoints->type;
+			info->a.b.watchType = watchpoint->type;
 			return true;
 		}
 	}

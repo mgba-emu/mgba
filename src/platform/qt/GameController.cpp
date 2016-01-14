@@ -110,7 +110,7 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
+		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
 			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
@@ -696,6 +696,10 @@ void GameController::setUseBIOS(bool use) {
 }
 
 void GameController::loadState(int slot) {
+	if (!m_threadContext.fname) {
+		// We're in the BIOS
+		return;
+	}
 	if (slot > 0 && slot != m_stateSlot) {
 		m_stateSlot = slot;
 		m_backupSaveState.clear();
@@ -714,6 +718,10 @@ void GameController::loadState(int slot) {
 }
 
 void GameController::saveState(int slot) {
+	if (!m_threadContext.fname) {
+		// We're in the BIOS
+		return;
+	}
 	if (slot > 0) {
 		m_stateSlot = slot;
 	}
