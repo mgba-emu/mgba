@@ -36,6 +36,7 @@ public:
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+	QString getOpenDirectoryName(QWidget* owner, const QString& title);
 
 	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());

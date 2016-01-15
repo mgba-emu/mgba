@@ -164,6 +164,7 @@ int main(int argc, char** argv) {
 	GBAConfigFreeOpts(&opts);
 	GBAConfigDeinit(&config);
 	free(context.debugger);
+	GBADirectorySetDeinit(&context.dirs);
 	GBASDLDetachPlayer(&renderer.events, &renderer.player);
 	GBAInputMapDeinit(&inputMap);
 

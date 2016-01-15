@@ -19,6 +19,7 @@
 extern "C" {
 #include "gba/audio.h"
 #include "gba/context/config.h"
+#include "gba/context/directories.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
@@ -216,6 +217,7 @@ GameController::~GameController() {
 	clearMultiplayerController();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
+	GBADirectorySetDeinit(&m_threadContext.dirs);
 	delete m_renderer;
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
@@ -255,6 +257,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setMute(opts->mute);
 
 	threadInterrupt();
+	GBADirectorySetMapOptions(&m_threadContext.dirs, opts);
 	m_threadContext.idleOptimization = opts->idleOptimization;
 	threadContinue();
 }

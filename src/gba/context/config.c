@@ -347,6 +347,11 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	_lookupIntValue(config, "width", &opts->width);
 	_lookupIntValue(config, "height", &opts->height);
 
+	_lookupCharValue(config, "savegamePath", &opts->savegamePath);
+	_lookupCharValue(config, "savestatePath", &opts->savestatePath);
+	_lookupCharValue(config, "screenshotPath", &opts->screenshotPath);
+	_lookupCharValue(config, "patchPath", &opts->patchPath);
+
 	char* idleOptimization = 0;
 	if (_lookupCharValue(config, "idleOptimization", &idleOptimization)) {
 		if (strcasecmp(idleOptimization, "ignore") == 0) {
@@ -409,6 +414,14 @@ struct Configuration* GBAConfigGetOverrides(struct GBAConfig* config) {
 void GBAConfigFreeOpts(struct GBAOptions* opts) {
 	free(opts->bios);
 	free(opts->shader);
+	free(opts->savegamePath);
+	free(opts->savestatePath);
+	free(opts->screenshotPath);
+	free(opts->patchPath);
 	opts->bios = 0;
 	opts->shader = 0;
+	opts->savegamePath = 0;
+	opts->savestatePath = 0;
+	opts->screenshotPath = 0;
+	opts->patchPath = 0;
 }
