@@ -364,6 +364,33 @@ DEFINE_INSTRUCTION_LR35902(LDIOA, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDIOADelay;)
 
+#define DEFINE_INCDEC_INSTRUCTION_LR35902(REG) \
+	DEFINE_INSTRUCTION_LR35902(INC ## REG, \
+		uint16_t reg = LR35902Read ## REG (cpu); \
+		LR35902Write ## REG (cpu, reg + 1); \
+		/* TODO: Stall properly */ \
+		cpu->cycles += 4;) \
+	DEFINE_INSTRUCTION_LR35902(DEC ## REG, \
+		uint16_t reg = LR35902Read ## REG (cpu); \
+		LR35902Write ## REG (cpu, reg - 1); \
+		/* TODO: Stall properly */ \
+		cpu->cycles += 4;) \
+
+
+DEFINE_INCDEC_INSTRUCTION_LR35902(BC);
+DEFINE_INCDEC_INSTRUCTION_LR35902(DE);
+DEFINE_INCDEC_INSTRUCTION_LR35902(HL);
+
+DEFINE_INSTRUCTION_LR35902(INCSP,
+	++cpu->sp;
+	// TODO: Stall properly
+	cpu->cycles += 4;)
+
+DEFINE_INSTRUCTION_LR35902(DECSP,
+	--cpu->sp;
+	// TODO: Stall properly
+	cpu->cycles += 4;)
+
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
 
