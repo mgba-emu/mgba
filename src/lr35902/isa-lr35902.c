@@ -99,6 +99,30 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
+DEFINE_INSTRUCTION_LR35902(RETUpdateSPL,
+	cpu->pc |= cpu->bus << 8;
+	cpu->sp += 2;
+	cpu->memory.setActiveRegion(cpu, cpu->pc);
+	// TODO: Stall properly
+	cpu->cycles += 4;)
+
+DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
+	if (cpu->condition) {
+		cpu->index = cpu->sp + 1;
+		cpu->pc = cpu->bus;
+		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD;
+		cpu->instruction = _LR35902InstructionRETUpdateSPL;
+	})
+
+#define DEFINE_RET_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
+	DEFINE_INSTRUCTION_LR35902(RET ## CONDITION_NAME, \
+		cpu->condition = CONDITION; \
+		cpu->index = cpu->sp; \
+		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+		cpu->instruction = _LR35902InstructionRETUpdateSPH;)
+
+DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
+
 #define DEFINE_AND_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(AND ## NAME, \
 		cpu->a &= OPERAND; \
