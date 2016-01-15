@@ -16,6 +16,13 @@
 
 DEFINE_INSTRUCTION_LR35902(NOP,);
 
+#define DEFINE_CONDITIONAL_INSTRUCTION_LR35902(NAME) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(, true) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(C, cpu->f.c) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(Z, cpu->f.z) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(NC, !cpu->f.c) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(NZ, !cpu->f.z)
+
 DEFINE_INSTRUCTION_LR35902(JPFinish,
 	if (cpu->condition) {
 		cpu->pc = (cpu->bus << 8) | cpu->index;
@@ -35,11 +42,7 @@ DEFINE_INSTRUCTION_LR35902(JPDelay,
 		cpu->instruction = _LR35902InstructionJPDelay; \
 		cpu->condition = CONDITION;)
 
-DEFINE_JP_INSTRUCTION_LR35902(, true);
-DEFINE_JP_INSTRUCTION_LR35902(C, cpu->f.c);
-DEFINE_JP_INSTRUCTION_LR35902(Z, cpu->f.z);
-DEFINE_JP_INSTRUCTION_LR35902(NC, !cpu->f.c);
-DEFINE_JP_INSTRUCTION_LR35902(NZ, !cpu->f.z);
+DEFINE_CONDITIONAL_INSTRUCTION_LR35902(JP);
 
 DEFINE_INSTRUCTION_LR35902(JRFinish,
 	if (cpu->condition) {
@@ -55,11 +58,46 @@ DEFINE_INSTRUCTION_LR35902(JRFinish,
 		cpu->instruction = _LR35902InstructionJRFinish; \
 		cpu->condition = CONDITION;)
 
-DEFINE_JR_INSTRUCTION_LR35902(, true);
-DEFINE_JR_INSTRUCTION_LR35902(C, cpu->f.c);
-DEFINE_JR_INSTRUCTION_LR35902(Z, cpu->f.z);
-DEFINE_JR_INSTRUCTION_LR35902(NC, !cpu->f.c);
-DEFINE_JR_INSTRUCTION_LR35902(NZ, !cpu->f.z);
+DEFINE_CONDITIONAL_INSTRUCTION_LR35902(JR);
+
+DEFINE_INSTRUCTION_LR35902(CALLFinish,
+	if (cpu->condition) {
+		cpu->pc = (cpu->bus << 8) | cpu->index;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+		// TODO: Stall properly
+		cpu->cycles += 4;
+	})
+
+DEFINE_INSTRUCTION_LR35902(CALLUpdatePC,
+	cpu->executionState = LR35902_CORE_READ_PC;
+	cpu->index = cpu->bus;
+	cpu->instruction = _LR35902InstructionCALLFinish;)
+
+DEFINE_INSTRUCTION_LR35902(CALLUpdateSPL,
+	cpu->executionState = LR35902_CORE_READ_PC; \
+	cpu->instruction = _LR35902InstructionCALLUpdatePC;)
+
+DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
+	cpu->index = cpu->sp + 1;
+	cpu->bus = (cpu->pc + 2) >> 8;
+	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE;
+	cpu->instruction = _LR35902InstructionCALLUpdateSPL;)
+
+#define DEFINE_CALL_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
+	DEFINE_INSTRUCTION_LR35902(CALL ## CONDITION_NAME, \
+		cpu->condition = CONDITION; \
+		if (CONDITION) { \
+			cpu->sp -= 2; \
+			cpu->index = cpu->sp; \
+			cpu->bus = cpu->pc + 2; \
+			cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+			cpu->instruction = _LR35902InstructionCALLUpdateSPH; \
+		} else { \
+			cpu->executionState = LR35902_CORE_READ_PC; \
+			cpu->instruction = _LR35902InstructionCALLUpdatePC; \
+		})
+
+DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
 #define DEFINE_AND_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(AND ## NAME, \
@@ -213,15 +251,51 @@ DEFINE_INSTRUCTION_LR35902(LDAI, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDAIDelay;)
 
+DEFINE_INSTRUCTION_LR35902(LDAIOC, \
+	cpu->index = 0xFF00 | cpu->c; \
+	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+	cpu->instruction = _LR35902InstructionLDA_Bus;)
+
+DEFINE_INSTRUCTION_LR35902(LDIOCA, \
+	cpu->index = 0xFF00 | cpu->c; \
+	cpu->bus = cpu->a; \
+	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->instruction = _LR35902InstructionNOP;)
+
+DEFINE_INSTRUCTION_LR35902(LDAIODelay, \
+	cpu->index = 0xFF00 | cpu->bus; \
+	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+	cpu->instruction = _LR35902InstructionLDA_Bus;)
+
+DEFINE_INSTRUCTION_LR35902(LDAIO, \
+	cpu->executionState = LR35902_CORE_READ_PC; \
+	cpu->instruction = _LR35902InstructionLDAIODelay;)
+
+DEFINE_INSTRUCTION_LR35902(LDIOADelay, \
+	cpu->index = 0xFF00 | cpu->bus; \
+	cpu->bus = cpu->a; \
+	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->instruction = _LR35902InstructionNOP;)
+
+DEFINE_INSTRUCTION_LR35902(LDIOA, \
+	cpu->executionState = LR35902_CORE_READ_PC; \
+	cpu->instruction = _LR35902InstructionLDIOADelay;)
+
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
 
 DEFINE_INSTRUCTION_LR35902(STUB, cpu->irqh.hitStub(cpu));
 
-const LR35902Instruction _lr35902InstructionTable[0x100] = {
-	DECLARE_LR35902_EMITTER_BLOCK(_LR35902Instruction)
+static const LR35902Instruction _lr35902CBInstructionTable[0x100] = {
+	DECLARE_LR35902_CB_EMITTER_BLOCK(_LR35902Instruction)
 };
 
-const LR35902Instruction _lr35902CBInstructionTable[0x100] = {
-	DECLARE_LR35902_CB_EMITTER_BLOCK(_LR35902Instruction)
+DEFINE_INSTRUCTION_LR35902(CBDelegate, _lr35902CBInstructionTable[cpu->bus](cpu))
+
+DEFINE_INSTRUCTION_LR35902(CB, \
+	cpu->executionState = LR35902_CORE_READ_PC; \
+	cpu->instruction = _LR35902InstructionCBDelegate;)
+
+const LR35902Instruction _lr35902InstructionTable[0x100] = {
+	DECLARE_LR35902_EMITTER_BLOCK(_LR35902Instruction)
 };

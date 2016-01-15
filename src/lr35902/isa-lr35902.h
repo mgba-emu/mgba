@@ -12,6 +12,5 @@ struct LR35902Core;
 
 typedef void (*LR35902Instruction)(struct LR35902Core*);
 const LR35902Instruction _lr35902InstructionTable[0x100];
-const LR35902Instruction _lr35902CBInstructionTable[0x100];
 
 #endif
