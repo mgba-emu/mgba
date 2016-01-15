@@ -120,6 +120,9 @@ struct LR35902Core {
 	bool condition;
 	LR35902Instruction instruction;
 
+	bool irqPending;
+	uint16_t irqVector;
+
 	struct LR35902Memory memory;
 	struct LR35902InterruptHandler irqh;
 
@@ -142,7 +145,7 @@ void LR35902HotplugAttach(struct LR35902Core* cpu, size_t slot);
 void LR35902HotplugDetach(struct LR35902Core* cpu, size_t slot);
 
 void LR35902Reset(struct LR35902Core* cpu);
-void LR35902RaiseIRQ(struct LR35902Core*);
+void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector);
 
 void LR35902Tick(struct LR35902Core* cpu);
 

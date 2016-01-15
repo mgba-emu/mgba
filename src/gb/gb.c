@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gb.h"
 
+#include "gb/io.h"
+
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/math.h"
@@ -30,17 +32,18 @@ void GBCreate(struct GB* gb) {
 }
 
 static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) {
-	struct GB* gba = (struct GB*) component;
-	gba->cpu = cpu;
+	struct GB* gb = (struct GB*) component;
+	gb->cpu = cpu;
 
 	GBInterruptHandlerInit(&cpu->irqh);
-	GBMemoryInit(gba);
+	GBMemoryInit(gb);
+	GBVideoInit(&gb->video);
 
-	gba->romVf = 0;
+	gb->romVf = 0;
 
-	gba->pristineRom = 0;
-	gba->pristineRomSize = 0;
-	gba->yankedRomSize = 0;
+	gb->pristineRom = 0;
+	gb->pristineRomSize = 0;
+	gb->yankedRomSize = 0;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* fname) {
@@ -120,17 +123,62 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->yankedRomSize = 0;
 	}
 	GBMemoryReset(gb);
+
+	gb->video.p = gb;
+	GBVideoReset(&gb->video);
+}
+
+void GBUpdateIRQs(struct GB* gb) {
+	if (!gb->memory.ime) {
+		return;
+	}
+	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
+	if (!irqs) {
+		return;
+	}
+	if (irqs & (1 << GB_IRQ_VBLANK)) {
+		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_VBLANK);
+		return;
+	}
+	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
+		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_LCDSTAT);
+		return;
+	}
+	if (irqs & (1 << GB_IRQ_TIMER)) {
+		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_TIMER);
+		return;
+	}
+	if (irqs & (1 << GB_IRQ_SIO)) {
+		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_SIO);
+		return;
+	}
+	if (irqs & (1 << GB_IRQ_KEYPAD)) {
+		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_KEYPAD);
+	}
 }
 
 void GBProcessEvents(struct LR35902Core* cpu) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
+	int32_t cycles = cpu->nextEvent;
+	int32_t nextEvent = INT_MAX;
+	int32_t testEvent;
+
+	testEvent = GBVideoProcessEvents(&gb->video, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
+	cpu->cycles -= cycles;
+	cpu->nextEvent = nextEvent;
 }
 
 void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
+	gb->memory.ime = enable;
+	GBUpdateIRQs(gb);
 }
 
 void GBHitStub(struct LR35902Core* cpu) {
 	// TODO
-	printf("Hit stub at address %04X\n", cpu->pc);
+	//printf("Hit stub at address %04X\n", cpu->pc);
 }

@@ -6,6 +6,7 @@
 #include "memory.h"
 
 #include "gb/gb.h"
+#include "gb/io.h"
 
 #include "util/memory.h"
 
@@ -26,6 +27,10 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.rom = 0;
 	gb->memory.romBank = 0;
 	gb->memory.romSize = 0;
+
+	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
+
+	GBIOInit(gb);
 }
 
 void GBMemoryDeinit(struct GB* gb) {
@@ -80,8 +85,20 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_WORKING_RAM_BANK1:
 		return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 	default:
-		// TODO
-		return 0;
+		if (address < GB_BASE_OAM) {
+			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		}
+		if (address < GB_BASE_IO) {
+			// TODO
+			return 0;
+		}
+		if (address < GB_BASE_HRAM) {
+			return GBIORead(gb, address & (GB_SIZE_IO - 1));
+		}
+		if (address < GB_BASE_IE) {
+			return memory->hram[address & GB_SIZE_HRAM];
+		}
+		return GBIORead(gb, REG_IE);
 	}
 }
 
@@ -121,8 +138,17 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
 		return;
 	default:
-		// TODO
-		return;
+		if (address < GB_BASE_OAM) {
+			memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
+		} else if (address < GB_BASE_IO) {
+			// TODO
+		} else if (address < GB_BASE_HRAM) {
+			GBIOWrite(gb, address & (GB_SIZE_IO - 1), value);
+		} else if (address < GB_BASE_IE) {
+			memory->hram[address & GB_SIZE_HRAM] = value;
+		} else {
+			GBIOWrite(gb, REG_IE, value);
+		}
 	}
 }
 

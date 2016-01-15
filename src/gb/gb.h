@@ -11,6 +11,7 @@
 #include "lr35902/lr35902.h"
 
 #include "gb/memory.h"
+#include "gb/video.h"
 
 extern const uint32_t DMG_LR35902_FREQUENCY;
 extern const uint32_t CGB_LR35902_FREQUENCY;
@@ -25,11 +26,20 @@ enum GBIRQ {
 	GB_IRQ_KEYPAD = 0x4,
 };
 
+enum GBIRQVector {
+	GB_VECTOR_VBLANK = 0x40,
+	GB_VECTOR_LCDSTAT = 0x48,
+	GB_VECTOR_TIMER = 0x50,
+	GB_VECTOR_SIO = 0x58,
+	GB_VECTOR_KEYPAD = 0x60,
+};
+
 struct GB {
 	struct LR35902Component d;
 
 	struct LR35902Core* cpu;
 	struct GBMemory memory;
+	struct GBVideo video;
 
 	int* keySource;
 
@@ -47,9 +57,7 @@ void GBDestroy(struct GB* gb);
 
 void GBReset(struct LR35902Core* cpu);
 
-void GBWriteIE(struct GB* gb, uint8_t value);
-void GBRaiseIRQ(struct GB* gb, enum GBIRQ irq);
-void GBTestIRQ(struct LR35902Core* cpu);
+void GBUpdateIRQs(struct GB* gb);
 void GBHalt(struct GB* gb);
 void GBStop(struct GB* gb);
 

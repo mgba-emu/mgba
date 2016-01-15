@@ -54,6 +54,12 @@ struct GBMemory {
 	uint8_t* wram;
 	uint8_t* wramBank;
 
+	uint8_t io[GB_SIZE_IO];
+	bool ime;
+	uint8_t ie;
+
+	uint8_t hram[GB_SIZE_HRAM];
+
 	size_t romSize;
 };
 

@@ -69,8 +69,9 @@ void LR35902Reset(struct LR35902Core* cpu) {
 	cpu->irqh.reset(cpu);
 }
 
-void LR35902RaiseIRQ(struct LR35902Core* cpu) {
-	// TODO
+void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector) {
+	cpu->irqPending = true;
+	cpu->irqVector = vector;
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {
@@ -80,6 +81,12 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	cpu->executionState &= 3;
 	switch (state) {
 	case LR35902_CORE_FETCH:
+		if (cpu->irqPending) {
+			cpu->pc = cpu->irqVector;
+			cpu->irqPending = false;
+			cpu->irqh.setInterrupts(cpu, false);
+			// TODO: stall
+		}
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
 		break;
 	case LR35902_CORE_DECODE:
