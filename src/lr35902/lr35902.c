@@ -88,8 +88,6 @@ void LR35902Tick(struct LR35902Core* cpu) {
 			// TODO: stall
 		}
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
-		break;
-	case LR35902_CORE_DECODE:
 		cpu->instruction = _lr35902InstructionTable[cpu->bus];
 		++cpu->pc;
 		break;
@@ -105,16 +103,8 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	case LR35902_CORE_READ_PC:
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
 		++cpu->pc;
-		cpu->executionState = LR35902_CORE_READ_PC_STALL;
 		break;
-	case LR35902_CORE_MEMORY_MOVE_INDEX_LOAD:
-		cpu->executionState = LR35902_CORE_MEMORY_LOAD;
-		break;
-	case LR35902_CORE_MEMORY_MOVE_INDEX_STORE:
-		cpu->executionState = LR35902_CORE_MEMORY_STORE;
-		break;
-	case LR35902_CORE_READ_PC_STALL:
-	case LR35902_CORE_STALL:
+	default:
 		break;
 	}
 	if (cpu->cycles >= cpu->nextEvent) {

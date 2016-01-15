@@ -80,7 +80,7 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPL,
 DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
 	cpu->index = cpu->sp + 1;
 	cpu->bus = (cpu->pc + 2) >> 8;
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionCALLUpdateSPL;)
 
 #define DEFINE_CALL_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
@@ -90,7 +90,7 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
 			cpu->sp -= 2; \
 			cpu->index = cpu->sp; \
 			cpu->bus = cpu->pc + 2; \
-			cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+			cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 			cpu->instruction = _LR35902InstructionCALLUpdateSPH; \
 		} else { \
 			cpu->executionState = LR35902_CORE_READ_PC; \
@@ -110,7 +110,7 @@ DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 	if (cpu->condition) {
 		cpu->index = cpu->sp + 1;
 		cpu->pc = cpu->bus;
-		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD;
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD;
 		cpu->instruction = _LR35902InstructionRETUpdateSPL;
 	})
 
@@ -118,7 +118,7 @@ DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 	DEFINE_INSTRUCTION_LR35902(RET ## CONDITION_NAME, \
 		cpu->condition = CONDITION; \
 		cpu->index = cpu->sp; \
-		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 		cpu->instruction = _LR35902InstructionRETUpdateSPH;)
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
@@ -182,7 +182,7 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
 #define DEFINE_LDHL__INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(LDHL_ ## NAME, \
 		cpu->bus = OPERAND; \
-		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 		cpu->instruction = _LR35902InstructionLDHL_Bus;)
 
 #define DEFINE_LDA__INSTRUCTION_LR35902(NAME, OPERAND) \
@@ -200,7 +200,7 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
 
 DEFINE_INSTRUCTION_LR35902(LDHL_Bus, \
 	cpu->index = LR35902ReadHL(cpu); \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDHL_, \
@@ -210,7 +210,7 @@ DEFINE_INSTRUCTION_LR35902(LDHL_, \
 #define DEFINE_ALU_INSTRUCTION_LR35902(NAME) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(Bus, cpu->bus); \
 	DEFINE_INSTRUCTION_LR35902(NAME ## HL, \
-		cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 		cpu->index = LR35902ReadHL(cpu); \
 		cpu->instruction = _LR35902Instruction ## NAME ## Bus;) \
 	DEFINE_INSTRUCTION_LR35902(NAME, \
@@ -253,7 +253,7 @@ DEFINE_INSTRUCTION_LR35902(LDBC, \
 DEFINE_INSTRUCTION_LR35902(LDBC_A, \
 	cpu->index = LR35902ReadBC(cpu); \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDDEDelay, \
@@ -268,7 +268,7 @@ DEFINE_INSTRUCTION_LR35902(LDDE, \
 DEFINE_INSTRUCTION_LR35902(LDDE_A, \
 	cpu->index = LR35902ReadDE(cpu); \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDHLDelay, \
@@ -295,20 +295,20 @@ DEFINE_INSTRUCTION_LR35902(LDIHLA, \
 	cpu->index = LR35902ReadHL(cpu); \
 	LR35902WriteHL(cpu, cpu->index + 1); \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDDHLA, \
 	cpu->index = LR35902ReadHL(cpu); \
 	LR35902WriteHL(cpu, cpu->index - 1); \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDIAFinish, \
 	cpu->index |= cpu->bus << 8;
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDIADelay, \
@@ -322,7 +322,7 @@ DEFINE_INSTRUCTION_LR35902(LDIA, \
 
 DEFINE_INSTRUCTION_LR35902(LDAIFinish, \
 	cpu->index |= cpu->bus << 8;
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 	cpu->instruction = _LR35902InstructionLDA_Bus;)
 
 DEFINE_INSTRUCTION_LR35902(LDAIDelay, \
@@ -336,18 +336,18 @@ DEFINE_INSTRUCTION_LR35902(LDAI, \
 
 DEFINE_INSTRUCTION_LR35902(LDAIOC, \
 	cpu->index = 0xFF00 | cpu->c; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 	cpu->instruction = _LR35902InstructionLDA_Bus;)
 
 DEFINE_INSTRUCTION_LR35902(LDIOCA, \
 	cpu->index = 0xFF00 | cpu->c; \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDAIODelay, \
 	cpu->index = 0xFF00 | cpu->bus; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_LOAD; \
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 	cpu->instruction = _LR35902InstructionLDA_Bus;)
 
 DEFINE_INSTRUCTION_LR35902(LDAIO, \
@@ -357,7 +357,7 @@ DEFINE_INSTRUCTION_LR35902(LDAIO, \
 DEFINE_INSTRUCTION_LR35902(LDIOADelay, \
 	cpu->index = 0xFF00 | cpu->bus; \
 	cpu->bus = cpu->a; \
-	cpu->executionState = LR35902_CORE_MEMORY_MOVE_INDEX_STORE; \
+	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
 
 DEFINE_INSTRUCTION_LR35902(LDIOA, \
