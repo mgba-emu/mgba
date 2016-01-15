@@ -85,7 +85,8 @@ void LR35902Tick(struct LR35902Core* cpu) {
 			cpu->pc = cpu->irqVector;
 			cpu->irqPending = false;
 			cpu->irqh.setInterrupts(cpu, false);
-			// TODO: stall
+			cpu->instruction = _lr35902InstructionTable[0]; // NOP
+			break;
 		}
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
 		cpu->instruction = _lr35902InstructionTable[cpu->bus];
@@ -103,6 +104,9 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	case LR35902_CORE_READ_PC:
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
 		++cpu->pc;
+		break;
+	case LR35902_CORE_STALL:
+		cpu->instruction = _lr35902InstructionTable[0]; // NOP
 		break;
 	default:
 		break;

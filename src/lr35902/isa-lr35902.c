@@ -27,8 +27,7 @@ DEFINE_INSTRUCTION_LR35902(JPFinish,
 	if (cpu->condition) {
 		cpu->pc = (cpu->bus << 8) | cpu->index;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
-		// TODO: Stall properly
-		cpu->cycles += 4;
+		cpu->executionState = LR35902_CORE_STALL;
 	})
 
 DEFINE_INSTRUCTION_LR35902(JPDelay,
@@ -48,8 +47,7 @@ DEFINE_INSTRUCTION_LR35902(JRFinish,
 	if (cpu->condition) {
 		cpu->pc += (int8_t) cpu->bus;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
-		// TODO: Stall properly
-		cpu->cycles += 4;
+		cpu->executionState = LR35902_CORE_STALL;
 	})
 
 #define DEFINE_JR_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
@@ -64,8 +62,7 @@ DEFINE_INSTRUCTION_LR35902(CALLFinish,
 	if (cpu->condition) {
 		cpu->pc = (cpu->bus << 8) | cpu->index;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
-		// TODO: Stall properly
-		cpu->cycles += 4;
+		cpu->executionState = LR35902_CORE_STALL;
 	})
 
 DEFINE_INSTRUCTION_LR35902(CALLUpdatePC,
@@ -103,8 +100,7 @@ DEFINE_INSTRUCTION_LR35902(RETUpdateSPL,
 	cpu->pc |= cpu->bus << 8;
 	cpu->sp += 2;
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
-	// TODO: Stall properly
-	cpu->cycles += 4;)
+	cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 	if (cpu->condition) {
@@ -368,14 +364,11 @@ DEFINE_INSTRUCTION_LR35902(LDIOA, \
 	DEFINE_INSTRUCTION_LR35902(INC ## REG, \
 		uint16_t reg = LR35902Read ## REG (cpu); \
 		LR35902Write ## REG (cpu, reg + 1); \
-		/* TODO: Stall properly */ \
-		cpu->cycles += 4;) \
+		cpu->executionState = LR35902_CORE_STALL;) \
 	DEFINE_INSTRUCTION_LR35902(DEC ## REG, \
 		uint16_t reg = LR35902Read ## REG (cpu); \
 		LR35902Write ## REG (cpu, reg - 1); \
-		/* TODO: Stall properly */ \
-		cpu->cycles += 4;) \
-
+		cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INCDEC_INSTRUCTION_LR35902(BC);
 DEFINE_INCDEC_INSTRUCTION_LR35902(DE);
@@ -383,13 +376,11 @@ DEFINE_INCDEC_INSTRUCTION_LR35902(HL);
 
 DEFINE_INSTRUCTION_LR35902(INCSP,
 	++cpu->sp;
-	// TODO: Stall properly
-	cpu->cycles += 4;)
+	cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INSTRUCTION_LR35902(DECSP,
 	--cpu->sp;
-	// TODO: Stall properly
-	cpu->cycles += 4;)
+	cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
