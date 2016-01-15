@@ -24,7 +24,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_IE:
 		gb->memory.ie = value;
 		GBUpdateIRQs(gb);
-		break;
+		return;
 	default:
 		// TODO: Log
 		if (address >= GB_SIZE_IO) {
