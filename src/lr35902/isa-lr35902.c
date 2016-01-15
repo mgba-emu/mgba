@@ -84,7 +84,7 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
 	DEFINE_INSTRUCTION_LR35902(CALL ## CONDITION_NAME, \
 		cpu->condition = CONDITION; \
 		if (CONDITION) { \
-			cpu->sp -= 2; \
+			cpu->sp -= 2; /* TODO: Atomic incrementing? */ \
 			cpu->index = cpu->sp; \
 			cpu->bus = cpu->pc + 2; \
 			cpu->executionState = LR35902_CORE_MEMORY_STORE; \
@@ -98,7 +98,7 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPL,
 	cpu->pc |= cpu->bus << 8;
-	cpu->sp += 2;
+	cpu->sp += 2;  /* TODO: Atomic incrementing? */
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 	cpu->executionState = LR35902_CORE_STALL;)
 
@@ -381,6 +381,40 @@ DEFINE_INSTRUCTION_LR35902(INCSP,
 DEFINE_INSTRUCTION_LR35902(DECSP,
 	--cpu->sp;
 	cpu->executionState = LR35902_CORE_STALL;)
+
+
+#define DEFINE_POPPUSH_INSTRUCTION_LR35902(REG, HH, H, L) \
+	DEFINE_INSTRUCTION_LR35902(POP ## REG ## Delay, \
+		cpu-> L = cpu->bus; \
+		cpu->index = cpu->sp; \
+		++cpu->sp; \
+		cpu->instruction = _LR35902InstructionLD ## HH ## _Bus; \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD;) \
+	DEFINE_INSTRUCTION_LR35902(POP ## REG, \
+		cpu->index = cpu->sp; \
+		++cpu->sp; \
+		cpu->instruction = _LR35902InstructionPOP ## REG ## Delay; \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD;) \
+	DEFINE_INSTRUCTION_LR35902(PUSH ## REG ## Finish, \
+		cpu->instruction = _LR35902InstructionNOP; \
+		cpu->executionState = LR35902_CORE_STALL;) \
+	DEFINE_INSTRUCTION_LR35902(PUSH ## REG ## Delay, \
+		--cpu->sp; \
+		cpu->index = cpu->sp; \
+		cpu->bus = cpu-> L; \
+		cpu->instruction = _LR35902InstructionPUSH ## REG ## Finish; \
+		cpu->executionState = LR35902_CORE_MEMORY_STORE;) \
+	DEFINE_INSTRUCTION_LR35902(PUSH ## REG, \
+		--cpu->sp; \
+		cpu->index = cpu->sp; \
+		cpu->bus = cpu-> H; \
+		cpu->instruction = _LR35902InstructionPUSH ## REG ## Delay; \
+		cpu->executionState = LR35902_CORE_MEMORY_STORE;)
+
+DEFINE_POPPUSH_INSTRUCTION_LR35902(BC, B, b, c);
+DEFINE_POPPUSH_INSTRUCTION_LR35902(DE, D, d, e);
+DEFINE_POPPUSH_INSTRUCTION_LR35902(HL, H, h, l);
+DEFINE_POPPUSH_INSTRUCTION_LR35902(AF, A, a, f.packed);
 
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
