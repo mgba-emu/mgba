@@ -35,12 +35,15 @@ static const char* const _fragmentShader =
 	"varying vec2 texCoord;\n"
 	"uniform sampler2D tex;\n"
 	"uniform float gamma;\n"
+	"uniform vec3 desaturation;\n"
 	"uniform vec3 scale;\n"
 	"uniform vec3 bias;\n"
 
 	"void main() {\n"
 	"	vec4 color = texture2D(tex, texCoord);\n"
 	"	color.a = 1.;\n"
+	"	float average = dot(color.rgb, vec3(1.)) / 3.;\n"
+	"	color.rgb = vec3(average) * desaturation + color.rgb * (vec3(1.) - desaturation);\n"
 	"	color.rgb = scale * pow(color.rgb, vec3(gamma, gamma, gamma)) + bias;\n"
 	"	gl_FragColor = color;\n"
 	"}";
@@ -82,7 +85,7 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
-	struct GBAGLES2Uniform* uniforms = malloc(sizeof(struct GBAGLES2Uniform) * 3);
+	struct GBAGLES2Uniform* uniforms = malloc(sizeof(struct GBAGLES2Uniform) * 4);
 	uniforms[0].name = "gamma";
 	uniforms[0].readableName = "Gamma";
 	uniforms[0].type = GL_FLOAT;
@@ -113,7 +116,19 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[2].max.fvec3[0] = 1.0f;
 	uniforms[2].max.fvec3[1] = 1.0f;
 	uniforms[2].max.fvec3[2] = 1.0f;
-	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, uniforms, 3);
+	uniforms[3].name = "desaturation";
+	uniforms[3].readableName = "Desaturation";
+	uniforms[3].type = GL_FLOAT_VEC3;
+	uniforms[3].value.fvec3[0] = 0.0f;
+	uniforms[3].value.fvec3[1] = 0.0f;
+	uniforms[3].value.fvec3[2] = 0.0f;
+	uniforms[3].min.fvec3[0] = 0.0f;
+	uniforms[3].min.fvec3[1] = 0.0f;
+	uniforms[3].min.fvec3[2] = 0.0f;
+	uniforms[3].max.fvec3[0] = 1.0f;
+	uniforms[3].max.fvec3[1] = 1.0f;
+	uniforms[3].max.fvec3[2] = 1.0f;
+	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, uniforms, 4);
 	GBAGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, 0, 0);
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
 	context->finalShader.fbo = 0;
