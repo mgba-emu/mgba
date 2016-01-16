@@ -10,6 +10,9 @@
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
+#ifndef GLdouble
+#define GLdouble GLdouble
+#endif
 #endif
 
 #include <QGLWidget>
