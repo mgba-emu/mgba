@@ -43,6 +43,10 @@ DEFINE_INSTRUCTION_LR35902(JPDelay,
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(JP);
 
+DEFINE_INSTRUCTION_LR35902(JPHL,
+	cpu->pc = LR35902ReadHL(cpu);
+	cpu->memory.setActiveRegion(cpu, cpu->pc);)
+
 DEFINE_INSTRUCTION_LR35902(JRFinish,
 	if (cpu->condition) {
 		cpu->pc += (int8_t) cpu->bus;
@@ -360,7 +364,7 @@ DEFINE_INSTRUCTION_LR35902(LDIOA, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDIOADelay;)
 
-#define DEFINE_INCDEC_INSTRUCTION_LR35902(REG) \
+#define DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(REG) \
 	DEFINE_INSTRUCTION_LR35902(INC ## REG, \
 		uint16_t reg = LR35902Read ## REG (cpu); \
 		LR35902Write ## REG (cpu, reg + 1); \
@@ -370,9 +374,57 @@ DEFINE_INSTRUCTION_LR35902(LDIOA, \
 		LR35902Write ## REG (cpu, reg - 1); \
 		cpu->executionState = LR35902_CORE_STALL;)
 
-DEFINE_INCDEC_INSTRUCTION_LR35902(BC);
-DEFINE_INCDEC_INSTRUCTION_LR35902(DE);
-DEFINE_INCDEC_INSTRUCTION_LR35902(HL);
+DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(BC);
+DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(DE);
+DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(HL);
+
+
+#define DEFINE_INC_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(INC ## NAME, \
+		int diff = OPERAND + 1; \
+		OPERAND = diff; \
+		cpu->f.n = 0; \
+		cpu->f.z = !diff; \
+		/* TODO: Find explanation of H flag */)
+
+#define DEFINE_DEC_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(DEC ## NAME, \
+		int diff = OPERAND - 1; \
+		OPERAND = diff; \
+		cpu->f.n = 1; \
+		cpu->f.z = !diff; \
+		/* TODO: Find explanation of H flag */)
+
+DEFINE_ALU_INSTRUCTION_LR35902_NOHL(INC);
+DEFINE_ALU_INSTRUCTION_LR35902_NOHL(DEC);
+
+DEFINE_INSTRUCTION_LR35902(INC_HLDelay,
+	int diff = cpu->bus + 1;
+	cpu->bus = diff;
+	cpu->f.n = 0;
+	cpu->f.z = !diff;
+	/* TODO: Find explanation of H flag */
+	cpu->instruction = _LR35902InstructionNOP;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
+
+DEFINE_INSTRUCTION_LR35902(INC_HL,
+	cpu->index = LR35902ReadHL(cpu);
+	cpu->instruction = _LR35902InstructionINC_HLDelay;
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD;)
+
+DEFINE_INSTRUCTION_LR35902(DEC_HLDelay,
+	int diff = cpu->bus - 1;
+	cpu->bus = diff;
+	cpu->f.n = 1;
+	cpu->f.z = !diff;
+	/* TODO: Find explanation of H flag */
+	cpu->instruction = _LR35902InstructionNOP;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
+
+DEFINE_INSTRUCTION_LR35902(DEC_HL,
+	cpu->index = LR35902ReadHL(cpu);
+	cpu->instruction = _LR35902InstructionDEC_HLDelay;
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD;)
 
 DEFINE_INSTRUCTION_LR35902(INCSP,
 	++cpu->sp;
