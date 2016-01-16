@@ -366,7 +366,7 @@ void PainterGL::enqueue(const uint32_t* backing) {
 	} else {
 		buffer = m_free.takeLast();
 	}
-	memcpy(buffer, backing, 256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	memcpy(buffer, backing, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }

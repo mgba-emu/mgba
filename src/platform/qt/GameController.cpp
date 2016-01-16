@@ -32,8 +32,8 @@ using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(new uint32_t[256 * VIDEO_HORIZONTAL_PIXELS])
-	, m_frontBuffer(new uint32_t[256 * 256])
+	, m_drawContext(new uint32_t[VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS])
+	, m_frontBuffer(new uint32_t[VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS])
 	, m_threadContext()
 	, m_activeKeys(0)
 	, m_inactiveKeys(0)
@@ -62,7 +62,7 @@ GameController::GameController(QObject* parent)
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
-	m_renderer->outputBufferStride = 256;
+	m_renderer->outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	GBACheatDeviceCreate(&m_cheatDevice);
 
@@ -127,7 +127,7 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+		memcpy(controller->m_frontBuffer, controller->m_drawContext, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
 		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
