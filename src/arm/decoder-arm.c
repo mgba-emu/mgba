@@ -106,7 +106,7 @@
 			info->operandFormat >>= 8; \
 		} else if (SKIPPED == 2) { \
 			info->op2 = info->op3; \
-			info->operandFormat |= info->operandFormat >>= 8; \
+			info->operandFormat |= info->operandFormat >> 8; \
 			info->operandFormat &= ~ARM_OPERAND_3; \
 		} \
 		if (info->op1.reg == ARM_PC) { \
