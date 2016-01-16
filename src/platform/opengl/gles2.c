@@ -287,7 +287,6 @@ void GBAGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 }
 
 void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
