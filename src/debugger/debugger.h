@@ -56,7 +56,9 @@ struct DebuggerEntryInfo {
 	union {
 		struct {
 			uint32_t oldValue;
+			uint32_t newValue;
 			enum WatchpointType watchType;
+			enum WatchpointType accessType;
 		};
 
 		struct {
