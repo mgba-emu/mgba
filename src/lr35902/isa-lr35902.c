@@ -510,6 +510,15 @@ DEFINE_INSTRUCTION_LR35902(DECSP,
 	--cpu->sp;
 	cpu->executionState = LR35902_CORE_STALL;)
 
+DEFINE_INSTRUCTION_LR35902(SCF,
+	cpu->f.c = 1;
+	cpu->f.h = 0;
+	cpu->f.n = 0;)
+
+DEFINE_INSTRUCTION_LR35902(CCF,
+	cpu->f.c ^= 1;
+	cpu->f.h = 0;
+	cpu->f.n = 0;)
 
 #define DEFINE_POPPUSH_INSTRUCTION_LR35902(REG, HH, H, L) \
 	DEFINE_INSTRUCTION_LR35902(POP ## REG ## Delay, \
