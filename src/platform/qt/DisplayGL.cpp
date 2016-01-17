@@ -188,7 +188,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 #endif
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	if (glVersion & QGLFormat::OpenGL_Version_3_0) {
+	if (glVersion & (QGLFormat::OpenGL_Version_3_0 | QGLFormat::OpenGL_ES_Version_2_0)) {
 		gl2Backend = new GBAGLES2Context;
 		GBAGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
