@@ -80,6 +80,8 @@ enum GBIORegisters {
 
 struct GB;
 void GBIOInit(struct GB* gb);
+void GBIOReset(struct GB* gb);
+
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value);
 uint8_t GBIORead(struct GB* gb, unsigned address);
 
