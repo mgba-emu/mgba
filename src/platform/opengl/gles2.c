@@ -13,6 +13,13 @@
 
 #define MAX_PASSES 8
 
+static const GLchar* const _gles2Header =
+	"#version 100\n"
+	"precision mediump float;\n";
+
+static const GLchar* const _gl3Header =
+	"#version 120\n";
+
 static const char* const _vertexShader =
 	"attribute vec4 position;\n"
 	"varying vec2 texCoord;\n"
@@ -327,16 +334,27 @@ void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const cha
 	shader->program = glCreateProgram();
 	shader->vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	shader->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	const GLchar* shaderBuffer[2];
+	const GLubyte* version = glGetString(GL_VERSION);
+	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
+		shaderBuffer[0] = _gl3Header;
+	} else {
+		shaderBuffer[0] = _gles2Header;
+	}
 	if (vs) {
-		glShaderSource(shader->vertexShader, 1, (const GLchar**) &vs, 0);
+		shaderBuffer[1] = vs;
 	} else {
-		glShaderSource(shader->vertexShader, 1, (const GLchar**) &_nullVertexShader, 0);
+		shaderBuffer[1] = _nullVertexShader;
 	}
+	glShaderSource(shader->vertexShader, 2, shaderBuffer, 0);
+
 	if (fs) {
-		glShaderSource(shader->fragmentShader, 1, (const GLchar**) &fs, 0);
+		shaderBuffer[1] = fs;
 	} else {
-		glShaderSource(shader->fragmentShader, 1, (const GLchar**) &_nullFragmentShader, 0);
+		shaderBuffer[1] = _nullFragmentShader;
 	}
+	glShaderSource(shader->fragmentShader, 2, shaderBuffer, 0);
+
 	glAttachShader(shader->program, shader->vertexShader);
 	glAttachShader(shader->program, shader->fragmentShader);
 	char log[1024];
