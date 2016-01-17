@@ -207,12 +207,15 @@ DEFINE_INSTRUCTION_LR35902(LDHL_, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDHL_Bus;)
 
+#define DEFINE_ALU_INSTRUCTION_LR35902_MEM(NAME, REG) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## REG, \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+		cpu->index = LR35902Read ## REG (cpu); \
+		cpu->instruction = _LR35902Instruction ## NAME ## Bus;)
+
 #define DEFINE_ALU_INSTRUCTION_LR35902(NAME) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(Bus, cpu->bus); \
-	DEFINE_INSTRUCTION_LR35902(NAME ## HL, \
-		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
-		cpu->index = LR35902ReadHL(cpu); \
-		cpu->instruction = _LR35902Instruction ## NAME ## Bus;) \
+	DEFINE_ALU_INSTRUCTION_LR35902_MEM(NAME, HL) \
 	DEFINE_INSTRUCTION_LR35902(NAME, \
 		cpu->executionState = LR35902_CORE_READ_PC; \
 		cpu->instruction = _LR35902Instruction ## NAME ## Bus;) \
@@ -240,6 +243,8 @@ DEFINE_ALU_INSTRUCTION_LR35902(LDH_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDL_);
 DEFINE_ALU_INSTRUCTION_LR35902_NOHL(LDHL_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDA_);
+DEFINE_ALU_INSTRUCTION_LR35902_MEM(LDA_, BC);
+DEFINE_ALU_INSTRUCTION_LR35902_MEM(LDA_, DE);
 
 DEFINE_INSTRUCTION_LR35902(LDBCDelay, \
 	cpu->c = cpu->bus; \
@@ -304,6 +309,18 @@ DEFINE_INSTRUCTION_LR35902(LDDHLA, \
 	cpu->bus = cpu->a; \
 	cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 	cpu->instruction = _LR35902InstructionNOP;)
+
+DEFINE_INSTRUCTION_LR35902(LDA_IHL, \
+	cpu->index = LR35902ReadHL(cpu); \
+	LR35902WriteHL(cpu, cpu->index + 1); \
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+	cpu->instruction = _LR35902InstructionLDA_Bus;)
+
+DEFINE_INSTRUCTION_LR35902(LDA_DHL, \
+	cpu->index = LR35902ReadHL(cpu); \
+	LR35902WriteHL(cpu, cpu->index - 1); \
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+	cpu->instruction = _LR35902InstructionLDA_Bus;)
 
 DEFINE_INSTRUCTION_LR35902(LDIAFinish, \
 	cpu->index |= cpu->bus << 8;
