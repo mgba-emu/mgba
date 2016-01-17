@@ -121,6 +121,13 @@ DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
 		cpu->instruction = _LR35902InstructionRETUpdateSPH;)
 
+DEFINE_INSTRUCTION_LR35902(RETI,
+	cpu->condition = true;
+	cpu->index = cpu->sp;
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD;
+	cpu->irqh.setInterrupts(cpu, true);
+	cpu->instruction = _LR35902InstructionRETUpdateSPH;)
+
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
 
 #define DEFINE_AND_INSTRUCTION_LR35902(NAME, OPERAND) \
@@ -520,6 +527,11 @@ DEFINE_INSTRUCTION_LR35902(CCF,
 	cpu->f.h = 0;
 	cpu->f.n = 0;)
 
+DEFINE_INSTRUCTION_LR35902(CPL_,
+	cpu->a ^= 0xFF;
+	cpu->f.h = 1;
+	cpu->f.n = 1;)
+
 #define DEFINE_POPPUSH_INSTRUCTION_LR35902(REG, HH, H, L) \
 	DEFINE_INSTRUCTION_LR35902(POP ## REG ## Delay, \
 		cpu-> L = cpu->bus; \
@@ -554,6 +566,7 @@ DEFINE_POPPUSH_INSTRUCTION_LR35902(AF, A, a, f.packed);
 
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
+DEFINE_INSTRUCTION_LR35902(HALT, cpu->cycles = cpu->nextEvent);
 
 DEFINE_INSTRUCTION_LR35902(STUB, cpu->irqh.hitStub(cpu));
 
