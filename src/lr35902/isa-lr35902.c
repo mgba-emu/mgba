@@ -235,6 +235,42 @@ static void _LR35902InstructionLDL_Bus(struct LR35902Core*);
 static void _LR35902InstructionLDHL_Bus(struct LR35902Core*);
 static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 
+#define DEFINE_ADD_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(ADD ## NAME, \
+		int diff = cpu->a + OPERAND; \
+		cpu->a = diff; \
+		cpu->f.n = 0; \
+		cpu->f.z = !diff; \
+		cpu->f.c = diff >= 0x100; \
+		/* TODO: Find explanation of H flag */)
+
+#define DEFINE_ADC_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(ADC ## NAME, \
+		int diff = cpu->a + OPERAND + cpu->f.c; \
+		cpu->a = diff; \
+		cpu->f.n = 0; \
+		cpu->f.z = !diff; \
+		cpu->f.c = diff > 0x100; \
+		/* TODO: Find explanation of H flag */)
+
+#define DEFINE_SUB_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(SUB ## NAME, \
+		int diff = cpu->a - OPERAND; \
+		cpu->a = diff; \
+		cpu->f.n = 1; \
+		cpu->f.z = !diff; \
+		cpu->f.c = diff < 0; \
+		/* TODO: Find explanation of H flag */)
+
+#define DEFINE_SBC_INSTRUCTION_LR35902(NAME, OPERAND) \
+	DEFINE_INSTRUCTION_LR35902(SBC ## NAME, \
+		int diff = cpu->a - OPERAND - cpu->f.c; \
+		cpu->a = diff; \
+		cpu->f.n = 1; \
+		cpu->f.z = !diff; \
+		cpu->f.c = diff < 0; \
+		/* TODO: Find explanation of H flag */)
+
 DEFINE_ALU_INSTRUCTION_LR35902(LDB_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDC_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDD_);
@@ -245,6 +281,10 @@ DEFINE_ALU_INSTRUCTION_LR35902_NOHL(LDHL_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDA_);
 DEFINE_ALU_INSTRUCTION_LR35902_MEM(LDA_, BC);
 DEFINE_ALU_INSTRUCTION_LR35902_MEM(LDA_, DE);
+DEFINE_ALU_INSTRUCTION_LR35902(ADD);
+DEFINE_ALU_INSTRUCTION_LR35902(ADC);
+DEFINE_ALU_INSTRUCTION_LR35902(SUB);
+DEFINE_ALU_INSTRUCTION_LR35902(SBC);
 
 DEFINE_INSTRUCTION_LR35902(LDBCDelay, \
 	cpu->c = cpu->bus; \
