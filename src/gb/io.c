@@ -21,6 +21,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		// TODO: handle GBC differences
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
+	case REG_STAT:
+		GBVideoWriteSTAT(&gb->video, value);
+		break;
 	case REG_IE:
 		gb->memory.ie = value;
 		GBUpdateIRQs(gb);

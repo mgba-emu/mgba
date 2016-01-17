@@ -46,12 +46,20 @@ DECL_BITFIELD(GBRegisterLCDC, uint8_t);
 DECL_BIT(GBRegisterLCDC, Enable, 7);
 
 DECL_BITFIELD(GBRegisterSTAT, uint8_t);
+DECL_BITS(GBRegisterSTAT, Mode, 0, 2);
+DECL_BIT(GBRegisterSTAT, LYC, 2);
+DECL_BIT(GBRegisterSTAT, HblankIRQ, 3);
+DECL_BIT(GBRegisterSTAT, VblankIRQ, 4);
+DECL_BIT(GBRegisterSTAT, OAMIRQ, 5);
+DECL_BIT(GBRegisterSTAT, LYCIRQ, 6);
 
 struct GBVideo {
 	struct GB* p;
 	struct GBVideoRenderer* renderer;
 
 	int ly;
+	GBRegisterSTAT stat;
+
 	int mode;
 
 	int32_t nextEvent;
