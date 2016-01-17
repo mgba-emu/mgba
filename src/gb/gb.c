@@ -37,6 +37,8 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 
 	GBInterruptHandlerInit(&cpu->irqh);
 	GBMemoryInit(gb);
+
+	gb->video.p = gb;
 	GBVideoInit(&gb->video);
 
 	gb->romVf = 0;
@@ -123,9 +125,8 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->yankedRomSize = 0;
 	}
 	GBMemoryReset(gb);
-
-	gb->video.p = gb;
 	GBVideoReset(&gb->video);
+	GBIOReset(gb);
 }
 
 void GBUpdateIRQs(struct GB* gb) {

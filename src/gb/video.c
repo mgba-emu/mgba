@@ -145,6 +145,15 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		}
 		return;
 	}
+	if (GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && !GBRegisterLCDCIsEnable(value)) {
+		video->mode = 0;
+		video->nextMode = INT_MAX;
+		video->nextEvent = INT_MAX;
+		video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
+		video->p->memory.io[REG_STAT] = video->stat;
+		video->ly = 0;
+		video->p->memory.io[REG_LY] = 0;
+	}
 }
 
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
