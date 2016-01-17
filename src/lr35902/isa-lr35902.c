@@ -435,6 +435,25 @@ DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(BC);
 DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(DE);
 DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(HL);
 
+#define DEFINE_ADD_HL_INSTRUCTION_LR35902(REG, L, H) \
+	DEFINE_INSTRUCTION_LR35902(ADDHL_ ## REG ## Finish, \
+		int diff = H + cpu->h + cpu->f.c; \
+		cpu->h = diff; \
+		cpu->f.c = diff >= 0x100; \
+		cpu->f.n = 0; \
+		/* TODO: Find explanation of H flag */) \
+	DEFINE_INSTRUCTION_LR35902(ADDHL_ ## REG, \
+		int diff = L + cpu->l; \
+		cpu->l = diff; \
+		cpu->f.c = diff >= 0x100; \
+		cpu->executionState = LR35902_CORE_STALL; \
+		cpu->instruction = _LR35902InstructionADDHL_ ## REG ## Finish;)
+
+DEFINE_ADD_HL_INSTRUCTION_LR35902(BC, cpu->c, cpu->b);
+DEFINE_ADD_HL_INSTRUCTION_LR35902(DE, cpu->e, cpu->d);
+DEFINE_ADD_HL_INSTRUCTION_LR35902(HL, cpu->l, cpu->h);
+DEFINE_ADD_HL_INSTRUCTION_LR35902(SP, (cpu->sp & 0xFF), (cpu->sp >> 8));
+
 
 #define DEFINE_INC_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(INC ## NAME, \
@@ -505,7 +524,6 @@ DEFINE_INSTRUCTION_LR35902(DECSP,
 		cpu->instruction = _LR35902InstructionPOP ## REG ## Delay; \
 		cpu->executionState = LR35902_CORE_MEMORY_LOAD;) \
 	DEFINE_INSTRUCTION_LR35902(PUSH ## REG ## Finish, \
-		cpu->instruction = _LR35902InstructionNOP; \
 		cpu->executionState = LR35902_CORE_STALL;) \
 	DEFINE_INSTRUCTION_LR35902(PUSH ## REG ## Delay, \
 		--cpu->sp; \
