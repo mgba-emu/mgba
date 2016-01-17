@@ -10,6 +10,19 @@
 
 #include "util/memory.h"
 
+static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	// TODO: Log game error
+	UNUSED(memory);
+	UNUSED(address);
+	UNUSED(value);
+}
+
+static void _GBMBC1(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC2(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC4(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
+
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	// TODO
 }
@@ -27,6 +40,8 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.rom = 0;
 	gb->memory.romBank = 0;
 	gb->memory.romSize = 0;
+	gb->memory.mbcType = GB_MBC_NONE;
+	gb->memory.mbc = 0;
 
 	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
 
@@ -47,6 +62,52 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.wram = anonymousMemoryMap(GB_SIZE_WORKING_RAM);
 	gb->memory.wramBank = &gb->memory.wram[GB_SIZE_WORKING_RAM_BANK0];
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
+
+	const struct GBCartridge* cart = &gb->memory.rom[0x100];
+	switch (cart->type) {
+	case 0:
+	case 8:
+	case 9:
+		gb->memory.mbc = _GBMBCNone;
+		gb->memory.mbcType = GB_MBC_NONE;
+		break;
+	case 1:
+	case 2:
+	case 3:
+		gb->memory.mbc = _GBMBC1;
+		gb->memory.mbcType = GB_MBC1;
+		break;
+	case 5:
+	case 6:
+		gb->memory.mbc = _GBMBC2;
+		gb->memory.mbcType = GB_MBC2;
+		break;
+	case 0x0F:
+	case 0x10:
+	case 0x11:
+	case 0x12:
+	case 0x13:
+		gb->memory.mbc = _GBMBC3;
+		gb->memory.mbcType = GB_MBC3;
+		break;
+	case 0x15:
+	case 0x16:
+	case 0x17:
+		gb->memory.mbc = _GBMBC4;
+		gb->memory.mbcType = GB_MBC4;
+		break;
+	default:
+		// TODO: Log
+	case 0x19:
+	case 0x1A:
+	case 0x1B:
+	case 0x1C:
+	case 0x1D:
+	case 0x1E:
+		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcType = GB_MBC5;
+		break;
+	}
 
 	if (!gb->memory.wram) {
 		GBMemoryDeinit(gb);
@@ -114,13 +175,11 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
-		// TODO
-		return;
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		// TODO
+		memory->mbc(memory, address, value);
 		return;
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -157,3 +216,63 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
 
 void GBPatch16(struct LR35902Core* cpu, uint16_t address, int16_t value, int16_t* old);
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
+
+static void _switchBank(struct GBMemory* memory, int bank) {
+	size_t bankStart = bank * GB_SIZE_CART_BANK0;
+	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
+		// TODO: Log
+		return;
+	}
+	memory->romBank = &memory->rom[bankStart];
+	memory->currentBank = bank;
+}
+
+void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	int bank = value & 0x1F;
+	switch (address >> 13) {
+	case 0x0:
+		// TODO
+		break;
+	case 0x1:
+		if (!bank) {
+			++bank;
+		}
+		_switchBank(memory, bank | (memory->currentBank & 0x60));
+		break;
+	}
+}
+
+void _GBMBC2(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	// TODO
+}
+
+void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	int bank = value & 0x7F;
+	switch (address >> 13) {
+	case 0x0:
+		// TODO
+		break;
+	case 0x1:
+		if (!bank) {
+			++bank;
+		}
+		_switchBank(memory, bank);
+		break;
+	}
+}
+
+void _GBMBC4(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	// TODO
+}
+
+void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	int bank = value & 0x7F;
+	switch (address >> 13) {
+	case 0x0:
+		// TODO
+		break;
+	case 0x1:
+		_switchBank(memory, bank);
+		break;
+	}
+}

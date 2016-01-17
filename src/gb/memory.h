@@ -47,9 +47,26 @@ enum {
 	GB_SIZE_HRAM = 0x7F,
 };
 
+enum GBMemoryBankControllerType {
+	GB_MBC_NONE = 0,
+	GB_MBC1 = 1,
+	GB_MBC2 = 2,
+	GB_MBC3 = 3,
+	GB_MBC4 = 4,
+	GB_MBC5 = 5,
+	GB_MMM01 = 0x10,
+	GB_HuC1 = 0x11
+};
+
+struct GBMemory;
+typedef void (*GBMemoryBankController)(struct GBMemory*, uint16_t address, uint8_t value);
+
 struct GBMemory {
 	uint8_t* rom;
 	uint8_t* romBank;
+	enum GBMemoryBankControllerType mbcType;
+	GBMemoryBankController mbc;
+	int currentBank;
 
 	uint8_t* wram;
 	uint8_t* wramBank;
