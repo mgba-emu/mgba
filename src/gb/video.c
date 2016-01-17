@@ -140,8 +140,8 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->eventDiff = 0;
-		if (video->nextEvent < video->p->cpu->nextEvent) {
-			video->p->cpu->nextEvent = video->nextEvent;
+		if (video->p->cpu->cycles + video->nextEvent < video->p->cpu->nextEvent) {
+			video->p->cpu->nextEvent = video->p->cpu->cycles + video->nextEvent;
 		}
 		return;
 	}
