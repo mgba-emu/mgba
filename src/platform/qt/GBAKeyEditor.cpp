@@ -171,9 +171,10 @@ void GBAKeyEditor::closeEvent(QCloseEvent*) {
 }
 
 bool GBAKeyEditor::event(QEvent* event) {
-	if (event->type() == QEvent::WindowActivate) {
+	QEvent::Type type = event->type();
+	if (type == QEvent::WindowActivate || type == QEvent::Show) {
 		m_controller->stealFocus(this);
-	} else if (event->type() == QEvent::WindowDeactivate) {
+	} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
 		m_controller->releaseFocus(this);
 	}
 	return QWidget::event(event);
