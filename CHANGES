@@ -18,6 +18,7 @@ Features:
  - Cleaner, unified settings window
  - Added a setting for pausing when the emulator is not in focus
  - Customizable paths for save games, save states, screenshots and patches
+ - Controller hotplugging
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline

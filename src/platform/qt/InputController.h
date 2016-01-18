@@ -52,6 +52,7 @@ public:
 
 	const GBAInputMap* map() const { return &m_inputMap; }
 
+	void updateJoysticks();
 	int pollEvents();
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;

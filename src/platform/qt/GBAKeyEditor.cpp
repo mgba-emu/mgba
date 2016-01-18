@@ -15,6 +15,12 @@
 #include "InputController.h"
 #include "KeyEditor.h"
 
+#ifdef BUILD_SDL
+extern "C" {
+#include "platform/sdl/sdl-events.h"
+}
+#endif
+
 using namespace QGBA;
 
 const qreal GBAKeyEditor::DPAD_CENTER_X = 0.247;
@@ -51,22 +57,19 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
+		controller->updateJoysticks();
 		controller->recalibrateAxes();
 		lookupAxes(map);
 
 		m_profileSelect = new QComboBox(this);
 		m_profileSelect->addItems(controller->connectedGamepads(type));
 		int activeGamepad = controller->gamepad(type);
+		selectGamepad(activeGamepad);
 		if (activeGamepad > 0) {
 			m_profileSelect->setCurrentIndex(activeGamepad);
 		}
 
-		connect(m_profileSelect, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this] (int i) {
-			m_controller->setGamepad(m_type, i);
-			m_profile = m_profileSelect->currentText();
-			m_controller->loadProfile(m_type, m_profile);
-			refresh();
-		});
+		connect(m_profileSelect, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGamepad(int)));
 
 		m_clear = new QWidget(this);
 		QHBoxLayout* layout = new QHBoxLayout;
@@ -310,6 +313,13 @@ void GBAKeyEditor::setAxisValue(int axis, int32_t value) {
 	}
 	KeyEditor* focused = *m_currentKey;
 	focused->setValueAxis(axis, value);
+}
+
+void GBAKeyEditor::selectGamepad(int index) {
+	m_controller->setGamepad(m_type, index);
+	m_profile = m_profileSelect->currentText();
+	m_controller->loadProfile(m_type, m_profile);
+	refresh();
 }
 #endif
 
