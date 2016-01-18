@@ -28,6 +28,7 @@ Q_OBJECT
 
 public:
 	GBAKeyEditor(InputController* controller, int type, const QString& profile = QString(), QWidget* parent = nullptr);
+	virtual ~GBAKeyEditor();
 
 public slots:
 	void setAll();

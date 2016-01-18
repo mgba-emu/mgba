@@ -133,6 +133,10 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setAll->setFocus();
 }
 
+GBAKeyEditor::~GBAKeyEditor() {
+	m_controller->releaseFocus(this);
+}
+
 void GBAKeyEditor::setAll() {
 	m_currentKey = m_keyOrder.begin();
 	(*m_currentKey)->setFocus();
