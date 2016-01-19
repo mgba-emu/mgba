@@ -103,30 +103,42 @@ struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* 
 
 void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOptions* opts) {
 	if (opts->savegamePath) {
-		if (dirs->save && dirs->save != dirs->base) {
-			dirs->save->close(dirs->save);
+		struct VDir* dir = VDirOpen(opts->savegamePath);
+		if (dir) {
+			if (dirs->save && dirs->save != dirs->base) {
+				dirs->save->close(dirs->save);
+			}
+			dirs->save = dir;
 		}
-		dirs->save = VDirOpen(opts->savegamePath);
 	}
 
 	if (opts->savestatePath) {
-		if (dirs->state && dirs->state != dirs->base) {
-			dirs->state->close(dirs->state);
+		struct VDir* dir = VDirOpen(opts->savestatePath);
+		if (dir) {
+			if (dirs->state && dirs->state != dirs->base) {
+				dirs->state->close(dirs->state);
+			}
+			dirs->state = dir;
 		}
-		dirs->state = VDirOpen(opts->savestatePath);
 	}
 
 	if (opts->screenshotPath) {
-		if (dirs->screenshot && dirs->screenshot != dirs->base) {
-			dirs->screenshot->close(dirs->screenshot);
+		struct VDir* dir = VDirOpen(opts->screenshotPath);
+		if (dir) {
+			if (dirs->screenshot && dirs->screenshot != dirs->base) {
+				dirs->screenshot->close(dirs->screenshot);
+			}
+			dirs->screenshot = dir;
 		}
-		dirs->screenshot = VDirOpen(opts->screenshotPath);
 	}
 
 	if (opts->patchPath) {
-		if (dirs->patch && dirs->patch != dirs->base) {
-			dirs->patch->close(dirs->patch);
+		struct VDir* dir = VDirOpen(opts->patchPath);
+		if (dir) {
+			if (dirs->patch && dirs->patch != dirs->base) {
+				dirs->patch->close(dirs->patch);
+			}
+			dirs->patch = dir;
 		}
-		dirs->patch = VDirOpen(opts->patchPath);
 	}
 }
