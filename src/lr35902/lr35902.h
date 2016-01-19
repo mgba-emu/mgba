@@ -32,7 +32,7 @@ union FlagRegister {
 
 	uint8_t packed;
 };
-#pragma pack(pop, 1)
+#pragma pack(pop)
 
 enum LR35902ExecutionState {
 	LR35902_CORE_FETCH = 0,
@@ -83,7 +83,7 @@ struct LR35902Core {
 		};
 		uint16_t af;
 	};
-#pragma pack(pop, 1)
+#pragma pack(pop)
 	union {
 		struct {
 			uint8_t c;
