@@ -81,9 +81,10 @@ void SensorView::jiggerer(QAbstractButton* button, void (InputController::*sette
 }
 
 bool SensorView::event(QEvent* event) {
-	if (event->type() == QEvent::WindowActivate) {
+	QEvent::Type type = event->type();
+	if (type == QEvent::WindowActivate || type == QEvent::Show) {
 		m_input->stealFocus(this);
-	} else if (event->type() == QEvent::WindowDeactivate) {
+	} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
 		m_input->releaseFocus(this);
 	}
 	return QWidget::event(event);
