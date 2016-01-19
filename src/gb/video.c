@@ -64,7 +64,10 @@ void GBVideoDeinit(struct GBVideo* video) {
 }
 
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer) {
-	// TODO
+	video->renderer->deinit(video->renderer);
+	video->renderer = renderer;
+	renderer->vram = video->vram;
+	video->renderer->init(video->renderer);
 }
 
 int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
@@ -79,11 +82,15 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 		if (video->nextMode <= 0) {
 			switch (video->mode) {
 			case 0:
+				if (video->ly < GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+					video->renderer->drawScanline(video->renderer, video->ly);
+				}
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
 				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->ly = 0;
 					++video->frameCounter;
+					video->renderer->finishFrame(video->renderer);
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 					video->mode = 1;
 					if (GBRegisterSTATIsVblankIRQ(video->stat)) {

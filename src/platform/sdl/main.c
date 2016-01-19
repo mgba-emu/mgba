@@ -13,12 +13,19 @@
 #include "debugger/gdb-stub.h"
 #endif
 
+#ifdef M_CORE_GBA
 #include "gba/gba.h"
 #include "gba/context/config.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#include "gb/video.h"
+#endif
 #include "platform/commandline.h"
 #include "util/configuration.h"
+#include "util/vfs.h"
 
 #include <SDL.h>
 
@@ -28,12 +35,27 @@
 
 #define PORT "sdl"
 
-static bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
+// TODO: Move somewhere
+enum mPlatform {
+	PLATFORM_NONE = -1,
+	PLATFORM_GBA,
+	PLATFORM_GB
+};
+
+static bool mSDLInit(struct mSDLRenderer* renderer);
+static void mSDLDeinit(struct mSDLRenderer* renderer);
+
+// TODO: Clean up signatures
+#ifdef M_CORE_GBA
+static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config, struct GBAInputMap* inputMap);
+#endif
+#ifdef M_CORE_GB
+static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
+#endif
+
 
 int main(int argc, char** argv) {
-	struct SDLSoftwareRenderer renderer;
-	GBAVideoSoftwareRendererCreate(&renderer.d);
+	struct mSDLRenderer renderer;
 
 	struct GBAInputMap inputMap;
 	GBAInputMapInit(&inputMap);
@@ -43,15 +65,14 @@ int main(int argc, char** argv) {
 	GBAConfigLoad(&config);
 
 	struct GBAOptions opts = {
-		.width = VIDEO_HORIZONTAL_PIXELS,
-		.height = VIDEO_VERTICAL_PIXELS,
+		.width = 0,
+		.height = 0,
 		.useBios = true,
 		.rewindEnable = true,
 		.audioBuffers = 512,
 		.videoSync = false,
 		.audioSync = true,
 	};
-	GBAConfigLoadDefaults(&config, &opts);
 
 	struct GBAArguments args;
 	struct GraphicsOpts graphicsOpts;
@@ -75,6 +96,49 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
+	enum mPlatform platform = PLATFORM_NONE;
+
+	if (args.fname) {
+		struct VFile* vf = VFileOpen(args.fname, O_RDONLY);
+		if (!vf) {
+			printf("Could not open game. Are you sure the file exists?\n");
+			freeArguments(&args);
+			GBAConfigFreeOpts(&opts);
+			GBAConfigDeinit(&config);
+			return 1;
+		}
+#ifdef M_CORE_GBA
+		else if (GBAIsROM(vf)) {
+			platform = PLATFORM_GBA;
+			if (!opts.width) {
+				opts.width = VIDEO_HORIZONTAL_PIXELS;
+			}
+			if (!opts.height) {
+				opts.height = VIDEO_VERTICAL_PIXELS;
+			}
+		}
+#endif
+#ifdef M_CORE_GB
+		else if (GBIsROM(vf)) {
+			platform = PLATFORM_GB;
+			if (!opts.width) {
+				opts.width = /*GB_*/VIDEO_HORIZONTAL_PIXELS;
+			}
+			if (!opts.height) {
+				opts.height = /*GB_*/VIDEO_VERTICAL_PIXELS;
+			}
+		}
+#endif
+		else {
+			printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
+			freeArguments(&args);
+			GBAConfigFreeOpts(&opts);
+			GBAConfigDeinit(&config);
+			return 1;
+		}
+	}
+
+	GBAConfigLoadDefaults(&config, &opts);
 	GBAConfigMap(&config, &opts);
 
 	renderer.viewportWidth = opts.width;
@@ -93,57 +157,78 @@ int main(int argc, char** argv) {
 	renderer.lockAspectRatio = opts.lockAspectRatio;
 	renderer.filter = opts.resampleVideo;
 
+	int ret;
+
+	switch (platform) {
+	case PLATFORM_GBA:
+		ret = mSDLRunGBA(&renderer, &args, &opts, &config, &inputMap);
+		break;
+	case PLATFORM_GB:
+		ret = mSDLRunGB(&renderer, &args);
+		break;
+	default:
+		ret = 1;
+		break;
+	}
+
+	freeArguments(&args);
+	GBAConfigFreeOpts(&opts);
+	GBAConfigDeinit(&config);
+
+	return ret;
+}
+
+#ifdef M_CORE_GBA
+int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config, struct GBAInputMap* inputMap) {
+	GBAVideoSoftwareRendererCreate(&renderer->d);
 #ifdef BUILD_GL
-	GBASDLGLCreate(&renderer);
+	mSDLGLCreate(renderer);
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-	GBASDLGLES2Create(&renderer);
+	mSDLGLES2Create(renderer);
 #else
-	GBASDLSWCreate(&renderer);
+	mSDLSWCreate(renderer);
 #endif
 
-	if (!GBASDLInit(&renderer)) {
-		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+	if (!mSDLInit(renderer)) {
 		return 1;
 	}
 
 	struct GBAThread context = {
-		.renderer = &renderer.d.d,
-		.userData = &renderer
+		.renderer = &renderer->d.d,
+		.userData = renderer
 	};
 
-	context.debugger = createDebugger(&args, &context);
+	context.debugger = createDebugger(args, &context);
 
-	GBAMapOptionsToContext(&opts, &context);
-	GBAMapArgumentsToContext(&args, &context);
+	GBAMapOptionsToContext(opts, &context);
+	GBAMapArgumentsToContext(args, &context);
 
 	bool didFail = false;
 
-	renderer.audio.samples = context.audioBuffers;
-	renderer.audio.sampleRate = 44100;
-	if (opts.sampleRate) {
-		renderer.audio.sampleRate = opts.sampleRate;
+	renderer->audio.samples = context.audioBuffers;
+	renderer->audio.sampleRate = 44100;
+	if (opts->sampleRate) {
+		renderer->audio.sampleRate = opts->sampleRate;
 	}
-	if (!GBASDLInitAudio(&renderer.audio, &context)) {
+	if (!GBASDLInitAudio(&renderer->audio, &context)) {
 		didFail = true;
 	}
 
-	renderer.player.bindings = &inputMap;
-	GBASDLInitBindings(&inputMap);
-	GBASDLInitEvents(&renderer.events);
-	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
-	GBASDLAttachPlayer(&renderer.events, &renderer.player);
-	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
-	context.overrides = GBAConfigGetOverrides(&config);
+	renderer->player.bindings = inputMap;
+	GBASDLInitBindings(inputMap);
+	GBASDLInitEvents(&renderer->events);
+	GBASDLEventsLoadConfig(&renderer->events, GBAConfigGetInput(config));
+	GBASDLAttachPlayer(&renderer->events, &renderer->player);
+	GBASDLPlayerLoadConfig(&renderer->player, GBAConfigGetInput(config));
+	context.overrides = GBAConfigGetOverrides(config);
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBASDLSetScreensaverSuspendable(&renderer.events, opts.suspendScreensaver);
-		GBASDLSuspendScreensaver(&renderer.events);
+		GBASDLSetScreensaverSuspendable(&renderer->events, opts->suspendScreensaver);
+		GBASDLSuspendScreensaver(&renderer->events);
 #endif
 		if (GBAThreadStart(&context)) {
-			renderer.runloop(&context, &renderer);
+			renderer->runloop(renderer, &context);
 			GBAThreadJoin(&context);
 		} else {
 			didFail = true;
@@ -151,8 +236,8 @@ int main(int argc, char** argv) {
 		}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBASDLResumeScreensaver(&renderer.events);
-		GBASDLSetScreensaverSuspendable(&renderer.events, false);
+		GBASDLResumeScreensaver(&renderer->events);
+		GBASDLSetScreensaverSuspendable(&renderer->events, false);
 #endif
 
 		if (GBAThreadHasCrashed(&context)) {
@@ -160,20 +245,53 @@ int main(int argc, char** argv) {
 			printf("The game crashed!\n");
 		}
 	}
-	freeArguments(&args);
-	GBAConfigFreeOpts(&opts);
-	GBAConfigDeinit(&config);
 	free(context.debugger);
 	GBADirectorySetDeinit(&context.dirs);
-	GBASDLDetachPlayer(&renderer.events, &renderer.player);
-	GBAInputMapDeinit(&inputMap);
+	GBASDLDetachPlayer(&renderer->events, &renderer->player);
+	GBAInputMapDeinit(inputMap);
 
-	GBASDLDeinit(&renderer);
+	mSDLDeinit(renderer);
 
 	return didFail;
 }
+#endif
 
-static bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+#ifdef M_CORE_GB
+int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
+	GBVideoSoftwareRendererCreate(&renderer->gb);
+#ifdef BUILD_GL
+	mSDLGLCreateGB(renderer);
+#elif defined(BUILD_GLES2)
+	mSDLGLES2CreateGB(renderer);
+#else
+	mSDLSWCreateGB(renderer);
+#endif
+
+	if (!mSDLInit(renderer)) {
+		return 1;
+	}
+
+	struct LR35902Core cpu;
+	struct GB gb;
+
+	GBCreate(&gb);
+	LR35902SetComponents(&cpu, &gb.d, 0, 0);
+	LR35902Init(&cpu);
+
+	GBVideoAssociateRenderer(&gb.video, &renderer->gb.d);
+	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
+	GBLoadROM(&gb, vf, 0, args->fname);
+
+	LR35902Reset(&cpu);
+	renderer->runloop(renderer, &gb);
+	vf->close(vf);
+
+	mSDLDeinit(renderer);
+	return 0;
+}
+#endif
+
+static bool mSDLInit(struct mSDLRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		return false;
@@ -182,7 +300,7 @@ static bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	return renderer->init(renderer);
 }
 
-static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	GBASDLDeinitEvents(&renderer->events);
 	GBASDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)

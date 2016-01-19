@@ -183,3 +183,17 @@ void GBHitStub(struct LR35902Core* cpu) {
 	// TODO
 	//printf("Hit stub at address %04X\n", cpu->pc);
 }
+
+bool GBIsROM(struct VFile* vf) {
+	vf->seek(vf, 0x104, SEEK_SET);
+	uint8_t header[4];
+	static const uint8_t knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
+
+	if (vf->read(vf, &header, sizeof(header)) < (ssize_t) sizeof(header)) {
+		return false;
+	}
+	if (memcmp(header, knownHeader, sizeof(header))) {
+		return false;
+	}
+	return true;
+}

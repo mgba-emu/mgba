@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
-void GBASDLGLCommonSwap(struct VideoBackend* context) {
-	struct SDLSoftwareRenderer* renderer = (struct SDLSoftwareRenderer*) context->user;
+void mSDLGLCommonSwap(struct VideoBackend* context) {
+	struct mSDLRenderer* renderer = (struct mSDLRenderer*) context->user;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_SwapWindow(renderer->window);
 #else
@@ -15,7 +15,7 @@ void GBASDLGLCommonSwap(struct VideoBackend* context) {
 #endif
 }
 
-void GBASDLGLCommonInit(struct SDLSoftwareRenderer* renderer) {
+void mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 #ifndef COLOR_16_BIT
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);

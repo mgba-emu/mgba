@@ -7,7 +7,7 @@
 #define SDL_GL_COMMON_H
 #include "main.h"
 
-void GBASDLGLCommonSwap(struct VideoBackend* context);
-void GBASDLGLCommonInit(struct SDLSoftwareRenderer* renderer);
+void mSDLGLCommonSwap(struct VideoBackend* context);
+void mSDLGLCommonInit(struct mSDLRenderer* renderer);
 
 #endif

@@ -6,7 +6,13 @@
 #ifndef SDL_MAIN_H
 #define SDL_MAIN_H
 
+#ifdef M_CORE_GBA
 #include "gba/renderers/video-software.h"
+#endif
+
+#ifdef M_CORE_GB
+#include "gb/renderers/software.h"
+#endif
 
 #include "sdl-audio.h"
 #include "sdl-events.h"
@@ -34,15 +40,22 @@
 #include <pixman.h>
 #endif
 
-struct SDLSoftwareRenderer {
-	struct GBAVideoSoftwareRenderer d;
+struct mSDLRenderer {
+	union {
+#ifdef M_CORE_GBA
+		struct GBAVideoSoftwareRenderer d;
+#endif
+#ifdef M_CORE_GB
+		struct GBVideoSoftwareRenderer gb;
+#endif
+	};
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
 	struct GBASDLPlayer player;
 
-	bool (*init)(struct SDLSoftwareRenderer* renderer);
-	void (*runloop)(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-	void (*deinit)(struct SDLSoftwareRenderer* renderer);
+	bool (*init)(struct mSDLRenderer* renderer);
+	void (*runloop)(struct mSDLRenderer* renderer, void* user);
+	void (*deinit)(struct mSDLRenderer* renderer);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
@@ -86,13 +99,14 @@ struct SDLSoftwareRenderer {
 #endif
 };
 
-void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer);
+void mSDLSWCreate(struct mSDLRenderer* renderer);
 
 #ifdef BUILD_GL
-void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer);
+void mSDLGLCreate(struct mSDLRenderer* renderer);
+void mSDLGLCreateGB(struct mSDLRenderer* renderer);
 #endif
 
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)
-void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer);
+void mSDLGLES2Create(struct mSDLRenderer* renderer);
 #endif
 #endif

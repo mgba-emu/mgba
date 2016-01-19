@@ -8,6 +8,9 @@
 #include "gl-common.h"
 
 #include "gba/supervisor/thread.h"
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "platform/opengl/gl.h"
 
 static void _doViewport(int w, int h, struct VideoBackend* v) {
@@ -17,18 +20,25 @@ static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->clear(v);
 }
 
-static bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer);
+#ifdef M_CORE_GBA
+static bool mSDLGLInitGBA(struct mSDLRenderer* renderer);
+static void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user);
+#endif
+#ifdef M_CORE_GB
+static bool mSDLGLInitGB(struct mSDLRenderer* renderer);
+static void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user);
+#endif
+static void mSDLGLDeinit(struct mSDLRenderer* renderer);
 
-void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLGLInit;
-	renderer->deinit = GBASDLGLDeinit;
-	renderer->runloop = GBASDLGLRunloop;
+#ifdef M_CORE_GBA
+void mSDLGLCreate(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLGLInitGBA;
+	renderer->deinit = mSDLGLDeinit;
+	renderer->runloop = mSDLGLRunloopGBA;
 }
 
-bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
-	GBASDLGLCommonInit(renderer);
+bool mSDLGLInitGBA(struct mSDLRenderer* renderer) {
+	mSDLGLCommonInit(renderer);
 
 	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
@@ -37,14 +47,15 @@ bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = GBASDLGLCommonSwap;
+	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
 
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
 
-void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
+	struct GBAThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 
@@ -69,8 +80,62 @@ void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 		v->swap(v);
 	}
 }
+#endif
 
-void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
+#ifdef M_CORE_GB
+void mSDLGLCreateGB(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLGLInitGB;
+	renderer->deinit = mSDLGLDeinit;
+	renderer->runloop = mSDLGLRunloopGB;
+}
+
+bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
+	mSDLGLCommonInit(renderer);
+
+	// TODO: Pass texture size along
+	renderer->gb.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	renderer->gb.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+
+	GBAGLContextCreate(&renderer->gl);
+	renderer->gl.d.user = renderer;
+	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
+	renderer->gl.d.filter = renderer->filter;
+	renderer->gl.d.swap = mSDLGLCommonSwap;
+	renderer->gl.d.init(&renderer->gl.d, 0);
+
+	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
+	return true;
+}
+
+void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
+	struct GB* gb = user;
+	SDL_Event event;
+	struct VideoBackend* v = &renderer->gl.d;
+
+	while (true) {
+		int64_t frameCounter = gb->video.frameCounter;
+		while (gb->video.frameCounter == frameCounter) {
+			LR35902Tick(gb->cpu);			
+		}
+		while (SDL_PollEvent(&event)) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			// Event handling can change the size of the screen
+			if (renderer->player.windowUpdated) {
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+				_doViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				renderer->player.windowUpdated = 0;
+			}
+#endif
+		}
+
+		v->postFrame(v, renderer->gb.outputBuffer);
+		v->drawFrame(v);
+		v->swap(v);
+	}
+}
+#endif
+
+void mSDLGLDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
