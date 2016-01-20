@@ -628,6 +628,22 @@ DEFINE_INSTRUCTION_LR35902(RLCA_,
 	cpu->f.n = 0;
 	cpu->f.c = cpu->a & 1;)
 
+DEFINE_INSTRUCTION_LR35902(RRA_,
+	int low = cpu->a & 1;
+	cpu->a = (cpu->a >> 1) | (cpu->f.c << 7);
+	cpu->f.z = 0;
+	cpu->f.h = 0;
+	cpu->f.n = 0;
+	cpu->f.c = cpu->f.c = low;)
+
+DEFINE_INSTRUCTION_LR35902(RRCA_,
+	int low = cpu->a & 1;
+	cpu->a = (cpu->a >> 1) | (low << 7);
+	cpu->f.z = 0;
+	cpu->f.h = 0;
+	cpu->f.n = 0;
+	cpu->f.c = low;)
+
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
 DEFINE_INSTRUCTION_LR35902(HALT, cpu->cycles = cpu->nextEvent);
