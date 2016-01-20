@@ -111,13 +111,32 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 	struct GB* gb = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
+	int activeKeys = 0;
+	gb->keySource = &activeKeys;
 
 	while (true) {
 		int64_t frameCounter = gb->video.frameCounter;
 		while (gb->video.frameCounter == frameCounter) {
-			LR35902Tick(gb->cpu);			
+			LR35902Tick(gb->cpu);
 		}
 		while (SDL_PollEvent(&event)) {
+			// TODO: Refactor out
+			if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
+				int key;
+#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
+				key = GBAInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.scancode);
+#else
+				key = GBAInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.sym);
+#endif
+				if (key != GBA_KEY_NONE) {
+					if (event.type == SDL_KEYDOWN) {
+						activeKeys |= 1 << key;
+					} else {
+						activeKeys &= ~(1 << key);
+					}
+				}
+			}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {

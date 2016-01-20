@@ -47,7 +47,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 // TODO: Clean up signatures
 #ifdef M_CORE_GBA
-static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config, struct GBAInputMap* inputMap);
+static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config);
 #endif
 #ifdef M_CORE_GB
 static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
@@ -116,6 +116,14 @@ int main(int argc, char** argv) {
 			if (!opts.height) {
 				opts.height = VIDEO_VERTICAL_PIXELS;
 			}
+			GBAVideoSoftwareRendererCreate(&renderer.d);
+#ifdef BUILD_GL
+			mSDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+			mSDLGLES2Create(&renderer);
+#else
+			mSDLSWCreate(&renderer);
+#endif
 		}
 #endif
 #ifdef M_CORE_GB
@@ -127,6 +135,14 @@ int main(int argc, char** argv) {
 			if (!opts.height) {
 				opts.height = /*GB_*/VIDEO_VERTICAL_PIXELS;
 			}
+			GBVideoSoftwareRendererCreate(&renderer.gb);
+#ifdef BUILD_GL
+			mSDLGLCreateGB(&renderer);
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+			mSDLGLES2CreateGB(&renderer);
+#else
+			mSDLSWCreateGB(&renderer);
+#endif
 		}
 #endif
 		else {
@@ -157,11 +173,25 @@ int main(int argc, char** argv) {
 	renderer.lockAspectRatio = opts.lockAspectRatio;
 	renderer.filter = opts.resampleVideo;
 
+	if (!mSDLInit(&renderer)) {
+		freeArguments(&args);
+		GBAConfigFreeOpts(&opts);
+		GBAConfigDeinit(&config);
+		return 1;
+	}
+
+	renderer.player.bindings = &inputMap;
+	GBASDLInitBindings(&inputMap);
+	GBASDLInitEvents(&renderer.events);
+	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
+	GBASDLAttachPlayer(&renderer.events, &renderer.player);
+	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
+
 	int ret;
 
 	switch (platform) {
 	case PLATFORM_GBA:
-		ret = mSDLRunGBA(&renderer, &args, &opts, &config, &inputMap);
+		ret = mSDLRunGBA(&renderer, &args, &opts, &config);
 		break;
 	case PLATFORM_GB:
 		ret = mSDLRunGB(&renderer, &args);
@@ -170,6 +200,10 @@ int main(int argc, char** argv) {
 		ret = 1;
 		break;
 	}
+	GBASDLDetachPlayer(&renderer.events, &renderer.player);
+	GBAInputMapDeinit(&inputMap);
+
+	mSDLDeinit(&renderer);
 
 	freeArguments(&args);
 	GBAConfigFreeOpts(&opts);
@@ -179,20 +213,7 @@ int main(int argc, char** argv) {
 }
 
 #ifdef M_CORE_GBA
-int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config, struct GBAInputMap* inputMap) {
-	GBAVideoSoftwareRendererCreate(&renderer->d);
-#ifdef BUILD_GL
-	mSDLGLCreate(renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-	mSDLGLES2Create(renderer);
-#else
-	mSDLSWCreate(renderer);
-#endif
-
-	if (!mSDLInit(renderer)) {
-		return 1;
-	}
-
+int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config) {
 	struct GBAThread context = {
 		.renderer = &renderer->d.d,
 		.userData = renderer
@@ -202,6 +223,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 	GBAMapOptionsToContext(opts, &context);
 	GBAMapArgumentsToContext(args, &context);
+	context.overrides = GBAConfigGetOverrides(config);
 
 	bool didFail = false;
 
@@ -213,14 +235,6 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 	if (!GBASDLInitAudio(&renderer->audio, &context)) {
 		didFail = true;
 	}
-
-	renderer->player.bindings = inputMap;
-	GBASDLInitBindings(inputMap);
-	GBASDLInitEvents(&renderer->events);
-	GBASDLEventsLoadConfig(&renderer->events, GBAConfigGetInput(config));
-	GBASDLAttachPlayer(&renderer->events, &renderer->player);
-	GBASDLPlayerLoadConfig(&renderer->player, GBAConfigGetInput(config));
-	context.overrides = GBAConfigGetOverrides(config);
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -247,10 +261,6 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 	}
 	free(context.debugger);
 	GBADirectorySetDeinit(&context.dirs);
-	GBASDLDetachPlayer(&renderer->events, &renderer->player);
-	GBAInputMapDeinit(inputMap);
-
-	mSDLDeinit(renderer);
 
 	return didFail;
 }
@@ -258,19 +268,6 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 #ifdef M_CORE_GB
 int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
-	GBVideoSoftwareRendererCreate(&renderer->gb);
-#ifdef BUILD_GL
-	mSDLGLCreateGB(renderer);
-#elif defined(BUILD_GLES2)
-	mSDLGLES2CreateGB(renderer);
-#else
-	mSDLSWCreateGB(renderer);
-#endif
-
-	if (!mSDLInit(renderer)) {
-		return 1;
-	}
-
 	struct LR35902Core cpu;
 	struct GB gb;
 
@@ -285,8 +282,6 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	LR35902Reset(&cpu);
 	renderer->runloop(renderer, &gb);
 	vf->close(vf);
-
-	mSDLDeinit(renderer);
 	return 0;
 }
 #endif
