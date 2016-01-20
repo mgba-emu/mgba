@@ -24,7 +24,12 @@ struct GBVideoSoftwareRenderer {
 
 	uint32_t row[GB_VIDEO_HORIZONTAL_PIXELS];
 
+	color_t bgPalette[4];
+	color_t objPalette[2][4];
+
 	uint32_t* temporaryBuffer;
+
+	GBRegisterLCDC lcdc;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

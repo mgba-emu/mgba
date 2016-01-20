@@ -82,38 +82,42 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 		if (video->nextMode <= 0) {
 			switch (video->mode) {
 			case 0:
-				if (video->ly < GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
-					video->renderer->drawScanline(video->renderer, video->ly);
-				}
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
-				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
-					video->ly = 0;
-					++video->frameCounter;
-					video->renderer->finishFrame(video->renderer);
-					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
-					video->mode = 1;
-					if (GBRegisterSTATIsVblankIRQ(video->stat)) {
-						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-					}
-					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
-					GBUpdateIRQs(video->p);
-				} else {
+				if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
+					video->renderer->drawScanline(video->renderer, video->ly);
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 						GBUpdateIRQs(video->p);
 					}
+				} else {
+					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
+					video->mode = 1;
+					++video->frameCounter;
+					video->renderer->finishFrame(video->renderer);
+					if (GBRegisterSTATIsVblankIRQ(video->stat)) {
+						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+					}
+					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
+					GBUpdateIRQs(video->p);
 				}
 				break;
 			case 1:
-				video->nextMode = GB_VIDEO_MODE_2_LENGTH;
-				video->mode = 2;
-				if (GBRegisterSTATIsOAMIRQ(video->stat)) {
-					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-					GBUpdateIRQs(video->p);
+				++video->ly;
+				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+					video->ly = 0;
+					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
+					video->mode = 2;
+					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
+						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+						GBUpdateIRQs(video->p);
+					}
+				} else {
+					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 				}
+				video->p->memory.io[REG_LY] = video->ly;
 				break;
 			case 2:
 				video->nextMode = GB_VIDEO_MODE_3_LENGTH;
@@ -144,6 +148,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->mode = 2;
 		video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 		video->nextEvent = video->nextMode;
+		video->eventDiff = 0;
 		video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->eventDiff = 0;

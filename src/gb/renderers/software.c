@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "software.h"
 
+#include "gb/io.h"
 #include "util/memory.h"
 
 static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer);
@@ -16,6 +17,8 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
+
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, int y);
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -74,7 +77,29 @@ static void GBVideoSoftwareRendererWriteVRAM(struct GBVideoRenderer* renderer, u
 }
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
-	// TODO
+	switch (address) {
+	case REG_LCDC:
+		softwareRenderer->lcdc = value;
+		break;
+	case REG_BGP:
+		softwareRenderer->bgPalette[0] = GB_PALETTE[value & 3];
+		softwareRenderer->bgPalette[1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->bgPalette[2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->bgPalette[3] = GB_PALETTE[(value >> 6) & 3];
+		break;
+	case REG_OBP0:
+		softwareRenderer->objPalette[0][0] = GB_PALETTE[value & 3];
+		softwareRenderer->objPalette[0][1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->objPalette[0][2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->objPalette[0][3] = GB_PALETTE[(value >> 6) & 3];
+		break;
+	case REG_OBP1:
+		softwareRenderer->objPalette[1][0] = GB_PALETTE[value & 3];
+		softwareRenderer->objPalette[1][1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->objPalette[1][2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->objPalette[1][3] = GB_PALETTE[(value >> 6) & 3];
+		break;
+	}
 	return value;
 }
 
@@ -83,7 +108,8 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 
-	// TODO
+	GBVideoSoftwareRendererDrawBackground(softwareRenderer, y);
+
 	size_t x;
 #ifdef COLOR_16_BIT
 #if defined(__ARM_NEON) && !defined(__APPLE__)
@@ -104,5 +130,30 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	if (softwareRenderer->temporaryBuffer) {
 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
 		softwareRenderer->temporaryBuffer = 0;
+	}
+}
+
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, int y) {
+	uint8_t* maps = &renderer->d.vram[GB_BASE_MAP];
+	if (GBRegisterLCDCIsTileMap(renderer->lcdc)) {
+		maps += GB_SIZE_MAP;
+	}
+	uint8_t* data = renderer->d.vram;
+	if (!GBRegisterLCDCIsTileData(renderer->lcdc)) {
+		data += 0x1000;
+	}
+	int x;
+	for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		int bgTile;
+		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
+			bgTile = maps[(x >> 3) + (0x20 * (y >> 3))];
+		} else {
+			bgTile = ((int8_t*) maps)[(x >> 3) + (0x20 * (y >> 3))];
+		}
+		uint8_t tileDataLower = data[(bgTile * 8 + (y & 7)) * 2];
+		uint8_t tileDataUpper = data[(bgTile * 8 + (y & 7)) * 2 + 1];
+		tileDataUpper >>= 7 - (x & 7);
+		tileDataLower >>= 7 - (x & 7);
+		renderer->row[x] = renderer->bgPalette[((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
 	}
 }

@@ -24,6 +24,9 @@ enum {
 
 	GB_VIDEO_MODE_1_LENGTH = GB_VIDEO_HORIZONTAL_LENGTH * GB_VIDEO_VBLANK_PIXELS,
 	GB_VIDEO_TOTAL_LENGTH = GB_VIDEO_HORIZONTAL_LENGTH * GB_VIDEO_VERTICAL_TOTAL_PIXELS,
+
+	GB_BASE_MAP = 0x1800,
+	GB_SIZE_MAP = 0x0400
 };
 
 struct GBVideoRenderer {
@@ -43,6 +46,13 @@ struct GBVideoRenderer {
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);
+DECL_BIT(GBRegisterLCDC, BgEnable, 0);
+DECL_BIT(GBRegisterLCDC, ObjEnable, 1);
+DECL_BIT(GBRegisterLCDC, ObjSize, 2);
+DECL_BIT(GBRegisterLCDC, TileMap, 3);
+DECL_BIT(GBRegisterLCDC, TileData, 4);
+DECL_BIT(GBRegisterLCDC, Window, 5);
+DECL_BIT(GBRegisterLCDC, WindowTileMap, 6);
 DECL_BIT(GBRegisterLCDC, Enable, 7);
 
 DECL_BITFIELD(GBRegisterSTAT, uint8_t);
@@ -68,6 +78,7 @@ struct GBVideo {
 	int32_t nextMode;
 
 	uint8_t* vram;
+	uint8_t* vramBank;
 
 	int32_t frameCounter;
 	int frameskip;
