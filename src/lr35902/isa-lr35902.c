@@ -453,7 +453,7 @@ DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(HL);
 		int diff = L + cpu->l; \
 		cpu->l = diff; \
 		cpu->f.c = diff >= 0x100; \
-		cpu->executionState = LR35902_CORE_STALL; \
+		cpu->executionState = LR35902_CORE_OP2; \
 		cpu->instruction = _LR35902InstructionADDHL_ ## REG ## Finish;)
 
 DEFINE_ADD_HL_INSTRUCTION_LR35902(BC, cpu->c, cpu->b);
