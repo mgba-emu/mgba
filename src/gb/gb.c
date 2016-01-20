@@ -137,24 +137,31 @@ void GBUpdateIRQs(struct GB* gb) {
 	if (!irqs) {
 		return;
 	}
+
+	gb->cpu->irqh.setInterrupts(gb->cpu, false);
 	if (irqs & (1 << GB_IRQ_VBLANK)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_VBLANK);
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
 		return;
 	}
 	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_LCDSTAT);
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
 		return;
 	}
 	if (irqs & (1 << GB_IRQ_TIMER)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_TIMER);
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_TIMER);
 		return;
 	}
 	if (irqs & (1 << GB_IRQ_SIO)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_SIO);
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_SIO);
 		return;
 	}
 	if (irqs & (1 << GB_IRQ_KEYPAD)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_KEYPAD);
+		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
 	}
 }
 

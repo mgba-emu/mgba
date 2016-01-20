@@ -101,7 +101,6 @@ void LR35902Tick(struct LR35902Core* cpu) {
 		if (cpu->irqPending) {
 			cpu->index = cpu->sp;
 			cpu->irqPending = false;
-			cpu->irqh.setInterrupts(cpu, false);
 			cpu->instruction = _LR35902InstructionIRQ;
 			break;
 		}
