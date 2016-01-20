@@ -564,9 +564,82 @@ DEFINE_POPPUSH_INSTRUCTION_LR35902(DE, D, d, e);
 DEFINE_POPPUSH_INSTRUCTION_LR35902(HL, H, h, l);
 DEFINE_POPPUSH_INSTRUCTION_LR35902(AF, A, a, f.packed);
 
+#define DEFINE_CB_2_INSTRUCTION_LR35902(NAME, BODY) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## B, uint8_t reg = cpu->b; BODY; cpu->b = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## C, uint8_t reg = cpu->c; BODY; cpu->c = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## D, uint8_t reg = cpu->d; BODY; cpu->d = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## E, uint8_t reg = cpu->e; BODY; cpu->e = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## H, uint8_t reg = cpu->h; BODY; cpu->h = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## L, uint8_t reg = cpu->l; BODY; cpu->l = reg) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## HLDelay, \
+		uint8_t reg = cpu->bus; \
+		BODY; \
+		cpu->bus = reg; \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+		cpu->instruction = _LR35902InstructionNOP;) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## HL, \
+		cpu->index = LR35902ReadHL(cpu); \
+		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+		cpu->instruction = _LR35902Instruction ## NAME ## HLDelay;) \
+	DEFINE_INSTRUCTION_LR35902(NAME ## A, uint8_t reg = cpu->a; BODY; cpu->a = reg)
+
+#define DEFINE_CB_INSTRUCTION_LR35902(NAME, BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 0, uint8_t bit = 1; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 1, uint8_t bit = 2; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 2, uint8_t bit = 4; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 3, uint8_t bit = 8; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 4, uint8_t bit = 16; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 5, uint8_t bit = 32; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 6, uint8_t bit = 64; BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME ## 7, uint8_t bit = 128; BODY)
+
+DEFINE_CB_INSTRUCTION_LR35902(BIT, cpu->f.n = 0; cpu->f.h = 1; cpu->f.z = !(reg & bit))
+DEFINE_CB_INSTRUCTION_LR35902(RES, reg &= ~bit)
+DEFINE_CB_INSTRUCTION_LR35902(SET, reg |= bit)
+
+#define DEFINE_CB_ALU_INSTRUCTION_LR35902(NAME, BODY) \
+	DEFINE_CB_2_INSTRUCTION_LR35902(NAME, \
+		BODY; \
+		cpu->f.n = 0; \
+		cpu->f.h = 0; \
+		cpu->f.z = !reg;)
+
+DEFINE_CB_ALU_INSTRUCTION_LR35902(RL, int wide = (reg << 1) | cpu->f.c; reg = wide; cpu->f.c = wide >> 8)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(RLC, reg = (reg << 1) | (reg >> 7); cpu->f.c = reg & 1)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(RR, int low = reg & 1; reg = (reg >> 1) | (cpu->f.c << 7); cpu->f.c = low)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(RRC, int low = reg & 1; reg = (reg >> 1) | (low << 7); cpu->f.c = low)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(SLA, cpu->f.c = reg >> 7; reg <<= 1)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(SRA, reg = ((int8_t) reg) >> 1; cpu->f.c = 0)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(SRL, cpu->f.c = reg & 1; reg >>= 1)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(SWAP, reg = (reg << 4) | (reg >> 4); cpu->f.c = 0)
+
+DEFINE_INSTRUCTION_LR35902(RLA_,
+	int wide = (cpu->a << 1) | cpu->f.c;
+	cpu->a = wide;
+	cpu->f.z = 0;
+	cpu->f.h = 0;
+	cpu->f.n = 0;
+	cpu->f.c = wide >> 8;)
+
+DEFINE_INSTRUCTION_LR35902(RLCA_,
+	cpu->a = (cpu->a << 1) | (cpu->a >> 7);
+	cpu->f.z = 0;
+	cpu->f.h = 0;
+	cpu->f.n = 0;
+	cpu->f.c = cpu->a & 1;)
+
 DEFINE_INSTRUCTION_LR35902(DI, cpu->irqh.setInterrupts(cpu, false));
 DEFINE_INSTRUCTION_LR35902(EI, cpu->irqh.setInterrupts(cpu, true));
 DEFINE_INSTRUCTION_LR35902(HALT, cpu->cycles = cpu->nextEvent);
+
+DEFINE_INSTRUCTION_LR35902(RST00, LR35902RaiseIRQ(cpu, 0x00));
+DEFINE_INSTRUCTION_LR35902(RST08, LR35902RaiseIRQ(cpu, 0x08));
+DEFINE_INSTRUCTION_LR35902(RST10, LR35902RaiseIRQ(cpu, 0x10));
+DEFINE_INSTRUCTION_LR35902(RST18, LR35902RaiseIRQ(cpu, 0x18));
+DEFINE_INSTRUCTION_LR35902(RST20, LR35902RaiseIRQ(cpu, 0x20));
+DEFINE_INSTRUCTION_LR35902(RST28, LR35902RaiseIRQ(cpu, 0x28));
+DEFINE_INSTRUCTION_LR35902(RST30, LR35902RaiseIRQ(cpu, 0x30));
+DEFINE_INSTRUCTION_LR35902(RST38, LR35902RaiseIRQ(cpu, 0x38));
 
 DEFINE_INSTRUCTION_LR35902(STUB, cpu->irqh.hitStub(cpu));
 
