@@ -74,6 +74,23 @@ void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector) {
 	cpu->irqVector = vector;
 }
 
+static void _LR35902InstructionIRQFinish(struct LR35902Core* cpu) {
+	cpu->index = cpu->sp + 1;
+	cpu->bus = cpu->pc >> 8;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _lr35902InstructionTable[0]; // NOP
+	cpu->pc = cpu->irqVector;
+	cpu->memory.setActiveRegion(cpu, cpu->pc);
+}
+
+static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
+	cpu->sp -= 2; /* TODO: Atomic incrementing? */
+	cpu->index = cpu->sp;
+	cpu->bus = cpu->pc;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _LR35902InstructionIRQFinish;
+}
+
 void LR35902Tick(struct LR35902Core* cpu) {
 	++cpu->cycles;
 	enum LR35902ExecutionState state = cpu->executionState;
@@ -82,10 +99,10 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	switch (state) {
 	case LR35902_CORE_FETCH:
 		if (cpu->irqPending) {
-			cpu->pc = cpu->irqVector;
+			cpu->index = cpu->sp;
 			cpu->irqPending = false;
 			cpu->irqh.setInterrupts(cpu, false);
-			cpu->instruction = _lr35902InstructionTable[0]; // NOP
+			cpu->instruction = _LR35902InstructionIRQ;
 			break;
 		}
 		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
