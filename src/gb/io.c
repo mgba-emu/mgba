@@ -125,6 +125,8 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_TIMA:
 	case REG_TMA:
 	case REG_TAC:
+	case REG_LY:
+		// Handled transparently by the registers
 		break;
 	default:
 		// TODO: Log
