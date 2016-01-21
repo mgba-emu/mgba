@@ -11,16 +11,13 @@
 void GBTimerReset(struct GBTimer* timer) {
 	timer->nextDiv = GB_DMG_DIV_PERIOD; // TODO: GBC differences
 	timer->nextTima = INT_MAX;
-	timer->nextEvent = INT_MAX;
+	timer->nextEvent = GB_DMG_DIV_PERIOD;
 }
 
 int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
-	if (timer->nextEvent == INT_MAX) {
-		return INT_MAX;
-	}
 	timer->eventDiff += cycles;
 	timer->nextEvent -= cycles;
-	if (timer->nextEvent < 0) {
+	if (timer->nextEvent <= 0) {
 		timer->nextDiv -= timer->eventDiff;
 		if (timer->nextDiv <= 0) {
 			++timer->p->memory.io[REG_DIV];
@@ -51,7 +48,11 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 
 void GBTimerDivReset(struct GBTimer* timer) {
 	timer->p->memory.io[REG_DIV] = 0;
-	// TODO: Do we need to reset the event?
+	timer->nextDiv = timer->eventDiff + GB_DMG_DIV_PERIOD;
+	timer->nextEvent = timer->nextTima;
+	if (timer->nextDiv < timer->nextEvent) {
+		timer->nextEvent = timer->nextDiv;
+	}
 }
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
