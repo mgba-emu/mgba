@@ -214,6 +214,23 @@ DEFINE_INSTRUCTION_LR35902(LDHL_, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDHL_Bus;)
 
+DEFINE_INSTRUCTION_LR35902(LDHL_SPDelay,
+	int diff = cpu->sp + (int8_t) cpu->bus;
+	LR35902WriteHL(cpu, diff);
+	cpu->executionState = LR35902_CORE_STALL;
+	cpu->f.z = 0;
+	cpu->f.n = 0;
+	cpu->f.c = !!(diff & 0xFFFF0000);
+	/* Figure out h flag*/)
+
+DEFINE_INSTRUCTION_LR35902(LDHL_SP,
+	cpu->executionState = LR35902_CORE_READ_PC;
+	cpu->instruction = _LR35902InstructionLDHL_SPDelay;)
+
+DEFINE_INSTRUCTION_LR35902(LDSP_HL,
+	cpu->sp = LR35902ReadHL(cpu);
+	cpu->executionState = LR35902_CORE_STALL;)
+
 #define DEFINE_ALU_INSTRUCTION_LR35902_MEM(NAME, REG) \
 	DEFINE_INSTRUCTION_LR35902(NAME ## REG, \
 		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
