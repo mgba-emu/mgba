@@ -11,6 +11,7 @@
 #include "lr35902/lr35902.h"
 
 #include "gb/memory.h"
+#include "gb/timer.h"
 #include "gb/video.h"
 
 extern const uint32_t DMG_LR35902_FREQUENCY;
@@ -40,6 +41,7 @@ struct GB {
 	struct LR35902Core* cpu;
 	struct GBMemory memory;
 	struct GBVideo video;
+	struct GBTimer timer;
 
 	int* keySource;
 

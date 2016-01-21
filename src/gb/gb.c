@@ -41,6 +41,8 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 	gb->video.p = gb;
 	GBVideoInit(&gb->video);
 
+	gb->timer.p = gb;
+
 	gb->romVf = 0;
 
 	gb->pristineRom = 0;
@@ -126,6 +128,7 @@ void GBReset(struct LR35902Core* cpu) {
 	}
 	GBMemoryReset(gb);
 	GBVideoReset(&gb->video);
+	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
 }
 
@@ -172,6 +175,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 	int32_t testEvent;
 
 	testEvent = GBVideoProcessEvents(&gb->video, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
+	testEvent = GBTimerProcessEvents(&gb->timer, cycles);
 	if (testEvent < nextEvent) {
 		nextEvent = testEvent;
 	}

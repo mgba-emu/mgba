@@ -50,6 +50,18 @@ void GBIOReset(struct GB* gb) {
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	switch (address) {
+	case REG_DIV:
+		GBTimerDivReset(&gb->timer);
+		return;
+	case REG_TIMA:
+		// ???
+		return;
+	case REG_TMA:
+		// Handled transparently by the registers
+		break;
+	case REG_TAC:
+		value = GBTimerUpdateTAC(&gb->timer, value);
+		break;
 	case REG_IF:
 		gb->memory.io[REG_IF] = value;
 		GBUpdateIRQs(gb);
@@ -108,6 +120,11 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		break;
 	case REG_IE:
 		return gb->memory.ie;
+	case REG_DIV:
+	case REG_TIMA:
+	case REG_TMA:
+	case REG_TAC:
+		break;
 	default:
 		// TODO: Log
 		if (address >= GB_SIZE_IO) {
