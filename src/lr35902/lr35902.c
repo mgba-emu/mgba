@@ -66,6 +66,7 @@ void LR35902Reset(struct LR35902Core* cpu) {
 	cpu->executionState = LR35902_CORE_FETCH;
 	cpu->halted = 0;
 
+	cpu->irqPending = false;
 	cpu->irqh.reset(cpu);
 }
 

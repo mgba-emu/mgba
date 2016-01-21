@@ -62,6 +62,7 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.wram = anonymousMemoryMap(GB_SIZE_WORKING_RAM);
 	gb->memory.wramBank = &gb->memory.wram[GB_SIZE_WORKING_RAM_BANK0];
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
+	gb->memory.currentBank = 1;
 
 	const struct GBCartridge* cart = &gb->memory.rom[0x100];
 	switch (cart->type) {
