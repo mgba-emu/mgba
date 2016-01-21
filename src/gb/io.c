@@ -107,6 +107,7 @@ static uint8_t _readKeys(struct GB* gb) {
 		break;
 	default:
 		// ???
+		keys = 0;
 		break;
 	}
 	return 0xC0 | (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
