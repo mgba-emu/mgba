@@ -310,6 +310,24 @@ DEFINE_ALU_INSTRUCTION_LR35902(ADC);
 DEFINE_ALU_INSTRUCTION_LR35902(SUB);
 DEFINE_ALU_INSTRUCTION_LR35902(SBC);
 
+DEFINE_INSTRUCTION_LR35902(ADDSPFinish,
+	cpu->sp = cpu->index;
+	cpu->executionState = LR35902_CORE_STALL;)
+
+DEFINE_INSTRUCTION_LR35902(ADDSPDelay,
+	int diff = cpu->sp + (int8_t) cpu->bus;
+	cpu->index = diff;
+	cpu->executionState = LR35902_CORE_OP2;
+	cpu->instruction = _LR35902InstructionADDSPFinish;
+	cpu->f.z = 0;
+	cpu->f.n = 0;
+	cpu->f.c = !!(diff & 0xFFFF0000);
+	/* Figure out h flag*/)
+
+DEFINE_INSTRUCTION_LR35902(ADDSP,
+	cpu->executionState = LR35902_CORE_READ_PC;
+	cpu->instruction = _LR35902InstructionADDSPDelay;)
+
 DEFINE_INSTRUCTION_LR35902(LDBCDelay, \
 	cpu->c = cpu->bus; \
 	cpu->executionState = LR35902_CORE_READ_PC; \
@@ -444,6 +462,27 @@ DEFINE_INSTRUCTION_LR35902(LDIOADelay, \
 DEFINE_INSTRUCTION_LR35902(LDIOA, \
 	cpu->executionState = LR35902_CORE_READ_PC; \
 	cpu->instruction = _LR35902InstructionLDIOADelay;)
+
+DEFINE_INSTRUCTION_LR35902(LDISPStoreH,
+	++cpu->index;
+	cpu->bus = cpu->sp >> 8;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _LR35902InstructionNOP;)
+
+DEFINE_INSTRUCTION_LR35902(LDISPStoreL,
+	cpu->index |= cpu->bus << 8;
+	cpu->bus = cpu->sp;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _LR35902InstructionLDISPStoreH;)
+
+DEFINE_INSTRUCTION_LR35902(LDISPReadAddr,
+	cpu->index = cpu->bus;
+	cpu->executionState = LR35902_CORE_READ_PC;
+	cpu->instruction = _LR35902InstructionLDISPStoreL;)
+
+DEFINE_INSTRUCTION_LR35902(LDISP,
+	cpu->executionState = LR35902_CORE_READ_PC;
+	cpu->instruction = _LR35902InstructionLDISPReadAddr;)
 
 #define DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(REG) \
 	DEFINE_INSTRUCTION_LR35902(INC ## REG, \
