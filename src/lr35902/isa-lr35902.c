@@ -592,6 +592,7 @@ DEFINE_INSTRUCTION_LR35902(CPL_,
 #define DEFINE_POPPUSH_INSTRUCTION_LR35902(REG, HH, H, L) \
 	DEFINE_INSTRUCTION_LR35902(POP ## REG ## Delay, \
 		cpu-> L = cpu->bus; \
+		cpu->f.packed &= 0xF0; \
 		cpu->index = cpu->sp; \
 		++cpu->sp; \
 		cpu->instruction = _LR35902InstructionLD ## HH ## _Bus; \
