@@ -31,6 +31,8 @@ struct GBVideoSoftwareRenderer {
 
 	uint8_t scy;
 	uint8_t scx;
+	uint8_t wy;
+	uint8_t wx;
 
 	GBRegisterLCDC lcdc;
 };

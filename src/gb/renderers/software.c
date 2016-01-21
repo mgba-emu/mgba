@@ -18,7 +18,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, int y);
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int x, int y, int sx, int sy);
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -63,6 +63,8 @@ static void GBVideoSoftwareRendererReset(struct GBVideoRenderer* renderer) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	softwareRenderer->scy = 0;
 	softwareRenderer->scx = 0;
+	softwareRenderer->wy = 0;
+	softwareRenderer->wx = 0;
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
@@ -104,6 +106,12 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	case REG_SCX:
 		softwareRenderer->scx = value;
 		break;
+	case REG_WY:
+		softwareRenderer->wy = value;
+		break;
+	case REG_WX:
+		softwareRenderer->wx = value;
+		break;
 	}
 	return value;
 }
@@ -113,7 +121,19 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 
-	GBVideoSoftwareRendererDrawBackground(softwareRenderer, y);
+	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
+	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
+		maps += GB_SIZE_MAP;
+	}
+	GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, softwareRenderer->scx, softwareRenderer->scy);
+
+	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc)) {
+		maps = &softwareRenderer->d.vram[GB_BASE_MAP];
+		if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
+			maps += GB_SIZE_MAP;
+		}
+		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, -7, y, softwareRenderer->wx - 7, softwareRenderer->wy);
+	}
 
 	size_t x;
 #ifdef COLOR_16_BIT
@@ -138,21 +158,19 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	}
 }
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, int y) {
-	uint8_t* maps = &renderer->d.vram[GB_BASE_MAP];
-	if (GBRegisterLCDCIsTileMap(renderer->lcdc)) {
-		maps += GB_SIZE_MAP;
-	}
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int x, int y, int sx, int sy) {
 	uint8_t* data = renderer->d.vram;
 	if (!GBRegisterLCDCIsTileData(renderer->lcdc)) {
 		data += 0x1000;
 	}
-	int x;
-	int topY = (((y + renderer->scy) >> 3) & 0x1F) * 0x20;
-	int bottomY = (y + renderer->scy) & 7;
-	for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		int topX = ((x + renderer->scx) >> 3) & 0x1F;
-		int bottomX = 7 - ((x + renderer->scx) & 7);
+	int topY = (((y + sy) >> 3) & 0x1F) * 0x20;
+	int bottomY = (y + sy) & 7;
+	if (x < 0) {
+		x = 0;
+	}
+	for (; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		int topX = ((x + sx) >> 3) & 0x1F;
+		int bottomX = 7 - ((x + sx) & 7);
 		int bgTile;
 		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
 			bgTile = maps[topX + topY];
