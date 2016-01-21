@@ -29,6 +29,9 @@ struct GBVideoSoftwareRenderer {
 
 	uint32_t* temporaryBuffer;
 
+	uint8_t scy;
+	uint8_t scx;
+
 	GBRegisterLCDC lcdc;
 };
 

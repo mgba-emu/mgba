@@ -61,9 +61,8 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer) {
 
 static void GBVideoSoftwareRendererReset(struct GBVideoRenderer* renderer) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
-	int i;
-
-	// TODO
+	softwareRenderer->scy = 0;
+	softwareRenderer->scx = 0;
 }
 
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer) {
@@ -98,6 +97,12 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		softwareRenderer->objPalette[1][1] = GB_PALETTE[(value >> 2) & 3];
 		softwareRenderer->objPalette[1][2] = GB_PALETTE[(value >> 4) & 3];
 		softwareRenderer->objPalette[1][3] = GB_PALETTE[(value >> 6) & 3];
+		break;
+	case REG_SCY:
+		softwareRenderer->scy = value;
+		break;
+	case REG_SCX:
+		softwareRenderer->scx = value;
 		break;
 	}
 	return value;
@@ -143,17 +148,21 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		data += 0x1000;
 	}
 	int x;
+	int topY = (((y + renderer->scy) >> 3) & 0x1F) * 0x20;
+	int bottomY = (y + renderer->scy) & 7;
 	for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
+		int topX = ((x + renderer->scx) >> 3) & 0x1F;
+		int bottomX = 7 - ((x + renderer->scx) & 7);
 		int bgTile;
 		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
-			bgTile = maps[(x >> 3) + (0x20 * (y >> 3))];
+			bgTile = maps[topX + topY];
 		} else {
-			bgTile = ((int8_t*) maps)[(x >> 3) + (0x20 * (y >> 3))];
+			bgTile = ((int8_t*) maps)[topX + topY];
 		}
-		uint8_t tileDataLower = data[(bgTile * 8 + (y & 7)) * 2];
-		uint8_t tileDataUpper = data[(bgTile * 8 + (y & 7)) * 2 + 1];
-		tileDataUpper >>= 7 - (x & 7);
-		tileDataLower >>= 7 - (x & 7);
+		uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
+		uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
+		tileDataUpper >>= bottomX;
+		tileDataLower >>= bottomX;
 		renderer->row[x] = renderer->bgPalette[((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
 	}
 }
