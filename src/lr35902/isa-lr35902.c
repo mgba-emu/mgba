@@ -632,7 +632,7 @@ DEFINE_POPPUSH_INSTRUCTION_LR35902(AF, A, a, f.packed);
 		uint8_t reg = cpu->bus; \
 		BODY; \
 		cpu->bus = reg; \
-		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 		cpu->instruction = _LR35902InstructionNOP;) \
 	DEFINE_INSTRUCTION_LR35902(NAME ## HL, \
 		cpu->index = LR35902ReadHL(cpu); \
