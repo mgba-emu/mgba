@@ -63,7 +63,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = GBTimerUpdateTAC(&gb->timer, value);
 		break;
 	case REG_IF:
-		gb->memory.io[REG_IF] = value;
+		gb->memory.io[REG_IF] = value | 0xE0;
 		GBUpdateIRQs(gb);
 		return;
 	case REG_LCDC:
@@ -109,7 +109,7 @@ static uint8_t _readKeys(struct GB* gb) {
 		// ???
 		break;
 	}
-	return (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
+	return 0xC0 | (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
 }
 
 uint8_t GBIORead(struct GB* gb, unsigned address) {
