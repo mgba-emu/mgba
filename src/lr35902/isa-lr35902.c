@@ -680,7 +680,7 @@ DEFINE_CB_ALU_INSTRUCTION_LR35902(RLC, reg = (reg << 1) | (reg >> 7); cpu->f.c =
 DEFINE_CB_ALU_INSTRUCTION_LR35902(RR, int low = reg & 1; reg = (reg >> 1) | (cpu->f.c << 7); cpu->f.c = low)
 DEFINE_CB_ALU_INSTRUCTION_LR35902(RRC, int low = reg & 1; reg = (reg >> 1) | (low << 7); cpu->f.c = low)
 DEFINE_CB_ALU_INSTRUCTION_LR35902(SLA, cpu->f.c = reg >> 7; reg <<= 1)
-DEFINE_CB_ALU_INSTRUCTION_LR35902(SRA, reg = ((int8_t) reg) >> 1; cpu->f.c = 0)
+DEFINE_CB_ALU_INSTRUCTION_LR35902(SRA, cpu->f.c = reg & 1; reg = ((int8_t) reg) >> 1)
 DEFINE_CB_ALU_INSTRUCTION_LR35902(SRL, cpu->f.c = reg & 1; reg >>= 1)
 DEFINE_CB_ALU_INSTRUCTION_LR35902(SWAP, reg = (reg << 4) | (reg >> 4); cpu->f.c = 0)
 
