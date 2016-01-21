@@ -158,7 +158,7 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
 	DEFINE_INSTRUCTION_LR35902(CP ## NAME, \
 		int diff = cpu->a - OPERAND; \
 		cpu->f.n = 1; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !(diff & 0xFF); \
 		cpu->f.h = (cpu->a & 0xF) - (OPERAND & 0xF) < 0; \
 		cpu->f.c = diff < 0;)
 
@@ -265,7 +265,7 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		int diff = cpu->a + OPERAND; \
 		cpu->a = diff; \
 		cpu->f.n = 0; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !cpu->a; \
 		cpu->f.h = (cpu->a & 0xF) + (OPERAND & 0xF) >= 0x10; \
 		cpu->f.c = diff >= 0x100;)
 
@@ -274,7 +274,7 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		int diff = cpu->a + OPERAND + cpu->f.c; \
 		cpu->a = diff; \
 		cpu->f.n = 0; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !cpu->a; \
 		cpu->f.h = (cpu->a & 0xF) + ((OPERAND + cpu->f.c) & 0xF) >= 0x10; \
 		cpu->f.c = diff > 0x100;)
 
@@ -283,7 +283,7 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		int diff = cpu->a - OPERAND; \
 		cpu->a = diff; \
 		cpu->f.n = 1; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !cpu->a; \
 		cpu->f.h = (cpu->a & 0xF) - (OPERAND & 0xF) < 0; \
 		cpu->f.c = diff < 0;)
 
@@ -292,7 +292,7 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		int diff = cpu->a - OPERAND - cpu->f.c; \
 		cpu->a = diff; \
 		cpu->f.n = 1; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !cpu->a; \
 		cpu->f.h = (cpu->a & 0xF) - ((OPERAND + cpu->f.c) & 0xF) < 0; \
 		cpu->f.c = diff < 0;)
 
@@ -524,7 +524,7 @@ DEFINE_ADD_HL_INSTRUCTION_LR35902(SP, (cpu->sp & 0xFF), (cpu->sp >> 8));
 		int diff = OPERAND + 1; \
 		OPERAND = diff; \
 		cpu->f.n = 0; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !OPERAND; \
 		/* TODO: Find explanation of H flag */)
 
 #define DEFINE_DEC_INSTRUCTION_LR35902(NAME, OPERAND) \
@@ -532,7 +532,7 @@ DEFINE_ADD_HL_INSTRUCTION_LR35902(SP, (cpu->sp & 0xFF), (cpu->sp >> 8));
 		int diff = OPERAND - 1; \
 		OPERAND = diff; \
 		cpu->f.n = 1; \
-		cpu->f.z = !diff; \
+		cpu->f.z = !OPERAND; \
 		/* TODO: Find explanation of H flag */)
 
 DEFINE_ALU_INSTRUCTION_LR35902_NOHL(INC);
@@ -542,7 +542,7 @@ DEFINE_INSTRUCTION_LR35902(INC_HLDelay,
 	int diff = cpu->bus + 1;
 	cpu->bus = diff;
 	cpu->f.n = 0;
-	cpu->f.z = !diff;
+	cpu->f.z = !cpu->bus;
 	cpu->f.h = (cpu->bus & 0xF) == 0xF;
 	cpu->instruction = _LR35902InstructionNOP;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
@@ -556,7 +556,7 @@ DEFINE_INSTRUCTION_LR35902(DEC_HLDelay,
 	int diff = cpu->bus - 1;
 	cpu->bus = diff;
 	cpu->f.n = 1;
-	cpu->f.z = !diff;
+	cpu->f.z = !cpu->bus;
 	cpu->f.h = (cpu->bus & 0xF) == 0;
 	cpu->instruction = _LR35902InstructionNOP;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
