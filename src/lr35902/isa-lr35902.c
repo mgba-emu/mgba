@@ -590,14 +590,23 @@ DEFINE_INSTRUCTION_LR35902(CPL_,
 	cpu->f.n = 1;)
 
 DEFINE_INSTRUCTION_LR35902(DAA,
-	if ((cpu->a & 0xF) > 0x9 || cpu->f.h) {
-		cpu->a += 0x6;
-	}
-	if ((cpu->a & 0xF0) > 0x90 || cpu->f.c) {
-		cpu->a += 0x60;
-		cpu->f.c = 1;
+	if (cpu->f.n) {
+		if (cpu->f.h) {
+			cpu->a += 0xFA;
+		}
+		if (cpu->f.c) {
+			cpu->a += 0xA0;
+		}
 	} else {
-		cpu->f.c = 0;
+		if ((cpu->a & 0xF) > 0x9 || cpu->f.h) {
+			cpu->a += 0x6;
+		}
+		if ((cpu->a & 0xF0) > 0x90 || cpu->f.c) {
+			cpu->a += 0x60;
+			cpu->f.c = 1;
+		} else {
+			cpu->f.c = 0;
+		}
 	}
 	cpu->f.h = 0;
 	cpu->f.z = !cpu->a;)
