@@ -159,8 +159,8 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
 		int diff = cpu->a - OPERAND; \
 		cpu->f.n = 1; \
 		cpu->f.z = !diff; \
-		cpu->f.c = diff < 0; \
-		/* TODO: Find explanation of H flag */)
+		cpu->f.h = (cpu->a & 0xF) - (OPERAND & 0xF) < 0; \
+		cpu->f.c = diff < 0;)
 
 #define DEFINE_LDB__INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(LDB_ ## NAME, \
@@ -266,8 +266,8 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		cpu->a = diff; \
 		cpu->f.n = 0; \
 		cpu->f.z = !diff; \
-		cpu->f.c = diff >= 0x100; \
-		/* TODO: Find explanation of H flag */)
+		cpu->f.h = (cpu->a & 0xF) + (OPERAND & 0xF) >= 0x10; \
+		cpu->f.c = diff >= 0x100;)
 
 #define DEFINE_ADC_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(ADC ## NAME, \
@@ -275,8 +275,8 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		cpu->a = diff; \
 		cpu->f.n = 0; \
 		cpu->f.z = !diff; \
-		cpu->f.c = diff > 0x100; \
-		/* TODO: Find explanation of H flag */)
+		cpu->f.h = (cpu->a & 0xF) + ((OPERAND + cpu->f.c) & 0xF) >= 0x10; \
+		cpu->f.c = diff > 0x100;)
 
 #define DEFINE_SUB_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(SUB ## NAME, \
@@ -284,8 +284,8 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		cpu->a = diff; \
 		cpu->f.n = 1; \
 		cpu->f.z = !diff; \
-		cpu->f.c = diff < 0; \
-		/* TODO: Find explanation of H flag */)
+		cpu->f.h = (cpu->a & 0xF) - (OPERAND & 0xF) < 0; \
+		cpu->f.c = diff < 0;)
 
 #define DEFINE_SBC_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(SBC ## NAME, \
@@ -293,8 +293,8 @@ static void _LR35902InstructionLDA_Bus(struct LR35902Core*);
 		cpu->a = diff; \
 		cpu->f.n = 1; \
 		cpu->f.z = !diff; \
-		cpu->f.c = diff < 0; \
-		/* TODO: Find explanation of H flag */)
+		cpu->f.h = (cpu->a & 0xF) - ((OPERAND + cpu->f.c) & 0xF) < 0; \
+		cpu->f.c = diff < 0;)
 
 DEFINE_ALU_INSTRUCTION_LR35902(LDB_);
 DEFINE_ALU_INSTRUCTION_LR35902(LDC_);
@@ -543,7 +543,7 @@ DEFINE_INSTRUCTION_LR35902(INC_HLDelay,
 	cpu->bus = diff;
 	cpu->f.n = 0;
 	cpu->f.z = !diff;
-	/* TODO: Find explanation of H flag */
+	cpu->f.h = (cpu->bus & 0xF) == 0xF;
 	cpu->instruction = _LR35902InstructionNOP;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
 
@@ -557,7 +557,7 @@ DEFINE_INSTRUCTION_LR35902(DEC_HLDelay,
 	cpu->bus = diff;
 	cpu->f.n = 1;
 	cpu->f.z = !diff;
-	/* TODO: Find explanation of H flag */
+	cpu->f.h = (cpu->bus & 0xF) == 0;
 	cpu->instruction = _LR35902InstructionNOP;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;)
 
@@ -588,6 +588,19 @@ DEFINE_INSTRUCTION_LR35902(CPL_,
 	cpu->a ^= 0xFF;
 	cpu->f.h = 1;
 	cpu->f.n = 1;)
+
+DEFINE_INSTRUCTION_LR35902(DAA,
+	if ((cpu->a & 0xF) > 0x9 || cpu->f.h) {
+		cpu->a += 0x6;
+	}
+	if ((cpu->a & 0xF0) > 0x90 || cpu->f.c) {
+		cpu->a += 0x60;
+		cpu->f.c = 1;
+	} else {
+		cpu->f.c = 0;
+	}
+	cpu->f.h = 0;
+	cpu->f.z = !cpu->a;)
 
 #define DEFINE_POPPUSH_INSTRUCTION_LR35902(REG, HH, H, L) \
 	DEFINE_INSTRUCTION_LR35902(POP ## REG ## Delay, \
