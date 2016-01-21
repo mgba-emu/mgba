@@ -108,6 +108,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				++video->ly;
 				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->ly = 0;
+					video->renderer->drawScanline(video->renderer, video->ly);
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
