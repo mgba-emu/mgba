@@ -63,6 +63,7 @@ struct LR35902InterruptHandler {
 	void (*reset)(struct LR35902Core* cpu);
 	void (*processEvents)(struct LR35902Core* cpu);
 	void (*setInterrupts)(struct LR35902Core* cpu, bool enable);
+	void (*halt)(struct LR35902Core* cpu);
 
 	void (*hitStub)(struct LR35902Core* cpu);
 };
@@ -113,7 +114,7 @@ struct LR35902Core {
 	int32_t cycles;
 	int32_t nextEvent;
 	enum LR35902ExecutionState executionState;
-	int halted;
+	bool halted;
 
 	uint8_t bus;
 	bool condition;

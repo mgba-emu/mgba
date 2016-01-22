@@ -84,8 +84,8 @@ void GBDestroy(struct GB* gb);
 void GBReset(struct LR35902Core* cpu);
 
 void GBUpdateIRQs(struct GB* gb);
-void GBHalt(struct GB* gb);
-void GBStop(struct GB* gb);
+void GBHalt(struct LR35902Core* cpu);
+void GBStop(struct LR35902Core* cpu);
 
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* fname);

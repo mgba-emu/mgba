@@ -106,6 +106,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
 	irqh->hitStub = GBHitStub;
+	irqh->halt = GBHalt;
 }
 
 void GBReset(struct LR35902Core* cpu) {
@@ -133,11 +134,13 @@ void GBReset(struct LR35902Core* cpu) {
 }
 
 void GBUpdateIRQs(struct GB* gb) {
-	if (!gb->memory.ime) {
-		return;
-	}
 	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
 	if (!irqs) {
+		return;
+	}
+	gb->cpu->halted = false;
+
+	if (!gb->memory.ime) {
 		return;
 	}
 
@@ -170,33 +173,45 @@ void GBUpdateIRQs(struct GB* gb) {
 
 void GBProcessEvents(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	int32_t cycles = cpu->nextEvent;
-	int32_t nextEvent = INT_MAX;
-	int32_t testEvent;
+	do {
+		int32_t cycles = cpu->nextEvent;
+		int32_t nextEvent = INT_MAX;
+		int32_t testEvent;
 
-	testEvent = GBVideoProcessEvents(&gb->video, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBVideoProcessEvents(&gb->video, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	testEvent = GBTimerProcessEvents(&gb->timer, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	testEvent = GBMemoryProcessEvents(gb, cycles);
-	if (testEvent < nextEvent) {
-		nextEvent = testEvent;
-	}
+		testEvent = GBMemoryProcessEvents(gb, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
 
-	cpu->cycles -= cycles;
-	cpu->nextEvent = nextEvent;
+		cpu->cycles -= cycles;
+		cpu->nextEvent = nextEvent;
+
+		if (cpu->halted) {
+			cpu->cycles = cpu->nextEvent;
+		}
+	} while (cpu->cycles >= cpu->nextEvent);
 }
 
 void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
 	gb->memory.ime = enable;
 	GBUpdateIRQs(gb);
+}
+
+void GBHalt(struct LR35902Core* cpu) {
+	struct GB* gb = (struct GB*) cpu->master;
+	cpu->cycles = cpu->nextEvent;
+	cpu->halted = true;
 }
 
 void GBHitStub(struct LR35902Core* cpu) {
