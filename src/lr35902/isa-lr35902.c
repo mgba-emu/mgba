@@ -216,13 +216,14 @@ DEFINE_INSTRUCTION_LR35902(LDHL_, \
 	cpu->instruction = _LR35902InstructionLDHL_Bus;)
 
 DEFINE_INSTRUCTION_LR35902(LDHL_SPDelay,
-	int diff = cpu->sp + (int8_t) cpu->bus;
-	LR35902WriteHL(cpu, diff);
+	int diff = (int8_t) cpu->bus;
+	int sum = cpu->sp + diff;
+	LR35902WriteHL(cpu, sum);
 	cpu->executionState = LR35902_CORE_STALL;
 	cpu->f.z = 0;
 	cpu->f.n = 0;
-	cpu->f.c = !!(diff & 0xFFFF0000);
-	/* Figure out h flag*/)
+	cpu->f.c = (diff & 0xFF) + (cpu->sp & 0xFF) >= 0x100;
+	cpu->f.h = (diff & 0xF) + (cpu->sp & 0xF) >= 0x10;)
 
 DEFINE_INSTRUCTION_LR35902(LDHL_SP,
 	cpu->executionState = LR35902_CORE_READ_PC;
@@ -316,14 +317,15 @@ DEFINE_INSTRUCTION_LR35902(ADDSPFinish,
 	cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INSTRUCTION_LR35902(ADDSPDelay,
-	int diff = cpu->sp + (int8_t) cpu->bus;
-	cpu->index = diff;
+	int diff = (int8_t) cpu->bus;
+	int sum = cpu->sp + diff;
+	cpu->index = sum;
 	cpu->executionState = LR35902_CORE_OP2;
 	cpu->instruction = _LR35902InstructionADDSPFinish;
 	cpu->f.z = 0;
 	cpu->f.n = 0;
-	cpu->f.c = !!(diff & 0xFFFF0000);
-	/* Figure out h flag*/)
+	cpu->f.c = (diff & 0xFF) + (cpu->sp & 0xFF) >= 0x100;
+	cpu->f.h = (diff & 0xF) + (cpu->sp & 0xF) >= 0x10;)
 
 DEFINE_INSTRUCTION_LR35902(ADDSP,
 	cpu->executionState = LR35902_CORE_READ_PC;
@@ -502,10 +504,10 @@ DEFINE_INCDEC_WIDE_INSTRUCTION_LR35902(HL);
 #define DEFINE_ADD_HL_INSTRUCTION_LR35902(REG, L, H) \
 	DEFINE_INSTRUCTION_LR35902(ADDHL_ ## REG ## Finish, \
 		int diff = H + cpu->h + cpu->f.c; \
-		cpu->f.c = diff >= 0x100; \
 		cpu->f.n = 0; \
-		cpu->h = diff; \
-		/* TODO: Find explanation of H flag */) \
+		cpu->f.h = (H & 0xF) + (cpu->h & 0xF) + cpu->f.c >= 0x10; \
+		cpu->f.c = diff >= 0x100; \
+		cpu->h = diff;) \
 	DEFINE_INSTRUCTION_LR35902(ADDHL_ ## REG, \
 		int diff = L + cpu->l; \
 		cpu->l = diff; \
