@@ -88,13 +88,17 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			case 0:
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
+				int lyc = video->p->memory.io[REG_LYC];
+				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
+				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
+					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+				}
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
 					video->renderer->drawScanline(video->renderer, video->ly);
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-						GBUpdateIRQs(video->p);
 					}
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
@@ -105,8 +109,8 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
-					GBUpdateIRQs(video->p);
 				}
+				GBUpdateIRQs(video->p);
 				break;
 			case 1:
 				++video->ly;
