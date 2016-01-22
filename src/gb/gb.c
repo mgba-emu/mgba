@@ -184,6 +184,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		nextEvent = testEvent;
 	}
 
+	testEvent = GBMemoryProcessEvents(gb, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
+
 	cpu->cycles -= cycles;
 	cpu->nextEvent = nextEvent;
 }

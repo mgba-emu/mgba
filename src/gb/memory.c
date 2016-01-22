@@ -27,11 +27,12 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	// TODO
 }
 
+static void _GBMemoryDMAService(struct GB* gb);
+
+
 void GBMemoryInit(struct GB* gb) {
 	struct LR35902Core* cpu = gb->cpu;
-	cpu->memory.load16 = GBLoad16;
 	cpu->memory.load8 = GBLoad8;
-	cpu->memory.store16 = GBStore16;
 	cpu->memory.store8 = GBStore8;
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
 
@@ -42,6 +43,9 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.romSize = 0;
 	gb->memory.mbcType = GB_MBC_NONE;
 	gb->memory.mbc = 0;
+
+	gb->memory.dmaNext = INT_MAX;
+	gb->memory.dmaRemaining = 0;
 
 	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
 
@@ -115,10 +119,6 @@ void GBMemoryReset(struct GB* gb) {
 	}
 }
 
-uint16_t GBLoad16(struct LR35902Core* cpu, uint16_t address) {
-	// TODO
-}
-
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
@@ -161,10 +161,6 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		}
 		return GBIORead(gb, REG_IE);
 	}
-}
-
-void GBStore16(struct LR35902Core* cpu, uint16_t address, int16_t value) {
-	// TODO
 }
 
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
@@ -213,10 +209,67 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	}
 }
 
-uint16_t GBView16(struct LR35902Core* cpu, uint16_t address);
+int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles) {
+	if (!gb->memory.dmaRemaining) {
+		return INT_MAX;
+	}
+	gb->memory.dmaNext -= cycles;
+	if (gb->memory.dmaNext <= 0) {
+		_GBMemoryDMAService(gb);
+	}
+	return gb->memory.dmaNext;
+}
+
+void GBMemoryDMA(struct GB* gb, uint16_t base) {
+	if (base > 0xF100) {
+		return;
+	}
+	gb->cpu->memory.store8 = GBDMAStore8;
+	gb->cpu->memory.load8 = GBDMALoad8;
+	gb->memory.dmaNext = gb->cpu->cycles + 4;
+	if (gb->memory.dmaNext < gb->cpu->nextEvent) {
+		gb->cpu->nextEvent = gb->memory.dmaNext;
+	}
+	gb->memory.dmaSource = base;
+	gb->memory.dmaDest = GB_BASE_OAM;
+	gb->memory.dmaRemaining = 0xA0;
+}
+
+void _GBMemoryDMAService(struct GB* gb) {
+	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
+	GBStore8(gb->cpu, gb->memory.dmaDest, b);
+	++gb->memory.dmaSource;
+	++gb->memory.dmaDest;
+	--gb->memory.dmaRemaining;
+	if (gb->memory.dmaRemaining) {
+		gb->memory.dmaNext += 4;
+	} else {
+		gb->memory.dmaNext = INT_MAX;
+		gb->cpu->memory.store8 = GBStore8;
+		gb->cpu->memory.load8 = GBLoad8;
+	}
+}
+
+uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	if (address < 0xFF80 || address == 0xFFFF) {
+		return 0xFF;
+	}
+	return memory->hram[address & GB_SIZE_HRAM];
+}
+
+void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	if (address < 0xFF80 || address == 0xFFFF) {
+		return;
+	}
+	memory->hram[address & GB_SIZE_HRAM] = value;
+}
+
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
 
-void GBPatch16(struct LR35902Core* cpu, uint16_t address, int16_t value, int16_t* old);
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
 static void _switchBank(struct GBMemory* memory, int bank) {

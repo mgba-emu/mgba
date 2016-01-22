@@ -71,6 +71,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
+	case REG_DMA:
+		GBMemoryDMA(gb, value << 8);
+		break;
 	case REG_SCY:
 	case REG_SCX:
 	case REG_WY:

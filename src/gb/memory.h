@@ -71,11 +71,21 @@ struct GBMemory {
 	uint8_t* wram;
 	uint8_t* wramBank;
 
+	bool sramAccess;
+	uint8_t* sram;
+	uint8_t* sramBank;
+	int sramCurrentBank;
+
 	uint8_t io[GB_SIZE_IO];
 	bool ime;
 	uint8_t ie;
 
 	uint8_t hram[GB_SIZE_HRAM];
+
+	int32_t dmaNext;
+	uint16_t dmaSource;
+	uint16_t dmaDest;
+	int dmaRemaining;
 
 	size_t romSize;
 };
@@ -85,11 +95,14 @@ void GBMemoryDeinit(struct GB* gb);
 
 void GBMemoryReset(struct GB* gb);
 
-uint16_t GBLoad16(struct LR35902Core* cpu, uint16_t address);
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
-
-void GBStore16(struct LR35902Core* cpu, uint16_t address, int16_t value);
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
+
+int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles);
+void GBMemoryDMA(struct GB* gb, uint16_t base);
+
+uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address);
+void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 uint16_t GBView16(struct LR35902Core* cpu, uint16_t address);
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
