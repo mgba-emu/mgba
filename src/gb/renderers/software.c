@@ -256,6 +256,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (x < 0) {
 		x = 0;
 	}
+	int p = GBObjAttributesGetPalette(obj->attr);
 	for (; x < end; ++x) {
 		int bottomX;
 		if (GBObjAttributesIsXFlip(obj->attr)) {
@@ -270,7 +271,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		tileDataLower >>= bottomX;
 		color_t current = renderer->row[x];
 		if (((tileDataUpper | tileDataLower) & 1) && (!GBObjAttributesIsPriority(obj->attr) || current == GB_PALETTE[0])) {
-			renderer->row[x] = renderer->bgPalette[((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
+			renderer->row[x] = renderer->objPalette[p][((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
 		}
 	}
 }
