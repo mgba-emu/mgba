@@ -642,10 +642,6 @@ if(BUILD_TEST)
 	target_link_libraries(${BINARY_NAME}-fuzz ${BINARY_NAME})
 	set_target_properties(${BINARY_NAME}-fuzz PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 	install(TARGETS ${BINARY_NAME}-fuzz DESTINATION bin COMPONENT ${BINARY_NAME}-test)
-
-	add_executable(${BINARY_NAME}-gb ${CMAKE_SOURCE_DIR}/src/platform/test/gb-main.c)
-	target_link_libraries(${BINARY_NAME}-gb ${BINARY_NAME})
-	set_target_properties(${BINARY_NAME}-gb PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 endif()
 
 # Packaging
