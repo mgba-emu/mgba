@@ -136,6 +136,9 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 					}
 				}
 			}
+			if (event.type == SDL_QUIT) {
+				return;
+			}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
