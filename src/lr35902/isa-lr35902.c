@@ -598,15 +598,17 @@ DEFINE_INSTRUCTION_LR35902(DAA,
 			cpu->a += 0xA0;
 		}
 	} else {
+		int a = cpu->a;
 		if ((cpu->a & 0xF) > 0x9 || cpu->f.h) {
-			cpu->a += 0x6;
+			a += 0x6;
 		}
-		if ((cpu->a & 0xF0) > 0x90 || cpu->f.c) {
-			cpu->a += 0x60;
+		if ((a & 0x1F0) > 0x90 || cpu->f.c) {
+			a += 0x60;
 			cpu->f.c = 1;
 		} else {
 			cpu->f.c = 0;
 		}
+		cpu->a = a;
 	}
 	cpu->f.h = 0;
 	cpu->f.z = !cpu->a;)
