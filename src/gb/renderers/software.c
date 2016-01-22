@@ -148,7 +148,7 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 	}
 	GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, softwareRenderer->scx, softwareRenderer->scy);
 
-	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy < GB_VIDEO_VERTICAL_PIXELS) {
+	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y) {
 		maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 		if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 			maps += GB_SIZE_MAP;
