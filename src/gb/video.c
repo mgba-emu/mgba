@@ -15,6 +15,7 @@ static void GBVideoDummyRendererReset(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address);
+static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint8_t oam);
 static void GBVideoDummyRendererDrawScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
@@ -25,6 +26,7 @@ static struct GBVideoRenderer dummyRenderer = {
 	.deinit = GBVideoDummyRendererDeinit,
 	.writeVideoRegister = GBVideoDummyRendererWriteVideoRegister,
 	.writeVRAM = GBVideoDummyRendererWriteVRAM,
+	.writeOAM = GBVideoDummyRendererWriteOAM,
 	.drawScanline = GBVideoDummyRendererDrawScanline,
 	.finishFrame = GBVideoDummyRendererFinishFrame,
 	.getPixels = GBVideoDummyRendererGetPixels
@@ -53,6 +55,8 @@ void GBVideoReset(struct GBVideo* video) {
 	}
 	video->vram = anonymousMemoryMap(GB_SIZE_VRAM);
 	video->renderer->vram = video->vram;
+	memset(&video->oam, 0, sizeof(video->oam));
+	video->renderer->oam = &video->oam;
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer);
@@ -197,6 +201,12 @@ static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* re
 static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
 	UNUSED(renderer);
 	UNUSED(address);
+	// Nothing to do
+}
+
+static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint8_t oam) {
+	UNUSED(renderer);
+	UNUSED(oam);
 	// Nothing to do
 }
 

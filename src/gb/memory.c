@@ -57,6 +57,9 @@ void GBMemoryDeinit(struct GB* gb) {
 	if (gb->memory.rom) {
 		mappedMemoryFree(gb->memory.rom, gb->memory.romSize);
 	}
+	if (gb->memory.sram) {
+		mappedMemoryFree(gb->memory.sram, 0x8000);
+	}
 }
 
 void GBMemoryReset(struct GB* gb) {
@@ -67,6 +70,10 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.wramBank = &gb->memory.wram[GB_SIZE_WORKING_RAM_BANK0];
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
+	gb->memory.sram = anonymousMemoryMap(0x8000); // TODO: Persist
+	gb->memory.sramCurrentBank = 0;
+
+	memset(&gb->video.oam, 0, sizeof(gb->video.oam));
 
 	const struct GBCartridge* cart = &gb->memory.rom[0x100];
 	switch (cart->type) {
@@ -138,8 +145,10 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		return gb->video.vram[address & (GB_SIZE_VRAM - 1)];
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		// TODO
-		return 0;
+		if (memory->sramAccess) {
+			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+		}
+		return 0xFF;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
 		return memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
@@ -149,9 +158,14 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		if (address < GB_BASE_OAM) {
 			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 		}
+		if (address < GB_BASE_UNUSABLE) {
+			if (gb->video.mode < 2) {
+				return gb->video.oam.raw[address & 0xFF];
+			}
+			return 0xFF;
+		}
 		if (address < GB_BASE_IO) {
-			// TODO
-			return 0;
+			return 0xFF;
 		}
 		if (address < GB_BASE_HRAM) {
 			return GBIORead(gb, address & (GB_SIZE_IO - 1));
@@ -185,7 +199,9 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		return;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		// TODO
+		if (memory->sramAccess) {
+			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		}
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
@@ -197,8 +213,13 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	default:
 		if (address < GB_BASE_OAM) {
 			memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
+		} else if (address < GB_BASE_UNUSABLE) {
+			if (gb->video.mode < 2) {
+				gb->video.oam.raw[address & 0xFF] = value;
+				gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
+			}
 		} else if (address < GB_BASE_IO) {
-			// TODO
+			// TODO: Log
 		} else if (address < GB_BASE_HRAM) {
 			GBIOWrite(gb, address & (GB_SIZE_IO - 1), value);
 		} else if (address < GB_BASE_IE) {
@@ -282,11 +303,29 @@ static void _switchBank(struct GBMemory* memory, int bank) {
 	memory->currentBank = bank;
 }
 
+static void _switchSramBank(struct GBMemory* memory, int bank) {
+	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
+	memory->sramBank = &memory->sram[bankStart];
+	memory->sramCurrentBank = bank;
+}
+
 void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x1F;
 	switch (address >> 13) {
 	case 0x0:
-		// TODO
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			break;
+		}
+		break;
 		break;
 	case 0x1:
 		if (!bank) {
@@ -305,13 +344,29 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
 	switch (address >> 13) {
 	case 0x0:
-		// TODO
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			break;
+		}
 		break;
 	case 0x1:
 		if (!bank) {
 			++bank;
 		}
 		_switchBank(memory, bank);
+		break;
+	case 0x2:
+		if (value < 4) {
+			_switchSramBank(memory, value);
+		}
 		break;
 	}
 }
@@ -324,7 +379,19 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
 	switch (address >> 13) {
 	case 0x0:
-		// TODO
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			break;
+		}
+		break;
 		break;
 	case 0x1:
 		_switchBank(memory, bank);

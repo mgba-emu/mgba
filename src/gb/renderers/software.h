@@ -35,6 +35,10 @@ struct GBVideoSoftwareRenderer {
 	uint8_t wx;
 
 	GBRegisterLCDC lcdc;
+
+	struct GBObj* obj[40];
+	int oamMax;
+	bool oamDirty;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);

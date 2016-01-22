@@ -29,6 +29,24 @@ enum {
 	GB_SIZE_MAP = 0x0400
 };
 
+DECL_BITFIELD(GBObjAttributes, uint8_t);
+DECL_BIT(GBObjAttributes, Palette, 4);
+DECL_BIT(GBObjAttributes, XFlip, 5);
+DECL_BIT(GBObjAttributes, YFlip, 6);
+DECL_BIT(GBObjAttributes, Priority, 7);
+
+struct GBObj {
+	uint8_t y;
+	uint8_t x;
+	uint8_t tile;
+	GBObjAttributes attr;
+};
+
+union GBOAM {
+	struct GBObj obj[40];
+	uint8_t raw[160];
+};
+
 struct GBVideoRenderer {
 	void (*init)(struct GBVideoRenderer* renderer);
 	void (*reset)(struct GBVideoRenderer* renderer);
@@ -36,6 +54,7 @@ struct GBVideoRenderer {
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
+	void (*writeOAM)(struct GBVideoRenderer* renderer, uint8_t oam);
 	void (*drawScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
 
@@ -43,6 +62,7 @@ struct GBVideoRenderer {
 	void (*putPixels)(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
 
 	uint8_t* vram;
+	union GBOAM* oam;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);
@@ -79,6 +99,8 @@ struct GBVideo {
 
 	uint8_t* vram;
 	uint8_t* vramBank;
+
+	union GBOAM oam;
 
 	int32_t frameCounter;
 	int frameskip;
