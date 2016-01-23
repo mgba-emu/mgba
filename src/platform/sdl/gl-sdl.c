@@ -23,17 +23,18 @@ static void _doViewport(int w, int h, struct VideoBackend* v) {
 #ifdef M_CORE_GBA
 static bool mSDLGLInitGBA(struct mSDLRenderer* renderer);
 static void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLDeinitGBA(struct mSDLRenderer* renderer);
 #endif
 #ifdef M_CORE_GB
 static bool mSDLGLInitGB(struct mSDLRenderer* renderer);
 static void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLDeinitGB(struct mSDLRenderer* renderer);
 #endif
-static void mSDLGLDeinit(struct mSDLRenderer* renderer);
 
 #ifdef M_CORE_GBA
 void mSDLGLCreate(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLInitGBA;
-	renderer->deinit = mSDLGLDeinit;
+	renderer->deinit = mSDLGLDeinitGBA;
 	renderer->runloop = mSDLGLRunloopGBA;
 }
 
@@ -80,12 +81,22 @@ void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 		v->swap(v);
 	}
 }
+
+void mSDLGLDeinitGBA(struct mSDLRenderer* renderer) {
+	if (renderer->gl.d.deinit) {
+		renderer->gl.d.deinit(&renderer->gl.d);
+	}
+	free(renderer->d.outputBuffer);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GL_DeleteContext(renderer->glCtx);
+#endif
+}
 #endif
 
 #ifdef M_CORE_GB
 void mSDLGLCreateGB(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLInitGB;
-	renderer->deinit = mSDLGLDeinit;
+	renderer->deinit = mSDLGLDeinitGB;
 	renderer->runloop = mSDLGLRunloopGB;
 }
 
@@ -155,14 +166,14 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 		v->swap(v);
 	}
 }
-#endif
 
-void mSDLGLDeinit(struct mSDLRenderer* renderer) {
+void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
-	free(renderer->d.outputBuffer);
+	free(renderer->gb.outputBuffer);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
 }
+#endif
