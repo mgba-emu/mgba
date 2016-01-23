@@ -45,13 +45,6 @@ precision mediump float;
 #else
 #define COMPAT_PRECISION
 #endif
-COMPAT_VARYING     vec4 _t7;
-COMPAT_VARYING     vec4 _t6;
-COMPAT_VARYING     vec4 _t5;
-COMPAT_VARYING     vec4 _t4;
-COMPAT_VARYING     vec4 _t3;
-COMPAT_VARYING     vec4 _t2;
-COMPAT_VARYING     vec4 _t1;
 vec4 _ret_0;
 float _TMP57;
 float _TMP56;
