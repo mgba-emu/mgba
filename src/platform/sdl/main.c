@@ -277,7 +277,18 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 
 	GBVideoAssociateRenderer(&gb.video, &renderer->gb.d);
 	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
-	GBLoadROM(&gb, vf, 0, args->fname);
+	struct VFile* savVf = 0;
+
+	{
+		char savepath[PATH_MAX];
+		char dirname[PATH_MAX];
+		char basename[PATH_MAX];
+		separatePath(args->fname, dirname, basename, 0);
+		snprintf(savepath, sizeof(savepath), "%s" PATH_SEP "%s.sav", dirname, basename);
+		savVf = VFileOpen(savepath, O_RDWR | O_CREAT);
+	}
+
+	GBLoadROM(&gb, vf, savVf, args->fname);
 
 	LR35902Reset(&cpu);
 	renderer->runloop(renderer, &gb);
