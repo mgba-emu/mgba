@@ -55,6 +55,7 @@ enum GBMemoryBankControllerType {
 	GB_MBC3 = 3,
 	GB_MBC4 = 4,
 	GB_MBC5 = 5,
+	GB_MBC7 = 7,
 	GB_MMM01 = 0x10,
 	GB_HuC1 = 0x11
 };

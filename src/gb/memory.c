@@ -22,6 +22,7 @@ static void _GBMBC2(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC4(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	// TODO
@@ -114,6 +115,10 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x1E:
 		gb->memory.mbc = _GBMBC5;
 		gb->memory.mbcType = GB_MBC5;
+		break;
+	case 0x22:
+		gb->memory.mbc = _GBMBC7;
+		gb->memory.mbcType = GB_MBC7;
 		break;
 	}
 
@@ -393,4 +398,8 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		_switchBank(memory, bank);
 		break;
 	}
+}
+
+void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	// TODO
 }
