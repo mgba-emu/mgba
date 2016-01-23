@@ -41,6 +41,7 @@ void GBVideoInit(struct GBVideo* video) {
 void GBVideoReset(struct GBVideo* video) {
 	video->ly = 0;
 	video->mode = 1;
+	video->stat = 1;
 
 	video->nextEvent = INT_MAX;
 	video->eventDiff = 0;
