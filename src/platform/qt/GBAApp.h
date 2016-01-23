@@ -44,10 +44,6 @@ public:
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
 
-public slots:
-	void interruptAll();
-	void continueAll();
-
 protected:
 	bool event(QEvent*);
 
@@ -63,6 +59,9 @@ private:
 	};
 
 	Window* newWindowInternal();
+
+	void pauseAll(QList<int>* paused);
+	void continueAll(const QList<int>* paused);
 
 	ConfigController m_configController;
 	Window* m_windows[MAX_GBAS];
