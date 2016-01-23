@@ -22,10 +22,9 @@ struct GBVideoSoftwareRenderer {
 	color_t* outputBuffer;
 	int outputBufferStride;
 
-	uint32_t row[GB_VIDEO_HORIZONTAL_PIXELS];
+	uint8_t row[GB_VIDEO_HORIZONTAL_PIXELS + 8];
 
-	color_t bgPalette[4];
-	color_t objPalette[2][4];
+	color_t palette[128];
 
 	uint32_t* temporaryBuffer;
 

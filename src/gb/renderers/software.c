@@ -97,22 +97,22 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		softwareRenderer->lcdc = value;
 		break;
 	case REG_BGP:
-		softwareRenderer->bgPalette[0] = GB_PALETTE[value & 3];
-		softwareRenderer->bgPalette[1] = GB_PALETTE[(value >> 2) & 3];
-		softwareRenderer->bgPalette[2] = GB_PALETTE[(value >> 4) & 3];
-		softwareRenderer->bgPalette[3] = GB_PALETTE[(value >> 6) & 3];
+		softwareRenderer->palette[0] = GB_PALETTE[value & 3];
+		softwareRenderer->palette[1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->palette[2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->palette[3] = GB_PALETTE[(value >> 6) & 3];
 		break;
 	case REG_OBP0:
-		softwareRenderer->objPalette[0][0] = GB_PALETTE[value & 3];
-		softwareRenderer->objPalette[0][1] = GB_PALETTE[(value >> 2) & 3];
-		softwareRenderer->objPalette[0][2] = GB_PALETTE[(value >> 4) & 3];
-		softwareRenderer->objPalette[0][3] = GB_PALETTE[(value >> 6) & 3];
+		softwareRenderer->palette[8 * 4 + 0] = GB_PALETTE[value & 3];
+		softwareRenderer->palette[8 * 4 + 1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->palette[8 * 4 + 2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->palette[8 * 4 + 3] = GB_PALETTE[(value >> 6) & 3];
 		break;
 	case REG_OBP1:
-		softwareRenderer->objPalette[1][0] = GB_PALETTE[value & 3];
-		softwareRenderer->objPalette[1][1] = GB_PALETTE[(value >> 2) & 3];
-		softwareRenderer->objPalette[1][2] = GB_PALETTE[(value >> 4) & 3];
-		softwareRenderer->objPalette[1][3] = GB_PALETTE[(value >> 6) & 3];
+		softwareRenderer->palette[9 * 4 + 0] = GB_PALETTE[value & 3];
+		softwareRenderer->palette[9 * 4 + 1] = GB_PALETTE[(value >> 2) & 3];
+		softwareRenderer->palette[9 * 4 + 2] = GB_PALETTE[(value >> 4) & 3];
+		softwareRenderer->palette[9 * 4 + 3] = GB_PALETTE[(value >> 6) & 3];
 		break;
 	case REG_SCY:
 		softwareRenderer->scy = value;
@@ -133,11 +133,6 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer, int y) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 
-	size_t x;
-	for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		softwareRenderer->row[x] = GB_PALETTE[0];
-	}
-
 	if (softwareRenderer->oamDirty) {
 		_cleanOAM(softwareRenderer);
 	}
@@ -146,14 +141,21 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
-	GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, softwareRenderer->scx, softwareRenderer->scy);
+	size_t x;
+	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc)) {
+		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, softwareRenderer->scx, softwareRenderer->scy);
 
-	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y) {
-		maps = &softwareRenderer->d.vram[GB_BASE_MAP];
-		if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
-			maps += GB_SIZE_MAP;
+		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y) {
+			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
+			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
+				maps += GB_SIZE_MAP;
+			}
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, 7 - softwareRenderer->wx, -softwareRenderer->wy);
 		}
-		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, 7 - softwareRenderer->wx, -softwareRenderer->wy);
+	} else {
+		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
+			softwareRenderer->row[x] = 0;
+		}
 	}
 
 	int spriteHeight = 8;
@@ -169,17 +171,9 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 	}
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
-#ifdef COLOR_16_BIT
-#if defined(__ARM_NEON) && !defined(__APPLE__)
-	_to16Bit(row, softwareRenderer->row, GB_VIDEO_HORIZONTAL_PIXELS);
-#else
 	for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
-		row[x] = softwareRenderer->row[x];
+		row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
 	}
-#endif
-#else
-	memcpy(row, softwareRenderer->row, GB_VIDEO_HORIZONTAL_PIXELS * sizeof(*row));
-#endif
 }
 
 static void _cleanOAM(struct GBVideoSoftwareRenderer* renderer) {
@@ -189,7 +183,7 @@ static void _cleanOAM(struct GBVideoSoftwareRenderer* renderer) {
 	int i;
 	for (i = 0; i < 40; ++i) {
 		uint8_t y = renderer->d.oam->obj[i].y;
-		if (y < 16 || y >= GB_VIDEO_VERTICAL_PIXELS + 16) {
+		if (y == 0 || y >= GB_VIDEO_VERTICAL_PIXELS + 16) {
 			continue;
 		}
 		// TODO: Sort
@@ -229,7 +223,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
 		tileDataUpper >>= bottomX;
 		tileDataLower >>= bottomX;
-		renderer->row[x] = renderer->bgPalette[((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
+		renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 	}
 }
 
@@ -239,12 +233,12 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	int bottomY;
 	if (GBObjAttributesIsYFlip(obj->attr)) {
 		bottomY = 7 - ((y - obj->y - 16) & 7);
-		if (y - obj->y < -8) {
+		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - obj->y < -8) {
 			++tileOffset;
 		}
 	} else {
 		bottomY = (y - obj->y - 16) & 7;
-		if (y - obj->y >= -8) {
+		if (GBRegisterLCDCIsObjSize(renderer->lcdc) && y - obj->y >= -8) {
 			++tileOffset;
 		}
 	}
@@ -256,7 +250,8 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (x < 0) {
 		x = 0;
 	}
-	int p = GBObjAttributesGetPalette(obj->attr);
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x20;
+	int p = (GBObjAttributesGetPalette(obj->attr) + 8) * 4;
 	for (; x < end; ++x) {
 		int bottomX;
 		if (GBObjAttributesIsXFlip(obj->attr)) {
@@ -270,8 +265,8 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		tileDataUpper >>= bottomX;
 		tileDataLower >>= bottomX;
 		color_t current = renderer->row[x];
-		if (((tileDataUpper | tileDataLower) & 1) && (!GBObjAttributesIsPriority(obj->attr) || current == GB_PALETTE[0])) {
-			renderer->row[x] = renderer->objPalette[p][((tileDataUpper & 1) << 1) | (tileDataLower & 1)];
+		if (((tileDataUpper | tileDataLower) & 1) && current <= mask) {
+			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 		}
 	}
 }
