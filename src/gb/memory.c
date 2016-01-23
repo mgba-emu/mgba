@@ -57,9 +57,6 @@ void GBMemoryDeinit(struct GB* gb) {
 	if (gb->memory.rom) {
 		mappedMemoryFree(gb->memory.rom, gb->memory.romSize);
 	}
-	if (gb->memory.sram) {
-		mappedMemoryFree(gb->memory.sram, 0x8000);
-	}
 }
 
 void GBMemoryReset(struct GB* gb) {
@@ -70,7 +67,6 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.wramBank = &gb->memory.wram[GB_SIZE_WORKING_RAM_BANK0];
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
-	gb->memory.sram = anonymousMemoryMap(0x8000); // TODO: Persist
 	gb->memory.sramCurrentBank = 0;
 
 	memset(&gb->video.oam, 0, sizeof(gb->video.oam));

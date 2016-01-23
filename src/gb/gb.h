@@ -50,6 +50,7 @@ struct GB {
 	size_t yankedRomSize;
 	uint32_t romCrc32;
 	struct VFile* romVf;
+	struct VFile* sramVf;
 
 	const char* activeFile;
 };

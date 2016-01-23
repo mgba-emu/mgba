@@ -44,6 +44,7 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 	gb->timer.p = gb;
 
 	gb->romVf = 0;
+	gb->sramVf = 0;
 
 	gb->pristineRom = 0;
 	gb->pristineRomSize = 0;
@@ -72,6 +73,12 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* f
 	gb->activeFile = fname;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
+	gb->sramVf = sav;
+	if (sav) {
+		gb->memory.sram = sav->map(sav, 0x8000, MAP_WRITE);
+	} else {
+		gb->memory.sram = anonymousMemoryMap(0x8000);
+	}
 	return true;
 	// TODO: error check
 }
@@ -93,6 +100,13 @@ void GBUnloadROM(struct GB* gb) {
 		gb->pristineRom = 0;
 		gb->romVf = 0;
 	}
+
+	if (gb->sramVf) {
+		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x8000);
+	} else if (gb->memory.sram) {
+		mappedMemoryFree(gb->memory.sram, 0x8000);
+	}
+	gb->memory.sram = 0;
 }
 
 void GBDestroy(struct GB* gb) {
@@ -209,7 +223,6 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 }
 
 void GBHalt(struct LR35902Core* cpu) {
-	struct GB* gb = (struct GB*) cpu->master;
 	cpu->cycles = cpu->nextEvent;
 	cpu->halted = true;
 }
