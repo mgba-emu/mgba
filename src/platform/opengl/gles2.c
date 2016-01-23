@@ -135,8 +135,8 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[3].max.fvec3[0] = 1.0f;
 	uniforms[3].max.fvec3[1] = 1.0f;
 	uniforms[3].max.fvec3[2] = 1.0f;
-	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, uniforms, 4);
-	GBAGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, 0, 0);
+	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
+	GBAGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
 	context->finalShader.fbo = 0;
 }
@@ -195,6 +195,12 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 		drawH = viewport[3];
 		padH = viewport[1];
 	}
+	if (shader->integerScaling) {
+		padW = 0;
+		padH = 0;
+		drawW -= drawW % VIDEO_HORIZONTAL_PIXELS;
+		drawH -= drawH % VIDEO_VERTICAL_PIXELS;
+	}
 	glViewport(padW, padH, drawW, drawH);
 	if (!shader->width || !shader->height) {
 		GLint oldTex;
@@ -204,7 +210,7 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 		glBindTexture(GL_TEXTURE_2D, oldTex);
 	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
@@ -310,9 +316,10 @@ void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
 	context->nShaders = 0;
 }
 
-void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const char* fs, int width, int height, struct GBAGLES2Uniform* uniforms, size_t nUniforms) {
+void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, struct GBAGLES2Uniform* uniforms, size_t nUniforms) {
 	shader->width = width >= 0 ? width : VIDEO_HORIZONTAL_PIXELS;
 	shader->height = height >= 0 ? height : VIDEO_VERTICAL_PIXELS;
+	shader->integerScaling = integerScaling;
 	shader->filter = false;
 	shader->blend = false;
 	shader->uniforms = uniforms;
@@ -802,8 +809,10 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				}
 				int width = 0;
 				int height = 0;
+				int scaling = 0;
 				_lookupIntValue(&description, passName, "width", &width);
 				_lookupIntValue(&description, passName, "height", &height);
+				_lookupIntValue(&description, passName, "integerScaling", &scaling);
 
 				struct GBAGLES2UniformList uniformVector;
 				GBAGLES2UniformListInit(&uniformVector, 0);
@@ -821,7 +830,7 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				memcpy(uniformBlock, GBAGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
 				GBAGLES2UniformListDeinit(&uniformVector);
 
-				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, uniformBlock, u);
+				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);
 				int b = 0;
 				_lookupIntValue(&description, passName, "blend", &b);
 				if (b) {

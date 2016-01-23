@@ -53,6 +53,7 @@ struct GBAGLES2Uniform {
 struct GBAGLES2Shader {
 	unsigned width;
 	unsigned height;
+	bool integerScaling;
 	bool filter;
 	bool blend;
 	GLuint tex;
@@ -83,7 +84,7 @@ struct GBAGLES2Context {
 
 void GBAGLES2ContextCreate(struct GBAGLES2Context*);
 
-void GBAGLES2ShaderInit(struct GBAGLES2Shader*, const char* vs, const char* fs, int width, int height, struct GBAGLES2Uniform* uniforms, size_t nUniforms);
+void GBAGLES2ShaderInit(struct GBAGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct GBAGLES2Uniform* uniforms, size_t nUniforms);
 void GBAGLES2ShaderDeinit(struct GBAGLES2Shader*);
 void GBAGLES2ShaderAttach(struct GBAGLES2Context*, struct GBAGLES2Shader*, size_t nShaders);
 void GBAGLES2ShaderDetach(struct GBAGLES2Context*);
