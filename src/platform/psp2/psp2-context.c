@@ -65,7 +65,7 @@ static void _mapVitaKey(struct GBAInputMap* map, int pspKey, enum GBAKey key) {
 static THREAD_ENTRY _audioThread(void* context) {
 	struct GBAPSP2AudioContext* audio = (struct GBAPSP2AudioContext*) context;
 	struct GBAStereoSample buffer[PSP2_SAMPLES];
-	int audioPort = sceAudioOutOpenPort(PSP2_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_SAMPLES, 48000, PSP2_AUDIO_OUT_MODE_STEREO);
+	int audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_SAMPLES, 48000, SCE_AUDIO_OUT_MODE_STEREO);
 	while (audio->running) {
 		memset(buffer, 0, sizeof(buffer));
 		MutexLock(&audio->mutex);
@@ -75,7 +75,7 @@ static THREAD_ENTRY _audioThread(void* context) {
 			len = PSP2_SAMPLES;
 		}
 		if (len > 0) {
-			len &= ~(PSP2_AUDIO_MIN_LEN - 1);
+			len &= ~(SCE_AUDIO_MIN_LEN - 1);
 			CircleBufferRead(&audio->buffer, buffer, len * sizeof(buffer[0]));
 			MutexUnlock(&audio->mutex);
 			sceAudioOutOutput(audioPort, buffer);
@@ -137,16 +137,16 @@ uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner) {
 
 void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CROSS, GBA_KEY_A);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_CIRCLE, GBA_KEY_B);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_START, GBA_KEY_START);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_SELECT, GBA_KEY_SELECT);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_UP, GBA_KEY_UP);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_DOWN, GBA_KEY_DOWN);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_LEFT, GBA_KEY_LEFT);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_RIGHT, GBA_KEY_RIGHT);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_LTRIGGER, GBA_KEY_L);
-	_mapVitaKey(&runner->context.inputMap, PSP2_CTRL_RTRIGGER, GBA_KEY_R);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_START, GBA_KEY_START);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_UP, GBA_KEY_UP);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
+	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
 
 	struct GBAAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);

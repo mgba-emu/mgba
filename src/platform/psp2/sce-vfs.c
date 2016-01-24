@@ -222,7 +222,7 @@ static const char* _vdesceName(struct VDirEntry* vde) {
 
 static enum VFSType _vdesceType(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
-	if (PSP2_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
+	if (SCE_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;
