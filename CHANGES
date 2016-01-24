@@ -34,6 +34,7 @@ Bugfixes:
  - Qt: Fix some potential crashes with the gamepad mapping
  - Debugger: Fix watchpoints in gdb
  - ARM7: Fix decoding of some ARM ALU instructions with shifters
+ - Qt: Fix keys being mapped incorrectly when loading configuration file
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
