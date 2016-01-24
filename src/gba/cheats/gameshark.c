@@ -75,12 +75,14 @@ void GBACheatReseedGameShark(uint32_t* seeds, uint16_t params, const uint8_t* t1
 }
 
 void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
-	cheats->gsaVersion = 1;
+	cheats->gsaVersion = version;
 	switch (version) {
 	case 1:
+	case 2:
 		memcpy(cheats->gsaSeeds, GBACheatGameSharkSeeds, 4 * sizeof(uint32_t));
 		break;
 	case 3:
+	case 4:
 		memcpy(cheats->gsaSeeds, GBACheatProActionReplaySeeds, 4 * sizeof(uint32_t));
 		break;
 	}
@@ -198,9 +200,11 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	switch (set->gsaVersion) {
 	case 0:
 	case 3:
+	case 4:
 		GBACheatSetGameSharkVersion(set, 1);
 	// Fall through
 	case 1:
+	case 2:
 		GBACheatDecryptGameShark(&o1, &o2, set->gsaSeeds);
 		return GBACheatAddGameSharkRaw(set, o1, o2);
 	}
