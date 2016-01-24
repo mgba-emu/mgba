@@ -25,10 +25,10 @@
    Incorporates some of the ideas from SABR shader. Thanks to Joshua Street.
 */
 
-#define XBR_Y_WEIGHT 48.0
-#define XBR_EQ_THRESHOLD 10.0
-#define XBR_EQ_THRESHOLD2 2.0
-#define XBR_LV2_COEFFICIENT 2.0
+uniform float XBR_Y_WEIGHT;
+uniform float XBR_EQ_THRESHOLD;
+uniform float XBR_EQ_THRESHOLD2;
+uniform float XBR_LV2_COEFFICIENT;
 
 const mat3 yuv = mat3(0.299, 0.587, 0.114, -0.169, -0.331, 0.499, 0.499, -0.418, -0.0813);
 const vec4 delta = vec4(0.4, 0.4, 0.4, 0.4);
