@@ -125,7 +125,6 @@ Footnotes
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
 - Mosaic for transformed OBJs ([Bug #9](http://mgba.io/b/9))
-- BIOS call RegisterRamReset is partially stubbed out ([Bug #141](http://mgba.io/b/141))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
