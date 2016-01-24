@@ -180,7 +180,7 @@ void Window::argumentsPassed(GBAArguments* args) {
 	}
 
 	if (args->fname) {
-		m_controller->loadGame(args->fname, args->dirmode);
+		m_controller->loadGame(args->fname);
 	}
 }
 

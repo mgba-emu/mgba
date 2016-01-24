@@ -281,26 +281,22 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 }
 #endif
 
-void GameController::loadGame(const QString& path, bool dirmode) {
+void GameController::loadGame(const QString& path) {
 	closeGame();
-	if (!dirmode) {
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly)) {
-			postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
-			return;
-		}
-		file.close();
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
+		return;
 	}
+	file.close();
 
 	m_fname = path;
-	m_dirmode = dirmode;
 	openGame();
 }
 
 void GameController::bootBIOS() {
 	closeGame();
 	m_fname = QString();
-	m_dirmode = false;
 	openGame(true);
 }
 

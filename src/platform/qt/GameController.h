@@ -97,7 +97,7 @@ signals:
 	void postLog(int level, const QString& log);
 
 public slots:
-	void loadGame(const QString& path, bool dirmode = false);
+	void loadGame(const QString& path);
 	void loadBIOS(const QString& path);
 	void yankPak();
 	void replaceGame(const QString& path);
@@ -180,7 +180,6 @@ private:
 	int m_logLevels;
 
 	bool m_gameOpen;
-	bool m_dirmode;
 
 	QString m_fname;
 	QString m_bios;
