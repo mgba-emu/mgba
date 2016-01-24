@@ -32,6 +32,8 @@
 			<integer>0</integer>
 			<key>OEGameCoreSupportsRewinding</key>
 			<true/>
+			<key>OEGameCoreSupportsCheatCode</key>
+			<true/>
 		</dict>
 	</dict>
 	<key>OEGameCorePlayerCount</key>
