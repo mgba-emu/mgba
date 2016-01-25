@@ -265,6 +265,7 @@ bool GBACheatParseFile(struct GBACheatDevice* device, struct VFile* vf) {
 			do {
 				++i;
 			} while (isspace((int) cheat[i]));
+			cheat[strlen(cheat) - 1] = '\0'; // Remove trailing newline
 			newSet = malloc(sizeof(*set));
 			GBACheatSetInit(newSet, &cheat[i]);
 			newSet->enabled = !nextDisabled;
