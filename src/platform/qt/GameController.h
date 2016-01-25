@@ -209,6 +209,8 @@ private:
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;
 	QByteArray m_backupSaveState;
+	int m_saveStateFlags;
+	int m_loadStateFlags;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

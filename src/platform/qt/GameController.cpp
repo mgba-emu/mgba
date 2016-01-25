@@ -58,6 +58,8 @@ GameController::GameController(QObject* parent)
 	, m_stateSlot(1)
 	, m_backupLoadState(nullptr)
 	, m_backupSaveState(nullptr)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
+	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
@@ -112,7 +114,7 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
+		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, controller->m_loadStateFlags)) {
 			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
@@ -141,7 +143,7 @@ GameController::GameController(QObject* parent)
 			return false;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (!GBASaveState(context, context->dirs.state, 0, true)) {
+		if (!GBASaveState(context, context->dirs.state, 0, controller->m_saveStateFlags)) {
 			return false;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
@@ -710,7 +712,7 @@ void GameController::loadState(int slot) {
 			controller->m_backupLoadState = new GBASerializedState;
 		}
 		GBASerialize(context->gba, controller->m_backupLoadState);
-		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
+		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
 		}
@@ -733,7 +735,7 @@ void GameController::saveState(int slot) {
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		GBASaveState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
+		GBASaveState(context, context->dirs.state, controller->m_stateSlot, controller->m_saveStateFlags);
 	});
 }
 
