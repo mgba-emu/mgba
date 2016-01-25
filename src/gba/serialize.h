@@ -339,11 +339,13 @@ enum GBAExtdataTag {
 	EXTDATA_NONE = 0,
 	EXTDATA_SCREENSHOT = 1,
 	EXTDATA_SAVEDATA = 2,
+	EXTDATA_CHEATS = 3,
 	EXTDATA_MAX
 };
 
 #define SAVESTATE_SCREENSHOT 1
 #define SAVESTATE_SAVEDATA   2
+#define SAVESTATE_CHEATS     4
 
 struct GBAExtdataItem {
 	int32_t size;

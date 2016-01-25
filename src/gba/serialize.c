@@ -6,6 +6,7 @@
 #include "serialize.h"
 
 #include "gba/audio.h"
+#include "gba/cheats.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
 #include "gba/supervisor/thread.h"
@@ -426,6 +427,20 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		}
 		svf->close(svf);
 	}
+	struct VFile* cheatVf = 0;
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
+		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+		cheatVf = VFileMemChunk(0, 0);
+		if (cheatVf) {
+			GBACheatSaveFile(device, cheatVf);
+			struct GBAExtdataItem item = {
+				.size = cheatVf->size(cheatVf),
+				.data = cheatVf->map(cheatVf, cheatVf->size(cheatVf), MAP_READ),
+				.clean = 0
+			};
+			GBAExtdataPut(&extdata, EXTDATA_CHEATS, &item);
+		}
+	};
 #ifdef USE_PNG
 	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
@@ -435,6 +450,9 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 		if (!state) {
 			GBAExtdataDeinit(&extdata);
+			if (cheatVf) {
+				cheatVf->close(cheatVf);
+			}
 			return false;
 		}
 		GBASerialize(gba, state);
@@ -442,6 +460,9 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		vf->seek(vf, sizeof(struct GBASerializedState), SEEK_SET);
 		GBAExtdataSerialize(&extdata, vf);
 		GBAExtdataDeinit(&extdata);
+		if (cheatVf) {
+			cheatVf->close(cheatVf);
+		}
 		return true;
 #ifdef USE_PNG
 	}
@@ -500,6 +521,17 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		if (svf) {
 			GBASavedataLoad(&gba->memory.savedata, svf);
 			svf->close(svf);
+		}
+	}
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
+		if (item.size) {
+			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+			struct VFile* svf = VFileFromMemory(item.data, item.size);
+			if (svf) {
+				GBACheatDeviceClear(device);
+				GBACheatParseFile(device, svf);
+				svf->close(svf);
+			}
 		}
 	}
 	GBAExtdataDeinit(&extdata);
