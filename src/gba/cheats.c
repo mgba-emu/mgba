@@ -110,13 +110,18 @@ void GBACheatDeviceCreate(struct GBACheatDevice* device) {
 }
 
 void GBACheatDeviceDestroy(struct GBACheatDevice* device) {
+	GBACheatDeviceClear(device);
+	GBACheatSetsDeinit(&device->cheats);
+}
+
+void GBACheatDeviceClear(struct GBACheatDevice* device) {
 	size_t i;
 	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
 		struct GBACheatSet* set = *GBACheatSetsGetPointer(&device->cheats, i);
 		GBACheatSetDeinit(set);
 		free(set);
 	}
-	GBACheatSetsDeinit(&device->cheats);
+	GBACheatSetsClear(&device->cheats);
 }
 
 void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
