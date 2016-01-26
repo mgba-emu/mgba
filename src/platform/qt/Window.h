@@ -66,6 +66,7 @@ public slots:
 	void exitFullScreen();
 	void toggleFullScreen();
 	void loadConfig();
+	void reloadConfig();
 	void saveConfig();
 
 	void replaceROM();

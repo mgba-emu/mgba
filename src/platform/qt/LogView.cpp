@@ -70,15 +70,13 @@ LogView::LogView(LogController* log, QWidget* parent)
 
 void LogView::postLog(int level, const QString& log) {
 	QString line = QString("%1:\t%2").arg(LogController::toString(level)).arg(log);
-	if (isVisible()) {
-		m_ui.view->appendPlainText(line);
-	} else {
-		m_pendingLines.enqueue(line);
-	}
+	// TODO: Log to file
+	m_pendingLines.enqueue(line);
 	++m_lines;
 	if (m_lines > m_lineLimit) {
 		clearLine();
 	}
+	update();
 }
 
 void LogView::clear() {
@@ -145,10 +143,11 @@ void LogView::setMaxLines(int limit) {
 	}
 }
 
-void LogView::showEvent(QShowEvent*) {
+void LogView::paintEvent(QPaintEvent* event) {
 	while (!m_pendingLines.isEmpty()) {
 		m_ui.view->appendPlainText(m_pendingLines.dequeue());
 	}
+	QWidget::paintEvent(event);
 }
 
 void LogView::clearLine() {

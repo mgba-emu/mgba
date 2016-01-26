@@ -31,6 +31,7 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
 	connect(m_ui.remove, SIGNAL(clicked()), this, SLOT(removeSet()));
 	connect(controller, SIGNAL(gameStopped(GBAThread*)), &m_model, SLOT(invalidated()));
+	connect(controller, SIGNAL(stateLoaded(GBAThread*)), &m_model, SLOT(invalidated()));
 
 	connect(m_ui.add, &QPushButton::clicked, [this]() {
 		enterCheat(GBACheatAddLine);

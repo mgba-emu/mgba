@@ -26,6 +26,7 @@ signals:
 	void biosLoaded(const QString&);
 	void audioDriverChanged();
 	void displayDriverChanged();
+	void pathsChanged();
 
 private slots:
 	void selectBios();

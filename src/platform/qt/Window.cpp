@@ -104,7 +104,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, &GameController::gamePaused, [this]() {
 		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
-		                    VIDEO_VERTICAL_PIXELS, 1024, QImage::Format_RGBX8888);
+		                    VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage);
 		m_screenWidget->setPixmap(pixmap);
@@ -180,7 +180,7 @@ void Window::argumentsPassed(GBAArguments* args) {
 	}
 
 	if (args->fname) {
-		m_controller->loadGame(args->fname, args->dirmode);
+		m_controller->loadGame(args->fname);
 	}
 }
 
@@ -198,16 +198,7 @@ void Window::setConfig(ConfigController* config) {
 
 void Window::loadConfig() {
 	const GBAOptions* opts = m_config->options();
-
-	m_log.setLevels(opts->logLevel);
-
-	m_controller->setOptions(opts);
-	m_display->lockAspectRatio(opts->lockAspectRatio);
-	m_display->filter(opts->resampleVideo);
-
-	if (opts->bios) {
-		m_controller->loadBIOS(opts->bios);
-	}
+	reloadConfig();
 
 	// TODO: Move these to ConfigController
 	if (opts->fpsTarget) {
@@ -239,12 +230,26 @@ void Window::loadConfig() {
 		}
 	}
 
-	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
-
 	m_mruFiles = m_config->getMRU();
 	updateMRU();
 
 	m_inputController.setConfiguration(m_config);
+}
+
+void Window::reloadConfig() {
+	const GBAOptions* opts = m_config->options();
+
+	m_log.setLevels(opts->logLevel);
+
+	m_controller->setOptions(opts);
+	m_display->lockAspectRatio(opts->lockAspectRatio);
+	m_display->filter(opts->resampleVideo);
+
+	if (opts->bios) {
+		m_controller->loadBIOS(opts->bios);
+	}
+
+	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
 void Window::saveConfig() {
@@ -350,6 +355,7 @@ void Window::openSettingsWindow() {
 	connect(settingsWindow, SIGNAL(biosLoaded(const QString&)), m_controller, SLOT(loadBIOS(const QString&)));
 	connect(settingsWindow, SIGNAL(audioDriverChanged()), m_controller, SLOT(reloadAudioDriver()));
 	connect(settingsWindow, SIGNAL(displayDriverChanged()), this, SLOT(mustRestart()));
+	connect(settingsWindow, SIGNAL(pathsChanged()), this, SLOT(reloadConfig()));
 	openView(settingsWindow);
 }
 

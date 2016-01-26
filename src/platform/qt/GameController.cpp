@@ -19,6 +19,7 @@
 extern "C" {
 #include "gba/audio.h"
 #include "gba/context/config.h"
+#include "gba/context/directories.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
@@ -31,8 +32,8 @@ using namespace std;
 
 GameController::GameController(QObject* parent)
 	: QObject(parent)
-	, m_drawContext(new uint32_t[256 * VIDEO_HORIZONTAL_PIXELS])
-	, m_frontBuffer(new uint32_t[256 * 256])
+	, m_drawContext(new uint32_t[VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS])
+	, m_frontBuffer(new uint32_t[VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS])
 	, m_threadContext()
 	, m_activeKeys(0)
 	, m_inactiveKeys(0)
@@ -57,11 +58,13 @@ GameController::GameController(QObject* parent)
 	, m_stateSlot(1)
 	, m_backupLoadState(nullptr)
 	, m_backupSaveState(nullptr)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
+	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
 {
 	m_renderer = new GBAVideoSoftwareRenderer;
 	GBAVideoSoftwareRendererCreate(m_renderer);
 	m_renderer->outputBuffer = (color_t*) m_drawContext;
-	m_renderer->outputBufferStride = 256;
+	m_renderer->outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	GBACheatDeviceCreate(&m_cheatDevice);
 
@@ -74,6 +77,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.rewindBufferCapacity = 0;
 	m_threadContext.cheats = &m_cheatDevice;
 	m_threadContext.logLevel = GBA_LOG_ALL;
+	GBADirectorySetInit(&m_threadContext.dirs);
 
 	m_lux.p = this;
 	m_lux.sample = [](GBALuminanceSource* context) {
@@ -110,7 +114,7 @@ GameController::GameController(QObject* parent)
 		context->gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
 		controller->m_fpsTarget = context->fpsTarget;
 
-		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, SAVESTATE_SCREENSHOT)) {
+		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, controller->m_loadStateFlags)) {
 			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
 			if (vf) {
 				vf->truncate(vf, 0);
@@ -126,7 +130,7 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.frameCallback = [](GBAThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		memcpy(controller->m_frontBuffer, controller->m_drawContext, 256 * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+		memcpy(controller->m_frontBuffer, controller->m_drawContext, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
 		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
 		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
 			GBAThreadPauseFromThread(context);
@@ -139,7 +143,7 @@ GameController::GameController(QObject* parent)
 			return false;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (!GBASaveState(context, context->dirs.state, 0, true)) {
+		if (!GBASaveState(context, context->dirs.state, 0, controller->m_saveStateFlags)) {
 			return false;
 		}
 		QMetaObject::invokeMethod(controller, "closeGame");
@@ -216,6 +220,7 @@ GameController::~GameController() {
 	clearMultiplayerController();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
+	GBADirectorySetDeinit(&m_threadContext.dirs);
 	delete m_renderer;
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
@@ -255,6 +260,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setMute(opts->mute);
 
 	threadInterrupt();
+	GBADirectorySetMapOptions(&m_threadContext.dirs, opts);
 	m_threadContext.idleOptimization = opts->idleOptimization;
 	threadContinue();
 }
@@ -277,26 +283,22 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 }
 #endif
 
-void GameController::loadGame(const QString& path, bool dirmode) {
+void GameController::loadGame(const QString& path) {
 	closeGame();
-	if (!dirmode) {
-		QFile file(path);
-		if (!file.open(QIODevice::ReadOnly)) {
-			postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
-			return;
-		}
-		file.close();
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly)) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
+		return;
 	}
+	file.close();
 
 	m_fname = path;
-	m_dirmode = dirmode;
 	openGame();
 }
 
 void GameController::bootBIOS() {
 	closeGame();
 	m_fname = QString();
-	m_dirmode = false;
 	openGame(true);
 }
 
@@ -336,7 +338,7 @@ void GameController::openGame(bool biosOnly) {
 	}
 
 	m_inputController->recalibrateAxes();
-	memset(m_drawContext, 0xF8, 1024 * VIDEO_HORIZONTAL_PIXELS);
+	memset(m_drawContext, 0xF8, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * 4);
 
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
@@ -710,7 +712,7 @@ void GameController::loadState(int slot) {
 			controller->m_backupLoadState = new GBASerializedState;
 		}
 		GBASerialize(context->gba, controller->m_backupLoadState);
-		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT)) {
+		if (GBALoadState(context, context->dirs.state, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
 		}
@@ -733,7 +735,7 @@ void GameController::saveState(int slot) {
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		GBASaveState(context, context->dirs.state, controller->m_stateSlot, SAVESTATE_SCREENSHOT | EXTDATA_SAVEDATA);
+		GBASaveState(context, context->dirs.state, controller->m_stateSlot, controller->m_saveStateFlags);
 	});
 }
 

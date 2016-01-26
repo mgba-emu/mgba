@@ -34,7 +34,7 @@ static inline int MutexLock(Mutex* mutex) {
 
 static inline int MutexTryLock(Mutex* mutex) {
 	if (TryEnterCriticalSection(mutex)) {
-		return GetLastError();
+		return 0;
 	}
 	return 1;
 }

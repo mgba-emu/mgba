@@ -40,6 +40,11 @@ struct GBAOptions {
 	bool suspendScreensaver;
 	char* shader;
 
+	char* savegamePath;
+	char* savestatePath;
+	char* screenshotPath;
+	char* patchPath;
+
 	int volume;
 	bool mute;
 

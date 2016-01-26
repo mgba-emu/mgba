@@ -28,6 +28,7 @@ Q_OBJECT
 
 public:
 	GBAKeyEditor(InputController* controller, int type, const QString& profile = QString(), QWidget* parent = nullptr);
+	virtual ~GBAKeyEditor();
 
 public slots:
 	void setAll();
@@ -45,6 +46,7 @@ private slots:
 	void refresh();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
+	void selectGamepad(int index);
 #endif
 
 private:

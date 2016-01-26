@@ -17,6 +17,8 @@ Features:
  - Implemented cycle counting for sprite rendering
  - Cleaner, unified settings window
  - Added a setting for pausing when the emulator is not in focus
+ - Customizable paths for save games, save states, screenshots and patches
+ - Controller hotplugging
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
@@ -32,6 +34,8 @@ Bugfixes:
  - Qt: Fix some potential crashes with the gamepad mapping
  - Debugger: Fix watchpoints in gdb
  - ARM7: Fix decoding of some ARM ALU instructions with shifters
+ - Qt: Fix keys being mapped incorrectly when loading configuration file
+ - GBA Cheats: Fix cheats setting the Action Replay version
 Misc:
  - Qt: Window size command line options are now supported
  - Qt: Increase usability of key mapper
@@ -60,6 +64,9 @@ Misc:
  - GBA RR: Add support for resets in movies
  - GBA Input: Consolidate GBA_KEY_NONE and GBA_NO_MAPPING
  - Debugger: Convert breakpoints and watchpoints from linked-lists to vectors
+ - Qt: Added button for breaking into the GDB debugger
+ - GBA BIOS: Finish implementing RegisterRamReset
+ - GBA: Allow jumping to OAM and palette RAM
 
 0.3.2: (2015-12-16)
 Bugfixes:

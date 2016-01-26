@@ -47,6 +47,12 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 			const char* type = 0;
 			switch (info->watchType) {
 			case WATCHPOINT_WRITE:
+				if (info->newValue == info->oldValue) {
+					if (stub->d.state == DEBUGGER_PAUSED) {
+						stub->d.state = DEBUGGER_RUNNING;
+					}
+					return;
+				}
 				type = "watch";
 				break;
 			case WATCHPOINT_READ:

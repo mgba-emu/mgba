@@ -188,7 +188,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 #endif
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
-	if (glVersion & QGLFormat::OpenGL_Version_3_0) {
+	if (glVersion & (QGLFormat::OpenGL_Version_3_0 | QGLFormat::OpenGL_ES_Version_2_0)) {
 		gl2Backend = new GBAGLES2Context;
 		GBAGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
@@ -366,7 +366,7 @@ void PainterGL::enqueue(const uint32_t* backing) {
 	} else {
 		buffer = m_free.takeLast();
 	}
-	memcpy(buffer, backing, 256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	memcpy(buffer, backing, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }

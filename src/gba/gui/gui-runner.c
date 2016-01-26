@@ -15,6 +15,10 @@
 #include "util/png-io.h"
 #include "util/vfs.h"
 
+#ifdef _3DS
+#include <3ds.h>
+#endif
+
 #include <sys/time.h>
 
 #define FPS_GRANULARITY 120
@@ -237,6 +241,12 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
 		while (true) {
+#ifdef _3DS
+			running = aptMainLoop();
+			if (!running) {
+				break;
+			}
+#endif
 			uint32_t guiKeys;
 			GUIPollInput(&runner->params, &guiKeys, 0);
 			if (guiKeys & (1 << GUI_INPUT_CANCEL)) {

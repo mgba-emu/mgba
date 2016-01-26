@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "directories.h"
 
+#include "gba/context/config.h"
 #include "util/vfs.h"
 
 void GBADirectorySetInit(struct GBADirectorySet* dirs) {
@@ -98,4 +99,46 @@ struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* 
 		}
 	}
 	return file;
+}
+
+void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOptions* opts) {
+	if (opts->savegamePath) {
+		struct VDir* dir = VDirOpen(opts->savegamePath);
+		if (dir) {
+			if (dirs->save && dirs->save != dirs->base) {
+				dirs->save->close(dirs->save);
+			}
+			dirs->save = dir;
+		}
+	}
+
+	if (opts->savestatePath) {
+		struct VDir* dir = VDirOpen(opts->savestatePath);
+		if (dir) {
+			if (dirs->state && dirs->state != dirs->base) {
+				dirs->state->close(dirs->state);
+			}
+			dirs->state = dir;
+		}
+	}
+
+	if (opts->screenshotPath) {
+		struct VDir* dir = VDirOpen(opts->screenshotPath);
+		if (dir) {
+			if (dirs->screenshot && dirs->screenshot != dirs->base) {
+				dirs->screenshot->close(dirs->screenshot);
+			}
+			dirs->screenshot = dir;
+		}
+	}
+
+	if (opts->patchPath) {
+		struct VDir* dir = VDirOpen(opts->patchPath);
+		if (dir) {
+			if (dirs->patch && dirs->patch != dirs->base) {
+				dirs->patch->close(dirs->patch);
+			}
+			dirs->patch = dir;
+		}
+	}
 }

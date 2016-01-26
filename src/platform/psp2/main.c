@@ -22,8 +22,6 @@
 
 #include <vita2d.h>
 
-PSP2_MODULE_INFO(0, 0, "mGBA");
-
 static void _drawStart(void) {
 	vita2d_set_vblank_wait(false);
 	vita2d_start_drawing();
@@ -43,29 +41,29 @@ static uint32_t _pollInput(void) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 	int input = 0;
-	if (pad.buttons & PSP2_CTRL_TRIANGLE) {
+	if (pad.buttons & SCE_CTRL_TRIANGLE) {
 		input |= 1 << GUI_INPUT_CANCEL;
 	}
-	if (pad.buttons & PSP2_CTRL_SQUARE) {
+	if (pad.buttons & SCE_CTRL_SQUARE) {
 		input |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
 	}
-	if (pad.buttons & PSP2_CTRL_CIRCLE) {
+	if (pad.buttons & SCE_CTRL_CIRCLE) {
 		input |= 1 << GUI_INPUT_BACK;
 	}
-	if (pad.buttons & PSP2_CTRL_CROSS) {
+	if (pad.buttons & SCE_CTRL_CROSS) {
 		input |= 1 << GUI_INPUT_SELECT;
 	}
 
-	if (pad.buttons & PSP2_CTRL_UP || pad.ly < 64) {
+	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
 	}
-	if (pad.buttons & PSP2_CTRL_DOWN || pad.ly >= 192) {
+	if (pad.buttons & SCE_CTRL_DOWN || pad.ly >= 192) {
 		input |= 1 << GUI_INPUT_DOWN;
 	}
-	if (pad.buttons & PSP2_CTRL_LEFT || pad.lx < 64) {
+	if (pad.buttons & SCE_CTRL_LEFT || pad.lx < 64) {
 		input |= 1 << GUI_INPUT_LEFT;
 	}
-	if (pad.buttons & PSP2_CTRL_RIGHT || pad.lx >= 192) {
+	if (pad.buttons & SCE_CTRL_RIGHT || pad.lx >= 192) {
 		input |= 1 << GUI_INPUT_RIGHT;
 	}
 
@@ -108,7 +106,7 @@ int main() {
 			GUI_PARAMS_TRAIL
 		},
 		.configExtra = (struct GUIMenuItem[]) {
-			{ 
+			{
 				.title = "Screen mode",
 				.data = "screenMode",
 				.submenu = 0,
