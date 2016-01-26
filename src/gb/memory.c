@@ -374,6 +374,8 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	case 0x2:
 		if (value < 4) {
 			_switchSramBank(memory, value);
+		} else {
+			mLOG(GB_MBC, STUB, "MBC3 RTC unimplemented", value);
 		}
 		break;
 	}

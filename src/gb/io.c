@@ -58,7 +58,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_TIMA:
 		// ???
 		return;
+	case REG_JOYP:
 	case REG_TMA:
+	case REG_LYC:
 		// Handled transparently by the registers
 		break;
 	case REG_TAC:
@@ -93,7 +95,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		GBUpdateIRQs(gb);
 		return;
 	default:
-		// TODO: Log
+		mLOG(GB_MBC, STUB, "Writing to unknown register FF%02X:%02X", address, value);
 		if (address >= GB_SIZE_IO) {
 			return;
 		}
@@ -130,11 +132,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_TIMA:
 	case REG_TMA:
 	case REG_TAC:
+	case REG_LCDC:
 	case REG_LY:
+	case REG_LYC:
 		// Handled transparently by the registers
 		break;
 	default:
-		// TODO: Log
+		mLOG(GB_MBC, STUB, "Reading from unknown register FF%02X", address);
 		if (address >= GB_SIZE_IO) {
 			return 0;
 		}
