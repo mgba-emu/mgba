@@ -19,6 +19,7 @@ Features:
  - Added a setting for pausing when the emulator is not in focus
  - Customizable paths for save games, save states, screenshots and patches
  - Controller hotplugging
+ - Ability to store save games and active cheats within savestates
 Bugfixes:
  - Util: Fix PowerPC PNG read/write pixel order
  - VFS: Fix VFileReadline and remove _vfdReadline
@@ -67,6 +68,7 @@ Misc:
  - Qt: Added button for breaking into the GDB debugger
  - GBA BIOS: Finish implementing RegisterRamReset
  - GBA: Allow jumping to OAM and palette RAM
+ - Qt: Add box for showing duration of rewind
 
 0.3.2: (2015-12-16)
 Bugfixes:

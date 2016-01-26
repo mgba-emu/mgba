@@ -13,6 +13,10 @@
 #include "InputController.h"
 #include "ShortcutView.h"
 
+extern "C" {
+#include "gba/serialize.h"
+}
+
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, QWidget* parent)
@@ -21,29 +25,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 {
 	m_ui.setupUi(this);
 
-	loadSetting("bios", m_ui.bios);
-	loadSetting("useBios", m_ui.useBios);
-	loadSetting("skipBios", m_ui.skipBios);
-	loadSetting("audioBuffers", m_ui.audioBufferSize);
-	loadSetting("sampleRate", m_ui.sampleRate);
-	loadSetting("videoSync", m_ui.videoSync);
-	loadSetting("audioSync", m_ui.audioSync);
-	loadSetting("frameskip", m_ui.frameskip);
-	loadSetting("fpsTarget", m_ui.fpsTarget);
-	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
-	loadSetting("volume", m_ui.volume);
-	loadSetting("mute", m_ui.mute);
-	loadSetting("rewindEnable", m_ui.rewind);
-	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
-	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
-	loadSetting("resampleVideo", m_ui.resampleVideo);
-	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
-	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
-	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
-	loadSetting("savegamePath", m_ui.savegamePath);
-	loadSetting("savestatePath", m_ui.savestatePath);
-	loadSetting("screenshotPath", m_ui.screenshotPath);
-	loadSetting("patchPath", m_ui.patchPath);
+	reloadConfig();
 
 	if (m_ui.savegamePath->text().isEmpty()) {
 		m_ui.savegameSameDir->setChecked(true);
@@ -109,28 +91,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
-	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
-	if (fastForwardRatio <= 0) {
-		m_ui.fastForwardUnbounded->setChecked(true);
-		m_ui.fastForwardRatio->setEnabled(false);
-	} else {
-		m_ui.fastForwardUnbounded->setChecked(false);
-		m_ui.fastForwardRatio->setEnabled(true);
-		m_ui.fastForwardRatio->setValue(fastForwardRatio);
-	}
-	connect(m_ui.fastForwardUnbounded, &QAbstractButton::toggled, [this](bool checked) {
-		m_ui.fastForwardRatio->setEnabled(!checked);
-	});
-
-	QString idleOptimization = loadSetting("idleOptimization");
-	if (idleOptimization == "ignore") {
-		m_ui.idleOptimization->setCurrentIndex(0);
-	} else if (idleOptimization == "remove") {
-		m_ui.idleOptimization->setCurrentIndex(1);
-	} else if (idleOptimization == "detect") {
-		m_ui.idleOptimization->setCurrentIndex(2);
-	}
-
+	// TODO: Move to reloadConfig()
 	QVariant audioDriver = m_controller->getQtOption("audioDriver");
 #ifdef BUILD_QT_MULTIMEDIA
 	m_ui.audioDriver->addItem(tr("Qt Multimedia"), static_cast<int>(AudioProcessor::Driver::QT_MULTIMEDIA));
@@ -146,6 +107,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 #endif
 
+	// TODO: Move to reloadConfig()
 	QVariant displayDriver = m_controller->getQtOption("displayDriver");
 	m_ui.displayDriver->addItem(tr("Software (Qt)"), static_cast<int>(Display::Driver::QT));
 	if (!displayDriver.isNull() && displayDriver.toInt() == static_cast<int>(Display::Driver::QT)) {
@@ -195,6 +157,14 @@ void SettingsView::selectBios() {
 	}
 }
 
+void SettingsView::recalculateRewind() {
+	int interval = m_ui.rewindInterval->value();
+	int capacity = m_ui.rewindCapacity->value();
+	double duration = m_ui.fpsTarget->value();
+	m_ui.rewindDuration->setValue(interval * capacity / duration);
+
+}
+
 void SettingsView::updateConfig() {
 	saveSetting("bios", m_ui.bios);
 	saveSetting("useBios", m_ui.useBios);
@@ -238,6 +208,18 @@ void SettingsView::updateConfig() {
 		break;
 	}
 
+	int loadState = 0;
+	loadState |= m_ui.loadStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
+	loadState |= m_ui.loadStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
+	loadState |= m_ui.loadStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
+	saveSetting("loadStateExtdata", loadState);
+
+	int saveState = 0;
+	saveState |= m_ui.saveStateScreenshot->isChecked() ? SAVESTATE_SCREENSHOT : 0;
+	saveState |= m_ui.saveStateSave->isChecked() ? SAVESTATE_SAVEDATA : 0;
+	saveState |= m_ui.saveStateCheats->isChecked() ? SAVESTATE_CHEATS : 0;
+	saveSetting("saveStateExtdata", saveState);
+
 	QVariant audioDriver = m_ui.audioDriver->itemData(m_ui.audioDriver->currentIndex());
 	if (audioDriver != m_controller->getQtOption("audioDriver")) {
 		m_controller->setQtOption("audioDriver", audioDriver);
@@ -256,6 +238,72 @@ void SettingsView::updateConfig() {
 
 	emit pathsChanged();
 	emit biosLoaded(m_ui.bios->text());
+}
+
+void SettingsView::reloadConfig() {	
+	loadSetting("bios", m_ui.bios);
+	loadSetting("useBios", m_ui.useBios);
+	loadSetting("skipBios", m_ui.skipBios);
+	loadSetting("audioBuffers", m_ui.audioBufferSize);
+	loadSetting("sampleRate", m_ui.sampleRate);
+	loadSetting("videoSync", m_ui.videoSync);
+	loadSetting("audioSync", m_ui.audioSync);
+	loadSetting("frameskip", m_ui.frameskip);
+	loadSetting("fpsTarget", m_ui.fpsTarget);
+	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
+	loadSetting("volume", m_ui.volume);
+	loadSetting("mute", m_ui.mute);
+	loadSetting("rewindEnable", m_ui.rewind);
+	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
+	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("resampleVideo", m_ui.resampleVideo);
+	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
+	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
+	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	loadSetting("savegamePath", m_ui.savegamePath);
+	loadSetting("savestatePath", m_ui.savestatePath);
+	loadSetting("screenshotPath", m_ui.screenshotPath);
+	loadSetting("patchPath", m_ui.patchPath);
+
+	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
+	if (fastForwardRatio <= 0) {
+		m_ui.fastForwardUnbounded->setChecked(true);
+		m_ui.fastForwardRatio->setEnabled(false);
+	} else {
+		m_ui.fastForwardUnbounded->setChecked(false);
+		m_ui.fastForwardRatio->setEnabled(true);
+		m_ui.fastForwardRatio->setValue(fastForwardRatio);
+	}
+
+	connect(m_ui.rewindInterval, SIGNAL(valueChanged(int)), this, SLOT(recalculateRewind()));
+	connect(m_ui.rewindCapacity, SIGNAL(valueChanged(int)), this, SLOT(recalculateRewind()));
+	connect(m_ui.fpsTarget, SIGNAL(valueChanged(double)), this, SLOT(recalculateRewind()));
+
+	QString idleOptimization = loadSetting("idleOptimization");
+	if (idleOptimization == "ignore") {
+		m_ui.idleOptimization->setCurrentIndex(0);
+	} else if (idleOptimization == "remove") {
+		m_ui.idleOptimization->setCurrentIndex(1);
+	} else if (idleOptimization == "detect") {
+		m_ui.idleOptimization->setCurrentIndex(2);
+	}
+
+	bool ok;
+	int loadState = loadSetting("loadStateExtdata").toInt(&ok);
+	if (!ok) {
+		loadState = SAVESTATE_SCREENSHOT;
+	}
+	m_ui.loadStateScreenshot->setChecked(loadState & SAVESTATE_SCREENSHOT);
+	m_ui.loadStateSave->setChecked(loadState & SAVESTATE_SAVEDATA);
+	m_ui.loadStateCheats->setChecked(loadState & SAVESTATE_CHEATS);
+
+	int saveState = loadSetting("saveStateExtdata").toInt(&ok);
+	if (!ok) {
+		saveState = SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS;
+	}
+	m_ui.saveStateScreenshot->setChecked(saveState & SAVESTATE_SCREENSHOT);
+	m_ui.saveStateSave->setChecked(saveState & SAVESTATE_SAVEDATA);
+	m_ui.saveStateCheats->setChecked(saveState & SAVESTATE_CHEATS);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {
