@@ -73,6 +73,7 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
 	gb->memory.sramCurrentBank = 0;
+	gb->memory.sramBank = gb->memory.sram;
 
 	memset(&gb->video.oam, 0, sizeof(gb->video.oam));
 
