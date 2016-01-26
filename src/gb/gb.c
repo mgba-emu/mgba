@@ -19,6 +19,8 @@ const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
+mLOG_DEFINE_CATEGORY(GB);
+
 static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
@@ -229,7 +231,7 @@ void GBHalt(struct LR35902Core* cpu) {
 
 void GBHitStub(struct LR35902Core* cpu) {
 	// TODO
-	//printf("Hit stub at address %04X\n", cpu->pc);
+	mLOG(GB, STUB, "Hit stub at address %04X:%02X\n", cpu->pc, cpu->bus);
 }
 
 bool GBIsROM(struct VFile* vf) {

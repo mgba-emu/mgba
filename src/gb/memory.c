@@ -10,11 +10,15 @@
 
 #include "util/memory.h"
 
+mLOG_DEFINE_CATEGORY(GB_MBC);
+mLOG_DEFINE_CATEGORY(GB_MEM);
+
 static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO: Log game error
 	UNUSED(memory);
 	UNUSED(address);
 	UNUSED(value);
+
+	mLOG(GB_MBC, GAME_ERROR, "Wrote to invalid MBC");
 }
 
 static void _GBMBC1(struct GBMemory*, uint16_t address, uint8_t value);
@@ -106,7 +110,7 @@ void GBMemoryReset(struct GB* gb) {
 		gb->memory.mbcType = GB_MBC4;
 		break;
 	default:
-		// TODO: Log
+		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 	case 0x19:
 	case 0x1A:
 	case 0x1B:
@@ -166,6 +170,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return 0xFF;
 		}
 		if (address < GB_BASE_IO) {
+			mLOG(GB_MEM, GAME_ERROR, "Attempt to read from unusable memory: %04X", address);
 			return 0xFF;
 		}
 		if (address < GB_BASE_HRAM) {
@@ -220,7 +225,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 				gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 			}
 		} else if (address < GB_BASE_IO) {
-			// TODO: Log
+			mLOG(GB_MEM, GAME_ERROR, "Attempt to write to unusable memory: %04X:%02X", address, value);
 		} else if (address < GB_BASE_HRAM) {
 			GBIOWrite(gb, address & (GB_SIZE_IO - 1), value);
 		} else if (address < GB_BASE_IE) {
@@ -297,7 +302,7 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 static void _switchBank(struct GBMemory* memory, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
-		// TODO: Log
+		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
 		return;
 	}
 	memory->romBank = &memory->rom[bankStart];
@@ -324,6 +329,7 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		default:
 			// TODO
+			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
 			break;
 		}
 		break;
@@ -338,7 +344,7 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC2(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO
+	mLOG(GB_MBC, STUB, "MBC2 unimplemented");
 }
 
 void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
@@ -355,6 +361,7 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		default:
 			// TODO
+			mLOG(GB_MBC, STUB, "MBC3 unknown value %02X", value);
 			break;
 		}
 		break;
@@ -374,6 +381,7 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 
 void _GBMBC4(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	// TODO
+	mLOG(GB_MBC, STUB, "MBC4 unimplemented");
 }
 
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
@@ -390,6 +398,7 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		default:
 			// TODO
+			mLOG(GB_MBC, STUB, "MBC5 unknown value %02X", value);
 			break;
 		}
 		break;
@@ -402,4 +411,5 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 
 void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	// TODO
+	mLOG(GB_MBC, STUB, "MBC7 unimplemented");
 }

@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
+mLOG_DECLARE_CATEGORY(GB_IO);
+
 enum GBIORegisters {
 	REG_JOYP = 0x00,
 	REG_SB = 0x01,

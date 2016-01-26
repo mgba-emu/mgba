@@ -8,7 +8,12 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
 #include "lr35902/lr35902.h"
+
+mLOG_DECLARE_CATEGORY(GB_MBC);
+mLOG_DECLARE_CATEGORY(GB_MEM);
 
 struct GB;
 

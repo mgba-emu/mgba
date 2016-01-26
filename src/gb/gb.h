@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
 #include "lr35902/lr35902.h"
 
 #include "gb/memory.h"
@@ -17,6 +19,8 @@
 extern const uint32_t DMG_LR35902_FREQUENCY;
 extern const uint32_t CGB_LR35902_FREQUENCY;
 extern const uint32_t SGB_LR35902_FREQUENCY;
+
+mLOG_DECLARE_CATEGORY(GB);
 
 // TODO: Prefix GBAIRQ
 enum GBIRQ {
