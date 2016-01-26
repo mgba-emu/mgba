@@ -62,6 +62,7 @@ struct LR35902InterruptHandler {
 	void (*setInterrupts)(struct LR35902Core* cpu, bool enable);
 	void (*halt)(struct LR35902Core* cpu);
 
+	void (*hitIllegal)(struct LR35902Core* cpu);
 	void (*hitStub)(struct LR35902Core* cpu);
 };
 

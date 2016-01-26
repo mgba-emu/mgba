@@ -25,6 +25,7 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
+static void GBIllegal(struct LR35902Core* cpu);
 static void GBHitStub(struct LR35902Core* cpu);
 
 void GBCreate(struct GB* gb) {
@@ -124,6 +125,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->reset = GBReset;
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
+	irqh->hitIllegal = GBIllegal;
 	irqh->hitStub = GBHitStub;
 	irqh->halt = GBHalt;
 }
@@ -229,6 +231,11 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 void GBHalt(struct LR35902Core* cpu) {
 	cpu->cycles = cpu->nextEvent;
 	cpu->halted = true;
+}
+
+void GBIllegal(struct LR35902Core* cpu) {
+	// TODO
+	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
 }
 
 void GBHitStub(struct LR35902Core* cpu) {
