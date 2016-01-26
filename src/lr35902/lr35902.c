@@ -90,6 +90,7 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 	cpu->bus = cpu->pc;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionIRQFinish;
+	cpu->irqh.setInterrupts(cpu, false);
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {

@@ -163,7 +163,6 @@ void GBUpdateIRQs(struct GB* gb) {
 		return;
 	}
 
-	gb->cpu->irqh.setInterrupts(gb->cpu, false);
 	if (irqs & (1 << GB_IRQ_VBLANK)) {
 		LR35902RaiseIRQ(gb->cpu, GB_VECTOR_VBLANK);
 		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
