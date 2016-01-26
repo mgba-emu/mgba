@@ -273,7 +273,7 @@ void Window::saveConfig() {
 void Window::selectROM() {
 	QStringList formats{
 		"*.gba",
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
@@ -293,7 +293,7 @@ void Window::selectROM() {
 void Window::replaceROM() {
 	QStringList formats{
 		"*.gba",
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
