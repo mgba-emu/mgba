@@ -20,8 +20,6 @@ struct GB;
 struct GBTimer {
 	struct GB* p;
 
-	int mode;
-
 	int32_t nextEvent;
 	int32_t eventDiff;
 

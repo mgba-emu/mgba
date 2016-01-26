@@ -48,10 +48,7 @@ enum LR35902ExecutionState {
 };
 
 struct LR35902Memory {
-	uint16_t (*load16)(struct LR35902Core*, uint16_t address);
 	uint8_t (*load8)(struct LR35902Core*, uint16_t address);
-
-	void (*store16)(struct LR35902Core*, uint16_t address, int16_t value);
 	void (*store8)(struct LR35902Core*, uint16_t address, int8_t value);
 
 	uint8_t* activeRegion;
