@@ -100,11 +100,15 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
+DEFINE_INSTRUCTION_LR35902(RETFinish,
+	cpu->sp += 2;  /* TODO: Atomic incrementing? */
+	cpu->executionState = LR35902_CORE_STALL;)
+
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPL,
 	cpu->pc |= cpu->bus << 8;
-	cpu->sp += 2;  /* TODO: Atomic incrementing? */
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
-	cpu->executionState = LR35902_CORE_STALL;)
+	cpu->executionState = LR35902_CORE_OP2;
+	cpu->instruction = _LR35902InstructionRETFinish;)
 
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 	if (cpu->condition) {
