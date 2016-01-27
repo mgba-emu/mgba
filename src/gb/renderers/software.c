@@ -158,15 +158,17 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 		}
 	}
 
-	int spriteHeight = 8;
-	if (GBRegisterLCDCIsObjSize(softwareRenderer->lcdc)) {
-		spriteHeight = 16;
-	}
-	int i;
-	for (i = 0; i < softwareRenderer->oamMax; ++i) {
-		// TODO: Sprite sizes
-		if (y >= softwareRenderer->obj[i]->y - 16 && y < softwareRenderer->obj[i]->y - 16 + spriteHeight) {
-			GBVideoSoftwareRendererDrawObj(softwareRenderer, softwareRenderer->obj[i], y);
+	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
+		int spriteHeight = 8;
+		if (GBRegisterLCDCIsObjSize(softwareRenderer->lcdc)) {
+			spriteHeight = 16;
+		}
+		int i;
+		for (i = 0; i < softwareRenderer->oamMax; ++i) {
+			// TODO: Sprite sizes
+			if (y >= softwareRenderer->obj[i]->y - 16 && y < softwareRenderer->obj[i]->y - 16 + spriteHeight) {
+				GBVideoSoftwareRendererDrawObj(softwareRenderer, softwareRenderer->obj[i], y);
+			}
 		}
 	}
 
