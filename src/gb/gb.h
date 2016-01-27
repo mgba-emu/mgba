@@ -57,6 +57,8 @@ struct GB {
 	struct VFile* sramVf;
 
 	const char* activeFile;
+
+	bool eiPending;
 };
 
 struct GBCartridge {
