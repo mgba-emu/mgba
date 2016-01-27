@@ -130,6 +130,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_TIMA:
 	case REG_TMA:
 	case REG_TAC:
+	case REG_STAT:
 	case REG_LCDC:
 	case REG_LY:
 	case REG_LYC:
