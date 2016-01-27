@@ -212,6 +212,9 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 	}
 	int topY = (((y + sy) >> 3) & 0x1F) * 0x20;
 	int bottomY = (y + sy) & 7;
+	if (x < 0) {
+		x = 0;
+	}
 	for (; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
 		int topX = ((x + sx) >> 3) & 0x1F;
 		int bottomX = 7 - ((x + sx) & 7);
