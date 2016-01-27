@@ -150,7 +150,7 @@ static void GBVideoSoftwareRendererDrawScanline(struct GBVideoRenderer* renderer
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, 0, y, 7 - softwareRenderer->wx, -softwareRenderer->wy);
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, y, 7 - softwareRenderer->wx, -softwareRenderer->wy);
 		}
 	} else {
 		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; ++x) {
