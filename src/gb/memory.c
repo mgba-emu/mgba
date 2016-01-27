@@ -342,6 +342,10 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		}
 		_switchBank(memory, bank | (memory->currentBank & 0x60));
 		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC1 unknown address: %04X:%02X", address, value);
+		break;
 	}
 }
 
@@ -380,6 +384,10 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			mLOG(GB_MBC, STUB, "MBC3 RTC unimplemented", value);
 		}
 		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC3 unknown address: %04X:%02X", address, value);
+		break;
 	}
 }
 
@@ -406,9 +414,12 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		}
 		break;
-		break;
 	case 0x1:
 		_switchBank(memory, bank);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC5 unknown address: %04X:%02X", address, value);
 		break;
 	}
 }
