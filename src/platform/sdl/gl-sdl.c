@@ -13,6 +13,8 @@
 #endif
 #include "platform/opengl/gl.h"
 
+#define GB_GBA_CENTER ((VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS + VIDEO_HORIZONTAL_PIXELS * (VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS)) / 2)
+
 static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->resized(v, w, h);
 	v->clear(v);
@@ -104,7 +106,9 @@ bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
 	// TODO: Pass texture size along
-	renderer->gb.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	color_t* buf = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	memset(buf, 0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	renderer->gb.outputBuffer = buf + GB_GBA_CENTER;
 	renderer->gb.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	GBAGLContextCreate(&renderer->gl);
@@ -161,7 +165,7 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 #endif
 		}
 
-		v->postFrame(v, renderer->gb.outputBuffer);
+		v->postFrame(v, renderer->gb.outputBuffer - GB_GBA_CENTER);
 		v->drawFrame(v);
 		v->swap(v);
 	}
@@ -171,7 +175,7 @@ void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
-	free(renderer->gb.outputBuffer);
+	free(renderer->gb.outputBuffer - GB_GBA_CENTER);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
