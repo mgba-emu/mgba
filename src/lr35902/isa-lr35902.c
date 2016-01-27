@@ -65,41 +65,35 @@ DEFINE_INSTRUCTION_LR35902(JRFinish,
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(JR);
 
-DEFINE_INSTRUCTION_LR35902(CALLFinish,
+DEFINE_INSTRUCTION_LR35902(CALLUpdateSPL,
+	--cpu->index;
+	cpu->bus = cpu->sp;
+	cpu->sp = cpu->index;
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _LR35902InstructionNOP;)
+
+DEFINE_INSTRUCTION_LR35902(CALLUpdatePCH,
 	if (cpu->condition) {
-		cpu->pc = (cpu->bus << 8) | cpu->index;
+		int newPc = (cpu->bus << 8) | cpu->index;
+		cpu->bus = cpu->pc >> 8;
+		cpu->index = cpu->sp - 1;
+		cpu->sp = cpu->pc; // GROSS
+		cpu->pc = newPc;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
-		cpu->executionState = LR35902_CORE_STALL;
+		cpu->executionState = LR35902_CORE_MEMORY_STORE;
+		cpu->instruction = _LR35902InstructionCALLUpdateSPL;
 	})
 
-DEFINE_INSTRUCTION_LR35902(CALLUpdatePC,
+DEFINE_INSTRUCTION_LR35902(CALLUpdatePCL,
 	cpu->executionState = LR35902_CORE_READ_PC;
 	cpu->index = cpu->bus;
-	cpu->instruction = _LR35902InstructionCALLFinish;)
-
-DEFINE_INSTRUCTION_LR35902(CALLUpdateSPL,
-	cpu->executionState = LR35902_CORE_READ_PC; \
-	cpu->instruction = _LR35902InstructionCALLUpdatePC;)
-
-DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
-	cpu->index = cpu->sp + 1;
-	cpu->bus = (cpu->pc + 2) >> 8;
-	cpu->executionState = LR35902_CORE_MEMORY_STORE;
-	cpu->instruction = _LR35902InstructionCALLUpdateSPL;)
+	cpu->instruction = _LR35902InstructionCALLUpdatePCH)
 
 #define DEFINE_CALL_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
 	DEFINE_INSTRUCTION_LR35902(CALL ## CONDITION_NAME, \
 		cpu->condition = CONDITION; \
-		if (CONDITION) { \
-			cpu->sp -= 2; /* TODO: Atomic incrementing? */ \
-			cpu->index = cpu->sp; \
-			cpu->bus = cpu->pc + 2; \
-			cpu->executionState = LR35902_CORE_MEMORY_STORE; \
-			cpu->instruction = _LR35902InstructionCALLUpdateSPH; \
-		} else { \
-			cpu->executionState = LR35902_CORE_READ_PC; \
-			cpu->instruction = _LR35902InstructionCALLUpdatePC; \
-		})
+		cpu->executionState = LR35902_CORE_READ_PC; \
+		cpu->instruction = _LR35902InstructionCALLUpdatePCL;)
 
 DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
