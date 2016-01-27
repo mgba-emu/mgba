@@ -106,7 +106,7 @@ void LR35902Tick(struct LR35902Core* cpu) {
 			cpu->instruction = _LR35902InstructionIRQ;
 			break;
 		}
-		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
+		cpu->bus = cpu->memory.cpuLoad8(cpu, cpu->pc);
 		cpu->instruction = _lr35902InstructionTable[cpu->bus];
 		++cpu->pc;
 		break;

@@ -37,6 +37,7 @@ static void _GBMemoryDMAService(struct GB* gb);
 
 void GBMemoryInit(struct GB* gb) {
 	struct LR35902Core* cpu = gb->cpu;
+	cpu->memory.cpuLoad8 = GBLoad8;
 	cpu->memory.load8 = GBLoad8;
 	cpu->memory.store8 = GBStore8;
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
