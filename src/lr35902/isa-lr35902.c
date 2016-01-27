@@ -16,12 +16,15 @@
 
 DEFINE_INSTRUCTION_LR35902(NOP,);
 
-#define DEFINE_CONDITIONAL_INSTRUCTION_LR35902(NAME) \
-	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(, true) \
+#define DEFINE_CONDITIONAL_ONLY_INSTRUCTION_LR35902(NAME) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(C, cpu->f.c) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(Z, cpu->f.z) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(NC, !cpu->f.c) \
 	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(NZ, !cpu->f.z)
+
+#define DEFINE_CONDITIONAL_INSTRUCTION_LR35902(NAME) \
+	DEFINE_ ## NAME ## _INSTRUCTION_LR35902(, true) \
+	DEFINE_CONDITIONAL_ONLY_INSTRUCTION_LR35902(NAME)
 
 DEFINE_INSTRUCTION_LR35902(JPFinish,
 	if (cpu->condition) {
@@ -102,18 +105,19 @@ DEFINE_CONDITIONAL_INSTRUCTION_LR35902(CALL)
 
 DEFINE_INSTRUCTION_LR35902(RETFinish,
 	cpu->sp += 2;  /* TODO: Atomic incrementing? */
+	cpu->pc |= cpu->bus << 8;
+	cpu->memory.setActiveRegion(cpu, cpu->pc);
 	cpu->executionState = LR35902_CORE_STALL;)
 
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPL,
-	cpu->pc |= cpu->bus << 8;
-	cpu->memory.setActiveRegion(cpu, cpu->pc);
-	cpu->executionState = LR35902_CORE_OP2;
+	cpu->index = cpu->sp + 1;
+	cpu->pc = cpu->bus;
+	cpu->executionState = LR35902_CORE_MEMORY_LOAD;
 	cpu->instruction = _LR35902InstructionRETFinish;)
 
 DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 	if (cpu->condition) {
-		cpu->index = cpu->sp + 1;
-		cpu->pc = cpu->bus;
+		cpu->index = cpu->sp;
 		cpu->executionState = LR35902_CORE_MEMORY_LOAD;
 		cpu->instruction = _LR35902InstructionRETUpdateSPL;
 	})
@@ -121,18 +125,19 @@ DEFINE_INSTRUCTION_LR35902(RETUpdateSPH,
 #define DEFINE_RET_INSTRUCTION_LR35902(CONDITION_NAME, CONDITION) \
 	DEFINE_INSTRUCTION_LR35902(RET ## CONDITION_NAME, \
 		cpu->condition = CONDITION; \
-		cpu->index = cpu->sp; \
-		cpu->executionState = LR35902_CORE_MEMORY_LOAD; \
+		cpu->executionState = LR35902_CORE_OP2; \
 		cpu->instruction = _LR35902InstructionRETUpdateSPH;)
+
+DEFINE_INSTRUCTION_LR35902(RET,
+	cpu->condition = true;
+	_LR35902InstructionRETUpdateSPH(cpu);)
 
 DEFINE_INSTRUCTION_LR35902(RETI,
 	cpu->condition = true;
-	cpu->index = cpu->sp;
-	cpu->executionState = LR35902_CORE_MEMORY_LOAD;
 	cpu->irqh.setInterrupts(cpu, true);
-	cpu->instruction = _LR35902InstructionRETUpdateSPH;)
+	_LR35902InstructionRETUpdateSPH(cpu);)
 
-DEFINE_CONDITIONAL_INSTRUCTION_LR35902(RET)
+DEFINE_CONDITIONAL_ONLY_INSTRUCTION_LR35902(RET)
 
 #define DEFINE_AND_INSTRUCTION_LR35902(NAME, OPERAND) \
 	DEFINE_INSTRUCTION_LR35902(AND ## NAME, \
