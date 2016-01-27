@@ -32,5 +32,6 @@ void GBTimerReset(struct GBTimer*);
 int32_t GBTimerProcessEvents(struct GBTimer*, int32_t cycles);
 void GBTimerDivReset(struct GBTimer*);
 uint8_t GBTimerUpdateTAC(struct GBTimer*, GBRegisterTAC tac);
+void GBTimerUpdateTIMA(struct GBTimer* timer);
 
 #endif

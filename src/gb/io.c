@@ -55,10 +55,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_DIV:
 		GBTimerDivReset(&gb->timer);
 		return;
-	case REG_TIMA:
-		// ???
-		return;
 	case REG_JOYP:
+	case REG_TIMA:
 	case REG_TMA:
 	case REG_LYC:
 		// Handled transparently by the registers

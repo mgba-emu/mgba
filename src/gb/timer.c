@@ -71,15 +71,19 @@ uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
 			timer->timaPeriod = 256;
 			break;
 		}
-		timer->nextTima = timer->eventDiff + timer->timaPeriod;
-		if (timer->nextTima < timer->nextEvent) {
-			timer->nextEvent = timer->nextTima;
-			if (timer->nextEvent < timer->p->cpu->nextEvent) {
-				timer->p->cpu->nextEvent = timer->nextEvent;
-			}
-		}
+		GBTimerUpdateTIMA(timer);
 	} else {
 		timer->nextTima = INT_MAX;
 	}
 	return tac;
+}
+
+void GBTimerUpdateTIMA(struct GBTimer* timer) {
+	timer->nextTima = timer->eventDiff + timer->p->cpu->cycles + timer->timaPeriod;
+	if (timer->eventDiff + timer->timaPeriod < timer->nextEvent) {
+		timer->nextEvent = timer->eventDiff + timer->timaPeriod;
+		if (timer->nextEvent < timer->p->cpu->nextEvent) {
+			timer->p->cpu->nextEvent = timer->nextEvent;
+		}
+	}
 }
