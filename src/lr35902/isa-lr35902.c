@@ -741,7 +741,7 @@ DEFINE_INSTRUCTION_LR35902(HALT, cpu->irqh.halt(cpu));
 		cpu->executionState = LR35902_CORE_STALL;) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC ## UpdateSPH, \
 		cpu->index = cpu->sp + 1; \
-		cpu->bus = (cpu->pc + 2) >> 8; \
+		cpu->bus = cpu->pc >> 8; \
 		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 		cpu->instruction = _LR35902InstructionRST ## VEC ## UpdateSPL;) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC, \
