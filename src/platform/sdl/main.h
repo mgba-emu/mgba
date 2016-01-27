@@ -40,15 +40,14 @@
 #include <pixman.h>
 #endif
 
+struct mCore;
 struct mSDLRenderer {
-	union {
+	struct mCore* core;
+	color_t* outputBuffer;
 #ifdef M_CORE_GBA
-		struct GBAVideoSoftwareRenderer d;
+	// TODO: Remove
+	struct GBAVideoSoftwareRenderer d;
 #endif
-#ifdef M_CORE_GB
-		struct GBVideoSoftwareRenderer gb;
-#endif
-	};
 	struct GBASDLAudio audio;
 	struct GBASDLEvents events;
 	struct GBASDLPlayer player;

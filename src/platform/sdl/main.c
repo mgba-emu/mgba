@@ -13,6 +13,7 @@
 #include "debugger/gdb-stub.h"
 #endif
 
+#include "core/core.h"
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
 #include "gba/context/config.h"
@@ -20,6 +21,7 @@
 #include "gba/video.h"
 #endif
 #ifdef M_CORE_GB
+#include "gb/core.h"
 #include "gb/gb.h"
 #include "gb/video.h"
 #endif
@@ -135,7 +137,7 @@ int main(int argc, char** argv) {
 			if (!opts.height) {
 				opts.height = /*GB_*/VIDEO_VERTICAL_PIXELS;
 			}
-			GBVideoSoftwareRendererCreate(&renderer.gb);
+			renderer.core = GBCoreCreate();
 #ifdef BUILD_GL
 			mSDLGLCreateGB(&renderer);
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
@@ -178,6 +180,11 @@ int main(int argc, char** argv) {
 		GBAConfigFreeOpts(&opts);
 		GBAConfigDeinit(&config);
 		return 1;
+	}
+
+	if (renderer.core) {
+		// TODO: Check return code
+		renderer.core->init(renderer.core);
 	}
 
 	renderer.player.bindings = &inputMap;
@@ -268,14 +275,6 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 #ifdef M_CORE_GB
 int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
-	struct LR35902Core cpu;
-	struct GB gb;
-
-	GBCreate(&gb);
-	LR35902SetComponents(&cpu, &gb.d, 0, 0);
-	LR35902Init(&cpu);
-
-	GBVideoAssociateRenderer(&gb.video, &renderer->gb.d);
 	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
 	struct VFile* savVf = 0;
 
@@ -288,10 +287,10 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 		savVf = VFileOpen(savepath, O_RDWR | O_CREAT);
 	}
 
-	GBLoadROM(&gb, vf, savVf, args->fname);
-
-	LR35902Reset(&cpu);
-	renderer->runloop(renderer, &gb);
+	renderer->core->loadROM(renderer->core, vf, savVf, args->fname);
+	renderer->core->reset(renderer->core);
+	renderer->runloop(renderer, NULL);
+	renderer->core->unloadROM(renderer->core);
 	vf->close(vf);
 	return 0;
 }

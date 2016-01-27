@@ -171,5 +171,6 @@ void LR35902Reset(struct LR35902Core* cpu);
 void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector);
 
 void LR35902Tick(struct LR35902Core* cpu);
+void LR35902Run(struct LR35902Core* cpu);
 
 #endif

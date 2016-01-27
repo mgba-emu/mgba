@@ -93,7 +93,7 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 	cpu->irqh.setInterrupts(cpu, false);
 }
 
-void LR35902Tick(struct LR35902Core* cpu) {
+static void _lr35902Step(struct LR35902Core* cpu) {
 	++cpu->cycles;
 	enum LR35902ExecutionState state = cpu->executionState;
 	++cpu->executionState;
@@ -129,7 +129,18 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	default:
 		break;
 	}
+}
+
+void LR35902Tick(struct LR35902Core* cpu) {
+	_lr35902Step(cpu);
 	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
+}
+
+void LR35902Run(struct LR35902Core* cpu) {
+	while (cpu->cycles < cpu->nextEvent) {
+		_lr35902Step(cpu);
+	}
+	cpu->irqh.processEvents(cpu);
 }

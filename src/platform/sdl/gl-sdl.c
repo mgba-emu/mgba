@@ -7,8 +7,12 @@
 
 #include "gl-common.h"
 
+#include "core/core.h"
+#ifdef M_CORE_GBA
 #include "gba/supervisor/thread.h"
+#endif
 #ifdef M_CORE_GB
+#include "gb/core.h"
 #include "gb/gb.h"
 #endif
 #include "platform/opengl/gl.h"
@@ -106,10 +110,9 @@ bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
 	// TODO: Pass texture size along
-	color_t* buf = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	memset(buf, 0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer->gb.outputBuffer = buf + GB_GBA_CENTER;
-	renderer->gb.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+	renderer->outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer + GB_GBA_CENTER, VIDEO_HORIZONTAL_PIXELS);
 
 	GBAGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
@@ -123,17 +126,13 @@ bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
 }
 
 void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
-	struct GB* gb = user;
+	UNUSED(user);
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 	int activeKeys = 0;
-	gb->keySource = &activeKeys;
 
 	while (true) {
-		int64_t frameCounter = gb->video.frameCounter;
-		while (gb->video.frameCounter == frameCounter) {
-			LR35902Tick(gb->cpu);
-		}
+		renderer->core->runFrame(renderer->core);
 		while (SDL_PollEvent(&event)) {
 			// TODO: Refactor out
 			if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
@@ -164,8 +163,9 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 			}
 #endif
 		}
+		renderer->core->setKeys(renderer->core, activeKeys);
 
-		v->postFrame(v, renderer->gb.outputBuffer - GB_GBA_CENTER);
+		v->postFrame(v, renderer->outputBuffer);
 		v->drawFrame(v);
 		v->swap(v);
 	}
@@ -175,7 +175,7 @@ void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
-	free(renderer->gb.outputBuffer - GB_GBA_CENTER);
+	free(renderer->outputBuffer);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif

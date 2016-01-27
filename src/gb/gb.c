@@ -7,6 +7,7 @@
 
 #include "gb/io.h"
 
+#include "core/core.h"
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/math.h"

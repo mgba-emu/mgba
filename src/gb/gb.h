@@ -47,7 +47,7 @@ struct GB {
 	struct GBVideo video;
 	struct GBTimer timer;
 
-	int* keySource;
+	uint8_t* keySource;
 
 	void* pristineRom;
 	size_t pristineRomSize;
