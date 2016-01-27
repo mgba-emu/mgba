@@ -40,6 +40,74 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	loadSetting("savegamePath", m_ui.savegamePath);
+	loadSetting("savestatePath", m_ui.savestatePath);
+	loadSetting("screenshotPath", m_ui.screenshotPath);
+	loadSetting("patchPath", m_ui.patchPath);
+
+	if (m_ui.savegamePath->text().isEmpty()) {
+		m_ui.savegameSameDir->setChecked(true);
+	}
+	connect(m_ui.savegameSameDir, &QAbstractButton::toggled, [this] (bool e) {
+		if (e) {
+			m_ui.savegamePath->clear();
+		}
+	});
+	connect(m_ui.savegameBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
+		if (!path.isNull()) {
+			m_ui.savegameSameDir->setChecked(false);
+			m_ui.savegamePath->setText(path);
+		}
+	});
+
+	if (m_ui.savestatePath->text().isEmpty()) {
+		m_ui.savestateSameDir->setChecked(true);
+	}
+	connect(m_ui.savestateSameDir, &QAbstractButton::toggled, [this] (bool e) {
+		if (e) {
+			m_ui.savestatePath->clear();
+		}
+	});
+	connect(m_ui.savestateBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
+		if (!path.isNull()) {
+			m_ui.savestateSameDir->setChecked(false);
+			m_ui.savestatePath->setText(path);
+		}
+	});
+
+	if (m_ui.screenshotPath->text().isEmpty()) {
+		m_ui.screenshotSameDir->setChecked(true);
+	}
+	connect(m_ui.screenshotSameDir, &QAbstractButton::toggled, [this] (bool e) {
+		if (e) {
+			m_ui.screenshotPath->clear();
+		}
+	});
+	connect(m_ui.screenshotBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
+		if (!path.isNull()) {
+			m_ui.screenshotSameDir->setChecked(false);
+			m_ui.screenshotPath->setText(path);
+		}
+	});
+
+	if (m_ui.patchPath->text().isEmpty()) {
+		m_ui.patchSameDir->setChecked(true);
+	}
+	connect(m_ui.patchSameDir, &QAbstractButton::toggled, [this] (bool e) {
+		if (e) {
+			m_ui.patchPath->clear();
+		}
+	});
+	connect(m_ui.patchBrowse, &QAbstractButton::pressed, [this] () {
+		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
+		if (!path.isNull()) {
+			m_ui.patchSameDir->setChecked(false);
+			m_ui.patchPath->setText(path);
+		}
+	});
 
 	double fastForwardRatio = loadSetting("fastForwardRatio").toDouble();
 	if (fastForwardRatio <= 0) {
@@ -147,6 +215,10 @@ void SettingsView::updateConfig() {
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
+	saveSetting("savegamePath", m_ui.savegamePath);
+	saveSetting("savestatePath", m_ui.savestatePath);
+	saveSetting("screenshotPath", m_ui.screenshotPath);
+	saveSetting("patchPath", m_ui.patchPath);
 
 	if (m_ui.fastForwardUnbounded->isChecked()) {
 		saveSetting("fastForwardRatio", "-1");
@@ -182,6 +254,7 @@ void SettingsView::updateConfig() {
 
 	m_controller->write();
 
+	emit pathsChanged();
 	emit biosLoaded(m_ui.bios->text());
 }
 

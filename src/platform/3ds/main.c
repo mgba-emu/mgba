@@ -54,6 +54,8 @@ static struct ctrTexture gbaOutputTexture;
 static int guiDrawn;
 static int screenCleanup;
 
+static aptHookCookie cookie;
+
 enum {
 	GUI_ACTIVE = 1,
 	GUI_THIS_FRAME = 2,
@@ -69,6 +71,48 @@ enum {
 };
 
 extern bool allocateRomBuffer(void);
+
+static void _cleanup(void) {
+	if (renderer.outputBuffer) {
+		linearFree(renderer.outputBuffer);
+	}
+
+	if (gbaOutputTexture.data) {
+		ctrDeinitGpu();
+		vramFree(gbaOutputTexture.data);
+	}
+
+	gfxExit();
+
+	if (hasSound) {
+		linearFree(audioLeft);
+		linearFree(audioRight);
+	}
+
+	csndExit();
+	ptmuExit();
+}
+
+static void _aptHook(APT_HookType hook, void* user) {
+	UNUSED(user);
+	switch (hook) {
+	case APTHOOK_ONSUSPEND:
+	case APTHOOK_ONSLEEP:
+		CSND_SetPlayState(8, 0);
+		CSND_SetPlayState(9, 0);
+		csndExecCmds(false);
+		break;
+	case APTHOOK_ONEXIT:
+		CSND_SetPlayState(8, 0);
+		CSND_SetPlayState(9, 0);
+		csndExecCmds(false);
+		_cleanup();
+		exit(0);
+		break;
+	default:
+		break;
+	}
+}
 
 static void _map3DSKey(struct GBAInputMap* map, int ctrKey, enum GBAKey key) {
 	GBAInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
@@ -480,6 +524,8 @@ int main() {
 		return 1;
 	}
 
+	aptHook(&cookie, _aptHook, 0);
+
 	ptmuInit();
 	hasSound = !csndInit();
 
@@ -492,7 +538,8 @@ int main() {
 
 	if (ctrInitGpu() < 0) {
 		gbaOutputTexture.data = 0;
-		goto cleanup;
+		_cleanup();
+		return 1;
 	}
 
 	ctrTexture_Init(&gbaOutputTexture);
@@ -504,7 +551,8 @@ int main() {
 	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
 
 	if (!gbaOutputTexture.data) {
-		goto cleanup;
+		_cleanup();
+		return 1;
 	}
 
 	// Zero texture data to make sure no garbage around the border interferes with filtering
@@ -523,7 +571,8 @@ int main() {
 	struct GUIFont* font = GUIFontCreate();
 
 	if (!font) {
-		goto cleanup;
+		_cleanup();
+		return 1;
 	}
 
 	struct GBAGUIRunner runner = {
@@ -610,24 +659,6 @@ int main() {
 	GBAGUIRunloop(&runner);
 	GBAGUIDeinit(&runner);
 
-cleanup:
-	if (renderer.outputBuffer) {
-		linearFree(renderer.outputBuffer);
-	}
-
-	if (gbaOutputTexture.data) {
-		ctrDeinitGpu();
-		vramFree(gbaOutputTexture.data);
-	}
-
-	gfxExit();
-
-	if (hasSound) {
-		linearFree(audioLeft);
-		linearFree(audioRight);
-	}
-
-	csndExit();
-	ptmuExit();
+	_cleanup();
 	return 0;
 }

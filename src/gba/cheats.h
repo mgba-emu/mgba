@@ -192,6 +192,7 @@ struct VFile;
 
 void GBACheatDeviceCreate(struct GBACheatDevice*);
 void GBACheatDeviceDestroy(struct GBACheatDevice*);
+void GBACheatDeviceClear(struct GBACheatDevice*);
 
 void GBACheatSetInit(struct GBACheatSet*, const char* name);
 void GBACheatSetDeinit(struct GBACheatSet*);

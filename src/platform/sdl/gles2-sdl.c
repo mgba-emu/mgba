@@ -93,8 +93,8 @@ bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	GBASDLGLCommonInit(renderer);
 #endif
 
-	renderer->d.outputBuffer = memalign(16, 256 * 256 * 4);
-	renderer->d.outputBufferStride = 256;
+	renderer->d.outputBuffer = memalign(16, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	GBAGLES2ContextCreate(&renderer->gl2);
 	renderer->gl2.d.user = renderer;

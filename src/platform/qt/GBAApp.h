@@ -36,16 +36,13 @@ public:
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+	QString getOpenDirectoryName(QWidget* owner, const QString& title);
 
 	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
-
-public slots:
-	void interruptAll();
-	void continueAll();
 
 protected:
 	bool event(QEvent*);
@@ -62,6 +59,9 @@ private:
 	};
 
 	Window* newWindowInternal();
+
+	void pauseAll(QList<int>* paused);
+	void continueAll(const QList<int>* paused);
 
 	ConfigController m_configController;
 	Window* m_windows[MAX_GBAS];

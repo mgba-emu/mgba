@@ -128,6 +128,7 @@ ConfigController::~ConfigController() {
 
 bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser) {
 	if (::parseArguments(args, &m_config, argc, argv, subparser)) {
+		GBAConfigFreeOpts(&m_opts);
 		GBAConfigMap(&m_config, &m_opts);
 		return true;
 	}
@@ -262,6 +263,9 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 void ConfigController::write() {
 	GBAConfigSave(&m_config);
 	m_settings->sync();
+
+	GBAConfigFreeOpts(&m_opts);
+	GBAConfigMap(&m_config, &m_opts);
 }
 
 void ConfigController::makePortable() {

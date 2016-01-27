@@ -24,6 +24,8 @@
 #define GYRO_STEPS 100
 #define RUMBLE_PWM 20
 
+DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
 #endif
@@ -52,22 +54,9 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 
 	SDL_JoystickEventState(SDL_ENABLE);
 	int nJoysticks = SDL_NumJoysticks();
+	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		context->nJoysticks = nJoysticks;
-		context->joysticks = calloc(context->nJoysticks, sizeof(SDL_Joystick*));
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		context->haptic = calloc(context->nJoysticks, sizeof(SDL_Haptic*));
-#endif
-		size_t i;
-		for (i = 0; i < context->nJoysticks; ++i) {
-			context->joysticks[i] = SDL_JoystickOpen(i);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			context->haptic[i] = SDL_HapticOpenFromJoystick(context->joysticks[i]);
-#endif
-		}
-	} else {
-		context->nJoysticks = 0;
-		context->joysticks = 0;
+		GBASDLUpdateJoysticks(context);
 	}
 
 	context->playersAttached = 0;
@@ -75,7 +64,6 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	size_t i;
 	for (i = 0; i < MAX_PLAYERS; ++i) {
 		context->preferredJoysticks[i] = 0;
-		context->joysticksClaimed[i] = SIZE_MAX;
 	}
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
@@ -88,13 +76,14 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 
 void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	size_t i;
-	for (i = 0; i < context->nJoysticks; ++i) {
+	for (i = 0; i < SDL_JoystickListSize(&context->joysticks); ++i) {
+		struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&context->joysticks, i);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		SDL_HapticClose(context->haptic[i]);
+		SDL_HapticClose(joystick->haptic);
 #endif
-		SDL_JoystickClose(context->joysticks[i]);
+		SDL_JoystickClose(joystick->joystick);
 	}
-
+	SDL_JoystickListDeinit(&context->joysticks);
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 
@@ -160,7 +149,6 @@ void GBASDLInitBindings(struct GBAInputMap* inputMap) {
 
 bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
 	player->joystick = 0;
-	player->joystickIndex = SIZE_MAX;
 
 	if (events->playersAttached >= MAX_PLAYERS) {
 		return false;
@@ -187,15 +175,17 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	player->rotation.p = player;
 
 	player->playerId = events->playersAttached;
+	events->players[player->playerId] = player;
 	size_t firstUnclaimed = SIZE_MAX;
+	size_t index = SIZE_MAX;
 
 	size_t i;
-	for (i = 0; i < events->nJoysticks; ++i) {
+	for (i = 0; i < SDL_JoystickListSize(&events->joysticks); ++i) {
 		bool claimed = false;
 
 		int p;
 		for (p = 0; p < events->playersAttached; ++p) {
-			if (events->joysticksClaimed[p] == i) {
+			if (events->players[p]->joystick == SDL_JoystickListGetPointer(&events->joysticks, i)) {
 				claimed = true;
 				break;
 			}
@@ -210,28 +200,26 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 
 		const char* joystickName;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		joystickName = SDL_JoystickName(events->joysticks[i]);
+		joystickName = SDL_JoystickName(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick);
 #else
-		joystickName = SDL_JoystickName(SDL_JoystickIndex(events->joysticks[i]));
+		joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
 #endif
 		if (events->preferredJoysticks[player->playerId] && strcmp(events->preferredJoysticks[player->playerId], joystickName) == 0) {
-			player->joystickIndex = i;
+			index = i;
 			break;
 		}
 	}
 
-	if (player->joystickIndex == SIZE_MAX && firstUnclaimed != SIZE_MAX) {
-		player->joystickIndex = firstUnclaimed;
+	if (index == SIZE_MAX && firstUnclaimed != SIZE_MAX) {
+		index = firstUnclaimed;
 	}
 
-	if (player->joystickIndex != SIZE_MAX) {
-		player->joystick = events->joysticks[player->joystickIndex];
-		events->joysticksClaimed[player->playerId] = player->joystickIndex;
+	if (index != SIZE_MAX) {
+		player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		player->haptic = events->haptic[player->joystickIndex];
-		if (player->haptic) {
-			SDL_HapticRumbleInit(player->haptic);
+		if (player->joystick->haptic) {
+			SDL_HapticRumbleInit(player->joystick->haptic);
 		}
 #endif
 	}
@@ -241,7 +229,19 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 }
 
 void GBASDLDetachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
-	events->joysticksClaimed[player->playerId] = SIZE_MAX;
+	if (player != events->players[player->playerId]) {
+		return;
+	}
+	int i;
+	for (i = player->playerId; i < events->playersAttached; ++i) {
+		if (i + 1 < MAX_PLAYERS) {
+			events->players[i] = events->players[i + 1];
+		}
+		if (i < events->playersAttached - 1) {
+			events->players[i]->playerId = i;
+		}
+	}
+	--events->playersAttached;
 	CircleBufferDeinit(&player->rotation.zHistory);
 }
 
@@ -250,15 +250,15 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 	if (context->joystick) {
 		GBAInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		const char* name = SDL_JoystickName(context->joystick);
+		const char* name = SDL_JoystickName(context->joystick->joystick);
 #else
-		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 #endif
 		GBAInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
 
 		const char* value;
 		char* end;
-		int numAxes = SDL_JoystickNumAxes(context->joystick);
+		int numAxes = SDL_JoystickNumAxes(context->joystick->joystick);
 		int axis;
 		value = GBAInputGetCustomValue(config, SDL_BINDING_BUTTON, "tiltAxisX", name);
 		if (value) {
@@ -301,9 +301,9 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configuration* config) {
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		const char* name = SDL_JoystickName(context->joystick);
+		const char* name = SDL_JoystickName(context->joystick->joystick);
 #else
-		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick));
+		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 #endif
 		char value[12];
 		snprintf(value, sizeof(value), "%i", context->rotation.axisX);
@@ -320,14 +320,54 @@ void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configura
 }
 
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
-	if (player->playerId >= MAX_PLAYERS || index >= events->nJoysticks) {
+	if (player->playerId >= MAX_PLAYERS || index >= SDL_JoystickListSize(&events->joysticks)) {
 		return;
 	}
-	events->joysticksClaimed[player->playerId] = index;
-	player->joystickIndex = index;
-	player->joystick = events->joysticks[index];
+	player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
+}
+
+void GBASDLUpdateJoysticks(struct GBASDLEvents* events) {
+	// Pump SDL joystick events without eating the rest of the events
+	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	player->haptic = events->haptic[index];
+	SDL_Event event;
+	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED) > 0) {
+		if (event.type == SDL_JOYDEVICEADDED) {
+			struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
+			joystick->joystick = SDL_JoystickOpen(event.jdevice.which);
+			joystick->id = SDL_JoystickInstanceID(joystick->joystick);
+			joystick->index = SDL_JoystickListSize(&events->joysticks) - 1;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
+#endif
+		} else if (event.type == SDL_JOYDEVICEREMOVED) {
+			SDL_JoystickID ids[MAX_PLAYERS];
+			size_t i;
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					ids[i] = events->players[i]->joystick->id;
+					events->players[i]->joystick = 0;
+				} else {
+					ids[i] = -1;
+				}
+			}
+			for (i = 0; i < SDL_JoystickListSize(&events->joysticks);) {
+				struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
+				if (joystick->id == event.jdevice.which) {
+					SDL_JoystickListShift(&events->joysticks, i, 1);
+					continue;
+				}
+				SDL_JoystickListGetPointer(&events->joysticks, i)->index = i;
+				int p;
+				for (p = 0; p < events->playersAttached; ++p) {
+					if (joystick->id == ids[p]) {
+						events->players[p]->joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
+					}
+				}
+				++i;
+			}
+		}
+	}
 #endif
 }
 
@@ -540,7 +580,7 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContex
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 	struct GBASDLRumble* sdlRumble = (struct GBASDLRumble*) rumble;
-	if (!sdlRumble->p->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->haptic)) {
+	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
 	sdlRumble->level += enable;
@@ -551,15 +591,15 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 	}
 	CircleBufferWrite8(&sdlRumble->history, enable);
 	if (sdlRumble->level) {
-		SDL_HapticRumblePlay(sdlRumble->p->haptic, sdlRumble->level / (float) RUMBLE_PWM, 20);
+		SDL_HapticRumblePlay(sdlRumble->p->joystick->haptic, sdlRumble->level / (float) RUMBLE_PWM, 20);
 	} else {
-		SDL_HapticRumbleStop(sdlRumble->p->haptic);
+		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
 	}
 }
 #endif
 
 static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
-	return SDL_JoystickGetAxis(player->joystick, axis) * 0x3800;
+	return SDL_JoystickGetAxis(player->joystick->joystick, axis) * 0x3800;
 }
 
 static int32_t _GBASDLReadTiltX(struct GBARotationSource* source) {
@@ -582,8 +622,8 @@ static void _GBASDLRotationSample(struct GBARotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	SDL_JoystickUpdate();
 
-	int x = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroX);
-	int y = SDL_JoystickGetAxis(rotation->p->joystick, rotation->gyroY);
+	int x = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroX);
+	int y = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroY);
 	union {
 		float f;
 		int32_t i;

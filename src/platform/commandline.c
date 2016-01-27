@@ -36,7 +36,6 @@
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
-	{ "dirmode",   required_argument, 0, 'D' },
 	{ "frameskip", required_argument, 0, 's' },
 #ifdef USE_CLI_DEBUGGER
 	{ "debug",     no_argument, 0, 'd' },
@@ -56,7 +55,7 @@ static bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config
 bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
-		"b:c:Dhl:p:s:v:"
+		"b:c:hl:p:s:v:"
 #ifdef USE_CLI_DEBUGGER
 		"d"
 #endif
@@ -85,9 +84,6 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 			break;
 		case 'c':
 			opts->cheatsFile = strdup(optarg);
-			break;
-		case 'D':
-			opts->dirmode = true;
 			break;
 #ifdef USE_CLI_DEBUGGER
 		case 'd':
