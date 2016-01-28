@@ -85,11 +85,11 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			video->nextMode -= video->eventDiff;
 		}
 		if (video->nextMode <= 0) {
+			int lyc = video->p->memory.io[REG_LYC];
 			switch (video->mode) {
 			case 0:
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
-				int lyc = video->p->memory.io[REG_LYC];
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -115,6 +115,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				break;
 			case 1:
 				++video->ly;
+				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
+				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
+					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+				}
 				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->ly = 0;
 					video->renderer->drawScanline(video->renderer, video->ly);
