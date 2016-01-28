@@ -260,13 +260,15 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 		gb->cpu->nextEvent = gb->memory.dmaNext;
 	}
 	gb->memory.dmaSource = base;
-	gb->memory.dmaDest = GB_BASE_OAM;
+	gb->memory.dmaDest = 0;
 	gb->memory.dmaRemaining = 0xA0;
 }
 
 void _GBMemoryDMAService(struct GB* gb) {
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
-	GBStore8(gb->cpu, gb->memory.dmaDest, b);
+	// TODO: Can DMA write OAM during modes 2-3?
+	gb->video.oam.raw[gb->memory.dmaDest] = b;
+	gb->video.renderer->writeOAM(gb->video.renderer, gb->memory.dmaDest);
 	++gb->memory.dmaSource;
 	++gb->memory.dmaDest;
 	--gb->memory.dmaRemaining;
