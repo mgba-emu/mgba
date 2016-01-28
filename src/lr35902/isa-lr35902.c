@@ -741,18 +741,20 @@ DEFINE_INSTRUCTION_LR35902(HALT, cpu->irqh.halt(cpu));
 
 #define DEFINE_RST_INSTRUCTION_LR35902(VEC) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC ## UpdateSPL, \
+		--cpu->sp; \
+		cpu->index = cpu->sp; \
+		cpu->bus = cpu->pc; \
 		cpu->pc = 0x ## VEC; \
-		cpu->executionState = LR35902_CORE_STALL;) \
+		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
+		cpu->instruction = _LR35902InstructionNOP;) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC ## UpdateSPH, \
-		cpu->index = cpu->sp + 1; \
+		--cpu->sp;\
+		cpu->index = cpu->sp; \
 		cpu->bus = cpu->pc >> 8; \
 		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 		cpu->instruction = _LR35902InstructionRST ## VEC ## UpdateSPL;) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC, \
-		cpu->sp -= 2; /* TODO: Atomic incrementing? */ \
-		cpu->index = cpu->sp; \
-		cpu->bus = cpu->pc; \
-		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
+		cpu->executionState = LR35902_CORE_OP2; \
 		cpu->instruction = _LR35902InstructionRST ## VEC ## UpdateSPH;)
 
 DEFINE_RST_INSTRUCTION_LR35902(00);
