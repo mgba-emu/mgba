@@ -75,11 +75,20 @@ void LR35902RaiseIRQ(struct LR35902Core* cpu, uint8_t vector) {
 	cpu->irqVector = vector;
 }
 
+static void _LR35902InstructionIRQStall(struct LR35902Core* cpu) {
+	cpu->executionState = LR35902_CORE_STALL;
+}
+
 static void _LR35902InstructionIRQFinish(struct LR35902Core* cpu) {
+	cpu->executionState = LR35902_CORE_OP2;
+	cpu->instruction = _LR35902InstructionIRQStall;
+}
+
+static void _LR35902InstructionIRQDelay(struct LR35902Core* cpu) {
 	cpu->index = cpu->sp + 1;
 	cpu->bus = cpu->pc >> 8;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
-	cpu->instruction = _lr35902InstructionTable[0]; // NOP
+	cpu->instruction = _LR35902InstructionIRQFinish;
 	cpu->pc = cpu->irqVector;
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 }
@@ -89,11 +98,11 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 	cpu->index = cpu->sp;
 	cpu->bus = cpu->pc;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
-	cpu->instruction = _LR35902InstructionIRQFinish;
+	cpu->instruction = _LR35902InstructionIRQDelay;
 	cpu->irqh.setInterrupts(cpu, false);
 }
 
-static void _lr35902Step(struct LR35902Core* cpu) {
+static void _LR35902Step(struct LR35902Core* cpu) {
 	++cpu->cycles;
 	enum LR35902ExecutionState state = cpu->executionState;
 	++cpu->executionState;
@@ -132,7 +141,7 @@ static void _lr35902Step(struct LR35902Core* cpu) {
 }
 
 void LR35902Tick(struct LR35902Core* cpu) {
-	_lr35902Step(cpu);
+	_LR35902Step(cpu);
 	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
@@ -140,7 +149,7 @@ void LR35902Tick(struct LR35902Core* cpu) {
 
 void LR35902Run(struct LR35902Core* cpu) {
 	while (cpu->cycles < cpu->nextEvent) {
-		_lr35902Step(cpu);
+		_LR35902Step(cpu);
 	}
 	cpu->irqh.processEvents(cpu);
 }
