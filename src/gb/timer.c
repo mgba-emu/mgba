@@ -49,9 +49,11 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 void GBTimerDivReset(struct GBTimer* timer) {
 	timer->p->memory.io[REG_DIV] = 0;
 	timer->nextDiv = timer->eventDiff + timer->p->cpu->cycles + GB_DMG_DIV_PERIOD;
-	timer->nextEvent = timer->nextTima;
-	if (timer->nextDiv < timer->nextEvent) {
-		timer->nextEvent = timer->nextDiv;
+	if (timer->eventDiff + GB_DMG_DIV_PERIOD < timer->nextEvent) {
+		timer->nextEvent = timer->eventDiff + GB_DMG_DIV_PERIOD;
+		if (timer->nextEvent < timer->p->cpu->nextEvent) {
+			timer->p->cpu->nextEvent = timer->nextEvent;
+		}
 	}
 }
 
