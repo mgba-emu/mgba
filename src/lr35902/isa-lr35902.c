@@ -72,6 +72,10 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdateSPL,
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionNOP;)
 
+DEFINE_INSTRUCTION_LR35902(CALLUpdateSPH,
+	cpu->executionState = LR35902_CORE_MEMORY_STORE;
+	cpu->instruction = _LR35902InstructionCALLUpdateSPL;)
+
 DEFINE_INSTRUCTION_LR35902(CALLUpdatePCH,
 	if (cpu->condition) {
 		int newPc = (cpu->bus << 8) | cpu->index;
@@ -80,8 +84,8 @@ DEFINE_INSTRUCTION_LR35902(CALLUpdatePCH,
 		cpu->sp = cpu->pc; // GROSS
 		cpu->pc = newPc;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
-		cpu->executionState = LR35902_CORE_MEMORY_STORE;
-		cpu->instruction = _LR35902InstructionCALLUpdateSPL;
+		cpu->executionState = LR35902_CORE_OP2;
+		cpu->instruction = _LR35902InstructionCALLUpdateSPH;
 	})
 
 DEFINE_INSTRUCTION_LR35902(CALLUpdatePCL,
