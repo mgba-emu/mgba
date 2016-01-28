@@ -57,7 +57,7 @@ static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
 
 
 int main(int argc, char** argv) {
-	struct mSDLRenderer renderer;
+	struct mSDLRenderer renderer = {};
 
 	struct GBAInputMap inputMap;
 	GBAInputMapInit(&inputMap);
