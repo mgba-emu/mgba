@@ -58,7 +58,7 @@ struct GB {
 
 	const char* activeFile;
 
-	bool eiPending;
+	bool diPending;
 };
 
 struct GBCartridge {
