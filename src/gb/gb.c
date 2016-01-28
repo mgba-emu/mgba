@@ -81,12 +81,13 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* f
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 	gb->sramVf = sav;
 	if (sav) {
-		if (sav->size(sav) < 0x8000) {
-			sav->truncate(sav, 0x8000);
+		// TODO: Do this in bank-switching code
+		if (sav->size(sav) < 0x20000) {
+			sav->truncate(sav, 0x20000);
 		}
-		gb->memory.sram = sav->map(sav, 0x8000, MAP_WRITE);
+		gb->memory.sram = sav->map(sav, 0x20000, MAP_WRITE);
 	} else {
-		gb->memory.sram = anonymousMemoryMap(0x8000);
+		gb->memory.sram = anonymousMemoryMap(0x20000);
 	}
 	return true;
 	// TODO: error check

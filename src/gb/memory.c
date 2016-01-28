@@ -419,6 +419,11 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	case 0x1:
 		_switchBank(memory, bank);
 		break;
+	case 0x2:
+		if (value < 0x10) {
+			_switchSramBank(memory, value);
+		}
+		break;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC5 unknown address: %04X:%02X", address, value);
