@@ -255,7 +255,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	}
 	gb->cpu->memory.store8 = GBDMAStore8;
 	gb->cpu->memory.load8 = GBDMALoad8;
-	gb->memory.dmaNext = gb->cpu->cycles;
+	gb->memory.dmaNext = gb->cpu->cycles + 8;
 	if (gb->memory.dmaNext < gb->cpu->nextEvent) {
 		gb->cpu->nextEvent = gb->memory.dmaNext;
 	}
