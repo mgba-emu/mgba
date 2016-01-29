@@ -203,7 +203,6 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_VRAM + 1:
 		// TODO: Block access in wrong modes
 		gb->video.vram[address & (GB_SIZE_VRAM - 1)] = value;
-		gb->video.renderer->writeVRAM(gb->video.renderer, address & (GB_SIZE_VRAM - 1));
 		return;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
@@ -224,7 +223,6 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else if (address < GB_BASE_UNUSABLE) {
 			if (gb->video.mode < 2) {
 				gb->video.oam.raw[address & 0xFF] = value;
-				gb->video.renderer->writeOAM(gb->video.renderer, address & 0xFF);
 			}
 		} else if (address < GB_BASE_IO) {
 			mLOG(GB_MEM, GAME_ERROR, "Attempt to write to unusable memory: %04X:%02X", address, value);
@@ -268,7 +266,6 @@ void _GBMemoryDMAService(struct GB* gb) {
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
 	gb->video.oam.raw[gb->memory.dmaDest] = b;
-	gb->video.renderer->writeOAM(gb->video.renderer, gb->memory.dmaDest);
 	++gb->memory.dmaSource;
 	++gb->memory.dmaDest;
 	--gb->memory.dmaRemaining;

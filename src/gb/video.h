@@ -16,11 +16,12 @@ enum {
 	GB_VIDEO_VBLANK_PIXELS = 10,
 	GB_VIDEO_VERTICAL_TOTAL_PIXELS = GB_VIDEO_VERTICAL_PIXELS + GB_VIDEO_VBLANK_PIXELS,
 
-	GB_VIDEO_MODE_0_LENGTH = 203, // Estimates, figure out with more precision
-	GB_VIDEO_MODE_2_LENGTH = 81,
-	GB_VIDEO_MODE_3_LENGTH = 172,
+	// TODO: Figure out exact lengths
+	GB_VIDEO_MODE_2_LENGTH = 84,
+	GB_VIDEO_MODE_3_LENGTH_BASE = 168,
+	GB_VIDEO_MODE_0_LENGTH_BASE = 204,
 
-	GB_VIDEO_HORIZONTAL_LENGTH = GB_VIDEO_MODE_0_LENGTH + GB_VIDEO_MODE_2_LENGTH + GB_VIDEO_MODE_3_LENGTH,
+	GB_VIDEO_HORIZONTAL_LENGTH = GB_VIDEO_MODE_0_LENGTH_BASE + GB_VIDEO_MODE_2_LENGTH + GB_VIDEO_MODE_3_LENGTH_BASE,
 
 	GB_VIDEO_MODE_1_LENGTH = GB_VIDEO_HORIZONTAL_LENGTH * GB_VIDEO_VBLANK_PIXELS,
 	GB_VIDEO_TOTAL_LENGTH = GB_VIDEO_HORIZONTAL_LENGTH * GB_VIDEO_VERTICAL_TOTAL_PIXELS,
@@ -53,9 +54,7 @@ struct GBVideoRenderer {
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
-	void (*writeVRAM)(struct GBVideoRenderer* renderer, uint16_t address);
-	void (*writeOAM)(struct GBVideoRenderer* renderer, uint8_t oam);
-	void (*drawScanline)(struct GBVideoRenderer* renderer, int y);
+	void (*drawDot)(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** objOnLine, size_t nObj);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
 
 	void (*getPixels)(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
@@ -87,6 +86,7 @@ struct GBVideo {
 	struct GB* p;
 	struct GBVideoRenderer* renderer;
 
+	int x;
 	int ly;
 	GBRegisterSTAT stat;
 
@@ -96,11 +96,14 @@ struct GBVideo {
 	int32_t eventDiff;
 
 	int32_t nextMode;
+	int32_t nextDot;
 
 	uint8_t* vram;
 	uint8_t* vramBank;
 
 	union GBOAM oam;
+	struct GBObj* objThisLine[10];
+	int objMax;
 
 	int32_t frameCounter;
 	int frameskip;
