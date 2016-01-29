@@ -907,6 +907,14 @@ void GameController::reloadAudioDriver() {
 	}
 }
 
+void GameController::setSaveStateExtdata(int flags) {
+	m_saveStateFlags = flags;
+}
+
+void GameController::setLoadStateExtdata(int flags) {
+	m_loadStateFlags = flags;
+}
+
 void GameController::setLuminanceValue(uint8_t value) {
 	m_luxValue = value;
 	value = std::max<int>(value - 0x16, 0);

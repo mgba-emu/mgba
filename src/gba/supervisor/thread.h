@@ -48,7 +48,9 @@ struct GBAThread {
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBADirectorySet dirs;
+#endif
 	struct VFile* rom;
 	struct VFile* save;
 	struct VFile* bios;
