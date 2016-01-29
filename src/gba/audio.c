@@ -125,7 +125,7 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
-	GBASyncLockAudio(audio->p->sync);
+	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
 #if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 	size_t oldCapacity = audio->left.capacity;
@@ -161,7 +161,7 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 	audio->clock = 0;
 #endif
 
-	GBASyncConsumeAudio(audio->p->sync);
+	mCoreSyncConsumeAudio(audio->p->sync);
 }
 
 int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
@@ -534,7 +534,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 
 #if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned nSamples) {
-	GBASyncLockAudio(audio->p->sync);
+	mCoreSyncLockAudio(audio->p->sync);
 	unsigned read = 0;
 	if (left) {
 		unsigned readL = CircleBufferRead(&audio->left, left, nSamples * sizeof(int16_t)) >> 1;
@@ -550,7 +550,7 @@ unsigned GBAAudioCopy(struct GBAAudio* audio, void* left, void* right, unsigned 
 		}
 		read = read >= readR ? read : readR;
 	}
-	GBASyncConsumeAudio(audio->p->sync);
+	mCoreSyncConsumeAudio(audio->p->sync);
 	return read;
 }
 
@@ -821,7 +821,7 @@ static void _sample(struct GBAAudio* audio) {
 	sampleLeft = _applyBias(audio, sampleLeft);
 	sampleRight = _applyBias(audio, sampleRight);
 
-	GBASyncLockAudio(audio->p->sync);
+	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
 #if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
 	CircleBufferWrite16(&audio->left, sampleLeft);
@@ -846,7 +846,7 @@ static void _sample(struct GBAAudio* audio) {
 		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
 	}
 	bool wait = produced >= audio->samples;
-	GBASyncProduceAudio(audio->p->sync, wait);
+	mCoreSyncProduceAudio(audio->p->sync, wait);
 
 	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
 		audio->p->stream->postAudioBuffer(audio->p->stream, audio);

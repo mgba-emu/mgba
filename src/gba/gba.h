@@ -83,7 +83,7 @@ struct GBA {
 	struct GBAAudio audio;
 	struct GBASIO sio;
 
-	struct GBASync* sync;
+	struct mCoreSync* sync;
 
 	struct ARMDebugger* debugger;
 

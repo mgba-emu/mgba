@@ -91,7 +91,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			struct fb_var_screeninfo info;
 			ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
 			info.yoffset = VIDEO_VERTICAL_PIXELS * renderer->odd;
@@ -103,7 +103,7 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			renderer->odd = !renderer->odd;
 			renderer->d.outputBuffer = renderer->base[renderer->odd];
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 	}
 }
 

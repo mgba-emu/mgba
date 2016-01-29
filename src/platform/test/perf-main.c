@@ -174,7 +174,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 	*frames = 0;
 	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			++*frames;
 			++lastFrames;
 			if (!quiet) {
@@ -192,7 +192,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 				}
 			}
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 		if (duration > 0 && *frames == duration) {
 			_GBAPerfShutdown(0);
 		}

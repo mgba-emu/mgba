@@ -9,10 +9,10 @@
 #include "util/common.h"
 
 #include "core/directories.h"
+#include "core/sync.h"
 #include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/context/overrides.h"
-#include "gba/context/sync.h"
 
 #include "util/threading.h"
 
@@ -93,7 +93,7 @@ struct GBAThread {
 	void* userData;
 	void (*run)(struct GBAThread*);
 
-	struct GBASync sync;
+	struct mCoreSync sync;
 
 	int rewindBufferSize;
 	int rewindBufferCapacity;

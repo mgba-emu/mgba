@@ -519,7 +519,7 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	if (flags & SAVESTATE_SCREENSHOT && GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
 		if (item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
 			gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, item.data);
-			GBASyncForceFrame(gba->sync);
+			mCoreSyncForceFrame(gba->sync);
 		} else {
 			GBALog(gba, GBA_LOG_WARN, "Savestate includes invalid screenshot");
 		}

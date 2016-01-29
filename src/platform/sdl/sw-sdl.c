@@ -94,7 +94,7 @@ void mSDLSWRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			SDL_UnlockTexture(renderer->sdlTex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
@@ -129,7 +129,7 @@ void mSDLSWRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 			SDL_LockSurface(surface);
 #endif
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 	}
 }
 

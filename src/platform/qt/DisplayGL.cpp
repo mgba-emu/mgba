@@ -79,7 +79,7 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 	m_painter->moveToThread(m_drawThread);
 	connect(m_drawThread, SIGNAL(started()), m_painter, SLOT(start()));
 	m_drawThread->start();
-	GBASyncSetVideoSync(&m_context->sync, false);
+	mCoreSyncSetVideoSync(&m_context->sync, false);
 
 	lockAspectRatio(isAspectRatioLocked());
 	filter(isFiltered());
@@ -310,15 +310,15 @@ void PainterGL::draw() {
 	if (m_queue.isEmpty() || !GBAThreadIsActive(m_context)) {
 		return;
 	}
-	if (GBASyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
+	if (mCoreSyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {
 		dequeue();
-		GBASyncWaitFrameEnd(&m_context->sync);
+		mCoreSyncWaitFrameEnd(&m_context->sync);
 		m_painter.begin(m_gl->context()->device());
 		performDraw();
 		m_painter.end();
 		m_backend->swap(m_backend);
 	} else {
-		GBASyncWaitFrameEnd(&m_context->sync);
+		mCoreSyncWaitFrameEnd(&m_context->sync);
 	}
 	if (!m_queue.isEmpty()) {
 		QMetaObject::invokeMethod(this, "draw", Qt::QueuedConnection);

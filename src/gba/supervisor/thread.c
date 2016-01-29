@@ -627,7 +627,7 @@ void GBAThreadPause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	GBASyncSetVideoSync(&threadContext->sync, frameOn);
+	mCoreSyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
 void GBAThreadUnpause(struct GBAThread* threadContext) {
@@ -641,7 +641,7 @@ void GBAThreadUnpause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	GBASyncSetVideoSync(&threadContext->sync, frameOn);
+	mCoreSyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
 bool GBAThreadIsPaused(struct GBAThread* threadContext) {
@@ -668,7 +668,7 @@ void GBAThreadTogglePause(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	GBASyncSetVideoSync(&threadContext->sync, frameOn);
+	mCoreSyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
 void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
@@ -681,7 +681,7 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 	}
 	MutexUnlock(&threadContext->stateMutex);
 
-	GBASyncSetVideoSync(&threadContext->sync, frameOn);
+	mCoreSyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {

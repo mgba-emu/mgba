@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sync.h"
 
-static void _changeVideoSync(struct GBASync* sync, bool frameOn) {
+static void _changeVideoSync(struct mCoreSync* sync, bool frameOn) {
 	// Make sure the video thread can process events while the GBA thread is paused
 	MutexLock(&sync->videoFrameMutex);
 	if (frameOn != sync->videoFrameOn) {
@@ -15,7 +15,7 @@ static void _changeVideoSync(struct GBASync* sync, bool frameOn) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-void GBASyncPostFrame(struct GBASync* sync) {
+void mCoreSyncPostFrame(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}
@@ -31,7 +31,7 @@ void GBASyncPostFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-void GBASyncForceFrame(struct GBASync* sync) {
+void mCoreSyncForceFrame(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}
@@ -41,7 +41,7 @@ void GBASyncForceFrame(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-bool GBASyncWaitFrameStart(struct GBASync* sync) {
+bool mCoreSyncWaitFrameStart(struct mCoreSync* sync) {
 	if (!sync) {
 		return true;
 	}
@@ -60,7 +60,7 @@ bool GBASyncWaitFrameStart(struct GBASync* sync) {
 	return true;
 }
 
-void GBASyncWaitFrameEnd(struct GBASync* sync) {
+void mCoreSyncWaitFrameEnd(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}
@@ -68,7 +68,7 @@ void GBASyncWaitFrameEnd(struct GBASync* sync) {
 	MutexUnlock(&sync->videoFrameMutex);
 }
 
-void GBASyncSetVideoSync(struct GBASync* sync, bool wait) {
+void mCoreSyncSetVideoSync(struct mCoreSync* sync, bool wait) {
 	if (!sync) {
 		return;
 	}
@@ -76,7 +76,7 @@ void GBASyncSetVideoSync(struct GBASync* sync, bool wait) {
 	_changeVideoSync(sync, wait);
 }
 
-void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
+void mCoreSyncProduceAudio(struct mCoreSync* sync, bool wait) {
 	if (!sync) {
 		return;
 	}
@@ -88,7 +88,7 @@ void GBASyncProduceAudio(struct GBASync* sync, bool wait) {
 	MutexUnlock(&sync->audioBufferMutex);
 }
 
-void GBASyncLockAudio(struct GBASync* sync) {
+void mCoreSyncLockAudio(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}
@@ -96,7 +96,7 @@ void GBASyncLockAudio(struct GBASync* sync) {
 	MutexLock(&sync->audioBufferMutex);
 }
 
-void GBASyncUnlockAudio(struct GBASync* sync) {
+void mCoreSyncUnlockAudio(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}
@@ -104,7 +104,7 @@ void GBASyncUnlockAudio(struct GBASync* sync) {
 	MutexUnlock(&sync->audioBufferMutex);
 }
 
-void GBASyncConsumeAudio(struct GBASync* sync) {
+void mCoreSyncConsumeAudio(struct mCoreSync* sync) {
 	if (!sync) {
 		return;
 	}

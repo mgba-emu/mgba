@@ -79,10 +79,10 @@ void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 #endif
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
 		v->swap(v);
 	}

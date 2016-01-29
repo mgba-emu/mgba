@@ -115,10 +115,10 @@ void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
 			GBASDLHandleEvent(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
