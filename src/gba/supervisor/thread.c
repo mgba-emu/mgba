@@ -27,13 +27,13 @@ static const float _defaultFPSTarget = 60.f;
 #ifndef DISABLE_THREADING
 
 static bool _reloadDirectories(struct GBAThread* threadContext) {
-	GBADirectorySetDetachBase(&threadContext->dirs);
+	mDirectorySetDetachBase(&threadContext->dirs);
 
 	char basename[PATH_MAX];
 	if (threadContext->fname) {
 		char dirname[PATH_MAX];
 		separatePath(threadContext->fname, dirname, basename, 0);
-		GBADirectorySetAttachBase(&threadContext->dirs, VDirOpen(dirname));
+		mDirectorySetAttachBase(&threadContext->dirs, VDirOpen(dirname));
 	} else {
 		return false;
 	}
@@ -402,7 +402,7 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 
 	threadContext->idleOptimization = opts->idleOptimization;
 
-	GBADirectorySetMapOptions(&threadContext->dirs, opts);
+	mDirectorySetMapOptions(&threadContext->dirs, opts);
 }
 
 void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {
@@ -685,7 +685,7 @@ void GBAThreadPauseFromThread(struct GBAThread* threadContext) {
 }
 
 void GBAThreadLoadROM(struct GBAThread* threadContext, const char* fname) {
-	threadContext->rom = GBADirectorySetOpenPath(&threadContext->dirs, fname, GBAIsROM);
+	threadContext->rom = mDirectorySetOpenPath(&threadContext->dirs, fname, GBAIsROM);
 }
 
 void GBAThreadReplaceROM(struct GBAThread* threadContext, const char* fname) {

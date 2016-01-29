@@ -267,7 +267,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 		}
 	}
 	free(context.debugger);
-	GBADirectorySetDeinit(&context.dirs);
+	mDirectorySetDeinit(&context.dirs);
 
 	return didFail;
 }

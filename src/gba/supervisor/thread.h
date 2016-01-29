@@ -8,9 +8,9 @@
 
 #include "util/common.h"
 
+#include "core/directories.h"
 #include "gba/gba.h"
 #include "gba/input.h"
-#include "gba/context/directories.h"
 #include "gba/context/overrides.h"
 #include "gba/context/sync.h"
 
@@ -49,7 +49,7 @@ struct GBAThread {
 	struct GBASIODriverSet sioDrivers;
 	struct ARMDebugger* debugger;
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct GBADirectorySet dirs;
+	struct mDirectorySet dirs;
 #endif
 	struct VFile* rom;
 	struct VFile* save;

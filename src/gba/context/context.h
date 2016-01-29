@@ -8,8 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/directories.h"
 #include "gba/context/config.h"
-#include "gba/context/directories.h"
 #include "gba/context/sync.h"
 #include "gba/input.h"
 
@@ -22,7 +22,7 @@ struct GBAContext {
 	struct VFile* save;
 	struct VFile* bios;
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct GBADirectorySet dirs;
+	struct mDirectorySet dirs;
 #endif
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct GBAConfig config;

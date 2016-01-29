@@ -11,7 +11,7 @@
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 struct VDir;
 
-struct GBADirectorySet {
+struct mDirectorySet {
 	struct VDir* base;
 	struct VDir* archive;
 	struct VDir* save;
@@ -20,16 +20,16 @@ struct GBADirectorySet {
 	struct VDir* screenshot;
 };
 
-void GBADirectorySetInit(struct GBADirectorySet* dirs);
-void GBADirectorySetDeinit(struct GBADirectorySet* dirs);
+void mDirectorySetInit(struct mDirectorySet* dirs);
+void mDirectorySetDeinit(struct mDirectorySet* dirs);
 
-void GBADirectorySetAttachBase(struct GBADirectorySet* dirs, struct VDir* base);
-void GBADirectorySetDetachBase(struct GBADirectorySet* dirs);
+void mDirectorySetAttachBase(struct mDirectorySet* dirs, struct VDir* base);
+void mDirectorySetDetachBase(struct mDirectorySet* dirs);
 
-struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
+struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
 
 struct GBAOptions;
-void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOptions* opts);
+void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct GBAOptions* opts);
 #endif
 
 #endif

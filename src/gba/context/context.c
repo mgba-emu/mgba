@@ -22,7 +22,7 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->save = 0;
 	context->renderer = 0;
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	GBADirectorySetInit(&context->dirs);
+	mDirectorySetInit(&context->dirs);
 #endif
 	memset(context->components, 0, sizeof(context->components));
 
@@ -82,13 +82,13 @@ void GBAContextDeinit(struct GBAContext* context) {
 	mappedMemoryFree(context->cpu, 0);
 	GBAConfigDeinit(&context->config);
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	GBADirectorySetDeinit(&context->dirs);
+	mDirectorySetDeinit(&context->dirs);
 #endif
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	context->rom = GBADirectorySetOpenPath(&context->dirs, path, GBAIsROM);
+	context->rom = mDirectorySetOpenPath(&context->dirs, path, GBAIsROM);
 #else
 	context->rom = VFileOpen(path, O_RDONLY);
 #endif
@@ -102,7 +102,7 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 		char dirname[PATH_MAX];
 		char basename[PATH_MAX];
 		separatePath(context->fname, dirname, basename, 0);
-		GBADirectorySetAttachBase(&context->dirs, VDirOpen(dirname));
+		mDirectorySetAttachBase(&context->dirs, VDirOpen(dirname));
 		strncat(basename, ".sav", PATH_MAX - strlen(basename) - 1);
 		context->save = context->dirs.save->openFile(context->dirs.save, basename, O_RDWR | O_CREAT);
 	}
@@ -115,7 +115,7 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 void GBAContextUnloadROM(struct GBAContext* context) {
 	GBAUnloadROM(context->gba);
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	GBADirectorySetDetachBase(&context->dirs);
+	mDirectorySetDetachBase(&context->dirs);
 #endif
 	if (context->rom) {
 		context->rom->close(context->rom);

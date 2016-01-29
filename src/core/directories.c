@@ -9,7 +9,7 @@
 #include "util/vfs.h"
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-void GBADirectorySetInit(struct GBADirectorySet* dirs) {
+void mDirectorySetInit(struct mDirectorySet* dirs) {
 	dirs->base = 0;
 	dirs->archive = 0;
 	dirs->save = 0;
@@ -18,8 +18,8 @@ void GBADirectorySetInit(struct GBADirectorySet* dirs) {
 	dirs->screenshot = 0;
 }
 
-void GBADirectorySetDeinit(struct GBADirectorySet* dirs) {
-	GBADirectorySetDetachBase(dirs);
+void mDirectorySetDeinit(struct mDirectorySet* dirs) {
+	mDirectorySetDetachBase(dirs);
 
 	if (dirs->archive) {
 		dirs->archive->close(dirs->archive);
@@ -47,7 +47,7 @@ void GBADirectorySetDeinit(struct GBADirectorySet* dirs) {
 	}
 }
 
-void GBADirectorySetAttachBase(struct GBADirectorySet* dirs, struct VDir* base) {
+void mDirectorySetAttachBase(struct mDirectorySet* dirs, struct VDir* base) {
 	dirs->base = base;
 	if (!dirs->save) {
 		dirs->save = dirs->base;
@@ -63,7 +63,7 @@ void GBADirectorySetAttachBase(struct GBADirectorySet* dirs, struct VDir* base) 
 	}
 }
 
-void GBADirectorySetDetachBase(struct GBADirectorySet* dirs) {
+void mDirectorySetDetachBase(struct mDirectorySet* dirs) {
 	if (dirs->save == dirs->base) {
 		dirs->save = 0;
 	}
@@ -83,7 +83,7 @@ void GBADirectorySetDetachBase(struct GBADirectorySet* dirs) {
 	}
 }
 
-struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* path, bool (*filter)(struct VFile*)) {
+struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path, bool (*filter)(struct VFile*)) {
 	dirs->archive = VDirOpenArchive(path);
 	struct VFile* file;
 	if (dirs->archive) {
@@ -102,7 +102,7 @@ struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* 
 	return file;
 }
 
-void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOptions* opts) {
+void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct GBAOptions* opts) {
 	if (opts->savegamePath) {
 		struct VDir* dir = VDirOpen(opts->savegamePath);
 		if (dir) {

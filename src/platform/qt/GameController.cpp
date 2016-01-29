@@ -18,9 +18,9 @@
 #include <ctime>
 
 extern "C" {
+#include "core/directories.h"
 #include "gba/audio.h"
 #include "gba/context/config.h"
-#include "gba/context/directories.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
@@ -78,7 +78,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.rewindBufferCapacity = 0;
 	m_threadContext.cheats = &m_cheatDevice;
 	m_threadContext.logLevel = GBA_LOG_ALL;
-	GBADirectorySetInit(&m_threadContext.dirs);
+	mDirectorySetInit(&m_threadContext.dirs);
 
 	m_lux.p = this;
 	m_lux.sample = [](GBALuminanceSource* context) {
@@ -216,7 +216,7 @@ GameController::~GameController() {
 	clearMultiplayerController();
 	closeGame();
 	GBACheatDeviceDestroy(&m_cheatDevice);
-	GBADirectorySetDeinit(&m_threadContext.dirs);
+	mDirectorySetDeinit(&m_threadContext.dirs);
 	delete m_renderer;
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
@@ -256,7 +256,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 	setMute(opts->mute);
 
 	threadInterrupt();
-	GBADirectorySetMapOptions(&m_threadContext.dirs, opts);
+	mDirectorySetMapOptions(&m_threadContext.dirs, opts);
 	m_threadContext.idleOptimization = opts->idleOptimization;
 	threadContinue();
 }
