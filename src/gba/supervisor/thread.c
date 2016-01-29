@@ -6,10 +6,10 @@
 #include "thread.h"
 
 #include "arm.h"
+#include "core/config.h"
 #include "gba/gba.h"
 #include "gba/cheats.h"
 #include "gba/serialize.h"
-#include "gba/context/config.h"
 #include "gba/rr/mgm.h"
 #include "gba/rr/vbm.h"
 

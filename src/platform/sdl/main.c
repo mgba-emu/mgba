@@ -14,9 +14,9 @@
 #endif
 
 #include "core/core.h"
+#include "core/config.h"
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
-#include "gba/context/config.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
 #endif
@@ -49,7 +49,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 // TODO: Clean up signatures
 #ifdef M_CORE_GBA
-static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config);
+static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config);
 #endif
 #ifdef M_CORE_GB
 static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
 	struct GBAInputMap inputMap;
 	GBAInputMapInit(&inputMap);
 
-	struct GBAConfig config;
-	GBAConfigInit(&config, PORT);
-	GBAConfigLoad(&config);
+	struct mCoreConfig config;
+	mCoreConfigInit(&config, PORT);
+	mCoreConfigLoad(&config);
 
 	struct GBAOptions opts = {
 		.width = 0,
@@ -86,15 +86,15 @@ int main(int argc, char** argv) {
 	if (!parsed || args.showHelp) {
 		usage(argv[0], subparser.usage);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		mCoreConfigFreeOpts(&opts);
+		mCoreConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		mCoreConfigFreeOpts(&opts);
+		mCoreConfigDeinit(&config);
 		return 0;
 	}
 
@@ -105,8 +105,8 @@ int main(int argc, char** argv) {
 		if (!vf) {
 			printf("Could not open game. Are you sure the file exists?\n");
 			freeArguments(&args);
-			GBAConfigFreeOpts(&opts);
-			GBAConfigDeinit(&config);
+			mCoreConfigFreeOpts(&opts);
+			mCoreConfigDeinit(&config);
 			return 1;
 		}
 #ifdef M_CORE_GBA
@@ -150,14 +150,14 @@ int main(int argc, char** argv) {
 		else {
 			printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
 			freeArguments(&args);
-			GBAConfigFreeOpts(&opts);
-			GBAConfigDeinit(&config);
+			mCoreConfigFreeOpts(&opts);
+			mCoreConfigDeinit(&config);
 			return 1;
 		}
 	}
 
-	GBAConfigLoadDefaults(&config, &opts);
-	GBAConfigMap(&config, &opts);
+	mCoreConfigLoadDefaults(&config, &opts);
+	mCoreConfigMap(&config, &opts);
 
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
@@ -177,8 +177,8 @@ int main(int argc, char** argv) {
 
 	if (!mSDLInit(&renderer)) {
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		mCoreConfigFreeOpts(&opts);
+		mCoreConfigDeinit(&config);
 		return 1;
 	}
 
@@ -190,9 +190,9 @@ int main(int argc, char** argv) {
 	renderer.player.bindings = &inputMap;
 	GBASDLInitBindings(&inputMap);
 	GBASDLInitEvents(&renderer.events);
-	GBASDLEventsLoadConfig(&renderer.events, GBAConfigGetInput(&config));
+	GBASDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&config));
 	GBASDLAttachPlayer(&renderer.events, &renderer.player);
-	GBASDLPlayerLoadConfig(&renderer.player, GBAConfigGetInput(&config));
+	GBASDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&config));
 
 	int ret;
 
@@ -213,14 +213,14 @@ int main(int argc, char** argv) {
 	mSDLDeinit(&renderer);
 
 	freeArguments(&args);
-	GBAConfigFreeOpts(&opts);
-	GBAConfigDeinit(&config);
+	mCoreConfigFreeOpts(&opts);
+	mCoreConfigDeinit(&config);
 
 	return ret;
 }
 
 #ifdef M_CORE_GBA
-int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct GBAConfig* config) {
+int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config) {
 	struct GBAThread context = {
 		.renderer = &renderer->d.d,
 		.userData = renderer
@@ -230,7 +230,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 	GBAMapOptionsToContext(opts, &context);
 	GBAMapArgumentsToContext(args, &context);
-	context.overrides = GBAConfigGetOverrides(config);
+	context.overrides = mCoreConfigGetOverrides(config);
 
 	bool didFail = false;
 

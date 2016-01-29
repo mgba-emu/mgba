@@ -39,19 +39,19 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	ARMSetComponents(context->cpu, &context->gba->d, GBA_COMPONENT_MAX, context->components);
 	ARMInit(context->cpu);
 
-	GBAConfigInit(&context->config, port);
+	mCoreConfigInit(&context->config, port);
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (port) {
 		if (!_logFile) {
 			char logPath[PATH_MAX];
-			GBAConfigDirectory(logPath, PATH_MAX);
+			mCoreConfigDirectory(logPath, PATH_MAX);
 			strncat(logPath, PATH_SEP "log", PATH_MAX - strlen(logPath));
 			_logFile = VFileOpen(logPath, O_WRONLY | O_CREAT | O_TRUNC);
 		}
 		context->gba->logHandler = _GBAContextLog;
 
 		char biosPath[PATH_MAX];
-		GBAConfigDirectory(biosPath, PATH_MAX);
+		mCoreConfigDirectory(biosPath, PATH_MAX);
 		strncat(biosPath, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(biosPath));
 
 		struct GBAOptions opts = {
@@ -60,8 +60,8 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 			.idleOptimization = IDLE_LOOP_DETECT,
 			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
 		};
-		GBAConfigLoad(&context->config);
-		GBAConfigLoadDefaults(&context->config, &opts);
+		mCoreConfigLoad(&context->config);
+		mCoreConfigLoadDefaults(&context->config, &opts);
 	}
 #else
 	UNUSED(port);
@@ -80,7 +80,7 @@ void GBAContextDeinit(struct GBAContext* context) {
 	}
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
-	GBAConfigDeinit(&context->config);
+	mCoreConfigDeinit(&context->config);
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&context->dirs);
 #endif
@@ -171,7 +171,7 @@ bool GBAContextStart(struct GBAContext* context) {
 		return false;
 	}
 
-	GBAConfigMap(&context->config, &opts);
+	mCoreConfigMap(&context->config, &opts);
 
 	if (!context->bios && opts.bios) {
 		GBAContextLoadBIOS(context, opts.bios);
@@ -194,8 +194,8 @@ bool GBAContextStart(struct GBAContext* context) {
 	memcpy(override.id, &cart->id, sizeof(override.id));
 	struct Configuration* overrides = 0;
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	overrides = GBAConfigGetOverrides(&context->config);
-	GBAConfigFreeOpts(&opts);
+	overrides = mCoreConfigGetOverrides(&context->config);
+	mCoreConfigFreeOpts(&opts);
 #endif
 	if (GBAOverrideFind(overrides, &override)) {
 		GBAOverrideApply(context->gba, &override);

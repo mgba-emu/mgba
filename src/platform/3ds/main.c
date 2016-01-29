@@ -271,7 +271,7 @@ static void _setup(struct GBAGUIRunner* runner) {
 	runner->context.renderer = &renderer.d;
 
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 
@@ -304,7 +304,7 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 		screenCleanup |= SCREEN_CLEANUP_BOTTOM | SCREEN_CLEANUP_TOP;
 	}
@@ -437,7 +437,7 @@ static void _incrementScreenMode(struct GBAGUIRunner* runner) {
 	UNUSED(runner);
 	screenCleanup |= SCREEN_CLEANUP_TOP | SCREEN_CLEANUP_BOTTOM;
 	screenMode = (screenMode + 1) % SM_MAX;
-	GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
 }
 
 static uint32_t _pollInput(void) {

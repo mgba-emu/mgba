@@ -9,8 +9,8 @@
 #include "util/common.h"
 
 #include "core/directories.h"
+#include "core/config.h"
 #include "core/sync.h"
-#include "gba/context/config.h"
 #include "gba/input.h"
 
 struct GBAContext {
@@ -25,7 +25,7 @@ struct GBAContext {
 	struct mDirectorySet dirs;
 #endif
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
-	struct GBAConfig config;
+	struct mCoreConfig config;
 	struct GBAOptions opts;
 	struct GBAInputMap inputMap;
 };

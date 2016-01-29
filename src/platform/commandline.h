@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba/context/config.h"
+#include "core/config.h"
 
 enum DebuggerType {
 	DEBUGGER_NONE = 0,
@@ -35,7 +35,7 @@ struct GBAArguments {
 
 struct SubParser {
 	const char* usage;
-	bool (*parse)(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+	bool (*parse)(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
 	const char* extraOptions;
 	void* opts;
 };
@@ -47,7 +47,7 @@ struct GraphicsOpts {
 
 struct GBAThread;
 
-bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv,
+bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int argc, char* const* argv,
                     struct SubParser* subparser);
 void freeArguments(struct GBAArguments* opts);
 

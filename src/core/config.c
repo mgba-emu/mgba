@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@
 
 #define SECTION_NAME_MAX 128
 
-static const char* _lookupValue(const struct GBAConfig* config, const char* key) {
+static const char* _lookupValue(const struct mCoreConfig* config, const char* key) {
 	const char* value;
 	if (config->port) {
 		value = ConfigurationGetValue(&config->overridesTable, config->port, key);
@@ -59,7 +59,7 @@ static const char* _lookupValue(const struct GBAConfig* config, const char* key)
 	return ConfigurationGetValue(&config->defaultsTable, 0, key);
 }
 
-static bool _lookupCharValue(const struct GBAConfig* config, const char* key, char** out) {
+static bool _lookupCharValue(const struct mCoreConfig* config, const char* key, char** out) {
 	const char* value = _lookupValue(config, key);
 	if (!value) {
 		return false;
@@ -71,7 +71,7 @@ static bool _lookupCharValue(const struct GBAConfig* config, const char* key, ch
 	return true;
 }
 
-static bool _lookupIntValue(const struct GBAConfig* config, const char* key, int* out) {
+static bool _lookupIntValue(const struct mCoreConfig* config, const char* key, int* out) {
 	const char* charValue = _lookupValue(config, key);
 	if (!charValue) {
 		return false;
@@ -85,7 +85,7 @@ static bool _lookupIntValue(const struct GBAConfig* config, const char* key, int
 	return true;
 }
 
-static bool _lookupUIntValue(const struct GBAConfig* config, const char* key, unsigned* out) {
+static bool _lookupUIntValue(const struct mCoreConfig* config, const char* key, unsigned* out) {
 	const char* charValue = _lookupValue(config, key);
 	if (!charValue) {
 		return false;
@@ -99,7 +99,7 @@ static bool _lookupUIntValue(const struct GBAConfig* config, const char* key, un
 	return true;
 }
 
-static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, float* out) {
+static bool _lookupFloatValue(const struct mCoreConfig* config, const char* key, float* out) {
 	const char* charValue = _lookupValue(config, key);
 	if (!charValue) {
 		return false;
@@ -113,7 +113,7 @@ static bool _lookupFloatValue(const struct GBAConfig* config, const char* key, f
 	return true;
 }
 
-void GBAConfigInit(struct GBAConfig* config, const char* port) {
+void mCoreConfigInit(struct mCoreConfig* config, const char* port) {
 	ConfigurationInit(&config->configTable);
 	ConfigurationInit(&config->defaultsTable);
 	ConfigurationInit(&config->overridesTable);
@@ -125,7 +125,7 @@ void GBAConfigInit(struct GBAConfig* config, const char* port) {
 	}
 }
 
-void GBAConfigDeinit(struct GBAConfig* config) {
+void mCoreConfigDeinit(struct mCoreConfig* config) {
 	ConfigurationDeinit(&config->configTable);
 	ConfigurationDeinit(&config->defaultsTable);
 	ConfigurationDeinit(&config->overridesTable);
@@ -133,29 +133,29 @@ void GBAConfigDeinit(struct GBAConfig* config) {
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-bool GBAConfigLoad(struct GBAConfig* config) {
+bool mCoreConfigLoad(struct mCoreConfig* config) {
 	char path[PATH_MAX];
-	GBAConfigDirectory(path, PATH_MAX);
+	mCoreConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
-	return GBAConfigLoadPath(config, path);
+	return mCoreConfigLoadPath(config, path);
 }
 
-bool GBAConfigSave(const struct GBAConfig* config) {
+bool mCoreConfigSave(const struct mCoreConfig* config) {
 	char path[PATH_MAX];
-	GBAConfigDirectory(path, PATH_MAX);
+	mCoreConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
-	return GBAConfigSavePath(config, path);
+	return mCoreConfigSavePath(config, path);
 }
 
-bool GBAConfigLoadPath(struct GBAConfig* config, const char* path) {
+bool mCoreConfigLoadPath(struct mCoreConfig* config, const char* path) {
 	return ConfigurationRead(&config->configTable, path);
 }
 
-bool GBAConfigSavePath(const struct GBAConfig* config, const char* path) {
+bool mCoreConfigSavePath(const struct mCoreConfig* config, const char* path) {
 	return ConfigurationWrite(&config->configTable, path);
 }
 
-void GBAConfigMakePortable(const struct GBAConfig* config) {
+void mCoreConfigMakePortable(const struct mCoreConfig* config) {
 	struct VFile* portable = 0;
 #ifdef _WIN32
 	char out[MAX_PATH];
@@ -178,11 +178,11 @@ void GBAConfigMakePortable(const struct GBAConfig* config) {
 #endif
 	if (portable) {
 		portable->close(portable);
-		GBAConfigSave(config);
+		mCoreConfigSave(config);
 	}
 }
 
-void GBAConfigDirectory(char* out, size_t outLength) {
+void mCoreConfigDirectory(char* out, size_t outLength) {
 	struct VFile* portable;
 #ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
@@ -235,71 +235,71 @@ void GBAConfigDirectory(char* out, size_t outLength) {
 }
 #endif
 
-const char* GBAConfigGetValue(const struct GBAConfig* config, const char* key) {
+const char* mCoreConfigGetValue(const struct mCoreConfig* config, const char* key) {
 	return _lookupValue(config, key);
 }
 
-bool GBAConfigGetIntValue(const struct GBAConfig* config, const char* key, int* value) {
+bool mCoreConfigGetIntValue(const struct mCoreConfig* config, const char* key, int* value) {
 	return _lookupIntValue(config, key, value);
 }
 
-bool GBAConfigGetUIntValue(const struct GBAConfig* config, const char* key, unsigned* value) {
+bool mCoreConfigGetUIntValue(const struct mCoreConfig* config, const char* key, unsigned* value) {
 	return _lookupUIntValue(config, key, value);
 }
 
-bool GBAConfigGetFloatValue(const struct GBAConfig* config, const char* key, float* value) {
+bool mCoreConfigGetFloatValue(const struct mCoreConfig* config, const char* key, float* value) {
 	return _lookupFloatValue(config, key, value);
 }
 
-void GBAConfigSetValue(struct GBAConfig* config, const char* key, const char* value) {
+void mCoreConfigSetValue(struct mCoreConfig* config, const char* key, const char* value) {
 	ConfigurationSetValue(&config->configTable, config->port, key, value);
 }
 
-void GBAConfigSetIntValue(struct GBAConfig* config, const char* key, int value) {
+void mCoreConfigSetIntValue(struct mCoreConfig* config, const char* key, int value) {
 	ConfigurationSetIntValue(&config->configTable, config->port, key, value);
 }
 
-void GBAConfigSetUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+void mCoreConfigSetUIntValue(struct mCoreConfig* config, const char* key, unsigned value) {
 	ConfigurationSetUIntValue(&config->configTable, config->port, key, value);
 }
 
-void GBAConfigSetFloatValue(struct GBAConfig* config, const char* key, float value) {
+void mCoreConfigSetFloatValue(struct mCoreConfig* config, const char* key, float value) {
 	ConfigurationSetFloatValue(&config->configTable, config->port, key, value);
 }
 
-void GBAConfigSetDefaultValue(struct GBAConfig* config, const char* key, const char* value) {
+void mCoreConfigSetDefaultValue(struct mCoreConfig* config, const char* key, const char* value) {
 	ConfigurationSetValue(&config->defaultsTable, config->port, key, value);
 }
 
-void GBAConfigSetDefaultIntValue(struct GBAConfig* config, const char* key, int value) {
+void mCoreConfigSetDefaultIntValue(struct mCoreConfig* config, const char* key, int value) {
 	ConfigurationSetIntValue(&config->defaultsTable, config->port, key, value);
 }
 
-void GBAConfigSetDefaultUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+void mCoreConfigSetDefaultUIntValue(struct mCoreConfig* config, const char* key, unsigned value) {
 	ConfigurationSetUIntValue(&config->defaultsTable, config->port, key, value);
 }
 
-void GBAConfigSetDefaultFloatValue(struct GBAConfig* config, const char* key, float value) {
+void mCoreConfigSetDefaultFloatValue(struct mCoreConfig* config, const char* key, float value) {
 	ConfigurationSetFloatValue(&config->defaultsTable, config->port, key, value);
 }
 
-void GBAConfigSetOverrideValue(struct GBAConfig* config, const char* key, const char* value) {
+void mCoreConfigSetOverrideValue(struct mCoreConfig* config, const char* key, const char* value) {
 	ConfigurationSetValue(&config->overridesTable, config->port, key, value);
 }
 
-void GBAConfigSetOverrideIntValue(struct GBAConfig* config, const char* key, int value) {
+void mCoreConfigSetOverrideIntValue(struct mCoreConfig* config, const char* key, int value) {
 	ConfigurationSetIntValue(&config->overridesTable, config->port, key, value);
 }
 
-void GBAConfigSetOverrideUIntValue(struct GBAConfig* config, const char* key, unsigned value) {
+void mCoreConfigSetOverrideUIntValue(struct mCoreConfig* config, const char* key, unsigned value) {
 	ConfigurationSetUIntValue(&config->overridesTable, config->port, key, value);
 }
 
-void GBAConfigSetOverrideFloatValue(struct GBAConfig* config, const char* key, float value) {
+void mCoreConfigSetOverrideFloatValue(struct mCoreConfig* config, const char* key, float value) {
 	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
-void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
+void mCoreConfigMap(const struct mCoreConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupCharValue(config, "shader", &opts->shader);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
@@ -365,7 +365,7 @@ void GBAConfigMap(const struct GBAConfig* config, struct GBAOptions* opts) {
 	}
 }
 
-void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* opts) {
+void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct GBAOptions* opts) {
 	ConfigurationSetValue(&config->defaultsTable, 0, "bios", opts->bios);
 	ConfigurationSetValue(&config->defaultsTable, 0, "shader", opts->shader);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
@@ -403,15 +403,15 @@ void GBAConfigLoadDefaults(struct GBAConfig* config, const struct GBAOptions* op
 }
 
 // These two are basically placeholders in case the internal layout changes, e.g. for loading separate files
-struct Configuration* GBAConfigGetInput(struct GBAConfig* config) {
+struct Configuration* mCoreConfigGetInput(struct mCoreConfig* config) {
 	return &config->configTable;
 }
 
-struct Configuration* GBAConfigGetOverrides(struct GBAConfig* config) {
+struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig* config) {
 	return &config->configTable;
 }
 
-void GBAConfigFreeOpts(struct GBAOptions* opts) {
+void mCoreConfigFreeOpts(struct GBAOptions* opts) {
 	free(opts->bios);
 	free(opts->shader);
 	free(opts->savegamePath);

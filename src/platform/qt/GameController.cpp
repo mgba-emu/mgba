@@ -18,9 +18,9 @@
 #include <ctime>
 
 extern "C" {
+#include "core/config.h"
 #include "core/directories.h"
 #include "gba/audio.h"
-#include "gba/context/config.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"

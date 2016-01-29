@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "directories.h"
 
-#include "gba/context/config.h"
+#include "core/config.h"
 #include "util/vfs.h"
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

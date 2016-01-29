@@ -257,11 +257,11 @@ void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, 
 
 void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner) {
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 	} else {
 		screenMode = (screenMode + 1) % SM_MAX;
-		GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+		mCoreConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
 	}
 }
 

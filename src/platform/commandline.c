@@ -50,9 +50,9 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+static bool _parseGraphicsArg(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
 
-bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
 	int ch;
 	char options[64] =
 		"b:c:hl:p:s:v:"
@@ -80,7 +80,7 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 			}
 			break;
 		case 'b':
-			GBAConfigSetOverrideValue(config, "bios", optarg);
+			mCoreConfigSetOverrideValue(config, "bios", optarg);
 			break;
 		case 'c':
 			opts->cheatsFile = strdup(optarg);
@@ -105,13 +105,13 @@ bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int arg
 			opts->showHelp = true;
 			break;
 		case 'l':
-			GBAConfigSetOverrideValue(config, "logLevel", optarg);
+			mCoreConfigSetOverrideValue(config, "logLevel", optarg);
 			break;
 		case 'p':
 			opts->patch = strdup(optarg);
 			break;
 		case 's':
-			GBAConfigSetOverrideValue(config, "frameskip", optarg);
+			mCoreConfigSetOverrideValue(config, "frameskip", optarg);
 			break;
 		case 'v':
 			opts->movie = strdup(optarg);
@@ -154,13 +154,13 @@ void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) 
 	opts->fullscreen = false;
 }
 
-bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
+bool _parseGraphicsArg(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
 	UNUSED(arg);
 	struct GraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
 		graphicsOpts->fullscreen = true;
-		GBAConfigSetOverrideIntValue(config, "fullscreen", 1);
+		mCoreConfigSetOverrideIntValue(config, "fullscreen", 1);
 		return true;
 	case '1':
 	case '2':
@@ -172,8 +172,8 @@ bool _parseGraphicsArg(struct SubParser* parser, struct GBAConfig* config, int o
 			return false;
 		}
 		graphicsOpts->multiplier = option - '0';
-		GBAConfigSetOverrideIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
-		GBAConfigSetOverrideIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
+		mCoreConfigSetOverrideIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
+		mCoreConfigSetOverrideIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
 		return true;
 	default:
 		return false;

@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "core/config.h"
 #include "gba/supervisor/thread.h"
-#include "gba/context/config.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
@@ -38,7 +38,7 @@ struct PerfOpts {
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+static bool _parsePerfOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
 static void _loadSavestate(struct GBAThread* context);
 
 static struct GBAThread* _thread;
@@ -59,29 +59,29 @@ int main(int argc, char** argv) {
 		.opts = &perfOpts
 	};
 
-	struct GBAConfig config;
-	GBAConfigInit(&config, "perf");
-	GBAConfigLoad(&config);
+	struct mCoreConfig config;
+	mCoreConfigInit(&config, "perf");
+	mCoreConfigLoad(&config);
 
 	struct GBAOptions opts = {
 		.idleOptimization = IDLE_LOOP_DETECT
 	};
-	GBAConfigLoadDefaults(&config, &opts);
+	mCoreConfigLoadDefaults(&config, &opts);
 
 	struct GBAArguments args;
 	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		mCoreConfigFreeOpts(&opts);
+		mCoreConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
+		mCoreConfigFreeOpts(&opts);
+		mCoreConfigDeinit(&config);
 		return 0;
 	}
 
@@ -103,10 +103,10 @@ int main(int argc, char** argv) {
 	}
 
 	context.debugger = createDebugger(&args, &context);
-	context.overrides = GBAConfigGetOverrides(&config);
+	context.overrides = mCoreConfigGetOverrides(&config);
 	char gameCode[5] = { 0 };
 
-	GBAConfigMap(&config, &opts);
+	mCoreConfigMap(&config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
 	GBAMapArgumentsToContext(&args, &context);
@@ -158,9 +158,9 @@ cleanup:
 	if (_savestate) {
 		_savestate->close(_savestate);
 	}
-	GBAConfigFreeOpts(&opts);
+	mCoreConfigFreeOpts(&opts);
 	freeArguments(&args);
-	GBAConfigDeinit(&config);
+	mCoreConfigDeinit(&config);
 	free(context.debugger);
 	free(renderer.outputBuffer);
 
@@ -212,7 +212,7 @@ static void _GBAPerfShutdown(int signal) {
 	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
+static bool _parsePerfOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
 	UNUSED(config);
 	struct PerfOpts* opts = parser->opts;
 	errno = 0;

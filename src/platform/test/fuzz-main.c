@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba/context/config.h"
+#include "core/config.h"
 #include "gba/context/context.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
@@ -36,7 +36,7 @@ struct FuzzOpts {
 
 static void _GBAFuzzRunloop(struct GBAContext* context, int frames);
 static void _GBAFuzzShutdown(int signal);
-static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+static bool _parseFuzzOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
 
 static bool _dispatchExiting = false;
 
@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
 	struct GBAOptions opts = {
 		.idleOptimization = IDLE_LOOP_DETECT
 	};
-	GBAConfigLoadDefaults(&context.config, &opts);
-	GBAConfigFreeOpts(&opts);
+	mCoreConfigLoadDefaults(&context.config, &opts);
+	mCoreConfigFreeOpts(&opts);
 
 	struct GBAArguments args;
 	bool parsed = parseArguments(&args, &context.config, argc, argv, &subparser);
@@ -161,7 +161,7 @@ static void _GBAFuzzShutdown(int signal) {
 	_dispatchExiting = true;
 }
 
-static bool _parseFuzzOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
+static bool _parseFuzzOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
 	UNUSED(config);
 	struct FuzzOpts* opts = parser->opts;
 	errno = 0;

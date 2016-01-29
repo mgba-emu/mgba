@@ -93,7 +93,7 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		if (!item->validStates || !item->data) {
 			continue;
 		}
-		GBAConfigGetUIntValue(&runner->context.config, item->data, &item->state);
+		mCoreConfigGetUIntValue(&runner->context.config, item->data, &item->state);
 	}
 
 	while (true) {
@@ -103,16 +103,16 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		}
 		if (!strcmp(item->data, "*SAVE")) {
 			if (biosPath[0]) {
-				GBAConfigSetValue(&runner->context.config, "bios", biosPath);
+				mCoreConfigSetValue(&runner->context.config, "bios", biosPath);
 			}
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
 				if (!item->validStates || !item->data) {
 					continue;
 				}
-				GBAConfigSetUIntValue(&runner->context.config, item->data, item->state);
+				mCoreConfigSetUIntValue(&runner->context.config, item->data, item->state);
 			}
-			GBAConfigSave(&runner->context.config);
+			mCoreConfigSave(&runner->context.config);
 			break;
 		}
 		if (!strcmp(item->data, "*REMAP")) {

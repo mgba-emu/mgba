@@ -599,10 +599,10 @@ void _unpaused(struct GBAGUIRunner* runner) {
 	_CPU_ISR_Restore(level);
 
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
-	if (GBAConfigGetUIntValue(&runner->context.config, "filter", &mode) && mode < FM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->context.config, "filter", &mode) && mode < FM_MAX) {
 		switch (mode) {
 		case FM_NEAREST:
 		default:

@@ -124,7 +124,7 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	if (runner->context.config.port && runner->keySources) {
 		size_t i;
 		for (i = 0; runner->keySources[i].id; ++i) {
-			GBAInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+			GBAInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
 		}
 	}
 }
@@ -137,10 +137,10 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 		if (runner->keySources) {
 			size_t i;
 			for (i = 0; runner->keySources[i].id; ++i) {
-				GBAInputMapSave(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+				GBAInputMapSave(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
 			}
 		}
-		GBAConfigSave(&runner->context.config);
+		mCoreConfigSave(&runner->context.config);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);
 	GBAContextDeinit(&runner->context);
@@ -272,7 +272,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 			GBAContextFrame(&runner->context, keys);
 			if (runner->drawFrame) {
 				int drawFps = false;
-				GBAConfigGetIntValue(&runner->context.config, "fpsCounter", &drawFps);
+				mCoreConfigGetIntValue(&runner->context.config, "fpsCounter", &drawFps);
 
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
@@ -347,7 +347,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				GBAConfigGetIntValue(&runner->context.config, "frameskip", &runner->context.gba->video.frameskip);
+				mCoreConfigGetIntValue(&runner->context.config, "frameskip", &runner->context.gba->video.frameskip);
 				break;
 			case RUNNER_CONTINUE:
 				break;

@@ -14,7 +14,7 @@
 #include <functional>
 
 extern "C" {
-#include "gba/context/config.h"
+#include "core/config.h"
 #include "util/configuration.h"
 #include "platform/commandline.h"
 }
@@ -77,10 +77,10 @@ public:
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
-	Configuration* overrides() { return GBAConfigGetOverrides(&m_config); }
+	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
 	void saveOverride(const GBACartridgeOverride&);
 
-	Configuration* input() { return GBAConfigGetInput(&m_config); }
+	Configuration* input() { return mCoreConfigGetInput(&m_config); }
 
 public slots:
 	void setOption(const char* key, bool value);
@@ -96,7 +96,7 @@ public slots:
 private:
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
-	GBAConfig m_config;
+	mCoreConfig m_config;
 	GBAOptions m_opts;
 
 	QMap<QString, ConfigOption*> m_optionSet;

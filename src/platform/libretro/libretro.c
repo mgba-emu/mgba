@@ -79,7 +79,7 @@ static void _reloadSettings(void) {
 		}
 	}
 
-	GBAConfigLoadDefaults(&context.config, &opts);
+	mCoreConfigLoadDefaults(&context.config, &opts);
 }
 
 unsigned retro_api_version(void) {

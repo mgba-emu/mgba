@@ -63,7 +63,7 @@
 			.useBios = true,
 			.idleOptimization = IDLE_LOOP_REMOVE
 		};
-		GBAConfigLoadDefaults(&context.config, &opts);
+		mCoreConfigLoadDefaults(&context.config, &opts);
 		GBAVideoSoftwareRendererCreate(&renderer);
 		renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 		renderer.outputBufferStride = 256;
