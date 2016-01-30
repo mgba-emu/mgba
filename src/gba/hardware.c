@@ -21,7 +21,7 @@ static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
 
-static time_t _rtcGenericCallback(struct GBARTCSource* source);
+static time_t _rtcGenericCallback(struct mRTCSource* source);
 
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
@@ -29,7 +29,7 @@ static void _rumbleReadPins(struct GBACartridgeHardware* hw);
 
 static void _lightReadPins(struct GBACartridgeHardware* hw);
 
-static uint16_t _gbpRead(struct GBAKeyCallback*);
+static uint16_t _gbpRead(struct mKeyCallback*);
 static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles);
 
@@ -271,7 +271,7 @@ unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
 
 void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	time_t t;
-	struct GBARTCSource* rtc = hw->p->rtcSource;
+	struct mRTCSource* rtc = hw->p->rtcSource;
 	if (rtc) {
 		if (rtc->sample) {
 			rtc->sample(rtc);
@@ -302,7 +302,7 @@ unsigned _rtcBCD(unsigned value) {
 	return counter;
 }
 
-time_t _rtcGenericCallback(struct GBARTCSource* source) {
+time_t _rtcGenericCallback(struct mRTCSource* source) {
 	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
 	switch (rtc->override) {
 	case RTC_NO_OVERRIDE:
@@ -332,7 +332,7 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* hw) {
 }
 
 void _gyroReadPins(struct GBACartridgeHardware* hw) {
-	struct GBARotationSource* gyro = hw->p->rotationSource;
+	struct mRotationSource* gyro = hw->p->rotationSource;
 	if (!gyro || !gyro->readGyroZ) {
 		return;
 	}
@@ -428,7 +428,7 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 	case 0x8100:
 		if (value == 0xAA && hw->tiltState == 1) {
 			hw->tiltState = 0;
-			struct GBARotationSource* rotationSource = hw->p->rotationSource;
+			struct mRotationSource* rotationSource = hw->p->rotationSource;
 			if (!rotationSource || !rotationSource->readTiltX || !rotationSource->readTiltY) {
 				return;
 			}
@@ -535,7 +535,7 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 	}
 }
 
-uint16_t _gbpRead(struct GBAKeyCallback* callback) {
+uint16_t _gbpRead(struct mKeyCallback* callback) {
 	struct GBAGBPKeyCallback* gbpCallback = (struct GBAGBPKeyCallback*) callback;
 	if (gbpCallback->p->gbpInputsPosted == 2) {
 		return 0x30F;

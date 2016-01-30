@@ -29,10 +29,10 @@ DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
 #endif
-static int32_t _GBASDLReadTiltX(struct GBARotationSource* rumble);
-static int32_t _GBASDLReadTiltY(struct GBARotationSource* rumble);
-static int32_t _GBASDLReadGyroZ(struct GBARotationSource* rumble);
-static void _GBASDLRotationSample(struct GBARotationSource* source);
+static int32_t _GBASDLReadTiltX(struct mRotationSource* rumble);
+static int32_t _GBASDLReadTiltY(struct mRotationSource* rumble);
+static int32_t _GBASDLReadGyroZ(struct mRotationSource* rumble);
+static void _GBASDLRotationSample(struct mRotationSource* source);
 
 bool GBASDLInitEvents(struct GBASDLEvents* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
@@ -605,23 +605,23 @@ static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
 	return SDL_JoystickGetAxis(player->joystick->joystick, axis) * 0x3800;
 }
 
-static int32_t _GBASDLReadTiltX(struct GBARotationSource* source) {
+static int32_t _GBASDLReadTiltX(struct mRotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	return _readTilt(rotation->p, rotation->axisX);
 }
 
-static int32_t _GBASDLReadTiltY(struct GBARotationSource* source) {
+static int32_t _GBASDLReadTiltY(struct mRotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	return _readTilt(rotation->p, rotation->axisY);
 }
 
-static int32_t _GBASDLReadGyroZ(struct GBARotationSource* source) {
+static int32_t _GBASDLReadGyroZ(struct mRotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	float z = rotation->zDelta;
 	return z * rotation->gyroSensitivity;
 }
 
-static void _GBASDLRotationSample(struct GBARotationSource* source) {
+static void _GBASDLRotationSample(struct mRotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	SDL_JoystickUpdate();
 	if (!rotation->p->joystick) {

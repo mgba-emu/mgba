@@ -80,7 +80,7 @@ public:
 	void releaseFocus(QWidget* focus);
 
 	GBARumble* rumble();
-	GBARotationSource* rotationSource();
+	mRotationSource* rotationSource();
 
 signals:
 	void profileLoaded(const QString& profile);

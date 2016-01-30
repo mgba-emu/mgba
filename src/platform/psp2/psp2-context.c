@@ -41,7 +41,7 @@ static vita2d_texture* tex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
 static struct GBASceRotationSource {
-	struct GBARotationSource d;
+	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
 

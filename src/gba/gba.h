@@ -96,9 +96,9 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
-	struct GBARotationSource* rotationSource;
+	struct mRotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
-	struct GBARTCSource* rtcSource;
+	struct mRTCSource* rtcSource;
 	struct GBARumble* rumble;
 
 	struct GBARRContext* rr;
@@ -114,8 +114,8 @@ struct GBA {
 	GBALogHandler logHandler;
 	enum GBALogLevel logLevel;
 	struct GBAAVStream* stream;
-	struct GBAKeyCallback* keyCallback;
-	struct GBAStopCallback* stopCallback;
+	struct mKeyCallback* keyCallback;
+	struct mStopCallback* stopCallback;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;

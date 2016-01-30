@@ -128,11 +128,11 @@ static void _pauseThread(struct GBAThread* threadContext, bool onThread) {
 }
 
 struct GBAThreadStop {
-	struct GBAStopCallback d;
+	struct mStopCallback d;
 	struct GBAThread* p;
 };
 
-static void _stopCallback(struct GBAStopCallback* stop) {
+static void _stopCallback(struct mStopCallback* stop) {
 	struct GBAThreadStop* callback = (struct GBAThreadStop*) stop;
 	if (callback->p->stopCallback(callback->p)) {
 		_changeState(callback->p, THREAD_EXITING, false);

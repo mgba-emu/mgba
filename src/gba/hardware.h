@@ -16,7 +16,7 @@
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
 struct GBARTCGenericSource {
-	struct GBARTCSource d;
+	struct mRTCSource d;
 	struct GBA* p;
 	enum {
 		RTC_NO_OVERRIDE,
@@ -85,7 +85,7 @@ struct GBARumble {
 };
 
 struct GBAGBPKeyCallback {
-	struct GBAKeyCallback d;
+	struct mKeyCallback d;
 	struct GBACartridgeHardware* p;
 };
 

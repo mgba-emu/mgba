@@ -65,7 +65,7 @@ struct GBASDLPlayer {
 #endif
 
 	struct GBASDLRotation {
-		struct GBARotationSource d;
+		struct mRotationSource d;
 		struct GBASDLPlayer* p;
 
 		// Tilt

@@ -217,7 +217,7 @@ GBARumble* InputController::rumble() {
 	return nullptr;
 }
 
-GBARotationSource* InputController::rotationSource() {
+mRotationSource* InputController::rotationSource() {
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
 		return &m_sdlPlayer.rotation.d;

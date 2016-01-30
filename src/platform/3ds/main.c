@@ -39,7 +39,7 @@ static enum ScreenMode {
 FS_Archive sdmcArchive;
 
 static struct GBA3DSRotationSource {
-	struct GBARotationSource d;
+	struct mRotationSource d;
 	accelVector accel;
 	angularRate gyro;
 } rotation;

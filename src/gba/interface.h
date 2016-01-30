@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/interface.h"
+
 enum GBALogLevel {
 	GBA_LOG_FATAL = 0x01,
 	GBA_LOG_ERROR = 0x02,
@@ -62,35 +64,12 @@ struct GBAAVStream {
 	void (*postAudioBuffer)(struct GBAAVStream*, struct GBAAudio*);
 };
 
-struct GBAKeyCallback {
-	uint16_t (*readKeys)(struct GBAKeyCallback*);
-};
-
-struct GBAStopCallback {
-	void (*stop)(struct GBAStopCallback*);
-};
-
-struct GBARotationSource {
-	void (*sample)(struct GBARotationSource*);
-
-	int32_t (*readTiltX)(struct GBARotationSource*);
-	int32_t (*readTiltY)(struct GBARotationSource*);
-
-	int32_t (*readGyroZ)(struct GBARotationSource*);
-};
-
 extern const int GBA_LUX_LEVELS[10];
 
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);
 
 	uint8_t (*readLuminance)(struct GBALuminanceSource*);
-};
-
-struct GBARTCSource {
-	void (*sample)(struct GBARTCSource*);
-
-	time_t (*unixTime)(struct GBARTCSource*);
 };
 
 struct GBASIODriver {

@@ -51,10 +51,10 @@ static void _retraceCallback(u32 count);
 
 static void _audioDMA(void);
 static void _setRumble(struct GBARumble* rumble, int enable);
-static void _sampleRotation(struct GBARotationSource* source);
-static int32_t _readTiltX(struct GBARotationSource* source);
-static int32_t _readTiltY(struct GBARotationSource* source);
-static int32_t _readGyroZ(struct GBARotationSource* source);
+static void _sampleRotation(struct mRotationSource* source);
+static int32_t _readTiltX(struct mRotationSource* source);
+static int32_t _readTiltY(struct mRotationSource* source);
+static int32_t _readGyroZ(struct mRotationSource* source);
 
 static void _drawStart(void);
 static void _drawEnd(void);
@@ -75,7 +75,7 @@ static s8 WPAD_StickY(u8 chan, u8 right);
 
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBARumble rumble;
-static struct GBARotationSource rotation;
+static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
@@ -731,7 +731,7 @@ void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 }
 
-void _sampleRotation(struct GBARotationSource* source) {
+void _sampleRotation(struct mRotationSource* source) {
 	UNUSED(source);
 	vec3w_t accel;
 	WPAD_Accel(0, &accel);
@@ -749,17 +749,17 @@ void _sampleRotation(struct GBARotationSource* source) {
 	gyroZ <<= 18;
 }
 
-int32_t _readTiltX(struct GBARotationSource* source) {
+int32_t _readTiltX(struct mRotationSource* source) {
 	UNUSED(source);
 	return tiltX;
 }
 
-int32_t _readTiltY(struct GBARotationSource* source) {
+int32_t _readTiltY(struct mRotationSource* source) {
 	UNUSED(source);
 	return tiltY;
 }
 
-int32_t _readGyroZ(struct GBARotationSource* source) {
+int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
 	return gyroZ;
 }
