@@ -134,8 +134,8 @@ static void _aptHook(APT_HookType hook, void* user) {
 	}
 }
 
-static void _map3DSKey(struct GBAInputMap* map, int ctrKey, enum GBAKey key) {
-	GBAInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
+static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
+	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
 
 static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size) {
@@ -428,7 +428,7 @@ static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 
 	hidScanInput();
 	uint32_t activeKeys = hidKeysHeld();
-	uint16_t keys = GBAInputMapKeyBits(&runner->context.inputMap, _3DS_INPUT, activeKeys, 0);
+	uint16_t keys = mInputMapKeyBits(&runner->context.inputMap, _3DS_INPUT, activeKeys, 0);
 	keys |= (activeKeys >> 24) & 0xF0;
 	return keys;
 }
@@ -489,24 +489,24 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	return GUI_CURSOR_DOWN;
 }
 
-static void _sampleRotation(struct GBARotationSource* source) {
+static void _sampleRotation(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	// Work around ctrulib getting the entries wrong
 	rotation->accel = *(accelVector*)& hidSharedMem[0x48];
 	rotation->gyro = *(angularRate*)& hidSharedMem[0x5C];
 }
 
-static int32_t _readTiltX(struct GBARotationSource* source) {
+static int32_t _readTiltX(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->accel.x << 18L;
 }
 
-static int32_t _readTiltY(struct GBARotationSource* source) {
+static int32_t _readTiltY(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->accel.y << 18L;
 }
 
-static int32_t _readGyroZ(struct GBARotationSource* source) {
+static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->gyro.y << 18L; // Yes, y
 }

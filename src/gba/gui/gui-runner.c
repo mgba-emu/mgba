@@ -124,7 +124,7 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 	if (runner->context.config.port && runner->keySources) {
 		size_t i;
 		for (i = 0; runner->keySources[i].id; ++i) {
-			GBAInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
+			mInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
 		}
 	}
 }
@@ -137,7 +137,7 @@ void GBAGUIDeinit(struct GBAGUIRunner* runner) {
 		if (runner->keySources) {
 			size_t i;
 			for (i = 0; runner->keySources[i].id; ++i) {
-				GBAInputMapSave(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
+				mInputMapSave(&runner->context.inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->context.config));
 			}
 		}
 		mCoreConfigSave(&runner->context.config);

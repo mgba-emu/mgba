@@ -138,9 +138,9 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 			if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
 				int key;
 #if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
-				key = GBAInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.scancode);
+				key = mInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.scancode);
 #else
-				key = GBAInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.sym);
+				key = mInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.sym);
 #endif
 				if (key != GBA_KEY_NONE) {
 					if (event.type == SDL_KEYDOWN) {

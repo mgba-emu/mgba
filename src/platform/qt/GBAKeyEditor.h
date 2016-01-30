@@ -57,13 +57,13 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
-	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
+	void lookupBinding(const mInputMap*, KeyEditor*, GBAKey);
 	void bindKey(const KeyEditor*, GBAKey);
 
 	bool findFocus(KeyEditor* needle = nullptr);
 
 #ifdef BUILD_SDL
-	void lookupAxes(const GBAInputMap*);
+	void lookupAxes(const mInputMap*);
 #endif
 
 	KeyEditor* keyById(GBAKey);

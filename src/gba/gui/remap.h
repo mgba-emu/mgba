@@ -16,8 +16,8 @@ struct GUIInputKeys {
 };
 
 struct GUIParams;
-struct GBAInputMap;
+struct mInputMap;
 
-void GBAGUIRemapKeys(struct GUIParams*, struct GBAInputMap*, const struct GUIInputKeys*);
+void GBAGUIRemapKeys(struct GUIParams*, struct mInputMap*, const struct GUIInputKeys*);
 
 #endif

@@ -58,8 +58,8 @@ static struct GBAPSP2AudioContext {
 	bool running;
 } audioContext;
 
-static void _mapVitaKey(struct GBAInputMap* map, int pspKey, enum GBAKey key) {
-	GBAInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
+static void _mapVitaKey(struct mInputMap* map, int pspKey, enum GBAKey key) {
+	mInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
 }
 
 static THREAD_ENTRY _audioThread(void* context) {
@@ -91,22 +91,22 @@ static THREAD_ENTRY _audioThread(void* context) {
 	return 0;
 }
 
-static void _sampleRotation(struct GBARotationSource* source) {
+static void _sampleRotation(struct mRotationSource* source) {
 	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
 	sceMotionGetSensorState(&rotation->state, 1);
 }
 
-static int32_t _readTiltX(struct GBARotationSource* source) {
+static int32_t _readTiltX(struct mRotationSource* source) {
 	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
 	return rotation->state.accelerometer.x * 0x60000000;
 }
 
-static int32_t _readTiltY(struct GBARotationSource* source) {
+static int32_t _readTiltY(struct mRotationSource* source) {
 	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
 	return rotation->state.accelerometer.y * 0x60000000;
 }
 
-static int32_t _readGyroZ(struct GBARotationSource* source) {
+static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
 	return rotation->state.gyro.z * 0x10000000;
 }
@@ -115,20 +115,20 @@ uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 
-	int activeKeys = GBAInputMapKeyBits(&runner->context.inputMap, PSP2_INPUT, pad.buttons, 0);
-	enum GBAKey angles = GBAInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 0, pad.ly);
+	int activeKeys = mInputMapKeyBits(&runner->context.inputMap, PSP2_INPUT, pad.buttons, 0);
+	enum GBAKey angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 0, pad.ly);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = GBAInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 1, pad.lx);
+	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 1, pad.lx);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = GBAInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 2, pad.ry);
+	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 2, pad.ry);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = GBAInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 3, pad.rx);
+	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 3, pad.rx);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
@@ -148,10 +148,10 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
 	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
 
-	struct GBAAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
-	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);
-	desc = (struct GBAAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
-	GBAInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
+	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
+	mInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);
+	desc = (struct mInputAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
+	mInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);

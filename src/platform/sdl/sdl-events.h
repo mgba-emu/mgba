@@ -48,7 +48,7 @@ struct GBASDLEvents {
 
 struct GBASDLPlayer {
 	size_t playerId;
-	struct GBAInputMap* bindings;
+	struct mInputMap* bindings;
 	struct SDL_JoystickCombo* joystick;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
@@ -92,7 +92,7 @@ void GBASDLEventsLoadConfig(struct GBASDLEvents*, const struct Configuration*);
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents*, struct GBASDLPlayer*, size_t index);
 void GBASDLUpdateJoysticks(struct GBASDLEvents* events);
 
-void GBASDLInitBindings(struct GBAInputMap* inputMap);
+void GBASDLInitBindings(struct mInputMap* inputMap);
 void GBASDLPlayerLoadConfig(struct GBASDLPlayer*, const struct Configuration*);
 void GBASDLPlayerSaveConfig(const struct GBASDLPlayer*, struct Configuration*);
 

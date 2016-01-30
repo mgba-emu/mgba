@@ -50,7 +50,7 @@ public:
 
 	void bindKey(uint32_t type, int key, GBAKey);
 
-	const GBAInputMap* map() const { return &m_inputMap; }
+	const mInputMap* map() const { return &m_inputMap; }
 
 	void updateJoysticks();
 	int pollEvents();
@@ -99,7 +99,7 @@ private:
 	bool hasPendingEvent(GBAKey) const;
 	void sendGamepadEvent(QEvent*);
 
-	GBAInputMap m_inputMap;
+	mInputMap m_inputMap;
 	ConfigController* m_config;
 	int m_playerId;
 	bool m_allowOpposing;

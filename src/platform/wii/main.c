@@ -28,8 +28,8 @@
 #define WIIMOTE_INPUT 0x5749494D
 #define CLASSIC_INPUT 0x57494943
 
-static void _mapKey(struct GBAInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
-	GBAInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
+static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
+	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
 
 static enum ScreenMode {
@@ -552,12 +552,12 @@ void _setup(struct GBAGUIRunner* runner) {
 	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
 	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
 
-	struct GBAAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
-	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 0, &desc);
-	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, &desc);
-	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
-	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
-	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
+	struct mInputAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
+	mInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 0, &desc);
+	mInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, &desc);
+	desc = (struct mInputAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
+	mInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
+	mInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
 
 	GBAVideoSoftwareRendererCreate(&renderer);
 	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
@@ -694,25 +694,25 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	u32 wiiPad = WPAD_ButtonsHeld(0);
 	u32 ext = 0;
 	WPAD_Probe(0, &ext);
-	uint16_t keys = GBAInputMapKeyBits(&runner->context.inputMap, GCN1_INPUT, padkeys, 0);
-	keys |= GBAInputMapKeyBits(&runner->context.inputMap, GCN2_INPUT, padkeys, 0);
-	keys |= GBAInputMapKeyBits(&runner->context.inputMap, WIIMOTE_INPUT, wiiPad, 0);
+	uint16_t keys = mInputMapKeyBits(&runner->context.inputMap, GCN1_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(&runner->context.inputMap, GCN2_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(&runner->context.inputMap, WIIMOTE_INPUT, wiiPad, 0);
 
-	enum GBAKey angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 0, PAD_StickX(0));
+	enum GBAKey angles = mInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 0, PAD_StickX(0));
 	if (angles != GBA_KEY_NONE) {
 		keys |= 1 << angles;
 	}
-	angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 1, PAD_StickY(0));
+	angles = mInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 1, PAD_StickY(0));
 	if (angles != GBA_KEY_NONE) {
 		keys |= 1 << angles;
 	}
 	if (ext == WPAD_EXP_CLASSIC) {
-		keys |= GBAInputMapKeyBits(&runner->context.inputMap, CLASSIC_INPUT, wiiPad, 0);
-		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
+		keys |= mInputMapKeyBits(&runner->context.inputMap, CLASSIC_INPUT, wiiPad, 0);
+		angles = mInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
 		if (angles != GBA_KEY_NONE) {
 			keys |= 1 << angles;
 		}
-		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
+		angles = mInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
 		if (angles != GBA_KEY_NONE) {
 			keys |= 1 << angles;
 		}

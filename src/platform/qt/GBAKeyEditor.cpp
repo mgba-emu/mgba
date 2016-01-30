@@ -39,7 +39,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	setWindowFlags(windowFlags() & ~Qt::WindowFullscreenButtonHint);
 	setMinimumSize(300, 300);
 
-	const GBAInputMap* map = controller->map();
+	const mInputMap* map = controller->map();
 	controller->stealFocus(this);
 
 	m_keyDU = new KeyEditor(this);
@@ -237,7 +237,7 @@ void GBAKeyEditor::save() {
 }
 
 void GBAKeyEditor::refresh() {
-	const GBAInputMap* map = m_controller->map();
+	const mInputMap* map = m_controller->map();
 	lookupBinding(map, m_keyDU, GBA_KEY_UP);
 	lookupBinding(map, m_keyDD, GBA_KEY_DOWN);
 	lookupBinding(map, m_keyDL, GBA_KEY_LEFT);
@@ -250,31 +250,31 @@ void GBAKeyEditor::refresh() {
 	lookupBinding(map, m_keyR, GBA_KEY_R);
 }
 
-void GBAKeyEditor::lookupBinding(const GBAInputMap* map, KeyEditor* keyEditor, GBAKey key) {
+void GBAKeyEditor::lookupBinding(const mInputMap* map, KeyEditor* keyEditor, GBAKey key) {
 #ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON) {
-		int value = GBAInputQueryBinding(map, m_type, key);
+		int value = mInputQueryBinding(map, m_type, key);
 		if (value != GBA_KEY_NONE) {
 			keyEditor->setValueButton(value);
 		}
 		return;
 	}
 #endif
-	keyEditor->setValueKey(GBAInputQueryBinding(map, m_type, key));
+	keyEditor->setValueKey(mInputQueryBinding(map, m_type, key));
 }
 
 #ifdef BUILD_SDL
-void GBAKeyEditor::lookupAxes(const GBAInputMap* map) {
-	GBAInputEnumerateAxes(map, m_type, [](int axis, const GBAAxis* description, void* user) {
+void GBAKeyEditor::lookupAxes(const mInputMap* map) {
+	mInputEnumerateAxes(map, m_type, [](int axis, const mInputAxis* description, void* user) {
 		GBAKeyEditor* self = static_cast<GBAKeyEditor*>(user);
 		if (description->highDirection != GBA_KEY_NONE) {
-			KeyEditor* key = self->keyById(description->highDirection);
+			KeyEditor* key = self->keyById(static_cast<enum GBAKey>(description->highDirection));
 			if (key) {
 				key->setValueAxis(axis, description->deadHigh);
 			}
 		}
 		if (description->lowDirection != GBA_KEY_NONE) {
-			KeyEditor* key = self->keyById(description->lowDirection);
+			KeyEditor* key = self->keyById(static_cast<enum GBAKey>(description->lowDirection));
 			if (key) {
 				key->setValueAxis(axis, description->deadLow);
 			}

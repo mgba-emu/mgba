@@ -59,8 +59,8 @@ static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
 int main(int argc, char** argv) {
 	struct mSDLRenderer renderer = {};
 
-	struct GBAInputMap inputMap;
-	GBAInputMapInit(&inputMap);
+	struct mInputMap inputMap;
+	mInputMapInit(&inputMap, &GBAInputInfo);
 
 	struct mCoreConfig config;
 	mCoreConfigInit(&config, PORT);
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
 		break;
 	}
 	GBASDLDetachPlayer(&renderer.events, &renderer.player);
-	GBAInputMapDeinit(&inputMap);
+	mInputMapDeinit(&inputMap);
 
 	mSDLDeinit(&renderer);
 

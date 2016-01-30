@@ -27,7 +27,7 @@ struct GBAContext {
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct mCoreConfig config;
 	struct GBAOptions opts;
-	struct GBAInputMap inputMap;
+	struct mInputMap inputMap;
 };
 
 bool GBAContextInit(struct GBAContext* context, const char* port);
