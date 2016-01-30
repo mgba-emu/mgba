@@ -114,6 +114,11 @@ static int32_t _GBCoreFrequency(struct mCore* core) {
 	return DMG_LR35902_FREQUENCY;
 }
 
+static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
+	struct GB* gb = core->board;
+	gb->memory.rtc = rtc;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -134,5 +139,6 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
+	core->setRTC = _GBCoreSetRTC;
 	return core;
 }

@@ -95,6 +95,12 @@ struct GBMemory {
 	int dmaRemaining;
 
 	size_t romSize;
+
+	bool rtcAccess;
+	int activeRtcReg;
+	int rtcLatched;
+	uint8_t rtcRegs[5];
+	struct mRTCSource* rtc;
 };
 
 void GBMemoryInit(struct GB* gb);

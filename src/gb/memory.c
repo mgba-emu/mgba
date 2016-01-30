@@ -5,10 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "memory.h"
 
+#include "core/interface.h"
 #include "gb/gb.h"
 #include "gb/io.h"
 
 #include "util/memory.h"
+
+#include <time.h>
 
 mLOG_DEFINE_CATEGORY(GB_MBC);
 mLOG_DEFINE_CATEGORY(GB_MEM);
@@ -54,6 +57,11 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.dmaRemaining = 0;
 
 	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
+
+	gb->memory.sramAccess = false;
+	gb->memory.rtcAccess = false;
+	gb->memory.rtcLatched = 0;
+	gb->memory.rtc = NULL;
 
 	GBIOInit(gb);
 }
@@ -152,7 +160,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		return gb->video.vram[address & (GB_SIZE_VRAM - 1)];
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		if (memory->sramAccess) {
+		if (memory->rtcAccess) {
+			return gb->memory.rtcRegs[memory->activeRtcReg];
+		} else if (memory->sramAccess) {
 			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		}
 		return 0xFF;
@@ -206,7 +216,9 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		return;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
-		if (memory->sramAccess) {
+		if (memory->rtcAccess) {
+			gb->memory.rtcRegs[memory->activeRtcReg] = value;
+		} else if (memory->sramAccess) {
 			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
 		}
 		return;
@@ -316,6 +328,27 @@ static void _switchSramBank(struct GBMemory* memory, int bank) {
 	memory->sramCurrentBank = bank;
 }
 
+static void _latchRtc(struct GBMemory* memory) {
+	time_t t;
+	struct mRTCSource* rtc = memory->rtc;
+	if (rtc) {
+		if (rtc->sample) {
+			rtc->sample(rtc);
+		}
+		t = rtc->unixTime(rtc);
+	} else {
+		t = time(0);
+	}
+	struct tm date;
+	localtime_r(&t, &date);
+	memory->rtcRegs[0] = date.tm_sec;
+	memory->rtcRegs[1] = date.tm_min;
+	memory->rtcRegs[2] = date.tm_hour;
+	memory->rtcRegs[3] = date.tm_yday; // TODO: Persist day counter
+	memory->rtcRegs[4] &= 0xF0;
+	memory->rtcRegs[4] |= date.tm_yday >> 8;
+}
+
 void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x1F;
 	switch (address >> 13) {
@@ -333,7 +366,6 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
 			break;
 		}
-		break;
 		break;
 	case 0x1:
 		if (!bank) {
@@ -379,13 +411,18 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	case 0x2:
 		if (value < 4) {
 			_switchSramBank(memory, value);
-		} else {
-			mLOG(GB_MBC, STUB, "MBC3 RTC unimplemented", value);
+			memory->rtcAccess = false;
+		} else if (value >= 8 && value <= 0xC) {
+			memory->activeRtcReg = value - 8;
+			memory->rtcAccess = true;
 		}
 		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "MBC3 unknown address: %04X:%02X", address, value);
+	case 0x3:
+		if (memory->rtcLatched && value == 0) {
+			memory->rtcLatched = value;
+		} else if (!memory->rtcLatched && value == 1) {
+			_latchRtc(memory);
+		}
 		break;
 	}
 }

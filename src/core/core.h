@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 struct VFile;
+struct mRTCSource;
 
 struct mCore {
 	void* cpu;
@@ -37,6 +38,8 @@ struct mCore {
 	int32_t (*frameCounter)(struct mCore*);
 	int32_t (*frameCycles)(struct mCore*);
 	int32_t (*frequency)(struct mCore*);
+
+	void (*setRTC)(struct mCore*, struct mRTCSource*);
 };
 
 #endif
