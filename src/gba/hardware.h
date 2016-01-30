@@ -18,11 +18,7 @@
 struct GBARTCGenericSource {
 	struct mRTCSource d;
 	struct GBA* p;
-	enum {
-		RTC_NO_OVERRIDE,
-		RTC_FIXED,
-		RTC_FAKE_EPOCH
-	} override;
+	enum mRTCGenericType override;
 	int64_t value;
 };
 

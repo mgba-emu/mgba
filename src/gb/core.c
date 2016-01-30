@@ -98,6 +98,22 @@ static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys = keys;
 }
 
+static int32_t _GBCoreFrameCounter(struct mCore* core) {
+	struct GB* gb = core->board;
+	return gb->video.frameCounter;
+}
+
+static int32_t _GBCoreFrameCycles(struct mCore* core) {
+	UNUSED(core);
+	return GB_VIDEO_TOTAL_LENGTH;
+}
+
+static int32_t _GBCoreFrequency(struct mCore* core) {
+	UNUSED(core);
+	// TODO: GB differences
+	return DMG_LR35902_FREQUENCY;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -115,5 +131,8 @@ struct mCore* GBCoreCreate(void) {
 	core->runLoop = _GBCoreRunLoop;
 	core->step = _GBCoreStep;
 	core->setKeys = _GBCoreSetKeys;
+	core->frameCounter = _GBCoreFrameCounter;
+	core->frameCycles = _GBCoreFrameCycles;
+	core->frequency = _GBCoreFrequency;
 	return core;
 }

@@ -952,16 +952,16 @@ void GameController::setLuminanceLevel(int level) {
 }
 
 void GameController::setRealTime() {
-	m_rtc.override = GBARTCGenericSource::RTC_NO_OVERRIDE;
+	m_rtc.override = RTC_NO_OVERRIDE;
 }
 
 void GameController::setFixedTime(const QDateTime& time) {
-	m_rtc.override = GBARTCGenericSource::RTC_FIXED;
+	m_rtc.override = RTC_FIXED;
 	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
 }
 
 void GameController::setFakeEpoch(const QDateTime& time) {
-	m_rtc.override = GBARTCGenericSource::RTC_FAKE_EPOCH;
+	m_rtc.override = RTC_FAKE_EPOCH;
 	m_rtc.value = time.toMSecsSinceEpoch() / 1000;
 }
 

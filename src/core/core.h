@@ -33,6 +33,10 @@ struct mCore {
 	void (*step)(struct mCore*);
 
 	void (*setKeys)(struct mCore*, uint32_t keys);
+
+	int32_t (*frameCounter)(struct mCore*);
+	int32_t (*frameCycles)(struct mCore*);
+	int32_t (*frequency)(struct mCore*);
 };
 
 #endif

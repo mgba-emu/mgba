@@ -31,4 +31,19 @@ struct mRTCSource {
 	time_t (*unixTime)(struct mRTCSource*);
 };
 
+enum mRTCGenericType {
+	RTC_NO_OVERRIDE,
+	RTC_FIXED,
+	RTC_FAKE_EPOCH
+};
+
+struct mRTCGenericSource {
+	struct mRTCSource d;
+	struct mCore* p;
+	enum mRTCGenericType override;
+	int64_t value;
+};
+
+void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core);
+
 #endif
