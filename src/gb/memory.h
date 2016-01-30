@@ -58,11 +58,12 @@ enum GBMemoryBankControllerType {
 	GB_MBC1 = 1,
 	GB_MBC2 = 2,
 	GB_MBC3 = 3,
-	GB_MBC4 = 4,
 	GB_MBC5 = 5,
+	GB_MBC6 = 6,
 	GB_MBC7 = 7,
 	GB_MMM01 = 0x10,
-	GB_HuC1 = 0x11
+	GB_HuC1 = 0x11,
+	GB_HuC3 = 0x12,
 };
 
 struct GBMemory;

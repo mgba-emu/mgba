@@ -27,8 +27,8 @@ static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value)
 static void _GBMBC1(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC2(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC4(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
@@ -113,12 +113,6 @@ void GBMemoryReset(struct GB* gb) {
 		gb->memory.mbc = _GBMBC3;
 		gb->memory.mbcType = GB_MBC3;
 		break;
-	case 0x15:
-	case 0x16:
-	case 0x17:
-		gb->memory.mbc = _GBMBC4;
-		gb->memory.mbcType = GB_MBC4;
-		break;
 	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 	case 0x19:
@@ -129,6 +123,10 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x1E:
 		gb->memory.mbc = _GBMBC5;
 		gb->memory.mbcType = GB_MBC5;
+		break;
+	case 0x20:
+		gb->memory.mbc = _GBMBC6;
+		gb->memory.mbcType = GB_MBC6;
 		break;
 	case 0x22:
 		gb->memory.mbc = _GBMBC7;
@@ -427,11 +425,6 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	}
 }
 
-void _GBMBC4(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO
-	mLOG(GB_MBC, STUB, "MBC4 unimplemented");
-}
-
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
 	switch (address >> 13) {
@@ -463,6 +456,11 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		mLOG(GB_MBC, STUB, "MBC5 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+void _GBMBC6(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	// TODO
+	mLOG(GB_MBC, STUB, "MBC6 unimplemented");
 }
 
 void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
