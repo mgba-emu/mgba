@@ -124,3 +124,14 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		break;
 	}
 }
+
+void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+	ctrActivateTexture(&font->icons);
+
+	if (icon >= GUI_ICON_MAX) {
+		return;
+	}
+
+	struct GUIIconMetric metric = defaultIconMetrics[icon];
+	ctrAddRectScaled(color, x, y, w, h, metric.x, metric.y, metric.width, metric.height);
+}
