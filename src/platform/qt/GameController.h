@@ -138,6 +138,8 @@ public slots:
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
+	void setSaveStateExtdata(int flags);
+	void setLoadStateExtdata(int flags);
 
 #ifdef USE_PNG
 	void screenshot();

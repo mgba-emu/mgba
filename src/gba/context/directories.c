@@ -8,6 +8,7 @@
 #include "gba/context/config.h"
 #include "util/vfs.h"
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 void GBADirectorySetInit(struct GBADirectorySet* dirs) {
 	dirs->base = 0;
 	dirs->archive = 0;
@@ -142,3 +143,4 @@ void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOpt
 		}
 	}
 }
+#endif

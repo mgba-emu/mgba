@@ -241,6 +241,19 @@ void Window::reloadConfig() {
 
 	m_log.setLevels(opts->logLevel);
 
+	QString saveStateExtdata = m_config->getOption("saveStateExtdata");
+	bool ok;
+	int flags = saveStateExtdata.toInt(&ok);
+	if (ok) {
+		m_controller->setSaveStateExtdata(flags);
+	}
+
+	QString loadStateExtdata = m_config->getOption("loadStateExtdata");
+	flags = loadStateExtdata.toInt(&ok);
+	if (ok) {
+		m_controller->setLoadStateExtdata(flags);
+	}
+
 	m_controller->setOptions(opts);
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
@@ -260,7 +273,7 @@ void Window::saveConfig() {
 void Window::selectROM() {
 	QStringList formats{
 		"*.gba",
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
@@ -280,7 +293,7 @@ void Window::selectROM() {
 void Window::replaceROM() {
 	QStringList formats{
 		"*.gba",
-#ifdef USE_LIBZIP
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
 #ifdef USE_LZMA
@@ -1237,6 +1250,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant& value) {
 		m_inputController.setAllowOpposing(value.toBool());
+	}, this);
+
+	ConfigOption* saveStateExtdata = m_config->addOption("saveStateExtdata");
+	saveStateExtdata->connect([this](const QVariant& value) {
+		m_controller->setSaveStateExtdata(value.toInt());
+	}, this);
+
+	ConfigOption* loadStateExtdata = m_config->addOption("loadStateExtdata");
+	loadStateExtdata->connect([this](const QVariant& value) {
+		m_controller->setLoadStateExtdata(value.toInt());
 	}, this);
 
 	QAction* exitFullScreen = new QAction(tr("Exit fullscreen"), frameMenu);

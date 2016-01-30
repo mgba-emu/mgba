@@ -50,7 +50,7 @@ static const char* const _fragmentShader =
 	"	vec4 color = texture2D(tex, texCoord);\n"
 	"	color.a = 1.;\n"
 	"	float average = dot(color.rgb, vec3(1.)) / 3.;\n"
-	"	color.rgb = vec3(average) * desaturation + color.rgb * (vec3(1.) - desaturation);\n"
+	"	color.rgb = mix(color.rgb, vec3(average), desaturation);\n"
 	"	color.rgb = scale * pow(color.rgb, vec3(gamma, gamma, gamma)) + bias;\n"
 	"	gl_FragColor = color;\n"
 	"}";
