@@ -28,7 +28,7 @@ extern "C" {
 using namespace QGBA;
 
 ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_display(display)
 	, m_config(config)
 	, m_shaderPath("")
