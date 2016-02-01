@@ -366,6 +366,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
+void GBADeleteState(struct GBA* thread, struct VDir* dir, int slot);
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
