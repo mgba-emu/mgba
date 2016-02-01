@@ -11,6 +11,14 @@
 struct VFile;
 struct mRTCSource;
 
+#ifdef COLOR_16_BIT
+typedef uint16_t color_t;
+#define BYTES_PER_PIXEL 2
+#else
+typedef uint32_t color_t;
+#define BYTES_PER_PIXEL 4
+#endif
+
 struct mCore {
 	void* cpu;
 	void* board;
@@ -19,7 +27,7 @@ struct mCore {
 	void (*deinit)(struct mCore*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
-	void (*setVideoBuffer)(struct mCore*, void* buffer, size_t stride);
+	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 
 	bool (*isROM)(struct mCore*, struct VFile* vf);
 	bool (*loadROM)(struct mCore*, struct VFile* vf, struct VFile* save, const char* fname);

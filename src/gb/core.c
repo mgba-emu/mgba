@@ -54,7 +54,7 @@ static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, u
 	*height = GB_VIDEO_VERTICAL_PIXELS;
 }
 
-static void _GBCoreSetVideoBuffer(struct mCore* core, void* buffer, size_t stride) {
+static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->renderer.outputBuffer = buffer;
 	gbcore->renderer.outputBufferStride = stride;

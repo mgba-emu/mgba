@@ -8,13 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gb/video.h"
-
-#ifdef COLOR_16_BIT
-typedef uint16_t color_t;
-#else
-typedef uint32_t color_t;
-#endif
 
 struct GBVideoSoftwareRenderer {
 	struct GBVideoRenderer d;
