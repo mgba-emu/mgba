@@ -59,6 +59,7 @@ struct VDir {
 	struct VDirEntry* (*listNext)(struct VDir* vd);
 	struct VFile* (*openFile)(struct VDir* vd, const char* name, int mode);
 	struct VDir* (*openDir)(struct VDir* vd, const char* name);
+	bool (*deleteFile)(struct VDir* vd, const char* name);
 };
 
 struct VFile* VFileOpen(const char* path, int flags);
