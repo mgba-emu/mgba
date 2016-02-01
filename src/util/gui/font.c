@@ -5,12 +5,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
 
+#include "util/string.h"
+
 unsigned GUIFontSpanWidth(const struct GUIFont* font, const char* text) {
 	unsigned width = 0;
-	size_t i;
-	for (i = 0; text[i]; ++i) {
-		char c = text[i];
-		width += GUIFontGlyphWidth(font, c);
+	size_t len = strlen(text);
+	while (len) {
+		uint32_t c = utf8Char(&text, &len);
+		if (c == '\1') {
+			c = utf8Char(&text, &len);
+			if (c < GUI_ICON_MAX) {
+				unsigned w;
+				GUIFontIconMetrics(font, c, &w, 0);
+				width += w;
+			}
+		} else {
+			width += GUIFontGlyphWidth(font, c);
+		}
 	}
 	return width;
 }
@@ -29,8 +40,18 @@ void GUIFontPrint(const struct GUIFont* font, int x, int y, enum GUIAlignment al
 	size_t len = strlen(text);
 	while (len) {
 		uint32_t c = utf8Char(&text, &len);
-		GUIFontDrawGlyph(font, x, y, color, c);
-		x += GUIFontGlyphWidth(font, c);
+		if (c == '\1') {
+			c = utf8Char(&text, &len);
+			if (c < GUI_ICON_MAX) {
+				GUIFontDrawIcon(font, x, y, GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, c);
+				unsigned w;
+				GUIFontIconMetrics(font, c, &w, 0);
+				x += w;
+			}
+		} else {
+			GUIFontDrawGlyph(font, x, y, color, c);
+			x += GUIFontGlyphWidth(font, c);
+		}
 	}
 }
 

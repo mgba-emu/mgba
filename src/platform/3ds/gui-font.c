@@ -70,6 +70,25 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width;
 }
 
+void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
+	UNUSED(font);
+	if (icon >= GUI_ICON_MAX) {
+		if (w) {
+			*w = 0;
+		}
+		if (h) {
+			*h = 0;
+		}
+	} else {
+		if (w) {
+			*w = defaultIconMetrics[icon].width;
+		}
+		if (h) {
+			*h = defaultIconMetrics[icon].height;
+		}
+	}
+}
+
 void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
 	ctrActivateTexture(&font->texture);
 
@@ -133,5 +152,5 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	}
 
 	struct GUIIconMetric metric = defaultIconMetrics[icon];
-	ctrAddRectScaled(color, x, y, w, h, metric.x, metric.y, metric.width, metric.height);
+	ctrAddRectScaled(color, x, y, w ? w : metric.width, h ? h : metric.height, metric.x, metric.y, metric.width, metric.height);
 }

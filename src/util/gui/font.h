@@ -75,6 +75,7 @@ struct GUIIconMetric {
 unsigned GUIFontHeight(const struct GUIFont*);
 unsigned GUIFontGlyphWidth(const struct GUIFont*, uint32_t glyph);
 unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
+void GUIFontIconMetrics(const struct GUIFont*, enum GUIIcon icon, unsigned* w, unsigned* h);
 
 ATTRIBUTE_FORMAT(printf, 6, 7)
 void GUIFontPrintf(const struct GUIFont*, int x, int y, enum GUIAlignment, uint32_t color, const char* text, ...);

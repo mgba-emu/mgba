@@ -49,6 +49,25 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width * 2;
 }
 
+void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
+	UNUSED(font);
+	if (icon >= GUI_ICON_MAX) {
+		if (w) {
+			*w = 0;
+		}
+		if (h) {
+			*h = 0;
+		}
+	} else {
+		if (w) {
+			*w = defaultIconMetrics[icon].width * 2;
+		}
+		if (h) {
+			*h = defaultIconMetrics[icon].height * 2;
+		}
+	}
+}
+
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	if (glyph > 0x7F) {
 		glyph = '?';
@@ -116,5 +135,5 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	vita2d_draw_texture_tint_part_scale(font->icons, x, y,
 	                                    metric.x * 2, metric.y * 2,
 	                                    metric.width * 2, metric.height * 2,
-	                                    w / (float) metric.width, h / (float) metric.height, color);
+	                                    w ? (w / (float) metric.width) : 1, h ? (h / (float) metric.height) : 1, color);
 }

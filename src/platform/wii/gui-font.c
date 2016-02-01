@@ -65,6 +65,25 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width * 2;
 }
 
+void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
+	UNUSED(font);
+	if (icon >= GUI_ICON_MAX) {
+		if (w) {
+			*w = 0;
+		}
+		if (h) {
+			*h = 0;
+		}
+	} else {
+		if (w) {
+			*w = defaultIconMetrics[icon].width * 2;
+		}
+		if (h) {
+			*h = defaultIconMetrics[icon].height * 2;
+		}
+	}
+}
+
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	color = (color >> 24) | (color << 8);
 	GXTexObj tex;
@@ -201,6 +220,13 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 
 	float u[4];
 	float v[4];
+
+	if (!h) {
+		h = metric.height * 2;
+	}
+	if (!w) {
+		w = metric.width * 2;
+	}
 
 	u[0] = u[3] = metric.x / 256.f;
 	u[1] = u[2] = (metric.x + metric.width) / 256.f;

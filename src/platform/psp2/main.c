@@ -136,10 +136,10 @@ int main() {
 					"R",
 					0, // L2?
 					0, // R2?
-					"Triangle",
-					"Circle",
-					"Cross",
-					"Square"
+					"\1\xC",
+					"\1\xA",
+					"\1\xB",
+					"\1\xD"
 				},
 				.nKeys = 16
 			},
