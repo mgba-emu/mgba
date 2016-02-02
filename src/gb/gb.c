@@ -45,6 +45,9 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 	gb->video.p = gb;
 	GBVideoInit(&gb->video);
 
+	gb->audio.p = gb;
+	GBAudioInit(&gb->audio, 2048); // TODO: Remove magic constant
+
 	gb->timer.p = gb;
 
 	gb->romVf = 0;
@@ -156,6 +159,7 @@ void GBReset(struct LR35902Core* cpu) {
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
+	GBAudioReset(&gb->audio);
 }
 
 void GBUpdateIRQs(struct GB* gb) {
@@ -208,6 +212,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		}
 
 		testEvent = GBVideoProcessEvents(&gb->video, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
+
+		testEvent = GBAudioProcessEvents(&gb->audio, cycles);
 		if (testEvent < nextEvent) {
 			nextEvent = testEvent;
 		}

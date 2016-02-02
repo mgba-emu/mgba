@@ -130,13 +130,9 @@
 
 	int16_t samples[SAMPLES * 2];
 	size_t available = 0;
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	available = blip_samples_avail(context.gba->audio.left);
-	blip_read_samples(context.gba->audio.left, samples, available, true);
-	blip_read_samples(context.gba->audio.right, samples + 1, available, true);
-#else
-#error BLIP_BUF is required for now
-#endif
+	available = blip_samples_avail(context.gba->audio.psg.left);
+	blip_read_samples(context.gba->audio.psg.left, samples, available, true);
+	blip_read_samples(context.gba->audio.psg.right, samples + 1, available, true);
 	[[self ringBufferAtIndex:0] write:samples maxLength:available * 4];
 }
 
@@ -153,10 +149,8 @@
 
 - (void)setupEmulation
 {
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
-#endif
+	blip_set_rates(context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 }
 
 #pragma mark - Video

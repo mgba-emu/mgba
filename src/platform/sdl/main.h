@@ -48,7 +48,7 @@ struct mSDLRenderer {
 	// TODO: Remove
 	struct GBAVideoSoftwareRenderer d;
 #endif
-	struct GBASDLAudio audio;
+	struct GBSDLAudio audio;
 	struct GBASDLEvents events;
 	struct GBASDLPlayer player;
 

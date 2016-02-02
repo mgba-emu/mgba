@@ -65,6 +65,7 @@ void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 	struct GBAThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
+	renderer->audio.psg = &context->gba->audio.psg;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
@@ -86,6 +87,8 @@ void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 		v->drawFrame(v);
 		v->swap(v);
 	}
+
+	renderer->audio.psg = 0;
 }
 
 void mSDLGLDeinitGBA(struct mSDLRenderer* renderer) {
@@ -130,6 +133,7 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 	int activeKeys = 0;
+	renderer->audio.psg = &((struct GB*) renderer->core->board)->audio;
 
 	while (true) {
 		renderer->core->runFrame(renderer->core);
@@ -169,6 +173,7 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 		v->drawFrame(v);
 		v->swap(v);
 	}
+	renderer->audio.psg = 0;
 }
 
 void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {

@@ -55,6 +55,87 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_DIV:
 		GBTimerDivReset(&gb->timer);
 		return;
+	case REG_NR10:
+		GBAudioWriteNR10(&gb->audio, value);
+		break;
+	case REG_NR11:
+		GBAudioWriteNR11(&gb->audio, value);
+		break;
+	case REG_NR12:
+		GBAudioWriteNR12(&gb->audio, value);
+		break;
+	case REG_NR13:
+		GBAudioWriteNR13(&gb->audio, value);
+		break;
+	case REG_NR14:
+		GBAudioWriteNR14(&gb->audio, value);
+		break;
+	case REG_NR21:
+		GBAudioWriteNR21(&gb->audio, value);
+		break;
+	case REG_NR22:
+		GBAudioWriteNR22(&gb->audio, value);
+		break;
+	case REG_NR23:
+		GBAudioWriteNR23(&gb->audio, value);
+		break;
+	case REG_NR24:
+		GBAudioWriteNR24(&gb->audio, value);
+		break;
+	case REG_NR30:
+		GBAudioWriteNR30(&gb->audio, value);
+		break;
+	case REG_NR31:
+		GBAudioWriteNR31(&gb->audio, value);
+		break;
+	case REG_NR32:
+		GBAudioWriteNR32(&gb->audio, value);
+		break;
+	case REG_NR33:
+		GBAudioWriteNR33(&gb->audio, value);
+		break;
+	case REG_NR34:
+		GBAudioWriteNR34(&gb->audio, value);
+		break;
+	case REG_NR41:
+		GBAudioWriteNR41(&gb->audio, value);
+		break;
+	case REG_NR42:
+		GBAudioWriteNR42(&gb->audio, value);
+		break;
+	case REG_NR43:
+		GBAudioWriteNR43(&gb->audio, value);
+		break;
+	case REG_NR44:
+		GBAudioWriteNR44(&gb->audio, value);
+		break;
+	case REG_NR50:
+		GBAudioWriteNR50(&gb->audio, value);
+		break;
+	case REG_NR51:
+		GBAudioWriteNR51(&gb->audio, value);
+		break;
+	case REG_NR52:
+		GBAudioWriteNR52(&gb->audio, value);
+		break;
+	case REG_WAVE_0:
+	case REG_WAVE_1:
+	case REG_WAVE_2:
+	case REG_WAVE_3:
+	case REG_WAVE_4:
+	case REG_WAVE_5:
+	case REG_WAVE_6:
+	case REG_WAVE_7:
+	case REG_WAVE_8:
+	case REG_WAVE_9:
+	case REG_WAVE_A:
+	case REG_WAVE_B:
+	case REG_WAVE_C:
+	case REG_WAVE_D:
+	case REG_WAVE_E:
+	case REG_WAVE_F:
+		((uint8_t*) gb->audio.ch3.wavedata)[address - REG_WAVE_0] = value; // TODO: Big endian
+		break;
 	case REG_JOYP:
 	case REG_TIMA:
 	case REG_TMA:

@@ -12,6 +12,7 @@
 
 #include "lr35902/lr35902.h"
 
+#include "gb/audio.h"
 #include "gb/memory.h"
 #include "gb/timer.h"
 #include "gb/video.h"
@@ -39,6 +40,7 @@ enum GBIRQVector {
 	GB_VECTOR_KEYPAD = 0x60,
 };
 
+struct mCoreSync;
 struct GB {
 	struct LR35902Component d;
 
@@ -46,6 +48,9 @@ struct GB {
 	struct GBMemory memory;
 	struct GBVideo video;
 	struct GBTimer timer;
+	struct GBAudio audio;
+
+	struct mCoreSync* sync;
 
 	uint8_t* keySource;
 

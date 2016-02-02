@@ -10,9 +10,7 @@
 
 #include <SDL.h>
 
-#include "gba/audio.h"
-
-struct GBASDLAudio {
+struct GBSDLAudio {
 	// Input
 	size_t samples;
 	unsigned sampleRate;
@@ -20,23 +18,18 @@ struct GBASDLAudio {
 	// State
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
-#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
-	float ratio;
-#endif
-#if RESAMPLE_LIBRARY == RESAMPLE_NN
-	float drift;
-#endif
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_AudioDeviceID deviceId;
 #endif
 
+	struct GBAudio* psg;
 	struct GBAThread* thread;
-	struct GBA* gba;
+	struct mCoreSync* sync;
 };
 
-bool GBASDLInitAudio(struct GBASDLAudio* context, struct GBAThread* threadContext);
-void GBASDLDeinitAudio(struct GBASDLAudio* context);
-void GBASDLPauseAudio(struct GBASDLAudio* context);
-void GBASDLResumeAudio(struct GBASDLAudio* context);
+bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread*);
+void GBSDLDeinitAudio(struct GBSDLAudio* context);
+void GBSDLPauseAudio(struct GBSDLAudio* context);
+void GBSDLResumeAudio(struct GBSDLAudio* context);
 
 #endif

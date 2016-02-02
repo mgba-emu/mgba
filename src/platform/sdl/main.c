@@ -239,7 +239,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 	if (opts->sampleRate) {
 		renderer->audio.sampleRate = opts->sampleRate;
 	}
-	if (!GBASDLInitAudio(&renderer->audio, &context)) {
+	if (!GBSDLInitAudio(&renderer->audio, &context)) {
 		didFail = true;
 	}
 
@@ -249,7 +249,9 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 		GBASDLSuspendScreensaver(&renderer->events);
 #endif
 		if (GBAThreadStart(&context)) {
+			renderer->audio.psg = &context.gba->audio.psg;
 			renderer->runloop(renderer, &context);
+			renderer->audio.psg = 0;
 			GBAThreadJoin(&context);
 		} else {
 			didFail = true;
@@ -278,6 +280,11 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
 	struct VFile* savVf = 0;
 
+	renderer->audio.samples = 1024;
+	renderer->audio.sampleRate = 44100;
+
+	GBSDLInitAudio(&renderer->audio, 0);
+
 	{
 		char savepath[PATH_MAX];
 		char dirname[PATH_MAX];
@@ -289,6 +296,8 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 
 	renderer->core->loadROM(renderer->core, vf, savVf, args->fname);
 	renderer->core->reset(renderer->core);
+	renderer->audio.psg = 0;
+	GBSDLResumeAudio(&renderer->audio);
 	renderer->runloop(renderer, NULL);
 	renderer->core->unloadROM(renderer->core);
 	vf->close(vf);
@@ -307,7 +316,7 @@ static bool mSDLInit(struct mSDLRenderer* renderer) {
 
 static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	GBASDLDeinitEvents(&renderer->events);
-	GBASDLDeinitAudio(&renderer->audio);
+	GBSDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_DestroyWindow(renderer->window);
 #endif

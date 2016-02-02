@@ -222,10 +222,8 @@ void retro_init(void) {
 
 	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_set_rates(context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768);
-#endif
+	blip_set_rates(context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768);
 
 	GBACheatDeviceCreate(&cheats);
 	GBACheatAttachDevice(context.gba, &cheats);
@@ -467,18 +465,8 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
 	int16_t samples[SAMPLES * 2];
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_read_samples(audio->left, samples, SAMPLES, true);
-	blip_read_samples(audio->right, samples + 1, SAMPLES, true);
-#else
-	int16_t samplesR[SAMPLES];
-	GBAAudioCopy(audio, &samples[SAMPLES], samplesR, SAMPLES);
-	size_t i;
-	for (i = 0; i < SAMPLES; ++i) {
-		samples[i * 2] = samples[SAMPLES + i];
-		samples[i * 2 + 1] = samplesR[i];
-	}
-#endif
+	blip_read_samples(audio->psg.left, samples, SAMPLES, true);
+	blip_read_samples(audio->psg.right, samples + 1, SAMPLES, true);
 	audioCallback(samples, SAMPLES);
 }
 

@@ -126,8 +126,8 @@ int main(int argc, char** argv) {
 		savestate = 0;
 	}
 
-	blip_set_rates(context.gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
-	blip_set_rates(context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(context.gba->audio.psg.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
 	_GBAFuzzRunloop(&context, fuzzOpts.frames);
 

@@ -102,10 +102,10 @@ GameController::GameController(QObject* parent)
 		context->gba->rtcSource = &controller->m_rtc.d;
 		context->gba->rumble = controller->m_inputController->rumble();
 		context->gba->rotationSource = controller->m_inputController->rotationSource();
-		context->gba->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
-		context->gba->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
-		context->gba->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
-		context->gba->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
+		context->gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
+		context->gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
+		context->gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
+		context->gba->audio.psg.forceDisableCh[3] = !controller->m_audioChannels[3];
 		context->gba->audio.forceDisableChA = !controller->m_audioChannels[4];
 		context->gba->audio.forceDisableChB = !controller->m_audioChannels[5];
 		context->gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
@@ -638,7 +638,7 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 		case 1:
 		case 2:
 		case 3:
-			m_threadContext.gba->audio.forceDisableCh[channel] = !enable;
+			m_threadContext.gba->audio.psg.forceDisableCh[channel] = !enable;
 			break;
 		case 4:
 			m_threadContext.gba->audio.forceDisableChA = !enable;
@@ -973,17 +973,7 @@ void GameController::updateKeys() {
 }
 
 void GameController::redoSamples(int samples) {
-#if RESAMPLE_LIBRARY != RESAMPLE_BLIP_BUF
-	float sampleRate = 0x8000;
-	float ratio;
-	if (m_threadContext.gba) {
-		sampleRate = m_threadContext.gba->audio.sampleRate;
-	}
-	ratio = GBAAudioCalculateRatio(sampleRate, m_threadContext.fpsTarget, m_audioProcess->sampleRate());
-	m_threadContext.audioBuffers = ceil(samples / ratio);
-#else
 	m_threadContext.audioBuffers = samples;
-#endif
 	if (m_threadContext.gba) {
 		GBAAudioResizeBuffer(&m_threadContext.gba->audio, m_threadContext.audioBuffers);
 	}

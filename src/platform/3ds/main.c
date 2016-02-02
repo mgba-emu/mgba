@@ -287,11 +287,9 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
-#endif
+	blip_set_rates(runner->context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+	blip_set_rates(runner->context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
@@ -377,12 +375,10 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	if (hasSound == NO_SOUND) {
-		blip_clear(runner->context.gba->audio.left);
-		blip_clear(runner->context.gba->audio.right);
+		blip_clear(runner->context.gba->audio.psg.left);
+		blip_clear(runner->context.gba->audio.psg.right);
 	}
-#endif
 
 	gspWaitForPPF();
 	ctrActivateTexture(tex);
@@ -514,12 +510,8 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
 	if (hasSound == CSND_SUPPORTED) {
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 		blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
 		blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
-#elif RESAMPLE_LIBRARY == RESAMPLE_NN
-		GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
-#endif
 		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
@@ -546,10 +538,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
 		dspBuffer[bufferId].data_pcm16 = tmpBuf;
 		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 		blip_read_samples(audio->left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
 		blip_read_samples(audio->right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
-#endif
 		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}

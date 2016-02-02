@@ -566,11 +566,9 @@ void _setup(struct GBAGUIRunner* runner) {
 
 	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-#endif
+	blip_set_rates(runner->context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 }
 
 void _gameUnloaded(struct GBAGUIRunner* runner) {
@@ -617,23 +615,21 @@ void _unpaused(struct GBAGUIRunner* runner) {
 }
 
 void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	int available = blip_samples_avail(runner->context.gba->audio.left);
+	int available = blip_samples_avail(runner->context.gba->audio.psg.left);
 	if (available + audioBufferSize > SAMPLES) {
 		available = SAMPLES - audioBufferSize;
 	}
 	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 	if (available > 0) {
 		// These appear to be reversed for AUDIO_InitDMA
-		blip_read_samples(runner->context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
-		blip_read_samples(runner->context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+		blip_read_samples(runner->context.gba->audio.psg.left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		blip_read_samples(runner->context.gba->audio.psg.right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
 		audioBufferSize += available;
 	}
 	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
 		_audioDMA();
 		AUDIO_StartDMA();
 	}
-#endif
 
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {

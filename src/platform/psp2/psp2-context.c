@@ -173,8 +173,8 @@ void GBAPSP2Setup(struct GBAGUIRunner* runner) {
 void GBAPSP2LoadROM(struct GBAGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
 	double ratio = GBAAudioCalculateRatio(1, 60, 1);
-	blip_set_rates(runner->context.gba->audio.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->context.gba->audio.psg.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 
 	if (runner->context.gba->memory.hw.devices & (HW_TILT | HW_GYRO)) {
 		sceMotionStartSampling();
@@ -189,13 +189,13 @@ void GBAPSP2LoadROM(struct GBAGUIRunner* runner) {
 
 void GBAPSP2PrepareForFrame(struct GBAGUIRunner* runner) {
 	MutexLock(&audioContext.mutex);
-	while (blip_samples_avail(runner->context.gba->audio.left) >= PSP2_SAMPLES) {
+	while (blip_samples_avail(runner->context.gba->audio.psg.left) >= PSP2_SAMPLES) {
 		if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
 			break;
 		}
 		struct GBAStereoSample samples[PSP2_SAMPLES];
-		blip_read_samples(runner->context.gba->audio.left, &samples[0].left, PSP2_SAMPLES, true);
-		blip_read_samples(runner->context.gba->audio.right, &samples[0].right, PSP2_SAMPLES, true);
+		blip_read_samples(runner->context.gba->audio.psg.left, &samples[0].left, PSP2_SAMPLES, true);
+		blip_read_samples(runner->context.gba->audio.psg.right, &samples[0].right, PSP2_SAMPLES, true);
 		int i;
 		for (i = 0; i < PSP2_SAMPLES; ++i) {
 			CircleBufferWrite16(&audioContext.buffer, samples[i].left);
