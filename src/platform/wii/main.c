@@ -50,7 +50,7 @@ enum FilterMode {
 static void _retraceCallback(u32 count);
 
 static void _audioDMA(void);
-static void _setRumble(struct GBARumble* rumble, int enable);
+static void _setRumble(struct mRumble* rumble, int enable);
 static void _sampleRotation(struct mRotationSource* source);
 static int32_t _readTiltX(struct mRotationSource* source);
 static int32_t _readTiltY(struct mRotationSource* source);
@@ -74,7 +74,7 @@ static s8 WPAD_StickX(u8 chan, u8 right);
 static s8 WPAD_StickY(u8 chan, u8 right);
 
 static struct GBAVideoSoftwareRenderer renderer;
-static struct GBARumble rumble;
+static struct mRumble rumble;
 static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static Mtx model, view, modelview;
@@ -717,7 +717,7 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	return keys;
 }
 
-void _setRumble(struct GBARumble* rumble, int enable) {
+void _setRumble(struct mRumble* rumble, int enable) {
 	UNUSED(rumble);
 	WPAD_Rumble(0, enable);
 	if (enable) {

@@ -76,10 +76,6 @@ struct GBARTC {
 };
 #pragma pack(pop)
 
-struct GBARumble {
-	void (*setRumble)(struct GBARumble*, int enable);
-};
-
 struct GBAGBPKeyCallback {
 	struct mKeyCallback d;
 	struct GBACartridgeHardware* p;

@@ -22,7 +22,7 @@ using namespace QGBA;
 
 #ifdef BUILD_SDL
 int InputController::s_sdlInited = 0;
-GBASDLEvents InputController::s_sdlEvents;
+mSDLEvents InputController::s_sdlEvents;
 #endif
 
 InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
@@ -41,11 +41,11 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 
 #ifdef BUILD_SDL
 	if (s_sdlInited == 0) {
-		GBASDLInitEvents(&s_sdlEvents);
+		mSDLInitEvents(&s_sdlEvents);
 	}
 	++s_sdlInited;
 	m_sdlPlayer.bindings = &m_inputMap;
-	GBASDLInitBindings(&m_inputMap);
+	mSDLInitBindingsGBA(&m_inputMap);
 	updateJoysticks();
 #endif
 
@@ -75,12 +75,12 @@ InputController::~InputController() {
 
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
-		GBASDLDetachPlayer(&s_sdlEvents, &m_sdlPlayer);
+		mSDLDetachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
 
 	--s_sdlInited;
 	if (s_sdlInited == 0) {
-		GBASDLDeinitEvents(&s_sdlEvents);
+		mSDLDeinitEvents(&s_sdlEvents);
 	}
 #endif
 }
@@ -90,9 +90,9 @@ void InputController::setConfiguration(ConfigController* config) {
 	setAllowOpposing(config->getOption("allowOpposingDirections").toInt());
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
-	GBASDLEventsLoadConfig(&s_sdlEvents, config->input());
+	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
-		m_playerAttached = GBASDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
+		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
 	loadConfiguration(SDL_BINDING_BUTTON);
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
@@ -103,7 +103,7 @@ void InputController::loadConfiguration(uint32_t type) {
 	mInputMapLoad(&m_inputMap, type, m_config->input());
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
-		GBASDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
+		mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
 	}
 #endif
 }
@@ -126,7 +126,7 @@ void InputController::saveConfiguration() {
 	saveConfiguration(SDL_BINDING_BUTTON);
 	saveProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 	if (m_playerAttached) {
-		GBASDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
+		mSDLPlayerSaveConfig(&m_sdlPlayer, m_config->input());
 	}
 	m_config->write();
 #endif
@@ -194,7 +194,7 @@ int InputController::gamepad(uint32_t type) const {
 void InputController::setGamepad(uint32_t type, int index) {
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		GBASDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index);
+		mSDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index);
 	}
 #endif
 }
@@ -206,7 +206,7 @@ void InputController::setPreferredGamepad(uint32_t type, const QString& device) 
 	mInputSetPreferredDevice(m_config->input(), "gba", type, m_playerId, device.toUtf8().constData());
 }
 
-GBARumble* InputController::rumble() {
+mRumble* InputController::rumble() {
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	if (m_playerAttached) {
@@ -285,7 +285,7 @@ void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
 
 void InputController::updateJoysticks() {
 #ifdef BUILD_SDL
-	GBASDLUpdateJoysticks(&s_sdlEvents);
+	mSDLUpdateJoysticks(&s_sdlEvents);
 #endif
 }
 
@@ -513,7 +513,7 @@ bool InputController::hasPendingEvent(GBAKey key) const {
 void InputController::suspendScreensaver() {
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBASDLSuspendScreensaver(&s_sdlEvents);
+	mSDLSuspendScreensaver(&s_sdlEvents);
 #endif
 #endif
 }
@@ -521,7 +521,7 @@ void InputController::suspendScreensaver() {
 void InputController::resumeScreensaver() {
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBASDLResumeScreensaver(&s_sdlEvents);
+	mSDLResumeScreensaver(&s_sdlEvents);
 #endif
 #endif
 }
@@ -529,7 +529,7 @@ void InputController::resumeScreensaver() {
 void InputController::setScreensaverSuspendable(bool suspendable) {
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	GBASDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
+	mSDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
 #endif
 #endif
 }

@@ -49,8 +49,8 @@ struct mSDLRenderer {
 	struct GBAVideoSoftwareRenderer d;
 #endif
 	struct GBSDLAudio audio;
-	struct GBASDLEvents events;
-	struct GBASDLPlayer player;
+	struct mSDLEvents events;
+	struct mSDLPlayer player;
 
 	bool (*init)(struct mSDLRenderer* renderer);
 	void (*runloop)(struct mSDLRenderer* renderer, void* user);

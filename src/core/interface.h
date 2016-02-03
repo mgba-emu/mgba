@@ -46,4 +46,8 @@ struct mRTCGenericSource {
 
 void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core);
 
+struct mRumble {
+	void (*setRumble)(struct mRumble*, int enable);
+};
+
 #endif

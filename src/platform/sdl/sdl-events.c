@@ -5,10 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-events.h"
 
+#include "core/input.h"
 #include "debugger/debugger.h"
+#include "gba/input.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
+#include "gba/supervisor/thread.h"
 #include "gba/video.h"
 #include "gba/renderers/video-software.h"
 #include "util/configuration.h"
@@ -27,14 +30,14 @@
 DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _GBASDLSetRumble(struct GBARumble* rumble, int enable);
+static void _mSDLSetRumble(struct mRumble* rumble, int enable);
 #endif
-static int32_t _GBASDLReadTiltX(struct mRotationSource* rumble);
-static int32_t _GBASDLReadTiltY(struct mRotationSource* rumble);
-static int32_t _GBASDLReadGyroZ(struct mRotationSource* rumble);
-static void _GBASDLRotationSample(struct mRotationSource* source);
+static int32_t _mSDLReadTiltX(struct mRotationSource* rumble);
+static int32_t _mSDLReadTiltY(struct mRotationSource* rumble);
+static int32_t _mSDLReadGyroZ(struct mRotationSource* rumble);
+static void _mSDLRotationSample(struct mRotationSource* source);
 
-bool GBASDLInitEvents(struct GBASDLEvents* context) {
+bool mSDLInitEvents(struct mSDLEvents* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif
@@ -56,7 +59,7 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	int nJoysticks = SDL_NumJoysticks();
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
-		GBASDLUpdateJoysticks(context);
+		mSDLUpdateJoysticks(context);
 	}
 
 	context->playersAttached = 0;
@@ -74,7 +77,7 @@ bool GBASDLInitEvents(struct GBASDLEvents* context) {
 	return true;
 }
 
-void GBASDLDeinitEvents(struct GBASDLEvents* context) {
+void mSDLDeinitEvents(struct mSDLEvents* context) {
 	size_t i;
 	for (i = 0; i < SDL_JoystickListSize(&context->joysticks); ++i) {
 		struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&context->joysticks, i);
@@ -87,14 +90,14 @@ void GBASDLDeinitEvents(struct GBASDLEvents* context) {
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
 }
 
-void GBASDLEventsLoadConfig(struct GBASDLEvents* context, const struct Configuration* config) {
+void mSDLEventsLoadConfig(struct mSDLEvents* context, const struct Configuration* config) {
 	context->preferredJoysticks[0] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 0);
 	context->preferredJoysticks[1] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 1);
 	context->preferredJoysticks[2] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 2);
 	context->preferredJoysticks[3] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 3);
 }
 
-void GBASDLInitBindings(struct mInputMap* inputMap) {
+void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 #ifdef BUILD_PANDORA
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_PAGEDOWN, GBA_KEY_A);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_END, GBA_KEY_B);
@@ -147,7 +150,7 @@ void GBASDLInitBindings(struct mInputMap* inputMap) {
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 }
 
-bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
+bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	player->joystick = 0;
 
 	if (events->playersAttached >= MAX_PLAYERS) {
@@ -155,16 +158,16 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	player->rumble.d.setRumble = _GBASDLSetRumble;
+	player->rumble.d.setRumble = _mSDLSetRumble;
 	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
 	player->rumble.level = 0;
 	player->rumble.p = player;
 #endif
 
-	player->rotation.d.readTiltX = _GBASDLReadTiltX;
-	player->rotation.d.readTiltY = _GBASDLReadTiltY;
-	player->rotation.d.readGyroZ = _GBASDLReadGyroZ;
-	player->rotation.d.sample = _GBASDLRotationSample;
+	player->rotation.d.readTiltX = _mSDLReadTiltX;
+	player->rotation.d.readTiltY = _mSDLReadTiltY;
+	player->rotation.d.readGyroZ = _mSDLReadGyroZ;
+	player->rotation.d.sample = _mSDLRotationSample;
 	player->rotation.axisX = 2;
 	player->rotation.axisY = 3;
 	player->rotation.gyroSensitivity = 2.2e9f;
@@ -228,7 +231,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	return true;
 }
 
-void GBASDLDetachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player) {
+void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	if (player != events->players[player->playerId]) {
 		return;
 	}
@@ -245,7 +248,7 @@ void GBASDLDetachPlayer(struct GBASDLEvents* events, struct GBASDLPlayer* player
 	CircleBufferDeinit(&player->rotation.zHistory);
 }
 
-void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configuration* config) {
+void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
 	mInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
 	if (context->joystick) {
 		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
@@ -298,7 +301,7 @@ void GBASDLPlayerLoadConfig(struct GBASDLPlayer* context, const struct Configura
 	}
 }
 
-void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configuration* config) {
+void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration* config) {
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		const char* name = SDL_JoystickName(context->joystick->joystick);
@@ -319,14 +322,14 @@ void GBASDLPlayerSaveConfig(const struct GBASDLPlayer* context, struct Configura
 	}
 }
 
-void GBASDLPlayerChangeJoystick(struct GBASDLEvents* events, struct GBASDLPlayer* player, size_t index) {
+void mSDLPlayerChangeJoystick(struct mSDLEvents* events, struct mSDLPlayer* player, size_t index) {
 	if (player->playerId >= MAX_PLAYERS || index >= SDL_JoystickListSize(&events->joysticks)) {
 		return;
 	}
 	player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
 }
 
-void GBASDLUpdateJoysticks(struct GBASDLEvents* events) {
+void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 	// Pump SDL joystick events without eating the rest of the events
 	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -376,7 +379,7 @@ static void _pauseAfterFrame(struct GBAThread* context) {
 	GBAThreadPauseFromThread(context);
 }
 
-static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
+static void _mSDLHandleKeypressGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	enum GBAKey key = GBA_KEY_NONE;
 	if (!event->keysym.mod) {
 #if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
@@ -493,7 +496,7 @@ static void _GBASDLHandleKeypress(struct GBAThread* context, struct GBASDLPlayer
 	}
 }
 
-static void _GBASDLHandleJoyButton(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
+static void _mSDLHandleJoyButtonGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	enum GBAKey key = 0;
 	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
 	if (key == GBA_KEY_NONE) {
@@ -507,7 +510,7 @@ static void _GBASDLHandleJoyButton(struct GBAThread* context, struct GBASDLPlaye
 	}
 }
 
-static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyHatEvent* event) {
+static void _mSDLHandleJoyHatGBA(struct GBAThread* context, const struct SDL_JoyHatEvent* event) {
 	enum GBAKey key = 0;
 
 	if (event->value & SDL_HAT_UP) {
@@ -527,21 +530,67 @@ static void _GBASDLHandleJoyHat(struct GBAThread* context, const struct SDL_JoyH
 	context->activeKeys |= key;
 }
 
-static void _GBASDLHandleJoyAxis(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
+static void _mSDLHandleJoyAxisGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
 	int keys = context->activeKeys;
 
 	keys = mInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, keys);
 	enum GBAKey key = mInputMapAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, event->value);
-	if (key != GBA_KEY_NONE) {
+	if (key != -1) {
 		keys |= 1 << key;
 	}
 
 	context->activeKeys = keys;
 }
 
+static void _mSDLHandleKeypress(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
+	int key = -1;
+	if (!event->keysym.mod) {
+#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
+		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
+#else
+		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
+#endif
+	}
+	if (key != -1) {
+		if (event->type == SDL_KEYDOWN) {
+			core->addKeys(core, 1 << key);
+		} else {
+			core->clearKeys(core, 1 << key);
+		}
+		return;
+	}
+	// TODO: Put back events
+}
+
+static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
+	int key = 0;
+	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
+	if (key == -1) {
+		return;
+	}
+
+	if (event->type == SDL_JOYBUTTONDOWN) {
+		core->addKeys(core, 1 << key);
+	} else {
+		core->clearKeys(core, 1 << key);
+	}
+}
+
+static void _mSDLHandleJoyAxis(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyAxisEvent* event) {
+	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, -1);
+	int newKeys = 0;
+	int key = mInputMapAxis(sdlContext->bindings, SDL_BINDING_BUTTON, event->axis, event->value);
+	if (key != -1) {
+		newKeys |= 1 << key;
+	}
+	clearKeys &= ~newKeys;
+	core->clearKeys(core, clearKeys);
+	core->addKeys(core, newKeys);
+
+}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
-	UNUSED(context);
+static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
 	switch (event->event) {
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
 		sdlContext->windowUpdated = 1;
@@ -550,36 +599,63 @@ static void _GBASDLHandleWindowEvent(struct GBAThread* context, struct GBASDLPla
 }
 #endif
 
-void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const union SDL_Event* event) {
+void mSDLHandleEventGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
 		GBAThreadEnd(context);
 		break;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_WINDOWEVENT:
-		_GBASDLHandleWindowEvent(context, sdlContext, &event->window);
+		_mSDLHandleWindowEvent(sdlContext, &event->window);
 		break;
 #endif
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
-		_GBASDLHandleKeypress(context, sdlContext, &event->key);
+		_mSDLHandleKeypressGBA(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		_GBASDLHandleJoyButton(context, sdlContext, &event->jbutton);
+		_mSDLHandleJoyButtonGBA(context, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
-		_GBASDLHandleJoyHat(context, &event->jhat);
+		_mSDLHandleJoyHatGBA(context, &event->jhat);
 		break;
 	case SDL_JOYAXISMOTION:
-		_GBASDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+		_mSDLHandleJoyAxisGBA(context, sdlContext, &event->jaxis);
+		break;
+	}
+}
+
+void mSDLHandleEvent(struct mCore* core, struct mSDLPlayer* sdlContext, const union SDL_Event* event) {
+	switch (event->type) {
+	case SDL_QUIT:
+		// TODO
+		break;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	case SDL_WINDOWEVENT:
+		_mSDLHandleWindowEvent(sdlContext, &event->window);
+		break;
+#endif
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+		_mSDLHandleKeypress(core, sdlContext, &event->key);
+		break;
+	case SDL_JOYBUTTONDOWN:
+	case SDL_JOYBUTTONUP:
+		_mSDLHandleJoyButton(core, sdlContext, &event->jbutton);
+		break;
+	case SDL_JOYHATMOTION:
+		// TODO
+		break;
+	case SDL_JOYAXISMOTION:
+		_mSDLHandleJoyAxis(core, sdlContext, &event->jaxis);
 		break;
 	}
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
-	struct GBASDLRumble* sdlRumble = (struct GBASDLRumble*) rumble;
+static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
+	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
 	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
@@ -598,31 +674,31 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 }
 #endif
 
-static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
+static int32_t _readTilt(struct mSDLPlayer* player, int axis) {
 	if (!player->joystick) {
 		return 0;
 	}
 	return SDL_JoystickGetAxis(player->joystick->joystick, axis) * 0x3800;
 }
 
-static int32_t _GBASDLReadTiltX(struct mRotationSource* source) {
-	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+static int32_t _mSDLReadTiltX(struct mRotationSource* source) {
+	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
 	return _readTilt(rotation->p, rotation->axisX);
 }
 
-static int32_t _GBASDLReadTiltY(struct mRotationSource* source) {
-	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+static int32_t _mSDLReadTiltY(struct mRotationSource* source) {
+	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
 	return _readTilt(rotation->p, rotation->axisY);
 }
 
-static int32_t _GBASDLReadGyroZ(struct mRotationSource* source) {
-	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+static int32_t _mSDLReadGyroZ(struct mRotationSource* source) {
+	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
 	float z = rotation->zDelta;
 	return z * rotation->gyroSensitivity;
 }
 
-static void _GBASDLRotationSample(struct mRotationSource* source) {
-	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
+static void _mSDLRotationSample(struct mRotationSource* source) {
+	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
 	SDL_JoystickUpdate();
 	if (!rotation->p->joystick) {
 		return;
@@ -653,21 +729,21 @@ static void _GBASDLRotationSample(struct mRotationSource* source) {
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-void GBASDLSuspendScreensaver(struct GBASDLEvents* events) {
+void mSDLSuspendScreensaver(struct mSDLEvents* events) {
 	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
 		SDL_DisableScreenSaver();
 	}
 	++events->screensaverSuspendDepth;
 }
 
-void GBASDLResumeScreensaver(struct GBASDLEvents* events) {
+void mSDLResumeScreensaver(struct mSDLEvents* events) {
 	--events->screensaverSuspendDepth;
 	if (events->screensaverSuspendDepth == 0 && events->screensaverSuspendable) {
 		SDL_EnableScreenSaver();
 	}
 }
 
-void GBASDLSetScreensaverSuspendable(struct GBASDLEvents* events, bool suspendable) {
+void mSDLSetScreensaverSuspendable(struct mSDLEvents* events, bool suspendable) {
 	bool wasSuspendable = events->screensaverSuspendable;
 	events->screensaverSuspendable = suspendable;
 	if (events->screensaverSuspendDepth > 0) {

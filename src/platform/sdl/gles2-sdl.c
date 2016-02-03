@@ -112,7 +112,7 @@ void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEventGBA(context, &renderer->player, &event);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->sync)) {

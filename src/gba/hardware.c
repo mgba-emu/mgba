@@ -364,7 +364,7 @@ void GBAHardwareInitRumble(struct GBACartridgeHardware* hw) {
 }
 
 void _rumbleReadPins(struct GBACartridgeHardware* hw) {
-	struct GBARumble* rumble = hw->p->rumble;
+	struct mRumble* rumble = hw->p->rumble;
 	if (!rumble) {
 		return;
 	}

@@ -79,7 +79,7 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
-	GBARumble* rumble();
+	mRumble* rumble();
 	mRotationSource* rotationSource();
 
 signals:
@@ -108,8 +108,8 @@ private:
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
-	static GBASDLEvents s_sdlEvents;
-	GBASDLPlayer m_sdlPlayer;
+	static mSDLEvents s_sdlEvents;
+	mSDLPlayer m_sdlPlayer;
 	bool m_playerAttached;
 #endif
 

@@ -188,11 +188,11 @@ int main(int argc, char** argv) {
 	}
 
 	renderer.player.bindings = &inputMap;
-	GBASDLInitBindings(&inputMap);
-	GBASDLInitEvents(&renderer.events);
-	GBASDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&config));
-	GBASDLAttachPlayer(&renderer.events, &renderer.player);
-	GBASDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&config));
+	mSDLInitBindingsGBA(&inputMap);
+	mSDLInitEvents(&renderer.events);
+	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&config));
+	mSDLAttachPlayer(&renderer.events, &renderer.player);
+	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&config));
 
 	int ret;
 
@@ -207,7 +207,7 @@ int main(int argc, char** argv) {
 		ret = 1;
 		break;
 	}
-	GBASDLDetachPlayer(&renderer.events, &renderer.player);
+	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&inputMap);
 
 	mSDLDeinit(&renderer);
@@ -245,8 +245,8 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBASDLSetScreensaverSuspendable(&renderer->events, opts->suspendScreensaver);
-		GBASDLSuspendScreensaver(&renderer->events);
+		mSDLSetScreensaverSuspendable(&renderer->events, opts->suspendScreensaver);
+		mSDLSuspendScreensaver(&renderer->events);
 #endif
 		if (GBAThreadStart(&context)) {
 			renderer->audio.psg = &context.gba->audio.psg;
@@ -259,8 +259,8 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 		}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		GBASDLResumeScreensaver(&renderer->events);
-		GBASDLSetScreensaverSuspendable(&renderer->events, false);
+		mSDLResumeScreensaver(&renderer->events);
+		mSDLSetScreensaverSuspendable(&renderer->events, false);
 #endif
 
 		if (GBAThreadHasCrashed(&context)) {
@@ -315,7 +315,7 @@ static bool mSDLInit(struct mSDLRenderer* renderer) {
 }
 
 static void mSDLDeinit(struct mSDLRenderer* renderer) {
-	GBASDLDeinitEvents(&renderer->events);
+	mSDLDeinitEvents(&renderer->events);
 	GBSDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_DestroyWindow(renderer->window);

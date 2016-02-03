@@ -69,7 +69,7 @@ void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEventGBA(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
@@ -132,32 +132,15 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 	UNUSED(user);
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
-	int activeKeys = 0;
 	renderer->audio.psg = &((struct GB*) renderer->core->board)->audio;
 
 	while (true) {
 		renderer->core->runFrame(renderer->core);
 		while (SDL_PollEvent(&event)) {
-			// TODO: Refactor out
-			if (event.type == SDL_KEYUP || event.type == SDL_KEYDOWN) {
-				int key;
-#if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
-				key = mInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.scancode);
-#else
-				key = mInputMapKey(renderer->player.bindings, SDL_BINDING_KEY, event.key.keysym.sym);
-#endif
-				if (key != GBA_KEY_NONE) {
-					if (event.type == SDL_KEYDOWN) {
-						activeKeys |= 1 << key;
-					} else {
-						activeKeys &= ~(1 << key);
-					}
-				}
-			}
+			mSDLHandleEvent(renderer->core, &renderer->player, &event);
 			if (event.type == SDL_QUIT) {
 				return;
 			}
-
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
@@ -167,7 +150,6 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 			}
 #endif
 		}
-		renderer->core->setKeys(renderer->core, activeKeys);
 
 		v->postFrame(v, renderer->outputBuffer);
 		v->drawFrame(v);

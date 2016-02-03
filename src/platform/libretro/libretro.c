@@ -29,7 +29,7 @@ static retro_set_rumble_state_t rumbleCallback;
 static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
-static void _setRumble(struct GBARumble* rumble, int enable);
+static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 
@@ -41,7 +41,7 @@ static void* savedata;
 static struct GBAAVStream stream;
 static int rumbleLevel;
 static struct CircleBuffer rumbleHistory;
-static struct GBARumble rumble;
+static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
 static struct GBACheatDevice cheats;
@@ -470,7 +470,7 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 	audioCallback(samples, SAMPLES);
 }
 
-static void _setRumble(struct GBARumble* rumble, int enable) {
+static void _setRumble(struct mRumble* rumble, int enable) {
 	UNUSED(rumble);
 	if (!rumbleCallback) {
 		return;

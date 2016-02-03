@@ -99,7 +99,7 @@ struct GBA {
 	struct mRotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
 	struct mRTCSource* rtcSource;
-	struct GBARumble* rumble;
+	struct mRumble* rumble;
 
 	struct GBARRContext* rr;
 	void* pristineRom;
