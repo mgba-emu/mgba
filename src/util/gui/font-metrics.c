@@ -151,5 +151,5 @@ struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_BUTTON_CROSS] = { 18, 34, 12, 11 },
 	[GUI_ICON_BUTTON_TRIANGLE] = { 34, 34, 12, 11 },
 	[GUI_ICON_BUTTON_SQUARE] = { 50, 34, 12, 11 },
-	[GUI_ICON_BUTTON_HOME] = { 66, 34, 16, 16 },
+	[GUI_ICON_BUTTON_HOME] = { 66, 34, 12, 11 },
 };

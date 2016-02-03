@@ -1,4 +1,4 @@
-0.4.0: (Future)
+0.4.0: (2016-02-02)
 Features:
  - Officially supported ports for the Nintendo 3DS, Wii, and PlayStation Vita
  - I/O viewer
@@ -21,54 +21,53 @@ Features:
  - Controller hotplugging
  - Ability to store save games and active cheats within savestates
 Bugfixes:
- - Util: Fix PowerPC PNG read/write pixel order
- - VFS: Fix VFileReadline and remove _vfdReadline
- - GBA Memory: Fix DMA register writing behavior
- - GBA BIOS: Fix misaligned CpuSet
  - ARM7: Fix sign of unaligned LDRSH
+ - ARM7: Fix decoding of some ARM ALU instructions with shifters
+ - Debugger: Fix watchpoints in gdb
  - GBA: Fix warnings when creating and loading savestates
- - GBA Memory: Fix DMAs triggering two cycles early
- - GBA Hardware: Fix GPIO on big endian
- - Util: Fix excessive memory allocation when decoding a PNG
  - GBA: Fix Iridion II savetype
+ - GBA BIOS: Fix misaligned CpuSet
+ - GBA Cheats: Fix cheats setting the Action Replay version
+ - GBA Hardware: Fix GPIO on big endian
+ - GBA Memory: Fix DMA register writing behavior
+ - GBA Memory: Fix DMAs triggering two cycles early
  - Libretro: Fix aspect ratio
  - Qt: Fix some potential crashes with the gamepad mapping
- - Debugger: Fix watchpoints in gdb
- - ARM7: Fix decoding of some ARM ALU instructions with shifters
  - Qt: Fix keys being mapped incorrectly when loading configuration file
- - GBA Cheats: Fix cheats setting the Action Replay version
+ - Util: Fix PowerPC PNG read/write pixel order
+ - Util: Fix excessive memory allocation when decoding a PNG
+ - VFS: Fix VFileReadline and remove _vfdReadline
 Misc:
- - Qt: Window size command line options are now supported
- - Qt: Increase usability of key mapper
- - GBA Memory: Use a dynamically sized mask for ROM memory
- - ARM7: Combine shifter-immediate and shifter-register functions to reduce binary size
- - SDL: Support fullscreen in SDL 1.2
- - Libretro: Use anonymous memory mappers for large blocks of memory
- - Qt: Add 'Apply' button to settings window
- - GBA Video: Remove lastHblank, as it is implied
- - GBA Config: Add "override" layer for better one-time configuration
- - SDL: Allow GBASDLAudio to be used without a thread context
  - All: Improved PowerPC support
  - All: Fix some undefined behavior warnings
- - Util: Use VFile for configuration
- - GBA Memory: Implement several unimplemented memory access types
+ - ARM7: Combine shifter-immediate and shifter-register functions to reduce binary size
+ - Debugger: Convert breakpoints and watchpoints from linked-lists to vectors
  - GBA: Implement bad I/O register loading
+ - GBA: Allow jumping to OAM and palette RAM
+ - GBA BIOS: Finish implementing RegisterRamReset
+ - GBA Config: Add "override" layer for better one-time configuration
+ - GBA Input: Consolidate GBA_KEY_NONE and GBA_NO_MAPPING
+ - GBA Memory: Use a dynamically sized mask for ROM memory
+ - GBA Memory: Implement several unimplemented memory access types
  - GBA Memory: Add GBAView* functions for viewing memory directly without bus issues
- - Util: Add MutexTryLock
+ - GBA RR: Starting from savestate now embeds the savegame
+ - GBA RR: Add preliminary SRAM support for VBM loading
+ - GBA RR: Add support for resets in movies
+ - GBA Video: Remove lastHblank, as it is implied
+ - Libretro: Use anonymous memory mappers for large blocks of memory
+ - Libretro: Add install target for libretro core
+ - Qt: Window size command line options are now supported
+ - Qt: Increase usability of key mapper
+ - Qt: Add 'Apply' button to settings window
  - Qt: Gray out "Skip BIOS intro" while "Use BIOS file" is unchecked
  - Qt: Allow use of modifier keys as input
  - Qt: Optimize log viewer
- - GBA RR: Starting from savestate now embeds the savegame
- - Libretro: Add install target for libretro core
- - 3DS: Update to new ctrulib API
- - GBA RR: Add preliminary SRAM support for VBM loading
- - GBA RR: Add support for resets in movies
- - GBA Input: Consolidate GBA_KEY_NONE and GBA_NO_MAPPING
- - Debugger: Convert breakpoints and watchpoints from linked-lists to vectors
  - Qt: Added button for breaking into the GDB debugger
- - GBA BIOS: Finish implementing RegisterRamReset
- - GBA: Allow jumping to OAM and palette RAM
  - Qt: Add box for showing duration of rewind
+ - SDL: Support fullscreen in SDL 1.2
+ - SDL: Allow GBASDLAudio to be used without a thread context
+ - Util: Use VFile for configuration
+ - Util: Add MutexTryLock
 
 0.3.2: (2015-12-16)
 Bugfixes:

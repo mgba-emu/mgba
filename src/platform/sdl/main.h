@@ -26,7 +26,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
 #include "platform/opengl/gles2.h"
 #endif
 
@@ -63,7 +63,7 @@ struct SDLSoftwareRenderer {
 #ifdef BUILD_GL
 	struct GBAGLContext gl;
 #endif
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
 	struct GBAGLES2Context gl2;
 #endif
 
@@ -92,7 +92,7 @@ void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer);
 void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer);
 #endif
 
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
 void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer);
 #endif
 #endif

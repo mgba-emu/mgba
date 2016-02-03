@@ -264,15 +264,15 @@ int main(int argc, char* argv[]) {
 					"1",
 					"B",
 					"A",
-					"Minus",
+					"-",
 					0,
 					0,
-					"Home",
+					"\1\xE",
 					"Left",
 					"Right",
 					"Down",
 					"Up",
-					"Plus",
+					"+",
 					0,
 					0,
 					0,
@@ -311,9 +311,9 @@ int main(int argc, char* argv[]) {
 					"ZL",
 					0,
 					"R",
-					"Plus",
-					"Home",
-					"Minus",
+					"+",
+					"\1\xE",
+					"-",
 					"L",
 					"Down",
 					"Right",
@@ -426,18 +426,18 @@ static uint32_t _pollInput(void) {
 	int keys = 0;
 	int x = PAD_StickX(0);
 	int y = PAD_StickY(0);
-	int w_x = WPAD_StickX(0,0);
-	int w_y = WPAD_StickY(0,0);
-	if (x < -0x40 || w_x < -0x40) {
+	int w_x = WPAD_StickX(0, 0);
+	int w_y = WPAD_StickY(0, 0);
+	if (x < -0x20 || w_x < -0x20) {
 		keys |= 1 << GUI_INPUT_LEFT;
 	}
-	if (x > 0x40 || w_x > 0x40) {
+	if (x > 0x20 || w_x > 0x20) {
 		keys |= 1 << GUI_INPUT_RIGHT;
 	}
-	if (y < -0x40 || w_y <- 0x40) {
+	if (y < -0x20 || w_y <- 0x20) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
-	if (y > 0x40 || w_y > 0x40) {
+	if (y > 0x20 || w_y > 0x20) {
 		keys |= 1 << GUI_INPUT_UP;
 	}
 	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
@@ -552,10 +552,10 @@ void _setup(struct GBAGUIRunner* runner) {
 	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
 	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
 
-	struct GBAAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x40, -0x40 };
+	struct GBAAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
 	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 0, &desc);
 	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, &desc);
-	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x40, -0x40 };
+	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
 	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
 	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
 

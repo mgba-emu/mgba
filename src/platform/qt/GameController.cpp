@@ -115,10 +115,7 @@ GameController::GameController(QObject* parent)
 		controller->m_fpsTarget = context->fpsTarget;
 
 		if (context->dirs.state && GBALoadState(context, context->dirs.state, 0, controller->m_loadStateFlags)) {
-			VFile* vf = GBAGetState(context->gba, context->dirs.state, 0, true);
-			if (vf) {
-				vf->truncate(vf, 0);
-			}
+			GBADeleteState(context->gba, context->dirs.state, 0);
 		}
 		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(GBAThread*, context));
 	};

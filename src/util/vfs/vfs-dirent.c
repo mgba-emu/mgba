@@ -15,6 +15,7 @@ static void _vdRewind(struct VDir* vd);
 static struct VDirEntry* _vdListNext(struct VDir* vd);
 static struct VFile* _vdOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vdOpenDir(struct VDir* vd, const char* path);
+static bool _vdDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdeName(struct VDirEntry* vde);
 static enum VFSType _vdeType(struct VDirEntry* vde);
@@ -55,6 +56,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->d.listNext = _vdListNext;
 	vd->d.openFile = _vdOpenFile;
 	vd->d.openDir = _vdOpenDir;
+	vd->d.deleteFile = _vdDeleteFile;
 	vd->path = strdup(path);
 	vd->de = de;
 
@@ -119,6 +121,20 @@ struct VDir* _vdOpenDir(struct VDir* vd, const char* path) {
 	}
 	free(combined);
 	return vd2;
+}
+
+bool _vdDeleteFile(struct VDir* vd, const char* path) {
+	struct VDirDE* vdde = (struct VDirDE*) vd;
+	if (!path) {
+		return false;
+	}
+	const char* dir = vdde->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+
+	bool ret = !unlink(combined);
+	free(combined);
+	return ret;
 }
 
 const char* _vdeName(struct VDirEntry* vde) {

@@ -45,6 +45,7 @@ static void _vd3dRewind(struct VDir* vd);
 static struct VDirEntry* _vd3dListNext(struct VDir* vd);
 static struct VFile* _vd3dOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path);
+static bool _vd3dDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vd3deName(struct VDirEntry* vde);
 static enum VFSType _vd3deType(struct VDirEntry* vde);
@@ -191,6 +192,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd3d->d.listNext = _vd3dListNext;
 	vd3d->d.openFile = _vd3dOpenFile;
 	vd3d->d.openDir = _vd3dOpenDir;
+	vd3d->d.deleteFile = _vd3dDeleteFile;
 
 	vd3d->vde.d.name = _vd3deName;
 	vd3d->vde.d.type = _vd3deType;
@@ -255,6 +257,22 @@ static struct VDir* _vd3dOpenDir(struct VDir* vd, const char* path) {
 	}
 	free(combined);
 	return vd2;
+}
+
+static bool _vd3dDeleteFile(struct VDir* vd, const char* path) {
+	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vd3d->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
+	sprintf(combined, "%s/%s", dir, path);
+
+	// TODO: Use UTF-16
+	FS_Path newPath = fsMakePath(PATH_ASCII, combined);
+	bool ret = !FSUSER_DeleteFile(sdmcArchive, newPath);
+	free(combined);
+	return ret;
 }
 
 static const char* _vd3deName(struct VDirEntry* vde) {

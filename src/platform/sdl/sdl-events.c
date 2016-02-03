@@ -599,6 +599,9 @@ static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 #endif
 
 static int32_t _readTilt(struct GBASDLPlayer* player, int axis) {
+	if (!player->joystick) {
+		return 0;
+	}
 	return SDL_JoystickGetAxis(player->joystick->joystick, axis) * 0x3800;
 }
 
@@ -621,6 +624,9 @@ static int32_t _GBASDLReadGyroZ(struct GBARotationSource* source) {
 static void _GBASDLRotationSample(struct GBARotationSource* source) {
 	struct GBASDLRotation* rotation = (struct GBASDLRotation*) source;
 	SDL_JoystickUpdate();
+	if (!rotation->p->joystick) {
+		return;
+	}
 
 	int x = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroX);
 	int y = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroY);
