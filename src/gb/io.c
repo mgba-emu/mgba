@@ -7,7 +7,7 @@
 
 #include "gb/gb.h"
 
-mLOG_DEFINE_CATEGORY(GB_IO);
+mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
 void GBIOInit(struct GB* gb) {
 	memset(gb->memory.io, 0, sizeof(gb->memory.io));

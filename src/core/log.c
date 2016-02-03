@@ -5,12 +5,26 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "log.h"
 
+#define MAX_CATEGORY 64
+
 struct mLogger* mLogGetContext(void) {
 	return NULL; // TODO
 }
 
-int mLogGenerateCategory(void) {
-	static int category = 0;
-	++category;
-	return category;
+static int _category = 0;
+static const char* _categoryNames[MAX_CATEGORY];
+
+int mLogGenerateCategory(const char* name) {
+	++_category;
+	if (_category < MAX_CATEGORY) {
+		_categoryNames[_category] = name;
+	}
+	return _category;
+}
+
+const char* mLogCategoryName(int category) {
+	if (category < MAX_CATEGORY) {
+		return _categoryNames[category];
+	}
+	return 0;
 }

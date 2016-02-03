@@ -13,8 +13,8 @@
 
 #include <time.h>
 
-mLOG_DEFINE_CATEGORY(GB_MBC);
-mLOG_DEFINE_CATEGORY(GB_MEM);
+mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
+mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory");
 
 static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	UNUSED(memory);

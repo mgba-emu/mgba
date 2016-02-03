@@ -24,7 +24,8 @@ struct mLogger {
 };
 
 struct mLogger* mLogGetContext(void);
-int mLogGenerateCategory(void);
+int mLogGenerateCategory(const char*);
+const char* mLogCategoryName(int);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
 static inline void _mLog(int (*category)(void), enum mLogLevel level, const char* format, ...) {
@@ -34,6 +35,7 @@ static inline void _mLog(int (*category)(void), enum mLogLevel level, const char
 	if (context) {
 		context->log(context, category(), level, format, args);
 	} else {
+		printf("%s: ", mLogCategoryName(category()));
 		vprintf(format, args);
 		printf("\n");
 	}
@@ -43,11 +45,11 @@ static inline void _mLog(int (*category)(void), enum mLogLevel level, const char
 #define mLOG(CATEGORY, LEVEL, ...) _mLog(_mLOG_CAT_ ## CATEGORY, mLOG_ ## LEVEL, __VA_ARGS__)
 
 #define mLOG_DECLARE_CATEGORY(CATEGORY) int _mLOG_CAT_ ## CATEGORY (void);
-#define mLOG_DEFINE_CATEGORY(CATEGORY) \
+#define mLOG_DEFINE_CATEGORY(CATEGORY, NAME) \
 	int _mLOG_CAT_ ## CATEGORY (void) { \
 		static int category = 0; \
 		if (!category) { \
-			category = mLogGenerateCategory(); \
+			category = mLogGenerateCategory(NAME); \
 		} \
 		return category; \
 	}

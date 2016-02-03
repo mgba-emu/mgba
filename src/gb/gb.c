@@ -20,7 +20,7 @@ const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
-mLOG_DEFINE_CATEGORY(GB);
+mLOG_DEFINE_CATEGORY(GB, "GB");
 
 static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
