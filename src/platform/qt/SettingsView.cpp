@@ -114,9 +114,16 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	m_ui.displayDriver->addItem(tr("OpenGL"), static_cast<int>(Display::Driver::OPENGL));
 	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL)) {
+		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
+	}
+#endif
+
+#ifdef BUILD_GL
+	m_ui.displayDriver->addItem(tr("OpenGL (force version 1.x)"), static_cast<int>(Display::Driver::OPENGL1));
+	if (displayDriver.isNull() || displayDriver.toInt() == static_cast<int>(Display::Driver::OPENGL1)) {
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 #endif

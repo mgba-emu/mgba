@@ -24,14 +24,22 @@ extern "C" {
 
 using namespace QGBA;
 
-DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
+DisplayGL::DisplayGL(const QGLFormat& format, bool force1, QWidget* parent)
 	: Display(parent)
 	, m_isDrawing(false)
 	, m_gl(new EmptyGLWidget(format, this))
 	, m_drawThread(nullptr)
 	, m_context(nullptr)
 {
-	m_painter = new PainterGL(m_gl, QGLFormat::openGLVersionFlags());
+	QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
+	if (force1) {
+		versions &= QGLFormat::OpenGL_Version_1_1 |
+		            QGLFormat::OpenGL_Version_1_2 |
+		            QGLFormat::OpenGL_Version_1_3 |
+		            QGLFormat::OpenGL_Version_1_4 |
+		            QGLFormat::OpenGL_Version_1_5;
+	}
+	m_painter = new PainterGL(m_gl, versions);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
 }

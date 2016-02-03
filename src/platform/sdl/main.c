@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
 
 #ifdef BUILD_GL
 	GBASDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2)
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
 	GBASDLGLES2Create(&renderer);
 #else
 	GBASDLSWCreate(&renderer);

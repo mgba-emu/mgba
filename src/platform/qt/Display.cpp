@@ -14,30 +14,34 @@ extern "C" {
 
 using namespace QGBA;
 
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 Display::Driver Display::s_driver = Display::Driver::OPENGL;
 #else
 Display::Driver Display::s_driver = Display::Driver::QT;
 #endif
 
 Display* Display::create(QWidget* parent) {
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
 #endif
 
 	switch (s_driver) {
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
-		return new DisplayGL(format, parent);
+		return new DisplayGL(format, false, parent);
+#endif
+#ifdef BUILD_GL
+	case Driver::OPENGL1:
+		return new DisplayGL(format, true, parent);
 #endif
 
 	case Driver::QT:
 		return new DisplayQt(parent);
 
 	default:
-#ifdef BUILD_GL
-		return new DisplayGL(format, parent);
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+		return new DisplayGL(format, false, parent);
 #else
 		return new DisplayQt(parent);
 #endif

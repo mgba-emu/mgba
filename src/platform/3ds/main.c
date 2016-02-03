@@ -32,8 +32,9 @@ static enum ScreenMode {
 
 #define _3DS_INPUT 0x3344534B
 
-#define AUDIO_SAMPLES 0x80
-#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
+#define AUDIO_SAMPLES 384
+#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
+#define DSP_BUFFERS 4
 
 FS_Archive sdmcArchive;
 
@@ -43,7 +44,12 @@ static struct GBA3DSRotationSource {
 	angularRate gyro;
 } rotation;
 
-static bool hasSound;
+static enum {
+	NO_SOUND,
+	DSP_SUPPORTED,
+	CSND_SUPPORTED
+} hasSound;
+
 // TODO: Move into context
 static struct GBAVideoSoftwareRenderer renderer;
 static struct GBAAVStream stream;
@@ -53,6 +59,8 @@ static size_t audioPos = 0;
 static struct ctrTexture gbaOutputTexture;
 static int guiDrawn;
 static int screenCleanup;
+static ndspWaveBuf dspBuffer[DSP_BUFFERS];
+static int bufferId = 0;
 
 static aptHookCookie cookie;
 
@@ -84,9 +92,17 @@ static void _cleanup(void) {
 
 	gfxExit();
 
-	if (hasSound) {
+	if (hasSound != NO_SOUND) {
 		linearFree(audioLeft);
+	}
+
+	if (hasSound == CSND_SUPPORTED) {
 		linearFree(audioRight);
+		csndExit();
+	}
+
+	if (hasSound == DSP_SUPPORTED) {
+		ndspExit();
 	}
 
 	csndExit();
@@ -98,14 +114,18 @@ static void _aptHook(APT_HookType hook, void* user) {
 	switch (hook) {
 	case APTHOOK_ONSUSPEND:
 	case APTHOOK_ONSLEEP:
-		CSND_SetPlayState(8, 0);
-		CSND_SetPlayState(9, 0);
-		csndExecCmds(false);
+		if (hasSound == CSND_SUPPORTED) {
+			CSND_SetPlayState(8, 0);
+			CSND_SetPlayState(9, 0);
+			csndExecCmds(false);
+		}
 		break;
 	case APTHOOK_ONEXIT:
-		CSND_SetPlayState(8, 0);
-		CSND_SetPlayState(9, 0);
-		csndExecCmds(false);
+		if (hasSound == CSND_SUPPORTED) {
+			CSND_SetPlayState(8, 0);
+			CSND_SetPlayState(9, 0);
+			csndExecCmds(false);
+		}
 		_cleanup();
 		exit(0);
 		break;
@@ -118,8 +138,7 @@ static void _map3DSKey(struct GBAInputMap* map, int ctrKey, enum GBAKey key) {
 	GBAInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
 
-static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size)
-{
+static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size) {
 	u32 pleft = 0, pright = 0;
 
 	int loopMode = (flags >> 10) & 3;
@@ -231,7 +250,7 @@ static void _guiFinish(void) {
 
 static void _setup(struct GBAGUIRunner* runner) {
 	runner->context.gba->rotationSource = &rotation.d;
-	if (hasSound) {
+	if (hasSound != NO_SOUND) {
 		runner->context.gba->stream = &stream;
 	}
 
@@ -273,12 +292,16 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
 	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
 #endif
-	if (hasSound) {
+	if (hasSound != NO_SOUND) {
+		audioPos = 0;
+	}
+	if (hasSound == CSND_SUPPORTED) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		audioPos = 0;
 		_csndPlaySound(SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, audioLeft, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		csndExecCmds(false);
+	} else if (hasSound == DSP_SUPPORTED) {
+		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
 	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
@@ -288,7 +311,7 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 }
 
 static void _gameUnloaded(struct GBAGUIRunner* runner) {
-	if (hasSound) {
+	if (hasSound == CSND_SUPPORTED) {
 		CSND_SetPlayState(8, 0);
 		CSND_SetPlayState(9, 0);
 		csndExecCmds(false);
@@ -355,7 +378,7 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	if (!hasSound) {
+	if (hasSound == NO_SOUND) {
 		blip_clear(runner->context.gba->audio.left);
 		blip_clear(runner->context.gba->audio.right);
 	}
@@ -490,23 +513,45 @@ static int32_t _readGyroZ(struct GBARotationSource* source) {
 
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
+	if (hasSound == CSND_SUPPORTED) {
 #if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
-	blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
 #elif RESAMPLE_LIBRARY == RESAMPLE_NN
-	GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
+		GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
 #endif
-	GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-	GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
-	if (audioPos == AUDIO_SAMPLES * 3) {
-		u8 playing = 0;
-		csndIsPlaying(0x8, &playing);
-		if (!playing) {
-			CSND_SetPlayState(0x8, 1);
-			CSND_SetPlayState(0x9, 1);
-			csndExecCmds(false);
+		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
+		if (audioPos == AUDIO_SAMPLES * 3) {
+			u8 playing = 0;
+			csndIsPlaying(0x8, &playing);
+			if (!playing) {
+				CSND_SetPlayState(0x8, 1);
+				CSND_SetPlayState(0x9, 1);
+				csndExecCmds(false);
+			}
 		}
+	} else if (hasSound == DSP_SUPPORTED) {
+		int startId = bufferId;
+		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
+			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
+			if (bufferId == startId) {
+				blip_clear(audio->left);
+				blip_clear(audio->right);
+				return;
+			}
+		}
+		void* tmpBuf = dspBuffer[bufferId].data_pcm16;
+		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
+		dspBuffer[bufferId].data_pcm16 = tmpBuf;
+		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
+#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
+		blip_read_samples(audio->left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
+		blip_read_samples(audio->right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+#endif
+		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}
 }
 
@@ -527,9 +572,27 @@ int main() {
 	aptHook(&cookie, _aptHook, 0);
 
 	ptmuInit();
-	hasSound = !csndInit();
+	hasSound = NO_SOUND;
+	if (!ndspInit()) {
+		hasSound = DSP_SUPPORTED;
+		ndspSetOutputMode(NDSP_OUTPUT_STEREO);
+		ndspSetOutputCount(1);
+		ndspChnReset(0);
+		ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
+		ndspChnSetInterp(0, NDSP_INTERP_NONE);
+		ndspChnSetRate(0, 0x8000);
+		ndspChnWaveBufClear(0);
+		audioLeft = linearMemAlign(AUDIO_SAMPLES * DSP_BUFFERS * 2 * sizeof(int16_t), 0x80);
+		memset(dspBuffer, 0, sizeof(dspBuffer));
+		int i;
+		for (i = 0; i < DSP_BUFFERS; ++i) {
+			dspBuffer[i].data_pcm16 = &audioLeft[AUDIO_SAMPLES * i * 2];
+			dspBuffer[i].nsamples = AUDIO_SAMPLES;
+		}
+	}
 
-	if (hasSound) {
+	if (hasSound == NO_SOUND && !csndInit()) {
+		hasSound = CSND_SUPPORTED;
 		audioLeft = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}

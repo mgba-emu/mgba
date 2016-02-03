@@ -65,6 +65,25 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width * 2;
 }
 
+void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
+	UNUSED(font);
+	if (icon >= GUI_ICON_MAX) {
+		if (w) {
+			*w = 0;
+		}
+		if (h) {
+			*h = 0;
+		}
+	} else {
+		if (w) {
+			*w = defaultIconMetrics[icon].width * 2;
+		}
+		if (h) {
+			*h = defaultIconMetrics[icon].height * 2;
+		}
+	}
+}
+
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	color = (color >> 24) | (color << 8);
 	GXTexObj tex;
@@ -172,6 +191,58 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	GX_TexCoord2f32(u[1], v[1]);
 
 	GX_Position2s16(x + metric.width * 2, y);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[2], v[2]);
+
+	GX_Position2s16(x, y);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[3], v[3]);
+	GX_End();
+}
+
+void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+	if (icon >= GUI_ICON_MAX) {
+		return;
+	}
+
+	color = (color >> 24) | (color << 8);
+	GXTexObj tex;
+
+	struct GUIFont* ncfont = font;
+	TPL_GetTexture(&ncfont->iconsTdf, 0, &tex);
+	GX_LoadTexObj(&tex, GX_TEXMAP0);
+
+	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+
+	struct GUIIconMetric metric = defaultIconMetrics[icon];
+
+	float u[4];
+	float v[4];
+
+	if (!h) {
+		h = metric.height * 2;
+	}
+	if (!w) {
+		w = metric.width * 2;
+	}
+
+	u[0] = u[3] = metric.x / 256.f;
+	u[1] = u[2] = (metric.x + metric.width) / 256.f;
+	v[0] = v[1] = (metric.y + metric.height) / 64.f;
+	v[2] = v[3] = metric.y / 64.f;
+
+	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+	GX_Position2s16(x, y + h);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[0], v[0]);
+
+	GX_Position2s16(x + w, y + h);
+	GX_Color1u32(color);
+	GX_TexCoord2f32(u[1], v[1]);
+
+	GX_Position2s16(x + w, y);
 	GX_Color1u32(color);
 	GX_TexCoord2f32(u[2], v[2]);
 
