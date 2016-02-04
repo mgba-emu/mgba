@@ -250,18 +250,6 @@ static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* re
 	return value;
 }
 
-static void GBVideoDummyRendererWriteVRAM(struct GBVideoRenderer* renderer, uint16_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
-	// Nothing to do
-}
-
-static void GBVideoDummyRendererWriteOAM(struct GBVideoRenderer* renderer, uint8_t oam) {
-	UNUSED(renderer);
-	UNUSED(oam);
-	// Nothing to do
-}
-
 static void GBVideoDummyRendererDrawDot(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** obj, size_t oamMax) {
 	UNUSED(renderer);
 	UNUSED(x);
