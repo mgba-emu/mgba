@@ -9,6 +9,7 @@
 #include "core/log.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
+#include "gba/serialize.h"
 #include "util/memory.h"
 
 struct GBACore {
@@ -126,6 +127,14 @@ static void _GBACoreStep(struct mCore* core) {
 	ARMRun(core->cpu);
 }
 
+static bool _GBACoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
+	return GBALoadStateNamed(core->board, vf, flags);
+}
+
+static bool _GBACoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
+	return GBASaveStateNamed(core->board, vf, flags);
+}
+
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->keys = keys;
@@ -181,6 +190,8 @@ struct mCore* GBACoreCreate(void) {
 	core->runFrame = _GBACoreRunFrame;
 	core->runLoop = _GBACoreRunLoop;
 	core->step = _GBACoreStep;
+	core->loadState = _GBACoreLoadState;
+	core->saveState = _GBACoreSaveState;
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;

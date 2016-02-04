@@ -34,3 +34,5 @@ const char* mLogCategoryName(int category) {
 	}
 	return 0;
 }
+
+mLOG_DEFINE_CATEGORY(STATUS, "Status")

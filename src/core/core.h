@@ -58,6 +58,9 @@ struct mCore {
 	void (*runLoop)(struct mCore*);
 	void (*step)(struct mCore*);
 
+	bool (*loadState)(struct mCore*, struct VFile*, int flags);
+	bool (*saveState)(struct mCore*, struct VFile*, int flags);
+
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
@@ -70,7 +73,15 @@ struct mCore {
 };
 
 bool mCoreLoadFile(struct mCore* core, const char* path);
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
+
+bool mCoreSaveState(struct mCore* core, int slot, int flags);
+bool mCoreLoadState(struct mCore* core, int slot, int flags);
+struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
+void mCoreDeleteState(struct mCore* core, int slot);
+#endif
 
 #endif

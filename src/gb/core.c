@@ -124,6 +124,22 @@ static void _GBCoreStep(struct mCore* core) {
 	LR35902Tick(core->cpu);
 }
 
+static bool _GBCoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
+	UNUSED(core);
+	UNUSED(vf);
+	UNUSED(flags);
+	// TODO
+	return false;
+}
+
+static bool _GBCoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
+	UNUSED(core);
+	UNUSED(vf);
+	UNUSED(flags);
+	// TODO
+	return false;
+}
+
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys = keys;
@@ -180,6 +196,8 @@ struct mCore* GBCoreCreate(void) {
 	core->runFrame = _GBCoreRunFrame;
 	core->runLoop = _GBCoreRunLoop;
 	core->step = _GBCoreStep;
+	core->loadState = _GBCoreLoadState;
+	core->saveState = _GBCoreSaveState;
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;

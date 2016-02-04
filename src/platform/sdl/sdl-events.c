@@ -564,7 +564,90 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	}
-	// TODO: Put back events
+	if (event->type == SDL_KEYDOWN) {
+		switch (event->keysym.sym) {
+		case SDLK_F11:
+			// TODO: Put back debugger
+			return;
+#ifdef USE_PNG
+		case SDLK_F12:
+			// TODO: Put back screenshots
+			return;
+#endif
+		case SDLK_BACKSLASH:
+			// TODO: Put back frame advance
+			return;
+		case SDLK_BACKQUOTE:
+			// TODO: Put back rewind
+			return;
+#ifdef BUILD_PANDORA
+		case SDLK_ESCAPE:
+			mCoreThreadEnd(context);
+			return;
+#endif
+		default:
+			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
+				switch (event->keysym.sym) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				case SDLK_f:
+					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+					sdlContext->fullscreen = !sdlContext->fullscreen;
+					sdlContext->windowUpdated = 1;
+					break;
+#endif
+				case SDLK_p:
+					mCoreThreadTogglePause(context);
+					break;
+				case SDLK_n:
+					// TODO: Put back frame advance
+					break;
+				case SDLK_r:
+					mCoreThreadReset(context);
+					break;
+				default:
+					break;
+				}
+			}
+			if (event->keysym.mod & KMOD_SHIFT) {
+				switch (event->keysym.sym) {
+				case SDLK_F1:
+				case SDLK_F2:
+				case SDLK_F3:
+				case SDLK_F4:
+				case SDLK_F5:
+				case SDLK_F6:
+				case SDLK_F7:
+				case SDLK_F8:
+				case SDLK_F9:
+					mCoreThreadInterrupt(context);
+					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					mCoreThreadContinue(context);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (event->keysym.sym) {
+				case SDLK_F1:
+				case SDLK_F2:
+				case SDLK_F3:
+				case SDLK_F4:
+				case SDLK_F5:
+				case SDLK_F6:
+				case SDLK_F7:
+				case SDLK_F8:
+				case SDLK_F9:
+					mCoreThreadInterrupt(context);
+					mCoreLoadState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					mCoreThreadContinue(context);
+					break;
+				default:
+					break;
+				}
+			}
+			return;
+		}
+	}
 }
 
 static void _mSDLHandleJoyButton(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {

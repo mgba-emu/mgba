@@ -53,4 +53,6 @@ static inline void _mLog(int (*category)(void), enum mLogLevel level, const char
 		return category; \
 	}
 
+mLOG_DECLARE_CATEGORY(STATUS)
+
 #endif
