@@ -5,9 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "log.h"
 
+#include "core/thread.h"
+
 #define MAX_CATEGORY 64
 
 struct mLogger* mLogGetContext(void) {
+	struct mLogger* logger = mCoreThreadLogger();
+	if (logger) {
+		return logger;
+	}
 	return NULL; // TODO
 }
 

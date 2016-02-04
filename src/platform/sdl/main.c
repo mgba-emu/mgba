@@ -15,6 +15,7 @@
 
 #include "core/core.h"
 #include "core/config.h"
+#include "core/thread.h"
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
 #include "gba/supervisor/thread.h"
@@ -277,6 +278,12 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 
 #ifdef M_CORE_GB
 int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
+	struct mCoreThread thread = {
+		.core = renderer->core,
+		.sync = {
+			.audioWait = true
+		}
+	};
 	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
 	struct VFile* savVf = 0;
 
@@ -284,6 +291,7 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	renderer->audio.sampleRate = 44100;
 
 	GBSDLInitAudio(&renderer->audio, 0);
+	renderer->audio.sync = &thread.sync;
 
 	{
 		char savepath[PATH_MAX];
@@ -295,10 +303,10 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	}
 
 	renderer->core->loadROM(renderer->core, vf, savVf, args->fname);
-	renderer->core->reset(renderer->core);
+	mCoreThreadStart(&thread);
 	renderer->audio.psg = 0;
 	GBSDLResumeAudio(&renderer->audio);
-	renderer->runloop(renderer, NULL);
+	renderer->runloop(renderer, &thread);
 	renderer->core->unloadROM(renderer->core);
 	vf->close(vf);
 	return 0;

@@ -48,6 +48,11 @@ static void _GBCoreDeinit(struct mCore* core) {
 	mappedMemoryFree(core->board, sizeof(struct GB));
 }
 
+static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
+	struct GB* gb = core->board;
+	gb->sync = sync;
+}
+
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = GB_VIDEO_HORIZONTAL_PIXELS;
@@ -136,6 +141,7 @@ struct mCore* GBCoreCreate(void) {
 	core->board = 0;
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
+	core->setSync = _GBCoreSetSync;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->isROM = _GBCoreIsROM;

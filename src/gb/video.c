@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video.h"
 
+#include "core/sync.h"
 #include "gb/gb.h"
 #include "gb/io.h"
 
@@ -112,6 +113,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 1;
 					++video->frameCounter;
 					video->renderer->finishFrame(video->renderer);
+					mCoreSyncPostFrame(video->p->sync);
 					if (GBRegisterSTATIsVblankIRQ(video->stat) || GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}

@@ -6,6 +6,7 @@
 #include "sdl-events.h"
 
 #include "core/input.h"
+#include "core/thread.h"
 #include "debugger/debugger.h"
 #include "gba/input.h"
 #include "gba/io.h"
@@ -542,7 +543,7 @@ static void _mSDLHandleJoyAxisGBA(struct GBAThread* context, struct mSDLPlayer* 
 	context->activeKeys = keys;
 }
 
-static void _mSDLHandleKeypress(struct mCore* core, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
+static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
 	if (!event->keysym.mod) {
 #if !defined(BUILD_PANDORA) && SDL_VERSION_ATLEAST(2, 0, 0)
@@ -553,10 +554,14 @@ static void _mSDLHandleKeypress(struct mCore* core, struct mSDLPlayer* sdlContex
 	}
 	if (key != -1) {
 		if (event->type == SDL_KEYDOWN) {
-			core->addKeys(core, 1 << key);
+			context->core->addKeys(context->core, 1 << key);
 		} else {
-			core->clearKeys(core, 1 << key);
+			context->core->clearKeys(context->core, 1 << key);
 		}
+		return;
+	}
+	if (event->keysym.sym == SDLK_TAB) {
+		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	}
 	// TODO: Put back events
@@ -626,10 +631,10 @@ void mSDLHandleEventGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext
 	}
 }
 
-void mSDLHandleEvent(struct mCore* core, struct mSDLPlayer* sdlContext, const union SDL_Event* event) {
+void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event) {
 	switch (event->type) {
 	case SDL_QUIT:
-		// TODO
+		mCoreThreadEnd(context);
 		break;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_WINDOWEVENT:
@@ -638,17 +643,17 @@ void mSDLHandleEvent(struct mCore* core, struct mSDLPlayer* sdlContext, const un
 #endif
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
-		_mSDLHandleKeypress(core, sdlContext, &event->key);
+		_mSDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
-		_mSDLHandleJoyButton(core, sdlContext, &event->jbutton);
+		_mSDLHandleJoyButton(context->core, sdlContext, &event->jbutton);
 		break;
 	case SDL_JOYHATMOTION:
 		// TODO
 		break;
 	case SDL_JOYAXISMOTION:
-		_mSDLHandleJoyAxis(core, sdlContext, &event->jaxis);
+		_mSDLHandleJoyAxis(context->core, sdlContext, &event->jaxis);
 		break;
 	}
 }

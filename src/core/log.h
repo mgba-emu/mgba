@@ -19,8 +19,7 @@ enum mLogLevel {
 };
 
 struct mLogger {
-	ATTRIBUTE_FORMAT(printf, 4, 5)
-	void (*log)(struct mLogger*, int category, enum mLogLevel level, const char* format, ...);
+	void (*log)(struct mLogger*, int category, enum mLogLevel level, const char* format, va_list args);
 };
 
 struct mLogger* mLogGetContext(void);

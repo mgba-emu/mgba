@@ -129,18 +129,14 @@ bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
 }
 
 void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
-	UNUSED(user);
+	struct mCoreThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 	renderer->audio.psg = &((struct GB*) renderer->core->board)->audio;
 
-	while (true) {
-		renderer->core->runFrame(renderer->core);
+	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			mSDLHandleEvent(renderer->core, &renderer->player, &event);
-			if (event.type == SDL_QUIT) {
-				return;
-			}
+			mSDLHandleEvent(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
@@ -151,7 +147,10 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 #endif
 		}
 
-		v->postFrame(v, renderer->outputBuffer);
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
+			v->postFrame(v, renderer->outputBuffer);
+		}
+		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
 		v->swap(v);
 	}

@@ -10,6 +10,7 @@
 
 #include "core/directories.h"
 #include "core/sync.h"
+#include "core/thread.h"
 #include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/context/overrides.h"
@@ -21,26 +22,12 @@ struct GBAArguments;
 struct GBACheatSet;
 struct GBAOptions;
 
-typedef void (*ThreadCallback)(struct GBAThread* threadContext);
+typedef void (*GBAThreadCallback)(struct GBAThread* threadContext);
 typedef bool (*ThreadStopCallback)(struct GBAThread* threadContext);
-
-enum ThreadState {
-	THREAD_INITIALIZED = -1,
-	THREAD_RUNNING = 0,
-	THREAD_INTERRUPTED,
-	THREAD_INTERRUPTING,
-	THREAD_PAUSED,
-	THREAD_PAUSING,
-	THREAD_RUN_ON,
-	THREAD_RESETING,
-	THREAD_EXITING,
-	THREAD_SHUTDOWN,
-	THREAD_CRASHED
-};
 
 struct GBAThread {
 	// Output
-	enum ThreadState state;
+	enum mCoreThreadState state;
 	struct GBA* gba;
 	struct ARMCore* cpu;
 
@@ -80,15 +67,15 @@ struct GBAThread {
 
 	Mutex stateMutex;
 	Condition stateCond;
-	enum ThreadState savedState;
+	enum mCoreThreadState savedState;
 	int interruptDepth;
 	bool frameWasOn;
 
 	GBALogHandler logHandler;
 	int logLevel;
-	ThreadCallback startCallback;
-	ThreadCallback cleanCallback;
-	ThreadCallback frameCallback;
+	GBAThreadCallback startCallback;
+	GBAThreadCallback cleanCallback;
+	GBAThreadCallback frameCallback;
 	ThreadStopCallback stopCallback;
 	void* userData;
 	void (*run)(struct GBAThread*);

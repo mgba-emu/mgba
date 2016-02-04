@@ -97,8 +97,8 @@ struct GBAThread;
 void mSDLInitBindingsGBA(struct mInputMap* inputMap);
 void mSDLHandleEventGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);
 
-struct mCore;
-void mSDLHandleEvent(struct mCore* core, struct mSDLPlayer* sdlContext, const union SDL_Event* event);
+struct mCoreThread;
+void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 void mSDLSuspendScreensaver(struct mSDLEvents*);

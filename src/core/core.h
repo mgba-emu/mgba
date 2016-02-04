@@ -19,12 +19,15 @@ typedef uint32_t color_t;
 #define BYTES_PER_PIXEL 4
 #endif
 
+struct mCoreSync;
 struct mCore {
 	void* cpu;
 	void* board;
 
 	bool (*init)(struct mCore*);
 	void (*deinit)(struct mCore*);
+
+	void (*setSync)(struct mCore*, struct mCoreSync*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);

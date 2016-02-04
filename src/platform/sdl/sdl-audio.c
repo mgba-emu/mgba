@@ -47,6 +47,7 @@ bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread* threadContext)
 		if (context->samples > threadContext->audioBuffers) {
 			threadContext->audioBuffers = context->samples * 2;
 		}
+		context->sync = &threadContext->sync;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		SDL_PauseAudioDevice(context->deviceId, 0);
@@ -116,8 +117,8 @@ static void _GBSDLAudioCallback(void* context, Uint8* data, int len) {
 		blip_read_samples(psg->right, ((short*) data) + 1, available, 1);
 	}
 
-	if (audioContext->thread) {
-		mCoreSyncConsumeAudio(&audioContext->thread->sync);
+	if (audioContext->sync) {
+		mCoreSyncConsumeAudio(audioContext->sync);
 	}
 	if (available < len) {
 		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, (len - available) * audioContext->obtainedSpec.channels * sizeof(short));

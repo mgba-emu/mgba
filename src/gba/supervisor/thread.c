@@ -77,7 +77,7 @@ static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
 }
 #endif
 
-static void _changeState(struct GBAThread* threadContext, enum ThreadState newState, bool broadcast) {
+static void _changeState(struct GBAThread* threadContext, enum mCoreThreadState newState, bool broadcast) {
 	MutexLock(&threadContext->stateMutex);
 	threadContext->state = newState;
 	if (broadcast) {
@@ -92,7 +92,7 @@ static void _waitOnInterrupt(struct GBAThread* threadContext) {
 	}
 }
 
-static void _waitUntilNotState(struct GBAThread* threadContext, enum ThreadState oldState) {
+static void _waitUntilNotState(struct GBAThread* threadContext, enum mCoreThreadState oldState) {
 	MutexLock(&threadContext->sync.videoFrameMutex);
 	bool videoFrameWait = threadContext->sync.videoFrameWait;
 	threadContext->sync.videoFrameWait = false;
