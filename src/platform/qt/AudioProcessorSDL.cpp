@@ -20,7 +20,7 @@ AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
 }
 
 AudioProcessorSDL::~AudioProcessorSDL() {
-	GBSDLDeinitAudio(&m_audio);
+	mSDLDeinitAudio(&m_audio);
 }
 
 bool AudioProcessorSDL::start() {
@@ -30,26 +30,26 @@ bool AudioProcessorSDL::start() {
 	}
 
 	if (m_audio.thread) {
-		GBSDLResumeAudio(&m_audio);
+		mSDLResumeAudio(&m_audio);
 		return true;
 	} else {
 		if (!m_audio.samples) {
 			m_audio.samples = input()->audioBuffers;
 		}
-		return GBSDLInitAudio(&m_audio, input());
+		return mSDLInitAudio(&m_audio, input());
 	}
 }
 
 void AudioProcessorSDL::pause() {
-	GBSDLPauseAudio(&m_audio);
+	mSDLPauseAudio(&m_audio);
 }
 
 void AudioProcessorSDL::setBufferSamples(int samples) {
 	AudioProcessor::setBufferSamples(samples);
 	m_audio.samples = samples;
 	if (m_audio.thread) {
-		GBSDLDeinitAudio(&m_audio);
-		GBSDLInitAudio(&m_audio, input());
+		mSDLDeinitAudio(&m_audio);
+		mSDLInitAudio(&m_audio, input());
 	}
 }
 
@@ -59,8 +59,8 @@ void AudioProcessorSDL::inputParametersChanged() {
 void AudioProcessorSDL::requestSampleRate(unsigned rate) {
 	m_audio.sampleRate = rate;
 	if (m_audio.thread) {
-		GBSDLDeinitAudio(&m_audio);
-		GBSDLInitAudio(&m_audio, input());
+		mSDLDeinitAudio(&m_audio);
+		mSDLInitAudio(&m_audio, input());
 	}
 }
 

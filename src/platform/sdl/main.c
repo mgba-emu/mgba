@@ -15,8 +15,11 @@
 
 #include "core/core.h"
 #include "core/config.h"
+#include "core/input.h"
 #include "core/thread.h"
+#include "gba/input.h"
 #ifdef M_CORE_GBA
+#include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/supervisor/thread.h"
 #include "gba/video.h"
@@ -52,9 +55,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 #ifdef M_CORE_GBA
 static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config);
 #endif
-#ifdef M_CORE_GB
-static int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args);
-#endif
+static int mSDLRun(struct mSDLRenderer* renderer, struct GBAArguments* args);
 
 
 int main(int argc, char** argv) {
@@ -119,9 +120,9 @@ int main(int argc, char** argv) {
 			if (!opts.height) {
 				opts.height = VIDEO_VERTICAL_PIXELS;
 			}
-			GBAVideoSoftwareRendererCreate(&renderer.d);
+			renderer.core = GBACoreCreate();
 #ifdef BUILD_GL
-			mSDLGLCreate(&renderer);
+			mSDLGLCreateGBA(&renderer);
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
 			mSDLGLES2Create(&renderer);
 #else
@@ -149,7 +150,7 @@ int main(int argc, char** argv) {
 		}
 #endif
 		else {
-			printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
+			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 			freeArguments(&args);
 			mCoreConfigFreeOpts(&opts);
 			mCoreConfigDeinit(&config);
@@ -197,17 +198,8 @@ int main(int argc, char** argv) {
 
 	int ret;
 
-	switch (platform) {
-	case PLATFORM_GBA:
-		ret = mSDLRunGBA(&renderer, &args, &opts, &config);
-		break;
-	case PLATFORM_GB:
-		ret = mSDLRunGB(&renderer, &args);
-		break;
-	default:
-		ret = 1;
-		break;
-	}
+	// TODO: Use opts and config
+	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&inputMap);
 
@@ -223,7 +215,6 @@ int main(int argc, char** argv) {
 #ifdef M_CORE_GBA
 int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config) {
 	struct GBAThread context = {
-		.renderer = &renderer->d.d,
 		.userData = renderer
 	};
 
@@ -240,7 +231,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 	if (opts->sampleRate) {
 		renderer->audio.sampleRate = opts->sampleRate;
 	}
-	if (!GBSDLInitAudio(&renderer->audio, &context)) {
+	if (!mSDLInitAudio(&renderer->audio, &context)) {
 		didFail = true;
 	}
 
@@ -250,9 +241,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 		mSDLSuspendScreensaver(&renderer->events);
 #endif
 		if (GBAThreadStart(&context)) {
-			renderer->audio.psg = &context.gba->audio.psg;
 			renderer->runloop(renderer, &context);
-			renderer->audio.psg = 0;
 			GBAThreadJoin(&context);
 		} else {
 			didFail = true;
@@ -276,8 +265,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 }
 #endif
 
-#ifdef M_CORE_GB
-int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
+int mSDLRun(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	struct mCoreThread thread = {
 		.core = renderer->core,
 		.sync = {
@@ -292,18 +280,18 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	renderer->audio.samples = 1024;
 	renderer->audio.sampleRate = 44100;
 
-	bool didFail = !GBSDLInitAudio(&renderer->audio, 0);
+	bool didFail = !mSDLInitAudio(&renderer->audio, 0);
 	if (!didFail) {
+		renderer->audio.core = renderer->core;
 		renderer->audio.sync = &thread.sync;
 
 		if (mCoreThreadStart(&thread)) {
-			renderer->audio.psg = 0;
-			GBSDLResumeAudio(&renderer->audio);
+			mSDLResumeAudio(&renderer->audio);
 			renderer->runloop(renderer, &thread);
 			mCoreThreadJoin(&thread);
 		} else {
 			didFail = true;
-			printf("Could not run game. Are you sure the file exists and is a Game Boy game?\n");
+			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 		}
 
 		if (mCoreThreadHasCrashed(&thread)) {
@@ -314,7 +302,6 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	renderer->core->unloadROM(renderer->core);
 	return didFail;
 }
-#endif
 
 static bool mSDLInit(struct mSDLRenderer* renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -327,7 +314,7 @@ static bool mSDLInit(struct mSDLRenderer* renderer) {
 
 static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	mSDLDeinitEvents(&renderer->events);
-	GBSDLDeinitAudio(&renderer->audio);
+	mSDLDeinitAudio(&renderer->audio);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_DestroyWindow(renderer->window);
 #endif

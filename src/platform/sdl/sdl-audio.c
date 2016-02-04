@@ -12,9 +12,9 @@
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 
-static void _GBSDLAudioCallback(void* context, Uint8* data, int len);
+static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 
-bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread* threadContext) {
+bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread* threadContext) {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
 		return false;
@@ -24,7 +24,7 @@ bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread* threadContext)
 	context->desiredSpec.format = AUDIO_S16SYS;
 	context->desiredSpec.channels = 2;
 	context->desiredSpec.samples = context->samples;
-	context->desiredSpec.callback = _GBSDLAudioCallback;
+	context->desiredSpec.callback = _mSDLAudioCallback;
 	context->desiredSpec.userdata = context;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -37,7 +37,7 @@ bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread* threadContext)
 		return false;
 	}
 	context->samples = context->obtainedSpec.samples;
-	context->psg = 0;
+	context->core = 0;
 	context->thread = 0;
 
 	if (threadContext) {
@@ -59,9 +59,8 @@ bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread* threadContext)
 	return true;
 }
 
-void GBSDLDeinitAudio(struct GBSDLAudio* context) {
+void mSDLDeinitAudio(struct mSDLAudio* context) {
 	UNUSED(context);
-	context->psg = 0;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_PauseAudioDevice(context->deviceId, 1);
 	SDL_CloseAudioDevice(context->deviceId);
@@ -72,7 +71,7 @@ void GBSDLDeinitAudio(struct GBSDLAudio* context) {
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-void GBSDLPauseAudio(struct GBSDLAudio* context) {
+void mSDLPauseAudio(struct mSDLAudio* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_PauseAudioDevice(context->deviceId, 1);
 #else
@@ -81,7 +80,7 @@ void GBSDLPauseAudio(struct GBSDLAudio* context) {
 #endif
 }
 
-void GBSDLResumeAudio(struct GBSDLAudio* context) {
+void mSDLResumeAudio(struct mSDLAudio* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_PauseAudioDevice(context->deviceId, 0);
 #else
@@ -90,31 +89,39 @@ void GBSDLResumeAudio(struct GBSDLAudio* context) {
 #endif
 }
 
-static void _GBSDLAudioCallback(void* context, Uint8* data, int len) {
-	struct GBSDLAudio* audioContext = context;
-	if (!context || (!audioContext->psg && !audioContext->thread)) {
+static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
+	struct mSDLAudio* audioContext = context;
+	if (!context || (!audioContext->core && !audioContext->thread)) {
 		memset(data, 0, len);
 		return;
 	}
-	struct GBAudio* psg = audioContext->psg;
-	if (!psg) {
-		psg = &audioContext->thread->gba->audio.psg;
+	blip_t* left = NULL;
+	blip_t* right = NULL;
+	int32_t clockRate;
+	if (audioContext->core) {
+		left = audioContext->core->getAudioChannel(audioContext->core, 0);
+		right = audioContext->core->getAudioChannel(audioContext->core, 1);
+		clockRate = audioContext->core->frequency(audioContext->core);
+	} else if (audioContext->thread) {
+		left = audioContext->thread->gba->audio.psg.left;
+		right = audioContext->thread->gba->audio.psg.right;
+		clockRate = GBA_ARM7TDMI_FREQUENCY;
 	}
 	double fauxClock = 1;
 	if (audioContext->thread) {
 		fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
 		mCoreSyncLockAudio(&audioContext->thread->sync);
 	}
-	blip_set_rates(psg->left, psg->clockRate, audioContext->obtainedSpec.freq * fauxClock);
-	blip_set_rates(psg->right, psg->clockRate, audioContext->obtainedSpec.freq * fauxClock);
+	blip_set_rates(left, clockRate, audioContext->obtainedSpec.freq * fauxClock);
+	blip_set_rates(right, clockRate, audioContext->obtainedSpec.freq * fauxClock);
 	len /= 2 * audioContext->obtainedSpec.channels;
-	int available = blip_samples_avail(psg->left);
+	int available = blip_samples_avail(left);
 	if (available > len) {
 		available = len;
 	}
-	blip_read_samples(psg->left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
+	blip_read_samples(left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
 	if (audioContext->obtainedSpec.channels == 2) {
-		blip_read_samples(psg->right, ((short*) data) + 1, available, 1);
+		blip_read_samples(right, ((short*) data) + 1, available, 1);
 	}
 
 	if (audioContext->sync) {

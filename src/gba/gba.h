@@ -8,7 +8,8 @@
 
 #include "util/common.h"
 
-#include "arm.h"
+#include "arm/arm.h"
+#include "core/log.h"
 #include "debugger/debugger.h"
 
 #include "gba/interface.h"
@@ -58,6 +59,8 @@ struct GBA;
 struct GBAThread;
 struct Patch;
 struct VFile;
+
+mLOG_DECLARE_CATEGORY(GBA);
 
 DECL_BITFIELD(GBATimerFlags, uint32_t);
 DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
@@ -171,6 +174,8 @@ void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t 
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+bool GBALoadROM2(struct GBA* gba, struct VFile* vf);
+bool GBALoadSave(struct GBA* gba, struct VFile* sav);
 void GBAYankROM(struct GBA* gba);
 void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);

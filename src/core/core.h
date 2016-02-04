@@ -23,6 +23,7 @@ typedef uint32_t color_t;
 #define BYTES_PER_PIXEL 4
 #endif
 
+struct blip_t;
 struct mCoreSync;
 struct mCore {
 	void* cpu;
@@ -39,6 +40,8 @@ struct mCore {
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
+
+	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
 
 	bool (*isROM)(struct VFile* vf);
 	bool (*loadROM)(struct mCore*, struct VFile* vf);

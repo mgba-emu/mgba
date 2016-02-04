@@ -44,11 +44,8 @@ struct mCore;
 struct mSDLRenderer {
 	struct mCore* core;
 	color_t* outputBuffer;
-#ifdef M_CORE_GBA
-	// TODO: Remove
-	struct GBAVideoSoftwareRenderer d;
-#endif
-	struct GBSDLAudio audio;
+
+	struct mSDLAudio audio;
 	struct mSDLEvents events;
 	struct mSDLPlayer player;
 
@@ -101,7 +98,7 @@ struct mSDLRenderer {
 void mSDLSWCreate(struct mSDLRenderer* renderer);
 
 #ifdef BUILD_GL
-void mSDLGLCreate(struct mSDLRenderer* renderer);
+void mSDLGLCreateGBA(struct mSDLRenderer* renderer);
 void mSDLGLCreateGB(struct mSDLRenderer* renderer);
 #endif
 

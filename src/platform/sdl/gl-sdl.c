@@ -8,13 +8,7 @@
 #include "gl-common.h"
 
 #include "core/core.h"
-#ifdef M_CORE_GBA
-#include "gba/supervisor/thread.h"
-#endif
-#ifdef M_CORE_GB
-#include "gb/core.h"
-#include "gb/gb.h"
-#endif
+#include "core/thread.h"
 #include "platform/opengl/gl.h"
 
 #define GB_GBA_CENTER ((VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS + VIDEO_HORIZONTAL_PIXELS * (VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS)) / 2)
@@ -27,28 +21,32 @@ static void _doViewport(int w, int h, struct VideoBackend* v) {
 }
 
 #ifdef M_CORE_GBA
+#include "gba/gba.h"
+
 static bool mSDLGLInitGBA(struct mSDLRenderer* renderer);
-static void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user);
-static void mSDLGLDeinitGBA(struct mSDLRenderer* renderer);
 #endif
 #ifdef M_CORE_GB
+#include "gb/gb.h"
+
 static bool mSDLGLInitGB(struct mSDLRenderer* renderer);
-static void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user);
-static void mSDLGLDeinitGB(struct mSDLRenderer* renderer);
 #endif
 
+static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLDeinit(struct mSDLRenderer* renderer);
+
 #ifdef M_CORE_GBA
-void mSDLGLCreate(struct mSDLRenderer* renderer) {
+void mSDLGLCreateGBA(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLInitGBA;
-	renderer->deinit = mSDLGLDeinitGBA;
-	renderer->runloop = mSDLGLRunloopGBA;
+	renderer->deinit = mSDLGLDeinit;
+	renderer->runloop = mSDLGLRunloop;
 }
 
 bool mSDLGLInitGBA(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+	renderer->outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, VIDEO_HORIZONTAL_PIXELS);
 
 	GBAGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
@@ -60,53 +58,13 @@ bool mSDLGLInitGBA(struct mSDLRenderer* renderer) {
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
-
-void mSDLGLRunloopGBA(struct mSDLRenderer* renderer, void* user) {
-	struct GBAThread* context = user;
-	SDL_Event event;
-	struct VideoBackend* v = &renderer->gl.d;
-	renderer->audio.psg = &context->gba->audio.psg;
-
-	while (context->state < THREAD_EXITING) {
-		while (SDL_PollEvent(&event)) {
-			mSDLHandleEventGBA(context, &renderer->player, &event);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			// Event handling can change the size of the screen
-			if (renderer->player.windowUpdated) {
-				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-				_doViewport(renderer->viewportWidth, renderer->viewportHeight, v);
-				renderer->player.windowUpdated = 0;
-			}
-#endif
-		}
-
-		if (mCoreSyncWaitFrameStart(&context->sync)) {
-			v->postFrame(v, renderer->d.outputBuffer);
-		}
-		mCoreSyncWaitFrameEnd(&context->sync);
-		v->drawFrame(v);
-		v->swap(v);
-	}
-
-	renderer->audio.psg = 0;
-}
-
-void mSDLGLDeinitGBA(struct mSDLRenderer* renderer) {
-	if (renderer->gl.d.deinit) {
-		renderer->gl.d.deinit(&renderer->gl.d);
-	}
-	free(renderer->d.outputBuffer);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_GL_DeleteContext(renderer->glCtx);
-#endif
-}
 #endif
 
 #ifdef M_CORE_GB
 void mSDLGLCreateGB(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLInitGB;
-	renderer->deinit = mSDLGLDeinitGB;
-	renderer->runloop = mSDLGLRunloopGB;
+	renderer->deinit = mSDLGLDeinit;
+	renderer->runloop = mSDLGLRunloop;
 }
 
 bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
@@ -127,12 +85,12 @@ bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
+#endif
 
-void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
+void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
-	renderer->audio.psg = &((struct GB*) renderer->core->board)->audio;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
@@ -154,10 +112,9 @@ void mSDLGLRunloopGB(struct mSDLRenderer* renderer, void* user) {
 		v->drawFrame(v);
 		v->swap(v);
 	}
-	renderer->audio.psg = 0;
 }
 
-void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {
+void mSDLGLDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
@@ -166,4 +123,3 @@ void mSDLGLDeinitGB(struct mSDLRenderer* renderer) {
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
 }
-#endif

@@ -22,6 +22,8 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
+mLOG_DEFINE_CATEGORY(GBA, "GBA");
+
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
@@ -443,7 +445,7 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
 	return true;
 }
 
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+bool GBALoadROM2(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
@@ -466,14 +468,26 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	}
 	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
-	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
-	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	return true;
 	// TODO: error check
+	return true;
+}
+
+bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+	if (!GBALoadROM2(gba, vf)) {
+		return false;
+	}
+	gba->activeFile = fname;
+	GBALoadSave(gba, sav);
+	return true;
+}
+
+bool GBALoadSave(struct GBA* gba, struct VFile* sav) {
+	GBASavedataInit(&gba->memory.savedata, sav);
+	return true;
 }
 
 void GBAYankROM(struct GBA* gba) {

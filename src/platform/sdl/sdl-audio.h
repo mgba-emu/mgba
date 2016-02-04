@@ -10,7 +10,7 @@
 
 #include <SDL.h>
 
-struct GBSDLAudio {
+struct mSDLAudio {
 	// Input
 	size_t samples;
 	unsigned sampleRate;
@@ -22,14 +22,14 @@ struct GBSDLAudio {
 	SDL_AudioDeviceID deviceId;
 #endif
 
-	struct GBAudio* psg;
+	struct mCore* core;
 	struct GBAThread* thread;
 	struct mCoreSync* sync;
 };
 
-bool GBSDLInitAudio(struct GBSDLAudio* context, struct GBAThread*);
-void GBSDLDeinitAudio(struct GBSDLAudio* context);
-void GBSDLPauseAudio(struct GBSDLAudio* context);
-void GBSDLResumeAudio(struct GBSDLAudio* context);
+bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread*);
+void mSDLDeinitAudio(struct mSDLAudio* context);
+void mSDLPauseAudio(struct mSDLAudio* context);
+void mSDLResumeAudio(struct mSDLAudio* context);
 
 #endif
