@@ -48,6 +48,8 @@ struct mCore {
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
 	bool (*selectBIOS)(struct mCore*, int biosID);
 
+	bool (*loadPatch)(struct mCore*, struct VFile* vf);
+
 	void (*reset)(struct mCore*);
 	void (*runFrame)(struct mCore*);
 	void (*runLoop)(struct mCore*);
@@ -66,5 +68,6 @@ struct mCore {
 
 bool mCoreLoadFile(struct mCore* core, const char* path);
 bool mCoreAutoloadSave(struct mCore* core);
+bool mCoreAutoloadPatch(struct mCore* core);
 
 #endif

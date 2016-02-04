@@ -80,6 +80,14 @@ static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBLoadSave(core->board, vf);
 }
 
+static bool _GBCoreLoadPatch(struct mCore* core, struct VFile* vf) {
+	// TODO
+	UNUSED(core);
+	UNUSED(vf);
+	mLOG(GB, STUB, "Patches are not yet supported");
+	return false;
+}
+
 static void _GBCoreUnloadROM(struct mCore* core) {
 	return GBUnloadROM(core->board);
 }
@@ -153,6 +161,7 @@ struct mCore* GBCoreCreate(void) {
 	core->isROM = GBIsROM;
 	core->loadROM = _GBCoreLoadROM;
 	core->loadSave = _GBCoreLoadSave;
+	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;
