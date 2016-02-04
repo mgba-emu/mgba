@@ -292,16 +292,27 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	renderer->audio.samples = 1024;
 	renderer->audio.sampleRate = 44100;
 
-	GBSDLInitAudio(&renderer->audio, 0);
-	renderer->audio.sync = &thread.sync;
+	bool didFail = !GBSDLInitAudio(&renderer->audio, 0);
+	if (!didFail) {
+		renderer->audio.sync = &thread.sync;
 
-	mCoreThreadStart(&thread);
-	renderer->audio.psg = 0;
-	GBSDLResumeAudio(&renderer->audio);
-	renderer->runloop(renderer, &thread);
-	mCoreThreadJoin(&thread);
+		if (mCoreThreadStart(&thread)) {
+			renderer->audio.psg = 0;
+			GBSDLResumeAudio(&renderer->audio);
+			renderer->runloop(renderer, &thread);
+			mCoreThreadJoin(&thread);
+		} else {
+			didFail = true;
+			printf("Could not run game. Are you sure the file exists and is a Game Boy game?\n");
+		}
+
+		if (mCoreThreadHasCrashed(&thread)) {
+			didFail = true;
+			printf("The game crashed!\n");
+		}
+	}
 	renderer->core->unloadROM(renderer->core);
-	return 0;
+	return didFail;
 }
 #endif
 
