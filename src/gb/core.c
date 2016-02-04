@@ -37,6 +37,10 @@ static bool _GBCoreInit(struct mCore* core) {
 	GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 
 	gb->keySource = &gbcore->keys;
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	mDirectorySetInit(&core->dirs);
+#endif
 	
 	return true;
 }
@@ -46,6 +50,9 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct LR35902Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	mDirectorySetDeinit(&core->dirs);
+#endif
 }
 
 static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
@@ -65,13 +72,12 @@ static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t st
 	gbcore->renderer.outputBufferStride = stride;
 }
 
-static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf, struct VFile* save, const char* fname) {
-	return GBLoadROM(core->board, vf, save, fname);
+static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
+	return GBLoadROM(core->board, vf);
 }
 
-static bool _GBCoreIsROM(struct mCore* core, struct VFile* vf) {
-	UNUSED(core);
-	return GBIsROM(vf);
+static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
+	return GBLoadSave(core->board, vf);
 }
 
 static void _GBCoreUnloadROM(struct mCore* core) {
@@ -144,8 +150,9 @@ struct mCore* GBCoreCreate(void) {
 	core->setSync = _GBCoreSetSync;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
-	core->isROM = _GBCoreIsROM;
+	core->isROM = GBIsROM;
 	core->loadROM = _GBCoreLoadROM;
+	core->loadSave = _GBCoreLoadSave;
 	core->unloadROM = _GBCoreUnloadROM;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;

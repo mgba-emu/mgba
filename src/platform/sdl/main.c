@@ -284,8 +284,10 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 			.audioWait = true
 		}
 	};
-	struct VFile* vf = VFileOpen(args->fname, O_RDONLY);
-	struct VFile* savVf = 0;
+	if (!mCoreLoadFile(renderer->core, args->fname)) {
+		return 1;
+	}
+	mCoreAutoloadSave(renderer->core);
 
 	renderer->audio.samples = 1024;
 	renderer->audio.sampleRate = 44100;
@@ -293,22 +295,11 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	GBSDLInitAudio(&renderer->audio, 0);
 	renderer->audio.sync = &thread.sync;
 
-	{
-		char savepath[PATH_MAX];
-		char dirname[PATH_MAX];
-		char basename[PATH_MAX];
-		separatePath(args->fname, dirname, basename, 0);
-		snprintf(savepath, sizeof(savepath), "%s" PATH_SEP "%s.sav", dirname, basename);
-		savVf = VFileOpen(savepath, O_RDWR | O_CREAT);
-	}
-
-	renderer->core->loadROM(renderer->core, vf, savVf, args->fname);
 	mCoreThreadStart(&thread);
 	renderer->audio.psg = 0;
 	GBSDLResumeAudio(&renderer->audio);
 	renderer->runloop(renderer, &thread);
 	renderer->core->unloadROM(renderer->core);
-	vf->close(vf);
 	return 0;
 }
 #endif

@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#include "core/directories.h"
+#endif
+
 struct VFile;
 struct mRTCSource;
 
@@ -24,6 +28,10 @@ struct mCore {
 	void* cpu;
 	void* board;
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct mDirectorySet dirs;
+#endif
+
 	bool (*init)(struct mCore*);
 	void (*deinit)(struct mCore*);
 
@@ -32,8 +40,9 @@ struct mCore {
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 
-	bool (*isROM)(struct mCore*, struct VFile* vf);
-	bool (*loadROM)(struct mCore*, struct VFile* vf, struct VFile* save, const char* fname);
+	bool (*isROM)(struct VFile* vf);
+	bool (*loadROM)(struct mCore*, struct VFile* vf);
+	bool (*loadSave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
@@ -54,5 +63,8 @@ struct mCore {
 
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
 };
+
+bool mCoreLoadFile(struct mCore* core, const char* path);
+bool mCoreAutoloadSave(struct mCore* core);
 
 #endif

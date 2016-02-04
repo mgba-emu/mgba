@@ -61,8 +61,6 @@ struct GB {
 	struct VFile* romVf;
 	struct VFile* sramVf;
 
-	const char* activeFile;
-
 	bool diPending;
 };
 
@@ -100,7 +98,8 @@ void GBHalt(struct LR35902Core* cpu);
 void GBStop(struct LR35902Core* cpu);
 
 struct VFile;
-bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* fname);
+bool GBLoadROM(struct GB* gb, struct VFile* vf);
+bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 

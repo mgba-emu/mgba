@@ -60,7 +60,7 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 	gb->diPending = false;
 }
 
-bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* fname) {
+bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	GBUnloadROM(gb);
 	gb->romVf = vf;
 	gb->pristineRomSize = vf->size(vf);
@@ -79,21 +79,25 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf, struct VFile* sav, const char* f
 	}
 	gb->yankedRomSize = 0;
 	gb->memory.rom = gb->pristineRom;
-	gb->activeFile = fname;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	gb->sramVf = sav;
-	if (sav) {
+
+	// TODO: error check
+	return true;
+}
+
+bool GBLoadSave(struct GB* gb, struct VFile* vf) {
+	gb->sramVf = vf;
+	if (vf) {
 		// TODO: Do this in bank-switching code
-		if (sav->size(sav) < 0x20000) {
-			sav->truncate(sav, 0x20000);
+		if (vf->size(vf) < 0x20000) {
+			vf->truncate(vf, 0x20000);
 		}
-		gb->memory.sram = sav->map(sav, 0x20000, MAP_WRITE);
+		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
 	} else {
 		gb->memory.sram = anonymousMemoryMap(0x20000);
 	}
-	return true;
-	// TODO: error check
+	return gb->memory.sram;
 }
 
 void GBUnloadROM(struct GB* gb) {

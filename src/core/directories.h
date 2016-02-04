@@ -12,6 +12,7 @@
 struct VDir;
 
 struct mDirectorySet {
+	char baseName[PATH_MAX];
 	struct VDir* base;
 	struct VDir* archive;
 	struct VDir* save;
@@ -27,6 +28,7 @@ void mDirectorySetAttachBase(struct mDirectorySet* dirs, struct VDir* base);
 void mDirectorySetDetachBase(struct mDirectorySet* dirs);
 
 struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
+struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, const char* suffix, int mode);
 
 struct GBAOptions;
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct GBAOptions* opts);

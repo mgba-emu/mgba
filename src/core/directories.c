@@ -99,7 +99,18 @@ struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path
 			file = 0;
 		}
 	}
+	if (file) {
+		char dirname[PATH_MAX];
+		separatePath(path, dirname, dirs->baseName, 0);
+		mDirectorySetAttachBase(dirs, VDirOpen(dirname));
+	}
 	return file;
+}
+
+struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, const char* suffix, int mode) {
+	char name[PATH_MAX];
+	snprintf(name, sizeof(name), "%s%s", dirs->baseName, suffix);
+	return dirs->base->openFile(dirs->base, name, mode);
 }
 
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct GBAOptions* opts) {
