@@ -299,6 +299,7 @@ int mSDLRunGB(struct mSDLRenderer* renderer, struct GBAArguments* args) {
 	renderer->audio.psg = 0;
 	GBSDLResumeAudio(&renderer->audio);
 	renderer->runloop(renderer, &thread);
+	mCoreThreadJoin(&thread);
 	renderer->core->unloadROM(renderer->core);
 	return 0;
 }
