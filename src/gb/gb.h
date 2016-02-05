@@ -61,7 +61,7 @@ struct GB {
 	struct VFile* romVf;
 	struct VFile* sramVf;
 
-	bool diPending;
+	int32_t eiPending;
 };
 
 struct GBCartridge {

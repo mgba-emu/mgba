@@ -57,7 +57,7 @@ static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) 
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
-	gb->diPending = false;
+	gb->eiPending = false;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -210,9 +210,13 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
 
-		if (gb->diPending) {
-			gb->memory.ime = false;
-			gb->diPending = false;
+		if (gb->eiPending) {
+			gb->eiPending -= cycles;
+			if (gb->eiPending <= 0) {
+				gb->memory.ime = true;
+				GBUpdateIRQs(gb);
+				gb->eiPending = 0;
+			}
 		}
 
 		testEvent = GBVideoProcessEvents(&gb->video, cycles);
@@ -246,14 +250,15 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 
 void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (enable) {
+	if (!enable) {
 		gb->memory.ime = enable;
+		gb->eiPending = 0;
 		GBUpdateIRQs(gb);
 	} else {
-		if (cpu->nextEvent > 4) {
-			cpu->nextEvent = 4;
+		if (cpu->nextEvent > cpu->cycles + 4) {
+			cpu->nextEvent = cpu->cycles + 4;
 		}
-		gb->diPending = true;
+		gb->eiPending = cpu->cycles + 4;
 	}
 }
 
