@@ -25,7 +25,7 @@ extern "C" {
 }
 
 struct GBAAudio;
-struct GBAOptions;
+struct mCoreOptions;
 struct GBAVideoSoftwareRenderer;
 struct Configuration;
 
@@ -70,7 +70,7 @@ public:
 	void setOverride(const GBACartridgeOverride& override);
 	void clearOverride() { m_threadContext.hasOverride = false; }
 
-	void setOptions(const GBAOptions*);
+	void setOptions(const mCoreOptions*);
 
 	int stateSlot() const { return m_stateSlot; }
 

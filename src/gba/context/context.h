@@ -11,6 +11,7 @@
 #include "core/directories.h"
 #include "core/config.h"
 #include "core/sync.h"
+#include "gba/gba.h"
 #include "gba/input.h"
 
 struct GBAContext {
@@ -26,7 +27,7 @@ struct GBAContext {
 #endif
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct mCoreConfig config;
-	struct GBAOptions opts;
+	struct mCoreOptions opts;
 	struct mInputMap inputMap;
 };
 

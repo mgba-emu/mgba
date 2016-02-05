@@ -172,7 +172,7 @@ Window::~Window() {
 #endif
 }
 
-void Window::argumentsPassed(GBAArguments* args) {
+void Window::argumentsPassed(mArguments* args) {
 	loadConfig();
 
 	if (args->patch) {
@@ -197,7 +197,7 @@ void Window::setConfig(ConfigController* config) {
 }
 
 void Window::loadConfig() {
-	const GBAOptions* opts = m_config->options();
+	const mCoreOptions* opts = m_config->options();
 	reloadConfig();
 
 	// TODO: Move these to ConfigController
@@ -237,7 +237,7 @@ void Window::loadConfig() {
 }
 
 void Window::reloadConfig() {
-	const GBAOptions* opts = m_config->options();
+	const mCoreOptions* opts = m_config->options();
 
 	m_log.setLevels(opts->logLevel);
 

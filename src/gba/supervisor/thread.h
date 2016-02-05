@@ -18,9 +18,9 @@
 #include "util/threading.h"
 
 struct GBAThread;
-struct GBAArguments;
+struct mArguments;
 struct GBACheatSet;
-struct GBAOptions;
+struct mCoreOptions;
 
 typedef void (*GBAThreadCallback)(struct GBAThread* threadContext);
 typedef bool (*ThreadStopCallback)(struct GBAThread* threadContext);
@@ -93,8 +93,8 @@ struct GBAThread {
 	struct GBACheatDevice* cheats;
 };
 
-void GBAMapOptionsToContext(const struct GBAOptions*, struct GBAThread*);
-void GBAMapArgumentsToContext(const struct GBAArguments*, struct GBAThread*);
+void GBAMapOptionsToContext(const struct mCoreOptions*, struct GBAThread*);
+void GBAMapArgumentsToContext(const struct mArguments*, struct GBAThread*);
 
 bool GBAThreadStart(struct GBAThread* threadContext);
 bool GBAThreadHasStarted(struct GBAThread* threadContext);

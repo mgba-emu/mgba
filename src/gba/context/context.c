@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba/context/context.h"
 
+#include "gba/video.h"
 #include "gba/context/overrides.h"
 
 #include "util/memory.h"
@@ -54,10 +55,9 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 		mCoreConfigDirectory(biosPath, PATH_MAX);
 		strncat(biosPath, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(biosPath));
 
-		struct GBAOptions opts = {
+		struct mCoreOptions opts = {
 			.bios = biosPath,
 			.useBios = true,
-			.idleOptimization = IDLE_LOOP_DETECT,
 			.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS
 		};
 		mCoreConfigLoad(&context->config);
@@ -161,7 +161,7 @@ bool GBAContextLoadBIOSFromVFile(struct GBAContext* context, struct VFile* bios)
 }
 
 bool GBAContextStart(struct GBAContext* context) {
-	struct GBAOptions opts = { .bios = 0 };
+	struct mCoreOptions opts = { .bios = 0 };
 
 	if (context->renderer) {
 		GBAVideoAssociateRenderer(&context->gba->video, context->renderer);
@@ -180,7 +180,6 @@ bool GBAContextStart(struct GBAContext* context) {
 		GBALoadBIOS(context->gba, context->bios);
 	}
 	context->gba->logLevel = opts.logLevel;
-	context->gba->idleOptimization = opts.idleOptimization;
 
 	GBAContextReset(context);
 

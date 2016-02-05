@@ -53,22 +53,15 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 // TODO: Clean up signatures
 #ifdef M_CORE_GBA
-static int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config);
+static int mSDLRunGBA(struct mSDLRenderer* renderer, struct mArguments* args, struct mCoreOptions* opts, struct mCoreConfig* config);
 #endif
-static int mSDLRun(struct mSDLRenderer* renderer, struct GBAArguments* args);
+static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
 
 int main(int argc, char** argv) {
 	struct mSDLRenderer renderer = {};
 
-	struct mInputMap inputMap;
-	mInputMapInit(&inputMap, &GBAInputInfo);
-
-	struct mCoreConfig config;
-	mCoreConfigInit(&config, PORT);
-	mCoreConfigLoad(&config);
-
-	struct GBAOptions opts = {
+	struct mCoreOptions opts = {
 		.width = 0,
 		.height = 0,
 		.useBios = true,
@@ -78,25 +71,21 @@ int main(int argc, char** argv) {
 		.audioSync = true,
 	};
 
-	struct GBAArguments args;
-	struct GraphicsOpts graphicsOpts;
+	struct mArguments args;
+	struct mGraphicsOpts graphicsOpts;
 
-	struct SubParser subparser;
+	struct mSubParser subparser;
 
 	initParserForGraphics(&subparser, &graphicsOpts);
-	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], subparser.usage);
-		freeArguments(&args);
 		mCoreConfigFreeOpts(&opts);
-		mCoreConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		freeArguments(&args);
 		mCoreConfigFreeOpts(&opts);
-		mCoreConfigDeinit(&config);
 		return 0;
 	}
 
@@ -108,7 +97,6 @@ int main(int argc, char** argv) {
 			printf("Could not open game. Are you sure the file exists?\n");
 			freeArguments(&args);
 			mCoreConfigFreeOpts(&opts);
-			mCoreConfigDeinit(&config);
 			return 1;
 		}
 #ifdef M_CORE_GBA
@@ -153,13 +141,15 @@ int main(int argc, char** argv) {
 			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 			freeArguments(&args);
 			mCoreConfigFreeOpts(&opts);
-			mCoreConfigDeinit(&config);
 			return 1;
 		}
 	}
 
-	mCoreConfigLoadDefaults(&config, &opts);
-	mCoreConfigMap(&config, &opts);
+	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
+	mCoreInitConfig(renderer.core, PORT);
+	applyArguments(&args, &subparser, &renderer.core->config);
+
+	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
@@ -180,7 +170,7 @@ int main(int argc, char** argv) {
 	if (!mSDLInit(&renderer)) {
 		freeArguments(&args);
 		mCoreConfigFreeOpts(&opts);
-		mCoreConfigDeinit(&config);
+		mCoreConfigDeinit(&renderer.core->config);
 		return 1;
 	}
 
@@ -188,32 +178,33 @@ int main(int argc, char** argv) {
 		// TODO: Check return code
 		renderer.core->init(renderer.core);
 	}
+	mCoreLoadConfig(renderer.core);
 
-	renderer.player.bindings = &inputMap;
-	mSDLInitBindingsGBA(&inputMap);
+	renderer.player.bindings = &renderer.core->inputMap;
+	mSDLInitBindingsGBA(&renderer.core->inputMap);
 	mSDLInitEvents(&renderer.events);
-	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&config));
+	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&renderer.core->config));
 	mSDLAttachPlayer(&renderer.events, &renderer.player);
-	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&config));
+	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
 	int ret;
 
 	// TODO: Use opts and config
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
-	mInputMapDeinit(&inputMap);
+	mInputMapDeinit(&renderer.core->inputMap);
 
 	mSDLDeinit(&renderer);
 
 	freeArguments(&args);
 	mCoreConfigFreeOpts(&opts);
-	mCoreConfigDeinit(&config);
+	mCoreConfigDeinit(&renderer.core->config);
 
 	return ret;
 }
 
 #ifdef M_CORE_GBA
-int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct GBAOptions* opts, struct mCoreConfig* config) {
+int mSDLRunGBA(struct mSDLRenderer* renderer, struct mArguments* args, struct mCoreOptions* opts, struct mCoreConfig* config) {
 	struct GBAThread context = {
 		.userData = renderer
 	};
@@ -265,7 +256,7 @@ int mSDLRunGBA(struct mSDLRenderer* renderer, struct GBAArguments* args, struct 
 }
 #endif
 
-int mSDLRun(struct mSDLRenderer* renderer, struct GBAArguments* args) {
+int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	struct mCoreThread thread = {
 		.core = renderer->core,
 		.sync = {

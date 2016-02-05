@@ -52,9 +52,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("displayDriver").toInt()));
 	}
 
-	GBAArguments args;
-	GraphicsOpts graphicsOpts;
-	SubParser subparser;
+	mArguments args;
+	mGraphicsOpts graphicsOpts;
+	mSubParser subparser;
 	initParserForGraphics(&subparser, &graphicsOpts);
 	bool loaded = m_configController.parseArguments(&args, argc, argv, &subparser);
 	if (loaded && args.showHelp) {

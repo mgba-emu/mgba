@@ -22,7 +22,7 @@ extern "C" {
 class QAction;
 class QMenu;
 
-struct GBAArguments;
+struct mArguments;
 struct GBACartridgeOverride;
 
 namespace QGBA {
@@ -64,8 +64,8 @@ public:
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
 
-	const GBAOptions* options() const { return &m_opts; }
-	bool parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser = nullptr);
+	const mCoreOptions* options() const { return &m_opts; }
+	bool parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser = nullptr);
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
@@ -97,7 +97,7 @@ private:
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
 	mCoreConfig m_config;
-	GBAOptions m_opts;
+	mCoreOptions m_opts;
 
 	QMap<QString, ConfigOption*> m_optionSet;
 	QSettings* m_settings;

@@ -245,7 +245,7 @@ void GameController::setOverride(const GBACartridgeOverride& override) {
 	m_threadContext.hasOverride = true;
 }
 
-void GameController::setOptions(const GBAOptions* opts) {
+void GameController::setOptions(const mCoreOptions* opts) {
 	setFrameskip(opts->frameskip);
 	setAudioSync(opts->audioSync);
 	setVideoSync(opts->videoSync);
@@ -257,7 +257,7 @@ void GameController::setOptions(const GBAOptions* opts) {
 
 	threadInterrupt();
 	mDirectorySetMapOptions(&m_threadContext.dirs, opts);
-	m_threadContext.idleOptimization = opts->idleOptimization;
+	// TODO: Put back idle optimization
 	threadContinue();
 }
 

@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "config.h"
 
+#include "gba/gba.h"
 #include "util/formatting.h"
 #include "util/string.h"
 #include "util/vfs.h"
@@ -299,7 +300,7 @@ void mCoreConfigSetOverrideFloatValue(struct mCoreConfig* config, const char* ke
 	ConfigurationSetFloatValue(&config->overridesTable, config->port, key, value);
 }
 
-void mCoreConfigMap(const struct mCoreConfig* config, struct GBAOptions* opts) {
+void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts) {
 	_lookupCharValue(config, "bios", &opts->bios);
 	_lookupCharValue(config, "shader", &opts->shader);
 	_lookupIntValue(config, "logLevel", &opts->logLevel);
@@ -351,21 +352,9 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct GBAOptions* opts) {
 	_lookupCharValue(config, "savestatePath", &opts->savestatePath);
 	_lookupCharValue(config, "screenshotPath", &opts->screenshotPath);
 	_lookupCharValue(config, "patchPath", &opts->patchPath);
-
-	char* idleOptimization = 0;
-	if (_lookupCharValue(config, "idleOptimization", &idleOptimization)) {
-		if (strcasecmp(idleOptimization, "ignore") == 0) {
-			opts->idleOptimization = IDLE_LOOP_IGNORE;
-		} else if (strcasecmp(idleOptimization, "remove") == 0) {
-			opts->idleOptimization = IDLE_LOOP_REMOVE;
-		} else if (strcasecmp(idleOptimization, "detect") == 0) {
-			opts->idleOptimization = IDLE_LOOP_DETECT;
-		}
-		free(idleOptimization);
-	}
 }
 
-void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct GBAOptions* opts) {
+void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts) {
 	ConfigurationSetValue(&config->defaultsTable, 0, "bios", opts->bios);
 	ConfigurationSetValue(&config->defaultsTable, 0, "shader", opts->shader);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "skipBios", opts->skipBios);
@@ -388,18 +377,6 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct GBAOptions
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
-
-	switch (opts->idleOptimization) {
-	case IDLE_LOOP_IGNORE:
-		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "ignore");
-		break;
-	case IDLE_LOOP_REMOVE:
-		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "remove");
-		break;
-	case IDLE_LOOP_DETECT:
-		ConfigurationSetValue(&config->defaultsTable, 0, "idleOptimization", "detect");
-		break;
-	}
 }
 
 // These two are basically placeholders in case the internal layout changes, e.g. for loading separate files
@@ -411,7 +388,7 @@ struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig* config) {
 	return &config->configTable;
 }
 
-void mCoreConfigFreeOpts(struct GBAOptions* opts) {
+void mCoreConfigFreeOpts(struct mCoreOptions* opts) {
 	free(opts->bios);
 	free(opts->shader);
 	free(opts->savegamePath);

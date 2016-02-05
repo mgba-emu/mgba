@@ -50,9 +50,10 @@ static const struct option _options[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static bool _parseGraphicsArg(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
+static bool _parseGraphicsArg(struct mSubParser* parser, int option, const char* arg);
+static void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config);
 
-bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int argc, char* const* argv, struct SubParser* subparser) {
+bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparser) {
 	int ch;
 	char options[64] =
 		"b:c:hl:p:s:v:"
@@ -63,7 +64,7 @@ bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int a
 		"g"
 #endif
 	;
-	memset(opts, 0, sizeof(*opts));
+	memset(args, 0, sizeof(*args));
 	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
@@ -74,51 +75,51 @@ bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int a
 		switch (ch) {
 		case '\0':
 			if (strcmp(opt->name, "version") == 0) {
-				opts->showVersion = true;
+				args->showVersion = true;
 			} else {
 				return false;
 			}
 			break;
 		case 'b':
-			mCoreConfigSetOverrideValue(config, "bios", optarg);
+			args->bios = strdup(optarg);
 			break;
 		case 'c':
-			opts->cheatsFile = strdup(optarg);
+			args->cheatsFile = strdup(optarg);
 			break;
 #ifdef USE_CLI_DEBUGGER
 		case 'd':
-			if (opts->debuggerType != DEBUGGER_NONE) {
+			if (args->debuggerType != DEBUGGER_NONE) {
 				return false;
 			}
-			opts->debuggerType = DEBUGGER_CLI;
+			args->debuggerType = DEBUGGER_CLI;
 			break;
 #endif
 #ifdef USE_GDB_STUB
 		case 'g':
-			if (opts->debuggerType != DEBUGGER_NONE) {
+			if (args->debuggerType != DEBUGGER_NONE) {
 				return false;
 			}
-			opts->debuggerType = DEBUGGER_GDB;
+			args->debuggerType = DEBUGGER_GDB;
 			break;
 #endif
 		case 'h':
-			opts->showHelp = true;
+			args->showHelp = true;
 			break;
 		case 'l':
-			mCoreConfigSetOverrideValue(config, "logLevel", optarg);
+			args->logLevel = atoi(optarg);
 			break;
 		case 'p':
-			opts->patch = strdup(optarg);
+			args->patch = strdup(optarg);
 			break;
 		case 's':
-			mCoreConfigSetOverrideValue(config, "frameskip", optarg);
+			args->frameskip = atoi(optarg);
 			break;
 		case 'v':
-			opts->movie = strdup(optarg);
+			args->movie = strdup(optarg);
 			break;
 		default:
 			if (subparser) {
-				if (!subparser->parse(subparser, config, ch, optarg)) {
+				if (!subparser->parse(subparser, ch, optarg)) {
 					return false;
 				}
 			}
@@ -128,39 +129,54 @@ bool parseArguments(struct GBAArguments* opts, struct mCoreConfig* config, int a
 	argc -= optind;
 	argv += optind;
 	if (argc != 1) {
-		return opts->showHelp || opts->showVersion;
+		return args->showHelp || args->showVersion;
 	}
-	opts->fname = strdup(argv[0]);
+	args->fname = strdup(argv[0]);
 	return true;
 }
 
-void freeArguments(struct GBAArguments* opts) {
-	free(opts->fname);
-	opts->fname = 0;
-
-	free(opts->patch);
-	opts->patch = 0;
-
-	free(opts->movie);
-	opts->movie = 0;
+void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
+	mCoreConfigSetOverrideIntValue(config, "frameskip", args->frameskip);
+	mCoreConfigSetOverrideIntValue(config, "logLevel", args->logLevel);
+	mCoreConfigSetOverrideValue(config, "bios", args->bios);
+	if (subparser) {
+		subparser->apply(subparser, config);
+	}
 }
 
-void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts) {
+void freeArguments(struct mArguments* args) {
+	free(args->fname);
+	args->fname = 0;
+
+	free(args->patch);
+	args->patch = 0;
+
+	free(args->movie);
+	args->movie = 0;
+
+	free(args->cheatsFile);
+	args->cheatsFile = 0;
+
+	free(args->bios);
+	args->bios = 0;
+}
+
+void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts) {
 	parser->usage = GRAPHICS_USAGE;
 	parser->opts = opts;
 	parser->parse = _parseGraphicsArg;
+	parser->apply = _applyGraphicsArgs;
 	parser->extraOptions = GRAPHICS_OPTIONS;
 	opts->multiplier = 0;
 	opts->fullscreen = false;
 }
 
-bool _parseGraphicsArg(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
+bool _parseGraphicsArg(struct mSubParser* parser, int option, const char* arg) {
 	UNUSED(arg);
-	struct GraphicsOpts* graphicsOpts = parser->opts;
+	struct mGraphicsOpts* graphicsOpts = parser->opts;
 	switch (option) {
 	case 'f':
 		graphicsOpts->fullscreen = true;
-		mCoreConfigSetOverrideIntValue(config, "fullscreen", 1);
 		return true;
 	case '1':
 	case '2':
@@ -172,15 +188,18 @@ bool _parseGraphicsArg(struct SubParser* parser, struct mCoreConfig* config, int
 			return false;
 		}
 		graphicsOpts->multiplier = option - '0';
-		mCoreConfigSetOverrideIntValue(config, "width", VIDEO_HORIZONTAL_PIXELS * graphicsOpts->multiplier);
-		mCoreConfigSetOverrideIntValue(config, "height", VIDEO_VERTICAL_PIXELS * graphicsOpts->multiplier);
 		return true;
 	default:
 		return false;
 	}
 }
 
-struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context) {
+void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
+	struct mGraphicsOpts* graphicsOpts = parser->opts;
+	mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
+}
+
+struct ARMDebugger* createDebugger(struct mArguments* opts, struct GBAThread* context) {
 #ifndef USE_CLI_DEBUGGER
 	UNUSED(context);
 #endif

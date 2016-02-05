@@ -11,9 +11,14 @@
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include "core/directories.h"
 #endif
+#ifndef MINIMAL_CORE
+#include "core/input.h"
+#endif
+#include "core/config.h"
 
 struct VFile;
 struct mRTCSource;
+struct mCoreConfig;
 
 #ifdef COLOR_16_BIT
 typedef uint16_t color_t;
@@ -32,11 +37,17 @@ struct mCore {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
 #endif
+#ifndef MINIMAL_CORE
+	struct mInputMap inputMap;
+#endif
+	struct mCoreConfig config;
+	struct mCoreOptions opts;
 
 	bool (*init)(struct mCore*);
 	void (*deinit)(struct mCore*);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
+	void (*loadConfig)(struct mCore*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
@@ -72,9 +83,9 @@ struct mCore {
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
 };
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool mCoreLoadFile(struct mCore* core, const char* path);
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 
@@ -83,5 +94,8 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags);
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
 #endif
+
+void mCoreInitConfig(struct mCore* core, const char* port);
+void mCoreLoadConfig(struct mCore* core);
 
 #endif

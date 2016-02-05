@@ -375,9 +375,9 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events) {
 #endif
 }
 
-static void _pauseAfterFrame(struct GBAThread* context) {
+static void _pauseAfterFrame(struct mCoreThread* context) {
 	context->frameCallback = 0;
-	GBAThreadPauseFromThread(context);
+	mCoreThreadPauseFromThread(context);
 }
 
 static void _mSDLHandleKeypressGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
@@ -415,11 +415,6 @@ static void _mSDLHandleKeypressGBA(struct GBAThread* context, struct mSDLPlayer*
 			GBAThreadContinue(context);
 			return;
 #endif
-		case SDLK_BACKSLASH:
-			GBAThreadPause(context);
-			context->frameCallback = _pauseAfterFrame;
-			GBAThreadUnpause(context);
-			return;
 		case SDLK_BACKQUOTE:
 			GBAThreadInterrupt(context);
 			GBARewind(context, 10);
@@ -442,11 +437,6 @@ static void _mSDLHandleKeypressGBA(struct GBAThread* context, struct mSDLPlayer*
 #endif
 				case SDLK_p:
 					GBAThreadTogglePause(context);
-					break;
-				case SDLK_n:
-					GBAThreadPause(context);
-					context->frameCallback = _pauseAfterFrame;
-					GBAThreadUnpause(context);
 					break;
 				case SDLK_r:
 					GBAThreadReset(context);
@@ -575,7 +565,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			return;
 #endif
 		case SDLK_BACKSLASH:
-			// TODO: Put back frame advance
+			mCoreThreadPause(context);
+			context->frameCallback = _pauseAfterFrame;
+			mCoreThreadUnpause(context);
 			return;
 		case SDLK_BACKQUOTE:
 			// TODO: Put back rewind
@@ -599,7 +591,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 					mCoreThreadTogglePause(context);
 					break;
 				case SDLK_n:
-					// TODO: Put back frame advance
+					mCoreThreadPause(context);
+					context->frameCallback = _pauseAfterFrame;
+					mCoreThreadUnpause(context);
 					break;
 				case SDLK_r:
 					mCoreThreadReset(context);

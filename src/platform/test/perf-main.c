@@ -38,7 +38,7 @@ struct PerfOpts {
 
 static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
-static bool _parsePerfOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
+static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg);
 static void _loadSavestate(struct GBAThread* context);
 
 static struct GBAThread* _thread;
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 	GBAVideoSoftwareRendererCreate(&renderer);
 
 	struct PerfOpts perfOpts = { false, false, 0, 0, 0 };
-	struct SubParser subparser = {
+	struct mSubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
 		.extraOptions = PERF_OPTIONS,
@@ -63,13 +63,11 @@ int main(int argc, char** argv) {
 	mCoreConfigInit(&config, "perf");
 	mCoreConfigLoad(&config);
 
-	struct GBAOptions opts = {
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
+	struct mCoreOptions opts = {}; // TODO: Put back idle loops
 	mCoreConfigLoadDefaults(&config, &opts);
 
-	struct GBAArguments args;
-	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	struct mArguments args;
+	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
@@ -84,6 +82,7 @@ int main(int argc, char** argv) {
 		mCoreConfigDeinit(&config);
 		return 0;
 	}
+	applyArguments(&args, NULL, &config);
 
 	renderer.outputBuffer = malloc(256 * 256 * 4);
 	renderer.outputBufferStride = 256;
@@ -212,8 +211,7 @@ static void _GBAPerfShutdown(int signal) {
 	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
-static bool _parsePerfOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
-	UNUSED(config);
+static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {

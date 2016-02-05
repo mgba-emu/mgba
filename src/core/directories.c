@@ -113,7 +113,7 @@ struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, const char* su
 	return dirs->base->openFile(dirs->base, name, mode);
 }
 
-void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct GBAOptions* opts) {
+void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptions* opts) {
 	if (opts->savegamePath) {
 		struct VDir* dir = VDirOpen(opts->savegamePath);
 		if (dir) {

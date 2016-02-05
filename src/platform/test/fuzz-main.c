@@ -36,7 +36,7 @@ struct FuzzOpts {
 
 static void _GBAFuzzRunloop(struct GBAContext* context, int frames);
 static void _GBAFuzzShutdown(int signal);
-static bool _parseFuzzOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg);
+static bool _parseFuzzOpts(struct mSubParser* parser, int option, const char* arg);
 
 static bool _dispatchExiting = false;
 
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 	signal(SIGINT, _GBAFuzzShutdown);
 
 	struct FuzzOpts fuzzOpts = { false, 0, 0, 0, 0 };
-	struct SubParser subparser = {
+	struct mSubParser subparser = {
 		.usage = FUZZ_USAGE,
 		.parse = _parseFuzzOpts,
 		.extraOptions = FUZZ_OPTIONS,
@@ -53,26 +53,23 @@ int main(int argc, char** argv) {
 
 	struct GBAContext context;
 	GBAContextInit(&context, "fuzz");
-	struct GBAOptions opts = {
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
+	struct mCoreOptions opts = {}; // TODO: Put back idle loops
 	mCoreConfigLoadDefaults(&context.config, &opts);
 	mCoreConfigFreeOpts(&opts);
 
-	struct GBAArguments args;
-	bool parsed = parseArguments(&args, &context.config, argc, argv, &subparser);
+	struct mArguments args;
+	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
-		freeArguments(&args);
 		GBAContextDeinit(&context);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		freeArguments(&args);
 		GBAContextDeinit(&context);
 		return 0;
 	}
+	applyArguments(&args, NULL, &context.config);
 
 	struct GBAVideoSoftwareRenderer renderer;
 	renderer.outputBuffer = 0;
@@ -161,8 +158,7 @@ static void _GBAFuzzShutdown(int signal) {
 	_dispatchExiting = true;
 }
 
-static bool _parseFuzzOpts(struct SubParser* parser, struct mCoreConfig* config, int option, const char* arg) {
-	UNUSED(config);
+static bool _parseFuzzOpts(struct mSubParser* parser, int option, const char* arg) {
 	struct FuzzOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {

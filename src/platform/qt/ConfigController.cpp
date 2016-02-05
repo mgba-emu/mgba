@@ -126,9 +126,10 @@ ConfigController::~ConfigController() {
 	mCoreConfigFreeOpts(&m_opts);
 }
 
-bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser) {
-	if (::parseArguments(args, &m_config, argc, argv, subparser)) {
+bool ConfigController::parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser) {
+	if (::parseArguments(args, argc, argv, subparser)) {
 		mCoreConfigFreeOpts(&m_opts);
+		applyArguments(args, subparser, &m_config);
 		mCoreConfigMap(&m_config, &m_opts);
 		return true;
 	}

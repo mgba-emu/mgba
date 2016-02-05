@@ -11,6 +11,7 @@
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
+#include "util/vfs.h"
 
 struct GBACore {
 	struct mCore d;
@@ -30,6 +31,8 @@ static bool _GBACoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gba;
+
+	memset(&core->opts, 0, sizeof(core->opts));
 
 	GBACreate(gba);
 	// TODO: Restore debugger and cheats
@@ -61,6 +64,29 @@ static void _GBACoreDeinit(struct mCore* core) {
 static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	struct GBA* gba = core->board;
 	gba->sync = sync;
+}
+
+static void _GBACoreLoadConfig(struct mCore* core) {
+	struct GBA* gba = core->board;
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios) {
+		bios = VFileOpen(core->opts.bios, O_RDONLY);
+	}
+	GBALoadBIOS(gba, bios);
+#endif
+
+	const char* idleOptimization = mCoreConfigGetValue(&core->config, "idleOptimization");
+	if (idleOptimization) {
+		if (strcasecmp(idleOptimization, "ignore") == 0) {
+			gba->idleOptimization = IDLE_LOOP_IGNORE;
+		} else if (strcasecmp(idleOptimization, "remove") == 0) {
+			gba->idleOptimization = IDLE_LOOP_REMOVE;
+		} else if (strcasecmp(idleOptimization, "detect") == 0) {
+			gba->idleOptimization = IDLE_LOOP_DETECT;
+		}
+	}
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -109,6 +135,9 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 
 static void _GBACoreReset(struct mCore* core) {
 	ARMReset(core->cpu);
+	if (core->opts.skipBios) {
+		GBASkipBIOS(core->board);
+	}
 }
 
 static void _GBACoreRunFrame(struct mCore* core) {
@@ -178,6 +207,7 @@ struct mCore* GBACoreCreate(void) {
 	core->init = _GBACoreInit;
 	core->deinit = _GBACoreDeinit;
 	core->setSync = _GBACoreSetSync;
+	core->loadConfig = _GBACoreLoadConfig;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
 	core->getAudioChannel = _GBACoreGetAudioChannel;

@@ -59,9 +59,8 @@
 	{
 		// TODO: Add a log handler
 		GBAContextInit(&context, 0);
-		struct GBAOptions opts = {
+		struct mCoreOptions opts = {
 			.useBios = true,
-			.idleOptimization = IDLE_LOOP_REMOVE
 		};
 		mCoreConfigLoadDefaults(&context.config, &opts);
 		GBAVideoSoftwareRendererCreate(&renderer);

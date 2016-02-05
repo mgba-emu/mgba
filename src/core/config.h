@@ -8,8 +8,6 @@
 
 #include "util/common.h"
 
-#include "gba/gba.h"
-
 #include "util/configuration.h"
 
 struct mCoreConfig {
@@ -19,7 +17,7 @@ struct mCoreConfig {
 	char* port;
 };
 
-struct GBAOptions {
+struct mCoreOptions {
 	char* bios;
 	bool skipBios;
 	bool useBios;
@@ -50,8 +48,6 @@ struct GBAOptions {
 
 	bool videoSync;
 	bool audioSync;
-
-	enum GBAIdleLoopOptimization idleOptimization;
 };
 
 void mCoreConfigInit(struct mCoreConfig*, const char* port);
@@ -87,12 +83,12 @@ void mCoreConfigSetOverrideIntValue(struct mCoreConfig*, const char* key, int va
 void mCoreConfigSetOverrideUIntValue(struct mCoreConfig*, const char* key, unsigned value);
 void mCoreConfigSetOverrideFloatValue(struct mCoreConfig*, const char* key, float value);
 
-void mCoreConfigMap(const struct mCoreConfig* config, struct GBAOptions* opts);
-void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct GBAOptions* opts);
+void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts);
+void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts);
 
 struct Configuration* mCoreConfigGetInput(struct mCoreConfig*);
 struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig*);
 
-void mCoreConfigFreeOpts(struct GBAOptions* opts);
+void mCoreConfigFreeOpts(struct mCoreOptions* opts);
 
 #endif

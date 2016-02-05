@@ -48,9 +48,8 @@ static struct GBACheatDevice cheats;
 static struct GBACheatSet cheatSet;
 
 static void _reloadSettings(void) {
-	struct GBAOptions opts = {
+	struct mCoreOptions opts = {
 		.useBios = true,
-		.idleOptimization = IDLE_LOOP_REMOVE
 	};
 
 	struct retro_variable var;
@@ -71,11 +70,11 @@ static void _reloadSettings(void) {
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Don't Remove") == 0) {
-			opts.idleOptimization = IDLE_LOOP_IGNORE;
+			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_IGNORE);
 		} else if (strcmp(var.value, "Remove Known") == 0) {
-			opts.idleOptimization = IDLE_LOOP_REMOVE;
+			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_REMOVE);
 		} else if (strcmp(var.value, "Detect and Remove") == 0) {
-			opts.idleOptimization = IDLE_LOOP_DETECT;
+			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_DETECT);
 		}
 	}
 

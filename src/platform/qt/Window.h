@@ -21,9 +21,7 @@ extern "C" {
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
-
-struct GBAOptions;
-struct GBAArguments;
+struct mArguments;
 
 namespace QGBA {
 
@@ -47,7 +45,7 @@ public:
 	GameController* controller() { return m_controller; }
 
 	void setConfig(ConfigController*);
-	void argumentsPassed(GBAArguments*);
+	void argumentsPassed(mArguments*);
 
 	void resizeFrame(int width, int height);
 

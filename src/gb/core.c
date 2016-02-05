@@ -60,6 +60,11 @@ static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	gb->sync = sync;
 }
 
+static void _GBCoreLoadConfig(struct mCore* core) {
+	UNUSED(core);
+	// TODO
+}
+
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = GB_VIDEO_HORIZONTAL_PIXELS;
@@ -184,6 +189,7 @@ struct mCore* GBCoreCreate(void) {
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
 	core->setSync = _GBCoreSetSync;
+	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->getAudioChannel = _GBCoreGetAudioChannel;

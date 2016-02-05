@@ -372,7 +372,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	return 0;
 }
 
-void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* threadContext) {
+void GBAMapOptionsToContext(const struct mCoreOptions* opts, struct GBAThread* threadContext) {
 	if (opts->useBios) {
 		threadContext->bios = VFileOpen(opts->bios, O_RDONLY);
 	} else {
@@ -400,12 +400,10 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 		threadContext->audioBuffers = opts->audioBuffers;
 	}
 
-	threadContext->idleOptimization = opts->idleOptimization;
-
 	mDirectorySetMapOptions(&threadContext->dirs, opts);
 }
 
-void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {
+void GBAMapArgumentsToContext(const struct mArguments* args, struct GBAThread* threadContext) {
 	GBAThreadLoadROM(threadContext, args->fname);
 	threadContext->fname = args->fname;
 	threadContext->patch = VFileOpen(args->patch, O_RDONLY);
