@@ -398,11 +398,11 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 		}
 
 		if (audio->p) {
-			audio->p->memory.io[REG_NR51] &= ~0x000F;
-			audio->p->memory.io[REG_NR51] |= audio->playingCh1;
-			audio->p->memory.io[REG_NR51] |= audio->playingCh2 << 1;
-			audio->p->memory.io[REG_NR51] |= audio->playingCh3 << 2;
-			audio->p->memory.io[REG_NR51] |= audio->playingCh4 << 3;
+			audio->p->memory.io[REG_NR52] &= ~0x000F;
+			audio->p->memory.io[REG_NR52] |= audio->playingCh1;
+			audio->p->memory.io[REG_NR52] |= audio->playingCh2 << 1;
+			audio->p->memory.io[REG_NR52] |= audio->playingCh3 << 2;
+			audio->p->memory.io[REG_NR52] |= audio->playingCh4 << 3;
 			audio->nextSample -= audio->eventDiff;
 			if (audio->nextSample <= 0) {
 				_sample(audio, audio->sampleInterval);
