@@ -117,10 +117,10 @@ int main(int argc, char** argv) {
 		else if (GBIsROM(vf)) {
 			platform = PLATFORM_GB;
 			if (!opts.width) {
-				opts.width = /*GB_*/VIDEO_HORIZONTAL_PIXELS;
+				opts.width = GB_VIDEO_HORIZONTAL_PIXELS;
 			}
 			if (!opts.height) {
-				opts.height = /*GB_*/VIDEO_VERTICAL_PIXELS;
+				opts.height = GB_VIDEO_VERTICAL_PIXELS;
 			}
 			renderer.core = GBCoreCreate();
 #ifdef BUILD_GL

@@ -51,8 +51,8 @@ struct GBAGLES2Uniform {
 };
 
 struct GBAGLES2Shader {
-	unsigned width;
-	unsigned height;
+	int width;
+	int height;
 	bool integerScaling;
 	bool filter;
 	bool blend;

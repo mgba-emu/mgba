@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gl.h"
 
-#include "gba/video.h"
+#include "util/math.h"
 
 static const GLint _glVertices[] = {
 	0, 0,
@@ -21,7 +21,7 @@ static const GLint _glTexCoords[] = {
 	0, 1
 };
 
-static void GBAGLContextInit(struct VideoBackend* v, WHandle handle) {
+static void GBAGLContextInit(struct VideoBackend* v, unsigned width, unsigned height, WHandle handle) {
 	UNUSED(handle);
 	struct GBAGLContext* context = (struct GBAGLContext*) v;
 	glGenTextures(1, &context->tex);
@@ -31,15 +31,17 @@ static void GBAGLContextInit(struct VideoBackend* v, WHandle handle) {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
+	v->width = width;
+	v->height = height;
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
 #endif
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 }
 
@@ -48,9 +50,9 @@ static void GBAGLContextDeinit(struct VideoBackend* v) {
 	glDeleteTextures(1, &context->tex);
 }
 
-static void GBAGLContextResized(struct VideoBackend* v, int w, int h) {
-	int drawW = w;
-	int drawH = h;
+static void GBAGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+	unsigned drawW = w;
+	unsigned drawH = h;
 	if (v->lockAspectRatio) {
 		if (w * 2 > h * 3) {
 			drawW = h * 3 / 2;
@@ -80,7 +82,7 @@ void GBAGLContextDrawFrame(struct VideoBackend* v) {
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, 0, 1);
+	glOrtho(0, v->width, v->height, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glBindTexture(GL_TEXTURE_2D, context->tex);
@@ -99,12 +101,12 @@ void GBAGLContextPostFrame(struct VideoBackend* v, const void* frame) {
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,  GL_RGBA, GL_UNSIGNED_BYTE, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, v->width, v->height,  GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
 }
 

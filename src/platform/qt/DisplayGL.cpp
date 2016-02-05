@@ -221,7 +221,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
+	m_backend->init(m_backend, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, reinterpret_cast<WHandle>(m_gl->winId()));
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_supportsShaders) {
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<GBAGLES2Context*>(m_backend)->initialShader);
