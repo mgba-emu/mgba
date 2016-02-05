@@ -162,6 +162,9 @@ bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	pthread_sigmask(SIG_BLOCK, &signals, 0);
 #endif
 
+	threadContext->sync.audioWait = threadContext->core->opts.audioSync;
+	threadContext->sync.videoFrameWait = threadContext->core->opts.videoSync;
+
 	MutexLock(&threadContext->stateMutex);
 	ThreadCreate(&threadContext->thread, _mCoreThreadRun, threadContext);
 	while (threadContext->state < THREAD_RUNNING) {

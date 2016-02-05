@@ -51,12 +51,7 @@ enum mPlatform {
 static bool mSDLInit(struct mSDLRenderer* renderer);
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
-// TODO: Clean up signatures
-#ifdef M_CORE_GBA
-static int mSDLRunGBA(struct mSDLRenderer* renderer, struct mArguments* args, struct mCoreOptions* opts, struct mCoreConfig* config);
-#endif
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
-
 
 int main(int argc, char** argv) {
 	struct mSDLRenderer renderer = {};
@@ -151,6 +146,7 @@ int main(int argc, char** argv) {
 
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 
+	// TODO: Load from config
 	renderer.viewportWidth = opts.width;
 	renderer.viewportHeight = opts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -159,6 +155,7 @@ int main(int argc, char** argv) {
 #else
 	renderer.fullscreen = opts.fullscreen;
 #endif
+
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
 		renderer.ratio = 1;
@@ -203,76 +200,25 @@ int main(int argc, char** argv) {
 	return ret;
 }
 
-#ifdef M_CORE_GBA
-int mSDLRunGBA(struct mSDLRenderer* renderer, struct mArguments* args, struct mCoreOptions* opts, struct mCoreConfig* config) {
-	struct GBAThread context = {
-		.userData = renderer
-	};
-
-	context.debugger = createDebugger(args, &context);
-
-	GBAMapOptionsToContext(opts, &context);
-	GBAMapArgumentsToContext(args, &context);
-	context.overrides = mCoreConfigGetOverrides(config);
-
-	bool didFail = false;
-
-	renderer->audio.samples = context.audioBuffers;
-	renderer->audio.sampleRate = 44100;
-	if (opts->sampleRate) {
-		renderer->audio.sampleRate = opts->sampleRate;
-	}
-	if (!mSDLInitAudio(&renderer->audio, &context)) {
-		didFail = true;
-	}
-
-	if (!didFail) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		mSDLSetScreensaverSuspendable(&renderer->events, opts->suspendScreensaver);
-		mSDLSuspendScreensaver(&renderer->events);
-#endif
-		if (GBAThreadStart(&context)) {
-			renderer->runloop(renderer, &context);
-			GBAThreadJoin(&context);
-		} else {
-			didFail = true;
-			printf("Could not run game. Are you sure the file exists and is a Game Boy Advance game?\n");
-		}
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-		mSDLResumeScreensaver(&renderer->events);
-		mSDLSetScreensaverSuspendable(&renderer->events, false);
-#endif
-
-		if (GBAThreadHasCrashed(&context)) {
-			didFail = true;
-			printf("The game crashed!\n");
-		}
-	}
-	free(context.debugger);
-	mDirectorySetDeinit(&context.dirs);
-
-	return didFail;
-}
-#endif
-
 int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	struct mCoreThread thread = {
-		.core = renderer->core,
-		.sync = {
-			.audioWait = true
-		}
+		.core = renderer->core
 	};
 	if (!mCoreLoadFile(renderer->core, args->fname)) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
+	// TODO: Create debugger
 
-	renderer->audio.samples = 1024;
+	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
 
 	bool didFail = !mSDLInitAudio(&renderer->audio, 0);
 	if (!didFail) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
+		mSDLSuspendScreensaver(&renderer->events);
+#endif
 		renderer->audio.core = renderer->core;
 		renderer->audio.sync = &thread.sync;
 
@@ -284,6 +230,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 			didFail = true;
 			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		mSDLResumeScreensaver(&renderer->events);
+		mSDLSetScreensaverSuspendable(&renderer->events, false);
+#endif
 
 		if (mCoreThreadHasCrashed(&thread)) {
 			didFail = true;

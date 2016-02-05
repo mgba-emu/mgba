@@ -8,6 +8,7 @@
 #include "core/core.h"
 #include "core/log.h"
 #include "gba/gba.h"
+#include "gba/context/overrides.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
@@ -134,9 +135,21 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 }
 
 static void _GBACoreReset(struct mCore* core) {
+	struct GBA* gba = (struct GBA*) core->board;
 	ARMReset(core->cpu);
 	if (core->opts.skipBios) {
 		GBASkipBIOS(core->board);
+	}
+
+	struct GBACartridgeOverride override;
+	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
+	memcpy(override.id, &cart->id, sizeof(override.id));
+	struct Configuration* overrides = 0;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	overrides = mCoreConfigGetOverrides(&core->config);
+#endif
+	if (GBAOverrideFind(overrides, &override)) {
+		GBAOverrideApply(gba, &override);
 	}
 }
 
