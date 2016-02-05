@@ -210,6 +210,15 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mCoreAutoloadSave(renderer->core);
 	// TODO: Create debugger
 
+	if (args->patch) {
+		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
+		if (patch) {
+			renderer->core->loadPatch(renderer->core, patch);
+		}
+	} else {
+		mCoreAutoloadPatch(renderer->core);
+	}
+
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
 

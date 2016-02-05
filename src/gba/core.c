@@ -12,6 +12,7 @@
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
+#include "util/patch.h"
 #include "util/vfs.h"
 
 struct GBACore {
@@ -123,11 +124,15 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBACoreLoadPatch(struct mCore* core, struct VFile* vf) {
-	// TODO
-	UNUSED(core);
-	UNUSED(vf);
-	mLOG(GBA, STUB, "Patches are not yet supported");
-	return false;
+	if (!vf) {
+		return false;
+	}
+	struct Patch patch;
+	if (!loadPatch(vf, &patch)) {
+		return false;
+	}
+	GBAApplyPatch(core->board, &patch);
+	return true;
 }
 
 static void _GBACoreUnloadROM(struct mCore* core) {
