@@ -34,7 +34,6 @@ static bool _GBCoreInit(struct mCore* core) {
 	LR35902Init(cpu);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
-	GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 
 	gb->keySource = &gbcore->keys;
 
@@ -110,6 +109,9 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 }
 
 static void _GBCoreReset(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct GB* gb = (struct GB*) core->board;
+	GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 	LR35902Reset(core->cpu);
 }
 
@@ -184,6 +186,7 @@ static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
+	memset(&core->opts, 0, sizeof(core->opts));
 	core->cpu = 0;
 	core->board = 0;
 	core->init = _GBCoreInit;

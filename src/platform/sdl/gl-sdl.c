@@ -20,72 +20,33 @@ static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->clear(v);
 }
 
-#ifdef M_CORE_GBA
-#include "gba/gba.h"
-
-static bool mSDLGLInitGBA(struct mSDLRenderer* renderer);
-#endif
-#ifdef M_CORE_GB
-#include "gb/gb.h"
-
-static bool mSDLGLInitGB(struct mSDLRenderer* renderer);
-#endif
-
+static bool mSDLGLInit(struct mSDLRenderer* renderer);
 static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLGLDeinit(struct mSDLRenderer* renderer);
 
-#ifdef M_CORE_GBA
-void mSDLGLCreateGBA(struct mSDLRenderer* renderer) {
-	renderer->init = mSDLGLInitGBA;
+void mSDLGLCreate(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLGLInit;
 	renderer->deinit = mSDLGLDeinit;
 	renderer->runloop = mSDLGLRunloop;
 }
 
-bool mSDLGLInitGBA(struct mSDLRenderer* renderer) {
+bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	mSDLGLCommonInit(renderer);
 
-	renderer->outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	memset(renderer->outputBuffer, 0, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, VIDEO_HORIZONTAL_PIXELS);
+	renderer->outputBuffer = malloc(renderer->width * renderer->height * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
 	GBAGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
-	renderer->gl.d.init(&renderer->gl.d, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0);
+	renderer->gl.d.init(&renderer->gl.d, renderer->width, renderer->height, 0);
 
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
-#endif
-
-#ifdef M_CORE_GB
-void mSDLGLCreateGB(struct mSDLRenderer* renderer) {
-	renderer->init = mSDLGLInitGB;
-	renderer->deinit = mSDLGLDeinit;
-	renderer->runloop = mSDLGLRunloop;
-}
-
-bool mSDLGLInitGB(struct mSDLRenderer* renderer) {
-	mSDLGLCommonInit(renderer);
-
-	// TODO: Pass texture size along
-	renderer->outputBuffer = malloc(GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	memset(renderer->outputBuffer, 0, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, GB_VIDEO_HORIZONTAL_PIXELS);
-
-	GBAGLContextCreate(&renderer->gl);
-	renderer->gl.d.user = renderer;
-	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
-	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = mSDLGLCommonSwap;
-	renderer->gl.d.init(&renderer->gl.d, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS, 0);
-
-	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
-	return true;
-}
-#endif
 
 void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;

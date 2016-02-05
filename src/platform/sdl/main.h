@@ -62,6 +62,8 @@ struct mSDLRenderer {
 	bool fullscreen;
 #endif
 
+	unsigned width;
+	unsigned height;
 	int viewportWidth;
 	int viewportHeight;
 	int ratio;
@@ -98,8 +100,7 @@ struct mSDLRenderer {
 void mSDLSWCreate(struct mSDLRenderer* renderer);
 
 #ifdef BUILD_GL
-void mSDLGLCreateGBA(struct mSDLRenderer* renderer);
-void mSDLGLCreateGB(struct mSDLRenderer* renderer);
+void mSDLGLCreate(struct mSDLRenderer* renderer);
 #endif
 
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)

@@ -34,15 +34,12 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->cpu = cpu;
 	core->board = gba;
 
-	memset(&core->opts, 0, sizeof(core->opts));
-
 	GBACreate(gba);
 	// TODO: Restore debugger and cheats
 	ARMSetComponents(cpu, &gba->d, 0, 0);
 	ARMInit(cpu);
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
-	GBAVideoAssociateRenderer(&gba->video, &gbacore->renderer.d);
 
 	gba->keySource = &gbacore->keys;
 
@@ -140,7 +137,9 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 }
 
 static void _GBACoreReset(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
+	GBAVideoAssociateRenderer(&gba->video, &gbacore->renderer.d);
 	ARMReset(core->cpu);
 	if (core->opts.skipBios) {
 		GBASkipBIOS(core->board);
@@ -220,6 +219,7 @@ static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
+	memset(&core->opts, 0, sizeof(core->opts));
 	core->cpu = 0;
 	core->board = 0;
 	core->init = _GBACoreInit;

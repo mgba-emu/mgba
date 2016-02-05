@@ -57,8 +57,6 @@ int main(int argc, char** argv) {
 	struct mSDLRenderer renderer = {};
 
 	struct mCoreOptions opts = {
-		.width = 0,
-		.height = 0,
 		.useBios = true,
 		.rewindEnable = true,
 		.audioBuffers = 512,
@@ -75,12 +73,12 @@ int main(int argc, char** argv) {
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], subparser.usage);
-		mCoreConfigFreeOpts(&opts);
+		freeArguments(&args);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		mCoreConfigFreeOpts(&opts);
+		freeArguments(&args);
 		return 0;
 	}
 
@@ -91,21 +89,16 @@ int main(int argc, char** argv) {
 		if (!vf) {
 			printf("Could not open game. Are you sure the file exists?\n");
 			freeArguments(&args);
-			mCoreConfigFreeOpts(&opts);
 			return 1;
 		}
 #ifdef M_CORE_GBA
 		else if (GBAIsROM(vf)) {
 			platform = PLATFORM_GBA;
-			if (!opts.width) {
-				opts.width = VIDEO_HORIZONTAL_PIXELS;
-			}
-			if (!opts.height) {
-				opts.height = VIDEO_VERTICAL_PIXELS;
-			}
+			renderer.width = VIDEO_HORIZONTAL_PIXELS;
+			renderer.height = VIDEO_VERTICAL_PIXELS;
 			renderer.core = GBACoreCreate();
 #ifdef BUILD_GL
-			mSDLGLCreateGBA(&renderer);
+			mSDLGLCreate(&renderer);
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
 			mSDLGLES2Create(&renderer);
 #else
@@ -116,15 +109,11 @@ int main(int argc, char** argv) {
 #ifdef M_CORE_GB
 		else if (GBIsROM(vf)) {
 			platform = PLATFORM_GB;
-			if (!opts.width) {
-				opts.width = GB_VIDEO_HORIZONTAL_PIXELS;
-			}
-			if (!opts.height) {
-				opts.height = GB_VIDEO_VERTICAL_PIXELS;
-			}
+			renderer.width = GB_VIDEO_HORIZONTAL_PIXELS;
+			renderer.height = GB_VIDEO_VERTICAL_PIXELS;
 			renderer.core = GBCoreCreate();
 #ifdef BUILD_GL
-			mSDLGLCreateGB(&renderer);
+			mSDLGLCreate(&renderer);
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
 			mSDLGLES2CreateGB(&renderer);
 #else
@@ -135,9 +124,20 @@ int main(int argc, char** argv) {
 		else {
 			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 			freeArguments(&args);
-			mCoreConfigFreeOpts(&opts);
 			return 1;
 		}
+	}
+
+	renderer.ratio = graphicsOpts.multiplier;
+	if (renderer.ratio == 0) {
+		renderer.ratio = 1;
+	}
+	opts.width = renderer.width * renderer.ratio;
+	opts.height = renderer.height * renderer.ratio;
+
+	if (!renderer.core->init(renderer.core)) {
+		freeArguments(&args);
+		return 1;
 	}
 
 	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
@@ -145,37 +145,25 @@ int main(int argc, char** argv) {
 	applyArguments(&args, &subparser, &renderer.core->config);
 
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
+	mCoreLoadConfig(renderer.core);
 
-	// TODO: Load from config
-	renderer.viewportWidth = opts.width;
-	renderer.viewportHeight = opts.height;
+	renderer.viewportWidth = renderer.core->opts.width;
+	renderer.viewportHeight = renderer.core->opts.height;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.player.fullscreen = opts.fullscreen;
+	renderer.player.fullscreen = renderer.core->opts.fullscreen;
 	renderer.player.windowUpdated = 0;
 #else
-	renderer.fullscreen = opts.fullscreen;
+	renderer.fullscreen = renderer.core->opts.fullscreen;
 #endif
 
-	renderer.ratio = graphicsOpts.multiplier;
-	if (renderer.ratio == 0) {
-		renderer.ratio = 1;
-	}
-
-	renderer.lockAspectRatio = opts.lockAspectRatio;
-	renderer.filter = opts.resampleVideo;
+	renderer.lockAspectRatio = renderer.core->opts.lockAspectRatio;
+	renderer.filter = renderer.core->opts.resampleVideo;
 
 	if (!mSDLInit(&renderer)) {
 		freeArguments(&args);
-		mCoreConfigFreeOpts(&opts);
-		mCoreConfigDeinit(&renderer.core->config);
+		renderer.core->deinit(renderer.core);
 		return 1;
 	}
-
-	if (renderer.core) {
-		// TODO: Check return code
-		renderer.core->init(renderer.core);
-	}
-	mCoreLoadConfig(renderer.core);
 
 	renderer.player.bindings = &renderer.core->inputMap;
 	mSDLInitBindingsGBA(&renderer.core->inputMap);
