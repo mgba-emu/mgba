@@ -136,12 +136,12 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-						GBUpdateIRQs(video->p);
 					}
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 				}
 				video->p->memory.io[REG_LY] = video->ly;
+				GBUpdateIRQs(video->p);
 				break;
 			case 2:
 				_cleanOAM(video, video->ly);
