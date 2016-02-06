@@ -9,7 +9,9 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
-const static uint8_t _registerMask[0x50] = {
+const static uint8_t _registerMask[] = {
+	[REG_SC]   = 0x7E, // TODO: GBC differences
+	[REG_IF]   = 0xE0,
 	[REG_TAC]  = 0xF8,
 	[REG_NR10] = 0x80,
 	[REG_NR11] = 0x3F,
@@ -33,6 +35,7 @@ const static uint8_t _registerMask[0x50] = {
 	[REG_NR51] = 0x00,
 	[REG_NR52] = 0x70,
 	[REG_STAT] = 0x80,
+	[REG_IE]   = 0xE0,
 };
 
 void GBIOInit(struct GB* gb) {
@@ -42,38 +45,39 @@ void GBIOInit(struct GB* gb) {
 void GBIOReset(struct GB* gb) {
 	memset(gb->memory.io, 0, sizeof(gb->memory.io));
 
-	GBIOWrite(gb, 0x05, 0);
-	GBIOWrite(gb, 0x06, 0);
-	GBIOWrite(gb, 0x07, 0);
-	GBIOWrite(gb, 0x10, 0x80);
-	GBIOWrite(gb, 0x11, 0xBF);
-	GBIOWrite(gb, 0x12, 0xF3);
-	GBIOWrite(gb, 0x12, 0xF3);
-	GBIOWrite(gb, 0x14, 0xBF);
-	GBIOWrite(gb, 0x16, 0x3F);
-	GBIOWrite(gb, 0x17, 0x00);
-	GBIOWrite(gb, 0x19, 0xBF);
-	GBIOWrite(gb, 0x1A, 0x7F);
-	GBIOWrite(gb, 0x1B, 0xFF);
-	GBIOWrite(gb, 0x1C, 0x9F);
-	GBIOWrite(gb, 0x1E, 0xBF);
-	GBIOWrite(gb, 0x20, 0xFF);
-	GBIOWrite(gb, 0x21, 0x00);
-	GBIOWrite(gb, 0x22, 0x00);
-	GBIOWrite(gb, 0x23, 0xBF);
-	GBIOWrite(gb, 0x24, 0x77);
-	GBIOWrite(gb, 0x25, 0xF3);
-	GBIOWrite(gb, 0x26, 0xF1);
-	GBIOWrite(gb, 0x40, 0x91);
-	GBIOWrite(gb, 0x42, 0x00);
-	GBIOWrite(gb, 0x43, 0x00);
-	GBIOWrite(gb, 0x45, 0x00);
-	GBIOWrite(gb, 0x47, 0xFC);
-	GBIOWrite(gb, 0x48, 0xFF);
-	GBIOWrite(gb, 0x49, 0xFF);
-	GBIOWrite(gb, 0x4A, 0x00);
-	GBIOWrite(gb, 0x4B, 0x00);
-	GBIOWrite(gb, 0xFF, 0x00);
+	GBIOWrite(gb, REG_TIMA, 0);
+	GBIOWrite(gb, REG_TMA, 0);
+	GBIOWrite(gb, REG_TAC, 0);
+	GBIOWrite(gb, REG_IF, 1);
+	GBIOWrite(gb, REG_NR52, 0xF1);
+	GBIOWrite(gb, REG_NR10, 0x80);
+	GBIOWrite(gb, REG_NR11, 0xBF);
+	GBIOWrite(gb, REG_NR12, 0xF3);
+	GBIOWrite(gb, REG_NR13, 0xF3);
+	GBIOWrite(gb, REG_NR14, 0xBF);
+	GBIOWrite(gb, REG_NR21, 0x3F);
+	GBIOWrite(gb, REG_NR22, 0x00);
+	GBIOWrite(gb, REG_NR24, 0xBF);
+	GBIOWrite(gb, REG_NR30, 0x7F);
+	GBIOWrite(gb, REG_NR31, 0xFF);
+	GBIOWrite(gb, REG_NR32, 0x9F);
+	GBIOWrite(gb, REG_NR34, 0xBF);
+	GBIOWrite(gb, REG_NR41, 0xFF);
+	GBIOWrite(gb, REG_NR42, 0x00);
+	GBIOWrite(gb, REG_NR43, 0x00);
+	GBIOWrite(gb, REG_NR44, 0xBF);
+	GBIOWrite(gb, REG_NR50, 0x77);
+	GBIOWrite(gb, REG_NR51, 0xF3);
+	GBIOWrite(gb, REG_LCDC, 0x91);
+	GBIOWrite(gb, REG_SCY, 0x00);
+	GBIOWrite(gb, REG_SCX, 0x00);
+	GBIOWrite(gb, REG_LYC, 0x00);
+	GBIOWrite(gb, REG_BGP, 0xFC);
+	GBIOWrite(gb, REG_OBP0, 0xFF);
+	GBIOWrite(gb, REG_OBP1, 0xFF);
+	GBIOWrite(gb, REG_WY, 0x00);
+	GBIOWrite(gb, REG_WX, 0x00);
+	GBIOWrite(gb, REG_IE, 0x00);
 }
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
@@ -311,10 +315,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	switch (address) {
 	case REG_JOYP:
 		return _readKeys(gb);
-	case REG_IF:
+	case REG_SB:
+	case REG_SC:
+		// TODO
 		break;
 	case REG_IE:
 		return gb->memory.ie;
+	case REG_IF:
 	case REG_NR10:
 	case REG_NR11:
 	case REG_NR12:
@@ -358,6 +365,11 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_SCX:
 	case REG_LY:
 	case REG_LYC:
+	case REG_BGP:
+	case REG_OBP0:
+	case REG_OBP1:
+	case REG_WY:
+	case REG_WX:
 		// Handled transparently by the registers
 		break;
 	default:
