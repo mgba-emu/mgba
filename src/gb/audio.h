@@ -78,23 +78,21 @@ struct GBAudioEnvelope {
 	bool direction;
 	int currentVolume;
 	int dead;
-	int32_t nextStep;
+	uint8_t nextStep;
 };
 
 struct GBAudioSquareControl {
 	uint16_t frequency;
+	uint8_t length;
 	bool stop;
 	int hi;
-	int32_t nextStep;
-	int32_t endTime;
 };
 
 struct GBAudioChannel1 {
 	uint8_t shift;
 	uint8_t time;
+	uint8_t sweepStep;
 	bool direction;
-
-	int32_t nextSweep;
 
 	struct GBAudioEnvelope envelope;
 	struct GBAudioSquareControl control;
@@ -113,11 +111,11 @@ struct GBAudioChannel3 {
 	bool enable;
 
 	unsigned length;
+	unsigned lengthShadow;
 	uint8_t volume;
 
 	uint16_t rate;
 	bool stop;
-	int32_t endTime;
 
 	uint32_t wavedata[8];
 	int8_t sample;
@@ -130,7 +128,7 @@ struct GBAudioChannel4 {
 	uint8_t frequency;
 	bool power;
 	bool stop;
-	int32_t endTime;
+	uint8_t length;
 
 	uint32_t lfsr;
 	int8_t sample;
@@ -168,6 +166,8 @@ struct GBAudio {
 
 	int32_t nextEvent;
 	int32_t eventDiff;
+	int32_t nextFrame;
+	int frame;
 	int32_t nextSample;
 
 	int32_t sampleInterval;
