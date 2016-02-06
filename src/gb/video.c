@@ -201,14 +201,16 @@ static void _cleanOAM(struct GBVideo* video, int y) {
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 	if (!GBRegisterLCDCIsEnable(video->p->memory.io[REG_LCDC]) && GBRegisterLCDCIsEnable(value)) {
-		// TODO: Does enabling the LCD start in vblank?
 		video->mode = 2;
-		video->nextMode = GB_VIDEO_MODE_2_LENGTH;
+		video->nextMode = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		video->nextEvent = video->nextMode;
-		video->eventDiff = 0;
-		video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
+		video->eventDiff = -video->p->cpu->cycles;
+		// TODO: Does this read as 0 for 4 T-cycles?
+		video->stat = GBRegisterSTATSetMode(video->stat, 2);
 		video->p->memory.io[REG_STAT] = video->stat;
-		video->eventDiff = 0;
+		video->ly = 0;
+		video->p->memory.io[REG_LY] = 0;
+
 		if (video->p->cpu->cycles + video->nextEvent < video->p->cpu->nextEvent) {
 			video->p->cpu->nextEvent = video->p->cpu->cycles + video->nextEvent;
 		}
