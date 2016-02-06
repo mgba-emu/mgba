@@ -121,6 +121,9 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		if (!audio->ch1.control.length) {
 			audio->ch1.control.length = 64;
 		}
+		if (audio->playingCh1 && audio->ch1.shift) {
+			audio->playingCh1 = _updateSweep(&audio->ch1);
+		}
 		audio->nextEvent = 0;
 	}
 }
@@ -360,7 +363,7 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 						}
 					}
 
-					if ((frame & 3) == 2) {
+					if (audio->ch1.sweepStep && (frame & 3) == 2) {
 						--audio->ch1.sweepStep;
 						if (audio->ch1.sweepStep == 0) {
 							audio->playingCh1 = _updateSweep(&audio->ch1);
