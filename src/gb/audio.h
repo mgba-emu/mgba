@@ -112,7 +112,7 @@ struct GBAudioChannel3 {
 	bool bank;
 	bool enable;
 
-	uint8_t length;
+	unsigned length;
 	uint8_t volume;
 
 	uint16_t rate;

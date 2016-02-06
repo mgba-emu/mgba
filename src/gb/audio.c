@@ -86,6 +86,7 @@ void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
 	_writeDuty(&audio->ch1.envelope, value);
+	audio->ch1.control.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch1.envelope.length)) >> 8;
 }
 
 void GBAudioWriteNR12(struct GBAudio* audio, uint8_t value) {
@@ -103,7 +104,6 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.control.frequency &= 0xFF;
 	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
 	audio->ch1.control.stop = GBAudioRegisterControlGetStop(value << 8);
-	audio->ch1.control.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch1.envelope.length)) >> 8;
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		if (audio->ch1.time) {
 			audio->ch1.nextSweep = audio->ch1.time * SWEEP_CYCLES;
@@ -132,6 +132,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR21(struct GBAudio* audio, uint8_t value) {
 	_writeDuty(&audio->ch2.envelope, value);
+	audio->ch2.control.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch1.envelope.length)) >> 8;
 }
 
 void GBAudioWriteNR22(struct GBAudio* audio, uint8_t value) {
@@ -149,7 +150,6 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	audio->ch2.control.frequency &= 0xFF;
 	audio->ch2.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
 	audio->ch2.control.stop = GBAudioRegisterControlGetStop(value << 8);
-	audio->ch2.control.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch2.envelope.length)) >> 8;
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = 1;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
@@ -180,6 +180,7 @@ void GBAudioWriteNR30(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR31(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.length = value;
+	audio->ch3.endTime = (DMG_LR35902_FREQUENCY * (256 - audio->ch3.length)) >> 8;
 }
 
 void GBAudioWriteNR32(struct GBAudio* audio, uint8_t value) {
@@ -195,7 +196,6 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.rate &= 0xFF;
 	audio->ch3.rate |= GBAudioRegisterControlGetRate(value << 8);
 	audio->ch3.stop = GBAudioRegisterControlGetStop(value << 8);
-	audio->ch3.endTime = (DMG_LR35902_FREQUENCY * (256 - audio->ch3.length)) >> 8;
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh3 = audio->ch3.enable;
 	}
@@ -210,6 +210,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR41(struct GBAudio* audio, uint8_t value) {
 	_writeDuty(&audio->ch4.envelope, value);
+	audio->ch4.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch4.envelope.length)) >> 8;
 }
 
 void GBAudioWriteNR42(struct GBAudio* audio, uint8_t value) {
@@ -226,7 +227,6 @@ void GBAudioWriteNR43(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	audio->ch4.stop = GBAudioRegisterNoiseControlGetStop(value);
-	audio->ch4.endTime = (DMG_LR35902_FREQUENCY * (64 - audio->ch4.envelope.length)) >> 8;
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = 1;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
@@ -271,6 +271,55 @@ void GBAudioWriteNR51(struct GBAudio* audio, uint8_t value) {
 
 void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 	audio->enable = GBAudioEnableGetEnable(value);
+	if (!audio->enable) {
+		audio->playingCh1 = 0;
+		audio->playingCh2 = 0;
+		audio->playingCh3 = 0;
+		audio->playingCh4 = 0;
+		GBAudioWriteNR10(audio, 0);
+		GBAudioWriteNR11(audio, 0);
+		GBAudioWriteNR12(audio, 0);
+		GBAudioWriteNR13(audio, 0);
+		GBAudioWriteNR14(audio, 0);
+		GBAudioWriteNR21(audio, 0);
+		GBAudioWriteNR22(audio, 0);
+		GBAudioWriteNR23(audio, 0);
+		GBAudioWriteNR24(audio, 0);
+		GBAudioWriteNR30(audio, 0);
+		GBAudioWriteNR31(audio, 0);
+		GBAudioWriteNR32(audio, 0);
+		GBAudioWriteNR33(audio, 0);
+		GBAudioWriteNR34(audio, 0);
+		GBAudioWriteNR41(audio, 0);
+		GBAudioWriteNR42(audio, 0);
+		GBAudioWriteNR43(audio, 0);
+		GBAudioWriteNR44(audio, 0);
+		GBAudioWriteNR50(audio, 0);
+		GBAudioWriteNR51(audio, 0);
+		if (audio->p) {
+			audio->p->memory.io[REG_NR10] = 0;
+			audio->p->memory.io[REG_NR11] = 0;
+			audio->p->memory.io[REG_NR12] = 0;
+			audio->p->memory.io[REG_NR13] = 0;
+			audio->p->memory.io[REG_NR14] = 0;
+			audio->p->memory.io[REG_NR21] = 0;
+			audio->p->memory.io[REG_NR22] = 0;
+			audio->p->memory.io[REG_NR23] = 0;
+			audio->p->memory.io[REG_NR24] = 0;
+			audio->p->memory.io[REG_NR30] = 0;
+			audio->p->memory.io[REG_NR31] = 0;
+			audio->p->memory.io[REG_NR32] = 0;
+			audio->p->memory.io[REG_NR33] = 0;
+			audio->p->memory.io[REG_NR34] = 0;
+			audio->p->memory.io[REG_NR41] = 0;
+			audio->p->memory.io[REG_NR42] = 0;
+			audio->p->memory.io[REG_NR43] = 0;
+			audio->p->memory.io[REG_NR44] = 0;
+			audio->p->memory.io[REG_NR50] = 0;
+			audio->p->memory.io[REG_NR51] = 0;
+			audio->p->memory.io[REG_NR52] &= ~0x000F;
+		}
+	}
 }
 
 int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
@@ -282,26 +331,28 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 	while (audio->nextEvent <= 0) {
 		audio->nextEvent = INT_MAX;
 		if (audio->enable) {
-			if (audio->playingCh1 && !audio->ch1.envelope.dead) {
+			if (audio->playingCh1) {
 				audio->nextCh1 -= audio->eventDiff;
-				if (audio->ch1.envelope.nextStep != INT_MAX) {
-					audio->ch1.envelope.nextStep -= audio->eventDiff;
-					if (audio->ch1.envelope.nextStep <= 0) {
-						int8_t sample = audio->ch1.control.hi * 0x10 - 0x8;
-						_updateEnvelope(&audio->ch1.envelope);
-						if (audio->ch1.envelope.nextStep < audio->nextEvent) {
-							audio->nextEvent = audio->ch1.envelope.nextStep;
+				if (!audio->ch1.envelope.dead) {
+					if (audio->ch1.envelope.nextStep != INT_MAX) {
+						audio->ch1.envelope.nextStep -= audio->eventDiff;
+						if (audio->ch1.envelope.nextStep <= 0) {
+							int8_t sample = audio->ch1.control.hi * 0x10 - 0x8;
+							_updateEnvelope(&audio->ch1.envelope);
+							if (audio->ch1.envelope.nextStep < audio->nextEvent) {
+								audio->nextEvent = audio->ch1.envelope.nextStep;
+							}
+							audio->ch1.sample = sample * audio->ch1.envelope.currentVolume;
 						}
-						audio->ch1.sample = sample * audio->ch1.envelope.currentVolume;
 					}
-				}
 
-				if (audio->ch1.nextSweep != INT_MAX) {
-					audio->ch1.nextSweep -= audio->eventDiff;
-					if (audio->ch1.nextSweep <= 0) {
-						audio->playingCh1 = _updateSweep(&audio->ch1);
-						if (audio->ch1.nextSweep < audio->nextEvent) {
-							audio->nextEvent = audio->ch1.nextSweep;
+					if (audio->ch1.nextSweep != INT_MAX) {
+						audio->ch1.nextSweep -= audio->eventDiff;
+						if (audio->ch1.nextSweep <= 0) {
+							audio->playingCh1 = _updateSweep(&audio->ch1);
+							if (audio->ch1.nextSweep < audio->nextEvent) {
+								audio->nextEvent = audio->ch1.nextSweep;
+							}
 						}
 					}
 				}
@@ -321,9 +372,9 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 				}
 			}
 
-			if (audio->playingCh2 && !audio->ch2.envelope.dead) {
+			if (audio->playingCh2) {
 				audio->nextCh2 -= audio->eventDiff;
-				if (audio->ch2.envelope.nextStep != INT_MAX) {
+				if (!audio->ch2.envelope.dead && audio->ch2.envelope.nextStep != INT_MAX) {
 					audio->ch2.envelope.nextStep -= audio->eventDiff;
 					if (audio->ch2.envelope.nextStep <= 0) {
 						int8_t sample = audio->ch2.control.hi * 0x10 - 0x8;
@@ -367,9 +418,9 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 				}
 			}
 
-			if (audio->playingCh4 && !audio->ch4.envelope.dead) {
+			if (audio->playingCh4) {
 				audio->nextCh4 -= audio->eventDiff;
-				if (audio->ch4.envelope.nextStep != INT_MAX) {
+				if (!audio->ch4.envelope.dead && audio->ch4.envelope.nextStep != INT_MAX) {
 					audio->ch4.envelope.nextStep -= audio->eventDiff;
 					if (audio->ch4.envelope.nextStep <= 0) {
 						int8_t sample = (audio->ch4.sample >> 31) * 0x8;

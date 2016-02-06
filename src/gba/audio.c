@@ -201,7 +201,7 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 	audio->enable = GBAudioEnableGetEnable(value);
-	audio->psg.enable = audio->enable;
+	GBAudioWriteNR52(&audio->psg, value);
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
