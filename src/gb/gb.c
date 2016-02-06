@@ -126,6 +126,24 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.sram = 0;
 }
 
+void GBApplyPatch(struct GB* gb, struct Patch* patch) {
+	size_t patchedSize = patch->outputSize(patch, gb->memory.romSize);
+	if (!patchedSize) {
+		return;
+	}
+	if (patchedSize > 0x400000) {
+		patchedSize = 0x400000;
+	}
+	gb->memory.rom = anonymousMemoryMap(0x400000);
+	if (!patch->applyPatch(patch, gb->pristineRom, gb->pristineRomSize, gb->memory.rom, patchedSize)) {
+		mappedMemoryFree(gb->memory.rom, patchedSize);
+		gb->memory.rom = gb->pristineRom;
+		return;
+	}
+	gb->memory.romSize = patchedSize;
+	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
+}
+
 void GBDestroy(struct GB* gb) {
 	GBUnloadROM(gb);
 

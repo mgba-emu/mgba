@@ -9,6 +9,7 @@
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
 #include "util/memory.h"
+#include "util/patch.h"
 
 struct GBCore {
 	struct mCore d;
@@ -97,11 +98,15 @@ static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBCoreLoadPatch(struct mCore* core, struct VFile* vf) {
-	// TODO
-	UNUSED(core);
-	UNUSED(vf);
-	mLOG(GB, STUB, "Patches are not yet supported");
-	return false;
+	if (!vf) {
+		return false;
+	}
+	struct Patch patch;
+	if (!loadPatch(vf, &patch)) {
+		return false;
+	}
+	GBApplyPatch(core->board, &patch);
+	return true;
 }
 
 static void _GBCoreUnloadROM(struct mCore* core) {
