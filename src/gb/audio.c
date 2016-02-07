@@ -11,6 +11,7 @@
 
 #define FRAME_CYCLES (DMG_LR35902_FREQUENCY >> 9)
 
+const uint32_t DMG_LR35902_FREQUENCY = 0x400000;
 static const int CLOCKS_PER_BLIP_FRAME = 0x1000;
 static const unsigned BLIP_BUFFER_SIZE = 0x4000;
 

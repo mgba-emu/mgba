@@ -14,7 +14,6 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
-const uint32_t DMG_LR35902_FREQUENCY = 0x400000;
 const uint32_t CGB_LR35902_FREQUENCY = 0x800000;
 const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
