@@ -104,7 +104,14 @@ void GBAudioWriteNR13(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.control.frequency &= 0xFF;
 	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
+	bool wasStop = audio->ch1.control.stop;
 	audio->ch1.control.stop = GBAudioRegisterControlGetStop(value << 8);
+	if (!wasStop && audio->ch1.control.stop && audio->ch1.control.length && !(audio->frame & 1)) {
+		--audio->ch1.control.length;
+		if (audio->ch1.control.length == 0) {
+			audio->playingCh1 = false;
+		}
+	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
@@ -118,13 +125,25 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 			audio->ch1.envelope.dead = 0;
 		}
 		audio->ch1.sweepStep = audio->ch1.time;
-		if (!audio->ch1.control.length) {
-			audio->ch1.control.length = 64;
-		}
 		if (audio->playingCh1 && audio->ch1.shift) {
 			audio->playingCh1 = _updateSweep(&audio->ch1);
 		}
-		audio->nextEvent = 0;
+		if (!audio->ch1.control.length) {
+			audio->ch1.control.length = 64;
+			if (audio->ch1.control.stop && !(audio->frame & 1)) {
+				--audio->ch1.control.length;
+			}
+		}
+		audio->nextEvent = audio->eventDiff;
+		if (audio->p) {
+			// TODO: Don't need
+			audio->p->cpu->nextEvent = audio->eventDiff;
+		}
+	}
+	// TODO: Don't need p
+	if (audio->p) {
+		audio->p->memory.io[REG_NR52] &= ~0x0001;
+		audio->p->memory.io[REG_NR52] |= audio->playingCh1;
 	}
 }
 
@@ -151,7 +170,14 @@ void GBAudioWriteNR23(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	audio->ch2.control.frequency &= 0xFF;
 	audio->ch2.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
+	bool wasStop = audio->ch2.control.stop;
 	audio->ch2.control.stop = GBAudioRegisterControlGetStop(value << 8);
+	if (!wasStop && audio->ch2.control.stop && audio->ch2.control.length && !(audio->frame & 1)) {
+		--audio->ch2.control.length;
+		if (audio->ch2.control.length == 0) {
+			audio->playingCh2 = false;
+		}
+	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = audio->ch2.envelope.initialVolume || audio->ch2.envelope.direction;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
@@ -166,8 +192,20 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		}
 		if (!audio->ch2.control.length) {
 			audio->ch2.control.length = 64;
+			if (audio->ch2.control.stop && !(audio->frame & 1)) {
+				--audio->ch2.control.length;
+			}
 		}
-		audio->nextEvent = 0;
+		audio->nextEvent = audio->eventDiff;
+		if (audio->p) {
+			// TODO: Don't need
+			audio->p->cpu->nextEvent = audio->eventDiff;
+		}
+	}
+	// TODO: Don't need p
+	if (audio->p) {
+		audio->p->memory.io[REG_NR52] &= ~0x0002;
+		audio->p->memory.io[REG_NR52] |= audio->playingCh2 << 1;
 	}
 }
 
@@ -199,11 +237,21 @@ void GBAudioWriteNR33(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.rate &= 0xFF;
 	audio->ch3.rate |= GBAudioRegisterControlGetRate(value << 8);
+	bool wasStop = audio->ch3.stop;
 	audio->ch3.stop = GBAudioRegisterControlGetStop(value << 8);
+	if (!wasStop && audio->ch3.stop && audio->ch3.lengthShadow && !(audio->frame & 1)) {
+		--audio->ch3.lengthShadow;
+		if (audio->ch3.lengthShadow == 0) {
+			audio->playingCh3 = false;
+		}
+	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh3 = audio->ch3.enable;
 		if (!audio->ch3.lengthShadow) {
 			audio->ch3.lengthShadow = 256;
+			if (audio->ch3.stop && !(audio->frame & 1)) {
+				--audio->ch3.lengthShadow;
+			}
 		}
 	}
 	if (audio->playingCh3) {
@@ -211,7 +259,16 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			audio->eventDiff = 0;
 		}
 		audio->nextCh3 = audio->eventDiff;
-		audio->nextEvent = 0;
+		audio->nextEvent = audio->eventDiff;
+		if (audio->p) {
+			// TODO: Don't need
+			audio->p->cpu->nextEvent = audio->eventDiff;
+		}
+	}
+	// TODO: Don't need p
+	if (audio->p) {
+		audio->p->memory.io[REG_NR52] &= ~0x0004;
+		audio->p->memory.io[REG_NR52] |= audio->playingCh3 << 2;
 	}
 }
 
@@ -237,7 +294,14 @@ void GBAudioWriteNR43(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
+	bool wasStop = audio->ch4.stop;
 	audio->ch4.stop = GBAudioRegisterNoiseControlGetStop(value);
+	if (!wasStop && audio->ch4.stop && audio->ch4.length && !(audio->frame & 1)) {
+		--audio->ch4.length;
+		if (audio->ch4.length == 0) {
+			audio->playingCh4 = false;
+		}
+	}
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
@@ -257,8 +321,20 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		}
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
+			if (audio->ch4.stop && !(audio->frame & 1)) {
+				--audio->ch4.length;
+			}
 		}
-		audio->nextEvent = 0;
+		audio->nextEvent = audio->eventDiff;
+		if (audio->p) {
+			// TODO: Don't need
+			audio->p->cpu->nextEvent = audio->eventDiff;
+		}
+	}
+	// TODO: Don't need p
+	if (audio->p) {
+		audio->p->memory.io[REG_NR52] &= ~0x0008;
+		audio->p->memory.io[REG_NR52] |= audio->playingCh4 << 3;
 	}
 }
 
@@ -328,6 +404,8 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 			audio->p->memory.io[REG_NR51] = 0;
 			audio->p->memory.io[REG_NR52] &= ~0x000F;
 		}
+	} else {
+		audio->frame = 7;
 	}
 }
 

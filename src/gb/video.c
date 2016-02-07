@@ -125,12 +125,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				GBUpdateIRQs(video->p);
 				break;
 			case 1:
+				// TODO: One M-cycle delay
 				++video->ly;
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
-				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
-					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-				}
-				if (video->ly >= GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->ly = 0;
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
@@ -140,7 +138,14 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 				}
-				video->p->memory.io[REG_LY] = video->ly;
+				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
+					video->p->memory.io[REG_LY] = 0;
+				} else {
+					video->p->memory.io[REG_LY] = video->ly;
+				}
+				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
+					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+				}
 				GBUpdateIRQs(video->p);
 				break;
 			case 2:
