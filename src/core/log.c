@@ -12,7 +12,10 @@
 static struct mLogger* _defaultLogger = NULL;
 
 struct mLogger* mLogGetContext(void) {
-	struct mLogger* logger = mCoreThreadLogger();
+	struct mLogger* logger = NULL;
+#ifndef DISABLE_LOGGING
+	logger = mCoreThreadLogger();
+#endif
 	if (logger) {
 		return logger;
 	}

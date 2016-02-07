@@ -367,6 +367,10 @@ struct mCoreThread* mCoreThreadGet(void) {
 	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
 	return TlsGetValue(_contextKey);
 }
+#else
+struct mCoreThread* mCoreThreadGet(void) {
+	return NULL;
+}
 #endif
 
 #else
