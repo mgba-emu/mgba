@@ -77,6 +77,12 @@ static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t st
 	gbcore->renderer.outputBufferStride = stride;
 }
 
+static void _GBCoreGetVideoBuffer(struct mCore* core, color_t** buffer, size_t* stride) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	*buffer = gbcore->renderer.outputBuffer;
+	*stride = gbcore->renderer.outputBufferStride;
+}
+
 static struct blip_t* _GBCoreGetAudioChannel(struct mCore* core, int ch) {
 	struct GB* gb = core->board;
 	switch (ch) {
@@ -200,6 +206,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
+	core->getVideoBuffer = _GBCoreGetVideoBuffer;
 	core->getAudioChannel = _GBCoreGetAudioChannel;
 	core->isROM = GBIsROM;
 	core->loadROM = _GBCoreLoadROM;

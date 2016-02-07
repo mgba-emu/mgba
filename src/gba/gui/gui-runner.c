@@ -342,7 +342,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
 				break;
 			case RUNNER_SCREENSHOT:
-				// TODO: Put back screenshots
+				mCoreTakeScreenshot(runner->core);
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);

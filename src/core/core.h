@@ -51,6 +51,7 @@ struct mCore {
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
+	void (*getVideoBuffer)(struct mCore*, color_t** buffer, size_t* stride);
 
 	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
 
@@ -93,6 +94,8 @@ bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
+
+void mCoreTakeScreenshot(struct mCore* core);
 #endif
 
 void mCoreInitConfig(struct mCore* core, const char* port);

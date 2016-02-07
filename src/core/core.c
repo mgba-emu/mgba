@@ -9,6 +9,8 @@
 #include "util/vfs.h"
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#include "util/png-io.h"
+
 bool mCoreLoadFile(struct mCore* core, const char* path) {
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
 	if (!rom) {
@@ -74,6 +76,32 @@ void mCoreDeleteState(struct mCore* core, int slot) {
 	char name[PATH_MAX];
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	core->dirs.state->deleteFile(core->dirs.state, name);
+}
+
+void mCoreTakeScreenshot(struct mCore* core) {
+#ifdef USE_PNG
+	size_t stride;
+	color_t* pixels = 0;
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	struct VFile* vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	bool success = false;
+	if (vf) {
+		core->getVideoBuffer(core, &pixels, &stride);
+		png_structp png = PNGWriteOpen(vf);
+		png_infop info = PNGWriteHeader(png, width, height);
+		success = PNGWritePixels(png, width, height, stride, pixels);
+		PNGWriteClose(png, info);
+		vf->close(vf);
+	}
+	if (success) {
+		mLOG(STATUS, INFO, "Screenshot saved");
+		return;
+	}
+#else
+	UNUSED(core);
+#endif
+	mLOG(STATUS, WARN, "Failed to take screenshot");
 }
 #endif
 

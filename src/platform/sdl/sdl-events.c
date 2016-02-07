@@ -561,7 +561,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			return;
 #ifdef USE_PNG
 		case SDLK_F12:
-			// TODO: Put back screenshots
+			mCoreTakeScreenshot(context->core);
 			return;
 #endif
 		case SDLK_BACKSLASH:
