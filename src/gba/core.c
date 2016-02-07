@@ -152,7 +152,9 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
-	GBAVideoAssociateRenderer(&gba->video, &gbacore->renderer.d);
+	if (gbacore->renderer.outputBuffer) {
+		GBAVideoAssociateRenderer(&gba->video, &gbacore->renderer.d);
+	}
 	ARMReset(core->cpu);
 	if (core->opts.skipBios) {
 		GBASkipBIOS(core->board);
