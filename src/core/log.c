@@ -9,12 +9,18 @@
 
 #define MAX_CATEGORY 64
 
+static struct mLogger* _defaultLogger = NULL;
+
 struct mLogger* mLogGetContext(void) {
 	struct mLogger* logger = mCoreThreadLogger();
 	if (logger) {
 		return logger;
 	}
-	return NULL; // TODO
+	return _defaultLogger;
+}
+
+void mLogSetDefaultLogger(struct mLogger* logger) {
+	_defaultLogger = logger;
 }
 
 static int _category = 0;

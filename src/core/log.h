@@ -23,6 +23,7 @@ struct mLogger {
 };
 
 struct mLogger* mLogGetContext(void);
+void mLogSetDefaultLogger(struct mLogger*);
 int mLogGenerateCategory(const char*);
 const char* mLogCategoryName(int);
 
