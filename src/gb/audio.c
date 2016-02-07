@@ -18,7 +18,7 @@ static void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value);
 static bool _writeSweep(struct GBAudioEnvelope* envelope, uint8_t value);
 static int32_t _updateSquareChannel(struct GBAudioSquareControl* envelope, int duty);
 static void _updateEnvelope(struct GBAudioEnvelope* envelope);
-static bool _updateSweep(struct GBAudioChannel1* ch);
+static bool _updateSweep(struct GBAudioChannel1* ch, bool initial);
 static int32_t _updateChannel1(struct GBAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAudioChannel2* ch);
 static int32_t _updateChannel3(struct GBAudioChannel3* ch);
@@ -50,10 +50,10 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->nextCh2 = 0;
 	audio->nextCh3 = 0;
 	audio->nextCh4 = 0;
-	audio->ch1 = (struct GBAudioChannel1) { };
-	audio->ch2 = (struct GBAudioChannel2) { };
+	audio->ch1 = (struct GBAudioChannel1) { .envelope = { .dead = 1 } };
+	audio->ch2 = (struct GBAudioChannel2) { .envelope = { .dead = 1 } };
 	audio->ch3 = (struct GBAudioChannel3) { .bank = 0 };
-	audio->ch4 = (struct GBAudioChannel4) { };
+	audio->ch4 = (struct GBAudioChannel4) { .envelope = { .dead = 1 } };
 	audio->eventDiff = 0;
 	audio->nextFrame = 0;
 	audio->frame = 0;
@@ -79,6 +79,7 @@ void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.shift = GBAudioRegisterSquareSweepGetShift(value);
 	audio->ch1.direction = GBAudioRegisterSquareSweepGetDirection(value);
 	audio->ch1.time = GBAudioRegisterSquareSweepGetTime(value);
+	audio->ch1.sweepStep = audio->ch1.time;
 }
 
 void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
@@ -121,12 +122,13 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
-		if (audio->ch1.envelope.currentVolume > 0) {
+		if (audio->ch1.envelope.currentVolume > 0 && audio->ch1.envelope.stepTime) {
 			audio->ch1.envelope.dead = 0;
 		}
 		audio->ch1.sweepStep = audio->ch1.time;
+		audio->ch1.sweepEnable = audio->ch1.sweepStep || audio->ch1.shift;
 		if (audio->playingCh1 && audio->ch1.shift) {
-			audio->playingCh1 = _updateSweep(&audio->ch1);
+			audio->playingCh1 = _updateSweep(&audio->ch1, true);
 		}
 		if (!audio->ch1.control.length) {
 			audio->ch1.control.length = 64;
@@ -181,7 +183,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = audio->ch2.envelope.initialVolume || audio->ch2.envelope.direction;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
-		if (audio->ch2.envelope.currentVolume > 0) {
+		if (audio->ch2.envelope.currentVolume > 0 && audio->ch2.envelope.stepTime) {
 			audio->ch2.envelope.dead = 0;
 		}
 		if (audio->nextEvent == INT_MAX) {
@@ -198,7 +200,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->nextEvent = audio->eventDiff;
 		if (audio->p) {
-			// TODO: Don't need
+			// TODO: Don't need p
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
@@ -261,7 +263,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		audio->nextCh3 = audio->eventDiff;
 		audio->nextEvent = audio->eventDiff;
 		if (audio->p) {
-			// TODO: Don't need
+			// TODO: Don't need p
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
@@ -305,7 +307,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
-		if (audio->ch4.envelope.currentVolume > 0) {
+		if (audio->ch4.envelope.currentVolume > 0 && audio->ch4.envelope.stepTime) {
 			audio->ch4.envelope.dead = 0;
 		}
 		if (audio->ch4.power) {
@@ -327,7 +329,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->nextEvent = audio->eventDiff;
 		if (audio->p) {
-			// TODO: Don't need
+			// TODO: Don't need p
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
@@ -440,12 +442,12 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 							audio->ch1.sample = sample * audio->ch1.envelope.currentVolume;
 						}
 					}
+				}
 
-					if (audio->ch1.sweepStep && (frame & 3) == 2) {
-						--audio->ch1.sweepStep;
-						if (audio->ch1.sweepStep == 0) {
-							audio->playingCh1 = _updateSweep(&audio->ch1);
-						}
+				if (audio->ch1.sweepEnable && (frame & 3) == 2) {
+					--audio->ch1.sweepStep;
+					if (audio->ch1.sweepStep == 0) {
+						audio->playingCh1 = _updateSweep(&audio->ch1, false);
 					}
 				}
 
@@ -639,7 +641,7 @@ bool _writeSweep(struct GBAudioEnvelope* envelope, uint8_t value) {
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
-	envelope->dead = 0;
+	envelope->dead = envelope->stepTime == 0;
 	envelope->nextStep = envelope->stepTime;
 	return envelope->initialVolume || envelope->direction;
 }
@@ -670,6 +672,7 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 	}
 	if (envelope->currentVolume >= 15) {
 		envelope->currentVolume = 15;
+		envelope->dead = 1;
 	} else if (envelope->currentVolume <= 0) {
 		envelope->currentVolume = 0;
 		envelope->dead = 1;
@@ -678,7 +681,7 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 	}
 }
 
-static bool _updateSweep(struct GBAudioChannel1* ch) {
+static bool _updateSweep(struct GBAudioChannel1* ch, bool initial) {
 	if (ch->direction) {
 		int frequency = ch->control.frequency;
 		frequency -= frequency >> ch->shift;
@@ -689,7 +692,12 @@ static bool _updateSweep(struct GBAudioChannel1* ch) {
 		int frequency = ch->control.frequency;
 		frequency += frequency >> ch->shift;
 		if (frequency < 2048) {
-			ch->control.frequency = frequency;
+			if (!initial && ch->shift) {
+				ch->control.frequency = frequency;
+				if (!_updateSweep(ch, true)) {
+					return false;
+				}
+			}
 		} else {
 			return false;
 		}
