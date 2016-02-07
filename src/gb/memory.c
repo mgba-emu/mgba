@@ -314,7 +314,8 @@ static void _switchBank(struct GBMemory* memory, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		return;
+		bankStart &= (GB_SIZE_CART_BANK0 - 1);
+		bank /= GB_SIZE_CART_BANK0;
 	}
 	memory->romBank = &memory->rom[bankStart];
 	memory->currentBank = bank;
