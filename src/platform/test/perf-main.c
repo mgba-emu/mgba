@@ -63,22 +63,19 @@ int main(int argc, char** argv) {
 	mCoreConfigInit(&config, "perf");
 	mCoreConfigLoad(&config);
 
-	struct mCoreOptions opts = {}; // TODO: Put back idle loops
-	mCoreConfigLoadDefaults(&config, &opts);
+	mCoreConfigSetDefaultIntValue(&config, "idleOptimization", IDLE_LOOP_REMOVE);
 
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
-		mCoreConfigFreeOpts(&opts);
 		mCoreConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		mCoreConfigFreeOpts(&opts);
 		mCoreConfigDeinit(&config);
 		return 0;
 	}
@@ -105,6 +102,7 @@ int main(int argc, char** argv) {
 	context.overrides = mCoreConfigGetOverrides(&config);
 	char gameCode[5] = { 0 };
 
+	struct mCoreOptions opts;
 	mCoreConfigMap(&config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;

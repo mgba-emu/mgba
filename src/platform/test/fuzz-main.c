@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
-#include "gba/context/context.h"
+#include "core/core.h"
+#include "gba/core.h"
 #include "gba/gba.h"
-#include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 
 #include "platform/commandline.h"
@@ -34,7 +34,7 @@ struct FuzzOpts {
 	char* ssOverlay;
 };
 
-static void _GBAFuzzRunloop(struct GBAContext* context, int frames);
+static void _GBAFuzzRunloop(struct mCore* core, int frames);
 static void _GBAFuzzShutdown(int signal);
 static bool _parseFuzzOpts(struct mSubParser* parser, int option, const char* arg);
 
@@ -51,50 +51,43 @@ int main(int argc, char** argv) {
 		.opts = &fuzzOpts
 	};
 
-	struct GBAContext context;
-	GBAContextInit(&context, "fuzz");
-	struct mCoreOptions opts = {}; // TODO: Put back idle loops
-	mCoreConfigLoadDefaults(&context.config, &opts);
-	mCoreConfigFreeOpts(&opts);
+	struct mCore* core = GBACoreCreate();
+	core->init(core);
+	mCoreInitConfig(core, "fuzz");
+	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
 
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
-		GBAContextDeinit(&context);
+		core->deinit(core);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		GBAContextDeinit(&context);
+		core->deinit(core);
 		return 0;
 	}
-	applyArguments(&args, NULL, &context.config);
+	applyArguments(&args, NULL, &core->config);
 
-	struct GBAVideoSoftwareRenderer renderer;
-	renderer.outputBuffer = 0;
+	void* outputBuffer;
+	outputBuffer = 0;
 
 	if (!fuzzOpts.noVideo) {
-		GBAVideoSoftwareRendererCreate(&renderer);
-		renderer.outputBuffer = malloc(256 * 256 * 4);
-		renderer.outputBufferStride = 256;
-		context.renderer = &renderer.d;
+		outputBuffer = malloc(256 * 256 * 4);
+		core->setVideoBuffer(core, outputBuffer, 256);
 	}
 
 #ifdef __AFL_HAVE_MANUAL_CONTROL
 	__AFL_INIT();
 #endif
 
-	struct VFile* rom = VFileOpen(args.fname, O_RDONLY);
-
-	context.gba->hardCrash = false;
-	GBAContextLoadROMFromVFile(&context, rom, 0);
+	((struct GBA*) core->board)->hardCrash = false;
+	mCoreLoadFile(core, args.fname);
 
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
 	size_t overlayOffset;
-
-	GBAContextStart(&context);
 
 	if (fuzzOpts.savestate) {
 		savestate = VFileOpen(fuzzOpts.savestate, O_RDONLY);
@@ -109,12 +102,12 @@ int main(int argc, char** argv) {
 	}
 	if (savestate) {
 		if (!savestateOverlay) {
-			GBALoadStateNamed(context.gba, savestate, 0);
+			core->loadState(core, savestate, 0);
 		} else {
 			struct GBASerializedState* state = GBAAllocateState();
 			savestate->read(savestate, state, sizeof(*state));
 			savestateOverlay->read(savestateOverlay, (uint8_t*) state + overlayOffset, sizeof(*state) - overlayOffset);
-			GBADeserialize(context.gba, state);
+			GBADeserialize(core->board, state);
 			GBADeallocateState(state);
 			savestateOverlay->close(savestateOverlay);
 			savestateOverlay = 0;
@@ -123,13 +116,12 @@ int main(int argc, char** argv) {
 		savestate = 0;
 	}
 
-	blip_set_rates(context.gba->audio.psg.left, GBA_ARM7TDMI_FREQUENCY, 0x8000);
-	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 0x8000);
+	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
-	_GBAFuzzRunloop(&context, fuzzOpts.frames);
+	_GBAFuzzRunloop(core, fuzzOpts.frames);
 
-	GBAContextStop(&context);
-	GBAContextUnloadROM(&context);
+	core->unloadROM(core);
 
 	if (savestate) {
 		savestate->close(savestate);
@@ -139,18 +131,18 @@ int main(int argc, char** argv) {
 	}
 
 	freeArguments(&args);
-	if (renderer.outputBuffer) {
-		free(renderer.outputBuffer);
+	if (outputBuffer) {
+		free(outputBuffer);
 	}
-	GBAContextDeinit(&context);
+	core->deinit(core);
 
 	return 0;
 }
 
-static void _GBAFuzzRunloop(struct GBAContext* context, int frames) {
+static void _GBAFuzzRunloop(struct mCore* core, int frames) {
 	do {
-		GBAContextFrame(context, 0);
-	} while (context->gba->video.frameCounter < frames && !_dispatchExiting);
+		core->runFrame(core);
+	} while (core->frameCounter(core) < frames && !_dispatchExiting);
 }
 
 static void _GBAFuzzShutdown(int signal) {
