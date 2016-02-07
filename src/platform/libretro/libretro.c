@@ -7,10 +7,11 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/cheats.h"
+#include "gba/core.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
-#include "gba/context/context.h"
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -26,15 +27,15 @@ static retro_input_state_t inputCallback;
 static retro_log_printf_t logCallback;
 static retro_set_rumble_state_t rumbleCallback;
 
-static void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args);
+static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 
-static struct GBAContext context;
-static struct GBAVideoSoftwareRenderer renderer;
+static struct mCore* core;
+static void* outputBuffer;
 static void* data;
 static size_t dataSize;
 static void* savedata;
@@ -46,6 +47,7 @@ static struct GBALuminanceSource lux;
 static int luxLevel;
 static struct GBACheatDevice cheats;
 static struct GBACheatSet cheatSet;
+static struct mLogger logger;
 
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
@@ -70,15 +72,16 @@ static void _reloadSettings(void) {
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Don't Remove") == 0) {
-			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_IGNORE);
+			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_IGNORE);
 		} else if (strcmp(var.value, "Remove Known") == 0) {
-			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_REMOVE);
+			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
 		} else if (strcmp(var.value, "Detect and Remove") == 0) {
-			mCoreConfigSetDefaultIntValue(&context.config, "idleOptimization", IDLE_LOOP_DETECT);
+			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_DETECT);
 		}
 	}
 
-	mCoreConfigLoadDefaults(&context.config, &opts);
+	mCoreConfigLoadDefaults(&core->config, &opts);
+	mCoreLoadConfig(core);
 }
 
 unsigned retro_api_version(void) {
@@ -191,18 +194,22 @@ void retro_init(void) {
 	} else {
 		logCallback = 0;
 	}
+	logger.log = GBARetroLog;
+	mLogSetDefaultLogger(&logger);
 
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = 0;
 
-	GBAContextInit(&context, 0);
-	context.gba->logHandler = GBARetroLog;
-	context.gba->stream = &stream;
+	core = GBACoreCreate();
+	mCoreInitConfig(core, NULL);
+	core->init(core);
+	struct GBA* gba = core->board;
+	gba->stream = &stream;
 	if (rumbleCallback) {
-		context.gba->rumble = &rumble;
+		gba->rumble = &rumble;
 	}
-	context.gba->luminanceSource = &lux;
+	gba->luminanceSource = &lux;
 
 	const char* sysDir = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
@@ -210,32 +217,30 @@ void retro_init(void) {
 		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
 		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
 		if (bios) {
-			GBAContextLoadBIOSFromVFile(&context, bios);
+			core->loadBIOS(core, bios, 0);
 		}
 	}
 
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer.outputBufferStride = 256;
-	context.renderer = &renderer.d;
+	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	core->setVideoBuffer(core, outputBuffer, 256);
 
-	GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
+	GBAAudioResizeBuffer(&gba->audio, SAMPLES);
 
-	blip_set_rates(context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 32768);
 
 	GBACheatDeviceCreate(&cheats);
-	GBACheatAttachDevice(context.gba, &cheats);
+	GBACheatAttachDevice(gba, &cheats);
 	GBACheatSetInit(&cheatSet, "libretro");
 	GBACheatAddSet(&cheats, &cheatSet);
 }
 
 void retro_deinit(void) {
-	GBAContextDeinit(&context);
+	core->deinit(core);
 	GBACheatRemoveSet(&cheats, &cheatSet);
 	GBACheatDeviceDestroy(&cheats);
 	GBACheatSetDeinit(&cheatSet);
-	free(renderer.outputBuffer);
+	free(outputBuffer);
 }
 
 void retro_run(void) {
@@ -250,7 +255,7 @@ void retro_run(void) {
 	bool updated = false;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-			context.gba->allowOpposingDirections = strcmp(var.value, "yes") == 0;
+			((struct GBA*) core->board)->allowOpposingDirections = strcmp(var.value, "yes") == 0;
 		}
 	}
 
@@ -265,6 +270,7 @@ void retro_run(void) {
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)) << 7;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
 	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
+	core->setKeys(core, keys);
 
 	static bool wasAdjustingLux = false;
 	if (wasAdjustingLux) {
@@ -286,12 +292,12 @@ void retro_run(void) {
 		}
 	}
 
-	GBAContextFrame(&context, keys);
-	videoCallback(renderer.outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * renderer.outputBufferStride);
+	core->runFrame(core);
+	videoCallback(outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * 256);
 }
 
 void retro_reset(void) {
-	ARMReset(context.cpu);
+	core->reset(core);
 
 	if (rumbleCallback) {
 		CircleBufferClear(&rumbleHistory);
@@ -322,13 +328,13 @@ bool retro_load_game(const struct retro_game_info* game) {
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
 
 	_reloadSettings();
-	GBAContextLoadROMFromVFile(&context, rom, save);
-	GBAContextStart(&context);
+	core->loadROM(core, rom);
+	core->loadSave(core, save);
+	core->reset(core);
 	return true;
 }
 
 void retro_unload_game(void) {
-	GBAContextStop(&context);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
 	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
@@ -344,7 +350,7 @@ bool retro_serialize(void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBASerialize(context.gba, data);
+	GBASerialize(core->board, data);
 	return true;
 }
 
@@ -352,7 +358,7 @@ bool retro_unserialize(const void* data, size_t size) {
 	if (size != retro_serialize_size()) {
 		return false;
 	}
-	GBADeserialize(context.gba, data);
+	GBADeserialize(core->board, data);
 	return true;
 }
 
@@ -411,7 +417,7 @@ size_t retro_get_memory_size(unsigned id) {
 	if (id != RETRO_MEMORY_SAVE_RAM) {
 		return 0;
 	}
-	switch (context.gba->memory.savedata.type) {
+	switch (((struct GBA*) core->board)->memory.savedata.type) {
 	case SAVEDATA_AUTODETECT:
 	case SAVEDATA_FLASH1M:
 		return SIZE_CART_FLASH1M;
@@ -427,8 +433,8 @@ size_t retro_get_memory_size(unsigned id) {
 	return 0;
 }
 
-void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* format, va_list args) {
-	UNUSED(thread);
+void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	UNUSED(logger);
 	if (!logCallback) {
 		return;
 	}
@@ -438,27 +444,23 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 
 	enum retro_log_level retroLevel = RETRO_LOG_INFO;
 	switch (level) {
-	case GBA_LOG_ALL:
-	case GBA_LOG_ERROR:
-	case GBA_LOG_FATAL:
+	case mLOG_ERROR:
+	case mLOG_FATAL:
 		retroLevel = RETRO_LOG_ERROR;
 		break;
-	case GBA_LOG_WARN:
+	case mLOG_WARN:
 		retroLevel = RETRO_LOG_WARN;
 		break;
-	case GBA_LOG_INFO:
-	case GBA_LOG_GAME_ERROR:
-	case GBA_LOG_SWI:
-	case GBA_LOG_STATUS:
+	case mLOG_INFO:
+	case mLOG_GAME_ERROR:
 		retroLevel = RETRO_LOG_INFO;
 		break;
-	case GBA_LOG_DEBUG:
-	case GBA_LOG_STUB:
-	case GBA_LOG_SIO:
+	case mLOG_DEBUG:
+	case mLOG_STUB:
 		retroLevel = RETRO_LOG_DEBUG;
 		break;
 	}
-	logCallback(retroLevel, "%s\n", message);
+	logCallback(retroLevel, "%s: %s\n", mLogCategoryName(category), message);
 }
 
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
