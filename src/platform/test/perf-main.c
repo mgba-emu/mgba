@@ -4,7 +4,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
-#include "gba/supervisor/thread.h"
+#include "core/thread.h"
+#include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
@@ -36,20 +37,17 @@ struct PerfOpts {
 	char* savestate;
 };
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
+static void _GBAPerfRunloop(struct mCoreThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
 static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg);
-static void _loadSavestate(struct GBAThread* context);
+static void _loadSavestate(struct mCoreThread* context);
 
-static struct GBAThread* _thread;
+static struct mCoreThread* _thread;
 static bool _dispatchExiting = false;
 static struct VFile* _savestate = 0;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAPerfShutdown);
-
-	struct GBAVideoSoftwareRenderer renderer;
-	GBAVideoSoftwareRendererCreate(&renderer);
 
 	struct PerfOpts perfOpts = { false, false, 0, 0, 0 };
 	struct mSubParser subparser = {
@@ -59,36 +57,29 @@ int main(int argc, char** argv) {
 		.opts = &perfOpts
 	};
 
-	struct mCoreConfig config;
-	mCoreConfigInit(&config, "perf");
-	mCoreConfigLoad(&config);
-
-	mCoreConfigSetDefaultIntValue(&config, "idleOptimization", IDLE_LOOP_REMOVE);
-
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
-		mCoreConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		mCoreConfigDeinit(&config);
 		return 0;
 	}
-	applyArguments(&args, NULL, &config);
 
-	renderer.outputBuffer = malloc(256 * 256 * 4);
-	renderer.outputBufferStride = 256;
+	void* outputBuffer = malloc(256 * 256 * 4);
 
-	struct GBAThread context = {};
+	struct mCore* core = GBACoreCreate();
+	struct mCoreThread context = {
+		.core = core
+	};
 	_thread = &context;
 
 	if (!perfOpts.noVideo) {
-		context.renderer = &renderer.d;
+		core->setVideoBuffer(core, outputBuffer, 256);
 	}
 	if (perfOpts.savestate) {
 		_savestate = VFileOpen(perfOpts.savestate, O_RDONLY);
@@ -98,30 +89,36 @@ int main(int argc, char** argv) {
 		context.startCallback = _loadSavestate;
 	}
 
-	context.debugger = createDebugger(&args, &context);
-	context.overrides = mCoreConfigGetOverrides(&config);
+	// TODO: Put back debugger
 	char gameCode[5] = { 0 };
 
+	core->init(core);
+	mCoreLoadFile(core, args.fname);
+	mCoreConfigInit(&core->config, "perf");
+	mCoreConfigLoad(&core->config);
+
+	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
 	struct mCoreOptions opts;
-	mCoreConfigMap(&config, &opts);
+	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
-	GBAMapArgumentsToContext(&args, &context);
-	GBAMapOptionsToContext(&opts, &context);
+	applyArguments(&args, NULL, &core->config);
+	mCoreConfigLoadDefaults(&core->config, &opts);
+	mCoreLoadConfig(core);
 
-	int didStart = GBAThreadStart(&context);
+	int didStart = mCoreThreadStart(&context);
 
 	if (!didStart) {
 		goto cleanup;
 	}
-	GBAThreadInterrupt(&context);
-	if (GBAThreadHasCrashed(&context)) {
-		GBAThreadJoin(&context);
+	mCoreThreadInterrupt(&context);
+	if (mCoreThreadHasCrashed(&context)) {
+		mCoreThreadJoin(&context);
 		goto cleanup;
 	}
 
-	GBAGetGameCode(context.gba, gameCode);
-	GBAThreadContinue(&context);
+	GBAGetGameCode(core->board, gameCode);
+	mCoreThreadContinue(&context);
 
 	int frames = perfOpts.frames;
 	if (!frames) {
@@ -135,7 +132,7 @@ int main(int argc, char** argv) {
 	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
 
-	GBAThreadJoin(&context);
+	mCoreThreadJoin(&context);
 
 	float scaledFrames = frames * 1000000.f;
 	if (perfOpts.csv) {
@@ -157,14 +154,13 @@ cleanup:
 	}
 	mCoreConfigFreeOpts(&opts);
 	freeArguments(&args);
-	mCoreConfigDeinit(&config);
-	free(context.debugger);
-	free(renderer.outputBuffer);
+	mCoreConfigDeinit(&core->config);
+	free(outputBuffer);
 
-	return !didStart || GBAThreadHasCrashed(&context);
+	return !didStart || mCoreThreadHasCrashed(&context);
 }
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {
+static void _GBAPerfRunloop(struct mCoreThread* context, int* frames, bool quiet) {
 	struct timeval lastEcho;
 	gettimeofday(&lastEcho, 0);
 	int duration = *frames;
@@ -194,7 +190,7 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 			_GBAPerfShutdown(0);
 		}
 		if (_dispatchExiting) {
-			GBAThreadEnd(context);
+			mCoreThreadEnd(context);
 		}
 	}
 	if (!quiet) {
@@ -233,8 +229,8 @@ static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* ar
 	}
 }
 
-static void _loadSavestate(struct GBAThread* context) {
-	GBALoadStateNamed(context->gba, _savestate, 0);
+static void _loadSavestate(struct mCoreThread* context) {
+	context->core->loadState(context->core, _savestate, 0);
 	_savestate->close(_savestate);
 	_savestate = 0;
 }
