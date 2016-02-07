@@ -9,7 +9,7 @@
 #include "util/gui.h"
 #include "util/gui/menu.h"
 
-void GBAGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct GUIInputKeys* keys) {
+void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct GUIInputKeys* keys) {
 	struct GUIMenu menu = {
 		.title = "Remap keys",
 		.index = 0,

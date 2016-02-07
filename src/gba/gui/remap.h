@@ -18,6 +18,6 @@ struct GUIInputKeys {
 struct GUIParams;
 struct mInputMap;
 
-void GBAGUIRemapKeys(struct GUIParams*, struct mInputMap*, const struct GUIInputKeys*);
+void mGUIRemapKeys(struct GUIParams*, struct mInputMap*, const struct GUIInputKeys*);
 
 #endif

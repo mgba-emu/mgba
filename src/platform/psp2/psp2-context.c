@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "psp2-context.h"
 
+#include "core/core.h"
+
 #include "gba/gba.h"
 #include "gba/audio.h"
-#include "gba/context/context.h"
 #include "gba/gui/gui-runner.h"
 #include "gba/input.h"
 
@@ -36,7 +37,7 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode;
 
-static struct GBAVideoSoftwareRenderer renderer;
+static void* outputBuffer;
 static vita2d_texture* tex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
@@ -111,72 +112,70 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 	return rotation->state.gyro.z * 0x10000000;
 }
 
-uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner) {
+uint16_t GBAPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 
-	int activeKeys = mInputMapKeyBits(&runner->context.inputMap, PSP2_INPUT, pad.buttons, 0);
-	enum GBAKey angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 0, pad.ly);
+	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
+	enum GBAKey angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 1, pad.lx);
+	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 1, pad.lx);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 2, pad.ry);
+	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 2, pad.ry);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
-	angles = mInputMapAxis(&runner->context.inputMap, PSP2_INPUT, 3, pad.rx);
+	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 3, pad.rx);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
 	return activeKeys;
 }
 
-void GBAPSP2Setup(struct GBAGUIRunner* runner) {
+void GBAPSP2Setup(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_START, GBA_KEY_START);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_UP, GBA_KEY_UP);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	_mapVitaKey(&runner->context.inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_UP, GBA_KEY_UP);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
+	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
-	mInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 0, &desc);
+	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
 	desc = (struct mInputAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 192, 64 };
-	mInputBindAxis(&runner->context.inputMap, PSP2_INPUT, 1, &desc);
+	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 1, &desc);
 
 	tex = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	screenshot = vita2d_create_empty_texture_format(256, 256, SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = vita2d_texture_get_datap(tex);
-	renderer.outputBufferStride = 256;
-	runner->context.renderer = &renderer.d;
+	outputBuffer = vita2d_texture_get_datap(tex);
+	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	rotation.d.sample = _sampleRotation;
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
-	runner->context.gba->rotationSource = &rotation.d;
+	((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 }
 
-void GBAPSP2LoadROM(struct GBAGUIRunner* runner) {
+void GBAPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
 	double ratio = GBAAudioCalculateRatio(1, 60, 1);
-	blip_set_rates(runner->context.gba->audio.psg.left, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 
-	if (runner->context.gba->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
 		sceMotionStartSampling();
 	}
 
@@ -187,15 +186,15 @@ void GBAPSP2LoadROM(struct GBAGUIRunner* runner) {
 	ThreadCreate(&audioThread, _audioThread, &audioContext);
 }
 
-void GBAPSP2PrepareForFrame(struct GBAGUIRunner* runner) {
+void GBAPSP2PrepareForFrame(struct mGUIRunner* runner) {
 	MutexLock(&audioContext.mutex);
-	while (blip_samples_avail(runner->context.gba->audio.psg.left) >= PSP2_SAMPLES) {
+	while (blip_samples_avail(runner->core->getAudioChannel(runner->core, 0)) >= PSP2_SAMPLES) {
 		if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
 			break;
 		}
 		struct GBAStereoSample samples[PSP2_SAMPLES];
-		blip_read_samples(runner->context.gba->audio.psg.left, &samples[0].left, PSP2_SAMPLES, true);
-		blip_read_samples(runner->context.gba->audio.psg.right, &samples[0].right, PSP2_SAMPLES, true);
+		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &samples[0].left, PSP2_SAMPLES, true);
+		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &samples[0].right, PSP2_SAMPLES, true);
 		int i;
 		for (i = 0; i < PSP2_SAMPLES; ++i) {
 			CircleBufferWrite16(&audioContext.buffer, samples[i].left);
@@ -206,19 +205,19 @@ void GBAPSP2PrepareForFrame(struct GBAGUIRunner* runner) {
 	MutexUnlock(&audioContext.mutex);
 }
 
-void GBAPSP2UnloadROM(struct GBAGUIRunner* runner) {
-	if (runner->context.gba->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+void GBAPSP2UnloadROM(struct mGUIRunner* runner) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
 		sceMotionStopSampling();
 	}
 	scePowerSetArmClockFrequency(80);
 }
 
-void GBAPSP2Teardown(struct GBAGUIRunner* runner) {
+void GBAPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }
 
-void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
+void GBAPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 	switch (screenMode) {
 	case SM_BACKDROP:
@@ -234,7 +233,7 @@ void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded) {
 	}
 }
 
-void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
+void GBAPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
 	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
 	int y;
@@ -255,13 +254,13 @@ void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, 
 	}
 }
 
-void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner) {
+void GBAPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 	} else {
 		screenMode = (screenMode + 1) % SM_MAX;
-		mCoreConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+		mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
 	}
 }
 

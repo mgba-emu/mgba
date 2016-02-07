@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gba/renderers/video-software.h"
-#include "gba/context/context.h"
+#include "gba/gba.h"
 #include "gba/gui/gui-runner.h"
+#include "gba/input.h"
 #include "gba/video.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
@@ -51,7 +51,7 @@ static enum {
 } hasSound;
 
 // TODO: Move into context
-static struct GBAVideoSoftwareRenderer renderer;
+static void* outputBuffer;
 static struct GBAAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
@@ -81,8 +81,8 @@ enum {
 extern bool allocateRomBuffer(void);
 
 static void _cleanup(void) {
-	if (renderer.outputBuffer) {
-		linearFree(renderer.outputBuffer);
+	if (outputBuffer) {
+		linearFree(outputBuffer);
 	}
 
 	if (gbaOutputTexture.data) {
@@ -248,48 +248,46 @@ static void _guiFinish(void) {
 	screenCleanup |= SCREEN_CLEANUP_BOTTOM;
 }
 
-static void _setup(struct GBAGUIRunner* runner) {
-	runner->context.gba->rotationSource = &rotation.d;
+static void _setup(struct mGUIRunner* runner) {
+	((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
 	if (hasSound != NO_SOUND) {
-		runner->context.gba->stream = &stream;
+		((struct GBA*) runner->core->board)->stream = &stream;
 	}
 
-	_map3DSKey(&runner->context.inputMap, KEY_A, GBA_KEY_A);
-	_map3DSKey(&runner->context.inputMap, KEY_B, GBA_KEY_B);
-	_map3DSKey(&runner->context.inputMap, KEY_START, GBA_KEY_START);
-	_map3DSKey(&runner->context.inputMap, KEY_SELECT, GBA_KEY_SELECT);
-	_map3DSKey(&runner->context.inputMap, KEY_UP, GBA_KEY_UP);
-	_map3DSKey(&runner->context.inputMap, KEY_DOWN, GBA_KEY_DOWN);
-	_map3DSKey(&runner->context.inputMap, KEY_LEFT, GBA_KEY_LEFT);
-	_map3DSKey(&runner->context.inputMap, KEY_RIGHT, GBA_KEY_RIGHT);
-	_map3DSKey(&runner->context.inputMap, KEY_L, GBA_KEY_L);
-	_map3DSKey(&runner->context.inputMap, KEY_R, GBA_KEY_R);
+	_map3DSKey(&runner->core->inputMap, KEY_A, GBA_KEY_A);
+	_map3DSKey(&runner->core->inputMap, KEY_B, GBA_KEY_B);
+	_map3DSKey(&runner->core->inputMap, KEY_START, GBA_KEY_START);
+	_map3DSKey(&runner->core->inputMap, KEY_SELECT, GBA_KEY_SELECT);
+	_map3DSKey(&runner->core->inputMap, KEY_UP, GBA_KEY_UP);
+	_map3DSKey(&runner->core->inputMap, KEY_DOWN, GBA_KEY_DOWN);
+	_map3DSKey(&runner->core->inputMap, KEY_LEFT, GBA_KEY_LEFT);
+	_map3DSKey(&runner->core->inputMap, KEY_RIGHT, GBA_KEY_RIGHT);
+	_map3DSKey(&runner->core->inputMap, KEY_L, GBA_KEY_L);
+	_map3DSKey(&runner->core->inputMap, KEY_R, GBA_KEY_R);
 
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
-	renderer.outputBufferStride = 256;
-	runner->context.renderer = &renderer.d;
+	outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
+	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 
-	GBAAudioResizeBuffer(&runner->context.gba->audio, AUDIO_SAMPLES);
+	GBAAudioResizeBuffer(&((struct GBA*) runner->core->board)->audio, AUDIO_SAMPLES);
 }
 
-static void _gameLoaded(struct GBAGUIRunner* runner) {
-	if (runner->context.gba->memory.hw.devices & HW_TILT) {
+static void _gameLoaded(struct mGUIRunner* runner) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 		HIDUSER_EnableAccelerometer();
 	}
-	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		HIDUSER_EnableGyroscope();
 	}
 	osSetSpeedupEnable(true);
 
 	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
-	blip_set_rates(runner->context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
-	blip_set_rates(runner->context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
@@ -302,13 +300,13 @@ static void _gameLoaded(struct GBAGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 		screenCleanup |= SCREEN_CLEANUP_BOTTOM | SCREEN_CLEANUP_TOP;
 	}
 }
 
-static void _gameUnloaded(struct GBAGUIRunner* runner) {
+static void _gameUnloaded(struct mGUIRunner* runner) {
 	if (hasSound == CSND_SUPPORTED) {
 		CSND_SetPlayState(8, 0);
 		CSND_SetPlayState(9, 0);
@@ -316,10 +314,10 @@ static void _gameUnloaded(struct GBAGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(false);
 
-	if (runner->context.gba->memory.hw.devices & HW_TILT) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 		HIDUSER_DisableAccelerometer();
 	}
-	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		HIDUSER_DisableGyroscope();
 	}
 }
@@ -361,10 +359,9 @@ static void _drawTex(bool faded) {
 	ctrAddRectScaled(color, x, y, w, h, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
 }
 
-static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
+static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 
-	void* outputBuffer = renderer.outputBuffer;
 	struct ctrTexture* tex = &gbaOutputTexture;
 
 	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
@@ -376,8 +373,8 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
 	if (hasSound == NO_SOUND) {
-		blip_clear(runner->context.gba->audio.psg.left);
-		blip_clear(runner->context.gba->audio.psg.right);
+		blip_clear(runner->core->getAudioChannel(runner->core, 0));
+		blip_clear(runner->core->getAudioChannel(runner->core, 1));
 	}
 
 	gspWaitForPPF();
@@ -385,7 +382,7 @@ static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	_drawTex(faded);
 }
 
-static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
 
 	struct ctrTexture* tex = &gbaOutputTexture;
@@ -419,21 +416,21 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 	_drawTex(faded);
 }
 
-static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
+static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	UNUSED(runner);
 
 	hidScanInput();
 	uint32_t activeKeys = hidKeysHeld();
-	uint16_t keys = mInputMapKeyBits(&runner->context.inputMap, _3DS_INPUT, activeKeys, 0);
+	uint16_t keys = mInputMapKeyBits(&runner->core->inputMap, _3DS_INPUT, activeKeys, 0);
 	keys |= (activeKeys >> 24) & 0xF0;
 	return keys;
 }
 
-static void _incrementScreenMode(struct GBAGUIRunner* runner) {
+static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	screenCleanup |= SCREEN_CLEANUP_TOP | SCREEN_CLEANUP_BOTTOM;
 	screenMode = (screenMode + 1) % SM_MAX;
-	mCoreConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
 }
 
 static uint32_t _pollInput(void) {
@@ -444,7 +441,7 @@ static uint32_t _pollInput(void) {
 		keys |= 1 << GUI_INPUT_CANCEL;
 	}
 	if (activeKeys & KEY_Y) {
-		keys |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
+		keys |= 1 << mGUI_INPUT_SCREEN_MODE;
 	}
 	if (activeKeys & KEY_B) {
 		keys |= 1 << GUI_INPUT_BACK;
@@ -465,10 +462,10 @@ static uint32_t _pollInput(void) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
 	if (activeKeys & KEY_CSTICK_UP) {
-		keys |= 1 << GBA_GUI_INPUT_INCREASE_BRIGHTNESS;
+		keys |= 1 << mGUI_INPUT_INCREASE_BRIGHTNESS;
 	}
 	if (activeKeys & KEY_CSTICK_DOWN) {
-		keys |= 1 << GBA_GUI_INPUT_DECREASE_BRIGHTNESS;
+		keys |= 1 << mGUI_INPUT_DECREASE_BRIGHTNESS;
 	}
 	return keys;
 }
@@ -510,8 +507,8 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
 	UNUSED(stream);
 	if (hasSound == CSND_SUPPORTED) {
-		blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
-		blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(audio->psg.left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(audio->psg.right, &audioRight[audioPos], AUDIO_SAMPLES, false);
 		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
@@ -529,8 +526,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
 			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
 			if (bufferId == startId) {
-				blip_clear(audio->left);
-				blip_clear(audio->right);
+				blip_clear(audio->psg.left);
+				blip_clear(audio->psg.right);
 				return;
 			}
 		}
@@ -538,8 +535,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
 		dspBuffer[bufferId].data_pcm16 = tmpBuf;
 		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
-		blip_read_samples(audio->left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
-		blip_read_samples(audio->right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+		blip_read_samples(audio->psg.left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
+		blip_read_samples(audio->psg.right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
 		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}
@@ -628,7 +625,7 @@ int main() {
 		return 1;
 	}
 
-	struct GBAGUIRunner runner = {
+	struct mGUIRunner runner = {
 		.params = {
 			320, 240,
 			font, "/",
@@ -708,9 +705,9 @@ int main() {
 		.pollGameInput = _pollGameInput
 	};
 
-	GBAGUIInit(&runner, "3ds");
-	GBAGUIRunloop(&runner);
-	GBAGUIDeinit(&runner);
+	mGUIInit(&runner, "3ds");
+	mGUIRunloop(&runner);
+	mGUIDeinit(&runner);
 
 	_cleanup();
 	return 0;
