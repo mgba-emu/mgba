@@ -118,6 +118,15 @@ static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
 	return GBALoadROM2(core->board, vf);
 }
 
+static bool _GBACoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
+	UNUSED(type);
+	if (!GBAIsBIOS(vf)) {
+		return false;
+	}
+	GBALoadBIOS(core->board, vf);
+	return true;
+}
+
 static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBALoadSave(core->board, vf);
 }
@@ -233,6 +242,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->isROM = GBAIsROM;
 	core->loadROM = _GBACoreLoadROM;
+	core->loadBIOS = _GBACoreLoadBIOS;
 	core->loadSave = _GBACoreLoadSave;
 	core->loadPatch = _GBACoreLoadPatch;
 	core->unloadROM = _GBACoreUnloadROM;
