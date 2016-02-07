@@ -19,6 +19,7 @@ struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
+	struct ARMComponent* components[GBA_COMPONENT_MAX];
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -36,7 +37,8 @@ static bool _GBACoreInit(struct mCore* core) {
 
 	GBACreate(gba);
 	// TODO: Restore debugger and cheats
-	ARMSetComponents(cpu, &gba->d, 0, 0);
+	memset(gbacore->components, 0, sizeof(gbacore->components));
+	ARMSetComponents(cpu, &gba->d, GBA_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);

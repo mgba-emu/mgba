@@ -26,11 +26,14 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
+#include "gba/audio.h"
 #include "gba/cheats.h"
+#include "gba/core.h"
 #include "gba/cheats/gameshark.h"
-#include "gba/renderers/video-software.h"
+#include "gba/gba.h"
+#include "gba/input.h"
 #include "gba/serialize.h"
-#include "gba/context/context.h"
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -43,11 +46,11 @@
 
 @interface mGBAGameCore () <OEGBASystemResponderClient>
 {
-	struct GBAContext context;
-	struct GBAVideoSoftwareRenderer renderer;
+	struct mCore* core;
+	struct GBA* gba;
 	struct GBACheatDevice cheats;
+	void* outputBuffer;
 	NSMutableDictionary *cheatSets;
-	uint16_t keys;
 }
 @end
 
@@ -57,21 +60,25 @@
 {
 	if ((self = [super init]))
 	{
-		// TODO: Add a log handler
-		GBAContextInit(&context, 0);
+		core = GBACoreCreate();
+		mCoreInitConfig(core, nil);
+
 		struct mCoreOptions opts = {
 			.useBios = true,
 		};
-		mCoreConfigLoadDefaults(&context.config, &opts);
-		GBAVideoSoftwareRendererCreate(&renderer);
-		renderer.outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-		renderer.outputBufferStride = 256;
-		context.renderer = &renderer.d;
-		GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
+		mCoreConfigLoadDefaults(&core->config, &opts);
+		core->init(core);
+
+		unsigned width, height;
+		core->desiredVideoDimensions(core, &width, &height);
+		outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
+		core->setVideoBuffer(core, outputBuffer, width);
+
+		gba = core->board;
+		GBAAudioResizeBuffer(&gba->audio, SAMPLES);
 		GBACheatDeviceCreate(&cheats);
-		GBACheatAttachDevice(context.gba, &cheats);
+		GBACheatAttachDevice(gba, &cheats);
 		cheatSets = [[NSMutableDictionary alloc] init];
-		keys = 0;
 	}
 
 	return self;
@@ -79,7 +86,7 @@
 
 - (void)dealloc
 {
-	GBAContextDeinit(&context);
+	core->deinit(core);
 	[cheatSets enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
 		UNUSED(key);
 		UNUSED(stop);
@@ -92,7 +99,7 @@
 		GBACheatSetDeinit([obj pointerValue]);
 	}];
 	[cheatSets release];
-	free(renderer.outputBuffer);
+	free(outputBuffer);
 
 	[super dealloc];
 }
@@ -106,50 +113,42 @@
 	                                withIntermediateDirectories:YES
 	                                attributes:nil
 	                                error:nil];
-	if (context.dirs.save) {
-		context.dirs.save->close(context.dirs.save);
+	if (core->dirs.save) {
+		core->dirs.save->close(core->dirs.save);
 	}
-	context.dirs.save = VDirOpen([batterySavesDirectory UTF8String]);
+	core->dirs.save = VDirOpen([batterySavesDirectory UTF8String]);
 
-	if (!GBAContextLoadROM(&context, [path UTF8String], true)) {
+	if (!mCoreLoadFile(core, [path UTF8String])) {
 		*error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadROMError userInfo:nil];
 		return NO;
 	}
+	mCoreAutoloadSave(core);
 
-	if (!GBAContextStart(&context)) {
-		*error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotStartCoreError userInfo:nil];
-		return NO;
-	}
+	core->reset(core);
 	return YES;
 }
 
 - (void)executeFrame
 {
-	GBAContextFrame(&context, keys);
+	core->runFrame(core);
 
 	int16_t samples[SAMPLES * 2];
 	size_t available = 0;
-	available = blip_samples_avail(context.gba->audio.psg.left);
-	blip_read_samples(context.gba->audio.psg.left, samples, available, true);
-	blip_read_samples(context.gba->audio.psg.right, samples + 1, available, true);
+	available = blip_samples_avail(core->getAudioChannel(core, 0));
+	blip_read_samples(core->getAudioChannel(core, 0), samples, available, true);
+	blip_read_samples(core->getAudioChannel(core, 1), samples + 1, available, true);
 	[[self ringBufferAtIndex:0] write:samples maxLength:available * 4];
 }
 
 - (void)resetEmulation
 {
-	ARMReset(context.cpu);
-}
-
-- (void)stopEmulation
-{
-	GBAContextStop(&context);
-	[super stopEmulation];
+	core->reset(core);
 }
 
 - (void)setupEmulation
 {
-	blip_set_rates(context.gba->audio.psg.left,  GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(context.gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 32768);
+	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 32768);
 }
 
 #pragma mark - Video
@@ -161,17 +160,21 @@
 
 - (OEIntRect)screenRect
 {
-    return OEIntRectMake(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+    return OEIntRectMake(0, 0, width, height);
 }
 
 - (OEIntSize)bufferSize
 {
-    return OEIntSizeMake(256, VIDEO_VERTICAL_PIXELS);
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+    return OEIntSizeMake(width, height);
 }
 
 - (const void *)videoBuffer
 {
-	return renderer.outputBuffer;
+	return outputBuffer;
 }
 
 - (GLenum)pixelFormat
@@ -211,7 +214,7 @@
 - (NSData *)serializeStateWithError:(NSError **)outError
 {
 	struct VFile* vf = VFileMemChunk(nil, 0);
-	if (!GBASaveStateNamed(context.gba, vf, SAVESTATE_SAVEDATA)) {
+	if (!core->saveState(core, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return nil;
@@ -227,7 +230,7 @@
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
 	struct VFile* vf = VFileFromConstMemory(state.bytes, state.length);
-	if (!GBALoadStateNamed(context.gba, vf, SAVESTATE_SAVEDATA)) {
+	if (!core->loadState(core, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return NO;
@@ -239,14 +242,14 @@
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_CREAT | O_TRUNC | O_RDWR);
-	block(GBASaveStateNamed(context.gba, vf, 0), nil);
+	block(core->saveState(core, vf, 0), nil);
 	vf->close(vf);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_RDONLY);
-	block(GBALoadStateNamed(context.gba, vf, 0), nil);
+	block(core->loadState(core, vf, 0), nil);
 	vf->close(vf);
 }
 
@@ -268,13 +271,13 @@ const int GBAMap[] = {
 - (oneway void)didPushGBAButton:(OEGBAButton)button forPlayer:(NSUInteger)player
 {
 	UNUSED(player);
-	keys |= 1 << GBAMap[button];
+	core->addKeys(core, 1 << GBAMap[button]);
 }
 
 - (oneway void)didReleaseGBAButton:(OEGBAButton)button forPlayer:(NSUInteger)player
 {
 	UNUSED(player);
-	keys &= ~(1 << GBAMap[button]);
+	core->clearKeys(core, 1 << GBAMap[button]);
 }
 
 #pragma mark - Cheats
