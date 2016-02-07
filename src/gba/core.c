@@ -75,7 +75,9 @@ static void _GBACoreLoadConfig(struct mCore* core) {
 	if (core->opts.useBios) {
 		bios = VFileOpen(core->opts.bios, O_RDONLY);
 	}
-	GBALoadBIOS(gba, bios);
+	if (bios) {
+		GBALoadBIOS(gba, bios);
+	}
 #endif
 
 	const char* idleOptimization = mCoreConfigGetValue(&core->config, "idleOptimization");
