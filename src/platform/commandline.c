@@ -199,7 +199,7 @@ void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 	mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
 }
 
-struct ARMDebugger* createDebugger(struct mArguments* opts, struct GBAThread* context) {
+struct ARMDebugger* createDebugger(struct mArguments* opts, struct mCore* core) {
 #ifndef USE_CLI_DEBUGGER
 	UNUSED(context);
 #endif
@@ -219,7 +219,7 @@ struct ARMDebugger* createDebugger(struct mArguments* opts, struct GBAThread* co
 #ifdef USE_CLI_DEBUGGER
 	case DEBUGGER_CLI:
 		CLIDebuggerCreate(&debugger->cli);
-		struct GBACLIDebugger* gbaDebugger = GBACLIDebuggerCreate(context);
+		struct GBACLIDebugger* gbaDebugger = GBACLIDebuggerCreate(core);
 		CLIDebuggerAttachSystem(&debugger->cli, &gbaDebugger->d);
 		break;
 #endif

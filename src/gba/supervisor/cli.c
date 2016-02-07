@@ -31,7 +31,7 @@ struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
 	{ 0, 0, 0, 0 }
 };
 
-struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
+struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 	struct GBACLIDebugger* debugger = malloc(sizeof(struct GBACLIDebugger));
 	debugger->d.init = _GBACLIDebuggerInit;
 	debugger->d.deinit = _GBACLIDebuggerDeinit;
@@ -41,7 +41,7 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread* context) {
 	debugger->d.name = "Game Boy Advance";
 	debugger->d.commands = _GBACLIDebuggerCommands;
 
-	debugger->context = context;
+	debugger->core = core;
 
 	return debugger;
 }
@@ -60,12 +60,12 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
 
 	if (gbaDebugger->frameAdvance) {
-		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1])) {
+		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1])) {
 			ARMDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}
-		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1]);
+		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
 		return true;
 	}
 	return false;
@@ -90,7 +90,7 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	gbaDebugger->frameAdvance = true;
-	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(gbaDebugger->context->gba->memory.io[REG_DISPSTAT >> 1]);
+	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
 }
 
 static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -106,17 +106,17 @@ static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	GBALoadState(gbaDebugger->context, gbaDebugger->context->dirs.state, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreLoadState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
 }
 
 static void _rewind(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	if (!dv) {
-		GBARewindAll(gbaDebugger->context);
+		// TODO: Put back rewind
 	} else if (dv->type != CLIDV_INT_TYPE) {
 		printf("%s\n", ERROR_MISSING_ARGS);
 	} else {
-		GBARewind(gbaDebugger->context, dv->intValue);
+		// TODO: Put back rewind
 	}
 }
 
@@ -133,6 +133,6 @@ static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 
-	GBASaveState(gbaDebugger->context, gbaDebugger->context->dirs.state, dv->intValue, SAVESTATE_SCREENSHOT);
+	mCoreSaveState(gbaDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
 }
 #endif

@@ -9,18 +9,18 @@
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 
-struct GBAThread;
+struct mCore;
 
 struct GBACLIDebugger {
 	struct CLIDebuggerSystem d;
 
-	struct GBAThread* context;
+	struct mCore* core;
 
 	bool frameAdvance;
 	bool inVblank;
 };
 
-struct GBACLIDebugger* GBACLIDebuggerCreate(struct GBAThread*);
+struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore*);
 #endif
 
 #endif
