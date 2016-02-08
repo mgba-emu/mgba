@@ -52,7 +52,7 @@ static enum {
 
 // TODO: Move into context
 static void* outputBuffer;
-static struct GBAAVStream stream;
+static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
 static size_t audioPos = 0;
@@ -165,7 +165,7 @@ static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, voi
 	CSND_SetChnRegs(flags | SOUND_CHANNEL(9), pright, pright, size, volumes, volumes);
 }
 
-static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
 	ctrGpuBeginDrawing();
@@ -504,11 +504,11 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 	return rotation->gyro.y << 18L; // Yes, y
 }
 
-static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
 	if (hasSound == CSND_SUPPORTED) {
-		blip_read_samples(audio->psg.left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
-		blip_read_samples(audio->psg.right, &audioRight[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(right, &audioRight[audioPos], AUDIO_SAMPLES, false);
 		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
 		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
@@ -526,8 +526,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
 			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
 			if (bufferId == startId) {
-				blip_clear(audio->psg.left);
-				blip_clear(audio->psg.right);
+				blip_clear(left);
+				blip_clear(right);
 				return;
 			}
 		}
@@ -535,8 +535,8 @@ static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio)
 		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
 		dspBuffer[bufferId].data_pcm16 = tmpBuf;
 		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
-		blip_read_samples(audio->psg.left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
-		blip_read_samples(audio->psg.right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+		blip_read_samples(left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
+		blip_read_samples(right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
 		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}

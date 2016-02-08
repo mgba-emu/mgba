@@ -136,7 +136,7 @@ public slots:
 	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setTurboSpeed(float ratio = -1);
-	void setAVStream(GBAAVStream*);
+	void setAVStream(mAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
 	void setSaveStateExtdata(int flags);

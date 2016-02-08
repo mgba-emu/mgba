@@ -912,7 +912,10 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 
 	if (gba->stream && gba->stream->postVideoFrame) {
-		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+		const color_t* pixels;
+		unsigned stride;
+		gba->video.renderer->getPixels(gba->video.renderer, &stride, (const void**) &pixels);
+		gba->stream->postVideoFrame(gba->stream, pixels, stride);
 	}
 
 	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {

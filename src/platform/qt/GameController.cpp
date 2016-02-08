@@ -873,7 +873,7 @@ void GameController::enableTurbo() {
 	threadContinue();
 }
 
-void GameController::setAVStream(GBAAVStream* stream) {
+void GameController::setAVStream(mAVStream* stream) {
 	threadInterrupt();
 	m_threadContext.stream = stream;
 	if (isLoaded()) {

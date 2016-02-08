@@ -29,7 +29,7 @@ static retro_set_rumble_state_t rumbleCallback;
 
 static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
-static void _postAudioBuffer(struct GBAAVStream*, struct GBAAudio* audio);
+static void _postAudioBuffer(struct mAVStream*, blip_t* left, blip_t* right);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
@@ -39,7 +39,7 @@ static void* outputBuffer;
 static void* data;
 static size_t dataSize;
 static void* savedata;
-static struct GBAAVStream stream;
+static struct mAVStream stream;
 static int rumbleLevel;
 static struct CircleBuffer rumbleHistory;
 static struct mRumble rumble;
@@ -463,11 +463,11 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 	logCallback(retroLevel, "%s: %s\n", mLogCategoryName(category), message);
 }
 
-static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
 	int16_t samples[SAMPLES * 2];
-	blip_read_samples(audio->psg.left, samples, SAMPLES, true);
-	blip_read_samples(audio->psg.right, samples + 1, SAMPLES, true);
+	blip_read_samples(left, samples, SAMPLES, true);
+	blip_read_samples(right, samples + 1, SAMPLES, true);
 	audioCallback(samples, SAMPLES);
 }
 

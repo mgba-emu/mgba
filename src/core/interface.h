@@ -8,6 +8,24 @@
 
 #include "util/common.h"
 
+struct mCore;
+
+#ifdef COLOR_16_BIT
+typedef uint16_t color_t;
+#define BYTES_PER_PIXEL 2
+#else
+typedef uint32_t color_t;
+#define BYTES_PER_PIXEL 4
+#endif
+
+struct blip_t;
+
+struct mAVStream {
+	void (*postVideoFrame)(struct mAVStream*, const color_t* buffer, size_t stride);
+	void (*postAudioFrame)(struct mAVStream*, int16_t left, int16_t right);
+	void (*postAudioBuffer)(struct mAVStream*, struct blip_t* left, struct blip_t* right);
+};
+
 struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
 };

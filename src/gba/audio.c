@@ -321,7 +321,7 @@ static void _sample(struct GBAAudio* audio) {
 	mCoreSyncProduceAudio(audio->p->sync, wait);
 
 	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
-		audio->p->stream->postAudioBuffer(audio->p->stream, audio);
+		audio->p->stream->postAudioBuffer(audio->p->stream, audio->psg.left, audio->psg.right);
 	}
 }
 

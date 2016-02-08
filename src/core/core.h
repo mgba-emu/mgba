@@ -8,27 +8,18 @@
 
 #include "util/common.h"
 
+#include "core/config.h"
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include "core/directories.h"
 #endif
 #ifndef MINIMAL_CORE
 #include "core/input.h"
 #endif
-#include "core/config.h"
+#include "core/interface.h"
 
 struct VFile;
 struct mRTCSource;
 struct mCoreConfig;
-
-#ifdef COLOR_16_BIT
-typedef uint16_t color_t;
-#define BYTES_PER_PIXEL 2
-#else
-typedef uint32_t color_t;
-#define BYTES_PER_PIXEL 4
-#endif
-
-struct blip_t;
 struct mCoreSync;
 struct mCore {
 	void* cpu;

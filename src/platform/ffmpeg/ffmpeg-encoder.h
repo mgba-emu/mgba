@@ -11,7 +11,7 @@
 #include <libavformat/avformat.h>
 
 struct FFmpegEncoder {
-	struct GBAAVStream d;
+	struct mAVStream d;
 	struct AVFormatContext* context;
 
 	unsigned audioBitrate;

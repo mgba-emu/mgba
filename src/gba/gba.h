@@ -116,7 +116,7 @@ struct GBA {
 
 	GBALogHandler logHandler;
 	enum GBALogLevel logLevel;
-	struct GBAAVStream* stream;
+	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mStopCallback* stopCallback;
 

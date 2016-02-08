@@ -46,7 +46,7 @@ struct GBAThread {
 	const char* fname;
 	const char* movie;
 	int activeKeys;
-	struct GBAAVStream* stream;
+	struct mAVStream* stream;
 	struct Configuration* overrides;
 	enum GBAIdleLoopOptimization idleOptimization;
 	bool bootBios;
