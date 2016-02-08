@@ -199,12 +199,12 @@ void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 	mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
 }
 
-struct ARMDebugger* createDebugger(struct mArguments* opts, struct mCore* core) {
+struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core) {
 #ifndef USE_CLI_DEBUGGER
 	UNUSED(context);
 #endif
 	union DebugUnion {
-		struct ARMDebugger d;
+		struct Debugger d;
 #ifdef USE_CLI_DEBUGGER
 		struct CLIDebugger cli;
 #endif

@@ -34,7 +34,7 @@ struct GBAThread {
 	// Input
 	struct GBAVideoRenderer* renderer;
 	struct GBASIODriverSet sioDrivers;
-	struct ARMDebugger* debugger;
+	struct Debugger* debugger;
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
 #endif

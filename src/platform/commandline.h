@@ -8,16 +8,7 @@
 
 #include "util/common.h"
 
-enum DebuggerType {
-	DEBUGGER_NONE = 0,
-#ifdef USE_CLI_DEBUGGER
-	DEBUGGER_CLI,
-#endif
-#ifdef USE_GDB_STUB
-	DEBUGGER_GDB,
-#endif
-	DEBUGGER_MAX
-};
+#include "debugger/debugger.h"
 
 struct mArguments {
 	char* fname;
@@ -48,8 +39,6 @@ struct mGraphicsOpts {
 	bool fullscreen;
 };
 
-struct GBAThread;
-
 bool parseArguments(struct mArguments* args, int argc, char* const* argv,
                     struct mSubParser* subparser);
 void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config);
@@ -60,6 +49,6 @@ void version(const char* arg0);
 
 void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
 struct mCore;
-struct ARMDebugger* createDebugger(struct mArguments* opts, struct mCore* core);
+struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core);
 
 #endif

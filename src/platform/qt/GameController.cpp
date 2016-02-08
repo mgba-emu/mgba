@@ -262,11 +262,11 @@ void GameController::setOptions(const mCoreOptions* opts) {
 }
 
 #ifdef USE_GDB_STUB
-ARMDebugger* GameController::debugger() {
+Debugger* GameController::debugger() {
 	return m_threadContext.debugger;
 }
 
-void GameController::setDebugger(ARMDebugger* debugger) {
+void GameController::setDebugger(Debugger* debugger) {
 	threadInterrupt();
 	if (m_threadContext.debugger && GBAThreadIsActive(&m_threadContext)) {
 		GBADetachDebugger(m_threadContext.gba);

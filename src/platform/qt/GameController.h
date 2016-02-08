@@ -75,8 +75,8 @@ public:
 	int stateSlot() const { return m_stateSlot; }
 
 #ifdef USE_GDB_STUB
-	ARMDebugger* debugger();
-	void setDebugger(ARMDebugger*);
+	Debugger* debugger();
+	void setDebugger(Debugger*);
 #endif
 
 signals:

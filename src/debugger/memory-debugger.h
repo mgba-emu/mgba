@@ -10,9 +10,9 @@
 
 #include "arm.h"
 
-struct ARMDebugger;
+struct Debugger;
 
-void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger);
-void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger);
+void DebuggerInstallMemoryShim(struct Debugger* debugger);
+void DebuggerRemoveMemoryShim(struct Debugger* debugger);
 
 #endif

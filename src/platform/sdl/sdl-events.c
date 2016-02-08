@@ -405,7 +405,7 @@ static void _mSDLHandleKeypressGBA(struct GBAThread* context, struct mSDLPlayer*
 		switch (event->keysym.sym) {
 		case SDLK_F11:
 			if (context->debugger) {
-				ARMDebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL, 0);
+				DebuggerEnter(context->debugger, DEBUGGER_ENTER_MANUAL, 0);
 			}
 			return;
 #ifdef USE_PNG

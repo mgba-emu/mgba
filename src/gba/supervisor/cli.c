@@ -61,7 +61,7 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 	if (gbaDebugger->frameAdvance) {
 		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1])) {
-			ARMDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
+			DebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}

@@ -88,7 +88,7 @@ struct GBA {
 
 	struct mCoreSync* sync;
 
-	struct ARMDebugger* debugger;
+	struct Debugger* debugger;
 
 	uint32_t bus;
 	int performingDMA;
@@ -166,7 +166,7 @@ void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 
-void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
+void GBAAttachDebugger(struct GBA* gba, struct Debugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
 void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,
@@ -196,6 +196,6 @@ ATTRIBUTE_FORMAT(printf, 3, 4)
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
+void GBADebuggerLogShim(struct Debugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

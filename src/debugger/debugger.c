@@ -10,7 +10,7 @@
 
 #include "memory-debugger.h"
 
-const uint32_t ARM_DEBUGGER_ID = 0xDEADBEEF;
+const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 
 DEFINE_VECTOR(DebugBreakpointList, struct DebugBreakpoint);
 DEFINE_VECTOR(DebugWatchpointList, struct DebugWatchpoint);
@@ -25,7 +25,7 @@ static struct DebugBreakpoint* _lookupBreakpoint(struct DebugBreakpointList* bre
 	return 0;
 }
 
-static void _checkBreakpoints(struct ARMDebugger* debugger) {
+static void _checkBreakpoints(struct Debugger* debugger) {
 	int instructionLength;
 	enum ExecutionMode mode = debugger->cpu->cpsr.t;
 	if (mode == MODE_ARM) {
@@ -40,20 +40,20 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	struct DebuggerEntryInfo info = {
 		.address = breakpoint->address
 	};
-	ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
+	DebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
 
-static void ARMDebuggerInit(void* cpu, struct mCPUComponent*);
-static void ARMDebuggerDeinit(struct mCPUComponent*);
+static void DebuggerInit(void* cpu, struct mCPUComponent*);
+static void DebuggerDeinit(struct mCPUComponent*);
 
-void ARMDebuggerCreate(struct ARMDebugger* debugger) {
-	debugger->d.id = ARM_DEBUGGER_ID;
-	debugger->d.init = ARMDebuggerInit;
-	debugger->d.deinit = ARMDebuggerDeinit;
+void DebuggerCreate(struct Debugger* debugger) {
+	debugger->d.id = DEBUGGER_ID;
+	debugger->d.init = DebuggerInit;
+	debugger->d.deinit = DebuggerDeinit;
 }
 
-void ARMDebuggerInit(void* cpu, struct mCPUComponent* component) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
+void DebuggerInit(void* cpu, struct mCPUComponent* component) {
+	struct Debugger* debugger = (struct Debugger*) component;
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_RUNNING;
 	debugger->originalMemory = debugger->cpu->memory;
@@ -66,15 +66,15 @@ void ARMDebuggerInit(void* cpu, struct mCPUComponent* component) {
 	}
 }
 
-void ARMDebuggerDeinit(struct mCPUComponent* component) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
+void DebuggerDeinit(struct mCPUComponent* component) {
+	struct Debugger* debugger = (struct Debugger*) component;
 	debugger->deinit(debugger);
 	DebugBreakpointListDeinit(&debugger->breakpoints);
 	DebugBreakpointListDeinit(&debugger->swBreakpoints);
 	DebugWatchpointListDeinit(&debugger->watchpoints);
 }
 
-void ARMDebuggerRun(struct ARMDebugger* debugger) {
+void DebuggerRun(struct Debugger* debugger) {
 	switch (debugger->state) {
 	case DEBUGGER_RUNNING:
 		if (!DebugBreakpointListSize(&debugger->breakpoints) && !DebugWatchpointListSize(&debugger->watchpoints)) {
@@ -107,7 +107,7 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 	}
 }
 
-void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
+void DebuggerEnter(struct Debugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
 	struct ARMCore* cpu = debugger->cpu;
 	cpu->nextEvent = cpu->cycles;
@@ -128,13 +128,13 @@ void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason rea
 	}
 }
 
-void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
+void DebuggerSetBreakpoint(struct Debugger* debugger, uint32_t address) {
 	struct DebugBreakpoint* breakpoint = DebugBreakpointListAppend(&debugger->breakpoints);
 	breakpoint->address = address;
 	breakpoint->isSw = false;
 }
 
-bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
+bool DebuggerSetSoftwareBreakpoint(struct Debugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	uint32_t opcode;
 	if (!debugger->setSoftwareBreakpoint || !debugger->setSoftwareBreakpoint(debugger, address, mode, &opcode)) {
 		return false;
@@ -149,7 +149,7 @@ bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t add
 	return true;
 }
 
-void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
+void DebuggerClearBreakpoint(struct Debugger* debugger, uint32_t address) {
 	struct DebugBreakpointList* breakpoints = &debugger->breakpoints;
 	size_t i;
 	for (i = 0; i < DebugBreakpointListSize(breakpoints); ++i) {
@@ -160,16 +160,16 @@ void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) 
 
 }
 
-void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address, enum WatchpointType type) {
+void DebuggerSetWatchpoint(struct Debugger* debugger, uint32_t address, enum WatchpointType type) {
 	if (!DebugWatchpointListSize(&debugger->watchpoints)) {
-		ARMDebuggerInstallMemoryShim(debugger);
+		DebuggerInstallMemoryShim(debugger);
 	}
 	struct DebugWatchpoint* watchpoint = DebugWatchpointListAppend(&debugger->watchpoints);
 	watchpoint->address = address;
 	watchpoint->type = type;
 }
 
-void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
+void DebuggerClearWatchpoint(struct Debugger* debugger, uint32_t address) {
 	struct DebugWatchpointList* watchpoints = &debugger->watchpoints;
 	size_t i;
 	for (i = 0; i < DebugWatchpointListSize(watchpoints); ++i) {
@@ -178,6 +178,6 @@ void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) 
 		}
 	}
 	if (!DebugWatchpointListSize(&debugger->watchpoints)) {
-		ARMDebuggerRemoveMemoryShim(debugger);
+		DebuggerRemoveMemoryShim(debugger);
 	}
 }

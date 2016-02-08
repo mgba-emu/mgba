@@ -40,8 +40,8 @@ static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
 static void GBAIllegal(struct ARMCore* cpu, uint32_t opcode);
 static void GBABreakpoint(struct ARMCore* cpu, int immediate);
 
-static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
-static bool _clearSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
+static bool _setSoftwareBreakpoint(struct Debugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+static bool _clearSoftwareBreakpoint(struct Debugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
 
 #ifdef _3DS
@@ -402,7 +402,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 	return nextEvent;
 }
 
-void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
+void GBAAttachDebugger(struct GBA* gba, struct Debugger* debugger) {
 	debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
 	debugger->clearSoftwareBreakpoint = _clearSoftwareBreakpoint;
 	gba->debugger = debugger;
@@ -698,7 +698,7 @@ void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
 	va_end(args);
 }
 
-void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
+void GBADebuggerLogShim(struct Debugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
 	struct GBA* gba = 0;
 	if (debugger->cpu) {
 		gba = (struct GBA*) debugger->cpu->master;
@@ -819,7 +819,7 @@ void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		DebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
 	GBALog(gba, level, "Stub opcode: %08x", opcode);
 }
@@ -834,7 +834,7 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		DebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	} else {
 		ARMRaiseUndefined(cpu);
 	}
@@ -851,7 +851,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 			struct DebuggerEntryInfo info = {
 				.address = _ARMPCAddress(cpu)
 			};
-			ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
+			DebuggerEnter(gba->debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
 		break;
 	case GBA_COMPONENT_CHEAT_DEVICE:
@@ -978,12 +978,12 @@ struct GBAThread* GBAThreadGetContext(void) {
 }
 #endif
 
-static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+static bool _setSoftwareBreakpoint(struct Debugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d, address, mode, opcode);
 	return true;
 }
 
-static bool _clearSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
+static bool _clearSoftwareBreakpoint(struct Debugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t opcode) {
 	GBAClearBreakpoint((struct GBA*) debugger->cpu->master, address, mode, opcode);
 	return true;
 }

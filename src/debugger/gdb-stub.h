@@ -23,7 +23,7 @@ enum GDBStubAckState {
 };
 
 struct GDBStub {
-	struct ARMDebugger d;
+	struct Debugger d;
 
 	char line[GDB_STUB_MAX_LINE];
 	char outgoing[GDB_STUB_MAX_LINE];

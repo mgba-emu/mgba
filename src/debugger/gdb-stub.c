@@ -26,14 +26,14 @@ enum {
 
 static void _sendMessage(struct GDBStub* stub);
 
-static void _gdbStubDeinit(struct ARMDebugger* debugger) {
+static void _gdbStubDeinit(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
 }
 
-static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
+static void _gdbStubEntered(struct Debugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
@@ -76,7 +76,7 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 	_sendMessage(stub);
 }
 
-static void _gdbStubPoll(struct ARMDebugger* debugger) {
+static void _gdbStubPoll(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	--stub->untilPoll;
 	if (stub->untilPoll > 0) {
@@ -87,7 +87,7 @@ static void _gdbStubPoll(struct ARMDebugger* debugger) {
 	GDBStubUpdate(stub);
 }
 
-static void _gdbStubWait(struct ARMDebugger* debugger) {
+static void _gdbStubWait(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	stub->shouldBlock = true;
 	GDBStubUpdate(stub);
@@ -302,7 +302,7 @@ static void _processVReadCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	if (!strncmp("Attach", message, 6)) {
 		strncpy(stub->outgoing, "1", GDB_STUB_MAX_LINE - 4);
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		DebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 	}
 	_sendMessage(stub);
 }
@@ -318,22 +318,22 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
 	case '1':
-		ARMDebuggerSetBreakpoint(&stub->d, address);
+		DebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '2':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_WRITE);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_WRITE);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '3':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_READ);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_READ);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '4':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_RW);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_RW);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
@@ -351,12 +351,12 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
 	case '1':
-		ARMDebuggerClearBreakpoint(&stub->d, address);
+		DebuggerClearBreakpoint(&stub->d, address);
 		break;
 	case '2':
 	case '3':
 	case '4':
-		ARMDebuggerClearWatchpoint(&stub->d, address);
+		DebuggerClearWatchpoint(&stub->d, address);
 		break;
 	default:
 		break;
@@ -379,7 +379,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		++message;
 		break;
 	case '\x03':
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		DebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 		return parsed;
 	default:
 		_nak(stub);
@@ -468,7 +468,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 }
 
 void GDBStubCreate(struct GDBStub* stub) {
-	ARMDebuggerCreate(&stub->d);
+	DebuggerCreate(&stub->d);
 	stub->socket = INVALID_SOCKET;
 	stub->connection = INVALID_SOCKET;
 	stub->d.init = 0;
@@ -547,7 +547,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			if (!SocketSetBlocking(stub->connection, false)) {
 				goto connectionLost;
 			}
-			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
+			DebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
 		} else if (SocketWouldBlock()) {
 			return;
 		} else {

@@ -275,7 +275,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	if (threadContext->debugger) {
 		threadContext->debugger->log = GBADebuggerLogShim;
 		GBAAttachDebugger(&gba, threadContext->debugger);
-		ARMDebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED, 0);
+		DebuggerEnter(threadContext->debugger, DEBUGGER_ENTER_ATTACHED, 0);
 	}
 
 	GBASIOSetDriverSet(&gba.sio, &threadContext->sioDrivers);
@@ -299,8 +299,8 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 
 	while (threadContext->state < THREAD_EXITING) {
 		if (threadContext->debugger) {
-			struct ARMDebugger* debugger = threadContext->debugger;
-			ARMDebuggerRun(debugger);
+			struct Debugger* debugger = threadContext->debugger;
+			DebuggerRun(debugger);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				_changeState(threadContext, THREAD_EXITING, false);
 			}
