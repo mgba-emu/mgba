@@ -43,7 +43,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
-	qRegisterMetaType<GBAThread*>("GBAThread*");
+	qRegisterMetaType<mCoreThread*>("mCoreThread*");
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);

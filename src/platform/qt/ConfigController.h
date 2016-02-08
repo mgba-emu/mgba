@@ -82,6 +82,8 @@ public:
 
 	Configuration* input() { return mCoreConfigGetInput(&m_config); }
 
+	const mCoreConfig* config() { return &m_config; }
+
 public slots:
 	void setOption(const char* key, bool value);
 	void setOption(const char* key, int value);

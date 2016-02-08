@@ -24,7 +24,7 @@ AudioProcessorQt::AudioProcessorQt(QObject* parent)
 {
 }
 
-void AudioProcessorQt::setInput(GBAThread* input) {
+void AudioProcessorQt::setInput(mCoreThread* input) {
 	AudioProcessor::setInput(input);
 	if (m_device) {
 		m_device->setInput(input);
@@ -59,7 +59,7 @@ bool AudioProcessorQt::start() {
 
 	m_device->setInput(input());
 	m_device->setFormat(m_audioOutput->format());
-	m_audioOutput->setBufferSize(input()->audioBuffers * 4);
+	m_audioOutput->setBufferSize(2048 * 4); // TODO?
 
 	m_audioOutput->start(m_device);
 	return m_audioOutput->state() == QAudio::ActiveState;

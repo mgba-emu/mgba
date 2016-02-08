@@ -8,9 +8,9 @@
 #include "LogController.h"
 
 extern "C" {
+#include "core/thread.h"
 #include "gba/gba.h"
 #include "gba/audio.h"
-#include "gba/supervisor/thread.h"
 }
 
 using namespace QGBA;
@@ -25,18 +25,18 @@ AudioDevice::AudioDevice(QObject* parent)
 }
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
-	if (!m_context || !GBAThreadIsActive(m_context)) {
+	if (!m_context || !mCoreThreadIsActive(m_context)) {
 		LOG(INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
-	double fauxClock = GBAAudioCalculateRatio(1, m_context->fpsTarget, 1);
+	double fauxClock = GBAAudioCalculateRatio(1, 60, 1); // TODO: Put back fpsTarget
 	mCoreSyncLockAudio(&m_context->sync);
-	blip_set_rates(m_context->gba->audio.psg.left, GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
-	blip_set_rates(m_context->gba->audio.psg.right, GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
+	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 0), GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
+	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 1), GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
 	mCoreSyncUnlockAudio(&m_context->sync);
 }
 
-void AudioDevice::setInput(GBAThread* input) {
+void AudioDevice::setInput(mCoreThread* input) {
 	m_context = input;
 }
 
@@ -45,18 +45,18 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 		maxSize = 0xFFFFFFFF;
 	}
 
-	if (!m_context->gba) {
-		LOG(WARN) << tr("Audio device is missing its GBA");
+	if (!m_context->core) {
+		LOG(WARN) << tr("Audio device is missing its core");
 		return 0;
 	}
 
 	mCoreSyncLockAudio(&m_context->sync);
-	int available = blip_samples_avail(m_context->gba->audio.psg.left);
+	int available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0));
 	if (available > maxSize / sizeof(GBAStereoSample)) {
 		available = maxSize / sizeof(GBAStereoSample);
 	}
-	blip_read_samples(m_context->gba->audio.psg.left, &reinterpret_cast<GBAStereoSample*>(data)->left, available, true);
-	blip_read_samples(m_context->gba->audio.psg.right, &reinterpret_cast<GBAStereoSample*>(data)->right, available, true);
+	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 0), &reinterpret_cast<GBAStereoSample*>(data)->left, available, true);
+	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 1), &reinterpret_cast<GBAStereoSample*>(data)->right, available, true);
 	mCoreSyncConsumeAudio(&m_context->sync);
 	return available * sizeof(GBAStereoSample);
 }

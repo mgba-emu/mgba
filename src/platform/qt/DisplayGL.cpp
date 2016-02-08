@@ -62,7 +62,7 @@ VideoShader* DisplayGL::shaders() {
 	return shaders;
 }
 
-void DisplayGL::startDrawing(GBAThread* thread) {
+void DisplayGL::startDrawing(mCoreThread* thread) {
 	if (m_drawThread) {
 		return;
 	}
@@ -90,14 +90,14 @@ void DisplayGL::startDrawing(GBAThread* thread) {
 void DisplayGL::stopDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadInterrupt(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadInterrupt(m_context);
 		}
 		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread = nullptr;
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadContinue(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadContinue(m_context);
 		}
 	}
 }
@@ -105,12 +105,12 @@ void DisplayGL::stopDrawing() {
 void DisplayGL::pauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadInterrupt(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadInterrupt(m_context);
 		}
 		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadContinue(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadContinue(m_context);
 		}
 	}
 }
@@ -118,12 +118,12 @@ void DisplayGL::pauseDrawing() {
 void DisplayGL::unpauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = true;
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadInterrupt(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadInterrupt(m_context);
 		}
 		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
-		if (GBAThreadIsActive(m_context)) {
-			GBAThreadContinue(m_context);
+		if (mCoreThreadIsActive(m_context)) {
+			mCoreThreadContinue(m_context);
 		}
 	}
 }
@@ -260,7 +260,7 @@ PainterGL::~PainterGL() {
 	m_backend = nullptr;
 }
 
-void PainterGL::setContext(GBAThread* context) {
+void PainterGL::setContext(mCoreThread* context) {
 	m_context = context;
 }
 
@@ -307,7 +307,7 @@ void PainterGL::start() {
 }
 
 void PainterGL::draw() {
-	if (m_queue.isEmpty() || !GBAThreadIsActive(m_context)) {
+	if (m_queue.isEmpty() || !mCoreThreadIsActive(m_context)) {
 		return;
 	}
 	if (mCoreSyncWaitFrameStart(&m_context->sync) || !m_queue.isEmpty()) {

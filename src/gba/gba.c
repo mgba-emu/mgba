@@ -922,7 +922,7 @@ void GBAFrameEnded(struct GBA* gba) {
 		GBAHardwarePlayerUpdate(gba);
 	}
 
-	struct GBAThread* thread = GBAThreadGetContext();
+	struct mCoreThread* thread = mCoreThreadGet();
 	if (!thread) {
 		return;
 	}
@@ -931,12 +931,7 @@ void GBAFrameEnded(struct GBA* gba) {
 		thread->frameCallback(thread);
 	}
 
-	if (gba->rr && gba->rr->queryReset(gba->rr)) {
-		// TODO: Clean up reset scheduling
-		MutexLock(&thread->stateMutex);
-		thread->state = THREAD_RESETING;
-		MutexUnlock(&thread->stateMutex);
-	}
+	// TODO: Put back RR
 }
 
 void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {

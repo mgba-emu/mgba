@@ -19,7 +19,7 @@ Q_OBJECT
 public:
 	AudioProcessorQt(QObject* parent = nullptr);
 
-	virtual void setInput(GBAThread* input) override;
+	virtual void setInput(mCoreThread* input) override;
 	virtual unsigned sampleRate() const override;
 
 public slots:

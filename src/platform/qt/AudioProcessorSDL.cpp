@@ -34,9 +34,15 @@ bool AudioProcessorSDL::start() {
 		return true;
 	} else {
 		if (!m_audio.samples) {
-			m_audio.samples = input()->audioBuffers;
+			m_audio.samples = 2048; // TODO?
 		}
-		return mSDLInitAudio(&m_audio, input());
+		if (mSDLInitAudio(&m_audio, nullptr)) {
+			m_audio.core = input()->core;
+			m_audio.sync = &input()->sync;
+			mSDLResumeAudio(&m_audio);
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -49,7 +55,10 @@ void AudioProcessorSDL::setBufferSamples(int samples) {
 	m_audio.samples = samples;
 	if (m_audio.thread) {
 		mSDLDeinitAudio(&m_audio);
-		mSDLInitAudio(&m_audio, input());
+		mSDLInitAudio(&m_audio, nullptr);
+		m_audio.core = input()->core;
+		m_audio.sync = &input()->sync;
+		mSDLResumeAudio(&m_audio);
 	}
 }
 
@@ -60,7 +69,10 @@ void AudioProcessorSDL::requestSampleRate(unsigned rate) {
 	m_audio.sampleRate = rate;
 	if (m_audio.thread) {
 		mSDLDeinitAudio(&m_audio);
-		mSDLInitAudio(&m_audio, input());
+		mSDLInitAudio(&m_audio, nullptr);
+		m_audio.core = input()->core;
+		m_audio.sync = &input()->sync;
+		mSDLResumeAudio(&m_audio);
 	}
 }
 

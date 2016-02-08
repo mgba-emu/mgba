@@ -196,7 +196,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	// TODO: Create debugger
+	// TODO: Put back debugger
 
 	if (args->patch) {
 		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);

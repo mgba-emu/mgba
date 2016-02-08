@@ -79,7 +79,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	setAttribute(Qt::WA_DeleteOnClose);
 	m_controller = new GameController(this);
 	m_controller->setInputController(&m_inputController);
-	m_controller->setOverrides(m_config->overrides());
 	updateTitle();
 
 	m_display = Display::create(this);
@@ -95,13 +94,13 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
 
-	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
-	connect(m_controller, SIGNAL(gameStarted(GBAThread*)), &m_inputController, SLOT(suspendScreensaver()));
-	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_display, SLOT(stopDrawing()));
-	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
-	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
-	connect(m_controller, SIGNAL(stateLoaded(GBAThread*)), m_display, SLOT(forceDraw()));
-	connect(m_controller, SIGNAL(rewound(GBAThread*)), m_display, SLOT(forceDraw()));
+	connect(m_controller, SIGNAL(gameStarted(mCoreThread*)), this, SLOT(gameStarted(mCoreThread*)));
+	connect(m_controller, SIGNAL(gameStarted(mCoreThread*)), &m_inputController, SLOT(suspendScreensaver()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_display, SLOT(stopDrawing()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(gameStopped()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), &m_inputController, SLOT(resumeScreensaver()));
+	connect(m_controller, SIGNAL(stateLoaded(mCoreThread*)), m_display, SLOT(forceDraw()));
+	connect(m_controller, SIGNAL(rewound(mCoreThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, &GameController::gamePaused, [this]() {
 		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
 		                    VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
@@ -110,18 +109,18 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 		m_screenWidget->setPixmap(pixmap);
 		m_screenWidget->setLockAspectRatio(3, 2);
 	});
-	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), m_display, SLOT(pauseDrawing()));
+	connect(m_controller, SIGNAL(gamePaused(mCoreThread*)), m_display, SLOT(pauseDrawing()));
 #ifndef Q_OS_MAC
-	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), menuBar(), SLOT(show()));
+	connect(m_controller, SIGNAL(gamePaused(mCoreThread*)), menuBar(), SLOT(show()));
 	connect(m_controller, &GameController::gameUnpaused, [this]() {
 		if(isFullScreen()) {
 			menuBar()->hide();
 		}
 	});
 #endif
-	connect(m_controller, SIGNAL(gamePaused(GBAThread*)), &m_inputController, SLOT(resumeScreensaver()));
-	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), m_display, SLOT(unpauseDrawing()));
-	connect(m_controller, SIGNAL(gameUnpaused(GBAThread*)), &m_inputController, SLOT(suspendScreensaver()));
+	connect(m_controller, SIGNAL(gamePaused(mCoreThread*)), &m_inputController, SLOT(resumeScreensaver()));
+	connect(m_controller, SIGNAL(gameUnpaused(mCoreThread*)), m_display, SLOT(unpauseDrawing()));
+	connect(m_controller, SIGNAL(gameUnpaused(mCoreThread*)), &m_inputController, SLOT(suspendScreensaver()));
 	connect(m_controller, SIGNAL(postLog(int, const QString&)), &m_log, SLOT(postLog(int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), m_display, SLOT(framePosted(const uint32_t*)));
@@ -132,7 +131,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(&m_log, SIGNAL(levelsSet(int)), m_controller, SLOT(setLogLevel(int)));
 	connect(&m_log, SIGNAL(levelsEnabled(int)), m_controller, SLOT(enableLogLevel(int)));
 	connect(&m_log, SIGNAL(levelsDisabled(int)), m_controller, SLOT(disableLogLevel(int)));
-	connect(this, SIGNAL(startDrawing(GBAThread*)), m_display, SLOT(startDrawing(GBAThread*)), Qt::QueuedConnection);
+	connect(this, SIGNAL(startDrawing(mCoreThread*)), m_display, SLOT(startDrawing(mCoreThread*)), Qt::QueuedConnection);
 	connect(this, SIGNAL(shutdown()), m_display, SLOT(stopDrawing()));
 	connect(this, SIGNAL(shutdown()), m_controller, SLOT(closeGame()));
 	connect(this, SIGNAL(shutdown()), m_logView, SLOT(hide()));
@@ -254,7 +253,7 @@ void Window::reloadConfig() {
 		m_controller->setLoadStateExtdata(flags);
 	}
 
-	m_controller->setOptions(opts);
+	m_controller->setConfig(m_config->config());
 	m_display->lockAspectRatio(opts->lockAspectRatio);
 	m_display->filter(opts->resampleVideo);
 
@@ -418,8 +417,8 @@ void Window::openVideoWindow() {
 		m_videoView = new VideoView();
 		connect(m_videoView, SIGNAL(recordingStarted(mAVStream*)), m_controller, SLOT(setAVStream(mAVStream*)));
 		connect(m_videoView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
-		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_videoView, SLOT(stopRecording()));
-		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_videoView, SLOT(close()));
+		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(stopRecording()));
+		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(close()));
 		connect(this, SIGNAL(shutdown()), m_videoView, SLOT(close()));
 	}
 	m_videoView->show();
@@ -432,8 +431,8 @@ void Window::openGIFWindow() {
 		m_gifView = new GIFView();
 		connect(m_gifView, SIGNAL(recordingStarted(mAVStream*)), m_controller, SLOT(setAVStream(mAVStream*)));
 		connect(m_gifView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
-		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_gifView, SLOT(stopRecording()));
-		connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_gifView, SLOT(close()));
+		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_gifView, SLOT(stopRecording()));
+		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_gifView, SLOT(close()));
 		connect(this, SIGNAL(shutdown()), m_gifView, SLOT(close()));
 	}
 	m_gifView->show();
@@ -597,7 +596,7 @@ void Window::toggleFullScreen() {
 	}
 }
 
-void Window::gameStarted(GBAThread* context) {
+void Window::gameStarted(mCoreThread* context) {
 	char title[13] = { '\0' };
 	MutexLock(&context->stateMutex);
 	if (context->state < THREAD_EXITING) {
@@ -611,10 +610,10 @@ void Window::gameStarted(GBAThread* context) {
 		action->setDisabled(false);
 	}
 	multiplayerChanged();
-	if (context->fname) {
+	/*if (context->fname) {
 		setWindowFilePath(context->fname);
 		appendMRU(context->fname);
-	}
+	}*/
 	updateTitle();
 	attachWidget(m_display);
 
@@ -716,11 +715,11 @@ void Window::updateTitle(float fps) {
 	if (m_controller->isLoaded()) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game;
-		if (db && NoIntroDBLookupGameByCRC(db, m_controller->thread()->gba->romCrc32, &game)) {
+		if (db && NoIntroDBLookupGameByCRC(db, static_cast<GBA*>(m_controller->thread()->core->board)->romCrc32, &game)) {
 			title = QLatin1String(game.name);
 		} else {
 			char gameTitle[13] = { '\0' };
-			GBAGetGameTitle(m_controller->thread()->gba, gameTitle);
+			GBAGetGameTitle(static_cast<GBA*>(m_controller->thread()->core->board), gameTitle);
 			title = gameTitle;
 		}
 	}
@@ -749,7 +748,7 @@ void Window::openStateWindow(LoadSave ls) {
 	bool wasPaused = m_controller->isPaused();
 	m_stateWindow = new LoadSaveState(m_controller);
 	connect(this, SIGNAL(shutdown()), m_stateWindow, SLOT(close()));
-	connect(m_controller, SIGNAL(gameStopped(GBAThread*)), m_stateWindow, SLOT(close()));
+	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_stateWindow, SLOT(close()));
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
 		detachWidget(m_stateWindow);
 		m_stateWindow = nullptr;
@@ -979,14 +978,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), emulationMenu);
 	videoSync->connect([this](const QVariant& value) {
-		m_controller->setVideoSync(value.toBool());
+		reloadConfig();
 	}, this);
 	m_config->updateOption("videoSync");
 
 	ConfigOption* audioSync = m_config->addOption("audioSync");
 	audioSync->addBoolean(tr("Sync to &audio"), emulationMenu);
 	audioSync->connect([this](const QVariant& value) {
-		m_controller->setAudioSync(value.toBool());
+		reloadConfig();
 	}, this);
 	m_config->updateOption("audioSync");
 
@@ -1061,7 +1060,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QMenu* skipMenu = avMenu->addMenu(tr("Frame&skip"));
 	ConfigOption* skip = m_config->addOption("frameskip");
 	skip->connect([this](const QVariant& value) {
-		m_controller->setFrameskip(value.toInt());
+		reloadConfig();
 	}, this);
 	for (int i = 0; i <= 10; ++i) {
 		skip->addValue(QString::number(i), i, skipMenu);
@@ -1209,12 +1208,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {
-		m_controller->setSkipBIOS(value.toBool());
+		reloadConfig();
 	}, this);
 
 	ConfigOption* useBios = m_config->addOption("useBios");
 	useBios->connect([this](const QVariant& value) {
-		m_controller->setUseBIOS(value.toBool());
+		reloadConfig();
 	}, this);
 
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
@@ -1229,7 +1228,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* volume = m_config->addOption("volume");
 	volume->connect([this](const QVariant& value) {
-		m_controller->setVolume(value.toInt());
+		reloadConfig();
 	}, this);
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");

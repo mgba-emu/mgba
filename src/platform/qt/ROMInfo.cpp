@@ -26,7 +26,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 
 	controller->threadInterrupt();
-	GBA* gba = controller->thread()->gba;
+	GBA* gba = static_cast<GBA*>(controller->thread()->core->board);
 	char title[13] = {};
 	GBAGetGameCode(gba, title);
 	m_ui.id->setText(QLatin1String(title));

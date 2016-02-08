@@ -50,7 +50,7 @@ public:
 	void resizeFrame(int width, int height);
 
 signals:
-	void startDrawing(GBAThread*);
+	void startDrawing(mCoreThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void sampleRateChanged(unsigned samples);
@@ -111,7 +111,7 @@ protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
-	void gameStarted(GBAThread*);
+	void gameStarted(mCoreThread*);
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();

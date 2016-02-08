@@ -9,6 +9,7 @@
 #include "GameController.h"
 
 extern "C" {
+#include "core/core.h"
 #include "gba/memory.h"
 }
 
@@ -31,12 +32,12 @@ MemoryView::MemoryView(GameController* controller, QWidget* parent)
 
 	connect(m_ui.hexfield, SIGNAL(selectionChanged(uint32_t, uint32_t)), this, SLOT(updateSelection(uint32_t, uint32_t)));
 
-	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
+	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 
 	connect(controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(update()));
-	connect(controller, SIGNAL(gamePaused(GBAThread*)), this, SLOT(update()));
-	connect(controller, SIGNAL(stateLoaded(GBAThread*)), this, SLOT(update()));
-	connect(controller, SIGNAL(rewound(GBAThread*)), this, SLOT(update()));
+	connect(controller, SIGNAL(gamePaused(mCoreThread*)), this, SLOT(update()));
+	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), this, SLOT(update()));
+	connect(controller, SIGNAL(rewound(mCoreThread*)), this, SLOT(update()));
 }
 
 void MemoryView::setIndex(int index) {
@@ -83,7 +84,7 @@ void MemoryView::updateStatus() {
 	if (!m_controller->isLoaded()) {
 		return;
 	}
-	ARMCore* cpu = m_controller->thread()->cpu;
+	ARMCore* cpu = static_cast<ARMCore*>(m_controller->thread()->core->cpu);
 	union {
 		uint32_t u32;
 		int32_t i32;
