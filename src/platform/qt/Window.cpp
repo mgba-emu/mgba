@@ -718,8 +718,9 @@ void Window::updateTitle(float fps) {
 		if (db && NoIntroDBLookupGameByCRC(db, static_cast<GBA*>(m_controller->thread()->core->board)->romCrc32, &game)) {
 			title = QLatin1String(game.name);
 		} else {
-			char gameTitle[13] = { '\0' };
-			GBAGetGameTitle(static_cast<GBA*>(m_controller->thread()->core->board), gameTitle);
+			char gameTitle[17] = { '\0' };
+			mCore* core = m_controller->thread()->core;
+			core->getGameTitle(core, gameTitle);
 			title = gameTitle;
 		}
 	}

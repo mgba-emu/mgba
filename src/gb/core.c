@@ -190,6 +190,10 @@ static int32_t _GBCoreFrequency(struct mCore* core) {
 	return DMG_LR35902_FREQUENCY;
 }
 
+static void _GBCoreGetGameTitle(struct mCore* core, char* title) {
+	GBGetGameTitle(core->board, title);
+}
+
 static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	struct GB* gb = core->board;
 	gb->memory.rtc = rtc;
@@ -226,6 +230,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
+	core->getGameTitle = _GBCoreGetGameTitle;
 	core->setRTC = _GBCoreSetRTC;
 	return core;
 }

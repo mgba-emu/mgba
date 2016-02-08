@@ -26,11 +26,12 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 
 	controller->threadInterrupt();
-	GBA* gba = static_cast<GBA*>(controller->thread()->core->board);
-	char title[13] = {};
+	mCore* core = controller->thread()->core;
+	GBA* gba = static_cast<GBA*>(core->board);
+	char title[17] = {};
 	GBAGetGameCode(gba, title);
 	m_ui.id->setText(QLatin1String(title));
-	GBAGetGameTitle(gba, title);
+	core->getGameTitle(core, title);
 	m_ui.title->setText(QLatin1String(title));
 	m_ui.size->setText(QString::number(gba->pristineRomSize));
 	m_ui.crc->setText(QString::number(gba->romCrc32, 16));
