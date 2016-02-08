@@ -17,7 +17,16 @@
 #endif
 #include "core/interface.h"
 
-struct VFile;
+enum mPlatform {
+	PLATFORM_NONE = -1,
+#ifdef M_CORE_GBA
+	PLATFORM_GBA,
+#endif
+#ifdef M_CORE_GB
+	PLATFORM_GB,
+#endif
+};
+
 struct mRTCSource;
 struct mCoreConfig;
 struct mCoreSync;
@@ -80,6 +89,7 @@ struct mCore {
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
 
 bool mCoreAutoloadSave(struct mCore* core);

@@ -11,6 +11,75 @@
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include "util/png-io.h"
 
+#ifdef M_CORE_GB
+#include "gb/core.h"
+#include "gb/gb.h"
+#endif
+#ifdef M_CORE_GBA
+#include "gba/core.h"
+#include "gba/gba.h"
+#endif
+
+static struct mCoreFilter {
+	bool (*filter)(struct VFile*);
+	struct mCore* (*open)(void);
+} _filters[] = {
+#ifdef M_CORE_GBA
+	{ GBAIsROM, GBACoreCreate },
+#endif
+#ifdef M_CORE_GB
+	{ GBIsROM, GBCoreCreate },
+#endif
+	{ 0, 0 }
+};
+
+struct mCore* mCoreFind(const char* path) {
+	struct VDir* archive = VDirOpenArchive(path);
+	struct mCore* (*open)(void) = NULL;
+	if (archive) {
+		struct VDirEntry* dirent = archive->listNext(archive);
+		while (dirent) {
+			struct VFile* vf = archive->openFile(archive, dirent->name(dirent), O_RDONLY);
+			if (!vf) {
+				dirent = archive->listNext(archive);
+				continue;
+			}
+			struct mCoreFilter* filter;
+			for (filter = &_filters[0]; filter->filter; ++filter) {
+				if (filter->filter(vf)) {
+					break;
+				}
+			}
+			vf->close(vf);
+			if (filter->open) {
+				open = filter->open;
+				break;
+			}
+			dirent = archive->listNext(archive);
+		}
+		archive->close(archive);
+	} else {
+		struct VFile* vf = VFileOpen(path, O_RDONLY);
+		if (!vf) {
+			return NULL;
+		}
+		struct mCoreFilter* filter;
+		for (filter = &_filters[0]; filter->filter; ++filter) {
+			if (filter->filter(vf)) {
+				break;
+			}
+		}
+		vf->close(vf);
+		if (filter->open) {
+			open = filter->open;
+		}
+	}
+	if (open) {
+		return open();
+	}
+	return NULL;
+}
+
 bool mCoreLoadFile(struct mCore* core, const char* path) {
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
 	if (!rom) {

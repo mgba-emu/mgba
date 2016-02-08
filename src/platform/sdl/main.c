@@ -41,13 +41,6 @@
 
 #define PORT "sdl"
 
-// TODO: Move somewhere
-enum mPlatform {
-	PLATFORM_NONE = -1,
-	PLATFORM_GBA,
-	PLATFORM_GB
-};
-
 static bool mSDLInit(struct mSDLRenderer* renderer);
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
@@ -82,50 +75,21 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	enum mPlatform platform = PLATFORM_NONE;
-
 	if (args.fname) {
-		struct VFile* vf = VFileOpen(args.fname, O_RDONLY);
-		if (!vf) {
-			printf("Could not open game. Are you sure the file exists?\n");
-			freeArguments(&args);
-			return 1;
-		}
-#ifdef M_CORE_GBA
-		else if (GBAIsROM(vf)) {
-			platform = PLATFORM_GBA;
-			renderer.width = VIDEO_HORIZONTAL_PIXELS;
-			renderer.height = VIDEO_VERTICAL_PIXELS;
-			renderer.core = GBACoreCreate();
-#ifdef BUILD_GL
-			mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-			mSDLGLES2Create(&renderer);
-#else
-			mSDLSWCreate(&renderer);
-#endif
-		}
-#endif
-#ifdef M_CORE_GB
-		else if (GBIsROM(vf)) {
-			platform = PLATFORM_GB;
-			renderer.width = GB_VIDEO_HORIZONTAL_PIXELS;
-			renderer.height = GB_VIDEO_VERTICAL_PIXELS;
-			renderer.core = GBCoreCreate();
-#ifdef BUILD_GL
-			mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-			mSDLGLES2CreateGB(&renderer);
-#else
-			mSDLSWCreateGB(&renderer);
-#endif
-		}
-#endif
-		else {
+		renderer.core = mCoreFind(args.fname);
+		if (!renderer.core) {
 			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 			freeArguments(&args);
 			return 1;
 		}
+		renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+#ifdef BUILD_GL
+		mSDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+		mSDLGLES2Create(&renderer);
+#else
+		mSDLSWCreate(&renderer);
+#endif
 	}
 
 	renderer.ratio = graphicsOpts.multiplier;
