@@ -95,7 +95,7 @@ signals:
 	void luminanceValueChanged(int);
 
 	void statusPosted(const QString& message);
-	void postLog(int level, const QString& log);
+	void postLog(int level, int category, const QString& log);
 
 public slots:
 	void loadGame(const QString& path);

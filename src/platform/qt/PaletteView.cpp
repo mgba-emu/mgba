@@ -94,7 +94,7 @@ void PaletteView::exportPalette(int start, int length) {
 	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		LOG(ERROR) << tr("Failed to open output palette file: %1").arg(filename);
+		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);
 		m_controller->threadContinue();
 		return;
 	}

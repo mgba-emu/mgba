@@ -26,7 +26,7 @@ AudioDevice::AudioDevice(QObject* parent)
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
 	if (!m_context || !mCoreThreadIsActive(m_context)) {
-		LOG(INFO) << tr("Can't set format of context-less audio device");
+		LOG(QT, INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
 	double fauxClock = GBAAudioCalculateRatio(1, 60, 1); // TODO: Put back fpsTarget
@@ -46,7 +46,7 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 	}
 
 	if (!m_context->core) {
-		LOG(WARN) << tr("Audio device is missing its core");
+		LOG(QT, WARN) << tr("Audio device is missing its core");
 		return 0;
 	}
 
@@ -62,6 +62,6 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 }
 
 qint64 AudioDevice::writeData(const char*, qint64) {
-	LOG(WARN) << tr("Writing data to read-only audio device");
+	LOG(QT, WARN) << tr("Writing data to read-only audio device");
 	return 0;
 }

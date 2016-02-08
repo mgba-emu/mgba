@@ -36,7 +36,7 @@ void AudioProcessorQt::setInput(mCoreThread* input) {
 
 bool AudioProcessorQt::start() {
 	if (!input()) {
-		LOG(WARN) << tr("Can't start an audio processor without input");
+		LOG(QT, WARN) << tr("Can't start an audio processor without input");
 		return false;
 	}
 

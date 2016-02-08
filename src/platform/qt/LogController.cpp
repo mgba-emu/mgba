@@ -7,29 +7,29 @@
 
 using namespace QGBA;
 
-LogController LogController::s_global(GBA_LOG_ALL);
+LogController LogController::s_global(mLOG_ALL);
 
 LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
 	, m_logLevel(levels)
 {
 	if (this != &s_global) {
-		connect(&s_global, SIGNAL(logPosted(int, const QString&)), this, SLOT(postLog(int, const QString&)));
+		connect(&s_global, SIGNAL(logPosted(int, int, const QString&)), this, SLOT(postLog(int, int, const QString&)));
 		connect(this, SIGNAL(levelsSet(int)), &s_global, SLOT(setLevels(int)));
 		connect(this, SIGNAL(levelsEnabled(int)), &s_global, SLOT(enableLevels(int)));
 		connect(this, SIGNAL(levelsDisabled(int)), &s_global, SLOT(disableLevels(int)));
 	}
 }
 
-LogController::Stream LogController::operator()(int level) {
-	return Stream(this, level);
+LogController::Stream LogController::operator()(int category, int level) {
+	return Stream(this, category, level);
 }
 
-void LogController::postLog(int level, const QString& string) {
+void LogController::postLog(int level, int category, const QString& string) {
 	if (!(m_logLevel & level)) {
 		return;
 	}
-	emit logPosted(level, string);
+	emit logPosted(level, category, string);
 }
 
 void LogController::setLevels(int levels) {
@@ -53,38 +53,33 @@ LogController* LogController::global() {
 
 QString LogController::toString(int level) {
 	switch (level) {
-	case GBA_LOG_DEBUG:
+	case mLOG_DEBUG:
 		return tr("DEBUG");
-	case GBA_LOG_STUB:
+	case mLOG_STUB:
 		return tr("STUB");
-	case GBA_LOG_INFO:
+	case mLOG_INFO:
 		return tr("INFO");
-	case GBA_LOG_WARN:
+	case mLOG_WARN:
 		return tr("WARN");
-	case GBA_LOG_ERROR:
+	case mLOG_ERROR:
 		return tr("ERROR");
-	case GBA_LOG_FATAL:
+	case mLOG_FATAL:
 		return tr("FATAL");
-	case GBA_LOG_GAME_ERROR:
+	case mLOG_GAME_ERROR:
 		return tr("GAME ERROR");
-	case GBA_LOG_SWI:
-		return tr("SWI");
-	case GBA_LOG_STATUS:
-		return tr("STATUS");
-	case GBA_LOG_SIO:
-		return tr("SIO");
 	}
 	return QString();
 }
 
-LogController::Stream::Stream(LogController* controller, int level)
+LogController::Stream::Stream(LogController* controller, int level, int category)
 	: m_log(controller)
 	, m_level(level)
+	, m_category(category)
 {
 }
 
 LogController::Stream::~Stream() {
-	m_log->postLog(m_level, m_queue.join(" "));
+	m_log->postLog(m_level, m_category, m_queue.join(" "));
 }
 
 LogController::Stream& LogController::Stream::operator<<(const QString& string) {

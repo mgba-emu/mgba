@@ -26,6 +26,8 @@ using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
 
+mLOG_DEFINE_CATEGORY(QT, "Qt");
+
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
 	, m_windows{}

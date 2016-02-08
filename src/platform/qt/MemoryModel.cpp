@@ -158,7 +158,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		LOG(WARN) << tr("Failed to open output file: %1").arg(filename);
+		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QDataStream stream(&outfile);

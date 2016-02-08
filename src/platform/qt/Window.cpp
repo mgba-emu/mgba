@@ -121,7 +121,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gamePaused(mCoreThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(gameUnpaused(mCoreThread*)), m_display, SLOT(unpauseDrawing()));
 	connect(m_controller, SIGNAL(gameUnpaused(mCoreThread*)), &m_inputController, SLOT(suspendScreensaver()));
-	connect(m_controller, SIGNAL(postLog(int, const QString&)), &m_log, SLOT(postLog(int, const QString&)));
+	connect(m_controller, SIGNAL(postLog(int, int, const QString&)), &m_log, SLOT(postLog(int, int, const QString&)));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(recordFrame()));
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), m_display, SLOT(framePosted(const uint32_t*)));
 	connect(m_controller, SIGNAL(gameCrashed(const QString&)), this, SLOT(gameCrashed(const QString&)));

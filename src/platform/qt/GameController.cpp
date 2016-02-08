@@ -21,6 +21,7 @@ extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
 #include "gba/audio.h"
+#include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
@@ -85,7 +86,7 @@ GameController::GameController(QObject* parent)
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
 
-		GBA* gba = static_cast<GBA*>(context->core->board);
+		/*GBA* gba = static_cast<GBA*>(context->core->board);
 		gba->luminanceSource = &controller->m_lux;
 		gba->rumble = controller->m_inputController->rumble();
 		gba->rotationSource = controller->m_inputController->rotationSource();
@@ -99,7 +100,7 @@ GameController::GameController(QObject* parent)
 		gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
 		gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
 		gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
-		gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
+		gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];*/
 		// TODO: Put back fpsTarget
 
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
@@ -135,21 +136,23 @@ GameController::GameController(QObject* parent)
 		return true;
 	};*/
 
-	/*m_threadContext.logHandler = [](mCoreThread* context, enum GBALogLevel level, const char* format, va_list args) {
-		static const char* stubMessage = "Stub software interrupt: %02X";
+	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
+		mCoreThread* context = logContext->p;
+
 		static const char* savestateMessage = "State %i loaded";
 		static const char* savestateFailedMessage = "State %i failed to load";
 		if (!context) {
 			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (level == GBA_LOG_STUB && strncmp(stubMessage, format, strlen(stubMessage)) == 0) {
+		if (level == mLOG_STUB && category == _mLOG_CAT_GBA_BIOS()) {
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
 			va_end(argc);
 			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
-		} else if (level == GBA_LOG_STATUS) {
+		} else if (category == _mLOG_CAT_STATUS()) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
 				va_list argc;
@@ -169,17 +172,17 @@ GameController::GameController(QObject* parent)
 				}
 			}
 		}
-		if (level == GBA_LOG_FATAL) {
+		if (level == mLOG_FATAL) {
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		} else if (!(controller->m_logLevels & level)) {
 			return;
 		}
 		QString message(QString().vsprintf(format, args));
-		if (level == GBA_LOG_STATUS) {
+		if (category == _mLOG_CAT_STATUS()) {
 			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
-		QMetaObject::invokeMethod(controller, "postLog", Q_ARG(int, level), Q_ARG(const QString&, message));
-	};*/
+		QMetaObject::invokeMethod(controller, "postLog", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
+	};
 
 	m_threadContext.userData = this;
 
@@ -257,7 +260,7 @@ void GameController::loadGame(const QString& path) {
 	closeGame();
 	QFile file(path);
 	if (!file.open(QIODevice::ReadOnly)) {
-		postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
+		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		return;
 	}
 	file.close();
@@ -380,7 +383,7 @@ void GameController::importSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
-		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for reading: %1").arg(path));
+		LOG(QT, ERROR) << tr("Failed to open snapshot file for reading: %1").arg(path);
 		return;
 	}
 	threadInterrupt();
@@ -395,7 +398,7 @@ void GameController::exportSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		postLog(GBA_LOG_ERROR, tr("Failed to open snapshot file for writing: %1").arg(path));
+		LOG(QT, ERROR) << tr("Failed to open snapshot file for writing: %1").arg(path);
 		return;
 	}
 	threadInterrupt();
@@ -635,7 +638,7 @@ void GameController::startAudio() {
 	bool started = false;
 	QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
 	if (!started) {
-		LOG(ERROR) << tr("Failed to start audio processor");
+		LOG(QT, ERROR) << tr("Failed to start audio processor");
 		// Don't freeze!
 		m_audioSync = false;
 		m_videoSync = true;
