@@ -60,8 +60,9 @@ static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	gb->sync = sync;
 }
 
-static void _GBCoreLoadConfig(struct mCore* core) {
+static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
 	UNUSED(core);
+	UNUSED(config);
 	// TODO
 }
 

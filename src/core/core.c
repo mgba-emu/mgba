@@ -113,9 +113,13 @@ void mCoreLoadConfig(struct mCore* core) {
 #ifndef MINIMAL_CORE
 	mCoreConfigLoad(&core->config);
 #endif
-	mCoreConfigMap(&core->config, &core->opts);
+	mCoreLoadForeignConfig(core, &core->config);
+}
+
+void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
+	mCoreConfigMap(config, &core->opts);
 #ifndef MINIMAL_CORE
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
-	core->loadConfig(core);
+	core->loadConfig(core, config);
 }

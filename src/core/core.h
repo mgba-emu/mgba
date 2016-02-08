@@ -38,13 +38,15 @@ struct mCore {
 	void (*deinit)(struct mCore*);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
-	void (*loadConfig)(struct mCore*);
+	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 	void (*getVideoBuffer)(struct mCore*, color_t** buffer, size_t* stride);
 
 	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
+
+	void (*setAVStream)(struct mCore*, struct mAVStream*);
 
 	bool (*isROM)(struct VFile* vf);
 	bool (*loadROM)(struct mCore*, struct VFile* vf);
@@ -91,5 +93,6 @@ void mCoreTakeScreenshot(struct mCore* core);
 
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);
+void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);
 
 #endif

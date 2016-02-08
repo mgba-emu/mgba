@@ -20,6 +20,7 @@ struct GBACore {
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
 	struct mCPUComponent* components[GBA_COMPONENT_MAX];
+	struct Configuration* overrides;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -34,6 +35,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gba;
+	gbacore->overrides = 0;
 
 	GBACreate(gba);
 	// TODO: Restore debugger and cheats
@@ -67,10 +69,13 @@ static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	gba->sync = sync;
 }
 
-static void _GBACoreLoadConfig(struct mCore* core) {
+static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
 	struct GBA* gba = core->board;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct GBACore* gbacore = (struct GBACore*) core;
+	gbacore->overrides = mCoreConfigGetOverrides(&core->config);
+
 	struct VFile* bios = 0;
 	if (core->opts.useBios) {
 		bios = VFileOpen(core->opts.bios, O_RDONLY);
@@ -80,7 +85,7 @@ static void _GBACoreLoadConfig(struct mCore* core) {
 	}
 #endif
 
-	const char* idleOptimization = mCoreConfigGetValue(&core->config, "idleOptimization");
+	const char* idleOptimization = mCoreConfigGetValue(config, "idleOptimization");
 	if (idleOptimization) {
 		if (strcasecmp(idleOptimization, "ignore") == 0) {
 			gba->idleOptimization = IDLE_LOOP_IGNORE;
@@ -120,6 +125,11 @@ static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
 	default:
 		return NULL;
 	}
+}
+
+static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
+	struct GBA* gba = core->board;
+	gba->stream = stream;
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
@@ -169,11 +179,7 @@ static void _GBACoreReset(struct mCore* core) {
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
 	memcpy(override.id, &cart->id, sizeof(override.id));
-	struct Configuration* overrides = 0;
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	overrides = mCoreConfigGetOverrides(&core->config);
-#endif
-	if (GBAOverrideFind(overrides, &override)) {
+	if (GBAOverrideFind(gbacore->overrides, &override)) {
 		GBAOverrideApply(gba, &override);
 	}
 }
@@ -251,6 +257,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
 	core->getVideoBuffer = _GBACoreGetVideoBuffer;
 	core->getAudioChannel = _GBACoreGetAudioChannel;
+	core->setAVStream = _GBACoreSetAVStream;
 	core->isROM = GBAIsROM;
 	core->loadROM = _GBACoreLoadROM;
 	core->loadBIOS = _GBACoreLoadBIOS;
