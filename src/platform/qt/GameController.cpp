@@ -25,7 +25,6 @@ extern "C" {
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
-#include "gba/renderers/video-software.h"
 #include "util/vfs.h"
 }
 
@@ -290,13 +289,20 @@ void GameController::openGame(bool biosOnly) {
 		m_threadContext.sync.audioWait = m_audioSync;
 	}
 
-	m_threadContext.core = GBACoreCreate();
+
+	if (!biosOnly) {
+		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
+	} else {
+		m_threadContext.core = GBACoreCreate();
+	}
 	m_threadContext.core->init(m_threadContext.core);
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, VIDEO_HORIZONTAL_PIXELS);
 
 	if (!biosOnly) {
 		mCoreLoadFile(m_threadContext.core, m_fname.toUtf8().constData());
+		mCoreAutoloadSave(m_threadContext.core);
 	}
+
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, VIDEO_HORIZONTAL_PIXELS);
 
 	if (!m_bios.isNull() && m_useBios) {
 		VFile* bios = VFileDevice::open(m_bios, O_RDONLY);

@@ -96,6 +96,10 @@ static struct blip_t* _GBCoreGetAudioChannel(struct mCore* core, int ch) {
 	}
 }
 
+static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
+	// TODO
+}
+
 static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
 	return GBLoadROM(core->board, vf);
 }
@@ -213,6 +217,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->getVideoBuffer = _GBCoreGetVideoBuffer;
 	core->getAudioChannel = _GBCoreGetAudioChannel;
+	core->setAVStream = _GBCoreSetAVStream;
 	core->isROM = GBIsROM;
 	core->loadROM = _GBCoreLoadROM;
 	core->loadSave = _GBCoreLoadSave;

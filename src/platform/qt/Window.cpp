@@ -272,6 +272,7 @@ void Window::saveConfig() {
 void Window::selectROM() {
 	QStringList formats{
 		"*.gba",
+		"*.gb",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif

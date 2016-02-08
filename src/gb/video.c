@@ -6,6 +6,7 @@
 #include "video.h"
 
 #include "core/sync.h"
+#include "core/thread.h"
 #include "gb/gb.h"
 #include "gb/io.h"
 
@@ -114,6 +115,12 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					++video->frameCounter;
 					video->renderer->finishFrame(video->renderer);
 					mCoreSyncPostFrame(video->p->sync);
+
+					struct mCoreThread* thread = mCoreThreadGet();
+					if (thread && thread->frameCallback) {
+						thread->frameCallback(thread);
+					}
+
 					if (GBRegisterSTATIsVblankIRQ(video->stat) || GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
