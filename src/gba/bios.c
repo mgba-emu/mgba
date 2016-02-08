@@ -13,6 +13,8 @@
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
 
+mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS");
+
 static void _unLz77(struct GBA* gba, int width);
 static void _unHuffman(struct GBA* gba);
 static void _unRl(struct GBA* gba, int width);
@@ -254,7 +256,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 		cpu->gprs[1] = result.rem;
 		cpu->gprs[3] = abs(result.quot);
 	} else {
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Attempting to divide %i by zero!", num);
+		mLOG(GBA_BIOS, GAME_ERROR, "Attempting to divide %i by zero!", num);
 		// If abs(num) > 1, this should hang, but that would be painful to
 		// emulate in HLE, and no game will get into a state where it hangs...
 		cpu->gprs[0] = (num < 0) ? -1 : 1;
@@ -265,7 +267,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_SWI, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
+	mLOG(GBA_BIOS, DEBUG, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
 	    immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
 	if (gba->memory.fullBios) {
@@ -307,14 +309,14 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0xB:
 	case 0xC:
 		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot CpuSet from BIOS");
+			mLOG(GBA_BIOS, GAME_ERROR, "Cannot CpuSet from BIOS");
 			return;
 		}
 		if (cpu->gprs[0] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet source");
 		}
 		if (cpu->gprs[1] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet destination");
 		}
 		ARMRaiseSWI(cpu);
 		break;
@@ -332,12 +334,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x11:
 	case 0x12:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -348,12 +350,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0x13:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -365,12 +367,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x14:
 	case 0x15:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -383,12 +385,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x17:
 	case 0x18:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -399,13 +401,13 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0x19:
 		// SoundBias is mostly meaningless here
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: SoundBias (19)");
+		mLOG(GBA_BIOS, STUB, "Stub software interrupt: SoundBias (19)");
 		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);
 		break;
 	default:
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
+		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}
 	gba->memory.biosPrefetch = 0xE3A02004;
 }
