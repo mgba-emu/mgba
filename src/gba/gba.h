@@ -78,7 +78,7 @@ struct GBATimer {
 };
 
 struct GBA {
-	struct ARMComponent d;
+	struct mCPUComponent d;
 
 	struct ARMCore* cpu;
 	struct GBAMemory memory;
@@ -169,7 +169,7 @@ void GBAStop(struct GBA* gba);
 void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode,
+void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 

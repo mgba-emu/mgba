@@ -43,8 +43,8 @@ static void _checkBreakpoints(struct ARMDebugger* debugger) {
 	ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
 
-static void ARMDebuggerInit(struct ARMCore*, struct ARMComponent*);
-static void ARMDebuggerDeinit(struct ARMComponent*);
+static void ARMDebuggerInit(void* cpu, struct mCPUComponent*);
+static void ARMDebuggerDeinit(struct mCPUComponent*);
 
 void ARMDebuggerCreate(struct ARMDebugger* debugger) {
 	debugger->d.id = ARM_DEBUGGER_ID;
@@ -52,11 +52,11 @@ void ARMDebuggerCreate(struct ARMDebugger* debugger) {
 	debugger->d.deinit = ARMDebuggerDeinit;
 }
 
-void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
+void ARMDebuggerInit(void* cpu, struct mCPUComponent* component) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
 	debugger->cpu = cpu;
 	debugger->state = DEBUGGER_RUNNING;
-	debugger->originalMemory = cpu->memory;
+	debugger->originalMemory = debugger->cpu->memory;
 	debugger->currentBreakpoint = 0;
 	DebugBreakpointListInit(&debugger->breakpoints, 0);
 	DebugBreakpointListInit(&debugger->swBreakpoints, 0);
@@ -66,7 +66,7 @@ void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	}
 }
 
-void ARMDebuggerDeinit(struct ARMComponent* component) {
+void ARMDebuggerDeinit(struct mCPUComponent* component) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
 	debugger->deinit(debugger);
 	DebugBreakpointListDeinit(&debugger->breakpoints);

@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#include "core/cpu.h"
 #include "lr35902/isa-lr35902.h"
 
 struct LR35902Core;
@@ -67,13 +68,6 @@ struct LR35902InterruptHandler {
 	void (*hitStub)(struct LR35902Core* cpu);
 };
 
-// TODO: Merge with ARMComponent?
-struct LR35902Component {
-	uint32_t id;
-	void (*init)(struct LR35902Core* cpu, struct LR35902Component* component);
-	void (*deinit)(struct LR35902Component* component);
-};
-
 struct LR35902Core {
 #pragma pack(push, 1)
 	union {
@@ -125,10 +119,10 @@ struct LR35902Core {
 	struct LR35902Memory memory;
 	struct LR35902InterruptHandler irqh;
 
-	struct LR35902Component* master;
+	struct mCPUComponent* master;
 
 	size_t numComponents;
-	struct LR35902Component** components;
+	struct mCPUComponent** components;
 };
 
 static inline uint16_t LR35902ReadHL(struct LR35902Core* cpu) {
@@ -163,7 +157,7 @@ static inline void LR35902WriteDE(struct LR35902Core* cpu, uint16_t de) {
 
 void LR35902Init(struct LR35902Core* cpu);
 void LR35902Deinit(struct LR35902Core* cpu);
-void LR35902SetComponents(struct LR35902Core* cpu, struct LR35902Component* master, int extra, struct LR35902Component** extras);
+void LR35902SetComponents(struct LR35902Core* cpu, struct mCPUComponent* master, int extra, struct mCPUComponent** extras);
 void LR35902HotplugAttach(struct LR35902Core* cpu, size_t slot);
 void LR35902HotplugDetach(struct LR35902Core* cpu, size_t slot);
 

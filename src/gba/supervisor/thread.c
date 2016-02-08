@@ -151,7 +151,7 @@ static THREAD_ENTRY _GBAThreadRun(void* context) {
 	struct Patch patch;
 	struct GBACheatDevice cheatDevice;
 	struct GBAThread* threadContext = context;
-	struct ARMComponent* components[GBA_COMPONENT_MAX] = { 0 };
+	struct mCPUComponent* components[GBA_COMPONENT_MAX] = { 0 };
 	struct GBARRContext* movie = 0;
 	int numComponents = GBA_COMPONENT_MAX;
 

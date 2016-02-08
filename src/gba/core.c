@@ -19,7 +19,7 @@ struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
-	struct ARMComponent* components[GBA_COMPONENT_MAX];
+	struct mCPUComponent* components[GBA_COMPONENT_MAX];
 };
 
 static bool _GBACoreInit(struct mCore* core) {

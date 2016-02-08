@@ -182,7 +182,7 @@ struct GBACheatSet {
 DECLARE_VECTOR(GBACheatSets, struct GBACheatSet*);
 
 struct GBACheatDevice {
-	struct ARMComponent d;
+	struct mCPUComponent d;
 	struct GBA* p;
 
 	struct GBACheatSets cheats;

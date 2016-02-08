@@ -42,7 +42,7 @@ enum GBIRQVector {
 
 struct mCoreSync;
 struct GB {
-	struct LR35902Component d;
+	struct mCPUComponent d;
 
 	struct LR35902Core* cpu;
 	struct GBMemory memory;

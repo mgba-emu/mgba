@@ -75,7 +75,7 @@ enum DebuggerLogLevel {
 };
 
 struct ARMDebugger {
-	struct ARMComponent d;
+	struct mCPUComponent d;
 	enum DebuggerState state;
 	struct ARMCore* cpu;
 

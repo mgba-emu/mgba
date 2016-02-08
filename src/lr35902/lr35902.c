@@ -29,7 +29,7 @@ void LR35902Deinit(struct LR35902Core* cpu) {
 	}
 }
 
-void LR35902SetComponents(struct LR35902Core* cpu, struct LR35902Component* master, int extra, struct LR35902Component** extras) {
+void LR35902SetComponents(struct LR35902Core* cpu, struct mCPUComponent* master, int extra, struct mCPUComponent** extras) {
 	cpu->master = master;
 	cpu->numComponents = extra;
 	cpu->components = extras;

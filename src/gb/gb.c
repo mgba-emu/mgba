@@ -21,7 +21,7 @@ const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
 mLOG_DEFINE_CATEGORY(GB, "GB");
 
-static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component);
+static void GBInit(void* cpu, struct mCPUComponent* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
@@ -34,11 +34,11 @@ void GBCreate(struct GB* gb) {
 	gb->d.deinit = 0;
 }
 
-static void GBInit(struct LR35902Core* cpu, struct LR35902Component* component) {
+static void GBInit(void* cpu, struct mCPUComponent* component) {
 	struct GB* gb = (struct GB*) component;
 	gb->cpu = cpu;
 
-	GBInterruptHandlerInit(&cpu->irqh);
+	GBInterruptHandlerInit(&gb->cpu->irqh);
 	GBMemoryInit(gb);
 
 	gb->video.p = gb;

@@ -32,7 +32,7 @@ static const uint8_t GBA_ROM_MAGIC[] = { 0xEA };
 
 static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
 
-static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
+static void GBAInit(void* cpu, struct mCPUComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
@@ -55,13 +55,13 @@ void GBACreate(struct GBA* gba) {
 	gba->d.deinit = 0;
 }
 
-static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
+static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	struct GBA* gba = (struct GBA*) component;
 	gba->cpu = cpu;
 	gba->debugger = 0;
 	gba->sync = 0;
 
-	GBAInterruptHandlerInit(&cpu->irqh);
+	GBAInterruptHandlerInit(&gba->cpu->irqh);
 	GBAMemoryInit(gba);
 	GBASavedataInit(&gba->memory.savedata, 0);
 
@@ -936,7 +936,7 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 }
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	size_t immediate;
 	for (immediate = 0; immediate < gba->cpu->numComponents; ++immediate) {
 		if (gba->cpu->components[immediate] == component) {
