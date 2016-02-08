@@ -142,6 +142,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->state = THREAD_INITIALIZED;
+	threadContext->logger.p = threadContext;
 
 	MutexInit(&threadContext->stateMutex);
 	ConditionInit(&threadContext->stateCond);
@@ -380,19 +381,19 @@ struct mCoreThread* mCoreThreadGet(void) {
 #endif
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	UNUSED(logger);
 	printf("%s: ", mLogCategoryName(category));
 	vprintf(format, args);
 	printf("\n");
-
 }
 
 struct mLogger* mCoreThreadLogger(void) {
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread) {
-		if (!thread->logger.log) {
-			thread->logger.log = _mCoreLog;
+		if (!thread->logger.d.log) {
+			thread->logger.d.log = _mCoreLog;
 		}
-		return &thread->logger;
+		return &thread->logger.d;
 	}
 	return NULL;
 }

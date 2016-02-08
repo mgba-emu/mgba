@@ -31,6 +31,12 @@ enum mCoreThreadState {
 	THREAD_CRASHED
 };
 
+struct mCoreThread;
+struct mThreadLogger {
+	struct mLogger d;
+	struct mCoreThread* p;
+};
+
 struct mCoreThread {
 	// Input
 	struct mCore* core;
@@ -45,7 +51,7 @@ struct mCoreThread {
 	int interruptDepth;
 	bool frameWasOn;
 
-	struct mLogger logger;
+	struct mThreadLogger logger;
 	enum mLogLevel logLevel;
 	ThreadCallback startCallback;
 	ThreadCallback cleanCallback;

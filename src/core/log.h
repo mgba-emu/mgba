@@ -15,7 +15,9 @@ enum mLogLevel {
 	mLOG_INFO = 0x08,
 	mLOG_DEBUG = 0x10,
 	mLOG_STUB = 0x20,
-	mLOG_GAME_ERROR = 0x40
+	mLOG_GAME_ERROR = 0x40,
+
+	mLOG_ALL = 0x7F
 };
 
 struct mLogger {
