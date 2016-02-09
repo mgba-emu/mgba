@@ -119,6 +119,8 @@ int main(int argc, char** argv) {
 	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 0x8000);
 	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
+	core->reset(core);
+
 	_GBAFuzzRunloop(core, fuzzOpts.frames);
 
 	core->unloadROM(core);
@@ -142,6 +144,8 @@ int main(int argc, char** argv) {
 static void _GBAFuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
+		blip_clear(core->getAudioChannel(core, 0));
+		blip_clear(core->getAudioChannel(core, 1));
 	} while (core->frameCounter(core) < frames && !_dispatchExiting);
 }
 
