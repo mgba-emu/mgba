@@ -104,6 +104,14 @@ static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
 	return GBLoadROM(core->board, vf);
 }
 
+static bool _GBCoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
+	UNUSED(core);
+	UNUSED(vf);
+	UNUSED(type);
+	// TODO
+	return false;
+}
+
 static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBLoadSave(core->board, vf);
 }
@@ -220,6 +228,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setAVStream = _GBCoreSetAVStream;
 	core->isROM = GBIsROM;
 	core->loadROM = _GBCoreLoadROM;
+	core->loadBIOS = _GBCoreLoadBIOS;
 	core->loadSave = _GBCoreLoadSave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
