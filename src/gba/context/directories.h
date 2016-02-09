@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 struct VDir;
 
 struct GBADirectorySet {
@@ -26,5 +27,9 @@ void GBADirectorySetAttachBase(struct GBADirectorySet* dirs, struct VDir* base);
 void GBADirectorySetDetachBase(struct GBADirectorySet* dirs);
 
 struct VFile* GBADirectorySetOpenPath(struct GBADirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
+
+struct GBAOptions;
+void GBADirectorySetMapOptions(struct GBADirectorySet* dirs, const struct GBAOptions* opts);
+#endif
 
 #endif

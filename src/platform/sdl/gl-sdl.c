@@ -30,8 +30,8 @@ void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
 bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
 	GBASDLGLCommonInit(renderer);
 
-	renderer->d.outputBuffer = malloc(256 * 256 * BYTES_PER_PIXEL);
-	renderer->d.outputBufferStride = 256;
+	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
 	GBAGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;

@@ -536,7 +536,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetWatchpoint(&debugger->d, address);
+	ARMDebuggerSetWatchpoint(&debugger->d, address, WATCHPOINT_RW); // TODO: ro/wo
 }
 
 static void _breakIntoDefault(int signal) {
@@ -802,7 +802,11 @@ static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason 
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
-			printf("Hit watchpoint at 0x%08X: (old value = 0x%08X)\n", info->address, info->oldValue);
+			if (info->accessType & WATCHPOINT_WRITE) {
+				printf("Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->newValue, info->oldValue);
+			} else {
+				printf("Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->oldValue);
+			}
 		} else {
 			printf("Hit watchpoint\n");
 		}

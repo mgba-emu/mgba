@@ -14,7 +14,9 @@ extern "C" {
 
 using namespace QGBA;
 
-ROMInfo::ROMInfo(GameController* controller, QWidget* parent) {
+ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+{
 	m_ui.setupUi(this);
 
 	if (!controller->isLoaded()) {

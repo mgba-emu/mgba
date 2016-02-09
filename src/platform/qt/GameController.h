@@ -101,7 +101,7 @@ signals:
 	void postLog(int level, const QString& log);
 
 public slots:
-	void loadGame(const QString& path, bool dirmode = false);
+	void loadGame(const QString& path);
 	void loadBIOS(const QString& path);
 	void yankPak();
 	void replaceGame(const QString& path);
@@ -142,6 +142,8 @@ public slots:
 	void setAVStream(GBAAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
+	void setSaveStateExtdata(int flags);
+	void setLoadStateExtdata(int flags);
 
 #ifdef USE_PNG
 	void screenshot();
@@ -186,7 +188,6 @@ private:
 	GBASIODolphin m_dolphin;
 
 	bool m_gameOpen;
-	bool m_dirmode;
 
 	QString m_fname;
 	QString m_bios;
@@ -216,6 +217,8 @@ private:
 	int m_stateSlot;
 	GBASerializedState* m_backupLoadState;
 	QByteArray m_backupSaveState;
+	int m_saveStateFlags;
+	int m_loadStateFlags;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;

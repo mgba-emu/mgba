@@ -75,3 +75,12 @@ void GDBController::listen() {
 	}
 	m_gameController->threadContinue();
 }
+
+void GDBController::breakInto() {
+	if (!isAttached()) {
+		return;
+	}
+	m_gameController->threadInterrupt();
+	ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_MANUAL, 0);
+	m_gameController->threadContinue();
+}

@@ -22,6 +22,7 @@ Q_OBJECT
 
 public:
 	ShortcutView(QWidget* parent = nullptr);
+	~ShortcutView();
 
 	void setController(ShortcutController* controller);
 	void setInputController(InputController* input);

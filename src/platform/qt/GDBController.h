@@ -34,6 +34,7 @@ public slots:
 	void attach();
 	void detach();
 	void listen();
+	void breakInto();
 
 signals:
 	void listening();

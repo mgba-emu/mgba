@@ -339,11 +339,13 @@ enum GBAExtdataTag {
 	EXTDATA_NONE = 0,
 	EXTDATA_SCREENSHOT = 1,
 	EXTDATA_SAVEDATA = 2,
+	EXTDATA_CHEATS = 3,
 	EXTDATA_MAX
 };
 
 #define SAVESTATE_SCREENSHOT 1
 #define SAVESTATE_SAVEDATA   2
+#define SAVESTATE_CHEATS     4
 
 struct GBAExtdataItem {
 	int32_t size;
@@ -364,6 +366,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
+void GBADeleteState(struct GBA* thread, struct VDir* dir, int slot);
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);

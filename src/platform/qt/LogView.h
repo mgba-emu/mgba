@@ -38,7 +38,7 @@ private slots:
 	void setMaxLines(int);
 
 protected:
-	virtual void showEvent(QShowEvent*) override;
+	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	static const int DEFAULT_LINE_LIMIT = 1000;

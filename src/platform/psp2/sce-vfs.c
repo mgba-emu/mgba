@@ -43,6 +43,7 @@ static void _vdsceRewind(struct VDir* vd);
 static struct VDirEntry* _vdsceListNext(struct VDir* vd);
 static struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vdsceOpenDir(struct VDir* vd, const char* path);
+static bool _vdsceDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdesceName(struct VDirEntry* vde);
 static enum VFSType _vdesceType(struct VDirEntry* vde);
@@ -152,6 +153,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->d.listNext = _vdsceListNext;
 	vd->d.openFile = _vdsceOpenFile;
 	vd->d.openDir = _vdsceOpenDir;
+	vd->d.deleteFile = _vdsceDeleteFile;
 	vd->path = strdup(path);
 
 	vd->de.d.name = _vdesceName;
@@ -215,6 +217,20 @@ struct VDir* _vdsceOpenDir(struct VDir* vd, const char* path) {
 	return vd2;
 }
 
+bool _vdsceDeleteFile(struct VDir* vd, const char* path) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vdsce->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + strlen(PATH_SEP) + 1));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+
+	bool ret = sceIoRemove(combined) >= 0;
+	free(combined);
+	return ret;
+}
+
 static const char* _vdesceName(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
 	return vdesce->ent.d_name;
@@ -222,7 +238,7 @@ static const char* _vdesceName(struct VDirEntry* vde) {
 
 static enum VFSType _vdesceType(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
-	if (PSP2_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
+	if (SCE_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;

@@ -36,6 +36,7 @@ private:
 	QLineEdit* m_portEdit;
 	QLineEdit* m_bindAddressEdit;
 	QPushButton* m_startStopButton;
+	QPushButton* m_breakButton;
 };
 
 }

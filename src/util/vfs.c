@@ -40,27 +40,27 @@ struct VFile* VFileOpen(const char* path, int flags) {
 	}
 	return VFileFOpen(path, chflags);
 #elif defined(PSP2)
-	int sceFlags = PSP2_O_RDONLY;
+	int sceFlags = SCE_O_RDONLY;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:
-		sceFlags = PSP2_O_WRONLY;
+		sceFlags = SCE_O_WRONLY;
 		break;
 	case O_RDWR:
-		sceFlags = PSP2_O_RDWR;
+		sceFlags = SCE_O_RDWR;
 		break;
 	case O_RDONLY:
-		sceFlags = PSP2_O_RDONLY;
+		sceFlags = SCE_O_RDONLY;
 		break;
 	}
 
 	if (flags & O_APPEND) {
-		sceFlags |= PSP2_O_APPEND;
+		sceFlags |= SCE_O_APPEND;
 	}
 	if (flags & O_TRUNC) {
-		sceFlags |= PSP2_O_TRUNC;
+		sceFlags |= SCE_O_TRUNC;
 	}
 	if (flags & O_CREAT) {
-		sceFlags |= PSP2_O_CREAT;
+		sceFlags |= SCE_O_CREAT;
 	}
 	return VFileOpenSce(path, sceFlags, 0666);
 #elif defined(USE_VFS_3DS)

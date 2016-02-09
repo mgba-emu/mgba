@@ -8,6 +8,10 @@
 #include "util/gui.h"
 #include "util/gui/font.h"
 
+#ifdef _3DS
+#include <3ds.h>
+#endif
+
 DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 
 enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item) {
@@ -23,6 +27,11 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 
 	GUIInvalidateKeys(params);
 	while (true) {
+#ifdef _3DS
+		if (!aptMainLoop()) {
+			return GUI_MENU_EXIT_CANCEL;
+		}
+#endif
 		uint32_t newInput = 0;
 		GUIPollInput(params, &newInput, 0);
 		unsigned cx, cy;
@@ -88,7 +97,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 					++menu->index;
 				} else if (cy <= params->height - lineHeight && cy > 2 * lineHeight) {
 					size_t location = cy - 2 * lineHeight;
-					location *= GUIMenuItemListSize(&menu->items);
+					location *= GUIMenuItemListSize(&menu->items) - 1;
 					menu->index = location / (params->height - 3 * lineHeight);
 				}
 			}
@@ -140,10 +149,10 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			int color = 0xE0A0A0A0;
 			if (i == menu->index) {
 				color = 0xFFFFFFFF;
-				GUIFontDrawIcon(params->font, 2, y, GUI_ALIGN_BOTTOM | GUI_ALIGN_LEFT, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_POINTER);
+				GUIFontDrawIcon(params->font, lineHeight * 0.8f, y, GUI_ALIGN_BOTTOM | GUI_ALIGN_RIGHT, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_POINTER);
 			}
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, i);
-			GUIFontPrintf(params->font, 0, y, GUI_ALIGN_LEFT, color, "  %s", item->title);
+			GUIFontPrint(params->font, lineHeight, y, GUI_ALIGN_LEFT, color, item->title);
 			if (item->validStates && item->validStates[item->state]) {
 				GUIFontPrintf(params->font, params->width, y, GUI_ALIGN_RIGHT, color, "%s ", item->validStates[item->state]);
 			}
@@ -154,15 +163,18 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 		}
 
 		if (itemsPerScreen < GUIMenuItemListSize(&menu->items)) {
-			y = 2 * lineHeight;
-			GUIFontDrawIcon(params->font, params->width - 8, y, GUI_ALIGN_HCENTER | GUI_ALIGN_BOTTOM, GUI_ORIENT_VMIRROR, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
-			for (; y < params->height - 16; y += 16) {
-				GUIFontDrawIcon(params->font, params->width - 8, y, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_TRACK);
-			}
-			GUIFontDrawIcon(params->font, params->width - 8, y, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
-
 			size_t top = 2 * lineHeight;
-			y = menu->index * (y - top - 16) / GUIMenuItemListSize(&menu->items);
+			size_t bottom = params->height - 8;
+			unsigned w;
+			unsigned right;
+			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_BUTTON, &right, 0);
+			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_TRACK, &w, 0);
+			right = (right - w) / 2;
+			GUIFontDrawIcon(params->font, params->width - 8, top, GUI_ALIGN_HCENTER | GUI_ALIGN_BOTTOM, GUI_ORIENT_VMIRROR, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
+			GUIFontDrawIconSize(params->font, params->width - right - 8, top, 0, bottom - top, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_TRACK);
+			GUIFontDrawIcon(params->font, params->width - 8, bottom, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_BUTTON);
+
+			y = menu->index * (bottom - top - 16) / GUIMenuItemListSize(&menu->items);
 			GUIFontDrawIcon(params->font, params->width - 8, top + y, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_SCROLLBAR_THUMB);
 		}
 

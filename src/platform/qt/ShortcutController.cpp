@@ -137,10 +137,13 @@ void ShortcutController::addFunctions(QMenu* menu, std::function<void()> press, 
 	smenu->addFunctions(qMakePair(press, release), shortcut, visibleName, name);
 	endInsertRows();
 	ShortcutItem* item = &smenu->items().last();
+	bool loadedShortcut = false;
 	if (m_config) {
-		loadShortcuts(item);
+		loadedShortcut = loadShortcuts(item);
 	}
-	m_heldKeys[shortcut] = item;
+	if (!loadedShortcut && !m_heldKeys.contains(shortcut)) {
+		m_heldKeys[shortcut] = item;
+	}
 	emit dataChanged(createIndex(smenu->items().count() - 1, 0, item),
 	                 createIndex(smenu->items().count() - 1, 2, item));
 }
@@ -387,10 +390,11 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 	return false;
 }
 
-void ShortcutController::loadShortcuts(ShortcutItem* item) {
+bool ShortcutController::loadShortcuts(ShortcutItem* item) {
 	if (item->name().isNull()) {
-		return;
+		return false;
 	}
+	loadGamepadShortcuts(item);
 	QVariant shortcut = m_config->getQtOption(item->name(), KEY_SECTION);
 	if (!shortcut.isNull()) {
 		if (shortcut.toString().endsWith("+")) {
@@ -398,8 +402,9 @@ void ShortcutController::loadShortcuts(ShortcutItem* item) {
 		} else {
 			updateKey(item, QKeySequence(shortcut.toString())[0]);
 		}
+		return true;
 	}
-	loadGamepadShortcuts(item);
+	return false;
 }
 
 void ShortcutController::loadGamepadShortcuts(ShortcutItem* item) {

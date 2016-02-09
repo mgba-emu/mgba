@@ -401,6 +401,8 @@ void GBAMapOptionsToContext(const struct GBAOptions* opts, struct GBAThread* thr
 	}
 
 	threadContext->idleOptimization = opts->idleOptimization;
+
+	GBADirectorySetMapOptions(&threadContext->dirs, opts);
 }
 
 void GBAMapArgumentsToContext(const struct GBAArguments* args, struct GBAThread* threadContext) {
@@ -441,7 +443,6 @@ bool GBAThreadStart(struct GBAThread* threadContext) {
 		return false;
 	}
 
-	GBADirectorySetInit(&threadContext->dirs);
 	_reloadDirectories(threadContext);
 
 	MutexInit(&threadContext->stateMutex);
@@ -571,8 +572,6 @@ void GBAThreadJoin(struct GBAThread* threadContext) {
 		threadContext->patch->close(threadContext->patch);
 		threadContext->patch = 0;
 	}
-
-	GBADirectorySetDeinit(&threadContext->dirs);
 }
 
 bool GBAThreadIsActive(struct GBAThread* threadContext) {

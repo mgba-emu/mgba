@@ -12,6 +12,7 @@ static void _vdlRewind(struct VDir* vd);
 static struct VDirEntry* _vdlListNext(struct VDir* vd);
 static struct VFile* _vdlOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vdlOpenDir(struct VDir* vd, const char* path);
+static bool _vdlDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdleName(struct VDirEntry* vde);
 static enum VFSType _vdleType(struct VDirEntry* vde);
@@ -38,6 +39,7 @@ struct VDir* VDeviceList() {
 	vd->d.listNext = _vdlListNext;
 	vd->d.openFile = _vdlOpenFile;
 	vd->d.openDir = _vdlOpenDir;
+	vd->d.deleteFile = _vdlDeleteFile;
 
 	vd->vde.d.name = _vdleName;
 	vd->vde.d.type = _vdleType;
@@ -91,6 +93,12 @@ static struct VFile* _vdlOpenFile(struct VDir* vd, const char* path, int mode) {
 static struct VDir* _vdlOpenDir(struct VDir* vd, const char* path) {
 	UNUSED(vd);
 	return VDirOpen(path);
+}
+
+static bool _vdlDeleteFile(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	return false;
 }
 
 static const char* _vdleName(struct VDirEntry* vde) {

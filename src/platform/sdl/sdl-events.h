@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 #include "util/circle-buffer.h"
+#include "util/vector.h"
 
 #include "gba/supervisor/thread.h"
 
@@ -21,14 +22,25 @@
 struct GBAVideoSoftwareRenderer;
 struct Configuration;
 
+struct SDL_JoystickCombo {
+	SDL_JoystickID id;
+	size_t index;
+	SDL_Joystick* joystick;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Haptic* haptic;
+#endif
+};
+
+DECLARE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
+
+struct GBASDLPlayer;
+
 struct GBASDLEvents {
-	SDL_Joystick** joysticks;
-	size_t nJoysticks;
+	struct SDL_JoystickList joysticks;
 	const char* preferredJoysticks[MAX_PLAYERS];
 	int playersAttached;
-	size_t joysticksClaimed[MAX_PLAYERS];
+	struct GBASDLPlayer* players[MAX_PLAYERS];
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_Haptic** haptic;
 	int screensaverSuspendDepth;
 	bool screensaverSuspendable;
 #endif
@@ -37,13 +49,11 @@ struct GBASDLEvents {
 struct GBASDLPlayer {
 	size_t playerId;
 	struct GBAInputMap* bindings;
-	SDL_Joystick* joystick;
-	size_t joystickIndex;
+	struct SDL_JoystickCombo* joystick;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
 	int fullscreen;
 	int windowUpdated;
-	SDL_Haptic* haptic;
 
 	struct GBASDLRumble {
 		struct GBARumble d;
@@ -80,6 +90,7 @@ bool GBASDLAttachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
 void GBASDLDetachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
 void GBASDLEventsLoadConfig(struct GBASDLEvents*, const struct Configuration*);
 void GBASDLPlayerChangeJoystick(struct GBASDLEvents*, struct GBASDLPlayer*, size_t index);
+void GBASDLUpdateJoysticks(struct GBASDLEvents* events);
 
 void GBASDLInitBindings(struct GBAInputMap* inputMap);
 void GBASDLPlayerLoadConfig(struct GBASDLPlayer*, const struct Configuration*);

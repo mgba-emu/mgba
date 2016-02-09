@@ -49,17 +49,36 @@ unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	return defaultFontMetrics[glyph].width * 2;
 }
 
+void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
+	UNUSED(font);
+	if (icon >= GUI_ICON_MAX) {
+		if (w) {
+			*w = 0;
+		}
+		if (h) {
+			*h = 0;
+		}
+	} else {
+		if (w) {
+			*w = defaultIconMetrics[icon].width * 2;
+		}
+		if (h) {
+			*h = defaultIconMetrics[icon].height * 2;
+		}
+	}
+}
+
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
 	if (glyph > 0x7F) {
 		glyph = '?';
 	}
 	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	vita2d_draw_texture_tint_part_scale(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top * 2,
+	vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top * 2,
 	                                    (glyph & 15) * CELL_WIDTH + metric.padding.left * 2,
 	                                    (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2,
 	                                    CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2,
 	                                    CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2,
-	                                    1, 1, color);
+	                                    color);
 }
 
 void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
@@ -86,13 +105,13 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 
 	switch (orient) {
 	case GUI_ORIENT_HMIRROR:
-		vita2d_draw_texture_tint_part_scale(font->icons, x, y,
+		vita2d_draw_texture_tint_part_scale(font->icons, x + metric.width * 2, y,
 		                                    metric.x * 2, metric.y * 2,
 		                                    metric.width * 2, metric.height * 2,
 		                                    -1, 1, color);
 		return;
 	case GUI_ORIENT_VMIRROR:
-		vita2d_draw_texture_tint_part_scale(font->icons, x, y,
+		vita2d_draw_texture_tint_part_scale(font->icons, x, y + metric.height * 2,
 		                                    metric.x * 2, metric.y * 2,
 		                                    metric.width * 2, metric.height * 2,
 		                                    1, -1, color);
@@ -106,4 +125,15 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 		                                    color);
 		break;
 	}
+}
+
+void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+	if (icon >= GUI_ICON_MAX) {
+		return;
+	}
+	struct GUIIconMetric metric = defaultIconMetrics[icon];
+	vita2d_draw_texture_tint_part_scale(font->icons, x, y,
+	                                    metric.x * 2, metric.y * 2,
+	                                    metric.width * 2, metric.height * 2,
+	                                    w ? (w / (float) metric.width) : 1, h ? (h / (float) metric.height) : 1, color);
 }

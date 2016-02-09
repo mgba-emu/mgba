@@ -41,12 +41,12 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 	}
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB16);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_RGB16);
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB555);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_RGB555);
 #endif
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB32);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_RGB32);
 #endif
 }
 

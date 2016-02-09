@@ -21,7 +21,9 @@ struct GBAContext {
 	const char* fname;
 	struct VFile* save;
 	struct VFile* bios;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBADirectorySet dirs;
+#endif
 	struct ARMComponent* components[GBA_COMPONENT_MAX];
 	struct GBAConfig config;
 	struct GBAOptions opts;

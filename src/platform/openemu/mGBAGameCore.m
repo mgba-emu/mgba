@@ -27,6 +27,7 @@
 #include "util/common.h"
 
 #include "gba/cheats.h"
+#include "gba/cheats/gameshark.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "gba/context/context.h"
@@ -45,7 +46,7 @@
 	struct GBAContext context;
 	struct GBAVideoSoftwareRenderer renderer;
 	struct GBACheatDevice cheats;
-	struct GBACheatSet cheatSet;
+	NSMutableDictionary *cheatSets;
 	uint16_t keys;
 }
 @end
@@ -70,8 +71,7 @@
 		GBAAudioResizeBuffer(&context.gba->audio, SAMPLES);
 		GBACheatDeviceCreate(&cheats);
 		GBACheatAttachDevice(context.gba, &cheats);
-		GBACheatSetInit(&cheatSet, "openemu");
-		GBACheatAddSet(&cheats, &cheatSet);
+		cheatSets = [[NSMutableDictionary alloc] init];
 		keys = 0;
 	}
 
@@ -81,9 +81,18 @@
 - (void)dealloc
 {
 	GBAContextDeinit(&context);
-	GBACheatRemoveSet(&cheats, &cheatSet);
+	[cheatSets enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+		UNUSED(key);
+		UNUSED(stop);
+		GBACheatRemoveSet(&cheats, [obj pointerValue]);
+	}];
 	GBACheatDeviceDestroy(&cheats);
-	GBACheatSetDeinit(&cheatSet);
+	[cheatSets enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+		UNUSED(key);
+		UNUSED(stop);
+		GBACheatSetDeinit([obj pointerValue]);
+	}];
+	[cheatSets release];
 	free(renderer.outputBuffer);
 
 	[super dealloc];
@@ -275,5 +284,33 @@ const int GBAMap[] = {
 	keys &= ~(1 << GBAMap[button]);
 }
 
+#pragma mark - Cheats
+
+- (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
+{
+	code = [code stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+	NSString *codeId = [code stringByAppendingFormat:@"/%@", type];
+	struct GBACheatSet* cheatSet = [[cheatSets objectForKey:codeId] pointerValue];
+	if (cheatSet) {
+		cheatSet->enabled = enabled;
+		return;
+	}
+	cheatSet = malloc(sizeof(*cheatSet));
+	GBACheatSetInit(cheatSet, [codeId UTF8String]);
+	if ([type isEqual:@"GameShark"]) {
+		GBACheatSetGameSharkVersion(cheatSet, 1);
+	} else if ([type isEqual:@"Action Replay"]) {
+		GBACheatSetGameSharkVersion(cheatSet, 3);
+	}
+	NSArray *codeSet = [code componentsSeparatedByString:@"+"];
+	for (id c in codeSet) {
+		GBACheatAddLine(cheatSet, [c UTF8String]);
+	}
+	cheatSet->enabled = enabled;
+	[cheatSets setObject:[NSValue valueWithPointer:cheatSet] forKey:codeId];
+	GBACheatAddSet(&cheats, cheatSet);
+}
 @end
 

@@ -9,6 +9,7 @@
 #include "GamepadButtonEvent.h"
 #include "ShortcutController.h"
 
+#include <QFontMetrics>
 #include <QKeyEvent>
 
 using namespace QGBA;
@@ -72,7 +73,8 @@ void KeyEditor::clearAxis() {
 
 QSize KeyEditor::sizeHint() const {
 	QSize hint = QLineEdit::sizeHint();
-	hint.setWidth(40);
+	QFontMetrics fm(font());
+	hint.setWidth(fm.height() * 3);
 	return hint;
 }
 

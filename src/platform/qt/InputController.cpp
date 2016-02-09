@@ -46,6 +46,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	++s_sdlInited;
 	m_sdlPlayer.bindings = &m_inputMap;
 	GBASDLInitBindings(&m_inputMap);
+	updateJoysticks();
 #endif
 
 	m_gamepadTimer = new QTimer(this);
@@ -146,9 +147,9 @@ const char* InputController::profileForType(uint32_t type) {
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		return SDL_JoystickName(m_sdlPlayer.joystick);
+		return SDL_JoystickName(m_sdlPlayer.joystick->joystick);
 #else
-		return SDL_JoystickName(SDL_JoystickIndex(m_sdlPlayer.joystick));
+		return SDL_JoystickName(SDL_JoystickIndex(m_sdlPlayer.joystick->joystick));
 #endif
 	}
 #endif
@@ -161,12 +162,12 @@ QStringList InputController::connectedGamepads(uint32_t type) const {
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
 		QStringList pads;
-		for (size_t i = 0; i < s_sdlEvents.nJoysticks; ++i) {
+		for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
 			const char* name;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-			name = SDL_JoystickName(s_sdlEvents.joysticks[i]);
+			name = SDL_JoystickName(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, i)->joystick);
 #else
-			name = SDL_JoystickName(SDL_JoystickIndex(s_sdlEvents.joysticks[i]));
+			name = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, i)->joystick));
 #endif
 			if (name) {
 				pads.append(QString(name));
@@ -184,7 +185,7 @@ QStringList InputController::connectedGamepads(uint32_t type) const {
 int InputController::gamepad(uint32_t type) const {
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		return m_sdlPlayer.joystickIndex;
+		return m_sdlPlayer.joystick ? m_sdlPlayer.joystick->index : 0;
 	}
 #endif
 	return 0;
@@ -282,11 +283,17 @@ void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
 	return GBAInputBindKey(&m_inputMap, type, key, gbaKey);
 }
 
+void InputController::updateJoysticks() {
+#ifdef BUILD_SDL
+	GBASDLUpdateJoysticks(&s_sdlEvents);
+#endif
+}
+
 int InputController::pollEvents() {
 	int activeButtons = 0;
 #ifdef BUILD_SDL
-	if (m_playerAttached) {
-		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	if (m_playerAttached && m_sdlPlayer.joystick) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
 		SDL_JoystickUpdate();
 		int numButtons = SDL_JoystickNumButtons(joystick);
 		int i;
@@ -336,8 +343,8 @@ int InputController::pollEvents() {
 QSet<int> InputController::activeGamepadButtons(int type) {
 	QSet<int> activeButtons;
 #ifdef BUILD_SDL
-	if (m_playerAttached && type == SDL_BINDING_BUTTON) {
-		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	if (m_playerAttached && type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
 		SDL_JoystickUpdate();
 		int numButtons = SDL_JoystickNumButtons(joystick);
 		int i;
@@ -353,8 +360,8 @@ QSet<int> InputController::activeGamepadButtons(int type) {
 
 void InputController::recalibrateAxes() {
 #ifdef BUILD_SDL
-	if (m_playerAttached) {
-		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	if (m_playerAttached && m_sdlPlayer.joystick) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
 		SDL_JoystickUpdate();
 		int numAxes = SDL_JoystickNumAxes(joystick);
 		if (numAxes < 1) {
@@ -372,8 +379,8 @@ void InputController::recalibrateAxes() {
 QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes(int type) {
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
 #ifdef BUILD_SDL
-	if (m_playerAttached && type == SDL_BINDING_BUTTON) {
-		SDL_Joystick* joystick = m_sdlPlayer.joystick;
+	if (m_playerAttached && type == SDL_BINDING_BUTTON && m_sdlPlayer.joystick) {
+		SDL_Joystick* joystick = m_sdlPlayer.joystick->joystick;
 		SDL_JoystickUpdate();
 		int numAxes = SDL_JoystickNumAxes(joystick);
 		if (numAxes < 1) {
@@ -399,14 +406,19 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 	if (old) {
 		description = *old;
 	}
+	int deadzone = 0;
+	if (m_deadzones.size() > axis) {
+		deadzone = m_deadzones[axis];
+	}
 	switch (direction) {
 	case GamepadAxisEvent::NEGATIVE:
 		description.lowDirection = key;
-		description.deadLow = m_deadzones[axis] - AXIS_THRESHOLD;
+
+		description.deadLow = deadzone - AXIS_THRESHOLD;
 		break;
 	case GamepadAxisEvent::POSITIVE:
 		description.highDirection = key;
-		description.deadHigh = m_deadzones[axis] + AXIS_THRESHOLD;
+		description.deadHigh = deadzone + AXIS_THRESHOLD;
 		break;
 	default:
 		return;

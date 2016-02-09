@@ -11,9 +11,9 @@
 
 #define ADDR_MODE_1_SHIFT(OP) \
 	info->op3.reg = opcode & 0x0000000F; \
+	info->op3.shifterOp = ARM_SHIFT_ ## OP; \
 	info->operandFormat |= ARM_OPERAND_REGISTER_3; \
 	if (opcode & 0x00000010) { \
-		info->op3.shifterOp = ARM_SHIFT_ ## OP; \
 		info->op3.shifterReg = (opcode >> 8) & 0xF; \
 		++info->iCycles; \
 		info->operandFormat |= ARM_OPERAND_SHIFT_REGISTER_3; \
@@ -101,11 +101,13 @@
 		info->affectsCPSR = S; \
 		SHIFTER; \
 		if (SKIPPED == 1) { \
-			info->operandFormat >>= 8; \
 			info->op1 = info->op2; \
 			info->op2 = info->op3; \
+			info->operandFormat >>= 8; \
 		} else if (SKIPPED == 2) { \
-			info->operandFormat &= ~ARM_OPERAND_2; \
+			info->op2 = info->op3; \
+			info->operandFormat |= info->operandFormat >> 8; \
+			info->operandFormat &= ~ARM_OPERAND_3; \
 		} \
 		if (info->op1.reg == ARM_PC) { \
 			info->branchType = ARM_BRANCH_INDIRECT; \

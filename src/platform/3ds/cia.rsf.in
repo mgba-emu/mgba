@@ -92,6 +92,7 @@ AccessControlInfo:
    
   MaxCpu                        : 0x9E # Default
   CpuSpeed                      : 804mhz
+  EnableL2Cache                 : true
   
   DisableDebug                  : true
   EnableForceDebug              : false

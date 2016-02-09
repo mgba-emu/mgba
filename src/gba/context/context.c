@@ -21,7 +21,9 @@ bool GBAContextInit(struct GBAContext* context, const char* port) {
 	context->fname = 0;
 	context->save = 0;
 	context->renderer = 0;
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBADirectorySetInit(&context->dirs);
+#endif
 	memset(context->components, 0, sizeof(context->components));
 
 	if (!context->gba || !context->cpu) {
@@ -79,11 +81,17 @@ void GBAContextDeinit(struct GBAContext* context) {
 	mappedMemoryFree(context->gba, 0);
 	mappedMemoryFree(context->cpu, 0);
 	GBAConfigDeinit(&context->config);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBADirectorySetDeinit(&context->dirs);
+#endif
 }
 
 bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autoloadSave) {
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	context->rom = GBADirectorySetOpenPath(&context->dirs, path, GBAIsROM);
+#else
+	context->rom = VFileOpen(path, O_RDONLY);
+#endif
 	if (!context->rom) {
 		return false;
 	}
@@ -106,7 +114,9 @@ bool GBAContextLoadROM(struct GBAContext* context, const char* path, bool autolo
 
 void GBAContextUnloadROM(struct GBAContext* context) {
 	GBAUnloadROM(context->gba);
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	GBADirectorySetDetachBase(&context->dirs);
+#endif
 	if (context->rom) {
 		context->rom->close(context->rom);
 		context->rom = 0;

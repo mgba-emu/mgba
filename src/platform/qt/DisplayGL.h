@@ -10,6 +10,9 @@
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
+#ifndef GLdouble
+#define GLdouble GLdouble
+#endif
 #endif
 
 #include <QGLWidget>
@@ -42,7 +45,7 @@ class DisplayGL : public Display {
 Q_OBJECT
 
 public:
-	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
+	DisplayGL(const QGLFormat& format, bool force1 = false, QWidget* parent = nullptr);
 	~DisplayGL();
 
 	bool isDrawing() const override { return m_isDrawing; }
