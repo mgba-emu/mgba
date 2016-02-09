@@ -204,9 +204,7 @@ GameController::GameController(QObject* parent)
 	m_audioThread->setObjectName("Audio Thread");
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
-	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
 }
@@ -341,6 +339,17 @@ void GameController::openGame(bool biosOnly) {
 	if (!GBAThreadStart(&m_threadContext)) {
 		m_gameOpen = false;
 		emit gameFailed();
+	} else if (m_audioProcessor) {
+		bool started = false;
+		QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
+		if (!started) {
+			LOG(ERROR) << tr("Failed to start audio processor");
+			// Don't freeze!
+			m_audioSync = false;
+			m_videoSync = true;
+			m_threadContext.sync.audioWait = false;
+			m_threadContext.sync.videoFrameWait = true;
+		}
 	}
 }
 
@@ -900,12 +909,19 @@ void GameController::reloadAudioDriver() {
 		m_audioProcessor->requestSampleRate(sampleRate);
 	}
 	m_audioProcessor->moveToThread(m_audioThread);
-	connect(this, SIGNAL(gameStarted(GBAThread*)), m_audioProcessor, SLOT(start()));
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
-	connect(this, SIGNAL(gameUnpaused(GBAThread*)), m_audioProcessor, SLOT(start()));
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
-		QMetaObject::invokeMethod(m_audioProcessor, "start");
+		bool started = false;
+		QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
+		if (!started) {
+			LOG(ERROR) << tr("Failed to start audio processor");
+			// Don't freeze!
+			m_audioSync = false;
+			m_videoSync = true;
+			m_threadContext.sync.audioWait = false;
+			m_threadContext.sync.videoFrameWait = true;
+		}
 	}
 }
 

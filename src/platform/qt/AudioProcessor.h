@@ -34,7 +34,7 @@ public:
 	virtual unsigned sampleRate() const = 0;
 
 public slots:
-	virtual void start() = 0;
+	virtual bool start() = 0;
 	virtual void pause() = 0;
 
 	virtual void setBufferSamples(int samples) = 0;

@@ -2,6 +2,7 @@
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
  - Qt: Fix sending gameStopped twice
+ - Qt: Fix hang if audio sync is enabled and audio fails to initialize
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
 
