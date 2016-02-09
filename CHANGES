@@ -1,6 +1,8 @@
 0.4.1: (Future)
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
+Misc:
+ - GBA: Slightly optimize GBAProcessEvents
 
 0.4.0: (2016-02-02)
 Features:
