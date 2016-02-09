@@ -445,9 +445,6 @@ void GameController::closeGame() {
 	GBACheatSetsClear(&m_cheatDevice.cheats);
 
 	m_threadContext.core->deinit(m_threadContext.core);
-
-	m_gameOpen = false;
-	emit gameStopped(&m_threadContext);
 }
 
 void GameController::crashGame(const QString& crashMessage) {
