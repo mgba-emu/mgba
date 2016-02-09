@@ -51,12 +51,31 @@ static void _waitOnInterrupt(struct mCoreThread* threadContext) {
 }
 
 static void _waitUntilNotState(struct mCoreThread* threadContext, enum mCoreThreadState oldState) {
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	bool videoFrameWait = threadContext->sync.videoFrameWait;
+	threadContext->sync.videoFrameWait = false;
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
+
 	while (threadContext->state == oldState) {
 		MutexUnlock(&threadContext->stateMutex);
+
+		if (!MutexTryLock(&threadContext->sync.videoFrameMutex)) {
+			ConditionWake(&threadContext->sync.videoFrameRequiredCond);
+			MutexUnlock(&threadContext->sync.videoFrameMutex);
+		}
+
+		if (!MutexTryLock(&threadContext->sync.audioBufferMutex)) {
+			ConditionWake(&threadContext->sync.audioRequiredCond);
+			MutexUnlock(&threadContext->sync.audioBufferMutex);
+		}
 
 		MutexLock(&threadContext->stateMutex);
 		ConditionWake(&threadContext->stateCond);
 	}
+
+	MutexLock(&threadContext->sync.videoFrameMutex);
+	threadContext->sync.videoFrameWait = videoFrameWait;
+	MutexUnlock(&threadContext->sync.videoFrameMutex);
 }
 
 static void _pauseThread(struct mCoreThread* threadContext, bool onThread) {
