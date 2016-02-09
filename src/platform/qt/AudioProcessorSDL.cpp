@@ -23,19 +23,20 @@ AudioProcessorSDL::~AudioProcessorSDL() {
 	GBASDLDeinitAudio(&m_audio);
 }
 
-void AudioProcessorSDL::start() {
+bool AudioProcessorSDL::start() {
 	if (!input()) {
 		LOG(WARN) << tr("Can't start an audio processor without input");
-		return;
+		return false;
 	}
 
 	if (m_audio.thread) {
 		GBASDLResumeAudio(&m_audio);
+		return true;
 	} else {
 		if (!m_audio.samples) {
 			m_audio.samples = input()->audioBuffers;
 		}
-		GBASDLInitAudio(&m_audio, input());
+		return GBASDLInitAudio(&m_audio, input());
 	}
 }
 

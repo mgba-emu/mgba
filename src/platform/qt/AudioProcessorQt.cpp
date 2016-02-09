@@ -34,10 +34,10 @@ void AudioProcessorQt::setInput(GBAThread* input) {
 	}
 }
 
-void AudioProcessorQt::start() {
+bool AudioProcessorQt::start() {
 	if (!input()) {
 		LOG(WARN) << tr("Can't start an audio processor without input");
-		return;
+		return false;
 	}
 
 	if (!m_device) {
@@ -62,6 +62,7 @@ void AudioProcessorQt::start() {
 	m_audioOutput->setBufferSize(input()->audioBuffers * 4);
 
 	m_audioOutput->start(m_device);
+	return m_audioOutput->state() == QAudio::ActiveState;
 }
 
 void AudioProcessorQt::pause() {
