@@ -156,10 +156,10 @@ static void GBAGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned 
 	unsigned drawW = w;
 	unsigned drawH = h;
 	if (v->lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
+		if (w * v->height > h * v->width) {
+			drawW = h * v->width / v->height;
+		} else if (w * v->height < h * v->width) {
+			drawH = w * v->height / v->width;
 		}
 	}
 	glViewport(0, 0, v->width, v->height);
