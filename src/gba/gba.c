@@ -205,8 +205,19 @@ void GBASkipBIOS(struct GBA* gba) {
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+
+	gba->bus = cpu->prefetch[1];
+	if (cpu->executionMode == MODE_THUMB) {
+		gba->bus |= cpu->prefetch[1] << 16;
+	}
+
+	if (gba->springIRQ) {
+		ARMRaiseIRQ(cpu);
+		gba->springIRQ = 0;
+	}
+
 	do {
-		struct GBA* gba = (struct GBA*) cpu->master;
 		int32_t cycles = cpu->nextEvent;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
@@ -215,16 +226,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			GBALog(gba, GBA_LOG_FATAL, "Negative cycles passed: %i", cycles);
 		}
 #endif
-
-		gba->bus = cpu->prefetch[1];
-		if (cpu->executionMode == MODE_THUMB) {
-			gba->bus |= cpu->prefetch[1] << 16;
-		}
-
-		if (gba->springIRQ) {
-			ARMRaiseIRQ(cpu);
-			gba->springIRQ = 0;
-		}
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
