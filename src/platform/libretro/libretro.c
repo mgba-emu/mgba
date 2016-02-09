@@ -205,7 +205,7 @@ void retro_init(void) {
 	mCoreInitConfig(core, NULL);
 	core->init(core);
 	struct GBA* gba = core->board;
-	gba->stream = &stream;
+	core->setAVStream(core, &stream);
 	if (rumbleCallback) {
 		gba->rumble = &rumble;
 	}
@@ -224,7 +224,7 @@ void retro_init(void) {
 	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
 	core->setVideoBuffer(core, outputBuffer, 256);
 
-	GBAAudioResizeBuffer(&gba->audio, SAMPLES);
+	core->setAudioBufferSize(core, SAMPLES);
 
 	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 32768);
 	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 32768);

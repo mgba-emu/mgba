@@ -73,9 +73,9 @@
 		core->desiredVideoDimensions(core, &width, &height);
 		outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 		core->setVideoBuffer(core, outputBuffer, width);
+		core->setAudioBufferSize(core, SAMPLES);
 
 		gba = core->board;
-		GBAAudioResizeBuffer(&gba->audio, SAMPLES);
 		GBACheatDeviceCreate(&cheats);
 		GBACheatAttachDevice(gba, &cheats);
 		cheatSets = [[NSMutableDictionary alloc] init];

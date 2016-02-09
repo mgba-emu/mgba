@@ -932,7 +932,7 @@ void GameController::updateKeys() {
 void GameController::redoSamples(int samples) {
 	// TODO: Put back audio buffers
 	if (m_threadContext.core) {
-		GBAAudioResizeBuffer(&static_cast<GBA*>(m_threadContext.core->board)->audio, samples);
+		m_threadContext.core->setAudioBufferSize(m_threadContext.core, samples);
 	}
 	QMetaObject::invokeMethod(m_audioProcessor, "inputParametersChanged");
 }

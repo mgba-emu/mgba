@@ -76,6 +76,15 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->playingCh4 = false;
 }
 
+void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
+	mCoreSyncLockAudio(audio->p->sync);
+	audio->samples = samples;
+	blip_clear(audio->left);
+	blip_clear(audio->right);
+	audio->clock = 0;
+	mCoreSyncConsumeAudio(audio->p->sync);
+}
+
 void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.shift = GBAudioRegisterSquareSweepGetShift(value);
 	audio->ch1.direction = GBAudioRegisterSquareSweepGetDirection(value);

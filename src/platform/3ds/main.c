@@ -273,7 +273,7 @@ static void _setup(struct mGUIRunner* runner) {
 		screenMode = mode;
 	}
 
-	GBAAudioResizeBuffer(&((struct GBA*) runner->core->board)->audio, AUDIO_SAMPLES);
+	runner->core->setAudioBufferSize(runner->core, AUDIO_SAMPLES);
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {

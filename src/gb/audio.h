@@ -187,6 +187,8 @@ void GBAudioInit(struct GBAudio* audio, size_t samples);
 void GBAudioDeinit(struct GBAudio* audio);
 void GBAudioReset(struct GBAudio* audio);
 
+void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples);
+
 void GBAudioWriteNR10(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR11(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR12(struct GBAudio* audio, uint8_t);

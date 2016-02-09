@@ -569,7 +569,7 @@ void _setup(struct mGUIRunner* runner) {
 	outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
-	GBAAudioResizeBuffer(&((struct GBA*) runner->core->board)->audio, SAMPLES);
+	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
 	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
