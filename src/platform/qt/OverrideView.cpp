@@ -21,7 +21,7 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 {
 	m_ui.setupUi(this);
 
-	connect(controller, SIGNAL(gameStarted(mCoreThread*)), this, SLOT(gameStarted(mCoreThread*)));
+	connect(controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*)));
 	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(gameStopped()));
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {

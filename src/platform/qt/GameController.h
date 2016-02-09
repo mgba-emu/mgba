@@ -82,7 +82,7 @@ public:
 
 signals:
 	void frameAvailable(const uint32_t*);
-	void gameStarted(mCoreThread*);
+	void gameStarted(mCoreThread*, const QString& fname);
 	void gameStopped(mCoreThread*);
 	void gamePaused(mCoreThread*);
 	void gameUnpaused(mCoreThread*);
@@ -171,6 +171,7 @@ private:
 	uint32_t* m_drawContext;
 	uint32_t* m_frontBuffer;
 	mCoreThread m_threadContext;
+	const mCoreConfig* m_config;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
 	int m_activeButtons;

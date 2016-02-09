@@ -111,7 +111,7 @@ protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
-	void gameStarted(mCoreThread*);
+	void gameStarted(mCoreThread*, const QString&);
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();

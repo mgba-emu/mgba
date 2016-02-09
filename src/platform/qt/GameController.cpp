@@ -106,7 +106,7 @@ GameController::GameController(QObject* parent)
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
 			mCoreDeleteState(context->core, 0);
 		}
-		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context));
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
 	};
 
 	m_threadContext.cleanCallback = [](mCoreThread* context) {
@@ -235,12 +235,12 @@ void GameController::setOverride(const GBACartridgeOverride& override) {
 }
 
 void GameController::setConfig(const mCoreConfig* config) {
-	if (!m_gameOpen) {
-		return;
+	m_config = config;
+	if (isLoaded()) {
+		threadInterrupt();
+		mCoreLoadForeignConfig(m_threadContext.core, config);
+		threadContinue();
 	}
-	threadInterrupt();
-	mCoreLoadForeignConfig(m_threadContext.core, config);
-	threadContinue();
 }
 
 #ifdef USE_GDB_STUB
@@ -332,6 +332,10 @@ void GameController::openGame(bool biosOnly) {
 	memset(m_drawContext, 0xF8, width * height * 4);
 
 	m_threadContext.core->setAVStream(m_threadContext.core, m_stream);
+
+	if (m_config) {
+		mCoreLoadForeignConfig(m_threadContext.core, m_config);
+	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
 		m_gameOpen = false;

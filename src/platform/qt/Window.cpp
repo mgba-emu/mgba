@@ -94,8 +94,8 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	m_screenWidget->setLockAspectRatio(m_logo.width(), m_logo.height());
 	setCentralWidget(m_screenWidget);
 
-	connect(m_controller, SIGNAL(gameStarted(mCoreThread*)), this, SLOT(gameStarted(mCoreThread*)));
-	connect(m_controller, SIGNAL(gameStarted(mCoreThread*)), &m_inputController, SLOT(suspendScreensaver()));
+	connect(m_controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*, const QString&)));
+	connect(m_controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), &m_inputController, SLOT(suspendScreensaver()));
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_display, SLOT(stopDrawing()));
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(gameStopped()));
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), &m_inputController, SLOT(resumeScreensaver()));
@@ -597,8 +597,7 @@ void Window::toggleFullScreen() {
 	}
 }
 
-void Window::gameStarted(mCoreThread* context) {
-	char title[13] = { '\0' };
+void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	MutexLock(&context->stateMutex);
 	if (context->state < THREAD_EXITING) {
 		emit startDrawing(context);
@@ -611,10 +610,10 @@ void Window::gameStarted(mCoreThread* context) {
 		action->setDisabled(false);
 	}
 	multiplayerChanged();
-	/*if (context->fname) {
-		setWindowFilePath(context->fname);
-		appendMRU(context->fname);
-	}*/
+	if (!fname.isEmpty()) {
+		setWindowFilePath(fname);
+		appendMRU(fname);
+	}
 	updateTitle();
 	attachWidget(m_display);
 
