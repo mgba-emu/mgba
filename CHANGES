@@ -1,6 +1,7 @@
 0.4.1: (Future)
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
+ - Qt: Fix sending gameStopped twice
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
 
