@@ -11,6 +11,7 @@
 #include "MultiplayerController.h"
 #include "VFileDevice.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QThread>
 
@@ -419,6 +420,8 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
+	m_gameOpen = false;
+
 	m_rewindTimer.stop();
 	if (GBAThreadIsPaused(&m_threadContext)) {
 		GBAThreadUnpause(&m_threadContext);
@@ -426,6 +429,8 @@ void GameController::closeGame() {
 	m_audioProcessor->pause();
 	GBAThreadEnd(&m_threadContext);
 	GBAThreadJoin(&m_threadContext);
+	// Make sure the event queue clears out before the thread is reused
+	QCoreApplication::processEvents();
 	if (m_threadContext.fname) {
 		free(const_cast<char*>(m_threadContext.fname));
 		m_threadContext.fname = nullptr;
