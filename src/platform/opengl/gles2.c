@@ -71,25 +71,13 @@ static const GLfloat _vertices[] = {
 	1.f, -1.f,
 };
 
-static void GBAGLES2ContextInit(struct VideoBackend* v, unsigned width, unsigned height, WHandle handle) {
+static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
 	glGenTextures(1, &context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	v->width = width;
-	v->height = height;
-
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
-#endif
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-#endif
 
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
@@ -142,6 +130,23 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, unsigned width, unsigned
 	glDeleteTextures(1, &context->finalShader.tex);
 	context->finalShader.fbo = 0;
 	context->finalShader.tex = 0;
+}
+
+static void GBAGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
+	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
+	v->width = width;
+	v->height = height;
+
+	glBindTexture(GL_TEXTURE_2D, context->tex);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+#endif
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+#endif
 }
 
 static void GBAGLES2ContextDeinit(struct VideoBackend* v) {
@@ -312,6 +317,7 @@ void GBAGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
 	context->d.init = GBAGLES2ContextInit;
 	context->d.deinit = GBAGLES2ContextDeinit;
+	context->d.setDimensions = GBAGLES2ContextSetDimensions;
 	context->d.resized = GBAGLES2ContextResized;
 	context->d.swap = 0;
 	context->d.clear = GBAGLES2ContextClear;

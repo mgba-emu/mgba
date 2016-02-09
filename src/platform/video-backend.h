@@ -16,8 +16,9 @@ typedef void* WHandle;
 #endif
 
 struct VideoBackend {
-	void (*init)(struct VideoBackend*, unsigned width, unsigned height, WHandle handle);
+	void (*init)(struct VideoBackend*, WHandle handle);
 	void (*deinit)(struct VideoBackend*);
+	void (*setDimensions)(struct VideoBackend*, unsigned width, unsigned height);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
 	void (*resized)(struct VideoBackend*, unsigned w, unsigned h);

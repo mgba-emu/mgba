@@ -102,6 +102,7 @@ bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	renderer->gl2.d.filter = renderer->filter;
 	renderer->gl2.d.swap = mSDLGLCommonSwap;
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
+	renderer->gl2.d.setDimensions(&renderer->gl2.d, renderer->width, renderer->height);
 	return true;
 }
 

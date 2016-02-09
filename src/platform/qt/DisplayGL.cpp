@@ -221,7 +221,7 @@ PainterGL::PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags glVersion)
 #if defined(_WIN32) && defined(USE_EPOXY)
 	epoxy_handle_external_wglMakeCurrent();
 #endif
-	m_backend->init(m_backend, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, reinterpret_cast<WHandle>(m_gl->winId()));
+	m_backend->init(m_backend, reinterpret_cast<WHandle>(m_gl->winId()));
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_supportsShaders) {
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<GBAGLES2Context*>(m_backend)->initialShader);
@@ -262,6 +262,19 @@ PainterGL::~PainterGL() {
 
 void PainterGL::setContext(mCoreThread* context) {
 	m_context = context;
+
+	if (!context) {
+		return;
+	}
+
+	m_gl->makeCurrent();
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+	unsigned width, height;
+	context->core->desiredVideoDimensions(context->core, &width, &height);
+	m_backend->setDimensions(m_backend, width, height);
+	m_gl->doneCurrent();
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -374,7 +387,9 @@ void PainterGL::enqueue(const uint32_t* backing) {
 	} else {
 		buffer = m_free.takeLast();
 	}
-	memcpy(buffer, backing, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	unsigned width, height;
+	m_context->core->desiredVideoDimensions(m_context->core, &width, &height);
+	memcpy(buffer, backing, width * height * BYTES_PER_PIXEL);
 	m_queue.enqueue(buffer);
 	m_mutex.unlock();
 }

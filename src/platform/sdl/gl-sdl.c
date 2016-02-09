@@ -42,7 +42,8 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
-	renderer->gl.d.init(&renderer->gl.d, renderer->width, renderer->height, 0);
+	renderer->gl.d.init(&renderer->gl.d, 0);
+	renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
 
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;

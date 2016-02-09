@@ -21,7 +21,7 @@ static const GLint _glTexCoords[] = {
 	0, 1
 };
 
-static void GBAGLContextInit(struct VideoBackend* v, unsigned width, unsigned height, WHandle handle) {
+static void GBAGLContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct GBAGLContext* context = (struct GBAGLContext*) v;
 	glGenTextures(1, &context->tex);
@@ -31,9 +31,14 @@ static void GBAGLContextInit(struct VideoBackend* v, unsigned width, unsigned he
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
+}
+
+static void GBAGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
+	struct GBAGLContext* context = (struct GBAGLContext*) v;
 	v->width = width;
 	v->height = height;
 
+	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
@@ -113,6 +118,7 @@ void GBAGLContextPostFrame(struct VideoBackend* v, const void* frame) {
 void GBAGLContextCreate(struct GBAGLContext* context) {
 	context->d.init = GBAGLContextInit;
 	context->d.deinit = GBAGLContextDeinit;
+	context->d.setDimensions = GBAGLContextSetDimensions;
 	context->d.resized = GBAGLContextResized;
 	context->d.swap = 0;
 	context->d.clear = GBAGLContextClear;
