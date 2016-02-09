@@ -88,6 +88,7 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 
 struct Configuration* mCoreConfigGetInput(struct mCoreConfig*);
 struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig*);
+const struct Configuration* mCoreConfigGetOverridesConst(const struct mCoreConfig*);
 
 void mCoreConfigFreeOpts(struct mCoreOptions* opts);
 

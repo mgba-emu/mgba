@@ -20,7 +20,7 @@ struct GBACore {
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
 	struct mCPUComponent* components[GBA_COMPONENT_MAX];
-	struct Configuration* overrides;
+	const struct Configuration* overrides;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -74,7 +74,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->overrides = mCoreConfigGetOverrides(&core->config);
+	gbacore->overrides = mCoreConfigGetOverridesConst(config);
 
 	struct VFile* bios = 0;
 	if (core->opts.useBios) {

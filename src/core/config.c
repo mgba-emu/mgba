@@ -388,6 +388,10 @@ struct Configuration* mCoreConfigGetOverrides(struct mCoreConfig* config) {
 	return &config->configTable;
 }
 
+const struct Configuration* mCoreConfigGetOverridesConst(const struct mCoreConfig* config) {
+	return &config->configTable;
+}
+
 void mCoreConfigFreeOpts(struct mCoreOptions* opts) {
 	free(opts->bios);
 	free(opts->shader);
