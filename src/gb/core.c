@@ -55,6 +55,11 @@ static void _GBCoreDeinit(struct mCore* core) {
 #endif
 }
 
+static enum mPlatform _GBCorePlatform(struct mCore* core) {
+	UNUSED(core);
+	return PLATFORM_GB;
+}
+
 static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	struct GB* gb = core->board;
 	gb->sync = sync;
@@ -229,6 +234,7 @@ struct mCore* GBCoreCreate(void) {
 	core->board = 0;
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
+	core->platform = _GBCorePlatform;
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;

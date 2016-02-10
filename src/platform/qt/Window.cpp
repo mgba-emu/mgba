@@ -153,7 +153,7 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	});
 	connect(&m_inputController, SIGNAL(profileLoaded(const QString&)), m_shortcutController, SLOT(loadProfile(const QString&)));
 
-	m_log.setLevels(GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS);
+	m_log.setLevels(mLOG_WARN | mLOG_ERROR | mLOG_FATAL);
 	m_fpsTimer.setInterval(FPS_TIMER_INTERVAL);
 	m_focusCheck.setInterval(200);
 
@@ -295,6 +295,7 @@ void Window::selectROM() {
 void Window::replaceROM() {
 	QStringList formats{
 		"*.gba",
+		"*.gb",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
@@ -717,7 +718,8 @@ void Window::updateTitle(float fps) {
 	if (m_controller->isLoaded()) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game;
-		if (db && NoIntroDBLookupGameByCRC(db, static_cast<GBA*>(m_controller->thread()->core->board)->romCrc32, &game)) {
+		if (m_controller->thread()->core->platform(m_controller->thread()->core) == PLATFORM_GBA && db &&
+		    NoIntroDBLookupGameByCRC(db, static_cast<GBA*>(m_controller->thread()->core->board)->romCrc32, &game)) {
 			title = QLatin1String(game.name);
 		} else {
 			char gameTitle[17] = { '\0' };

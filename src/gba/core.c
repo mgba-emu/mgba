@@ -64,6 +64,11 @@ static void _GBACoreDeinit(struct mCore* core) {
 #endif
 }
 
+static enum mPlatform _GBACorePlatform(struct mCore* core) {
+	UNUSED(core);
+	return PLATFORM_GBA;
+}
+
 static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 	struct GBA* gba = core->board;
 	gba->sync = sync;
@@ -265,6 +270,7 @@ struct mCore* GBACoreCreate(void) {
 	core->board = 0;
 	core->init = _GBACoreInit;
 	core->deinit = _GBACoreDeinit;
+	core->platform = _GBACorePlatform;
 	core->setSync = _GBACoreSetSync;
 	core->loadConfig = _GBACoreLoadConfig;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;

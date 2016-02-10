@@ -29,23 +29,32 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 
 	controller->threadInterrupt();
 	mCore* core = controller->thread()->core;
-	GBA* gba = static_cast<GBA*>(core->board);
 	char title[17] = {};
-	GBAGetGameCode(gba, title);
-	m_ui.id->setText(QLatin1String(title));
 	core->getGameTitle(core, title);
 	m_ui.title->setText(QLatin1String(title));
-	m_ui.size->setText(QString::number(gba->pristineRomSize));
-	m_ui.crc->setText(QString::number(gba->romCrc32, 16));
-	if (db) {
-		NoIntroGame game;
-		if (NoIntroDBLookupGameByCRC(db, gba->romCrc32, &game)) {
-			m_ui.name->setText(game.name);
+
+	if (controller->thread()->core->platform(controller->thread()->core) == PLATFORM_GBA) {
+		GBA* gba = static_cast<GBA*>(core->board);
+		GBAGetGameCode(gba, title);
+		m_ui.id->setText(QLatin1String(title));
+		m_ui.size->setText(QString::number(gba->pristineRomSize));
+		m_ui.crc->setText(QString::number(gba->romCrc32, 16));
+		if (db) {
+			NoIntroGame game;
+			if (NoIntroDBLookupGameByCRC(db, gba->romCrc32, &game)) {
+				m_ui.name->setText(game.name);
+			} else {
+				m_ui.name->setText(tr("(unknown)"));
+			}
 		} else {
-			m_ui.name->setText(tr("(unknown)"));
+			m_ui.name->setText(tr("(no database present)"));
 		}
 	} else {
-		m_ui.name->setText(tr("(no database present)"));
+		// TODO: GB
+		m_ui.id->setText(tr("(unknown)"));
+		m_ui.size->setText(tr("(unknown)"));
+		m_ui.crc->setText(tr("(unknown)"));
+		m_ui.name->setText(tr("(unknown)"));
 	}
 	controller->threadContinue();
 }

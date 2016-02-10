@@ -86,21 +86,23 @@ GameController::GameController(QObject* parent)
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
 
-		/*GBA* gba = static_cast<GBA*>(context->core->board);
-		gba->luminanceSource = &controller->m_lux;
-		gba->rumble = controller->m_inputController->rumble();
-		gba->rotationSource = controller->m_inputController->rotationSource();
-		gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
-		gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
-		gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
-		gba->audio.psg.forceDisableCh[3] = !controller->m_audioChannels[3];
-		gba->audio.forceDisableChA = !controller->m_audioChannels[4];
-		gba->audio.forceDisableChB = !controller->m_audioChannels[5];
-		gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
-		gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
-		gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
-		gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
-		gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];*/
+		if (context->core->platform(context->core) == PLATFORM_GBA) {
+			GBA* gba = static_cast<GBA*>(context->core->board);
+			gba->luminanceSource = &controller->m_lux;
+			gba->rumble = controller->m_inputController->rumble();
+			gba->rotationSource = controller->m_inputController->rotationSource();
+			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
+			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
+			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
+			gba->audio.psg.forceDisableCh[3] = !controller->m_audioChannels[3];
+			gba->audio.forceDisableChA = !controller->m_audioChannels[4];
+			gba->audio.forceDisableChB = !controller->m_audioChannels[5];
+			gba->video.renderer->disableBG[0] = !controller->m_videoLayers[0];
+			gba->video.renderer->disableBG[1] = !controller->m_videoLayers[1];
+			gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
+			gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
+			gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
+		}
 		controller->m_fpsTarget = context->sync.fpsTarget;
 
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
@@ -661,9 +663,9 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 	if (layer > 4 || layer < 0) {
 		return;
 	}
-	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 	m_videoLayers[layer] = enable;
-	if (isLoaded()) {
+	if (isLoaded() && m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
+		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		switch (layer) {
 		case 0:
 		case 1:
