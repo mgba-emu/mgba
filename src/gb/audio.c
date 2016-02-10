@@ -87,9 +87,19 @@ void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
 
 void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.shift = GBAudioRegisterSquareSweepGetShift(value);
+	bool oldDirection = audio->ch1.direction;
 	audio->ch1.direction = GBAudioRegisterSquareSweepGetDirection(value);
+	if (audio->ch1.sweepOccurred && oldDirection && !audio->ch1.direction) {
+		audio->playingCh1 = false;
+		// TODO: Don't need p
+		if (audio->p) {
+			audio->p->memory.io[REG_NR52] &= ~0x0001;
+		}
+	}
 	audio->ch1.time = GBAudioRegisterSquareSweepGetTime(value);
-	audio->ch1.sweepStep = audio->ch1.time;
+	if (!audio->ch1.time) {
+		audio->ch1.time = 8;
+	}
 }
 
 void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
@@ -108,13 +118,13 @@ void GBAudioWriteNR12(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR13(struct GBAudio* audio, uint8_t value) {
-	audio->ch1.control.frequency &= 0x700;
-	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value);
+	audio->ch1.realFrequency &= 0x700;
+	audio->ch1.realFrequency |= GBAudioRegisterControlGetFrequency(value);
 }
 
 void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
-	audio->ch1.control.frequency &= 0xFF;
-	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
+	audio->ch1.realFrequency &= 0xFF;
+	audio->ch1.realFrequency |= GBAudioRegisterControlGetFrequency(value << 8);
 	bool wasStop = audio->ch1.control.stop;
 	audio->ch1.control.stop = GBAudioRegisterControlGetStop(value << 8);
 	if (!wasStop && audio->ch1.control.stop && audio->ch1.control.length && !(audio->frame & 1)) {
@@ -135,8 +145,10 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		if (audio->ch1.envelope.currentVolume > 0 && audio->ch1.envelope.stepTime) {
 			audio->ch1.envelope.dead = 0;
 		}
+		audio->ch1.control.frequency = audio->ch1.realFrequency;
 		audio->ch1.sweepStep = audio->ch1.time;
-		audio->ch1.sweepEnable = audio->ch1.sweepStep || audio->ch1.shift;
+		audio->ch1.sweepEnable = (audio->ch1.sweepStep != 8) || audio->ch1.shift;
+		audio->ch1.sweepOccurred = false;
 		if (audio->playingCh1 && audio->ch1.shift) {
 			audio->playingCh1 = _updateSweep(&audio->ch1, true);
 		}
@@ -710,25 +722,28 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 }
 
 static bool _updateSweep(struct GBAudioChannel1* ch, bool initial) {
-	if (ch->direction) {
-		int frequency = ch->control.frequency;
-		frequency -= frequency >> ch->shift;
-		if (frequency >= 0) {
-			ch->control.frequency = frequency;
-		}
-	} else {
-		int frequency = ch->control.frequency;
-		frequency += frequency >> ch->shift;
-		if (frequency < 2048) {
-			if (!initial && ch->shift) {
+	if (initial || ch->time != 8) {
+		if (ch->direction) {
+			int frequency = ch->control.frequency;
+			frequency -= frequency >> ch->shift;
+			if (frequency >= 0) {
 				ch->control.frequency = frequency;
-				if (!_updateSweep(ch, true)) {
-					return false;
-				}
 			}
 		} else {
-			return false;
+			int frequency = ch->control.frequency;
+			frequency += frequency >> ch->shift;
+			if (frequency < 2048) {
+				if (!initial && ch->shift) {
+					ch->control.frequency = frequency;
+					if (!_updateSweep(ch, true)) {
+						return false;
+					}
+				}
+			} else {
+				return false;
+			}
 		}
+		ch->sweepOccurred = true;
 	}
 	ch->sweepStep = ch->time;
 	return true;

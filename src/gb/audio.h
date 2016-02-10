@@ -94,6 +94,8 @@ struct GBAudioChannel1 {
 	uint8_t sweepStep;
 	bool direction;
 	bool sweepEnable;
+	bool sweepOccurred;
+	uint16_t realFrequency;
 
 	struct GBAudioEnvelope envelope;
 	struct GBAudioSquareControl control;
