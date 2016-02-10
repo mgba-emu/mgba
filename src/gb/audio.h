@@ -183,6 +183,7 @@ struct GBAudio {
 
 	size_t samples;
 	bool forceDisableCh[4];
+	int masterVolume;
 };
 
 void GBAudioInit(struct GBAudio* audio, size_t samples);

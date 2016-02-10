@@ -14,6 +14,7 @@
 const uint32_t DMG_LR35902_FREQUENCY = 0x400000;
 static const int CLOCKS_PER_BLIP_FRAME = 0x1000;
 static const unsigned BLIP_BUFFER_SIZE = 0x4000;
+const int GB_AUDIO_VOLUME_MAX = 0x100;
 
 static void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value);
 static bool _writeSweep(struct GBAudioEnvelope* envelope, uint8_t value);
@@ -38,6 +39,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples) {
 	audio->forceDisableCh[1] = false;
 	audio->forceDisableCh[2] = false;
 	audio->forceDisableCh[3] = false;
+	audio->masterVolume = GB_AUDIO_VOLUME_MAX;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -641,8 +643,8 @@ void _sample(struct GBAudio* audio, int32_t cycles) {
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
 	GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
-	sampleLeft <<= 1;
-	sampleRight <<= 1;
+	sampleLeft = (sampleLeft * audio->masterVolume) >> 6;
+	sampleRight = (sampleRight * audio->masterVolume) >> 6;
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;

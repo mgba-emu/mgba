@@ -66,9 +66,10 @@ static void _GBCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 }
 
 static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
-	UNUSED(core);
 	UNUSED(config);
-	// TODO
+
+	struct GB* gb = core->board;
+	gb->audio.masterVolume = core->opts.volume;
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
