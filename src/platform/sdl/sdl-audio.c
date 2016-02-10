@@ -38,15 +38,8 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread* threadContext) {
 	}
 	context->samples = context->obtainedSpec.samples;
 	context->core = 0;
-	context->thread = 0;
 
 	if (threadContext) {
-		context->thread = threadContext;
-		float ratio = GBAAudioCalculateRatio(0x8000, threadContext->fpsTarget, 44100);
-		threadContext->audioBuffers = context->samples / ratio;
-		if (context->samples > threadContext->audioBuffers) {
-			threadContext->audioBuffers = context->samples * 2;
-		}
 		context->sync = &threadContext->sync;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -91,7 +84,7 @@ void mSDLResumeAudio(struct mSDLAudio* context) {
 
 static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 	struct mSDLAudio* audioContext = context;
-	if (!context || (!audioContext->core && !audioContext->thread)) {
+	if (!context || !audioContext->core) {
 		memset(data, 0, len);
 		return;
 	}
@@ -102,16 +95,12 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		left = audioContext->core->getAudioChannel(audioContext->core, 0);
 		right = audioContext->core->getAudioChannel(audioContext->core, 1);
 		clockRate = audioContext->core->frequency(audioContext->core);
-	} else if (audioContext->thread) {
-		left = audioContext->thread->gba->audio.psg.left;
-		right = audioContext->thread->gba->audio.psg.right;
-		clockRate = GBA_ARM7TDMI_FREQUENCY;
 	}
 	double fauxClock = 1;
-	if (audioContext->thread) {
-		fauxClock = GBAAudioCalculateRatio(1, audioContext->thread->fpsTarget, 1);
-	}
 	if (audioContext->sync) {
+		if (audioContext->sync->fpsTarget > 0) {
+			fauxClock = GBAAudioCalculateRatio(1, audioContext->sync->fpsTarget, 1);
+		}
 		mCoreSyncLockAudio(audioContext->sync);
 	}
 	blip_set_rates(left, clockRate, audioContext->obtainedSpec.freq * fauxClock);

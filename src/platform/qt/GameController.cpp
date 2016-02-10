@@ -101,7 +101,7 @@ GameController::GameController(QObject* parent)
 		gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
 		gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
 		gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];*/
-		// TODO: Put back fpsTarget
+		controller->m_fpsTarget = context->sync.fpsTarget;
 
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
 			mCoreDeleteState(context->core, 0);
@@ -239,6 +239,7 @@ void GameController::setConfig(const mCoreConfig* config) {
 	if (isLoaded()) {
 		threadInterrupt();
 		mCoreLoadForeignConfig(m_threadContext.core, config);
+		m_audioProcessor->setInput(&m_threadContext);
 		threadContinue();
 	}
 }
@@ -680,9 +681,9 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 void GameController::setFPSTarget(float fps) {
 	threadInterrupt();
 	m_fpsTarget = fps;
-	// TODO: Put back fpsTarget
+	m_threadContext.sync.fpsTarget = fps;
 	if (m_turbo && m_turboSpeed > 0) {
-		// TODO: Put back fpsTarget
+		m_threadContext.sync.fpsTarget *= m_turboSpeed;
 	}
 	if (m_audioProcessor) {
 		redoSamples(m_audioProcessor->getBufferSamples());
@@ -805,15 +806,15 @@ void GameController::setTurboSpeed(float ratio) {
 void GameController::enableTurbo() {
 	threadInterrupt();
 	if (!m_turbo) {
-		// TODO: Put back fpsTarget
+		m_threadContext.sync.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = m_audioSync;
 		m_threadContext.sync.videoFrameWait = m_videoSync;
 	} else if (m_turboSpeed <= 0) {
-		// TODO: Put back fpsTarget
+		m_threadContext.sync.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = false;
 		m_threadContext.sync.videoFrameWait = false;
 	} else {
-		// TODO: Put back fpsTarget
+		m_threadContext.sync.fpsTarget = m_fpsTarget * m_turboSpeed;
 		m_threadContext.sync.audioWait = true;
 		m_threadContext.sync.videoFrameWait = false;
 	}
@@ -927,7 +928,6 @@ void GameController::updateKeys() {
 }
 
 void GameController::redoSamples(int samples) {
-	// TODO: Put back audio buffers
 	if (m_threadContext.core) {
 		m_threadContext.core->setAudioBufferSize(m_threadContext.core, samples);
 	}

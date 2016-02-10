@@ -28,8 +28,6 @@ protected:
 
 private:
 	mCoreThread* m_context;
-	float m_drift;
-	float m_ratio;
 };
 
 }

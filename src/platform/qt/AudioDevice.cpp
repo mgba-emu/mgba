@@ -18,8 +18,6 @@ using namespace QGBA;
 AudioDevice::AudioDevice(QObject* parent)
 	: QIODevice(parent)
 	, m_context(nullptr)
-	, m_drift(0)
-	, m_ratio(1.f)
 {
 	setOpenMode(ReadOnly);
 }
@@ -29,10 +27,12 @@ void AudioDevice::setFormat(const QAudioFormat& format) {
 		LOG(QT, INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
-	double fauxClock = GBAAudioCalculateRatio(1, 60, 1); // TODO: Put back fpsTarget
+	double fauxClock = GBAAudioCalculateRatio(1, m_context->sync.fpsTarget, 1);
 	mCoreSyncLockAudio(&m_context->sync);
-	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 0), GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
-	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 1), GBA_ARM7TDMI_FREQUENCY, format.sampleRate() * fauxClock);
+	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 0),
+		           m_context->core->frequency(m_context->core), format.sampleRate() * fauxClock);
+	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 1),
+		           m_context->core->frequency(m_context->core), format.sampleRate() * fauxClock);
 	mCoreSyncUnlockAudio(&m_context->sync);
 }
 
@@ -41,8 +41,8 @@ void AudioDevice::setInput(mCoreThread* input) {
 }
 
 qint64 AudioDevice::readData(char* data, qint64 maxSize) {
-	if (maxSize > 0xFFFFFFFF) {
-		maxSize = 0xFFFFFFFF;
+	if (maxSize > 0xFFFFFFFFLL) {
+		maxSize = 0xFFFFFFFFLL;
 	}
 
 	if (!m_context->core) {

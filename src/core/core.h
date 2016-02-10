@@ -55,6 +55,7 @@ struct mCore {
 
 	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
+	size_t (*getAudioBufferSize)(struct mCore*);
 
 	void (*setAVStream)(struct mCore*, struct mAVStream*);
 

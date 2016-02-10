@@ -21,6 +21,8 @@ struct mCoreSync {
 	bool audioWait;
 	Condition audioRequiredCond;
 	Mutex audioBufferMutex;
+
+	float fpsTarget;
 };
 
 void mCoreSyncPostFrame(struct mCoreSync* sync);

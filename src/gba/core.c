@@ -132,6 +132,11 @@ static void _GBACoreSetAudioBufferSize(struct mCore* core, size_t samples) {
 	GBAAudioResizeBuffer(&gba->audio, samples);
 }
 
+static size_t _GBACoreGetAudioBufferSize(struct mCore* core) {
+	struct GBA* gba = core->board;
+	return gba->audio.samples;
+}
+
 static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GBA* gba = core->board;
 	gba->stream = stream;
@@ -267,6 +272,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getVideoBuffer = _GBACoreGetVideoBuffer;
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
+	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
 	core->setAVStream = _GBACoreSetAVStream;
 	core->isROM = GBAIsROM;
 	core->loadROM = _GBACoreLoadROM;
