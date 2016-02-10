@@ -122,6 +122,7 @@ public slots:
 	void setAudioBufferSamples(int samples);
 	void setAudioSampleRate(unsigned rate);
 	void setAudioChannelEnabled(int channel, bool enable = true);
+	void startAudio();
 	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
