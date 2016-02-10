@@ -14,7 +14,7 @@
 
 static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 
-bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread* threadContext) {
+bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
 		return false;
@@ -40,6 +40,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread* threadContext) {
 	context->core = 0;
 
 	if (threadContext) {
+		context->core = threadContext->core;
 		context->sync = &threadContext->sync;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)

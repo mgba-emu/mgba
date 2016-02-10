@@ -23,11 +23,11 @@ struct mSDLAudio {
 #endif
 
 	struct mCore* core;
-	struct GBAThread* thread;
 	struct mCoreSync* sync;
 };
 
-bool mSDLInitAudio(struct mSDLAudio* context, struct GBAThread*);
+struct mCoreThread;
+bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread*);
 void mSDLDeinitAudio(struct mSDLAudio* context);
 void mSDLPauseAudio(struct mSDLAudio* context);
 void mSDLResumeAudio(struct mSDLAudio* context);

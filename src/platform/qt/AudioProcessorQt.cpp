@@ -11,7 +11,7 @@
 #include <QAudioOutput>
 
 extern "C" {
-#include "gba/supervisor/thread.h"
+#include "core/thread.h"
 }
 
 using namespace QGBA;

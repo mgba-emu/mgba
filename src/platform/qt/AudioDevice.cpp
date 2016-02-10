@@ -9,7 +9,6 @@
 
 extern "C" {
 #include "core/thread.h"
-#include "gba/gba.h"
 #include "gba/audio.h"
 }
 

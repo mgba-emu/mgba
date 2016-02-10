@@ -174,17 +174,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
 
-	bool didFail = !mSDLInitAudio(&renderer->audio, 0);
+	bool didFail = !mSDLInitAudio(&renderer->audio, &thread);
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		mSDLSetScreensaverSuspendable(&renderer->events, renderer->core->opts.suspendScreensaver);
 		mSDLSuspendScreensaver(&renderer->events);
 #endif
-		renderer->audio.core = renderer->core;
-		renderer->audio.sync = &thread.sync;
-
 		if (mCoreThreadStart(&thread)) {
-			mSDLResumeAudio(&renderer->audio);
 			renderer->runloop(renderer, &thread);
 			mCoreThreadJoin(&thread);
 		} else {
