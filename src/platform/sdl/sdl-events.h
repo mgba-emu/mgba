@@ -93,9 +93,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events);
 void mSDLPlayerLoadConfig(struct mSDLPlayer*, const struct Configuration*);
 void mSDLPlayerSaveConfig(const struct mSDLPlayer*, struct Configuration*);
 
-struct GBAThread;
 void mSDLInitBindingsGBA(struct mInputMap* inputMap);
-void mSDLHandleEventGBA(struct GBAThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);
 
 struct mCoreThread;
 void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);

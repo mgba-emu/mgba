@@ -13,6 +13,7 @@
 #include <QFontDatabase>
 
 extern "C" {
+#include "core/core.h"
 #include "gba/supervisor/export.h"
 #include "util/vfs.h"
 }

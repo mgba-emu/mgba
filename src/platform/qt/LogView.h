@@ -11,10 +11,6 @@
 
 #include "ui_LogView.h"
 
-extern "C" {
-#include "gba/supervisor/thread.h"
-}
-
 namespace QGBA {
 
 class LogController;

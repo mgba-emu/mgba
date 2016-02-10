@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "audio.h"
 
+#include "core/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/thread.h"
 #include "gba/video.h"
 
 const unsigned GBA_AUDIO_SAMPLES = 2048;

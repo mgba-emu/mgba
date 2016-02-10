@@ -7,7 +7,6 @@
 
 #include "gba/io.h"
 #include "gba/serialize.h"
-#include "gba/supervisor/thread.h"
 
 #ifdef USE_CLI_DEBUGGER
 

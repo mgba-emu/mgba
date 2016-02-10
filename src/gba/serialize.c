@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "serialize.h"
 
+#include "core/sync.h"
 #include "gba/audio.h"
 #include "gba/cheats.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
-#include "gba/supervisor/thread.h"
 #include "gba/video.h"
 
 #include "util/memory.h"
@@ -356,66 +356,6 @@ static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtd
 }
 #endif
 
-bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
-	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
-	if (!vf) {
-		return false;
-	}
-	bool success = GBASaveStateNamed(threadContext->gba, vf, flags);
-	vf->close(vf);
-	if (success) {
-#if SAVESTATE_DEBUG
-		vf = GBAGetState(threadContext->gba, dir, slot, false);
-		if (vf) {
-			struct GBA* backup = anonymousMemoryMap(sizeof(*backup));
-			memcpy(backup, threadContext->gba, sizeof(*backup));
-			memset(threadContext->gba->memory.io, 0, sizeof(threadContext->gba->memory.io));
-			memset(threadContext->gba->timers, 0, sizeof(threadContext->gba->timers));
-			GBALoadStateNamed(threadContext->gba, vf, flags);
-			if (memcmp(backup, threadContext->gba, sizeof(*backup))) {
-				char suffix[16] = { '\0' };
-				struct VFile* vf2;
-				snprintf(suffix, sizeof(suffix), ".dump.0.%d", slot);
-				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-				if (vf2) {
-					vf2->write(vf2, backup, sizeof(*backup));
-					vf2->close(vf2);
-				}
-				snprintf(suffix, sizeof(suffix), ".dump.1.%d", slot);
-				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-				if (vf2) {
-					vf2->write(vf2, threadContext->gba, sizeof(*threadContext->gba));
-					vf2->close(vf2);
-				}
-			}
-			mappedMemoryFree(backup, sizeof(*backup));
-			vf->close(vf);
-		}
-#endif
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i saved", slot);
-	} else {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to save", slot);
-	}
-
-	return success;
-}
-
-bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
-	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, false);
-	if (!vf) {
-		return false;
-	}
-	threadContext->rewindBufferSize = 0;
-	bool success = GBALoadStateNamed(threadContext->gba, vf, flags);
-	vf->close(vf);
-	if (success) {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i loaded", slot);
-	} else {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to load", slot);
-	}
-	return success;
-}
-
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	struct GBAExtdata extdata;
 	GBAExtdataInit(&extdata);
@@ -671,82 +611,7 @@ void GBADeallocateState(struct GBASerializedState* state) {
 	mappedMemoryFree(state, sizeof(struct GBASerializedState));
 }
 
-void GBARecordFrame(struct GBAThread* thread) {
-	int offset = thread->rewindBufferWriteOffset;
-	struct GBASerializedState* state = thread->rewindBuffer[offset];
-	if (!state) {
-		state = GBAAllocateState();
-		thread->rewindBuffer[offset] = state;
-	}
-	GBASerialize(thread->gba, state);
-
-	if (thread->rewindScreenBuffer) {
-		unsigned stride;
-		const uint8_t* pixels = 0;
-		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (const void**) &pixels);
-		if (pixels) {
-			size_t y;
-			for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-				memcpy(&thread->rewindScreenBuffer[(offset * VIDEO_VERTICAL_PIXELS + y) * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL], &pixels[y * stride * BYTES_PER_PIXEL], VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-			}
-		}
-	}
-	thread->rewindBufferSize = thread->rewindBufferSize == thread->rewindBufferCapacity ? thread->rewindBufferCapacity : thread->rewindBufferSize + 1;
-	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
-}
-
-void GBARewindSettingsChanged(struct GBAThread* threadContext, int newCapacity, int newInterval) {
-	if (newCapacity == threadContext->rewindBufferCapacity && newInterval == threadContext->rewindBufferInterval) {
-		return;
-	}
-	threadContext->rewindBufferInterval = newInterval;
-	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
-	threadContext->rewindBufferSize = 0;
-	if (threadContext->rewindBuffer) {
-		int i;
-		for (i = 0; i < threadContext->rewindBufferCapacity; ++i) {
-			GBADeallocateState(threadContext->rewindBuffer[i]);
-		}
-		free(threadContext->rewindBuffer);
-		free(threadContext->rewindScreenBuffer);
-	}
-	threadContext->rewindBufferCapacity = newCapacity;
-	if (threadContext->rewindBufferCapacity > 0) {
-		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(struct GBASerializedState*));
-		threadContext->rewindScreenBuffer = calloc(threadContext->rewindBufferCapacity, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-	} else {
-		threadContext->rewindBuffer = 0;
-		threadContext->rewindScreenBuffer = 0;
-	}
-}
-
-int GBARewind(struct GBAThread* thread, int nStates) {
-	if (nStates > thread->rewindBufferSize || nStates < 0) {
-		nStates = thread->rewindBufferSize;
-	}
-	if (nStates == 0) {
-		return 0;
-	}
-	int offset = thread->rewindBufferWriteOffset - nStates;
-	if (offset < 0) {
-		offset += thread->rewindBufferCapacity;
-	}
-	struct GBASerializedState* state = thread->rewindBuffer[offset];
-	if (!state) {
-		return 0;
-	}
-	thread->rewindBufferSize -= nStates;
-	thread->rewindBufferWriteOffset = offset;
-	GBADeserialize(thread->gba, state);
-	if (thread->rewindScreenBuffer) {
-		thread->gba->video.renderer->putPixels(thread->gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, &thread->rewindScreenBuffer[offset * VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL]);
-	}
-	return nStates;
-}
-
-void GBARewindAll(struct GBAThread* thread) {
-	GBARewind(thread, thread->rewindBufferSize);
-}
+// TODO: Put back rewind
 
 void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
 #ifdef USE_PNG

@@ -16,7 +16,6 @@
 #include <QIcon>
 
 extern "C" {
-#include "gba/supervisor/thread.h"
 #include "platform/commandline.h"
 #include "util/nointro.h"
 #include "util/socket.h"

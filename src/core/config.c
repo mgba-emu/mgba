@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "config.h"
 
-#include "gba/gba.h"
 #include "util/formatting.h"
 #include "util/string.h"
 #include "util/vfs.h"

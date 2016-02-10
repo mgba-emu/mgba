@@ -9,6 +9,8 @@
 #include "GameController.h"
 
 extern "C" {
+#include "core/core.h"
+#include "gba/gba.h"
 #include "util/nointro.h"
 }
 

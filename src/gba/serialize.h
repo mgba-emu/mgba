@@ -358,13 +358,10 @@ struct GBAExtdata {
 };
 
 struct VDir;
-struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
-bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
 struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
 void GBADeleteState(struct GBA* thread, struct VDir* dir, int slot);
 
@@ -381,11 +378,6 @@ bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf);
 struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
-
-void GBARecordFrame(struct GBAThread* thread);
-void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int newInterval);
-int GBARewind(struct GBAThread* thread, int nStates);
-void GBARewindAll(struct GBAThread* thread);
 
 void GBATakeScreenshot(struct GBA* gba, struct VDir* dir);
 

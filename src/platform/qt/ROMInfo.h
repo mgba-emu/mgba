@@ -10,10 +10,6 @@
 
 #include "ui_ROMInfo.h"
 
-extern "C" {
-#include "gba/supervisor/thread.h"
-}
-
 namespace QGBA {
 
 class GameController;

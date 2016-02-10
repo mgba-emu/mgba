@@ -56,7 +56,6 @@ enum {
 };
 
 struct GBA;
-struct GBAThread;
 struct Patch;
 struct VFile;
 
@@ -114,8 +113,6 @@ struct GBA {
 
 	const char* activeFile;
 
-	GBALogHandler logHandler;
-	enum GBALogLevel logLevel;
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mStopCallback* stopCallback;

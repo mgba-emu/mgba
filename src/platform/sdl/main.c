@@ -21,7 +21,6 @@
 #ifdef M_CORE_GBA
 #include "gba/core.h"
 #include "gba/gba.h"
-#include "gba/supervisor/thread.h"
 #include "gba/video.h"
 #endif
 #ifdef M_CORE_GB

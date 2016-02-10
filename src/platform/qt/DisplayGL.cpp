@@ -9,8 +9,8 @@
 #include <QResizeEvent>
 
 extern "C" {
-#include "gba/supervisor/thread.h"
-
+#include "core/core.h"
+#include "core/thread.h"
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif

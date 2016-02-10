@@ -5,14 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba.h"
 
+#include "core/thread.h"
+
 #include "arm/decoder.h"
 #include "arm/isa-inlines.h"
 
 #include "gba/bios.h"
 #include "gba/cheats.h"
+#include "gba/context/overrides.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
-#include "gba/supervisor/thread.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
 
@@ -90,8 +92,6 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->romVf = 0;
 	gba->biosVf = 0;
 
-	gba->logHandler = 0;
-	gba->logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	gba->stream = 0;
 	gba->keyCallback = 0;
 	gba->stopCallback = 0;
@@ -650,80 +650,12 @@ void GBAStop(struct GBA* gba) {
 	gba->stopCallback->stop(gba->stopCallback);
 }
 
-static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
-	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = GBA_LOG_ALL;
-
-	if (gba) {
-		logLevel = gba->logLevel;
-	}
-
-	if (threadContext) {
-		logLevel = threadContext->logLevel;
-		gba = threadContext->gba;
-	}
-
-	if (!(level & logLevel) && level != GBA_LOG_FATAL) {
-		return;
-	}
-
-	if (level == GBA_LOG_FATAL && gba) {
-		gba->cpu->nextEvent = 0;
-	}
-
-	if (threadContext) {
-		if (level == GBA_LOG_FATAL) {
-			MutexLock(&threadContext->stateMutex);
-			threadContext->state = THREAD_CRASHED;
-			MutexUnlock(&threadContext->stateMutex);
-		}
-	}
-	if (gba && gba->logHandler) {
-		gba->logHandler(threadContext, level, format, args);
-		return;
-	}
-
-	vprintf(format, args);
-	printf("\n");
-
-	if (level == GBA_LOG_FATAL && !threadContext) {
-		abort();
-	}
-}
-
 void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	_GBAVLog(gba, level, format, args);
-	va_end(args);
+	// TODO: Kill GBALog
 }
 
 void GBADebuggerLogShim(struct Debugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
-	struct GBA* gba = 0;
-	if (debugger->cpu) {
-		gba = (struct GBA*) debugger->cpu->master;
-	}
-
-	enum GBALogLevel gbaLevel;
-	switch (level) {
-	default: // Avoids compiler warning
-	case DEBUGGER_LOG_DEBUG:
-		gbaLevel = GBA_LOG_DEBUG;
-		break;
-	case DEBUGGER_LOG_INFO:
-		gbaLevel = GBA_LOG_INFO;
-		break;
-	case DEBUGGER_LOG_WARN:
-		gbaLevel = GBA_LOG_WARN;
-		break;
-	case DEBUGGER_LOG_ERROR:
-		gbaLevel = GBA_LOG_ERROR;
-		break;
-	}
-	va_list args;
-	va_start(args, format);
-	_GBAVLog(gba, gbaLevel, format, args);
-	va_end(args);
+	// TODO: Kill GBADebuggerLogShim
 }
 
 bool GBAIsROM(struct VFile* vf) {
@@ -879,18 +811,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	struct GBAThread* thread = GBAThreadGetContext();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->rewindBuffer) {
-		--thread->rewindBufferNext;
-		if (thread->rewindBufferNext <= 0) {
-			thread->rewindBufferNext = thread->rewindBufferInterval;
-			GBARecordFrame(thread);
-		}
-	}
+	// TODO: Put back rewind
 }
 
 void GBAFrameEnded(struct GBA* gba) {
@@ -969,12 +890,6 @@ void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mo
 		GBAPatch16(gba->cpu, address, opcode, 0);
 	}
 }
-
-#if (!defined(USE_PTHREADS) && !defined(_WIN32)) || defined(DISABLE_THREADING)
-struct GBAThread* GBAThreadGetContext(void) {
-	return 0;
-}
-#endif
 
 static bool _setSoftwareBreakpoint(struct Debugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d, address, mode, opcode);

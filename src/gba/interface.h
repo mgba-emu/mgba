@@ -37,10 +37,7 @@ enum GBASIOMode {
 struct GBA;
 struct GBAAudio;
 struct GBASIO;
-struct GBAThread;
 struct GBAVideoRenderer;
-
-typedef void (*GBALogHandler)(struct GBAThread*, enum GBALogLevel, const char* format, va_list args);
 
 extern const int GBA_LUX_LEVELS[10];
 
