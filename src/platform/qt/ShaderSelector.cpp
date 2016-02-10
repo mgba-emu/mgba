@@ -118,9 +118,9 @@ void ShaderSelector::refreshShaders() {
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shaders->preprocessShader) {
-		m_ui.passes->addTab(makePage(static_cast<GBAGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
+		m_ui.passes->addTab(makePage(static_cast<mGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
 	}
-	GBAGLES2Shader* shaders = static_cast<GBAGLES2Shader*>(m_shaders->passes);
+	mGLES2Shader* shaders = static_cast<mGLES2Shader*>(m_shaders->passes);
 	QFileInfo fi(m_shaderPath);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
 		QWidget* page = makePage(&shaders[p], fi.baseName(), p);
@@ -200,7 +200,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	});
 }
 
-QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader, const QString& name, int pass) {
+QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass) {
 	if (!shader->nUniforms) {
 		return nullptr;
 	}
@@ -209,7 +209,7 @@ QWidget* ShaderSelector::makePage(GBAGLES2Shader* shader, const QString& name, i
 	page->setLayout(layout);
 	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
 		QGridLayout* settings = new QGridLayout;
-		GBAGLES2Uniform* uniform = &shader->uniforms[u];
+		mGLES2Uniform* uniform = &shader->uniforms[u];
 		QString section = QString("shader.%1.%2").arg(name).arg(pass);
 		QString name = QLatin1String(uniform->name);
 		switch (uniform->type) {

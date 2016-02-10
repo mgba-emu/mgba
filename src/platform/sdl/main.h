@@ -72,10 +72,10 @@ struct mSDLRenderer {
 	bool filter;
 
 #ifdef BUILD_GL
-	struct GBAGLContext gl;
+	struct mGLContext gl;
 #endif
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)
-	struct GBAGLES2Context gl2;
+	struct mGLES2Context gl2;
 #endif
 
 #ifdef USE_PIXMAN

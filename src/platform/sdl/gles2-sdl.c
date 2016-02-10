@@ -96,7 +96,7 @@ bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 	renderer->d.outputBuffer = memalign(16, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
-	GBAGLES2ContextCreate(&renderer->gl2);
+	mGLES2ContextCreate(&renderer->gl2);
 	renderer->gl2.d.user = renderer;
 	renderer->gl2.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl2.d.filter = renderer->filter;

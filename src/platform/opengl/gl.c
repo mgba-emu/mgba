@@ -21,9 +21,9 @@ static const GLint _glTexCoords[] = {
 	0, 1
 };
 
-static void GBAGLContextInit(struct VideoBackend* v, WHandle handle) {
+static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
-	struct GBAGLContext* context = (struct GBAGLContext*) v;
+	struct mGLContext* context = (struct mGLContext*) v;
 	glGenTextures(1, &context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -33,8 +33,8 @@ static void GBAGLContextInit(struct VideoBackend* v, WHandle handle) {
 #endif
 }
 
-static void GBAGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
-	struct GBAGLContext* context = (struct GBAGLContext*) v;
+static void mGLContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
+	struct mGLContext* context = (struct mGLContext*) v;
 	v->width = width;
 	v->height = height;
 
@@ -50,12 +50,12 @@ static void GBAGLContextSetDimensions(struct VideoBackend* v, unsigned width, un
 #endif
 }
 
-static void GBAGLContextDeinit(struct VideoBackend* v) {
-	struct GBAGLContext* context = (struct GBAGLContext*) v;
+static void mGLContextDeinit(struct VideoBackend* v) {
+	struct mGLContext* context = (struct mGLContext*) v;
 	glDeleteTextures(1, &context->tex);
 }
 
-static void GBAGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
 	unsigned drawW = w;
 	unsigned drawH = h;
 	if (v->lockAspectRatio) {
@@ -72,14 +72,14 @@ static void GBAGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) 
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 }
 
-static void GBAGLContextClear(struct VideoBackend* v) {
+static void mGLContextClear(struct VideoBackend* v) {
 	UNUSED(v);
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void GBAGLContextDrawFrame(struct VideoBackend* v) {
-	struct GBAGLContext* context = (struct GBAGLContext*) v;
+void mGLContextDrawFrame(struct VideoBackend* v) {
+	struct mGLContext* context = (struct mGLContext*) v;
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -101,8 +101,8 @@ void GBAGLContextDrawFrame(struct VideoBackend* v) {
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void GBAGLContextPostFrame(struct VideoBackend* v, const void* frame) {
-	struct GBAGLContext* context = (struct GBAGLContext*) v;
+void mGLContextPostFrame(struct VideoBackend* v, const void* frame) {
+	struct mGLContext* context = (struct mGLContext*) v;
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -115,15 +115,15 @@ void GBAGLContextPostFrame(struct VideoBackend* v, const void* frame) {
 #endif
 }
 
-void GBAGLContextCreate(struct GBAGLContext* context) {
-	context->d.init = GBAGLContextInit;
-	context->d.deinit = GBAGLContextDeinit;
-	context->d.setDimensions = GBAGLContextSetDimensions;
-	context->d.resized = GBAGLContextResized;
+void mGLContextCreate(struct mGLContext* context) {
+	context->d.init = mGLContextInit;
+	context->d.deinit = mGLContextDeinit;
+	context->d.setDimensions = mGLContextSetDimensions;
+	context->d.resized = mGLContextResized;
 	context->d.swap = 0;
-	context->d.clear = GBAGLContextClear;
-	context->d.postFrame = GBAGLContextPostFrame;
-	context->d.drawFrame = GBAGLContextDrawFrame;
+	context->d.clear = mGLContextClear;
+	context->d.postFrame = mGLContextPostFrame;
+	context->d.drawFrame = mGLContextDrawFrame;
 	context->d.setMessage = 0;
 	context->d.clearMessage = 0;
 }

@@ -11,8 +11,6 @@
 #include "core/thread.h"
 #include "platform/opengl/gl.h"
 
-#define GB_GBA_CENTER ((VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS + VIDEO_HORIZONTAL_PIXELS * (VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS)) / 2)
-
 static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->resized(v, w, h);
 	v->clear(v);
@@ -37,7 +35,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
 	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
-	GBAGLContextCreate(&renderer->gl);
+	mGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;

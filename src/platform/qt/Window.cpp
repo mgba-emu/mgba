@@ -101,13 +101,15 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), &m_inputController, SLOT(resumeScreensaver()));
 	connect(m_controller, SIGNAL(stateLoaded(mCoreThread*)), m_display, SLOT(forceDraw()));
 	connect(m_controller, SIGNAL(rewound(mCoreThread*)), m_display, SLOT(forceDraw()));
-	connect(m_controller, &GameController::gamePaused, [this]() {
-		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), VIDEO_HORIZONTAL_PIXELS,
-		                    VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
+	connect(m_controller, &GameController::gamePaused, [this](mCoreThread* context) {
+		unsigned width, height;
+		context->core->desiredVideoDimensions(context->core, &width, &height);
+		QImage currentImage(reinterpret_cast<const uchar*>(m_controller->drawContext()), width, height,
+		                    width * BYTES_PER_PIXEL, QImage::Format_RGBX8888);
 		QPixmap pixmap;
 		pixmap.convertFromImage(currentImage);
 		m_screenWidget->setPixmap(pixmap);
-		m_screenWidget->setLockAspectRatio(3, 2);
+		m_screenWidget->setLockAspectRatio(width, height);
 	});
 	connect(m_controller, SIGNAL(gamePaused(mCoreThread*)), m_display, SLOT(pauseDrawing()));
 #ifndef Q_OS_MAC
