@@ -340,16 +340,7 @@ void GameController::openGame(bool biosOnly) {
 		m_gameOpen = false;
 		emit gameFailed();
 	} else if (m_audioProcessor) {
-		bool started = false;
-		QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
-		if (!started) {
-			LOG(ERROR) << tr("Failed to start audio processor");
-			// Don't freeze!
-			m_audioSync = false;
-			m_videoSync = true;
-			m_threadContext.sync.audioWait = false;
-			m_threadContext.sync.videoFrameWait = true;
-		}
+		startAudio();
 	}
 }
 
@@ -479,6 +470,7 @@ void GameController::setPaused(bool paused) {
 		m_pauseAfterFrame.testAndSetRelaxed(false, true);
 	} else {
 		GBAThreadUnpause(&m_threadContext);
+		startAudio();
 		emit gameUnpaused(&m_threadContext);
 	}
 }
@@ -655,6 +647,19 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 			m_threadContext.gba->audio.forceDisableChB = !enable;
 			break;
 		}
+	}
+}
+
+void GameController::startAudio() {
+	bool started = false;
+	QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
+	if (!started) {
+		LOG(ERROR) << tr("Failed to start audio processor");
+		// Don't freeze!
+		m_audioSync = false;
+		m_videoSync = true;
+		m_threadContext.sync.audioWait = false;
+		m_threadContext.sync.videoFrameWait = true;
 	}
 }
 
@@ -912,16 +917,7 @@ void GameController::reloadAudioDriver() {
 	connect(this, SIGNAL(gamePaused(GBAThread*)), m_audioProcessor, SLOT(pause()));
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
-		bool started = false;
-		QMetaObject::invokeMethod(m_audioProcessor, "start", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, started));
-		if (!started) {
-			LOG(ERROR) << tr("Failed to start audio processor");
-			// Don't freeze!
-			m_audioSync = false;
-			m_videoSync = true;
-			m_threadContext.sync.audioWait = false;
-			m_threadContext.sync.videoFrameWait = true;
-		}
+		startAudio();
 	}
 }
 
