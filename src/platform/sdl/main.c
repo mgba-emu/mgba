@@ -54,6 +54,7 @@ int main(int argc, char** argv) {
 		.audioBuffers = 512,
 		.videoSync = false,
 		.audioSync = true,
+		.volume = 0x100,
 	};
 
 	struct mArguments args;
