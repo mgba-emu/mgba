@@ -27,7 +27,7 @@ static int32_t _updateChannel3(struct GBAudioChannel3* ch);
 static int32_t _updateChannel4(struct GBAudioChannel4* ch);
 static void _sample(struct GBAudio* audio, int32_t cycles);
 
-void GBAudioInit(struct GBAudio* audio, size_t samples) {
+void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52) {
 	audio->samples = samples;
 	audio->left = blip_new(BLIP_BUFFER_SIZE);
 	audio->right = blip_new(BLIP_BUFFER_SIZE);
@@ -40,6 +40,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples) {
 	audio->forceDisableCh[2] = false;
 	audio->forceDisableCh[3] = false;
 	audio->masterVolume = GB_AUDIO_VOLUME_MAX;
+	audio->nr52 = nr52;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -93,10 +94,7 @@ void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
 	audio->ch1.direction = GBAudioRegisterSquareSweepGetDirection(value);
 	if (audio->ch1.sweepOccurred && oldDirection && !audio->ch1.direction) {
 		audio->playingCh1 = false;
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x0001;
-		}
+		*audio->nr52 &= ~0x0001;
 	}
 	audio->ch1.sweepOccurred = false;
 	audio->ch1.time = GBAudioRegisterSquareSweepGetTime(value);
@@ -113,10 +111,7 @@ void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR12(struct GBAudio* audio, uint8_t value) {
 	if (!_writeSweep(&audio->ch1.envelope, value)) {
 		audio->playingCh1 = false;
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x0001;
-		}
+		*audio->nr52 &= ~0x0001;
 	}
 }
 
@@ -163,15 +158,12 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->nextEvent = audio->eventDiff;
 		if (audio->p) {
-			// TODO: Don't need
+			// TODO: Don't need p
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
-	// TODO: Don't need p
-	if (audio->p) {
-		audio->p->memory.io[REG_NR52] &= ~0x0001;
-		audio->p->memory.io[REG_NR52] |= audio->playingCh1;
-	}
+	*audio->nr52 &= ~0x0001;
+	*audio->nr52 |= audio->playingCh1;
 }
 
 void GBAudioWriteNR21(struct GBAudio* audio, uint8_t value) {
@@ -182,10 +174,7 @@ void GBAudioWriteNR21(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR22(struct GBAudio* audio, uint8_t value) {
 	if (!_writeSweep(&audio->ch2.envelope, value)) {
 		audio->playingCh2 = false;
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x0002;
-		}
+		*audio->nr52 &= ~0x0002;
 	}
 }
 
@@ -229,21 +218,15 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
-	// TODO: Don't need p
-	if (audio->p) {
-		audio->p->memory.io[REG_NR52] &= ~0x0002;
-		audio->p->memory.io[REG_NR52] |= audio->playingCh2 << 1;
-	}
+	*audio->nr52 &= ~0x0002;
+	*audio->nr52 |= audio->playingCh2 << 1;
 }
 
 void GBAudioWriteNR30(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.enable = GBAudioRegisterBankGetEnable(value);
 	if (!audio->ch3.enable) {
 		audio->playingCh3 = false;
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x0004;
-		}
+		*audio->nr52 &= ~0x0004;
 	}
 }
 
@@ -292,11 +275,8 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
-	// TODO: Don't need p
-	if (audio->p) {
-		audio->p->memory.io[REG_NR52] &= ~0x0004;
-		audio->p->memory.io[REG_NR52] |= audio->playingCh3 << 2;
-	}
+	*audio->nr52 &= ~0x0004;
+	*audio->nr52 |= audio->playingCh3 << 2;
 }
 
 void GBAudioWriteNR41(struct GBAudio* audio, uint8_t value) {
@@ -307,10 +287,7 @@ void GBAudioWriteNR41(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR42(struct GBAudio* audio, uint8_t value) {
 	if (!_writeSweep(&audio->ch4.envelope, value)) {
 		audio->playingCh4 = false;
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x0008;
-		}
+		*audio->nr52 &= ~0x0008;
 	}
 }
 
@@ -358,11 +335,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 			audio->p->cpu->nextEvent = audio->eventDiff;
 		}
 	}
-	// TODO: Don't need p
-	if (audio->p) {
-		audio->p->memory.io[REG_NR52] &= ~0x0008;
-		audio->p->memory.io[REG_NR52] |= audio->playingCh4 << 3;
-	}
+	*audio->nr52 &= ~0x0008;
+	*audio->nr52 |= audio->playingCh4 << 3;
 }
 
 void GBAudioWriteNR50(struct GBAudio* audio, uint8_t value) {
@@ -430,8 +404,8 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 			audio->p->memory.io[REG_NR44] = 0;
 			audio->p->memory.io[REG_NR50] = 0;
 			audio->p->memory.io[REG_NR51] = 0;
-			audio->p->memory.io[REG_NR52] &= ~0x000F;
 		}
+		*audio->nr52 &= ~0x000F;
 	} else if (!wasEnable) {
 		audio->frame = 7;
 	}
@@ -572,12 +546,13 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 			}
 		}
 
+		*audio->nr52 &= ~0x000F;
+		*audio->nr52 |= audio->playingCh1;
+		*audio->nr52 |= audio->playingCh2 << 1;
+		*audio->nr52 |= audio->playingCh3 << 2;
+		*audio->nr52 |= audio->playingCh4 << 3;
+
 		if (audio->p) {
-			audio->p->memory.io[REG_NR52] &= ~0x000F;
-			audio->p->memory.io[REG_NR52] |= audio->playingCh1;
-			audio->p->memory.io[REG_NR52] |= audio->playingCh2 << 1;
-			audio->p->memory.io[REG_NR52] |= audio->playingCh3 << 2;
-			audio->p->memory.io[REG_NR52] |= audio->playingCh4 << 3;
 			audio->nextSample -= audio->eventDiff;
 			if (audio->nextSample <= 0) {
 				_sample(audio, audio->sampleInterval);

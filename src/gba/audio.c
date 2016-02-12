@@ -22,7 +22,11 @@ static void _sample(struct GBAAudio* audio);
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->psg.p = NULL;
-	GBAudioInit(&audio->psg, 0);
+	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[REG_SOUNDCNT_X >> 1];
+#ifdef __BIG_ENDIAN__
+	++n52;
+#endif
+	GBAudioInit(&audio->psg, 0, nr52);
 	audio->samples = samples;
 	audio->psg.clockRate = GBA_ARM7TDMI_FREQUENCY;
 	// Guess too large; we hang producing extra samples if we guess too low
@@ -89,12 +93,6 @@ int32_t GBAAudioProcessEvents(struct GBAAudio* audio, int32_t cycles) {
 			if (audio->nextEvent != INT_MAX) {
 				audio->nextEvent *= 4;
 			}
-
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] &= ~0x000F;
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->psg.playingCh1;
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->psg.playingCh2 << 1;
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->psg.playingCh3 << 2;
-			audio->p->memory.io[REG_SOUNDCNT_X >> 1] |= audio->psg.playingCh4 << 3;
 		}
 
 		audio->nextSample -= audio->eventDiff;

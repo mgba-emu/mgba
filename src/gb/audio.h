@@ -166,6 +166,7 @@ struct GBAudio {
 	bool playingCh2;
 	bool playingCh3;
 	bool playingCh4;
+	uint8_t* nr52;
 
 	int32_t nextEvent;
 	int32_t eventDiff;
@@ -186,7 +187,7 @@ struct GBAudio {
 	int masterVolume;
 };
 
-void GBAudioInit(struct GBAudio* audio, size_t samples);
+void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52);
 void GBAudioDeinit(struct GBAudio* audio);
 void GBAudioReset(struct GBAudio* audio);
 
