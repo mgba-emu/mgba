@@ -8,7 +8,11 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
 #include <SDL.h>
+
+mLOG_DECLARE_CATEGORY(SDL_AUDIO);
 
 struct mSDLAudio {
 	// Input

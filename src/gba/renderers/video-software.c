@@ -328,10 +328,10 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->mosaic = value;
 		break;
 	case REG_GREENSWP:
-		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
+		mLOG(GBA_VIDEO, STUB, "Stub video register write: 0x%03X", address);
 		break;
 	default:
-		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid video register: 0x%03X", address);
+		mLOG(GBA_VIDEO, GAME_ERROR, "Invalid video register: 0x%03X", address);
 	}
 	return value;
 }
@@ -418,7 +418,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 					// Trim off extra windows we've overwritten
 					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
 						if (VIDEO_CHECKS && activeWindow >= MAX_WINDOW) {
-							GBALog(0, GBA_LOG_FATAL, "Out of bounds window write will occur");
+							mLOG(GBA_VIDEO, FATAL, "Out of bounds window write will occur");
 							return;
 						}
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
@@ -440,7 +440,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 	}
 #ifdef DEBUG
 	if (softwareRenderer->nWindows > MAX_WINDOW) {
-		GBALog(0, GBA_LOG_FATAL, "Out of bounds window write occurred!");
+		mLOG(GBA_VIDEO, FATAL, "Out of bounds window write occurred!");
 	}
 #endif
 }

@@ -57,7 +57,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		cheats->incompleteCheat = cheat;
 		break;
 	case CB_FILL_8:
-		GBALog(0, GBA_LOG_STUB, "[Cheat] CodeBreaker code %08X %04X not supported", op1, op2);
+		mLOG(CHEATS, STUB, "CodeBreaker code %08X %04X not supported", op1, op2);
 		return false;
 	case CB_AND_2:
 		cheat = GBACheatListAppend(&cheats->list);
@@ -75,7 +75,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		cheat->width = 2;
 		break;
 	case CB_ENCRYPT:
-		GBALog(0, GBA_LOG_STUB, "[Cheat] CodeBreaker encryption not supported");
+		mLOG(CHEATS, STUB, "CodeBreaker encryption not supported");
 		return false;
 	case CB_IF_NE:
 		cheat = GBACheatListAppend(&cheats->list);
@@ -103,7 +103,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 			cheat->repeat = 1;
 			return true;
 		default:
-			GBALog(0, GBA_LOG_STUB, "[Cheat] CodeBreaker code %08X %04X not supported", op1, op2);
+			mLOG(CHEATS, STUB, "CodeBreaker code %08X %04X not supported", op1, op2);
 			return false;
 		}
 	case CB_ADD_2:

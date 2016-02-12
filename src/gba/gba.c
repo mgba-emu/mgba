@@ -225,7 +225,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		int32_t testEvent;
 #ifndef NDEBUG
 		if (cycles < 0) {
-			GBALog(gba, GBA_LOG_FATAL, "Negative cycles passed: %i", cycles);
+			mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
 		}
 #endif
 
@@ -434,7 +434,7 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
 	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 #endif
 	if (!gba->pristineRom) {
-		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
+		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
@@ -463,7 +463,7 @@ bool GBALoadROM2(struct GBA* gba, struct VFile* vf) {
 	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 #endif
 	if (!gba->pristineRom) {
-		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
+		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
@@ -473,15 +473,6 @@ bool GBALoadROM2(struct GBA* gba, struct VFile* vf) {
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	// TODO: error check
-	return true;
-}
-
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
-	if (!GBALoadROM2(gba, vf)) {
-		return false;
-	}
-	gba->activeFile = fname;
-	GBALoadSave(gba, sav);
 	return true;
 }
 
@@ -501,19 +492,19 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
 	uint32_t* bios = vf->map(vf, SIZE_BIOS, MAP_READ);
 	if (!bios) {
-		GBALog(gba, GBA_LOG_WARN, "Couldn't map BIOS");
+		mLOG(GBA, WARN, "Couldn't map BIOS");
 		return;
 	}
 	gba->memory.bios = bios;
 	gba->memory.fullBios = 1;
 	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
-	GBALog(gba, GBA_LOG_DEBUG, "BIOS Checksum: 0x%X", checksum);
+	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
 	if (checksum == GBA_BIOS_CHECKSUM) {
-		GBALog(gba, GBA_LOG_INFO, "Official GBA BIOS detected");
+		mLOG(GBA, INFO, "Official GBA BIOS detected");
 	} else if (checksum == GBA_DS_BIOS_CHECKSUM) {
-		GBALog(gba, GBA_LOG_INFO, "Official GBA (DS) BIOS detected");
+		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
 	} else {
-		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
+		mLOG(GBA, WARN, "BIOS checksum incorrect");
 	}
 	gba->biosChecksum = checksum;
 	if (gba->memory.activeRegion == REGION_BIOS) {
@@ -606,7 +597,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_KEYPAD)) {
-		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
+		mLOG(GBA, STUB, "Keypad interrupts not implemented");
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
@@ -648,14 +639,6 @@ void GBAStop(struct GBA* gba) {
 	}
 	gba->cpu->nextEvent = gba->cpu->cycles;
 	gba->stopCallback->stop(gba->stopCallback);
-}
-
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
-	// TODO: Kill GBALog
-}
-
-void GBADebuggerLogShim(struct Debugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
-	// TODO: Kill GBADebuggerLogShim
 }
 
 bool GBAIsROM(struct VFile* vf) {
@@ -744,22 +727,22 @@ void GBAGetGameTitle(struct GBA* gba, char* out) {
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	enum GBALogLevel level = GBA_LOG_ERROR;
 	if (gba->debugger) {
-		level = GBA_LOG_STUB;
 		struct DebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
 		DebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
-	GBALog(gba, level, "Stub opcode: %08x", opcode);
+	// TODO: More sensible category?
+	mLOG(GBA, ERROR, "Stub opcode: %08x", opcode);
 }
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->yankedRomSize) {
-		GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+		// TODO: More sensible category?
+		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
 	}
 	if (gba->debugger) {
 		struct DebuggerEntryInfo info = {

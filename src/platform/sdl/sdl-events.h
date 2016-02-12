@@ -9,10 +9,13 @@
 #include "util/common.h"
 
 #include "core/interface.h"
+#include "core/log.h"
 #include "util/circle-buffer.h"
 #include "util/vector.h"
 
 #include <SDL.h>
+
+mLOG_DECLARE_CATEGORY(SDL_EVENTS);
 
 #define SDL_BINDING_KEY 0x53444C4BU
 #define SDL_BINDING_BUTTON 0x53444C42U

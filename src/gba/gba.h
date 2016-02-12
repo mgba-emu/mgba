@@ -170,7 +170,6 @@ void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
 bool GBALoadROM2(struct GBA* gba, struct VFile* vf);
 bool GBALoadSave(struct GBA* gba, struct VFile* sav);
 void GBAYankROM(struct GBA* gba);
@@ -188,11 +187,5 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBADebuggerLogShim(struct Debugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

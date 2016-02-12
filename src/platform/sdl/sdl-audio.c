@@ -12,11 +12,13 @@
 
 #define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 
+mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio");
+
 static void _mSDLAudioCallback(void* context, Uint8* data, int len);
 
 bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-		GBALog(0, GBA_LOG_ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
+		mLOG(SDL_AUDIO, ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
 		return false;
 	}
 
@@ -33,7 +35,7 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 #else
 	if (SDL_OpenAudio(&context->desiredSpec, &context->obtainedSpec) < 0) {
 #endif
-		GBALog(0, GBA_LOG_ERROR, "Could not open SDL sound system");
+		mLOG(SDL_AUDIO, ERROR, "Could not open SDL sound system");
 		return false;
 	}
 	context->samples = context->obtainedSpec.samples;

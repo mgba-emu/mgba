@@ -151,6 +151,8 @@ enum GBAIORegisters {
 	REG_HALTCNT = 0x301
 };
 
+mLOG_DECLARE_CATEGORY(GBA_IO);
+
 extern const char* GBAIORegisterNames[];
 
 void GBAIOInit(struct GBA* gba);

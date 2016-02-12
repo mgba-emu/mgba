@@ -9,8 +9,11 @@
 #include "util/common.h"
 #include "macros.h"
 
+#include "core/log.h"
 #include "gb/audio.h"
 #include "util/circle-buffer.h"
+
+mLOG_DECLARE_CATEGORY(GBA_AUDIO);
 
 struct GBADMA;
 

@@ -20,6 +20,8 @@
 #define GBA_G8(X) (((X) >> 2) & 0xF8)
 #define GBA_B8(X) (((X) >> 7) & 0xF8)
 
+mLOG_DECLARE_CATEGORY(GBA_VIDEO);
+
 enum {
 	VIDEO_HORIZONTAL_PIXELS = 240,
 	VIDEO_HBLANK_PIXELS = 68,

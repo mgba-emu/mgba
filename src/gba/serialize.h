@@ -8,9 +8,12 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/gba.h"
 
 extern const uint32_t GBA_SAVESTATE_MAGIC;
+
+mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
  * 0x00000 - 0x00003: Version Magic (0x01000000)

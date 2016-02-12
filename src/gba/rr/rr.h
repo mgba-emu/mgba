@@ -8,9 +8,12 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
 #include "gba/serialize.h"
 
 struct VFile;
+
+mLOG_DECLARE_CATEGORY(GBA_RR);
 
 enum GBARRInitFrom {
 	INIT_EX_NIHILO = 0,

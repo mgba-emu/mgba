@@ -15,6 +15,8 @@
 
 const uint32_t GBA_CHEAT_DEVICE_ID = 0xABADC0DE;
 
+mLOG_DEFINE_CATEGORY(CHEATS, "Cheats");
+
 DEFINE_VECTOR(GBACheatList, struct GBACheat);
 DEFINE_VECTOR(GBACheatSets, struct GBACheatSet*);
 DEFINE_VECTOR(StringList, char*);

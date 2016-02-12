@@ -100,9 +100,7 @@ static void _ack(struct GDBStub* stub) {
 
 static void _nak(struct GDBStub* stub) {
 	char nak = '-';
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Packet error");
-	}
+	mLOG(DEBUGGER, WARN, "Packet error");
 	SocketSend(stub->connection, &nak, 1);
 }
 
@@ -181,9 +179,7 @@ static void _sendMessage(struct GDBStub* stub) {
 	stub->outgoing[i] = '#';
 	_int2hex8(checksum, &stub->outgoing[i + 1]);
 	stub->outgoing[i + 3] = 0;
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "> %s", stub->outgoing);
-	}
+	mLOG(DEBUGGER, DEBUG, "> %s", stub->outgoing);
 	SocketSend(stub->connection, stub->outgoing, i + 3);
 }
 
@@ -408,9 +404,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	parsed += 2;
 	int networkChecksum = _hex2int(&message[i], 2);
 	if (networkChecksum != checksum) {
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Checksum error: expected %02x, got %02x", checksum, networkChecksum);
-		}
+		mLOG(DEBUGGER, WARN, "Checksum error: expected %02x, got %02x", checksum, networkChecksum);
 		_nak(stub);
 		return parsed;
 	}
@@ -476,7 +470,6 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.paused = _gdbStubWait;
 	stub->d.entered = _gdbStubEntered;
 	stub->d.custom = _gdbStubPoll;
-	stub->d.log = 0;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->lineAck = GDB_ACK_PENDING;
 	stub->shouldBlock = false;
@@ -488,9 +481,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 	}
 	stub->socket = SocketOpenTCP(port, bindAddress);
 	if (SOCKET_FAILED(stub->socket)) {
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
-		}
+		mLOG(DEBUGGER, ERROR, "Couldn't open socket");
 		return false;
 	}
 	if (!SocketSetBlocking(stub->socket, false)) {
@@ -504,9 +495,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 	return true;
 
 cleanup:
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't listen on port");
-	}
+	mLOG(DEBUGGER, ERROR, "Couldn't listen on port");
 	SocketClose(stub->socket);
 	stub->socket = INVALID_SOCKET;
 	return false;
@@ -570,9 +559,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 		stub->line[messageLen] = '\0';
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "< %s", stub->line);
-		}
+		mLOG(DEBUGGER, DEBUG, "< %s", stub->line);
 		ssize_t position = 0;
 		while (position < messageLen) {
 			position += _parseGDBMessage(stub, &stub->line[position]);
@@ -580,8 +567,6 @@ void GDBStubUpdate(struct GDBStub* stub) {
 	}
 
 connectionLost:
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_INFO, "Connection lost");
-	}
+	mLOG(DEBUGGER, WARN, "Connection lost");
 	GDBStubHangup(stub);
 }

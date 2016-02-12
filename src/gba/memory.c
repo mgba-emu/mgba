@@ -17,6 +17,8 @@
 
 #define IDLE_LOOP_THRESHOLD 10000
 
+mLOG_DEFINE_CATEGORY(GBA_MEM, "GBA Memory");
+
 static void _pristineCow(struct GBA* gba);
 static uint32_t _deadbeef[1] = { 0xE710B710 }; // Illegal instruction on both ARM and Thumb
 
@@ -123,7 +125,7 @@ void GBAMemoryReset(struct GBA* gba) {
 
 	if (!gba->memory.wram || !gba->memory.iwram) {
 		GBAMemoryDeinit(gba);
-		GBALog(gba, GBA_LOG_FATAL, "Could not map memory");
+		mLOG(GBA_MEM, FATAL, "Could not map memory");
 	}
 }
 
@@ -291,11 +293,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = _deadbeef;
 		cpu->memory.activeMask = 0;
-		enum GBALogLevel errorLevel = GBA_LOG_FATAL;
 		if (gba->yankedRomSize || !gba->hardCrash) {
-			errorLevel = GBA_LOG_GAME_ERROR;
+			mLOG(GBA_MEM, GAME_ERROR, "Jumped to invalid address: %08X", address);
+		} else {
+			mLOG(GBA_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		}
-		GBALog(gba, errorLevel, "Jumped to invalid address: %08X", address);
 		return;
 	}
 	cpu->memory.activeSeqCycles32 = memory->waitstatesSeq32[memory->activeRegion];
@@ -337,11 +339,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if (memory->activeRegion == REGION_BIOS) { \
 			LOAD_32(value, address, memory->bios); \
 		} else { \
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load32: 0x%08X", address); \
+			mLOG(GBA_MEM, GAME_ERROR, "Bad BIOS Load32: 0x%08X", address); \
 			value = memory->biosPrefetch; \
 		} \
 	} else { \
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load32: 0x%08X", address); \
 		LOAD_BAD; \
 	}
 
@@ -371,7 +373,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
 		LOAD_32(value, address & (SIZE_CART0 - 4), memory->rom); \
 	} else { \
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
+		mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
 		value = ((address & ~3) >> 1) & 0xFFFF; \
 		value |= (((address & ~3) + 2) >> 1) << 16; \
 	}
@@ -431,7 +433,7 @@ uint32_t GBALoad32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		LOAD_SRAM;
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load32: 0x%08X", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load32: 0x%08X", address);
 		LOAD_BAD;
 		break;
 	}
@@ -460,11 +462,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (memory->activeRegion == REGION_BIOS) {
 				LOAD_16(value, address, memory->bios);
 			} else {
-				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
+				mLOG(GBA_MEM, GAME_ERROR, "Bad BIOS Load16: 0x%08X", address);
 				value = (memory->biosPrefetch >> ((address & 2) * 8)) & 0xFFFF;
 			}
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 			LOAD_BAD;
 			value = (value >> ((address & 2) * 8)) & 0xFFFF;
 		}
@@ -501,7 +503,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
 		}
 		break;
@@ -512,7 +514,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
 		}
 		break;
@@ -523,7 +525,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		value |= value << 8;
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load16: 0x%08X", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load16: 0x%08X", address);
 		LOAD_BAD;
 		value = (value >> ((address & 2) * 8)) & 0xFFFF;
 		break;
@@ -553,11 +555,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			if (memory->activeRegion == REGION_BIOS) {
 				value = ((uint8_t*) memory->bios)[address];
 			} else {
-				GBALog(gba, GBA_LOG_GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
+				mLOG(GBA_MEM, GAME_ERROR, "Bad BIOS Load8: 0x%08X", address);
 				value = (memory->biosPrefetch >> ((address & 3) * 8)) & 0xFF;
 			}
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 			LOAD_BAD;
 			value = (value >> ((address & 3) * 8)) & 0xFF;
 		}
@@ -595,7 +597,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
 			value = (address >> 1) & 0xFF;
 		}
 		break;
@@ -603,7 +605,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART_SRAM_MIRROR:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
-			GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
+			mLOG(GBA_MEM, INFO, "Detected SRAM savegame");
 			GBASavedataInitSRAM(&memory->savedata);
 		}
 		if (gba->performingDMA == 1) {
@@ -616,13 +618,13 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else if (memory->hw.devices & HW_TILT) {
 			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
 		}
 		value &= 0xFF;
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Load8: 0x%08x", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Load8: 0x%08x", address);
 		LOAD_BAD;
 		value = (value >> ((address & 3) * 8)) & 0xFF;
 		break;
@@ -673,11 +675,11 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 
 #define STORE_CART \
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
-	GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store32: 0x%08X", address);
+	mLOG(GBA_MEM, STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
 	if (address & 0x3) { \
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Unaligned SRAM Store32: 0x%08X", address); \
+		mLOG(GBA_MEM, GAME_ERROR, "Unaligned SRAM Store32: 0x%08X", address); \
 		value = 0; \
 	} \
 	GBAStore8(cpu, address & ~0x3, value, cycleCounter); \
@@ -686,7 +688,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	GBAStore8(cpu, (address & ~0x3) | 3, value, cycleCounter);
 
 #define STORE_BAD \
-	GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store32: 0x%08X", address);
+	mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store32: 0x%08X", address);
 
 void GBAStore32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycleCounter) {
 	struct GBA* gba = (struct GBA*) cpu->master;
@@ -777,12 +779,12 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 			uint32_t reg = address & 0xFFFFFE;
 			GBAHardwareGPIOWrite(&memory->hw, reg, value);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		}
 		break;
 	case REGION_CART2_EX:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
-			GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
+			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 			GBASavedataInitEEPROM(&memory->savedata);
 		}
 		GBASavedataWriteEEPROM(&memory->savedata, value, 1);
@@ -793,7 +795,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		GBAStore8(cpu, (address & ~0x1) | 1, value, cycleCounter);
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store16: 0x%08X", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store16: 0x%08X", address);
 		break;
 	}
 
@@ -828,26 +830,26 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	case REGION_VRAM:
 		if ((address & 0x0001FFFF) >= ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) == 4) ? 0x00014000 : 0x00010000)) {
 			// TODO: check BG mode
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Cannot Store8 to OBJ: 0x%08X", address);
 			break;
 		}
 		gba->video.renderer->vram[(address & 0x1FFFE) >> 1] = ((uint8_t) value) | (value << 8);
 		gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		break;
 	case REGION_OAM:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Cannot Store8 to OAM: 0x%08X", address);
 		break;
 	case REGION_CART0:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Store8: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			if (address == SAVEDATA_FLASH_BASE) {
-				GBALog(gba, GBA_LOG_INFO, "Detected Flash savegame");
+				mLOG(GBA_MEM, INFO, "Detected Flash savegame");
 				GBASavedataInitFlash(&memory->savedata, gba->realisticTiming);
 			} else {
-				GBALog(gba, GBA_LOG_INFO, "Detected SRAM savegame");
+				mLOG(GBA_MEM, INFO, "Detected SRAM savegame");
 				GBASavedataInitSRAM(&memory->savedata);
 			}
 		}
@@ -859,12 +861,12 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
 		wait = memory->waitstatesNonseq16[REGION_CART_SRAM];
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Bad memory Store8: 0x%08X", address);
+		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store8: 0x%08X", address);
 		break;
 	}
 
@@ -1003,7 +1005,7 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		STORE_32(value, address & (SIZE_WORKING_IRAM - 4), memory->iwram);
 		break;
 	case REGION_IO:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch32: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch32: 0x%08X", address);
 		break;
 	case REGION_PALETTE_RAM:
 		LOAD_32(oldValue, address & (SIZE_PALETTE_RAM - 1), gba->video.palette);
@@ -1046,11 +1048,11 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 			LOAD_32(oldValue, address & (SIZE_CART_SRAM - 4), memory->savedata.data);
 			STORE_32(value, address & (SIZE_CART_SRAM - 4), memory->savedata.data);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
 		break;
 	default:
-		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+		mLOG(GBA_MEM, WARN, "Bad memory Patch16: 0x%08X", address);
 		break;
 	}
 	if (old) {
@@ -1073,7 +1075,7 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 		STORE_16(value, address & (SIZE_WORKING_IRAM - 2), memory->iwram);
 		break;
 	case REGION_IO:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch16: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch16: 0x%08X", address);
 		break;
 	case REGION_PALETTE_RAM:
 		LOAD_16(oldValue, address & (SIZE_PALETTE_RAM - 2), gba->video.palette);
@@ -1114,11 +1116,11 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 			LOAD_16(oldValue, address & (SIZE_CART_SRAM - 2), memory->savedata.data);
 			STORE_16(value, address & (SIZE_CART_SRAM - 2), memory->savedata.data);
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
 		break;
 	default:
-		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch16: 0x%08X", address);
+		mLOG(GBA_MEM, WARN, "Bad memory Patch16: 0x%08X", address);
 		break;
 	}
 	if (old) {
@@ -1141,16 +1143,16 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 		((int8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)] = value;
 		break;
 	case REGION_IO:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 		break;
 	case REGION_PALETTE_RAM:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 		break;
 	case REGION_VRAM:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 		break;
 	case REGION_OAM:
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 		break;
 	case REGION_CART0:
 	case REGION_CART0_EX:
@@ -1172,11 +1174,11 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 			oldValue = ((int8_t*) memory->savedata.data)[address & (SIZE_CART_SRAM - 1)];
 			((int8_t*) memory->savedata.data)[address & (SIZE_CART_SRAM - 1)] = value;
 		} else {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
+			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
 		break;
 	default:
-		GBALog(gba, GBA_LOG_WARN, "Bad memory Patch8: 0x%08X", address);
+		mLOG(GBA_MEM, WARN, "Bad memory Patch8: 0x%08X", address);
 		break;
 	}
 	if (old) {
@@ -1498,7 +1500,7 @@ uint16_t GBAMemoryWriteDMACNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	currentDma->reg = control;
 
 	if (GBADMARegisterIsDRQ(currentDma->reg)) {
-		GBALog(gba, GBA_LOG_STUB, "DRQ not implemented");
+		mLOG(GBA_MEM, STUB, "DRQ not implemented");
 	}
 
 	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
@@ -1530,7 +1532,7 @@ void GBAMemoryScheduleDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		info->nextEvent = INT_MAX;
 		switch (number) {
 		case 0:
-			GBALog(gba, GBA_LOG_WARN, "Discarding invalid DMA0 scheduling");
+			mLOG(GBA_MEM, WARN, "Discarding invalid DMA0 scheduling");
 			break;
 		case 1:
 		case 2:
@@ -1657,7 +1659,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 			--wordsRemaining;
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
-				GBALog(gba, GBA_LOG_INFO, "Detected EEPROM savegame");
+				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			word = cpu->memory.load16(cpu, source, 0);

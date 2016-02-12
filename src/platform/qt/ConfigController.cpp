@@ -110,7 +110,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.audioBuffers = 1536;
 	m_opts.sampleRate = 44100;
 	m_opts.volume = 0x100;
-	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS;
+	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;

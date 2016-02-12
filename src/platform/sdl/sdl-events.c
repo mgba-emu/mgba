@@ -27,6 +27,8 @@
 #define GYRO_STEPS 100
 #define RUMBLE_PWM 20
 
+mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events");
+
 DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -42,16 +44,16 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
-		GBALog(0, GBA_LOG_ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
+		mLOG(SDL_EVENTS, ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
 	}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
-		GBALog(0, GBA_LOG_ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
+		mLOG(SDL_EVENTS, ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
 	}
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-		GBALog(0, GBA_LOG_ERROR, "SDL video initialization failed: %s", SDL_GetError());
+		mLOG(SDL_EVENTS, ERROR, "SDL video initialization failed: %s", SDL_GetError());
 	}
 #endif
 

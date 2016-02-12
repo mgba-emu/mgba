@@ -152,7 +152,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		return true;
 	case GSA_BUTTON:
 		// TODO: Implement button
-		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
+		mLOG(CHEATS, STUB, "GameShark button unimplemented");
 		return false;
 	case GSA_IF_EQ:
 		if (op1 == 0xDEADFACE) {

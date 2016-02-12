@@ -10,21 +10,6 @@
 
 #include "core/interface.h"
 
-enum GBALogLevel {
-	GBA_LOG_FATAL = 0x01,
-	GBA_LOG_ERROR = 0x02,
-	GBA_LOG_WARN = 0x04,
-	GBA_LOG_INFO = 0x08,
-	GBA_LOG_DEBUG = 0x10,
-	GBA_LOG_STUB = 0x20,
-
-	GBA_LOG_GAME_ERROR = 0x100,
-	GBA_LOG_STATUS = 0x400,
-	GBA_LOG_SIO = 0x800,
-
-	GBA_LOG_ALL = 0xF3F,
-};
-
 enum GBASIOMode {
 	SIO_NORMAL_8 = 0,
 	SIO_NORMAL_32 = 1,

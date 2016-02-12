@@ -11,6 +11,8 @@
 #include "gba/serialize.h"
 #include "gba/video.h"
 
+mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio");
+
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const unsigned GBA_AUDIO_FIFO_SIZE = 8 * sizeof(int32_t);
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
@@ -118,7 +120,7 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		audio->chB.dmaSource = number;
 		break;
 	default:
-		GBALog(audio->p, GBA_LOG_GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
+		mLOG(GBA_AUDIO, GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
 	info->reg = GBADMARegisterSetDestControl(info->reg, DMA_FIXED);
@@ -220,7 +222,7 @@ void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 		fifo = &audio->chB.fifo;
 		break;
 	default:
-		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", address);
+		mLOG(GBA_AUDIO, ERROR, "Bad FIFO write to address 0x%03x", address);
 		return;
 	}
 	int i;
@@ -239,7 +241,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	} else if (fifoId == 1) {
 		channel = &audio->chB;
 	} else {
-		GBALog(audio->p, GBA_LOG_ERROR, "Bad FIFO write to address 0x%03x", fifoId);
+		mLOG(GBA_AUDIO, ERROR, "Bad FIFO write to address 0x%03x", fifoId);
 		return;
 	}
 	if (CircleBufferSize(&channel->fifo) <= 4 * sizeof(int32_t) && channel->dmaSource > 0) {

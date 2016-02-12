@@ -86,6 +86,8 @@ enum DMATiming {
 	DMA_TIMING_CUSTOM = 3
 };
 
+mLOG_DECLARE_CATEGORY(GBA_MEM);
+
 DECL_BITFIELD(GBADMARegister, uint16_t);
 DECL_BITS(GBADMARegister, DestControl, 5, 2);
 DECL_BITS(GBADMARegister, SrcControl, 7, 2);

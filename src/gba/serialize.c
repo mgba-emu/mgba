@@ -26,6 +26,8 @@
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
 
+mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
+
 struct GBABundledState {
 	struct GBASerializedState* state;
 	struct GBAExtdata* extdata;
@@ -96,12 +98,12 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	uint32_t ucheck;
 	LOAD_32(ucheck, 0, &state->versionMagic);
 	if (ucheck != GBA_SAVESTATE_MAGIC) {
-		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC, ucheck);
+		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC, ucheck);
 		error = true;
 	}
 	LOAD_32(ucheck, 0, &state->biosChecksum);
 	if (ucheck != gba->biosChecksum) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
+		mLOG(GBA_STATE, WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
 		uint32_t pc;
 		LOAD_32(pc, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 		if (pc < SIZE_BIOS && pc >= 0x20) {
@@ -109,34 +111,34 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 	}
 	if (gba->memory.rom && (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title)))) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
+		mLOG(GBA_STATE, WARN, "Savestate is for a different game");
 		error = true;
 	} else if (!gba->memory.rom && state->id != 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a game, but no game loaded");
+		mLOG(GBA_STATE, WARN, "Savestate is for a game, but no game loaded");
 		error = true;
 	}
 	LOAD_32(ucheck, 0, &state->romCrc32);
 	if (ucheck != gba->romCrc32) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
+		mLOG(GBA_STATE, WARN, "Savestate is for a different version of the game");
 	}
 	LOAD_32(check, 0, &state->cpu.cycles);
 	if (check < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
 	if (check >= (int32_t) GBA_ARM7TDMI_FREQUENCY) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are too high");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
 	LOAD_32(check, 0, &state->video.eventDiff);
 	if (check < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
 	}
 	LOAD_32(check, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 	int region = (check >> BASE_OFFSET);
 	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((check - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
+		mLOG(GBA_STATE, WARN, "Savestate created using a differently sized version of the ROM");
 		error = true;
 	}
 	if (error) {
@@ -461,7 +463,7 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 			gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, item.data);
 			mCoreSyncForceFrame(gba->sync);
 		} else {
-			GBALog(gba, GBA_LOG_WARN, "Savestate includes invalid screenshot");
+			mLOG(GBA_STATE, WARN, "Savestate includes invalid screenshot");
 		}
 	}
 	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
@@ -630,11 +632,11 @@ void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
 		vf->close(vf);
 	}
 	if (success) {
-		GBALog(gba, GBA_LOG_STATUS, "Screenshot saved");
+		mLOG(STATUS, INFO, "Screenshot saved");
 		return;
 	}
 #else
 	UNUSED(dir);
 #endif
-	GBALog(gba, GBA_LOG_STATUS, "Failed to take screenshot");
+	mLOG(STATUS, WARN, "Failed to take screenshot");
 }

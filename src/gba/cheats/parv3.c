@@ -109,7 +109,7 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	switch (condition) {
 	case PAR3_COND_OTHER:
 		// We shouldn't be able to get here
-		GBALog(0, GBA_LOG_ERROR, "Unexpectedly created 'other' PARv3 code");
+		mLOG(CHEATS, ERROR, "Unexpectedly created 'other' PARv3 code");
 		cheat->type = CHEAT_IF_LAND;
 		cheat->operand = 0;
 		break;
@@ -148,7 +148,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 	case PAR3_OTHER_BUTTON_2:
 	case PAR3_OTHER_BUTTON_4:
 		// TODO: Button
-		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
+		mLOG(CHEATS, STUB, "GameShark button unimplemented");
 		return false;
 	// TODO: Fix overriding existing patches
 	case PAR3_OTHER_PATCH_1:

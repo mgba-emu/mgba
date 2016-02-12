@@ -22,6 +22,8 @@
 #define FLASH_SETTLE_CYCLES 18000
 #define CLEANUP_THRESHOLD 15
 
+mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata");
+
 static void _flashSwitchBank(struct GBASavedata* savedata, int bank);
 static void _flashErase(struct GBASavedata* savedata);
 static void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart);
@@ -181,7 +183,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 		savedata->type = SAVEDATA_FLASH512;
 	}
 	if (savedata->type != SAVEDATA_FLASH512 && savedata->type != SAVEDATA_FLASH1M) {
-		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
 		return;
 	}
 	int32_t flashSize = SIZE_CART_FLASH512;
@@ -213,7 +215,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_EEPROM;
 	} else {
-		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
 		return;
 	}
 	off_t end;
@@ -236,7 +238,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_SRAM;
 	} else {
-		GBALog(0, GBA_LOG_WARN, "Can't re-initialize savedata");
+		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
 		return;
 	}
 	off_t end;
@@ -290,7 +292,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 			if (address == 0 && value < 2) {
 				_flashSwitchBank(savedata, value);
 			} else {
-				GBALog(0, GBA_LOG_GAME_ERROR, "Bad flash bank switch");
+				mLOG(GBA_SAVE, GAME_ERROR, "Bad flash bank switch");
 				savedata->command = FLASH_COMMAND_NONE;
 			}
 			savedata->command = FLASH_COMMAND_NONE;
@@ -299,7 +301,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 			if (address == FLASH_BASE_HI && value == FLASH_COMMAND_START) {
 				savedata->flashState = FLASH_STATE_START;
 			} else {
-				GBALog(0, GBA_LOG_GAME_ERROR, "Bad flash write: %#04x = %#02x", address, value);
+				mLOG(GBA_SAVE, GAME_ERROR, "Bad flash write: %#04x = %#02x", address, value);
 			}
 			break;
 		}
@@ -308,7 +310,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 		if (address == FLASH_BASE_LO && value == FLASH_COMMAND_CONTINUE) {
 			savedata->flashState = FLASH_STATE_CONTINUE;
 		} else {
-			GBALog(0, GBA_LOG_GAME_ERROR, "Bad flash write: %#04x = %#02x", address, value);
+			mLOG(GBA_SAVE, GAME_ERROR, "Bad flash write: %#04x = %#02x", address, value);
 			savedata->flashState = FLASH_STATE_RAW;
 		}
 		break;
@@ -325,7 +327,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 					savedata->command = value;
 					break;
 				default:
-					GBALog(0, GBA_LOG_GAME_ERROR, "Unsupported flash operation: %#02x", value);
+					mLOG(GBA_SAVE, GAME_ERROR, "Unsupported flash operation: %#02x", value);
 					break;
 				}
 				break;
@@ -335,7 +337,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 					_flashErase(savedata);
 					break;
 				default:
-					GBALog(0, GBA_LOG_GAME_ERROR, "Unsupported flash erase operation: %#02x", value);
+					mLOG(GBA_SAVE, GAME_ERROR, "Unsupported flash erase operation: %#02x", value);
 					break;
 				}
 				savedata->command = FLASH_COMMAND_NONE;
@@ -346,7 +348,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 				}
 				break;
 			default:
-				GBALog(0, GBA_LOG_ERROR, "Flash entered bad state: %#02x", savedata->command);
+				mLOG(GBA_SAVE, ERROR, "Flash entered bad state: %#02x", savedata->command);
 				savedata->command = FLASH_COMMAND_NONE;
 				break;
 			}
@@ -355,7 +357,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 				_flashEraseSector(savedata, address);
 				savedata->command = FLASH_COMMAND_NONE;
 			} else {
-				GBALog(0, GBA_LOG_GAME_ERROR, "Unsupported flash erase operation: %#02x", value);
+				mLOG(GBA_SAVE, GAME_ERROR, "Unsupported flash erase operation: %#02x", value);
 			}
 		}
 		break;
@@ -394,7 +396,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			savedata->data[savedata->writeAddress >> 3] = current;
 			++savedata->writeAddress;
 		} else {
-			GBALog(0, GBA_LOG_GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
+			mLOG(GBA_SAVE, GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
 		}
 		break;
 	case EEPROM_COMMAND_READ_PENDING:
@@ -421,7 +423,7 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		int step = 63 - savedata->readBitsRemaining;
 		uint32_t address = (savedata->readAddress + step) >> 3;
 		if (address >= SIZE_CART_EEPROM) {
-			GBALog(0, GBA_LOG_GAME_ERROR, "Reading beyond end of EEPROM: %08X", address);
+			mLOG(GBA_SAVE, GAME_ERROR, "Reading beyond end of EEPROM: %08X", address);
 			return 0xFF;
 		}
 		uint8_t data = savedata->data[address] >> (0x7 - (step & 0x7));
@@ -464,7 +466,7 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 		}
 		savedata->vf->sync(savedata->vf, savedata->data, size);
 		savedata->dirty = 0;
-		GBALog(0, GBA_LOG_INFO, "Savedata synced");
+		mLOG(GBA_SAVE, INFO, "Savedata synced");
 	}
 }
 
@@ -504,7 +506,7 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 }
 
 void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
-	GBALog(0, GBA_LOG_DEBUG, "Performing flash bank switch to bank %i", bank);
+	mLOG(GBA_SAVE, DEBUG, "Performing flash bank switch to bank %i", bank);
 	savedata->currentBank = &savedata->data[bank << 16];
 	if (bank > 0 && savedata->type == SAVEDATA_FLASH512) {
 		savedata->type = SAVEDATA_FLASH1M;
@@ -516,7 +518,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 }
 
 void _flashErase(struct GBASavedata* savedata) {
-	GBALog(0, GBA_LOG_DEBUG, "Performing flash chip erase");
+	mLOG(GBA_SAVE, DEBUG, "Performing flash chip erase");
 	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = SIZE_CART_FLASH512;
 	if (savedata->type == SAVEDATA_FLASH1M) {
@@ -526,11 +528,11 @@ void _flashErase(struct GBASavedata* savedata) {
 }
 
 void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
-	GBALog(0, GBA_LOG_DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
+	mLOG(GBA_SAVE, DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
 	savedata->dirty |= SAVEDATA_DIRT_NEW;
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
-		GBALog(0, GBA_LOG_DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
+		mLOG(GBA_SAVE, DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
 	}
 	savedata->settling = sectorStart >> 12;
 	if (savedata->realisticTiming) {

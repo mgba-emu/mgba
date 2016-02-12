@@ -13,6 +13,8 @@
 
 #include "util/memory.h"
 
+mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
+
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer);

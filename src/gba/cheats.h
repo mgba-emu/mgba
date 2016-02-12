@@ -8,7 +8,8 @@
 
 #include "util/common.h"
 
-#include "arm.h"
+#include "arm/arm.h"
+#include "core/log.h"
 #include "util/vector.h"
 
 #define MAX_ROM_PATCHES 4
@@ -150,6 +151,8 @@ struct GBACheatHook {
 	size_t refs;
 	size_t reentries;
 };
+
+mLOG_DECLARE_CATEGORY(CHEATS);
 
 DECLARE_VECTOR(GBACheatList, struct GBACheat);
 DECLARE_VECTOR(StringList, char*);

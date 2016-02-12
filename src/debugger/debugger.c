@@ -15,6 +15,8 @@ const uint32_t DEBUGGER_ID = 0xDEADBEEF;
 DEFINE_VECTOR(DebugBreakpointList, struct DebugBreakpoint);
 DEFINE_VECTOR(DebugWatchpointList, struct DebugWatchpoint);
 
+mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger");
+
 static struct DebugBreakpoint* _lookupBreakpoint(struct DebugBreakpointList* breakpoints, uint32_t address) {
 	size_t i;
 	for (i = 0; i < DebugBreakpointListSize(breakpoints); ++i) {

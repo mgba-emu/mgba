@@ -9,7 +9,10 @@
 #include "util/common.h"
 
 #include "arm/arm.h"
+#include "core/log.h"
 #include "util/vector.h"
+
+mLOG_DECLARE_CATEGORY(DEBUGGER);
 
 extern const uint32_t DEBUGGER_ID;
 
@@ -105,9 +108,6 @@ struct Debugger {
 
 	bool (*setSoftwareBreakpoint)(struct Debugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 	bool (*clearSoftwareBreakpoint)(struct Debugger*, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
-
-	ATTRIBUTE_FORMAT(printf, 3, 4)
-	void (*log)(struct Debugger*, enum DebuggerLogLevel, const char* format, ...);
 };
 
 void DebuggerCreate(struct Debugger*);

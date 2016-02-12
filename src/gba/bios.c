@@ -508,11 +508,11 @@ static void _unHuffman(struct GBA* gba) {
 	int remaining = header >> 8;
 	int bits = header & 0xF;
 	if (bits == 0) {
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Invalid Huffman bits");
+		mLOG(GBA_BIOS, GAME_ERROR, "Invalid Huffman bits");
 		bits = 8;
 	}
 	if (32 % bits || bits == 1) {
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
+		mLOG(GBA_BIOS, STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
 	// We assume the signature byte (0x20) is correct

@@ -157,7 +157,7 @@ bool _loadStream(struct GBAMGMContext* mgm, uint32_t streamId) {
 			mgm->d.stopPlaying(&mgm->d);
 		}
 	}
-	GBALog(0, GBA_LOG_DEBUG, "[RR] Loading segment: %u", streamId);
+	mLOG(GBA_RR, DEBUG, "Loading segment: %u", streamId);
 	mgm->d.frames = 0;
 	mgm->d.lagFrames = 0;
 	return true;
@@ -174,7 +174,7 @@ bool _incrementStream(struct GBAMGMContext* mgm, bool recursive) {
 	if (!_loadStream(mgm, newStreamId)) {
 		return false;
 	}
-	GBALog(0, GBA_LOG_DEBUG, "[RR] New segment: %u", newStreamId);
+	mLOG(GBA_RR, DEBUG, "New segment: %u", newStreamId);
 	_emitMagic(mgm, mgm->movieStream);
 	mgm->maxStreamId = newStreamId;
 	_emitTag(mgm, mgm->movieStream, TAG_PREVIOUSLY);
@@ -264,21 +264,21 @@ void GBAMGMNextFrame(struct GBARRContext* rr) {
 	if (rr->isPlaying(rr)) {
 		while (mgm->peekedTag == TAG_INPUT) {
 			_readTag(mgm, mgm->movieStream);
-			GBALog(0, GBA_LOG_WARN, "[RR] Desync detected!");
+			mLOG(GBA_RR, WARN, "Desync detected!");
 		}
 		if (mgm->peekedTag == TAG_LAG) {
-			GBALog(0, GBA_LOG_DEBUG, "[RR] Lag frame marked in stream");
+			mLOG(GBA_RR, DEBUG, "Lag frame marked in stream");
 			if (mgm->inputThisFrame) {
-				GBALog(0, GBA_LOG_WARN, "[RR] Lag frame in stream does not match movie");
+				mLOG(GBA_RR, WARN, "Lag frame in stream does not match movie");
 			}
 		}
 	}
 
 	++mgm->d.frames;
-	GBALog(0, GBA_LOG_DEBUG, "[RR] Frame: %u", mgm->d.frames);
+	mLOG(GBA_RR, DEBUG, "Frame: %u", mgm->d.frames);
 	if (!mgm->inputThisFrame) {
 		++mgm->d.lagFrames;
-		GBALog(0, GBA_LOG_DEBUG, "[RR] Lag frame: %u", mgm->d.lagFrames);
+		mLOG(GBA_RR, DEBUG, "Lag frame: %u", mgm->d.lagFrames);
 	}
 
 	if (rr->isRecording(rr)) {
@@ -305,7 +305,7 @@ void GBAMGMLogInput(struct GBARRContext* rr, uint16_t keys) {
 		mgm->movieStream->write(mgm->movieStream, &keys, sizeof(keys));
 		mgm->currentInput = keys;
 	}
-	GBALog(0, GBA_LOG_DEBUG, "[RR] Input log: %03X", mgm->currentInput);
+	mLOG(GBA_RR, DEBUG, "Input log: %03X", mgm->currentInput);
 	mgm->inputThisFrame = true;
 }
 
@@ -320,9 +320,9 @@ uint16_t GBAMGMQueryInput(struct GBARRContext* rr) {
 	}
 	mgm->inputThisFrame = true;
 	if (mgm->currentInput == INVALID_INPUT) {
-		GBALog(0, GBA_LOG_WARN, "[RR] Stream did not specify input");
+		mLOG(GBA_RR, WARN, "Stream did not specify input");
 	}
-	GBALog(0, GBA_LOG_DEBUG, "[RR] Input replay: %03X", mgm->currentInput);
+	mLOG(GBA_RR, DEBUG, "Input replay: %03X", mgm->currentInput);
 	return mgm->currentInput;
 }
 
