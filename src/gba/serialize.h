@@ -382,6 +382,4 @@ struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* 
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 
-void GBATakeScreenshot(struct GBA* gba, struct VDir* dir);
-
 #endif

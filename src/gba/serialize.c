@@ -614,29 +614,3 @@ void GBADeallocateState(struct GBASerializedState* state) {
 }
 
 // TODO: Put back rewind
-
-void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
-#ifdef USE_PNG
-	unsigned stride;
-	const void* pixels = 0;
-	char basename[PATH_MAX];
-	separatePath(gba->activeFile, 0, basename, 0);
-	struct VFile* vf = VDirFindNextAvailable(dir, basename, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
-	bool success = false;
-	if (vf) {
-		gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
-		png_structp png = PNGWriteOpen(vf);
-		png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-		success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
-		PNGWriteClose(png, info);
-		vf->close(vf);
-	}
-	if (success) {
-		mLOG(STATUS, INFO, "Screenshot saved");
-		return;
-	}
-#else
-	UNUSED(dir);
-#endif
-	mLOG(STATUS, WARN, "Failed to take screenshot");
-}
