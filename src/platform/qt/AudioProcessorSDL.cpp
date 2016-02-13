@@ -7,6 +7,10 @@
 
 #include "LogController.h"
 
+extern "C" {
+#include "core/thread.h"
+}
+
 using namespace QGBA;
 
 AudioProcessorSDL::AudioProcessorSDL(QObject* parent)
@@ -21,7 +25,7 @@ AudioProcessorSDL::~AudioProcessorSDL() {
 
 void AudioProcessorSDL::setInput(mCoreThread* input) {
 	AudioProcessor::setInput(input);
-	if (m_audio.core) {
+	if (m_audio.core && input->core != m_audio.core) {
 		mSDLDeinitAudio(&m_audio);
 		mSDLInitAudio(&m_audio, input);
 	}
