@@ -71,31 +71,31 @@ DECL_BIT(GBAudioEnable, Enable, 7);
 
 struct GB;
 struct GBAudioEnvelope {
-	uint8_t length;
-	uint8_t duty;
-	uint8_t stepTime;
-	uint8_t initialVolume;
-	bool direction;
+	int length;
+	int duty;
+	int stepTime;
+	int initialVolume;
 	int currentVolume;
+	bool direction;
 	int dead;
-	uint8_t nextStep;
+	int nextStep;
 };
 
 struct GBAudioSquareControl {
-	uint16_t frequency;
-	uint8_t length;
+	int frequency;
+	int length;
 	bool stop;
 	int hi;
 };
 
 struct GBAudioChannel1 {
-	uint8_t shift;
-	uint8_t time;
-	uint8_t sweepStep;
+	int shift;
+	int time;
+	int sweepStep;
 	bool direction;
 	bool sweepEnable;
 	bool sweepOccurred;
-	uint16_t realFrequency;
+	int realFrequency;
 
 	struct GBAudioEnvelope envelope;
 	struct GBAudioSquareControl control;
@@ -114,10 +114,9 @@ struct GBAudioChannel3 {
 	bool enable;
 
 	unsigned length;
-	unsigned lengthShadow;
-	uint8_t volume;
+	int volume;
 
-	uint16_t rate;
+	int rate;
 	bool stop;
 
 	uint32_t wavedata[8];
@@ -127,11 +126,11 @@ struct GBAudioChannel3 {
 struct GBAudioChannel4 {
 	struct GBAudioEnvelope envelope;
 
-	uint8_t ratio;
-	uint8_t frequency;
+	int ratio;
+	int frequency;
 	bool power;
 	bool stop;
-	uint8_t length;
+	int length;
 
 	uint32_t lfsr;
 	int8_t sample;
