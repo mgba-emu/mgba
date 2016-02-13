@@ -231,8 +231,7 @@ void GBAudioWriteNR30(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR31(struct GBAudio* audio, uint8_t value) {
-	audio->ch3.length = value;
-	audio->ch3.lengthShadow = 256 - value;
+	audio->ch3.length = 256 - value;
 }
 
 void GBAudioWriteNR32(struct GBAudio* audio, uint8_t value) {
@@ -249,18 +248,18 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 	audio->ch3.rate |= GBAudioRegisterControlGetRate(value << 8);
 	bool wasStop = audio->ch3.stop;
 	audio->ch3.stop = GBAudioRegisterControlGetStop(value << 8);
-	if (!wasStop && audio->ch3.stop && audio->ch3.lengthShadow && !(audio->frame & 1)) {
-		--audio->ch3.lengthShadow;
-		if (audio->ch3.lengthShadow == 0) {
+	if (!wasStop && audio->ch3.stop && audio->ch3.length && !(audio->frame & 1)) {
+		--audio->ch3.length;
+		if (audio->ch3.length == 0) {
 			audio->playingCh3 = false;
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh3 = audio->ch3.enable;
-		if (!audio->ch3.lengthShadow) {
-			audio->ch3.lengthShadow = 256;
+		if (!audio->ch3.length) {
+			audio->ch3.length = 256;
 			if (audio->ch3.stop && !(audio->frame & 1)) {
-				--audio->ch3.lengthShadow;
+				--audio->ch3.length;
 			}
 		}
 	}
@@ -504,9 +503,9 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 				}
 			}
 
-			if (audio->ch3.lengthShadow && audio->ch3.stop && !(frame & 1)) {
-				--audio->ch3.lengthShadow;
-				if (audio->ch3.lengthShadow == 0) {
+			if (audio->ch3.length && audio->ch3.stop && !(frame & 1)) {
+				--audio->ch3.length;
+				if (audio->ch3.length == 0) {
 					audio->playingCh3 = 0;
 				}
 			}
