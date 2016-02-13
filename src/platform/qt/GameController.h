@@ -16,6 +16,7 @@
 #include <memory>
 
 extern "C" {
+#include "core/core.h"
 #include "core/thread.h"
 #include "gba/cheats.h"
 #include "gba/context/overrides.h"
@@ -58,9 +59,11 @@ public:
 
 	bool isPaused();
 	bool isLoaded() { return m_gameOpen && mCoreThreadIsActive(&m_threadContext); }
+	mPlatform platform() const;
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
+	QSize screenDimensions() const;
 
 	void setInputController(InputController* controller) { m_inputController = controller; }
 

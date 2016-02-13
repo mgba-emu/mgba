@@ -463,6 +463,23 @@ bool GameController::isPaused() {
 	return mCoreThreadIsPaused(&m_threadContext);
 }
 
+mPlatform GameController::platform() const {
+	if (!m_gameOpen) {
+		return PLATFORM_NONE;
+	}
+	return m_threadContext.core->platform(m_threadContext.core);
+}
+
+QSize GameController::screenDimensions() const {
+	if (!m_gameOpen) {
+		return QSize();
+	}
+	unsigned width, height;
+	m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
+
+	return QSize(width, height);
+}
+
 void GameController::setPaused(bool paused) {
 	if (!isLoaded() || m_rewindTimer.isActive() || paused == mCoreThreadIsPaused(&m_threadContext)) {
 		return;

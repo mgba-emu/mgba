@@ -36,7 +36,7 @@ void GDBController::setBindAddress(uint32_t bindAddress) {
 }
 
 void GDBController::attach() {
-	if (isAttached()) {
+	if (isAttached() || m_gameController->platform() != PLATFORM_GBA) {
 		return;
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);

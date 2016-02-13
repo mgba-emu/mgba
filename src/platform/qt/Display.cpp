@@ -9,7 +9,7 @@
 #include "DisplayQt.h"
 
 extern "C" {
-#include "gba/video.h"
+#include "gb/video.h"
 }
 
 using namespace QGBA;
@@ -54,7 +54,7 @@ Display::Display(QWidget* parent)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
 	m_mouseTimer.setSingleShot(true);
 	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);

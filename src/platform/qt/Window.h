@@ -47,7 +47,7 @@ public:
 	void setConfig(ConfigController*);
 	void argumentsPassed(mArguments*);
 
-	void resizeFrame(int width, int height);
+	void resizeFrame(const QSize& size);
 
 signals:
 	void startDrawing(mCoreThread*);
@@ -146,8 +146,10 @@ private:
 
 	GameController* m_controller;
 	Display* m_display;
+	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
+	QList<QAction*> m_gbaActions;
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;

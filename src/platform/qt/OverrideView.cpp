@@ -104,6 +104,10 @@ void OverrideView::gameStarted(mCoreThread* thread) {
 		gameStopped();
 		return;
 	}
+	if (thread->core->platform(thread->core) != PLATFORM_GBA) {
+		close();
+		return;
+	}
 	GBA* gba = static_cast<GBA*>(thread->core->board);
 	m_ui.savetype->setCurrentIndex(gba->memory.savedata.type + 1);
 	m_ui.savetype->setEnabled(false);
