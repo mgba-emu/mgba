@@ -376,7 +376,7 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		GBAudioWriteNR32(audio, 0);
 		GBAudioWriteNR33(audio, 0);
 		GBAudioWriteNR34(audio, 0);
-		GBAudioWriteNR41(audio, 0);
+		// Don't write to NR41
 		GBAudioWriteNR42(audio, 0);
 		GBAudioWriteNR43(audio, 0);
 		GBAudioWriteNR44(audio, 0);
@@ -397,7 +397,6 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 			audio->p->memory.io[REG_NR32] = 0;
 			audio->p->memory.io[REG_NR33] = 0;
 			audio->p->memory.io[REG_NR34] = 0;
-			audio->p->memory.io[REG_NR41] = 0;
 			audio->p->memory.io[REG_NR42] = 0;
 			audio->p->memory.io[REG_NR43] = 0;
 			audio->p->memory.io[REG_NR44] = 0;

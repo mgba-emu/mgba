@@ -184,11 +184,8 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_NR41:
-		if (gb->audio.enable) {
-			GBAudioWriteNR41(&gb->audio, value);
-		} else {
-			value = 0;
-		}
+		// NR41 is exempt, for some reason
+		GBAudioWriteNR41(&gb->audio, value);
 		break;
 	case REG_NR42:
 		if (gb->audio.enable) {
