@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,7 @@
 #endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
+const uint32_t GBA_SAVESTATE_VERSION = 0x00000001;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
 
@@ -40,7 +41,7 @@ struct GBAExtdataHeader {
 };
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
-	STORE_32(GBA_SAVESTATE_MAGIC, 0, &state->versionMagic);
+	STORE_32(GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
 	STORE_32(gba->romCrc32, 0, &state->romCrc32);
 
@@ -97,9 +98,14 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int32_t check;
 	uint32_t ucheck;
 	LOAD_32(ucheck, 0, &state->versionMagic);
-	if (ucheck != GBA_SAVESTATE_MAGIC) {
-		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC, ucheck);
+	if (ucheck > GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION) {
+		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 		error = true;
+	} else if (ucheck < GBA_SAVESTATE_MAGIC) {
+		mLOG(GBA_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
+		error = true;
+	} else {
+		mLOG(GBA_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 	}
 	LOAD_32(ucheck, 0, &state->biosChecksum);
 	if (ucheck != gba->biosChecksum) {
