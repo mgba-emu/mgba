@@ -148,8 +148,15 @@ void LR35902Tick(struct LR35902Core* cpu) {
 }
 
 void LR35902Run(struct LR35902Core* cpu) {
-	while (cpu->cycles < cpu->nextEvent) {
+	while (true) {
 		_LR35902Step(cpu);
+		if (cpu->cycles >= cpu->nextEvent) {
+			break;
+		} else if (cpu->executionState < LR35902_CORE_EXECUTE) {
+			// Silly hack: keep us from calling step if we know the next step is a no-op
+			++cpu->cycles;
+			++cpu->executionState;
+		}
 	}
 	cpu->irqh.processEvents(cpu);
 }
