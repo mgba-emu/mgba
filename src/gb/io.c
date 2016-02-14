@@ -243,8 +243,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_WAVE_D:
 	case REG_WAVE_E:
 	case REG_WAVE_F:
-		if (!gb->audio.playingCh3 || gb->audio.ch3.readable) {
+		if (!gb->audio.playingCh3) {
 			gb->audio.ch3.wavedata8[address - REG_WAVE_0] = value;
+		} else if(gb->audio.ch3.readable) {
+			gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1] = value;
 		}
 		break;
 	case REG_JOYP:

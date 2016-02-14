@@ -281,7 +281,8 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 2 + 2 * (2048 - audio->ch3.rate);
+		// TODO: Where does this cycle delay come from?
+		audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 4 + 2 * (2048 - audio->ch3.rate);
 		audio->ch3.readable = false;
 		audio->nextEvent = audio->p->cpu->cycles;
 		if (audio->p) {
