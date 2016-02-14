@@ -201,7 +201,7 @@ void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 
 struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core) {
 #ifndef USE_CLI_DEBUGGER
-	UNUSED(context);
+	UNUSED(core);
 #endif
 	union DebugUnion {
 		struct Debugger d;
