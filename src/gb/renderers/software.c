@@ -123,12 +123,12 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc)) {
 		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, softwareRenderer->scx, softwareRenderer->scy);
 
-		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && startX >= softwareRenderer->wx - 7) {
+		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
 			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
 		}
 	} else {
 		int x;
@@ -165,7 +165,7 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
 		softwareRenderer->temporaryBuffer = 0;
 	}
-	softwareRenderer->currentWy = 0;
+	softwareRenderer->currentWy = softwareRenderer->wy;
 }
 
 static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int y, int sx, int sy) {
