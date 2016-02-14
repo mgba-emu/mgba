@@ -1,4 +1,6 @@
 0.5.0: (Future)
+Feaatures:
+ - Game Boy support
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
  - Qt: Fix sending gameStopped twice
