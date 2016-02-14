@@ -157,10 +157,12 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		audio->nextEvent = audio->p->cpu->cycles;
+		// TODO: Don't need p
 		if (audio->p) {
-			// TODO: Don't need p
+			audio->nextEvent = audio->p->cpu->cycles;
 			audio->p->cpu->nextEvent = audio->nextEvent;
+		} else {
+			audio->nextEvent = 0;
 		}
 	}
 	*audio->nr52 &= ~0x0001;
@@ -213,10 +215,12 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		audio->nextEvent = audio->p->cpu->cycles;
+		// TODO: Don't need p
 		if (audio->p) {
-			// TODO: Don't need p
+			audio->nextEvent = audio->p->cpu->cycles;
 			audio->p->cpu->nextEvent = audio->nextEvent;
+		} else {
+			audio->nextEvent = 0;
 		}
 	}
 	*audio->nr52 &= ~0x0002;
@@ -282,12 +286,15 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			audio->eventDiff = 0;
 		}
 		// TODO: Where does this cycle delay come from?
-		audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 4 + 2 * (2048 - audio->ch3.rate);
 		audio->ch3.readable = false;
-		audio->nextEvent = audio->p->cpu->cycles;
+		// TODO: Don't need p
 		if (audio->p) {
-			// TODO: Don't need p
+			audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 4 + 2 * (2048 - audio->ch3.rate);
+			audio->nextEvent = audio->p->cpu->cycles;
 			audio->p->cpu->nextEvent = audio->nextEvent;
+		} else {
+			audio->nextCh3 = audio->eventDiff + 4 + 2 * (2048 - audio->ch3.rate);
+			audio->nextEvent = 0;
 		}
 	}
 	*audio->nr52 &= ~0x0004;
@@ -344,10 +351,12 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 				--audio->ch4.length;
 			}
 		}
-		audio->nextEvent = audio->p->cpu->cycles;
+		// TODO: Don't need p
 		if (audio->p) {
-			// TODO: Don't need p
+			audio->nextEvent = audio->p->cpu->cycles;
 			audio->p->cpu->nextEvent = audio->nextEvent;
+		} else {
+			audio->nextEvent = 0;
 		}
 	}
 	*audio->nr52 &= ~0x0008;
