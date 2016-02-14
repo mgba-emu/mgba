@@ -275,6 +275,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_BGP:
 	case REG_OBP0:
 	case REG_OBP1:
+		GBVideoProcessDots(&gb->video);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		break;
 	case REG_STAT:

@@ -17,8 +17,8 @@ enum {
 	GB_VIDEO_VERTICAL_TOTAL_PIXELS = GB_VIDEO_VERTICAL_PIXELS + GB_VIDEO_VBLANK_PIXELS,
 
 	// TODO: Figure out exact lengths
-	GB_VIDEO_MODE_2_LENGTH = 84,
-	GB_VIDEO_MODE_3_LENGTH_BASE = 168,
+	GB_VIDEO_MODE_2_LENGTH = 85,
+	GB_VIDEO_MODE_3_LENGTH_BASE = 167,
 	GB_VIDEO_MODE_0_LENGTH_BASE = 204,
 
 	GB_VIDEO_HORIZONTAL_LENGTH = GB_VIDEO_MODE_0_LENGTH_BASE + GB_VIDEO_MODE_2_LENGTH + GB_VIDEO_MODE_3_LENGTH_BASE,
@@ -54,7 +54,8 @@ struct GBVideoRenderer {
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
-	void (*drawDot)(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** objOnLine, size_t nObj);
+	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** objOnLine, size_t nObj);
+	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
 
 	void (*getPixels)(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
@@ -96,7 +97,7 @@ struct GBVideo {
 	int32_t eventDiff;
 
 	int32_t nextMode;
-	int32_t nextDot;
+	int32_t dotCounter;
 
 	uint8_t* vram;
 	uint8_t* vramBank;
@@ -115,6 +116,7 @@ void GBVideoReset(struct GBVideo* video);
 void GBVideoDeinit(struct GBVideo* video);
 void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* renderer);
 int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles);
+void GBVideoProcessDots(struct GBVideo* video);
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);

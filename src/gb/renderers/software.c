@@ -12,13 +12,14 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererReset(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
-static void GBVideoSoftwareRendererDrawDot(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int x, int y, int sx, int sy);
-static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int x, int y);
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int y, int sx, int sy);
+static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
@@ -35,7 +36,8 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.reset = GBVideoSoftwareRendererReset;
 	renderer->d.deinit = GBVideoSoftwareRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoSoftwareRendererWriteVideoRegister;
-	renderer->d.drawDot = GBVideoSoftwareRendererDrawDot;
+	renderer->d.drawRange = GBVideoSoftwareRendererDrawRange;
+	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = 0;
 	renderer->d.putPixels = 0;
@@ -112,38 +114,48 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 	return value;
 }
 
-static void GBVideoSoftwareRendererDrawDot(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** obj, size_t oamMax) {
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc)) {
-		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, x, y, softwareRenderer->scx, softwareRenderer->scy);
+		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, softwareRenderer->scx, softwareRenderer->scy);
 
-		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && x >= softwareRenderer->wx - 7) {
+		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && startX >= softwareRenderer->wx - 7) {
 			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, x, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
-			if (x == 159) { // TODO: Find a better way to do this
-				++softwareRenderer->currentWy;
-			}
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
 		}
 	} else {
-		softwareRenderer->row[x] = 0;
+		int x;
+		for (x = startX; x < endX; ++x) {
+			softwareRenderer->row[x] = 0;
+		}
 	}
 
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
 		size_t i;
 		for (i = 0; i < oamMax; ++i) {
-			GBVideoSoftwareRendererDrawObj(softwareRenderer, obj[i], x, y);
+			GBVideoSoftwareRendererDrawObj(softwareRenderer, obj[i], startX, endX, y);
 		}
 	}
 
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
-	row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
+	int x;
+	for (x = startX; x < endX; ++x) {
+		row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
+	}
+}
+
+static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
+	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) && GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && softwareRenderer->wx - 7 < GB_VIDEO_HORIZONTAL_PIXELS) {
+		++softwareRenderer->currentWy;
+	}
 }
 
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer) {
@@ -156,29 +168,42 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 	softwareRenderer->currentWy = 0;
 }
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int x, int y, int sx, int sy) {
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int y, int sx, int sy) {
 	uint8_t* data = renderer->d.vram;
 	if (!GBRegisterLCDCIsTileData(renderer->lcdc)) {
 		data += 0x1000;
 	}
 	int topY = (((y + sy) >> 3) & 0x1F) * 0x20;
 	int bottomY = (y + sy) & 7;
-	int topX = ((x + sx) >> 3) & 0x1F;
-	int bottomX = 7 - ((x + sx) & 7);
-	int bgTile;
-	if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
-		bgTile = maps[topX + topY];
-	} else {
-		bgTile = ((int8_t*) maps)[topX + topY];
+	int x;
+	for (x = startX; x < endX; ++x) {
+		int topX = ((x + sx) >> 3) & 0x1F;
+		int bottomX = 7 - ((x + sx) & 7);
+		int bgTile;
+		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
+			bgTile = maps[topX + topY];
+		} else {
+			bgTile = ((int8_t*) maps)[topX + topY];
+		}
+		uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
+		uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
+		tileDataUpper >>= bottomX;
+		tileDataLower >>= bottomX;
+		renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 	}
-	uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
-	uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
-	tileDataUpper >>= bottomX;
-	tileDataLower >>= bottomX;
-	renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 }
 
-static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int x, int y) {
+static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y) {
+	int ix = obj->x - 8;
+	if (endX < ix || startX >= ix + 8) {
+		return;
+	}
+	if (obj->x < endX) {
+		endX = obj->x;
+	}
+	if (obj->x - 8 > startX) {
+		startX = obj->x - 8;
+	}
 	uint8_t* data = renderer->d.vram;
 	int tileOffset = 0;
 	int bottomY;
@@ -193,29 +218,24 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 			++tileOffset;
 		}
 	}
-	int end = GB_VIDEO_HORIZONTAL_PIXELS;
-	if (obj->x < end) {
-		end = obj->x;
-	}
-	int ix = obj->x - 8;
-	if (x < ix || x >= ix + 8) {
-		return;
-	}
 	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x20;
 	int p = (GBObjAttributesGetPalette(obj->attr) + 8) * 4;
 	int bottomX;
-	if (GBObjAttributesIsXFlip(obj->attr)) {
-		bottomX = (x - obj->x) & 7;
-	} else {
-		bottomX = 7 - ((x - obj->x) & 7);
-	}
-	int objTile = obj->tile + tileOffset;
-	uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];
-	uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
-	tileDataUpper >>= bottomX;
-	tileDataLower >>= bottomX;
-	color_t current = renderer->row[x];
-	if (((tileDataUpper | tileDataLower) & 1) && current <= mask) {
-		renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+	int x;
+	for (x = startX; x < endX; ++x) {
+		if (GBObjAttributesIsXFlip(obj->attr)) {
+			bottomX = (x - obj->x) & 7;
+		} else {
+			bottomX = 7 - ((x - obj->x) & 7);
+		}
+		int objTile = obj->tile + tileOffset;
+		uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];
+		uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
+		tileDataUpper >>= bottomX;
+		tileDataLower >>= bottomX;
+		color_t current = renderer->row[x];
+		if (((tileDataUpper | tileDataLower) & 1) && current <= mask) {
+			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		}
 	}
 }

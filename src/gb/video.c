@@ -16,7 +16,8 @@ static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererReset(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
-static void GBVideoDummyRendererDrawDot(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
 
@@ -27,7 +28,8 @@ static struct GBVideoRenderer dummyRenderer = {
 	.reset = GBVideoDummyRendererReset,
 	.deinit = GBVideoDummyRendererDeinit,
 	.writeVideoRegister = GBVideoDummyRendererWriteVideoRegister,
-	.drawDot = GBVideoDummyRendererDrawDot,
+	.drawRange = GBVideoDummyRendererDrawRange,
+	.finishScanline = GBVideoDummyRendererFinishScanline,
 	.finishFrame = GBVideoDummyRendererFinishFrame,
 	.getPixels = GBVideoDummyRendererGetPixels
 };
@@ -47,7 +49,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->eventDiff = 0;
 
 	video->nextMode = INT_MAX;
-	video->nextDot = INT_MAX;
+	video->dotCounter = INT_MIN;
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
@@ -84,22 +86,14 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 	if (video->nextEvent <= 0) {
 		if (video->nextEvent != INT_MAX) {
 			video->nextMode -= video->eventDiff;
-			video->nextDot -= video->eventDiff;
 		}
 		video->nextEvent = INT_MAX;
-		if (video->nextDot <= 0) {
-			video->renderer->drawDot(video->renderer, video->x, video->ly, video->objThisLine, video->objMax);
-			++video->x;
-			if (video->x < GB_VIDEO_HORIZONTAL_PIXELS) {
-				video->nextDot = 1;
-			} else {
-				video->nextDot = INT_MAX;
-			}
-		}
+		GBVideoProcessDots(video);
 		if (video->nextMode <= 0) {
 			int lyc = video->p->memory.io[REG_LYC];
 			switch (video->mode) {
 			case 0:
+				video->renderer->finishScanline(video->renderer, video->ly);
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
@@ -157,8 +151,8 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				break;
 			case 2:
 				_cleanOAM(video, video->ly);
-				video->nextDot = 1;
-				video->nextEvent = video->nextDot;
+				video->dotCounter = 0;
+				video->nextEvent = GB_VIDEO_HORIZONTAL_LENGTH;
 				video->x = 0;
 				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 8;
 				video->mode = 3;
@@ -174,9 +168,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			}
 			video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
 			video->p->memory.io[REG_STAT] = video->stat;
-		}
-		if (video->nextDot < video->nextEvent) {
-			video->nextEvent = video->nextDot;
 		}
 		if (video->nextMode < video->nextEvent) {
 			video->nextEvent = video->nextMode;
@@ -209,6 +200,21 @@ static void _cleanOAM(struct GBVideo* video, int y) {
 		}
 	}
 	video->objMax = o;
+}
+
+void GBVideoProcessDots(struct GBVideo* video) {
+	if (video->mode != 3 || video->dotCounter < 0) {
+		return;
+	}
+	int oldX = video->x;
+	video->x = video->dotCounter + video->eventDiff + video->p->cpu->cycles;
+	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
+		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
+	}
+	if (video->x == GB_VIDEO_HORIZONTAL_PIXELS) {
+		video->dotCounter = INT_MIN;
+	}
+	video->renderer->drawRange(video->renderer, oldX, video->x, video->ly, video->objThisLine, video->objMax);
 }
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
@@ -264,12 +270,19 @@ static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* re
 	return value;
 }
 
-static void GBVideoDummyRendererDrawDot(struct GBVideoRenderer* renderer, int x, int y, struct GBObj** obj, size_t oamMax) {
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {
 	UNUSED(renderer);
-	UNUSED(x);
+	UNUSED(endX);
+	UNUSED(startX);
 	UNUSED(y);
 	UNUSED(obj);
 	UNUSED(oamMax);
+	// Nothing to do
+}
+
+static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
+	UNUSED(renderer);
+	UNUSED(y);
 	// Nothing to do
 }
 
