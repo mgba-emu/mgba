@@ -23,11 +23,11 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope);
 static bool _updateSweep(struct GBAudioChannel1* ch, bool initial);
 static int32_t _updateChannel1(struct GBAudioChannel1* ch);
 static int32_t _updateChannel2(struct GBAudioChannel2* ch);
-static int32_t _updateChannel3(struct GBAudioChannel3* ch);
+static int32_t _updateChannel3(struct GBAudioChannel3* ch, enum GBAudioStyle style);
 static int32_t _updateChannel4(struct GBAudioChannel4* ch);
 static void _sample(struct GBAudio* audio, int32_t cycles);
 
-void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52) {
+void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAudioStyle style) {
 	audio->samples = samples;
 	audio->left = blip_new(BLIP_BUFFER_SIZE);
 	audio->right = blip_new(BLIP_BUFFER_SIZE);
@@ -41,6 +41,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52) {
 	audio->forceDisableCh[3] = false;
 	audio->masterVolume = GB_AUDIO_VOLUME_MAX;
 	audio->nr52 = nr52;
+	audio->style = style;
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -156,10 +157,10 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		audio->nextEvent = audio->eventDiff;
+		audio->nextEvent = audio->p->cpu->cycles;
 		if (audio->p) {
 			// TODO: Don't need p
-			audio->p->cpu->nextEvent = audio->eventDiff;
+			audio->p->cpu->nextEvent = audio->nextEvent;
 		}
 	}
 	*audio->nr52 &= ~0x0001;
@@ -212,10 +213,10 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		audio->nextEvent = audio->eventDiff;
+		audio->nextEvent = audio->p->cpu->cycles;
 		if (audio->p) {
 			// TODO: Don't need p
-			audio->p->cpu->nextEvent = audio->eventDiff;
+			audio->p->cpu->nextEvent = audio->nextEvent;
 		}
 	}
 	*audio->nr52 &= ~0x0002;
@@ -254,6 +255,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			audio->playingCh3 = false;
 		}
 	}
+	bool wasEnable = audio->playingCh3;
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh3 = audio->ch3.enable;
 		if (!audio->ch3.length) {
@@ -262,16 +264,29 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 				--audio->ch3.length;
 			}
 		}
+
+		if (audio->style == GB_AUDIO_DMG && wasEnable && audio->playingCh3 && audio->ch3.readable) {
+			if (audio->ch3.window < 8) {
+				audio->ch3.wavedata8[0] = audio->ch3.wavedata8[audio->ch3.window >> 1];
+			} else {
+				audio->ch3.wavedata8[0] = audio->ch3.wavedata8[((audio->ch3.window >> 1) & ~3)];
+				audio->ch3.wavedata8[1] = audio->ch3.wavedata8[((audio->ch3.window >> 1) & ~3) + 1];
+				audio->ch3.wavedata8[2] = audio->ch3.wavedata8[((audio->ch3.window >> 1) & ~3) + 2];
+				audio->ch3.wavedata8[3] = audio->ch3.wavedata8[((audio->ch3.window >> 1) & ~3) + 3];
+			}
+		}
+		audio->ch3.window = 0;
 	}
 	if (audio->playingCh3) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		audio->nextCh3 = audio->eventDiff;
-		audio->nextEvent = audio->eventDiff;
+		audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 2 + 2 * (2048 - audio->ch3.rate);
+		audio->ch3.readable = false;
+		audio->nextEvent = audio->p->cpu->cycles;
 		if (audio->p) {
 			// TODO: Don't need p
-			audio->p->cpu->nextEvent = audio->eventDiff;
+			audio->p->cpu->nextEvent = audio->nextEvent;
 		}
 	}
 	*audio->nr52 &= ~0x0004;
@@ -328,10 +343,10 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 				--audio->ch4.length;
 			}
 		}
-		audio->nextEvent = audio->eventDiff;
+		audio->nextEvent = audio->p->cpu->cycles;
 		if (audio->p) {
 			// TODO: Don't need p
-			audio->p->cpu->nextEvent = audio->eventDiff;
+			audio->p->cpu->nextEvent = audio->nextEvent;
 		}
 	}
 	*audio->nr52 &= ~0x0008;
@@ -494,8 +509,18 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 
 			if (audio->playingCh3) {
 				audio->nextCh3 -= audio->eventDiff;
+				audio->fadeCh3 -= audio->eventDiff;
+				if (audio->fadeCh3 <= 0) {
+					audio->ch3.readable = false;
+					audio->fadeCh3 = INT_MAX;
+				}
 				if (audio->nextCh3 <= 0) {
-					audio->nextCh3 += _updateChannel3(&audio->ch3);
+					audio->fadeCh3 = audio->nextCh3 + 2;
+					audio->nextCh3 += _updateChannel3(&audio->ch3, audio->style);
+					audio->ch3.readable = true;
+				}
+				if (audio->fadeCh3 < audio->nextEvent) {
+					audio->nextEvent = audio->fadeCh3;
 				}
 				if (audio->nextCh3 < audio->nextEvent) {
 					audio->nextEvent = audio->nextCh3;
@@ -741,10 +766,8 @@ static int32_t _updateChannel2(struct GBAudioChannel2* ch) {
 	return timing;
 }
 
-static int32_t _updateChannel3(struct GBAudioChannel3* ch) {
+static int32_t _updateChannel3(struct GBAudioChannel3* ch, enum GBAudioStyle style) {
 	int i;
-	int start;
-	int end;
 	int volume;
 	switch (ch->volume) {
 	case 0:
@@ -763,25 +786,42 @@ static int32_t _updateChannel3(struct GBAudioChannel3* ch) {
 		volume = 3;
 		break;
 	}
-	if (ch->size) {
-		start = 7;
-		end = 0;
-	} else if (ch->bank) {
-		start = 7;
-		end = 4;
-	} else {
-		start = 3;
-		end = 0;
+	switch (style) {
+		int start;
+		int end;
+	case GB_AUDIO_DMG:
+	default:
+		++ch->window;
+		ch->window &= 0x1F;
+		ch->sample = ch->wavedata8[ch->window >> 1];
+		if (ch->window & 1) {
+			ch->sample &= 0xF;
+		} else {
+			ch->sample >>= 4;
+		}
+		break;
+	case GB_AUDIO_GBA:
+		if (ch->size) {
+			start = 7;
+			end = 0;
+		} else if (ch->bank) {
+			start = 7;
+			end = 4;
+		} else {
+			start = 3;
+			end = 0;
+		}
+		uint32_t bitsCarry = ch->wavedata32[end] & 0x000000F0;
+		uint32_t bits;
+		for (i = start; i >= end; --i) {
+			bits = ch->wavedata32[i] & 0x000000F0;
+			ch->wavedata32[i] = ((ch->wavedata32[i] & 0x0F0F0F0F) << 4) | ((ch->wavedata32[i] & 0xF0F0F000) >> 12);
+			ch->wavedata32[i] |= bitsCarry << 20;
+			bitsCarry = bits;
+		}
+		ch->sample = bitsCarry >> 4;
+		break;
 	}
-	uint32_t bitsCarry = ch->wavedata[end] & 0x000000F0;
-	uint32_t bits;
-	for (i = start; i >= end; --i) {
-		bits = ch->wavedata[i] & 0x000000F0;
-		ch->wavedata[i] = ((ch->wavedata[i] & 0x0F0F0F0F) << 4) | ((ch->wavedata[i] & 0xF0F0F000) >> 12);
-		ch->wavedata[i] |= bitsCarry << 20;
-		bitsCarry = bits;
-	}
-	ch->sample = bitsCarry >> 4;
 	ch->sample -= 8;
 	ch->sample *= volume * 4;
 	return 2 * (2048 - ch->rate);

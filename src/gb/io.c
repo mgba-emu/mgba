@@ -243,7 +243,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_WAVE_D:
 	case REG_WAVE_E:
 	case REG_WAVE_F:
-		((uint8_t*) gb->audio.ch3.wavedata)[address - REG_WAVE_0] = value; // TODO: Big endian
+		if (!gb->audio.playingCh3 || gb->audio.ch3.readable) {
+			gb->audio.ch3.wavedata8[address - REG_WAVE_0] = value;
+		}
 		break;
 	case REG_JOYP:
 	case REG_TIMA:
@@ -318,6 +320,32 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		break;
 	case REG_IE:
 		return gb->memory.ie;
+	case REG_WAVE_0:
+	case REG_WAVE_1:
+	case REG_WAVE_2:
+	case REG_WAVE_3:
+	case REG_WAVE_4:
+	case REG_WAVE_5:
+	case REG_WAVE_6:
+	case REG_WAVE_7:
+	case REG_WAVE_8:
+	case REG_WAVE_9:
+	case REG_WAVE_A:
+	case REG_WAVE_B:
+	case REG_WAVE_C:
+	case REG_WAVE_D:
+	case REG_WAVE_E:
+	case REG_WAVE_F:
+		if (gb->audio.playingCh3) {
+			if (gb->audio.ch3.readable) {
+				return gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1];
+			} else {
+				return 0xFF;
+			}
+		} else {
+			return gb->audio.ch3.wavedata8[address - REG_WAVE_0];
+		}
+		break;
 	case REG_IF:
 	case REG_NR10:
 	case REG_NR11:
@@ -336,22 +364,6 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_NR50:
 	case REG_NR51:
 	case REG_NR52:
-	case REG_WAVE_0:
-	case REG_WAVE_1:
-	case REG_WAVE_2:
-	case REG_WAVE_3:
-	case REG_WAVE_4:
-	case REG_WAVE_5:
-	case REG_WAVE_6:
-	case REG_WAVE_7:
-	case REG_WAVE_8:
-	case REG_WAVE_9:
-	case REG_WAVE_A:
-	case REG_WAVE_B:
-	case REG_WAVE_C:
-	case REG_WAVE_D:
-	case REG_WAVE_E:
-	case REG_WAVE_F:
 	case REG_DIV:
 	case REG_TIMA:
 	case REG_TMA:

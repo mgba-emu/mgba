@@ -28,7 +28,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 #ifdef __BIG_ENDIAN__
 	++n52;
 #endif
-	GBAudioInit(&audio->psg, 0, nr52);
+	GBAudioInit(&audio->psg, 0, nr52, GB_AUDIO_GBA);
 	audio->samples = samples;
 	audio->psg.clockRate = GBA_ARM7TDMI_FREQUENCY;
 	// Guess too large; we hang producing extra samples if we guess too low
@@ -209,7 +209,7 @@ void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
-	audio->psg.ch3.wavedata[address | (!audio->psg.ch3.bank * 4)] = value;
+	audio->psg.ch3.wavedata32[address | (!audio->psg.ch3.bank * 4)] = value;
 }
 
 void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
@@ -353,7 +353,7 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 	STORE_32(ch2Flags, 0, &state->audio.ch2.envelope);
 	STORE_32(audio->psg.nextCh2, 0, &state->audio.ch2.nextEvent);
 
-	memcpy(state->audio.ch3.wavebanks, audio->psg.ch3.wavedata, sizeof(state->audio.ch3.wavebanks));
+	memcpy(state->audio.ch3.wavebanks, audio->psg.ch3.wavedata32, sizeof(state->audio.ch3.wavebanks));
 	STORE_16(audio->psg.ch3.length, 0, &state->audio.ch3.length);
 	STORE_32(audio->psg.nextCh3, 0, &state->audio.ch3.nextEvent);
 
@@ -407,7 +407,7 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	LOAD_32(audio->psg.nextCh2, 0, &state->audio.ch2.nextEvent);
 
 	// TODO: Big endian?
-	memcpy(audio->psg.ch3.wavedata, state->audio.ch3.wavebanks, sizeof(audio->psg.ch3.wavedata));
+	memcpy(audio->psg.ch3.wavedata32, state->audio.ch3.wavebanks, sizeof(audio->psg.ch3.wavedata32));
 	LOAD_16(audio->psg.ch3.length, 0, &state->audio.ch3.length);
 	LOAD_32(audio->psg.nextCh3, 0, &state->audio.ch3.nextEvent);
 

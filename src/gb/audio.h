@@ -119,7 +119,12 @@ struct GBAudioChannel3 {
 	int rate;
 	bool stop;
 
-	uint32_t wavedata[8];
+	int window;
+	bool readable;
+	union {
+		uint32_t wavedata32[8];
+		uint8_t wavedata8[16];
+	};
 	int8_t sample;
 };
 
@@ -134,6 +139,13 @@ struct GBAudioChannel4 {
 
 	uint32_t lfsr;
 	int8_t sample;
+};
+
+enum GBAudioStyle {
+	GB_AUDIO_DMG,
+	GB_AUDIO_CGB,
+	GB_AUDIO_AGB, // GB in GBA
+	GB_AUDIO_GBA, // GBA PSG
 };
 
 struct GBAudio {
@@ -174,10 +186,12 @@ struct GBAudio {
 	int32_t nextSample;
 
 	int32_t sampleInterval;
+	enum GBAudioStyle style;
 
 	int32_t nextCh1;
 	int32_t nextCh2;
 	int32_t nextCh3;
+	int32_t fadeCh3;
 	int32_t nextCh4;
 	bool enable;
 
@@ -186,7 +200,7 @@ struct GBAudio {
 	int masterVolume;
 };
 
-void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52);
+void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAudioStyle style);
 void GBAudioDeinit(struct GBAudio* audio);
 void GBAudioReset(struct GBAudio* audio);
 

@@ -45,7 +45,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	GBVideoInit(&gb->video);
 
 	gb->audio.p = gb;
-	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52]); // TODO: Remove magic constant
+	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
 
 	gb->timer.p = gb;
 
