@@ -804,11 +804,10 @@ static int32_t _updateChannel3(struct GBAudioChannel3* ch, enum GBAudioStyle sty
 		++ch->window;
 		ch->window &= 0x1F;
 		ch->sample = ch->wavedata8[ch->window >> 1];
-		if (ch->window & 1) {
-			ch->sample &= 0xF;
-		} else {
+		if (!(ch->window & 1)) {
 			ch->sample >>= 4;
 		}
+		ch->sample &= 0xF;
 		break;
 	case GB_AUDIO_GBA:
 		if (ch->size) {
