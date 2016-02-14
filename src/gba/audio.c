@@ -26,7 +26,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->psg.p = NULL;
 	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[REG_SOUNDCNT_X >> 1];
 #ifdef __BIG_ENDIAN__
-	++n52;
+	++nr52;
 #endif
 	GBAudioInit(&audio->psg, 0, nr52, GB_AUDIO_GBA);
 	audio->samples = samples;
