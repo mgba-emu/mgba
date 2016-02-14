@@ -28,6 +28,11 @@ static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
 static void GBIllegal(struct LR35902Core* cpu);
 static void GBHitStub(struct LR35902Core* cpu);
 
+#ifdef _3DS
+extern uint32_t* romBuffer;
+extern size_t romBufferSize;
+#endif
+
 void GBCreate(struct GB* gb) {
 	gb->d.id = GB_COMPONENT_MAGIC;
 	gb->d.init = GBInit;
