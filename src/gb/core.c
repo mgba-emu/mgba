@@ -36,6 +36,7 @@ static bool _GBCoreInit(struct mCore* core) {
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
 
+	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

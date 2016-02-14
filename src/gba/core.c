@@ -45,6 +45,7 @@ static bool _GBACoreInit(struct mCore* core) {
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 
+	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
