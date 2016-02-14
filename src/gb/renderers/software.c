@@ -175,6 +175,9 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 	}
 	int topY = (((y + sy) >> 3) & 0x1F) * 0x20;
 	int bottomY = (y + sy) & 7;
+	if (startX < 0) {
+		startX = 0;
+	}
 	int x;
 	for (x = startX; x < endX; ++x) {
 		int topX = ((x + sx) >> 3) & 0x1F;
@@ -203,6 +206,9 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	}
 	if (obj->x - 8 > startX) {
 		startX = obj->x - 8;
+	}
+	if (startX < 0) {
+		startX = 0;
 	}
 	uint8_t* data = renderer->d.vram;
 	int tileOffset = 0;
