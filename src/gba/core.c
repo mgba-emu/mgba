@@ -85,7 +85,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
 
 	struct VFile* bios = 0;
-	if (core->opts.useBios) {
+	if (core->opts.useBios && core->opts.bios) {
 		bios = VFileOpen(core->opts.bios, O_RDONLY);
 	}
 	if (bios) {

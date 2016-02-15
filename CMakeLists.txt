@@ -473,24 +473,6 @@ foreach(FEATURE IN LISTS FEATURES)
 	list(APPEND FEATURE_DEFINES "USE_${FEATURE}")
 endforeach()
 
-source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})
-source_group("Extra features" FILES ${FEATURE_SRC})
-source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
-
-# Platform binaries
-if(3DS)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/3ds ${CMAKE_BINARY_DIR}/3ds)
-endif()
-
-if(WII)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/wii ${CMAKE_BINARY_DIR}/wii)
-endif()
-
-if(PSP2)
-	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
-endif()
-
-# Binaries
 set(CORE_SRC)
 if(M_CORE_GB)
 	add_definitions(-DM_CORE_GB)
@@ -514,6 +496,24 @@ if(M_CORE_GBA)
 	endif()
 endif()
 
+source_group("Virtual files" FILES ${CORE_VFS_SRC} ${VFS_SRC})
+source_group("Extra features" FILES ${FEATURE_SRC})
+source_group("Third-party code" FILES ${THIRD_PARTY_SRC})
+
+# Platform binaries
+if(3DS)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/3ds ${CMAKE_BINARY_DIR}/3ds)
+endif()
+
+if(WII)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/wii ${CMAKE_BINARY_DIR}/wii)
+endif()
+
+if(PSP2)
+	add_subdirectory(${CMAKE_SOURCE_DIR}/src/platform/psp2 ${CMAKE_BINARY_DIR}/psp2)
+endif()
+
+# Binaries
 list(APPEND CORE_SRC
 	${UTIL_SRC}
 	${CORE_VFS_SRC}

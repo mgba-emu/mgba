@@ -249,9 +249,11 @@ static void _guiFinish(void) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
+	}
 	if (hasSound != NO_SOUND) {
-		((struct GBA*) runner->core->board)->stream = &stream;
+		runner->core->setAVStream(runner->core, &stream);
 	}
 
 	_map3DSKey(&runner->core->inputMap, KEY_A, GBA_KEY_A);
@@ -277,17 +279,19 @@ static void _setup(struct mGUIRunner* runner) {
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
-		HIDUSER_EnableAccelerometer();
-	}
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
-		HIDUSER_EnableGyroscope();
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
+			HIDUSER_EnableAccelerometer();
+		}
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+			HIDUSER_EnableGyroscope();
+		}
 	}
 	osSetSpeedupEnable(true);
 
 	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
@@ -314,19 +318,24 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(false);
 
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
-		HIDUSER_DisableAccelerometer();
-	}
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
-		HIDUSER_DisableGyroscope();
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
+			HIDUSER_DisableAccelerometer();
+		}
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+			HIDUSER_DisableGyroscope();
+		}
 	}
 }
 
-static void _drawTex(bool faded) {
+static void _drawTex(struct mCore* core, bool faded) {
 	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
 
 	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
 	int screen_h = 240;
+
+	unsigned corew, coreh;
+	core->desiredVideoDimensions(core, &corew, &coreh);
 
 	int w, h;
 
@@ -334,8 +343,8 @@ static void _drawTex(bool faded) {
 	case SM_PA_TOP:
 	case SM_PA_BOTTOM:
 	default:
-		w = VIDEO_HORIZONTAL_PIXELS;
-		h = VIDEO_VERTICAL_PIXELS;
+		w = corew;
+		h = coreh;
 		break;
 	case SM_AF_TOP:
 		w = 360;
@@ -356,7 +365,7 @@ static void _drawTex(bool faded) {
 	int x = (screen_w - w) / 2;
 	int y = (screen_h - h) / 2;
 
-	ctrAddRectScaled(color, x, y, w, h, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	ctrAddRectScaled(color, x, y, w, h, 0, 0, corew, coreh);
 }
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
@@ -379,7 +388,7 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 
 	gspWaitForPPF();
 	ctrActivateTexture(tex);
-	_drawTex(faded);
+	_drawTex(runner->core, faded);
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
@@ -413,7 +422,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, b
 	linearFree(newPixels);
 
 	ctrActivateTexture(tex);
-	_drawTex(faded);
+	_drawTex(runner->core, faded);
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {

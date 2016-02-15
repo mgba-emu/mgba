@@ -153,7 +153,9 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 static void _GBCoreReset(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = (struct GB*) core->board;
-	GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
+	if (gbcore->renderer.outputBuffer) {
+		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
+	}
 	LR35902Reset(core->cpu);
 }
 

@@ -45,6 +45,7 @@ struct mGUIRunner {
 
 	struct GUIInputKeys* keySources;
 
+	const char* port;
 	float fps;
 	int64_t lastFpsCheck;
 	int32_t totalDelta;

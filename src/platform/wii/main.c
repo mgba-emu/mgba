@@ -88,6 +88,7 @@ static int32_t gyroZ;
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
 static int scaleFactor;
+static unsigned corew, coreh;
 
 static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
@@ -125,11 +126,9 @@ static void reconfigureScreen(struct mCore* core, GXRModeObj* vmode) {
 	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
 	if (core) {
-		unsigned width = VIDEO_HORIZONTAL_PIXELS;
-		unsigned height = VIDEO_VERTICAL_PIXELS;
-		core->desiredVideoDimensions(core, &width, &height);
-		int hfactor = vmode->fbWidth / width;
-		int vfactor = vmode->efbHeight / height;
+		core->desiredVideoDimensions(core, &corew, &coreh);
+		int hfactor = vmode->fbWidth / corew;
+		int vfactor = vmode->efbHeight / coreh;
 		if (hfactor > vfactor) {
 			scaleFactor = vfactor;
 		} else {
@@ -515,15 +514,17 @@ void _guiPrepare(void) {
 
 void _guiFinish(void) {
 	if (screenMode == SM_PA) {
-		_reproj(VIDEO_HORIZONTAL_PIXELS * scaleFactor, VIDEO_VERTICAL_PIXELS * scaleFactor);
+		_reproj(corew * scaleFactor, coreh * scaleFactor);
 	} else {
-		_reproj2(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+		_reproj2(corew, coreh);
 	}
 }
 
 void _setup(struct mGUIRunner* runner) {
-	((struct GBA*) runner->core->board)->rumble = &rumble;
-	((struct GBA*) runner->core->board)->rotationSource = &rotation;
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		((struct GBA*) runner->core->board)->rumble = &rumble;
+		((struct GBA*) runner->core->board)->rotationSource = &rotation;
+	}
 
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
@@ -572,8 +573,8 @@ void _setup(struct mGUIRunner* runner) {
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
 	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 }
 
 void _gameUnloaded(struct mGUIRunner* runner) {
@@ -583,7 +584,7 @@ void _gameUnloaded(struct mGUIRunner* runner) {
 
 void _gameLoaded(struct mGUIRunner* runner) {
 	reconfigureScreen(runner->core, vmode);
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+	if (runner->core->platform(runner->core) == PLATFORM_GBA && ((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {
 			u32 result = WPAD_SetMotionPlus(0, 1);
@@ -644,8 +645,8 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	size_t x, y;
 	uint64_t* texdest = (uint64_t*) texmem;
 	uint64_t* texsrc = (uint64_t*) outputBuffer;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; y += 4) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS >> 2; ++x) {
+	for (y = 0; y < coreh; y += 4) {
+		for (x = 0; x < corew >> 2; ++x) {
 			texdest[0 + x * 4 + y * 64] = texsrc[0   + x + y * 64];
 			texdest[1 + x * 4 + y * 64] = texsrc[64  + x + y * 64];
 			texdest[2 + x * 4 + y * 64] = texsrc[128 + x + y * 64];
