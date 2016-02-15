@@ -131,10 +131,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
 		}
 	} else {
-		int x;
-		for (x = startX; x < endX; ++x) {
-			softwareRenderer->row[x] = 0;
-		}
+		memset(&softwareRenderer->row[startX], 0, endX - startX);
 	}
 
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
@@ -143,11 +140,17 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, obj[i], startX, endX, y);
 		}
 	}
-
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
-	for (x = startX; x < endX; ++x) {
+	for (x = startX; x < endX; x += 8) {
 		row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
+		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1]];
+		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2]];
+		row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3]];
+		row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4]];
+		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5]];
+		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6]];
+		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7]];
 	}
 }
 
