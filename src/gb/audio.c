@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "audio.h"
 
+#include "core/interface.h"
 #include "core/sync.h"
 #include "gb/gb.h"
 #include "gb/io.h"
@@ -671,9 +672,15 @@ void _sample(struct GBAudio* audio, int32_t cycles) {
 		}
 	}
 	produced = blip_samples_avail(audio->left);
+	if (audio->p->stream && audio->p->stream->postAudioFrame) {
+		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
+	}
 	bool wait = produced >= audio->samples;
 	mCoreSyncProduceAudio(audio->p->sync, wait);
-	// TODO: Put AVStream back
+
+	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
+		audio->p->stream->postAudioBuffer(audio->p->stream, audio->left, audio->right);
+	}
 }
 
 void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value) {
