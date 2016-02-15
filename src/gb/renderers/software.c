@@ -179,9 +179,27 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		startX = 0;
 	}
 	int x;
-	for (x = startX; x < endX; ++x) {
+	if ((startX + sx) & 7) {
+		int startX2 = startX + 8 - ((startX + sx) & 7);
+		for (x = startX; x < startX2; ++x) {
+			int topX = ((x + sx) >> 3) & 0x1F;
+			int bottomX = 7 - ((x + sx) & 7);
+			int bgTile;
+			if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
+				bgTile = maps[topX + topY];
+			} else {
+				bgTile = ((int8_t*) maps)[topX + topY];
+			}
+			uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
+			uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
+			tileDataUpper >>= bottomX;
+			tileDataLower >>= bottomX;
+			renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		}
+		startX = startX2;
+	}
+	for (x = startX; x < endX; x += 8) {
 		int topX = ((x + sx) >> 3) & 0x1F;
-		int bottomX = 7 - ((x + sx) & 7);
 		int bgTile;
 		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
 			bgTile = maps[topX + topY];
@@ -190,9 +208,14 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		}
 		uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
 		uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
-		tileDataUpper >>= bottomX;
-		tileDataLower >>= bottomX;
-		renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		renderer->row[x + 7] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		renderer->row[x + 6] = (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
+		renderer->row[x + 5] = ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
+		renderer->row[x + 4] = ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
+		renderer->row[x + 3] = ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
+		renderer->row[x + 2] = ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
+		renderer->row[x + 1] = ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
+		renderer->row[x + 0] = ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
 	}
 }
 
