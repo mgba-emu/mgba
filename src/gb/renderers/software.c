@@ -106,6 +106,7 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		break;
 	case REG_WY:
 		softwareRenderer->wy = value;
+		softwareRenderer->currentWy = value;
 		break;
 	case REG_WX:
 		softwareRenderer->wx = value;
