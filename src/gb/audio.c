@@ -286,10 +286,10 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		// TODO: Where does this cycle delay come from?
 		audio->ch3.readable = false;
 		// TODO: Don't need p
 		if (audio->p) {
+			// TODO: Where does this cycle delay come from?
 			audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 4 + 2 * (2048 - audio->ch3.rate);
 			audio->nextEvent = audio->p->cpu->cycles;
 			audio->p->cpu->nextEvent = audio->nextEvent;
@@ -389,25 +389,28 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		audio->playingCh3 = 0;
 		audio->playingCh4 = 0;
 		GBAudioWriteNR10(audio, 0);
-		GBAudioWriteNR11(audio, 0);
 		GBAudioWriteNR12(audio, 0);
 		GBAudioWriteNR13(audio, 0);
 		GBAudioWriteNR14(audio, 0);
-		GBAudioWriteNR21(audio, 0);
 		GBAudioWriteNR22(audio, 0);
 		GBAudioWriteNR23(audio, 0);
 		GBAudioWriteNR24(audio, 0);
 		GBAudioWriteNR30(audio, 0);
-		GBAudioWriteNR31(audio, 0);
 		GBAudioWriteNR32(audio, 0);
 		GBAudioWriteNR33(audio, 0);
 		GBAudioWriteNR34(audio, 0);
-		// Don't write to NR41
 		GBAudioWriteNR42(audio, 0);
 		GBAudioWriteNR43(audio, 0);
 		GBAudioWriteNR44(audio, 0);
 		GBAudioWriteNR50(audio, 0);
 		GBAudioWriteNR51(audio, 0);
+		if (audio->style != GB_AUDIO_DMG) {
+			GBAudioWriteNR11(audio, 0);
+			GBAudioWriteNR21(audio, 0);
+			GBAudioWriteNR31(audio, 0);
+			GBAudioWriteNR41(audio, 0);
+		}
+
 		if (audio->p) {
 			audio->p->memory.io[REG_NR10] = 0;
 			audio->p->memory.io[REG_NR11] = 0;
@@ -428,6 +431,12 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 			audio->p->memory.io[REG_NR44] = 0;
 			audio->p->memory.io[REG_NR50] = 0;
 			audio->p->memory.io[REG_NR51] = 0;
+			if (audio->style != GB_AUDIO_DMG) {
+				audio->p->memory.io[REG_NR11] = 0;
+				audio->p->memory.io[REG_NR21] = 0;
+				audio->p->memory.io[REG_NR31] = 0;
+				audio->p->memory.io[REG_NR41] = 0;
+			}
 		}
 		*audio->nr52 &= ~0x000F;
 	} else if (!wasEnable) {

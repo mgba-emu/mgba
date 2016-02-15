@@ -96,6 +96,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		if (gb->audio.enable) {
 			GBAudioWriteNR11(&gb->audio, value);
 		} else {
+			GBAudioWriteNR11(&gb->audio, value & _registerMask[REG_NR11]);
 			value = 0;
 		}
 		break;
@@ -124,6 +125,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		if (gb->audio.enable) {
 			GBAudioWriteNR21(&gb->audio, value);
 		} else {
+			GBAudioWriteNR21(&gb->audio, value & _registerMask[REG_NR21]);
 			value = 0;
 		}
 		break;
@@ -156,7 +158,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_NR31:
-		if (gb->audio.enable) {
+		if (gb->audio.enable || gb->audio.style == GB_AUDIO_DMG) {
 			GBAudioWriteNR31(&gb->audio, value);
 		} else {
 			value = 0;
@@ -184,8 +186,11 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_NR41:
-		// NR41 is exempt, for some reason
-		GBAudioWriteNR41(&gb->audio, value);
+		if (gb->audio.enable || gb->audio.style == GB_AUDIO_DMG) {
+			GBAudioWriteNR41(&gb->audio, value);
+		} else {
+			value = 0;
+		}
 		break;
 	case REG_NR42:
 		if (gb->audio.enable) {
