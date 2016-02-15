@@ -201,15 +201,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->core->init(runner->core);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
 		mCoreInitConfig(runner->core, runner->port);
-		if (runner->core->platform(runner->core) == PLATFORM_GBA) {
-			((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
-		}
-		if (runner->core->config.port && runner->keySources) {
-			size_t i;
-			for (i = 0; runner->keySources[i].id; ++i) {
-				mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
-			}
-		}
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
 			runner->core->deinit(runner->core);
@@ -231,6 +222,18 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		}
 		return;
 	}
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
+	}
+	if (runner->core->config.port && runner->keySources) {
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
+		}
+	}
+	// TODO: Do we need to load more defaults?
+	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
+	mCoreLoadConfig(runner->core);
 	mCoreAutoloadSave(runner->core);
 	if (runner->setup) {
 		runner->setup(runner);
