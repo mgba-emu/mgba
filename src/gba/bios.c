@@ -90,7 +90,6 @@ static void _RegisterRamReset(struct GBA* gba) {
 		memset(gba->audio.psg.ch3.wavedata32, 0, sizeof(gba->audio.psg.ch3.wavedata32));
 	}
 	if (registers & 0x80) {
-		cpu->memory.store16(cpu, BASE_IO | 0x00, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x04, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x06, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x08, 0, 0);
