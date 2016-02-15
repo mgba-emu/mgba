@@ -71,6 +71,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 
 	struct GB* gb = core->board;
 	gb->audio.masterVolume = core->opts.volume;
+	gb->video.frameskip = core->opts.frameskip;
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {

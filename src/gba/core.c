@@ -78,6 +78,7 @@ static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
 	struct GBA* gba = core->board;
 	gba->audio.masterVolume = core->opts.volume;
+	gba->video.frameskip = core->opts.frameskip;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;

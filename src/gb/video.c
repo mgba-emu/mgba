@@ -93,7 +93,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			int lyc = video->p->memory.io[REG_LYC];
 			switch (video->mode) {
 			case 0:
-				video->renderer->finishScanline(video->renderer, video->ly);
+				if (video->frameskipCounter <= 0) {
+					video->renderer->finishScanline(video->renderer, video->ly);
+				}
 				++video->ly;
 				video->p->memory.io[REG_LY] = video->ly;
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
@@ -106,9 +108,13 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 					video->mode = 1;
+					--video->frameskipCounter;
+					if (video->frameskipCounter < 0) {
+						video->renderer->finishFrame(video->renderer);
+						mCoreSyncPostFrame(video->p->sync);
+						video->frameskipCounter = video->frameskip;
+					}
 					++video->frameCounter;
-					video->renderer->finishFrame(video->renderer);
-					mCoreSyncPostFrame(video->p->sync);
 
 					struct mCoreThread* thread = mCoreThreadGet();
 					if (thread && thread->frameCallback) {
@@ -214,7 +220,9 @@ void GBVideoProcessDots(struct GBVideo* video) {
 	if (video->x == GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->dotCounter = INT_MIN;
 	}
-	video->renderer->drawRange(video->renderer, oldX, video->x, video->ly, video->objThisLine, video->objMax);
+	if (video->frameskipCounter <= 0) {
+		video->renderer->drawRange(video->renderer, oldX, video->x, video->ly, video->objThisLine, video->objMax);
+	}
 }
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
