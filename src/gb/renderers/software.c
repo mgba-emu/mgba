@@ -23,12 +23,12 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-static const color_t GB_PALETTE[4] = { 0xFFFF, 0x39C7, 0x18C3, 0x0000};
+static const color_t GB_PALETTE[4] = { 0xFFFF, 0x528A, 0x2945, 0x0000};
 #else
-static const color_t GB_PALETTE[4] = { 0x7FFF, 0x1DE7, 0x0C63, 0x0000};
+static const color_t GB_PALETTE[4] = { 0x7FFF, 0x294A, 0x14A5, 0x0000};
 #endif
 #else
-static const color_t GB_PALETTE[4] = { 0xFFFFFF, 0x808080, 0x404040, 0x000000};
+static const color_t GB_PALETTE[4] = { 0xFFFFFF, 0xACACAC, 0x565656, 0x000000};
 #endif
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
