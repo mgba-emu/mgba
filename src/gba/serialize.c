@@ -206,22 +206,6 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	return true;
 }
 
-struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write) {
-	char basename[PATH_MAX];
-	separatePath(gba->activeFile, 0, basename, 0);
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s.ss%i", basename, slot);
-	return dir->openFile(dir, path, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-}
-
-void GBADeleteState(struct GBA* gba, struct VDir* dir, int slot) {
-	char basename[PATH_MAX];
-	separatePath(gba->activeFile, 0, basename, 0);
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s.ss%i", basename, slot);
-	dir->deleteFile(dir, path);
-}
-
 #ifdef USE_PNG
 static bool _savePNGState(struct GBA* gba, struct VFile* vf, struct GBAExtdata* extdata) {
 	unsigned stride;

@@ -438,7 +438,6 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
 		return false;
 	}
 	gba->yankedRomSize = 0;
-	gba->activeFile = fname;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
 	gba->romCrc32 = doCrc32(gba->pristineRom, gba->pristineRomSize);

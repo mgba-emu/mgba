@@ -63,10 +63,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
 			return;
 		}
-		struct VFile* vf = NULL;
-		if (gbaBackground->p->core->platform(gbaBackground->p->core) == PLATFORM_GBA) {
-			vf = GBAGetState(gbaBackground->p->core->board, gbaBackground->p->core->dirs.state, stateId, false);
-		}
+		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
