@@ -9,16 +9,21 @@
 #include "util/string.h"
 
 static void _magickPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
+static void _magickVideoDimensionsChanged(struct mAVStream*, unsigned width, unsigned height);
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->wand = 0;
 
+	encoder->d.videoDimensionsChanged = _magickVideoDimensionsChanged;
 	encoder->d.postVideoFrame = _magickPostVideoFrame;
 	encoder->d.postAudioFrame = 0;
 	encoder->d.postAudioBuffer = 0;
 
 	encoder->frameskip = 2;
 	encoder->delayMs = -1;
+
+	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
+	encoder->iheight = VIDEO_VERTICAL_PIXELS;
 }
 
 void ImageMagickGIFEncoderSetParams(struct ImageMagickGIFEncoder* encoder, int frameskip, int delayMs) {
@@ -35,7 +40,7 @@ bool ImageMagickGIFEncoderOpen(struct ImageMagickGIFEncoder* encoder, const char
 	MagickSetImageFormat(encoder->wand, "GIF");
 	MagickSetImageDispose(encoder->wand, PreviousDispose);
 	encoder->outfile = strdup(outfile);
-	encoder->frame = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	encoder->frame = malloc(encoder->iwidth * encoder->iheight * 4);
 	encoder->currentFrame = 0;
 	return true;
 }
@@ -68,11 +73,11 @@ static void _magickPostVideoFrame(struct mAVStream* stream, const color_t* pixel
 
 	const uint8_t* p8 = (const uint8_t*) pixels;
 	size_t row;
-	for (row = 0; row < VIDEO_VERTICAL_PIXELS; ++row) {
-		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &p8[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);
+	for (row = 0; row < encoder->iheight; ++row) {
+		memcpy(&encoder->frame[row * encoder->iwidth], &p8[row * 4 * stride], encoder->iwidth * 4);
 	}
 
-	MagickConstituteImage(encoder->wand, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, "RGBP", CharPixel, encoder->frame);
+	MagickConstituteImage(encoder->wand, encoder->iwidth, encoder->iheight, "RGBP", CharPixel, encoder->frame);
 	uint64_t ts = encoder->currentFrame;
 	uint64_t nts = encoder->currentFrame + encoder->frameskip + 1;
 	if (encoder->delayMs >= 0) {
@@ -88,4 +93,10 @@ static void _magickPostVideoFrame(struct mAVStream* stream, const color_t* pixel
 	}
 	MagickSetImageDelay(encoder->wand, nts - ts);
 	++encoder->currentFrame;
+}
+
+static void _magickVideoDimensionsChanged(struct mAVStream* stream, unsigned width, unsigned height) {
+	struct ImageMagickGIFEncoder* encoder = (struct ImageMagickGIFEncoder*) stream;
+	encoder->iwidth = width;
+	encoder->iheight = height;
 }

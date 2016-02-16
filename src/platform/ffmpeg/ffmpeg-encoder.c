@@ -24,6 +24,7 @@
 
 static void _ffmpegPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
 static void _ffmpegPostAudioFrame(struct mAVStream*, int16_t left, int16_t right);
+static void _ffmpegSetVideoDimensions(struct mAVStream*, unsigned width, unsigned height);
 
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
@@ -32,6 +33,7 @@ enum {
 void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	av_register_all();
 
+	encoder->d.videoDimensionsChanged = _ffmpegSetVideoDimensions;
 	encoder->d.postVideoFrame = _ffmpegPostVideoFrame;
 	encoder->d.postAudioFrame = _ffmpegPostAudioFrame;
 	encoder->d.postAudioBuffer = 0;
@@ -43,9 +45,12 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	FFmpegEncoderSetVideo(encoder, "png", 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
 	FFmpegEncoderSetDimensions(encoder, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	encoder->iwidth = VIDEO_HORIZONTAL_PIXELS;
+	encoder->iheight = VIDEO_VERTICAL_PIXELS;
 	encoder->resampleContext = 0;
 	encoder->absf = 0;
 	encoder->context = 0;
+	encoder->scaleContext = NULL;
 }
 
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, unsigned abr) {
@@ -290,22 +295,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->width = encoder->video->width;
 	encoder->videoFrame->height = encoder->video->height;
 	encoder->videoFrame->pts = 0;
-	encoder->scaleContext = sws_getContext(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS,
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	    AV_PIX_FMT_RGB565,
-#else
-	    AV_PIX_FMT_BGR555,
-#endif
-#else
-#ifndef USE_LIBAV
-	    AV_PIX_FMT_0BGR32,
-#else
-	    AV_PIX_FMT_BGR32,
-#endif
-#endif
-	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
-	    SWS_POINT, 0, 0, 0);
+	_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
 
 	avio_open(&encoder->context->pb, outfile, AVIO_FLAG_WRITE);
@@ -351,6 +341,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	avcodec_close(encoder->video);
 
 	sws_freeContext(encoder->scaleContext);
+	encoder->scaleContext = NULL;
 
 	avformat_free_context(encoder->context);
 	encoder->context = 0;
@@ -437,7 +428,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
 	++encoder->currentVideoFrame;
 
-	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, VIDEO_VERTICAL_PIXELS, encoder->videoFrame->data, encoder->videoFrame->linesize);
+	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	int gotData;
 	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
@@ -449,4 +440,29 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 		av_interleaved_write_frame(encoder->context, &packet);
 	}
 	av_free_packet(&packet);
+}
+
+static void _ffmpegSetVideoDimensions(struct mAVStream* stream, unsigned width, unsigned height) {
+	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
+	encoder->iwidth = width;
+	encoder->iheight = height;
+	if (encoder->scaleContext) {
+		sws_freeContext(encoder->scaleContext);
+	}
+	encoder->scaleContext = sws_getContext(encoder->iwidth, encoder->iheight,
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	    AV_PIX_FMT_RGB565,
+#else
+	    AV_PIX_FMT_BGR555,
+#endif
+#else
+#ifndef USE_LIBAV
+	    AV_PIX_FMT_0BGR32,
+#else
+	    AV_PIX_FMT_BGR32,
+#endif
+#endif
+	    encoder->videoFrame->width, encoder->videoFrame->height, encoder->video->pix_fmt,
+	    SWS_POINT, 0, 0, 0);
 }
