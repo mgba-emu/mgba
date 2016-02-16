@@ -8,10 +8,15 @@
 #include "util/common.h"
 
 #include "core/core.h"
+#ifdef M_CORE_GB
+#include "gb/core.h"
+#include "gb/gb.h"
+#endif
+#ifdef M_CORE_GBA
 #include "gba/cheats.h"
 #include "gba/core.h"
-#include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
+#endif
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -125,21 +130,23 @@ void retro_set_input_state(retro_input_state_t input) {
 }
 
 void retro_get_system_info(struct retro_system_info* info) {
-   info->need_fullpath = false;
-   info->valid_extensions = "gba";
-   info->library_version = projectVersion;
-   info->library_name = projectName;
-   info->block_extract = false;
+	info->need_fullpath = false;
+	info->valid_extensions = "gba|gb|gbc";
+	info->library_version = projectVersion;
+	info->library_name = projectName;
+	info->block_extract = false;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info* info) {
-   info->geometry.base_width = VIDEO_HORIZONTAL_PIXELS;
-   info->geometry.base_height = VIDEO_VERTICAL_PIXELS;
-   info->geometry.max_width = VIDEO_HORIZONTAL_PIXELS;
-   info->geometry.max_height = VIDEO_VERTICAL_PIXELS;
-   info->geometry.aspect_ratio = 3.0 / 2.0;
-   info->timing.fps =  GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
-   info->timing.sample_rate = 32768;
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	info->geometry.base_width = width;
+	info->geometry.base_height = height;
+	info->geometry.max_width = width;
+	info->geometry.max_height = height;
+	info->geometry.aspect_ratio = width / (double) height;
+	info->timing.fps =  GBA_ARM7TDMI_FREQUENCY / (float) VIDEO_TOTAL_LENGTH;
+	info->timing.sample_rate = 32768;
 }
 
 void retro_init(void) {
@@ -202,43 +209,9 @@ void retro_init(void) {
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = 0;
-
-	core = GBACoreCreate();
-	mCoreInitConfig(core, NULL);
-	core->init(core);
-	struct GBA* gba = core->board;
-	core->setAVStream(core, &stream);
-	if (rumbleCallback) {
-		gba->rumble = &rumble;
-	}
-	gba->luminanceSource = &lux;
-
-	const char* sysDir = 0;
-	if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
-		char biosPath[PATH_MAX];
-		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
-		if (bios) {
-			core->loadBIOS(core, bios, 0);
-		}
-	}
-
-	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	core->setVideoBuffer(core, outputBuffer, 256);
-
-	core->setAudioBufferSize(core, SAMPLES);
-
-	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 32768);
-	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 32768);
-
-	GBACheatDeviceCreate(&cheats);
-	GBACheatAttachDevice(gba, &cheats);
-	GBACheatSetInit(&cheatSet, "libretro");
-	GBACheatAddSet(&cheats, &cheatSet);
 }
 
 void retro_deinit(void) {
-	core->deinit(core);
 	GBACheatRemoveSet(&cheats, &cheatSet);
 	GBACheatDeviceDestroy(&cheats);
 	GBACheatSetDeinit(&cheatSet);
@@ -295,7 +268,9 @@ void retro_run(void) {
 	}
 
 	core->runFrame(core);
-	videoCallback(outputBuffer, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, BYTES_PER_PIXEL * 256);
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
 }
 
 void retro_reset(void) {
@@ -320,11 +295,59 @@ bool retro_load_game(const struct retro_game_info* game) {
 	if (!rom) {
 		return false;
 	}
-	if (!GBAIsROM(rom)) {
+
+	core = NULL;
+#ifdef M_CORE_GBA
+	if (!core && GBAIsROM(rom)) {
+		core = GBACoreCreate();
+	}
+#endif
+#ifdef M_CORE_GB
+	if (!core && GBIsROM(rom)) {
+		core = GBCoreCreate();
+	}
+#endif
+	if (!core) {
 		rom->close(rom);
 		mappedMemoryFree(data, game->size);
 		return false;
 	}
+	mCoreInitConfig(core, NULL);
+	core->init(core);
+	core->setAVStream(core, &stream);
+
+	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+	core->setVideoBuffer(core, outputBuffer, 256);
+
+	core->setAudioBufferSize(core, SAMPLES);
+
+	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 32768);
+	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
+
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		struct GBA* gba = core->board;
+		if (rumbleCallback) {
+			gba->rumble = &rumble;
+		}
+		gba->luminanceSource = &lux;
+
+		const char* sysDir = 0;
+		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+			char biosPath[PATH_MAX];
+			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
+			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+			if (bios) {
+				core->loadBIOS(core, bios, 0);
+			}
+		}
+
+		GBACheatDeviceCreate(&cheats);
+		GBACheatAttachDevice(gba, &cheats);
+		GBACheatSetInit(&cheatSet, "libretro");
+		GBACheatAddSet(&cheats, &cheatSet);
+	}
+#endif
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
@@ -337,6 +360,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 }
 
 void retro_unload_game(void) {
+	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
 	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
