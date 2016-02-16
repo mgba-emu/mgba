@@ -52,6 +52,7 @@ static struct mLogger logger;
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
 		.useBios = true,
+		.volume = 0x100,
 	};
 
 	struct retro_variable var;
