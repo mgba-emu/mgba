@@ -337,7 +337,17 @@ static void _drawTex(struct mCore* core, bool faded) {
 	unsigned corew, coreh;
 	core->desiredVideoDimensions(core, &corew, &coreh);
 
-	int w, h;
+	int w = corew;
+	int h = coreh;
+	// Get greatest common divisor
+	while (w != 0) {
+		int temp = h % w;
+		h = w;
+		w = temp;
+	}
+	int gcd = h;
+	int aspectw = corew / gcd;
+	int aspecth = coreh / gcd;
 
 	switch (screenMode) {
 	case SM_PA_TOP:
@@ -347,13 +357,16 @@ static void _drawTex(struct mCore* core, bool faded) {
 		h = coreh;
 		break;
 	case SM_AF_TOP:
-		w = 360;
-		h = 240;
-		break;
 	case SM_AF_BOTTOM:
-		// Largest possible size with 3:2 aspect ratio and integer dimensions
-		w = 318;
-		h = 212;
+		w = screen_w / aspectw;
+		h = screen_h / aspecth;
+		if (w * aspecth > screen_h) {
+			w = aspectw * h;
+			h = aspecth * h;
+		} else {
+			h = aspecth * w;
+			w = aspectw * w;
+		}
 		break;
 	case SM_SF_TOP:
 	case SM_SF_BOTTOM:
