@@ -122,6 +122,13 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						thread->frameCallback(thread);
 					}
 
+					if (video->p->stream && video->p->stream->postVideoFrame) {
+						const color_t* pixels;
+						unsigned stride;
+						video->renderer->getPixels(video->renderer, &stride, (const void**) &pixels);
+						video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
+					}
+
 					if (GBRegisterSTATIsVblankIRQ(video->stat) || GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
