@@ -22,6 +22,9 @@ struct ImageMagickGIFEncoder {
 	unsigned currentFrame;
 	int frameskip;
 	int delayMs;
+
+	unsigned iwidth;
+	unsigned iheight;
 };
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder*);

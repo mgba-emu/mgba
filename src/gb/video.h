@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/interface.h"
+#include "gb/interface.h"
 #include "gb/memory.h"
 
 enum {
@@ -31,6 +33,8 @@ enum {
 };
 
 DECL_BITFIELD(GBObjAttributes, uint8_t);
+DECL_BITS(GBObjAttributes, CGBPalette, 0, 3);
+DECL_BIT(GBObjAttributes, Bank, 3);
 DECL_BIT(GBObjAttributes, Palette, 4);
 DECL_BIT(GBObjAttributes, XFlip, 5);
 DECL_BIT(GBObjAttributes, YFlip, 6);
@@ -48,12 +52,13 @@ union GBOAM {
 	uint8_t raw[160];
 };
 
+enum GBModel;
 struct GBVideoRenderer {
-	void (*init)(struct GBVideoRenderer* renderer);
-	void (*reset)(struct GBVideoRenderer* renderer);
+	void (*init)(struct GBVideoRenderer* renderer, enum GBModel model);
 	void (*deinit)(struct GBVideoRenderer* renderer);
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
 	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
@@ -101,10 +106,18 @@ struct GBVideo {
 
 	uint8_t* vram;
 	uint8_t* vramBank;
+	int vramCurrentBank;
 
 	union GBOAM oam;
 	struct GBObj* objThisLine[10];
 	int objMax;
+
+	int bcpIndex;
+	bool bcpIncrement;
+	int ocpIndex;
+	bool ocpIncrement;
+
+	uint16_t palette[128];
 
 	int32_t frameCounter;
 	int frameskip;
@@ -120,5 +133,7 @@ void GBVideoProcessDots(struct GBVideo* video);
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
+void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
+void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 
 #endif

@@ -275,6 +275,7 @@ void Window::selectROM() {
 	QStringList formats{
 		"*.gba",
 		"*.gb",
+		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
@@ -296,6 +297,7 @@ void Window::replaceROM() {
 	QStringList formats{
 		"*.gba",
 		"*.gb",
+		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif

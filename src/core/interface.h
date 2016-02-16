@@ -21,6 +21,7 @@ typedef uint32_t color_t;
 struct blip_t;
 
 struct mAVStream {
+	void (*videoDimensionsChanged)(struct mAVStream*, unsigned width, unsigned height);
 	void (*postVideoFrame)(struct mAVStream*, const color_t* buffer, size_t stride);
 	void (*postAudioFrame)(struct mAVStream*, int16_t left, int16_t right);
 	void (*postAudioBuffer)(struct mAVStream*, struct blip_t* left, struct blip_t* right);

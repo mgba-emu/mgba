@@ -42,6 +42,8 @@ struct FFmpegEncoder {
 	struct AVFrame* videoFrame;
 	int width;
 	int height;
+	int iwidth;
+	int iheight;
 	int64_t currentVideoFrame;
 	struct SwsContext* scaleContext;
 	struct AVStream* videoStream;

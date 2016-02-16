@@ -79,7 +79,7 @@ void GBMemoryReset(struct GB* gb) {
 		mappedMemoryFree(gb->memory.wram, GB_SIZE_WORKING_RAM);
 	}
 	gb->memory.wram = anonymousMemoryMap(GB_SIZE_WORKING_RAM);
-	gb->memory.wramBank = &gb->memory.wram[GB_SIZE_WORKING_RAM_BANK0];
+	GBMemorySwitchWramBank(&gb->memory, 1);
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
 	gb->memory.sramCurrentBank = 0;
@@ -140,6 +140,15 @@ void GBMemoryReset(struct GB* gb) {
 	}
 }
 
+void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {
+	bank &= 7;
+	if (!bank) {
+		bank = 1;
+	}
+	memory->wramBank = &memory->wram[GB_SIZE_WORKING_RAM_BANK0 * bank];
+	memory->wramCurrentBank = bank;
+}
+
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
@@ -156,7 +165,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
-		return gb->video.vram[address & (GB_SIZE_VRAM - 1)];
+		return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
@@ -211,7 +220,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
 		// TODO: Block access in wrong modes
-		gb->video.vram[address & (GB_SIZE_VRAM - 1)] = value;
+		gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
 		return;
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:

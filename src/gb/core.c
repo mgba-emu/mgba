@@ -117,6 +117,9 @@ static size_t _GBCoreGetAudioBufferSize(struct mCore* core) {
 static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GB* gb = core->board;
 	gb->stream = stream;
+	if (stream && stream->videoDimensionsChanged) {
+		stream->videoDimensionsChanged(stream, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+	}
 }
 
 static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {

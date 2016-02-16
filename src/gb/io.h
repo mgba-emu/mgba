@@ -80,6 +80,28 @@ enum GBIORegisters {
 	REG_OBP1 = 0x49,
 	REG_WY = 0x4A,
 	REG_WX = 0x4B,
+
+	// CGB
+	REG_KEY1 = 0x4D,
+	REG_VBK = 0x4F,
+	REG_HDMA1 = 0x51,
+	REG_HDMA2 = 0x52,
+	REG_HDMA3 = 0x53,
+	REG_HDMA4 = 0x54,
+	REG_HDMA5 = 0x55,
+	REG_RP = 0x56,
+	REG_BCPS = 0x68,
+	REG_BCPD = 0x69,
+	REG_OCPS = 0x6A,
+	REG_OCPD = 0x6B,
+	REG_UNK6C = 0x6C,
+	REG_SVBK = 0x70,
+	REG_UNK72 = 0x72,
+	REG_UNK73 = 0x73,
+	REG_UNK74 = 0x74,
+	REG_UNK75 = 0x75,
+	REG_UNK76 = 0x76,
+	REG_UNK77 = 0x77
 };
 
 struct GB;

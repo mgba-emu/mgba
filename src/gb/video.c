@@ -12,10 +12,10 @@
 
 #include "util/memory.h"
 
-static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer);
-static void GBVideoDummyRendererReset(struct GBVideoRenderer* renderer);
+static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model);
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
+static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
@@ -25,9 +25,9 @@ static void _cleanOAM(struct GBVideo* video, int y);
 
 static struct GBVideoRenderer dummyRenderer = {
 	.init = GBVideoDummyRendererInit,
-	.reset = GBVideoDummyRendererReset,
 	.deinit = GBVideoDummyRendererDeinit,
 	.writeVideoRegister = GBVideoDummyRendererWriteVideoRegister,
+	.writePalette = GBVideoDummyRendererWritePalette,
 	.drawRange = GBVideoDummyRendererDrawRange,
 	.finishScanline = GBVideoDummyRendererFinishScanline,
 	.finishFrame = GBVideoDummyRendererFinishFrame,
@@ -58,12 +58,13 @@ void GBVideoReset(struct GBVideo* video) {
 		mappedMemoryFree(video->vram, GB_SIZE_VRAM);
 	}
 	video->vram = anonymousMemoryMap(GB_SIZE_VRAM);
+	GBVideoSwitchBank(video, 0);
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
 	video->renderer->oam = &video->oam;
 
 	video->renderer->deinit(video->renderer);
-	video->renderer->init(video->renderer);
+	video->renderer->init(video->renderer, video->p->model);
 }
 
 void GBVideoDeinit(struct GBVideo* video) {
@@ -75,7 +76,7 @@ void GBVideoAssociateRenderer(struct GBVideo* video, struct GBVideoRenderer* ren
 	video->renderer->deinit(video->renderer);
 	video->renderer = renderer;
 	renderer->vram = video->vram;
-	video->renderer->init(video->renderer);
+	video->renderer->init(video->renderer, video->p->model);
 }
 
 int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
@@ -119,6 +120,13 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					struct mCoreThread* thread = mCoreThreadGet();
 					if (thread && thread->frameCallback) {
 						thread->frameCallback(thread);
+					}
+
+					if (video->p->stream && video->p->stream->postVideoFrame) {
+						const color_t* pixels;
+						unsigned stride;
+						video->renderer->getPixels(video->renderer, &stride, (const void**) &pixels);
+						video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
 					}
 
 					if (GBRegisterSTATIsVblankIRQ(video->stat) || GBRegisterSTATIsOAMIRQ(video->stat)) {
@@ -257,13 +265,84 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	video->stat = (video->stat & 0x7) | (value & 0x78);
 }
 
-static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer) {
-	UNUSED(renderer);
-	// Nothing to do
+void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
+	static const uint16_t dmgPalette[4] = { 0x7FFF, 0x56B5, 0x294A, 0x0000};
+	if (video->p->model < GB_MODEL_CGB) {
+		switch (address) {
+		case REG_BGP:
+			video->palette[0] = dmgPalette[value & 3];
+			video->palette[1] = dmgPalette[(value >> 2) & 3];
+			video->palette[2] = dmgPalette[(value >> 4) & 3];
+			video->palette[3] = dmgPalette[(value >> 6) & 3];
+			video->renderer->writePalette(video->renderer, 0, video->palette[0]);
+			video->renderer->writePalette(video->renderer, 1, video->palette[1]);
+			video->renderer->writePalette(video->renderer, 2, video->palette[2]);
+			video->renderer->writePalette(video->renderer, 3, video->palette[3]);
+			break;
+		case REG_OBP0:
+			video->palette[8 * 4 + 0] = dmgPalette[value & 3];
+			video->palette[8 * 4 + 1] = dmgPalette[(value >> 2) & 3];
+			video->palette[8 * 4 + 2] = dmgPalette[(value >> 4) & 3];
+			video->palette[8 * 4 + 3] = dmgPalette[(value >> 6) & 3];
+			video->renderer->writePalette(video->renderer, 8 * 4 + 0, video->palette[8 * 4 + 0]);
+			video->renderer->writePalette(video->renderer, 8 * 4 + 1, video->palette[8 * 4 + 1]);
+			video->renderer->writePalette(video->renderer, 8 * 4 + 2, video->palette[8 * 4 + 2]);
+			video->renderer->writePalette(video->renderer, 8 * 4 + 3, video->palette[8 * 4 + 3]);
+			break;
+		case REG_OBP1:
+			video->palette[9 * 4 + 0] = dmgPalette[value & 3];
+			video->palette[9 * 4 + 1] = dmgPalette[(value >> 2) & 3];
+			video->palette[9 * 4 + 2] = dmgPalette[(value >> 4) & 3];
+			video->palette[9 * 4 + 3] = dmgPalette[(value >> 6) & 3];
+			video->renderer->writePalette(video->renderer, 9 * 4 + 0, video->palette[9 * 4 + 0]);
+			video->renderer->writePalette(video->renderer, 9 * 4 + 1, video->palette[9 * 4 + 1]);
+			video->renderer->writePalette(video->renderer, 9 * 4 + 2, video->palette[9 * 4 + 2]);
+			video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
+			break;
+		}
+	} else {
+		switch (address) {
+		case REG_BCPD:
+			if (video->bcpIndex & 1) {
+				video->palette[video->bcpIndex >> 1] &= 0x00FF;
+				video->palette[video->bcpIndex >> 1] |= value << 8;
+			} else {
+				video->palette[video->bcpIndex >> 1] &= 0xFF00;
+				video->palette[video->bcpIndex >> 1] |= value;
+			}
+			video->renderer->writePalette(video->renderer, video->bcpIndex >> 1, video->palette[video->bcpIndex >> 1]);
+			if (video->bcpIncrement) {
+				++video->bcpIndex;
+				video->bcpIndex &= 0x3F;
+			}
+			break;
+		case REG_OCPD:
+			if (video->ocpIndex & 1) {
+				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0x00FF;
+				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value << 8;
+			} else {
+				video->palette[8 * 4 + (video->ocpIndex >> 1)] &= 0xFF00;
+				video->palette[8 * 4 + (video->ocpIndex >> 1)] |= value;
+			}
+			video->renderer->writePalette(video->renderer, 8 * 4 + (video->ocpIndex >> 1), video->palette[8 * 4 + (video->ocpIndex >> 1)]);
+			if (video->ocpIncrement) {
+				++video->ocpIndex;
+				video->ocpIndex &= 0x3F;
+			}
+			break;
+		}
+	}
 }
 
-static void GBVideoDummyRendererReset(struct GBVideoRenderer* renderer) {
+void GBVideoSwitchBank(struct GBVideo* video, uint8_t value) {
+	value &= 1;
+	video->vramBank = &video->vram[value * GB_SIZE_VRAM_BANK0];
+	video->vramCurrentBank = value;
+}
+
+static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBModel model) {
 	UNUSED(renderer);
+	UNUSED(model);
 	// Nothing to do
 }
 
@@ -276,6 +355,12 @@ static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* re
 	UNUSED(renderer);
 	UNUSED(address);
 	return value;
+}
+
+static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
+	UNUSED(renderer);
+	UNUSED(index);
+	UNUSED(value);
 }
 
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {

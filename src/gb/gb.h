@@ -13,6 +13,7 @@
 #include "lr35902/lr35902.h"
 
 #include "gb/audio.h"
+#include "gb/interface.h"
 #include "gb/memory.h"
 #include "gb/timer.h"
 #include "gb/video.h"
@@ -50,6 +51,7 @@ struct GB {
 	struct GBVideo video;
 	struct GBTimer timer;
 	struct GBAudio audio;
+	enum GBModel model;
 
 	struct mCoreSync* sync;
 

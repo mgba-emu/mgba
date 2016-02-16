@@ -148,6 +148,9 @@ static size_t _GBACoreGetAudioBufferSize(struct mCore* core) {
 static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	struct GBA* gba = core->board;
 	gba->stream = stream;
+	if (stream && stream->videoDimensionsChanged) {
+		stream->videoDimensionsChanged(stream, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	}
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {

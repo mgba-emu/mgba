@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "core/core.h"
+#include "gb/gb.h"
 #include "gb/video.h"
 
 struct GBVideoSoftwareRenderer {
@@ -30,6 +31,7 @@ struct GBVideoSoftwareRenderer {
 	uint8_t currentWy;
 
 	GBRegisterLCDC lcdc;
+	enum GBModel model;
 };
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer*);
