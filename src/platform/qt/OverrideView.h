@@ -14,7 +14,7 @@ extern "C" {
 #include "gba/context/overrides.h"
 }
 
-struct GBAThread;
+struct mCoreThread;
 
 namespace QGBA {
 
@@ -32,7 +32,7 @@ public slots:
 
 private slots:
 	void updateOverrides();
-	void gameStarted(GBAThread*);
+	void gameStarted(mCoreThread*);
 	void gameStopped();
 
 private:

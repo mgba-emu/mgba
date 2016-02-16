@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/cpu.h"
+
 enum {
 	ARM_SP = 13,
 	ARM_LR = 14,
@@ -129,12 +131,6 @@ struct ARMInterruptHandler {
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };
 
-struct ARMComponent {
-	uint32_t id;
-	void (*init)(struct ARMCore* cpu, struct ARMComponent* component);
-	void (*deinit)(struct ARMComponent* component);
-};
-
 struct ARMCore {
 	int32_t gprs[16];
 	union PSR cpsr;
@@ -157,15 +153,15 @@ struct ARMCore {
 	struct ARMMemory memory;
 	struct ARMInterruptHandler irqh;
 
-	struct ARMComponent* master;
+	struct mCPUComponent* master;
 
 	size_t numComponents;
-	struct ARMComponent** components;
+	struct mCPUComponent** components;
 };
 
 void ARMInit(struct ARMCore* cpu);
 void ARMDeinit(struct ARMCore* cpu);
-void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras);
+void ARMSetComponents(struct ARMCore* cpu, struct mCPUComponent* master, int extra, struct mCPUComponent** extras);
 void ARMHotplugAttach(struct ARMCore* cpu, size_t slot);
 void ARMHotplugDetach(struct ARMCore* cpu, size_t slot);
 

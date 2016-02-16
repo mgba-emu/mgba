@@ -10,6 +10,8 @@
 #include "util/formatting.h"
 #include "util/hash.h"
 
+mLOG_DEFINE_CATEGORY(GBA_HW, "GBA Pak Hardware");
+
 const int GBA_LUX_LEVELS[10] = { 5, 11, 18, 27, 42, 62, 84, 109, 139, 183 };
 
 static void _readPins(struct GBACartridgeHardware* hw);
@@ -21,7 +23,7 @@ static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
 
-static time_t _rtcGenericCallback(struct GBARTCSource* source);
+static time_t _rtcGenericCallback(struct mRTCSource* source);
 
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
@@ -29,7 +31,7 @@ static void _rumbleReadPins(struct GBACartridgeHardware* hw);
 
 static void _lightReadPins(struct GBACartridgeHardware* hw);
 
-static uint16_t _gbpRead(struct GBAKeyCallback*);
+static uint16_t _gbpRead(struct mKeyCallback*);
 static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles);
 
@@ -84,7 +86,7 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 		hw->readWrite = value;
 		break;
 	default:
-		GBALog(hw->p, GBA_LOG_WARN, "Invalid GPIO address");
+		mLOG(GBA_HW, WARN, "Invalid GPIO address");
 	}
 	if (hw->readWrite) {
 		uint16_t old;
@@ -173,7 +175,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 				// GPIO direction should always != reading
 				if (hw->direction & 2) {
 					if (RTCCommandDataIsReading(hw->rtc.command)) {
-						GBALog(hw->p, GBA_LOG_GAME_ERROR, "Attempting to write to RTC while in read mode");
+						mLOG(GBA_HW, GAME_ERROR, "Attempting to write to RTC while in read mode");
 					}
 					++hw->rtc.bitsRead;
 					if (hw->rtc.bitsRead == 8) {
@@ -226,7 +228,7 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 				break;
 			}
 		} else {
-			GBALog(hw->p, GBA_LOG_WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
+			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
 		}
 	} else {
 		switch (RTCCommandDataGetCommand(hw->rtc.command)) {
@@ -234,7 +236,7 @@ void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 			hw->rtc.control = hw->rtc.bits;
 			break;
 		case RTC_FORCE_IRQ:
-			GBALog(hw->p, GBA_LOG_STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
+			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
 			break;
 		case RTC_RESET:
 		case RTC_DATETIME:
@@ -271,7 +273,7 @@ unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
 
 void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	time_t t;
-	struct GBARTCSource* rtc = hw->p->rtcSource;
+	struct mRTCSource* rtc = hw->p->rtcSource;
 	if (rtc) {
 		if (rtc->sample) {
 			rtc->sample(rtc);
@@ -302,7 +304,7 @@ unsigned _rtcBCD(unsigned value) {
 	return counter;
 }
 
-time_t _rtcGenericCallback(struct GBARTCSource* source) {
+time_t _rtcGenericCallback(struct mRTCSource* source) {
 	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
 	switch (rtc->override) {
 	case RTC_NO_OVERRIDE:
@@ -332,7 +334,7 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* hw) {
 }
 
 void _gyroReadPins(struct GBACartridgeHardware* hw) {
-	struct GBARotationSource* gyro = hw->p->rotationSource;
+	struct mRotationSource* gyro = hw->p->rotationSource;
 	if (!gyro || !gyro->readGyroZ) {
 		return;
 	}
@@ -364,7 +366,7 @@ void GBAHardwareInitRumble(struct GBACartridgeHardware* hw) {
 }
 
 void _rumbleReadPins(struct GBACartridgeHardware* hw) {
-	struct GBARumble* rumble = hw->p->rumble;
+	struct mRumble* rumble = hw->p->rumble;
 	if (!rumble) {
 		return;
 	}
@@ -388,7 +390,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 	}
 	if (hw->pinState & 2) {
 		struct GBALuminanceSource* lux = hw->p->luminanceSource;
-		GBALog(hw->p, GBA_LOG_DEBUG, "[SOLAR] Got reset");
+		mLOG(GBA_HW, DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
 		if (lux) {
 			lux->sample(lux);
@@ -404,7 +406,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 
 	bool sendBit = hw->lightCounter >= hw->lightSample;
 	_outputPins(hw, sendBit << 3);
-	GBALog(hw->p, GBA_LOG_DEBUG, "[SOLAR] Output %u with pins %u", hw->lightCounter, hw->pinState);
+	mLOG(GBA_HW, DEBUG, "[SOLAR] Output %u with pins %u", hw->lightCounter, hw->pinState);
 }
 
 // == Tilt
@@ -422,13 +424,13 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 		if (value == 0x55) {
 			hw->tiltState = 1;
 		} else {
-			GBALog(hw->p, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+			mLOG(GBA_HW, GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
 		}
 		break;
 	case 0x8100:
 		if (value == 0xAA && hw->tiltState == 1) {
 			hw->tiltState = 0;
-			struct GBARotationSource* rotationSource = hw->p->rotationSource;
+			struct mRotationSource* rotationSource = hw->p->rotationSource;
 			if (!rotationSource || !rotationSource->readTiltX || !rotationSource->readTiltY) {
 				return;
 			}
@@ -441,11 +443,11 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 			hw->tiltX = (x >> 21) + 0x3A0; // Crop off an extra bit so that we can't go negative
 			hw->tiltY = (y >> 21) + 0x3A0;
 		} else {
-			GBALog(hw->p, GBA_LOG_GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
+			mLOG(GBA_HW, GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
 		}
 		break;
 	default:
-		GBALog(hw->p, GBA_LOG_GAME_ERROR, "Invalid tilt sensor write to %04x: %02x", address, value);
+		mLOG(GBA_HW, GAME_ERROR, "Invalid tilt sensor write to %04x: %02x", address, value);
 		break;
 	}
 }
@@ -461,7 +463,7 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* hw, uint32_t address) {
 	case 0x8500:
 		return (hw->tiltY >> 8) & 0xF;
 	default:
-		GBALog(hw->p, GBA_LOG_GAME_ERROR, "Invalid tilt sensor read from %04x", address);
+		mLOG(GBA_HW, GAME_ERROR, "Invalid tilt sensor read from %04x", address);
 		break;
 	}
 	return 0xFF;
@@ -535,7 +537,7 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 	}
 }
 
-uint16_t _gbpRead(struct GBAKeyCallback* callback) {
+uint16_t _gbpRead(struct mKeyCallback* callback) {
 	struct GBAGBPKeyCallback* gbpCallback = (struct GBAGBPKeyCallback*) callback;
 	if (gbpCallback->p->gbpInputsPosted == 2) {
 		return 0x30F;

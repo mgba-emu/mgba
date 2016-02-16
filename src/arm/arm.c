@@ -90,7 +90,7 @@ void ARMDeinit(struct ARMCore* cpu) {
 	}
 }
 
-void ARMSetComponents(struct ARMCore* cpu, struct ARMComponent* master, int extra, struct ARMComponent** extras) {
+void ARMSetComponents(struct ARMCore* cpu, struct mCPUComponent* master, int extra, struct mCPUComponent** extras) {
 	cpu->master = master;
 	cpu->numComponents = extra;
 	cpu->components = extras;

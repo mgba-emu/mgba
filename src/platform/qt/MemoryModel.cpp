@@ -87,7 +87,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 }
 
 void MemoryModel::setController(GameController* controller) {
-	m_cpu = controller->thread()->cpu;
+	m_cpu = static_cast<ARMCore*>(controller->thread()->core->cpu);
 }
 
 void MemoryModel::setRegion(uint32_t base, uint32_t size, const QString& name) {
@@ -158,7 +158,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		LOG(WARN) << tr("Failed to open output file: %1").arg(filename);
+		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QDataStream stream(&outfile);

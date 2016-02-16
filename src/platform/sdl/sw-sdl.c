@@ -8,17 +8,17 @@
 #include "gba/supervisor/thread.h"
 #include "util/arm-algo.h"
 
-static bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLSWDeinit(struct SDLSoftwareRenderer* renderer);
+static bool mSDLSWInit(struct mSDLRenderer* renderer);
+static void mSDLSWRunloopGBA(struct mSDLRenderer* renderer, void* user);
+static void mSDLSWDeinit(struct mSDLRenderer* renderer);
 
-void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLSWInit;
-	renderer->deinit = GBASDLSWDeinit;
-	renderer->runloop = GBASDLSWRunloop;
+void mSDLSWCreate(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLSWInit;
+	renderer->deinit = mSDLSWDeinit;
+	renderer->runloop = mSDLSWRunloopGBA;
 }
 
-bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer) {
+bool mSDLSWInit(struct mSDLRenderer* renderer) {
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #ifdef COLOR_16_BIT
 	SDL_SetVideoMode(renderer->viewportWidth, renderer->viewportHeight, 16, SDL_DOUBLEBUF | SDL_HWSURFACE);
@@ -82,7 +82,8 @@ bool GBASDLSWInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void mSDLSWRunloopGBA(struct mSDLRenderer* renderer, void* user) {
+	struct GBAThread* context = user;
 	SDL_Event event;
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Surface* surface = SDL_GetVideoSurface();
@@ -90,10 +91,10 @@ void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEventGBA(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			SDL_UnlockTexture(renderer->sdlTex);
 			SDL_RenderCopy(renderer->sdlRenderer, renderer->sdlTex, 0, 0);
@@ -128,11 +129,11 @@ void GBASDLSWRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 			SDL_LockSurface(surface);
 #endif
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 	}
 }
 
-void GBASDLSWDeinit(struct SDLSoftwareRenderer* renderer) {
+void mSDLSWDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->ratio > 1) {
 		free(renderer->d.outputBuffer);
 	}

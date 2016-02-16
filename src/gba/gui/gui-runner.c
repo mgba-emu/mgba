@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
+#include "gba/core.h"
 #include "gba/gui/gui-config.h"
+#include "gba/input.h"
 #include "gba/interface.h"
 #include "gba/serialize.h"
 #include "util/gui/file-select.h"
@@ -47,21 +49,21 @@ enum {
 
 static void _drawBackground(struct GUIBackground* background, void* context) {
 	UNUSED(context);
-	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
+	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	if (gbaBackground->p->drawFrame) {
 		gbaBackground->p->drawFrame(gbaBackground->p, true);
 	}
 }
 
 static void _drawState(struct GUIBackground* background, void* id) {
-	struct GBAGUIBackground* gbaBackground = (struct GBAGUIBackground*) background;
+	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	int stateId = ((int) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
 		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
 			return;
 		}
-		struct VFile* vf = GBAGetState(gbaBackground->p->context.gba, gbaBackground->p->context.dirs.state, stateId, false);
+		struct VFile* vf = GBAGetState(gbaBackground->p->core->board, gbaBackground->p->core->dirs.state, stateId, false);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
@@ -96,7 +98,7 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 }
 
 static uint8_t _readLux(struct GBALuminanceSource* lux) {
-	struct GBAGUIRunnerLux* runnerLux = (struct GBAGUIRunnerLux*) lux;
+	struct mGUIRunnerLux* runnerLux = (struct mGUIRunnerLux*) lux;
 	int value = 0x16;
 	if (runnerLux->luxLevel > 0) {
 		value += GBA_LUX_LEVELS[runnerLux->luxLevel - 1];
@@ -104,13 +106,16 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 	return 0xFF - value;
 }
 
-void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
+void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
-	GBAContextInit(&runner->context, port);
+	runner->core = GBACoreCreate();
+	runner->core->init(runner->core);
+	mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
+	mCoreInitConfig(runner->core, port);
 	runner->luminanceSource.d.readLuminance = _readLux;
 	runner->luminanceSource.d.sample = _updateLux;
 	runner->luminanceSource.luxLevel = 0;
-	runner->context.gba->luminanceSource = &runner->luminanceSource.d;
+	((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
 	runner->background.d.draw = _drawBackground;
 	runner->background.p = runner;
 	runner->fps = 0;
@@ -121,33 +126,33 @@ void GBAGUIInit(struct GBAGUIRunner* runner, const char* port) {
 		runner->setup(runner);
 	}
 
-	if (runner->context.config.port && runner->keySources) {
+	if (runner->core->config.port && runner->keySources) {
 		size_t i;
 		for (i = 0; runner->keySources[i].id; ++i) {
-			GBAInputMapLoad(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
 		}
 	}
 }
 
-void GBAGUIDeinit(struct GBAGUIRunner* runner) {
+void mGUIDeinit(struct mGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
-	if (runner->context.config.port) {
+	if (runner->core->config.port) {
 		if (runner->keySources) {
 			size_t i;
 			for (i = 0; runner->keySources[i].id; ++i) {
-				GBAInputMapSave(&runner->context.inputMap, runner->keySources[i].id, GBAConfigGetInput(&runner->context.config));
+				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
 			}
 		}
-		GBAConfigSave(&runner->context.config);
+		mCoreConfigSave(&runner->core->config);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);
-	GBAContextDeinit(&runner->context);
+	runner->core->deinit(runner->core);
 }
 
-void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
-	struct GBAGUIBackground drawState = {
+void mGUIRun(struct mGUIRunner* runner, const char* path) {
+	struct mGUIBackground drawState = {
 		.d = {
 			.draw = _drawState
 		},
@@ -213,9 +218,9 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 	}
 	runner->params.drawEnd();
 
-	if (!GBAContextLoadROM(&runner->context, path, true)) {
+	if (!mCoreLoadFile(runner->core, path)) {
 		int i;
-		for (i = 0; i < 300; ++i) {
+		for (i = 0; i < 240; ++i) {
 			runner->params.drawStart();
 			if (runner->params.guiPrepare) {
 				runner->params.guiPrepare();
@@ -228,7 +233,9 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 		}
 		return;
 	}
-	bool running = GBAContextStart(&runner->context);
+	mCoreAutoloadSave(runner->core);
+	runner->core->reset(runner->core);
+	bool running = true;
 	if (runner->gameLoaded) {
 		runner->gameLoaded(runner);
 	}
@@ -252,27 +259,28 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 			if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
 				break;
 			}
-			if (guiKeys & (1 << GBA_GUI_INPUT_INCREASE_BRIGHTNESS)) {
+			if (guiKeys & (1 << mGUI_INPUT_INCREASE_BRIGHTNESS)) {
 				if (runner->luminanceSource.luxLevel < 10) {
 					++runner->luminanceSource.luxLevel;
 				}
 			}
-			if (guiKeys & (1 << GBA_GUI_INPUT_DECREASE_BRIGHTNESS)) {
+			if (guiKeys & (1 << mGUI_INPUT_DECREASE_BRIGHTNESS)) {
 				if (runner->luminanceSource.luxLevel > 0) {
 					--runner->luminanceSource.luxLevel;
 				}
 			}
-			if (guiKeys & (1 << GBA_GUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
+			if (guiKeys & (1 << mGUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
 				runner->incrementScreenMode(runner);
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
 				runner->prepareForFrame(runner);
 			}
-			GBAContextFrame(&runner->context, keys);
+			runner->core->setKeys(runner->core, keys);
+			runner->core->runFrame(runner->core);
 			if (runner->drawFrame) {
 				int drawFps = false;
-				GBAConfigGetIntValue(&runner->context.config, "fpsCounter", &drawFps);
+				mCoreConfigGetIntValue(&runner->core->config, "fpsCounter", &drawFps);
 
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
@@ -287,7 +295,7 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 				}
 				runner->params.drawEnd();
 
-				if (runner->context.gba->video.frameCounter % FPS_GRANULARITY == 0) {
+				if (runner->core->frameCounter(runner->core) % FPS_GRANULARITY == 0) {
 					if (drawFps) {
 						struct timeval tv;
 						gettimeofday(&tv, 0);
@@ -319,35 +327,26 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
 		if (reason == GUI_MENU_EXIT_ACCEPT) {
-			struct VFile* vf;
 			switch (((int) item->data) & RUNNER_COMMAND_MASK) {
 			case RUNNER_EXIT:
 				running = false;
 				keys = 0;
 				break;
 			case RUNNER_RESET:
-				GBAContextReset(&runner->context);
+				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
-				vf = GBAGetState(runner->context.gba, runner->context.dirs.state, ((int) item->data) >> 16, true);
-				if (vf) {
-					GBASaveStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
-					vf->close(vf);
-				}
+				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
 				break;
 			case RUNNER_LOAD_STATE:
-				vf = GBAGetState(runner->context.gba, runner->context.dirs.state, ((int) item->data) >> 16, false);
-				if (vf) {
-					GBALoadStateNamed(runner->context.gba, vf, SAVESTATE_SCREENSHOT);
-					vf->close(vf);
-				}
+				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
 				break;
 			case RUNNER_SCREENSHOT:
-				GBATakeScreenshot(runner->context.gba, runner->context.dirs.screenshot);
+				mCoreTakeScreenshot(runner->core);
 				break;
 			case RUNNER_CONFIG:
-				GBAGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				GBAConfigGetIntValue(&runner->context.config, "frameskip", &runner->context.gba->video.frameskip);
+				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
+				mCoreConfigGetIntValue(&runner->core->config, "frameskip", &((struct GBA*) runner->core->board)->video.frameskip);
 				break;
 			case RUNNER_CONTINUE:
 				break;
@@ -366,11 +365,10 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 			runner->unpaused(runner);
 		}
 	}
-	GBAContextStop(&runner->context);
 	if (runner->gameUnloaded) {
 		runner->gameUnloaded(runner);
 	}
-	GBAContextUnloadROM(&runner->context);
+	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
 	if (drawState.screenshot) {
 		mappedMemoryFree(drawState.screenshot, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
@@ -380,12 +378,12 @@ void GBAGUIRun(struct GBAGUIRunner* runner, const char* path) {
 	GUIMenuItemListDeinit(&stateLoadMenu.items);
 }
 
-void GBAGUIRunloop(struct GBAGUIRunner* runner) {
+void mGUIRunloop(struct mGUIRunner* runner) {
 	while (true) {
 		char path[PATH_MAX];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {
 			break;
 		}
-		GBAGUIRun(runner, path);
+		mGUIRun(runner, path);
 	}
 }

@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
+mLOG_DECLARE_CATEGORY(GBA_SAVE);
+
 struct VFile;
 
 enum SavedataType {

@@ -16,23 +16,23 @@
 #define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
 #endif
 
-static bool GBASDLInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLDeinit(struct SDLSoftwareRenderer* renderer);
+static bool mSDLInit(struct SDLSoftwareRenderer* renderer);
+static void mSDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
+static void mSDLDeinit(struct SDLSoftwareRenderer* renderer);
 
-void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLInit;
-	renderer->deinit = GBASDLDeinit;
-	renderer->runloop = GBASDLRunloop;
+void mSDLGLCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = mSDLInit;
+	renderer->deinit = mSDLDeinit;
+	renderer->runloop = mSDLRunloop;
 }
 
-void GBASDLSWCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLInit;
-	renderer->deinit = GBASDLDeinit;
-	renderer->runloop = GBASDLRunloop;
+void mSDLSWCreate(struct SDLSoftwareRenderer* renderer) {
+	renderer->init = mSDLInit;
+	renderer->deinit = mSDLDeinit;
+	renderer->runloop = mSDLRunloop;
 }
 
-bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
+bool mSDLInit(struct SDLSoftwareRenderer* renderer) {
 	SDL_SetVideoMode(800, 480, 16, SDL_FULLSCREEN);
 
 	renderer->odd = 0;
@@ -83,15 +83,15 @@ bool GBASDLInit(struct SDLSoftwareRenderer* renderer) {
 	return true;
 }
 
-void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void mSDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
 	SDL_Event event;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEventGBA(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			struct fb_var_screeninfo info;
 			ioctl(renderer->fb, FBIOGET_VSCREENINFO, &info);
 			info.yoffset = VIDEO_VERTICAL_PIXELS * renderer->odd;
@@ -103,11 +103,11 @@ void GBASDLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* render
 			renderer->odd = !renderer->odd;
 			renderer->d.outputBuffer = renderer->base[renderer->odd];
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 	}
 }
 
-void GBASDLDeinit(struct SDLSoftwareRenderer* renderer) {
+void mSDLDeinit(struct SDLSoftwareRenderer* renderer) {
 	munmap(renderer->base[0], VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 
 	struct omapfb_plane_info plane;

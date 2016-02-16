@@ -25,14 +25,14 @@ public:
 	GIFView(QWidget* parent = nullptr);
 	virtual ~GIFView();
 
-	GBAAVStream* getStream() { return &m_encoder.d; }
+	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
 	void startRecording();
 	void stopRecording();
 
 signals:
-	void recordingStarted(GBAAVStream*);
+	void recordingStarted(mAVStream*);
 	void recordingStopped();
 
 private slots:

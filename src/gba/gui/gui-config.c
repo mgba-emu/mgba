@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-config.h"
 
+#include "core/config.h"
+#include "core/core.h"
+#include "gba/gba.h"
 #include "gba/gui/gui-runner.h"
 #include "gba/gui/remap.h"
 #include "util/gui/file-select.h"
@@ -14,7 +17,7 @@
 #define GUI_MAX_INPUTS 7
 #endif
 
-void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra) {
+void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra) {
 	struct GUIMenu menu = {
 		.title = "Configure",
 		.index = 0,
@@ -93,7 +96,7 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		if (!item->validStates || !item->data) {
 			continue;
 		}
-		GBAConfigGetUIntValue(&runner->context.config, item->data, &item->state);
+		mCoreConfigGetUIntValue(&runner->core->config, item->data, &item->state);
 	}
 
 	while (true) {
@@ -103,20 +106,20 @@ void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, si
 		}
 		if (!strcmp(item->data, "*SAVE")) {
 			if (biosPath[0]) {
-				GBAConfigSetValue(&runner->context.config, "bios", biosPath);
+				mCoreConfigSetValue(&runner->core->config, "bios", biosPath);
 			}
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
 				if (!item->validStates || !item->data) {
 					continue;
 				}
-				GBAConfigSetUIntValue(&runner->context.config, item->data, item->state);
+				mCoreConfigSetUIntValue(&runner->core->config, item->data, item->state);
 			}
-			GBAConfigSave(&runner->context.config);
+			mCoreConfigSave(&runner->core->config);
 			break;
 		}
 		if (!strcmp(item->data, "*REMAP")) {
-			GBAGUIRemapKeys(&runner->params, &runner->context.inputMap, &runner->keySources[item->state]);
+			mGUIRemapKeys(&runner->params, &runner->core->inputMap, &runner->keySources[item->state]);
 			continue;
 		}
 		if (!strcmp(item->data, "bios")) {

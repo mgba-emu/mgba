@@ -85,7 +85,7 @@ bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	node->nextEvent = LOCKSTEP_INCREMENT;
 	node->d.p->a.multiplayerControl.slave = node->id > 0;
-	GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: Node init", node->id);
+	mLOG(GBA_SIO, DEBUG, "Lockstep %i: Node init", node->id);
 	return true;
 }
 
@@ -142,10 +142,10 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	if (address == REG_SIOCNT) {
-		GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: SIOCNT <- %04x", node->id, value);
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 		if (value & 0x0080) {
 			if (!node->id) {
-				GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: Transfer initiated", node->id);
+				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 				MutexLock(&node->p->mutex);
 				node->p->transferActive = true;
 				node->p->transferCycles = GBASIOCyclesPerTransfer[node->d.p->a.multiplayerControl.baud][node->p->attached - 1];
@@ -158,7 +158,7 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 		value &= 0xFF83;
 		value |= driver->p->a.siocnt & 0x00FC;
 	} else if (address == REG_SIOMLT_SEND) {
-		GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: SIOMLT_SEND <- %04x", node->id, value);
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOMLT_SEND <- %04x", node->id, value);
 	}
 	return value;
 }
@@ -195,7 +195,7 @@ static int32_t GBASIOLockstepNodeMultiProcessEvents(struct GBASIODriver* driver,
 			ConditionWake(&node->p->barrier);
 		}
 		if (node->state == LOCKSTEP_FINISHED) {
-			GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: Finishing transfer: %04x %04x %04x %04x", node->id, node->p->multiRecv[0], node->p->multiRecv[1], node->p->multiRecv[2], node->p->multiRecv[3]);
+			mLOG(GBA_SIO, DEBUG, "Lockstep %i: Finishing transfer: %04x %04x %04x %04x", node->id, node->p->multiRecv[0], node->p->multiRecv[1], node->p->multiRecv[2], node->p->multiRecv[3]);
 			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = node->p->multiRecv[0];
 			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = node->p->multiRecv[1];
 			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = node->p->multiRecv[2];
@@ -229,7 +229,7 @@ static int32_t GBASIOLockstepNodeMultiProcessEvents(struct GBASIODriver* driver,
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 	if (address == REG_SIOCNT) {
-		GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: SIOCNT <- %04x", node->id, value);
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 		value &= 0xFF8B;
 		MutexLock(&node->p->mutex);
 		if (value & 0x0080) {
@@ -251,9 +251,9 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 		}
 		MutexUnlock(&node->p->mutex);
 	} else if (address == REG_SIODATA32_LO) {
-		GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: SIODATA32_LO <- %04x", node->id, value);
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04x", node->id, value);
 	} else if (address == REG_SIODATA32_HI) {
-		GBALog(node->d.p->p, GBA_LOG_SIO, "Lockstep %i: SIODATA32_HI <- %04x", node->id, value);
+		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04x", node->id, value);
 	}
 	return value;
 }

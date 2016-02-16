@@ -26,14 +26,14 @@ enum {
 
 static void _sendMessage(struct GDBStub* stub);
 
-static void _gdbStubDeinit(struct ARMDebugger* debugger) {
+static void _gdbStubDeinit(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
 }
 
-static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
+static void _gdbStubEntered(struct Debugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
@@ -76,7 +76,7 @@ static void _gdbStubEntered(struct ARMDebugger* debugger, enum DebuggerEntryReas
 	_sendMessage(stub);
 }
 
-static void _gdbStubPoll(struct ARMDebugger* debugger) {
+static void _gdbStubPoll(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	--stub->untilPoll;
 	if (stub->untilPoll > 0) {
@@ -87,7 +87,7 @@ static void _gdbStubPoll(struct ARMDebugger* debugger) {
 	GDBStubUpdate(stub);
 }
 
-static void _gdbStubWait(struct ARMDebugger* debugger) {
+static void _gdbStubWait(struct Debugger* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	stub->shouldBlock = true;
 	GDBStubUpdate(stub);
@@ -100,9 +100,7 @@ static void _ack(struct GDBStub* stub) {
 
 static void _nak(struct GDBStub* stub) {
 	char nak = '-';
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Packet error");
-	}
+	mLOG(DEBUGGER, WARN, "Packet error");
 	SocketSend(stub->connection, &nak, 1);
 }
 
@@ -181,9 +179,7 @@ static void _sendMessage(struct GDBStub* stub) {
 	stub->outgoing[i] = '#';
 	_int2hex8(checksum, &stub->outgoing[i + 1]);
 	stub->outgoing[i + 3] = 0;
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "> %s", stub->outgoing);
-	}
+	mLOG(DEBUGGER, DEBUG, "> %s", stub->outgoing);
 	SocketSend(stub->connection, stub->outgoing, i + 3);
 }
 
@@ -302,7 +298,7 @@ static void _processVReadCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	if (!strncmp("Attach", message, 6)) {
 		strncpy(stub->outgoing, "1", GDB_STUB_MAX_LINE - 4);
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		DebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 	}
 	_sendMessage(stub);
 }
@@ -318,22 +314,22 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
 	case '1':
-		ARMDebuggerSetBreakpoint(&stub->d, address);
+		DebuggerSetBreakpoint(&stub->d, address);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '2':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_WRITE);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_WRITE);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '3':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_READ);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_READ);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
 	case '4':
-		ARMDebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_RW);
+		DebuggerSetWatchpoint(&stub->d, address, WATCHPOINT_RW);
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
@@ -351,12 +347,12 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0': // Memory breakpoints are not currently supported
 	case '1':
-		ARMDebuggerClearBreakpoint(&stub->d, address);
+		DebuggerClearBreakpoint(&stub->d, address);
 		break;
 	case '2':
 	case '3':
 	case '4':
-		ARMDebuggerClearWatchpoint(&stub->d, address);
+		DebuggerClearWatchpoint(&stub->d, address);
 		break;
 	default:
 		break;
@@ -379,7 +375,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		++message;
 		break;
 	case '\x03':
-		ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		DebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
 		return parsed;
 	default:
 		_nak(stub);
@@ -408,9 +404,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	parsed += 2;
 	int networkChecksum = _hex2int(&message[i], 2);
 	if (networkChecksum != checksum) {
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_WARN, "Checksum error: expected %02x, got %02x", checksum, networkChecksum);
-		}
+		mLOG(DEBUGGER, WARN, "Checksum error: expected %02x, got %02x", checksum, networkChecksum);
 		_nak(stub);
 		return parsed;
 	}
@@ -468,7 +462,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 }
 
 void GDBStubCreate(struct GDBStub* stub) {
-	ARMDebuggerCreate(&stub->d);
+	DebuggerCreate(&stub->d);
 	stub->socket = INVALID_SOCKET;
 	stub->connection = INVALID_SOCKET;
 	stub->d.init = 0;
@@ -476,7 +470,6 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.paused = _gdbStubWait;
 	stub->d.entered = _gdbStubEntered;
 	stub->d.custom = _gdbStubPoll;
-	stub->d.log = 0;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->lineAck = GDB_ACK_PENDING;
 	stub->shouldBlock = false;
@@ -488,9 +481,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 	}
 	stub->socket = SocketOpenTCP(port, bindAddress);
 	if (SOCKET_FAILED(stub->socket)) {
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't open socket");
-		}
+		mLOG(DEBUGGER, ERROR, "Couldn't open socket");
 		return false;
 	}
 	if (!SocketSetBlocking(stub->socket, false)) {
@@ -504,9 +495,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 	return true;
 
 cleanup:
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_ERROR, "Couldn't listen on port");
-	}
+	mLOG(DEBUGGER, ERROR, "Couldn't listen on port");
 	SocketClose(stub->socket);
 	stub->socket = INVALID_SOCKET;
 	return false;
@@ -547,7 +536,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			if (!SocketSetBlocking(stub->connection, false)) {
 				goto connectionLost;
 			}
-			ARMDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
+			DebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
 		} else if (SocketWouldBlock()) {
 			return;
 		} else {
@@ -570,9 +559,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			goto connectionLost;
 		}
 		stub->line[messageLen] = '\0';
-		if (stub->d.log) {
-			stub->d.log(&stub->d, DEBUGGER_LOG_DEBUG, "< %s", stub->line);
-		}
+		mLOG(DEBUGGER, DEBUG, "< %s", stub->line);
 		ssize_t position = 0;
 		while (position < messageLen) {
 			position += _parseGDBMessage(stub, &stub->line[position]);
@@ -580,8 +567,6 @@ void GDBStubUpdate(struct GDBStub* stub) {
 	}
 
 connectionLost:
-	if (stub->d.log) {
-		stub->d.log(&stub->d, DEBUGGER_LOG_INFO, "Connection lost");
-	}
+	mLOG(DEBUGGER, WARN, "Connection lost");
 	GDBStubHangup(stub);
 }

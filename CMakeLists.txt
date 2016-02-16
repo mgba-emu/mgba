@@ -13,7 +13,8 @@ set(USE_ZLIB ON CACHE BOOL "Whether or not to enable zlib support")
 set(USE_PNG ON CACHE BOOL "Whether or not to enable PNG support")
 set(USE_LIBZIP ON CACHE BOOL "Whether or not to enable LIBZIP support")
 set(USE_MAGICK ON CACHE BOOL "Whether or not to enable ImageMagick support")
-set(USE_BLIP ON CACHE BOOL "Whether or not to enable blip_buf support")
+set(M_CORE_GBA ON CACHE BOOL "Build Game Boy Advance core")
+set(M_CORE_GB ON CACHE BOOL "Build Game Boy core")
 set(USE_LZMA ON CACHE BOOL "Whether or not to enable 7-Zip support")
 set(BUILD_QT ON CACHE BOOL "Build Qt frontend")
 set(BUILD_SDL ON CACHE BOOL "Build SDL frontend")
@@ -31,22 +32,27 @@ set(BUILD_GLES2 OFF CACHE STRING "Build with OpenGL|ES 2")
 set(USE_EPOXY ON CACHE STRING "Build with libepoxy")
 set(DISABLE_DEPS OFF CACHE BOOL "Build without dependencies")
 file(GLOB ARM_SRC ${CMAKE_SOURCE_DIR}/src/arm/*.c)
+file(GLOB LR35902_SRC ${CMAKE_SOURCE_DIR}/src/lr35902/*.c)
 file(GLOB GBA_SRC ${CMAKE_SOURCE_DIR}/src/gba/*.c)
+file(GLOB GB_SRC ${CMAKE_SOURCE_DIR}/src/gb/*.c)
 file(GLOB GBA_CHEATS_SRC ${CMAKE_SOURCE_DIR}/src/gba/cheats/*.c)
 file(GLOB GBA_RR_SRC ${CMAKE_SOURCE_DIR}/src/gba/rr/*.c)
 file(GLOB GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/*.c)
 file(GLOB GBA_CTX_SRC ${CMAKE_SOURCE_DIR}/src/gba/context/*.c)
-file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs])
+file(GLOB UTIL_SRC ${CMAKE_SOURCE_DIR}/src/util/*.[cSs] ${CMAKE_SOURCE_DIR}/src/core/*.c)
 file(GLOB GUI_SRC ${CMAKE_SOURCE_DIR}/src/util/gui/*.c ${CMAKE_SOURCE_DIR}/src/gba/gui/*.c)
-file(GLOB RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
+file(GLOB GBA_RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gba/renderers/*.c)
 file(GLOB SIO_SRC ${CMAKE_SOURCE_DIR}/src/gba/sio/lockstep.c)
+file(GLOB GB_RENDERER_SRC ${CMAKE_SOURCE_DIR}/src/gb/renderers/*.c)
 file(GLOB THIRD_PARTY_SRC ${CMAKE_SOURCE_DIR}/src/third-party/inih/*.c)
 list(APPEND GBA_SV_SRC ${CMAKE_SOURCE_DIR}/src/platform/commandline.c)
 set(CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-mem.c)
 set(VFS_SRC)
 source_group("ARM core" FILES ${ARM_SRC})
-source_group("GBA board" FILES ${GBA_SRC} ${RENDERER_SRC} ${SIO_SRC})
+source_group("LR35902 core" FILES ${LR35902_SRC})
+source_group("GBA board" FILES ${GBA_SRC} ${GBA_RENDERER_SRC} ${SIO_SRC})
 source_group("GBA extra" FILES ${GBA_CHEATS_SRC} ${GBA_CTX_SRC} ${GBA_SV_SRC} ${GBA_RR_SRC})
+source_group("GB board" FILES ${GB_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/src/arm)
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -355,12 +361,7 @@ if(USE_FFMPEG)
 	endif()
 endif()
 
-if(USE_BLIP)
-	list(APPEND THIRD_PARTY_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
-	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_BLIP_BUF)
-else()
-	add_definitions(-DRESAMPLE_LIBRARY=RESAMPLE_NN)
-endif()
+list(APPEND THIRD_PARTY_SRC "${CMAKE_SOURCE_DIR}/src/third-party/blip_buf/blip_buf.c")
 
 if(USE_MAGICK)
 	list(APPEND FEATURES MAGICK)
@@ -490,28 +491,45 @@ if(PSP2)
 endif()
 
 # Binaries
-set(CORE_SRC
-	${ARM_SRC}
-	${GBA_SRC}
-	${GBA_CHEATS_SRC}
-	${GBA_CTX_SRC}
-	${DEBUGGER_SRC}
-	${RENDERER_SRC}
+set(CORE_SRC)
+if(M_CORE_GB)
+	add_definitions(-DM_CORE_GB)
+	list(APPEND CORE_SRC
+		${LR35902_SRC}
+		${GB_SRC}
+		${GB_RENDERER_SRC})
+endif()
+
+if(M_CORE_GBA)
+	add_definitions(-DM_CORE_GBA)
+	list(APPEND CORE_SRC 
+		${ARM_SRC}
+		${GBA_SRC}
+		${GBA_CHEATS_SRC}
+		${GBA_CTX_SRC}
+		${DEBUGGER_SRC}
+		${GBA_RENDERER_SRC})
+	if(NOT M_CORE_GB)
+		list(APPEND CORE_SRC ${CMAKE_SOURCE_DIR}/src/gb/audio.c)
+	endif()
+endif()
+
+list(APPEND CORE_SRC
 	${UTIL_SRC}
 	${CORE_VFS_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 
+set(SRC ${CORE_SRC} ${VFS_SRC})
 if(NOT MINIMAL_CORE)
-	set(SRC
-		${CORE_SRC}
-		${GBA_RR_SRC}
-		${GBA_SV_SRC}
-		${SIO_SRC}
-		${FEATURE_SRC}
-		${VFS_SRC})
-else()
-	set(SRC ${CORE_SRC} ${VFS_SRC})
+	if(M_CORE_GBA)
+		list(APPEND SRC
+			${GBA_RR_SRC}
+			${GBA_SV_SRC}
+			${SIO_SRC})
+	endif()
+	list(APPEND SRC
+		${FEATURE_SRC})
 endif()
 
 if(NOT SKIP_LIBRARY)
@@ -670,6 +688,9 @@ else()
 	set(SUMMARY_ZIP OFF)
 endif()
 
+message(STATUS "Platforms:")
+message(STATUS "	Game Boy Advance: ${M_CORE_GBA}")
+message(STATUS "	Game Boy: ${M_CORE_GB}")
 message(STATUS "Features:")
 message(STATUS "	CLI debugger: ${USE_CLI_DEBUGGER}")
 message(STATUS "	GDB stub: ${USE_GDB_STUB}")
@@ -678,7 +699,6 @@ message(STATUS "	GIF recording: ${USE_MAGICK}")
 message(STATUS "	Screenshot/advanced savestate support: ${USE_PNG}")
 message(STATUS "	ZIP support: ${SUMMARY_ZIP}")
 message(STATUS "	7-Zip support: ${USE_LZMA}")
-message(STATUS "	Better audio resampling: ${USE_BLIP}")
 message(STATUS "	OpenGL support: ${SUMMARY_GL}")
 message(STATUS "Frontends:")
 message(STATUS "	Qt: ${BUILD_QT}")

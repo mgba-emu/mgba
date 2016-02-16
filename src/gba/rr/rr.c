@@ -7,6 +7,8 @@
 
 #include "util/vfs.h"
 
+mLOG_DEFINE_CATEGORY(GBA_RR, "GBA RR");
+
 void GBARRInitRecord(struct GBA* gba) {
 	if (!gba || !gba->rr) {
 		return;

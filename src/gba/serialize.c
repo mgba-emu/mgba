@@ -1,15 +1,15 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "serialize.h"
 
+#include "core/sync.h"
 #include "gba/audio.h"
 #include "gba/cheats.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
-#include "gba/supervisor/thread.h"
 #include "gba/video.h"
 
 #include "util/memory.h"
@@ -25,6 +25,9 @@
 #endif
 
 const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
+const uint32_t GBA_SAVESTATE_VERSION = 0x00000001;
+
+mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
 
 struct GBABundledState {
 	struct GBASerializedState* state;
@@ -38,7 +41,7 @@ struct GBAExtdataHeader {
 };
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
-	STORE_32(GBA_SAVESTATE_MAGIC, 0, &state->versionMagic);
+	STORE_32(GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, 0, &state->versionMagic);
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
 	STORE_32(gba->romCrc32, 0, &state->romCrc32);
 
@@ -95,13 +98,18 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int32_t check;
 	uint32_t ucheck;
 	LOAD_32(ucheck, 0, &state->versionMagic);
-	if (ucheck != GBA_SAVESTATE_MAGIC) {
-		GBALog(gba, GBA_LOG_WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC, ucheck);
+	if (ucheck > GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION) {
+		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 		error = true;
+	} else if (ucheck < GBA_SAVESTATE_MAGIC) {
+		mLOG(GBA_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
+		error = true;
+	} else {
+		mLOG(GBA_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 	}
 	LOAD_32(ucheck, 0, &state->biosChecksum);
 	if (ucheck != gba->biosChecksum) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
+		mLOG(GBA_STATE, WARN, "Savestate created using a different version of the BIOS: expected %08X, got %08X", gba->biosChecksum, ucheck);
 		uint32_t pc;
 		LOAD_32(pc, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 		if (pc < SIZE_BIOS && pc >= 0x20) {
@@ -109,34 +117,34 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 	}
 	if (gba->memory.rom && (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title)))) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different game");
+		mLOG(GBA_STATE, WARN, "Savestate is for a different game");
 		error = true;
 	} else if (!gba->memory.rom && state->id != 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a game, but no game loaded");
+		mLOG(GBA_STATE, WARN, "Savestate is for a game, but no game loaded");
 		error = true;
 	}
 	LOAD_32(ucheck, 0, &state->romCrc32);
 	if (ucheck != gba->romCrc32) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is for a different version of the game");
+		mLOG(GBA_STATE, WARN, "Savestate is for a different version of the game");
 	}
 	LOAD_32(check, 0, &state->cpu.cycles);
 	if (check < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are negative");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
 	if (check >= (int32_t) GBA_ARM7TDMI_FREQUENCY) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: CPU cycles are too high");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
 	}
 	LOAD_32(check, 0, &state->video.eventDiff);
 	if (check < 0) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate is corrupted: video eventDiff is negative");
+		mLOG(GBA_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
 	}
 	LOAD_32(check, ARM_PC * sizeof(state->cpu.gprs[0]), state->cpu.gprs);
 	int region = (check >> BASE_OFFSET);
 	if ((region == REGION_CART0 || region == REGION_CART1 || region == REGION_CART2) && ((check - WORD_SIZE_ARM) & SIZE_CART0) >= gba->memory.romSize - WORD_SIZE_ARM) {
-		GBALog(gba, GBA_LOG_WARN, "Savestate created using a differently sized version of the ROM");
+		mLOG(GBA_STATE, WARN, "Savestate created using a differently sized version of the ROM");
 		error = true;
 	}
 	if (error) {
@@ -356,66 +364,6 @@ static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtd
 }
 #endif
 
-bool GBASaveState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
-	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, true);
-	if (!vf) {
-		return false;
-	}
-	bool success = GBASaveStateNamed(threadContext->gba, vf, flags);
-	vf->close(vf);
-	if (success) {
-#if SAVESTATE_DEBUG
-		vf = GBAGetState(threadContext->gba, dir, slot, false);
-		if (vf) {
-			struct GBA* backup = anonymousMemoryMap(sizeof(*backup));
-			memcpy(backup, threadContext->gba, sizeof(*backup));
-			memset(threadContext->gba->memory.io, 0, sizeof(threadContext->gba->memory.io));
-			memset(threadContext->gba->timers, 0, sizeof(threadContext->gba->timers));
-			GBALoadStateNamed(threadContext->gba, vf, flags);
-			if (memcmp(backup, threadContext->gba, sizeof(*backup))) {
-				char suffix[16] = { '\0' };
-				struct VFile* vf2;
-				snprintf(suffix, sizeof(suffix), ".dump.0.%d", slot);
-				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-				if (vf2) {
-					vf2->write(vf2, backup, sizeof(*backup));
-					vf2->close(vf2);
-				}
-				snprintf(suffix, sizeof(suffix), ".dump.1.%d", slot);
-				vf2 = VDirOptionalOpenFile(dir, threadContext->gba->activeFile, "savestate", suffix, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
-				if (vf2) {
-					vf2->write(vf2, threadContext->gba, sizeof(*threadContext->gba));
-					vf2->close(vf2);
-				}
-			}
-			mappedMemoryFree(backup, sizeof(*backup));
-			vf->close(vf);
-		}
-#endif
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i saved", slot);
-	} else {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to save", slot);
-	}
-
-	return success;
-}
-
-bool GBALoadState(struct GBAThread* threadContext, struct VDir* dir, int slot, int flags) {
-	struct VFile* vf = GBAGetState(threadContext->gba, dir, slot, false);
-	if (!vf) {
-		return false;
-	}
-	threadContext->rewindBufferSize = 0;
-	bool success = GBALoadStateNamed(threadContext->gba, vf, flags);
-	vf->close(vf);
-	if (success) {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i loaded", slot);
-	} else {
-		GBALog(threadContext->gba, GBA_LOG_STATUS, "State %i failed to load", slot);
-	}
-	return success;
-}
-
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	struct GBAExtdata extdata;
 	GBAExtdataInit(&extdata);
@@ -519,9 +467,9 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	if (flags & SAVESTATE_SCREENSHOT && GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
 		if (item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
 			gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, item.data);
-			GBASyncForceFrame(gba->sync);
+			mCoreSyncForceFrame(gba->sync);
 		} else {
-			GBALog(gba, GBA_LOG_WARN, "Savestate includes invalid screenshot");
+			mLOG(GBA_STATE, WARN, "Savestate includes invalid screenshot");
 		}
 	}
 	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
@@ -671,105 +619,4 @@ void GBADeallocateState(struct GBASerializedState* state) {
 	mappedMemoryFree(state, sizeof(struct GBASerializedState));
 }
 
-void GBARecordFrame(struct GBAThread* thread) {
-	int offset = thread->rewindBufferWriteOffset;
-	struct GBASerializedState* state = thread->rewindBuffer[offset];
-	if (!state) {
-		state = GBAAllocateState();
-		thread->rewindBuffer[offset] = state;
-	}
-	GBASerialize(thread->gba, state);
-
-	if (thread->rewindScreenBuffer) {
-		unsigned stride;
-		const uint8_t* pixels = 0;
-		thread->gba->video.renderer->getPixels(thread->gba->video.renderer, &stride, (const void**) &pixels);
-		if (pixels) {
-			size_t y;
-			for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-				memcpy(&thread->rewindScreenBuffer[(offset * VIDEO_VERTICAL_PIXELS + y) * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL], &pixels[y * stride * BYTES_PER_PIXEL], VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-			}
-		}
-	}
-	thread->rewindBufferSize = thread->rewindBufferSize == thread->rewindBufferCapacity ? thread->rewindBufferCapacity : thread->rewindBufferSize + 1;
-	thread->rewindBufferWriteOffset = (offset + 1) % thread->rewindBufferCapacity;
-}
-
-void GBARewindSettingsChanged(struct GBAThread* threadContext, int newCapacity, int newInterval) {
-	if (newCapacity == threadContext->rewindBufferCapacity && newInterval == threadContext->rewindBufferInterval) {
-		return;
-	}
-	threadContext->rewindBufferInterval = newInterval;
-	threadContext->rewindBufferNext = threadContext->rewindBufferInterval;
-	threadContext->rewindBufferSize = 0;
-	if (threadContext->rewindBuffer) {
-		int i;
-		for (i = 0; i < threadContext->rewindBufferCapacity; ++i) {
-			GBADeallocateState(threadContext->rewindBuffer[i]);
-		}
-		free(threadContext->rewindBuffer);
-		free(threadContext->rewindScreenBuffer);
-	}
-	threadContext->rewindBufferCapacity = newCapacity;
-	if (threadContext->rewindBufferCapacity > 0) {
-		threadContext->rewindBuffer = calloc(threadContext->rewindBufferCapacity, sizeof(struct GBASerializedState*));
-		threadContext->rewindScreenBuffer = calloc(threadContext->rewindBufferCapacity, VIDEO_VERTICAL_PIXELS * VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-	} else {
-		threadContext->rewindBuffer = 0;
-		threadContext->rewindScreenBuffer = 0;
-	}
-}
-
-int GBARewind(struct GBAThread* thread, int nStates) {
-	if (nStates > thread->rewindBufferSize || nStates < 0) {
-		nStates = thread->rewindBufferSize;
-	}
-	if (nStates == 0) {
-		return 0;
-	}
-	int offset = thread->rewindBufferWriteOffset - nStates;
-	if (offset < 0) {
-		offset += thread->rewindBufferCapacity;
-	}
-	struct GBASerializedState* state = thread->rewindBuffer[offset];
-	if (!state) {
-		return 0;
-	}
-	thread->rewindBufferSize -= nStates;
-	thread->rewindBufferWriteOffset = offset;
-	GBADeserialize(thread->gba, state);
-	if (thread->rewindScreenBuffer) {
-		thread->gba->video.renderer->putPixels(thread->gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, &thread->rewindScreenBuffer[offset * VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL]);
-	}
-	return nStates;
-}
-
-void GBARewindAll(struct GBAThread* thread) {
-	GBARewind(thread, thread->rewindBufferSize);
-}
-
-void GBATakeScreenshot(struct GBA* gba, struct VDir* dir) {
-#ifdef USE_PNG
-	unsigned stride;
-	const void* pixels = 0;
-	char basename[PATH_MAX];
-	separatePath(gba->activeFile, 0, basename, 0);
-	struct VFile* vf = VDirFindNextAvailable(dir, basename, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
-	bool success = false;
-	if (vf) {
-		gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
-		png_structp png = PNGWriteOpen(vf);
-		png_infop info = PNGWriteHeader(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
-		success = PNGWritePixels(png, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, stride, pixels);
-		PNGWriteClose(png, info);
-		vf->close(vf);
-	}
-	if (success) {
-		GBALog(gba, GBA_LOG_STATUS, "Screenshot saved");
-		return;
-	}
-#else
-	UNUSED(dir);
-#endif
-	GBALog(gba, GBA_LOG_STATUS, "Failed to take screenshot");
-}
+// TODO: Put back rewind

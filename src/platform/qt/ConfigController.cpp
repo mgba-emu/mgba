@@ -96,40 +96,41 @@ ConfigController::ConfigController(QObject* parent)
 	, m_opts()
 {
 	char path[PATH_MAX];
-	GBAConfigDirectory(path, sizeof(path));
+	mCoreConfigDirectory(path, sizeof(path));
 	QString fileName(path);
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	m_settings = new QSettings(fileName, QSettings::IniFormat, this);
 
-	GBAConfigInit(&m_config, PORT);
+	mCoreConfigInit(&m_config, PORT);
 
 	m_opts.audioSync = GameController::AUDIO_SYNC;
 	m_opts.videoSync = GameController::VIDEO_SYNC;
 	m_opts.fpsTarget = 60;
 	m_opts.audioBuffers = 1536;
 	m_opts.sampleRate = 44100;
-	m_opts.volume = GBA_AUDIO_VOLUME_MAX;
-	m_opts.logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL | GBA_LOG_STATUS;
+	m_opts.volume = 0x100;
+	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferInterval = 0;
 	m_opts.rewindBufferCapacity = 0;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
-	GBAConfigLoad(&m_config);
-	GBAConfigLoadDefaults(&m_config, &m_opts);
-	GBAConfigMap(&m_config, &m_opts);
+	mCoreConfigLoad(&m_config);
+	mCoreConfigLoadDefaults(&m_config, &m_opts);
+	mCoreConfigMap(&m_config, &m_opts);
 }
 
 ConfigController::~ConfigController() {
-	GBAConfigDeinit(&m_config);
-	GBAConfigFreeOpts(&m_opts);
+	mCoreConfigDeinit(&m_config);
+	mCoreConfigFreeOpts(&m_opts);
 }
 
-bool ConfigController::parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser) {
-	if (::parseArguments(args, &m_config, argc, argv, subparser)) {
-		GBAConfigFreeOpts(&m_opts);
-		GBAConfigMap(&m_config, &m_opts);
+bool ConfigController::parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser) {
+	if (::parseArguments(args, argc, argv, subparser)) {
+		mCoreConfigFreeOpts(&m_opts);
+		applyArguments(args, subparser, &m_config);
+		mCoreConfigMap(&m_config, &m_opts);
 		return true;
 	}
 	return false;
@@ -159,11 +160,11 @@ void ConfigController::updateOption(const char* key) {
 	if (!m_optionSet.contains(optionName)) {
 		return;
 	}
-	m_optionSet[optionName]->setValue(GBAConfigGetValue(&m_config, key));
+	m_optionSet[optionName]->setValue(mCoreConfigGetValue(&m_config, key));
 }
 
 QString ConfigController::getOption(const char* key) const {
-	return QString(GBAConfigGetValue(&m_config, key));
+	return QString(mCoreConfigGetValue(&m_config, key));
 }
 
 QVariant ConfigController::getQtOption(const QString& key, const QString& group) const {
@@ -183,7 +184,7 @@ void ConfigController::saveOverride(const GBACartridgeOverride& override) {
 }
 
 void ConfigController::setOption(const char* key, bool value) {
-	GBAConfigSetIntValue(&m_config, key, value);
+	mCoreConfigSetIntValue(&m_config, key, value);
 	QString optionName(key);
 	if (m_optionSet.contains(optionName)) {
 		m_optionSet[optionName]->setValue(value);
@@ -191,7 +192,7 @@ void ConfigController::setOption(const char* key, bool value) {
 }
 
 void ConfigController::setOption(const char* key, int value) {
-	GBAConfigSetIntValue(&m_config, key, value);
+	mCoreConfigSetIntValue(&m_config, key, value);
 	QString optionName(key);
 	if (m_optionSet.contains(optionName)) {
 		m_optionSet[optionName]->setValue(value);
@@ -199,7 +200,7 @@ void ConfigController::setOption(const char* key, int value) {
 }
 
 void ConfigController::setOption(const char* key, unsigned value) {
-	GBAConfigSetUIntValue(&m_config, key, value);
+	mCoreConfigSetUIntValue(&m_config, key, value);
 	QString optionName(key);
 	if (m_optionSet.contains(optionName)) {
 		m_optionSet[optionName]->setValue(value);
@@ -207,7 +208,7 @@ void ConfigController::setOption(const char* key, unsigned value) {
 }
 
 void ConfigController::setOption(const char* key, const char* value) {
-	GBAConfigSetValue(&m_config, key, value);
+	mCoreConfigSetValue(&m_config, key, value);
 	QString optionName(key);
 	if (m_optionSet.contains(optionName)) {
 		m_optionSet[optionName]->setValue(value);
@@ -261,18 +262,18 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 }
 
 void ConfigController::write() {
-	GBAConfigSave(&m_config);
+	mCoreConfigSave(&m_config);
 	m_settings->sync();
 
-	GBAConfigFreeOpts(&m_opts);
-	GBAConfigMap(&m_config, &m_opts);
+	mCoreConfigFreeOpts(&m_opts);
+	mCoreConfigMap(&m_config, &m_opts);
 }
 
 void ConfigController::makePortable() {
-	GBAConfigMakePortable(&m_config);
+	mCoreConfigMakePortable(&m_config);
 
 	char path[PATH_MAX];
-	GBAConfigDirectory(path, sizeof(path));
+	mCoreConfigDirectory(path, sizeof(path));
 	QString fileName(path);
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");

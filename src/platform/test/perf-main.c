@@ -3,8 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "gba/supervisor/thread.h"
-#include "gba/context/config.h"
+#include "core/config.h"
+#include "core/thread.h"
+#include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
@@ -36,63 +37,49 @@ struct PerfOpts {
 	char* savestate;
 };
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet);
+static void _GBAPerfRunloop(struct mCoreThread* context, int* frames, bool quiet);
 static void _GBAPerfShutdown(int signal);
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
-static void _loadSavestate(struct GBAThread* context);
+static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg);
+static void _loadSavestate(struct mCoreThread* context);
 
-static struct GBAThread* _thread;
+static struct mCoreThread* _thread;
 static bool _dispatchExiting = false;
 static struct VFile* _savestate = 0;
 
 int main(int argc, char** argv) {
 	signal(SIGINT, _GBAPerfShutdown);
 
-	struct GBAVideoSoftwareRenderer renderer;
-	GBAVideoSoftwareRendererCreate(&renderer);
-
 	struct PerfOpts perfOpts = { false, false, 0, 0, 0 };
-	struct SubParser subparser = {
+	struct mSubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
 		.extraOptions = PERF_OPTIONS,
 		.opts = &perfOpts
 	};
 
-	struct GBAConfig config;
-	GBAConfigInit(&config, "perf");
-	GBAConfigLoad(&config);
-
-	struct GBAOptions opts = {
-		.idleOptimization = IDLE_LOOP_DETECT
-	};
-	GBAConfigLoadDefaults(&config, &opts);
-
-	struct GBAArguments args;
-	bool parsed = parseArguments(&args, &config, argc, argv, &subparser);
+	struct mArguments args;
+	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
 		freeArguments(&args);
-		GBAConfigFreeOpts(&opts);
-		GBAConfigDeinit(&config);
 		return 0;
 	}
 
-	renderer.outputBuffer = malloc(256 * 256 * 4);
-	renderer.outputBufferStride = 256;
+	void* outputBuffer = malloc(256 * 256 * 4);
 
-	struct GBAThread context = {};
+	struct mCore* core = GBACoreCreate();
+	struct mCoreThread context = {
+		.core = core
+	};
 	_thread = &context;
 
 	if (!perfOpts.noVideo) {
-		context.renderer = &renderer.d;
+		core->setVideoBuffer(core, outputBuffer, 256);
 	}
 	if (perfOpts.savestate) {
 		_savestate = VFileOpen(perfOpts.savestate, O_RDONLY);
@@ -102,29 +89,36 @@ int main(int argc, char** argv) {
 		context.startCallback = _loadSavestate;
 	}
 
-	context.debugger = createDebugger(&args, &context);
-	context.overrides = GBAConfigGetOverrides(&config);
+	// TODO: Put back debugger
 	char gameCode[5] = { 0 };
 
-	GBAConfigMap(&config, &opts);
+	core->init(core);
+	mCoreLoadFile(core, args.fname);
+	mCoreConfigInit(&core->config, "perf");
+	mCoreConfigLoad(&core->config);
+
+	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
+	struct mCoreOptions opts;
+	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
-	GBAMapArgumentsToContext(&args, &context);
-	GBAMapOptionsToContext(&opts, &context);
+	applyArguments(&args, NULL, &core->config);
+	mCoreConfigLoadDefaults(&core->config, &opts);
+	mCoreLoadConfig(core);
 
-	int didStart = GBAThreadStart(&context);
+	int didStart = mCoreThreadStart(&context);
 
 	if (!didStart) {
 		goto cleanup;
 	}
-	GBAThreadInterrupt(&context);
-	if (GBAThreadHasCrashed(&context)) {
-		GBAThreadJoin(&context);
+	mCoreThreadInterrupt(&context);
+	if (mCoreThreadHasCrashed(&context)) {
+		mCoreThreadJoin(&context);
 		goto cleanup;
 	}
 
-	GBAGetGameCode(context.gba, gameCode);
-	GBAThreadContinue(&context);
+	GBAGetGameCode(core->board, gameCode);
+	mCoreThreadContinue(&context);
 
 	int frames = perfOpts.frames;
 	if (!frames) {
@@ -138,7 +132,7 @@ int main(int argc, char** argv) {
 	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
 
-	GBAThreadJoin(&context);
+	mCoreThreadJoin(&context);
 
 	float scaledFrames = frames * 1000000.f;
 	if (perfOpts.csv) {
@@ -158,23 +152,22 @@ cleanup:
 	if (_savestate) {
 		_savestate->close(_savestate);
 	}
-	GBAConfigFreeOpts(&opts);
+	mCoreConfigFreeOpts(&opts);
 	freeArguments(&args);
-	GBAConfigDeinit(&config);
-	free(context.debugger);
-	free(renderer.outputBuffer);
+	mCoreConfigDeinit(&core->config);
+	free(outputBuffer);
 
-	return !didStart || GBAThreadHasCrashed(&context);
+	return !didStart || mCoreThreadHasCrashed(&context);
 }
 
-static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) {
+static void _GBAPerfRunloop(struct mCoreThread* context, int* frames, bool quiet) {
 	struct timeval lastEcho;
 	gettimeofday(&lastEcho, 0);
 	int duration = *frames;
 	*frames = 0;
 	int lastFrames = 0;
 	while (context->state < THREAD_EXITING) {
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			++*frames;
 			++lastFrames;
 			if (!quiet) {
@@ -192,12 +185,12 @@ static void _GBAPerfRunloop(struct GBAThread* context, int* frames, bool quiet) 
 				}
 			}
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 		if (duration > 0 && *frames == duration) {
 			_GBAPerfShutdown(0);
 		}
 		if (_dispatchExiting) {
-			GBAThreadEnd(context);
+			mCoreThreadEnd(context);
 		}
 	}
 	if (!quiet) {
@@ -212,8 +205,7 @@ static void _GBAPerfShutdown(int signal) {
 	ConditionWake(&_thread->sync.videoFrameAvailableCond);
 }
 
-static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg) {
-	UNUSED(config);
+static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {
@@ -237,8 +229,8 @@ static bool _parsePerfOpts(struct SubParser* parser, struct GBAConfig* config, i
 	}
 }
 
-static void _loadSavestate(struct GBAThread* context) {
-	GBALoadStateNamed(context->gba, _savestate, 0);
+static void _loadSavestate(struct mCoreThread* context) {
+	context->core->loadState(context->core, _savestate, 0);
 	_savestate->close(_savestate);
 	_savestate = 0;
 }

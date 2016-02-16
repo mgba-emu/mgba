@@ -11,10 +11,6 @@
 
 #include "ui_LogView.h"
 
-extern "C" {
-#include "gba/supervisor/thread.h"
-}
-
 namespace QGBA {
 
 class LogController;
@@ -30,7 +26,7 @@ signals:
 	void levelsDisabled(int levels);
 
 public slots:
-	void postLog(int level, const QString& log);
+	void postLog(int level, int category, const QString& log);
 	void setLevels(int levels);
 	void clear();
 

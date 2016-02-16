@@ -20,7 +20,7 @@ DisplayQt::DisplayQt(QWidget* parent)
 {
 }
 
-void DisplayQt::startDrawing(GBAThread*) {
+void DisplayQt::startDrawing(mCoreThread*) {
 	m_isDrawing = true;
 }
 

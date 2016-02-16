@@ -22,7 +22,7 @@
 
 #include "platform/video-backend.h"
 
-union GBAGLES2UniformValue {
+union mGLES2UniformValue {
 	GLfloat f;
 	GLint i;
 	GLboolean b;
@@ -40,19 +40,19 @@ union GBAGLES2UniformValue {
 	GLfloat fmat4x4[16];
 };
 
-struct GBAGLES2Uniform {
+struct mGLES2Uniform {
 	const char* name;
 	GLenum type;
-	union GBAGLES2UniformValue value;
+	union mGLES2UniformValue value;
 	GLuint location;
-	union GBAGLES2UniformValue min;
-	union GBAGLES2UniformValue max;
+	union mGLES2UniformValue min;
+	union mGLES2UniformValue max;
 	const char* readableName;
 };
 
-struct GBAGLES2Shader {
-	unsigned width;
-	unsigned height;
+struct mGLES2Shader {
+	int width;
+	int height;
 	bool integerScaling;
 	bool filter;
 	bool blend;
@@ -64,33 +64,33 @@ struct GBAGLES2Shader {
 	GLuint texLocation;
 	GLuint positionLocation;
 
-	struct GBAGLES2Uniform* uniforms;
+	struct mGLES2Uniform* uniforms;
 	size_t nUniforms;
 };
 
-struct GBAGLES2Context {
+struct mGLES2Context {
 	struct VideoBackend d;
 
 	GLuint tex;
 	GLuint texLocation;
 	GLuint positionLocation;
 
-	struct GBAGLES2Shader initialShader;
-	struct GBAGLES2Shader finalShader;
+	struct mGLES2Shader initialShader;
+	struct mGLES2Shader finalShader;
 
-	struct GBAGLES2Shader* shaders;
+	struct mGLES2Shader* shaders;
 	size_t nShaders;
 };
 
-void GBAGLES2ContextCreate(struct GBAGLES2Context*);
+void mGLES2ContextCreate(struct mGLES2Context*);
 
-void GBAGLES2ShaderInit(struct GBAGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct GBAGLES2Uniform* uniforms, size_t nUniforms);
-void GBAGLES2ShaderDeinit(struct GBAGLES2Shader*);
-void GBAGLES2ShaderAttach(struct GBAGLES2Context*, struct GBAGLES2Shader*, size_t nShaders);
-void GBAGLES2ShaderDetach(struct GBAGLES2Context*);
+void mGLES2ShaderInit(struct mGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms);
+void mGLES2ShaderDeinit(struct mGLES2Shader*);
+void mGLES2ShaderAttach(struct mGLES2Context*, struct mGLES2Shader*, size_t nShaders);
+void mGLES2ShaderDetach(struct mGLES2Context*);
 
 struct VDir;
-bool GBAGLES2ShaderLoad(struct VideoShader*, struct VDir*);
-void GBAGLES2ShaderFree(struct VideoShader*);
+bool mGLES2ShaderLoad(struct VideoShader*, struct VDir*);
+void mGLES2ShaderFree(struct VideoShader*);
 
 #endif

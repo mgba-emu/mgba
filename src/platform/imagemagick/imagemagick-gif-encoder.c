@@ -8,14 +8,13 @@
 #include "gba/video.h"
 #include "util/string.h"
 
-static void _magickPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _magickPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
+static void _magickPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
 
 void ImageMagickGIFEncoderInit(struct ImageMagickGIFEncoder* encoder) {
 	encoder->wand = 0;
 
 	encoder->d.postVideoFrame = _magickPostVideoFrame;
-	encoder->d.postAudioFrame = _magickPostAudioFrame;
+	encoder->d.postAudioFrame = 0;
 	encoder->d.postAudioBuffer = 0;
 
 	encoder->frameskip = 2;
@@ -59,7 +58,7 @@ bool ImageMagickGIFEncoderIsOpen(struct ImageMagickGIFEncoder* encoder) {
 	return !!encoder->wand;
 }
 
-static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
+static void _magickPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
 	struct ImageMagickGIFEncoder* encoder = (struct ImageMagickGIFEncoder*) stream;
 
 	if (encoder->currentFrame % (encoder->frameskip + 1)) {
@@ -67,12 +66,10 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 		return;
 	}
 
-	const uint8_t* pixels;
-	unsigned stride;
-	renderer->getPixels(renderer, &stride, (const void**) &pixels);
+	const uint8_t* p8 = (const uint8_t*) pixels;
 	size_t row;
 	for (row = 0; row < VIDEO_VERTICAL_PIXELS; ++row) {
-		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &pixels[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);
+		memcpy(&encoder->frame[row * VIDEO_HORIZONTAL_PIXELS], &p8[row * 4 * stride], VIDEO_HORIZONTAL_PIXELS * 4);
 	}
 
 	MagickConstituteImage(encoder->wand, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, "RGBP", CharPixel, encoder->frame);
@@ -91,11 +88,4 @@ static void _magickPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRen
 	}
 	MagickSetImageDelay(encoder->wand, nts - ts);
 	++encoder->currentFrame;
-}
-
-static void _magickPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
-	UNUSED(stream);
-	UNUSED(left);
-	UNUSED(right);
-	// This is a video-only format...
 }

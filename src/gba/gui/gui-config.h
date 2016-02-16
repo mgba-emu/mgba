@@ -8,8 +8,8 @@
 
 #include "util/common.h"
 
-struct GBAGUIRunner;
+struct mGUIRunner;
 struct GUIMenuItem;
-void GBAGUIShowConfig(struct GBAGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra);
+void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t nExtra);
 
 #endif

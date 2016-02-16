@@ -1073,7 +1073,7 @@ void IOViewer::updateRegister() {
 	uint16_t value = 0;
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		value = GBAView16(m_controller->thread()->cpu, BASE_IO | m_register);
+		value = GBAView16(static_cast<ARMCore*>(m_controller->thread()->core->cpu), BASE_IO | m_register);
 	}
 	m_controller->threadContinue();
 
@@ -1096,7 +1096,7 @@ void IOViewer::bitFlipped() {
 void IOViewer::writeback() {
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
-		GBAIOWrite(m_controller->thread()->gba, m_register, m_value);
+		GBAIOWrite(static_cast<GBA*>(m_controller->thread()->core->board), m_register, m_value);
 	}
 	m_controller->threadContinue();
 	updateRegister();

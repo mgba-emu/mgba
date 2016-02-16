@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ffmpeg-encoder.h"
 
+#include "core/core.h"
 #include "gba/video.h"
 
 #include <libavcodec/version.h>
@@ -21,8 +22,8 @@
 #include <libavresample/avresample.h>
 #include <libswscale/swscale.h>
 
-static void _ffmpegPostVideoFrame(struct GBAAVStream*, struct GBAVideoRenderer* renderer);
-static void _ffmpegPostAudioFrame(struct GBAAVStream*, int16_t left, int16_t right);
+static void _ffmpegPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
+static void _ffmpegPostAudioFrame(struct mAVStream*, int16_t left, int16_t right);
 
 enum {
 	PREFERRED_SAMPLE_RATE = 0x8000
@@ -359,7 +360,7 @@ bool FFmpegEncoderIsOpen(struct FFmpegEncoder* encoder) {
 	return !!encoder->context;
 }
 
-void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t right) {
+void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context || !encoder->audioCodec) {
 		return;
@@ -418,14 +419,11 @@ void _ffmpegPostAudioFrame(struct GBAAVStream* stream, int16_t left, int16_t rig
 	av_free_packet(&packet);
 }
 
-void _ffmpegPostVideoFrame(struct GBAAVStream* stream, struct GBAVideoRenderer* renderer) {
+void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context) {
 		return;
 	}
-	const uint8_t* pixels;
-	unsigned stride;
-	renderer->getPixels(renderer, &stride, (const void**) &pixels);
 	stride *= BYTES_PER_PIXEL;
 
 	AVPacket packet;

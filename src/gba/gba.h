@@ -8,7 +8,8 @@
 
 #include "util/common.h"
 
-#include "arm.h"
+#include "arm/arm.h"
+#include "core/log.h"
 #include "debugger/debugger.h"
 
 #include "gba/interface.h"
@@ -55,9 +56,10 @@ enum {
 };
 
 struct GBA;
-struct GBAThread;
 struct Patch;
 struct VFile;
+
+mLOG_DECLARE_CATEGORY(GBA);
 
 DECL_BITFIELD(GBATimerFlags, uint32_t);
 DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
@@ -75,7 +77,7 @@ struct GBATimer {
 };
 
 struct GBA {
-	struct ARMComponent d;
+	struct mCPUComponent d;
 
 	struct ARMCore* cpu;
 	struct GBAMemory memory;
@@ -83,9 +85,9 @@ struct GBA {
 	struct GBAAudio audio;
 	struct GBASIO sio;
 
-	struct GBASync* sync;
+	struct mCoreSync* sync;
 
-	struct ARMDebugger* debugger;
+	struct Debugger* debugger;
 
 	uint32_t bus;
 	int performingDMA;
@@ -96,10 +98,10 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
-	struct GBARotationSource* rotationSource;
+	struct mRotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
-	struct GBARTCSource* rtcSource;
-	struct GBARumble* rumble;
+	struct mRTCSource* rtcSource;
+	struct mRumble* rumble;
 
 	struct GBARRContext* rr;
 	void* pristineRom;
@@ -111,11 +113,9 @@ struct GBA {
 
 	const char* activeFile;
 
-	GBALogHandler logHandler;
-	enum GBALogLevel logLevel;
-	struct GBAAVStream* stream;
-	struct GBAKeyCallback* keyCallback;
-	struct GBAStopCallback* stopCallback;
+	struct mAVStream* stream;
+	struct mKeyCallback* keyCallback;
+	struct mStopCallback* stopCallback;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;
@@ -163,14 +163,15 @@ void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 
-void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
+void GBAAttachDebugger(struct GBA* gba, struct Debugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode,
+void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+bool GBALoadROM2(struct GBA* gba, struct VFile* vf);
+bool GBALoadSave(struct GBA* gba, struct VFile* sav);
 void GBAYankROM(struct GBA* gba);
 void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
@@ -186,11 +187,5 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

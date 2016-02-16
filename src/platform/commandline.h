@@ -8,24 +8,16 @@
 
 #include "util/common.h"
 
-#include "gba/context/config.h"
+#include "debugger/debugger.h"
 
-enum DebuggerType {
-	DEBUGGER_NONE = 0,
-#ifdef USE_CLI_DEBUGGER
-	DEBUGGER_CLI,
-#endif
-#ifdef USE_GDB_STUB
-	DEBUGGER_GDB,
-#endif
-	DEBUGGER_MAX
-};
-
-struct GBAArguments {
+struct mArguments {
 	char* fname;
 	char* patch;
 	char* cheatsFile;
 	char* movie;
+	char* bios;
+	int logLevel;
+	int frameskip;
 
 	enum DebuggerType debuggerType;
 	bool debugAtStart;
@@ -33,28 +25,30 @@ struct GBAArguments {
 	bool showVersion;
 };
 
-struct SubParser {
+struct mCoreConfig;
+struct mSubParser {
 	const char* usage;
-	bool (*parse)(struct SubParser* parser, struct GBAConfig* config, int option, const char* arg);
+	bool (*parse)(struct mSubParser* parser, int option, const char* arg);
+	void (*apply)(struct mSubParser* parser, struct mCoreConfig* config);
 	const char* extraOptions;
 	void* opts;
 };
 
-struct GraphicsOpts {
+struct mGraphicsOpts {
 	int multiplier;
 	bool fullscreen;
 };
 
-struct GBAThread;
-
-bool parseArguments(struct GBAArguments* opts, struct GBAConfig* config, int argc, char* const* argv,
-                    struct SubParser* subparser);
-void freeArguments(struct GBAArguments* opts);
+bool parseArguments(struct mArguments* args, int argc, char* const* argv,
+                    struct mSubParser* subparser);
+void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config);
+void freeArguments(struct mArguments* args);
 
 void usage(const char* arg0, const char* extraOptions);
 void version(const char* arg0);
 
-void initParserForGraphics(struct SubParser* parser, struct GraphicsOpts* opts);
-struct ARMDebugger* createDebugger(struct GBAArguments* opts, struct GBAThread* context);
+void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
+struct mCore;
+struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core);
 
 #endif

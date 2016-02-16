@@ -103,7 +103,7 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 		return 0;
 	}
 
-	vd->dirent.index = 0;
+	vd->dirent.index = -1;
 	vd->dirent.utf8 = 0;
 	vd->dirent.vd = vd;
 	vd->dirent.d.name = _vde7zName;

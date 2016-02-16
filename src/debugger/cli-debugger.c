@@ -499,7 +499,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetBreakpoint(&debugger->d, address);
+	DebuggerSetBreakpoint(&debugger->d, address);
 }
 
 static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -508,7 +508,7 @@ static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVecto
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_ARM);
+	DebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_ARM);
 }
 
 static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -517,7 +517,7 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
+	DebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -526,8 +526,8 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerClearBreakpoint(&debugger->d, address);
-	ARMDebuggerClearWatchpoint(&debugger->d, address);
+	DebuggerClearBreakpoint(&debugger->d, address);
+	DebuggerClearWatchpoint(&debugger->d, address);
 }
 
 static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -536,12 +536,12 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetWatchpoint(&debugger->d, address, WATCHPOINT_RW); // TODO: ro/wo
+	DebuggerSetWatchpoint(&debugger->d, address, WATCHPOINT_RW); // TODO: ro/wo
 }
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	ARMDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
+	DebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 static uint32_t _performOperation(enum Operation operation, uint32_t current, uint32_t next, struct CLIDebugVector* dv) {
@@ -570,7 +570,7 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 	return current;
 }
 
-static uint32_t _lookupIdentifier(struct ARMDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
+static uint32_t _lookupIdentifier(struct Debugger* debugger, const char* name, struct CLIDebugVector* dv) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (strcmp(name, "sp") == 0) {
 		return debugger->cpu->gprs[ARM_SP];
@@ -605,7 +605,7 @@ static uint32_t _lookupIdentifier(struct ARMDebugger* debugger, const char* name
 	return 0;
 }
 
-static uint32_t _evaluateParseTree(struct ARMDebugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
+static uint32_t _evaluateParseTree(struct Debugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
 	switch (tree->token.type) {
 	case TOKEN_UINT_TYPE:
 		return tree->token.uintValue;
@@ -765,7 +765,7 @@ static char* _prompt(EditLine* el) {
 	return "> ";
 }
 
-static void _commandLine(struct ARMDebugger* debugger) {
+static void _commandLine(struct Debugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	const char* line;
 	_printStatus(cliDebugger, 0);
@@ -787,7 +787,7 @@ static void _commandLine(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _reportEntry(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
+static void _reportEntry(struct Debugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
 	UNUSED(debugger);
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
@@ -874,7 +874,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 	return CC_REDISPLAY;
 }
 
-static void _cliDebuggerInit(struct ARMDebugger* debugger) {
+static void _cliDebuggerInit(struct Debugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	// TODO: get argv[0]
 	cliDebugger->elstate = el_init(binaryName, stdin, stdout, stderr);
@@ -892,7 +892,7 @@ static void _cliDebuggerInit(struct ARMDebugger* debugger) {
 	signal(SIGINT, _breakIntoDefault);
 }
 
-static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
+static void _cliDebuggerDeinit(struct Debugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	history_end(cliDebugger->histate);
 	el_end(cliDebugger->elstate);
@@ -904,7 +904,7 @@ static void _cliDebuggerDeinit(struct ARMDebugger* debugger) {
 	}
 }
 
-static void _cliDebuggerCustom(struct ARMDebugger* debugger) {
+static void _cliDebuggerCustom(struct Debugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	bool retain = false;
 	if (cliDebugger->system) {
@@ -916,7 +916,7 @@ static void _cliDebuggerCustom(struct ARMDebugger* debugger) {
 }
 
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
-	ARMDebuggerCreate(&debugger->d);
+	DebuggerCreate(&debugger->d);
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
 	debugger->d.custom = _cliDebuggerCustom;

@@ -7,6 +7,8 @@
 
 #include "gba/io.h"
 
+mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O");
+
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 38326, 73003, 107680, 142356 },
 	{ 9582, 18251, 26920, 35589 },
@@ -102,7 +104,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 		driverLoc = &sio->drivers.joybus;
 		break;
 	default:
-		GBALog(sio->p, GBA_LOG_ERROR, "Setting an unsupported SIO driver: %x", mode);
+		mLOG(GBA_SIO, ERROR, "Setting an unsupported SIO driver: %x", mode);
 		return;
 	}
 	if (*driverLoc) {
@@ -119,7 +121,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 		if (driver->init) {
 			if (!driver->init(driver)) {
 				driver->deinit(driver);
-				GBALog(sio->p, GBA_LOG_ERROR, "Could not initialize SIO driver");
+				mLOG(GBA_SIO, ERROR, "Could not initialize SIO driver");
 				return;
 			}
 		}

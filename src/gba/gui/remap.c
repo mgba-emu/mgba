@@ -9,7 +9,7 @@
 #include "util/gui.h"
 #include "util/gui/menu.h"
 
-void GBAGUIRemapKeys(struct GUIParams* params, struct GBAInputMap* map, const struct GUIInputKeys* keys) {
+void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct GUIInputKeys* keys) {
 	struct GUIMenu menu = {
 		.title = "Remap keys",
 		.index = 0,
@@ -22,10 +22,10 @@ void GBAGUIRemapKeys(struct GUIParams* params, struct GBAInputMap* map, const st
 	size_t i;
 	for (i = 0; i < GBA_KEY_MAX; ++i) {
 		*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
-			.title = GBAKeyNames[i],
+			.title = GBAInputInfo.keyId[i],
 			.data = (void*) (GUI_INPUT_MAX + i),
 			.submenu = 0,
-			.state = GBAInputQueryBinding(map, keys->id, i) + 1,
+			.state = mInputQueryBinding(map, keys->id, i) + 1,
 			.validStates = keyNames,
 			.nStates = keys->nKeys + 1
 		};
@@ -50,7 +50,7 @@ void GBAGUIRemapKeys(struct GUIParams* params, struct GBAInputMap* map, const st
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
 				if (i < GBA_KEY_MAX) {
-					GBAInputBindKey(map, keys->id, item->state - 1, i);
+					mInputBindKey(map, keys->id, item->state - 1, i);
 				}
 			}
 			break;

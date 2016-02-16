@@ -14,9 +14,11 @@
 
 #include "util/common.h"
 
-#include "gba/renderers/video-software.h"
-#include "gba/context/context.h"
+#include "core/core.h"
+#include "gba/audio.h"
+#include "gba/gba.h"
 #include "gba/gui/gui-runner.h"
+#include "gba/input.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -28,8 +30,8 @@
 #define WIIMOTE_INPUT 0x5749494D
 #define CLASSIC_INPUT 0x57494943
 
-static void _mapKey(struct GBAInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
-	GBAInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
+static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
+	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
 
 static enum ScreenMode {
@@ -50,11 +52,11 @@ enum FilterMode {
 static void _retraceCallback(u32 count);
 
 static void _audioDMA(void);
-static void _setRumble(struct GBARumble* rumble, int enable);
-static void _sampleRotation(struct GBARotationSource* source);
-static int32_t _readTiltX(struct GBARotationSource* source);
-static int32_t _readTiltY(struct GBARotationSource* source);
-static int32_t _readGyroZ(struct GBARotationSource* source);
+static void _setRumble(struct mRumble* rumble, int enable);
+static void _sampleRotation(struct mRotationSource* source);
+static int32_t _readTiltX(struct mRotationSource* source);
+static int32_t _readTiltY(struct mRotationSource* source);
+static int32_t _readGyroZ(struct mRotationSource* source);
 
 static void _drawStart(void);
 static void _drawEnd(void);
@@ -63,19 +65,19 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
 
-static void _setup(struct GBAGUIRunner* runner);
-static void _gameLoaded(struct GBAGUIRunner* runner);
-static void _gameUnloaded(struct GBAGUIRunner* runner);
-static void _unpaused(struct GBAGUIRunner* runner);
-static void _drawFrame(struct GBAGUIRunner* runner, bool faded);
-static uint16_t _pollGameInput(struct GBAGUIRunner* runner);
+static void _setup(struct mGUIRunner* runner);
+static void _gameLoaded(struct mGUIRunner* runner);
+static void _gameUnloaded(struct mGUIRunner* runner);
+static void _unpaused(struct mGUIRunner* runner);
+static void _drawFrame(struct mGUIRunner* runner, bool faded);
+static uint16_t _pollGameInput(struct mGUIRunner* runner);
 
 static s8 WPAD_StickX(u8 chan, u8 right);
 static s8 WPAD_StickY(u8 chan, u8 right);
 
-static struct GBAVideoSoftwareRenderer renderer;
-static struct GBARumble rumble;
-static struct GBARotationSource rotation;
+static void* outputBuffer;
+static struct mRumble rumble;
+static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
@@ -96,7 +98,7 @@ static volatile int currentAudioBuffer = 0;
 
 static struct GUIFont* font;
 
-static void reconfigureScreen(GXRModeObj* vmode) {
+static void reconfigureScreen(struct mCore* core, GXRModeObj* vmode) {
 	free(framebuffer[0]);
 	free(framebuffer[1]);
 
@@ -122,12 +124,17 @@ static void reconfigureScreen(GXRModeObj* vmode) {
 	GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_TRUE, vmode->vfilter);
 	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
-	int hfactor = vmode->fbWidth / VIDEO_HORIZONTAL_PIXELS;
-	int vfactor = vmode->efbHeight / VIDEO_VERTICAL_PIXELS;
-	if (hfactor > vfactor) {
-		scaleFactor = vfactor;
-	} else {
-		scaleFactor = hfactor;
+	if (core) {
+		unsigned width = VIDEO_HORIZONTAL_PIXELS;
+		unsigned height = VIDEO_VERTICAL_PIXELS;
+		core->desiredVideoDimensions(core, &width, &height);
+		int hfactor = vmode->fbWidth / width;
+		int vfactor = vmode->efbHeight / height;
+		if (hfactor > vfactor) {
+			scaleFactor = vfactor;
+		} else {
+			scaleFactor = hfactor;
+		}
 	}
 };
 
@@ -154,7 +161,7 @@ int main(int argc, char* argv[]) {
 	GX_Init(fifo, 0x40000);
 	GX_SetCopyClear(bg, 0x00FFFFFF);
 
-	reconfigureScreen(vmode);
+	reconfigureScreen(NULL, vmode);
 
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
@@ -204,7 +211,7 @@ int main(int argc, char* argv[]) {
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
 
-	struct GBAGUIRunner runner = {
+	struct mGUIRunner runner = {
 		.params = {
 			vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE,
 			font, "",
@@ -357,17 +364,17 @@ int main(int argc, char* argv[]) {
 		.unpaused = _unpaused,
 		.pollGameInput = _pollGameInput
 	};
-	GBAGUIInit(&runner, "wii");
+	mGUIInit(&runner, "wii");
 	if (argc > 1) {
-		GBAGUIRun(&runner, argv[1]);
+		mGUIRun(&runner, argv[1]);
 	} else {
-		GBAGUIRunloop(&runner);
+		mGUIRunloop(&runner);
 	}
-	GBAGUIDeinit(&runner);
+	mGUIDeinit(&runner);
 
 	free(fifo);
 
-	free(renderer.outputBuffer);
+	free(outputBuffer);
 	GUIFontDestroy(font);
 
 	free(framebuffer[0]);
@@ -514,72 +521,69 @@ void _guiFinish(void) {
 	}
 }
 
-void _setup(struct GBAGUIRunner* runner) {
-	runner->context.gba->rumble = &rumble;
-	runner->context.gba->rotationSource = &rotation;
+void _setup(struct mGUIRunner* runner) {
+	((struct GBA*) runner->core->board)->rumble = &rumble;
+	((struct GBA*) runner->core->board)->rotationSource = &rotation;
 
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_START, GBA_KEY_START);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_X, GBA_KEY_SELECT);
-	_mapKey(&runner->context.inputMap, GCN2_INPUT, PAD_BUTTON_Y, GBA_KEY_SELECT);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_UP, GBA_KEY_UP);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_DOWN, GBA_KEY_DOWN);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_LEFT, GBA_KEY_LEFT);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_BUTTON_RIGHT, GBA_KEY_RIGHT);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_TRIGGER_L, GBA_KEY_L);
-	_mapKey(&runner->context.inputMap, GCN1_INPUT, PAD_TRIGGER_R, GBA_KEY_R);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_START, GBA_KEY_START);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_X, GBA_KEY_SELECT);
+	_mapKey(&runner->core->inputMap, GCN2_INPUT, PAD_BUTTON_Y, GBA_KEY_SELECT);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_UP, GBA_KEY_UP);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_DOWN, GBA_KEY_DOWN);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_LEFT, GBA_KEY_LEFT);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_RIGHT, GBA_KEY_RIGHT);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_TRIGGER_L, GBA_KEY_L);
+	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_TRIGGER_R, GBA_KEY_R);
 
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_2, GBA_KEY_A);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_1, GBA_KEY_B);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_PLUS, GBA_KEY_START);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_MINUS, GBA_KEY_SELECT);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_RIGHT, GBA_KEY_UP);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_LEFT, GBA_KEY_DOWN);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_UP, GBA_KEY_LEFT);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_DOWN, GBA_KEY_RIGHT);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_B, GBA_KEY_L);
-	_mapKey(&runner->context.inputMap, WIIMOTE_INPUT, WPAD_BUTTON_A, GBA_KEY_R);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_2, GBA_KEY_A);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_1, GBA_KEY_B);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_PLUS, GBA_KEY_START);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_MINUS, GBA_KEY_SELECT);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_RIGHT, GBA_KEY_UP);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_LEFT, GBA_KEY_DOWN);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_UP, GBA_KEY_LEFT);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_DOWN, GBA_KEY_RIGHT);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_B, GBA_KEY_L);
+	_mapKey(&runner->core->inputMap, WIIMOTE_INPUT, WPAD_BUTTON_A, GBA_KEY_R);
 
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_A, GBA_KEY_A);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_B, GBA_KEY_B);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_PLUS, GBA_KEY_START);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_MINUS, GBA_KEY_SELECT);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_UP, GBA_KEY_UP);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GBA_KEY_DOWN);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_LEFT, GBA_KEY_LEFT);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_RIGHT, GBA_KEY_RIGHT);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
-	_mapKey(&runner->context.inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_A, GBA_KEY_A);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_B, GBA_KEY_B);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_PLUS, GBA_KEY_START);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_MINUS, GBA_KEY_SELECT);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_UP, GBA_KEY_UP);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GBA_KEY_DOWN);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_LEFT, GBA_KEY_LEFT);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_RIGHT, GBA_KEY_RIGHT);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_L, GBA_KEY_L);
+	_mapKey(&runner->core->inputMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_FULL_R, GBA_KEY_R);
 
-	struct GBAAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
-	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 0, &desc);
-	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, &desc);
-	desc = (struct GBAAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
-	GBAInputBindAxis(&runner->context.inputMap, GCN1_INPUT, 1, &desc);
-	GBAInputBindAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, &desc);
+	struct mInputAxis desc = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x20, -0x20 };
+	mInputBindAxis(&runner->core->inputMap, GCN1_INPUT, 0, &desc);
+	mInputBindAxis(&runner->core->inputMap, CLASSIC_INPUT, 0, &desc);
+	desc = (struct mInputAxis) { GBA_KEY_UP, GBA_KEY_DOWN, 0x20, -0x20 };
+	mInputBindAxis(&runner->core->inputMap, GCN1_INPUT, 1, &desc);
+	mInputBindAxis(&runner->core->inputMap, CLASSIC_INPUT, 1, &desc);
 
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
-	renderer.outputBufferStride = 256;
-	runner->context.renderer = &renderer.d;
+	outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
+	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
-	GBAAudioResizeBuffer(&runner->context.gba->audio, SAMPLES);
+	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
 	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-#endif
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
 }
 
-void _gameUnloaded(struct GBAGUIRunner* runner) {
+void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	AUDIO_StopDMA();
 }
 
-void _gameLoaded(struct GBAGUIRunner* runner) {
-	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
+void _gameLoaded(struct mGUIRunner* runner) {
+	reconfigureScreen(runner->core, vmode);
+	if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {
 			u32 result = WPAD_SetMotionPlus(0, 1);
@@ -592,17 +596,17 @@ void _gameLoaded(struct GBAGUIRunner* runner) {
 	_unpaused(runner);
 }
 
-void _unpaused(struct GBAGUIRunner* runner) {
+void _unpaused(struct mGUIRunner* runner) {
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
 	referenceRetraceCount = retraceCount;
 	_CPU_ISR_Restore(level);
 
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
-	if (GBAConfigGetUIntValue(&runner->context.config, "filter", &mode) && mode < FM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "filter", &mode) && mode < FM_MAX) {
 		switch (mode) {
 		case FM_NEAREST:
 		default:
@@ -616,24 +620,22 @@ void _unpaused(struct GBAGUIRunner* runner) {
 	_guiFinish();
 }
 
-void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	int available = blip_samples_avail(runner->context.gba->audio.left);
+void _drawFrame(struct mGUIRunner* runner, bool faded) {
+	int available = blip_samples_avail(runner->core->getAudioChannel(runner->core, 0));
 	if (available + audioBufferSize > SAMPLES) {
 		available = SAMPLES - audioBufferSize;
 	}
 	available &= ~((32 / sizeof(struct GBAStereoSample)) - 1); // Force align to 32 bytes
 	if (available > 0) {
 		// These appear to be reversed for AUDIO_InitDMA
-		blip_read_samples(runner->context.gba->audio.left, &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
-		blip_read_samples(runner->context.gba->audio.right, &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
+		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &audioBuffer[currentAudioBuffer][audioBufferSize].right, available, true);
+		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &audioBuffer[currentAudioBuffer][audioBufferSize].left, available, true);
 		audioBufferSize += available;
 	}
 	if (audioBufferSize == SAMPLES && !AUDIO_GetDMAEnableFlag()) {
 		_audioDMA();
 		AUDIO_StartDMA();
 	}
-#endif
 
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
@@ -641,7 +643,7 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	}
 	size_t x, y;
 	uint64_t* texdest = (uint64_t*) texmem;
-	uint64_t* texsrc = (uint64_t*) renderer.outputBuffer;
+	uint64_t* texsrc = (uint64_t*) outputBuffer;
 	for (y = 0; y < VIDEO_VERTICAL_PIXELS; y += 4) {
 		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS >> 2; ++x) {
 			texdest[0 + x * 4 + y * 64] = texsrc[0   + x + y * 64];
@@ -686,7 +688,7 @@ void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
 	GX_End();
 }
 
-uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
+uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	PAD_ScanPads();
 	u16 padkeys = PAD_ButtonsHeld(0);
@@ -694,25 +696,25 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	u32 wiiPad = WPAD_ButtonsHeld(0);
 	u32 ext = 0;
 	WPAD_Probe(0, &ext);
-	uint16_t keys = GBAInputMapKeyBits(&runner->context.inputMap, GCN1_INPUT, padkeys, 0);
-	keys |= GBAInputMapKeyBits(&runner->context.inputMap, GCN2_INPUT, padkeys, 0);
-	keys |= GBAInputMapKeyBits(&runner->context.inputMap, WIIMOTE_INPUT, wiiPad, 0);
+	uint16_t keys = mInputMapKeyBits(&runner->core->inputMap, GCN1_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(&runner->core->inputMap, GCN2_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(&runner->core->inputMap, WIIMOTE_INPUT, wiiPad, 0);
 
-	enum GBAKey angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 0, PAD_StickX(0));
+	enum GBAKey angles = mInputMapAxis(&runner->core->inputMap, GCN1_INPUT, 0, PAD_StickX(0));
 	if (angles != GBA_KEY_NONE) {
 		keys |= 1 << angles;
 	}
-	angles = GBAInputMapAxis(&runner->context.inputMap, GCN1_INPUT, 1, PAD_StickY(0));
+	angles = mInputMapAxis(&runner->core->inputMap, GCN1_INPUT, 1, PAD_StickY(0));
 	if (angles != GBA_KEY_NONE) {
 		keys |= 1 << angles;
 	}
 	if (ext == WPAD_EXP_CLASSIC) {
-		keys |= GBAInputMapKeyBits(&runner->context.inputMap, CLASSIC_INPUT, wiiPad, 0);
-		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
+		keys |= mInputMapKeyBits(&runner->core->inputMap, CLASSIC_INPUT, wiiPad, 0);
+		angles = mInputMapAxis(&runner->core->inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
 		if (angles != GBA_KEY_NONE) {
 			keys |= 1 << angles;
 		}
-		angles = GBAInputMapAxis(&runner->context.inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
+		angles = mInputMapAxis(&runner->core->inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
 		if (angles != GBA_KEY_NONE) {
 			keys |= 1 << angles;
 		}
@@ -721,7 +723,7 @@ uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
 	return keys;
 }
 
-void _setRumble(struct GBARumble* rumble, int enable) {
+void _setRumble(struct mRumble* rumble, int enable) {
 	UNUSED(rumble);
 	WPAD_Rumble(0, enable);
 	if (enable) {
@@ -731,7 +733,7 @@ void _setRumble(struct GBARumble* rumble, int enable) {
 	}
 }
 
-void _sampleRotation(struct GBARotationSource* source) {
+void _sampleRotation(struct mRotationSource* source) {
 	UNUSED(source);
 	vec3w_t accel;
 	WPAD_Accel(0, &accel);
@@ -749,17 +751,17 @@ void _sampleRotation(struct GBARotationSource* source) {
 	gyroZ <<= 18;
 }
 
-int32_t _readTiltX(struct GBARotationSource* source) {
+int32_t _readTiltX(struct mRotationSource* source) {
 	UNUSED(source);
 	return tiltX;
 }
 
-int32_t _readTiltY(struct GBARotationSource* source) {
+int32_t _readTiltY(struct mRotationSource* source) {
 	UNUSED(source);
 	return tiltY;
 }
 
-int32_t _readGyroZ(struct GBARotationSource* source) {
+int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
 	return gyroZ;
 }

@@ -11,52 +11,52 @@
 
 #include <string.h>
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, uint32_t newValue, int width);
+static bool _checkWatchpoints(struct Debugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, uint32_t newValue, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	{ \
 		DEBUGGER = 0; \
 		size_t i; \
 		for (i = 0; i < CPU->numComponents; ++i) { \
-			if (CPU->components[i]->id == ARM_DEBUGGER_ID) { \
-				DEBUGGER = (struct ARMDebugger*) cpu->components[i]; \
+			if (CPU->components[i]->id == DEBUGGER_ID) { \
+				DEBUGGER = (struct Debugger*) cpu->components[i]; \
 				break; \
 			} \
 		} \
 	}
 
 #define CREATE_SHIM(NAME, RETURN, TYPES, ...) \
-	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
-		struct ARMDebugger* debugger; \
+	static RETURN DebuggerShim_ ## NAME TYPES { \
+		struct Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
 #define CREATE_WATCHPOINT_READ_SHIM(NAME, WIDTH, RETURN, TYPES, ...) \
-	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
-		struct ARMDebugger* debugger; \
+	static RETURN DebuggerShim_ ## NAME TYPES { \
+		struct Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		struct DebuggerEntryInfo info; \
 		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_READ, 0, WIDTH)) { \
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
+			DebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
 #define CREATE_WATCHPOINT_WRITE_SHIM(NAME, WIDTH, RETURN, TYPES, ...) \
-	static RETURN ARMDebuggerShim_ ## NAME TYPES { \
-		struct ARMDebugger* debugger; \
+	static RETURN DebuggerShim_ ## NAME TYPES { \
+		struct Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		struct DebuggerEntryInfo info; \
 		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_WRITE, value, WIDTH)) { \
-			ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
+			DebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 		} \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
 #define CREATE_MULTIPLE_WATCHPOINT_SHIM(NAME, ACCESS_TYPE) \
-	static uint32_t ARMDebuggerShim_ ## NAME (struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) { \
-		struct ARMDebugger* debugger; \
+	static uint32_t DebuggerShim_ ## NAME (struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) { \
+		struct Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
 		uint32_t popcount = popcount32(mask); \
 		int offset = 4; \
@@ -72,7 +72,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 		for (i = 0; i < popcount; ++i) { \
 			struct DebuggerEntryInfo info; \
 			if (_checkWatchpoints(debugger, base + 4 * i, &info, ACCESS_TYPE, 0, 4)) { \
-				ARMDebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
+				DebuggerEnter(debugger, DEBUGGER_ENTER_WATCHPOINT, &info); \
 			} \
 		} \
 		return debugger->originalMemory.NAME(cpu, address, mask, direction, cycleCounter); \
@@ -88,7 +88,7 @@ CREATE_MULTIPLE_WATCHPOINT_SHIM(loadMultiple, WATCHPOINT_READ)
 CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple, WATCHPOINT_WRITE)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, uint32_t newValue, int width) {
+static bool _checkWatchpoints(struct Debugger* debugger, uint32_t address, struct DebuggerEntryInfo* info, enum WatchpointType type, uint32_t newValue, int width) {
 	--width;
 	struct DebugWatchpoint* watchpoint;
 	size_t i;
@@ -116,20 +116,20 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 	return false;
 }
 
-void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {
+void DebuggerInstallMemoryShim(struct Debugger* debugger) {
 	debugger->originalMemory = debugger->cpu->memory;
-	debugger->cpu->memory.store32 = ARMDebuggerShim_store32;
-	debugger->cpu->memory.store16 = ARMDebuggerShim_store16;
-	debugger->cpu->memory.store8 = ARMDebuggerShim_store8;
-	debugger->cpu->memory.load32 = ARMDebuggerShim_load32;
-	debugger->cpu->memory.load16 = ARMDebuggerShim_load16;
-	debugger->cpu->memory.load8 = ARMDebuggerShim_load8;
-	debugger->cpu->memory.storeMultiple = ARMDebuggerShim_storeMultiple;
-	debugger->cpu->memory.loadMultiple = ARMDebuggerShim_loadMultiple;
-	debugger->cpu->memory.setActiveRegion = ARMDebuggerShim_setActiveRegion;
+	debugger->cpu->memory.store32 = DebuggerShim_store32;
+	debugger->cpu->memory.store16 = DebuggerShim_store16;
+	debugger->cpu->memory.store8 = DebuggerShim_store8;
+	debugger->cpu->memory.load32 = DebuggerShim_load32;
+	debugger->cpu->memory.load16 = DebuggerShim_load16;
+	debugger->cpu->memory.load8 = DebuggerShim_load8;
+	debugger->cpu->memory.storeMultiple = DebuggerShim_storeMultiple;
+	debugger->cpu->memory.loadMultiple = DebuggerShim_loadMultiple;
+	debugger->cpu->memory.setActiveRegion = DebuggerShim_setActiveRegion;
 }
 
-void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger) {
+void DebuggerRemoveMemoryShim(struct Debugger* debugger) {
 	debugger->cpu->memory.store32 = debugger->originalMemory.store32;
 	debugger->cpu->memory.store16 = debugger->originalMemory.store16;
 	debugger->cpu->memory.store8 = debugger->originalMemory.store8;

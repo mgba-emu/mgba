@@ -9,16 +9,16 @@
 #include "psp2-common.h"
 #include "util/gui.h"
 
-struct GBAGUIRunner;
-void GBAPSP2Setup(struct GBAGUIRunner* runner);
-void GBAPSP2Teardown(struct GBAGUIRunner* runner);
+struct mGUIRunner;
+void GBAPSP2Setup(struct mGUIRunner* runner);
+void GBAPSP2Teardown(struct mGUIRunner* runner);
 
-void GBAPSP2LoadROM(struct GBAGUIRunner* runner);
-void GBAPSP2UnloadROM(struct GBAGUIRunner* runner);
-void GBAPSP2PrepareForFrame(struct GBAGUIRunner* runner);
-void GBAPSP2Draw(struct GBAGUIRunner* runner, bool faded);
-void GBAPSP2DrawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded);
-void GBAPSP2IncrementScreenMode(struct GBAGUIRunner* runner);
-uint16_t GBAPSP2PollInput(struct GBAGUIRunner* runner);
+void GBAPSP2LoadROM(struct mGUIRunner* runner);
+void GBAPSP2UnloadROM(struct mGUIRunner* runner);
+void GBAPSP2PrepareForFrame(struct mGUIRunner* runner);
+void GBAPSP2Draw(struct mGUIRunner* runner, bool faded);
+void GBAPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded);
+void GBAPSP2IncrementScreenMode(struct mGUIRunner* runner);
+uint16_t GBAPSP2PollInput(struct mGUIRunner* runner);
 
 #endif

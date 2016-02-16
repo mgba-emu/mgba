@@ -5,13 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video.h"
 
-#include "gba/context/sync.h"
+#include "core/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 
 #include "util/memory.h"
+
+mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
@@ -160,7 +162,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBAFrameEnded(video->p);
 				--video->frameskipCounter;
 				if (video->frameskipCounter < 0) {
-					GBASyncPostFrame(video->p->sync);
+					mCoreSyncPostFrame(video->p->sync);
 					video->frameskipCounter = video->frameskip;
 				}
 				++video->frameCounter;

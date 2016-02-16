@@ -10,7 +10,7 @@
 
 #include "ui_ShaderSelector.h"
 
-struct GBAGLES2Shader;
+struct mGLES2Shader;
 class QGridLayout;
 struct VideoShader;
 
@@ -44,7 +44,7 @@ signals:
 private:
 	void addUniform(QGridLayout*, const QString& section, const QString& name, float* value, float min, float max, int y, int x);
 	void addUniform(QGridLayout*, const QString& section, const QString& name, int* value, int min, int max, int y, int x);
-	QWidget* makePage(GBAGLES2Shader*, const QString& name, int pass);
+	QWidget* makePage(mGLES2Shader*, const QString& name, int pass);
 
 	Ui::ShaderSelector m_ui;
 	Display* m_display;

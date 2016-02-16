@@ -10,6 +10,8 @@
 #include "gba/sio.h"
 #include "gba/video.h"
 
+mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
+
 const char* GBAIORegisterNames[] = {
 	// Video
 	"DISPCNT",
@@ -533,9 +535,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			// Some bad interrupt libraries will write to this
 			break;
 		default:
-			GBALog(gba, GBA_LOG_STUB, "Stub I/O register write: %03X", address);
+			mLOG(GBA_IO, STUB, "Stub I/O register write: %03X", address);
 			if (address >= REG_MAX) {
-				GBALog(gba, GBA_LOG_GAME_ERROR, "Write to unused I/O register: %03X", address);
+				mLOG(GBA_IO, GAME_ERROR, "Write to unused I/O register: %03X", address);
 				return;
 			}
 			break;
@@ -751,7 +753,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA3DAD_HI:
 	case REG_DMA3CNT_LO:
 		// Write-only register
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Read from write-only I/O register: %03X", address);
+		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 
 	case REG_SOUNDBIAS:
@@ -760,7 +762,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_JOY_TRANS:
 	case REG_KEYCNT:
 	case REG_POSTFLG:
-		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
+		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
 	case REG_SOUND1CNT_LO:
 	case REG_SOUND1CNT_HI:
@@ -774,7 +776,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
 	case REG_SOUNDCNT_HI:
-		if (!GBARegisterSOUNDCNT_XIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
+		if (!GBAudioEnableIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
 			// TODO: Is writing allowed when the circuit is disabled?
 			return 0;
 		}
@@ -822,7 +824,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Some bad interrupt libraries will read from this
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Read from unused I/O register: %03X", address);
+		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 	}
 	return gba->memory.io[address >> 1];

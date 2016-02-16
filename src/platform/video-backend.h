@@ -18,15 +18,18 @@ typedef void* WHandle;
 struct VideoBackend {
 	void (*init)(struct VideoBackend*, WHandle handle);
 	void (*deinit)(struct VideoBackend*);
+	void (*setDimensions)(struct VideoBackend*, unsigned width, unsigned height);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
-	void (*resized)(struct VideoBackend*, int w, int h);
+	void (*resized)(struct VideoBackend*, unsigned w, unsigned h);
 	void (*postFrame)(struct VideoBackend*, const void* frame);
 	void (*drawFrame)(struct VideoBackend*);
 	void (*setMessage)(struct VideoBackend*, const char* message);
 	void (*clearMessage)(struct VideoBackend*);
 
 	void* user;
+	unsigned width;
+	unsigned height;
 
 	bool filter;
 	bool lockAspectRatio;

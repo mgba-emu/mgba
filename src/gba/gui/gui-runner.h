@@ -6,36 +6,39 @@
 #ifndef GUI_RUNNER_H
 #define GUI_RUNNER_H
 
-#include "gba/context/context.h"
+#include "util/common.h"
+
 #include "gba/gui/remap.h"
+#include "gba/hardware.h"
 #include "util/circle-buffer.h"
 #include "util/gui.h"
 
-enum GBAGUIInput {
-	GBA_GUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
-	GBA_GUI_INPUT_DECREASE_BRIGHTNESS,
-	GBA_GUI_INPUT_SCREEN_MODE,
+enum mGUIInput {
+	mGUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
+	mGUI_INPUT_DECREASE_BRIGHTNESS,
+	mGUI_INPUT_SCREEN_MODE,
 };
 
-struct GBAGUIBackground {
+struct mGUIBackground {
 	struct GUIBackground d;
-	struct GBAGUIRunner* p;
+	struct mGUIRunner* p;
 
 	uint32_t* screenshot;
 	int screenshotId;
 };
 
-struct GBAGUIRunnerLux {
+struct mCore;
+struct mGUIRunnerLux {
 	struct GBALuminanceSource d;
 	int luxLevel;
 };
 
-struct GBAGUIRunner {
-	struct GBAContext context;
+struct mGUIRunner {
+	struct mCore* core;
 	struct GUIParams params;
 
-	struct GBAGUIBackground background;
-	struct GBAGUIRunnerLux luminanceSource;
+	struct mGUIBackground background;
+	struct mGUIRunnerLux luminanceSource;
 
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
@@ -47,22 +50,22 @@ struct GBAGUIRunner {
 	int32_t totalDelta;
 	struct CircleBuffer fpsBuffer;
 
-	void (*setup)(struct GBAGUIRunner*);
-	void (*teardown)(struct GBAGUIRunner*);
-	void (*gameLoaded)(struct GBAGUIRunner*);
-	void (*gameUnloaded)(struct GBAGUIRunner*);
-	void (*prepareForFrame)(struct GBAGUIRunner*);
-	void (*drawFrame)(struct GBAGUIRunner*, bool faded);
-	void (*drawScreenshot)(struct GBAGUIRunner*, const uint32_t* pixels, bool faded);
-	void (*paused)(struct GBAGUIRunner*);
-	void (*unpaused)(struct GBAGUIRunner*);
-	void (*incrementScreenMode)(struct GBAGUIRunner*);
-	uint16_t (*pollGameInput)(struct GBAGUIRunner*);
+	void (*setup)(struct mGUIRunner*);
+	void (*teardown)(struct mGUIRunner*);
+	void (*gameLoaded)(struct mGUIRunner*);
+	void (*gameUnloaded)(struct mGUIRunner*);
+	void (*prepareForFrame)(struct mGUIRunner*);
+	void (*drawFrame)(struct mGUIRunner*, bool faded);
+	void (*drawScreenshot)(struct mGUIRunner*, const uint32_t* pixels, bool faded);
+	void (*paused)(struct mGUIRunner*);
+	void (*unpaused)(struct mGUIRunner*);
+	void (*incrementScreenMode)(struct mGUIRunner*);
+	uint16_t (*pollGameInput)(struct mGUIRunner*);
 };
 
-void GBAGUIInit(struct GBAGUIRunner*, const char* port);
-void GBAGUIDeinit(struct GBAGUIRunner*);
-void GBAGUIRun(struct GBAGUIRunner*, const char* path);
-void GBAGUIRunloop(struct GBAGUIRunner*);
+void mGUIInit(struct mGUIRunner*, const char* port);
+void mGUIDeinit(struct mGUIRunner*);
+void mGUIRun(struct mGUIRunner*, const char* path);
+void mGUIRunloop(struct mGUIRunner*);
 
 #endif

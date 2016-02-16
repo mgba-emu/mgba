@@ -16,18 +16,21 @@
 #include <memory>
 
 extern "C" {
+#include "core/core.h"
+#include "core/thread.h"
 #include "gba/cheats.h"
+#include "gba/context/overrides.h"
 #include "gba/hardware.h"
-#include "gba/supervisor/thread.h"
+#include "gba/input.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"
 #endif
 }
 
 struct GBAAudio;
-struct GBAOptions;
-struct GBAVideoSoftwareRenderer;
+struct mCoreConfig;
 struct Configuration;
+struct Debugger;
 
 class QThread;
 
@@ -48,60 +51,60 @@ public:
 	~GameController();
 
 	const uint32_t* drawContext() const { return m_drawContext; }
-	GBAThread* thread() { return &m_threadContext; }
+	mCoreThread* thread() { return &m_threadContext; }
 	GBACheatDevice* cheatDevice() { return &m_cheatDevice; }
 
 	void threadInterrupt();
 	void threadContinue();
 
 	bool isPaused();
-	bool isLoaded() { return m_gameOpen && GBAThreadIsActive(&m_threadContext); }
+	bool isLoaded() { return m_gameOpen && mCoreThreadIsActive(&m_threadContext); }
+	mPlatform platform() const;
 
 	bool audioSync() const { return m_audioSync; }
 	bool videoSync() const { return m_videoSync; }
+	QSize screenDimensions() const;
 
 	void setInputController(InputController* controller) { m_inputController = controller; }
-	void setOverrides(Configuration* overrides) { m_threadContext.overrides = overrides; }
 
 	void setMultiplayerController(MultiplayerController* controller);
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
 	void setOverride(const GBACartridgeOverride& override);
-	void clearOverride() { m_threadContext.hasOverride = false; }
+	void clearOverride() { /* TODO: Put back overrides */ }
 
-	void setOptions(const GBAOptions*);
+	void setConfig(const mCoreConfig*);
 
 	int stateSlot() const { return m_stateSlot; }
 
 #ifdef USE_GDB_STUB
-	ARMDebugger* debugger();
-	void setDebugger(ARMDebugger*);
+	Debugger* debugger();
+	void setDebugger(Debugger*);
 #endif
 
 signals:
 	void frameAvailable(const uint32_t*);
-	void gameStarted(GBAThread*);
-	void gameStopped(GBAThread*);
-	void gamePaused(GBAThread*);
-	void gameUnpaused(GBAThread*);
+	void gameStarted(mCoreThread*, const QString& fname);
+	void gameStopped(mCoreThread*);
+	void gamePaused(mCoreThread*);
+	void gameUnpaused(mCoreThread*);
 	void gameCrashed(const QString& errorMessage);
 	void gameFailed();
-	void stateLoaded(GBAThread*);
-	void rewound(GBAThread*);
+	void stateLoaded(mCoreThread*);
+	void rewound(mCoreThread*);
 	void unimplementedBiosCall(int);
 
 	void luminanceValueChanged(int);
 
 	void statusPosted(const QString& message);
-	void postLog(int level, const QString& log);
+	void postLog(int level, int category, const QString& log);
 
 public slots:
 	void loadGame(const QString& path);
 	void loadBIOS(const QString& path);
 	void yankPak();
 	void replaceGame(const QString& path);
-	void setSkipBIOS(bool);
 	void setUseBIOS(bool);
 	void loadPatch(const QString& path);
 	void importSharkport(const QString& path);
@@ -122,20 +125,17 @@ public slots:
 	void setAudioBufferSamples(int samples);
 	void setAudioSampleRate(unsigned rate);
 	void setAudioChannelEnabled(int channel, bool enable = true);
+	void startAudio();
 	void setVideoLayerEnabled(int layer, bool enable = true);
 	void setFPSTarget(float fps);
 	void loadState(int slot = 0);
 	void saveState(int slot = 0);
 	void loadBackupState();
 	void saveBackupState();
-	void setVideoSync(bool);
-	void setAudioSync(bool);
-	void setFrameskip(int);
-	void setVolume(int);
 	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setTurboSpeed(float ratio = -1);
-	void setAVStream(GBAAVStream*);
+	void setAVStream(mAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
 	void setSaveStateExtdata(int flags);
@@ -173,8 +173,8 @@ private:
 
 	uint32_t* m_drawContext;
 	uint32_t* m_frontBuffer;
-	GBAThread m_threadContext;
-	GBAVideoSoftwareRenderer* m_renderer;
+	mCoreThread m_threadContext;
+	const mCoreConfig* m_config;
 	GBACheatDevice m_cheatDevice;
 	int m_activeKeys;
 	int m_activeButtons;
@@ -209,13 +209,15 @@ private:
 	int m_autofireStatus[GBA_KEY_MAX];
 
 	int m_stateSlot;
-	GBASerializedState* m_backupLoadState;
+	struct VFile* m_backupLoadState;
 	QByteArray m_backupSaveState;
 	int m_saveStateFlags;
 	int m_loadStateFlags;
 
 	InputController* m_inputController;
 	MultiplayerController* m_multiplayer;
+
+	mAVStream* m_stream;
 
 	struct GameControllerLux : GBALuminanceSource {
 		GameController* p;
@@ -224,7 +226,7 @@ private:
 	uint8_t m_luxValue;
 	int m_luxLevel;
 
-	GBARTCGenericSource m_rtc;
+	mRTCGenericSource m_rtc;
 };
 
 }

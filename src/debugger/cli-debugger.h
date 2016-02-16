@@ -52,7 +52,7 @@ struct CLIDebuggerSystem {
 };
 
 struct CLIDebugger {
-	struct ARMDebugger d;
+	struct Debugger d;
 
 	struct CLIDebuggerSystem* system;
 

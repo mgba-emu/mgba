@@ -21,9 +21,7 @@ extern "C" {
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
-
-struct GBAOptions;
-struct GBAArguments;
+struct mArguments;
 
 namespace QGBA {
 
@@ -47,12 +45,12 @@ public:
 	GameController* controller() { return m_controller; }
 
 	void setConfig(ConfigController*);
-	void argumentsPassed(GBAArguments*);
+	void argumentsPassed(mArguments*);
 
-	void resizeFrame(int width, int height);
+	void resizeFrame(const QSize& size);
 
 signals:
-	void startDrawing(GBAThread*);
+	void startDrawing(mCoreThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void sampleRateChanged(unsigned samples);
@@ -113,7 +111,7 @@ protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
-	void gameStarted(GBAThread*);
+	void gameStarted(mCoreThread*, const QString&);
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();
@@ -148,8 +146,10 @@ private:
 
 	GameController* m_controller;
 	Display* m_display;
+	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
+	QList<QAction*> m_gbaActions;
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;

@@ -15,6 +15,8 @@
 
 const uint32_t GBA_CHEAT_DEVICE_ID = 0xABADC0DE;
 
+mLOG_DEFINE_CATEGORY(CHEATS, "Cheats");
+
 DEFINE_VECTOR(GBACheatList, struct GBACheat);
 DEFINE_VECTOR(GBACheatSets, struct GBACheatSet*);
 DEFINE_VECTOR(StringList, char*);
@@ -99,8 +101,8 @@ static void _unpatchROM(struct GBACheatDevice* device, struct GBACheatSet* cheat
 	}
 }
 
-static void GBACheatDeviceInit(struct ARMCore*, struct ARMComponent*);
-static void GBACheatDeviceDeinit(struct ARMComponent*);
+static void GBACheatDeviceInit(void*, struct mCPUComponent*);
+static void GBACheatDeviceDeinit(struct mCPUComponent*);
 
 void GBACheatDeviceCreate(struct GBACheatDevice* device) {
 	device->d.id = GBA_CHEAT_DEVICE_ID;
@@ -557,9 +559,9 @@ void GBACheatSetCopyProperties(struct GBACheatSet* newSet, struct GBACheatSet* s
 	}
 }
 
-void GBACheatDeviceInit(struct ARMCore* cpu, struct ARMComponent* component) {
+void GBACheatDeviceInit(void* cpu, struct mCPUComponent* component) {
 	struct GBACheatDevice* device = (struct GBACheatDevice*) component;
-	device->p = (struct GBA*) cpu->master;
+	device->p = (struct GBA*) ((struct ARMCore*) cpu)->master;
 	size_t i;
 	for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
 		struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
@@ -568,7 +570,7 @@ void GBACheatDeviceInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	}
 }
 
-void GBACheatDeviceDeinit(struct ARMComponent* component) {
+void GBACheatDeviceDeinit(struct mCPUComponent* component) {
 	struct GBACheatDevice* device = (struct GBACheatDevice*) component;
 	size_t i;
 	for (i = GBACheatSetsSize(&device->cheats); i--;) {

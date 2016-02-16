@@ -14,7 +14,7 @@
 #include <wand/MagickWand.h>
 
 struct ImageMagickGIFEncoder {
-	struct GBAAVStream d;
+	struct mAVStream d;
 	MagickWand* wand;
 	char* outfile;
 	uint32_t* frame;

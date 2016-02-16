@@ -16,12 +16,12 @@
 
 #include "platform/video-backend.h"
 
-struct GBAGLContext {
+struct mGLContext {
 	struct VideoBackend d;
 
 	GLuint tex;
 };
 
-void GBAGLContextCreate(struct GBAGLContext*);
+void mGLContextCreate(struct mGLContext*);
 
 #endif

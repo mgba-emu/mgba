@@ -45,7 +45,7 @@ static uint32_t _pollInput(void) {
 		input |= 1 << GUI_INPUT_CANCEL;
 	}
 	if (pad.buttons & SCE_CTRL_SQUARE) {
-		input |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
+		input |= 1 << mGUI_INPUT_SCREEN_MODE;
 	}
 	if (pad.buttons & SCE_CTRL_CIRCLE) {
 		input |= 1 << GUI_INPUT_BACK;
@@ -95,7 +95,7 @@ static int _batteryState(void) {
 int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
-	struct GBAGUIRunner runner = {
+	struct mGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
 			font, "cache0:", _drawStart, _drawEnd,
@@ -159,9 +159,9 @@ int main() {
 		.pollGameInput = GBAPSP2PollInput
 	};
 
-	GBAGUIInit(&runner, "psvita");
-	GBAGUIRunloop(&runner);
-	GBAGUIDeinit(&runner);
+	mGUIInit(&runner, "psvita");
+	mGUIRunloop(&runner);
+	mGUIDeinit(&runner);
 
 	GUIFontDestroy(font);
 	vita2d_fini();
