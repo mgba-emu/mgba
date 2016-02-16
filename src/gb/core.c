@@ -71,6 +71,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 
 	struct GB* gb = core->board;
 	gb->audio.masterVolume = core->opts.volume;
+	gb->video.frameskip = core->opts.frameskip;
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -114,7 +115,8 @@ static size_t _GBCoreGetAudioBufferSize(struct mCore* core) {
 }
 
 static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
-	// TODO
+	struct GB* gb = core->board;
+	gb->stream = stream;
 }
 
 static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
@@ -152,7 +154,9 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 static void _GBCoreReset(struct mCore* core) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	struct GB* gb = (struct GB*) core->board;
-	GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
+	if (gbcore->renderer.outputBuffer) {
+		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
+	}
 	LR35902Reset(core->cpu);
 }
 

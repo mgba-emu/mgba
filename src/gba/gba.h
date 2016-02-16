@@ -111,8 +111,6 @@ struct GBA {
 	struct VFile* romVf;
 	struct VFile* biosVf;
 
-	const char* activeFile;
-
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
 	struct mStopCallback* stopCallback;

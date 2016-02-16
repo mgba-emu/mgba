@@ -124,6 +124,7 @@ void GBUnloadROM(struct GB* gb) {
 
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x8000);
+		gb->sramVf = 0;
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, 0x8000);
 	}

@@ -41,6 +41,7 @@ enum GBIRQVector {
 };
 
 struct mCoreSync;
+struct mAVStream;
 struct GB {
 	struct mCPUComponent d;
 
@@ -60,6 +61,8 @@ struct GB {
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* sramVf;
+
+	struct mAVStream* stream;
 
 	int32_t eiPending;
 };

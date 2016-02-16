@@ -50,6 +50,7 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.rom = 0;
 	gb->memory.romBank = 0;
 	gb->memory.romSize = 0;
+	gb->memory.sram = 0;
 	gb->memory.mbcType = GB_MBC_NONE;
 	gb->memory.mbc = 0;
 

@@ -23,12 +23,12 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-static const color_t GB_PALETTE[4] = { 0xFFFF, 0x39C7, 0x18C3, 0x0000};
+static const color_t GB_PALETTE[4] = { 0xFFFF, 0x528A, 0x2945, 0x0000};
 #else
-static const color_t GB_PALETTE[4] = { 0x7FFF, 0x1DE7, 0x0C63, 0x0000};
+static const color_t GB_PALETTE[4] = { 0x7FFF, 0x294A, 0x14A5, 0x0000};
 #endif
 #else
-static const color_t GB_PALETTE[4] = { 0xFFFFFF, 0x808080, 0x404040, 0x000000};
+static const color_t GB_PALETTE[4] = { 0xFFFFFF, 0xACACAC, 0x565656, 0x000000};
 #endif
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
@@ -106,6 +106,7 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		break;
 	case REG_WY:
 		softwareRenderer->wy = value;
+		softwareRenderer->currentWy = value;
 		break;
 	case REG_WX:
 		softwareRenderer->wx = value;
@@ -131,10 +132,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
 		}
 	} else {
-		int x;
-		for (x = startX; x < endX; ++x) {
-			softwareRenderer->row[x] = 0;
-		}
+		memset(&softwareRenderer->row[startX], 0, endX - startX);
 	}
 
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
@@ -143,11 +141,17 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, obj[i], startX, endX, y);
 		}
 	}
-
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
-	for (x = startX; x < endX; ++x) {
+	for (x = startX; x < endX; x += 8) {
 		row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
+		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1]];
+		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2]];
+		row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3]];
+		row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4]];
+		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5]];
+		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6]];
+		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7]];
 	}
 }
 
@@ -179,9 +183,27 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		startX = 0;
 	}
 	int x;
-	for (x = startX; x < endX; ++x) {
+	if ((startX + sx) & 7) {
+		int startX2 = startX + 8 - ((startX + sx) & 7);
+		for (x = startX; x < startX2; ++x) {
+			int topX = ((x + sx) >> 3) & 0x1F;
+			int bottomX = 7 - ((x + sx) & 7);
+			int bgTile;
+			if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
+				bgTile = maps[topX + topY];
+			} else {
+				bgTile = ((int8_t*) maps)[topX + topY];
+			}
+			uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
+			uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
+			tileDataUpper >>= bottomX;
+			tileDataLower >>= bottomX;
+			renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		}
+		startX = startX2;
+	}
+	for (x = startX; x < endX; x += 8) {
 		int topX = ((x + sx) >> 3) & 0x1F;
-		int bottomX = 7 - ((x + sx) & 7);
 		int bgTile;
 		if (GBRegisterLCDCIsTileData(renderer->lcdc)) {
 			bgTile = maps[topX + topY];
@@ -190,9 +212,14 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		}
 		uint8_t tileDataLower = data[(bgTile * 8 + bottomY) * 2];
 		uint8_t tileDataUpper = data[(bgTile * 8 + bottomY) * 2 + 1];
-		tileDataUpper >>= bottomX;
-		tileDataLower >>= bottomX;
-		renderer->row[x] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		renderer->row[x + 7] = ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		renderer->row[x + 6] = (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
+		renderer->row[x + 5] = ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
+		renderer->row[x + 4] = ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
+		renderer->row[x + 3] = ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
+		renderer->row[x + 2] = ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
+		renderer->row[x + 1] = ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
+		renderer->row[x + 0] = ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
 	}
 }
 

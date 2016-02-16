@@ -1,11 +1,11 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gui-runner.h"
 
-#include "gba/core.h"
+#include "core/core.h"
 #include "gba/gui/gui-config.h"
 #include "gba/input.h"
 #include "gba/interface.h"
@@ -63,7 +63,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
 			return;
 		}
-		struct VFile* vf = GBAGetState(gbaBackground->p->core->board, gbaBackground->p->core->dirs.state, stateId, false);
+		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
@@ -108,47 +108,24 @@ static uint8_t _readLux(struct GBALuminanceSource* lux) {
 
 void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	GUIInit(&runner->params);
-	runner->core = GBACoreCreate();
-	runner->core->init(runner->core);
-	mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
-	mCoreInitConfig(runner->core, port);
+	runner->port = port;
+	runner->core = NULL;
 	runner->luminanceSource.d.readLuminance = _readLux;
 	runner->luminanceSource.d.sample = _updateLux;
 	runner->luminanceSource.luxLevel = 0;
-	((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
 	runner->background.d.draw = _drawBackground;
 	runner->background.p = runner;
 	runner->fps = 0;
 	runner->lastFpsCheck = 0;
 	runner->totalDelta = 0;
 	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
-	if (runner->setup) {
-		runner->setup(runner);
-	}
-
-	if (runner->core->config.port && runner->keySources) {
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
-		}
-	}
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
-	if (runner->core->config.port) {
-		if (runner->keySources) {
-			size_t i;
-			for (i = 0; runner->keySources[i].id; ++i) {
-				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
-			}
-		}
-		mCoreConfigSave(&runner->core->config);
-	}
 	CircleBufferDeinit(&runner->fpsBuffer);
-	runner->core->deinit(runner->core);
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -218,7 +195,19 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	runner->params.drawEnd();
 
-	if (!mCoreLoadFile(runner->core, path)) {
+	bool found = false;
+	runner->core = mCoreFind(path);
+	if (runner->core) {
+		runner->core->init(runner->core);
+		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
+		mCoreInitConfig(runner->core, runner->port);
+		found = mCoreLoadFile(runner->core, path);
+		if (!found) {
+			runner->core->deinit(runner->core);
+		}
+	}
+
+	if (!found) {
 		int i;
 		for (i = 0; i < 240; ++i) {
 			runner->params.drawStart();
@@ -233,7 +222,22 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		}
 		return;
 	}
+	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+		((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
+	}
+	if (runner->core->config.port && runner->keySources) {
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
+		}
+	}
+	// TODO: Do we need to load more defaults?
+	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
+	mCoreLoadConfig(runner->core);
 	mCoreAutoloadSave(runner->core);
+	if (runner->setup) {
+		runner->setup(runner);
+	}
 	runner->core->reset(runner->core);
 	bool running = true;
 	if (runner->gameLoaded) {
@@ -346,7 +350,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				mCoreConfigGetIntValue(&runner->core->config, "frameskip", &((struct GBA*) runner->core->board)->video.frameskip);
+				mCoreLoadConfig(runner->core);
 				break;
 			case RUNNER_CONTINUE:
 				break;
@@ -373,6 +377,18 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (drawState.screenshot) {
 		mappedMemoryFree(drawState.screenshot, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
 	}
+
+	if (runner->core->config.port) {
+		if (runner->keySources) {
+			size_t i;
+			for (i = 0; runner->keySources[i].id; ++i) {
+				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
+			}
+		}
+		mCoreConfigSave(&runner->core->config);
+	}
+	runner->core->deinit(runner->core);
+
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);
 	GUIMenuItemListDeinit(&stateLoadMenu.items);

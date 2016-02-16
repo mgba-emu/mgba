@@ -65,6 +65,8 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 #endif
 	;
 	memset(args, 0, sizeof(*args));
+	args->frameskip = -1;
+	args->logLevel = INT_MIN;
 	if (subparser && subparser->extraOptions) {
 		// TODO: modularize options to subparsers
 		strncat(options, subparser->extraOptions, sizeof(options) - strlen(options) - 1);
@@ -136,9 +138,15 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 }
 
 void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
-	mCoreConfigSetOverrideIntValue(config, "frameskip", args->frameskip);
-	mCoreConfigSetOverrideIntValue(config, "logLevel", args->logLevel);
-	mCoreConfigSetOverrideValue(config, "bios", args->bios);
+	if (args->frameskip >= 0) {
+		mCoreConfigSetOverrideIntValue(config, "frameskip", args->frameskip);
+	}
+	if (args->logLevel > INT_MIN) {
+		mCoreConfigSetOverrideIntValue(config, "logLevel", args->logLevel);
+	}
+	if (args->bios) {
+		mCoreConfigSetOverrideValue(config, "bios", args->bios);
+	}
 	if (subparser) {
 		subparser->apply(subparser, config);
 	}

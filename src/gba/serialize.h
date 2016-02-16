@@ -385,9 +385,6 @@ struct VDir;
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
-void GBADeleteState(struct GBA* thread, struct VDir* dir, int slot);
-
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
 

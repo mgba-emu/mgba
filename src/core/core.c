@@ -190,6 +190,8 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 #ifndef MINIMAL_CORE
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
-	core->setAudioBufferSize(core, core->opts.audioBuffers);
+	if (core->opts.audioBuffers) {
+		core->setAudioBufferSize(core, core->opts.audioBuffers);
+	}
 	core->loadConfig(core, config);
 }
