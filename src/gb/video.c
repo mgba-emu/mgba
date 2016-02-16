@@ -266,7 +266,7 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
-	static const uint16_t dmgPalette[4] = { 0x7FFF, 0x294A, 0x14A5, 0x0000};
+	static const uint16_t dmgPalette[4] = { 0x7FFF, 0x56B5, 0x294A, 0x0000};
 	if (video->p->model < GB_MODEL_CGB) {
 		switch (address) {
 		case REG_BGP:
