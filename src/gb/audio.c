@@ -286,7 +286,7 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		audio->ch3.readable = false;
+		audio->ch3.readable = audio->style != GB_AUDIO_DMG;
 		// TODO: Don't need p
 		if (audio->p) {
 			// TODO: Where does this cycle delay come from?
@@ -535,7 +535,9 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 					audio->fadeCh3 = INT_MAX;
 				}
 				if (audio->nextCh3 <= 0) {
-					audio->fadeCh3 = audio->nextCh3 + 2;
+					if (audio->style == GB_AUDIO_DMG) {
+						audio->fadeCh3 = audio->nextCh3 + 2;
+					}
 					audio->nextCh3 += _updateChannel3(&audio->ch3, audio->style);
 					audio->ch3.readable = true;
 				}

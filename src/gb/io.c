@@ -35,6 +35,12 @@ const static uint8_t _registerMask[] = {
 	[REG_NR51] = 0x00,
 	[REG_NR52] = 0x70,
 	[REG_STAT] = 0x80,
+	[REG_VBK] = 0xFE,
+	[REG_OCPS] = 0x40,
+	[REG_BCPS] = 0x40,
+	[REG_UNK6C] = 0xFE,
+	[REG_SVBK] = 0xF8,
+	[REG_UNK75] = 0x8F,
 	[REG_IE]   = 0xE0,
 };
 
@@ -96,7 +102,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		if (gb->audio.enable) {
 			GBAudioWriteNR11(&gb->audio, value);
 		} else {
-			GBAudioWriteNR11(&gb->audio, value & _registerMask[REG_NR11]);
+			if (gb->audio.style == GB_AUDIO_DMG) {
+				GBAudioWriteNR11(&gb->audio, value & _registerMask[REG_NR11]);
+			}
 			value = 0;
 		}
 		break;
@@ -125,7 +133,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		if (gb->audio.enable) {
 			GBAudioWriteNR21(&gb->audio, value);
 		} else {
-			GBAudioWriteNR21(&gb->audio, value & _registerMask[REG_NR21]);
+			if (gb->audio.style == GB_AUDIO_DMG) {
+				GBAudioWriteNR21(&gb->audio, value & _registerMask[REG_NR21]);
+			}
 			value = 0;
 		}
 		break;
@@ -248,7 +258,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_WAVE_D:
 	case REG_WAVE_E:
 	case REG_WAVE_F:
-		if (!gb->audio.playingCh3) {
+		if (!gb->audio.playingCh3 || gb->audio.style != GB_AUDIO_DMG) {
 			gb->audio.ch3.wavedata8[address - REG_WAVE_0] = value;
 		} else if(gb->audio.ch3.readable) {
 			gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1] = value;
@@ -279,11 +289,14 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_SCX:
 	case REG_WY:
 	case REG_WX:
+		GBVideoProcessDots(&gb->video);
+		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
+		break;
 	case REG_BGP:
 	case REG_OBP0:
 	case REG_OBP1:
 		GBVideoProcessDots(&gb->video);
-		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
+		GBVideoWritePalette(&gb->video, address, value);
 		break;
 	case REG_STAT:
 		GBVideoWriteSTAT(&gb->video, value);
@@ -293,12 +306,43 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		GBUpdateIRQs(gb);
 		return;
 	default:
+		if (gb->model >= GB_MODEL_CGB) {
+			switch (address) {
+			case REG_VBK:
+				GBVideoSwitchBank(&gb->video, value);
+				break;
+			case REG_BCPS:
+				gb->video.bcpIndex = value & 0x3F;
+				gb->video.bcpIncrement = value & 0x80;
+				break;
+			case REG_BCPD:
+				GBVideoProcessDots(&gb->video);
+				GBVideoWritePalette(&gb->video, address, value);
+				break;
+			case REG_OCPS:
+				gb->video.ocpIndex = value & 0x3F;
+				gb->video.ocpIncrement = value & 0x80;
+				break;
+			case REG_OCPD:
+				GBVideoProcessDots(&gb->video);
+				GBVideoWritePalette(&gb->video, address, value);
+				break;
+			case REG_SVBK:
+				GBMemorySwitchWramBank(&gb->memory, value);
+				break;
+			default:
+				goto failed;
+			}
+			goto success;
+		}
+		failed:
 		mLOG(GB_IO, STUB, "Writing to unknown register FF%02X:%02X", address, value);
 		if (address >= GB_SIZE_IO) {
 			return;
 		}
 		break;
 	}
+	success:
 	gb->memory.io[address] = value;
 }
 
@@ -345,7 +389,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case REG_WAVE_E:
 	case REG_WAVE_F:
 		if (gb->audio.playingCh3) {
-			if (gb->audio.ch3.readable) {
+			if (gb->audio.ch3.readable || gb->audio.style != GB_AUDIO_DMG) {
 				return gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1];
 			} else {
 				return 0xFF;
@@ -390,8 +434,19 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		// Handled transparently by the registers
 		break;
 	default:
+		if (gb->model >= GB_MODEL_CGB) {
+			switch (address) {
+			case REG_SVBK:
+			case REG_VBK:
+				// Handled transparently by the registers
+				goto success;
+			default:
+				break;
+			}
+		}
 		mLOG(GB_IO, STUB, "Reading from unknown register FF%02X", address);
 		return 0xFF;
 	}
+	success:
 	return gb->memory.io[address] | _registerMask[address];
 }

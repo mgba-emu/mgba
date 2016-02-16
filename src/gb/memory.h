@@ -44,7 +44,8 @@ enum {
 
 enum {
 	GB_SIZE_CART_BANK0 = 0x4000,
-	GB_SIZE_VRAM = 0x2000,
+	GB_SIZE_VRAM = 0x4000,
+	GB_SIZE_VRAM_BANK0 = 0x2000,
 	GB_SIZE_EXTERNAL_RAM = 0x2000,
 	GB_SIZE_WORKING_RAM = 0x8000,
 	GB_SIZE_WORKING_RAM_BANK0 = 0x1000,
@@ -78,6 +79,7 @@ struct GBMemory {
 
 	uint8_t* wram;
 	uint8_t* wramBank;
+	int wramCurrentBank;
 
 	bool sramAccess;
 	uint8_t* sram;
@@ -108,6 +110,7 @@ void GBMemoryInit(struct GB* gb);
 void GBMemoryDeinit(struct GB* gb);
 
 void GBMemoryReset(struct GB* gb);
+void GBMemorySwitchWramBank(struct GBMemory* memory, int bank);
 
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);

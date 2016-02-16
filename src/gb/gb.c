@@ -165,7 +165,20 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 }
 
 void GBReset(struct LR35902Core* cpu) {
-	cpu->a = 1;
+	struct GB* gb = (struct GB*) cpu->master;
+
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart->cgb & 0x80) {
+		gb->model = GB_MODEL_CGB;
+		gb->audio.style = GB_AUDIO_CGB;
+		cpu->a = 0x11;
+	} else {
+		// TODO: SGB
+		gb->model = GB_MODEL_DMG;
+		gb->audio.style = GB_AUDIO_DMG;
+		cpu->a = 1;
+	}
+
 	cpu->f.packed = 0xB0;
 	cpu->b = 0;
 	cpu->c = 0x13;
@@ -175,8 +188,6 @@ void GBReset(struct LR35902Core* cpu) {
 	cpu->l = 0x4D;
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
-
-	struct GB* gb = (struct GB*) cpu->master;
 
 	if (gb->yankedRomSize) {
 		gb->memory.romSize = gb->yankedRomSize;
