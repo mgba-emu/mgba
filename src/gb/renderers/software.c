@@ -282,7 +282,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 			++tileOffset;
 		}
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x20;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x3F;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {
 		p = (GBObjAttributesGetCGBPalette(obj->attr) + 8) * 4;
@@ -306,7 +306,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		tileDataUpper >>= bottomX;
 		tileDataLower >>= bottomX;
 		color_t current = renderer->row[x];
-		if (((tileDataUpper | tileDataLower) & 1) && current <= mask) {
+		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
 			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 		}
 	}
