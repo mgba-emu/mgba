@@ -557,6 +557,7 @@ int main() {
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
 
+	stream.videoDimensionsChanged = 0;
 	stream.postVideoFrame = 0;
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
