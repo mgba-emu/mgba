@@ -36,7 +36,7 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 }
 
 static void _GBMemoryDMAService(struct GB* gb);
-
+static void _GBMemoryHDMAService(struct GB* gb);
 
 void GBMemoryInit(struct GB* gb) {
 	struct LR35902Core* cpu = gb->cpu;
@@ -56,6 +56,8 @@ void GBMemoryInit(struct GB* gb) {
 
 	gb->memory.dmaNext = INT_MAX;
 	gb->memory.dmaRemaining = 0;
+	gb->memory.hdmaNext = INT_MAX;
+	gb->memory.hdmaRemaining = 0;
 
 	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
 
@@ -257,14 +259,24 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 }
 
 int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles) {
-	if (!gb->memory.dmaRemaining) {
-		return INT_MAX;
+	int nextEvent = INT_MAX;
+	if (gb->memory.dmaRemaining) {
+		gb->memory.dmaNext -= cycles;
+		if (gb->memory.dmaNext <= 0) {
+			_GBMemoryDMAService(gb);
+		}
+		nextEvent = gb->memory.dmaNext;
 	}
-	gb->memory.dmaNext -= cycles;
-	if (gb->memory.dmaNext <= 0) {
-		_GBMemoryDMAService(gb);
+	if (gb->memory.hdmaRemaining) {
+		gb->memory.hdmaNext -= cycles;
+		if (gb->memory.hdmaNext <= 0) {
+			_GBMemoryHDMAService(gb);
+		}
+		if (gb->memory.hdmaNext < nextEvent) {
+			nextEvent = gb->memory.hdmaNext;
+		}
 	}
-	return gb->memory.dmaNext;
+	return nextEvent;
 }
 
 void GBMemoryDMA(struct GB* gb, uint16_t base) {
@@ -282,6 +294,26 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	gb->memory.dmaRemaining = 0xA0;
 }
 
+void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
+	gb->memory.hdmaSource = gb->memory.io[REG_HDMA1] << 8;
+	gb->memory.hdmaSource |= gb->memory.io[REG_HDMA2];
+	gb->memory.hdmaDest = gb->memory.io[REG_HDMA3] << 8;
+	gb->memory.hdmaDest |= gb->memory.io[REG_HDMA4];
+	gb->memory.hdmaSource &= 0xFFF0;
+	if (gb->memory.hdmaSource >= 0x8000 && gb->memory.hdmaSource < 0xA000) {
+		mLOG(GB_MEM, GAME_ERROR, "Invalid HDMA source: %04X", gb->memory.hdmaSource);
+		return;
+	}
+	gb->memory.hdmaDest &= 0x1FF0;
+	gb->memory.hdmaDest |= 0x8000;
+	gb->memory.isHdma = value & 0x80;
+	if (!gb->memory.isHdma) {
+		gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		gb->memory.hdmaNext = gb->cpu->cycles;
+		gb->cpu->nextEvent = gb->cpu->cycles;
+	}
+}
+
 void _GBMemoryDMAService(struct GB* gb) {
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
@@ -295,6 +327,20 @@ void _GBMemoryDMAService(struct GB* gb) {
 		gb->memory.dmaNext = INT_MAX;
 		gb->cpu->memory.store8 = GBStore8;
 		gb->cpu->memory.load8 = GBLoad8;
+	}
+}
+
+void _GBMemoryHDMAService(struct GB* gb) {
+	uint8_t b = gb->cpu->memory.load8(gb->cpu, gb->memory.hdmaSource);
+	gb->cpu->memory.store8(gb->cpu, gb->memory.hdmaDest, b);
+	++gb->memory.hdmaSource;
+	++gb->memory.hdmaDest;
+	--gb->memory.hdmaRemaining;
+	gb->cpu->cycles += 2;
+	if (gb->memory.hdmaRemaining) {
+		gb->memory.hdmaNext += 2;
+	} else {
+		gb->memory.io[REG_HDMA5] |= 0x80;
 	}
 }
 

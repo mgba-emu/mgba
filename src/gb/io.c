@@ -311,6 +311,16 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_VBK:
 				GBVideoSwitchBank(&gb->video, value);
 				break;
+			case REG_HDMA1:
+			case REG_HDMA2:
+			case REG_HDMA3:
+			case REG_HDMA4:
+				// Handled transparently by the registers
+				break;
+			case REG_HDMA5:
+				GBMemoryWriteHDMA5(gb, value);
+				value &= 0x7F;
+				break;
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
 				gb->video.bcpIncrement = value & 0x80;
@@ -436,8 +446,13 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
-			case REG_SVBK:
 			case REG_VBK:
+			case REG_HDMA1:
+			case REG_HDMA2:
+			case REG_HDMA3:
+			case REG_HDMA4:
+			case REG_HDMA5:
+			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
 			default:
