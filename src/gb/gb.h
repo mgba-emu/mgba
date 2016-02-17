@@ -67,6 +67,7 @@ struct GB {
 	struct mAVStream* stream;
 
 	int32_t eiPending;
+	unsigned doubleSpeed;
 };
 
 struct GBCartridge {

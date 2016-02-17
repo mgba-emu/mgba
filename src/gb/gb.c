@@ -62,6 +62,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->yankedRomSize = 0;
 
 	gb->eiPending = false;
+	gb->doubleSpeed = 0;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -160,7 +161,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
 	irqh->hitIllegal = GBIllegal;
-	irqh->hitStub = GBHitStub;
+	irqh->stop = GBStop;
 	irqh->halt = GBHalt;
 }
 
@@ -253,14 +254,20 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		testEvent = GBVideoProcessEvents(&gb->video, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
+		testEvent = GBVideoProcessEvents(&gb->video, cycles >> gb->doubleSpeed);
+		if (testEvent != INT_MAX) {
+			testEvent <<= gb->doubleSpeed;
+			if (testEvent < nextEvent) {
+				nextEvent = testEvent;
+			}
 		}
 
-		testEvent = GBAudioProcessEvents(&gb->audio, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
+		testEvent = GBAudioProcessEvents(&gb->audio, cycles >> gb->doubleSpeed);
+		if (testEvent != INT_MAX) {
+			testEvent <<= gb->doubleSpeed;
+			if (testEvent < nextEvent) {
+				nextEvent = testEvent;
+			}
 		}
 
 		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
@@ -301,14 +308,19 @@ void GBHalt(struct LR35902Core* cpu) {
 	cpu->halted = true;
 }
 
+void GBStop(struct LR35902Core* cpu) {
+	struct GB* gb = (struct GB*) cpu->master;
+	if (gb->memory.io[REG_KEY1] & 1) {
+		gb->doubleSpeed ^= 1;
+		gb->memory.io[REG_KEY1] &= 1;
+		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
+	}
+	// TODO: Actually stop
+}
+
 void GBIllegal(struct LR35902Core* cpu) {
 	// TODO
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
-}
-
-void GBHitStub(struct LR35902Core* cpu) {
-	// TODO
-	mLOG(GB, STUB, "Hit stub at address %04X:%02X\n", cpu->pc, cpu->bus);
 }
 
 bool GBIsROM(struct VFile* vf) {

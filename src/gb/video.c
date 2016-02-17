@@ -221,7 +221,7 @@ void GBVideoProcessDots(struct GBVideo* video) {
 		return;
 	}
 	int oldX = video->x;
-	video->x = video->dotCounter + video->eventDiff + video->p->cpu->cycles;
+	video->x = video->dotCounter + video->eventDiff + (video->p->cpu->cycles >> video->p->doubleSpeed);
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
 	}
@@ -238,15 +238,15 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->mode = 2;
 		video->nextMode = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		video->nextEvent = video->nextMode;
-		video->eventDiff = -video->p->cpu->cycles;
+		video->eventDiff = -video->p->cpu->cycles >> video->p->doubleSpeed;
 		// TODO: Does this read as 0 for 4 T-cycles?
 		video->stat = GBRegisterSTATSetMode(video->stat, 2);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
 
-		if (video->p->cpu->cycles + video->nextEvent < video->p->cpu->nextEvent) {
-			video->p->cpu->nextEvent = video->p->cpu->cycles + video->nextEvent;
+		if (video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed) < video->p->cpu->nextEvent) {
+			video->p->cpu->nextEvent = video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed);
 		}
 		return;
 	}

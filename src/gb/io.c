@@ -35,6 +35,7 @@ const static uint8_t _registerMask[] = {
 	[REG_NR51] = 0x00,
 	[REG_NR52] = 0x70,
 	[REG_STAT] = 0x80,
+	[REG_KEY1] = 0x7E,
 	[REG_VBK] = 0xFE,
 	[REG_OCPS] = 0x40,
 	[REG_BCPS] = 0x40,
@@ -308,6 +309,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
+			case REG_KEY1:
+				value &= 0x1;
+				value |= gb->memory.io[address] & 0x80;
+				break;
 			case REG_VBK:
 				GBVideoSwitchBank(&gb->video, value);
 				break;
@@ -455,6 +460,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_HDMA4:
 			case REG_HDMA5:
 			case REG_SVBK:
+			case REG_KEY1:
 				// Handled transparently by the registers
 				goto success;
 			default:

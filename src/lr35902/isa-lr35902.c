@@ -767,7 +767,15 @@ DEFINE_RST_INSTRUCTION_LR35902(30);
 DEFINE_RST_INSTRUCTION_LR35902(38);
 
 DEFINE_INSTRUCTION_LR35902(ILL, cpu->irqh.hitIllegal(cpu));
-DEFINE_INSTRUCTION_LR35902(STUB, cpu->irqh.hitStub(cpu));
+
+DEFINE_INSTRUCTION_LR35902(STOP2,
+	if (!cpu->bus) {
+		cpu->irqh.stop(cpu);
+	});
+
+DEFINE_INSTRUCTION_LR35902(STOP, \
+	cpu->executionState = LR35902_CORE_READ_PC; \
+	cpu->instruction = _LR35902InstructionSTOP2;)
 
 static const LR35902Instruction _lr35902CBInstructionTable[0x100] = {
 	DECLARE_LR35902_CB_EMITTER_BLOCK(_LR35902Instruction)
