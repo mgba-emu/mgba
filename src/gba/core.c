@@ -263,6 +263,10 @@ static void _GBACoreGetGameTitle(struct mCore* core, char* title) {
 	GBAGetGameTitle(core->board, title);
 }
 
+static void _GBACoreGetGameCode(struct mCore* core, char* title) {
+	GBAGetGameCode(core->board, title);
+}
+
 static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	struct GBA* gba = core->board;
 	gba->rtcSource = rtc;
@@ -305,6 +309,7 @@ struct mCore* GBACoreCreate(void) {
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
 	core->getGameTitle = _GBACoreGetGameTitle;
+	core->getGameCode = _GBACoreGetGameCode;
 	core->setRTC = _GBACoreSetRTC;
 	return core;
 }

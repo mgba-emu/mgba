@@ -230,6 +230,10 @@ static void _GBCoreGetGameTitle(struct mCore* core, char* title) {
 	GBGetGameTitle(core->board, title);
 }
 
+static void _GBCoreGetGameCode(struct mCore* core, char* title) {
+	GBGetGameCode(core->board, title);
+}
+
 static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	struct GB* gb = core->board;
 	gb->memory.rtc = rtc;
@@ -272,6 +276,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
+	core->getGameCode = _GBCoreGetGameCode;
 	core->setRTC = _GBCoreSetRTC;
 	return core;
 }

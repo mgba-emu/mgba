@@ -342,3 +342,20 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 		memcpy(out, cart->titleShort, 11);
 	}
 }
+
+void GBGetGameCode(struct GB* gb, char* out) {
+	memset(out, 0, 4);
+	const struct GBCartridge* cart = NULL;
+	if (gb->memory.rom) {
+		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	}
+	if (gb->pristineRom) {
+		cart = (const struct GBCartridge*) &gb->pristineRom[0x100];
+	}
+	if (!cart) {
+		return;
+	}
+	if (cart->oldLicensee == 0x33) {
+		memcpy(out, cart->maker, 11);
+	}
+}
