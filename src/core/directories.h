@@ -28,7 +28,7 @@ void mDirectorySetAttachBase(struct mDirectorySet* dirs, struct VDir* base);
 void mDirectorySetDetachBase(struct mDirectorySet* dirs);
 
 struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path, bool (*filter)(struct VFile*));
-struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, const char* suffix, int mode);
+struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* dir, const char* suffix, int mode);
 
 struct mCoreOptions;
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptions* opts);

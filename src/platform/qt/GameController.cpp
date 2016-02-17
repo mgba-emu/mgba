@@ -310,7 +310,6 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!biosOnly) {
 		mCoreLoadFile(m_threadContext.core, m_fname.toUtf8().constData());
-		mCoreAutoloadSave(m_threadContext.core);
 	}
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
@@ -338,6 +337,10 @@ void GameController::openGame(bool biosOnly) {
 
 	if (m_config) {
 		mCoreLoadForeignConfig(m_threadContext.core, m_config);
+	}
+
+	if (!biosOnly) {
+		mCoreAutoloadSave(m_threadContext.core);
 	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
