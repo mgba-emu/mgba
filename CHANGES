@@ -6,6 +6,7 @@ Bugfixes:
  - Qt: Fix sending gameStopped twice
  - Qt: Fix hang if audio sync is enabled and audio fails to initialize
  - GBA BIOS: Fix RegisterRamReset setting DISPCNT to the wrong value
+ - OpenGL: Correct boolean vector strcmp strings for uniforms
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
 
