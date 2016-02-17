@@ -359,14 +359,16 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
+	case 0x30:
+		keys = 0;
+		break;
 	case 0x20:
 		keys >>= 4;
 		break;
 	case 0x10:
 		break;
-	default:
-		// ???
-		keys = 0;
+	case 0x00:
+		keys |= keys >> 4;
 		break;
 	}
 	return 0xC0 | (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
