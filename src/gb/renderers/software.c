@@ -131,14 +131,14 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
 	for (x = startX; x < endX; x += 8) {
-		row[x] = softwareRenderer->palette[softwareRenderer->row[x]];
-		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1]];
-		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2]];
-		row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3]];
-		row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4]];
-		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5]];
-		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6]];
-		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7]];
+		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
+		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
+		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
+		row[x + 3] = softwareRenderer->palette[softwareRenderer->row[x + 3] & 0x7F];
+		row[x + 4] = softwareRenderer->palette[softwareRenderer->row[x + 4] & 0x7F];
+		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5] & 0x7F];
+		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6] & 0x7F];
+		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7] & 0x7F];
 	}
 }
 
@@ -188,6 +188,9 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 			if (renderer->model >= GB_MODEL_CGB) {
 				GBObjAttributes attrs = attr[topX + topY];
 				p = GBObjAttributesGetCGBPalette(attrs) * 4;
+				if (GBObjAttributesIsPriority(attrs)) {
+					p |= 0x80;
+				}
 				if (GBObjAttributesIsBank(attrs)) {
 					localData += GB_SIZE_VRAM_BANK0;
 				}
@@ -221,6 +224,9 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		if (renderer->model >= GB_MODEL_CGB) {
 			GBObjAttributes attrs = attr[topX + topY];
 			p = GBObjAttributesGetCGBPalette(attrs) * 4;
+			if (GBObjAttributesIsPriority(attrs)) {
+				p |= 0x80;
+			}
 			if (GBObjAttributesIsBank(attrs)) {
 				localData += GB_SIZE_VRAM_BANK0;
 			}
