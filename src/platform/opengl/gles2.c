@@ -730,11 +730,11 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 		uniform->type = GL_INT_VEC4;
 	} else if (!strcmp(type, "bool")) {
 		uniform->type = GL_BOOL;
-	} else if (!strcmp(type, "int2")) {
+	} else if (!strcmp(type, "bool2")) {
 		uniform->type = GL_BOOL_VEC2;
-	} else if (!strcmp(type, "int3")) {
+	} else if (!strcmp(type, "bool3")) {
 		uniform->type = GL_BOOL_VEC3;
-	} else if (!strcmp(type, "int4")) {
+	} else if (!strcmp(type, "bool4")) {
 		uniform->type = GL_BOOL_VEC4;
 	} else {
 		return false;
