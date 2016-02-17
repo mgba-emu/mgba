@@ -282,7 +282,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 			++tileOffset;
 		}
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x3F;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x1F;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {
 		p = (GBObjAttributesGetCGBPalette(obj->attr) + 8) * 4;
