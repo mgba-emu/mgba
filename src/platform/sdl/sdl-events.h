@@ -23,11 +23,13 @@ struct GBAVideoSoftwareRenderer;
 struct Configuration;
 
 struct SDL_JoystickCombo {
-	SDL_JoystickID id;
 	size_t index;
 	SDL_Joystick* joystick;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Haptic* haptic;
+	SDL_JoystickID id;
+#else
+	int id;
 #endif
 };
 
