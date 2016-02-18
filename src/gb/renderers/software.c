@@ -202,8 +202,8 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 					bottomX = 7 - bottomX;
 				}
 			}
-			uint8_t tileDataLower = data[(bgTile * 8 + localY) * 2];
-			uint8_t tileDataUpper = data[(bgTile * 8 + localY) * 2 + 1];
+			uint8_t tileDataLower = localData[(bgTile * 8 + localY) * 2];
+			uint8_t tileDataUpper = localData[(bgTile * 8 + localY) * 2 + 1];
 			tileDataUpper >>= bottomX;
 			tileDataLower >>= bottomX;
 			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
