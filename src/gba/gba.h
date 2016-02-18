@@ -168,14 +168,14 @@ void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-bool GBALoadROM2(struct GBA* gba, struct VFile* vf);
+bool GBALoadROM(struct GBA* gba, struct VFile* vf);
 bool GBALoadSave(struct GBA* gba, struct VFile* sav);
 void GBAYankROM(struct GBA* gba);
 void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
-bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname);
+bool GBALoadMB(struct GBA* gba, struct VFile* vf);
 
 bool GBAIsROM(struct VFile* vf);
 bool GBAIsMB(struct VFile* vf);

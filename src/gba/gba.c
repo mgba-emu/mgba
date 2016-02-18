@@ -416,7 +416,7 @@ void GBADetachDebugger(struct GBA* gba) {
 	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = 0;
 }
 
-bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
+bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
@@ -444,7 +444,7 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname) {
 	return true;
 }
 
-bool GBALoadROM2(struct GBA* gba, struct VFile* vf) {
+bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
