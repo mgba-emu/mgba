@@ -178,6 +178,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					GBUpdateIRQs(video->p);
 				}
+				if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
+					video->p->memory.hdmaRemaining = 0x10;
+					video->p->memory.hdmaNext = video->p->cpu->cycles;
+				}
 				break;
 			}
 			video->stat = GBRegisterSTATSetMode(video->stat, video->mode);

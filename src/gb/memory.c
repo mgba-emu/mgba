@@ -340,7 +340,11 @@ void _GBMemoryHDMAService(struct GB* gb) {
 	if (gb->memory.hdmaRemaining) {
 		gb->memory.hdmaNext += 2;
 	} else {
-		gb->memory.io[REG_HDMA5] |= 0x80;
+		if (gb->memory.isHdma) {
+			--gb->memory.io[REG_HDMA5];
+		} else {
+			gb->memory.io[REG_HDMA5] |= 0x80;
+		}
 	}
 }
 
