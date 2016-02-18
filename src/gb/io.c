@@ -329,6 +329,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
 				gb->video.bcpIncrement = value & 0x80;
+				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1];
 				break;
 			case REG_BCPD:
 				GBVideoProcessDots(&gb->video);
@@ -337,6 +338,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
 				gb->video.ocpIncrement = value & 0x80;
+				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)];
 				break;
 			case REG_OCPD:
 				GBVideoProcessDots(&gb->video);
@@ -453,14 +455,16 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
+			case REG_KEY1:
 			case REG_VBK:
 			case REG_HDMA1:
 			case REG_HDMA2:
 			case REG_HDMA3:
 			case REG_HDMA4:
 			case REG_HDMA5:
+			case REG_BCPD:
+			case REG_OCPD:
 			case REG_SVBK:
-			case REG_KEY1:
 				// Handled transparently by the registers
 				goto success;
 			default:

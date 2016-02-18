@@ -314,6 +314,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
+				video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1];
 			}
 			break;
 		case REG_OCPD:
@@ -328,6 +329,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;
+				video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)];
 			}
 			break;
 		}
