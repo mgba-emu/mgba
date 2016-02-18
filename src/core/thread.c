@@ -164,6 +164,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->state = THREAD_INITIALIZED;
 	threadContext->logger.p = threadContext;
+	threadContext->logLevel = threadContext->core->opts.logLevel;
 
 	if (!threadContext->sync.fpsTarget) {
 		threadContext->sync.fpsTarget = _defaultFPSTarget;
@@ -408,6 +409,10 @@ struct mCoreThread* mCoreThreadGet(void) {
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(logger);
+	struct mCoreThread* thread = mCoreThreadGet();
+	if (thread && !(thread->logLevel & level)) {
+		return;
+	}
 	printf("%s: ", mLogCategoryName(category));
 	vprintf(format, args);
 	printf("\n");

@@ -81,13 +81,6 @@ struct DebuggerEntryInfo {
 	};
 };
 
-enum DebuggerLogLevel {
-	DEBUGGER_LOG_DEBUG = 0x01,
-	DEBUGGER_LOG_INFO = 0x02,
-	DEBUGGER_LOG_WARN = 0x04,
-	DEBUGGER_LOG_ERROR = 0x08
-};
-
 struct Debugger {
 	struct mCPUComponent d;
 	enum DebuggerState state;
