@@ -63,6 +63,28 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 		}
 	},
 	{
+		"(Sony Computer Entertainment )?Wireless Controller", // The DualShock 4 device ID is cut off on Windows
+		(int[GBA_KEY_MAX]) {
+		/*keyA      */  1,
+		/*keyB      */  2,
+		/*keySelect */  8,
+		/*keyStart  */  9,
+		/*keyRight  */ -1,
+		/*keyLeft   */ -1,
+		/*keyUp     */ -1,
+		/*keyDown   */ -1,
+		/*keyR      */  5,
+		/*keyL      */  4
+		},
+		(ShortcutButton[]) {
+			{"loadState", 0},
+			{"saveState", 3},
+			{"holdFastForward", 7},
+			{"holdRewind", 6},
+			{}
+		},
+	},
+	{
 		"Controller", // The Xbox 360 controller drivers on OS X are vague...
 		(int[GBA_KEY_MAX]) {
 		/*keyA      */  1,
