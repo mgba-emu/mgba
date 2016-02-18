@@ -299,21 +299,97 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		p = (GBObjAttributesGetPalette(obj->attr) + 8) * 4;
 	}
 	int bottomX;
-	int x;
-	for (x = startX; x < endX; ++x) {
-		if (GBObjAttributesIsXFlip(obj->attr)) {
-			bottomX = (x - obj->x) & 7;
-		} else {
-			bottomX = 7 - ((x - obj->x) & 7);
+	int x = startX;
+	if ((x - obj->x) & 7) {
+		for (; x < endX; ++x) {
+			if (GBObjAttributesIsXFlip(obj->attr)) {
+				bottomX = (x - obj->x) & 7;
+			} else {
+				bottomX = 7 - ((x - obj->x) & 7);
+			}
+			int objTile = obj->tile + tileOffset;
+			uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];
+			uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
+			tileDataUpper >>= bottomX;
+			tileDataLower >>= bottomX;
+			color_t current = renderer->row[x];
+			if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
+				renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+			}
 		}
+	} else if (GBObjAttributesIsXFlip(obj->attr)) {
 		int objTile = obj->tile + tileOffset;
 		uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];
 		uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
-		tileDataUpper >>= bottomX;
-		tileDataLower >>= bottomX;
-		color_t current = renderer->row[x];
+		color_t current;
+		current = renderer->row[x];
 		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
 			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		}
+		current = renderer->row[x + 1];
+		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask)) {
+			renderer->row[x + 1] = p | (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
+		}
+		current = renderer->row[x + 2];
+		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask)) {
+			renderer->row[x + 2] = p | ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
+		}
+		current = renderer->row[x + 3];
+		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask)) {
+			renderer->row[x + 3] = p | ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
+		}
+		current = renderer->row[x + 4];
+		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask)) {
+			renderer->row[x + 4] = p | ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
+		}
+		current = renderer->row[x + 5];
+		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask)) {
+			renderer->row[x + 5] = p | ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
+		}
+		current = renderer->row[x + 6];
+		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask)) {
+			renderer->row[x + 6] = p | ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
+		}
+		current = renderer->row[x + 7];
+		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask)) {
+			renderer->row[x + 7] = p | ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
+		}
+	} else {
+		int objTile = obj->tile + tileOffset;
+		uint8_t tileDataLower = data[(objTile * 8 + bottomY) * 2];
+		uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
+		color_t current;
+		current = renderer->row[x + 7];
+		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
+			renderer->row[x + 7] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
+		}
+		current = renderer->row[x + 6];
+		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask)) {
+			renderer->row[x + 6] = p | (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
+		}
+		current = renderer->row[x + 5];
+		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask)) {
+			renderer->row[x + 5] = p | ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
+		}
+		current = renderer->row[x + 4];
+		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask)) {
+			renderer->row[x + 4] = p | ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
+		}
+		current = renderer->row[x + 3];
+		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask)) {
+			renderer->row[x + 3] = p | ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
+		}
+		current = renderer->row[x + 2];
+		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask)) {
+			renderer->row[x + 2] = p | ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
+		}
+		current = renderer->row[x + 1];
+		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask)) {
+			renderer->row[x + 1] = p | ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
+		}
+		current = renderer->row[x];
+		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask)) {
+			renderer->row[x] = p | ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
 		}
 	}
 }
