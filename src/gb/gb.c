@@ -26,7 +26,7 @@ static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
 static void GBIllegal(struct LR35902Core* cpu);
-static void GBHitStub(struct LR35902Core* cpu);
+static void GBStop(struct LR35902Core* cpu);
 
 #ifdef _3DS
 extern uint32_t* romBuffer;
@@ -343,7 +343,7 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	}
 	if (gb->pristineRom) {
-		cart = (const struct GBCartridge*) &gb->pristineRom[0x100];
+		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
 	}
 	if (!cart) {
 		return;
@@ -362,7 +362,7 @@ void GBGetGameCode(struct GB* gb, char* out) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	}
 	if (gb->pristineRom) {
-		cart = (const struct GBCartridge*) &gb->pristineRom[0x100];
+		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
 	}
 	if (!cart) {
 		return;

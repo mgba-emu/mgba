@@ -9,7 +9,7 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
-const static uint8_t _registerMask[] = {
+static const uint8_t _registerMask[] = {
 	[REG_SC]   = 0x7E, // TODO: GBC differences
 	[REG_IF]   = 0xE0,
 	[REG_TAC]  = 0xF8,
@@ -378,7 +378,7 @@ static uint8_t _readKeys(struct GB* gb) {
 		keys |= keys >> 4;
 		break;
 	}
-	return 0xC0 | (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
+	return (0xC0 | (gb->memory.io[REG_JOYP] | 0xF)) ^ (keys & 0xF);
 }
 
 uint8_t GBIORead(struct GB* gb, unsigned address) {

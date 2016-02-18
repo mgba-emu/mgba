@@ -89,7 +89,7 @@ void GBMemoryReset(struct GB* gb) {
 
 	memset(&gb->video.oam, 0, sizeof(gb->video.oam));
 
-	const struct GBCartridge* cart = &gb->memory.rom[0x100];
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	switch (cart->type) {
 	case 0:
 	case 8:
