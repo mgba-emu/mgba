@@ -9,6 +9,7 @@ Bugfixes:
  - OpenGL: Correct boolean vector strcmp strings for uniforms
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
+ - Qt: Add preset for DualShock 4
 
 0.4.0: (2016-02-02)
 Features:
