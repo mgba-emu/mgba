@@ -31,6 +31,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	}
 
 	const NoIntroDB* db = GBAApp::app()->gameDB();
+	uint32_t crc32 = 0;
 
 	controller->threadInterrupt();
 	mCore* core = controller->thread()->core;
@@ -50,17 +51,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	case PLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(core->board);
 		m_ui.size->setText(QString::number(gba->pristineRomSize) + tr(" bytes"));
-		m_ui.crc->setText(QString::number(gba->romCrc32, 16));
-		if (db) {
-			NoIntroGame game;
-			if (NoIntroDBLookupGameByCRC(db, gba->romCrc32, &game)) {
-				m_ui.name->setText(game.name);
-			} else {
-				m_ui.name->setText(tr("(unknown)"));
-			}
-		} else {
-			m_ui.name->setText(tr("(no database present)"));
-		}
+		crc32 = gba->romCrc32;
 		break;
 	}
 #endif
@@ -68,16 +59,29 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	case PLATFORM_GB: {
 		GB* gb = static_cast<GB*>(core->board);
 		m_ui.size->setText(QString::number(gb->pristineRomSize) + tr(" bytes"));
-		m_ui.crc->setText(QString::number(gb->romCrc32, 16));
-		m_ui.name->setText(tr("(unknown)"));
+		crc32 = gb->romCrc32;
 		break;
 	}
 #endif
 	default:
 		m_ui.size->setText(tr("(unknown)"));
+		break;
+	}
+	if (crc32) {
+		m_ui.crc->setText(QString::number(crc32, 16));
+		if (db) {
+			NoIntroGame game;
+			if (NoIntroDBLookupGameByCRC(db, crc32, &game)) {
+				m_ui.name->setText(game.name);
+			} else {
+				m_ui.name->setText(tr("(unknown)"));
+			}
+		} else {
+			m_ui.name->setText(tr("(no database present)"));
+		}
+	} else {
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
-
 	}
 	controller->threadContinue();
 }
