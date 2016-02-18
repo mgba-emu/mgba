@@ -487,7 +487,7 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x7F;
+	int bank = value;
 	switch (address >> 13) {
 	case 0x0:
 		switch (value) {
