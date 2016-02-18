@@ -291,7 +291,8 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (GBRegisterLCDCIsObjSize(renderer->lcdc) && obj->tile & 1) {
 		--tileOffset;
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x1F;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x9F;
+	uint8_t mask2 = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x83;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {
 		p = (GBObjAttributesGetCGBPalette(obj->attr) + 8) * 4;
@@ -316,7 +317,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 			tileDataUpper >>= bottomX;
 			tileDataLower >>= bottomX;
 			color_t current = renderer->row[x];
-			if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
+			if (((tileDataUpper | tileDataLower) & 1) && !(current & mask) && (current & mask2) <= 0x80) {
 				renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 			}
 		}
@@ -326,35 +327,35 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
 		color_t current;
 		current = renderer->row[x];
-		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 		}
 		current = renderer->row[x + 1];
-		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 1] = p | (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
 		}
 		current = renderer->row[x + 2];
-		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 2] = p | ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
 		}
 		current = renderer->row[x + 3];
-		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 3] = p | ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
 		}
 		current = renderer->row[x + 4];
-		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 4] = p | ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
 		}
 		current = renderer->row[x + 5];
-		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 5] = p | ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
 		}
 		current = renderer->row[x + 6];
-		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 6] = p | ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
 		}
 		current = renderer->row[x + 7];
-		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 7] = p | ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
 		}
 	} else {
@@ -363,35 +364,35 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		uint8_t tileDataUpper = data[(objTile * 8 + bottomY) * 2 + 1];
 		color_t current;
 		current = renderer->row[x + 7];
-		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 1) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 7] = p | ((tileDataUpper & 1) << 1) | (tileDataLower & 1);
 		}
 		current = renderer->row[x + 6];
-		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 2) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 6] = p | (tileDataUpper & 2) | ((tileDataLower & 2) >> 1);
 		}
 		current = renderer->row[x + 5];
-		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 4) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 5] = p | ((tileDataUpper & 4) >> 1) | ((tileDataLower & 4) >> 2);
 		}
 		current = renderer->row[x + 4];
-		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 8) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 4] = p | ((tileDataUpper & 8) >> 2) | ((tileDataLower & 8) >> 3);
 		}
 		current = renderer->row[x + 3];
-		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 16) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 3] = p | ((tileDataUpper & 16) >> 3) | ((tileDataLower & 16) >> 4);
 		}
 		current = renderer->row[x + 2];
-		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 32) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 2] = p | ((tileDataUpper & 32) >> 4) | ((tileDataLower & 32) >> 5);
 		}
 		current = renderer->row[x + 1];
-		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 64) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x + 1] = p | ((tileDataUpper & 64) >> 5) | ((tileDataLower & 64) >> 6);
 		}
 		current = renderer->row[x];
-		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask)) {
+		if (((tileDataUpper | tileDataLower) & 128) && !(current & mask) && (current & mask2) <= 0x80) {
 			renderer->row[x] = p | ((tileDataUpper & 128) >> 6) | ((tileDataLower & 128) >> 7);
 		}
 	}
