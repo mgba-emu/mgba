@@ -143,8 +143,8 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
-		if (audio->ch1.envelope.currentVolume > 0 && audio->ch1.envelope.stepTime) {
-			audio->ch1.envelope.dead = 0;
+		if (audio->ch1.envelope.currentVolume > 0) {
+			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 1;
 		}
 		audio->ch1.realFrequency = audio->ch1.control.frequency;
 		audio->ch1.sweepStep = audio->ch1.time;
@@ -196,8 +196,8 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = audio->ch2.envelope.initialVolume || audio->ch2.envelope.direction;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
-		if (audio->ch2.envelope.currentVolume > 0 && audio->ch2.envelope.stepTime) {
-			audio->ch2.envelope.dead = 0;
+		if (audio->ch2.envelope.currentVolume > 0) {
+			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 1;
 		}
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
@@ -314,8 +314,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
-		if (audio->ch4.envelope.currentVolume > 0 && audio->ch4.envelope.stepTime) {
-			audio->ch4.envelope.dead = 0;
+		if (audio->ch4.envelope.currentVolume > 0) {
+			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 1;
 		}
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
