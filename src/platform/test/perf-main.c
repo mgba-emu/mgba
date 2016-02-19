@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 	mCoreConfigLoad(&core->config);
 
 	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
-	struct mCoreOptions opts;
+	struct mCoreOptions opts = {};
 	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
