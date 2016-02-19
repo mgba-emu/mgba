@@ -272,6 +272,11 @@ static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	gba->rtcSource = rtc;
 }
 
+static void _GBACoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+	struct GBA* gba = core->board;
+	gba->rotationSource = rotation;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -311,5 +316,6 @@ struct mCore* GBACoreCreate(void) {
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
 	core->setRTC = _GBACoreSetRTC;
+	core->setRotation = _GBACoreSetRotation;
 	return core;
 }

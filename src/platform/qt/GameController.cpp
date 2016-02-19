@@ -20,12 +20,16 @@
 extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
-#include "gba/audio.h"
+#ifdef M_CORE_GBA
 #include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "util/vfs.h"
 }
 
@@ -85,12 +89,19 @@ GameController::GameController(QObject* parent)
 		}
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
+		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
 
-		if (context->core->platform(context->core) == PLATFORM_GBA) {
-			GBA* gba = static_cast<GBA*>(context->core->board);
+#ifdef M_CORE_GBA
+		GBA* gba = static_cast<GBA*>(context->core->board);
+#endif
+#ifdef M_CORE_GB
+		GB* gb = static_cast<GB*>(context->core->board);
+#endif
+		switch (context->core->platform(context->core)) {
+#ifdef M_CORE_GBA
+		case PLATFORM_GBA:
 			gba->luminanceSource = &controller->m_lux;
 			gba->rumble = controller->m_inputController->rumble();
-			gba->rotationSource = controller->m_inputController->rotationSource();
 			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
 			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
 			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];

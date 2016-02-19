@@ -239,6 +239,11 @@ static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	gb->memory.rtc = rtc;
 }
 
+static void _GBCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+	struct GB* gb = core->board;
+	gb->memory.rotation = rotation;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -278,5 +283,6 @@ struct mCore* GBCoreCreate(void) {
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
 	core->setRTC = _GBCoreSetRTC;
+	core->setRotation = _GBCoreSetRotation;
 	return core;
 }

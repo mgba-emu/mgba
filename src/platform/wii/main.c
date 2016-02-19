@@ -523,8 +523,8 @@ void _guiFinish(void) {
 void _setup(struct mGUIRunner* runner) {
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
 		((struct GBA*) runner->core->board)->rumble = &rumble;
-		((struct GBA*) runner->core->board)->rotationSource = &rotation;
 	}
+	runner->core->setRotation(runner->core, &rotation);
 
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);

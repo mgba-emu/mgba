@@ -91,6 +91,7 @@ struct mCore {
 	void (*getGameCode)(struct mCore*, char* title);
 
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
+	void (*setRotation)(struct mCore*, struct mRotationSource*);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
