@@ -42,6 +42,7 @@ void GBCreate(struct GB* gb) {
 static void GBInit(void* cpu, struct mCPUComponent* component) {
 	struct GB* gb = (struct GB*) component;
 	gb->cpu = cpu;
+	gb->sync = NULL;
 
 	GBInterruptHandlerInit(&gb->cpu->irqh);
 	GBMemoryInit(gb);
