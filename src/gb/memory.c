@@ -30,6 +30,8 @@ static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
+static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
+static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	// TODO
@@ -134,6 +136,7 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x22:
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
+		memset(&gb->memory.mbcState.mbc7, 0, sizeof(gb->memory.mbcState.mbc7));
 		break;
 	}
 
@@ -174,6 +177,8 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return gb->memory.rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
 			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+		} else if (memory->mbcType == GB_MBC7) {
+			return _GBMBC7Read(memory, address);
 		}
 		return 0xFF;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -230,6 +235,8 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 			gb->memory.rtcRegs[memory->activeRtcReg] = value;
 		} else if (memory->sramAccess) {
 			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else if (gb->memory.mbcType == GB_MBC7) {
+			_GBMBC7Write(&gb->memory, address, value);
 		}
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -525,6 +532,195 @@ void _GBMBC6(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO
-	mLOG(GB_MBC, STUB, "MBC7 unimplemented");
+	int bank = value & 0x7F;
+	switch (address >> 13) {
+	case 0x1:
+		_switchBank(memory, bank);
+		break;
+	case 0x2:
+		if (value < 0x10) {
+			_switchSramBank(memory, value);
+		}
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC7 unknown address: %04X:%02X", address, value);
+		break;
+	}
+}
+
+uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
+	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	switch (address & 0xF0) {
+	case 0x00:
+	case 0x10:
+	case 0x60:
+	case 0x70:
+		return 0;
+	case 0x20:
+		if (memory->rotation && memory->rotation->readTiltX) {
+			int32_t x = -memory->rotation->readTiltX(memory->rotation);
+			x >>= 21;
+			x += 2047;
+			return x;
+		}
+		return 0xFF;
+	case 0x30:
+		if (memory->rotation && memory->rotation->readTiltX) {
+			int32_t x = -memory->rotation->readTiltX(memory->rotation);
+			x >>= 21;
+			x += 2047;
+			return x >> 8;
+		}
+		return 7;
+	case 0x40:
+		if (memory->rotation && memory->rotation->readTiltY) {
+			int32_t y = -memory->rotation->readTiltY(memory->rotation);
+			y >>= 21;
+			y += 2047;
+			return y;
+		}
+		return 0xFF;
+	case 0x50:
+		if (memory->rotation && memory->rotation->readTiltY) {
+			int32_t y = -memory->rotation->readTiltY(memory->rotation);
+			y >>= 21;
+			y += 2047;
+			return y >> 8;
+		}
+		return 7;
+	case 0x80:
+		return (mbc7->sr >> 16) & 1;
+	default:
+		return 0xFF;
+	}
+}
+
+void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	if ((address & 0xF0) != 0x80) {
+		return;
+	}
+	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	GBMBC7Field old = memory->mbcState.mbc7.field;
+	mbc7->field = GBMBC7FieldClearIO(value);
+	if (!GBMBC7FieldIsCS(old) && GBMBC7FieldIsCS(value)) {
+		if (mbc7->state == GBMBC7_STATE_WRITE) {
+			if (mbc7->writable) {
+				memory->sramBank[mbc7->address * 2] = mbc7->sr >> 8;
+				memory->sramBank[mbc7->address * 2 + 1] = mbc7->sr;
+			}
+			mbc7->sr = 0x1FFFF;
+			mbc7->state = GBMBC7_STATE_NULL;
+		} else {
+			mbc7->state = GBMBC7_STATE_IDLE;
+		}
+	}
+	if (!GBMBC7FieldIsSK(old) && GBMBC7FieldIsSK(value)) {
+		if (mbc7->state > GBMBC7_STATE_IDLE && mbc7->state != GBMBC7_STATE_READ) {
+			mbc7->sr <<= 1;
+			mbc7->sr |= GBMBC7FieldGetIO(value);
+			++mbc7->srBits;
+		}
+		switch (mbc7->state) {
+		case GBMBC7_STATE_IDLE:
+			if (GBMBC7FieldIsIO(value)) {
+				mbc7->state = GBMBC7_STATE_READ_COMMAND;
+				mbc7->srBits = 0;
+				mbc7->sr = 0;
+			}
+			break;
+		case GBMBC7_STATE_READ_COMMAND:
+			if (mbc7->srBits == 2) {
+				mbc7->state = GBMBC7_STATE_READ_ADDRESS;
+				mbc7->srBits = 0;
+				mbc7->command = mbc7->sr;
+			}
+			break;
+		case GBMBC7_STATE_READ_ADDRESS:
+			if (mbc7->srBits == 8) {
+				mbc7->state = GBMBC7_STATE_COMMAND_0 + mbc7->command;
+				mbc7->srBits = 0;
+				mbc7->address = mbc7->sr;
+				if (mbc7->state == GBMBC7_STATE_COMMAND_0) {
+					switch (mbc7->address >> 6) {
+					case 0:
+						mbc7->writable = false;
+						mbc7->state = GBMBC7_STATE_NULL;
+						break;
+					case 3:
+						mbc7->writable = true;
+						mbc7->state = GBMBC7_STATE_NULL;
+						break;
+					}
+				}
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_0:
+			if (mbc7->srBits == 16) {
+				switch (mbc7->address >> 6) {
+				case 0:
+					mbc7->writable = false;
+					mbc7->state = GBMBC7_STATE_NULL;
+					break;
+				case 1:
+					mbc7->state = GBMBC7_STATE_WRITE;
+					if (mbc7->writable) {
+						int i;
+						for (i = 0; i < 256; ++i) {
+							memory->sramBank[i * 2] = mbc7->sr >> 8;
+							memory->sramBank[i * 2 + 1] = mbc7->sr;
+						}
+					}
+					break;
+				case 2:
+					mbc7->state = GBMBC7_STATE_WRITE;
+					if (mbc7->writable) {
+						int i;
+						for (i = 0; i < 256; ++i) {
+							memory->sramBank[i * 2] = 0xFF;
+							memory->sramBank[i * 2 + 1] = 0xFF;
+						}
+					}
+					break;
+				case 3:
+					mbc7->writable = true;
+					mbc7->state = GBMBC7_STATE_NULL;
+					break;
+				}
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_WRITE:
+			if (mbc7->srBits == 16) {
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_WRITE;
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_READ:
+			if (mbc7->srBits == 1) {
+				mbc7->sr = memory->sramBank[mbc7->address * 2] << 8;
+				mbc7->sr |= memory->sramBank[mbc7->address * 2 + 1];
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_READ;
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_FILL:
+			if (mbc7->srBits == 16) {
+				mbc7->sr = 0xFFFF;
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_WRITE;
+			}
+			break;
+		default:
+			break;
+		}
+	} else if (GBMBC7FieldIsSK(old) && !GBMBC7FieldIsSK(value)) {
+		if (mbc7->state == GBMBC7_STATE_READ) {
+			mbc7->sr <<= 1;
+			++mbc7->srBits;
+			if (mbc7->srBits == 16) {
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_NULL;
+			}
+		}
+	}
 }

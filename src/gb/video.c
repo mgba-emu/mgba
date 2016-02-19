@@ -161,6 +161,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 				}
+				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
+					video->p->memory.rotation->sample(video->p->memory.rotation);
+				}
 				GBUpdateIRQs(video->p);
 				break;
 			case 2:
