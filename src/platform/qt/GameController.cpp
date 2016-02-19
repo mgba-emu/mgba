@@ -113,6 +113,18 @@ GameController::GameController(QObject* parent)
 			gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
 			gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
 			gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
+			break;
+#endif
+#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			gb->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
+			gb->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
+			gb->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
+			gb->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
+			break;
+#endif
+		default:
+			break;
 		}
 		controller->m_fpsTarget = context->sync.fpsTarget;
 
@@ -657,7 +669,12 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 	if (channel > 5 || channel < 0) {
 		return;
 	}
+#ifdef M_CORE_GBA
 	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
+#endif
+#ifdef M_CORE_GB
+	GB* gb = static_cast<GB*>(m_threadContext.core->board);
+#endif
 	m_audioChannels[channel] = enable;
 	if (isLoaded()) {
 		switch (channel) {
@@ -665,14 +682,33 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 		case 1:
 		case 2:
 		case 3:
-			gba->audio.psg.forceDisableCh[channel] = !enable;
+			switch (m_threadContext.core->platform(m_threadContext.core)) {
+#ifdef M_CORE_GBA
+			case PLATFORM_GBA:
+				gba->audio.psg.forceDisableCh[channel] = !enable;
+				break;
+#endif
+#ifdef M_CORE_GB
+			case PLATFORM_GB:
+				gb->audio.forceDisableCh[channel] = !enable;
+				break;
+#endif
+			default:
+				break;
+			}
 			break;
+#ifdef M_CORE_GBA
 		case 4:
-			gba->audio.forceDisableChA = !enable;
+			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
+				gba->audio.forceDisableChA = !enable;
+			}
 			break;
 		case 5:
-			gba->audio.forceDisableChB = !enable;
+			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
+				gba->audio.forceDisableChB = !enable;
+			}
 			break;
+#endif
 		}
 	}
 }
