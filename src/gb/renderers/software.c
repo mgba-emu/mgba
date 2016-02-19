@@ -199,7 +199,6 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 				}
 				if (GBObjAttributesIsXFlip(attrs)) {
 					bottomX = 7 - bottomX;
-					bottomX = 7 - bottomX;
 				}
 			}
 			uint8_t tileDataLower = localData[(bgTile * 8 + localY) * 2];
