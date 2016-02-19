@@ -735,7 +735,7 @@ void Window::updateTitle(float fps) {
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
-		NoIntroGame game;
+		NoIntroGame game{};
 		uint32_t crc32 = 0;
 
 		switch (m_controller->thread()->core->platform(m_controller->thread()->core)) {
@@ -758,7 +758,7 @@ void Window::updateTitle(float fps) {
 		}
 
 		if (db && crc32) {
-		    NoIntroDBLookupGameByCRC(db, crc32, &game);
+			NoIntroDBLookupGameByCRC(db, crc32, &game);
 			title = QLatin1String(game.name);
 		} else {
 			char gameTitle[17] = { '\0' };

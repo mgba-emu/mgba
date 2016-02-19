@@ -70,7 +70,7 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	if (crc32) {
 		m_ui.crc->setText(QString::number(crc32, 16));
 		if (db) {
-			NoIntroGame game;
+			NoIntroGame game{};
 			if (NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 				m_ui.name->setText(game.name);
 			} else {
