@@ -5,6 +5,7 @@ Bugfixes:
  - Qt: Fix hang if audio sync is enabled and audio fails to initialize
  - GBA BIOS: Fix RegisterRamReset setting DISPCNT to the wrong value
  - OpenGL: Correct boolean vector strcmp strings for uniforms
+ - Wii: Fix tilting direction
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4

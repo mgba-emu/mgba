@@ -736,8 +736,8 @@ void _sampleRotation(struct GBARotationSource* source) {
 	vec3w_t accel;
 	WPAD_Accel(0, &accel);
 	// These are swapped
-	tiltX = (accel.y - 0x1EA) << 22;
-	tiltY = (accel.x - 0x1EA) << 22;
+	tiltX = (0x1EA - accel.y) << 22;
+	tiltY = (0x1EA - accel.x) << 22;
 
 	// This doesn't seem to work at all with -TR remotes
 	struct expansion_t exp;
