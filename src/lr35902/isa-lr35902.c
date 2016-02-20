@@ -745,6 +745,7 @@ DEFINE_INSTRUCTION_LR35902(HALT, cpu->irqh.halt(cpu));
 		cpu->index = cpu->sp; \
 		cpu->bus = cpu->pc; \
 		cpu->pc = 0x ## VEC; \
+		cpu->memory.setActiveRegion(cpu, cpu->pc); \
 		cpu->executionState = LR35902_CORE_MEMORY_STORE; \
 		cpu->instruction = _LR35902InstructionNOP;) \
 	DEFINE_INSTRUCTION_LR35902(RST ## VEC ## UpdateSPH, \
