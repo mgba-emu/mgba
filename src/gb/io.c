@@ -346,6 +346,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				break;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
+				value = gb->memory.wramCurrentBank;
 				break;
 			default:
 				goto failed;
