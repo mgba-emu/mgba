@@ -45,6 +45,8 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 void GBAAudioReset(struct GBAAudio* audio) {
 	GBAudioReset(&audio->psg);
 	audio->nextEvent = 0;
+	audio->chA.dmaSource = 1;
+	audio->chB.dmaSource = 2;
 	audio->chA.sample = 0;
 	audio->chB.sample = 0;
 	audio->eventDiff = 0;
