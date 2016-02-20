@@ -56,16 +56,6 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_NONE;
 	gb->memory.mbc = 0;
 
-	gb->memory.dmaNext = INT_MAX;
-	gb->memory.dmaRemaining = 0;
-	gb->memory.hdmaNext = INT_MAX;
-	gb->memory.hdmaRemaining = 0;
-
-	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
-
-	gb->memory.sramAccess = false;
-	gb->memory.rtcAccess = false;
-	gb->memory.rtcLatched = 0;
 	gb->memory.rtc = NULL;
 
 	GBIOInit(gb);
@@ -89,7 +79,26 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.sramCurrentBank = 0;
 	gb->memory.sramBank = gb->memory.sram;
 
-	memset(&gb->video.oam, 0, sizeof(gb->video.oam));
+	gb->memory.ime = false;
+	gb->memory.ie = 0;
+
+	gb->memory.dmaNext = INT_MAX;
+	gb->memory.dmaRemaining = 0;
+	gb->memory.dmaSource = 0;
+	gb->memory.dmaDest = 0;
+	gb->memory.hdmaNext = INT_MAX;
+	gb->memory.hdmaRemaining = 0;
+	gb->memory.hdmaSource = 0;
+	gb->memory.hdmaDest = 0;
+	gb->memory.isHdma = false;
+
+	gb->memory.sramAccess = false;
+	gb->memory.rtcAccess = false;
+	gb->memory.activeRtcReg = 0;
+	gb->memory.rtcLatched = 0;
+	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
+
+	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	switch (cart->type) {

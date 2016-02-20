@@ -56,6 +56,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->nextCh1 = 0;
 	audio->nextCh2 = 0;
 	audio->nextCh3 = 0;
+	audio->fadeCh3 = 0;
 	audio->nextCh4 = 0;
 	audio->ch1 = (struct GBAudioChannel1) { .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioChannel2) { .envelope = { .dead = 2 } };
@@ -66,6 +67,9 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->frame = 0;
 	audio->nextSample = 0;
 	audio->sampleInterval = 128;
+	audio->lastLeft = 0;
+	audio->lastRight = 0;
+	audio->clock = 0;
 	audio->volumeRight = 0;
 	audio->volumeLeft = 0;
 	audio->ch1Right = false;

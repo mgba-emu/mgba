@@ -62,6 +62,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
 	video->renderer->oam = &video->oam;
+	memset(&video->palette, 0, sizeof(video->palette));
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer, video->p->model);
