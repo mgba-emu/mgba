@@ -99,7 +99,6 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 	cpu->bus = cpu->pc;
 	cpu->executionState = LR35902_CORE_MEMORY_STORE;
 	cpu->instruction = _LR35902InstructionIRQDelay;
-	cpu->irqh.setInterrupts(cpu, false);
 }
 
 static void _LR35902Step(struct LR35902Core* cpu) {
@@ -113,6 +112,7 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 			cpu->index = cpu->sp;
 			cpu->irqPending = false;
 			cpu->instruction = _LR35902InstructionIRQ;
+			cpu->irqh.setInterrupts(cpu, false);
 			break;
 		}
 		cpu->bus = cpu->memory.cpuLoad8(cpu, cpu->pc);
