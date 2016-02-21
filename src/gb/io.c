@@ -338,7 +338,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
 				gb->video.bcpIncrement = value & 0x80;
-				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1];
+				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1] >> (8 * (gb->video.bcpIndex & 1));
 				break;
 			case REG_BCPD:
 				GBVideoProcessDots(&gb->video);
@@ -347,7 +347,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
 				gb->video.ocpIncrement = value & 0x80;
-				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)];
+				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)] >> (8 * (gb->video.ocpIndex & 1));
 				break;
 			case REG_OCPD:
 				GBVideoProcessDots(&gb->video);
