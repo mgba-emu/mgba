@@ -9,6 +9,7 @@ Bugfixes:
  - SDL: Fix joystick initialization on BS
  - SDL: Fix potential joystick crash in games with rumble
  - Qt: Fix initial state of key mapping
+ - Shaders: Fix AGS-001 shader with some bad drivers
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
