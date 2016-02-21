@@ -130,7 +130,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	}
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
-	for (x = startX; x < endX; x += 8) {
+	for (x = startX; x < endX & ~7; x += 8) {
 		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
 		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
 		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
@@ -139,6 +139,9 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5] & 0x7F];
 		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6] & 0x7F];
 		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7] & 0x7F];
+	}
+	for (; x < endX; ++x) {
+		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
 	}
 }
 
