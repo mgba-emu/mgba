@@ -48,11 +48,6 @@ extern "C" {
 
 using namespace QGBA;
 
-#if defined(__WIN32) || defined(__OpenBSD__)
-// This is a macro everywhere except MinGW and OpenBSD, it seems
-using std::isnan;
-#endif
-
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_log(0)
@@ -774,7 +769,7 @@ void Window::updateTitle(float fps) {
 	m_controller->threadContinue();
 	if (title.isNull()) {
 		setWindowTitle(tr("%1 - %2").arg(projectName).arg(projectVersion));
-	} else if (isnan(fps)) {
+	} else if (fps < 0) {
 		setWindowTitle(tr("%1 - %2 - %3").arg(projectName).arg(title).arg(projectVersion));
 	} else {
 		setWindowTitle(tr("%1 - %2 (%3 fps) - %4").arg(projectName).arg(title).arg(fps).arg(projectVersion));
