@@ -552,21 +552,6 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 						audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
 					}
 				}
-
-				if (audio->ch4.envelope.dead != 2) {
-					if (audio->nextCh4 <= 0) {
-						int32_t timing = _updateChannel4(&audio->ch4);
-						if (audio->nextCh4 < -timing) {
-							int32_t bound = timing * 16;
-							// Perform negative modulo to cap to 16 iterations
-							audio->nextCh4 = bound - (audio->nextCh4 - 1) % bound - 1;
-						}
-						audio->nextCh4 += timing;
-					}
-					if (audio->nextCh4 < audio->nextEvent) {
-						audio->nextEvent = audio->nextCh4;
-					}
-				}
 			}
 
 			if (audio->ch4.length && audio->ch4.stop && !(frame & 1)) {
@@ -602,6 +587,21 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	int sampleLeft = 0;
 	int sampleRight = 0;
+
+	if (audio->ch4.envelope.dead != 2) {
+		while (audio->nextCh4 <= 0) {
+			int32_t timing = _updateChannel4(&audio->ch4);
+			if (audio->nextCh4 < -timing) {
+				int32_t bound = timing * 16;
+				// Perform negative modulo to cap to 16 iterations
+				audio->nextCh4 = bound - (audio->nextCh4 - 1) % bound - 1;
+			}
+			audio->nextCh4 += timing;
+		}
+		if (audio->nextCh4 < audio->nextEvent) {
+			audio->nextEvent = audio->nextCh4;
+		}
+	}
 
 	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {
