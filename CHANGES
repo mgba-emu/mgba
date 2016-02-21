@@ -11,6 +11,7 @@ Bugfixes:
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
+ - SDL: Remove default gamepad mappings
 
 0.4.0: (2016-02-02)
 Features:
