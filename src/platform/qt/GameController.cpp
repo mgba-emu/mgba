@@ -306,6 +306,16 @@ void GameController::openGame(bool biosOnly) {
 		return;
 	}
 
+	if (!biosOnly) {
+		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
+	} else {
+		m_threadContext.core = GBACoreCreate();
+	}
+
+	if (!m_threadContext.core) {
+		return;
+	}
+
 	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
@@ -316,13 +326,6 @@ void GameController::openGame(bool biosOnly) {
 	} else {
 		m_threadContext.sync.videoFrameWait = m_videoSync;
 		m_threadContext.sync.audioWait = m_audioSync;
-	}
-
-
-	if (!biosOnly) {
-		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
-	} else {
-		m_threadContext.core = GBACoreCreate();
 	}
 	m_threadContext.core->init(m_threadContext.core);
 
