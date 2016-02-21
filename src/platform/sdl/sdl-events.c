@@ -62,6 +62,19 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
 		mSDLUpdateJoysticks(context);
+		// Some OSes don't do hotplug detection
+		if (!SDL_JoystickListSize(&context->joysticks)) {
+			int i;
+			for (i = 0; i < nJoysticks; ++i) {
+				struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&context->joysticks);
+				joystick->joystick = SDL_JoystickOpen(i);
+				joystick->id = SDL_JoystickInstanceID(joystick->joystick);
+				joystick->index = SDL_JoystickListSize(&context->joysticks) - 1;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
+#endif
+			}
+		}
 	}
 
 	context->playersAttached = 0;
