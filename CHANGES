@@ -8,6 +8,7 @@ Bugfixes:
  - Wii: Fix tilting direction
  - SDL: Fix joystick initialization on BS
  - SDL: Fix potential joystick crash in games with rumble
+ - Qt: Fix initial state of key mapping
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
