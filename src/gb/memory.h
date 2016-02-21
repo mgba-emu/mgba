@@ -65,6 +65,7 @@ enum GBMemoryBankControllerType {
 	GB_MMM01 = 0x10,
 	GB_HuC1 = 0x11,
 	GB_HuC3 = 0x12,
+	GB_MBC5_RUMBLE = 0x105
 };
 
 struct GBMemory;
@@ -145,6 +146,7 @@ struct GBMemory {
 	uint8_t rtcRegs[5];
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
+	struct mRumble* rumble;
 };
 
 void GBMemoryInit(struct GB* gb);

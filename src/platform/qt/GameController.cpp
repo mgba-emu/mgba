@@ -90,6 +90,7 @@ GameController::GameController(QObject* parent)
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
 		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
+		context->core->setRumble(context->core, controller->m_inputController->rumble());
 
 #ifdef M_CORE_GBA
 		GBA* gba = static_cast<GBA*>(context->core->board);
@@ -101,7 +102,6 @@ GameController::GameController(QObject* parent)
 #ifdef M_CORE_GBA
 		case PLATFORM_GBA:
 			gba->luminanceSource = &controller->m_lux;
-			gba->rumble = controller->m_inputController->rumble();
 			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
 			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
 			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];

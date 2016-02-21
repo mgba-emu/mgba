@@ -92,6 +92,7 @@ struct mCore {
 
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
 	void (*setRotation)(struct mCore*, struct mRotationSource*);
+	void (*setRumble)(struct mCore*, struct mRumble*);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

@@ -132,11 +132,14 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x19:
 	case 0x1A:
 	case 0x1B:
+		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcType = GB_MBC5;
+		break;
 	case 0x1C:
 	case 0x1D:
 	case 0x1E:
 		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5;
+		gb->memory.mbcType = GB_MBC5_RUMBLE;
 		break;
 	case 0x20:
 		gb->memory.mbc = _GBMBC6;
@@ -529,9 +532,11 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		_switchBank(memory, bank);
 		break;
 	case 0x2:
-		if (value < 0x10) {
-			_switchSramBank(memory, value);
+		if (memory->mbcType == GB_MBC5_RUMBLE) {
+			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
+			value &= ~8;
 		}
+		_switchSramBank(memory, value & 0xF);
 		break;
 	default:
 		// TODO
