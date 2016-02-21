@@ -148,17 +148,6 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #endif
 
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 10, GBA_KEY_L);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 11, GBA_KEY_R);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 3, GBA_KEY_START);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 0, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 4, GBA_KEY_UP);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
-
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
 	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
