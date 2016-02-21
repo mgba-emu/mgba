@@ -6,7 +6,7 @@ Bugfixes:
  - GBA BIOS: Fix RegisterRamReset setting DISPCNT to the wrong value
  - OpenGL: Correct boolean vector strcmp strings for uniforms
  - Wii: Fix tilting direction
- - SDL: Fix joystick initialization on BS
+ - SDL: Fix joystick initialization on BSD
  - SDL: Fix potential joystick crash in games with rumble
  - Qt: Fix initial state of key mapping
  - Shaders: Fix AGS-001 shader with some bad drivers
