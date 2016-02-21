@@ -514,9 +514,10 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value;
-	switch (address >> 13) {
+	int bank;
+	switch (address >> 12) {
 	case 0x0:
+	case 0x1:
 		switch (value) {
 		case 0:
 			memory->sramAccess = false;
@@ -531,10 +532,16 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		}
 		break;
-	case 0x1:
+	case 0x2:
+		bank = (memory->currentBank & 0x100) | value;
 		_switchBank(memory, bank);
 		break;
-	case 0x2:
+	case 0x3:
+		bank = (memory->currentBank & 0xFF) | ((value & 1) << 8);
+		_switchBank(memory, bank);
+		break;
+	case 0x4:
+	case 0x5:
 		if (memory->mbcType == GB_MBC5_RUMBLE) {
 			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
 			value &= ~8;

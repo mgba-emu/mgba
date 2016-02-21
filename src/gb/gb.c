@@ -114,7 +114,7 @@ void GBUnloadROM(struct GB* gb) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
 		}
-		mappedMemoryFree(gb->memory.rom, 0x400000);
+		mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
 	}
 	gb->memory.rom = 0;
 
@@ -140,10 +140,10 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (!patchedSize) {
 		return;
 	}
-	if (patchedSize > 0x400000) {
-		patchedSize = 0x400000;
+	if (patchedSize > GB_SIZE_CART_MAX) {
+		patchedSize = GB_SIZE_CART_MAX;
 	}
-	gb->memory.rom = anonymousMemoryMap(0x400000);
+	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->pristineRom, gb->pristineRomSize, gb->memory.rom, patchedSize)) {
 		mappedMemoryFree(gb->memory.rom, patchedSize);
 		gb->memory.rom = gb->pristineRom;
