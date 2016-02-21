@@ -254,9 +254,7 @@ void GBAKeyEditor::lookupBinding(const mInputMap* map, KeyEditor* keyEditor, GBA
 #ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON) {
 		int value = mInputQueryBinding(map, m_type, key);
-		if (value != GBA_KEY_NONE) {
-			keyEditor->setValueButton(value);
-		}
+		keyEditor->setValueButton(value);
 		return;
 	}
 #endif
