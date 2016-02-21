@@ -17,6 +17,7 @@ struct GBACartridgeOverride {
 	enum SavedataType savetype;
 	int hardware;
 	uint32_t idleLoop;
+	bool mirroring;
 };
 
 struct Configuration;

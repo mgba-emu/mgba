@@ -142,6 +142,8 @@ struct GBAMemory {
 	int activeDMA;
 	int32_t nextDMA;
 	int32_t eventDiff;
+
+	bool mirroring;
 };
 
 void GBAMemoryInit(struct GBA* gba);

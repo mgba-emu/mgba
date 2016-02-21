@@ -469,6 +469,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->memory.rom = gba->pristineRom;
 	gba->memory.romSize = gba->pristineRomSize;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
+	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
 	// TODO: error check

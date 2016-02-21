@@ -82,6 +82,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeNonseqCycles32 = 0;
 	cpu->memory.activeNonseqCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
+	gba->memory.mirroring = false;
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
@@ -244,8 +245,13 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	gba->lastJump = address;
 	memory->lastPrefetchedPc = 0;
 	memory->lastPrefetchedLoads = 0;
-	if (newRegion == memory->activeRegion && (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize)) {
-		return;
+	if (newRegion == memory->activeRegion) {
+		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
+			return;
+		}
+		if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
+			return;
+		}
 	}
 
 	if (memory->activeRegion == REGION_BIOS) {
@@ -372,6 +378,8 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
 	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
 		LOAD_32(value, address & (SIZE_CART0 - 4), memory->rom); \
+	} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) { \
+		LOAD_32(value, address & memory->romMask, memory->rom); \
 	} else { \
 		mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
 		value = ((address & ~3) >> 1) & 0xFFFF; \
@@ -502,6 +510,8 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
+		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
+			LOAD_16(value, address & memory->romMask, memory->rom);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
@@ -513,6 +523,8 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBASavedataReadEEPROM(&memory->savedata);
 		} else if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
+		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
+			LOAD_16(value, address & memory->romMask, memory->rom);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
@@ -596,6 +608,8 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
+		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
+			value = ((uint8_t*) memory->rom)[address & memory->romMask];
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
 			value = (address >> 1) & 0xFF;
