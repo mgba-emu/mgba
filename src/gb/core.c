@@ -70,7 +70,11 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	UNUSED(config);
 
 	struct GB* gb = core->board;
-	gb->audio.masterVolume = core->opts.volume;
+	if (core->opts.mute) {
+		gb->audio.masterVolume = 0;
+	} else {
+		gb->audio.masterVolume = core->opts.volume;
+	}
 	gb->video.frameskip = core->opts.frameskip;
 }
 

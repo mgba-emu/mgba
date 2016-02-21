@@ -132,7 +132,6 @@ public slots:
 	void saveState(int slot = 0);
 	void loadBackupState();
 	void saveBackupState();
-	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setTurboSpeed(float ratio = -1);
 	void setAVStream(mAVStream*);

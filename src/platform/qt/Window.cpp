@@ -1139,7 +1139,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* mute = m_config->addOption("mute");
 	mute->addBoolean(tr("Mute"), avMenu);
 	mute->connect([this](const QVariant& value) {
-		m_controller->setMute(value.toBool());
+		reloadConfig();
 	}, this);
 	m_config->updateOption("mute");
 

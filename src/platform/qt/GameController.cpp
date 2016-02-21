@@ -848,12 +848,6 @@ void GameController::saveBackupState() {
 	});
 }
 
-void GameController::setMute(bool mute) {
-	threadInterrupt();
-	// TODO: Put back mute
-	threadContinue();
-}
-
 void GameController::setTurbo(bool set, bool forced) {
 	if (m_turboForced && !forced) {
 		return;
