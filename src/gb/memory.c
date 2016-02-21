@@ -366,6 +366,9 @@ void _GBMemoryHDMAService(struct GB* gb) {
 		gb->memory.io[REG_HDMA4] = gb->memory.hdmaDest;
 		if (gb->memory.isHdma) {
 			--gb->memory.io[REG_HDMA5];
+			if (gb->memory.io[REG_HDMA5] == 0xFF) {
+				gb->memory.isHdma = false;
+			}
 		} else {
 			gb->memory.io[REG_HDMA5] |= 0x80;
 		}
