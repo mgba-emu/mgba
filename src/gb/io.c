@@ -9,7 +9,7 @@
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
-const static uint8_t _registerMask[] = {
+static const uint8_t _registerMask[] = {
 	[REG_SC]   = 0x7E, // TODO: GBC differences
 	[REG_IF]   = 0xE0,
 	[REG_TAC]  = 0xF8,
@@ -35,6 +35,7 @@ const static uint8_t _registerMask[] = {
 	[REG_NR51] = 0x00,
 	[REG_NR52] = 0x70,
 	[REG_STAT] = 0x80,
+	[REG_KEY1] = 0x7E,
 	[REG_VBK] = 0xFE,
 	[REG_OCPS] = 0x40,
 	[REG_BCPS] = 0x40,
@@ -308,12 +309,27 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
+			case REG_KEY1:
+				value &= 0x1;
+				value |= gb->memory.io[address] & 0x80;
+				break;
 			case REG_VBK:
 				GBVideoSwitchBank(&gb->video, value);
+				break;
+			case REG_HDMA1:
+			case REG_HDMA2:
+			case REG_HDMA3:
+			case REG_HDMA4:
+				// Handled transparently by the registers
+				break;
+			case REG_HDMA5:
+				GBMemoryWriteHDMA5(gb, value);
+				value &= 0x7F;
 				break;
 			case REG_BCPS:
 				gb->video.bcpIndex = value & 0x3F;
 				gb->video.bcpIncrement = value & 0x80;
+				gb->memory.io[REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1];
 				break;
 			case REG_BCPD:
 				GBVideoProcessDots(&gb->video);
@@ -322,6 +338,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
 				gb->video.ocpIncrement = value & 0x80;
+				gb->memory.io[REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)];
 				break;
 			case REG_OCPD:
 				GBVideoProcessDots(&gb->video);
@@ -329,6 +346,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				break;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
+				value = gb->memory.wramCurrentBank;
 				break;
 			default:
 				goto failed;
@@ -349,17 +367,19 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 static uint8_t _readKeys(struct GB* gb) {
 	uint8_t keys = *gb->keySource;
 	switch (gb->memory.io[REG_JOYP] & 0x30) {
+	case 0x30:
+		keys = 0;
+		break;
 	case 0x20:
 		keys >>= 4;
 		break;
 	case 0x10:
 		break;
-	default:
-		// ???
-		keys = 0;
+	case 0x00:
+		keys |= keys >> 4;
 		break;
 	}
-	return 0xC0 | (gb->memory.io[REG_JOYP] | 0xF) ^ (keys & 0xF);
+	return (0xC0 | (gb->memory.io[REG_JOYP] | 0xF)) ^ (keys & 0xF);
 }
 
 uint8_t GBIORead(struct GB* gb, unsigned address) {
@@ -436,8 +456,16 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	default:
 		if (gb->model >= GB_MODEL_CGB) {
 			switch (address) {
-			case REG_SVBK:
+			case REG_KEY1:
 			case REG_VBK:
+			case REG_HDMA1:
+			case REG_HDMA2:
+			case REG_HDMA3:
+			case REG_HDMA4:
+			case REG_HDMA5:
+			case REG_BCPD:
+			case REG_OCPD:
+			case REG_SVBK:
 				// Handled transparently by the registers
 				goto success;
 			default:

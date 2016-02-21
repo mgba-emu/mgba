@@ -30,13 +30,15 @@ static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
+static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
+static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	// TODO
 }
 
 static void _GBMemoryDMAService(struct GB* gb);
-
+static void _GBMemoryHDMAService(struct GB* gb);
 
 void GBMemoryInit(struct GB* gb) {
 	struct LR35902Core* cpu = gb->cpu;
@@ -54,14 +56,6 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_NONE;
 	gb->memory.mbc = 0;
 
-	gb->memory.dmaNext = INT_MAX;
-	gb->memory.dmaRemaining = 0;
-
-	memset(gb->memory.hram, 0, sizeof(gb->memory.hram));
-
-	gb->memory.sramAccess = false;
-	gb->memory.rtcAccess = false;
-	gb->memory.rtcLatched = 0;
 	gb->memory.rtc = NULL;
 
 	GBIOInit(gb);
@@ -85,9 +79,28 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.sramCurrentBank = 0;
 	gb->memory.sramBank = gb->memory.sram;
 
-	memset(&gb->video.oam, 0, sizeof(gb->video.oam));
+	gb->memory.ime = false;
+	gb->memory.ie = 0;
 
-	const struct GBCartridge* cart = &gb->memory.rom[0x100];
+	gb->memory.dmaNext = INT_MAX;
+	gb->memory.dmaRemaining = 0;
+	gb->memory.dmaSource = 0;
+	gb->memory.dmaDest = 0;
+	gb->memory.hdmaNext = INT_MAX;
+	gb->memory.hdmaRemaining = 0;
+	gb->memory.hdmaSource = 0;
+	gb->memory.hdmaDest = 0;
+	gb->memory.isHdma = false;
+
+	gb->memory.sramAccess = false;
+	gb->memory.rtcAccess = false;
+	gb->memory.activeRtcReg = 0;
+	gb->memory.rtcLatched = 0;
+	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
+
+	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
+
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	switch (cart->type) {
 	case 0:
 	case 8:
@@ -119,11 +132,14 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x19:
 	case 0x1A:
 	case 0x1B:
+		gb->memory.mbc = _GBMBC5;
+		gb->memory.mbcType = GB_MBC5;
+		break;
 	case 0x1C:
 	case 0x1D:
 	case 0x1E:
 		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5;
+		gb->memory.mbcType = GB_MBC5_RUMBLE;
 		break;
 	case 0x20:
 		gb->memory.mbc = _GBMBC6;
@@ -132,6 +148,7 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x22:
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
+		memset(&gb->memory.mbcState.mbc7, 0, sizeof(gb->memory.mbcState.mbc7));
 		break;
 	}
 
@@ -172,6 +189,8 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return gb->memory.rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
 			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+		} else if (memory->mbcType == GB_MBC7) {
+			return _GBMBC7Read(memory, address);
 		}
 		return 0xFF;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -228,6 +247,8 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 			gb->memory.rtcRegs[memory->activeRtcReg] = value;
 		} else if (memory->sramAccess) {
 			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else if (gb->memory.mbcType == GB_MBC7) {
+			_GBMBC7Write(&gb->memory, address, value);
 		}
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -257,14 +278,24 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 }
 
 int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles) {
-	if (!gb->memory.dmaRemaining) {
-		return INT_MAX;
+	int nextEvent = INT_MAX;
+	if (gb->memory.dmaRemaining) {
+		gb->memory.dmaNext -= cycles;
+		if (gb->memory.dmaNext <= 0) {
+			_GBMemoryDMAService(gb);
+		}
+		nextEvent = gb->memory.dmaNext;
 	}
-	gb->memory.dmaNext -= cycles;
-	if (gb->memory.dmaNext <= 0) {
-		_GBMemoryDMAService(gb);
+	if (gb->memory.hdmaRemaining) {
+		gb->memory.hdmaNext -= cycles;
+		if (gb->memory.hdmaNext <= 0) {
+			_GBMemoryHDMAService(gb);
+		}
+		if (gb->memory.hdmaNext < nextEvent) {
+			nextEvent = gb->memory.hdmaNext;
+		}
 	}
-	return gb->memory.dmaNext;
+	return nextEvent;
 }
 
 void GBMemoryDMA(struct GB* gb, uint16_t base) {
@@ -282,6 +313,27 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	gb->memory.dmaRemaining = 0xA0;
 }
 
+void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
+	gb->memory.hdmaSource = gb->memory.io[REG_HDMA1] << 8;
+	gb->memory.hdmaSource |= gb->memory.io[REG_HDMA2];
+	gb->memory.hdmaDest = gb->memory.io[REG_HDMA3] << 8;
+	gb->memory.hdmaDest |= gb->memory.io[REG_HDMA4];
+	gb->memory.hdmaSource &= 0xFFF0;
+	if (gb->memory.hdmaSource >= 0x8000 && gb->memory.hdmaSource < 0xA000) {
+		mLOG(GB_MEM, GAME_ERROR, "Invalid HDMA source: %04X", gb->memory.hdmaSource);
+		return;
+	}
+	gb->memory.hdmaDest &= 0x1FF0;
+	gb->memory.hdmaDest |= 0x8000;
+	bool wasHdma = gb->memory.isHdma;
+	gb->memory.isHdma = value & 0x80;
+	if (!wasHdma && !gb->memory.isHdma) {
+		gb->memory.hdmaRemaining = ((value & 0x7F) + 1) * 0x10;
+		gb->memory.hdmaNext = gb->cpu->cycles;
+		gb->cpu->nextEvent = gb->cpu->cycles;
+	}
+}
+
 void _GBMemoryDMAService(struct GB* gb) {
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
@@ -295,6 +347,28 @@ void _GBMemoryDMAService(struct GB* gb) {
 		gb->memory.dmaNext = INT_MAX;
 		gb->cpu->memory.store8 = GBStore8;
 		gb->cpu->memory.load8 = GBLoad8;
+	}
+}
+
+void _GBMemoryHDMAService(struct GB* gb) {
+	uint8_t b = gb->cpu->memory.load8(gb->cpu, gb->memory.hdmaSource);
+	gb->cpu->memory.store8(gb->cpu, gb->memory.hdmaDest, b);
+	++gb->memory.hdmaSource;
+	++gb->memory.hdmaDest;
+	--gb->memory.hdmaRemaining;
+	gb->cpu->cycles += 2;
+	if (gb->memory.hdmaRemaining) {
+		gb->memory.hdmaNext += 2;
+	} else {
+		gb->memory.io[REG_HDMA1] = gb->memory.hdmaSource >> 8;
+		gb->memory.io[REG_HDMA2] = gb->memory.hdmaSource;
+		gb->memory.io[REG_HDMA3] = gb->memory.hdmaDest >> 8;
+		gb->memory.io[REG_HDMA4] = gb->memory.hdmaDest;
+		if (gb->memory.isHdma) {
+			--gb->memory.io[REG_HDMA5];
+		} else {
+			gb->memory.io[REG_HDMA5] |= 0x80;
+		}
 	}
 }
 
@@ -437,7 +511,7 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x7F;
+	int bank = value;
 	switch (address >> 13) {
 	case 0x0:
 		switch (value) {
@@ -458,9 +532,11 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		_switchBank(memory, bank);
 		break;
 	case 0x2:
-		if (value < 0x10) {
-			_switchSramBank(memory, value);
+		if (memory->mbcType == GB_MBC5_RUMBLE) {
+			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
+			value &= ~8;
 		}
+		_switchSramBank(memory, value & 0xF);
 		break;
 	default:
 		// TODO
@@ -475,6 +551,195 @@ void _GBMBC6(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO
-	mLOG(GB_MBC, STUB, "MBC7 unimplemented");
+	int bank = value & 0x7F;
+	switch (address >> 13) {
+	case 0x1:
+		_switchBank(memory, bank);
+		break;
+	case 0x2:
+		if (value < 0x10) {
+			_switchSramBank(memory, value);
+		}
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC7 unknown address: %04X:%02X", address, value);
+		break;
+	}
+}
+
+uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
+	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	switch (address & 0xF0) {
+	case 0x00:
+	case 0x10:
+	case 0x60:
+	case 0x70:
+		return 0;
+	case 0x20:
+		if (memory->rotation && memory->rotation->readTiltX) {
+			int32_t x = -memory->rotation->readTiltX(memory->rotation);
+			x >>= 21;
+			x += 2047;
+			return x;
+		}
+		return 0xFF;
+	case 0x30:
+		if (memory->rotation && memory->rotation->readTiltX) {
+			int32_t x = -memory->rotation->readTiltX(memory->rotation);
+			x >>= 21;
+			x += 2047;
+			return x >> 8;
+		}
+		return 7;
+	case 0x40:
+		if (memory->rotation && memory->rotation->readTiltY) {
+			int32_t y = -memory->rotation->readTiltY(memory->rotation);
+			y >>= 21;
+			y += 2047;
+			return y;
+		}
+		return 0xFF;
+	case 0x50:
+		if (memory->rotation && memory->rotation->readTiltY) {
+			int32_t y = -memory->rotation->readTiltY(memory->rotation);
+			y >>= 21;
+			y += 2047;
+			return y >> 8;
+		}
+		return 7;
+	case 0x80:
+		return (mbc7->sr >> 16) & 1;
+	default:
+		return 0xFF;
+	}
+}
+
+void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	if ((address & 0xF0) != 0x80) {
+		return;
+	}
+	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
+	GBMBC7Field old = memory->mbcState.mbc7.field;
+	mbc7->field = GBMBC7FieldClearIO(value);
+	if (!GBMBC7FieldIsCS(old) && GBMBC7FieldIsCS(value)) {
+		if (mbc7->state == GBMBC7_STATE_WRITE) {
+			if (mbc7->writable) {
+				memory->sramBank[mbc7->address * 2] = mbc7->sr >> 8;
+				memory->sramBank[mbc7->address * 2 + 1] = mbc7->sr;
+			}
+			mbc7->sr = 0x1FFFF;
+			mbc7->state = GBMBC7_STATE_NULL;
+		} else {
+			mbc7->state = GBMBC7_STATE_IDLE;
+		}
+	}
+	if (!GBMBC7FieldIsSK(old) && GBMBC7FieldIsSK(value)) {
+		if (mbc7->state > GBMBC7_STATE_IDLE && mbc7->state != GBMBC7_STATE_READ) {
+			mbc7->sr <<= 1;
+			mbc7->sr |= GBMBC7FieldGetIO(value);
+			++mbc7->srBits;
+		}
+		switch (mbc7->state) {
+		case GBMBC7_STATE_IDLE:
+			if (GBMBC7FieldIsIO(value)) {
+				mbc7->state = GBMBC7_STATE_READ_COMMAND;
+				mbc7->srBits = 0;
+				mbc7->sr = 0;
+			}
+			break;
+		case GBMBC7_STATE_READ_COMMAND:
+			if (mbc7->srBits == 2) {
+				mbc7->state = GBMBC7_STATE_READ_ADDRESS;
+				mbc7->srBits = 0;
+				mbc7->command = mbc7->sr;
+			}
+			break;
+		case GBMBC7_STATE_READ_ADDRESS:
+			if (mbc7->srBits == 8) {
+				mbc7->state = GBMBC7_STATE_COMMAND_0 + mbc7->command;
+				mbc7->srBits = 0;
+				mbc7->address = mbc7->sr;
+				if (mbc7->state == GBMBC7_STATE_COMMAND_0) {
+					switch (mbc7->address >> 6) {
+					case 0:
+						mbc7->writable = false;
+						mbc7->state = GBMBC7_STATE_NULL;
+						break;
+					case 3:
+						mbc7->writable = true;
+						mbc7->state = GBMBC7_STATE_NULL;
+						break;
+					}
+				}
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_0:
+			if (mbc7->srBits == 16) {
+				switch (mbc7->address >> 6) {
+				case 0:
+					mbc7->writable = false;
+					mbc7->state = GBMBC7_STATE_NULL;
+					break;
+				case 1:
+					mbc7->state = GBMBC7_STATE_WRITE;
+					if (mbc7->writable) {
+						int i;
+						for (i = 0; i < 256; ++i) {
+							memory->sramBank[i * 2] = mbc7->sr >> 8;
+							memory->sramBank[i * 2 + 1] = mbc7->sr;
+						}
+					}
+					break;
+				case 2:
+					mbc7->state = GBMBC7_STATE_WRITE;
+					if (mbc7->writable) {
+						int i;
+						for (i = 0; i < 256; ++i) {
+							memory->sramBank[i * 2] = 0xFF;
+							memory->sramBank[i * 2 + 1] = 0xFF;
+						}
+					}
+					break;
+				case 3:
+					mbc7->writable = true;
+					mbc7->state = GBMBC7_STATE_NULL;
+					break;
+				}
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_WRITE:
+			if (mbc7->srBits == 16) {
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_WRITE;
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_READ:
+			if (mbc7->srBits == 1) {
+				mbc7->sr = memory->sramBank[mbc7->address * 2] << 8;
+				mbc7->sr |= memory->sramBank[mbc7->address * 2 + 1];
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_READ;
+			}
+			break;
+		case GBMBC7_STATE_COMMAND_SR_FILL:
+			if (mbc7->srBits == 16) {
+				mbc7->sr = 0xFFFF;
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_WRITE;
+			}
+			break;
+		default:
+			break;
+		}
+	} else if (GBMBC7FieldIsSK(old) && !GBMBC7FieldIsSK(value)) {
+		if (mbc7->state == GBMBC7_STATE_READ) {
+			mbc7->sr <<= 1;
+			++mbc7->srBits;
+			if (mbc7->srBits == 16) {
+				mbc7->srBits = 0;
+				mbc7->state = GBMBC7_STATE_NULL;
+			}
+		}
+	}
 }

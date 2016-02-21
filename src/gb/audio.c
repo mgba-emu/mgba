@@ -27,6 +27,7 @@ static int32_t _updateChannel2(struct GBAudioChannel2* ch);
 static int32_t _updateChannel3(struct GBAudioChannel3* ch, enum GBAudioStyle style);
 static int32_t _updateChannel4(struct GBAudioChannel4* ch);
 static void _sample(struct GBAudio* audio, int32_t cycles);
+static void _scheduleEvent(struct GBAudio* audio);
 
 void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAudioStyle style) {
 	audio->samples = samples;
@@ -55,6 +56,7 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->nextCh1 = 0;
 	audio->nextCh2 = 0;
 	audio->nextCh3 = 0;
+	audio->fadeCh3 = 0;
 	audio->nextCh4 = 0;
 	audio->ch1 = (struct GBAudioChannel1) { .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioChannel2) { .envelope = { .dead = 2 } };
@@ -65,6 +67,9 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->frame = 0;
 	audio->nextSample = 0;
 	audio->sampleInterval = 128;
+	audio->lastLeft = 0;
+	audio->lastRight = 0;
+	audio->clock = 0;
 	audio->volumeRight = 0;
 	audio->volumeLeft = 0;
 	audio->ch1Right = false;
@@ -142,8 +147,8 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
-		if (audio->ch1.envelope.currentVolume > 0 && audio->ch1.envelope.stepTime) {
-			audio->ch1.envelope.dead = 0;
+		if (audio->ch1.envelope.currentVolume > 0) {
+			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 1;
 		}
 		audio->ch1.realFrequency = audio->ch1.control.frequency;
 		audio->ch1.sweepStep = audio->ch1.time;
@@ -158,13 +163,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->nextEvent = audio->p->cpu->cycles;
-			audio->p->cpu->nextEvent = audio->nextEvent;
-		} else {
-			audio->nextEvent = 0;
-		}
+		_scheduleEvent(audio);
 	}
 	*audio->nr52 &= ~0x0001;
 	*audio->nr52 |= audio->playingCh1;
@@ -201,8 +200,8 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
 		audio->playingCh2 = audio->ch2.envelope.initialVolume || audio->ch2.envelope.direction;
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
-		if (audio->ch2.envelope.currentVolume > 0 && audio->ch2.envelope.stepTime) {
-			audio->ch2.envelope.dead = 0;
+		if (audio->ch2.envelope.currentVolume > 0) {
+			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 1;
 		}
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
@@ -216,13 +215,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->nextEvent = audio->p->cpu->cycles;
-			audio->p->cpu->nextEvent = audio->nextEvent;
-		} else {
-			audio->nextEvent = 0;
-		}
+		_scheduleEvent(audio);
 	}
 	*audio->nr52 &= ~0x0002;
 	*audio->nr52 |= audio->playingCh2 << 1;
@@ -287,16 +280,9 @@ void GBAudioWriteNR34(struct GBAudio* audio, uint8_t value) {
 			audio->eventDiff = 0;
 		}
 		audio->ch3.readable = audio->style != GB_AUDIO_DMG;
-		// TODO: Don't need p
-		if (audio->p) {
-			// TODO: Where does this cycle delay come from?
-			audio->nextCh3 = audio->eventDiff + audio->p->cpu->cycles + 4 + 2 * (2048 - audio->ch3.rate);
-			audio->nextEvent = audio->p->cpu->cycles;
-			audio->p->cpu->nextEvent = audio->nextEvent;
-		} else {
-			audio->nextCh3 = audio->eventDiff + 4 + 2 * (2048 - audio->ch3.rate);
-			audio->nextEvent = 0;
-		}
+		_scheduleEvent(audio);
+		// TODO: Where does this cycle delay come from?
+		audio->nextCh3 = audio->eventDiff + audio->nextEvent + 4 + 2 * (2048 - audio->ch3.rate);
 	}
 	*audio->nr52 &= ~0x0004;
 	*audio->nr52 |= audio->playingCh3 << 2;
@@ -332,8 +318,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = audio->ch4.envelope.initialVolume || audio->ch4.envelope.direction;
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
-		if (audio->ch4.envelope.currentVolume > 0 && audio->ch4.envelope.stepTime) {
-			audio->ch4.envelope.dead = 0;
+		if (audio->ch4.envelope.currentVolume > 0) {
+			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 1;
 		}
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
@@ -352,13 +338,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 				--audio->ch4.length;
 			}
 		}
-		// TODO: Don't need p
-		if (audio->p) {
-			audio->nextEvent = audio->p->cpu->cycles;
-			audio->p->cpu->nextEvent = audio->nextEvent;
-		} else {
-			audio->nextEvent = 0;
-		}
+		_scheduleEvent(audio);
 	}
 	*audio->nr52 &= ~0x0008;
 	*audio->nr52 |= audio->playingCh4 << 3;
@@ -864,4 +844,14 @@ static int32_t _updateChannel4(struct GBAudioChannel4* ch) {
 	timing <<= ch->frequency;
 	timing *= 8;
 	return timing;
+}
+
+void _scheduleEvent(struct GBAudio* audio) {
+	// TODO: Don't need p
+	if (audio->p) {
+		audio->nextEvent = audio->p->cpu->cycles >> audio->p->doubleSpeed;
+		audio->p->cpu->nextEvent = audio->nextEvent;
+	} else {
+		audio->nextEvent = 0;
+	}
 }

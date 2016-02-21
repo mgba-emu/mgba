@@ -4,10 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#ifdef M_CORE_GBA
 #include "gba/gba.h"
 #include "gba/gui/gui-runner.h"
 #include "gba/input.h"
 #include "gba/video.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -249,9 +254,7 @@ static void _guiFinish(void) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
-		((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
-	}
+	runner->core->setRotation(runner->core, &rotation.d);
 	if (hasSound != NO_SOUND) {
 		runner->core->setAVStream(runner->core, &stream);
 	}
@@ -279,13 +282,26 @@ static void _setup(struct mGUIRunner* runner) {
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_EnableAccelerometer();
 		}
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 			HIDUSER_EnableGyroscope();
 		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			HIDUSER_EnableAccelerometer();
+		}
+		break;
+#endif
+	default:
+		break;
 	}
 	osSetSpeedupEnable(true);
 
@@ -318,13 +334,26 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(false);
 
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_DisableAccelerometer();
 		}
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 			HIDUSER_DisableGyroscope();
 		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			HIDUSER_DisableAccelerometer();
+		}
+		break;
+#endif
+	default:
+		break;
 	}
 }
 
@@ -507,8 +536,8 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 static void _sampleRotation(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	// Work around ctrulib getting the entries wrong
-	rotation->accel = *(accelVector*)& hidSharedMem[0x48];
-	rotation->gyro = *(angularRate*)& hidSharedMem[0x5C];
+	rotation->accel = *(accelVector*) &hidSharedMem[0x48];
+	rotation->gyro = *(angularRate*) &hidSharedMem[0x5C];
 }
 
 static int32_t _readTiltX(struct mRotationSource* source) {

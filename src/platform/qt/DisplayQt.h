@@ -40,6 +40,8 @@ protected:
 
 private:
 	bool m_isDrawing;
+	unsigned m_width;
+	unsigned m_height;
 	QImage m_backing;
 };
 

@@ -94,13 +94,13 @@ bool mCoreLoadFile(struct mCore* core, const char* path) {
 }
 
 bool mCoreAutoloadSave(struct mCore* core) {
-	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, ".sav", O_CREAT | O_RDWR));
+	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".sav", O_CREAT | O_RDWR));
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
-	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, ".ups", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, ".ips", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, ".bps", O_RDONLY));
+	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY)) ||
+	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY)) ||
+	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
 }
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {

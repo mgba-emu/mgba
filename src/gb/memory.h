@@ -65,16 +65,51 @@ enum GBMemoryBankControllerType {
 	GB_MMM01 = 0x10,
 	GB_HuC1 = 0x11,
 	GB_HuC3 = 0x12,
+	GB_MBC5_RUMBLE = 0x105
 };
 
 struct GBMemory;
 typedef void (*GBMemoryBankController)(struct GBMemory*, uint16_t address, uint8_t value);
 
+DECL_BITFIELD(GBMBC7Field, uint8_t);
+DECL_BIT(GBMBC7Field, SK, 6);
+DECL_BIT(GBMBC7Field, CS, 7);
+DECL_BIT(GBMBC7Field, IO, 1);
+
+enum GBMBC7MachineState {
+	GBMBC7_STATE_NULL = -1,
+	GBMBC7_STATE_IDLE = 0,
+	GBMBC7_STATE_READ_COMMAND = 1,
+	GBMBC7_STATE_READ_ADDRESS = 2,
+	GBMBC7_STATE_COMMAND_0 = 3,
+	GBMBC7_STATE_COMMAND_SR_WRITE = 4,
+	GBMBC7_STATE_COMMAND_SR_READ = 5,
+	GBMBC7_STATE_COMMAND_SR_FILL = 6,
+	GBMBC7_STATE_READ = 7,
+	GBMBC7_STATE_WRITE = 8,
+};
+
+struct GBMBC7State {
+	enum GBMBC7MachineState state;
+	uint32_t sr;
+	uint8_t address;
+	bool writable;
+	int srBits;
+	int command;
+	GBMBC7Field field;
+};
+
+union GBMBCState {
+	struct GBMBC7State mbc7;
+};
+
+struct mRotationSource;
 struct GBMemory {
 	uint8_t* rom;
 	uint8_t* romBank;
 	enum GBMemoryBankControllerType mbcType;
 	GBMemoryBankController mbc;
+	union GBMBCState mbcState;
 	int currentBank;
 
 	uint8_t* wram;
@@ -97,6 +132,12 @@ struct GBMemory {
 	uint16_t dmaDest;
 	int dmaRemaining;
 
+	int32_t hdmaNext;
+	uint16_t hdmaSource;
+	uint16_t hdmaDest;
+	int hdmaRemaining;
+	bool isHdma;
+
 	size_t romSize;
 
 	bool rtcAccess;
@@ -104,6 +145,8 @@ struct GBMemory {
 	int rtcLatched;
 	uint8_t rtcRegs[5];
 	struct mRTCSource* rtc;
+	struct mRotationSource* rotation;
+	struct mRumble* rumble;
 };
 
 void GBMemoryInit(struct GB* gb);
@@ -117,6 +160,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles);
 void GBMemoryDMA(struct GB* gb, uint16_t base);
+void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
 
 uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address);
 void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);

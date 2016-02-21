@@ -20,12 +20,16 @@
 extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
-#include "gba/audio.h"
+#ifdef M_CORE_GBA
 #include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
 #include "gba/sharkport.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "util/vfs.h"
 }
 
@@ -85,12 +89,19 @@ GameController::GameController(QObject* parent)
 		}
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
+		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
+		context->core->setRumble(context->core, controller->m_inputController->rumble());
 
-		if (context->core->platform(context->core) == PLATFORM_GBA) {
-			GBA* gba = static_cast<GBA*>(context->core->board);
+#ifdef M_CORE_GBA
+		GBA* gba = static_cast<GBA*>(context->core->board);
+#endif
+#ifdef M_CORE_GB
+		GB* gb = static_cast<GB*>(context->core->board);
+#endif
+		switch (context->core->platform(context->core)) {
+#ifdef M_CORE_GBA
+		case PLATFORM_GBA:
 			gba->luminanceSource = &controller->m_lux;
-			gba->rumble = controller->m_inputController->rumble();
-			gba->rotationSource = controller->m_inputController->rotationSource();
 			gba->audio.psg.forceDisableCh[0] = !controller->m_audioChannels[0];
 			gba->audio.psg.forceDisableCh[1] = !controller->m_audioChannels[1];
 			gba->audio.psg.forceDisableCh[2] = !controller->m_audioChannels[2];
@@ -102,6 +113,18 @@ GameController::GameController(QObject* parent)
 			gba->video.renderer->disableBG[2] = !controller->m_videoLayers[2];
 			gba->video.renderer->disableBG[3] = !controller->m_videoLayers[3];
 			gba->video.renderer->disableOBJ = !controller->m_videoLayers[4];
+			break;
+#endif
+#ifdef M_CORE_GB
+		case PLATFORM_GB:
+			gb->audio.forceDisableCh[0] = !controller->m_audioChannels[0];
+			gb->audio.forceDisableCh[1] = !controller->m_audioChannels[1];
+			gb->audio.forceDisableCh[2] = !controller->m_audioChannels[2];
+			gb->audio.forceDisableCh[3] = !controller->m_audioChannels[3];
+			break;
+#endif
+		default:
+			break;
 		}
 		controller->m_fpsTarget = context->sync.fpsTarget;
 
@@ -310,7 +333,6 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!biosOnly) {
 		mCoreLoadFile(m_threadContext.core, m_fname.toUtf8().constData());
-		mCoreAutoloadSave(m_threadContext.core);
 	}
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
@@ -338,6 +360,10 @@ void GameController::openGame(bool biosOnly) {
 
 	if (m_config) {
 		mCoreLoadForeignConfig(m_threadContext.core, m_config);
+	}
+
+	if (!biosOnly) {
+		mCoreAutoloadSave(m_threadContext.core);
 	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
@@ -643,7 +669,12 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 	if (channel > 5 || channel < 0) {
 		return;
 	}
+#ifdef M_CORE_GBA
 	GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
+#endif
+#ifdef M_CORE_GB
+	GB* gb = static_cast<GB*>(m_threadContext.core->board);
+#endif
 	m_audioChannels[channel] = enable;
 	if (isLoaded()) {
 		switch (channel) {
@@ -651,14 +682,33 @@ void GameController::setAudioChannelEnabled(int channel, bool enable) {
 		case 1:
 		case 2:
 		case 3:
-			gba->audio.psg.forceDisableCh[channel] = !enable;
+			switch (m_threadContext.core->platform(m_threadContext.core)) {
+#ifdef M_CORE_GBA
+			case PLATFORM_GBA:
+				gba->audio.psg.forceDisableCh[channel] = !enable;
+				break;
+#endif
+#ifdef M_CORE_GB
+			case PLATFORM_GB:
+				gb->audio.forceDisableCh[channel] = !enable;
+				break;
+#endif
+			default:
+				break;
+			}
 			break;
+#ifdef M_CORE_GBA
 		case 4:
-			gba->audio.forceDisableChA = !enable;
+			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
+				gba->audio.forceDisableChA = !enable;
+			}
 			break;
 		case 5:
-			gba->audio.forceDisableChB = !enable;
+			if (m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
+				gba->audio.forceDisableChB = !enable;
+			}
 			break;
+#endif
 		}
 	}
 }

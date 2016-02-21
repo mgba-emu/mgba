@@ -107,10 +107,10 @@ struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path
 	return file;
 }
 
-struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, const char* suffix, int mode) {
+struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* dir, const char* suffix, int mode) {
 	char name[PATH_MAX];
 	snprintf(name, sizeof(name), "%s%s", dirs->baseName, suffix);
-	return dirs->base->openFile(dirs->base, name, mode);
+	return dir->openFile(dir, name, mode);
 }
 
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptions* opts) {

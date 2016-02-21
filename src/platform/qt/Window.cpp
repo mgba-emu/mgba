@@ -38,6 +38,9 @@
 #include "VideoView.h"
 
 extern "C" {
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "platform/commandline.h"
 #include "util/nointro.h"
 #include "util/vfs.h"
@@ -732,9 +735,30 @@ void Window::updateTitle(float fps) {
 	m_controller->threadInterrupt();
 	if (m_controller->isLoaded()) {
 		const NoIntroDB* db = GBAApp::app()->gameDB();
-		NoIntroGame game;
-		if (m_controller->thread()->core->platform(m_controller->thread()->core) == PLATFORM_GBA && db &&
-		    NoIntroDBLookupGameByCRC(db, static_cast<GBA*>(m_controller->thread()->core->board)->romCrc32, &game)) {
+		NoIntroGame game{};
+		uint32_t crc32 = 0;
+
+		switch (m_controller->thread()->core->platform(m_controller->thread()->core)) {
+	#ifdef M_CORE_GBA
+		case PLATFORM_GBA: {
+			GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
+			crc32 = gba->romCrc32;
+			break;
+		}
+	#endif
+	#ifdef M_CORE_GB
+		case PLATFORM_GB: {
+			GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
+			crc32 = gb->romCrc32;
+			break;
+		}
+	#endif
+		default:
+			break;
+		}
+
+		if (db && crc32) {
+			NoIntroDBLookupGameByCRC(db, crc32, &game);
 			title = QLatin1String(game.name);
 		} else {
 			char gameTitle[17] = { '\0' };

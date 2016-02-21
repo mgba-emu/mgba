@@ -10,7 +10,12 @@
 
 extern "C" {
 #include "core/core.h"
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
+#ifdef M_CORE_GBA
 #include "gba/gba.h"
+#endif
 #include "util/nointro.h"
 }
 
@@ -26,22 +31,47 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	}
 
 	const NoIntroDB* db = GBAApp::app()->gameDB();
+	uint32_t crc32 = 0;
 
 	controller->threadInterrupt();
 	mCore* core = controller->thread()->core;
 	char title[17] = {};
 	core->getGameTitle(core, title);
 	m_ui.title->setText(QLatin1String(title));
-
-	if (controller->thread()->core->platform(controller->thread()->core) == PLATFORM_GBA) {
-		GBA* gba = static_cast<GBA*>(core->board);
-		GBAGetGameCode(gba, title);
+	core->getGameCode(core, title);
+	title[4] = '\0';
+	if (title[0]) {
 		m_ui.id->setText(QLatin1String(title));
-		m_ui.size->setText(QString::number(gba->pristineRomSize));
-		m_ui.crc->setText(QString::number(gba->romCrc32, 16));
+	} else {
+		m_ui.id->setText(tr("(unknown)"));
+	}
+
+	switch (controller->thread()->core->platform(controller->thread()->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA: {
+		GBA* gba = static_cast<GBA*>(core->board);
+		m_ui.size->setText(QString::number(gba->pristineRomSize) + tr(" bytes"));
+		crc32 = gba->romCrc32;
+		break;
+	}
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB: {
+		GB* gb = static_cast<GB*>(core->board);
+		m_ui.size->setText(QString::number(gb->pristineRomSize) + tr(" bytes"));
+		crc32 = gb->romCrc32;
+		break;
+	}
+#endif
+	default:
+		m_ui.size->setText(tr("(unknown)"));
+		break;
+	}
+	if (crc32) {
+		m_ui.crc->setText(QString::number(crc32, 16));
 		if (db) {
-			NoIntroGame game;
-			if (NoIntroDBLookupGameByCRC(db, gba->romCrc32, &game)) {
+			NoIntroGame game{};
+			if (NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 				m_ui.name->setText(game.name);
 			} else {
 				m_ui.name->setText(tr("(unknown)"));
@@ -50,9 +80,6 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 			m_ui.name->setText(tr("(no database present)"));
 		}
 	} else {
-		// TODO: GB
-		m_ui.id->setText(tr("(unknown)"));
-		m_ui.size->setText(tr("(unknown)"));
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}

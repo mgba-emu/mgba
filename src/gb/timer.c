@@ -12,6 +12,8 @@ void GBTimerReset(struct GBTimer* timer) {
 	timer->nextDiv = GB_DMG_DIV_PERIOD; // TODO: GBC differences
 	timer->nextTima = INT_MAX;
 	timer->nextEvent = GB_DMG_DIV_PERIOD;
+	timer->eventDiff = 0;
+	timer->timaPeriod = 1024;
 }
 
 int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {

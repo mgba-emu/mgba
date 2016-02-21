@@ -521,10 +521,8 @@ void _guiFinish(void) {
 }
 
 void _setup(struct mGUIRunner* runner) {
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
-		((struct GBA*) runner->core->board)->rumble = &rumble;
-		((struct GBA*) runner->core->board)->rotationSource = &rotation;
-	}
+	runner->core->setRotation(runner->core, &rotation);
+	runner->core->setRumble(runner->core, &rumble);
 
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, GCN1_INPUT, PAD_BUTTON_B, GBA_KEY_B);
@@ -739,8 +737,8 @@ void _sampleRotation(struct mRotationSource* source) {
 	vec3w_t accel;
 	WPAD_Accel(0, &accel);
 	// These are swapped
-	tiltX = (accel.y - 0x1EA) << 22;
-	tiltY = (accel.x - 0x1EA) << 22;
+	tiltX = (0x1EA - accel.y) << 22;
+	tiltY = (0x1EA - accel.x) << 22;
 
 	// This doesn't seem to work at all with -TR remotes
 	struct expansion_t exp;

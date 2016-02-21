@@ -26,7 +26,7 @@ static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
 static void GBIllegal(struct LR35902Core* cpu);
-static void GBHitStub(struct LR35902Core* cpu);
+static void GBStop(struct LR35902Core* cpu);
 
 #ifdef _3DS
 extern uint32_t* romBuffer;
@@ -42,6 +42,7 @@ void GBCreate(struct GB* gb) {
 static void GBInit(void* cpu, struct mCPUComponent* component) {
 	struct GB* gb = (struct GB*) component;
 	gb->cpu = cpu;
+	gb->sync = NULL;
 
 	GBInterruptHandlerInit(&gb->cpu->irqh);
 	GBMemoryInit(gb);
@@ -61,7 +62,10 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
+	gb->stream = NULL;
+
 	gb->eiPending = false;
+	gb->doubleSpeed = 0;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -160,7 +164,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->processEvents = GBProcessEvents;
 	irqh->setInterrupts = GBSetInterrupts;
 	irqh->hitIllegal = GBIllegal;
-	irqh->hitStub = GBHitStub;
+	irqh->stop = GBStop;
 	irqh->halt = GBHalt;
 }
 
@@ -253,14 +257,20 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		testEvent = GBVideoProcessEvents(&gb->video, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
+		testEvent = GBVideoProcessEvents(&gb->video, cycles >> gb->doubleSpeed);
+		if (testEvent != INT_MAX) {
+			testEvent <<= gb->doubleSpeed;
+			if (testEvent < nextEvent) {
+				nextEvent = testEvent;
+			}
 		}
 
-		testEvent = GBAudioProcessEvents(&gb->audio, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
+		testEvent = GBAudioProcessEvents(&gb->audio, cycles >> gb->doubleSpeed);
+		if (testEvent != INT_MAX) {
+			testEvent <<= gb->doubleSpeed;
+			if (testEvent < nextEvent) {
+				nextEvent = testEvent;
+			}
 		}
 
 		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
@@ -301,14 +311,19 @@ void GBHalt(struct LR35902Core* cpu) {
 	cpu->halted = true;
 }
 
+void GBStop(struct LR35902Core* cpu) {
+	struct GB* gb = (struct GB*) cpu->master;
+	if (gb->memory.io[REG_KEY1] & 1) {
+		gb->doubleSpeed ^= 1;
+		gb->memory.io[REG_KEY1] &= 1;
+		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
+	}
+	// TODO: Actually stop
+}
+
 void GBIllegal(struct LR35902Core* cpu) {
 	// TODO
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
-}
-
-void GBHitStub(struct LR35902Core* cpu) {
-	// TODO
-	mLOG(GB, STUB, "Hit stub at address %04X:%02X\n", cpu->pc, cpu->bus);
 }
 
 bool GBIsROM(struct VFile* vf) {
@@ -331,7 +346,7 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	}
 	if (gb->pristineRom) {
-		cart = (const struct GBCartridge*) &gb->pristineRom[0x100];
+		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
 	}
 	if (!cart) {
 		return;
@@ -340,5 +355,22 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 		memcpy(out, cart->titleLong, 16);
 	} else {
 		memcpy(out, cart->titleShort, 11);
+	}
+}
+
+void GBGetGameCode(struct GB* gb, char* out) {
+	memset(out, 0, 4);
+	const struct GBCartridge* cart = NULL;
+	if (gb->memory.rom) {
+		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	}
+	if (gb->pristineRom) {
+		cart = (const struct GBCartridge*) &((uint8_t*) gb->pristineRom)[0x100];
+	}
+	if (!cart) {
+		return;
+	}
+	if (cart->oldLicensee == 0x33) {
+		memcpy(out, cart->maker, 11);
 	}
 }

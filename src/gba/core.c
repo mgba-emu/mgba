@@ -154,7 +154,7 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
-	return GBALoadROM2(core->board, vf);
+	return GBALoadROM(core->board, vf);
 }
 
 static bool _GBACoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
@@ -263,9 +263,23 @@ static void _GBACoreGetGameTitle(struct mCore* core, char* title) {
 	GBAGetGameTitle(core->board, title);
 }
 
+static void _GBACoreGetGameCode(struct mCore* core, char* title) {
+	GBAGetGameCode(core->board, title);
+}
+
 static void _GBACoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	struct GBA* gba = core->board;
 	gba->rtcSource = rtc;
+}
+
+static void _GBACoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+	struct GBA* gba = core->board;
+	gba->rotationSource = rotation;
+}
+
+static void _GBACoreSetRumble(struct mCore* core, struct mRumble* rumble) {
+	struct GBA* gba = core->board;
+	gba->rumble = rumble;
 }
 
 struct mCore* GBACoreCreate(void) {
@@ -305,6 +319,9 @@ struct mCore* GBACoreCreate(void) {
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
 	core->getGameTitle = _GBACoreGetGameTitle;
+	core->getGameCode = _GBACoreGetGameCode;
 	core->setRTC = _GBACoreSetRTC;
+	core->setRotation = _GBACoreSetRotation;
+	core->setRumble = _GBACoreSetRumble;
 	return core;
 }

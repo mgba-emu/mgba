@@ -62,6 +62,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
 	video->renderer->oam = &video->oam;
+	memset(&video->palette, 0, sizeof(video->palette));
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer, video->p->model);
@@ -161,6 +162,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 				}
+				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
+					video->p->memory.rotation->sample(video->p->memory.rotation);
+				}
 				GBUpdateIRQs(video->p);
 				break;
 			case 2:
@@ -177,6 +181,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					GBUpdateIRQs(video->p);
+				}
+				if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
+					video->p->memory.hdmaRemaining = 0x10;
+					video->p->memory.hdmaNext = video->p->cpu->cycles;
 				}
 				break;
 			}
@@ -221,7 +229,7 @@ void GBVideoProcessDots(struct GBVideo* video) {
 		return;
 	}
 	int oldX = video->x;
-	video->x = video->dotCounter + video->eventDiff + video->p->cpu->cycles;
+	video->x = video->dotCounter + video->eventDiff + (video->p->cpu->cycles >> video->p->doubleSpeed);
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
 	}
@@ -238,15 +246,15 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->mode = 2;
 		video->nextMode = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		video->nextEvent = video->nextMode;
-		video->eventDiff = -video->p->cpu->cycles;
+		video->eventDiff = -video->p->cpu->cycles >> video->p->doubleSpeed;
 		// TODO: Does this read as 0 for 4 T-cycles?
 		video->stat = GBRegisterSTATSetMode(video->stat, 2);
 		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
 
-		if (video->p->cpu->cycles + video->nextEvent < video->p->cpu->nextEvent) {
-			video->p->cpu->nextEvent = video->p->cpu->cycles + video->nextEvent;
+		if (video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed) < video->p->cpu->nextEvent) {
+			video->p->cpu->nextEvent = video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed);
 		}
 		return;
 	}
@@ -314,6 +322,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
+				video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1];
 			}
 			break;
 		case REG_OCPD:
@@ -328,6 +337,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;
+				video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)];
 			}
 			break;
 		}

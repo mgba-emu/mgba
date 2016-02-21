@@ -230,9 +230,23 @@ static void _GBCoreGetGameTitle(struct mCore* core, char* title) {
 	GBGetGameTitle(core->board, title);
 }
 
+static void _GBCoreGetGameCode(struct mCore* core, char* title) {
+	GBGetGameCode(core->board, title);
+}
+
 static void _GBCoreSetRTC(struct mCore* core, struct mRTCSource* rtc) {
 	struct GB* gb = core->board;
 	gb->memory.rtc = rtc;
+}
+
+static void _GBCoreSetRotation(struct mCore* core, struct mRotationSource* rotation) {
+	struct GB* gb = core->board;
+	gb->memory.rotation = rotation;
+}
+
+static void _GBCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
+	struct GB* gb = core->board;
+	gb->memory.rumble = rumble;
 }
 
 struct mCore* GBCoreCreate(void) {
@@ -272,6 +286,9 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
+	core->getGameCode = _GBCoreGetGameCode;
 	core->setRTC = _GBCoreSetRTC;
+	core->setRotation = _GBCoreSetRotation;
+	core->setRumble = _GBCoreSetRumble;
 	return core;
 }

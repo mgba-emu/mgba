@@ -67,6 +67,7 @@ struct GB {
 	struct mAVStream* stream;
 
 	int32_t eiPending;
+	unsigned doubleSpeed;
 };
 
 struct GBCartridge {
@@ -100,7 +101,6 @@ void GBReset(struct LR35902Core* cpu);
 
 void GBUpdateIRQs(struct GB* gb);
 void GBHalt(struct LR35902Core* cpu);
-void GBStop(struct LR35902Core* cpu);
 
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
@@ -113,6 +113,7 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch);
 
 bool GBIsROM(struct VFile* vf);
 void GBGetGameTitle(struct GB* gba, char* out);
+void GBGetGameCode(struct GB* gba, char* out);
 
 void GBFrameStarted(struct GB* gb);
 void GBFrameEnded(struct GB* gb);
