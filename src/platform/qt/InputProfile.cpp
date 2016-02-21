@@ -63,29 +63,7 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 		}
 	},
 	{
-		"(Sony Computer Entertainment )?Wireless Controller", // The DualShock 4 device ID is cut off on Windows
-		(int[GBA_KEY_MAX]) {
-		/*keyA      */  1,
-		/*keyB      */  2,
-		/*keySelect */  8,
-		/*keyStart  */  9,
-		/*keyRight  */ -1,
-		/*keyLeft   */ -1,
-		/*keyUp     */ -1,
-		/*keyDown   */ -1,
-		/*keyR      */  5,
-		/*keyL      */  4
-		},
-		(ShortcutButton[]) {
-			{"loadState", 0},
-			{"saveState", 3},
-			{"holdFastForward", 7},
-			{"holdRewind", 6},
-			{}
-		},
-	},
-	{
-		"Controller", // The Xbox 360 controller drivers on OS X are vague...
+		"Xbox 360 Wired Controller", // OS X
 		(int[GBA_KEY_MAX]) {
 		/*keyA      */  1,
 		/*keyB      */  0,
@@ -108,6 +86,28 @@ const InputProfile InputProfile::s_defaultMaps[] = {
 			{"holdRewind", GamepadAxisEvent::Direction::POSITIVE, 2},
 			{}
 		}
+	},
+	{
+		"(Sony Computer Entertainment )?Wireless Controller", // The DualShock 4 device ID is cut off on Windows
+		(int[GBA_KEY_MAX]) {
+		/*keyA      */  1,
+		/*keyB      */  2,
+		/*keySelect */  8,
+		/*keyStart  */  9,
+		/*keyRight  */ -1,
+		/*keyLeft   */ -1,
+		/*keyUp     */ -1,
+		/*keyDown   */ -1,
+		/*keyR      */  5,
+		/*keyL      */  4
+		},
+		(ShortcutButton[]) {
+			{"loadState", 0},
+			{"saveState", 3},
+			{"holdFastForward", 7},
+			{"holdRewind", 6},
+			{}
+		},
 	},
 	{
 		"PLAYSTATION\\(R\\)3 Controller", // DualShock 3 (OS X)
