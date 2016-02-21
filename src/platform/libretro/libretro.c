@@ -461,17 +461,25 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 
 void* retro_get_memory_data(unsigned id) {
+	struct GBA* gba = core->board;
+	struct GB* gb = core->board;
+
 	if (id == RETRO_MEMORY_SAVE_RAM) {
 		return savedata;
 	}
-/*
 	if (id == RETRO_MEMORY_SYSTEM_RAM) {
-		return context.gba->memory.wram;
+		if (core->platform(core) == PLATFORM_GBA)
+			return gba->memory.wram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->memory.wram;
 	}
 	if (id == RETRO_MEMORY_VIDEO_RAM) {
-		return context.gba->video.renderer->vram;
+		if (core->platform(core) == PLATFORM_GBA)
+			return gba->video.renderer->vram;
+		if (core->platform(core) == PLATFORM_GB)
+			return gb->video.renderer->vram;
 	}
-*/
+
 	return 0;
 }
 
