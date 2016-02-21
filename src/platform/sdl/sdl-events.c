@@ -593,7 +593,7 @@ void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContex
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _GBASDLSetRumble(struct GBARumble* rumble, int enable) {
 	struct GBASDLRumble* sdlRumble = (struct GBASDLRumble*) rumble;
-	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
+	if (!sdlRumble->p->joystick || !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
 	sdlRumble->level += enable;

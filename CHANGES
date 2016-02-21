@@ -7,6 +7,7 @@ Bugfixes:
  - OpenGL: Correct boolean vector strcmp strings for uniforms
  - Wii: Fix tilting direction
  - SDL: Fix joystick initialization on BS
+ - SDL: Fix potential joystick crash in games with rumble
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
