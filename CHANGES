@@ -15,6 +15,7 @@ Misc:
  - Qt: Add preset for DualShock 4
  - SDL: Remove default gamepad mappings
  - Qt: Update 360 input profile on OS X to reflect newer drivers
+ - Qt: Remove use of NaN
 
 0.4.0: (2016-02-02)
 Features:
