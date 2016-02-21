@@ -572,7 +572,7 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
-	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
+	if (!sdlRumble->p->joystick || !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
 	sdlRumble->level += enable;
