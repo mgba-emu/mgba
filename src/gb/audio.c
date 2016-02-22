@@ -142,9 +142,10 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh1) {
-			audio->nextCh1 = audio->eventDiff;
+		if (audio->playingCh1) {
+			audio->ch1.control.hi = !audio->ch1.control.hi;
 		}
+		audio->nextCh1 = audio->eventDiff;
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
 		if (audio->ch1.envelope.currentVolume > 0) {
@@ -210,9 +211,10 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh2) {
-			audio->nextCh2 = audio->eventDiff;
+		if (audio->playingCh2) {
+			audio->ch2.control.hi = !audio->ch2.control.hi;
 		}
+		audio->nextCh2 = audio->eventDiff;
 		if (!audio->ch2.control.length) {
 			audio->ch2.control.length = 64;
 			if (audio->ch2.control.stop && !(audio->frame & 1)) {
@@ -335,9 +337,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh4) {
-			audio->nextCh4 = audio->eventDiff;
-		}
+		audio->nextCh4 = audio->eventDiff;
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
 			if (audio->ch4.stop && !(audio->frame & 1)) {
