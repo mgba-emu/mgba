@@ -10,6 +10,10 @@
 #include "gb/gb.h"
 #include "gb/io.h"
 
+#ifdef _3DS
+#define blip_add_delta blip_add_delta_fast
+#endif
+
 #define FRAME_CYCLES (DMG_LR35902_FREQUENCY >> 9)
 
 const uint32_t DMG_LR35902_FREQUENCY = 0x400000;

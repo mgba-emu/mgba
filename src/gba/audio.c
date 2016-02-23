@@ -11,6 +11,10 @@
 #include "gba/serialize.h"
 #include "gba/video.h"
 
+#ifdef _3DS
+#define blip_add_delta blip_add_delta_fast
+#endif
+
 mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio");
 
 const unsigned GBA_AUDIO_SAMPLES = 2048;
