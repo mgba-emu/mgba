@@ -47,7 +47,6 @@ enum LR35902ExecutionState {
 	LR35902_CORE_STALL = 19,
 	LR35902_CORE_OP2 = 23
 };
-
 struct LR35902Memory {
 	uint8_t (*cpuLoad8)(struct LR35902Core*, uint16_t address);
 	uint8_t (*load8)(struct LR35902Core*, uint16_t address);
@@ -55,6 +54,7 @@ struct LR35902Memory {
 
 	uint8_t* activeRegion;
 	uint16_t activeMask;
+	uint16_t activeRegionEnd;
 	void (*setActiveRegion)(struct LR35902Core*, uint16_t address);
 };
 

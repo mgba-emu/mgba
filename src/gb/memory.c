@@ -33,8 +33,40 @@ static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
+static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
+	if (UNLIKELY(address > cpu->memory.activeRegionEnd)) {
+		cpu->memory.setActiveRegion(cpu, address);
+		return cpu->memory.cpuLoad8(cpu, address);
+	}
+	return cpu->memory.activeRegion[address & cpu->memory.activeMask];
+}
+
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.activeRegion = memory->rom;
+		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
+		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		break;
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.activeRegion = memory->romBank;
+		cpu->memory.activeRegionEnd = GB_BASE_VRAM;
+		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		break;
+	default:
+		cpu->memory.cpuLoad8 = GBLoad8;
+		break;
+	}
 }
 
 static void _GBMemoryDMAService(struct GB* gb);
@@ -235,6 +267,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
 		memory->mbc(memory, address, value);
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
 		return;
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -304,6 +337,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	}
 	gb->cpu->memory.store8 = GBDMAStore8;
 	gb->cpu->memory.load8 = GBDMALoad8;
+	gb->cpu->memory.cpuLoad8 = GBDMALoad8;
 	gb->memory.dmaNext = gb->cpu->cycles + 8;
 	if (gb->memory.dmaNext < gb->cpu->nextEvent) {
 		gb->cpu->nextEvent = gb->memory.dmaNext;

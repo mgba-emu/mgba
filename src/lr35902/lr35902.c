@@ -129,7 +129,7 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 		cpu->memory.store8(cpu, cpu->index, cpu->bus);
 		break;
 	case LR35902_CORE_READ_PC:
-		cpu->bus = cpu->memory.load8(cpu, cpu->pc);
+		cpu->bus = cpu->memory.cpuLoad8(cpu, cpu->pc);
 		++cpu->pc;
 		break;
 	case LR35902_CORE_STALL:
