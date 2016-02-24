@@ -102,8 +102,6 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 			vf->truncate(vf, 0x20000);
 		}
 		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
-	} else {
-		gb->memory.sram = anonymousMemoryMap(0x20000);
 	}
 	return gb->memory.sram;
 }

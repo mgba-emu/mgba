@@ -108,6 +108,9 @@ void GBMemoryReset(struct GB* gb) {
 	GBMemorySwitchWramBank(&gb->memory, 1);
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
+	if (!gb->memory.sram) {
+		gb->memory.sram = anonymousMemoryMap(0x20000);
+	}
 	gb->memory.sramCurrentBank = 0;
 	gb->memory.sramBank = gb->memory.sram;
 
