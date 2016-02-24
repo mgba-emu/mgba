@@ -72,7 +72,11 @@ int main(int argc, char** argv) {
 
 	void* outputBuffer = malloc(256 * 256 * 4);
 
-	struct mCore* core = GBACoreCreate();
+	struct mCore* core = mCoreFind(args.fname);
+	if (!core) {
+		freeArguments(&args);
+		return 1;
+	}
 	struct mCoreThread context = {
 		.core = core
 	};
