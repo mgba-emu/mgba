@@ -7,12 +7,16 @@
 
 #include "core/core.h"
 
+#ifdef M_CORE_GBA
 #include "gba/gba.h"
-#include "gba/audio.h"
-#include "gba/gui/gui-runner.h"
-#include "gba/input.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 
-#include "gba/renderers/video-software.h"
+#include "gba/input.h"
+#include "gba/gui/gui-runner.h"
+
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/threading.h"
@@ -41,7 +45,7 @@ static void* outputBuffer;
 static vita2d_texture* tex;
 static vita2d_texture* screenshot;
 static Thread audioThread;
-static struct GBASceRotationSource {
+static struct mSceRotationSource {
 	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
@@ -52,7 +56,7 @@ static vita2d_texture* backdrop = 0;
 #define PSP2_SAMPLES 64
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 19)
 
-static struct GBAPSP2AudioContext {
+static struct mPSP2AudioContext {
 	struct CircleBuffer buffer;
 	Mutex mutex;
 	Condition cond;
@@ -64,7 +68,7 @@ static void _mapVitaKey(struct mInputMap* map, int pspKey, enum GBAKey key) {
 }
 
 static THREAD_ENTRY _audioThread(void* context) {
-	struct GBAPSP2AudioContext* audio = (struct GBAPSP2AudioContext*) context;
+	struct mPSP2AudioContext* audio = (struct mPSP2AudioContext*) context;
 	struct GBAStereoSample buffer[PSP2_SAMPLES];
 	int audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, PSP2_SAMPLES, 48000, SCE_AUDIO_OUT_MODE_STEREO);
 	while (audio->running) {
@@ -93,26 +97,26 @@ static THREAD_ENTRY _audioThread(void* context) {
 }
 
 static void _sampleRotation(struct mRotationSource* source) {
-	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
 	sceMotionGetSensorState(&rotation->state, 1);
 }
 
 static int32_t _readTiltX(struct mRotationSource* source) {
-	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
 	return rotation->state.accelerometer.x * 0x60000000;
 }
 
 static int32_t _readTiltY(struct mRotationSource* source) {
-	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
 	return rotation->state.accelerometer.y * 0x60000000;
 }
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
-	struct GBASceRotationSource* rotation = (struct GBASceRotationSource*) source;
+	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
 	return rotation->state.gyro.z * 0x10000000;
 }
 
-uint16_t GBAPSP2PollInput(struct mGUIRunner* runner) {
+uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 
@@ -136,7 +140,7 @@ uint16_t GBAPSP2PollInput(struct mGUIRunner* runner) {
 	return activeKeys;
 }
 
-void GBAPSP2Setup(struct mGUIRunner* runner) {
+void mPSP2Setup(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
@@ -164,19 +168,34 @@ void GBAPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
-	((struct GBA*) runner->core->board)->rotationSource = &rotation.d;
+	runner->core->setRotation(runner->core, &rotation.d);
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 }
 
-void GBAPSP2LoadROM(struct mGUIRunner* runner) {
+void mPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
 	double ratio = GBAAudioCalculateRatio(1, 60, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), GBA_ARM7TDMI_FREQUENCY, 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
-		sceMotionStartSampling();
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+			sceMotionStartSampling();
+		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			sceMotionStartSampling();
+		}
+		break;
+#endif
+	default:
+		break;
 	}
 
 	CircleBufferInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
@@ -186,7 +205,7 @@ void GBAPSP2LoadROM(struct mGUIRunner* runner) {
 	ThreadCreate(&audioThread, _audioThread, &audioContext);
 }
 
-void GBAPSP2PrepareForFrame(struct mGUIRunner* runner) {
+void mPSP2PrepareForFrame(struct mGUIRunner* runner) {
 	MutexLock(&audioContext.mutex);
 	while (blip_samples_avail(runner->core->getAudioChannel(runner->core, 0)) >= PSP2_SAMPLES) {
 		if (CircleBufferSize(&audioContext.buffer) + PSP2_SAMPLES * sizeof(struct GBAStereoSample) > CircleBufferCapacity(&audioContext.buffer)) {
@@ -205,35 +224,51 @@ void GBAPSP2PrepareForFrame(struct mGUIRunner* runner) {
 	MutexUnlock(&audioContext.mutex);
 }
 
-void GBAPSP2UnloadROM(struct mGUIRunner* runner) {
-	if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
-		sceMotionStopSampling();
+void mPSP2UnloadROM(struct mGUIRunner* runner) {
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & (HW_TILT | HW_GYRO)) {
+			sceMotionStopSampling();
+		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			sceMotionStopSampling();
+		}
+		break;
+#endif
+	default:
+		break;
 	}
 	scePowerSetArmClockFrequency(80);
 }
 
-void GBAPSP2Teardown(struct mGUIRunner* runner) {
+void mPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }
 
-void GBAPSP2Draw(struct mGUIRunner* runner, bool faded) {
-	UNUSED(runner);
+void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
+	unsigned width, height;
+	runner->core->desiredVideoDimensions(runner->core, &width, &height);
 	switch (screenMode) {
 	case SM_BACKDROP:
 	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(tex, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_part_scale(tex, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	}
 }
 
-void GBAPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
+void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
 	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
 	int y;
@@ -254,7 +289,7 @@ void GBAPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bo
 	}
 }
 
-void GBAPSP2IncrementScreenMode(struct mGUIRunner* runner) {
+void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
