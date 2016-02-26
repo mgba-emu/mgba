@@ -582,14 +582,14 @@ bool GBAExtdataGet(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GB
 
 bool GBAExtdataSerialize(struct GBAExtdata* extdata, struct VFile* vf) {
 	ssize_t position = vf->seek(vf, 0, SEEK_CUR);
-	ssize_t size = 2;
+	ssize_t size = sizeof(struct GBAExtdataHeader);
 	size_t i = 0;
 	for (i = 1; i < EXTDATA_MAX; ++i) {
 		if (extdata->data[i].data) {
-			size += sizeof(uint64_t) * 2;
+			size += sizeof(struct GBAExtdataHeader);
 		}
 	}
-	if (size == 2) {
+	if (size == sizeof(struct GBAExtdataHeader)) {
 		return true;
 	}
 	struct GBAExtdataHeader* header = malloc(size);
