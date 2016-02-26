@@ -297,7 +297,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (GBRegisterLCDCIsObjSize(renderer->lcdc) && obj->tile & 1) {
 		--tileOffset;
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x9F;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0xE3 : 0x60;
 	uint8_t mask2 = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x83;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {

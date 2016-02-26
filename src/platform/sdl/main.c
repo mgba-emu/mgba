@@ -75,22 +75,20 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	if (args.fname) {
-		renderer.core = mCoreFind(args.fname);
-		if (!renderer.core) {
-			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
-			freeArguments(&args);
-			return 1;
-		}
-		renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
-#ifdef BUILD_GL
-		mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-		mSDLGLES2Create(&renderer);
-#else
-		mSDLSWCreate(&renderer);
-#endif
+	renderer.core = mCoreFind(args.fname);
+	if (!renderer.core) {
+		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
+		freeArguments(&args);
+		return 1;
 	}
+	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+#ifdef BUILD_GL
+	mSDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+	mSDLGLES2Create(&renderer);
+#else
+	mSDLSWCreate(&renderer);
+#endif
 
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
