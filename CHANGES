@@ -11,6 +11,7 @@ Bugfixes:
  - Qt: Fix initial state of key mapping
  - Shaders: Fix AGS-001 shader with some bad drivers
  - Qt: Initialize m_useBios
+ - GBA Serialize: Fix memory corruption bug in GBAExtdataSerialize
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
