@@ -14,6 +14,7 @@ Bugfixes:
  - Qt: Fix initial state of key mapping
  - Shaders: Fix AGS-001 shader with some bad drivers
  - GBA Memory: Fix mirror on non-overdumped Classic NES games
+ - Qt: Initialize m_useBios
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
