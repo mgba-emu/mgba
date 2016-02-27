@@ -271,6 +271,10 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	video->stat = (video->stat & 0x7) | (value & 0x78);
+	if (video->p->model == GB_MODEL_DMG && video->mode == 1) {
+		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+		GBUpdateIRQs(video->p);
+	}
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
