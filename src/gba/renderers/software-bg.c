@@ -41,10 +41,12 @@
 		x += background->dx; \
 		y += background->dy; \
 		\
-		MOSAIC(COORD) \
-		\
 		uint32_t current = *pixel; \
-		if (pixelData && IS_WRITABLE(current)) {	\
+		if (!IS_WRITABLE(current)) { \
+			continue; \
+		} \
+		MOSAIC(COORD) \
+		if (pixelData) { \
 			COMPOSITE_256_ ## OBJWIN (BLEND); \
 		} \
 	}
