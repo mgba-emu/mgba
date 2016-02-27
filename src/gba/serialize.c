@@ -458,8 +458,8 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	}
 	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
 		struct VFile* svf = VFileFromMemory(item.data, item.size);
+		GBASavedataLoad(&gba->memory.savedata, svf);
 		if (svf) {
-			GBASavedataLoad(&gba->memory.savedata, svf);
 			svf->close(svf);
 		}
 	}

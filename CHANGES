@@ -16,6 +16,7 @@ Bugfixes:
  - GBA Memory: Fix mirror on non-overdumped Classic NES games
  - Qt: Initialize m_useBios
  - GBA Serialize: Fix memory corruption bug in GBAExtdataSerialize
+ - GBA Serialize: Fix loading savegames from savestates
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
