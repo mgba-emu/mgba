@@ -520,8 +520,34 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC2(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	mLOG(GB_MBC, STUB, "MBC2 unimplemented");
-}
+	int bank = value & 0xF;
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
+			break;
+		}
+		break;
+	case 0x1:
+		if (!bank) {
+			++bank;
+		}
+		_switchBank(memory, bank);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
+		break;
+	}}
 
 void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
