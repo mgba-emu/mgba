@@ -438,8 +438,8 @@ static void _switchBank(struct GBMemory* memory, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (GB_SIZE_CART_BANK0 - 1);
-		bank /= GB_SIZE_CART_BANK0;
+		bankStart &= (memory->romSize - 1);
+		bank = bankStart / GB_SIZE_CART_BANK0;
 	}
 	memory->romBank = &memory->rom[bankStart];
 	memory->currentBank = bank;
@@ -495,6 +495,22 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			++bank;
 		}
 		_switchBank(memory, bank | (memory->currentBank & 0x60));
+		break;
+	case 0x2:
+		bank &= 3;
+		if (!memory->mbcState.mbc1.mode) {
+			_switchBank(memory, (bank << 5) | (memory->currentBank & 0x1F));
+		} else {
+			_switchSramBank(memory, bank);
+		}
+		break;
+	case 0x3:
+		memory->mbcState.mbc1.mode = value & 1;
+		if (memory->mbcState.mbc1.mode) {
+			_switchBank(memory, memory->currentBank & 0x1F);
+		} else {
+			_switchSramBank(memory, 0);
+		}
 		break;
 	default:
 		// TODO

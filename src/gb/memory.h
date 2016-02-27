@@ -90,6 +90,10 @@ enum GBMBC7MachineState {
 	GBMBC7_STATE_WRITE = 8,
 };
 
+struct GBMBC1State {
+	int mode;
+};
+
 struct GBMBC7State {
 	enum GBMBC7MachineState state;
 	uint32_t sr;
@@ -101,6 +105,7 @@ struct GBMBC7State {
 };
 
 union GBMBCState {
+	struct GBMBC1State mbc1;
 	struct GBMBC7State mbc7;
 };
 
