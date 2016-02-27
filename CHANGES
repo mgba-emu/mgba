@@ -12,6 +12,7 @@ Bugfixes:
  - Shaders: Fix AGS-001 shader with some bad drivers
  - Qt: Initialize m_useBios
  - GBA Serialize: Fix memory corruption bug in GBAExtdataSerialize
+ - GBA Serialize: Fix loading savegames from savestates
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4

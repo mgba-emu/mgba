@@ -124,7 +124,26 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 }
 
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
-	if (savedata->data) {
+	if (savedata->vf) {
+		off_t read = 0;
+		uint8_t buffer[2048];
+		memset(buffer, 0xFF, sizeof(buffer));
+		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
+		while (savedata->vf->seek(savedata->vf, 0, SEEK_CUR) < savedata->vf->size(savedata->vf)) {
+			savedata->vf->write(savedata->vf, buffer, sizeof(buffer));
+		}
+		savedata->vf->seek(savedata->vf, 0, SEEK_SET);
+		if (in) {
+			do {
+				read = in->read(in, buffer, sizeof(buffer));
+				read = savedata->vf->write(savedata->vf, buffer, read);
+			} while (read == sizeof(buffer));
+		}
+		return read >= 0;
+	} else if (savedata->data) {
+		if (!in && savedata->type != SAVEDATA_FORCE_NONE) {
+			return false;
+		}
 		switch (savedata->type) {
 		case SAVEDATA_SRAM:
 			return in->read(in, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
@@ -138,14 +157,6 @@ bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 		case SAVEDATA_FORCE_NONE:
 			return true;
 		}
-	} else if (savedata->vf) {
-		off_t read = 0;
-		uint8_t buffer[2048];
-		do {
-			in->read(in, buffer, read);
-			read = savedata->vf->write(savedata->vf, buffer, sizeof(buffer));
-		} while (read == sizeof(buffer));
-		return read >= 0;
 	}
 	return true;
 }
