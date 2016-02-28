@@ -44,6 +44,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	ARMInit(cpu);
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
+	gbacore->renderer.outputBuffer = NULL;
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;

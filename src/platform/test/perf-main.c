@@ -103,10 +103,6 @@ int main(int argc, char** argv) {
 		didFail = 1;
 		goto cleanup;
 	}
-
-	if (!perfOpts.noVideo) {
-		core->setVideoBuffer(core, outputBuffer, 256);
-	}
 	if (perfOpts.savestate) {
 		_savestate = VFileOpen(perfOpts.savestate, O_RDONLY);
 		free(perfOpts.savestate);
@@ -116,6 +112,9 @@ int main(int argc, char** argv) {
 	char gameCode[5] = { 0 };
 
 	core->init(core);
+	if (!perfOpts.noVideo) {
+		core->setVideoBuffer(core, outputBuffer, 256);
+	}
 	mCoreLoadFile(core, args.fname);
 	mCoreConfigInit(&core->config, "perf");
 	mCoreConfigLoad(&core->config);
