@@ -78,11 +78,11 @@ static void _reloadSettings(void) {
 	var.value = 0;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 		if (strcmp(var.value, "Don't Remove") == 0) {
-			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_IGNORE);
+			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "ignore");
 		} else if (strcmp(var.value, "Remove Known") == 0) {
-			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
+			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 		} else if (strcmp(var.value, "Detect and Remove") == 0) {
-			mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_DETECT);
+			mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 		}
 	}
 

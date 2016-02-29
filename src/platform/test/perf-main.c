@@ -119,13 +119,13 @@ int main(int argc, char** argv) {
 	mCoreConfigInit(&core->config, "perf");
 	mCoreConfigLoad(&core->config);
 
-	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
 	struct mCoreOptions opts = {};
 	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
 	applyArguments(&args, NULL, &core->config);
 	mCoreConfigLoadDefaults(&core->config, &opts);
+	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 	mCoreLoadConfig(core);
 
 	core->reset(core);
