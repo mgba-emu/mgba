@@ -412,22 +412,59 @@ void _GBMemoryHDMAService(struct GB* gb) {
 	}
 }
 
+struct OAMBlock {
+	uint16_t low;
+	uint16_t high;
+};
+
+static const struct OAMBlock _oamBlockDMG[] = {
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+};
+
+static const struct OAMBlock _oamBlockCGB[] = {
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xC000 },
+	{ 0xC000, 0xFE00 },
+	{ 0xA000, 0xC000 },
+};
+
 uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
-	if (address < 0xFF80 || address == 0xFFFF) {
+	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+	block = &block[memory->dmaSource >> 13];
+	if (address >= block->low && address < block->high) {
 		return 0xFF;
 	}
-	return memory->hram[address & GB_SIZE_HRAM];
+	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		return 0xFF;
+	}
+	return GBLoad8(cpu, address);
 }
 
 void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
-	if (address < 0xFF80 || address == 0xFFFF) {
+	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+	block = &block[memory->dmaSource >> 13];
+	if (address >= block->low && address < block->high) {
 		return;
 	}
-	memory->hram[address & GB_SIZE_HRAM] = value;
+	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		return;
+	}
+	GBStore8(cpu, address, value);
 }
 
 uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
