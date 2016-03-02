@@ -137,7 +137,7 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 	return true;
 }
 
-void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
+void applyArguments(const struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
 	if (args->frameskip >= 0) {
 		mCoreConfigSetOverrideIntValue(config, "frameskip", args->frameskip);
 	}

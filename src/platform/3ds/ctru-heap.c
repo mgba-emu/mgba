@@ -33,16 +33,6 @@ extern u32 __ctru_linear_heap_size;
 static u32 __custom_heap_size = 0x02400000;
 static u32 __custom_linear_heap_size = 0x01400000;
 
-extern void (*__system_retAddr)(void);
-
-void envDestroyHandles(void);
-
-void __appExit();
-
-void __libc_fini_array(void);
-
-Result __sync_fini(void) __attribute__((weak));
-
 uint32_t* romBuffer;
 size_t romBufferSize;
 

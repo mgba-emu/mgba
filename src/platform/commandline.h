@@ -41,7 +41,7 @@ struct mGraphicsOpts {
 
 bool parseArguments(struct mArguments* args, int argc, char* const* argv,
                     struct mSubParser* subparser);
-void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config);
+void applyArguments(const struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config);
 void freeArguments(struct mArguments* args);
 
 void usage(const char* arg0, const char* extraOptions);

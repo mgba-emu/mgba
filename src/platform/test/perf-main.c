@@ -10,6 +10,7 @@
 #include "gba/serialize.h"
 
 #include "platform/commandline.h"
+#include "util/socket.h"
 #include "util/string.h"
 #include "util/vfs.h"
 
@@ -23,14 +24,15 @@
 #include <inttypes.h>
 #include <sys/time.h>
 
-#define PERF_OPTIONS "F:L:NPS:"
+#define PERF_OPTIONS "DF:L:NPS:"
 #define PERF_USAGE \
 	"\nBenchmark options:\n" \
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
 	"  -P               CSV output, useful for parsing\n" \
 	"  -S SEC           Run for SEC in-game seconds before exiting\n" \
-	"  -L FILE          Load a savestate when starting the test"
+	"  -L FILE          Load a savestate when starting the test\n" \
+	"  -D               Act as a server"
 
 struct PerfOpts {
 	bool noVideo;
@@ -38,6 +40,7 @@ struct PerfOpts {
 	unsigned duration;
 	unsigned frames;
 	char* savestate;
+	bool server;
 };
 
 #ifdef _3DS
@@ -49,12 +52,17 @@ static void _mPerfRunloop(struct mCore* context, int* frames, bool quiet);
 static void _mPerfShutdown(int signal);
 static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg);
 static void _log(struct mLogger*, int, enum mLogLevel, const char*, va_list);
+static bool _mPerfRunCore(const char* fname, const struct mArguments*, const struct PerfOpts*);
+static bool _mPerfRunServer(const char* listen, const struct mArguments*, const struct PerfOpts*);
 
 static bool _dispatchExiting = false;
 static struct VFile* _savestate = 0;
+static void* _outputBuffer = NULL;
+static Socket _socket = INVALID_SOCKET;
 
 int main(int argc, char** argv) {
 #ifdef _3DS
+	UNUSED(_mPerfShutdown);
     gfxInitDefault();
     osSetSpeedupEnable(true);
 	consoleInit(GFX_BOTTOM, NULL);
@@ -75,7 +83,7 @@ int main(int argc, char** argv) {
 	struct mLogger logger = { .log = _log };
 	mLogSetDefaultLogger(&logger);
 
-	struct PerfOpts perfOpts = { false, false, 0, 0, 0 };
+	struct PerfOpts perfOpts = { false, false, 0, 0, 0, false };
 	struct mSubParser subparser = {
 		.usage = PERF_USAGE,
 		.parse = _parsePerfOpts,
@@ -96,26 +104,50 @@ int main(int argc, char** argv) {
 		goto cleanup;
 	}
 
-	void* outputBuffer = malloc(256 * 256 * 4);
-
-	struct mCore* core = mCoreFind(args.fname);
-	if (!core) {
-		didFail = 1;
-		goto cleanup;
-	}
 	if (perfOpts.savestate) {
 		_savestate = VFileOpen(perfOpts.savestate, O_RDONLY);
 		free(perfOpts.savestate);
+	}
+
+	_outputBuffer = malloc(256 * 256 * 4);
+	if (perfOpts.csv) {
+		puts("game_code,frames,duration,renderer");
+	}
+	if (perfOpts.server) {
+		didFail = !_mPerfRunServer(args.fname, &args, &perfOpts);
+	} else {
+		didFail = !_mPerfRunCore(args.fname, &args, &perfOpts);
+	}
+	free(_outputBuffer);
+
+	if (_savestate) {
+		_savestate->close(_savestate);
+	}
+	cleanup:
+	freeArguments(&args);
+
+#ifdef _3DS
+	gfxExit();
+	acExit();
+#endif
+
+	return didFail;
+}
+
+bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struct PerfOpts* perfOpts) {
+	struct mCore* core = mCoreFind(fname);
+	if (!core) {
+		return false;
 	}
 
 	// TODO: Put back debugger
 	char gameCode[5] = { 0 };
 
 	core->init(core);
-	if (!perfOpts.noVideo) {
-		core->setVideoBuffer(core, outputBuffer, 256);
+	if (!perfOpts->noVideo) {
+		core->setVideoBuffer(core, _outputBuffer, 256);
 	}
-	mCoreLoadFile(core, args.fname);
+	mCoreLoadFile(core, fname);
 	mCoreConfigInit(&core->config, "perf");
 	mCoreConfigLoad(&core->config);
 
@@ -123,7 +155,7 @@ int main(int argc, char** argv) {
 	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
-	applyArguments(&args, NULL, &core->config);
+	applyArguments(args, NULL, &core->config);
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 	mCoreLoadConfig(core);
@@ -131,20 +163,18 @@ int main(int argc, char** argv) {
 	core->reset(core);
 	if (_savestate) {
 		core->loadState(core, _savestate, 0);
-		_savestate->close(_savestate);
-		_savestate = NULL;
 	}
 
 	core->getGameCode(core, gameCode);
 
-	int frames = perfOpts.frames;
+	int frames = perfOpts->frames;
 	if (!frames) {
-		frames = perfOpts.duration * 60;
+		frames = perfOpts->duration * 60;
 	}
 	struct timeval tv;
 	gettimeofday(&tv, 0);
 	uint64_t start = 1000000LL * tv.tv_sec + tv.tv_usec;
-	_mPerfRunloop(core, &frames, perfOpts.csv);
+	_mPerfRunloop(core, &frames, perfOpts->csv);
 	gettimeofday(&tv, 0);
 	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
@@ -152,31 +182,26 @@ int main(int argc, char** argv) {
 	core->deinit(core);
 
 	float scaledFrames = frames * 1000000.f;
-	if (perfOpts.csv) {
-		puts("game_code,frames,duration,renderer");
+	if (perfOpts->csv) {
+		char buffer[256];
 		const char* rendererName;
-		if (perfOpts.noVideo) {
+		if (perfOpts->noVideo) {
 			rendererName = "none";
 		} else {
 			rendererName = "software";
 		}
-		printf("%s,%i,%" PRIu64 ",%s\n", gameCode, frames, duration, rendererName);
+		snprintf(buffer, sizeof(buffer), "%s,%i,%" PRIu64 ",%s\n", gameCode, frames, duration, rendererName);
+		printf("%s", buffer);
+		if (_socket != INVALID_SOCKET) {
+			SocketSend(_socket, buffer, strlen(buffer));
+		}
 	} else {
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
 	mCoreConfigFreeOpts(&opts);
 	mCoreConfigDeinit(&core->config);
-	free(outputBuffer);
-
-	cleanup:
-	freeArguments(&args);
-
-#ifdef _3DS
-	gfxExit();
-#endif
-
-	return didFail;
+	return true;
 }
 
 static void _mPerfRunloop(struct mCore* core, int* frames, bool quiet) {
@@ -212,15 +237,55 @@ static void _mPerfRunloop(struct mCore* core, int* frames, bool quiet) {
 	}
 }
 
+static bool _mPerfRunServer(const char* listen, const struct mArguments* args, const struct PerfOpts* perfOpts) {
+	SocketSubsystemInit();
+	Socket server = SocketOpenTCP(7216, NULL);
+	if (SOCKET_FAILED(server)) {
+		SocketSubsystemDeinit();
+		return false;
+	}
+	if (SOCKET_FAILED(SocketListen(server, 0))) {
+		SocketClose(server);
+		SocketSubsystemDeinit();
+		return false;
+	}
+	_socket = SocketAccept(server, NULL);
+	if (perfOpts->csv) {
+		const char* header = "game_code,frames,duration,renderer\n";
+		SocketSend(_socket, header, strlen(header));
+	}
+	char path[PATH_MAX];
+	while (SocketRecv(_socket, path, sizeof(path)) > 0) {
+		char* nl = strchr(path, '\n');
+		if (nl == path) {
+			break;
+		}
+		if (nl) {
+			nl[0] = '\0';
+		}
+		if (!_mPerfRunCore(path, args, perfOpts)) {
+			break;
+		}
+	}
+	SocketClose(_socket);
+	SocketClose(server);
+	SocketSubsystemDeinit();
+	return true;
+}
+
 static void _mPerfShutdown(int signal) {
 	UNUSED(signal);
 	_dispatchExiting = true;
+	SocketClose(_socket);
 }
 
 static bool _parsePerfOpts(struct mSubParser* parser, int option, const char* arg) {
 	struct PerfOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {
+	case 'D':
+		opts->server = true;
+		return true;
 	case 'F':
 		opts->frames = strtoul(arg, 0, 10);
 		return !errno;
