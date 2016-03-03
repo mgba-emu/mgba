@@ -54,6 +54,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+	free(core);
 }
 
 static enum mPlatform _GBCorePlatform(struct mCore* core) {
