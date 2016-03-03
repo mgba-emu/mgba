@@ -120,6 +120,7 @@ void GBUnloadROM(struct GB* gb) {
 #ifndef _3DS
 		gb->romVf->unmap(gb->romVf, gb->pristineRom, gb->pristineRomSize);
 #endif
+		gb->romVf->close(gb->romVf);
 		gb->pristineRom = 0;
 		gb->romVf = 0;
 	}
