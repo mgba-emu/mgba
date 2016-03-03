@@ -867,6 +867,7 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 			}
 		}
 	}
+	manifest->close(manifest);
 	ConfigurationDeinit(&description);
 	return success;
 }
