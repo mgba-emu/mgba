@@ -141,7 +141,7 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	}
 
 	// TODO: Put back debugger
-	char gameCode[5] = { 0 };
+	char gameCode[9] = { 0 };
 
 	core->init(core);
 	if (!perfOpts->noVideo) {
