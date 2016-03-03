@@ -98,6 +98,9 @@ if(BUILD_PERF)
 	add_custom_target(${BINARY_NAME}-perf.3dsx ALL
 	                  ${3DSXTOOL} ../${BINARY_NAME}-perf ${BINARY_NAME}-perf.3dsx --smdh=${BINARY_NAME}.smdh
 	                  DEPENDS ${BINARY_NAME}-perf ${BINARY_NAME}.smdh)
+	install(FILES
+		    ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}-perf.3dsx
+		    DESTINATION . COMPONENT ${BINARY_NAME}-3ds)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cia.rsf.in ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf)
