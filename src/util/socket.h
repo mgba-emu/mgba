@@ -109,6 +109,14 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 #endif
 }
 
+static inline int SocketClose(Socket socket) {
+#ifdef _WIN32
+	return closesocket(socket) == 0;
+#else
+	return close(socket) >= 0;
+#endif
+}
+
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
@@ -145,7 +153,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #endif
 	}
 	if (err) {
-		close(sock);
+		SocketClose(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
@@ -183,7 +191,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 	}
 
 	if (err) {
-		close(sock);
+		SocketClose(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
@@ -215,10 +223,6 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 #endif
 	}
 	return INVALID_SOCKET;
-}
-
-static inline int SocketClose(Socket socket) {
-	return close(socket) >= 0;
 }
 
 static inline int SocketSetBlocking(Socket socket, bool blocking) {
