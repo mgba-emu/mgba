@@ -175,20 +175,24 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->model = GB_MODEL_CGB;
 		gb->audio.style = GB_AUDIO_CGB;
 		cpu->a = 0x11;
+		cpu->f.packed = 0x80;
+		cpu->c = 0;
+		cpu->e = 0x08;
+		cpu->h = 0;
+		cpu->l = 0x7C;
 	} else {
 		// TODO: SGB
 		gb->model = GB_MODEL_DMG;
 		gb->audio.style = GB_AUDIO_DMG;
 		cpu->a = 1;
+		cpu->f.packed = 0xB0;
+		cpu->c = 0x13;
+		cpu->e = 0xD8;
+		cpu->h = 1;
+		cpu->l = 0x4D;
 	}
-
-	cpu->f.packed = 0xB0;
 	cpu->b = 0;
-	cpu->c = 0x13;
 	cpu->d = 0;
-	cpu->e = 0xD8;
-	cpu->h = 1;
-	cpu->l = 0x4D;
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
