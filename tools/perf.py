@@ -103,12 +103,15 @@ class PerfServer(object):
         self.results.append(next(self.reader))
         self.iterations -= 1
         if self.iterations == 0:
-            self.socket.send("\n");
-            self.reader = None
-            self.socket.close()
-            time.sleep(5)
-            self.socket = None
+            self.finish()
             self.iterations = self.ITERATIONS_PER_INSTANCE
+
+    def finish(self):
+        self.socket.send("\n");
+        self.reader = None
+        self.socket.close()
+        time.sleep(5)
+        self.socket = None
 
 class Suite(object):
     def __init__(self, cwd, wall=None, game=None, renderer='software'):
@@ -153,6 +156,7 @@ class Suite(object):
                 if test.results:
                     results.append(test.results)
         if self.server:
+            self.server.finish()
             results.extend(self.server.results)
         return results
 
