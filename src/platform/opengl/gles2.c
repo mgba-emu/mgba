@@ -5,10 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gles2.h"
 
+#include "core/log.h"
 #include "util/configuration.h"
 #include "util/formatting.h"
 #include "util/vector.h"
 #include "util/vfs.h"
+
+mLOG_DECLARE_CATEGORY(OPENGL);
+mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL");
 
 #define MAX_PASSES 8
 
@@ -381,17 +385,17 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	glCompileShader(shader->fragmentShader);
 	glGetShaderInfoLog(shader->fragmentShader, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 	glCompileShader(shader->vertexShader);
 	glGetShaderInfoLog(shader->vertexShader, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 	glLinkProgram(shader->program);
 	glGetProgramInfoLog(shader->program, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 
 	shader->texLocation = glGetUniformLocation(shader->program, "tex");
