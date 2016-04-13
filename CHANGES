@@ -28,6 +28,7 @@ Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - FFmpeg: Update dependencies on Ubuntu
  - OpenGL: Log shader compilation failure
+ - All: Allow use of external minizip library
 
 0.4.0: (2016-02-02)
 Features:
