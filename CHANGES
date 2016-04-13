@@ -22,6 +22,7 @@ Misc:
  - Qt: Update 360 input profile on OS X to reflect newer drivers
  - Qt: Remove use of NaN
  - FFmpeg: Update dependencies on Ubuntu
+ - All: Allow use of external minizip library
 
 0.4.0: (2016-02-02)
 Features:
