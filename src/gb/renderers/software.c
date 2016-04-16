@@ -108,7 +108,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
-	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc)) {
+	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
 			if (softwareRenderer->wx - 7 > 0) {
 				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, y, softwareRenderer->scx, softwareRenderer->scy);
@@ -195,7 +195,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 			if (renderer->model >= GB_MODEL_CGB) {
 				GBObjAttributes attrs = attr[topX + topY];
 				p = GBObjAttributesGetCGBPalette(attrs) * 4;
-				if (GBObjAttributesIsPriority(attrs)) {
+				if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
 					p |= 0x80;
 				}
 				if (GBObjAttributesIsBank(attrs)) {
@@ -230,7 +230,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		if (renderer->model >= GB_MODEL_CGB) {
 			GBObjAttributes attrs = attr[topX + topY];
 			p = GBObjAttributesGetCGBPalette(attrs) * 4;
-			if (GBObjAttributesIsPriority(attrs)) {
+			if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
 				p |= 0x80;
 			}
 			if (GBObjAttributesIsBank(attrs)) {
@@ -304,6 +304,10 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 		p = (GBObjAttributesGetCGBPalette(obj->attr) + 8) * 4;
 		if (GBObjAttributesIsBank(obj->attr)) {
 			data += GB_SIZE_VRAM_BANK0;
+		}
+		if (!GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
+			mask = 0x60;
+			mask2 = 0x83;
 		}
 	} else {
 		p = (GBObjAttributesGetPalette(obj->attr) + 8) * 4;
