@@ -15,6 +15,7 @@
 #include <QWidget>
 
 extern "C" {
+#include "core/interface.h"
 #include "util/configuration.h"
 }
 

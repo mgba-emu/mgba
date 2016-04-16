@@ -22,6 +22,9 @@ extern "C" {
 #endif
 }
 
+struct mRotationSource;
+struct mRumble;
+
 namespace QGBA {
 
 class ConfigController;
