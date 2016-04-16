@@ -38,7 +38,6 @@ Features
 - Re-recording support for tool-assist runs. ([Bugzilla keyword "TASBlocker"](https://endrift.com/mgba/bugs/buglist.cgi?quicksearch=TASBlocker))
 - Lua support for scripting ([Bug #62](http://mgba.io/b/62)).
 - A comprehensive debug suite ([Bug #132](http://mgba.io/b/132)).
-- OpenEmu core.
 - e-Reader support. ([Bug #171](http://mgba.io/b/171))
 
 
