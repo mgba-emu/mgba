@@ -69,12 +69,16 @@ private:
 	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1},
 	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1}},
 	                       const KeyList<AxisValue> axes = {
-	                                                       {}, {}, {}, {},
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 },
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 },
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 },
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 },
 	                                                       { GamepadAxisEvent::Direction::POSITIVE, 0 },
 	                                                       { GamepadAxisEvent::Direction::NEGATIVE, 0 },
 	                                                       { GamepadAxisEvent::Direction::NEGATIVE, 1 },
 	                                                       { GamepadAxisEvent::Direction::POSITIVE, 1 },
-	                                                       {}, {}},
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 },
+	                                                       { GamepadAxisEvent::Direction::NEUTRAL, -1 }},
 	                       const struct Coord& tiltAxis = { 2, 3 },
 	                       const struct Coord& gyroAxis = { 0, 1 },
 	                       float gyroSensitivity = 2e+09f);
