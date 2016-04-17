@@ -35,28 +35,46 @@ private:
 		int axis;
 	};
 
-	struct ShortcutButton {
-		const char* shortcut;
-		int button;
+	template <typename T> struct Shortcuts {
+		T loadState;
+		T saveState;
+		T holdFastForward;
+		T holdRewind;
 	};
 
-	struct ShortcutAxis {
-		const char* shortcut;
+	struct Axis {
 		GamepadAxisEvent::Direction direction;
 		int axis;
 	};
 
+	template <typename T> struct KeyList {
+		T keyA;
+		T keyB;
+		T keySelect;
+		T keyStart;
+		T keyRight;
+		T keyLeft;
+		T keyUp;
+		T keyDown;
+		T keyR;
+		T keyL;
+	};
+
 	constexpr InputProfile(const char* name,
-	                       int keys[GBA_KEY_MAX],
-	                       const ShortcutButton* shortcutButtons = (ShortcutButton[]) {{}},
-	                       const ShortcutAxis* shortcutAxes = (ShortcutAxis[]) {{}},
-	                       AxisValue axes[GBA_KEY_MAX] = (AxisValue[GBA_KEY_MAX]) {
-	                       	                             {}, {}, {}, {}, 
-	                                                     { GamepadAxisEvent::Direction::POSITIVE, 0 },
-	                                                     { GamepadAxisEvent::Direction::NEGATIVE, 0 },
-	                                                     { GamepadAxisEvent::Direction::NEGATIVE, 1 },
-	                                                     { GamepadAxisEvent::Direction::POSITIVE, 1 },
-	                                                     {}, {}},
+	                       const KeyList<int> keys,
+	                       const Shortcuts<int> shortcutButtons = { -1, -1, -1, -1},
+	                       const Shortcuts<Axis> shortcutAxes = {
+	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1},
+	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1},
+	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1},
+	                                                            {GamepadAxisEvent::Direction::NEUTRAL, -1}},
+	                       const KeyList<AxisValue> axes = {
+	                                                       {}, {}, {}, {},
+	                                                       { GamepadAxisEvent::Direction::POSITIVE, 0 },
+	                                                       { GamepadAxisEvent::Direction::NEGATIVE, 0 },
+	                                                       { GamepadAxisEvent::Direction::NEGATIVE, 1 },
+	                                                       { GamepadAxisEvent::Direction::POSITIVE, 1 },
+	                                                       {}, {}},
 	                       const struct Coord& tiltAxis = { 2, 3 },
 	                       const struct Coord& gyroAxis = { 0, 1 },
 	                       float gyroSensitivity = 2e+09f);
@@ -66,8 +84,8 @@ private:
 	const char* m_profileName;
 	const int m_keys[GBA_KEY_MAX];
 	const AxisValue m_axes[GBA_KEY_MAX];
-	const ShortcutButton* m_shortcutButtons;
-	const ShortcutAxis* m_shortcutAxes;
+	const Shortcuts<int> m_shortcutButtons;
+	const Shortcuts<Axis> m_shortcutAxes;
 	Coord m_tiltAxis;
 	Coord m_gyroAxis;
 	float m_gyroSensitivity;

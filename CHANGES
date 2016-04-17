@@ -29,6 +29,7 @@ Misc:
  - FFmpeg: Update dependencies on Ubuntu
  - OpenGL: Log shader compilation failure
  - All: Allow use of external minizip library
+ - Qt: Remove some C99isms from C++ code
 
 0.4.0: (2016-02-02)
 Features:
