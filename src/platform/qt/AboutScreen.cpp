@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AboutScreen.h"
 
+extern "C" {
 #include "util/version.h"
+}
 
 #include <QPixmap>
 

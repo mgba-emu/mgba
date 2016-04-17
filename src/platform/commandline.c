@@ -20,7 +20,11 @@
 #include "util/string.h"
 
 #include <fcntl.h>
+#ifdef _MSC_VER
+#include "platform/windows/getopt.h"
+#else
 #include <getopt.h>
+#endif
 
 #define GRAPHICS_OPTIONS "123456f"
 #define GRAPHICS_USAGE \
