@@ -201,6 +201,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 }
 
 QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass) {
+#if !defined(_WIN32) || defined(USE_EPOXY)
 	if (!shader->nUniforms) {
 		return nullptr;
 	}
@@ -253,6 +254,9 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 		layout->addRow(shader->uniforms[u].readableName, settings);
 	}
 	return page;
+#else
+	return nullptr;
+#endif
 }
 
 void ShaderSelector::buttonPressed(QAbstractButton* button) {
