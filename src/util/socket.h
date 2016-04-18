@@ -8,12 +8,11 @@
 
 #include "util/common.h"
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(restrict)
 #define restrict __restrict__
 #endif
 
 #ifdef _WIN32
-#include <winsock2.h>
 #include <ws2tcpip.h>
 
 #define SOCKET_FAILED(s) ((s) == INVALID_SOCKET)
