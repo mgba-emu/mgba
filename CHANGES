@@ -19,6 +19,7 @@ Bugfixes:
  - GBA Serialize: Fix loading savegames from savestates
  - All: Fix several file handle leaks
  - Util: Use closesocket on Windows
+ - GBA Memory: Fix executing code from OBJ region of VRAM
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
