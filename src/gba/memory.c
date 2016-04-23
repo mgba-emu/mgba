@@ -268,12 +268,12 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		cpu->memory.activeMask = SIZE_PALETTE_RAM - 1;
 		break;
 	case REGION_VRAM:
-		if (address < 0x06010000) {
-			cpu->memory.activeRegion = (uint32_t*) gba->video.renderer->vram;
-			cpu->memory.activeMask = 0x0000FFFF;
-		} else {
+		if (address & 0x10000) {
 			cpu->memory.activeRegion = (uint32_t*) &gba->video.renderer->vram[0x8000];
 			cpu->memory.activeMask = 0x00007FFF;
+		} else {
+			cpu->memory.activeRegion = (uint32_t*) gba->video.renderer->vram;
+			cpu->memory.activeMask = 0x0000FFFF;
 		}
 		break;
 	case REGION_OAM:
