@@ -11,6 +11,7 @@
 #include "gba/context/overrides.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
+#include "gba/supervisor/cli.h"
 #include "util/memory.h"
 #include "util/patch.h"
 #include "util/vfs.h"
@@ -19,8 +20,9 @@ struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
-	struct mCPUComponent* components[GBA_COMPONENT_MAX];
+	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct mDebuggerPlatform* debuggerPlatform;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -35,12 +37,14 @@ static bool _GBACoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gba;
+	core->debugger = NULL;
+	gbacore->debuggerPlatform = NULL;
 	gbacore->overrides = 0;
 
 	GBACreate(gba);
 	// TODO: Restore debugger and cheats
 	memset(gbacore->components, 0, sizeof(gbacore->components));
-	ARMSetComponents(cpu, &gba->d, GBA_COMPONENT_MAX, gbacore->components);
+	ARMSetComponents(cpu, &gba->d, CPU_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
@@ -288,12 +292,90 @@ static void _GBACoreSetRumble(struct mCore* core, struct mRumble* rumble) {
 	gba->rumble = rumble;
 }
 
+static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address, 0);
+}
+
+static uint32_t _GBACoreBusRead16(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address, 0);
+
+}
+
+static uint32_t _GBACoreBusRead32(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load32(cpu, address, 0);
+}
+
+static void _GBACoreBusWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value, 0);
+}
+
+static void _GBACoreBusWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store16(cpu, address, value, 0);
+}
+
+static void _GBACoreBusWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store32(cpu, address, value, 0);
+}
+
+static bool _GBACoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
+	UNUSED(core);
+	switch (type) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		return true;
+#endif
+#ifdef USE_GDB_STUB
+	case DEBUGGER_GDB:
+		return true;
+#endif
+	default:
+		return false;
+	}
+}
+
+static struct mDebuggerPlatform* _GBACoreDebuggerPlatform(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (!gbacore->debuggerPlatform) {
+		gbacore->debuggerPlatform = ARMDebuggerPlatformCreate();
+	}
+	return gbacore->debuggerPlatform;
+}
+
+static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
+#ifdef USE_CLI_DEBUGGER
+	return &GBACLIDebuggerCreate(core)->d;
+#else
+	UNUSED(core);
+	return NULL;
+#endif
+}
+
+static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	if (core->debugger) {
+		GBADetachDebugger(core->board);
+	}
+	GBAAttachDebugger(core->board, debugger);
+	core->debugger = debugger;
+}
+
+static void _GBACoreDetachDebugger(struct mCore* core) {
+	GBADetachDebugger(core->board);
+	core->debugger = NULL;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
 	memset(&core->opts, 0, sizeof(core->opts));
-	core->cpu = 0;
-	core->board = 0;
+	core->cpu = NULL;
+	core->board = NULL;
+	core->debugger = NULL;
 	core->init = _GBACoreInit;
 	core->deinit = _GBACoreDeinit;
 	core->platform = _GBACorePlatform;
@@ -329,5 +411,16 @@ struct mCore* GBACoreCreate(void) {
 	core->setRTC = _GBACoreSetRTC;
 	core->setRotation = _GBACoreSetRotation;
 	core->setRumble = _GBACoreSetRumble;
+	core->busRead8 = _GBACoreBusRead8;
+	core->busRead16 = _GBACoreBusRead16;
+	core->busRead32 = _GBACoreBusRead32;
+	core->busWrite8 = _GBACoreBusWrite8;
+	core->busWrite16 = _GBACoreBusWrite16;
+	core->busWrite32 = _GBACoreBusWrite32;
+	core->supportsDebuggerType = _GBACoreSupportsDebuggerType;
+	core->debuggerPlatform = _GBACoreDebuggerPlatform;
+	core->cliDebuggerSystem = _GBACoreCliDebuggerSystem;
+	core->attachDebugger = _GBACoreAttachDebugger;
+	core->detachDebugger = _GBACoreDetachDebugger;
 	return core;
 }

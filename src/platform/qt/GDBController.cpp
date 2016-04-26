@@ -41,12 +41,12 @@ void GDBController::attach() {
 	}
 	m_gameController->setDebugger(&m_gdbStub.d);
 	if (m_gameController->isLoaded()) {
-		DebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+		mDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		QObject::disconnect(m_autoattach);
 		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this]() {
 			QObject::disconnect(m_autoattach);
-			DebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+			mDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 		});
 	}
 }
@@ -81,6 +81,6 @@ void GDBController::breakInto() {
 		return;
 	}
 	m_gameController->threadInterrupt();
-	DebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_MANUAL, 0);
+	mDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_MANUAL, 0);
 	m_gameController->threadContinue();
 }

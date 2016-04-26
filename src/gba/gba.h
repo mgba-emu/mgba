@@ -9,8 +9,8 @@
 #include "util/common.h"
 
 #include "arm/arm.h"
+#include "arm/debugger.h"
 #include "core/log.h"
-#include "debugger/debugger.h"
 
 #include "gba/interface.h"
 #include "gba/memory.h"
@@ -35,12 +35,6 @@ enum GBAIRQ {
 	IRQ_DMA3 = 0xB,
 	IRQ_KEYPAD = 0xC,
 	IRQ_GAMEPAK = 0xD
-};
-
-enum GBAComponent {
-	GBA_COMPONENT_DEBUGGER,
-	GBA_COMPONENT_CHEAT_DEVICE,
-	GBA_COMPONENT_MAX
 };
 
 enum GBAIdleLoopOptimization {
@@ -87,7 +81,7 @@ struct GBA {
 
 	struct mCoreSync* sync;
 
-	struct Debugger* debugger;
+	struct ARMDebugger* debugger;
 
 	uint32_t bus;
 	int performingDMA;
@@ -161,7 +155,7 @@ void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 
-void GBAAttachDebugger(struct GBA* gba, struct Debugger* debugger);
+void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
 void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,

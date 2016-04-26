@@ -254,12 +254,56 @@ static void _GBCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
 	gb->memory.rumble = rumble;
 }
 
+static uint32_t _GBCoreBusRead8(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address);
+}
+
+static uint32_t _GBCoreBusRead16(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address) | (cpu->memory.load8(cpu, address + 1) << 8);
+}
+
+static uint32_t _GBCoreBusRead32(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address) | (cpu->memory.load8(cpu, address + 1) << 8) |
+	       (cpu->memory.load8(cpu, address + 2) << 16) | (cpu->memory.load8(cpu, address + 3) << 24);
+}
+
+static void _GBCoreBusWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+}
+
+static void _GBCoreBusWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+	cpu->memory.store8(cpu, address + 1, value >> 8);
+}
+
+static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+	cpu->memory.store8(cpu, address + 1, value >> 8);
+	cpu->memory.store8(cpu, address + 2, value >> 16);
+	cpu->memory.store8(cpu, address + 3, value >> 24);
+}
+
+static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
+	return false;
+}
+
+static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
+	return 0;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
 	memset(&core->opts, 0, sizeof(core->opts));
-	core->cpu = 0;
-	core->board = 0;
+	core->cpu = NULL;
+	core->board = NULL;
+	core->debugger = NULL;
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
 	core->platform = _GBCorePlatform;
@@ -295,5 +339,13 @@ struct mCore* GBCoreCreate(void) {
 	core->setRTC = _GBCoreSetRTC;
 	core->setRotation = _GBCoreSetRotation;
 	core->setRumble = _GBCoreSetRumble;
+	core->busRead8 = _GBCoreBusRead8;
+	core->busRead16 = _GBCoreBusRead16;
+	core->busRead32 = _GBCoreBusRead32;
+	core->busWrite8 = _GBCoreBusWrite8;
+	core->busWrite16 = _GBCoreBusWrite16;
+	core->busWrite32 = _GBCoreBusWrite32;
+	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
+	core->debuggerPlatform = _GBCoreDebuggerPlatform;
 	return core;
 }

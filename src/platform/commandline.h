@@ -19,7 +19,7 @@ struct mArguments {
 	int logLevel;
 	int frameskip;
 
-	enum DebuggerType debuggerType;
+	enum mDebuggerType debuggerType;
 	bool debugAtStart;
 	bool showHelp;
 	bool showVersion;
@@ -48,7 +48,5 @@ void usage(const char* arg0, const char* extraOptions);
 void version(const char* arg0);
 
 void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
-struct mCore;
-struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core);
 
 #endif

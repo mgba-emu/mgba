@@ -116,7 +116,17 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	_changeState(threadContext, THREAD_RUNNING, true);
 
 	while (threadContext->state < THREAD_EXITING) {
-		core->runLoop(core);
+		struct mDebugger* debugger = core->debugger;
+		if (debugger) {
+			mDebuggerRun(debugger);
+			if (debugger->state == DEBUGGER_SHUTDOWN) {
+				_changeState(threadContext, THREAD_EXITING, false);
+			}
+		} else {
+			while (threadContext->state == THREAD_RUNNING) {
+				core->runLoop(core);
+			}
+		}
 
 		int resetScheduled = 0;
 		MutexLock(&threadContext->stateMutex);

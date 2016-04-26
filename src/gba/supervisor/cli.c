@@ -5,12 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli.h"
 
+#include "arm/cli-debugger.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
 
 #ifdef USE_CLI_DEBUGGER
-
-static const char* ERROR_MISSING_ARGS = "Arguments missing"; // TODO: share
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
 static void _GBACLIDebuggerDeinit(struct CLIDebuggerSystem*);
@@ -32,6 +31,7 @@ struct CLIDebuggerCommandSummary _GBACLIDebuggerCommands[] = {
 
 struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 	struct GBACLIDebugger* debugger = malloc(sizeof(struct GBACLIDebugger));
+	ARMCLIDebuggerCreate(&debugger->d);
 	debugger->d.init = _GBACLIDebuggerInit;
 	debugger->d.deinit = _GBACLIDebuggerDeinit;
 	debugger->d.custom = _GBACLIDebuggerCustom;
@@ -60,7 +60,7 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 	if (gbaDebugger->frameAdvance) {
 		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1])) {
-			DebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
+			mDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}

@@ -271,14 +271,20 @@ void GameController::setConfig(const mCoreConfig* config) {
 }
 
 #ifdef USE_GDB_STUB
-Debugger* GameController::debugger() {
-	// TODO: Put back debugger
-	return nullptr;
+mDebugger* GameController::debugger() {
+	if (!isLoaded()) {
+		return nullptr;
+	}
+	return m_threadContext.core->debugger;
 }
 
-void GameController::setDebugger(Debugger* debugger) {
+void GameController::setDebugger(mDebugger* debugger) {
 	threadInterrupt();
-	// TODO: Put back debugger
+	if (debugger) {
+		mDebuggerAttach(debugger, m_threadContext.core);
+	} else {
+		m_threadContext.core->detachDebugger(m_threadContext.core);
+	}
 	threadContinue();
 }
 #endif

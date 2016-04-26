@@ -382,8 +382,8 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		svf->close(svf);
 	}
 	struct VFile* cheatVf = 0;
-	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
-		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 		cheatVf = VFileMemChunk(0, 0);
 		if (cheatVf) {
 			GBACheatSaveFile(device, cheatVf);
@@ -477,9 +477,9 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 			svf->close(svf);
 		}
 	}
-	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
 		if (item.size) {
-			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 			struct VFile* svf = VFileFromMemory(item.data, item.size);
 			if (svf) {
 				GBACheatDeviceClear(device);

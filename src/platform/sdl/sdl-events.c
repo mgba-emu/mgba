@@ -407,7 +407,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
 		case SDLK_F11:
-			// TODO: Put back debugger
+			if (context->core->debugger) {
+				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);
+			}
 			return;
 #ifdef USE_PNG
 		case SDLK_F12:

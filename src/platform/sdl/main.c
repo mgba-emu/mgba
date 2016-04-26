@@ -158,7 +158,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	// TODO: Put back debugger
+	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
+	if (debugger) {
+		mDebuggerAttach(debugger, renderer->core);
+		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
+	}
 
 	if (args->patch) {
 		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);

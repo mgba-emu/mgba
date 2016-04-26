@@ -316,7 +316,7 @@ find_feature(USE_MAGICK "MagickWand")
 find_feature(USE_EPOXY "epoxy")
 
 # Features
-set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c ${CMAKE_SOURCE_DIR}/src/debugger/memory-debugger.c)
+set(DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/debugger.c)
 set(FEATURE_SRC)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6")
 
@@ -326,9 +326,9 @@ endif()
 
 if(USE_CLI_DEBUGGER)
 	list(APPEND FEATURES CLI_DEBUGGER)
-	list(APPEND FEATURE_SRC ${CMAKE_SOURCE_DIR}/src/debugger/cli-debugger.c)
-	list(APPEND FEATURE_SRC ${CMAKE_SOURCE_DIR}/src/debugger/parser.c)
-	list(APPEND FEATURE_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/cli.c)
+	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/cli-debugger.c)
+	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/debugger/parser.c)
+	list(APPEND DEBUGGER_SRC ${CMAKE_SOURCE_DIR}/src/gba/supervisor/cli.c)
 	include_directories(AFTER ${LIBEDIT_INCLUDE_DIRS})
 	link_directories(${LIBEDIT_LIBRARY_DIRS})
 	set(DEBUGGER_LIB ${LIBEDIT_LIBRARIES})

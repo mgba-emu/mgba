@@ -165,11 +165,12 @@ void GBACheatSetDeinit(struct GBACheatSet* set) {
 }
 
 void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice* device) {
-	if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
-		ARMHotplugDetach(gba->cpu, GBA_COMPONENT_CHEAT_DEVICE);
+	// TODO: Remove this function
+	if (gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		ARMHotplugDetach(gba->cpu, CPU_COMPONENT_CHEAT_DEVICE);
 	}
-	gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE] = &device->d;
-	ARMHotplugAttach(gba->cpu, GBA_COMPONENT_CHEAT_DEVICE);
+	gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE] = &device->d;
+	ARMHotplugAttach(gba->cpu, CPU_COMPONENT_CHEAT_DEVICE);
 }
 
 void GBACheatAddSet(struct GBACheatDevice* device, struct GBACheatSet* cheats) {

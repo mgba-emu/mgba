@@ -30,7 +30,7 @@ extern "C" {
 struct GBAAudio;
 struct mCoreConfig;
 struct Configuration;
-struct Debugger;
+struct mDebugger;
 
 class QThread;
 
@@ -79,8 +79,8 @@ public:
 	int stateSlot() const { return m_stateSlot; }
 
 #ifdef USE_GDB_STUB
-	Debugger* debugger();
-	void setDebugger(Debugger*);
+	mDebugger* debugger();
+	void setDebugger(mDebugger*);
 #endif
 
 signals:
