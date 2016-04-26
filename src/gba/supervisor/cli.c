@@ -12,7 +12,6 @@
 #ifdef USE_CLI_DEBUGGER
 
 static void _GBACLIDebuggerInit(struct CLIDebuggerSystem*);
-static void _GBACLIDebuggerDeinit(struct CLIDebuggerSystem*);
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem*);
 static uint32_t _GBACLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 
@@ -33,7 +32,7 @@ struct GBACLIDebugger* GBACLIDebuggerCreate(struct mCore* core) {
 	struct GBACLIDebugger* debugger = malloc(sizeof(struct GBACLIDebugger));
 	ARMCLIDebuggerCreate(&debugger->d);
 	debugger->d.init = _GBACLIDebuggerInit;
-	debugger->d.deinit = _GBACLIDebuggerDeinit;
+	debugger->d.deinit = NULL;
 	debugger->d.custom = _GBACLIDebuggerCustom;
 	debugger->d.lookupIdentifier = _GBACLIDebuggerLookupIdentifier;
 
@@ -49,10 +48,6 @@ static void _GBACLIDebuggerInit(struct CLIDebuggerSystem* debugger) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
 
 	gbaDebugger->frameAdvance = false;
-}
-
-static void _GBACLIDebuggerDeinit(struct CLIDebuggerSystem* debugger) {
-	UNUSED(debugger);
 }
 
 static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {

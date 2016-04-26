@@ -6,8 +6,10 @@
 #include "core.h"
 
 #include "core/core.h"
+#include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
+#include "lr35902/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
 
@@ -15,6 +17,8 @@ struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
 	uint8_t keys;
+	struct mCPUComponent* components[CPU_COMPONENT_MAX];
+	struct mDebuggerPlatform* debuggerPlatform;
 };
 
 static bool _GBCoreInit(struct mCore* core) {
@@ -29,9 +33,11 @@ static bool _GBCoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gb;
+	gbcore->debuggerPlatform = NULL;
 
 	GBCreate(gb);
-	LR35902SetComponents(cpu, &gb->d, 0, 0);
+	memset(gbcore->components, 0, sizeof(gbcore->components));
+	LR35902SetComponents(cpu, &gb->d, CPU_COMPONENT_MAX, gbcore->components);
 	LR35902Init(cpu);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
@@ -290,11 +296,49 @@ static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 }
 
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
-	return false;
+	UNUSED(core);
+	switch (type) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		return true;
+#endif
+	default:
+		return false;
+	}
 }
 
 static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
-	return 0;
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (!gbcore->debuggerPlatform) {
+		gbcore->debuggerPlatform = LR35902DebuggerPlatformCreate();
+	}
+	return gbcore->debuggerPlatform;
+}
+
+static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
+#ifdef USE_CLI_DEBUGGER
+	return GBCLIDebuggerCreate(core);
+#else
+	UNUSED(core);
+	return NULL;
+#endif
+}
+
+static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	struct LR35902Core* cpu = core->cpu;
+	if (core->debugger) {
+		LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	}
+	cpu->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	LR35902HotplugAttach(cpu, CPU_COMPONENT_DEBUGGER);
+	core->debugger = debugger;
+}
+
+static void _GBCoreDetachDebugger(struct mCore* core) {
+	struct LR35902Core* cpu = core->cpu;
+	LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
+	core->debugger = NULL;
 }
 
 struct mCore* GBCoreCreate(void) {
@@ -347,5 +391,8 @@ struct mCore* GBCoreCreate(void) {
 	core->busWrite32 = _GBCoreBusWrite32;
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;
+	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;
+	core->attachDebugger = _GBCoreAttachDebugger;
+	core->detachDebugger = _GBCoreDetachDebugger;
 	return core;
 }

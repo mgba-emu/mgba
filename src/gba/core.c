@@ -42,7 +42,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->overrides = 0;
 
 	GBACreate(gba);
-	// TODO: Restore debugger and cheats
+	// TODO: Restore cheats
 	memset(gbacore->components, 0, sizeof(gbacore->components));
 	ARMSetComponents(cpu, &gba->d, CPU_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
