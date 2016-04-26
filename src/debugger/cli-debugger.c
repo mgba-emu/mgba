@@ -430,13 +430,17 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (cliDebugger->system) {
-		uint32_t value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
+		uint32_t value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
 			return value;
 		}
-	} else {
-		dv->type = CLIDV_ERROR_TYPE;
+		dv->type = CLIDV_INT_TYPE;
+		value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
+		if (dv->type != CLIDV_ERROR_TYPE) {
+			return value;
+		}
 	}
+	dv->type = CLIDV_ERROR_TYPE;
 	return 0;
 }
 

@@ -179,9 +179,8 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
 }
 
-static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	struct ARMCore* cpu = debugger->core->cpu;
+static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
+	struct ARMCore* cpu = debugger->p->d.core->cpu;
 	if (strcmp(name, "sp") == 0) {
 		return cpu->gprs[ARM_SP];
 	}
@@ -204,20 +203,14 @@ static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, 
 			return cpu->gprs[reg];
 		}
 	}
-	if (cliDebugger->system) {
-		uint32_t value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
-		if (dv->type != CLIDV_ERROR_TYPE) {
-			return value;
-		}
-	} else {
-		dv->type = CLIDV_ERROR_TYPE;
-	}
+	dv->type = CLIDV_ERROR_TYPE;
 	return 0;
 }
 
 void ARMCLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = _disassemble;
+	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "ARM";
 	debugger->platformCommands = _armCommands;
 }

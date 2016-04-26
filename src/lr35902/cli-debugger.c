@@ -34,9 +34,8 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	_printFlags(cpu->f);
 }
 
-static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
-	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-	struct LR35902Core* cpu = debugger->core->cpu;
+static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
+	struct LR35902Core* cpu = debugger->p->d.core->cpu;
 	if (strcmp(name, "a") == 0) {
 		return cpu->a;
 	}
@@ -79,20 +78,14 @@ static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, 
 	if (strcmp(name, "f") == 0) {
 		return cpu->f.packed;
 	}
-	if (cliDebugger->system) {
-		uint32_t value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
-		if (dv->type != CLIDV_ERROR_TYPE) {
-			return value;
-		}
-	} else {
-		dv->type = CLIDV_ERROR_TYPE;
-	}
+	dv->type = CLIDV_ERROR_TYPE;
 	return 0;
 }
 
 void LR35902CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = NULL;
+	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "GB-Z80";
 	debugger->platformCommands = NULL;
 }
