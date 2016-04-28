@@ -107,7 +107,7 @@ bool _mExampleRun(const struct mArguments* args, Socket client) {
 	mCoreConfigLoad(&core->config);
 
 	// Take any settings overrides from the command line and make sure they get
-	// loaded into the config sustem, as well as manually overriding the
+	// loaded into the config system, as well as manually overriding the
 	// "idleOptimization" setting to ensure cores that can detect idle loops
 	// will attempt the detection.
 	applyArguments(args, NULL, &core->config);
