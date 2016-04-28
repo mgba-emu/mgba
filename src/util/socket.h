@@ -109,7 +109,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
-		bindInfo.sin_addr.s_addr = bindAddress->ipv4;
+		bindInfo.sin_addr.s_addr = htonl(bindAddress->ipv4);
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 	} else {
 		struct sockaddr_in6 bindInfo;
@@ -144,7 +144,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
-		bindInfo.sin_addr.s_addr = destinationAddress->ipv4;
+		bindInfo.sin_addr.s_addr = htonl(destinationAddress->ipv4);
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 	} else {
 		struct sockaddr_in6 bindInfo;
