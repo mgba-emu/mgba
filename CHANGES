@@ -34,6 +34,7 @@ Misc:
  - Qt: Remove some C99isms from C++ code
  - Windows: Add native VDir support
  - All: Add QUIET parameter to silence CMake
+ - GBA Video: Null renderer should return proper register values
 
 0.4.0: (2016-02-02)
 Features:
