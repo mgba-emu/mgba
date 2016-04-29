@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "memory.h"
 
-#include "macros.h"
-
-#include "decoder.h"
+#include "arm/decoder.h"
 #include "gba/hardware.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
