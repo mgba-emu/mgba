@@ -594,13 +594,7 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 
 	if (audio->ch4.envelope.dead != 2) {
 		while (audio->nextCh4 <= 0) {
-			int32_t timing = _updateChannel4(&audio->ch4);
-			if (audio->nextCh4 < -timing) {
-				int32_t bound = timing * 16;
-				// Perform negative modulo to cap to 16 iterations
-				audio->nextCh4 = bound - (audio->nextCh4 - 1) % bound - 1;
-			}
-			audio->nextCh4 += timing;
+			audio->nextCh4 += _updateChannel4(&audio->ch4);
 		}
 		if (audio->nextCh4 < audio->nextEvent) {
 			audio->nextEvent = audio->nextCh4;
