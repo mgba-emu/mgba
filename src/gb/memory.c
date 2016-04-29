@@ -134,6 +134,7 @@ void GBMemoryReset(struct GB* gb) {
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	switch (cart->type) {
@@ -183,7 +184,6 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x22:
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
-		memset(&gb->memory.mbcState.mbc7, 0, sizeof(gb->memory.mbcState.mbc7));
 		break;
 	}
 

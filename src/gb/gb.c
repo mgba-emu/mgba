@@ -195,6 +195,7 @@ void GBReset(struct LR35902Core* cpu) {
 	cpu->d = 0;
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
+	cpu->memory.setActiveRegion(cpu, cpu->pc);
 
 	if (gb->yankedRomSize) {
 		gb->memory.romSize = gb->yankedRomSize;
