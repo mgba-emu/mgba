@@ -14,16 +14,18 @@
 static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint32_t newValue, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
-	{ \
+	do { \
 		DEBUGGER = 0; \
 		size_t i; \
 		for (i = 0; i < CPU->numComponents; ++i) { \
 			if (CPU->components[i]->id == DEBUGGER_ID) { \
-				DEBUGGER = (struct ARMDebugger*) cpu->components[i]; \
-				break; \
+				DEBUGGER = (struct ARMDebugger*) ((struct mDebugger*) cpu->components[i])->platform; \
+				goto debuggerFound; \
 			} \
 		} \
-	}
+		abort(); \
+		debuggerFound: break; \
+	} while(0)
 
 #define CREATE_SHIM(NAME, RETURN, TYPES, ...) \
 	static RETURN DebuggerShim_ ## NAME TYPES { \
