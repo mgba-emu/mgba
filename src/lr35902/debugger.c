@@ -45,7 +45,7 @@ static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool LR35902DebuggerHasBreakpoints(struct mDebuggerPlatform*);
 
 struct mDebuggerPlatform* LR35902DebuggerPlatformCreate(void) {
-	struct mDebuggerPlatform* platform = malloc(sizeof(struct LR35902Debugger));
+	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct LR35902Debugger));
 	platform->entered = LR35902DebuggerEnter;
 	platform->init = LR35902DebuggerInit;
 	platform->deinit = LR35902DebuggerDeinit;
@@ -72,6 +72,8 @@ void LR35902DebuggerDeinit(struct mDebuggerPlatform* platform) {
 }
 
 static void LR35902DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
+	UNUSED(reason);
+	UNUSED(info);
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) platform;
 	struct LR35902Core* cpu = debugger->cpu;
 	cpu->nextEvent = cpu->cycles;

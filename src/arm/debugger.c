@@ -55,7 +55,7 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
-	struct mDebuggerPlatform* platform = malloc(sizeof(struct ARMDebugger));
+	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
 	platform->entered = ARMDebuggerEnter;
 	platform->init = ARMDebuggerInit;
 	platform->deinit = ARMDebuggerDeinit;
