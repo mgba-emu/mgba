@@ -209,9 +209,11 @@ static void _GBACoreReset(struct mCore* core) {
 
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(gbacore->overrides, &override)) {
-		GBAOverrideApply(gba, &override);
+	if (cart) {
+		memcpy(override.id, &cart->id, sizeof(override.id));
+		if (GBAOverrideFind(gbacore->overrides, &override)) {
+			GBAOverrideApply(gba, &override);
+		}
 	}
 }
 
