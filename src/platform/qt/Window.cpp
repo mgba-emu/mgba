@@ -233,6 +233,7 @@ void Window::loadConfig() {
 	updateMRU();
 
 	m_inputController.setConfiguration(m_config);
+	m_controller->setUseBIOS(opts->useBios);
 }
 
 void Window::reloadConfig() {
@@ -1274,7 +1275,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* useBios = m_config->addOption("useBios");
 	useBios->connect([this](const QVariant& value) {
-		reloadConfig();
+		m_controller->setUseBIOS(value.toBool());
 	}, this);
 
 	ConfigOption* buffers = m_config->addOption("audioBuffers");
