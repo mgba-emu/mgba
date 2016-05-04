@@ -301,7 +301,7 @@ static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
 
 static uint32_t _GBACoreBusRead16(struct mCore* core, uint32_t address) {
 	struct ARMCore* cpu = core->cpu;
-	return cpu->memory.load8(cpu, address, 0);
+	return cpu->memory.load16(cpu, address, 0);
 
 }
 
