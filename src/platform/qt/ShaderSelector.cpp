@@ -18,6 +18,7 @@
 #include <QSpinBox>
 
 extern "C" {
+#include "core/version.h"
 #include "platform/video-backend.h"
 
 #if !defined(_WIN32) || defined(USE_EPOXY)

@@ -38,6 +38,7 @@
 #include "VideoView.h"
 
 extern "C" {
+#include "core/version.h"
 #ifdef M_CORE_GB
 #include "gb/gb.h"
 #endif

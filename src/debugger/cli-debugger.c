@@ -8,6 +8,7 @@
 #ifdef USE_CLI_DEBUGGER
 
 #include "core/core.h"
+#include "core/version.h"
 #include "parser.h"
 
 #include <signal.h>

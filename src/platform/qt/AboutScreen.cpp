@@ -6,7 +6,7 @@
 #include "AboutScreen.h"
 
 extern "C" {
-#include "util/version.h"
+#include "core/version.h"
 }
 
 #include <QPixmap>

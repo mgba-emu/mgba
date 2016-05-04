@@ -106,16 +106,16 @@ function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 endfunction()
 
 # Version information
-add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/src/util/version.c.in
+add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
 	COMMAND ${CMAKE_COMMAND}
 	-DBINARY_NAME=${BINARY_NAME}
-	-DCONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/src/util/version.c.in
+	-DCONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
 	-DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/version.c
 	-P ${CMAKE_CURRENT_SOURCE_DIR}/version.cmake
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/version.cmake)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/util/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 list(APPEND UTIL_SRC ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 source_group("Generated sources" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.c)
 

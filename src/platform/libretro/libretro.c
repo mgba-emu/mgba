@@ -8,6 +8,7 @@
 #include "util/common.h"
 
 #include "core/core.h"
+#include "core/version.h"
 #ifdef M_CORE_GB
 #include "gb/core.h"
 #include "gb/gb.h"

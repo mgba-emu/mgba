@@ -21,8 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "version.h"
-
 #ifdef _WIN32
 // WinSock2 gets very angry if it's included too late
 #include <winsock2.h>

@@ -6,6 +6,7 @@
 #include "commandline.h"
 
 #include "core/config.h"
+#include "core/version.h"
 #include "util/string.h"
 
 #include <fcntl.h>

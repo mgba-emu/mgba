@@ -16,6 +16,7 @@
 #include <QIcon>
 
 extern "C" {
+#include "core/version.h"
 #include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/socket.h"
