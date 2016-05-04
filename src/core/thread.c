@@ -9,7 +9,7 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 
 #include <signal.h>
 

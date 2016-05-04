@@ -6,7 +6,7 @@
 #include "gui-runner.h"
 
 #include "core/core.h"
-#include "gba/gui/gui-config.h"
+#include "feature/gui/gui-config.h"
 #include "gba/input.h"
 #include "gba/interface.h"
 #include "gba/serialize.h"

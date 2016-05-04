@@ -12,8 +12,8 @@
 
 #include "gba/bios.h"
 #include "gba/cheats.h"
-#include "gba/context/overrides.h"
 #include "gba/io.h"
+#include "gba/overrides.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"

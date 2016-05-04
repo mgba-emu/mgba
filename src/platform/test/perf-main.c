@@ -9,7 +9,7 @@
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/socket.h"
 #include "util/string.h"
 #include "util/vfs.h"

@@ -25,7 +25,7 @@ extern "C" {
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
-#include "gba/sharkport.h"
+#include "gba/extra/sharkport.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"

@@ -41,7 +41,7 @@ extern "C" {
 #ifdef M_CORE_GB
 #include "gb/gb.h"
 #endif
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/vfs.h"
 }

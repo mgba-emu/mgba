@@ -16,7 +16,7 @@
 extern "C" {
 #include "core/config.h"
 #include "util/configuration.h"
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 }
 
 class QAction;

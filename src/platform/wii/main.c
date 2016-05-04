@@ -15,9 +15,9 @@
 #include "util/common.h"
 
 #include "core/core.h"
+#include "feature/gui/gui-runner.h"
 #include "gba/audio.h"
 #include "gba/gba.h"
-#include "gba/gui/gui-runner.h"
 #include "gba/input.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"

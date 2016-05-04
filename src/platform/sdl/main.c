@@ -28,7 +28,7 @@
 #include "gb/gb.h"
 #include "gb/video.h"
 #endif
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/configuration.h"
 #include "util/vfs.h"
 

@@ -12,8 +12,8 @@
 #include <QMenu>
 
 extern "C" {
-#include "gba/context/overrides.h"
-#include "platform/commandline.h"
+#include "gba/overrides.h"
+#include "feature/commandline.h"
 }
 
 using namespace QGBA;

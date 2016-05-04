@@ -14,8 +14,8 @@
 #include "gb/gb.h"
 #endif
 
+#include "feature/gui/gui-runner.h"
 #include "gba/input.h"
-#include "gba/gui/gui-runner.h"
 
 #include "util/circle-buffer.h"
 #include "util/memory.h"

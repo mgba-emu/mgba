@@ -9,7 +9,6 @@
 
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
-#include "gba/supervisor/cli.h"
 #endif
 
 #ifdef USE_GDB_STUB

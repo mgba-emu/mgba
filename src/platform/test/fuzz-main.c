@@ -9,7 +9,7 @@
 #include "gba/gba.h"
 #include "gba/serialize.h"
 
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/memory.h"
 #include "util/string.h"
 #include "util/vfs.h"

@@ -19,9 +19,9 @@ extern "C" {
 #include "core/core.h"
 #include "core/thread.h"
 #include "gba/cheats.h"
-#include "gba/context/overrides.h"
 #include "gba/hardware.h"
 #include "gba/input.h"
+#include "gba/overrides.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"
 #endif

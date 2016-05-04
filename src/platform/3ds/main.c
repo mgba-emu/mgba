@@ -6,13 +6,13 @@
 
 #ifdef M_CORE_GBA
 #include "gba/gba.h"
-#include "gba/gui/gui-runner.h"
 #include "gba/input.h"
 #include "gba/video.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"
 #endif
+#include "feature/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
