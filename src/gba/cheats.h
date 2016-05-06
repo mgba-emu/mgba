@@ -175,6 +175,10 @@ struct GBACheatSet {
 
 	int gsaVersion;
 	uint32_t gsaSeeds[4];
+	uint32_t cbRngState;
+	uint32_t cbMaster;
+	uint8_t cbTable[0x30];
+	uint32_t cbSeeds[4];
 	int remainingAddresses;
 
 	char* name;

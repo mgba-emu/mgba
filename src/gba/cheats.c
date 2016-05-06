@@ -133,6 +133,8 @@ void GBACheatSetInit(struct GBACheatSet* set, const char* name) {
 	set->incompletePatch = 0;
 	set->currentBlock = 0;
 	set->gsaVersion = 0;
+	set->cbRngState = 0;
+	set->cbMaster = 0;
 	set->remainingAddresses = 0;
 	set->hook = 0;
 	int i;
@@ -548,6 +550,10 @@ void GBACheatRefresh(struct GBACheatDevice* device, struct GBACheatSet* cheats) 
 void GBACheatSetCopyProperties(struct GBACheatSet* newSet, struct GBACheatSet* set) {
 	newSet->gsaVersion = set->gsaVersion;
 	memcpy(newSet->gsaSeeds, set->gsaSeeds, sizeof(newSet->gsaSeeds));
+	newSet->cbRngState = set->cbRngState;
+	newSet->cbMaster = set->cbMaster;
+	memcpy(newSet->cbSeeds, set->cbSeeds, sizeof(newSet->cbSeeds));
+	memcpy(newSet->cbTable, set->cbTable, sizeof(newSet->cbTable));
 	if (set->hook) {
 		if (newSet->hook) {
 			--newSet->hook->refs;
