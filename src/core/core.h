@@ -104,6 +104,14 @@ struct mCore {
 	void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
 	void (*busWrite32)(struct mCore*, uint32_t address, uint32_t);
 
+	uint32_t (*rawRead8)(struct mCore*, uint32_t address);
+	uint32_t (*rawRead16)(struct mCore*, uint32_t address);
+	uint32_t (*rawRead32)(struct mCore*, uint32_t address);
+
+	void (*rawWrite8)(struct mCore*, uint32_t address, uint8_t);
+	void (*rawWrite16)(struct mCore*, uint32_t address, uint16_t);
+	void (*rawWrite32)(struct mCore*, uint32_t address, uint32_t);
+
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
 	struct mDebuggerPlatform* (*debuggerPlatform)(struct mCore*);
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);

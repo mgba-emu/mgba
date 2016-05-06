@@ -389,6 +389,12 @@ struct mCore* GBCoreCreate(void) {
 	core->busWrite8 = _GBCoreBusWrite8;
 	core->busWrite16 = _GBCoreBusWrite16;
 	core->busWrite32 = _GBCoreBusWrite32;
+	core->rawRead8 = NULL;
+	core->rawRead16 = NULL;
+	core->rawRead32 = NULL;
+	core->rawWrite8 = NULL;
+	core->rawWrite16 = NULL;
+	core->rawWrite32 = NULL;
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;
 	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;
