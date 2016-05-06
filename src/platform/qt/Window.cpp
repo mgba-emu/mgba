@@ -1260,7 +1260,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
 	m_gameActions.append(memoryView);
-	m_gbaActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);

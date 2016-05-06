@@ -210,12 +210,18 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
+		if ((y + m_top) * 16 >= m_size) {
+			break;
+		}
 		QString data = arg.arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
 		painter.drawText(QRectF(QPointF(0, yp), QSizeF(m_margins.left(), m_cellHeight)), Qt::AlignHCenter, data);
 		switch (m_align) {
 		case 2:
 			for (int x = 0; x < 16; x += 2) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
 					                        QSizeF(m_cellSize.width() * 2, m_cellSize.height())),
@@ -241,6 +247,9 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		case 4:
 			for (int x = 0; x < 16; x += 4) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
 					                        QSizeF(m_cellSize.width() * 4, m_cellSize.height())),
@@ -273,6 +282,9 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		default:
 			for (int x = 0; x < 16; ++x) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize),
 					                 palette.highlight());

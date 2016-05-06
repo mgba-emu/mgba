@@ -295,6 +295,22 @@ static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 	cpu->memory.store8(cpu, address + 3, value >> 24);
 }
 
+static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address);
+}
+
+static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8);
+}
+
+static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8) |
+	       (GBLoad8(cpu, address + 2) << 16) | (GBLoad8(cpu, address + 3) << 24);
+}
+
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
@@ -389,9 +405,9 @@ struct mCore* GBCoreCreate(void) {
 	core->busWrite8 = _GBCoreBusWrite8;
 	core->busWrite16 = _GBCoreBusWrite16;
 	core->busWrite32 = _GBCoreBusWrite32;
-	core->rawRead8 = NULL;
-	core->rawRead16 = NULL;
-	core->rawRead32 = NULL;
+	core->rawRead8 = _GBCoreRawRead8;
+	core->rawRead16 = _GBCoreRawRead16;
+	core->rawRead32 = _GBCoreRawRead32;
 	core->rawWrite8 = NULL;
 	core->rawWrite16 = NULL;
 	core->rawWrite32 = NULL;

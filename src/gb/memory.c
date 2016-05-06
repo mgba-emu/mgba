@@ -467,8 +467,6 @@ void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	GBStore8(cpu, address, value);
 }
 
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
-
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
 static void _switchBank(struct GBMemory* memory, int bank) {
