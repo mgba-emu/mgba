@@ -51,8 +51,6 @@ static struct CircleBuffer rumbleHistory;
 static struct mRumble rumble;
 static struct GBALuminanceSource lux;
 static int luxLevel;
-static struct GBACheatDevice cheats;
-static struct GBACheatSet cheatSet;
 static struct mLogger logger;
 
 static void _reloadSettings(void) {
@@ -213,9 +211,6 @@ void retro_init(void) {
 }
 
 void retro_deinit(void) {
-	GBACheatRemoveSet(&cheats, &cheatSet);
-	GBACheatDeviceDestroy(&cheats);
-	GBACheatSetDeinit(&cheatSet);
 	free(outputBuffer);
 }
 
@@ -341,11 +336,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 				core->loadBIOS(core, bios, 0);
 			}
 		}
-
-		GBACheatDeviceCreate(&cheats);
-		GBACheatAttachDevice(gba, &cheats);
-		GBACheatSetInit(&cheatSet, "libretro");
-		GBACheatAddSet(&cheats, &cheatSet);
 	}
 #endif
 
@@ -389,13 +379,20 @@ bool retro_unserialize(const void* data, size_t size) {
 }
 
 void retro_cheat_reset(void) {
-	GBACheatSetDeinit(&cheatSet);
-	GBACheatSetInit(&cheatSet, "libretro");
+	mCheatDeviceClear(core->cheatDevice(core));
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	UNUSED(index);
 	UNUSED(enabled);
+	struct mCheatDevice* device = core->cheatDevice(core);
+	struct mCheatSet* cheatSet = NULL;
+	if (mCheatSetsSize(&device->cheats)) {
+		cheatSet = *mCheatSetsGetPointer(&device->cheats, 0);
+	} else {
+		cheatSet = device->createSet(device, NULL);
+		mCheatAddSet(device, cheatSet);
+	}
 	// Convert the super wonky unportable libretro format to something normal
 	char realCode[] = "XXXXXXXX XXXXXXXX";
 	size_t len = strlen(code) + 1; // Include null terminator
@@ -408,7 +405,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 		}
 		if ((pos == 13 && (realCode[pos] == ' ' || !realCode[pos])) || pos == 17) {
 			realCode[pos] = '\0';
-			GBACheatAddLine(&cheatSet, realCode);
+			mCheatAddLine(cheatSet, realCode, 0);
 			pos = 0;
 			continue;
 		}

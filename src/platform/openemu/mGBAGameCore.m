@@ -27,11 +27,8 @@
 #include "util/common.h"
 
 #include "core/core.h"
-#include "gba/audio.h"
 #include "gba/cheats.h"
 #include "gba/core.h"
-#include "gba/cheats/gameshark.h"
-#include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/serialize.h"
 #include "util/circle-buffer.h"
@@ -47,8 +44,6 @@
 @interface mGBAGameCore () <OEGBASystemResponderClient>
 {
 	struct mCore* core;
-	struct GBA* gba;
-	struct GBACheatDevice cheats;
 	void* outputBuffer;
 	NSMutableDictionary *cheatSets;
 }
@@ -75,9 +70,6 @@
 		core->setVideoBuffer(core, outputBuffer, width);
 		core->setAudioBufferSize(core, SAMPLES);
 
-		gba = core->board;
-		GBACheatDeviceCreate(&cheats);
-		GBACheatAttachDevice(gba, &cheats);
 		cheatSets = [[NSMutableDictionary alloc] init];
 	}
 
@@ -87,17 +79,6 @@
 - (void)dealloc
 {
 	core->deinit(core);
-	[cheatSets enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-		UNUSED(key);
-		UNUSED(stop);
-		GBACheatRemoveSet(&cheats, [obj pointerValue]);
-	}];
-	GBACheatDeviceDestroy(&cheats);
-	[cheatSets enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-		UNUSED(key);
-		UNUSED(stop);
-		GBACheatSetDeinit([obj pointerValue]);
-	}];
 	[cheatSets release];
 	free(outputBuffer);
 
@@ -288,25 +269,26 @@ const int GBAMap[] = {
 	code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
 
 	NSString *codeId = [code stringByAppendingFormat:@"/%@", type];
-	struct GBACheatSet* cheatSet = [[cheatSets objectForKey:codeId] pointerValue];
+	struct mCheatSet* cheatSet = [[cheatSets objectForKey:codeId] pointerValue];
 	if (cheatSet) {
 		cheatSet->enabled = enabled;
 		return;
 	}
-	cheatSet = malloc(sizeof(*cheatSet));
-	GBACheatSetInit(cheatSet, [codeId UTF8String]);
+	struct mCheatDevice* cheats = core->cheatDevice(core);
+	cheatSet = cheats->createSet(cheats, [codeId UTF8String]);
+	int codeType = GBA_CHEAT_AUTODETECT;
 	if ([type isEqual:@"GameShark"]) {
-		GBACheatSetGameSharkVersion(cheatSet, 1);
+		codeType = GBA_CHEAT_GAMESHARK;
 	} else if ([type isEqual:@"Action Replay"]) {
-		GBACheatSetGameSharkVersion(cheatSet, 3);
+		codeType = GBA_CHEAT_PRO_ACTION_REPLAY;
 	}
 	NSArray *codeSet = [code componentsSeparatedByString:@"+"];
 	for (id c in codeSet) {
-		GBACheatAddLine(cheatSet, [c UTF8String]);
+		mCheatAddLine(cheatSet, [c UTF8String], codeType);
 	}
 	cheatSet->enabled = enabled;
 	[cheatSets setObject:[NSValue valueWithPointer:cheatSet] forKey:codeId];
-	GBACheatAddSet(&cheats, cheatSet);
+	mCheatAddSet(cheats, cheatSet);
 }
 @end
 
