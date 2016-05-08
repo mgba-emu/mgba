@@ -69,8 +69,6 @@ GameController::GameController(QObject* parent)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
 {
-	GBACheatDeviceCreate(&m_cheatDevice);
-
 	m_lux.p = this;
 	m_lux.sample = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
@@ -235,7 +233,6 @@ GameController::~GameController() {
 	disconnect();
 	clearMultiplayerController();
 	closeGame();
-	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_backupLoadState;
 }
 
@@ -475,13 +472,6 @@ void GameController::closeGame() {
 	delete[] m_frontBuffer;
 
 	m_patch = QString();
-
-	for (size_t i = 0; i < GBACheatSetsSize(&m_cheatDevice.cheats); ++i) {
-		GBACheatSet* set = *GBACheatSetsGetPointer(&m_cheatDevice.cheats, i);
-		GBACheatSetDeinit(set);
-		delete set;
-	}
-	GBACheatSetsClear(&m_cheatDevice.cheats);
 
 	m_threadContext.core->deinit(m_threadContext.core);
 }

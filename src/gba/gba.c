@@ -774,13 +774,13 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 		break;
 	case CPU_COMPONENT_CHEAT_DEVICE:
 		if (gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
-			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
+			struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 			struct GBACheatHook* hook = 0;
 			size_t i;
-			for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
-				struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+			for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+				struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
 				if (cheats->hook && cheats->hook->address == _ARMPCAddress(cpu)) {
-					GBACheatRefresh(device, cheats);
+					mCheatRefresh(device, &cheats->d);
 					hook = cheats->hook;
 				}
 			}
@@ -808,12 +808,12 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 
 	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
-		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
+		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 		size_t i;
-		for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
-			struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+			struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
 			if (!cheats->hook) {
-				GBACheatRefresh(device, cheats);
+				mCheatRefresh(device, &cheats->d);
 			}
 		}
 	}

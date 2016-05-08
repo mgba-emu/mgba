@@ -117,6 +117,8 @@ struct mCore {
 	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
 	void (*attachDebugger)(struct mCore*, struct mDebugger*);
 	void (*detachDebugger)(struct mCore*);
+
+	struct mCheatDevice* (*cheatDevice)(struct mCore*);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

@@ -7,6 +7,7 @@
 
 #include "core/core.h"
 #include "core/log.h"
+#include "gba/cheats.h"
 #include "gba/gba.h"
 #include "gba/extra/cli.h"
 #include "gba/overrides.h"
@@ -23,6 +24,7 @@ struct GBACore {
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
+	struct mCheatDevice* cheatDevice;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -38,8 +40,9 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->cpu = cpu;
 	core->board = gba;
 	core->debugger = NULL;
+	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
-	gbacore->overrides = 0;
+	gbacore->cheatDevice = NULL;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
@@ -68,6 +71,13 @@ static void _GBACoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+
+	struct GBACore* gbacore = (struct GBACore*) core;
+	free(gbacore->debuggerPlatform);
+	if (gbacore->cheatDevice) {
+		mCheatDeviceDestroy(gbacore->cheatDevice);
+	}
+	free(gbacore->cheatDevice);
 	free(core);
 }
 
@@ -401,6 +411,17 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 	core->debugger = NULL;
 }
 
+static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (!gbacore->cheatDevice) {
+		gbacore->cheatDevice = GBACheatDeviceCreate();
+		((struct ARMCore*) core->cpu)->components[CPU_COMPONENT_CHEAT_DEVICE] = &gbacore->cheatDevice->d;
+		ARMHotplugAttach(core->cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		gbacore->cheatDevice->p = core;
+	}
+	return gbacore->cheatDevice;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -460,5 +481,6 @@ struct mCore* GBACoreCreate(void) {
 	core->cliDebuggerSystem = _GBACoreCliDebuggerSystem;
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
+	core->cheatDevice = _GBACoreCheatDevice;
 	return core;
 }

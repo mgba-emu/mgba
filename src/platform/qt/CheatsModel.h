@@ -8,8 +8,8 @@
 
 #include <QAbstractItemModel>
 
-struct GBACheatDevice;
-struct GBACheatSet;
+struct mCheatDevice;
+struct mCheatSet;
 
 namespace QGBA {
 
@@ -17,7 +17,7 @@ class CheatsModel : public QAbstractItemModel {
 Q_OBJECT
 
 public:
-	CheatsModel(GBACheatDevice* m_device, QObject* parent = nullptr);
+	CheatsModel(mCheatDevice* m_device, QObject* parent = nullptr);
 
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
@@ -29,7 +29,7 @@ public:
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-	GBACheatSet* itemAt(const QModelIndex& index);
+	mCheatSet* itemAt(const QModelIndex& index);
 	void removeAt(const QModelIndex& index);
 	QString toString(const QModelIndexList& indices) const;
 
@@ -39,13 +39,13 @@ public:
 	void loadFile(const QString& path);
 	void saveFile(const QString& path);
 
-	void addSet(GBACheatSet* set);
+	void addSet(mCheatSet* set);
 
 public slots:
 	void invalidated();
 
 private:
-	GBACheatDevice* m_device;
+	mCheatDevice* m_device;
 };
 
 }

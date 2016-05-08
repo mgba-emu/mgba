@@ -52,7 +52,7 @@ public:
 
 	const uint32_t* drawContext() const { return m_drawContext; }
 	mCoreThread* thread() { return &m_threadContext; }
-	GBACheatDevice* cheatDevice() { return &m_cheatDevice; }
+	mCheatDevice* cheatDevice() { return m_threadContext.core ? m_threadContext.core->cheatDevice(m_threadContext.core) : nullptr; }
 
 	void threadInterrupt();
 	void threadContinue();
@@ -174,7 +174,7 @@ private:
 	uint32_t* m_frontBuffer;
 	mCoreThread m_threadContext;
 	const mCoreConfig* m_config;
-	GBACheatDevice m_cheatDevice;
+	mCheatDevice* m_cheatDevice;
 	int m_activeKeys;
 	int m_activeButtons;
 	int m_inactiveKeys;
