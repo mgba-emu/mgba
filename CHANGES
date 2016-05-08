@@ -37,6 +37,7 @@ Misc:
  - Windows: Add native VDir support
  - All: Add QUIET parameter to silence CMake
  - GBA Video: Null renderer should return proper register values
+ - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
 
 0.4.0: (2016-02-02)
 Features:

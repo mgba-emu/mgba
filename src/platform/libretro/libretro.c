@@ -14,6 +14,8 @@
 #include "gb/gb.h"
 #endif
 #ifdef M_CORE_GBA
+#include "gba/bios.h"
+#include "gba/core.h"
 #include "gba/cheats.h"
 #include "gba/core.h"
 #include "gba/serialize.h"
@@ -478,14 +480,25 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 		retroLevel = RETRO_LOG_WARN;
 		break;
 	case mLOG_INFO:
-	case mLOG_GAME_ERROR:
 		retroLevel = RETRO_LOG_INFO;
 		break;
-	case mLOG_DEBUG:
+	case mLOG_GAME_ERROR:
 	case mLOG_STUB:
+#ifdef NDEBUG
+		return;
+#else
+		retroLevel = RETRO_LOG_DEBUG;
+		break;
+#endif
+	case mLOG_DEBUG:
 		retroLevel = RETRO_LOG_DEBUG;
 		break;
 	}
+#ifdef NDEBUG
+	if (category == _mLOG_CAT_GBA_BIOS()) {
+		return;
+	}
+#endif
 	logCallback(retroLevel, "%s: %s\n", mLogCategoryName(category), message);
 }
 
