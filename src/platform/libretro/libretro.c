@@ -226,15 +226,9 @@ void retro_init(void) {
 }
 
 void retro_deinit(void) {
-<<<<<<< HEAD
-	GBACheatRemoveSet(&cheats, &cheatSet);
-	GBACheatDeviceDestroy(&cheats);
-	GBACheatSetDeinit(&cheatSet);
 #ifdef _3DS
 	linearFree(outputBuffer);
 #else
-=======
->>>>>>> upstream/master
 	free(outputBuffer);
 #endif
 }

@@ -57,15 +57,9 @@ struct mDebuggerEntryInfo {
 		struct {
 			uint32_t oldValue;
 			uint32_t newValue;
-<<<<<<< HEAD
-			enum WatchpointType watchType;
-			enum WatchpointType accessType;
-		} b;
-=======
 			enum mWatchpointType watchType;
 			enum mWatchpointType accessType;
-		};
->>>>>>> upstream/master
+		} b;
 
 		struct {
 			uint32_t opcode;

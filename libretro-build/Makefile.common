@@ -4,6 +4,10 @@ RETRODEFS    ?= -D__LIBRETRO__ -DMINIMAL_CORE=2 -DM_CORE_GBA -DM_CORE_GB
 INCLUDES  += -I$(CORE_DIR)/src -I$(CORE_DIR)/src/arm
 RETRODEFS += -DHAVE_STDINT_H -DHAVE_INTTYPES_H -DINLINE=inline -DCOLOR_16_BIT -DCOLOR_5_6_5 -DRESAMPLE_LIBRARY=2 -DM_PI=3.14159265358979323846 -DPATH_MAX=4096 -DBINARY_NAME=\"mgba\" -DPROJECT_VERSION=\"0.2.0\" -DPROJECT_NAME=\"mGBA\" -DSSIZE_MAX=32767
 
+ifneq ($(DEBUG), 1)
+	RETRODEFS += -DNDEBUG
+endif
+
 ifneq ($(HAVE_VFS_FD),1)
 RETRODEFS += -DUSE_VFS_FILE
 endif
@@ -28,7 +32,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/core/sync.c \
 					$(CORE_DIR)/src/core/thread.c \
 					$(CORE_DIR)/src/debugger/debugger.c \
-					$(CORE_DIR)/src/debugger/memory-debugger.c \
+					$(CORE_DIR)/src/arm/debugger/memory-debugger.c \
 					$(CORE_DIR)/src/gb/audio.c \
 					$(CORE_DIR)/src/gb/core.c \
 					$(CORE_DIR)/src/gb/gb.c \
@@ -58,7 +62,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/renderers/software-obj.c \
 					$(CORE_DIR)/src/gba/renderers/software-bg.c \
 					$(CORE_DIR)/src/gba/renderers/video-software.c \
-					$(CORE_DIR)/src/gba/context/overrides.c \
+					$(CORE_DIR)/src/gba/overrides.c \
 					$(CORE_DIR)/src/lr35902/isa-lr35902.c \
 					$(CORE_DIR)/src/lr35902/lr35902.c \
 					$(CORE_DIR)/src/platform/libretro/memory.c \

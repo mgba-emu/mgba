@@ -21,13 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-<<<<<<< HEAD
-=======
 #ifdef _WIN32
 // WinSock2 gets very angry if it's included too late
 #include <winsock2.h>
 #endif
->>>>>>> upstream/master
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <sys/types.h>

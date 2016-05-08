@@ -22,19 +22,9 @@ mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger");
 static void mDebuggerInit(void* cpu, struct mCPUComponent* component);
 static void mDebuggerDeinit(struct mCPUComponent* component);
 
-<<<<<<< HEAD
-static void _checkBreakpoints(struct Debugger* debugger) {
-	int instructionLength;
-	enum ExecutionMode mode = debugger->cpu->cpsr.a.t;
-	if (mode == MODE_ARM) {
-		instructionLength = WORD_SIZE_ARM;
-	} else {
-		instructionLength = WORD_SIZE_THUMB;
-=======
 struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	if (!core->supportsDebuggerType(core, type)) {
 		return NULL;
->>>>>>> upstream/master
 	}
 
 	union DebugUnion {
