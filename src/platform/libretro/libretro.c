@@ -350,6 +350,9 @@ bool retro_load_game(const struct retro_game_info* game) {
 }
 
 void retro_unload_game(void) {
+	if (!core) {
+		return;
+	}
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
