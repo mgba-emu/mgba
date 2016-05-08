@@ -451,13 +451,19 @@ void GBARetroLog(struct GBAThread* thread, enum GBALogLevel level, const char* f
 		break;
 	case GBA_LOG_INFO:
 	case GBA_LOG_GAME_ERROR:
-	case GBA_LOG_SWI:
 	case GBA_LOG_STATUS:
 		retroLevel = RETRO_LOG_INFO;
 		break;
-	case GBA_LOG_DEBUG:
+	case GBA_LOG_SWI:
 	case GBA_LOG_STUB:
 	case GBA_LOG_SIO:
+#ifdef NDEBUG
+		return;
+#else
+		retroLevel = RETRO_LOG_DEBUG;
+		break;
+#endif
+	case GBA_LOG_DEBUG:
 		retroLevel = RETRO_LOG_DEBUG;
 		break;
 	}
