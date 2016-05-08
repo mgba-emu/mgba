@@ -8,6 +8,7 @@
 #include "gb/io.h"
 
 #include "core/core.h"
+#include "core/cheats.h"
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/math.h"
@@ -381,5 +382,16 @@ void GBGetGameCode(struct GB* gb, char* out) {
 	}
 	if (cart->oldLicensee == 0x33) {
 		memcpy(&out[4], cart->maker, 4);
+	}
+}
+
+void GBFrameEnded(struct GB* gb) {
+	if (gb->cpu->components && gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		struct mCheatDevice* device = (struct mCheatDevice*) gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
+		size_t i;
+		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+			struct mCheatSet* cheats = *mCheatSetsGetPointer(&device->cheats, i);
+			mCheatRefresh(device, cheats);
+		}
 	}
 }

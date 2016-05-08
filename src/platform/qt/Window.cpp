@@ -1235,7 +1235,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QAction* cheats = new QAction(tr("&Cheats..."), toolsMenu);
 	connect(cheats, SIGNAL(triggered()), this, SLOT(openCheatsWindow()));
-	m_gbaActions.append(cheats);
+	m_gameActions.append(cheats);
 	addControlledAction(toolsMenu, cheats, "cheatsWindow");
 
 #ifdef USE_GDB_STUB

@@ -6,6 +6,7 @@
 #include "core.h"
 
 #include "core/core.h"
+#include "gb/cheats.h"
 #include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
@@ -19,6 +20,7 @@ struct GBCore {
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	struct mDebuggerPlatform* debuggerPlatform;
+	struct mCheatDevice* cheatDevice;
 };
 
 static bool _GBCoreInit(struct mCore* core) {
@@ -34,6 +36,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	core->cpu = cpu;
 	core->board = gb;
 	gbcore->debuggerPlatform = NULL;
+	gbcore->cheatDevice = NULL;
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -60,6 +63,13 @@ static void _GBCoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+
+	struct GBCore* gbcore = (struct GBCore*) core;
+	free(gbcore->debuggerPlatform);
+	if (gbcore->cheatDevice) {
+		mCheatDeviceDestroy(gbcore->cheatDevice);
+	}
+	free(gbcore->cheatDevice);
 	free(core);
 }
 
@@ -357,6 +367,17 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 	core->debugger = NULL;
 }
 
+static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (!gbcore->cheatDevice) {
+		gbcore->cheatDevice = GBCheatDeviceCreate();
+		((struct LR35902Core*) core->cpu)->components[CPU_COMPONENT_CHEAT_DEVICE] = &gbcore->cheatDevice->d;
+		LR35902HotplugAttach(core->cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		gbcore->cheatDevice->p = core;
+	}
+	return gbcore->cheatDevice;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -416,5 +437,6 @@ struct mCore* GBCoreCreate(void) {
 	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;
 	core->attachDebugger = _GBCoreAttachDebugger;
 	core->detachDebugger = _GBCoreDetachDebugger;
+	core->cheatDevice = _GBCoreCheatDevice;
 	return core;
 }

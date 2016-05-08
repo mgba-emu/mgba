@@ -116,6 +116,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						mCoreSyncPostFrame(video->p->sync);
 						video->frameskipCounter = video->frameskip;
 					}
+					GBFrameEnded(video->p);
 					++video->frameCounter;
 
 					struct mCoreThread* thread = mCoreThreadGet();
