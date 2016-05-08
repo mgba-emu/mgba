@@ -9,7 +9,7 @@
 #include "gba/gba.h"
 #include "gba/serialize.h"
 
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/memory.h"
 #include "util/string.h"
 #include "util/vfs.h"
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 	struct mCore* core = GBACoreCreate();
 	core->init(core);
 	mCoreInitConfig(core, "fuzz");
-	mCoreConfigSetDefaultIntValue(&core->config, "idleOptimization", IDLE_LOOP_REMOVE);
+	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);

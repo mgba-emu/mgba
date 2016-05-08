@@ -16,6 +16,7 @@
 #include "core/input.h"
 #endif
 #include "core/interface.h"
+#include "debugger/debugger.h"
 
 enum mPlatform {
 	PLATFORM_NONE = -1,
@@ -33,6 +34,7 @@ struct mCoreSync;
 struct mCore {
 	void* cpu;
 	void* board;
+	struct mDebugger* debugger;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct mDirectorySet dirs;
@@ -93,6 +95,30 @@ struct mCore {
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
 	void (*setRotation)(struct mCore*, struct mRotationSource*);
 	void (*setRumble)(struct mCore*, struct mRumble*);
+
+	uint32_t (*busRead8)(struct mCore*, uint32_t address);
+	uint32_t (*busRead16)(struct mCore*, uint32_t address);
+	uint32_t (*busRead32)(struct mCore*, uint32_t address);
+
+	void (*busWrite8)(struct mCore*, uint32_t address, uint8_t);
+	void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
+	void (*busWrite32)(struct mCore*, uint32_t address, uint32_t);
+
+	uint32_t (*rawRead8)(struct mCore*, uint32_t address);
+	uint32_t (*rawRead16)(struct mCore*, uint32_t address);
+	uint32_t (*rawRead32)(struct mCore*, uint32_t address);
+
+	void (*rawWrite8)(struct mCore*, uint32_t address, uint8_t);
+	void (*rawWrite16)(struct mCore*, uint32_t address, uint16_t);
+	void (*rawWrite32)(struct mCore*, uint32_t address, uint32_t);
+
+	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
+	struct mDebuggerPlatform* (*debuggerPlatform)(struct mCore*);
+	struct CLIDebuggerSystem* (*cliDebuggerSystem)(struct mCore*);
+	void (*attachDebugger)(struct mCore*, struct mDebugger*);
+	void (*detachDebugger)(struct mCore*);
+
+	struct mCheatDevice* (*cheatDevice)(struct mCore*);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

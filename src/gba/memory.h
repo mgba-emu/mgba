@@ -8,8 +8,7 @@
 
 #include "util/common.h"
 
-#include "arm.h"
-#include "macros.h"
+#include "arm/arm.h"
 
 #include "gba/hardware.h"
 #include "gba/savedata.h"
@@ -142,6 +141,8 @@ struct GBAMemory {
 	int activeDMA;
 	int32_t nextDMA;
 	int32_t eventDiff;
+
+	bool mirroring;
 };
 
 void GBAMemoryInit(struct GBA* gba);

@@ -6,7 +6,7 @@
 #include "psp2-context.h"
 
 #include "gba/gba.h"
-#include "gba/gui/gui-runner.h"
+#include "feature/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
@@ -146,17 +146,17 @@ int main() {
 			{ .id = 0 }
 		},
 		.nConfigExtra = 1,
-		.setup = GBAPSP2Setup,
-		.teardown = GBAPSP2Teardown,
-		.gameLoaded = GBAPSP2LoadROM,
-		.gameUnloaded = GBAPSP2UnloadROM,
-		.prepareForFrame = GBAPSP2PrepareForFrame,
-		.drawFrame = GBAPSP2Draw,
-		.drawScreenshot = GBAPSP2DrawScreenshot,
+		.setup = mPSP2Setup,
+		.teardown = mPSP2Teardown,
+		.gameLoaded = mPSP2LoadROM,
+		.gameUnloaded = mPSP2UnloadROM,
+		.prepareForFrame = mPSP2PrepareForFrame,
+		.drawFrame = mPSP2Draw,
+		.drawScreenshot = mPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
-		.incrementScreenMode = GBAPSP2IncrementScreenMode,
-		.pollGameInput = GBAPSP2PollInput
+		.incrementScreenMode = mPSP2IncrementScreenMode,
+		.pollGameInput = mPSP2PollInput
 	};
 
 	mGUIInit(&runner, "psvita");

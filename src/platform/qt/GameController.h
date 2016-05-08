@@ -19,9 +19,9 @@ extern "C" {
 #include "core/core.h"
 #include "core/thread.h"
 #include "gba/cheats.h"
-#include "gba/context/overrides.h"
 #include "gba/hardware.h"
 #include "gba/input.h"
+#include "gba/overrides.h"
 #ifdef BUILD_SDL
 #include "sdl-events.h"
 #endif
@@ -30,7 +30,7 @@ extern "C" {
 struct GBAAudio;
 struct mCoreConfig;
 struct Configuration;
-struct Debugger;
+struct mDebugger;
 
 class QThread;
 
@@ -52,7 +52,7 @@ public:
 
 	const uint32_t* drawContext() const { return m_drawContext; }
 	mCoreThread* thread() { return &m_threadContext; }
-	GBACheatDevice* cheatDevice() { return &m_cheatDevice; }
+	mCheatDevice* cheatDevice() { return m_threadContext.core ? m_threadContext.core->cheatDevice(m_threadContext.core) : nullptr; }
 
 	void threadInterrupt();
 	void threadContinue();
@@ -79,8 +79,8 @@ public:
 	int stateSlot() const { return m_stateSlot; }
 
 #ifdef USE_GDB_STUB
-	Debugger* debugger();
-	void setDebugger(Debugger*);
+	mDebugger* debugger();
+	void setDebugger(mDebugger*);
 #endif
 
 signals:
@@ -132,7 +132,6 @@ public slots:
 	void saveState(int slot = 0);
 	void loadBackupState();
 	void saveBackupState();
-	void setMute(bool);
 	void setTurbo(bool, bool forced = true);
 	void setTurboSpeed(float ratio = -1);
 	void setAVStream(mAVStream*);
@@ -175,7 +174,7 @@ private:
 	uint32_t* m_frontBuffer;
 	mCoreThread m_threadContext;
 	const mCoreConfig* m_config;
-	GBACheatDevice m_cheatDevice;
+	mCheatDevice* m_cheatDevice;
 	int m_activeKeys;
 	int m_activeButtons;
 	int m_inactiveKeys;

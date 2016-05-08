@@ -56,12 +56,11 @@ void OverrideView::saveOverride() {
 }
 
 void OverrideView::updateOverrides() {
-	m_override = (GBACartridgeOverride) {
-		"",
-		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
-		HW_NO_OVERRIDE,
-		IDLE_LOOP_NONE
-	};
+	memset(m_override.id, 0, 4);
+	m_override.savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
+	m_override.hardware = HW_NO_OVERRIDE;
+	m_override.idleLoop = IDLE_LOOP_NONE;
+	m_override.mirroring = false;
 
 	if (!m_ui.hwAutodetect->isChecked()) {
 		m_override.hardware = HW_NONE;

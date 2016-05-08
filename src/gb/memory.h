@@ -44,6 +44,7 @@ enum {
 
 enum {
 	GB_SIZE_CART_BANK0 = 0x4000,
+	GB_SIZE_CART_MAX = 0x800000,
 	GB_SIZE_VRAM = 0x4000,
 	GB_SIZE_VRAM_BANK0 = 0x2000,
 	GB_SIZE_EXTERNAL_RAM = 0x2000,
@@ -89,6 +90,10 @@ enum GBMBC7MachineState {
 	GBMBC7_STATE_WRITE = 8,
 };
 
+struct GBMBC1State {
+	int mode;
+};
+
 struct GBMBC7State {
 	enum GBMBC7MachineState state;
 	uint32_t sr;
@@ -100,6 +105,7 @@ struct GBMBC7State {
 };
 
 union GBMBCState {
+	struct GBMBC1State mbc1;
 	struct GBMBC7State mbc7;
 };
 
@@ -165,10 +171,6 @@ void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
 uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address);
 void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
-uint16_t GBView16(struct LR35902Core* cpu, uint16_t address);
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
-
-void GBPatch16(struct LR35902Core* cpu, uint16_t address, int16_t value, int16_t* old);
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
 #endif

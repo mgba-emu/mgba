@@ -38,20 +38,16 @@
 #include "VideoView.h"
 
 extern "C" {
+#include "core/version.h"
 #ifdef M_CORE_GB
 #include "gb/gb.h"
 #endif
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/vfs.h"
 }
 
 using namespace QGBA;
-
-#if defined(__WIN32) || defined(__OpenBSD__)
-// This is a macro everywhere except MinGW and OpenBSD, it seems
-using std::isnan;
-#endif
 
 Window::Window(ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
@@ -238,6 +234,7 @@ void Window::loadConfig() {
 	updateMRU();
 
 	m_inputController.setConfiguration(m_config);
+	m_controller->setUseBIOS(opts->useBios);
 }
 
 void Window::reloadConfig() {
@@ -774,7 +771,7 @@ void Window::updateTitle(float fps) {
 	m_controller->threadContinue();
 	if (title.isNull()) {
 		setWindowTitle(tr("%1 - %2").arg(projectName).arg(projectVersion));
-	} else if (isnan(fps)) {
+	} else if (fps < 0) {
 		setWindowTitle(tr("%1 - %2 - %3").arg(projectName).arg(title).arg(projectVersion));
 	} else {
 		setWindowTitle(tr("%1 - %2 (%3 fps) - %4").arg(projectName).arg(title).arg(fps).arg(projectVersion));
@@ -1139,7 +1136,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	ConfigOption* mute = m_config->addOption("mute");
 	mute->addBoolean(tr("Mute"), avMenu);
 	mute->connect([this](const QVariant& value) {
-		m_controller->setMute(value.toBool());
+		reloadConfig();
 	}, this);
 	m_config->updateOption("mute");
 
@@ -1238,7 +1235,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	QAction* cheats = new QAction(tr("&Cheats..."), toolsMenu);
 	connect(cheats, SIGNAL(triggered()), this, SLOT(openCheatsWindow()));
-	m_gbaActions.append(cheats);
+	m_gameActions.append(cheats);
 	addControlledAction(toolsMenu, cheats, "cheatsWindow");
 
 #ifdef USE_GDB_STUB
@@ -1263,7 +1260,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
 	m_gameActions.append(memoryView);
-	m_gbaActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
@@ -1279,7 +1275,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* useBios = m_config->addOption("useBios");
 	useBios->connect([this](const QVariant& value) {
-		reloadConfig();
+		m_controller->setUseBIOS(value.toBool());
 	}, this);
 
 	ConfigOption* buffers = m_config->addOption("audioBuffers");

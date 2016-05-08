@@ -14,7 +14,7 @@
 
 extern "C" {
 #include "core/core.h"
-#include "gba/supervisor/export.h"
+#include "gba/extra/export.h"
 #include "util/vfs.h"
 }
 

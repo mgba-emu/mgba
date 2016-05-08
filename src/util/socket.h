@@ -8,17 +8,17 @@
 
 #include "util/common.h"
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(restrict)
 #define restrict __restrict__
 #endif
 
 #ifdef _WIN32
-#include <winsock2.h>
 #include <ws2tcpip.h>
 
 #define SOCKET_FAILED(s) ((s) == INVALID_SOCKET)
 typedef SOCKET Socket;
 #else
+#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -44,10 +44,35 @@ struct Address {
 	};
 };
 
+#ifdef _3DS
+#include <3ds.h>
+#include <malloc.h>
+
+#define SOCU_ALIGN 0x1000
+#define SOCU_BUFFERSIZE 0x100000
+
+extern u32* SOCUBuffer;
+#endif
+
 static inline void SocketSubsystemInit() {
 #ifdef _WIN32
 	WSADATA data;
 	WSAStartup(MAKEWORD(2, 2), &data);
+#elif defined(_3DS)
+	if (!SOCUBuffer) {
+		SOCUBuffer = memalign(SOCU_ALIGN, SOCU_BUFFERSIZE);
+		socInit(SOCUBuffer, SOCU_BUFFERSIZE);
+	}
+#endif
+}
+
+static inline void SocketSubsystemDeinit() {
+#ifdef _WIN32
+	WSACleanup();
+#elif defined(_3DS)
+	socExit();
+	free(SOCUBuffer);
+	SOCUBuffer = NULL;
 #endif
 }
 
@@ -83,6 +108,14 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 #endif
 }
 
+static inline int SocketClose(Socket socket) {
+#ifdef _WIN32
+	return closesocket(socket) == 0;
+#else
+	return close(socket) >= 0;
+#endif
+}
+
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
 	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
@@ -95,14 +128,20 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
+#ifndef _3DS
+		bindInfo.sin_addr.s_addr = INADDR_ANY;
+#else
+		bindInfo.sin_addr.s_addr = gethostid();
+#endif
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 	} else if (bindAddress->version == IPV4) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
-		bindInfo.sin_addr.s_addr = bindAddress->ipv4;
+		bindInfo.sin_addr.s_addr = htonl(bindAddress->ipv4);
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+#ifndef _3DS
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -110,9 +149,10 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		bindInfo.sin6_port = htons(port);
 		memcpy(bindInfo.sin6_addr.s6_addr, bindAddress->ipv6, sizeof(bindInfo.sin6_addr.s6_addr));
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+#endif
 	}
 	if (err) {
-		close(sock);
+		SocketClose(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
@@ -136,8 +176,9 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
-		bindInfo.sin_addr.s_addr = destinationAddress->ipv4;
+		bindInfo.sin_addr.s_addr = htonl(destinationAddress->ipv4);
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+#ifndef _3DS
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -145,10 +186,11 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 		bindInfo.sin6_port = htons(port);
 		memcpy(bindInfo.sin6_addr.s6_addr, destinationAddress->ipv6, sizeof(bindInfo.sin6_addr.s6_addr));
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
+#endif
 	}
 
 	if (err) {
-		close(sock);
+		SocketClose(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
@@ -169,6 +211,7 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 		addrInfo.sin_addr.s_addr = address->ipv4;
 		socklen_t len = sizeof(addrInfo);
 		return accept(socket, (struct sockaddr*) &addrInfo, &len);
+#ifndef _3DS
 	} else {
 		struct sockaddr_in6 addrInfo;
 		memset(&addrInfo, 0, sizeof(addrInfo));
@@ -176,11 +219,9 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 		memcpy(addrInfo.sin6_addr.s6_addr, address->ipv6, sizeof(addrInfo.sin6_addr.s6_addr));
 		socklen_t len = sizeof(addrInfo);
 		return accept(socket, (struct sockaddr*) &addrInfo, &len);
+#endif
 	}
-}
-
-static inline int SocketClose(Socket socket) {
-	return close(socket) >= 0;
+	return INVALID_SOCKET;
 }
 
 static inline int SocketSetBlocking(Socket socket, bool blocking) {

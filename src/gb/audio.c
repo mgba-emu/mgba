@@ -10,6 +10,10 @@
 #include "gb/gb.h"
 #include "gb/io.h"
 
+#ifdef _3DS
+#define blip_add_delta blip_add_delta_fast
+#endif
+
 #define FRAME_CYCLES (DMG_LR35902_FREQUENCY >> 9)
 
 const uint32_t DMG_LR35902_FREQUENCY = 0x400000;
@@ -142,13 +146,16 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh1) {
-			audio->nextCh1 = audio->eventDiff;
+		if (audio->playingCh1) {
+			audio->ch1.control.hi = !audio->ch1.control.hi;
 		}
+		audio->nextCh1 = audio->eventDiff;
 		audio->playingCh1 = audio->ch1.envelope.initialVolume || audio->ch1.envelope.direction;
 		audio->ch1.envelope.currentVolume = audio->ch1.envelope.initialVolume;
 		if (audio->ch1.envelope.currentVolume > 0) {
 			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 1;
+		} else {
+			audio->ch1.envelope.dead = audio->ch1.envelope.stepTime ? 0 : 2;
 		}
 		audio->ch1.realFrequency = audio->ch1.control.frequency;
 		audio->ch1.sweepStep = audio->ch1.time;
@@ -202,13 +209,16 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		audio->ch2.envelope.currentVolume = audio->ch2.envelope.initialVolume;
 		if (audio->ch2.envelope.currentVolume > 0) {
 			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 1;
+		} else {
+			audio->ch2.envelope.dead = audio->ch2.envelope.stepTime ? 0 : 2;
 		}
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh2) {
-			audio->nextCh2 = audio->eventDiff;
+		if (audio->playingCh2) {
+			audio->ch2.control.hi = !audio->ch2.control.hi;
 		}
+		audio->nextCh2 = audio->eventDiff;
 		if (!audio->ch2.control.length) {
 			audio->ch2.control.length = 64;
 			if (audio->ch2.control.stop && !(audio->frame & 1)) {
@@ -320,6 +330,8 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		audio->ch4.envelope.currentVolume = audio->ch4.envelope.initialVolume;
 		if (audio->ch4.envelope.currentVolume > 0) {
 			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 1;
+		} else {
+			audio->ch4.envelope.dead = audio->ch4.envelope.stepTime ? 0 : 2;
 		}
 		if (audio->ch4.power) {
 			audio->ch4.lfsr = 0x40;
@@ -329,9 +341,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		if (audio->nextEvent == INT_MAX) {
 			audio->eventDiff = 0;
 		}
-		if (!audio->playingCh4) {
-			audio->nextCh4 = audio->eventDiff;
-		}
+		audio->nextCh4 = audio->eventDiff;
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
 			if (audio->ch4.stop && !(audio->frame & 1)) {
@@ -546,21 +556,6 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 						audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
 					}
 				}
-
-				if (audio->ch4.envelope.dead != 2) {
-					if (audio->nextCh4 <= 0) {
-						int32_t timing = _updateChannel4(&audio->ch4);
-						if (audio->nextCh4 < -timing) {
-							int32_t bound = timing * 16;
-							// Perform negative modulo to cap to 16 iterations
-							audio->nextCh4 = bound - (audio->nextCh4 - 1) % bound - 1;
-						}
-						audio->nextCh4 += timing;
-					}
-					if (audio->nextCh4 < audio->nextEvent) {
-						audio->nextEvent = audio->nextCh4;
-					}
-				}
 			}
 
 			if (audio->ch4.length && audio->ch4.stop && !(frame & 1)) {
@@ -596,6 +591,15 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	int sampleLeft = 0;
 	int sampleRight = 0;
+
+	if (audio->ch4.envelope.dead != 2) {
+		while (audio->nextCh4 <= 0) {
+			audio->nextCh4 += _updateChannel4(&audio->ch4);
+		}
+		if (audio->nextCh4 < audio->nextEvent) {
+			audio->nextEvent = audio->nextCh4;
+		}
+	}
 
 	if (audio->playingCh1 && !audio->forceDisableCh[0]) {
 		if (audio->ch1Left) {

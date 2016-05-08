@@ -222,7 +222,7 @@ static void _saveAxis(uint32_t axis, void* dp, void* up) {
 		ConfigurationSetValue(user->config, sectionName, axisKey, axisInfo);
 	}
 	if (description->highDirection != -1) {
-		const char* keyName = user->info->keyId[description->lowDirection];
+		const char* keyName = user->info->keyId[description->highDirection];
 
 		char axisKey[KEY_NAME_MAX];
 		snprintf(axisKey, KEY_NAME_MAX, "axis%sValue", keyName);

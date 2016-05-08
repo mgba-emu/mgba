@@ -10,7 +10,6 @@
 
 #include "core/core.h"
 #include "gba/memory.h"
-#include "macros.h"
 
 #define GBA_R5(X) ((X) & 0x1F)
 #define GBA_G5(X) (((X) >> 5) & 0x1F)

@@ -8,7 +8,7 @@
 
 #include "util/common.h"
 
-#include "gba/gui/remap.h"
+#include "feature/gui/remap.h"
 #include "gba/hardware.h"
 #include "util/circle-buffer.h"
 #include "util/gui.h"

@@ -8,11 +8,9 @@
 
 #include "util/common.h"
 
-#include "arm.h"
+struct ARMDebugger;
 
-struct Debugger;
-
-void DebuggerInstallMemoryShim(struct Debugger* debugger);
-void DebuggerRemoveMemoryShim(struct Debugger* debugger);
+void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger);
+void ARMDebuggerRemoveMemoryShim(struct ARMDebugger* debugger);
 
 #endif

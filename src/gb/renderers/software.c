@@ -108,15 +108,19 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
 	}
-	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc)) {
-		GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, softwareRenderer->scx, softwareRenderer->scy);
-
+	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
+			if (softwareRenderer->wx - 7 > 0) {
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, y, softwareRenderer->scx, softwareRenderer->scy);
+			}
+
 			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
 			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
+		} else {
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, softwareRenderer->scx, softwareRenderer->scy);
 		}
 	} else {
 		memset(&softwareRenderer->row[startX], 0, endX - startX);
@@ -130,7 +134,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	}
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
-	for (x = startX; x < endX; x += 8) {
+	for (x = startX; x < (endX & ~7); x += 8) {
 		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
 		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
 		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
@@ -139,6 +143,9 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		row[x + 5] = softwareRenderer->palette[softwareRenderer->row[x + 5] & 0x7F];
 		row[x + 6] = softwareRenderer->palette[softwareRenderer->row[x + 6] & 0x7F];
 		row[x + 7] = softwareRenderer->palette[softwareRenderer->row[x + 7] & 0x7F];
+	}
+	for (; x < endX; ++x) {
+		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
 	}
 }
 
@@ -188,7 +195,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 			if (renderer->model >= GB_MODEL_CGB) {
 				GBObjAttributes attrs = attr[topX + topY];
 				p = GBObjAttributesGetCGBPalette(attrs) * 4;
-				if (GBObjAttributesIsPriority(attrs)) {
+				if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
 					p |= 0x80;
 				}
 				if (GBObjAttributesIsBank(attrs)) {
@@ -223,7 +230,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 		if (renderer->model >= GB_MODEL_CGB) {
 			GBObjAttributes attrs = attr[topX + topY];
 			p = GBObjAttributesGetCGBPalette(attrs) * 4;
-			if (GBObjAttributesIsPriority(attrs)) {
+			if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
 				p |= 0x80;
 			}
 			if (GBObjAttributesIsBank(attrs)) {
@@ -290,13 +297,17 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (GBRegisterLCDCIsObjSize(renderer->lcdc) && obj->tile & 1) {
 		--tileOffset;
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? ~0x1C : ~0x9F;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0xE3 : 0x60;
 	uint8_t mask2 = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x83;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {
 		p = (GBObjAttributesGetCGBPalette(obj->attr) + 8) * 4;
 		if (GBObjAttributesIsBank(obj->attr)) {
 			data += GB_SIZE_VRAM_BANK0;
+		}
+		if (!GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
+			mask = 0x60;
+			mask2 = 0x83;
 		}
 	} else {
 		p = (GBObjAttributesGetPalette(obj->attr) + 8) * 4;

@@ -10,15 +10,7 @@ The general porting process involves branching `master`, making the needed chang
 Port-specific TODO
 ------------------
 
-The ports are vaguely usable, but by no means should be considered stable.
-
-### 3DS (master)
-* Add audio
-* Thread support testing
-* Make it faster
-	* Threaded renderer shim
-	* ARMv6 dynarec
-	* Hardware acceleration
+The following ports are considered incomplete and are thus on branches still. They may work, but should not be considered stable.
 
 ### PSP (port/psp)
 * Add menu
@@ -27,12 +19,3 @@ The ports are vaguely usable, but by no means should be considered stable.
 * Make it faster
 	* MIPS dynarec
 	* Hardware acceleration
-
-### PS Vita (master)
-* Make it faster
-	* Threaded renderer shim
-	* Hardware acceleration
-
-### Wii (master)
-* Thread support
-* Clean up video detection

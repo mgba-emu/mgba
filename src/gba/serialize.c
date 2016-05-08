@@ -16,7 +16,11 @@
 #include "util/vfs.h"
 
 #include <fcntl.h>
+#ifdef _MSC_VER
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
 
 #ifdef USE_PNG
 #include "util/png-io.h"
@@ -79,12 +83,22 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
 
+#ifndef _MSC_VER
 	struct timeval tv;
 	if (!gettimeofday(&tv, 0)) {
 		uint64_t usec = tv.tv_usec;
 		usec += tv.tv_sec * 1000000LL;
 		STORE_64(usec, 0, &state->creationUsec);
-	} else {
+	}
+#else
+	struct timespec ts;
+	if (timespec_get(&ts, TIME_UTC)) {
+		uint64_t usec = ts.tv_nsec / 1000;
+		usec += ts.tv_sec * 1000000LL;
+		STORE_64(usec, 0, &state->creationUsec);
+	}
+#endif
+	else {
 		state->creationUsec = 0;
 	}
 	state->associatedStreamId = 0;
@@ -368,11 +382,11 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		svf->close(svf);
 	}
 	struct VFile* cheatVf = 0;
-	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
-		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 		cheatVf = VFileMemChunk(0, 0);
 		if (cheatVf) {
-			GBACheatSaveFile(device, cheatVf);
+			mCheatSaveFile(device, cheatVf);
 			struct GBAExtdataItem item = {
 				.size = cheatVf->size(cheatVf),
 				.data = cheatVf->map(cheatVf, cheatVf->size(cheatVf), MAP_READ),
@@ -458,18 +472,18 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	}
 	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
 		struct VFile* svf = VFileFromMemory(item.data, item.size);
+		GBASavedataLoad(&gba->memory.savedata, svf);
 		if (svf) {
-			GBASavedataLoad(&gba->memory.savedata, svf);
 			svf->close(svf);
 		}
 	}
-	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
 		if (item.size) {
-			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+			struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 			struct VFile* svf = VFileFromMemory(item.data, item.size);
 			if (svf) {
-				GBACheatDeviceClear(device);
-				GBACheatParseFile(device, svf);
+				mCheatDeviceClear(device);
+				mCheatParseFile(device, svf);
 				svf->close(svf);
 			}
 		}
@@ -514,14 +528,14 @@ bool GBAExtdataGet(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GB
 
 bool GBAExtdataSerialize(struct GBAExtdata* extdata, struct VFile* vf) {
 	ssize_t position = vf->seek(vf, 0, SEEK_CUR);
-	ssize_t size = 2;
+	ssize_t size = sizeof(struct GBAExtdataHeader);
 	size_t i = 0;
 	for (i = 1; i < EXTDATA_MAX; ++i) {
 		if (extdata->data[i].data) {
-			size += sizeof(uint64_t) * 2;
+			size += sizeof(struct GBAExtdataHeader);
 		}
 	}
-	if (size == 2) {
+	if (size == sizeof(struct GBAExtdataHeader)) {
 		return true;
 	}
 	struct GBAExtdataHeader* header = malloc(size);

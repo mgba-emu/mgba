@@ -5,22 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "commandline.h"
 
-#include "debugger/debugger.h"
-
-#ifdef USE_CLI_DEBUGGER
-#include "debugger/cli-debugger.h"
-#include "gba/supervisor/cli.h"
-#endif
-
-#ifdef USE_GDB_STUB
-#include "debugger/gdb-stub.h"
-#endif
-
-#include "gba/video.h"
+#include "core/config.h"
+#include "core/version.h"
 #include "util/string.h"
 
 #include <fcntl.h>
+#ifdef _MSC_VER
+#include "platform/windows/getopt.h"
+#else
 #include <getopt.h>
+#endif
 
 #define GRAPHICS_OPTIONS "123456f"
 #define GRAPHICS_USAGE \
@@ -137,7 +131,7 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 	return true;
 }
 
-void applyArguments(struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
+void applyArguments(const struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config) {
 	if (args->frameskip >= 0) {
 		mCoreConfigSetOverrideIntValue(config, "frameskip", args->frameskip);
 	}
@@ -205,46 +199,6 @@ bool _parseGraphicsArg(struct mSubParser* parser, int option, const char* arg) {
 void _applyGraphicsArgs(struct mSubParser* parser, struct mCoreConfig* config) {
 	struct mGraphicsOpts* graphicsOpts = parser->opts;
 	mCoreConfigSetOverrideIntValue(config, "fullscreen", graphicsOpts->fullscreen);
-}
-
-struct Debugger* createDebugger(struct mArguments* opts, struct mCore* core) {
-#ifndef USE_CLI_DEBUGGER
-	UNUSED(core);
-#endif
-	union DebugUnion {
-		struct Debugger d;
-#ifdef USE_CLI_DEBUGGER
-		struct CLIDebugger cli;
-#endif
-#ifdef USE_GDB_STUB
-		struct GDBStub gdb;
-#endif
-	};
-
-	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
-
-	switch (opts->debuggerType) {
-#ifdef USE_CLI_DEBUGGER
-	case DEBUGGER_CLI:
-		CLIDebuggerCreate(&debugger->cli);
-		struct GBACLIDebugger* gbaDebugger = GBACLIDebuggerCreate(core);
-		CLIDebuggerAttachSystem(&debugger->cli, &gbaDebugger->d);
-		break;
-#endif
-#ifdef USE_GDB_STUB
-	case DEBUGGER_GDB:
-		GDBStubCreate(&debugger->gdb);
-		GDBStubListen(&debugger->gdb, 2345, 0);
-		break;
-#endif
-	case DEBUGGER_NONE:
-	case DEBUGGER_MAX:
-		free(debugger);
-		return 0;
-		break;
-	}
-
-	return &debugger->d;
 }
 
 void usage(const char* arg0, const char* extraOptions) {

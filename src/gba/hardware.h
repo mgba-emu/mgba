@@ -8,10 +8,9 @@
 
 #include "util/common.h"
 
+#include "arm/macros.h"
 #include "core/log.h"
 #include "gba/interface.h"
-
-#include "macros.h"
 
 #include <time.h>
 

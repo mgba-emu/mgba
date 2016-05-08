@@ -8,6 +8,7 @@
 #include "gb/io.h"
 
 #include "core/core.h"
+#include "core/cheats.h"
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/math.h"
@@ -102,8 +103,6 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 			vf->truncate(vf, 0x20000);
 		}
 		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
-	} else {
-		gb->memory.sram = anonymousMemoryMap(0x20000);
 	}
 	return gb->memory.sram;
 }
@@ -114,7 +113,7 @@ void GBUnloadROM(struct GB* gb) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
 		}
-		mappedMemoryFree(gb->memory.rom, 0x400000);
+		mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
 	}
 	gb->memory.rom = 0;
 
@@ -122,6 +121,7 @@ void GBUnloadROM(struct GB* gb) {
 #ifndef _3DS
 		gb->romVf->unmap(gb->romVf, gb->pristineRom, gb->pristineRomSize);
 #endif
+		gb->romVf->close(gb->romVf);
 		gb->pristineRom = 0;
 		gb->romVf = 0;
 	}
@@ -140,10 +140,10 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (!patchedSize) {
 		return;
 	}
-	if (patchedSize > 0x400000) {
-		patchedSize = 0x400000;
+	if (patchedSize > GB_SIZE_CART_MAX) {
+		patchedSize = GB_SIZE_CART_MAX;
 	}
-	gb->memory.rom = anonymousMemoryMap(0x400000);
+	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->pristineRom, gb->pristineRomSize, gb->memory.rom, patchedSize)) {
 		mappedMemoryFree(gb->memory.rom, patchedSize);
 		gb->memory.rom = gb->pristineRom;
@@ -176,22 +176,27 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->model = GB_MODEL_CGB;
 		gb->audio.style = GB_AUDIO_CGB;
 		cpu->a = 0x11;
+		cpu->f.packed = 0x80;
+		cpu->c = 0;
+		cpu->e = 0x08;
+		cpu->h = 0;
+		cpu->l = 0x7C;
 	} else {
 		// TODO: SGB
 		gb->model = GB_MODEL_DMG;
 		gb->audio.style = GB_AUDIO_DMG;
 		cpu->a = 1;
+		cpu->f.packed = 0xB0;
+		cpu->c = 0x13;
+		cpu->e = 0xD8;
+		cpu->h = 1;
+		cpu->l = 0x4D;
 	}
-
-	cpu->f.packed = 0xB0;
 	cpu->b = 0;
-	cpu->c = 0x13;
 	cpu->d = 0;
-	cpu->e = 0xD8;
-	cpu->h = 1;
-	cpu->l = 0x4D;
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
+	cpu->memory.setActiveRegion(cpu, cpu->pc);
 
 	if (gb->yankedRomSize) {
 		gb->memory.romSize = gb->yankedRomSize;
@@ -359,7 +364,7 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 }
 
 void GBGetGameCode(struct GB* gb, char* out) {
-	memset(out, 0, 4);
+	memset(out, 0, 8);
 	const struct GBCartridge* cart = NULL;
 	if (gb->memory.rom) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
@@ -370,7 +375,23 @@ void GBGetGameCode(struct GB* gb, char* out) {
 	if (!cart) {
 		return;
 	}
+	if (cart->cgb == 0xC0) {
+		memcpy(out, "CGB-????", 8);
+	} else {
+		memcpy(out, "DMG-????", 8);
+	}
 	if (cart->oldLicensee == 0x33) {
-		memcpy(out, cart->maker, 11);
+		memcpy(&out[4], cart->maker, 4);
+	}
+}
+
+void GBFrameEnded(struct GB* gb) {
+	if (gb->cpu->components && gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		struct mCheatDevice* device = (struct mCheatDevice*) gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
+		size_t i;
+		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+			struct mCheatSet* cheats = *mCheatSetsGetPointer(&device->cheats, i);
+			mCheatRefresh(device, cheats);
+		}
 	}
 }

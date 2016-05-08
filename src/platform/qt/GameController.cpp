@@ -25,7 +25,7 @@ extern "C" {
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"
-#include "gba/sharkport.h"
+#include "gba/extra/sharkport.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"
@@ -45,6 +45,7 @@ GameController::GameController(QObject* parent)
 	, m_inactiveKeys(0)
 	, m_logLevels(0)
 	, m_gameOpen(false)
+	, m_useBios(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
 	, m_pauseAfterFrame(false)
@@ -68,8 +69,6 @@ GameController::GameController(QObject* parent)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
 {
-	GBACheatDeviceCreate(&m_cheatDevice);
-
 	m_lux.p = this;
 	m_lux.sample = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
@@ -234,7 +233,6 @@ GameController::~GameController() {
 	disconnect();
 	clearMultiplayerController();
 	closeGame();
-	GBACheatDeviceDestroy(&m_cheatDevice);
 	delete m_backupLoadState;
 }
 
@@ -270,14 +268,20 @@ void GameController::setConfig(const mCoreConfig* config) {
 }
 
 #ifdef USE_GDB_STUB
-Debugger* GameController::debugger() {
-	// TODO: Put back debugger
-	return nullptr;
+mDebugger* GameController::debugger() {
+	if (!isLoaded()) {
+		return nullptr;
+	}
+	return m_threadContext.core->debugger;
 }
 
-void GameController::setDebugger(Debugger* debugger) {
+void GameController::setDebugger(mDebugger* debugger) {
 	threadInterrupt();
-	// TODO: Put back debugger
+	if (debugger) {
+		mDebuggerAttach(debugger, m_threadContext.core);
+	} else {
+		m_threadContext.core->detachDebugger(m_threadContext.core);
+	}
 	threadContinue();
 }
 #endif
@@ -306,6 +310,16 @@ void GameController::openGame(bool biosOnly) {
 		return;
 	}
 
+	if (!biosOnly) {
+		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
+	} else {
+		m_threadContext.core = GBACoreCreate();
+	}
+
+	if (!m_threadContext.core) {
+		return;
+	}
+
 	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
@@ -316,13 +330,6 @@ void GameController::openGame(bool biosOnly) {
 	} else {
 		m_threadContext.sync.videoFrameWait = m_videoSync;
 		m_threadContext.sync.audioWait = m_audioSync;
-	}
-
-
-	if (!biosOnly) {
-		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
-	} else {
-		m_threadContext.core = GBACoreCreate();
 	}
 	m_threadContext.core->init(m_threadContext.core);
 
@@ -465,13 +472,6 @@ void GameController::closeGame() {
 	delete[] m_frontBuffer;
 
 	m_patch = QString();
-
-	for (size_t i = 0; i < GBACheatSetsSize(&m_cheatDevice.cheats); ++i) {
-		GBACheatSet* set = *GBACheatSetsGetPointer(&m_cheatDevice.cheats, i);
-		GBACheatSetDeinit(set);
-		delete set;
-	}
-	GBACheatSetsClear(&m_cheatDevice.cheats);
 
 	m_threadContext.core->deinit(m_threadContext.core);
 }
@@ -846,12 +846,6 @@ void GameController::saveBackupState() {
 		}
 		controller->m_backupSaveState.clear();
 	});
-}
-
-void GameController::setMute(bool mute) {
-	threadInterrupt();
-	// TODO: Put back mute
-	threadContinue();
 }
 
 void GameController::setTurbo(bool set, bool forced) {

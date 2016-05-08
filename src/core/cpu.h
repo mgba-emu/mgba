@@ -8,6 +8,12 @@
 
 #include "util/common.h"
 
+enum mCPUComponentType {
+	CPU_COMPONENT_DEBUGGER,
+	CPU_COMPONENT_CHEAT_DEVICE,
+	CPU_COMPONENT_MAX
+};
+
 struct mCPUComponent {
 	uint32_t id;
 	void (*init)(void* cpu, struct mCPUComponent* component);

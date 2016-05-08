@@ -6,7 +6,7 @@
 #include "gui-runner.h"
 
 #include "core/core.h"
-#include "gba/gui/gui-config.h"
+#include "feature/gui/gui-config.h"
 #include "gba/input.h"
 #include "gba/interface.h"
 #include "gba/serialize.h"
@@ -233,6 +233,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	// TODO: Do we need to load more defaults?
 	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
+	mCoreConfigSetDefaultValue(&runner->core->config, "idleOptimization", "detect");
 	mCoreLoadConfig(runner->core);
 	mCoreAutoloadSave(runner->core);
 	if (runner->setup) {

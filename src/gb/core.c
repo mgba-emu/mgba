@@ -6,8 +6,11 @@
 #include "core.h"
 
 #include "core/core.h"
+#include "gb/cheats.h"
+#include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
+#include "lr35902/debugger/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
 
@@ -15,6 +18,9 @@ struct GBCore {
 	struct mCore d;
 	struct GBVideoSoftwareRenderer renderer;
 	uint8_t keys;
+	struct mCPUComponent* components[CPU_COMPONENT_MAX];
+	struct mDebuggerPlatform* debuggerPlatform;
+	struct mCheatDevice* cheatDevice;
 };
 
 static bool _GBCoreInit(struct mCore* core) {
@@ -29,9 +35,12 @@ static bool _GBCoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gb;
+	gbcore->debuggerPlatform = NULL;
+	gbcore->cheatDevice = NULL;
 
 	GBCreate(gb);
-	LR35902SetComponents(cpu, &gb->d, 0, 0);
+	memset(gbcore->components, 0, sizeof(gbcore->components));
+	LR35902SetComponents(cpu, &gb->d, CPU_COMPONENT_MAX, gbcore->components);
 	LR35902Init(cpu);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
@@ -54,6 +63,14 @@ static void _GBCoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+
+	struct GBCore* gbcore = (struct GBCore*) core;
+	free(gbcore->debuggerPlatform);
+	if (gbcore->cheatDevice) {
+		mCheatDeviceDestroy(gbcore->cheatDevice);
+	}
+	free(gbcore->cheatDevice);
+	free(core);
 }
 
 static enum mPlatform _GBCorePlatform(struct mCore* core) {
@@ -70,7 +87,11 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	UNUSED(config);
 
 	struct GB* gb = core->board;
-	gb->audio.masterVolume = core->opts.volume;
+	if (core->opts.mute) {
+		gb->audio.masterVolume = 0;
+	} else {
+		gb->audio.masterVolume = core->opts.volume;
+	}
 	gb->video.frameskip = core->opts.frameskip;
 }
 
@@ -249,12 +270,121 @@ static void _GBCoreSetRumble(struct mCore* core, struct mRumble* rumble) {
 	gb->memory.rumble = rumble;
 }
 
+static uint32_t _GBCoreBusRead8(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address);
+}
+
+static uint32_t _GBCoreBusRead16(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address) | (cpu->memory.load8(cpu, address + 1) << 8);
+}
+
+static uint32_t _GBCoreBusRead32(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address) | (cpu->memory.load8(cpu, address + 1) << 8) |
+	       (cpu->memory.load8(cpu, address + 2) << 16) | (cpu->memory.load8(cpu, address + 3) << 24);
+}
+
+static void _GBCoreBusWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+}
+
+static void _GBCoreBusWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+	cpu->memory.store8(cpu, address + 1, value >> 8);
+}
+
+static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value);
+	cpu->memory.store8(cpu, address + 1, value >> 8);
+	cpu->memory.store8(cpu, address + 2, value >> 16);
+	cpu->memory.store8(cpu, address + 3, value >> 24);
+}
+
+static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address);
+}
+
+static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8);
+}
+
+static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address) {
+	struct LR35902Core* cpu = core->cpu;
+	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8) |
+	       (GBLoad8(cpu, address + 2) << 16) | (GBLoad8(cpu, address + 3) << 24);
+}
+
+static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
+	UNUSED(core);
+	switch (type) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		return true;
+#endif
+	default:
+		return false;
+	}
+}
+
+static struct mDebuggerPlatform* _GBCoreDebuggerPlatform(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (!gbcore->debuggerPlatform) {
+		gbcore->debuggerPlatform = LR35902DebuggerPlatformCreate();
+	}
+	return gbcore->debuggerPlatform;
+}
+
+static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
+#ifdef USE_CLI_DEBUGGER
+	return GBCLIDebuggerCreate(core);
+#else
+	UNUSED(core);
+	return NULL;
+#endif
+}
+
+static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	struct LR35902Core* cpu = core->cpu;
+	if (core->debugger) {
+		LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	}
+	cpu->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	LR35902HotplugAttach(cpu, CPU_COMPONENT_DEBUGGER);
+	core->debugger = debugger;
+}
+
+static void _GBCoreDetachDebugger(struct mCore* core) {
+	struct LR35902Core* cpu = core->cpu;
+	LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
+	core->debugger = NULL;
+}
+
+static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	if (!gbcore->cheatDevice) {
+		gbcore->cheatDevice = GBCheatDeviceCreate();
+		((struct LR35902Core*) core->cpu)->components[CPU_COMPONENT_CHEAT_DEVICE] = &gbcore->cheatDevice->d;
+		LR35902HotplugAttach(core->cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		gbcore->cheatDevice->p = core;
+	}
+	return gbcore->cheatDevice;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
 	memset(&core->opts, 0, sizeof(core->opts));
-	core->cpu = 0;
-	core->board = 0;
+	core->cpu = NULL;
+	core->board = NULL;
+	core->debugger = NULL;
 	core->init = _GBCoreInit;
 	core->deinit = _GBCoreDeinit;
 	core->platform = _GBCorePlatform;
@@ -290,5 +420,23 @@ struct mCore* GBCoreCreate(void) {
 	core->setRTC = _GBCoreSetRTC;
 	core->setRotation = _GBCoreSetRotation;
 	core->setRumble = _GBCoreSetRumble;
+	core->busRead8 = _GBCoreBusRead8;
+	core->busRead16 = _GBCoreBusRead16;
+	core->busRead32 = _GBCoreBusRead32;
+	core->busWrite8 = _GBCoreBusWrite8;
+	core->busWrite16 = _GBCoreBusWrite16;
+	core->busWrite32 = _GBCoreBusWrite32;
+	core->rawRead8 = _GBCoreRawRead8;
+	core->rawRead16 = _GBCoreRawRead16;
+	core->rawRead32 = _GBCoreRawRead32;
+	core->rawWrite8 = NULL;
+	core->rawWrite16 = NULL;
+	core->rawWrite32 = NULL;
+	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
+	core->debuggerPlatform = _GBCoreDebuggerPlatform;
+	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;
+	core->attachDebugger = _GBCoreAttachDebugger;
+	core->detachDebugger = _GBCoreDetachDebugger;
+	core->cheatDevice = _GBCoreCheatDevice;
 	return core;
 }

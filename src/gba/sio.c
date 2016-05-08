@@ -171,10 +171,11 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	sio->a.siocnt = value;
 }
 
-void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value) {
+uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOMLT_SEND, value);
+		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
+	return value;
 }
 
 int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles) {

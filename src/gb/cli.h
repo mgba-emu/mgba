@@ -1,13 +1,15 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#ifndef GBA_CHEATS_PRIVATE_H
-#define GBA_CHEATS_PRIVATE_H
+#ifndef GB_CLI_H
+#define GB_CLI_H
 
-#include "gba/cheats.h"
+#ifdef USE_CLI_DEBUGGER
+#include "debugger/cli-debugger.h"
 
-void GBACheatRegisterLine(struct GBACheatSet* set, const char* line);
+struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore*);
+#endif
 
 #endif

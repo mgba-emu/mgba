@@ -1,9 +1,9 @@
 mGBA
 ====
 
-mGBA is a new emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
+mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
 
-Up-to-date news and downloads can be found at [mgba.io](http://mgba.io/).
+Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 
 [![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
@@ -30,6 +30,7 @@ Features
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
+- Cores available for RetroArch/Libretro and OpenEmu.
 
 ### Planned features
 
@@ -38,7 +39,6 @@ Features
 - Re-recording support for tool-assist runs. ([Bugzilla keyword "TASBlocker"](https://endrift.com/mgba/bugs/buglist.cgi?quicksearch=TASBlocker))
 - Lua support for scripting ([Bug #62](http://mgba.io/b/62)).
 - A comprehensive debug suite ([Bug #132](http://mgba.io/b/132)).
-- OpenEmu core.
 - e-Reader support. ([Bug #171](http://mgba.io/b/171))
 
 
@@ -49,6 +49,9 @@ Supported Platforms
 - OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
+- Nintendo 3DS
+- Wii
+- PlayStation Vita
 
 Other Unix-like platforms, such as OpenBSD, are known to work as well, but are untested and not fully supported.
 
@@ -144,3 +147,6 @@ mGBA contains the following third-party libraries:
 - [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
+- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
+
+If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

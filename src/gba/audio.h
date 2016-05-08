@@ -7,7 +7,6 @@
 #define GBA_AUDIO_H
 
 #include "util/common.h"
-#include "macros.h"
 
 #include "core/log.h"
 #include "gb/audio.h"

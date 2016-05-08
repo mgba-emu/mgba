@@ -1,6 +1,7 @@
 0.5.0: (Future)
 Features:
  - Game Boy support
+ - Support for encrypted CodeBreaker GBA cheats
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
  - Qt: Fix sending gameStopped twice
@@ -8,9 +9,35 @@ Bugfixes:
  - GBA BIOS: Fix RegisterRamReset setting DISPCNT to the wrong value
  - OpenGL: Correct boolean vector strcmp strings for uniforms
  - Wii: Fix tilting direction
+ - SDL: Fix joystick initialization on BSD
+ - SDL: Fix potential joystick crash in games with rumble
+ - SDL: Fix axes being mapped wrong
+ - Qt: Fix initial state of key mapping
+ - Shaders: Fix AGS-001 shader with some bad drivers
+ - GBA Memory: Fix mirror on non-overdumped Classic NES games
+ - Qt: Initialize m_useBios
+ - GBA Serialize: Fix memory corruption bug in GBAExtdataSerialize
+ - GBA Serialize: Fix loading savegames from savestates
+ - All: Fix several file handle leaks
+ - Util: Use closesocket on Windows
+ - GBA Memory: Fix executing code from OBJ region of VRAM
+ - Util: Fix socket bind addresses
+ - All: Fix instruction tables getting zeroed when linking sometimes
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
+ - SDL: Remove default gamepad mappings
+ - Qt: Update 360 input profile on OS X to reflect newer drivers
+ - Qt: Remove use of NaN
+ - 3DS: Use blip_add_delta_fast for a small speed improvement
+ - FFmpeg: Update dependencies on Ubuntu
+ - OpenGL: Log shader compilation failure
+ - All: Allow use of external minizip library
+ - Qt: Remove some C99isms from C++ code
+ - Windows: Add native VDir support
+ - All: Add QUIET parameter to silence CMake
+ - GBA Video: Null renderer should return proper register values
+ - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
 
 0.4.0: (2016-02-02)
 Features:

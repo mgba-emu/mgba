@@ -28,7 +28,7 @@
 #include "gb/gb.h"
 #include "gb/video.h"
 #endif
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 #include "util/configuration.h"
 #include "util/vfs.h"
 
@@ -75,22 +75,20 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	if (args.fname) {
-		renderer.core = mCoreFind(args.fname);
-		if (!renderer.core) {
-			printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
-			freeArguments(&args);
-			return 1;
-		}
-		renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
-#ifdef BUILD_GL
-		mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-		mSDLGLES2Create(&renderer);
-#else
-		mSDLSWCreate(&renderer);
-#endif
+	renderer.core = mCoreFind(args.fname);
+	if (!renderer.core) {
+		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
+		freeArguments(&args);
+		return 1;
 	}
+	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+#ifdef BUILD_GL
+	mSDLGLCreate(&renderer);
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+	mSDLGLES2Create(&renderer);
+#else
+	mSDLSWCreate(&renderer);
+#endif
 
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
@@ -160,7 +158,11 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	// TODO: Put back debugger
+	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
+	if (debugger) {
+		mDebuggerAttach(debugger, renderer->core);
+		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
+	}
 
 	if (args->patch) {
 		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);

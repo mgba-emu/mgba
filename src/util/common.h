@@ -21,15 +21,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+<<<<<<< HEAD
+=======
+#ifdef _WIN32
+// WinSock2 gets very angry if it's included too late
+#include <winsock2.h>
+#endif
+>>>>>>> upstream/master
 #ifdef _MSC_VER
+#include <Windows.h>
 #include <sys/types.h>
 typedef intptr_t ssize_t;
-#define inline __inline
+#define PATH_MAX MAX_PATH
 #define restrict __restrict
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
 #define snprintf _snprintf
+#define strdup _strdup
+#define lseek _lseek
 #elif defined(__wii__)
 typedef intptr_t ssize_t;
 #else

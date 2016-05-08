@@ -62,6 +62,19 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
 		mSDLUpdateJoysticks(context);
+		// Some OSes don't do hotplug detection
+		if (!SDL_JoystickListSize(&context->joysticks)) {
+			int i;
+			for (i = 0; i < nJoysticks; ++i) {
+				struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&context->joysticks);
+				joystick->joystick = SDL_JoystickOpen(i);
+				joystick->id = SDL_JoystickInstanceID(joystick->joystick);
+				joystick->index = SDL_JoystickListSize(&context->joysticks) - 1;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
+#endif
+			}
+		}
 	}
 
 	context->playersAttached = 0;
@@ -134,17 +147,6 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #endif
-
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 13, GBA_KEY_A);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 14, GBA_KEY_B);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 10, GBA_KEY_L);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 11, GBA_KEY_R);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 3, GBA_KEY_START);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 0, GBA_KEY_SELECT);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 4, GBA_KEY_UP);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 6, GBA_KEY_DOWN);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 7, GBA_KEY_LEFT);
-	mInputBindKey(inputMap, SDL_BINDING_BUTTON, 5, GBA_KEY_RIGHT);
 
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
@@ -405,7 +407,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
 		case SDLK_F11:
-			// TODO: Put back debugger
+			if (context->core->debugger) {
+				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);
+			}
 			return;
 #ifdef USE_PNG
 		case SDLK_F12:
@@ -559,7 +563,7 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
-	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
+	if (!sdlRumble->p->joystick || !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
 	sdlRumble->level += enable;

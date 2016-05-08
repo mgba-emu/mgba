@@ -7,8 +7,10 @@
 
 #include "core/core.h"
 #include "core/log.h"
+#include "gba/cheats.h"
 #include "gba/gba.h"
-#include "gba/context/overrides.h"
+#include "gba/extra/cli.h"
+#include "gba/overrides.h"
 #include "gba/renderers/video-software.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
@@ -19,8 +21,10 @@ struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
 	int keys;
-	struct mCPUComponent* components[GBA_COMPONENT_MAX];
+	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct mDebuggerPlatform* debuggerPlatform;
+	struct mCheatDevice* cheatDevice;
 };
 
 static bool _GBACoreInit(struct mCore* core) {
@@ -35,15 +39,19 @@ static bool _GBACoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gba;
-	gbacore->overrides = 0;
+	core->debugger = NULL;
+	gbacore->overrides = NULL;
+	gbacore->debuggerPlatform = NULL;
+	gbacore->cheatDevice = NULL;
 
 	GBACreate(gba);
-	// TODO: Restore debugger and cheats
+	// TODO: Restore cheats
 	memset(gbacore->components, 0, sizeof(gbacore->components));
-	ARMSetComponents(cpu, &gba->d, GBA_COMPONENT_MAX, gbacore->components);
+	ARMSetComponents(cpu, &gba->d, CPU_COMPONENT_MAX, gbacore->components);
 	ARMInit(cpu);
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
+	gbacore->renderer.outputBuffer = NULL;
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
@@ -63,6 +71,14 @@ static void _GBACoreDeinit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
 #endif
+
+	struct GBACore* gbacore = (struct GBACore*) core;
+	free(gbacore->debuggerPlatform);
+	if (gbacore->cheatDevice) {
+		mCheatDeviceDestroy(gbacore->cheatDevice);
+	}
+	free(gbacore->cheatDevice);
+	free(core);
 }
 
 static enum mPlatform _GBACorePlatform(struct mCore* core) {
@@ -77,7 +93,11 @@ static void _GBACoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 
 static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
 	struct GBA* gba = core->board;
-	gba->audio.masterVolume = core->opts.volume;
+	if (core->opts.mute) {
+		gba->audio.masterVolume = 0;
+	} else {
+		gba->audio.masterVolume = core->opts.volume;
+	}
 	gba->video.frameskip = core->opts.frameskip;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -199,9 +219,11 @@ static void _GBACoreReset(struct mCore* core) {
 
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
-	memcpy(override.id, &cart->id, sizeof(override.id));
-	if (GBAOverrideFind(gbacore->overrides, &override)) {
-		GBAOverrideApply(gba, &override);
+	if (cart) {
+		memcpy(override.id, &cart->id, sizeof(override.id));
+		if (GBAOverrideFind(gbacore->overrides, &override)) {
+			GBAOverrideApply(gba, &override);
+		}
 	}
 }
 
@@ -282,12 +304,131 @@ static void _GBACoreSetRumble(struct mCore* core, struct mRumble* rumble) {
 	gba->rumble = rumble;
 }
 
+static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load8(cpu, address, 0);
+}
+
+static uint32_t _GBACoreBusRead16(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load16(cpu, address, 0);
+
+}
+
+static uint32_t _GBACoreBusRead32(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return cpu->memory.load32(cpu, address, 0);
+}
+
+static void _GBACoreBusWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store8(cpu, address, value, 0);
+}
+
+static void _GBACoreBusWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store16(cpu, address, value, 0);
+}
+
+static void _GBACoreBusWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct ARMCore* cpu = core->cpu;
+	cpu->memory.store32(cpu, address, value, 0);
+}
+
+static uint32_t _GBACoreRawRead8(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return GBAView8(cpu, address);
+}
+
+static uint32_t _GBACoreRawRead16(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return GBAView16(cpu, address);
+}
+
+static uint32_t _GBACoreRawRead32(struct mCore* core, uint32_t address) {
+	struct ARMCore* cpu = core->cpu;
+	return GBAView32(cpu, address);
+}
+
+static void _GBACoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct ARMCore* cpu = core->cpu;
+	GBAPatch8(cpu, address, value, NULL);
+}
+
+static void _GBACoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct ARMCore* cpu = core->cpu;
+	GBAPatch16(cpu, address, value, NULL);
+}
+
+static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct ARMCore* cpu = core->cpu;
+	GBAPatch32(cpu, address, value, NULL);
+}
+
+static bool _GBACoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
+	UNUSED(core);
+	switch (type) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		return true;
+#endif
+#ifdef USE_GDB_STUB
+	case DEBUGGER_GDB:
+		return true;
+#endif
+	default:
+		return false;
+	}
+}
+
+static struct mDebuggerPlatform* _GBACoreDebuggerPlatform(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (!gbacore->debuggerPlatform) {
+		gbacore->debuggerPlatform = ARMDebuggerPlatformCreate();
+	}
+	return gbacore->debuggerPlatform;
+}
+
+static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
+#ifdef USE_CLI_DEBUGGER
+	return &GBACLIDebuggerCreate(core)->d;
+#else
+	UNUSED(core);
+	return NULL;
+#endif
+}
+
+static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	if (core->debugger) {
+		GBADetachDebugger(core->board);
+	}
+	GBAAttachDebugger(core->board, debugger);
+	core->debugger = debugger;
+}
+
+static void _GBACoreDetachDebugger(struct mCore* core) {
+	GBADetachDebugger(core->board);
+	core->debugger = NULL;
+}
+
+static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	if (!gbacore->cheatDevice) {
+		gbacore->cheatDevice = GBACheatDeviceCreate();
+		((struct ARMCore*) core->cpu)->components[CPU_COMPONENT_CHEAT_DEVICE] = &gbacore->cheatDevice->d;
+		ARMHotplugAttach(core->cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		gbacore->cheatDevice->p = core;
+	}
+	return gbacore->cheatDevice;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
 	memset(&core->opts, 0, sizeof(core->opts));
-	core->cpu = 0;
-	core->board = 0;
+	core->cpu = NULL;
+	core->board = NULL;
+	core->debugger = NULL;
 	core->init = _GBACoreInit;
 	core->deinit = _GBACoreDeinit;
 	core->platform = _GBACorePlatform;
@@ -323,5 +464,23 @@ struct mCore* GBACoreCreate(void) {
 	core->setRTC = _GBACoreSetRTC;
 	core->setRotation = _GBACoreSetRotation;
 	core->setRumble = _GBACoreSetRumble;
+	core->busRead8 = _GBACoreBusRead8;
+	core->busRead16 = _GBACoreBusRead16;
+	core->busRead32 = _GBACoreBusRead32;
+	core->busWrite8 = _GBACoreBusWrite8;
+	core->busWrite16 = _GBACoreBusWrite16;
+	core->busWrite32 = _GBACoreBusWrite32;
+	core->rawRead8 = _GBACoreRawRead8;
+	core->rawRead16 = _GBACoreRawRead16;
+	core->rawRead32 = _GBACoreRawRead32;
+	core->rawWrite8 = _GBACoreRawWrite8;
+	core->rawWrite16 = _GBACoreRawWrite16;
+	core->rawWrite32 = _GBACoreRawWrite32;
+	core->supportsDebuggerType = _GBACoreSupportsDebuggerType;
+	core->debuggerPlatform = _GBACoreDebuggerPlatform;
+	core->cliDebuggerSystem = _GBACoreCliDebuggerSystem;
+	core->attachDebugger = _GBACoreAttachDebugger;
+	core->detachDebugger = _GBACoreDetachDebugger;
+	core->cheatDevice = _GBACoreCheatDevice;
 	return core;
 }

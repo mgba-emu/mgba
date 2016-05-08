@@ -38,8 +38,8 @@ ROMInfo::ROMInfo(GameController* controller, QWidget* parent)
 	char title[17] = {};
 	core->getGameTitle(core, title);
 	m_ui.title->setText(QLatin1String(title));
+	title[8] = '\0';
 	core->getGameCode(core, title);
-	title[4] = '\0';
 	if (title[0]) {
 		m_ui.id->setText(QLatin1String(title));
 	} else {

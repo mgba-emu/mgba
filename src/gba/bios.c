@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "bios.h"
 
+#include "arm/isa-inlines.h"
+#include "arm/macros.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/memory.h"
-#include "isa-inlines.h"
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
@@ -69,8 +70,8 @@ static void _RegisterRamReset(struct GBA* gba) {
 		cpu->memory.store16(cpu, BASE_IO | REG_RCNT, RCNT_INITIAL, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_SIOMLT_SEND, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_JOYCNT, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV_LO, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS_LO, 0, 0);
 	}
 	if (registers & 0x40) {
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUND1CNT_LO, 0, 0);

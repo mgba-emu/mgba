@@ -517,6 +517,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
 		int end = softwareRenderer->windows[w].endX;
+		for (; x < end - 3; x += 4) {
+			softwareRenderer->row[x] = backdrop;
+			softwareRenderer->row[x + 1] = backdrop;
+			softwareRenderer->row[x + 2] = backdrop;
+			softwareRenderer->row[x + 3] = backdrop;
+		}
 		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}

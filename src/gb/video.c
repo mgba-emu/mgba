@@ -116,6 +116,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						mCoreSyncPostFrame(video->p->sync);
 						video->frameskipCounter = video->frameskip;
 					}
+					GBFrameEnded(video->p);
 					++video->frameCounter;
 
 					struct mCoreThread* thread = mCoreThreadGet();
@@ -143,29 +144,35 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			case 1:
 				// TODO: One M-cycle delay
 				++video->ly;
-				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
-				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS + 1) {
 					video->ly = 0;
+					video->p->memory.io[REG_LY] = video->ly;
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+						GBUpdateIRQs(video->p);
 					}
-				} else {
-					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
-				}
-				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
+					break;
+				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
+					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH - 8;
+				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS - 1) {
+					video->p->memory.io[REG_LY] = video->ly;
+					video->nextMode = 8;
 				} else {
 					video->p->memory.io[REG_LY] = video->ly;
+					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
 				}
-				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
+
+				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->p->memory.io[REG_LY]);
+				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->p->memory.io[REG_LY]) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+					GBUpdateIRQs(video->p);
 				}
 				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
 					video->p->memory.rotation->sample(video->p->memory.rotation);
 				}
-				GBUpdateIRQs(video->p);
 				break;
 			case 2:
 				_cleanOAM(video, video->ly);
@@ -271,6 +278,10 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	video->stat = (video->stat & 0x7) | (value & 0x78);
+	if (video->p->model == GB_MODEL_DMG && video->mode == 1) {
+		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+		GBUpdateIRQs(video->p);
+	}
 }
 
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {

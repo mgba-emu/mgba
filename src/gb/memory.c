@@ -33,8 +33,40 @@ static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 
+static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
+	if (UNLIKELY(address > cpu->memory.activeRegionEnd)) {
+		cpu->memory.setActiveRegion(cpu, address);
+		return cpu->memory.cpuLoad8(cpu, address);
+	}
+	return cpu->memory.activeRegion[address & cpu->memory.activeMask];
+}
+
 static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.activeRegion = memory->rom;
+		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
+		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		break;
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.activeRegion = memory->romBank;
+		cpu->memory.activeRegionEnd = GB_BASE_VRAM;
+		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
+		break;
+	default:
+		cpu->memory.cpuLoad8 = GBLoad8;
+		break;
+	}
 }
 
 static void _GBMemoryDMAService(struct GB* gb);
@@ -76,6 +108,9 @@ void GBMemoryReset(struct GB* gb) {
 	GBMemorySwitchWramBank(&gb->memory, 1);
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
+	if (!gb->memory.sram) {
+		gb->memory.sram = anonymousMemoryMap(0x20000);
+	}
 	gb->memory.sramCurrentBank = 0;
 	gb->memory.sramBank = gb->memory.sram;
 
@@ -99,6 +134,7 @@ void GBMemoryReset(struct GB* gb) {
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	switch (cart->type) {
@@ -148,7 +184,6 @@ void GBMemoryReset(struct GB* gb) {
 	case 0x22:
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
-		memset(&gb->memory.mbcState.mbc7, 0, sizeof(gb->memory.mbcState.mbc7));
 		break;
 	}
 
@@ -235,6 +270,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
 		memory->mbc(memory, address, value);
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
 		return;
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
@@ -304,6 +340,7 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 	}
 	gb->cpu->memory.store8 = GBDMAStore8;
 	gb->cpu->memory.load8 = GBDMALoad8;
+	gb->cpu->memory.cpuLoad8 = GBDMALoad8;
 	gb->memory.dmaNext = gb->cpu->cycles + 8;
 	if (gb->memory.dmaNext < gb->cpu->nextEvent) {
 		gb->cpu->nextEvent = gb->memory.dmaNext;
@@ -366,31 +403,69 @@ void _GBMemoryHDMAService(struct GB* gb) {
 		gb->memory.io[REG_HDMA4] = gb->memory.hdmaDest;
 		if (gb->memory.isHdma) {
 			--gb->memory.io[REG_HDMA5];
+			if (gb->memory.io[REG_HDMA5] == 0xFF) {
+				gb->memory.isHdma = false;
+			}
 		} else {
 			gb->memory.io[REG_HDMA5] |= 0x80;
 		}
 	}
 }
 
+struct OAMBlock {
+	uint16_t low;
+	uint16_t high;
+};
+
+static const struct OAMBlock _oamBlockDMG[] = {
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+	{ 0xA000, 0xFE00 },
+};
+
+static const struct OAMBlock _oamBlockCGB[] = {
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0xA000, 0xC000 },
+	{ 0x8000, 0xA000 },
+	{ 0xA000, 0xC000 },
+	{ 0xC000, 0xFE00 },
+	{ 0xA000, 0xC000 },
+};
+
 uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
-	if (address < 0xFF80 || address == 0xFFFF) {
+	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+	block = &block[memory->dmaSource >> 13];
+	if (address >= block->low && address < block->high) {
 		return 0xFF;
 	}
-	return memory->hram[address & GB_SIZE_HRAM];
+	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		return 0xFF;
+	}
+	return GBLoad8(cpu, address);
 }
 
 void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	struct GB* gb = (struct GB*) cpu->master;
 	struct GBMemory* memory = &gb->memory;
-	if (address < 0xFF80 || address == 0xFFFF) {
+	const struct OAMBlock* block = gb->model < GB_MODEL_CGB ? _oamBlockDMG : _oamBlockCGB;
+	block = &block[memory->dmaSource >> 13];
+	if (address >= block->low && address < block->high) {
 		return;
 	}
-	memory->hram[address & GB_SIZE_HRAM] = value;
+	if (address >= GB_BASE_OAM && address < GB_BASE_UNUSABLE) {
+		return;
+	}
+	GBStore8(cpu, address, value);
 }
-
-uint8_t GBView8(struct LR35902Core* cpu, uint16_t address);
 
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
@@ -398,8 +473,8 @@ static void _switchBank(struct GBMemory* memory, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
 	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
 		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (GB_SIZE_CART_BANK0 - 1);
-		bank /= GB_SIZE_CART_BANK0;
+		bankStart &= (memory->romSize - 1);
+		bank = bankStart / GB_SIZE_CART_BANK0;
 	}
 	memory->romBank = &memory->rom[bankStart];
 	memory->currentBank = bank;
@@ -456,6 +531,22 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		}
 		_switchBank(memory, bank | (memory->currentBank & 0x60));
 		break;
+	case 0x2:
+		bank &= 3;
+		if (!memory->mbcState.mbc1.mode) {
+			_switchBank(memory, (bank << 5) | (memory->currentBank & 0x1F));
+		} else {
+			_switchSramBank(memory, bank);
+		}
+		break;
+	case 0x3:
+		memory->mbcState.mbc1.mode = value & 1;
+		if (memory->mbcState.mbc1.mode) {
+			_switchBank(memory, memory->currentBank & 0x1F);
+		} else {
+			_switchSramBank(memory, 0);
+		}
+		break;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "MBC1 unknown address: %04X:%02X", address, value);
@@ -464,8 +555,34 @@ void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC2(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	mLOG(GB_MBC, STUB, "MBC2 unimplemented");
-}
+	int bank = value & 0xF;
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0:
+			memory->sramAccess = false;
+			break;
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			// TODO
+			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
+			break;
+		}
+		break;
+	case 0x1:
+		if (!bank) {
+			++bank;
+		}
+		_switchBank(memory, bank);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
+		break;
+	}}
 
 void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	int bank = value & 0x7F;
@@ -511,9 +628,10 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 }
 
 void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value;
-	switch (address >> 13) {
+	int bank;
+	switch (address >> 12) {
 	case 0x0:
+	case 0x1:
 		switch (value) {
 		case 0:
 			memory->sramAccess = false;
@@ -528,10 +646,16 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			break;
 		}
 		break;
-	case 0x1:
+	case 0x2:
+		bank = (memory->currentBank & 0x100) | value;
 		_switchBank(memory, bank);
 		break;
-	case 0x2:
+	case 0x3:
+		bank = (memory->currentBank & 0xFF) | ((value & 1) << 8);
+		_switchBank(memory, bank);
+		break;
+	case 0x4:
+	case 0x5:
 		if (memory->mbcType == GB_MBC5_RUMBLE) {
 			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
 			value &= ~8;
