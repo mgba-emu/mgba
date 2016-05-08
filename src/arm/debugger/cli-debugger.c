@@ -6,7 +6,7 @@
 #include "cli-debugger.h"
 
 #ifdef USE_CLI_DEBUGGER
-#include "arm/memory-debugger.h"
+#include "arm/debugger/memory-debugger.h"
 #include "arm/decoder.h"
 #include "core/core.h"
 #include "debugger/cli-debugger.h"

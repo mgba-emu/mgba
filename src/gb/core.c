@@ -9,7 +9,7 @@
 #include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
-#include "lr35902/debugger.h"
+#include "lr35902/debugger/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
 

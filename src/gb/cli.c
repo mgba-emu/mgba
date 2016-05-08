@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli.h"
 
-#include "lr35902/cli-debugger.h"
+#include "lr35902/debugger/cli-debugger.h"
 
 #ifdef USE_CLI_DEBUGGER
 

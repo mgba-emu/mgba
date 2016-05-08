@@ -324,9 +324,15 @@ endif()
 
 if(USE_CLI_DEBUGGER)
 	list(APPEND FEATURES CLI_DEBUGGER)
-	list(APPEND DEBUGGER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
-	list(APPEND DEBUGGER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c)
-	list(APPEND DEBUGGER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
+	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/cli-debugger.c)
+	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/parser.c)
+	if(M_CORE_GBA)
+		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/cli-debugger.c)
+		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gba/extra/cli.c)
+	endif()
+	if(M_CORE_GB)
+		list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/cli-debugger.c)
+	endif()
 	include_directories(AFTER ${LIBEDIT_INCLUDE_DIRS})
 	link_directories(${LIBEDIT_LIBRARY_DIRS})
 	set(DEBUGGER_LIB ${LIBEDIT_LIBRARIES})
@@ -337,9 +343,9 @@ endif()
 
 if(USE_GDB_STUB)
 	list(APPEND FEATURES GDB_STUB)
-	list(APPEND DEBUGGER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/gdb-stub.c)
+	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/debugger/gdb-stub.c)
 endif()
-source_group("ARM debugger" FILES ${DEBUGGER_SRC})
+source_group("Debugger" FILES ${DEBUGGER_SRC})
 
 if(USE_FFMPEG)
 	list(APPEND FEATURES FFMPEG)
@@ -492,6 +498,7 @@ if(M_CORE_GB)
 	add_definitions(-DM_CORE_GB)
 	list(APPEND CORE_SRC
 		${LR35902_SRC}
+		${CMAKE_CURRENT_SOURCE_DIR}/src/lr35902/debugger/debugger.c
 		${GB_SRC}
 		${GB_RENDERER_SRC})
 endif()
@@ -500,9 +507,10 @@ if(M_CORE_GBA)
 	add_definitions(-DM_CORE_GBA)
 	list(APPEND CORE_SRC 
 		${ARM_SRC}
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/debugger.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/arm/debugger/memory-debugger.c
 		${GBA_SRC}
 		${GBA_CHEATS_SRC}
-		${DEBUGGER_SRC}
 		${GBA_RENDERER_SRC})
 	if(NOT M_CORE_GB)
 		list(APPEND CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gb/audio.c)
@@ -530,6 +538,7 @@ endif()
 list(APPEND CORE_SRC
 	${UTIL_SRC}
 	${CORE_VFS_SRC}
+	${DEBUGGER_SRC}
 	${OS_SRC}
 	${THIRD_PARTY_SRC})
 

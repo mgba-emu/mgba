@@ -8,6 +8,7 @@
 #include "core/thread.h"
 
 #include "arm/decoder.h"
+#include "arm/debugger/debugger.h"
 #include "arm/isa-inlines.h"
 
 #include "gba/bios.h"

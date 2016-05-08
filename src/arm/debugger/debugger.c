@@ -7,7 +7,7 @@
 
 #include "arm/arm.h"
 #include "arm/isa-inlines.h"
-#include "arm/memory-debugger.h"
+#include "arm/debugger/memory-debugger.h"
 #include "core/core.h"
 
 DEFINE_VECTOR(ARMDebugBreakpointList, struct ARMDebugBreakpoint);

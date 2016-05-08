@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli.h"
 
-#include "arm/cli-debugger.h"
+#include "arm/debugger/cli-debugger.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
 

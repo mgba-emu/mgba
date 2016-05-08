@@ -9,7 +9,6 @@
 #include "util/common.h"
 
 #include "arm/arm.h"
-#include "arm/debugger.h"
 #include "core/log.h"
 
 #include "gba/interface.h"

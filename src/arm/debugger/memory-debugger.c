@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "memory-debugger.h"
 
-#include "arm/debugger.h"
+#include "arm/debugger/debugger.h"
 
 #include "util/math.h"
 
