@@ -54,15 +54,19 @@ static void GBCheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* devi
 	UNUSED(device);
 }
 
-static bool GBCheatAddGameShark(struct GBCheatSet* cheats, uint32_t op) {
+static bool GBCheatAddCodebreaker(struct GBCheatSet* cheats, uint16_t address, uint8_t data) {
 	struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
 	cheat->type = CHEAT_ASSIGN;
 	cheat->width = 1;
-	cheat->address = ((op & 0xFF) << 8) | ((op >> 8) & 0xFF);
-	cheat->operand = (op >> 16) & 0xFF;
+	cheat->address = address;
+	cheat->operand = data;
 	cheat->repeat = 1;
 	cheat->negativeRepeat = 0;
 	return true;
+}
+
+static bool GBCheatAddGameShark(struct GBCheatSet* cheats, uint32_t op) {
+	return GBCheatAddCodebreaker(cheats, ((op & 0xFF) << 8) | ((op >> 8) & 0xFF), (op >> 16) & 0xFF);
 }
 
 static bool GBCheatAddGameSharkLine(struct GBCheatSet* cheats, const char* line) {
@@ -111,6 +115,7 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 	uint16_t op1;
 	uint8_t op2;
 	uint8_t op3;
+	bool codebreaker = false;
 	const char* lineNext = hex16(line, &op1);
 	if (!lineNext) {
 		return false;
@@ -123,16 +128,22 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 		return false;
 	}
 	if (lineNext[0] == '-') {
-		return false;
+		codebreaker = true;
+		++lineNext;
 	}
 	lineNext = hex8(lineNext, &op3);
 	if (!lineNext) {
 		return false;
 	}
-	uint32_t realOp = op1 << 16;
-	realOp |= op2 << 8;
-	realOp |= op3;
-	return GBCheatAddGameShark(cheats, realOp);
+	if (codebreaker) {
+		uint16_t address = (op1 << 8) | op2;
+		return GBCheatAddCodebreaker(cheats, address, op3);
+	} else {
+		uint32_t realOp = op1 << 16;
+		realOp |= op2 << 8;
+		realOp |= op3;
+		return GBCheatAddGameShark(cheats, realOp);
+	}
 }
 
 static void GBCheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device) {
