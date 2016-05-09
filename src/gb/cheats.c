@@ -5,7 +5,42 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cheats.h"
 
+#include "core/core.h"
+#include "gb/memory.h"
 #include "util/string.h"
+
+DEFINE_VECTOR(GBCheatPatchList, struct GBCheatPatch);
+
+static void _patchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) {
+	if (!device->p) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < GBCheatPatchListSize(&cheats->romPatches); ++i) {
+		struct GBCheatPatch* patch = GBCheatPatchListGetPointer(&cheats->romPatches, i);
+		if (patch->applied) {
+			continue;
+		}
+		// TODO: Byte check
+		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue);
+		patch->applied = true;
+	}
+}
+
+static void _unpatchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) {
+	if (!device->p) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < GBCheatPatchListSize(&cheats->romPatches); ++i) {
+		struct GBCheatPatch* patch = GBCheatPatchListGetPointer(&cheats->romPatches, i);
+		if (!patch->applied) {
+			continue;
+		}
+		GBPatch8(device->p->cpu, patch->address, patch->oldValue, NULL);
+		patch->applied = false;
+	}
+}
 
 static void GBCheatSetDeinit(struct mCheatSet* set);
 static void GBCheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device);
@@ -18,6 +53,8 @@ static struct mCheatSet* GBCheatSetCreate(struct mCheatDevice* device, const cha
 	UNUSED(device);
 	struct GBCheatSet* set = malloc(sizeof(*set));
 	mCheatSetInit(&set->d, name);
+
+	GBCheatPatchListInit(&set->romPatches, 0);
 
 	set->d.deinit = GBCheatSetDeinit;
 	set->d.add = GBCheatAddSet;
@@ -39,19 +76,17 @@ struct mCheatDevice* GBCheatDeviceCreate(void) {
 
 static void GBCheatSetDeinit(struct mCheatSet* set) {
 	struct GBCheatSet* gbset = (struct GBCheatSet*) set;
-	UNUSED(gbset);
+	GBCheatPatchListDeinit(&gbset->romPatches);
 }
 
 static void GBCheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBCheatSet* gbset = (struct GBCheatSet*) cheats;
-	UNUSED(gbset);
-	UNUSED(device);
+	_patchROM(device, gbset);
 }
 
 static void GBCheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBCheatSet* gbset = (struct GBCheatSet*) cheats;
-	UNUSED(gbset);
-	UNUSED(device);
+	_unpatchROM(device, gbset);
 }
 
 static bool GBCheatAddCodebreaker(struct GBCheatSet* cheats, uint16_t address, uint8_t data) {
@@ -75,6 +110,28 @@ static bool GBCheatAddGameSharkLine(struct GBCheatSet* cheats, const char* line)
 		return false;
 	}
 	return GBCheatAddGameShark(cheats, op);
+}
+
+static bool GBCheatAddGameGenieLine(struct GBCheatSet* cheats, const char* line) {
+	uint16_t op1;
+	uint16_t op2;
+	const char* lineNext = hex12(line, &op1);
+	if (!lineNext || lineNext[0] != '-') {
+		return false;
+	}
+	++lineNext;
+	lineNext = hex12(lineNext, &op2);
+	if (!lineNext) {
+		return false;
+	}
+	uint16_t address = (op1 & 0xF) << 8;
+	address |= (op2 >> 4) & 0xFF;
+	address |= ((op2 & 0xF) ^ 0xF) << 12;
+	struct GBCheatPatch* patch = GBCheatPatchListAppend(&cheats->romPatches);
+	patch->address = address;
+	patch->newValue = op1 >> 4;
+	patch->applied = false;
+	return true;
 }
 
 static bool GBCheatAddVBALine(struct GBCheatSet* cheats, const char* line) {
@@ -103,7 +160,7 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 	case GB_CHEAT_AUTODETECT:
 		break;
 	case GB_CHEAT_GAME_GENIE:
-		return false;
+		return GBCheatAddGameGenieLine(cheats, line);
 	case GB_CHEAT_GAMESHARK:
 		return GBCheatAddGameSharkLine(cheats, line);
 	case GB_CHEAT_VBA:
@@ -118,7 +175,7 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 	bool codebreaker = false;
 	const char* lineNext = hex16(line, &op1);
 	if (!lineNext) {
-		return false;
+		return GBCheatAddGameGenieLine(cheats, line);
 	}
 	if (lineNext[0] == ':') {
 		return GBCheatAddVBALine(cheats, line);
@@ -148,8 +205,7 @@ bool GBCheatAddLine(struct mCheatSet* set, const char* line, int type) {
 
 static void GBCheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device) {
 	struct GBCheatSet* gbset = (struct GBCheatSet*) cheats;
-	UNUSED(gbset);
-	UNUSED(device);
+	_patchROM(device, gbset);
 }
 
 static void GBCheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* oldSet) {

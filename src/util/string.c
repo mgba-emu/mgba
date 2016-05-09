@@ -260,11 +260,44 @@ const char* hex32(const char* line, uint32_t* out) {
 	return line;
 }
 
+const char* hex24(const char* line, uint32_t* out) {
+	uint32_t value = 0;
+	int i;
+	for (i = 0; i < 6; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}
+
 const char* hex16(const char* line, uint16_t* out) {
 	uint16_t value = 0;
 	*out = 0;
 	int i;
 	for (i = 0; i < 4; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}
+
+const char* hex12(const char* line, uint16_t* out) {
+	uint16_t value = 0;
+	*out = 0;
+	int i;
+	for (i = 0; i < 3; ++i, ++line) {
 		char digit = *line;
 		value <<= 4;
 		int nybble = hexDigit(digit);
@@ -290,6 +323,20 @@ const char* hex8(const char* line, uint8_t* out) {
 		}
 		value |= nybble;
 	}
+	*out = value;
+	return line;
+}
+
+const char* hex4(const char* line, uint8_t* out) {
+	uint8_t value = 0;
+	*out = 0;
+	char digit = *line;
+	value <<= 4;
+	int nybble = hexDigit(digit);
+	if (nybble < 0) {
+		return 0;
+	}
+	value |= nybble;
 	*out = value;
 	return line;
 }

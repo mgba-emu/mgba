@@ -10,7 +10,6 @@
 
 #include "arm/arm.h"
 #include "core/cheats.h"
-#include "util/vector.h"
 
 #define MAX_ROM_PATCHES 4
 
