@@ -321,6 +321,25 @@ static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address) {
 	       (GBLoad8(cpu, address + 2) << 16) | (GBLoad8(cpu, address + 3) << 24);
 }
 
+static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	GBPatch8(cpu, address, value, NULL);
+}
+
+static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	GBPatch8(cpu, address, value, NULL);
+	GBPatch8(cpu, address + 1, value >> 8, NULL);
+}
+
+static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+	struct LR35902Core* cpu = core->cpu;
+	GBPatch8(cpu, address, value, NULL);
+	GBPatch8(cpu, address + 1, value >> 8, NULL);
+	GBPatch8(cpu, address + 2, value >> 16, NULL);
+	GBPatch8(cpu, address + 3, value >> 24, NULL);
+}
+
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
 	switch (type) {
@@ -429,9 +448,9 @@ struct mCore* GBCoreCreate(void) {
 	core->rawRead8 = _GBCoreRawRead8;
 	core->rawRead16 = _GBCoreRawRead16;
 	core->rawRead32 = _GBCoreRawRead32;
-	core->rawWrite8 = NULL;
-	core->rawWrite16 = NULL;
-	core->rawWrite32 = NULL;
+	core->rawWrite8 = _GBCoreRawWrite8;
+	core->rawWrite16 = _GBCoreRawWrite16;
+	core->rawWrite32 = _GBCoreRawWrite32;
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;
 	core->cliDebuggerSystem = _GBCoreCliDebuggerSystem;

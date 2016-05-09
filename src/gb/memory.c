@@ -16,6 +16,8 @@
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory");
 
+static void _pristineCow(struct GB* gba);
+
 static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	UNUSED(memory);
 	UNUSED(address);
@@ -467,7 +469,68 @@ void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	GBStore8(cpu, address, value);
 }
 
-void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
+void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	int8_t oldValue = -1;
+
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		_pristineCow(gb);
+		oldValue = memory->rom[address & (GB_SIZE_CART_BANK0 - 1)];
+		memory->rom[address & (GB_SIZE_CART_BANK0 - 1)] =  value;
+		break;
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		_pristineCow(gb);
+		oldValue = memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+		memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)] =  value;
+		break;
+	case GB_REGION_VRAM:
+	case GB_REGION_VRAM + 1:
+		oldValue = gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
+		break;
+	case GB_REGION_EXTERNAL_RAM:
+	case GB_REGION_EXTERNAL_RAM + 1:
+		mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		return;
+	case GB_REGION_WORKING_RAM_BANK0:
+	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		oldValue = memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
+		break;
+	case GB_REGION_WORKING_RAM_BANK1:
+		oldValue = memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
+		break;
+	default:
+		if (address < GB_BASE_OAM) {
+			oldValue = memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+			memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
+		} else if (address < GB_BASE_UNUSABLE) {
+			oldValue = gb->video.oam.raw[address & 0xFF];
+			gb->video.oam.raw[address & 0xFF] = value;
+		} else if (address < GB_BASE_HRAM) {
+			mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+			return;
+		} else if (address < GB_BASE_IE) {
+			oldValue = memory->hram[address & GB_SIZE_HRAM];
+			memory->hram[address & GB_SIZE_HRAM] = value;
+		} else {
+			mLOG(GB_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+			return;
+		}
+	}
+	if (old) {
+		*old = oldValue;
+	}
+}
 
 static void _switchBank(struct GBMemory* memory, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_BANK0;
@@ -866,4 +929,14 @@ void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			}
 		}
 	}
+}
+
+void _pristineCow(struct GB* gb) {
+	if (gb->memory.rom != gb->pristineRom) {
+		return;
+	}
+	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
+	memcpy(gb->memory.rom, gb->pristineRom, gb->memory.romSize);
+	memset(((uint8_t*) gb->memory.rom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
+	_switchBank(&gb->memory, gb->memory.currentBank);
 }
