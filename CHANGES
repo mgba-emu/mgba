@@ -117,6 +117,8 @@ Bugfixes:
  - VFS: VFileFromFD should not open directories
  - Wii: Fix tilting direction
  - Util: Fix realloc semantics in utf16to8
+ - All: Fix instruction tables getting zeroed when linking sometimes
+ - SDL: Fix SDL 1.2 build
 Misc:
  - All: Allow use of external minizip library
  - Debugger: CLI debugger now exits when end-of-stream is reached
