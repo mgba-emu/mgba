@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "arm.h"
 
-#include "isa-arm.h"
-#include "isa-inlines.h"
-#include "isa-thumb.h"
+#include "arm/dynarec.h"
+#include "arm/isa-arm.h"
+#include "arm/isa-inlines.h"
+#include "arm/isa-thumb.h"
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
@@ -69,6 +70,8 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 }
 
 void ARMInit(struct ARMCore* cpu) {
+	cpu->executor = ARM_DYNAREC;
+	ARMDynarecInit(cpu);
 	cpu->master->init(cpu, cpu->master);
 	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
@@ -88,6 +91,7 @@ void ARMDeinit(struct ARMCore* cpu) {
 			cpu->components[i]->deinit(cpu->components[i]);
 		}
 	}
+	ARMDynarecDeinit(cpu);
 }
 
 void ARMSetComponents(struct ARMCore* cpu, struct mCPUComponent* master, int extra, struct mCPUComponent** extras) {
@@ -142,6 +146,9 @@ void ARMReset(struct ARMCore* cpu) {
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
 	cpu->halted = 0;
+
+	ARMDynarecDeinit(cpu);
+	ARMDynarecInit(cpu);
 
 	cpu->irqh.reset(cpu);
 }
@@ -294,6 +301,11 @@ void ARMRun(struct ARMCore* cpu) {
 }
 
 void ARMRunLoop(struct ARMCore* cpu) {
+	if (cpu->dynarec.inDynarec) {
+		cpu->dynarec.inDynarec = false;
+		cpu->dynarec.currentEntry(cpu);
+		return;
+	}
 	if (cpu->executionMode == MODE_THUMB) {
 		while (cpu->cycles < cpu->nextEvent) {
 			ThumbStep(cpu);
