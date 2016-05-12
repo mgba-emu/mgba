@@ -9,6 +9,8 @@
 #include "util/common.h"
 
 #include "core/cpu.h"
+#include "util/table.h"
+#include "util/bump-allocator.h"
 
 enum {
 	ARM_SP = 13,
@@ -62,6 +64,11 @@ enum LSMDirection {
 	LSM_IB = 1,
 	LSM_DA = 2,
 	LSM_DB = 3
+};
+
+enum ARMExecutor {
+	ARM_INTERPRETER = 0,
+	ARM_DYNAREC = 1,
 };
 
 struct ARMCore;
@@ -131,6 +138,16 @@ struct ARMInterruptHandler {
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };
 
+struct ARMDynarec {
+	bool inDynarec;
+	struct BumpAllocator traceAlloc;
+	struct Table armTraces;
+	struct Table thumbTraces;
+	void* buffer;
+	void (*currentEntry)(struct ARMCore*);
+	void* temporaryMemory;
+};
+
 struct ARMCore {
 	int32_t gprs[16];
 	union PSR cpsr;
@@ -152,6 +169,9 @@ struct ARMCore {
 
 	struct ARMMemory memory;
 	struct ARMInterruptHandler irqh;
+
+	enum ARMExecutor executor;
+	struct ARMDynarec dynarec;
 
 	struct mCPUComponent* master;
 
