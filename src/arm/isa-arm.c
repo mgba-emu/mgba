@@ -629,6 +629,9 @@ DEFINE_INSTRUCTION_ARM(MSR,
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
+	if (mask & PSR_STATE_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_STATE_MASK) | (operand & PSR_STATE_MASK);
+	}
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);

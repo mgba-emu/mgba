@@ -39,6 +39,7 @@ Misc:
  - All: Add QUIET parameter to silence CMake
  - GBA Video: Null renderer should return proper register values
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
+ - ARM7: Support forcing Thumb mode via MSR
 
 0.4.0: (2016-02-02)
 Features:
