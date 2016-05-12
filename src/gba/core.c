@@ -7,6 +7,7 @@
 
 #include "core/core.h"
 #include "core/log.h"
+#include "arm/debugger/debugger.h"
 #include "gba/cheats.h"
 #include "gba/gba.h"
 #include "gba/extra/cli.h"
