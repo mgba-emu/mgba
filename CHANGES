@@ -18,6 +18,7 @@ Bugfixes:
  - GBA Memory: Fix executing code from OBJ region of VRAM
  - Util: Fix socket bind addresses
  - All: Fix instruction tables getting zeroed when linking sometimes
+ - SDL: Fix SDL 1.2 build
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
