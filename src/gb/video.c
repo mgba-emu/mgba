@@ -179,11 +179,11 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->dotCounter = 0;
 				video->nextEvent = GB_VIDEO_HORIZONTAL_LENGTH;
 				video->x = 0;
-				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 8;
+				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 12;
 				video->mode = 3;
 				break;
 			case 3:
-				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 8;
+				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 12;
 				video->mode = 0;
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
