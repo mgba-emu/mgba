@@ -40,6 +40,7 @@ Misc:
  - GBA Video: Null renderer should return proper register values
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
  - ARM7: Support forcing Thumb mode via MSR
+ - ARM7: Flush prefetch cache when loading CPSR via MSR
 
 0.4.0: (2016-02-02)
 Features:

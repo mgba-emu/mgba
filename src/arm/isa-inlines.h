@@ -85,8 +85,6 @@ static inline void _ARMSetMode(struct ARMCore* cpu, enum ExecutionMode execution
 		break;
 	case MODE_THUMB:
 		cpu->cpsr.t = 1;
-		cpu->prefetch[0] &= 0xFFFF;
-		cpu->prefetch[1] &= 0xFFFF;
 	}
 	cpu->nextEvent = cpu->cycles;
 }
