@@ -8,8 +8,6 @@
 #include "arm/arm.h"
 #include "util/memory.h"
 
-#define ARM_DYNAREC_THRESHOLD 1
-
 void ARMDynarecInit(struct ARMCore* cpu) {
 	BumpAllocatorInit(&cpu->dynarec.traceAlloc, sizeof(struct ARMDynarecTrace));
 	TableInit(&cpu->dynarec.armTraces, 0x2000, 0);
@@ -33,7 +31,6 @@ static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t
 		if (!trace) {
 			trace = BumpAllocatorAlloc(&cpu->dynarec.traceAlloc);
 			TableInsert(&cpu->dynarec.armTraces, address >> 2, trace);
-			trace->hits = 0;
 			trace->entry = NULL;
 			trace->start = address;
 			trace->mode = mode;
@@ -43,7 +40,6 @@ static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t
 		if (!trace) {
 			trace = BumpAllocatorAlloc(&cpu->dynarec.traceAlloc);
 			TableInsert(&cpu->dynarec.thumbTraces, address >> 1, trace);
-			trace->hits = 0;
 			trace->entry = NULL;
 			trace->start = address;
 			trace->mode = mode;
@@ -54,10 +50,6 @@ static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t
 
 void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {
 	struct ARMDynarecTrace* trace = ARMDynarecFindTrace(cpu, address, mode);
-	if (trace->hits < ARM_DYNAREC_THRESHOLD) {
-		++trace->hits;
-		return;
-	}
 	if (!trace->entry) {
 		ARMDynarecRecompileTrace(cpu, trace);
 	}
