@@ -70,21 +70,23 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | TODO: Fix this, they're in big-endian order, but field is little-endian
  * | 0x001DC - 0x001DC: Channel 1 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bit 5: Is high?
- *   | bit 6: Is sweep enabled?
- *   | bit 7: Has sweep occurred?
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
  * | 0x001DD - 0x001DD: Channel 2 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bit 5: Is high?
- *   | bits 6 - 7: Reserved
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
+*    | bits 7: Reserved
  * | 0x001DE - 0x001DE: Channel 4 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bits 5 - 7: Reserved
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
+*    | bits 7: Reserved
  * | 0x001DF - 0x001DF: Miscellaneous audio flags
  *   | bits 0 - 3: Current frame
+ *   | bit 4: Is channel 1 sweep enabled?
+ *   | bit 5: Has channel 1 sweep occurred?
+ *   | bits 6 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
  * | 0x001E4 - 0x001E7: Event diff
@@ -204,16 +206,16 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 DECL_BITFIELD(GBASerializedAudioFlags, uint32_t);
 DECL_BITS(GBASerializedAudioFlags, Ch1Volume, 0, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch1Dead, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 5);
-DECL_BIT(GBASerializedAudioFlags, Ch1SweepEnabled, 6);
-DECL_BIT(GBASerializedAudioFlags, Ch1SweepOccurred, 7);
+DECL_BITS(GBASerializedAudioFlags, Ch1Dead, 4, 2);
+DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 6);
 DECL_BITS(GBASerializedAudioFlags, Ch2Volume, 8, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch2Dead, 12);
-DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 13);
+DECL_BITS(GBASerializedAudioFlags, Ch2Dead, 12, 2);
+DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 14);
 DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch4Dead, 20);
-DECL_BITS(GBASerializedAudioFlags, Frame, 21, 3);
+DECL_BITS(GBASerializedAudioFlags, Ch4Dead, 20, 2);
+DECL_BITS(GBASerializedAudioFlags, Frame, 22, 3);
+DECL_BIT(GBASerializedAudioFlags, Ch1SweepEnabled, 25);
+DECL_BIT(GBASerializedAudioFlags, Ch1SweepOccurred, 26);
 
 DECL_BITFIELD(GBASerializedAudioEnvelope, uint32_t);
 DECL_BITS(GBASerializedAudioEnvelope, Length, 0, 7);
