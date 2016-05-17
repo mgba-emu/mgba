@@ -207,10 +207,19 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			*code++ = emitMOVW(1, instruction) | COND_AL;
 			*code = emitBL(code, _thumbTable[instruction >> 6]) | COND_AL;
 			++code;
-			if (needsUpdateEvents(&info)) {
+			if (info.branchType == ARM_BRANCH) {
+				// Assume branch not taken
+				if (info.condition == ARM_CONDITION_AL) {
+					code = updateEvents(code, cpu);
+					break;
+				}
+				*code++ = emitMOVW(5, address + WORD_SIZE_THUMB) | COND_AL;
+				*code++ = emitMOVT(5, (address + WORD_SIZE_THUMB) >> 16) | COND_AL;
+				code = updateEvents(code, cpu);
+			} else if (needsUpdateEvents(&info)) {
 				code = updateEvents(code, cpu);
 			}
-			if (info.branchType || info.traps) {
+			if (info.branchType > ARM_BRANCH || info.traps) {
 				break;
 			}
 			*code++ = emitMOV(0, 4) | COND_AL;
