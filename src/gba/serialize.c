@@ -118,7 +118,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	} else if (ucheck < GBA_SAVESTATE_MAGIC) {
 		mLOG(GBA_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 		error = true;
-	} else {
+	} else if (ucheck < GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION) {
 		mLOG(GBA_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
 	}
 	LOAD_32(ucheck, 0, &state->biosChecksum);
