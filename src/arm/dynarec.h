@@ -14,7 +14,6 @@ struct ARMCore;
 enum ExecutionMode;
 
 struct ARMDynarecTrace {
-	unsigned hits;
 	enum ExecutionMode mode;
 	uint32_t start;
 	void (*entry)(struct ARMCore* cpu);
