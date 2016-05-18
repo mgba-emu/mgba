@@ -301,9 +301,14 @@ void ARMRun(struct ARMCore* cpu) {
 }
 
 void ARMRunLoop(struct ARMCore* cpu) {
-	if (cpu->dynarec.inDynarec) {
+	if (cpu->dynarec.currentEntry) {
+		cpu->dynarec.inDynarec = true;
+		while (cpu->dynarec.currentEntry) {
+			void (*entry)(struct ARMCore*) = cpu->dynarec.currentEntry;
+			cpu->dynarec.currentEntry = NULL;
+			entry(cpu);
+		}
 		cpu->dynarec.inDynarec = false;
-		cpu->dynarec.currentEntry(cpu);
 		return;
 	}
 	if (cpu->executionMode == MODE_THUMB) {
