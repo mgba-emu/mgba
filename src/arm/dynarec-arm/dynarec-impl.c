@@ -108,9 +108,8 @@ static uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2) {
 	return OP_SUBS | (dst << 12) | (src1 << 16) | src2;
 }
 
-static uint32_t* updatePC(uint32_t* code, uint32_t address) {
-	*code++ = emitMOVW(5, address) | COND_AL;
-	*code++ = emitMOVT(5, address >> 16) | COND_AL;
+static uint32_t* updatePC(uint32_t* code, uint32_t oldAddress, uint32_t address) {
+	*code++ = emitADDI(5, 5, address - oldAddress) | COND_AL;
 	*code++ = emitSTRI(5, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
 	return code;
 }
@@ -223,14 +222,17 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		trace->entry = (void (*)(struct ARMCore*)) code;
 		*code++ = emitPUSH(0x4030) | COND_AL;
 		*code++ = emitMOV(4, 0) | COND_AL;
-		*code++ = emitLDRI(5, 0, ARM_PC * sizeof(uint32_t)) | COND_AL;
+		*code++ = emitMOVW(5, address) | COND_AL;
+		*code++ = emitMOVT(5, address >> 16) | COND_AL;
+		uint32_t oldAddress = address;
 		struct ARMInstructionInfo info;
 		while (true) {
 			uint16_t instruction = cpu->memory.load16(cpu, address, 0);
 			ARMDecodeThumb(instruction, &info);
 			address += WORD_SIZE_THUMB;
 			if (needsUpdatePC(&info)) {
-				code = updatePC(code, address + WORD_SIZE_THUMB);
+				code = updatePC(code, oldAddress, address + WORD_SIZE_THUMB);
+				oldAddress = address + WORD_SIZE_THUMB;
 			}
 			if (needsUpdatePrefetch(&info)) {
 				code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
@@ -245,8 +247,8 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 					code = updateEvents(code, cpu);
 					break;
 				}
-				*code++ = emitMOVW(5, address + WORD_SIZE_THUMB) | COND_AL;
-				*code++ = emitMOVT(5, (address + WORD_SIZE_THUMB) >> 16) | COND_AL;
+				*code++ = emitADDI(5, 5, address - oldAddress + WORD_SIZE_THUMB) | COND_AL;
+				oldAddress = address + WORD_SIZE_THUMB;
 				code = updateEvents(code, cpu);
 			} else if (needsUpdateEvents(&info)) {
 				code = updateEvents(code, cpu);
