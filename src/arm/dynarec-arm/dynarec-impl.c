@@ -129,21 +129,46 @@ static uint32_t* updateEvents(uint32_t* code, struct ARMCore* cpu) {
 }
 
 static uint32_t* flushPrefetch(uint32_t* code, uint32_t op0, uint32_t op1) {
-	*code++ = emitMOVW(1, op0) | COND_EQ;
+	*code++ = emitMOVW(1, op0) | COND_AL;
 	if (op0 >= 0x10000) {
-		*code++ = emitMOVT(1, op0 >> 16) | COND_EQ;
+		*code++ = emitMOVT(1, op0 >> 16) | COND_AL;
 	}
-	*code++ = emitMOVW(2, op1) | COND_EQ;
+	*code++ = emitMOVW(2, op1) | COND_AL;
 	if (op1 >= 0x10000) {
-		*code++ = emitMOVT(2, op1 >> 16) | COND_EQ;
+		*code++ = emitMOVT(2, op1 >> 16) | COND_AL;
 	}
-	*code++ = emitADDI(0, 4, offsetof(struct ARMCore, prefetch)) | COND_EQ;
-	*code++ = emitSTMIA(0, 6) | COND_EQ;
+	*code++ = emitADDI(0, 4, offsetof(struct ARMCore, prefetch)) | COND_AL;
+	*code++ = emitSTMIA(0, 6) | COND_AL;
 	return code;
 }
 
+static bool needsUpdatePrefetch(struct ARMInstructionInfo* info) {
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_1 | ARM_OPERAND_AFFECTED_1)) == ARM_OPERAND_MEMORY_1) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_2 | ARM_OPERAND_AFFECTED_2)) == ARM_OPERAND_MEMORY_2) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_3 | ARM_OPERAND_AFFECTED_3)) == ARM_OPERAND_MEMORY_3) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_4 | ARM_OPERAND_AFFECTED_4)) == ARM_OPERAND_MEMORY_4) {
+		return true;
+	}
+	return false;
+}
+
 static bool needsUpdateEvents(struct ARMInstructionInfo* info) {
-	if (info->operandFormat & ARM_OPERAND_MEMORY) {
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_1 | ARM_OPERAND_AFFECTED_1)) == (ARM_OPERAND_MEMORY_1 | ARM_OPERAND_AFFECTED_1)) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_2 | ARM_OPERAND_AFFECTED_2)) == (ARM_OPERAND_MEMORY_2 | ARM_OPERAND_AFFECTED_2)) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_3 | ARM_OPERAND_AFFECTED_3)) == (ARM_OPERAND_MEMORY_3 | ARM_OPERAND_AFFECTED_3)) {
+		return true;
+	}
+	if ((info->operandFormat & (ARM_OPERAND_MEMORY_4 | ARM_OPERAND_AFFECTED_4)) == (ARM_OPERAND_MEMORY_4 | ARM_OPERAND_AFFECTED_4)) {
 		return true;
 	}
 	if (info->branchType || info->traps) {
@@ -166,6 +191,9 @@ static bool needsUpdatePC(struct ARMInstructionInfo* info) {
 		return true;
 	}
 	if (info->operandFormat & ARM_OPERAND_REGISTER_4 && info->op4.reg == ARM_PC) {
+		return true;
+	}
+	if (info->operandFormat & ARM_OPERAND_MEMORY && info->memory.format & ARM_MEMORY_REGISTER_BASE && info->memory.baseReg == ARM_PC) {
 		return true;
 	}
 	if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_1 && info->op1.shifterReg == ARM_PC) {
@@ -204,7 +232,11 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			if (needsUpdatePC(&info)) {
 				code = updatePC(code, address + WORD_SIZE_THUMB);
 			}
+			if (needsUpdatePrefetch(&info)) {
+				code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
+			}
 			*code++ = emitMOVW(1, instruction) | COND_AL;
+			*code++ = emitMOV(0, 4) | COND_AL;
 			*code = emitBL(code, _thumbTable[instruction >> 6]) | COND_AL;
 			++code;
 			if (info.branchType == ARM_BRANCH) {
@@ -222,7 +254,6 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			if (info.branchType > ARM_BRANCH || info.traps) {
 				break;
 			}
-			*code++ = emitMOV(0, 4) | COND_AL;
 		}
 		code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
 		*code++ = emitPOP(0x8030) | COND_AL;
