@@ -11,8 +11,6 @@
 #include "core/cheats.h"
 #include "util/vector.h"
 
-#define MAX_ROM_PATCHES 4
-
 enum GBACheatType {
 	GB_CHEAT_AUTODETECT,
 	GB_CHEAT_GAMESHARK,
@@ -25,11 +23,13 @@ struct GBCheatPatch {
 	int8_t newValue;
 	int8_t oldValue;
 	bool applied;
-	bool exists;
 };
+
+DECLARE_VECTOR(GBCheatPatchList, struct GBCheatPatch);
 
 struct GBCheatSet {
 	struct mCheatSet d;
+	struct GBCheatPatchList romPatches;
 };
 
 struct mCheatDevice* GBCheatDeviceCreate(void);

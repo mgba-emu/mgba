@@ -629,11 +629,21 @@ DEFINE_INSTRUCTION_ARM(MSR,
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
+	if (mask & PSR_STATE_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_STATE_MASK) | (operand & PSR_STATE_MASK);
+	}
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
 	}
-	_ARMReadCPSR(cpu);)
+	_ARMReadCPSR(cpu);
+	if (cpu->executionMode == MODE_THUMB) {
+		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	} else {
+		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	})
 
 DEFINE_INSTRUCTION_ARM(MSRR,
 	int c = opcode & 0x00010000;
@@ -660,11 +670,21 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
+	if (mask & PSR_STATE_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_STATE_MASK) | (operand & PSR_STATE_MASK);
+	}
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
 	}
-	_ARMReadCPSR(cpu);)
+	_ARMReadCPSR(cpu);
+	if (cpu->executionMode == MODE_THUMB) {
+		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	} else {
+		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	})
 
 DEFINE_INSTRUCTION_ARM(MSRRI,
 	int c = opcode & 0x00010000;
