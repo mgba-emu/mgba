@@ -54,8 +54,9 @@ void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionM
 		ARMDynarecRecompileTrace(cpu, trace);
 	}
 	if (trace->entry) {
-		cpu->dynarec.inDynarec = true;
-		cpu->nextEvent = cpu->cycles;
+		if (!cpu->dynarec.inDynarec) {
+			cpu->nextEvent = cpu->cycles;
+		}
 		cpu->dynarec.currentEntry = trace->entry;
 	}
 }
