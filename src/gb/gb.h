@@ -62,6 +62,7 @@ struct GB {
 	size_t yankedRomSize;
 	uint32_t romCrc32;
 	struct VFile* romVf;
+	struct VFile* biosVf;
 	struct VFile* sramVf;
 
 	struct mAVStream* stream;
@@ -107,6 +108,8 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
+
+void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 
 struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);

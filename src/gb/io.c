@@ -311,6 +311,12 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_STAT:
 		GBVideoWriteSTAT(&gb->video, value);
 		break;
+	case 0x50:
+		if (gb->memory.romBase != gb->memory.rom) {
+			free(gb->memory.romBase);
+			gb->memory.romBase = gb->memory.rom;
+		}
+		break;
 	case REG_IE:
 		gb->memory.ie = value;
 		GBUpdateIRQs(gb);

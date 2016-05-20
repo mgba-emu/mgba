@@ -13,6 +13,7 @@
 #include "lr35902/debugger/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
+#include "util/vfs.h"
 
 struct GBCore {
 	struct mCore d;
@@ -93,6 +94,16 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->audio.masterVolume = core->opts.volume;
 	}
 	gb->video.frameskip = core->opts.frameskip;
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios && core->opts.bios) {
+		bios = VFileOpen(core->opts.bios, O_RDONLY);
+	}
+	if (bios) {
+		GBLoadBIOS(gb, bios);
+	}
+#endif
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -148,11 +159,9 @@ static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBCoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
-	UNUSED(core);
-	UNUSED(vf);
 	UNUSED(type);
-	// TODO
-	return false;
+	GBLoadBIOS(core->board, vf);
+	return true;
 }
 
 static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {

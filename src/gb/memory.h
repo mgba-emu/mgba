@@ -112,6 +112,7 @@ union GBMBCState {
 struct mRotationSource;
 struct GBMemory {
 	uint8_t* rom;
+	uint8_t* romBase;
 	uint8_t* romBank;
 	enum GBMemoryBankControllerType mbcType;
 	GBMemoryBankController mbc;

@@ -52,7 +52,7 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
 		cpu->memory.cpuLoad8 = GBFastLoad8;
-		cpu->memory.activeRegion = memory->rom;
+		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
 		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
 		break;
@@ -211,7 +211,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
-		return memory->rom[address & (GB_SIZE_CART_BANK0 - 1)];
+		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
