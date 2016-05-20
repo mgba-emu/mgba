@@ -8,6 +8,7 @@
 #include "arm/isa-thumb.h"
 
 #define OP_ADDI  0x02800000
+#define OP_B     0x0A000000
 #define OP_BL    0x0B000000
 #define OP_CMP   0x01500000
 #define OP_LDMIA 0x08900000
@@ -43,6 +44,13 @@ static uint32_t calculateAddrMode1(unsigned imm) {
 
 static uint32_t emitADDI(unsigned dst, unsigned src, unsigned imm) {
 	return OP_ADDI | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+static uint32_t emitB(void* base, void* target) {
+	uint32_t diff = (intptr_t) target - (intptr_t) base - WORD_SIZE_ARM * 2;
+	diff >>= 2;
+	diff &= 0x00FFFFFF;
+	return OP_B | diff;
 }
 
 static uint32_t emitBL(void* base, void* target) {
@@ -108,8 +116,9 @@ static uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2) {
 	return OP_SUBS | (dst << 12) | (src1 << 16) | src2;
 }
 
-static uint32_t* updatePC(uint32_t* code, uint32_t oldAddress, uint32_t address) {
-	*code++ = emitADDI(5, 5, address - oldAddress) | COND_AL;
+static uint32_t* updatePC(uint32_t* code, uint32_t address) {
+	*code++ = emitMOVW(5, address) | COND_AL;
+	*code++ = emitMOVT(5, address >> 16) | COND_AL;
 	*code++ = emitSTRI(5, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
 	return code;
 }
@@ -216,23 +225,27 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 #endif
 	uint32_t* code = cpu->dynarec.buffer;
 	uint32_t address = trace->start;
+	struct Label {
+		uint32_t* code;
+		uint32_t pc;
+	}* labels = cpu->dynarec.temporaryMemory;
 	if (trace->mode == MODE_ARM) {
 		return;
 	} else {
 		trace->entry = (void (*)(struct ARMCore*)) code;
 		*code++ = emitPUSH(0x4030) | COND_AL;
 		*code++ = emitMOV(4, 0) | COND_AL;
-		*code++ = emitMOVW(5, address) | COND_AL;
-		*code++ = emitMOVT(5, address >> 16) | COND_AL;
-		uint32_t oldAddress = address;
+		*code++ = emitLDRI(5, 0, ARM_PC * sizeof(uint32_t)) | COND_AL;
 		struct ARMInstructionInfo info;
 		while (true) {
 			uint16_t instruction = cpu->memory.load16(cpu, address, 0);
+			struct Label* label = &labels[(address - trace->start) >> 1];
 			ARMDecodeThumb(instruction, &info);
 			address += WORD_SIZE_THUMB;
+			label->code = code;
+			label->pc = address + WORD_SIZE_THUMB;
 			if (needsUpdatePC(&info)) {
-				code = updatePC(code, oldAddress, address + WORD_SIZE_THUMB);
-				oldAddress = address + WORD_SIZE_THUMB;
+				code = updatePC(code, address + WORD_SIZE_THUMB);
 			}
 			if (needsUpdatePrefetch(&info)) {
 				code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
@@ -242,14 +255,33 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			*code = emitBL(code, _thumbTable[instruction >> 6]) | COND_AL;
 			++code;
 			if (info.branchType == ARM_BRANCH) {
+				struct Label* label = NULL;
+				uint32_t base = address + info.op1.immediate + WORD_SIZE_THUMB;
+				if (info.op1.immediate <= 0) {
+					if (base > trace->start) {
+						label = &labels[(base - trace->start) >> 1];
+					}
+				}
 				// Assume branch not taken
 				if (info.condition == ARM_CONDITION_AL) {
 					code = updateEvents(code, cpu);
 					break;
 				}
-				*code++ = emitADDI(5, 5, address - oldAddress + WORD_SIZE_THUMB) | COND_AL;
-				oldAddress = address + WORD_SIZE_THUMB;
-				code = updateEvents(code, cpu);
+				*code++ = emitMOVW(5, address + WORD_SIZE_THUMB) | COND_AL;
+				*code++ = emitMOVT(5, (address + WORD_SIZE_THUMB) >> 16) | COND_AL;
+				*code++ = emitLDRI(1, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
+				*code++ = emitCMP(1, 5) | COND_AL;
+				if (!label || !label->code) {
+					*code++ = emitPOP(0x8030) | COND_NE;
+				} else {
+					uint32_t* l2 = code;
+					++code;
+					*code++ = emitMOV(5, 1) | COND_AL;
+					code = updateEvents(code, cpu);
+					*code = emitB(code, label->code) | COND_AL;
+					++code;
+					*l2 = emitB(l2, code) | COND_EQ;
+				}
 			} else if (needsUpdateEvents(&info)) {
 				code = updateEvents(code, cpu);
 			}
@@ -257,6 +289,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 				break;
 			}
 		}
+		memset(labels, 0, sizeof(struct Label) * ((address - trace->start) >> 1));
 		code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
 		*code++ = emitPOP(0x8030) | COND_AL;
 	}
