@@ -12,7 +12,7 @@ void ARMDynarecInit(struct ARMCore* cpu) {
 	BumpAllocatorInit(&cpu->dynarec.traceAlloc, sizeof(struct ARMDynarecTrace));
 	TableInit(&cpu->dynarec.armTraces, 0x2000, 0);
 	TableInit(&cpu->dynarec.thumbTraces, 0x2000, 0);
-	cpu->dynarec.buffer = executableMemoryMap(0x100000);
+	cpu->dynarec.buffer = executableMemoryMap(0x200000);
 	cpu->dynarec.temporaryMemory = anonymousMemoryMap(0x2000);
 }
 
@@ -20,7 +20,7 @@ void ARMDynarecDeinit(struct ARMCore* cpu) {
 	BumpAllocatorDeinit(&cpu->dynarec.traceAlloc);
 	TableDeinit(&cpu->dynarec.armTraces);
 	TableDeinit(&cpu->dynarec.thumbTraces);
-	mappedMemoryFree(cpu->dynarec.buffer, 0x100000);
+	mappedMemoryFree(cpu->dynarec.buffer, 0x200000);
 	mappedMemoryFree(cpu->dynarec.temporaryMemory, 0x2000);
 }
 
