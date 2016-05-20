@@ -90,6 +90,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			video->nextMode -= video->eventDiff;
 		}
 		video->nextEvent = INT_MAX;
+		video->p->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
 		GBVideoProcessDots(video);
 		if (video->nextMode <= 0) {
 			int lyc = video->p->memory.io[REG_LYC];
@@ -106,6 +107,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+						video->nextEvent = 4;
 					}
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
@@ -135,9 +137,11 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
+					video->nextEvent = 4;
 				}
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+					video->nextEvent = 4;
 				}
 				GBUpdateIRQs(video->p);
 				break;
@@ -151,6 +155,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+						video->nextEvent = 4;
 						GBUpdateIRQs(video->p);
 					}
 					break;
@@ -168,6 +173,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->p->memory.io[REG_LY]);
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->p->memory.io[REG_LY]) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+					video->nextEvent = 4;
 					GBUpdateIRQs(video->p);
 				}
 				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
@@ -187,6 +193,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->mode = 0;
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+					video->nextEvent = 4;
 					GBUpdateIRQs(video->p);
 				}
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
@@ -254,11 +261,17 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->nextMode = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		video->nextEvent = video->nextMode;
 		video->eventDiff = -video->p->cpu->cycles >> video->p->doubleSpeed;
-		// TODO: Does this read as 0 for 4 T-cycles?
-		video->stat = GBRegisterSTATSetMode(video->stat, 2);
-		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
+		// TODO: Does this read as 0 for 4 T-cycles?
+		video->stat = GBRegisterSTATSetMode(video->stat, 2);
+		video->stat = GBRegisterSTATSetLYC(video->stat, video->ly == video->p->memory.io[REG_LYC]);
+		if (GBRegisterSTATIsLYCIRQ(video->stat) && video->ly == video->p->memory.io[REG_LYC]) {
+			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+			video->nextEvent = 4;
+			GBUpdateIRQs(video->p);
+		}
+		video->p->memory.io[REG_STAT] = video->stat;
 
 		if (video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed) < video->p->cpu->nextEvent) {
 			video->p->cpu->nextEvent = video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed);
@@ -280,6 +293,7 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	video->stat = (video->stat & 0x7) | (value & 0x78);
 	if (video->p->model == GB_MODEL_DMG && video->mode == 1) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+		video->nextEvent = 4;
 		GBUpdateIRQs(video->p);
 	}
 }
