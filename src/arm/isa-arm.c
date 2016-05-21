@@ -184,8 +184,6 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 // Instruction definitions
 // Beware pre-processor antics
 
-#define NO_EXTEND64(V) (uint64_t)(uint32_t) (V)
-
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \
@@ -205,6 +203,17 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->cpsr.n = ARM_SIGN(D); \
 		cpu->cpsr.z = !(D); \
 		cpu->cpsr.c = ARM_BORROW_FROM(M, N, D); \
+		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
+	}
+
+#define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
+		cpu->cpsr = cpu->spsr; \
+		_ARMReadCPSR(cpu); \
+	} else { \
+		cpu->cpsr.n = ARM_SIGN(D); \
+		cpu->cpsr.z = !(D); \
+		cpu->cpsr.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
 		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
 	}
 
@@ -454,14 +463,13 @@ DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->g
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->gprs[rd]),
-	int32_t n = cpu->gprs[rn] + !cpu->cpsr.c;
-	cpu->gprs[rd] = cpu->shifterOperand - n;)
-
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(n, shifterOperand, cpu->gprs[rd]),
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.c),
 	int32_t n = cpu->gprs[rn];
-	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.c;
-	cpu->gprs[rd] = n - shifterOperand;)
+	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.c;)
+
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.c),
+	int32_t n = cpu->gprs[rn];
+	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];
@@ -495,7 +503,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
-	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
+	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	int32_t dm = cpu->gprs[rd];
 	int32_t dn = d;
 	cpu->gprs[rd] = dm + dn;
@@ -503,7 +511,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
-	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
+	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
