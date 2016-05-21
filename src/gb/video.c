@@ -90,7 +90,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			video->nextMode -= video->eventDiff;
 		}
 		video->nextEvent = INT_MAX;
-		video->p->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
 		GBVideoProcessDots(video);
 		if (video->nextMode <= 0) {
 			int lyc = video->p->memory.io[REG_LYC];
@@ -105,9 +104,8 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
-					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
+					if (!GBRegisterSTATIsHblankIRQ(video->stat) && GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-						video->nextEvent = 4;
 					}
 				} else {
 					video->nextMode = GB_VIDEO_HORIZONTAL_LENGTH;
@@ -137,11 +135,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
-					video->nextEvent = 4;
 				}
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-					video->nextEvent = 4;
 				}
 				GBUpdateIRQs(video->p);
 				break;
@@ -155,7 +151,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-						video->nextEvent = 4;
 						GBUpdateIRQs(video->p);
 					}
 					break;
@@ -173,7 +168,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->p->memory.io[REG_LY]);
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->p->memory.io[REG_LY]) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-					video->nextEvent = 4;
 					GBUpdateIRQs(video->p);
 				}
 				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
@@ -193,7 +187,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->mode = 0;
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-					video->nextEvent = 4;
 					GBUpdateIRQs(video->p);
 				}
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS && video->p->memory.isHdma && video->p->memory.io[REG_HDMA5] != 0xFF) {
@@ -268,7 +261,6 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->stat = GBRegisterSTATSetLYC(video->stat, video->ly == video->p->memory.io[REG_LYC]);
 		if (GBRegisterSTATIsLYCIRQ(video->stat) && video->ly == video->p->memory.io[REG_LYC]) {
 			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-			video->nextEvent = 4;
 			GBUpdateIRQs(video->p);
 		}
 		video->p->memory.io[REG_STAT] = video->stat;
@@ -293,7 +285,6 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	video->stat = (video->stat & 0x7) | (value & 0x78);
 	if (video->p->model == GB_MODEL_DMG && video->mode == 1) {
 		video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
-		video->nextEvent = 4;
 		GBUpdateIRQs(video->p);
 	}
 }
