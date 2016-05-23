@@ -30,6 +30,7 @@ Misc:
  - All: Allow use of external minizip library
  - GBA Video: Null renderer should return proper register values
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
+ - Qt: Canonicalize file paths when loading games
 
 0.4.0: (2016-02-02)
 Features:

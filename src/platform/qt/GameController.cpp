@@ -13,6 +13,7 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QFileInfo>
 #include <QThread>
 
 #include <ctime>
@@ -282,14 +283,12 @@ void GameController::setDebugger(ARMDebugger* debugger) {
 
 void GameController::loadGame(const QString& path) {
 	closeGame();
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
+	QFileInfo info(path);
+	if (!info.isReadable()) {
 		postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
 		return;
 	}
-	file.close();
-
-	m_fname = path;
+	m_fname = info.canonicalFilePath();
 	openGame();
 }
 
@@ -370,7 +369,12 @@ void GameController::replaceGame(const QString& path) {
 		return;
 	}
 
-	m_fname = path;
+	QFileInfo info(path);
+	if (!info.isReadable()) {
+		postLog(GBA_LOG_ERROR, tr("Failed to open game file: %1").arg(path));
+		return;
+	}
+	m_fname = info.canonicalFilePath();
 	threadInterrupt();
 	m_threadContext.fname = strdup(m_fname.toLocal8Bit().constData());
 	GBAThreadReplaceROM(&m_threadContext, m_threadContext.fname);
