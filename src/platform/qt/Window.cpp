@@ -333,11 +333,12 @@ void Window::multiplayerChanged() {
 void Window::selectBIOS() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
-		m_config->setOption("bios", filename);
+		QFileInfo info(filename);
+		m_config->setOption("bios", info.canonicalFilePath());
 		m_config->updateOption("bios");
 		m_config->setOption("useBios", true);
 		m_config->updateOption("useBios");
-		m_controller->loadBIOS(filename);
+		m_controller->loadBIOS(info.canonicalFilePath());
 	}
 }
 

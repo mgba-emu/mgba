@@ -288,14 +288,12 @@ void GameController::setDebugger(mDebugger* debugger) {
 
 void GameController::loadGame(const QString& path) {
 	closeGame();
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
+	QFileInfo info(path);
+	if (!info.isReadable()) {
 		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		return;
 	}
-	file.close();
-
-	m_fname = path;
+	m_fname = info.canonicalFilePath();
 	openGame();
 }
 
@@ -406,7 +404,12 @@ void GameController::replaceGame(const QString& path) {
 		return;
 	}
 
-	m_fname = path;
+	QFileInfo info(path);
+	if (!info.isReadable()) {
+		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		return;
+	}
+	m_fname = info.canonicalFilePath();
 	threadInterrupt();
 	mCoreLoadFile(m_threadContext.core, m_fname.toLocal8Bit().constData());
 	threadContinue();
