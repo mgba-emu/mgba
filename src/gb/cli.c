@@ -5,27 +5,69 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli.h"
 
+#include "core/core.h"
+#include "gb/gb.h"
+#include "gb/io.h"
+#include "gb/video.h"
 #include "lr35902/debugger/cli-debugger.h"
 
 #ifdef USE_CLI_DEBUGGER
 
+static void _GBCLIDebuggerInit(struct CLIDebuggerSystem*);
+static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem*);
+
+static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
+
 struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
+	{ "frame", _frame, 0, "Frame advance" },
 	{ 0, 0, 0, 0 }
 };
 
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore* core) {
 	UNUSED(core);
-	struct CLIDebuggerSystem* debugger = malloc(sizeof(struct CLIDebuggerSystem));
-	LR35902CLIDebuggerCreate(debugger);
-	debugger->init = NULL;
-	debugger->deinit = NULL;
-	debugger->custom = NULL;
-	debugger->lookupIdentifier = NULL;
+	struct GBCLIDebugger* debugger = malloc(sizeof(struct GBCLIDebugger));
+	LR35902CLIDebuggerCreate(&debugger->d);
+	debugger->d.init = _GBCLIDebuggerInit;
+	debugger->d.deinit = NULL;
+	debugger->d.custom = _GBCLIDebuggerCustom;
+	debugger->d.lookupIdentifier = NULL;
 
-	debugger->name = "Game Boy";
-	debugger->commands = _GBCLIDebuggerCommands;
+	debugger->d.name = "Game Boy";
+	debugger->d.commands = _GBCLIDebuggerCommands;
 
-	return debugger;
+	debugger->core = core;
+
+	return &debugger->d;
+}
+
+static void _GBCLIDebuggerInit(struct CLIDebuggerSystem* debugger) {
+	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger;
+
+	gbDebugger->frameAdvance = false;
+}
+
+static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
+	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger;
+
+	if (gbDebugger->frameAdvance) {
+		if (!gbDebugger->inVblank && GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1) {
+			mDebuggerEnter(&gbDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
+			gbDebugger->frameAdvance = false;
+			return false;
+		}
+		gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
+		return true;
+	}
+	return false;
+}
+
+static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	debugger->d.state = DEBUGGER_CUSTOM;
+
+	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
+	gbDebugger->frameAdvance = true;
+	gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
 }
 
 #endif
