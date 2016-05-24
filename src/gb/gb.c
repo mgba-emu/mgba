@@ -65,7 +65,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 
 	gb->stream = NULL;
 
-	gb->eiPending = false;
+	gb->eiPending = INT_MAX;
 	gb->doubleSpeed = 0;
 }
 
@@ -301,12 +301,12 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
 
-		if (gb->eiPending) {
+		if (gb->eiPending != INT_MAX) {
 			gb->eiPending -= cycles;
 			if (gb->eiPending <= 0) {
 				gb->memory.ime = true;
 				GBUpdateIRQs(gb);
-				gb->eiPending = 0;
+				gb->eiPending = INT_MAX;
 			}
 		}
 
@@ -349,7 +349,7 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!enable) {
 		gb->memory.ime = enable;
-		gb->eiPending = 0;
+		gb->eiPending = INT_MAX;
 		GBUpdateIRQs(gb);
 	} else {
 		if (cpu->nextEvent > cpu->cycles + 4) {
