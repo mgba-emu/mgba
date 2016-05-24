@@ -206,7 +206,10 @@ static void _GBCoreRunLoop(struct mCore* core) {
 }
 
 static void _GBCoreStep(struct mCore* core) {
-	LR35902Tick(core->cpu);
+	struct LR35902Core* cpu = core->cpu;
+	do {
+		LR35902Tick(cpu);
+	} while (cpu->executionState != LR35902_CORE_FETCH);
 }
 
 static bool _GBCoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
