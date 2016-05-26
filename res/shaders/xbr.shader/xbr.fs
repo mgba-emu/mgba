@@ -98,7 +98,7 @@ varying vec4 TEX5;
 varying vec4 TEX6;
 varying vec4 TEX7;
 
-const vec2 TextureSize = vec2(240.0, 160.0);
+uniform vec2 texSize;
 
 void main()
 {
@@ -110,7 +110,7 @@ void main()
 	vec3 res1, res2, pix1, pix2;
 	float blend1, blend2;
 
-    vec2 fp = fract(texCoord * TextureSize);
+    vec2 fp = fract(texCoord * texSize);
 
     vec3 A1 = COMPAT_TEXTURE(tex, TEX1.xw).rgb;
     vec3 B1 = COMPAT_TEXTURE(tex, TEX1.yw).rgb;
