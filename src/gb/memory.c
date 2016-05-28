@@ -132,7 +132,7 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.sramAccess = false;
 	gb->memory.rtcAccess = false;
 	gb->memory.activeRtcReg = 0;
-	gb->memory.rtcLatched = 0;
+	gb->memory.rtcLatched = false;
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
@@ -682,9 +682,10 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		break;
 	case 0x3:
 		if (memory->rtcLatched && value == 0) {
-			memory->rtcLatched = value;
+			memory->rtcLatched = false;
 		} else if (!memory->rtcLatched && value == 1) {
 			_latchRtc(memory);
+			memory->rtcLatched = true;
 		}
 		break;
 	}

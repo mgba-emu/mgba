@@ -149,7 +149,7 @@ struct GBMemory {
 
 	bool rtcAccess;
 	int activeRtcReg;
-	int rtcLatched;
+	bool rtcLatched;
 	uint8_t rtcRegs[5];
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
