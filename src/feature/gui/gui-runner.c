@@ -6,10 +6,10 @@
 #include "gui-runner.h"
 
 #include "core/core.h"
+#include "core/serialize.h"
 #include "feature/gui/gui-config.h"
 #include "gba/input.h"
 #include "gba/interface.h"
-#include "gba/serialize.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
 #include "util/gui/menu.h"

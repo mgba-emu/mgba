@@ -6,6 +6,7 @@
 #include "cli.h"
 
 #include "core/core.h"
+#include "core/serialize.h"
 #include "gb/gb.h"
 #include "gb/io.h"
 #include "gb/video.h"

@@ -26,11 +26,12 @@
 
 #include "util/common.h"
 
+#include "core/serialize.h"
 #include "core/core.h"
 #include "gba/cheats.h"
 #include "gba/core.h"
+#include "gba/gba.h"
 #include "gba/input.h"
-#include "gba/serialize.h"
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/vfs.h"

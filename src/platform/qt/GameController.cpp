@@ -20,11 +20,11 @@
 extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
+#include "core/serialize.h"
 #ifdef M_CORE_GBA
 #include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
-#include "gba/serialize.h"
 #include "gba/extra/sharkport.h"
 #endif
 #ifdef M_CORE_GB

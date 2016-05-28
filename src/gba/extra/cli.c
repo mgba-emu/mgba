@@ -6,6 +6,7 @@
 #include "cli.h"
 
 #include "arm/debugger/cli-debugger.h"
+#include "core/serialize.h"
 #include "gba/io.h"
 #include "gba/serialize.h"
 

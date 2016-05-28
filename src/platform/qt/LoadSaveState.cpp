@@ -15,8 +15,10 @@
 #include <QPainter>
 
 extern "C" {
+#include "core/serialize.h"
+#ifdef M_CORE_GBA
 #include "gba/serialize.h"
-#include "gba/video.h"
+#endif
 }
 
 using namespace QGBA;
@@ -176,21 +178,21 @@ void LoadSaveState::loadState(int slot) {
 		return;
 	}
 
-	GBAExtdata extdata;
-	GBAExtdataInit(&extdata);
+	mStateExtdata extdata;
+	mStateExtdataInit(&extdata);
 	GBASerializedState* state = GBAExtractState(vf, &extdata);
 	vf->seek(vf, 0, SEEK_SET);
 	if (!state) {
 		m_slots[slot - 1]->setText(tr("Corrupted"));
-		GBAExtdataDeinit(&extdata);
+		mStateExtdataDeinit(&extdata);
 		return;
 	}
 
 	QDateTime creation(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL));
 	QImage stateImage;
 
-	GBAExtdataItem item;
-	if (GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
+	mStateExtdataItem item;
+	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
 		stateImage = QImage((uchar*) item.data, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_ARGB32).rgbSwapped();
 	}
 

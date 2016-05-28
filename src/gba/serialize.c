@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "serialize.h"
 
+#include "core/serialize.h"
 #include "core/sync.h"
 #include "gba/audio.h"
 #include "gba/cheats.h"
@@ -35,13 +36,7 @@ mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate");
 
 struct GBABundledState {
 	struct GBASerializedState* state;
-	struct GBAExtdata* extdata;
-};
-
-struct GBAExtdataHeader {
-	uint32_t tag;
-	int32_t size;
-	int64_t offset;
+	struct mStateExtdata* extdata;
 };
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
@@ -221,7 +216,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 }
 
 #ifdef USE_PNG
-static bool _savePNGState(struct GBA* gba, struct VFile* vf, struct GBAExtdata* extdata) {
+static bool _savePNGState(struct GBA* gba, struct VFile* vf, struct mStateExtdata* extdata) {
 	unsigned stride;
 	const void* pixels = 0;
 	gba->video.renderer->getPixels(gba->video.renderer, &stride, &pixels);
@@ -290,11 +285,11 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 		return 1;
 	}
 	if (!strcmp((const char*) chunk->name, "gbAx")) {
-		struct GBAExtdata* extdata = bundle->extdata;
+		struct mStateExtdata* extdata = bundle->extdata;
 		if (!extdata) {
 			return 0;
 		}
-		struct GBAExtdataItem item;
+		struct mStateExtdataItem item;
 		if (chunk->size < sizeof(uint32_t) * 2) {
 			return 0;
 		}
@@ -314,13 +309,13 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 		data += sizeof(uint32_t) * 2;
 		uncompress((Bytef*) item.data, &len, data, chunk->size);
 		item.size = len;
-		GBAExtdataPut(extdata, tag, &item);
+		mStateExtdataPut(extdata, tag, &item);
 		return 1;
 	}
 	return 0;
 }
 
-static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtdata* extdata) {
+static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct mStateExtdata* extdata) {
 	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 	png_infop info = png_create_info_struct(png);
 	png_infop end = png_create_info_struct(png);
@@ -347,12 +342,12 @@ static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtd
 	PNGReadClose(png, info, end);
 
 	if (success) {
-		struct GBAExtdataItem item = {
+		struct mStateExtdataItem item = {
 			.size = VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4,
 			.data = pixels,
 			.clean = free
 		};
-		GBAExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
+		mStateExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
 	} else {
 		free(pixels);
 		GBADeallocateState(state);
@@ -363,19 +358,19 @@ static struct GBASerializedState* _loadPNGState(struct VFile* vf, struct GBAExtd
 #endif
 
 bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
-	struct GBAExtdata extdata;
-	GBAExtdataInit(&extdata);
+	struct mStateExtdata extdata;
+	mStateExtdataInit(&extdata);
 	if (flags & SAVESTATE_SAVEDATA) {
 		// TODO: A better way to do this would be nice
 		void* sram = malloc(SIZE_CART_FLASH1M);
 		struct VFile* svf = VFileFromMemory(sram, SIZE_CART_FLASH1M);
 		if (GBASavedataClone(&gba->memory.savedata, svf)) {
-			struct GBAExtdataItem item = {
+			struct mStateExtdataItem item = {
 				.size = svf->seek(svf, 0, SEEK_CUR),
 				.data = sram,
 				.clean = free
 			};
-			GBAExtdataPut(&extdata, EXTDATA_SAVEDATA, &item);
+			mStateExtdataPut(&extdata, EXTDATA_SAVEDATA, &item);
 		} else {
 			free(sram);
 		}
@@ -387,12 +382,12 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		cheatVf = VFileMemChunk(0, 0);
 		if (cheatVf) {
 			mCheatSaveFile(device, cheatVf);
-			struct GBAExtdataItem item = {
+			struct mStateExtdataItem item = {
 				.size = cheatVf->size(cheatVf),
 				.data = cheatVf->map(cheatVf, cheatVf->size(cheatVf), MAP_READ),
 				.clean = 0
 			};
-			GBAExtdataPut(&extdata, EXTDATA_CHEATS, &item);
+			mStateExtdataPut(&extdata, EXTDATA_CHEATS, &item);
 		}
 	};
 #ifdef USE_PNG
@@ -403,7 +398,7 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		vf->truncate(vf, sizeof(struct GBASerializedState));
 		struct GBASerializedState* state = vf->map(vf, sizeof(struct GBASerializedState), MAP_WRITE);
 		if (!state) {
-			GBAExtdataDeinit(&extdata);
+			mStateExtdataDeinit(&extdata);
 			if (cheatVf) {
 				cheatVf->close(cheatVf);
 			}
@@ -412,8 +407,8 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 		GBASerialize(gba, state);
 		vf->unmap(vf, state, sizeof(struct GBASerializedState));
 		vf->seek(vf, sizeof(struct GBASerializedState), SEEK_SET);
-		GBAExtdataSerialize(&extdata, vf);
-		GBAExtdataDeinit(&extdata);
+		mStateExtdataSerialize(&extdata, vf);
+		mStateExtdataDeinit(&extdata);
 		if (cheatVf) {
 			cheatVf->close(cheatVf);
 		}
@@ -422,15 +417,15 @@ bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	}
 	else {
 		bool success = _savePNGState(gba, vf, &extdata);
-		GBAExtdataDeinit(&extdata);
+		mStateExtdataDeinit(&extdata);
 		return success;
 	}
 #endif
-	GBAExtdataDeinit(&extdata);
+	mStateExtdataDeinit(&extdata);
 	return false;
 }
 
-struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata) {
+struct GBASerializedState* GBAExtractState(struct VFile* vf, struct mStateExtdata* extdata) {
 #ifdef USE_PNG
 	if (isPNG(vf)) {
 		return _loadPNGState(vf, extdata);
@@ -446,14 +441,14 @@ struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* 
 		return 0;
 	}
 	if (extdata) {
-		GBAExtdataDeserialize(extdata, vf);
+		mStateExtdataDeserialize(extdata, vf);
 	}
 	return state;
 }
 
 bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
-	struct GBAExtdata extdata;
-	GBAExtdataInit(&extdata);
+	struct mStateExtdata extdata;
+	mStateExtdataInit(&extdata);
 	struct GBASerializedState* state = GBAExtractState(vf, &extdata);
 	if (!state) {
 		return false;
@@ -461,8 +456,8 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 	bool success = GBADeserialize(gba, state);
 	GBADeallocateState(state);
 
-	struct GBAExtdataItem item;
-	if (flags & SAVESTATE_SCREENSHOT && GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
+	struct mStateExtdataItem item;
+	if (flags & SAVESTATE_SCREENSHOT && mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
 		if (item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
 			gba->video.renderer->putPixels(gba->video.renderer, VIDEO_HORIZONTAL_PIXELS, item.data);
 			mCoreSyncForceFrame(gba->sync);
@@ -470,14 +465,14 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 			mLOG(GBA_STATE, WARN, "Savestate includes invalid screenshot");
 		}
 	}
-	if (flags & SAVESTATE_SAVEDATA && GBAExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
+	if (flags & SAVESTATE_SAVEDATA && mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
 		struct VFile* svf = VFileFromMemory(item.data, item.size);
 		GBASavedataLoad(&gba->memory.savedata, svf);
 		if (svf) {
 			svf->close(svf);
 		}
 	}
-	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE] && GBAExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
+	if (flags & SAVESTATE_CHEATS && gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE] && mStateExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
 		if (item.size) {
 			struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 			struct VFile* svf = VFileFromMemory(item.data, item.size);
@@ -488,125 +483,8 @@ bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags) {
 			}
 		}
 	}
-	GBAExtdataDeinit(&extdata);
+	mStateExtdataDeinit(&extdata);
 	return success;
-}
-
-bool GBAExtdataInit(struct GBAExtdata* extdata) {
-	memset(extdata->data, 0, sizeof(extdata->data));
-	return true;
-}
-
-void GBAExtdataDeinit(struct GBAExtdata* extdata) {
-	size_t i;
-	for (i = 1; i < EXTDATA_MAX; ++i) {
-		if (extdata->data[i].data && extdata->data[i].clean) {
-			extdata->data[i].clean(extdata->data[i].data);
-		}
-	}
-}
-
-void GBAExtdataPut(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
-	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
-		return;
-	}
-
-	if (extdata->data[tag].data && extdata->data[tag].clean) {
-		extdata->data[tag].clean(extdata->data[tag].data);
-	}
-	extdata->data[tag] = *item;
-}
-
-bool GBAExtdataGet(struct GBAExtdata* extdata, enum GBAExtdataTag tag, struct GBAExtdataItem* item) {
-	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
-		return false;
-	}
-
-	*item = extdata->data[tag];
-	return true;
-}
-
-bool GBAExtdataSerialize(struct GBAExtdata* extdata, struct VFile* vf) {
-	ssize_t position = vf->seek(vf, 0, SEEK_CUR);
-	ssize_t size = sizeof(struct GBAExtdataHeader);
-	size_t i = 0;
-	for (i = 1; i < EXTDATA_MAX; ++i) {
-		if (extdata->data[i].data) {
-			size += sizeof(struct GBAExtdataHeader);
-		}
-	}
-	if (size == sizeof(struct GBAExtdataHeader)) {
-		return true;
-	}
-	struct GBAExtdataHeader* header = malloc(size);
-	position += size;
-
-	size_t j;
-	for (i = 1, j = 0; i < EXTDATA_MAX; ++i) {
-		if (extdata->data[i].data) {
-			STORE_32(i, offsetof(struct GBAExtdataHeader, tag), &header[j]);
-			STORE_32(extdata->data[i].size, offsetof(struct GBAExtdataHeader, size), &header[j]);
-			STORE_64(position, offsetof(struct GBAExtdataHeader, offset), &header[j]);
-			position += extdata->data[i].size;
-			++j;
-		}
-	}
-	header[j].tag = 0;
-	header[j].size = 0;
-	header[j].offset = 0;
-
-	if (vf->write(vf, header, size) != size) {
-		free(header);
-		return false;
-	}
-	free(header);
-
-	for (i = 1; i < EXTDATA_MAX; ++i) {
-		if (extdata->data[i].data) {
-			if (vf->write(vf, extdata->data[i].data, extdata->data[i].size) != extdata->data[i].size) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf) {
-	while (true) {
-		struct GBAExtdataHeader buffer, header;
-		if (vf->read(vf, &buffer, sizeof(buffer)) != sizeof(buffer)) {
-			return false;
-		}
-		LOAD_32(header.tag, 0, &buffer.tag);
-		LOAD_32(header.size, 0, &buffer.size);
-		LOAD_64(header.offset, 0, &buffer.offset);
-
-		if (header.tag == EXTDATA_NONE) {
-			break;
-		}
-		if (header.tag >= EXTDATA_MAX) {
-			continue;
-		}
-		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
-		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
-			return false;
-		}
-		struct GBAExtdataItem item = {
-			.data = malloc(header.size),
-			.size = header.size,
-			.clean = free
-		};
-		if (!item.data) {
-			continue;
-		}
-		if (vf->read(vf, item.data, header.size) != header.size) {
-			free(item.data);
-			continue;
-		}
-		GBAExtdataPut(extdata, header.tag, &item);
-		vf->seek(vf, position, SEEK_SET);
-	};
-	return true;
 }
 
 struct GBASerializedState* GBAAllocateState(void) {

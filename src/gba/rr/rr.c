@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "rr.h"
 
+#include "core/serialize.h"
 #include "util/vfs.h"
 
 mLOG_DEFINE_CATEGORY(GBA_RR, "GBA RR");
