@@ -104,6 +104,8 @@ struct GBVideo {
 	int32_t nextMode;
 	int32_t dotCounter;
 
+	int32_t nextFrame;
+
 	uint8_t* vram;
 	uint8_t* vramBank;
 	int vramCurrentBank;

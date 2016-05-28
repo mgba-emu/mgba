@@ -50,6 +50,7 @@ void GBVideoReset(struct GBVideo* video) {
 
 	video->nextMode = INT_MAX;
 	video->dotCounter = INT_MIN;
+	video->nextFrame = INT_MAX;
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
@@ -88,6 +89,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 	if (video->nextEvent <= 0) {
 		if (video->nextEvent != INT_MAX) {
 			video->nextMode -= video->eventDiff;
+			video->nextFrame -= video->eventDiff;
 		}
 		video->nextEvent = INT_MAX;
 		GBVideoProcessDots(video);
@@ -116,12 +118,10 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						mCoreSyncPostFrame(video->p->sync);
 						video->frameskipCounter = video->frameskip;
 					}
-					GBFrameEnded(video->p);
 					++video->frameCounter;
 
-					struct mCoreThread* thread = mCoreThreadGet();
-					if (thread && thread->frameCallback) {
-						thread->frameCallback(thread);
+					if (video->nextFrame != 0) {
+						video->nextFrame = 0;
 					}
 
 					if (video->p->stream && video->p->stream->postVideoFrame) {
@@ -197,6 +197,21 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			}
 			video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
 			video->p->memory.io[REG_STAT] = video->stat;
+		}
+		if (video->nextFrame <= 0) {
+			if (video->p->cpu->executionState == LR35902_CORE_FETCH) {
+				GBFrameEnded(video->p);
+				struct mCoreThread* thread = mCoreThreadGet();
+				if (thread && thread->frameCallback) {
+					thread->frameCallback(thread);
+				}
+				video->nextFrame = GB_VIDEO_TOTAL_LENGTH;
+			} else {
+				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);
+				if (video->nextFrame < video->nextEvent) {
+					video->nextEvent = video->nextFrame;
+				}
+			}
 		}
 		if (video->nextMode < video->nextEvent) {
 			video->nextEvent = video->nextMode;
