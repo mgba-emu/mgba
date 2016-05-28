@@ -123,7 +123,6 @@ void GBAUnloadROM(struct GBA* gba) {
 #ifndef _3DS
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
 #endif
-		gba->romVf->close(gba->romVf);
 		gba->pristineRom = 0;
 		gba->romVf = 0;
 	}
