@@ -56,6 +56,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 
 	gb->timer.p = gb;
 
+	gb->biosVf = 0;
 	gb->romVf = 0;
 	gb->sramVf = 0;
 
