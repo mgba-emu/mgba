@@ -20,6 +20,7 @@ Bugfixes:
  - All: Fix instruction tables getting zeroed when linking sometimes
  - SDL: Fix SDL 1.2 build
  - ARM7: Fix flags on SBC/RSC
+ - Util: Fix realloc semantics in utf16to8
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
