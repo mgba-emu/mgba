@@ -265,7 +265,7 @@ void GBUpdateIRQs(struct GB* gb) {
 	}
 	gb->cpu->halted = false;
 
-	if (!gb->memory.ime) {
+	if (!gb->memory.ime || gb->cpu->irqPending) {
 		return;
 	}
 
