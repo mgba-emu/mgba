@@ -45,6 +45,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	LR35902Init(cpu);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
+	gbcore->renderer.outputBuffer = NULL;
 
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
