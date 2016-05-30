@@ -101,8 +101,11 @@ enum GBIORegisters {
 	REG_UNK74 = 0x74,
 	REG_UNK75 = 0x75,
 	REG_UNK76 = 0x76,
-	REG_UNK77 = 0x77
+	REG_UNK77 = 0x77,
+	REG_MAX = 0x100
 };
+
+extern const char* const GBIORegisterNames[];
 
 struct GB;
 void GBIOInit(struct GB* gb);
