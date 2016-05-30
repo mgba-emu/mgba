@@ -33,6 +33,7 @@ Misc:
  - GBA Video: Null renderer should return proper register values
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
  - Qt: Canonicalize file paths when loading games
+ - Qt: Add refresh button to controller editing
 
 0.4.0: (2016-02-02)
 Features:
