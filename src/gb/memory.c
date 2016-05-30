@@ -8,6 +8,7 @@
 #include "core/interface.h"
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/serialize.h"
 
 #include "util/memory.h"
 
@@ -930,6 +931,64 @@ void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			}
 		}
 	}
+}
+
+void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state) {
+	memcpy(state->wram, memory->wram, GB_SIZE_WORKING_RAM);
+	memcpy(state->hram, memory->hram, GB_SIZE_HRAM);
+	STORE_16LE(memory->currentBank, 0, &state->memory.currentBank);
+	state->memory.wramCurrentBank = memory->wramCurrentBank;
+	state->memory.sramCurrentBank = memory->sramCurrentBank;
+
+	STORE_32LE(memory->dmaNext, 0, &state->memory.dmaNext);
+	STORE_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
+	STORE_16LE(memory->dmaDest, 0, &state->memory.dmaDest);
+
+	STORE_32LE(memory->hdmaNext, 0, &state->memory.hdmaNext);
+	STORE_16LE(memory->hdmaSource, 0, &state->memory.hdmaSource);
+	STORE_16LE(memory->hdmaDest, 0, &state->memory.hdmaDest);
+
+	STORE_16LE(memory->hdmaRemaining, 0, &state->memory.hdmaRemaining);
+	state->memory.dmaRemaining = memory->dmaRemaining;
+	memcpy(state->memory.rtcRegs, memory->rtcRegs, sizeof(state->memory.rtcRegs));
+
+	state->memory.sramAccess = memory->sramAccess;
+	state->memory.rtcAccess = memory->rtcAccess;
+	state->memory.rtcLatched = memory->rtcLatched;
+	state->memory.ime = memory->ime;
+	state->memory.isHdma = memory->isHdma;
+	state->memory.activeRtcReg = memory->activeRtcReg;
+}
+
+void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state) {
+	memcpy(memory->wram, state->wram, GB_SIZE_WORKING_RAM);
+	memcpy(memory->hram, state->hram, GB_SIZE_HRAM);
+	LOAD_16LE(memory->currentBank, 0, &state->memory.currentBank);
+	memory->wramCurrentBank = state->memory.wramCurrentBank;
+	memory->sramCurrentBank = state->memory.sramCurrentBank;
+
+	_switchBank(memory, memory->currentBank);
+	GBMemorySwitchWramBank(memory, memory->wramCurrentBank);
+	_switchSramBank(memory, memory->sramCurrentBank);
+
+	LOAD_32LE(memory->dmaNext, 0, &state->memory.dmaNext);
+	LOAD_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
+	LOAD_16LE(memory->dmaDest, 0, &state->memory.dmaDest);
+
+	LOAD_32LE(memory->hdmaNext, 0, &state->memory.hdmaNext);
+	LOAD_16LE(memory->hdmaSource, 0, &state->memory.hdmaSource);
+	LOAD_16LE(memory->hdmaDest, 0, &state->memory.hdmaDest);
+
+	LOAD_16LE(memory->hdmaRemaining, 0, &state->memory.hdmaRemaining);
+	memory->dmaRemaining = state->memory.dmaRemaining;
+	memcpy(memory->rtcRegs, state->memory.rtcRegs, sizeof(state->memory.rtcRegs));
+
+	memory->sramAccess = state->memory.sramAccess;
+	memory->rtcAccess = state->memory.rtcAccess;
+	memory->rtcLatched = state->memory.rtcLatched;
+	memory->ime = state->memory.ime;
+	memory->isHdma = state->memory.isHdma;
+	memory->activeRtcReg = state->memory.activeRtcReg;
 }
 
 void _pristineCow(struct GB* gb) {

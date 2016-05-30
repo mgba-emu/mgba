@@ -9,10 +9,10 @@
 #include "util/common.h"
 
 enum GBModel {
-	GB_MODEL_DMG,
-	GB_MODEL_SGB,
-	GB_MODEL_CGB,
-	GB_MODEL_AGB
+	GB_MODEL_DMG = 0x00,
+	GB_MODEL_SGB = 0x40,
+	GB_MODEL_CGB = 0x80,
+	GB_MODEL_AGB = 0xC0
 };
 
 #endif

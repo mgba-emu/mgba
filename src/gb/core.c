@@ -10,6 +10,7 @@
 #include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
+#include "gb/serialize.h"
 #include "lr35902/debugger/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
@@ -213,20 +214,17 @@ static void _GBCoreStep(struct mCore* core) {
 	} while (cpu->executionState != LR35902_CORE_FETCH);
 }
 
-static bool _GBCoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
+static size_t _GBCoreStateSize(struct mCore* core) {
 	UNUSED(core);
-	UNUSED(vf);
-	UNUSED(flags);
-	// TODO
-	return false;
+	return sizeof(struct GBSerializedState);
 }
 
-static bool _GBCoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
-	UNUSED(core);
-	UNUSED(vf);
-	UNUSED(flags);
-	// TODO
-	return false;
+static bool _GBCoreLoadState(struct mCore* core, const void* state) {
+	return GBDeserialize(core->board, state);
+}
+
+static bool _GBCoreSaveState(struct mCore* core, void* state) {
+	return GBSerialize(core->board, state);
 }
 
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
@@ -439,6 +437,7 @@ struct mCore* GBCoreCreate(void) {
 	core->runFrame = _GBCoreRunFrame;
 	core->runLoop = _GBCoreRunLoop;
 	core->step = _GBCoreStep;
+	core->stateSize = _GBCoreStateSize;
 	core->loadState = _GBCoreLoadState;
 	core->saveState = _GBCoreSaveState;
 	core->setKeys = _GBCoreSetKeys;

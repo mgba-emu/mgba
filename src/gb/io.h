@@ -114,4 +114,8 @@ void GBIOReset(struct GB* gb);
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value);
 uint8_t GBIORead(struct GB* gb, unsigned address);
 
+struct GBSerializedState;
+void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state);
+void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state);
+
 #endif

@@ -7,6 +7,7 @@
 
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/serialize.h"
 
 void GBTimerReset(struct GBTimer* timer) {
 	timer->nextDiv = GB_DMG_DIV_PERIOD; // TODO: GBC differences
@@ -96,4 +97,20 @@ void GBTimerUpdateTIMA(struct GBTimer* timer) {
 			timer->p->cpu->nextEvent = timer->nextEvent;
 		}
 	}
+}
+
+void GBTimerSerialize(const struct GBTimer* timer, struct GBSerializedState* state) {
+	STORE_32LE(timer->nextEvent, 0, &state->timer.nextEvent);
+	STORE_32LE(timer->eventDiff, 0, &state->timer.eventDiff);
+	STORE_32LE(timer->nextDiv, 0, &state->timer.nextDiv);
+	STORE_32LE(timer->nextTima, 0, &state->timer.nextTima);
+	STORE_32LE(timer->timaPeriod, 0, &state->timer.timaPeriod);
+}
+
+void GBTimerDeserialize(struct GBTimer* timer, const struct GBSerializedState* state) {
+	LOAD_32LE(timer->nextEvent, 0, &state->timer.nextEvent);
+	LOAD_32LE(timer->eventDiff, 0, &state->timer.eventDiff);
+	LOAD_32LE(timer->nextDiv, 0, &state->timer.nextDiv);
+	LOAD_32LE(timer->nextTima, 0, &state->timer.nextTima);
+	LOAD_32LE(timer->timaPeriod, 0, &state->timer.timaPeriod);
 }

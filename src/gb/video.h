@@ -138,4 +138,8 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 
+struct GBSerializedState;
+void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);
+void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state);
+
 #endif

@@ -6,6 +6,7 @@
 #include "io.h"
 
 #include "gb/gb.h"
+#include "gb/serialize.h"
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
 
@@ -550,4 +551,20 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	}
 	success:
 	return gb->memory.io[address] | _registerMask[address];
+}
+
+struct GBSerializedState;
+void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state) {
+	memcpy(state->io, gb->memory.io, GB_SIZE_IO);
+	state->ie = gb->memory.ie;
+}
+
+void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
+	memcpy(gb->memory.io, state->io, GB_SIZE_IO);
+	gb->memory.ie = state->ie;
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_LCDC, state->io[REG_LCDC]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCY, state->io[REG_SCY]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WY, state->io[REG_WY]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WX, state->io[REG_WX]);
 }

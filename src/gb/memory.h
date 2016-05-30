@@ -174,4 +174,8 @@ void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
+struct GBSerializedState;
+void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state);
+void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state);
+
 #endif

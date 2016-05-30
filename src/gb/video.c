@@ -9,6 +9,7 @@
 #include "core/thread.h"
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/serialize.h"
 
 #include "util/memory.h"
 
@@ -430,4 +431,56 @@ static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsi
 	UNUSED(stride);
 	UNUSED(pixels);
 	// Nothing to do
+}
+
+void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state) {
+	STORE_16LE(video->x, 0, &state->video.x);
+	STORE_16LE(video->ly, 0, &state->video.ly);
+	STORE_32LE(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32LE(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32LE(video->nextMode, 0, &state->video.nextMode);
+	STORE_32LE(video->dotCounter, 0, &state->video.dotCounter);
+	STORE_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	state->video.vramCurrentBank = video->vramCurrentBank;
+
+	state->video.bcpIncrement = video->bcpIncrement;
+	state->video.ocpIncrement = video->ocpIncrement;
+	STORE_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	STORE_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+
+	size_t i;
+	for (i = 0; i < 64; ++i) {
+		STORE_16LE(video->palette[i], i * 2, state->video.palette);
+	}
+
+	memcpy(state->vram, video->vram, GB_SIZE_VRAM);
+	memcpy(state->oam, &video->oam.raw, GB_SIZE_OAM);
+}
+
+void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state) {
+	LOAD_16LE(video->x, 0, &state->video.x);
+	LOAD_16LE(video->ly, 0, &state->video.ly);
+	LOAD_32LE(video->nextEvent, 0, &state->video.nextEvent);
+	LOAD_32LE(video->eventDiff, 0, &state->video.eventDiff);
+	LOAD_32LE(video->nextMode, 0, &state->video.nextMode);
+	LOAD_32LE(video->dotCounter, 0, &state->video.dotCounter);
+	LOAD_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	video->vramCurrentBank = state->video.vramCurrentBank;
+
+	video->bcpIncrement = state->video.bcpIncrement;
+	video->ocpIncrement = state->video.ocpIncrement;
+	LOAD_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+
+	size_t i;
+	for (i = 0; i < 64; ++i) {
+		LOAD_16LE(video->palette[i], i * 2, state->video.palette);
+		video->renderer->writePalette(video->renderer, i, video->palette[i]);
+	}
+
+	memcpy(video->vram, state->vram, GB_SIZE_VRAM);
+	memcpy(&video->oam.raw, state->oam, GB_SIZE_OAM);
+
+	_cleanOAM(video, video->ly);
+	GBVideoSwitchBank(video, video->vramCurrentBank);
 }

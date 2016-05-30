@@ -19,9 +19,13 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem*);
 static uint32_t _GBCLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 
 static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
+static void _load(struct CLIDebugger*, struct CLIDebugVector*);
+static void _save(struct CLIDebugger*, struct CLIDebugVector*);
 
 struct CLIDebuggerCommandSummary _GBCLIDebuggerCommands[] = {
 	{ "frame", _frame, 0, "Frame advance" },
+	{ "load", _load, CLIDVParse, "Load a savestate" },
+	{ "save", _save, CLIDVParse, "Save a savestate" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -85,4 +89,35 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
 }
 
+static void _load(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+
+	int state = dv->intValue;
+	if (state < 1 || state > 9) {
+		printf("State %u out of range", state);
+	}
+
+	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
+
+	mCoreLoadState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+}
+
+static void _save(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		printf("%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+
+	int state = dv->intValue;
+	if (state < 1 || state > 9) {
+		printf("State %u out of range", state);
+	}
+
+	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
+
+	mCoreSaveState(gbDebugger->core, dv->intValue, SAVESTATE_SCREENSHOT);
+}
 #endif
