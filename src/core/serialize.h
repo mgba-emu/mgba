@@ -39,4 +39,9 @@ struct VFile;
 bool mStateExtdataSerialize(struct mStateExtdata* extdata, struct VFile* vf);
 bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf);
 
+struct mCore;
+bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
+bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
+void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata);
+
 #endif

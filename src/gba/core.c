@@ -244,12 +244,18 @@ static void _GBACoreStep(struct mCore* core) {
 	ARMRun(core->cpu);
 }
 
-static bool _GBACoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
-	return GBALoadStateNamed(core->board, vf, flags);
+static size_t _GBACoreStateSize(struct mCore* core) {
+	UNUSED(core);
+	return sizeof(struct GBASerializedState);
 }
 
-static bool _GBACoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
-	return GBASaveStateNamed(core->board, vf, flags);
+static bool _GBACoreLoadState(struct mCore* core, const void* state) {
+	return GBADeserialize(core->board, state);
+}
+
+static bool _GBACoreSaveState(struct mCore* core, void* state) {
+	GBASerialize(core->board, state);
+	return true;
 }
 
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
@@ -452,6 +458,7 @@ struct mCore* GBACoreCreate(void) {
 	core->runFrame = _GBACoreRunFrame;
 	core->runLoop = _GBACoreRunLoop;
 	core->step = _GBACoreStep;
+	core->stateSize = _GBACoreStateSize;
 	core->loadState = _GBACoreLoadState;
 	core->saveState = _GBACoreSaveState;
 	core->setKeys = _GBACoreSetKeys;

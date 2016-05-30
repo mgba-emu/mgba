@@ -365,11 +365,6 @@ struct VDir;
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-
-struct mStateExtdata;
-struct GBASerializedState* GBAExtractState(struct VFile* vf, struct mStateExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 

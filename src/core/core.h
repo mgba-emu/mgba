@@ -31,6 +31,7 @@ enum mPlatform {
 struct mRTCSource;
 struct mCoreConfig;
 struct mCoreSync;
+struct mStateExtdata;
 struct mCore {
 	void* cpu;
 	void* board;
@@ -78,8 +79,9 @@ struct mCore {
 	void (*runLoop)(struct mCore*);
 	void (*step)(struct mCore*);
 
-	bool (*loadState)(struct mCore*, struct VFile*, int flags);
-	bool (*saveState)(struct mCore*, struct VFile*, int flags);
+	size_t (*stateSize)(struct mCore*);
+	bool (*loadState)(struct mCore*, const void* state);
+	bool (*saveState)(struct mCore*, void* state);
 
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);

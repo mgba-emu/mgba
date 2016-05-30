@@ -108,7 +108,7 @@ bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	if (!vf) {
 		return false;
 	}
-	bool success = core->saveState(core, vf, flags);
+	bool success = mCoreSaveStateNamed(core, vf, flags);
 	vf->close(vf);
 	if (success) {
 		mLOG(STATUS, INFO, "State %i saved", slot);
@@ -124,7 +124,7 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags) {
 	if (!vf) {
 		return false;
 	}
-	bool success = core->loadState(core, vf, flags);
+	bool success = mCoreLoadStateNamed(core, vf, flags);
 	vf->close(vf);
 	if (success) {
 		mLOG(STATUS, INFO, "State %i loaded", slot);

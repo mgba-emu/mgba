@@ -788,7 +788,7 @@ void GameController::loadState(int slot) {
 		if (!controller->m_backupLoadState) {
 			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
 		}
-		context->core->saveState(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
@@ -824,7 +824,7 @@ void GameController::loadBackupState() {
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_backupLoadState->seek(controller->m_backupLoadState, 0, SEEK_SET);
-		if (context->core->loadState(context->core, controller->m_backupLoadState, controller->m_loadStateFlags)) {
+		if (mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_loadStateFlags)) {
 			mLOG(STATUS, INFO, "Undid state load");
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);

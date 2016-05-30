@@ -19,6 +19,7 @@ extern "C" {
 #ifdef M_CORE_GBA
 #include "gba/serialize.h"
 #endif
+#include "util/memory.h"
 }
 
 using namespace QGBA;
@@ -180,7 +181,7 @@ void LoadSaveState::loadState(int slot) {
 
 	mStateExtdata extdata;
 	mStateExtdataInit(&extdata);
-	GBASerializedState* state = GBAExtractState(vf, &extdata);
+	void* state = mCoreExtractState(thread->core, vf, &extdata);
 	vf->seek(vf, 0, SEEK_SET);
 	if (!state) {
 		m_slots[slot - 1]->setText(tr("Corrupted"));
@@ -188,7 +189,7 @@ void LoadSaveState::loadState(int slot) {
 		return;
 	}
 
-	QDateTime creation(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL));
+	QDateTime creation/*(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL))*/; // TODO
 	QImage stateImage;
 
 	mStateExtdataItem item;
@@ -209,7 +210,7 @@ void LoadSaveState::loadState(int slot) {
 		m_slots[slot - 1]->setText(QString());
 	}
 	vf->close(vf);
-	GBADeallocateState(state);
+	mappedMemoryFree(state, thread->core->stateSize(thread->core));
 }
 
 void LoadSaveState::triggerState(int slot) {
