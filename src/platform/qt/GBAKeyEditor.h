@@ -47,6 +47,7 @@ private slots:
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
 	void selectGamepad(int index);
+	void updateJoysticks();
 #endif
 
 private:

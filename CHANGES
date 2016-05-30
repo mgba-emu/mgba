@@ -45,6 +45,7 @@ Misc:
  - ARM7: Flush prefetch cache when loading CPSR via MSR
  - Qt: Canonicalize file paths when loading games
  - OpenGL: Add texSize uniform
+ - Qt: Add refresh button to controller editing
 
 0.4.0: (2016-02-02)
 Features:
