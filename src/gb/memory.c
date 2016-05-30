@@ -721,7 +721,7 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		break;
 	case 0x4:
 	case 0x5:
-		if (memory->mbcType == GB_MBC5_RUMBLE) {
+		if (memory->mbcType == GB_MBC5_RUMBLE && memory->rumble) {
 			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
 			value &= ~8;
 		}
