@@ -13,6 +13,7 @@
 #include "gba/extra/cli.h"
 #include "gba/overrides.h"
 #include "gba/renderers/video-software.h"
+#include "gba/savedata.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
 #include "util/patch.h"
@@ -429,6 +430,41 @@ static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
 	return gbacore->cheatDevice;
 }
 
+static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
+	struct GBA* gba = core->board;
+	size_t size = GBASavedataSize(&gba->memory.savedata);
+	if (!size) {
+		*sram = NULL;
+		return 0;
+	}
+	*sram = malloc(size);
+	struct VFile* vf = VFileFromMemory(*sram, size);
+	if (!vf) {
+		free(*sram);
+		*sram = NULL;
+		return 0;
+	}
+	bool success = GBASavedataClone(&gba->memory.savedata, vf);
+	vf->close(vf);
+	if (!success) {
+		free(*sram);
+		*sram = NULL;
+		return 0;
+	}
+	return size;
+}
+
+static bool _GBACoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+	struct VFile* vf = VFileFromConstMemory(sram, size);
+	if (!vf) {
+		return false;
+	}
+	struct GBA* gba = core->board;
+	bool success = GBASavedataLoad(&gba->memory.savedata, vf);
+	vf->close(vf);
+	return success;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -490,5 +526,7 @@ struct mCore* GBACoreCreate(void) {
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
 	core->cheatDevice = _GBACoreCheatDevice;
+	core->savedataClone = _GBACoreSavedataClone;
+	core->savedataLoad = _GBACoreSavedataLoad;
 	return core;
 }

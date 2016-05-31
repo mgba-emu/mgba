@@ -125,6 +125,27 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 	return true;
 }
 
+size_t GBASavedataSize(struct GBASavedata* savedata) {
+	switch (savedata->type) {
+	case SAVEDATA_SRAM:
+		return SIZE_CART_SRAM;
+	case SAVEDATA_FLASH512:
+		return SIZE_CART_FLASH512;
+	case SAVEDATA_FLASH1M:
+		return SIZE_CART_FLASH1M;
+	case SAVEDATA_EEPROM:
+		return SIZE_CART_EEPROM;
+	case SAVEDATA_FORCE_NONE:
+		return 0;
+	case SAVEDATA_AUTODETECT:
+	default:
+		if (savedata->vf) {
+			return savedata->vf->size(savedata->vf);
+		}
+		return 0;
+	}
+}
+
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 	if (savedata->vf) {
 		off_t read = 0;

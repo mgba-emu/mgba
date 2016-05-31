@@ -310,20 +310,16 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mStateExtdataInit(&extdata);
 	size_t stateSize = core->stateSize(core);
 	if (flags & SAVESTATE_SAVEDATA) {
-	/*	// TODO: A better way to do this would be nice
-		void* sram = malloc(SIZE_CART_FLASH1M);
-		struct VFile* svf = VFileFromMemory(sram, SIZE_CART_FLASH1M);
-		if (GBASavedataClone(&gba->memory.savedata, svf)) {
+		void* sram = NULL;
+		size_t size = core->savedataClone(core, &sram);
+		if (size) {
 			struct mStateExtdataItem item = {
-				.size = svf->seek(svf, 0, SEEK_CUR),
+				.size = size,
 				.data = sram,
 				.clean = free
 			};
 			mStateExtdataPut(&extdata, EXTDATA_SAVEDATA, &item);
-		} else {
-			free(sram);
 		}
-		svf->close(svf);*/
 	}
 	struct VFile* cheatVf = 0;
 	struct mCheatDevice* device;
@@ -419,11 +415,9 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		}
 	}
 	if (flags & SAVESTATE_SAVEDATA && mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
-		/*struct VFile* svf = VFileFromMemory(item.data, item.size);
-		GBASavedataLoad(&gba->memory.savedata, svf);
-		if (svf) {
-			svf->close(svf);
-		}*/
+		if (item.data) {
+			core->savedataLoad(core, item.data, item.size);
+		}
 	}
 	struct mCheatDevice* device;
 	if (flags & SAVESTATE_CHEATS && (device = core->cheatDevice(core)) && mStateExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {

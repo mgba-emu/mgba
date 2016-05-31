@@ -121,6 +121,9 @@ struct mCore {
 	void (*detachDebugger)(struct mCore*);
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
+
+	size_t (*savedataClone)(struct mCore*, void** sram);
+	bool (*savedataLoad)(struct mCore*, const void* sram, size_t size);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

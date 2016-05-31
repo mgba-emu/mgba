@@ -409,6 +409,33 @@ static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
 	return gbcore->cheatDevice;
 }
 
+static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
+	struct GB* gb = core->board;
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		*sram = malloc(vf->size(vf));
+		vf->seek(vf, 0, SEEK_SET);
+		return vf->read(vf, *sram, vf->size(vf));
+	}
+	*sram = malloc(0x20000);
+	memcpy(*sram, gb->memory.sram, 0x20000);
+	return 0x20000;
+}
+
+static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+	struct GB* gb = core->board;
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		vf->seek(vf, 0, SEEK_SET);
+		return vf->write(vf, sram, size) > 0;
+	}
+	if (size > 0x20000) {
+		size = 0x20000;
+	}
+	memcpy(gb->memory.sram, sram, 0x20000);
+	return true;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -470,5 +497,7 @@ struct mCore* GBCoreCreate(void) {
 	core->attachDebugger = _GBCoreAttachDebugger;
 	core->detachDebugger = _GBCoreDetachDebugger;
 	core->cheatDevice = _GBCoreCheatDevice;
+	core->savedataClone = _GBCoreSavedataClone;
+	core->savedataLoad = _GBCoreSavedataLoad;
 	return core;
 }
