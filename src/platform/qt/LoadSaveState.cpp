@@ -43,10 +43,13 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	m_slots[7] = m_ui.state8;
 	m_slots[8] = m_ui.state9;
 
+	unsigned width, height;
+	controller->thread()->core->desiredVideoDimensions(controller->thread()->core, &width, &height);
 	int i;
 	for (i = 0; i < NUM_SLOTS; ++i) {
 		loadState(i + 1);
 		m_slots[i]->installEventFilter(this);
+		m_slots[i]->setMaximumSize(width + 2, height + 2);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
 
@@ -192,9 +195,11 @@ void LoadSaveState::loadState(int slot) {
 	QDateTime creation/*(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL))*/; // TODO
 	QImage stateImage;
 
+	unsigned width, height;
+	thread->core->desiredVideoDimensions(thread->core, &width, &height);
 	mStateExtdataItem item;
-	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
-		stateImage = QImage((uchar*) item.data, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_ARGB32).rgbSwapped();
+	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= width * height * 4) {
+		stateImage = QImage((uchar*) item.data, width, height, QImage::Format_ARGB32).rgbSwapped();
 	}
 
 	if (!stateImage.isNull()) {

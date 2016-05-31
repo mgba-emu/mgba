@@ -836,7 +836,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
 	m_gameActions.append(loadState);
 	m_nonMpActions.append(loadState);
-	m_gbaActions.append(loadState);
 	addControlledAction(fileMenu, loadState, "loadState");
 
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
@@ -844,7 +843,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
 	m_nonMpActions.append(saveState);
-	m_gbaActions.append(saveState);
 	addControlledAction(fileMenu, saveState, "saveState");
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
@@ -856,14 +854,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(quickLoad, SIGNAL(triggered()), m_controller, SLOT(loadState()));
 	m_gameActions.append(quickLoad);
 	m_nonMpActions.append(quickLoad);
-	m_gbaActions.append(quickLoad);
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
 	connect(quickSave, SIGNAL(triggered()), m_controller, SLOT(saveState()));
 	m_gameActions.append(quickSave);
 	m_nonMpActions.append(quickSave);
-	m_gbaActions.append(quickSave);
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
 
 	quickLoadMenu->addSeparator();
@@ -874,7 +870,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(undoLoadState, SIGNAL(triggered()), m_controller, SLOT(loadBackupState()));
 	m_gameActions.append(undoLoadState);
 	m_nonMpActions.append(undoLoadState);
-	m_gbaActions.append(undoLoadState);
 	addControlledAction(quickLoadMenu, undoLoadState, "undoLoadState");
 
 	QAction* undoSaveState = new QAction(tr("Undo save state"), quickSaveMenu);
@@ -882,7 +877,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(undoSaveState, SIGNAL(triggered()), m_controller, SLOT(saveBackupState()));
 	m_gameActions.append(undoSaveState);
 	m_nonMpActions.append(undoSaveState);
-	m_gbaActions.append(undoSaveState);
 	addControlledAction(quickSaveMenu, undoSaveState, "undoSaveState");
 
 	quickLoadMenu->addSeparator();
@@ -895,7 +889,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
 		m_gameActions.append(quickLoad);
 		m_nonMpActions.append(quickLoad);
-		m_gbaActions.append(quickLoad);
 		addControlledAction(quickLoadMenu, quickLoad, QString("quickLoad.%1").arg(i));
 
 		quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
@@ -903,7 +896,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
 		m_gameActions.append(quickSave);
 		m_nonMpActions.append(quickSave);
-		m_gbaActions.append(quickSave);
 		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
 
