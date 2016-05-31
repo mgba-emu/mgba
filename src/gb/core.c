@@ -224,7 +224,8 @@ static bool _GBCoreLoadState(struct mCore* core, const void* state) {
 }
 
 static bool _GBCoreSaveState(struct mCore* core, void* state) {
-	return GBSerialize(core->board, state);
+	GBSerialize(core->board, state);
+	return true;
 }
 
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {

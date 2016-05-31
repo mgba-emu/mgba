@@ -271,4 +271,7 @@ struct GBSerializedState {
 };
 #pragma pack(pop)
 
+bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state);
+void GBSerialize(struct GB* gb, struct GBSerializedState* state);
+
 #endif
