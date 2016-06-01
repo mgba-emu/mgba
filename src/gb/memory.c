@@ -959,7 +959,6 @@ void _GBHuC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		}
 		break;
 	case 0x1:
-		mLOG(GB_MBC, STUB, "Bank switch %02X", value);
 		_switchBank(memory, bank);
 		break;
 	case 0x2:
