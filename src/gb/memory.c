@@ -35,6 +35,7 @@ static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBHuC3(struct GBMemory*, uint16_t address, uint8_t value);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
 	if (UNLIKELY(address > cpu->memory.activeRegionEnd)) {
@@ -188,6 +189,10 @@ void GBMemoryReset(struct GB* gb) {
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
 		break;
+	case 0xFE:
+		gb->memory.mbc = _GBHuC3;
+		gb->memory.mbcType = GB_HuC3;
+		break;
 	}
 
 	if (!gb->memory.wram) {
@@ -229,6 +234,8 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_MBC7) {
 			return _GBMBC7Read(memory, address);
+		} else if (memory->mbcType == GB_HuC3) {
+			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
 		}
 		return 0xFF;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -930,6 +937,38 @@ void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 				mbc7->state = GBMBC7_STATE_NULL;
 			}
 		}
+	}
+}
+
+void _GBHuC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	int bank = value & 0x3F;
+	if (address & 0x1FFF) {
+		mLOG(GB_MBC, STUB, "HuC-3 unknown value %04X:%02X", address, value);
+	}
+
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			memory->sramAccess = false;
+			break;
+		}
+		break;
+	case 0x1:
+		mLOG(GB_MBC, STUB, "Bank switch %02X", value);
+		_switchBank(memory, bank);
+		break;
+	case 0x2:
+		_switchSramBank(memory, bank);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
+		break;
 	}
 }
 
