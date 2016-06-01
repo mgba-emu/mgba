@@ -17,6 +17,10 @@
 #include "gba/core.h"
 #include "gba/gba.h"
 #endif
+#ifdef M_CORE_DS
+#include "ds/core.h"
+#include "ds/ds.h"
+#endif
 
 static struct mCoreFilter {
 	bool (*filter)(struct VFile*);
@@ -28,6 +32,9 @@ static struct mCoreFilter {
 #endif
 #ifdef M_CORE_GB
 	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
+#endif
+#ifdef M_CORE_DS
+	{ DSIsROM, DSCoreCreate, PLATFORM_DS },
 #endif
 	{ 0, 0, PLATFORM_NONE }
 };

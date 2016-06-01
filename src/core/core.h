@@ -28,6 +28,9 @@ enum mPlatform {
 #ifdef M_CORE_GB
 	PLATFORM_GB,
 #endif
+#ifdef M_CORE_DS
+	PLATFORM_DS,
+#endif
 };
 
 struct mRTCSource;
