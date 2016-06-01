@@ -443,8 +443,10 @@ void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* sta
 	STORE_32LE(video->frameCounter, 0, &state->video.frameCounter);
 	state->video.vramCurrentBank = video->vramCurrentBank;
 
-	state->video.bcpIncrement = video->bcpIncrement;
-	state->video.ocpIncrement = video->ocpIncrement;
+	GBSerializedVideoFlags flags = 0;
+	flags = GBSerializedVideoFlagsSetBcpIncrement(flags, video->bcpIncrement);
+	flags = GBSerializedVideoFlagsSetOcpIncrement(flags, video->ocpIncrement);
+	state->video.flags = flags;
 	STORE_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
 	STORE_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
 
@@ -467,8 +469,9 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	LOAD_32LE(video->frameCounter, 0, &state->video.frameCounter);
 	video->vramCurrentBank = state->video.vramCurrentBank;
 
-	video->bcpIncrement = state->video.bcpIncrement;
-	video->ocpIncrement = state->video.ocpIncrement;
+	GBSerializedVideoFlags flags = state->video.flags;
+	video->bcpIncrement = GBSerializedVideoFlagsGetBcpIncrement(flags);
+	video->ocpIncrement = GBSerializedVideoFlagsGetOcpIncrement(flags);
 	LOAD_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
 	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
 

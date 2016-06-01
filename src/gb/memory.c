@@ -952,12 +952,14 @@ void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* 
 	state->memory.dmaRemaining = memory->dmaRemaining;
 	memcpy(state->memory.rtcRegs, memory->rtcRegs, sizeof(state->memory.rtcRegs));
 
-	state->memory.sramAccess = memory->sramAccess;
-	state->memory.rtcAccess = memory->rtcAccess;
-	state->memory.rtcLatched = memory->rtcLatched;
-	state->memory.ime = memory->ime;
-	state->memory.isHdma = memory->isHdma;
-	state->memory.activeRtcReg = memory->activeRtcReg;
+	GBSerializedMemoryFlags flags = 0;
+	flags = GBSerializedMemoryFlagsSetSramAccess(flags, memory->sramAccess);
+	flags = GBSerializedMemoryFlagsSetRtcAccess(flags, memory->rtcAccess);
+	flags = GBSerializedMemoryFlagsSetRtcLatched(flags, memory->rtcLatched);
+	flags = GBSerializedMemoryFlagsSetIme(flags, memory->ime);
+	flags = GBSerializedMemoryFlagsSetIsHdma(flags, memory->isHdma);
+	flags = GBSerializedMemoryFlagsSetActiveRtcReg(flags, memory->activeRtcReg);
+	STORE_16LE(flags, 0, &state->memory.flags);
 }
 
 void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state) {
@@ -983,12 +985,14 @@ void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState
 	memory->dmaRemaining = state->memory.dmaRemaining;
 	memcpy(memory->rtcRegs, state->memory.rtcRegs, sizeof(state->memory.rtcRegs));
 
-	memory->sramAccess = state->memory.sramAccess;
-	memory->rtcAccess = state->memory.rtcAccess;
-	memory->rtcLatched = state->memory.rtcLatched;
-	memory->ime = state->memory.ime;
-	memory->isHdma = state->memory.isHdma;
-	memory->activeRtcReg = state->memory.activeRtcReg;
+	GBSerializedMemoryFlags flags;
+	LOAD_16LE(flags, 0, &state->memory.flags);
+	memory->sramAccess = GBSerializedMemoryFlagsGetSramAccess(flags);
+	memory->rtcAccess = GBSerializedMemoryFlagsGetRtcAccess(flags);
+	memory->rtcLatched = GBSerializedMemoryFlagsGetRtcLatched(flags);
+	memory->ime = GBSerializedMemoryFlagsGetIme(flags);
+	memory->isHdma = GBSerializedMemoryFlagsGetIsHdma(flags);
+	memory->activeRtcReg = GBSerializedMemoryFlagsGetActiveRtcReg(flags);
 }
 
 void _pristineCow(struct GB* gb) {

@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "serialize.h"
 
+#include "gb/io.h"
+#include "gb/timer.h"
+
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate");
 
 #ifdef _MSC_VER
@@ -47,10 +50,13 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	state->cpu.executionState = gb->cpu->executionState;
 	STORE_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
 
-	state->cpu.condition = gb->cpu->condition;
-	state->cpu.irqPending = gb->cpu->irqPending;
+	STORE_32LE(gb->eiPending, 0, &state->cpu.eiPending);
 
-	state->cpu.doubleSpeed = gb->doubleSpeed;
+	GBSerializedCpuFlags flags = 0;
+	flags = GBSerializedCpuFlagsSetCondition(flags, gb->cpu->condition);
+	flags = GBSerializedCpuFlagsSetIrqPending(flags, gb->cpu->irqPending);
+	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
+	STORE_32LE(flags, 0, &state->cpu.flags);
 
 	GBMemorySerialize(&gb->memory, state);
 	GBIOSerialize(gb, state);
@@ -135,10 +141,13 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->cpu->executionState = state->cpu.executionState;
 	LOAD_16LE(gb->cpu->irqVector, 0, &state->cpu.irqVector);
 
-	gb->cpu->condition = state->cpu.condition;
-	gb->cpu->irqPending = state->cpu.irqPending;
+	LOAD_32LE(gb->eiPending, 0, &state->cpu.eiPending);
 
-	gb->doubleSpeed = state->cpu.doubleSpeed;
+	GBSerializedCpuFlags flags;
+	LOAD_32LE(flags, 0, &state->cpu.flags);
+	gb->cpu->condition = GBSerializedCpuFlagsGetCondition(flags);
+	gb->cpu->irqPending = GBSerializedCpuFlagsGetIrqPending(flags);
+	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);

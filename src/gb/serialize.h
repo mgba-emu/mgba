@@ -42,7 +42,11 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x0003A - 0x0003B: IRQ vector
  * | 0x0003C - 0x0003F: EI pending cycles
  * | 0x00040 - 0x00043: Reserved (DI pending cycles)
- * | 0x00044 - 0x00048: Flags
+ * | 0x00044 - 0x00047: Flags
+ *   | bit 0: Is condition met?
+ *   | bit 1: Is condition IRQ pending?
+ *   | bit 2: Double speed
+ *   | bits 3 - 31: Reserved
  * 0x00048 - 0x0005B: Audio channel 1/framer state
  * | 0x00048 - 0x0004B: Envelepe timing
  *   | bits 0 - 6: Remaining length
@@ -96,6 +100,60 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x000A8 - 0x000AB: Next event
  * | 0x000AC - 0x000AF: Event diff
  * | 0x000B0 - 0x000B3: Next sample
+ * 0x000B4 - 0x000153: Video state
+ * | 0x000B4 - 0x000B5: Current x
+ * | 0x000B6 - 0x000B7: Current y (ly)
+ * | 0x000B8 - 0x000BB: Next event
+ * | 0x000BC - 0x000BF: Event diff
+ * | 0x000C0 - 0x000C3: Next mode
+ * | 0x000C4 - 0x000C7: Dot cycle counter
+ * | 0x000C8 - 0x000CB: Frame counter
+ * | 0x000CC: Current VRAM bank
+ * | 0x000CD: Palette flags
+ *   | bit 0: BCP increment
+ *   | bit 1: OCP increment
+ *   | bits 2 - 7: Reserved
+ * | 0x000CE - 0x000CF: Reserved
+ * | 0x000D0 - 0x000D1: BCP index
+ * | 0x000D1 - 0x000D3: OCP index
+ * | 0x000D4 - 0x00153: Palette entries
+ * 0x00154 - 0x000167: Timer state
+ * | 0x00154 - 0x00157: Next event
+ * | 0x00158 - 0x0015B: Event diff
+ * | 0x0015C - 0x0015F: Next DIV
+ * | 0x00160 - 0x00163: Next TIMA
+ * | 0x00164 - 0x00167: TIMA period
+ * 0x000168 - 0x000197: Memory state
+ * | 0x00168 - 0x00169: Current ROM bank
+ * | 0x0016A: Current WRAM bank
+ * | 0x0016B: Current SRAM bank
+ * | 0x0016C - 0x0016F: Next DMA
+ * | 0x00170 - 0x00171: Next DMA source
+ * | 0x00172 - 0x00173: Next DMA destination
+ * | 0x00174 - 0x00177: Next HDMA
+ * | 0x00178 - 0x00179: Next HDMA source
+ * | 0x0017A - 0x0017B: Next HDMA destination
+ * | 0x0017C - 0x0017D: HDMA remaining
+ * | 0x0017E: DMA remaining
+ * | 0x0017F - 0x00183: RTC registers
+ * | 0x00184 - 0x00193: MBC state (TODO)
+ * | 0x00194 - 0x00195: Flags
+ *   | bit 0: SRAM accessable
+ *   | bit 1: RTC accessible
+ *   | bit 2: RTC latched
+ *   | bit 3: IME
+ *   | bit 4: Is HDMA active?
+ *   | bits 5 - 7:  Active RTC register
+ * | 0x00196 - 0x00197: Reserved (leave zero)
+ * 0x00198 - 0x0019F: Savestate creation time (usec since 1970)
+ * 0x001A0 - 0x0025F: Reserved (leave zero)
+ * 0x00260 - 0x002FF: OAM
+ * 0x00300 - 0x0037F: I/O memory
+ * 0x00380 - 0x003FE: HRAM
+ * 0x003FF: Interrupts enabled
+ * 0x00400 - 0x043FF: VRAM
+ * 0x04400 - 0x0C3FF: WRAM
+ * Total size: 0xC400 (50,176) bytes
 */
 
 DECL_BITFIELD(GBSerializedAudioFlags, uint32_t);
@@ -142,6 +200,28 @@ struct GBSerializedPSGState {
 	} ch4;
 };
 
+DECL_BITFIELD(GBSerializedCpuFlags, uint32_t);
+DECL_BIT(GBSerializedCpuFlags, Condition, 0);
+DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
+DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
+
+
+DECL_BITFIELD(GBSerializedVideoFlags, uint8_t);
+DECL_BIT(GBSerializedVideoFlags, BcpIncrement, 0);
+DECL_BIT(GBSerializedVideoFlags, OcpIncrement, 1);
+
+DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
+DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
+DECL_BIT(GBSerializedMBC7Flags, Writable, 2);
+
+DECL_BITFIELD(GBSerializedMemoryFlags, uint16_t);
+DECL_BIT(GBSerializedMemoryFlags, SramAccess, 0);
+DECL_BIT(GBSerializedMemoryFlags, RtcAccess, 1);
+DECL_BIT(GBSerializedMemoryFlags, RtcLatched, 2);
+DECL_BIT(GBSerializedMemoryFlags, Ime, 3);
+DECL_BIT(GBSerializedMemoryFlags, IsHdma, 4);
+DECL_BITS(GBSerializedMemoryFlags, ActiveRtcReg, 5, 3);
+
 #pragma pack(push, 1)
 struct GBSerializedState {
 	uint32_t versionMagic;
@@ -175,9 +255,7 @@ struct GBSerializedState {
 
 		int32_t eiPending;
 		int32_t reservedDiPending;
-		bool condition : 1;
-		bool irqPending : 1;
-		bool doubleSpeed : 1;
+		GBSerializedCpuFlags flags;
 	} cpu;
 
 	struct {
@@ -198,9 +276,9 @@ struct GBSerializedState {
 		int32_t frameCounter;
 
 		uint8_t vramCurrentBank;
+		GBSerializedVideoFlags flags;
+		uint16_t reserved;
 
-		bool bcpIncrement : 1;
-		bool ocpIncrement : 1;
 		uint16_t bcpIndex;
 		uint16_t ocpIndex;
 
@@ -243,29 +321,27 @@ struct GBSerializedState {
 				int8_t address;
 				uint8_t srBits;
 				uint32_t sr;
-				uint8_t command : 2;
-				bool writable : 1;
+				GBSerializedMBC7Flags flags;
 			} mbc7;
 			struct {
 				uint8_t reserved[16];
 			} padding;
 		};
 
-		bool sramAccess : 1;
-		bool rtcAccess : 1;
-		bool rtcLatched : 1;
-		bool ime : 1;
-		bool isHdma : 1;
-		uint8_t activeRtcReg : 5;
+		GBSerializedMemoryFlags flags;
+		uint16_t reserved;
 	} memory;
+
+	uint64_t creationUsec;
+
+	uint32_t reserved[48];
+
+	uint8_t oam[GB_SIZE_OAM];
 
 	uint8_t io[GB_SIZE_IO];
 	uint8_t hram[GB_SIZE_HRAM];
 	uint8_t ie;
 
-	uint64_t creationUsec;
-
-	uint8_t oam[GB_SIZE_OAM];
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
 };
