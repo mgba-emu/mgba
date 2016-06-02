@@ -44,6 +44,7 @@ Bugfixes:
  - GB Memory: Fix HDMA5 value after DMA completes
  - GB Video: Hblank IRQs should mask LYC=LY IRQs
  - GB Audio: Reset envelope timer when reseting sound channel
+ - SDL: Prevent crash on cores with no audio
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
@@ -214,6 +215,7 @@ Misc:
  - Wii: Add pixelated resample filter
  - Windows: Add native VDir support
  - Util: Add PRIz macro for libc versions that don't support %z
+ - GBA: Better debug logging if event processing breaks
 
 0.4.1: (2016-07-11)
 Bugfixes:
