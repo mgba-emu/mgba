@@ -177,7 +177,7 @@ struct ARMCP15 {
 		ARMCoprocessorAccess cpAccess;
 	} r1;
 
-	uint32_t (*write)(struct ARMCore*, int crn, int crm, int opcode2, uint32_t value);
+	uint32_t (*write)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2, uint32_t value);
 };
 
 struct ARMCore {

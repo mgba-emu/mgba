@@ -618,11 +618,33 @@ DEFINE_INSTRUCTION_ARM(BX,
 
 // Begin coprocessor definitions
 
+#define DEFINE_COPROCESSOR_INSTRUCTION(NAME, BODY) \
+	DEFINE_INSTRUCTION_ARM(NAME, \
+		int op1 = (opcode >> 21) & 7; \
+		int op2 = (opcode >> 5) & 7; \
+		int rd = (opcode >> 12) & 0xF; \
+		int cp = (opcode >> 8) & 0xF; \
+		int crn = (opcode >> 16) & 0xF; \
+		int crm = opcode & 0xF; \
+		UNUSED(op1); \
+		UNUSED(op2); \
+		UNUSED(rd); \
+		UNUSED(crn); \
+		UNUSED(crm); \
+		BODY;)
+
+DEFINE_COPROCESSOR_INSTRUCTION(MRC, ARM_STUB)
+
+DEFINE_COPROCESSOR_INSTRUCTION(MCR,
+	if (cp == 15) {
+		cpu->cp15.write(cpu, crn, crm, op1, op2, cpu->gprs[rd]);
+	} else {
+		ARM_STUB;
+	})
+
 DEFINE_INSTRUCTION_ARM(CDP, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(LDC, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(STC, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(MCR, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(MRC, ARM_STUB)
 
 // Begin miscellaneous definitions
 
