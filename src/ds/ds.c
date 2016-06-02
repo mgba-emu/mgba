@@ -37,10 +37,13 @@ enum {
 static void DSInit(void* cpu, struct mCPUComponent* component);
 
 static void DS7Reset(struct ARMCore* cpu);
+static void DS7TestIRQ(struct ARMCore* cpu);
 static void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh);
 
 static void DS9Reset(struct ARMCore* cpu);
+static void DS9TestIRQ(struct ARMCore* cpu);
 static void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh);
+
 
 static void DSProcessEvents(struct ARMCore* cpu);
 static void DSHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -104,7 +107,7 @@ void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->swi16 = NULL;
 	irqh->swi32 = NULL;
 	irqh->hitIllegal = DSIllegal;
-	irqh->readCPSR = NULL;
+	irqh->readCPSR = DS7TestIRQ;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -116,7 +119,7 @@ void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->swi16 = NULL;
 	irqh->swi32 = NULL;
 	irqh->hitIllegal = DSIllegal;
-	irqh->readCPSR = NULL;
+	irqh->readCPSR = DS9TestIRQ;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -335,5 +338,21 @@ void DSBreakpoint(struct ARMCore* cpu, int immediate) {
 		break;
 	default:
 		break;
+	}
+}
+
+void DS7TestIRQ(struct ARMCore* cpu) {
+	struct DS* ds = (struct DS*) cpu->master;
+	if (0) {
+		ds->springIRQ7 = 1;
+		cpu->nextEvent = cpu->cycles;
+	}
+}
+
+void DS9TestIRQ(struct ARMCore* cpu) {
+	struct DS* ds = (struct DS*) cpu->master;
+	if (0) {
+		ds->springIRQ9 = 1;
+		cpu->nextEvent = cpu->cycles;
 	}
 }
