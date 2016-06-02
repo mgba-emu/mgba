@@ -11,6 +11,7 @@
 #include "arm/arm.h"
 #include "core/log.h"
 
+#include "ds/memory.h"
 #include "ds/video.h"
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
@@ -54,6 +55,7 @@ struct DS {
 
 	struct ARMCore* arm7;
 	struct ARMCore* arm9;
+	struct DSMemory memory;
 	struct DSVideo video;
 
 	struct mCoreSync* sync;
@@ -63,13 +65,15 @@ struct DS {
 	int springIRQ7;
 	int springIRQ9;
 
-	uint32_t biosChecksum;
+	uint32_t bios7Checksum;
+	uint32_t bios9Checksum;
 	int* keySource;
 	struct mRTCSource* rtcSource;
 	struct mRumble* rumble;
 
-	uint32_t romCrc32;
 	struct VFile* romVf;
+	struct VFile* bios7Vf;
+	struct VFile* bios9Vf;
 
 	struct mKeyCallback* keyCallback;
 };
@@ -120,6 +124,8 @@ void DSDetachDebugger(struct DS* ds);
 bool DSLoadROM(struct DS* ds, struct VFile* vf);
 void DSUnloadROM(struct DS* ds);
 void DSApplyPatch(struct DS* ds, struct Patch* patch);
+
+bool DSLoadBIOS(struct DS* ds, struct VFile* vf);
 
 bool DSIsROM(struct VFile* vf);
 void DSGetGameCode(struct DS* ds, char* out);

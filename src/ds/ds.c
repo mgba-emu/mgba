@@ -8,11 +8,11 @@
 #include "arm/decoder.h"
 #include "arm/debugger/debugger.h"
 #include "arm/isa-inlines.h"
+#include "ds/bios.h"
 
 #include "util/crc32.h"
 #include "util/memory.h"
 #include "util/math.h"
-#include "util/patch.h"
 #include "util/vfs.h"
 
 mLOG_DEFINE_CATEGORY(DS, "DS");
@@ -67,8 +67,11 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 	}
 	ds->arm9 = cpu;
 
+	ds->arm9->cp15.r1.c0 = ARMControlRegFillVE(0);
+
 	DS7InterruptHandlerInit(&ds->arm7->irqh);
 	DS9InterruptHandlerInit(&ds->arm9->irqh);
+	DSMemoryInit(ds);
 
 	ds->video.p = ds;
 
@@ -92,6 +95,7 @@ void DSUnloadROM(struct DS* ds) {
 
 void DSDestroy(struct DS* ds) {
 	DSUnloadROM(ds);
+	DSMemoryDeinit(ds);
 }
 
 void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -134,6 +138,9 @@ void DS9Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS9_SP_BASE_SVC;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_SP] = DS9_SP_BASE;
+
+	struct DS* ds = (struct DS*) cpu->master;
+	DSMemoryReset(ds);
 }
 
 static void DSProcessEvents(struct ARMCore* cpu) {
@@ -196,6 +203,35 @@ bool DSIsROM(struct VFile* vf) {
 		return false;
 	}
 	return memcmp(signature, DS_ROM_MAGIC, sizeof(signature)) == 0;
+}
+
+bool DSLoadBIOS(struct DS* ds, struct VFile* vf) {
+	size_t size = vf->size(vf);
+	void* data = NULL;
+	uint32_t crc;
+	if (size == DS7_SIZE_BIOS) {
+		data = vf->map(vf, size, MAP_READ);
+	} else if (size == 0x1000) {
+		data = vf->map(vf, size, MAP_READ);
+	}
+	if (!data) {
+		return false;
+	}
+	crc = doCrc32(data, size);
+	if (crc == DS7_BIOS_CHECKSUM) {
+		ds->bios7Vf = vf;
+		ds->memory.bios7 = data;
+		mLOG(DS, INFO, "Official DS ARM7 BIOS detected");
+	} else if (crc == DS9_BIOS_CHECKSUM) {
+		ds->bios9Vf = vf;
+		ds->memory.bios9 = data;
+		mLOG(DS, INFO, "Official DS ARM9 BIOS detected");
+	} else {
+		mLOG(DS, WARN, "BIOS checksum incorrect");
+		vf->unmap(vf, data, size);
+		return false;
+	}
+	return true;
 }
 
 void DSGetGameCode(struct DS* ds, char* out) {

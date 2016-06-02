@@ -91,6 +91,14 @@ static void _DSCoreSetSync(struct mCore* core, struct mCoreSync* sync) {
 }
 
 static void _DSCoreLoadConfig(struct mCore* core, const struct mCoreConfig* config) {
+	struct DS* ds = core->board;
+	struct VFile* bios = NULL;
+	if (core->opts.useBios && core->opts.bios) {
+		bios = VFileOpen(core->opts.bios, O_RDONLY);
+	}
+	if (bios) {
+		DSLoadBIOS(ds, bios);
+	}
 }
 
 static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -124,7 +132,8 @@ static bool _DSCoreLoadROM(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _DSCoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
-	return false;
+	UNUSED(type);
+	return DSLoadBIOS(core->board, vf);
 }
 
 static bool _DSCoreLoadSave(struct mCore* core, struct VFile* vf) {
