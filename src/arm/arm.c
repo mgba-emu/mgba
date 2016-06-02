@@ -69,6 +69,7 @@ static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode mode) {
 }
 
 void ARMInit(struct ARMCore* cpu) {
+	memset(&cpu->cp15, 0, sizeof(cpu->cp15));
 	cpu->master->init(cpu, cpu->master);
 	size_t i;
 	for (i = 0; i < cpu->numComponents; ++i) {
@@ -115,6 +116,10 @@ void ARMReset(struct ARMCore* cpu) {
 	for (i = 0; i < 16; ++i) {
 		cpu->gprs[i] = 0;
 	}
+	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
+		cpu->gprs[ARM_PC] = 0xFFFF0000;
+	}
+
 	for (i = 0; i < 6; ++i) {
 		cpu->bankedRegisters[i][0] = 0;
 		cpu->bankedRegisters[i][1] = 0;
@@ -161,6 +166,9 @@ void ARMRaiseIRQ(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_IRQ;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth + WORD_SIZE_ARM;
 	cpu->gprs[ARM_PC] = BASE_IRQ;
+	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
+		cpu->gprs[ARM_PC] |= 0xFFFF0000;
+	}
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
@@ -181,6 +189,9 @@ void ARMRaiseSWI(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_SUPERVISOR;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_SWI;
+	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
+		cpu->gprs[ARM_PC] |= 0xFFFF0000;
+	}
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);
@@ -201,6 +212,9 @@ void ARMRaiseUndefined(struct ARMCore* cpu) {
 	cpu->cpsr.priv = MODE_UNDEFINED;
 	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - instructionWidth;
 	cpu->gprs[ARM_PC] = BASE_UNDEF;
+	if (ARMControlRegIsVE(cpu->cp15.r1.c0)) {
+		cpu->gprs[ARM_PC] |= 0xFFFF0000;
+	}
 	int currentCycles = 0;
 	ARM_WRITE_PC;
 	_ARMSetMode(cpu, MODE_ARM);

@@ -131,6 +131,55 @@ struct ARMInterruptHandler {
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };
 
+DECL_BITFIELD(ARMCPUID, uint32_t);
+DECL_BITFIELD(ARMCacheType, uint32_t);
+DECL_BITFIELD(ARMTCMType, uint32_t);
+DECL_BITFIELD(ARMTLBType, uint32_t);
+DECL_BITFIELD(ARMMPUType, uint32_t);
+
+DECL_BITFIELD(ARMControlReg, uint32_t);
+DECL_BIT(ARMControlReg, M, 0);
+DECL_BIT(ARMControlReg, A, 1);
+DECL_BIT(ARMControlReg, C, 2);
+DECL_BIT(ARMControlReg, W, 3);
+DECL_BIT(ARMControlReg, P, 4);
+DECL_BIT(ARMControlReg, D, 5);
+DECL_BIT(ARMControlReg, L, 6);
+DECL_BIT(ARMControlReg, B, 7);
+DECL_BIT(ARMControlReg, S, 8);
+DECL_BIT(ARMControlReg, R, 9);
+DECL_BIT(ARMControlReg, F, 10);
+DECL_BIT(ARMControlReg, Z, 11);
+DECL_BIT(ARMControlReg, I, 12);
+DECL_BIT(ARMControlReg, V, 13);
+DECL_BIT(ARMControlReg, RR, 14);
+DECL_BIT(ARMControlReg, L4, 15);
+DECL_BIT(ARMControlReg, FI, 21);
+DECL_BIT(ARMControlReg, U, 22);
+DECL_BIT(ARMControlReg, XP, 23);
+DECL_BIT(ARMControlReg, VE, 24);
+DECL_BIT(ARMControlReg, EE, 25);
+DECL_BIT(ARMControlReg, L2, 26);
+
+DECL_BITFIELD(ARMCoprocessorAccess, uint32_t);
+
+struct ARMCP15 {
+	struct {
+		ARMCPUID cpuid;
+		ARMCacheType cachetype;
+		ARMTCMType tcmtype;
+		ARMTLBType tlbtype;
+		ARMMPUType mputype;
+	} r0;
+	struct {
+		ARMControlReg c0;
+		uint32_t c1;
+		ARMCoprocessorAccess cpAccess;
+	} r1;
+
+	uint32_t (*write)(struct ARMCore*, int crn, int crm, int opcode2, uint32_t value);
+};
+
 struct ARMCore {
 	int32_t gprs[16];
 	union PSR cpsr;
@@ -152,6 +201,7 @@ struct ARMCore {
 
 	struct ARMMemory memory;
 	struct ARMInterruptHandler irqh;
+	struct ARMCP15 cp15;
 
 	struct mCPUComponent* master;
 
