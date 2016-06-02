@@ -5,8 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "memory.h"
 
+#include "arm/macros.h"
+
 #include "ds/ds.h"
 #include "util/math.h"
+#include "util/memory.h"
 
 mLOG_DEFINE_CATEGORY(DS_MEM, "DS Memory");
 
@@ -161,14 +164,29 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	memory->activeRegion7 = newRegion;
 	switch (newRegion) {
-	case DS7_REGION_BIOS:
-		cpu->memory.activeRegion = memory->bios7;
-		cpu->memory.activeMask = DS7_SIZE_BIOS - 1;
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			cpu->memory.activeRegion = memory->ram;
+			cpu->memory.activeMask = DS_SIZE_RAM - 1;
+			return;
+		}
 		break;
-	default:
-		mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
+	case DS7_REGION_BIOS:
+		if (memory->bios7) {
+			cpu->memory.activeRegion = memory->bios9;
+			cpu->memory.activeMask = DS9_SIZE_BIOS - 1;
+		} else {
+			cpu->memory.activeRegion = _deadbeef;
+			cpu->memory.activeMask = 0;
+		}
 		return;
+	default:
+		break;
 	}
+	cpu->memory.activeRegion = _deadbeef;
+	cpu->memory.activeMask = 0;
+	mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
+	return;
 }
 
 uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
@@ -178,6 +196,11 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		}
+		break;
 	default:
 		break;
 	}
@@ -321,7 +344,7 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 
 uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
-	struct DS* ds = (struct ds*) cpu->master;
+	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value;
 	int wait = 0;
@@ -368,8 +391,15 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	int newRegion = address >> DS_BASE_OFFSET;
 
-	memory->activeRegion7 = newRegion;
+	memory->activeRegion9 = newRegion;
 	switch (newRegion) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			cpu->memory.activeRegion = memory->ram;
+			cpu->memory.activeMask = DS_SIZE_RAM - 1;
+			return;
+		}
+		break;
 	case DS9_REGION_BIOS:
 		// TODO: Mask properly
 		if (memory->bios9) {
@@ -379,11 +409,14 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			cpu->memory.activeRegion = _deadbeef;
 			cpu->memory.activeMask = 0;
 		}
-		break;
-	default:
-		mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
 		return;
+	default:
+		break;
 	}
+	cpu->memory.activeRegion = _deadbeef;
+	cpu->memory.activeMask = 0;
+	mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
+	return;
 }
 
 uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
@@ -393,6 +426,11 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		}
+		break;
 	default:
 		break;
 	}
@@ -536,7 +574,7 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 
 
 uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum LSMDirection direction, int* cycleCounter) {
-	struct DS* ds = (struct ds*) cpu->master;
+	struct DS* ds = (struct DS*) cpu->master;
 	struct DSMemory* memory = &ds->memory;
 	uint32_t value;
 	int wait = 0;

@@ -129,6 +129,27 @@ void DS7Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS7_SP_BASE_SVC;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_SP] = DS7_SP_BASE;
+
+	struct DS* ds = (struct DS*) cpu->master;
+	DSMemoryReset(ds);
+
+	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
+	if (header) {
+		// TODO: Error check
+		ds->romVf->seek(ds->romVf, header->arm7Offset, SEEK_SET);
+		uint32_t base = header->arm7Base - DS_BASE_RAM;
+		uint32_t* basePointer = &ds->memory.ram[base >> 2];
+		if (base < DS_SIZE_RAM && base + header->arm7Size <= DS_SIZE_RAM) {
+			ds->romVf->read(ds->romVf, basePointer, header->arm7Size);
+		}
+		cpu->gprs[12] = header->arm7Entry;
+		cpu->gprs[ARM_LR] = header->arm7Entry;
+		cpu->gprs[ARM_PC] = header->arm7Entry;
+		int currentCycles = 0;
+		ARM_WRITE_PC;
+
+		ds->romVf->unmap(ds->romVf, header, sizeof(*header));
+	}
 }
 
 void DS9Reset(struct ARMCore* cpu) {
@@ -140,7 +161,23 @@ void DS9Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS9_SP_BASE;
 
 	struct DS* ds = (struct DS*) cpu->master;
-	DSMemoryReset(ds);
+	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
+	if (header) {
+		// TODO: Error check
+		ds->romVf->seek(ds->romVf, header->arm9Offset, SEEK_SET);
+		uint32_t base = header->arm9Base - DS_BASE_RAM;
+		uint32_t* basePointer = &ds->memory.ram[base >> 2];
+		if (base < DS_SIZE_RAM && base + header->arm9Size <= DS_SIZE_RAM) {
+			ds->romVf->read(ds->romVf, basePointer, header->arm9Size);
+		}
+		cpu->gprs[12] = header->arm9Entry;
+		cpu->gprs[ARM_LR] = header->arm9Entry;
+		cpu->gprs[ARM_PC] = header->arm9Entry;
+		int currentCycles = 0;
+		ARM_WRITE_PC;
+
+		ds->romVf->unmap(ds->romVf, header, sizeof(*header));
+	}
 }
 
 static void DSProcessEvents(struct ARMCore* cpu) {
@@ -189,7 +226,6 @@ void DSDetachDebugger(struct DS* ds) {
 bool DSLoadROM(struct DS* ds, struct VFile* vf) {
 	DSUnloadROM(ds);
 	ds->romVf = vf;
-	// TODO: Checksum?
 	// TODO: error check
 	return true;
 }
