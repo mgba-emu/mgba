@@ -6,6 +6,7 @@
 #include "core.h"
 
 #include "core/log.h"
+#include "core/serialize.h"
 #include "util/vfs.h"
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
