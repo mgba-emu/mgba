@@ -355,11 +355,24 @@ DEFINE_DECODER_ARM(BX, BX,
 
 // Begin coprocessor definitions
 
-DEFINE_DECODER_ARM(CDP, ILL, info->operandFormat = ARM_OPERAND_NONE;)
-DEFINE_DECODER_ARM(LDC, ILL, info->operandFormat = ARM_OPERAND_NONE;)
-DEFINE_DECODER_ARM(STC, ILL, info->operandFormat = ARM_OPERAND_NONE;)
-DEFINE_DECODER_ARM(MCR, ILL, info->operandFormat = ARM_OPERAND_NONE;)
-DEFINE_DECODER_ARM(MRC, ILL, info->operandFormat = ARM_OPERAND_NONE;)
+#define DEFINE_DECODER_COPROCESSOR(NAME, FORMAT) \
+	DEFINE_DECODER_ARM(NAME, NAME, \
+		info->cp.op1 = (opcode >> 21) & 7; \
+		info->cp.op2 = (opcode >> 5) & 7; \
+		info->op1.reg = (opcode >> 12) & 0xF; \
+		info->cp.cp = (opcode >> 8) & 0xF; \
+		info->op2.reg = (opcode >> 16) & 0xF; \
+		info->op3.reg = opcode & 0xF; \
+		info->operandFormat = ARM_OPERAND_REGISTER_1 |\
+		                      ARM_OPERAND_COPROCESSOR_REG_2 | \
+		                      ARM_OPERAND_COPROCESSOR_REG_3 | \
+		                      (FORMAT);)
+
+DEFINE_DECODER_ARM(CDP, CDP, info->operandFormat = ARM_OPERAND_NONE;)
+DEFINE_DECODER_ARM(LDC, LDC, info->operandFormat = ARM_OPERAND_NONE;)
+DEFINE_DECODER_ARM(STC, STC, info->operandFormat = ARM_OPERAND_NONE;)
+DEFINE_DECODER_COPROCESSOR(MCR, ARM_OPERAND_AFFECTED_2 | ARM_OPERAND_AFFECTED_3)
+DEFINE_DECODER_COPROCESSOR(MRC, ARM_OPERAND_AFFECTED_1)
 
 // Begin miscellaneous definitions
 

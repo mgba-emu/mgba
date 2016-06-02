@@ -14,6 +14,7 @@
 // Bit 3: the destination of this operand is affected by this opcode
 // Bit 4: this operand is shifted by a register
 // Bit 5: this operand is shifted by an immediate
+// Bit 6: a coprocessor register is involved with this command
 #define ARM_OPERAND_NONE                0x00000000
 #define ARM_OPERAND_REGISTER_1          0x00000001
 #define ARM_OPERAND_IMMEDIATE_1         0x00000002
@@ -21,6 +22,7 @@
 #define ARM_OPERAND_AFFECTED_1          0x00000008
 #define ARM_OPERAND_SHIFT_REGISTER_1    0x00000010
 #define ARM_OPERAND_SHIFT_IMMEDIATE_1   0x00000020
+#define ARM_OPERAND_COPROCESSOR_REG_1   0x00000040
 #define ARM_OPERAND_1                   0x000000FF
 
 #define ARM_OPERAND_REGISTER_2          0x00000100
@@ -29,6 +31,7 @@
 #define ARM_OPERAND_AFFECTED_2          0x00000800
 #define ARM_OPERAND_SHIFT_REGISTER_2    0x00001000
 #define ARM_OPERAND_SHIFT_IMMEDIATE_2   0x00002000
+#define ARM_OPERAND_COPROCESSOR_REG_2   0x00004000
 #define ARM_OPERAND_2                   0x0000FF00
 
 #define ARM_OPERAND_REGISTER_3          0x00010000
@@ -37,6 +40,7 @@
 #define ARM_OPERAND_AFFECTED_3          0x00080000
 #define ARM_OPERAND_SHIFT_REGISTER_3    0x00100000
 #define ARM_OPERAND_SHIFT_IMMEDIATE_3   0x00200000
+#define ARM_OPERAND_COPROCESSOR_REG_3   0x00400000
 #define ARM_OPERAND_3                   0x00FF0000
 
 #define ARM_OPERAND_REGISTER_4          0x01000000
@@ -45,9 +49,11 @@
 #define ARM_OPERAND_AFFECTED_4          0x08000000
 #define ARM_OPERAND_SHIFT_REGISTER_4    0x10000000
 #define ARM_OPERAND_SHIFT_IMMEDIATE_4   0x20000000
+#define ARM_OPERAND_COPROCESSOR_REG_4   0x40000000
 #define ARM_OPERAND_4                   0xFF000000
 
 #define ARM_OPERAND_MEMORY (ARM_OPERAND_MEMORY_1 | ARM_OPERAND_MEMORY_2 | ARM_OPERAND_MEMORY_3 | ARM_OPERAND_MEMORY_4)
+#define ARM_OPERAND_COPROCESSOR (ARM_OPERAND_COPROCESSOR_REG_1 | ARM_OPERAND_COPROCESSOR_REG_2 | ARM_OPERAND_COPROCESSOR_REG_3 | ARM_OPERAND_COPROCESSOR_REG_4)
 
 #define ARM_MEMORY_REGISTER_BASE     0x0001
 #define ARM_MEMORY_IMMEDIATE_OFFSET  0x0002
@@ -112,6 +118,12 @@ union ARMOperand {
 	int32_t immediate;
 };
 
+struct ARMCoprocessor {
+	uint8_t cp : 4;
+	uint8_t op1 : 4;
+	uint8_t op2 : 3;
+};
+
 enum ARMMemoryAccessType {
 	ARM_ACCESS_WORD = 4,
 	ARM_ACCESS_HALFWORD = 2,
@@ -147,15 +159,19 @@ enum ARMMnemonic {
 	ARM_MN_BKPT,
 	ARM_MN_BL,
 	ARM_MN_BX,
+	ARM_MN_CDP,
 	ARM_MN_CMN,
 	ARM_MN_CMP,
 	ARM_MN_EOR,
+	ARM_MN_LDC,
 	ARM_MN_LDM,
 	ARM_MN_LDR,
 	ARM_MN_LSL,
 	ARM_MN_LSR,
+	ARM_MN_MCR,
 	ARM_MN_MLA,
 	ARM_MN_MOV,
+	ARM_MN_MRC,
 	ARM_MN_MRS,
 	ARM_MN_MSR,
 	ARM_MN_MUL,
@@ -168,6 +184,7 @@ enum ARMMnemonic {
 	ARM_MN_SBC,
 	ARM_MN_SMLAL,
 	ARM_MN_SMULL,
+	ARM_MN_STC,
 	ARM_MN_STM,
 	ARM_MN_STR,
 	ARM_MN_SUB,
@@ -206,6 +223,7 @@ struct ARMInstructionInfo {
 	unsigned nInstructionCycles : 4;
 	unsigned sDataCycles : 10;
 	unsigned nDataCycles : 10;
+	struct ARMCoprocessor cp;
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info);

@@ -45,6 +45,7 @@ Bugfixes:
  - GB Video: Hblank IRQs should mask LYC=LY IRQs
  - GB Audio: Reset envelope timer when reseting sound channel
  - SDL: Prevent crash on cores with no audio
+ - ARM7: Decode MCR/MRC
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers

@@ -251,15 +251,19 @@ static const char* _armMnemonicStrings[] = {
 	"bkpt",
 	"bl",
 	"bx",
+	"cdp",
 	"cmn",
 	"cmp",
 	"eor",
+	"ldc",
 	"ldm",
 	"ldr",
 	"lsl",
 	"lsr",
+	"mcr",
 	"mla",
 	"mov",
+	"mrc",
 	"mrs",
 	"msr",
 	"mul",
@@ -272,6 +276,7 @@ static const char* _armMnemonicStrings[] = {
 	"sbc",
 	"smlal",
 	"smull",
+	"stc",
 	"stm",
 	"str",
 	"sub",
@@ -388,6 +393,10 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		}
 		break;
 	default:
+		if (info->operandFormat & ARM_OPERAND_COPROCESSOR) {
+			written = snprintf(buffer, blen - 1, "p%i, %i, ", info->cp.cp, info->cp.op1);
+			ADVANCE(written);
+		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
 			written = snprintf(buffer, blen - 1, "#%i", info->op1.immediate);
 			ADVANCE(written);
@@ -401,6 +410,8 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 				written = _decodePSR(info->op1.psrBits, buffer, blen);
 				ADVANCE(written);
 			}
+		} else if (info->operandFormat & ARM_OPERAND_COPROCESSOR_REG_1) {
+			written = snprintf(buffer, blen - 1, "c%i", info->op1.reg);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_1) {
 			written = _decodeShift(info->op1, true, buffer, blen);
@@ -421,6 +432,9 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_2) {
 			written = _decodeRegister(info->op2.reg, buffer, blen);
+			ADVANCE(written);
+		} else if (info->operandFormat & ARM_OPERAND_COPROCESSOR_REG_2) {
+			written = snprintf(buffer, blen - 1, "c%i", info->op2.reg);
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_2) {
@@ -443,6 +457,9 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_3) {
 			written = _decodeRegister(info->op3.reg, buffer, blen);
 			ADVANCE(written);
+		} else if (info->operandFormat & ARM_OPERAND_COPROCESSOR_REG_3) {
+			written = snprintf(buffer, blen - 1, "c%i", info->op3.reg);
+			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_3) {
 			written = _decodeShift(info->op3, true, buffer, blen);
@@ -464,12 +481,19 @@ int ARMDisassemble(struct ARMInstructionInfo* info, uint32_t pc, char* buffer, i
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_4) {
 			written = _decodeRegister(info->op4.reg, buffer, blen);
 			ADVANCE(written);
+		} else if (info->operandFormat & ARM_OPERAND_COPROCESSOR_REG_4) {
+			written = snprintf(buffer, blen - 1, "c%i", info->op4.reg);
+			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_4) {
 			written = _decodeShift(info->op4, true, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_4) {
 			written = _decodeShift(info->op4, false, buffer, blen);
+			ADVANCE(written);
+		}
+		if (info->cp.op2) {
+			written = snprintf(buffer, blen - 1, ", %i", info->cp.op2);
 			ADVANCE(written);
 		}
 		break;
