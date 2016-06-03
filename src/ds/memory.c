@@ -258,6 +258,7 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	default:
 		break;
 	}
 
@@ -429,9 +430,12 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
 		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
 	}
 
@@ -451,7 +455,14 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_16(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 		break;
 	}
 
@@ -471,7 +482,14 @@ uint32_t DS9Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			value = ((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)];
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load8: %08X", address);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load8: %08X", address);
 		break;
 	}
 
@@ -488,6 +506,15 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);
+		break;
+	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);
 		break;
 	}
 
@@ -503,7 +530,15 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_16(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
 		break;
 	}
 
@@ -519,7 +554,14 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)] = value;
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
 		break;
 	}
 
@@ -552,7 +594,16 @@ uint32_t DS9LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		LDM_LOOP(if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
+		});
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 LDM: %08X", address);
+		LDM_LOOP(value = 0);
 		break;
 	}
 
@@ -596,7 +647,16 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		STM_LOOP(if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		});
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		STM_LOOP();
 		break;
 	}
 
