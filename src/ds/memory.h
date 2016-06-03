@@ -14,6 +14,7 @@
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
 	DS9_REGION_ITCM = 0x0,
+	DS9_REGION_ITCM_MIRROR = 0x1,
 	DS_REGION_RAM = 0x2,
 	DS_REGION_WORKING_RAM = 0x3,
 	DS_REGION_IO = 0x4,
@@ -41,6 +42,8 @@ enum DSMemoryBase {
 };
 
 enum {
+	DS9_SIZE_ITCM = 0x00008000,
+	DS9_SIZE_DTCM = 0x00004000,
 	DS7_SIZE_BIOS = 0x00004000,
 	DS9_SIZE_BIOS = 0x00008000,
 	DS_SIZE_RAM = 0x00400000,
@@ -103,6 +106,8 @@ struct DSDMA {
 struct DSMemory {
 	uint32_t* bios7;
 	uint32_t* bios9;
+	uint32_t* itcm;
+	uint32_t* dtcm;
 	uint32_t* ram;
 	uint32_t* wram;
 	uint32_t* rom;

@@ -105,6 +105,8 @@ void DSMemoryInit(struct DS* ds) {
 	ds->memory.bios9 = NULL;
 	ds->memory.wram = NULL;
 	ds->memory.ram = NULL;
+	ds->memory.itcm = NULL;
+	ds->memory.dtcm = NULL;
 	ds->memory.rom = NULL;
 
 	ds->memory.activeRegion7 = -1;
@@ -130,6 +132,8 @@ void DSMemoryInit(struct DS* ds) {
 void DSMemoryDeinit(struct DS* ds) {
 	mappedMemoryFree(ds->memory.wram, DS_SIZE_WORKING_RAM);
 	mappedMemoryFree(ds->memory.ram, DS_SIZE_RAM);
+	mappedMemoryFree(ds->memory.itcm, DS9_SIZE_ITCM);
+	mappedMemoryFree(ds->memory.dtcm, DS9_SIZE_DTCM);
 }
 
 void DSMemoryReset(struct DS* ds) {
@@ -143,6 +147,16 @@ void DSMemoryReset(struct DS* ds) {
 	}
 	ds->memory.ram = anonymousMemoryMap(DS_SIZE_RAM);
 
+	if (ds->memory.itcm) {
+		mappedMemoryFree(ds->memory.itcm, DS9_SIZE_ITCM);
+	}
+	ds->memory.itcm = anonymousMemoryMap(DS9_SIZE_ITCM);
+
+	if (ds->memory.dtcm) {
+		mappedMemoryFree(ds->memory.dtcm, DS9_SIZE_DTCM);
+	}
+	ds->memory.dtcm = anonymousMemoryMap(DS9_SIZE_DTCM);
+
 	memset(ds->memory.dma7, 0, sizeof(ds->memory.dma7));
 	memset(ds->memory.dma9, 0, sizeof(ds->memory.dma9));
 	ds->memory.activeDMA7 = -1;
@@ -150,7 +164,7 @@ void DSMemoryReset(struct DS* ds) {
 	ds->memory.nextDMA = INT_MAX;
 	ds->memory.eventDiff = 0;
 
-	if (!ds->memory.wram || !ds->memory.ram) {
+	if (!ds->memory.wram || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
 		DSMemoryDeinit(ds);
 		mLOG(DS_MEM, FATAL, "Could not map memory");
 	}
@@ -394,13 +408,21 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	memory->activeRegion9 = newRegion;
 	switch (newRegion) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			cpu->memory.activeRegion = memory->itcm;
+			cpu->memory.activeMask = DS9_SIZE_ITCM - 1;
+			return;
+		}
+		goto jump_error;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			cpu->memory.activeRegion = memory->ram;
 			cpu->memory.activeMask = DS_SIZE_RAM - 1;
 			return;
 		}
-		break;
+		goto jump_error;
 	case DS9_REGION_BIOS:
 		// TODO: Mask properly
 		if (memory->bios9) {
@@ -414,10 +436,11 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	default:
 		break;
 	}
+
+jump_error:
 	cpu->memory.activeRegion = _deadbeef;
 	cpu->memory.activeMask = 0;
 	mLOG(DS_MEM, FATAL, "Jumped to invalid address: %08X", address);
-	return;
 }
 
 uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
@@ -506,6 +529,14 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512 << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
@@ -530,6 +561,14 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512 << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			STORE_16(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store16: %08X:%04X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			STORE_16(value, address & (DS_SIZE_RAM - 1), memory->ram);
@@ -554,6 +593,14 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			((uint8_t*) memory->itcm)[address & (DS9_SIZE_ITCM - 1)] = value;
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Bad DS9 Store8: %08X:%02X", address, value);
+		break;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)] = value;
@@ -647,6 +694,14 @@ uint32_t DS9StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS9_REGION_ITCM:
+	case DS9_REGION_ITCM_MIRROR:
+		STM_LOOP(if (address < (512U << ARMTCMControlGetVirtualSize(cpu->cp15.r9.i))) {
+			STORE_32(value, address & (DS9_SIZE_ITCM - 1), memory->itcm);
+		} else {
+			mLOG(DS_MEM, STUB, "Bad DS9 Store32: %08X:%08X", address, value);
+		});
+		break;
 	case DS_REGION_RAM:
 		STM_LOOP(if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
