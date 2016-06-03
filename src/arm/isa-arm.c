@@ -636,8 +636,8 @@ DEFINE_INSTRUCTION_ARM(BX,
 DEFINE_COPROCESSOR_INSTRUCTION(MRC, ARM_STUB)
 
 DEFINE_COPROCESSOR_INSTRUCTION(MCR,
-	if (cp == 15) {
-		cpu->cp15.write(cpu, crn, crm, op1, op2, cpu->gprs[rd]);
+	if (cp == 15 && cpu->irqh.writeCP15) {
+		cpu->irqh.writeCP15(cpu, crn, crm, op1, op2, cpu->gprs[rd]);
 	} else {
 		ARM_STUB;
 	})

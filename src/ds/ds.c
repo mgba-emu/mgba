@@ -42,8 +42,8 @@ static void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh);
 
 static void DS9Reset(struct ARMCore* cpu);
 static void DS9TestIRQ(struct ARMCore* cpu);
+static void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, uint32_t value);
 static void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh);
-
 
 static void DSProcessEvents(struct ARMCore* cpu);
 static void DSHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -108,6 +108,7 @@ void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->swi32 = NULL;
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS7TestIRQ;
+	irqh->writeCP15 = NULL;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -120,6 +121,7 @@ void DS9InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->swi32 = NULL;
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS9TestIRQ;
+	irqh->writeCP15 = DS9WriteCP15;
 	irqh->hitStub = DSHitStub;
 	irqh->bkpt16 = DSBreakpoint;
 	irqh->bkpt32 = DSBreakpoint;
@@ -356,3 +358,98 @@ void DS9TestIRQ(struct ARMCore* cpu) {
 		cpu->nextEvent = cpu->cycles;
 	}
 }
+
+static void _writeSysControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	mLOG(DS, STUB, "CP15 system control write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
+}
+
+static void _writeCacheControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	mLOG(DS, STUB, "CP15 cache control control write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
+	switch (opcode2) {
+	case 0:
+		cpu->cp15.r2.d = value;
+		break;
+	case 1:
+		cpu->cp15.r2.i = value;
+		break;
+	default:
+		mLOG(DS, GAME_ERROR, "CP15 cache control control bad op2: %i", opcode2);
+		break;
+	}
+}
+
+static void _writeWriteBufferControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	mLOG(DS, STUB, "CP15 write buffer control write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
+	switch (opcode2) {
+	case 0:
+		cpu->cp15.r3.d = value;
+		break;
+	default:
+		mLOG(DS, GAME_ERROR, "CP15 cache control control bad op2: %i", opcode2);
+		break;
+	}
+}
+
+static void _writeAccessControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	mLOG(DS, STUB, "CP15 access control write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
+}
+
+static void _writeRegionConfiguration(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	cpu->cp15.r6.region[crm] = value;
+	uint32_t base = ARMProtectionGetBase(value) << 12;
+	uint32_t size = 2 << ARMProtectionGetSize(value);
+	mLOG(DS, STUB, "CP15 region configuration write: Region: %i, Insn: %i, Base: %08X, Size: %08X", crm, opcode2, base, size);
+}
+
+static void _writeCache(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	mLOG(DS, STUB, "CP15 cache write: CRm: %i, Op2: %i, Value: 0x%08X", crm, opcode2, value);
+}
+
+static void _writeTCMControl(struct ARMCore* cpu, int crm, int opcode2, uint32_t value) {
+	uint32_t base = ARMTCMControlGetBase(value) << 12;
+	uint32_t size = 512 << ARMTCMControlGetVirtualSize(value);
+	mLOG(DS, STUB, "CP15 TCM control write: CRm: %i, Op2: %i, Base: %08X, Size: %08X", crm, opcode2, base, size);
+	switch (opcode2) {
+	case 0:
+		cpu->cp15.r9.d = value;
+		break;
+	case 1:
+		cpu->cp15.r9.i = value;
+		break;
+	default:
+		mLOG(DS, GAME_ERROR, "CP15 TCM control bad op2: %i", opcode2);
+		break;
+	}
+}
+
+void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, uint32_t value) {
+	switch (crn) {
+	default:
+		mLOG(DS, STUB, "CP15 unknown write: CRn: %i, CRm: %i, Op1: %i, Op2: %i, Value: 0x%08X", crn, crm, opcode1, opcode2, value);
+		break;
+	case 0:
+		mLOG(DS, GAME_ERROR, "Attempted to write to read-only cp15 register");
+		ARMRaiseUndefined(cpu);
+		break;
+	case 1:
+		_writeSysControl(cpu, crm, opcode2, value);
+		break;
+	case 2:
+		_writeCacheControl(cpu, crm, opcode2, value);
+		break;
+	case 3:
+		_writeWriteBufferControl(cpu, crm, opcode2, value);
+		break;
+	case 5:
+		_writeAccessControl(cpu, crm, opcode2, value);
+		break;
+	case 6:
+		_writeRegionConfiguration(cpu, crm, opcode2, value);
+		break;
+	case 7:
+		_writeCache(cpu, crm, opcode2, value);
+		break;
+	case 9:
+		_writeTCMControl(cpu, crm, opcode2, value);
+		break;
+	}}

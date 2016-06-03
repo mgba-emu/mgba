@@ -127,6 +127,7 @@ struct ARMInterruptHandler {
 	void (*bkpt16)(struct ARMCore* cpu, int immediate);
 	void (*bkpt32)(struct ARMCore* cpu, int immediate);
 	void (*readCPSR)(struct ARMCore* cpu);
+	void (*writeCP15)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2, uint32_t value);
 
 	void (*hitStub)(struct ARMCore* cpu, uint32_t opcode);
 };
@@ -163,6 +164,25 @@ DECL_BIT(ARMControlReg, L2, 26);
 
 DECL_BITFIELD(ARMCoprocessorAccess, uint32_t);
 
+DECL_BITFIELD(ARMCacheability, uint32_t);
+DECL_BIT(ARMCacheability, 0, 0);
+DECL_BIT(ARMCacheability, 1, 1);
+DECL_BIT(ARMCacheability, 2, 2);
+DECL_BIT(ARMCacheability, 3, 3);
+DECL_BIT(ARMCacheability, 4, 4);
+DECL_BIT(ARMCacheability, 5, 5);
+DECL_BIT(ARMCacheability, 6, 6);
+DECL_BIT(ARMCacheability, 7, 7);
+
+DECL_BITFIELD(ARMProtection, uint32_t);
+DECL_BIT(ARMProtection, Enable, 0);
+DECL_BITS(ARMProtection, Size, 1, 5);
+DECL_BITS(ARMProtection, Base, 12, 20);
+
+DECL_BITFIELD(ARMTCMControl, uint32_t);
+DECL_BITS(ARMTCMControl, VirtualSize, 1, 5);
+DECL_BITS(ARMTCMControl, Base, 12, 20);
+
 struct ARMCP15 {
 	struct {
 		ARMCPUID cpuid;
@@ -176,8 +196,20 @@ struct ARMCP15 {
 		uint32_t c1;
 		ARMCoprocessorAccess cpAccess;
 	} r1;
-
-	uint32_t (*write)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2, uint32_t value);
+	struct {
+		ARMCacheability d;
+		ARMCacheability i;
+	} r2;
+	struct {
+		ARMCacheability d;
+	} r3;
+	struct {
+		ARMProtection region[8];
+	} r6;
+	struct {
+		ARMTCMControl d;
+		ARMTCMControl i;
+	} r9;
 };
 
 struct ARMCore {

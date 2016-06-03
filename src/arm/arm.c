@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "arm.h"
 
-#include "isa-arm.h"
-#include "isa-inlines.h"
-#include "isa-thumb.h"
+#include "arm/isa-arm.h"
+#include "arm/isa-inlines.h"
+#include "arm/isa-thumb.h"
 
 static inline enum RegisterBank _ARMSelectBank(enum PrivilegeMode);
 
