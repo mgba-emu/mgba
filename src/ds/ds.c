@@ -104,8 +104,8 @@ void DSDestroy(struct DS* ds) {
 void DS7InterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 	irqh->reset = DS7Reset;
 	irqh->processEvents = DSProcessEvents;
-	irqh->swi16 = NULL;
-	irqh->swi32 = NULL;
+	irqh->swi16 = DS7Swi16;
+	irqh->swi32 = DS7Swi32;
 	irqh->hitIllegal = DSIllegal;
 	irqh->readCPSR = DS7TestIRQ;
 	irqh->writeCP15 = NULL;
