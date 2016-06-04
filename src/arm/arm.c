@@ -320,6 +320,28 @@ void ARMRunLoop(struct ARMCore* cpu) {
 	cpu->irqh.processEvents(cpu);
 }
 
+int32_t ARMRunCycles(struct ARMCore* cpu, int32_t cycles) {
+	int32_t startCycles = cpu->cycles;
+	int32_t endCycles = startCycles + cycles;
+
+	if (cpu->executionMode == MODE_THUMB) {
+		while (cpu->cycles < cpu->nextEvent && cpu->cycles < endCycles) {
+			ThumbStep(cpu);
+		}
+	} else {
+		while (cpu->cycles < cpu->nextEvent && cpu->cycles < endCycles) {
+			ARMStep(cpu);
+		}
+	}
+
+	endCycles = cpu->cycles - startCycles;
+	if (cpu->cycles >= cpu->nextEvent) {
+		// TODO: Handle HALT
+		cpu->irqh.processEvents(cpu);
+	}
+	return endCycles;
+}
+
 void ARMRunFake(struct ARMCore* cpu, uint32_t opcode) {
 	if (cpu->executionMode == MODE_ARM) {
 		cpu->gprs[ARM_PC] -= WORD_SIZE_ARM;

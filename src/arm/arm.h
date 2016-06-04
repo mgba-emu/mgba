@@ -255,6 +255,7 @@ void ARMRaiseUndefined(struct ARMCore*);
 
 void ARMRun(struct ARMCore* cpu);
 void ARMRunLoop(struct ARMCore* cpu);
+int32_t ARMRunCycles(struct ARMCore* cpu, int32_t cycles);
 void ARMRunFake(struct ARMCore* cpu, uint32_t opcode);
 
 #endif

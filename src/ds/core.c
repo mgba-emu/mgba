@@ -18,10 +18,12 @@
 struct DSCore {
 	struct mCore d;
 	struct ARMCore* arm7;
+	struct ARMCore* arm9;
 	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
+	int32_t cycleDrift;
 };
 
 static bool _DSCoreInit(struct mCore* core) {
@@ -36,12 +38,14 @@ static bool _DSCoreInit(struct mCore* core) {
 		free(ds);
 		return false;
 	}
-	core->cpu = arm9;
+	core->cpu = arm7;
 	core->board = ds;
 	core->debugger = NULL;
 	dscore->arm7 = arm7;
+	dscore->arm9 = arm9;
 	dscore->debuggerPlatform = NULL;
 	dscore->cheatDevice = NULL;
+	dscore->cycleDrift = 0;
 
 	DSCreate(ds);
 	memset(dscore->components, 0, sizeof(dscore->components));
@@ -62,11 +66,11 @@ static bool _DSCoreInit(struct mCore* core) {
 
 static void _DSCoreDeinit(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
-	ARMDeinit(core->cpu);
 	ARMDeinit(dscore->arm7);
+	ARMDeinit(dscore->arm9);
 	DSDestroy(core->board);
-	mappedMemoryFree(core->cpu, sizeof(struct ARMCore));
 	mappedMemoryFree(dscore->arm7, sizeof(struct ARMCore));
+	mappedMemoryFree(dscore->arm9, sizeof(struct ARMCore));
 	mappedMemoryFree(core->board, sizeof(struct DS));
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
@@ -156,19 +160,33 @@ static void _DSCoreReset(struct mCore* core) {
 }
 
 static void _DSCoreRunFrame(struct mCore* core) {
+	struct DSCore* dscore = (struct DSCore*) core;
 	struct DS* ds = core->board;
 	int32_t frameCounter = ds->video.frameCounter;
 	while (ds->video.frameCounter == frameCounter) {
-		ARMRunLoop(core->cpu);
+		dscore->cycleDrift += ARMRunCycles(dscore->arm9, 2048);
+		dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
 	}
 }
 
 static void _DSCoreRunLoop(struct mCore* core) {
-	ARMRunLoop(core->cpu);
+	struct DSCore* dscore = (struct DSCore*) core;
+	dscore->cycleDrift += ARMRunCycles(dscore->arm9, 2048);
+	dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
 }
 
 static void _DSCoreStep(struct mCore* core) {
-	ARMRun(core->cpu);
+	struct DSCore* dscore = (struct DSCore*) core;
+	int32_t runCycles;
+	if (core->cpu == dscore->arm9) {
+		runCycles = 1;
+	} else {
+		runCycles = 2;
+	}
+	dscore->cycleDrift += ARMRunCycles(dscore->arm9, runCycles);
+	if (dscore->cycleDrift > 1) {
+		dscore->cycleDrift -= ARMRunCycles(dscore->arm7, 1) << 1;
+	}
 }
 
 static size_t _DSCoreStateSize(struct mCore* core) {
@@ -325,6 +343,9 @@ static void _DSCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger
 		DSDetachDebugger(core->board);
 	}
 	DSAttachDebugger(core->board, debugger);
+	struct ARMCore* cpu = core->cpu;
+	cpu->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	ARMHotplugAttach(cpu, CPU_COMPONENT_DEBUGGER);
 	core->debugger = debugger;
 }
 
