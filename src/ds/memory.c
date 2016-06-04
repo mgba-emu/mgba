@@ -104,6 +104,7 @@ void DSMemoryInit(struct DS* ds) {
 	ds->memory.bios7 = NULL;
 	ds->memory.bios9 = NULL;
 	ds->memory.wram = NULL;
+	ds->memory.wram7 = NULL;
 	ds->memory.ram = NULL;
 	ds->memory.itcm = NULL;
 	ds->memory.dtcm = NULL;
@@ -131,6 +132,7 @@ void DSMemoryInit(struct DS* ds) {
 
 void DSMemoryDeinit(struct DS* ds) {
 	mappedMemoryFree(ds->memory.wram, DS_SIZE_WORKING_RAM);
+	mappedMemoryFree(ds->memory.wram7, DS7_SIZE_WORKING_RAM);
 	mappedMemoryFree(ds->memory.ram, DS_SIZE_RAM);
 	mappedMemoryFree(ds->memory.itcm, DS9_SIZE_ITCM);
 	mappedMemoryFree(ds->memory.dtcm, DS9_SIZE_DTCM);
@@ -141,6 +143,11 @@ void DSMemoryReset(struct DS* ds) {
 		mappedMemoryFree(ds->memory.wram, DS_SIZE_WORKING_RAM);
 	}
 	ds->memory.wram = anonymousMemoryMap(DS_SIZE_WORKING_RAM);
+
+	if (ds->memory.wram7) {
+		mappedMemoryFree(ds->memory.wram7, DS7_SIZE_WORKING_RAM);
+	}
+	ds->memory.wram7 = anonymousMemoryMap(DS7_SIZE_WORKING_RAM);
 
 	if (ds->memory.ram) {
 		mappedMemoryFree(ds->memory.ram, DS_SIZE_RAM);
@@ -164,7 +171,11 @@ void DSMemoryReset(struct DS* ds) {
 	ds->memory.nextDMA = INT_MAX;
 	ds->memory.eventDiff = 0;
 
-	if (!ds->memory.wram || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
+	// TODO: Correct size
+	ds->memory.wramSize7 = 0x8000;
+	ds->memory.wramSize9 = 0;
+
+	if (!ds->memory.wram || !ds->memory.wram7 || !ds->memory.ram || !ds->memory.itcm || !ds->memory.dtcm) {
 		DSMemoryDeinit(ds);
 		mLOG(DS_MEM, FATAL, "Could not map memory");
 	}
@@ -178,6 +189,15 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	memory->activeRegion7 = newRegion;
 	switch (newRegion) {
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !memory->wramSize7) {
+			cpu->memory.activeRegion = memory->wram7;
+			cpu->memory.activeMask = DS7_SIZE_WORKING_RAM - 1;
+		} else {
+			cpu->memory.activeRegion = memory->wram;
+			cpu->memory.activeMask = ds->memory.wramSize7 - 1;
+		}
+		return;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			cpu->memory.activeRegion = memory->ram;
@@ -187,7 +207,7 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		break;
 	case DS7_REGION_BIOS:
 		if (memory->bios7) {
-			cpu->memory.activeRegion = memory->bios9;
+			cpu->memory.activeRegion = memory->bios7;
 			cpu->memory.activeMask = DS9_SIZE_BIOS - 1;
 		} else {
 			cpu->memory.activeRegion = _deadbeef;
@@ -210,12 +230,25 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS7_REGION_BIOS:
+		LOAD_32(value, address & (DS7_SIZE_BIOS - 1), memory->bios7);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			LOAD_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			LOAD_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		}
+		break;
 	case DS_REGION_RAM:
 		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
 			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
 		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load32: %08X", address);
 		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load32: %08X", address);
 		break;
 	}
 
@@ -235,7 +268,24 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS7_REGION_BIOS:
+		LOAD_16(value, address & (DS7_SIZE_BIOS - 1), memory->bios7);
+		break;
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			LOAD_16(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			LOAD_16(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		}
+		break;
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_16(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 		break;
 	}
 
@@ -255,7 +305,14 @@ uint32_t DS7Load8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			value = ((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)];
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load8: %08X", address);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load8: %08X", address);
 		break;
 	}
 
@@ -272,7 +329,22 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			STORE_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			STORE_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		}
+		break;
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
 		break;
 	}
 
@@ -288,7 +360,22 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_WORKING_RAM:
+		if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			STORE_16(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			STORE_16(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		}
+		break;
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_16(value, address & (DS_SIZE_RAM - 1), memory->ram);
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
 		break;
 	}
 
@@ -304,7 +391,14 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	int wait = 0;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_RAM:
+		if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			((uint8_t*) memory->ram)[address & (DS_SIZE_RAM - 1)] = value;
+			break;
+		}
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
 		break;
 	}
 
@@ -337,8 +431,23 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
-	default:
+	case DS_REGION_WORKING_RAM:
+		LDM_LOOP(if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			LOAD_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			LOAD_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		});
 		break;
+	case DS_REGION_RAM:
+		LDM_LOOP(if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			LOAD_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
+		});
+		break;
+	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
+		LDM_LOOP(value = 0);
 	}
 
 	if (cycleCounter) {
@@ -381,7 +490,23 @@ uint32_t DS7StoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	address &= 0xFFFFFFFC;
 
 	switch (address >> DS_BASE_OFFSET) {
+	case DS_REGION_WORKING_RAM:
+		STM_LOOP(if (address >= DS7_BASE_WORKING_RAM || !ds->memory.wramSize7) {
+			STORE_32(value, address & (DS7_SIZE_WORKING_RAM - 1), memory->wram7);
+		} else {
+			STORE_32(value, address & (ds->memory.wramSize7 - 1), memory->wram);
+		});
+		break;
+	case DS_REGION_RAM:
+		STM_LOOP(if ((address & (DS_SIZE_RAM - 1)) < DS_SIZE_RAM) {
+			STORE_32(value, address & (DS_SIZE_RAM - 1), memory->ram);
+		} else {
+			mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		});
+		break;
 	default:
+		mLOG(DS_MEM, STUB, "Unimplemented DS9 STM: %08X", address);
+		STM_LOOP();
 		break;
 	}
 

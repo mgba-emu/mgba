@@ -32,6 +32,7 @@ enum DSMemoryBase {
 	DS9_BASE_ITCM = 0x00000000,
 	DS_BASE_RAM = 0x02000000,
 	DS_BASE_WORKING_RAM = 0x03000000,
+	DS7_BASE_WORKING_RAM = 0x03800000,
 	DS_BASE_IO = 0x04000000,
 	DS9_BASE_PALETTE_RAM = 0x05000000,
 	DS_BASE_VRAM = 0x06000000,
@@ -48,6 +49,7 @@ enum {
 	DS9_SIZE_BIOS = 0x00008000,
 	DS_SIZE_RAM = 0x00400000,
 	DS_SIZE_WORKING_RAM = 0x00008000,
+	DS7_SIZE_WORKING_RAM = 0x00010000,
 	DS9_SIZE_PALETTE_RAM = 0x00000800,
 	DS9_SIZE_OAM = 0x00000800,
 	DS_SIZE_SLOT2 = 0x02000000,
@@ -110,9 +112,12 @@ struct DSMemory {
 	uint32_t* dtcm;
 	uint32_t* ram;
 	uint32_t* wram;
+	uint32_t* wram7;
 	uint32_t* rom;
 
 	size_t romSize;
+	size_t wramSize7;
+	size_t wramSize9;
 
 	char waitstatesSeq32[256];
 	char waitstatesSeq16[256];
