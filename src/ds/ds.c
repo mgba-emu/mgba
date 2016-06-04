@@ -137,6 +137,7 @@ void DS7Reset(struct ARMCore* cpu) {
 
 	struct DS* ds = (struct DS*) cpu->master;
 	DSMemoryReset(ds);
+	DS7IOInit(ds);
 
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
@@ -166,6 +167,8 @@ void DS9Reset(struct ARMCore* cpu) {
 	cpu->gprs[ARM_SP] = DS9_SP_BASE;
 
 	struct DS* ds = (struct DS*) cpu->master;
+	DS9IOInit(ds);
+
 	struct DSCartridge* header = ds->romVf->map(ds->romVf, sizeof(*header), MAP_READ);
 	if (header) {
 		// TODO: Error check

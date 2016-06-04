@@ -10,6 +10,7 @@
 
 #include "arm/arm.h"
 #include "core/log.h"
+#include "ds/io.h"
 
 enum DSMemoryRegion {
 	DS7_REGION_BIOS = 0x0,
@@ -114,6 +115,8 @@ struct DSMemory {
 	uint32_t* wram;
 	uint32_t* wram7;
 	uint32_t* rom;
+	uint16_t io7[DS7_REG_MAX >> 1];
+	uint16_t io9[DS9_REG_MAX >> 1];
 
 	size_t romSize;
 	size_t wramSize7;

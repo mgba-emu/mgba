@@ -8,6 +8,7 @@
 #include "arm/macros.h"
 
 #include "ds/ds.h"
+#include "ds/io.h"
 #include "util/math.h"
 #include "util/memory.h"
 
@@ -284,6 +285,9 @@ uint32_t DS7Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
+	case DS_REGION_IO:
+		value = DS7IORead(ds, address & 0x00FFFFFF);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load16: %08X", address);
 		break;
@@ -374,6 +378,9 @@ void DS7Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
 		break;
+	case DS_REGION_IO:
+		DS7IOWrite(ds, address & 0x00FFFFFF, value);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store16: %08X:%04X", address, value);
 		break;
@@ -397,6 +404,9 @@ void DS7Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
+	case DS_REGION_IO:
+		DS7IOWrite8(ds, address & 0x00FFFFFF, value);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store8: %08X:%02X", address, value);
 		break;
@@ -609,6 +619,9 @@ uint32_t DS9Load16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
+	case DS_REGION_IO:
+		value = DS9IORead(ds, address & 0x00FFFFFF);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load16: %08X", address);
 		break;
@@ -701,6 +714,9 @@ void DS9Store16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
 		break;
+	case DS_REGION_IO:
+		DS9IOWrite(ds, address & 0x00FFFFFF, value);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store16: %08X:%04X", address, value);
 		break;
@@ -732,6 +748,9 @@ void DS9Store8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
+	case DS_REGION_IO:
+		DS9IOWrite8(ds, address & 0x00FFFFFF, value);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store8: %08X:%02X", address, value);
 		break;
