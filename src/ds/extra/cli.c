@@ -6,6 +6,9 @@
 #include "cli.h"
 
 #include "arm/debugger/cli-debugger.h"
+#include "core/core.h"
+#include "ds/core.h"
+#include "ds/ds.h"
 
 #ifdef USE_CLI_DEBUGGER
 
@@ -14,9 +17,11 @@ static bool _DSCLIDebuggerCustom(struct CLIDebuggerSystem*);
 static uint32_t _DSCLIDebuggerLookupIdentifier(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
 
 static void _frame(struct CLIDebugger*, struct CLIDebugVector*);
+static void _switchCpu(struct CLIDebugger*, struct CLIDebugVector*);
 
 struct CLIDebuggerCommandSummary _DSCLIDebuggerCommands[] = {
 	{ "frame", _frame, 0, "Frame advance" },
+	{ "cpu", _switchCpu, 0 , "Switch active CPU" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -59,4 +64,20 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct DSCLIDebugger* dsDebugger = (struct DSCLIDebugger*) debugger->system;
 	dsDebugger->frameAdvance = true;
 }
+
+static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	struct DSCLIDebugger* dsDebugger = (struct DSCLIDebugger*) debugger->system;
+	struct mCore* core = dsDebugger->core;
+	struct DS* ds = core->board;
+	debugger->d.platform->deinit(debugger->d.platform);
+	if (core->cpu == ds->arm9) {
+		core->cpu = ds->arm7;
+	} else {
+		core->cpu = ds->arm9;
+	}
+	debugger->d.platform->init(core->cpu, debugger->d.platform);
+	debugger->system->printStatus(debugger->system);
+}
+
 #endif

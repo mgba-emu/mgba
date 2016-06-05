@@ -38,7 +38,7 @@ static bool _DSCoreInit(struct mCore* core) {
 		free(ds);
 		return false;
 	}
-	core->cpu = arm7;
+	core->cpu = arm9;
 	core->board = ds;
 	core->debugger = NULL;
 	dscore->arm7 = arm7;
@@ -343,9 +343,6 @@ static void _DSCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger
 		DSDetachDebugger(core->board);
 	}
 	DSAttachDebugger(core->board, debugger);
-	struct ARMCore* cpu = core->cpu;
-	cpu->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
-	ARMHotplugAttach(cpu, CPU_COMPONENT_DEBUGGER);
 	core->debugger = debugger;
 }
 

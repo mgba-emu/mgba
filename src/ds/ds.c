@@ -216,6 +216,10 @@ static void DSProcessEvents(struct ARMCore* cpu) {
 
 void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger) {
 	ds->debugger = (struct ARMDebugger*) debugger->platform;
+	ds->arm7->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	ds->arm9->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	ARMHotplugAttach(ds->arm7, CPU_COMPONENT_DEBUGGER);
+	ARMHotplugAttach(ds->arm9, CPU_COMPONENT_DEBUGGER);
 }
 
 void DSDetachDebugger(struct DS* ds) {
