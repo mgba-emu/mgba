@@ -30,9 +30,9 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		_writeIPCSync(ds->arm9, ds->memory.io9, value);
 		break;
 	default:
-		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X", address);
+		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
-			mLOG(DS_IO, GAME_ERROR, "Write to unused DS7 I/O register: %06X", address);
+			mLOG(DS_IO, GAME_ERROR, "Write to unused DS7 I/O register: %06X:%04X", address, value);
 			return;
 		}
 		break;
@@ -78,9 +78,9 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		_writeIPCSync(ds->arm7, ds->memory.io7, value);
 		break;
 	default:
-		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X", address);
+		mLOG(DS_IO, STUB, "Stub DS9 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
-			mLOG(DS_IO, GAME_ERROR, "Write to unused DS9 I/O register: %06X", address);
+			mLOG(DS_IO, GAME_ERROR, "Write to unused DS9 I/O register: %06X:%04X", address, value);
 			return;
 		}
 		break;

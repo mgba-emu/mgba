@@ -383,6 +383,13 @@ DEFINE_DECODER_ARM(ILL, ILL,
 	info->operandFormat = ARM_OPERAND_NONE;
 	info->traps = 1;) // Illegal opcode
 
+DEFINE_DECODER_ARM(CLZ, CLZ,
+	info->op1.reg = (opcode >> 12) & 0xF;
+	info->op2.reg = opcode & 0xF;
+	info->operandFormat = ARM_OPERAND_REGISTER_1 |
+		ARM_OPERAND_AFFECTED_1 |
+		ARM_OPERAND_REGISTER_2;)
+
 DEFINE_DECODER_ARM(MSR, MSR,
 	info->affectsCPSR = 1;
 	info->op1.reg = ARM_CPSR;
@@ -446,7 +453,7 @@ DEFINE_DECODER_ARM(SWI, SWI,
 typedef void (*ARMDecoder)(uint32_t opcode, struct ARMInstructionInfo* info);
 
 static const ARMDecoder _armDecoderTable[0x1000] = {
-	DECLARE_ARM_EMITTER_BLOCK(_ARMDecode)
+	DECLARE_ARMV5_EMITTER_BLOCK(_ARMDecode)
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {

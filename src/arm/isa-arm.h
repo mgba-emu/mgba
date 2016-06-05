@@ -13,6 +13,7 @@
 struct ARMCore;
 
 typedef void (*ARMInstruction)(struct ARMCore*, uint32_t opcode);
-extern const ARMInstruction _armTable[0x1000];
+extern const ARMInstruction _armv4Table[0x1000];
+extern const ARMInstruction _armv5Table[0x1000];
 
 #endif

@@ -253,9 +253,12 @@ void ARMRaiseIRQ(struct ARMCore*);
 void ARMRaiseSWI(struct ARMCore*);
 void ARMRaiseUndefined(struct ARMCore*);
 
-void ARMRun(struct ARMCore* cpu);
-void ARMRunLoop(struct ARMCore* cpu);
-int32_t ARMRunCycles(struct ARMCore* cpu, int32_t cycles);
+void ARMv4Run(struct ARMCore* cpu);
+void ARMv4RunLoop(struct ARMCore* cpu);
+int32_t ARMv4RunCycles(struct ARMCore* cpu, int32_t cycles);
+void ARMv5Run(struct ARMCore* cpu);
+void ARMv5RunLoop(struct ARMCore* cpu);
+int32_t ARMv5RunCycles(struct ARMCore* cpu, int32_t cycles);
 void ARMRunFake(struct ARMCore* cpu, uint32_t opcode);
 
 #endif

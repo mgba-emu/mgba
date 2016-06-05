@@ -293,16 +293,16 @@ static void _GBACoreRunFrame(struct mCore* core) {
 	struct GBA* gba = core->board;
 	int32_t frameCounter = gba->video.frameCounter;
 	while (gba->video.frameCounter == frameCounter) {
-		ARMRunLoop(core->cpu);
+		ARMv4RunLoop(core->cpu);
 	}
 }
 
 static void _GBACoreRunLoop(struct mCore* core) {
-	ARMRunLoop(core->cpu);
+	ARMv4RunLoop(core->cpu);
 }
 
 static void _GBACoreStep(struct mCore* core) {
-	ARMRun(core->cpu);
+	ARMv4Run(core->cpu);
 }
 
 static size_t _GBACoreStateSize(struct mCore* core) {

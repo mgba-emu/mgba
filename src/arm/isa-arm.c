@@ -8,6 +8,7 @@
 #include "arm.h"
 #include "emitter-arm.h"
 #include "isa-inlines.h"
+#include "util/math.h"
 
 #define PSR_USER_MASK   0xF0000000
 #define PSR_PRIV_MASK   0x000000CF
@@ -648,6 +649,11 @@ DEFINE_INSTRUCTION_ARM(STC, ARM_STUB)
 
 // Begin miscellaneous definitions
 
+DEFINE_INSTRUCTION_ARM(CLZ,
+	int rm = opcode & 0xF;
+	int rd = (opcode >> 12) & 0xF;
+	cpu->gprs[rd] = clz32(cpu->gprs[rm]);)
+
 DEFINE_INSTRUCTION_ARM(BKPT, cpu->irqh.bkpt32(cpu, ((opcode >> 4) & 0xFFF0) | (opcode & 0xF))); // Not strictly in ARMv4T, but here for convenience
 DEFINE_INSTRUCTION_ARM(ILL, ARM_ILL) // Illegal opcode
 
@@ -727,6 +733,10 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 
-const ARMInstruction _armTable[0x1000] = {
-	DECLARE_ARM_EMITTER_BLOCK(_ARMInstruction)
+const ARMInstruction _armv4Table[0x1000] = {
+	DECLARE_ARMV4_EMITTER_BLOCK(_ARMInstruction)
+};
+
+const ARMInstruction _armv5Table[0x1000] = {
+	DECLARE_ARMV5_EMITTER_BLOCK(_ARMInstruction)
 };

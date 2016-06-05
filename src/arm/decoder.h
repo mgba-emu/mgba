@@ -160,6 +160,7 @@ enum ARMMnemonic {
 	ARM_MN_BL,
 	ARM_MN_BX,
 	ARM_MN_CDP,
+	ARM_MN_CLZ,
 	ARM_MN_CMN,
 	ARM_MN_CMP,
 	ARM_MN_EOR,

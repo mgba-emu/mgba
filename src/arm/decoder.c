@@ -252,6 +252,7 @@ static const char* _armMnemonicStrings[] = {
 	"bl",
 	"bx",
 	"cdp",
+	"clz",
 	"cmn",
 	"cmp",
 	"eor",
