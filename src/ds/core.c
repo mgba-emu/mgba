@@ -15,6 +15,8 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
+#define SLICE_CYCLES 2048
+
 struct DSCore {
 	struct mCore d;
 	struct ARMCore* arm7;
@@ -157,6 +159,7 @@ static void _DSCoreReset(struct mCore* core) {
 	struct DS* ds = (struct DS*) core->board;
 	ARMReset(ds->arm7);
 	ARMReset(ds->arm9);
+	dscore->cycleDrift = 0;
 }
 
 static void _DSCoreRunFrame(struct mCore* core) {
@@ -164,28 +167,47 @@ static void _DSCoreRunFrame(struct mCore* core) {
 	struct DS* ds = core->board;
 	int32_t frameCounter = ds->video.frameCounter;
 	while (ds->video.frameCounter == frameCounter) {
-		dscore->cycleDrift += ARMRunCycles(dscore->arm9, 2048);
-		dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
+		if (dscore->cycleDrift < SLICE_CYCLES) {
+			dscore->cycleDrift += ARMRunCycles(dscore->arm9, SLICE_CYCLES);
+		}
+		if (dscore->cycleDrift >= SLICE_CYCLES) {
+			dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
+		}
 	}
 }
 
 static void _DSCoreRunLoop(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
-	dscore->cycleDrift += ARMRunCycles(dscore->arm9, 2048);
-	dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
+	if (dscore->cycleDrift < SLICE_CYCLES) {
+		dscore->cycleDrift += ARMRunCycles(dscore->arm9, SLICE_CYCLES);
+	}
+	if (dscore->cycleDrift >= SLICE_CYCLES) {
+		dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
+	}
 }
 
 static void _DSCoreStep(struct mCore* core) {
 	struct DSCore* dscore = (struct DSCore*) core;
-	int32_t runCycles;
 	if (core->cpu == dscore->arm9) {
-		runCycles = 1;
+		do {
+			if (dscore->cycleDrift >= SLICE_CYCLES) {
+				dscore->cycleDrift -= ARMRunCycles(dscore->arm7, dscore->cycleDrift >> 1) << 1;
+			}
+			if (dscore->cycleDrift < SLICE_CYCLES) {
+				dscore->cycleDrift += ARMRunCycles(dscore->arm9, 1);
+				break;
+			}
+		} while (dscore->cycleDrift >= SLICE_CYCLES);
 	} else {
-		runCycles = 2;
-	}
-	dscore->cycleDrift += ARMRunCycles(dscore->arm9, runCycles);
-	if (dscore->cycleDrift > 1) {
-		dscore->cycleDrift -= ARMRunCycles(dscore->arm7, 1) << 1;
+		do {
+			if (dscore->cycleDrift < SLICE_CYCLES) {
+				dscore->cycleDrift += ARMRunCycles(dscore->arm9, SLICE_CYCLES - dscore->cycleDrift);
+			}
+			if (dscore->cycleDrift >= SLICE_CYCLES) {
+				dscore->cycleDrift -= ARMRunCycles(dscore->arm7, 1) << 1;
+				break;
+			}
+		} while (dscore->cycleDrift < SLICE_CYCLES);
 	}
 }
 
