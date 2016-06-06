@@ -158,6 +158,7 @@ enum ARMMnemonic {
 	ARM_MN_BIC,
 	ARM_MN_BKPT,
 	ARM_MN_BL,
+	ARM_MN_BLX,
 	ARM_MN_BX,
 	ARM_MN_CDP,
 	ARM_MN_CLZ,

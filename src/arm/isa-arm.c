@@ -613,6 +613,17 @@ DEFINE_INSTRUCTION_ARM(BX,
 		THUMB_WRITE_PC;
 	} else {
 		ARM_WRITE_PC;
+
+	})
+DEFINE_INSTRUCTION_ARM(BLX2,
+	int rm = opcode & 0x0000000F;
+	cpu->gprs[ARM_LR] = cpu->gprs[ARM_PC] - WORD_SIZE_ARM;
+	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
+	if (cpu->executionMode == MODE_THUMB) {
+		THUMB_WRITE_PC;
+	} else {
+		ARM_WRITE_PC;
 	})
 
 // End branch definitions

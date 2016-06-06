@@ -250,6 +250,7 @@ static const char* _armMnemonicStrings[] = {
 	"bic",
 	"bkpt",
 	"bl",
+	"blx",
 	"bx",
 	"cdp",
 	"clz",

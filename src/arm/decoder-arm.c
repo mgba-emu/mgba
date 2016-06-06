@@ -351,6 +351,11 @@ DEFINE_DECODER_ARM(BX, BX,
 	info->operandFormat = ARM_OPERAND_REGISTER_1;
 	info->branchType = ARM_BRANCH_INDIRECT;)
 
+DEFINE_DECODER_ARM(BLX2, BLX,
+	info->op1.reg = opcode & 0x0000000F;
+	info->operandFormat = ARM_OPERAND_REGISTER_1;
+	info->branchType = ARM_BRANCH_LINKED | ARM_BRANCH_INDIRECT;)
+
 // End branch definitions
 
 // Begin coprocessor definitions
