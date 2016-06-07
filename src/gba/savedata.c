@@ -84,18 +84,22 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 }
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
+	enum SavedataType type = savedata->type;
 	GBASavedataDeinit(savedata);
 	savedata->vf = vf;
 	savedata->mapMode = MAP_READ;
+	GBASavedataForceType(savedata, type, savedata->realisticTiming);
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
 	if (savedata->mapMode != MAP_READ) {
 		return;
 	}
+	enum SavedataType type = savedata->type;
 	GBASavedataDeinit(savedata);
 	savedata->vf = savedata->realVf;
 	savedata->mapMode = MAP_WRITE;
+	GBASavedataForceType(savedata, type, savedata->realisticTiming);
 }
 
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {

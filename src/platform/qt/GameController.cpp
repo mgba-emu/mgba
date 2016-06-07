@@ -390,6 +390,23 @@ void GameController::loadBIOS(const QString& path) {
 	}
 }
 
+void GameController::loadSave(const QString& path, bool temporary) {
+	if (!isLoaded()) {
+		return;
+	}
+	VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
+	if (!vf) {
+		LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
+		return;
+	}
+
+	if (temporary) {
+		m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+	} else {
+		m_threadContext.core->loadSave(m_threadContext.core, vf);
+	}
+}
+
 void GameController::yankPak() {
 	if (!m_gameOpen) {
 		return;

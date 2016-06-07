@@ -313,6 +313,15 @@ void Window::replaceROM() {
 	}
 }
 
+void Window::selectSave(bool temporary) {
+	QStringList formats{"*.sav"};
+	QString filter = tr("Game Boy Advance save files (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), filter);
+	if (!filename.isEmpty()) {
+		m_controller->loadSave(filename, temporary);
+	}
+}
+
 void Window::multiplayerChanged() {
 	disconnect(nullptr, this, SLOT(multiplayerChanged()));
 	int attached = 1;
@@ -812,6 +821,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
+	QAction* loadTemporarySave = new QAction(tr("Load temporary save"), fileMenu);
+	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
+	m_gameActions.append(loadTemporarySave);
+	m_gbaActions.append(loadTemporarySave);
+	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
+
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");

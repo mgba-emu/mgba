@@ -192,6 +192,11 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBALoadSave(core->board, vf);
 }
 
+static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
+	GBASavedataMask(core->board, vf);
+	return true; // TODO: Return a real value
+}
+
 static bool _GBACoreLoadPatch(struct mCore* core, struct VFile* vf) {
 	if (!vf) {
 		return false;
@@ -488,6 +493,7 @@ struct mCore* GBACoreCreate(void) {
 	core->loadROM = _GBACoreLoadROM;
 	core->loadBIOS = _GBACoreLoadBIOS;
 	core->loadSave = _GBACoreLoadSave;
+	core->loadTemporarySave = _GBACoreLoadTemporarySave;
 	core->loadPatch = _GBACoreLoadPatch;
 	core->unloadROM = _GBACoreUnloadROM;
 	core->reset = _GBACoreReset;

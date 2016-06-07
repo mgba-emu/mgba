@@ -67,6 +67,7 @@ struct mCore {
 	bool (*isROM)(struct VFile* vf);
 	bool (*loadROM)(struct mCore*, struct VFile* vf);
 	bool (*loadSave)(struct mCore*, struct VFile* vf);
+	bool (*loadTemporarySave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
