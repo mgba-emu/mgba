@@ -34,6 +34,7 @@ Misc:
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
  - Qt: Canonicalize file paths when loading games
  - Qt: Add refresh button to controller editing
+ - Debugger: CLI debugger now exits when end-of-stream is reached
 
 0.4.0: (2016-02-02)
 Features:
