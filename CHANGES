@@ -47,6 +47,7 @@ Misc:
  - OpenGL: Add texSize uniform
  - Qt: Add refresh button to controller editing
  - ARM7: Clean up instruction decoding for future expandability
+ - Debugger: CLI debugger now exits when end-of-stream is reached
 
 0.4.0: (2016-02-02)
 Features:

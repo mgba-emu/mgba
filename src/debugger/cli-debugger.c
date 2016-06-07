@@ -617,6 +617,7 @@ static void _commandLine(struct mDebugger* debugger) {
 	while (debugger->state == DEBUGGER_PAUSED) {
 		line = el_gets(cliDebugger->elstate, &count);
 		if (!line) {
+			debugger->state = DEBUGGER_SHUTDOWN;
 			return;
 		}
 		if (line[0] == '\n') {
