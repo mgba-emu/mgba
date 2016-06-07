@@ -46,6 +46,7 @@ Bugfixes:
  - GB Audio: Reset envelope timer when reseting sound channel
  - SDL: Prevent crash on cores with no audio
  - ARM7: Decode MCR/MRC
+ - ARM7: Clean up instruction decoding for future expandability
 Misc:
  - SDL: Remove scancode key input
  - GBA Video: Clean up unused timers
