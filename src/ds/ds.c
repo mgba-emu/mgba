@@ -80,6 +80,10 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 
 	ds->springIRQ7 = 0;
 	ds->springIRQ9 = 0;
+	ds->timersEnabled7 = 0;
+	ds->timersEnabled9 = 0;
+	memset(ds->timers7, 0, sizeof(ds->timers7));
+	memset(ds->timers9, 0, sizeof(ds->timers9));
 	ds->keySource = NULL;
 	ds->rtcSource = NULL;
 	ds->rumble = NULL;
@@ -196,22 +200,26 @@ static void DSProcessEvents(struct ARMCore* cpu) {
 		ds->springIRQ7 = 0;
 	}
 
-	do {
-		int32_t cycles = cpu->nextEvent;
-		int32_t nextEvent = INT_MAX;
+	int32_t cycles = cpu->nextEvent;
+	int32_t nextEvent = INT_MAX;
+	int32_t testEvent;
 #ifndef NDEBUG
-		if (cycles < 0) {
-			mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
-		}
+	if (cycles < 0) {
+		mLOG(DS, FATAL, "Negative cycles passed: %i", cycles);
+	}
 #endif
 
-		cpu->cycles -= cycles;
-		cpu->nextEvent = nextEvent;
+	testEvent = DSTimersProcessEvents(ds, cycles);
+	if (testEvent < nextEvent) {
+		nextEvent = testEvent;
+	}
 
-		if (cpu->halted) {
-			cpu->cycles = cpu->nextEvent;
-		}
-	} while (cpu->cycles >= cpu->nextEvent);
+	cpu->cycles -= cycles;
+	cpu->nextEvent = nextEvent;
+
+	if (cpu->halted) {
+		cpu->cycles = cpu->nextEvent;
+	}
 }
 
 void DSAttachDebugger(struct DS* ds, struct mDebugger* debugger) {
@@ -454,4 +462,34 @@ void DS9WriteCP15(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode
 	case 9:
 		_writeTCMControl(cpu, crm, opcode2, value);
 		break;
-	}}
+	}
+}
+
+void DSWriteIE(struct ARMCore* cpu, uint16_t* io, uint32_t value) {
+	if (io[DS7_REG_IME >> 1] && (value & io[DS7_REG_IF_LO >> 1] || (value >> 16) & io[DS7_REG_IF_HI >> 1])) {
+		ARMRaiseIRQ(cpu);
+	}
+}
+void DSWriteIME(struct ARMCore* cpu, uint16_t* io, uint16_t value) {
+	if (value && (io[DS7_REG_IE_LO >> 1] & io[DS7_REG_IF_LO >> 1] || io[DS7_REG_IE_HI >> 1] & io[DS7_REG_IF_HI >> 1])) {
+		ARMRaiseIRQ(cpu);
+	}
+}
+
+void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq) {
+	if (irq < 16) {
+		io[DS7_REG_IF_LO >> 1] |= 1 << irq;
+	} else {
+		io[DS7_REG_IF_HI >> 1] |= 1 << (irq - 16);
+	}
+	cpu->halted = 0;
+
+	if (!io[DS7_REG_IME >> 1]) {
+		return;
+	}
+	if (irq < 16 && (io[DS7_REG_IE_LO >> 1] & 1 << irq)) {
+		ARMRaiseIRQ(cpu);
+	} else if (io[DS7_REG_IE_HI >> 1] & 1 << (irq - 16)) {
+		ARMRaiseIRQ(cpu);
+	}
+}

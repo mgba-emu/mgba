@@ -24,10 +24,52 @@ void DS7IOInit(struct DS* ds) {
 
 void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	switch (address) {
-	case DS9_REG_IPCSYNC:
+	// Timers
+	case DS7_REG_TM0CNT_LO:
+		DSTimerWriteTMCNT_LO(&ds->timers7[0], value);
+		return;
+	case DS7_REG_TM1CNT_LO:
+		DSTimerWriteTMCNT_LO(&ds->timers7[1], value);
+		return;
+	case DS7_REG_TM2CNT_LO:
+		DSTimerWriteTMCNT_LO(&ds->timers7[2], value);
+		return;
+	case DS7_REG_TM3CNT_LO:
+		DSTimerWriteTMCNT_LO(&ds->timers7[3], value);
+		return;
+
+	case DS7_REG_TM0CNT_HI:
+		value &= 0x00C7;
+		DSTimerWriteTMCNT_HI(&ds->timers7[0], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
+		ds->timersEnabled7 &= ~1;
+		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[0].flags);
+		break;
+	case DS7_REG_TM1CNT_HI:
+		value &= 0x00C7;
+		DSTimerWriteTMCNT_HI(&ds->timers7[1], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
+		ds->timersEnabled7 &= ~2;
+		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[1].flags) << 1;
+		break;
+	case DS7_REG_TM2CNT_HI:
+		value &= 0x00C7;
+		DSTimerWriteTMCNT_HI(&ds->timers7[2], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
+		ds->timersEnabled7 &= ~4;
+		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[2].flags) << 2;
+		break;
+	case DS7_REG_TM3CNT_HI:
+		value &= 0x00C7;
+		DSTimerWriteTMCNT_HI(&ds->timers7[3], ds->arm7, &ds->memory.io7[(address - 2) >> 1], value);
+		ds->timersEnabled7 &= ~8;
+		ds->timersEnabled7 |= DSTimerFlagsGetEnable(ds->timers7[3].flags) << 3;
+		break;
+
+	case DS7_REG_IPCSYNC:
 		value &= 0x6F00;
 		value |= ds->memory.io7[address >> 1] & 0x000F;
 		_writeIPCSync(ds->arm9, ds->memory.io9, value);
+		break;
+	case DS7_REG_IME:
+		DSWriteIME(ds->arm7, ds->memory.io7, value);
 		break;
 	default:
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X:%04X", address, value);
@@ -50,11 +92,28 @@ void DS7IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 	}
 }
 
-void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value);
+void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
+	switch (address) {
+	case DS7_REG_IE_LO:
+		DSWriteIE(ds->arm7, ds->memory.io7, value);
+		break;
+	default:
+		DS7IOWrite(ds, address, value & 0xFFFF);
+		DS7IOWrite(ds, address | 2, value >> 16);
+		return;
+	}
+	ds->memory.io7[address >> 1] = value;
+	ds->memory.io7[(address >> 1) + 1] = value >> 16;
+}
 
 uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	switch (address) {
 	case DS7_REG_IPCSYNC:
+	case DS7_REG_IME:
+	case DS7_REG_IE_LO:
+	case DS7_REG_IE_HI:
+	case DS7_REG_IF_LO:
+	case DS7_REG_IF_HI:
 		// Handled transparently by the registers
 		break;
 	default:
@@ -98,7 +157,16 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 	}
 }
 
-void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value);
+void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
+	switch (address) {
+	default:
+		DS9IOWrite(ds, address, value & 0xFFFF);
+		DS9IOWrite(ds, address | 2, value >> 16);
+		return;
+	}
+	ds->memory.io9[address >> 1] = value;
+	ds->memory.io9[(address >> 1) + 1] = value >> 16;
+}
 
 uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	switch (address) {

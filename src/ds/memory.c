@@ -248,6 +248,9 @@ uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load32: %08X", address);
 		break;
+	case DS_REGION_IO:
+		value = DS7IORead(ds, address & 0x00FFFFFC) | (DS7IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Load32: %08X", address);
 		break;
@@ -346,6 +349,9 @@ void DS7Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
+		break;
+	case DS_REGION_IO:
+		DS7IOWrite32(ds, address & 0x00FFFFFF, value);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 Store32: %08X:%08X", address, value);
@@ -454,6 +460,9 @@ uint32_t DS7LoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		} else {
 			mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
 		});
+		break;
+	case DS_REGION_IO:
+		LDM_LOOP(value = DS7IORead(ds, address & 0x00FFFFFC) | (DS7IORead(ds, (address & 0x00FFFFFC) | 2) << 16));
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS7 LDM: %08X", address);
@@ -592,6 +601,9 @@ uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
+	case DS_REGION_IO:
+		value = DS9IORead(ds, address & 0x00FFFFFC) | (DS9IORead(ds, (address & 0x00FFFFFC) | 2) << 16);
+		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Load32: %08X", address);
 		break;
@@ -681,6 +693,9 @@ void DS9Store32(struct ARMCore* cpu, uint32_t address, int32_t value, int* cycle
 			break;
 		}
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);
+		break;
+	case DS_REGION_IO:
+		DS9IOWrite32(ds, address & 0x00FFFFFF, value);
 		break;
 	default:
 		mLOG(DS_MEM, STUB, "Unimplemented DS9 Store32: %08X:%08X", address, value);

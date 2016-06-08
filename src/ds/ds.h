@@ -12,6 +12,7 @@
 #include "core/log.h"
 
 #include "ds/memory.h"
+#include "ds/timer.h"
 #include "ds/video.h"
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
@@ -57,6 +58,10 @@ struct DS {
 	struct ARMCore* arm9;
 	struct DSMemory memory;
 	struct DSVideo video;
+	int timersEnabled7;
+	int timersEnabled9;
+	struct DSTimer timers7[4];
+	struct DSTimer timers9[4];
 
 	struct mCoreSync* sync;
 
@@ -130,5 +135,9 @@ bool DSLoadBIOS(struct DS* ds, struct VFile* vf);
 bool DSIsROM(struct VFile* vf);
 void DSGetGameCode(struct DS* ds, char* out);
 void DSGetGameTitle(struct DS* ds, char* out);
+
+void DSWriteIME(struct ARMCore* cpu, uint16_t* io, uint16_t value);
+void DSWriteIE(struct ARMCore* cpu, uint16_t* io, uint32_t value);
+void DSRaiseIRQ(struct ARMCore* cpu, uint16_t* io, enum DSIRQ irq);
 
 #endif
