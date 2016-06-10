@@ -659,7 +659,7 @@ DEFINE_INSTRUCTION_ARM(MSRR,
 	int32_t operand = cpu->gprs[opcode & 0x0000000F];
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
-	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
+	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask) | 0x00000010;)
 
 DEFINE_INSTRUCTION_ARM(MRS, \
 	int rd = (opcode >> 12) & 0xF; \
@@ -701,7 +701,7 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
-	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
+	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask) | 0x00000010;)
 
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 
