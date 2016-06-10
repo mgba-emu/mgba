@@ -112,6 +112,23 @@ void DS7IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
 
 uint16_t DS7IORead(struct DS* ds, uint32_t address) {
 	switch (address) {
+	case DS7_REG_TM0CNT_LO:
+		DSTimerUpdateRegister(&ds->timers7[0], ds->arm7, &ds->memory.io7[address >> 1]);
+		break;
+	case DS7_REG_TM1CNT_LO:
+		DSTimerUpdateRegister(&ds->timers7[1], ds->arm7, &ds->memory.io7[address >> 1]);
+		break;
+	case DS7_REG_TM2CNT_LO:
+		DSTimerUpdateRegister(&ds->timers7[2], ds->arm7, &ds->memory.io7[address >> 1]);
+		break;
+	case DS7_REG_TM3CNT_LO:
+		DSTimerUpdateRegister(&ds->timers7[3], ds->arm7, &ds->memory.io7[address >> 1]);
+		break;
+
+	case DS7_REG_TM0CNT_HI:
+	case DS7_REG_TM1CNT_HI:
+	case DS7_REG_TM2CNT_HI:
+	case DS7_REG_TM3CNT_HI:
 	case DS7_REG_IPCSYNC:
 	case DS7_REG_IME:
 	case DS7_REG_IE_LO:
