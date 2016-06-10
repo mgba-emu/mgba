@@ -71,6 +71,10 @@ void DS7IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 	case DS7_REG_IME:
 		DSWriteIME(ds->arm7, ds->memory.io7, value);
 		break;
+	case DS7_REG_IF_LO:
+	case DS7_REG_IF_HI:
+		value = ds->memory.io7[address >> 1] & ~value;
+		break;
 	default:
 		mLOG(DS_IO, STUB, "Stub DS7 I/O register write: %06X:%04X", address, value);
 		if (address >= DS7_REG_MAX) {
