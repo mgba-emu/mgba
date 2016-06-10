@@ -16,6 +16,9 @@ static inline uint32_t popcount32(unsigned bits) {
 
 static inline unsigned clz32(uint32_t bits) {
 #if defined(__GNUC__) || __clang__
+	if (!bits) {
+		return 32;
+	}
 	return __builtin_clz(bits);
 #else
 	static const int table[256] = {
