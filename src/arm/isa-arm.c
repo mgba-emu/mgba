@@ -207,14 +207,14 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 	}
 
 #define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
-	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.priv)) { \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
 		cpu->cpsr = cpu->spsr; \
 		_ARMReadCPSR(cpu); \
 	} else { \
-		cpu->cpsr.n = ARM_SIGN(D); \
-		cpu->cpsr.z = !(D); \
-		cpu->cpsr.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
-		cpu->cpsr.v = ARM_V_SUBTRACTION(M, N, D); \
+		cpu->cpsr.a.n = ARM_SIGN(D); \
+		cpu->cpsr.a.z = !(D); \
+		cpu->cpsr.a.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
+		cpu->cpsr.a.v = ARM_V_SUBTRACTION(M, N, D); \
 	}
 
 #define ARM_NEUTRAL_S(M, N, D) \
@@ -463,24 +463,13 @@ DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->g
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-<<<<<<< HEAD
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->gprs[rd]),
-	int32_t n = cpu->gprs[rn] + !cpu->cpsr.a.c;
-	cpu->gprs[rd] = cpu->shifterOperand - n;)
-=======
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.c),
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.a.c),
 	int32_t n = cpu->gprs[rn];
-	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.c;)
->>>>>>> upstream/master
+	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.a.c;)
 
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.c),
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.a.c),
 	int32_t n = cpu->gprs[rn];
-<<<<<<< HEAD
-	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.a.c;
-	cpu->gprs[rd] = n - shifterOperand;)
-=======
-	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.c;)
->>>>>>> upstream/master
+	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.a.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];
