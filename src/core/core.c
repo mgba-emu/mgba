@@ -6,6 +6,7 @@
 #include "core.h"
 
 #include "core/log.h"
+#include "core/serialize.h"
 #include "util/vfs.h"
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -108,7 +109,7 @@ bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	if (!vf) {
 		return false;
 	}
-	bool success = core->saveState(core, vf, flags);
+	bool success = mCoreSaveStateNamed(core, vf, flags);
 	vf->close(vf);
 	if (success) {
 		mLOG(STATUS, INFO, "State %i saved", slot);
@@ -124,7 +125,7 @@ bool mCoreLoadState(struct mCore* core, int slot, int flags) {
 	if (!vf) {
 		return false;
 	}
-	bool success = core->loadState(core, vf, flags);
+	bool success = mCoreLoadStateNamed(core, vf, flags);
 	vf->close(vf);
 	if (success) {
 		mLOG(STATUS, INFO, "State %i loaded", slot);

@@ -12,7 +12,7 @@
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
 
-const char* GBAIORegisterNames[] = {
+const char* const GBAIORegisterNames[] = {
 	// Video
 	"DISPCNT",
 	0,

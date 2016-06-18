@@ -6,12 +6,12 @@
 #include "sdl-events.h"
 
 #include "core/input.h"
+#include "core/serialize.h"
 #include "core/thread.h"
 #include "debugger/debugger.h"
 #include "gba/input.h"
 #include "gba/io.h"
 #include "gba/rr/rr.h"
-#include "gba/serialize.h"
 #include "gba/video.h"
 #include "gba/renderers/video-software.h"
 #include "util/configuration.h"

@@ -34,4 +34,8 @@ void GBTimerDivReset(struct GBTimer*);
 uint8_t GBTimerUpdateTAC(struct GBTimer*, GBRegisterTAC tac);
 void GBTimerUpdateTIMA(struct GBTimer* timer);
 
+struct GBSerializedState;
+void GBTimerSerialize(const struct GBTimer* timer, struct GBSerializedState* state);
+void GBTimerDeserialize(struct GBTimer* timer, const struct GBSerializedState* state);
+
 #endif

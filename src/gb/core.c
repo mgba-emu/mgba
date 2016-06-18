@@ -10,9 +10,11 @@
 #include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/renderers/software.h"
+#include "gb/serialize.h"
 #include "lr35902/debugger/debugger.h"
 #include "util/memory.h"
 #include "util/patch.h"
+#include "util/vfs.h"
 
 struct GBCore {
 	struct mCore d;
@@ -44,6 +46,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	LR35902Init(cpu);
 
 	GBVideoSoftwareRendererCreate(&gbcore->renderer);
+	gbcore->renderer.outputBuffer = NULL;
 
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
@@ -93,6 +96,16 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 		gb->audio.masterVolume = core->opts.volume;
 	}
 	gb->video.frameskip = core->opts.frameskip;
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios && core->opts.bios) {
+		bios = VFileOpen(core->opts.bios, O_RDONLY);
+	}
+	if (bios) {
+		GBLoadBIOS(gb, bios);
+	}
+#endif
 }
 
 static void _GBCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -148,11 +161,9 @@ static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBCoreLoadBIOS(struct mCore* core, struct VFile* vf, int type) {
-	UNUSED(core);
-	UNUSED(vf);
 	UNUSED(type);
-	// TODO
-	return false;
+	GBLoadBIOS(core->board, vf);
+	return true;
 }
 
 static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
@@ -197,23 +208,24 @@ static void _GBCoreRunLoop(struct mCore* core) {
 }
 
 static void _GBCoreStep(struct mCore* core) {
-	LR35902Tick(core->cpu);
+	struct LR35902Core* cpu = core->cpu;
+	do {
+		LR35902Tick(cpu);
+	} while (cpu->executionState != LR35902_CORE_FETCH);
 }
 
-static bool _GBCoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
+static size_t _GBCoreStateSize(struct mCore* core) {
 	UNUSED(core);
-	UNUSED(vf);
-	UNUSED(flags);
-	// TODO
-	return false;
+	return sizeof(struct GBSerializedState);
 }
 
-static bool _GBCoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
-	UNUSED(core);
-	UNUSED(vf);
-	UNUSED(flags);
-	// TODO
-	return false;
+static bool _GBCoreLoadState(struct mCore* core, const void* state) {
+	return GBDeserialize(core->board, state);
+}
+
+static bool _GBCoreSaveState(struct mCore* core, void* state) {
+	GBSerialize(core->board, state);
+	return true;
 }
 
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
@@ -397,6 +409,33 @@ static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
 	return gbcore->cheatDevice;
 }
 
+static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
+	struct GB* gb = core->board;
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		*sram = malloc(vf->size(vf));
+		vf->seek(vf, 0, SEEK_SET);
+		return vf->read(vf, *sram, vf->size(vf));
+	}
+	*sram = malloc(0x20000);
+	memcpy(*sram, gb->memory.sram, 0x20000);
+	return 0x20000;
+}
+
+static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+	struct GB* gb = core->board;
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		vf->seek(vf, 0, SEEK_SET);
+		return vf->write(vf, sram, size) > 0;
+	}
+	if (size > 0x20000) {
+		size = 0x20000;
+	}
+	memcpy(gb->memory.sram, sram, 0x20000);
+	return true;
+}
+
 struct mCore* GBCoreCreate(void) {
 	struct GBCore* gbcore = malloc(sizeof(*gbcore));
 	struct mCore* core = &gbcore->d;
@@ -426,6 +465,7 @@ struct mCore* GBCoreCreate(void) {
 	core->runFrame = _GBCoreRunFrame;
 	core->runLoop = _GBCoreRunLoop;
 	core->step = _GBCoreStep;
+	core->stateSize = _GBCoreStateSize;
 	core->loadState = _GBCoreLoadState;
 	core->saveState = _GBCoreSaveState;
 	core->setKeys = _GBCoreSetKeys;
@@ -457,5 +497,7 @@ struct mCore* GBCoreCreate(void) {
 	core->attachDebugger = _GBCoreAttachDebugger;
 	core->detachDebugger = _GBCoreDetachDebugger;
 	core->cheatDevice = _GBCoreCheatDevice;
+	core->savedataClone = _GBCoreSavedataClone;
+	core->savedataLoad = _GBCoreSavedataLoad;
 	return core;
 }

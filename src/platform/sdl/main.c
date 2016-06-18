@@ -146,6 +146,7 @@ int main(int argc, char** argv) {
 	freeArguments(&args);
 	mCoreConfigFreeOpts(&opts);
 	mCoreConfigDeinit(&renderer.core->config);
+	renderer.core->deinit(renderer.core);
 
 	return ret;
 }

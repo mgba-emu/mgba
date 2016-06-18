@@ -31,6 +31,7 @@ enum mPlatform {
 struct mRTCSource;
 struct mCoreConfig;
 struct mCoreSync;
+struct mStateExtdata;
 struct mCore {
 	void* cpu;
 	void* board;
@@ -66,6 +67,7 @@ struct mCore {
 	bool (*isROM)(struct VFile* vf);
 	bool (*loadROM)(struct mCore*, struct VFile* vf);
 	bool (*loadSave)(struct mCore*, struct VFile* vf);
+	bool (*loadTemporarySave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
@@ -78,8 +80,9 @@ struct mCore {
 	void (*runLoop)(struct mCore*);
 	void (*step)(struct mCore*);
 
-	bool (*loadState)(struct mCore*, struct VFile*, int flags);
-	bool (*saveState)(struct mCore*, struct VFile*, int flags);
+	size_t (*stateSize)(struct mCore*);
+	bool (*loadState)(struct mCore*, const void* state);
+	bool (*saveState)(struct mCore*, void* state);
 
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
@@ -119,6 +122,9 @@ struct mCore {
 	void (*detachDebugger)(struct mCore*);
 
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
+
+	size_t (*savedataClone)(struct mCore*, void** sram);
+	bool (*savedataLoad)(struct mCore*, const void* sram, size_t size);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

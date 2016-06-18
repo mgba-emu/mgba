@@ -299,18 +299,12 @@ static const ThumbDecoder _thumbDecoderTable[0x400] = {
 };
 
 void ARMDecodeThumb(uint16_t opcode, struct ARMInstructionInfo* info) {
+	memset(info, 0, sizeof(*info));
 	info->execMode = MODE_THUMB;
 	info->opcode = opcode;
 	info->branchType = ARM_BRANCH_NONE;
-	info->traps = 0;
-	info->affectsCPSR = 0;
 	info->condition = ARM_CONDITION_AL;
-	info->sDataCycles = 0;
-	info->nDataCycles = 0;
 	info->sInstructionCycles = 1;
-	info->nInstructionCycles = 0;
-	info->iCycles = 0;
-	info->cCycles = 0;
 	ThumbDecoder decoder = _thumbDecoderTable[opcode >> 6];
 	decoder(opcode, info);
 }

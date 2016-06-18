@@ -6,10 +6,11 @@
 #include "gui-runner.h"
 
 #include "core/core.h"
+#include "core/serialize.h"
 #include "feature/gui/gui-config.h"
+#include "gba/gba.h"
 #include "gba/input.h"
 #include "gba/interface.h"
-#include "gba/serialize.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
 #include "util/gui/menu.h"
@@ -64,9 +65,11 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			return;
 		}
 		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
+		unsigned w, h;
+		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
-			pixels = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+			pixels = anonymousMemoryMap(w * h * 4);
 			gbaBackground->screenshot = pixels;
 		}
 		bool success = false;
@@ -76,7 +79,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			png_infop end = png_create_info_struct(png);
 			if (png && info && end) {
 				success = PNGReadHeader(png, info);
-				success = success && PNGReadPixels(png, info, pixels, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, VIDEO_HORIZONTAL_PIXELS);
+				success = success && PNGReadPixels(png, info, pixels, w, h, w);
 				success = success && PNGReadFooter(png, end);
 			}
 			PNGReadClose(png, info, end);
@@ -376,7 +379,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
 	if (drawState.screenshot) {
-		mappedMemoryFree(drawState.screenshot, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+		unsigned w, h;
+		runner->core->desiredVideoDimensions(runner->core, &w, &h);
+		mappedMemoryFree(drawState.screenshot, w * h * 4);
 	}
 
 	if (runner->core->config.port) {

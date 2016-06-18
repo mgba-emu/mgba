@@ -155,7 +155,7 @@ enum GBAIORegisters {
 
 mLOG_DECLARE_CATEGORY(GBA_IO);
 
-extern const char* GBAIORegisterNames[];
+extern const char* const GBAIORegisterNames[];
 
 void GBAIOInit(struct GBA* gba);
 void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value);

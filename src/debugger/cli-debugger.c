@@ -617,6 +617,7 @@ static void _commandLine(struct mDebugger* debugger) {
 	while (debugger->state == DEBUGGER_PAUSED) {
 		line = el_gets(cliDebugger->elstate, &count);
 		if (!line) {
+			debugger->state = DEBUGGER_SHUTDOWN;
 			return;
 		}
 		if (line[0] == '\n') {
@@ -741,7 +742,9 @@ static void _cliDebuggerDeinit(struct mDebugger* debugger) {
 	el_end(cliDebugger->elstate);
 
 	if (cliDebugger->system) {
-		cliDebugger->system->deinit(cliDebugger->system);
+		if (cliDebugger->system->deinit) {
+			cliDebugger->system->deinit(cliDebugger->system);
+		}
 		free(cliDebugger->system);
 		cliDebugger->system = 0;
 	}
@@ -770,7 +773,9 @@ void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 
 void CLIDebuggerAttachSystem(struct CLIDebugger* debugger, struct CLIDebuggerSystem* system) {
 	if (debugger->system) {
-		debugger->system->deinit(debugger->system);
+		if (debugger->system->deinit) {
+			debugger->system->deinit(debugger->system);
+		}
 		free(debugger->system);
 	}
 

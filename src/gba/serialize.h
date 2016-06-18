@@ -10,6 +10,7 @@
 
 #include "core/core.h"
 #include "gba/gba.h"
+#include "gb/serialize.h"
 
 extern const uint32_t GBA_SAVESTATE_MAGIC;
 extern const uint32_t GBA_SAVESTATE_VERSION;
@@ -204,24 +205,6 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * Total size: 0x61000 (397,312) bytes
  */
 
-DECL_BITFIELD(GBASerializedAudioFlags, uint32_t);
-DECL_BITS(GBASerializedAudioFlags, Ch1Volume, 0, 4);
-DECL_BITS(GBASerializedAudioFlags, Ch1Dead, 4, 2);
-DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 6);
-DECL_BITS(GBASerializedAudioFlags, Ch2Volume, 8, 4);
-DECL_BITS(GBASerializedAudioFlags, Ch2Dead, 12, 2);
-DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 14);
-DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
-DECL_BITS(GBASerializedAudioFlags, Ch4Dead, 20, 2);
-DECL_BITS(GBASerializedAudioFlags, Frame, 22, 3);
-DECL_BIT(GBASerializedAudioFlags, Ch1SweepEnabled, 25);
-DECL_BIT(GBASerializedAudioFlags, Ch1SweepOccurred, 26);
-
-DECL_BITFIELD(GBASerializedAudioEnvelope, uint32_t);
-DECL_BITS(GBASerializedAudioEnvelope, Length, 0, 7);
-DECL_BITS(GBASerializedAudioEnvelope, NextStep, 7, 3);
-DECL_BITS(GBASerializedAudioEnvelope, Frequency, 10, 11);
-
 DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
 DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
@@ -261,36 +244,14 @@ struct GBASerializedState {
 	} cpu;
 
 	struct {
-		struct {
-			GBASerializedAudioEnvelope envelope;
-			int32_t nextFrame;
-			int32_t reserved[2];
-			int32_t nextEvent;
-		} ch1;
-		struct {
-			GBASerializedAudioEnvelope envelope;
-			int32_t reserved[2];
-			int32_t nextEvent;
-		} ch2;
-		struct {
-			uint32_t wavebanks[8];
-			int16_t length;
-			int16_t reserved;
-			int32_t nextEvent;
-		} ch3;
-		struct {
-			int32_t lfsr;
-			GBASerializedAudioEnvelope envelope;
-			int32_t reserved;
-			int32_t nextEvent;
-		} ch4;
+		struct GBSerializedPSGState psg;
 		uint8_t fifoA[32];
 		uint8_t fifoB[32];
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
 		uint32_t fifoSize;
-		GBASerializedAudioFlags flags;
+		GBSerializedAudioFlags flags;
 	} audio;
 
 	struct {
@@ -360,44 +321,11 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
-enum GBAExtdataTag {
-	EXTDATA_NONE = 0,
-	EXTDATA_SCREENSHOT = 1,
-	EXTDATA_SAVEDATA = 2,
-	EXTDATA_CHEATS = 3,
-	EXTDATA_MAX
-};
-
-#define SAVESTATE_SCREENSHOT 1
-#define SAVESTATE_SAVEDATA   2
-#define SAVESTATE_CHEATS     4
-
-struct GBAExtdataItem {
-	int32_t size;
-	void* data;
-	void (*clean)(void*);
-};
-
-struct GBAExtdata {
-	struct GBAExtdataItem data[EXTDATA_MAX];
-};
-
 struct VDir;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-
-bool GBAExtdataInit(struct GBAExtdata*);
-void GBAExtdataDeinit(struct GBAExtdata*);
-void GBAExtdataPut(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
-bool GBAExtdataGet(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
-bool GBAExtdataSerialize(struct GBAExtdata* extpdata, struct VFile* vf);
-bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf);
-
-struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
 

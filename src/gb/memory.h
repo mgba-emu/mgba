@@ -112,6 +112,7 @@ union GBMBCState {
 struct mRotationSource;
 struct GBMemory {
 	uint8_t* rom;
+	uint8_t* romBase;
 	uint8_t* romBank;
 	enum GBMemoryBankControllerType mbcType;
 	GBMemoryBankController mbc;
@@ -148,7 +149,7 @@ struct GBMemory {
 
 	bool rtcAccess;
 	int activeRtcReg;
-	int rtcLatched;
+	bool rtcLatched;
 	uint8_t rtcRegs[5];
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
@@ -172,5 +173,9 @@ uint8_t GBDMALoad8(struct LR35902Core* cpu, uint16_t address);
 void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
+
+struct GBSerializedState;
+void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state);
+void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state);
 
 #endif

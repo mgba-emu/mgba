@@ -84,18 +84,22 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 }
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
+	enum SavedataType type = savedata->type;
 	GBASavedataDeinit(savedata);
 	savedata->vf = vf;
 	savedata->mapMode = MAP_READ;
+	GBASavedataForceType(savedata, type, savedata->realisticTiming);
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
 	if (savedata->mapMode != MAP_READ) {
 		return;
 	}
+	enum SavedataType type = savedata->type;
 	GBASavedataDeinit(savedata);
 	savedata->vf = savedata->realVf;
 	savedata->mapMode = MAP_WRITE;
+	GBASavedataForceType(savedata, type, savedata->realisticTiming);
 }
 
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
@@ -123,6 +127,27 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 		return read >= 0;
 	}
 	return true;
+}
+
+size_t GBASavedataSize(struct GBASavedata* savedata) {
+	switch (savedata->type) {
+	case SAVEDATA_SRAM:
+		return SIZE_CART_SRAM;
+	case SAVEDATA_FLASH512:
+		return SIZE_CART_FLASH512;
+	case SAVEDATA_FLASH1M:
+		return SIZE_CART_FLASH1M;
+	case SAVEDATA_EEPROM:
+		return SIZE_CART_EEPROM;
+	case SAVEDATA_FORCE_NONE:
+		return 0;
+	case SAVEDATA_AUTODETECT:
+	default:
+		if (savedata->vf) {
+			return savedata->vf->size(savedata->vf);
+		}
+		return 0;
+	}
 }
 
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {

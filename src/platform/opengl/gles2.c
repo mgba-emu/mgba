@@ -230,6 +230,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
+	glUniform2f(shader->texSizeLocation, context->d.width, context->d.height);
 	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(shader->positionLocation);
 	size_t u;
@@ -399,6 +400,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	}
 
 	shader->texLocation = glGetUniformLocation(shader->program, "tex");
+	shader->texSizeLocation = glGetUniformLocation(shader->program, "texSize");
 	shader->positionLocation = glGetAttribLocation(shader->program, "position");
 	size_t i;
 	for (i = 0; i < shader->nUniforms; ++i) {

@@ -57,19 +57,10 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 
 #ifdef BUILD_SDL
 	if (type == SDL_BINDING_BUTTON) {
-		controller->updateJoysticks();
-		controller->recalibrateAxes();
-		lookupAxes(map);
-
 		m_profileSelect = new QComboBox(this);
-		m_profileSelect->addItems(controller->connectedGamepads(type));
-		int activeGamepad = controller->gamepad(type);
-		selectGamepad(activeGamepad);
-		if (activeGamepad > 0) {
-			m_profileSelect->setCurrentIndex(activeGamepad);
-		}
-
 		connect(m_profileSelect, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGamepad(int)));
+
+		updateJoysticks();
 
 		m_clear = new QWidget(this);
 		QHBoxLayout* layout = new QHBoxLayout;
@@ -97,6 +88,10 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 			(*m_currentKey)->clearAxis();
 			(*m_currentKey)->blockSignals(signalsBlocked);
 		});
+
+		QPushButton* updateJoysticksButton = new QPushButton(tr("Refresh"));
+		layout->addWidget(updateJoysticksButton);
+		connect(updateJoysticksButton, SIGNAL(pressed()), this, SLOT(updateJoysticks()));
 	}
 #endif
 
@@ -355,3 +350,19 @@ void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 	widget->setGeometry(s.width() * x - hint.width() / 2.0, s.height() * y - hint.height() / 2.0, hint.width(),
 	                    hint.height());
 }
+
+#ifdef BUILD_SDL
+void GBAKeyEditor::updateJoysticks() {
+	m_controller->updateJoysticks();
+	m_controller->recalibrateAxes();
+
+	m_profileSelect->clear();
+	m_profileSelect->addItems(m_controller->connectedGamepads(m_type));
+	int activeGamepad = m_controller->gamepad(m_type);
+	selectGamepad(activeGamepad);
+	if (activeGamepad > 0) {
+		m_profileSelect->setCurrentIndex(activeGamepad);
+	}
+	lookupAxes(m_controller->map());
+}
+#endif

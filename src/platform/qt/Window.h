@@ -59,6 +59,7 @@ signals:
 
 public slots:
 	void selectROM();
+	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
 	void enterFullScreen();

@@ -20,11 +20,11 @@
 extern "C" {
 #include "core/config.h"
 #include "core/directories.h"
+#include "core/serialize.h"
 #ifdef M_CORE_GBA
 #include "gba/bios.h"
 #include "gba/core.h"
 #include "gba/gba.h"
-#include "gba/serialize.h"
 #include "gba/extra/sharkport.h"
 #endif
 #ifdef M_CORE_GB
@@ -288,14 +288,12 @@ void GameController::setDebugger(mDebugger* debugger) {
 
 void GameController::loadGame(const QString& path) {
 	closeGame();
-	QFile file(path);
-	if (!file.open(QIODevice::ReadOnly)) {
+	QFileInfo info(path);
+	if (!info.isReadable()) {
 		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		return;
 	}
-	file.close();
-
-	m_fname = path;
+	m_fname = info.canonicalFilePath();
 	openGame();
 }
 
@@ -392,6 +390,23 @@ void GameController::loadBIOS(const QString& path) {
 	}
 }
 
+void GameController::loadSave(const QString& path, bool temporary) {
+	if (!isLoaded()) {
+		return;
+	}
+	VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
+	if (!vf) {
+		LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
+		return;
+	}
+
+	if (temporary) {
+		m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+	} else {
+		m_threadContext.core->loadSave(m_threadContext.core, vf);
+	}
+}
+
 void GameController::yankPak() {
 	if (!m_gameOpen) {
 		return;
@@ -406,7 +421,12 @@ void GameController::replaceGame(const QString& path) {
 		return;
 	}
 
-	m_fname = path;
+	QFileInfo info(path);
+	if (!info.isReadable()) {
+		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		return;
+	}
+	m_fname = info.canonicalFilePath();
 	threadInterrupt();
 	mCoreLoadFile(m_threadContext.core, m_fname.toLocal8Bit().constData());
 	threadContinue();
@@ -785,7 +805,7 @@ void GameController::loadState(int slot) {
 		if (!controller->m_backupLoadState) {
 			controller->m_backupLoadState = VFileMemChunk(nullptr, 0);
 		}
-		context->core->saveState(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
+		mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_saveStateFlags);
 		if (mCoreLoadState(context->core, controller->m_stateSlot, controller->m_loadStateFlags)) {
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);
@@ -821,7 +841,7 @@ void GameController::loadBackupState() {
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		controller->m_backupLoadState->seek(controller->m_backupLoadState, 0, SEEK_SET);
-		if (context->core->loadState(context->core, controller->m_backupLoadState, controller->m_loadStateFlags)) {
+		if (mCoreLoadStateNamed(context->core, controller->m_backupLoadState, controller->m_loadStateFlags)) {
 			mLOG(STATUS, INFO, "Undid state load");
 			controller->frameAvailable(controller->m_drawContext);
 			controller->stateLoaded(context);

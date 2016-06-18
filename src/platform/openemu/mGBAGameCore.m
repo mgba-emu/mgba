@@ -26,11 +26,12 @@
 
 #include "util/common.h"
 
+#include "core/serialize.h"
 #include "core/core.h"
 #include "gba/cheats.h"
 #include "gba/core.h"
+#include "gba/gba.h"
 #include "gba/input.h"
-#include "gba/serialize.h"
 #include "util/circle-buffer.h"
 #include "util/memory.h"
 #include "util/vfs.h"
@@ -195,7 +196,7 @@
 - (NSData *)serializeStateWithError:(NSError **)outError
 {
 	struct VFile* vf = VFileMemChunk(nil, 0);
-	if (!core->saveState(core, vf, SAVESTATE_SAVEDATA)) {
+	if (!mCoreSaveStateNamed(core, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return nil;
@@ -211,7 +212,7 @@
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
 	struct VFile* vf = VFileFromConstMemory(state.bytes, state.length);
-	if (!core->loadState(core, vf, SAVESTATE_SAVEDATA)) {
+	if (!mCoreLoadStateNamed(core, vf, SAVESTATE_SAVEDATA)) {
 		*outError = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:nil];
 		vf->close(vf);
 		return NO;
@@ -223,14 +224,14 @@
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_CREAT | O_TRUNC | O_RDWR);
-	block(core->saveState(core, vf, 0), nil);
+	block(mCoreSaveStateNamed(core, vf, 0), nil);
 	vf->close(vf);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
 	struct VFile* vf = VFileOpen([fileName UTF8String], O_RDONLY);
-	block(core->loadState(core, vf, 0), nil);
+	block(mCoreLoadStateNamed(core, vf, 0), nil);
 	vf->close(vf);
 }
 

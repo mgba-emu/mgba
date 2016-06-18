@@ -8,6 +8,7 @@
 #include "core/interface.h"
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/serialize.h"
 
 #include "util/memory.h"
 
@@ -34,6 +35,7 @@ static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
 static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
 static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
+static void _GBHuC3(struct GBMemory*, uint16_t address, uint8_t value);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
 	if (UNLIKELY(address > cpu->memory.activeRegionEnd)) {
@@ -52,7 +54,7 @@ static void GBSetActiveRegion(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
 		cpu->memory.cpuLoad8 = GBFastLoad8;
-		cpu->memory.activeRegion = memory->rom;
+		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
 		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
 		break;
@@ -132,7 +134,7 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.sramAccess = false;
 	gb->memory.rtcAccess = false;
 	gb->memory.activeRtcReg = 0;
-	gb->memory.rtcLatched = 0;
+	gb->memory.rtcLatched = false;
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
@@ -187,6 +189,10 @@ void GBMemoryReset(struct GB* gb) {
 		gb->memory.mbc = _GBMBC7;
 		gb->memory.mbcType = GB_MBC7;
 		break;
+	case 0xFE:
+		gb->memory.mbc = _GBHuC3;
+		gb->memory.mbcType = GB_HuC3;
+		break;
 	}
 
 	if (!gb->memory.wram) {
@@ -211,7 +217,7 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
-		return memory->rom[address & (GB_SIZE_CART_BANK0 - 1)];
+		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
@@ -228,6 +234,8 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_MBC7) {
 			return _GBMBC7Read(memory, address);
+		} else if (memory->mbcType == GB_HuC3) {
+			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
 		}
 		return 0xFF;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -682,9 +690,10 @@ void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		break;
 	case 0x3:
 		if (memory->rtcLatched && value == 0) {
-			memory->rtcLatched = value;
+			memory->rtcLatched = false;
 		} else if (!memory->rtcLatched && value == 1) {
 			_latchRtc(memory);
+			memory->rtcLatched = true;
 		}
 		break;
 	}
@@ -719,7 +728,7 @@ void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
 		break;
 	case 0x4:
 	case 0x5:
-		if (memory->mbcType == GB_MBC5_RUMBLE) {
+		if (memory->mbcType == GB_MBC5_RUMBLE && memory->rumble) {
 			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
 			value &= ~8;
 		}
@@ -929,6 +938,99 @@ void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 			}
 		}
 	}
+}
+
+void _GBHuC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
+	int bank = value & 0x3F;
+	if (address & 0x1FFF) {
+		mLOG(GB_MBC, STUB, "HuC-3 unknown value %04X:%02X", address, value);
+	}
+
+	switch (address >> 13) {
+	case 0x0:
+		switch (value) {
+		case 0xA:
+			memory->sramAccess = true;
+			_switchSramBank(memory, memory->sramCurrentBank);
+			break;
+		default:
+			memory->sramAccess = false;
+			break;
+		}
+		break;
+	case 0x1:
+		_switchBank(memory, bank);
+		break;
+	case 0x2:
+		_switchSramBank(memory, bank);
+		break;
+	default:
+		// TODO
+		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
+		break;
+	}
+}
+
+void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state) {
+	memcpy(state->wram, memory->wram, GB_SIZE_WORKING_RAM);
+	memcpy(state->hram, memory->hram, GB_SIZE_HRAM);
+	STORE_16LE(memory->currentBank, 0, &state->memory.currentBank);
+	state->memory.wramCurrentBank = memory->wramCurrentBank;
+	state->memory.sramCurrentBank = memory->sramCurrentBank;
+
+	STORE_32LE(memory->dmaNext, 0, &state->memory.dmaNext);
+	STORE_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
+	STORE_16LE(memory->dmaDest, 0, &state->memory.dmaDest);
+
+	STORE_32LE(memory->hdmaNext, 0, &state->memory.hdmaNext);
+	STORE_16LE(memory->hdmaSource, 0, &state->memory.hdmaSource);
+	STORE_16LE(memory->hdmaDest, 0, &state->memory.hdmaDest);
+
+	STORE_16LE(memory->hdmaRemaining, 0, &state->memory.hdmaRemaining);
+	state->memory.dmaRemaining = memory->dmaRemaining;
+	memcpy(state->memory.rtcRegs, memory->rtcRegs, sizeof(state->memory.rtcRegs));
+
+	GBSerializedMemoryFlags flags = 0;
+	flags = GBSerializedMemoryFlagsSetSramAccess(flags, memory->sramAccess);
+	flags = GBSerializedMemoryFlagsSetRtcAccess(flags, memory->rtcAccess);
+	flags = GBSerializedMemoryFlagsSetRtcLatched(flags, memory->rtcLatched);
+	flags = GBSerializedMemoryFlagsSetIme(flags, memory->ime);
+	flags = GBSerializedMemoryFlagsSetIsHdma(flags, memory->isHdma);
+	flags = GBSerializedMemoryFlagsSetActiveRtcReg(flags, memory->activeRtcReg);
+	STORE_16LE(flags, 0, &state->memory.flags);
+}
+
+void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state) {
+	memcpy(memory->wram, state->wram, GB_SIZE_WORKING_RAM);
+	memcpy(memory->hram, state->hram, GB_SIZE_HRAM);
+	LOAD_16LE(memory->currentBank, 0, &state->memory.currentBank);
+	memory->wramCurrentBank = state->memory.wramCurrentBank;
+	memory->sramCurrentBank = state->memory.sramCurrentBank;
+
+	_switchBank(memory, memory->currentBank);
+	GBMemorySwitchWramBank(memory, memory->wramCurrentBank);
+	_switchSramBank(memory, memory->sramCurrentBank);
+
+	LOAD_32LE(memory->dmaNext, 0, &state->memory.dmaNext);
+	LOAD_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
+	LOAD_16LE(memory->dmaDest, 0, &state->memory.dmaDest);
+
+	LOAD_32LE(memory->hdmaNext, 0, &state->memory.hdmaNext);
+	LOAD_16LE(memory->hdmaSource, 0, &state->memory.hdmaSource);
+	LOAD_16LE(memory->hdmaDest, 0, &state->memory.hdmaDest);
+
+	LOAD_16LE(memory->hdmaRemaining, 0, &state->memory.hdmaRemaining);
+	memory->dmaRemaining = state->memory.dmaRemaining;
+	memcpy(memory->rtcRegs, state->memory.rtcRegs, sizeof(state->memory.rtcRegs));
+
+	GBSerializedMemoryFlags flags;
+	LOAD_16LE(flags, 0, &state->memory.flags);
+	memory->sramAccess = GBSerializedMemoryFlagsGetSramAccess(flags);
+	memory->rtcAccess = GBSerializedMemoryFlagsGetRtcAccess(flags);
+	memory->rtcLatched = GBSerializedMemoryFlagsGetRtcLatched(flags);
+	memory->ime = GBSerializedMemoryFlagsGetIme(flags);
+	memory->isHdma = GBSerializedMemoryFlagsGetIsHdma(flags);
+	memory->activeRtcReg = GBSerializedMemoryFlagsGetActiveRtcReg(flags);
 }
 
 void _pristineCow(struct GB* gb) {

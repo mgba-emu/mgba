@@ -162,7 +162,7 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 
 	core->reset(core);
 	if (_savestate) {
-		core->loadState(core, _savestate, 0);
+		mCoreLoadStateNamed(core, _savestate, 0);
 	}
 
 	core->getGameCode(core, gameCode);

@@ -24,6 +24,10 @@ Bugfixes:
  - Util: Fix socket bind addresses
  - All: Fix instruction tables getting zeroed when linking sometimes
  - SDL: Fix SDL 1.2 build
+ - ARM7: Fix flags on SBC/RSC
+ - Util: Fix realloc semantics in utf16to8
+ - ARM7: Fix setting spsr privilege bits when spsr is empty
+ - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
@@ -41,6 +45,12 @@ Misc:
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
  - ARM7: Support forcing Thumb mode via MSR
  - ARM7: Flush prefetch cache when loading CPSR via MSR
+ - Qt: Canonicalize file paths when loading games
+ - OpenGL: Add texSize uniform
+ - Qt: Add refresh button to controller editing
+ - ARM7: Clean up instruction decoding for future expandability
+ - Debugger: CLI debugger now exits when end-of-stream is reached
+ - VFS: VFile.sync now updates modified time
 
 0.4.0: (2016-02-02)
 Features:

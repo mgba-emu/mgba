@@ -62,6 +62,7 @@ struct mGLES2Shader {
 	GLuint vertexShader;
 	GLuint program;
 	GLuint texLocation;
+	GLuint texSizeLocation;
 	GLuint positionLocation;
 
 	struct mGLES2Uniform* uniforms;
