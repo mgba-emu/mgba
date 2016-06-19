@@ -32,6 +32,11 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Dragon Ball Z - The Legacy of Goku
 	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
 
+	// Dragon Ball Z - The Legacy of Goku II
+	{ "ALFJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ALFE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ALFP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+
 	// Dragon Ball Z - Taiketsu
 	{ "BDBE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
 	{ "BDBP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE },
@@ -150,6 +155,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 
 	// Top Gun - Combat Zones
 	{ "A2YE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE },
+
+	// Ueki no Housoku - Jingi Sakuretsu! Nouryokusha Battle
+	{ "BUHJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
 	// Wario Ware Twisted
 	{ "RZWJ", SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, IDLE_LOOP_NONE },
