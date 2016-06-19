@@ -51,6 +51,7 @@ Misc:
  - ARM7: Clean up instruction decoding for future expandability
  - Debugger: CLI debugger now exits when end-of-stream is reached
  - VFS: VFile.sync now updates modified time
+ - GBA: Add overrides for DBZ: Legacy of Goku II and Ueki no Housoku
 
 0.4.0: (2016-02-02)
 Features:
