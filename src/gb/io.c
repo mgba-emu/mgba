@@ -408,7 +408,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPD:
 				GBVideoProcessDots(&gb->video);
 				GBVideoWritePalette(&gb->video, address, value);
-				break;
+				return;
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
 				gb->video.ocpIncrement = value & 0x80;
@@ -417,7 +417,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPD:
 				GBVideoProcessDots(&gb->video);
 				GBVideoWritePalette(&gb->video, address, value);
-				break;
+				return;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
 				value = gb->memory.wramCurrentBank;
@@ -537,7 +537,9 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_HDMA3:
 			case REG_HDMA4:
 			case REG_HDMA5:
+			case REG_BCPS:
 			case REG_BCPD:
+			case REG_OCPS:
 			case REG_OCPD:
 			case REG_SVBK:
 				// Handled transparently by the registers
