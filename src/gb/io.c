@@ -369,6 +369,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		break;
 	case REG_STAT:
 		GBVideoWriteSTAT(&gb->video, value);
+		value = gb->video.stat;
 		break;
 	case 0x50:
 		if (gb->memory.romBase != gb->memory.rom) {
