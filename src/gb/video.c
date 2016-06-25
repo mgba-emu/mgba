@@ -115,7 +115,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 1;
 					--video->frameskipCounter;
 					if (video->frameskipCounter < 0) {
-						video->renderer->finishFrame(video->renderer);
 						mCoreSyncPostFrame(video->p->sync);
 						video->frameskipCounter = video->frameskip;
 					}
@@ -154,6 +153,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 						GBUpdateIRQs(video->p);
 					}
+					video->renderer->finishFrame(video->renderer);
 					break;
 				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
