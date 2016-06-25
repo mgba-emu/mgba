@@ -2,6 +2,7 @@
 Features:
  - Game Boy support
  - Support for encrypted CodeBreaker GBA cheats
+ - Emulation of Vast Fame protected GBA carts (taizou)
 Bugfixes:
  - VFS: Fix reading 7z archives without rewinding first
  - Qt: Fix sending gameStopped twice
