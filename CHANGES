@@ -23,6 +23,7 @@ Bugfixes:
  - Util: Fix realloc semantics in utf16to8
  - ARM7: Fix setting spsr privilege bits when spsr is empty
  - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
+ - SDL: Fix sporadic crash when deinitializing audio
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4

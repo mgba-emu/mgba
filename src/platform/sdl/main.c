@@ -144,6 +144,7 @@ int main(int argc, char** argv) {
 #endif
 		if (GBAThreadStart(&context)) {
 			renderer.runloop(&context, &renderer);
+			GBASDLPauseAudio(&renderer.audio);
 			GBAThreadJoin(&context);
 		} else {
 			didFail = true;
