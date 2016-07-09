@@ -31,6 +31,7 @@ Bugfixes:
  - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
  - SDL: Fix sporadic crash when deinitializing audio
  - GBA Audio: Reset audio FIFO DMA if an invalid destination is set
+ - VFS: VFileFromFD should not open directories
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4

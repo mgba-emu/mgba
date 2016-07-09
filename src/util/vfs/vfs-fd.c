@@ -52,6 +52,12 @@ struct VFile* VFileFromFD(int fd) {
 		return 0;
 	}
 
+	struct stat stat;
+	if (fstat(fd, &stat) < 0 || S_ISDIR(stat.st_mode)) {
+		close(fd);
+		return 0;
+	}
+
 	struct VFileFD* vfd = malloc(sizeof(struct VFileFD));
 	if (!vfd) {
 		return 0;
