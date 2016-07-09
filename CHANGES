@@ -30,6 +30,7 @@ Bugfixes:
  - ARM7: Fix setting spsr privilege bits when spsr is empty
  - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
  - SDL: Fix sporadic crash when deinitializing audio
+ - GBA Audio: Reset audio FIFO DMA if an invalid destination is set
 Misc:
  - GBA: Slightly optimize GBAProcessEvents
  - Qt: Add preset for DualShock 4
