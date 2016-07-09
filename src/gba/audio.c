@@ -314,6 +314,12 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		audio->chB.dmaSource = number;
 		break;
 	default:
+		if (audio->chA.dmaSource == number) {
+			audio->chA.dmaSource = -1;
+		}
+		if (audio->chB.dmaSource == number) {
+			audio->chB.dmaSource = -1;
+		}
 		GBALog(audio->p, GBA_LOG_GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
