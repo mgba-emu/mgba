@@ -56,6 +56,7 @@ Misc:
  - VFS: VFile.sync now updates modified time
  - GBA: Add overrides for DBZ: Legacy of Goku II and Ueki no Housoku
  - Util: Fix intermittent build failure on OS X
+ - Qt: Make -g flag work in Qt build
 
 0.4.0: (2016-02-02)
 Features:

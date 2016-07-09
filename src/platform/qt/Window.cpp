@@ -182,6 +182,15 @@ void Window::argumentsPassed(mArguments* args) {
 	if (args->fname) {
 		m_controller->loadGame(args->fname);
 	}
+
+#ifdef USE_GDB_STUB
+	if (args->debuggerType == DEBUGGER_GDB) {
+		if (!m_gdbController) {
+			m_gdbController = new GDBController(m_controller, this);
+			m_gdbController->listen();
+		}
+	}
+#endif
 }
 
 void Window::resizeFrame(const QSize& size) {
