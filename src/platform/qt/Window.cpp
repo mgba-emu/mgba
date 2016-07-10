@@ -182,6 +182,15 @@ void Window::argumentsPassed(mArguments* args) {
 	if (args->fname) {
 		m_controller->loadGame(args->fname);
 	}
+
+#ifdef USE_GDB_STUB
+	if (args->debuggerType == DEBUGGER_GDB) {
+		if (!m_gdbController) {
+			m_gdbController = new GDBController(m_controller, this);
+			m_gdbController->listen();
+		}
+	}
+#endif
 }
 
 void Window::resizeFrame(const QSize& size) {
@@ -271,11 +280,13 @@ void Window::saveConfig() {
 	m_config->write();
 }
 
-void Window::selectROM() {
-	QStringList formats{
+QString Window::getFilters() const {
+	QStringList filters;
+	QStringList formats;
+
+#ifdef M_CORE_GBA
+	QStringList gbaFormats{
 		"*.gba",
-		"*.gb",
-		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
@@ -286,16 +297,12 @@ void Window::selectROM() {
 		"*.mb",
 		"*.rom",
 		"*.bin"};
-	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
-	if (!filename.isEmpty()) {
-		m_controller->loadGame(filename);
-	}
-}
+	formats.append(gbaFormats);
+	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
+#endif
 
-void Window::replaceROM() {
-	QStringList formats{
-		"*.gba",
+#ifdef M_CORE_GB
+	QStringList gbFormats{
 		"*.gb",
 		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
@@ -306,8 +313,24 @@ void Window::replaceROM() {
 #endif
 		"*.rom",
 		"*.bin"};
-	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
+	formats.append(gbFormats);
+	filters.append(tr("Game Boy ROMs (%1)").arg(gbFormats.join(QChar(' '))));
+#endif
+
+	formats.removeDuplicates();
+	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
+	return filters.join(";;");
+}
+
+void Window::selectROM() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	if (!filename.isEmpty()) {
+		m_controller->loadGame(filename);
+	}
+}
+
+void Window::replaceROM() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
 	if (!filename.isEmpty()) {
 		m_controller->replaceGame(filename);
 	}

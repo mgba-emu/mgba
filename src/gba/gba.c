@@ -18,6 +18,7 @@
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
+#include "gba/vfame.h"
 
 #include "util/crc32.h"
 #include "util/memory.h"
@@ -474,6 +475,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
+	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	// TODO: error check
 	return true;
 }

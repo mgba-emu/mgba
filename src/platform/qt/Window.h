@@ -146,6 +146,8 @@ private:
 
 	void updateTitle(float fps = -1);
 
+	QString getFilters() const;
+
 	GameController* m_controller;
 	Display* m_display;
 	// TODO: Move these to a new class

@@ -185,6 +185,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 		if (mCoreThreadStart(&thread)) {
 			renderer->runloop(renderer, &thread);
+			mSDLPauseAudio(&renderer->audio);
 			mCoreThreadJoin(&thread);
 		} else {
 			didFail = true;
