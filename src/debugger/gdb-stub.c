@@ -6,6 +6,7 @@
 #include "gdb-stub.h"
 
 #include "core/core.h"
+#include "gba/memory.h"
 
 #include <signal.h>
 
@@ -149,7 +150,7 @@ static void _int2hex32(uint32_t value, char* out) {
 static uint32_t _readHex(const char* in, unsigned* out) {
 	unsigned i;
 	for (i = 0; i < 8; ++i) {
-		if (in[i] == ',') {
+		if (in[i] == ',' || in[i] == ':' || in[i] == '=') {
 			break;
 		}
 	}
@@ -210,6 +211,65 @@ static void _step(struct GDBStub* stub, const char* message) {
 	UNUSED(message);
 }
 
+static void _writeMemoryBinary(struct GDBStub* stub, const char* message) {
+	const char* readAddress = message;
+	unsigned i = 0;
+	uint32_t address = _readHex(readAddress, &i);
+	readAddress += i + 1;
+
+	i = 0;
+	uint32_t size = _readHex(readAddress, &i);
+	readAddress += i + 1;
+
+	if (size > 512) {
+		_error(stub, GDB_BAD_ARGUMENTS);
+		return;
+	}
+
+	struct ARMCore* cpu = stub->d.core->cpu;
+	for (i = 0; i < size; i++) {
+		uint8_t byte = *readAddress;
+		++readAddress;
+
+		// Parse escape char
+		if (byte == 0x7D) {
+			byte = *readAddress ^ 0x20;
+			++readAddress;
+		}
+
+		GBAPatch8(cpu, address + i, byte, 0);
+	}
+
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
+}
+
+
+static void _writeMemory(struct GDBStub* stub, const char* message) {
+	const char* readAddress = message;
+	unsigned i = 0;
+	uint32_t address = _readHex(readAddress, &i);
+	readAddress += i + 1;
+
+	i = 0;
+	uint32_t size = _readHex(readAddress, &i);
+	readAddress += i + 1;
+
+	if (size > 512) {
+		_error(stub, GDB_BAD_ARGUMENTS);
+		return;
+	}
+
+	struct ARMCore* cpu = stub->d.core->cpu;
+	for (i = 0; i < size; ++i, readAddress += 2) {
+		uint8_t byte = _hex2int(readAddress, 2);
+		GBAPatch8(cpu, address + i, byte, 0);
+	}
+
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
+}
+
 static void _readMemory(struct GDBStub* stub, const char* message) {
 	const char* readAddress = message;
 	unsigned i = 0;
@@ -230,6 +290,20 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 	_sendMessage(stub);
 }
 
+static void _writeGPRs(struct GDBStub* stub, const char* message) {
+	struct ARMCore* cpu = stub->d.core->cpu;
+	const char* readAddress = message;
+
+	int r;
+	for (r = 0; r < 16; ++r) {
+		cpu->gprs[r] = _hex2int(readAddress, 8);
+		readAddress += 8;
+	}
+
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
+}
+
 static void _readGPRs(struct GDBStub* stub, const char* message) {
 	struct ARMCore* cpu = stub->d.core->cpu;
 	UNUSED(message);
@@ -240,6 +314,36 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 		i += 8;
 	}
 	stub->outgoing[i] = 0;
+	_sendMessage(stub);
+}
+
+static void _writeRegister(struct GDBStub* stub, const char* message) {
+	struct ARMCore* cpu = stub->d.core->cpu;
+	const char* readAddress = message;
+
+	unsigned i = 0;
+	uint32_t reg = _readHex(readAddress, &i);
+	readAddress += i + 1;
+
+	uint32_t value = _readHex(readAddress, &i);
+
+#ifdef _MSC_VER
+	value = _byteswap_ulong(value);
+#else
+	value = __builtin_bswap32(value);
+#endif
+
+	if (reg < 0x10) {
+		cpu->gprs[reg] = value;
+	} else if (reg == 0x19) {
+		cpu->cpsr.packed = value;
+	} else {
+		stub->outgoing[0] = '\0';
+		_sendMessage(stub);
+		return;
+	}
+
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 	_sendMessage(stub);
 }
 
@@ -388,7 +492,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 
 	int i;
 	char messageType = message[0];
-	for (i = 0; message[i] && message[i] != '#'; ++i, ++parsed) {
+	for (i = 0; message[i] != '#'; ++i, ++parsed) {
 		checksum += message[i];
 	}
 	if (!message[i]) {
@@ -423,6 +527,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	case 'c':
 		_continue(stub, message);
 		break;
+	case 'G':
+		_writeGPRs(stub, message);
+		break;
 	case 'g':
 		_readGPRs(stub, message);
 		break;
@@ -431,8 +538,14 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
 		break;
+	case 'M':
+		_writeMemory(stub, message);
+		break;
 	case 'm':
 		_readMemory(stub, message);
+		break;
+	case 'P':
+		_writeRegister(stub, message);
 		break;
 	case 'p':
 		_readRegister(stub, message);
@@ -452,6 +565,9 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	case 'v':
 		_processVReadCommand(stub, message);
 		break;
+	case 'X':
+		_writeMemoryBinary(stub, message);
+                break;
 	case 'Z':
 		_setBreakpoint(stub, message);
 		break;
