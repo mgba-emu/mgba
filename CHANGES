@@ -1,47 +1,47 @@
-0.4.1: (Future)
+0.4.1: (2016-07-11)
 Bugfixes:
- - VFS: Fix reading 7z archives without rewinding first
- - Qt: Fix sending gameStopped twice
- - Qt: Fix hang if audio sync is enabled and audio fails to initialize
+ - All: Fix several file handle leaks
+ - All: Fix instruction tables getting zeroed when linking sometimes
+ - ARM7: Fix flags on SBC/RSC
+ - ARM7: Fix setting spsr privilege bits when spsr is empty
+ - GBA Audio: Reset audio FIFO DMA if an invalid destination is set
  - GBA BIOS: Fix RegisterRamReset setting DISPCNT to the wrong value
- - OpenGL: Correct boolean vector strcmp strings for uniforms
- - Wii: Fix tilting direction
- - SDL: Fix joystick initialization on BSD
- - SDL: Fix potential joystick crash in games with rumble
- - Qt: Fix initial state of key mapping
- - Shaders: Fix AGS-001 shader with some bad drivers
- - Qt: Initialize m_useBios
+ - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
+ - GBA Memory: Fix executing code from OBJ region of VRAM
  - GBA Serialize: Fix memory corruption bug in GBAExtdataSerialize
  - GBA Serialize: Fix loading savegames from savestates
- - All: Fix several file handle leaks
- - Util: Use closesocket on Windows
- - GBA Memory: Fix executing code from OBJ region of VRAM
- - Util: Fix socket bind addresses
- - All: Fix instruction tables getting zeroed when linking sometimes
+ - OpenGL: Correct boolean vector strcmp strings for uniforms
+ - Qt: Fix sending gameStopped twice
+ - Qt: Fix hang if audio sync is enabled and audio fails to initialize
+ - Qt: Fix initial state of key mapping
+ - Qt: Initialize m_useBios
+ - SDL: Fix joystick initialization on BSD
+ - SDL: Fix potential joystick crash in games with rumble
  - SDL: Fix SDL 1.2 build
- - ARM7: Fix flags on SBC/RSC
- - Util: Fix realloc semantics in utf16to8
- - ARM7: Fix setting spsr privilege bits when spsr is empty
- - GBA BIOS: Fix ArcTan2 accuracy and boundary conditions
  - SDL: Fix sporadic crash when deinitializing audio
- - GBA Audio: Reset audio FIFO DMA if an invalid destination is set
+ - Shaders: Fix AGS-001 shader with some bad drivers
+ - Util: Use closesocket on Windows
+ - Util: Fix socket bind addresses
+ - VFS: Fix reading 7z archives without rewinding first
  - VFS: VFileFromFD should not open directories
+ - Wii: Fix tilting direction
+ - Util: Fix realloc semantics in utf16to8
 Misc:
- - GBA: Slightly optimize GBAProcessEvents
- - Qt: Add preset for DualShock 4
- - SDL: Remove default gamepad mappings
- - Qt: Update 360 input profile on OS X to reflect newer drivers
- - Qt: Remove use of NaN
- - FFmpeg: Update dependencies on Ubuntu
  - All: Allow use of external minizip library
+ - Debugger: CLI debugger now exits when end-of-stream is reached
+ - FFmpeg: Update dependencies on Ubuntu
+ - GBA: Slightly optimize GBAProcessEvents
+ - GBA: Add overrides for DBZ: Legacy of Goku II and Ueki no Housoku
  - GBA Video: Null renderer should return proper register values
  - Libretro: Disable logging game errors, BIOS calls and stubs in release builds
+ - Qt: Add preset for DualShock 4
+ - Qt: Update 360 input profile on OS X to reflect newer drivers
+ - Qt: Remove use of NaN
  - Qt: Canonicalize file paths when loading games
  - Qt: Add refresh button to controller editing
- - Debugger: CLI debugger now exits when end-of-stream is reached
- - VFS: VFile.sync now updates modified time
- - GBA: Add overrides for DBZ: Legacy of Goku II and Ueki no Housoku
+ - SDL: Remove default gamepad mappings
  - Util: Fix intermittent build failure on OS X
+ - VFS: VFile.sync now updates modified time
 
 0.4.0: (2016-02-02)
 Features:
