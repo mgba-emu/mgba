@@ -18,6 +18,7 @@ Misc:
  - OpenGL: Add texSize uniform
  - ARM7: Clean up instruction decoding for future expandability
  - Qt: Make -g flag work in Qt build
+ - Qt: Simplify OpenGL context creation
 
 0.4.1: (2016-07-11)
 Bugfixes:
