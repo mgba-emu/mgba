@@ -186,8 +186,8 @@ QFileDialog* GBAApp::getSaveFileDialog(QWidget* owner, const QString& title, con
 }
 
 QString GBAApp::dataDir() {
-#ifdef DATA_DIR
-	QString path = QString::fromUtf8(DATA_DIR);
+#ifdef DATADIR
+	QString path = QString::fromUtf8(DATADIR);
 #else
 	QString path = QCoreApplication::applicationDirPath();
 #ifdef Q_OS_MAC
