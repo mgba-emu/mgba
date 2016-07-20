@@ -8,28 +8,32 @@
 
 #include "gba/sio.h"
 
-#include "util/threading.h"
-
-enum LockstepState {
-	LOCKSTEP_IDLE = 0,
-	LOCKSTEP_STARTED = 1,
-	LOCKSTEP_FINISHED = 2
+enum GBASIOLockstepPhase {
+	TRANSFER_IDLE = 0,
+	TRANSFER_STARTING,
+	TRANSFER_STARTED,
+	TRANSFER_FINISHING,
+	TRANSFER_FINISHED
 };
 
 struct GBASIOLockstep {
 	struct GBASIOLockstepNode* players[MAX_GBAS];
 	int attached;
-	int loadedMulti;
-	int loadedNormal;
+	int attachedMulti;
 
 	uint16_t multiRecv[MAX_GBAS];
-	bool transferActive;
+	enum GBASIOLockstepPhase transferActive;
 	int32_t transferCycles;
-	int32_t nextEvent;
 
-	int waiting;
-	Mutex mutex;
-	Condition barrier;
+	uint32_t waitMask;
+	uint32_t waiting[MAX_GBAS];
+
+	void (*signal)(struct GBASIOLockstep*, int id);
+	void (*wait)(struct GBASIOLockstep*, int id);
+	void* context;
+#ifndef NDEBUG
+	int transferId;
+#endif
 };
 
 struct GBASIOLockstepNode {
@@ -37,11 +41,16 @@ struct GBASIOLockstepNode {
 	struct GBASIOLockstep* p;
 
 	int32_t nextEvent;
-	uint16_t multiSend;
+	int32_t eventDiff;
 	bool normalSO;
-	enum LockstepState state;
+	bool needsToWait;
 	int id;
 	enum GBASIOMode mode;
+	bool transferFinished;
+#ifndef NDEBUG
+	int transferId;
+	enum GBASIOLockstepPhase phase;
+#endif
 };
 
 void GBASIOLockstepInit(struct GBASIOLockstep*);

@@ -7,10 +7,41 @@
 
 #include "GameController.h"
 
+extern "C" {
+#ifdef M_CORE_GBA
+#include "gba/gba.h"
+#endif
+}
+
+
 using namespace QGBA;
 
 MultiplayerController::MultiplayerController() {
 	GBASIOLockstepInit(&m_lockstep);
+	m_lockstep.context = this;
+	m_lockstep.signal = [](GBASIOLockstep* lockstep, int id) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		GameController* game = controller->m_players[id];
+		controller->m_lock.lock();
+		if (--controller->m_asleep[id] == 0) {
+			mCoreThreadStopWaiting(game->thread());
+		}
+		controller->m_lock.unlock();
+	};
+	m_lockstep.wait = [](GBASIOLockstep* lockstep, int id) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.lock();
+		GameController* game = controller->m_players[id];
+		if (++controller->m_asleep[id] == 1) {
+			mCoreThreadWaitFromThread(game->thread());
+		} else if (controller->m_asleep[id] == 0) {
+			mCoreThreadStopWaiting(game->thread());
+		}
+		if (controller->m_asleep[id] > 1) {
+			//abort();
+		}
+		controller->m_lock.unlock();
+	};
 }
 
 MultiplayerController::~MultiplayerController() {
@@ -18,74 +49,68 @@ MultiplayerController::~MultiplayerController() {
 }
 
 bool MultiplayerController::attachGame(GameController* controller) {
-	MutexLock(&m_lockstep.mutex);
 	if (m_lockstep.attached == MAX_GBAS) {
-		MutexUnlock(&m_lockstep.mutex);
 		return false;
 	}
-	GBASIOLockstepNode* node = new GBASIOLockstepNode;
-	GBASIOLockstepNodeCreate(node);
-	GBASIOLockstepAttachNode(&m_lockstep, node);
-	MutexUnlock(&m_lockstep.mutex);
 
-	controller->threadInterrupt();
 	mCoreThread* thread = controller->thread();
-	/*if (controller->isLoaded()) {
-		GBASIOSetDriver(&thread->gba->sio, &node->d, SIO_MULTI);
-		GBASIOSetDriver(&thread->gba->sio, &node->d, SIO_NORMAL_32);
+	if (!thread) {
+		return false;
 	}
-	thread->sioDrivers.multiplayer = &node->d;
-	thread->sioDrivers.normal = &node->d;*/
-	controller->threadContinue();
-	emit gameAttached();
-	return true;
+
+#ifdef M_CORE_GBA
+	if (controller->platform() == PLATFORM_GBA) {
+		GBA* gba = static_cast<GBA*>(thread->core->board);
+
+		GBASIOLockstepNode* node = new GBASIOLockstepNode;
+		GBASIOLockstepNodeCreate(node);
+		GBASIOLockstepAttachNode(&m_lockstep, node);
+		m_players.append(controller);
+		m_asleep.append(0);
+
+		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
+		GBASIOSetDriver(&gba->sio, &node->d, SIO_NORMAL_32);
+
+		emit gameAttached();
+		return true;
+	}
+#endif
+
+	return false;
 }
 
 void MultiplayerController::detachGame(GameController* controller) {
-	controller->threadInterrupt();
-	MutexLock(&m_lockstep.mutex);
-	mCoreThread* thread = nullptr;
-	/*for (int i = 0; i < m_lockstep.attached; ++i) {
-		thread = controller->thread();
-		if (thread->sioDrivers.multiplayer == &m_lockstep.players[i]->d) {
-			break;
-		}
-		thread = nullptr;
+	if (!m_players.contains(controller)) {
+		return;
 	}
-	if (thread) {
-		GBASIOLockstepNode* node = reinterpret_cast<GBASIOLockstepNode*>(thread->sioDrivers.multiplayer);
-		if (controller->isLoaded()) {
-			GBASIOSetDriver(&thread->gba->sio, nullptr, SIO_MULTI);
-			GBASIOSetDriver(&thread->gba->sio, nullptr, SIO_NORMAL_32);
+	mCoreThread* thread = controller->thread();
+	if (!thread) {
+		return;
+	}
+#ifdef M_CORE_GBA
+	if (controller->platform() == PLATFORM_GBA) {
+		GBA* gba = static_cast<GBA*>(thread->core->board);
+		GBASIOLockstepNode* node = reinterpret_cast<GBASIOLockstepNode*>(gba->sio.drivers.multiplayer);
+		GBASIOSetDriver(&gba->sio, nullptr, SIO_MULTI);
+		GBASIOSetDriver(&gba->sio, nullptr, SIO_NORMAL_32);
+		if (node) {
+			GBASIOLockstepDetachNode(&m_lockstep, node);
+			delete node;
 		}
-		thread->sioDrivers.multiplayer = nullptr;
-		thread->sioDrivers.normal = nullptr;
-		GBASIOLockstepDetachNode(&m_lockstep, node);
-		delete node;
-	}*/
-	MutexUnlock(&m_lockstep.mutex);
-	controller->threadContinue();
+	}
+#endif
+	int i = m_players.indexOf(controller);
+	m_players.removeAt(i);
+	m_players.removeAt(i);
 	emit gameDetached();
 }
 
 int MultiplayerController::playerId(GameController* controller) {
-	MutexLock(&m_lockstep.mutex);
-	int id = -1;
-	for (int i = 0; i < m_lockstep.attached; ++i) {
-		mCoreThread* thread = controller->thread();
-		/*if (thread->sioDrivers.multiplayer == &m_lockstep.players[i]->d) {
-			id = i;
-			break;
-		}*/
-	}
-	MutexUnlock(&m_lockstep.mutex);
-	return id;
+	return m_players.indexOf(controller);
 }
 
 int MultiplayerController::attached() {
 	int num;
-	MutexLock(&m_lockstep.mutex);
 	num = m_lockstep.attached;
-	MutexUnlock(&m_lockstep.mutex);
 	return num;
 }

@@ -6,6 +6,8 @@
 #ifndef QGBA_MULTIPLAYER_CONTROLLER
 #define QGBA_MULTIPLAYER_CONTROLLER
 
+#include <QMutex>
+#include <QList>
 #include <QObject>
 
 extern "C" {
@@ -35,6 +37,9 @@ signals:
 
 private:
 	GBASIOLockstep m_lockstep;
+	QList<GameController*> m_players;
+	QList<int> m_asleep;
+	QMutex m_lock;
 };
 
 }

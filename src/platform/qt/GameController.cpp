@@ -130,6 +130,10 @@ GameController::GameController(QObject* parent)
 		}
 
 		controller->m_gameOpen = true;
+		if (controller->m_multiplayer) {
+			controller->m_multiplayer->attachGame(controller);
+		}
+
 		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
 		QMetaObject::invokeMethod(controller, "startAudio");
 	};
@@ -256,7 +260,12 @@ void GameController::setMultiplayerController(MultiplayerController* controller)
 	}
 	clearMultiplayerController();
 	m_multiplayer = controller;
-	controller->attachGame(this);
+	if (isLoaded()) {
+		mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* thread) {
+			GameController* controller = static_cast<GameController*>(thread->userData);
+			controller->m_multiplayer->attachGame(controller);
+		});
+	}
 }
 
 void GameController::clearMultiplayerController() {
@@ -521,6 +530,9 @@ void GameController::exportSharkport(const QString& path) {
 void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
+	}
+	if (m_multiplayer) {
+		m_multiplayer->detachGame(this);
 	}
 
 	if (mCoreThreadIsPaused(&m_threadContext)) {

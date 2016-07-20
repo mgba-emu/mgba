@@ -52,6 +52,23 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
+#ifndef _MSC_VER
+#define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
+#define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
+#define ATOMIC_ADD(DST, OP) __atomic_add_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_OR(DST, OP) __atomic_or_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_AND(DST, OP) __atomic_and_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) __atomic_compare_exchange_n(&DST, &EXPECTED, SRC, true,__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+#else
+// TODO
+#define ATOMIC_STORE(DST, SRC) DST = SRC
+#define ATOMIC_LOAD(DST, SRC) DST = SRC
+#define ATOMIC_ADD(DST, OP) DST += OP
+#define ATOMIC_OR(DST, OP) DST |= OP
+#define ATOMIC_AND(DST, OP) DST &= OP
+#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
+#endif
+
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
