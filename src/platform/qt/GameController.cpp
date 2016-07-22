@@ -356,6 +356,8 @@ void GameController::openGame(bool biosOnly) {
 			m_threadContext.core->loadPatch(m_threadContext.core, patch);
 		}
 		patch->close(patch);
+	} else {
+		mCoreAutoloadPatch(m_threadContext.core);
 	}
 
 	m_inputController->recalibrateAxes();
