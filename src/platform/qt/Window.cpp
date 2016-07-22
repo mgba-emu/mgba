@@ -30,6 +30,7 @@
 #include "MemoryView.h"
 #include "OverrideView.h"
 #include "PaletteView.h"
+#include "TileView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -428,6 +429,11 @@ void Window::openCheatsWindow() {
 void Window::openPaletteWindow() {
 	PaletteView* paletteWindow = new PaletteView(m_controller);
 	openView(paletteWindow);
+}
+
+void Window::openTileWindow() {
+	TileView* tileWindow = new TileView(m_controller);
+	openView(tileWindow);
 }
 
 void Window::openMemoryWindow() {
@@ -1287,6 +1293,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(paletteView);
 	m_gbaActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
+
+	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
+	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
+	m_gameActions.append(tileView);
+	m_gbaActions.append(tileView);
+	addControlledAction(toolsMenu, tileView, "tileWindow");
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));

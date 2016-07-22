@@ -102,6 +102,8 @@ set(SOURCE_FILES
 	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
+	TilePainter.cpp
+	TileView.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -121,6 +123,7 @@ qt5_wrap_ui(UI_FILES
 	SettingsView.ui
 	ShaderSelector.ui
 	ShortcutView.ui
+	TileView.ui
 	VideoView.ui)
 
 set(QT_LIBRARIES)
