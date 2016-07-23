@@ -26,11 +26,15 @@ public:
 	virtual ~TileView();
 
 public slots:
-	void updateTiles();
+	void updateTiles(bool force = false);
 	void updatePalette(int);
 
 private slots:
 	void selectIndex(int);
+
+protected:
+	void resizeEvent(QResizeEvent*) override;
+	void showEvent(QShowEvent*) override;
 
 private:
 	Ui::TileView m_ui;

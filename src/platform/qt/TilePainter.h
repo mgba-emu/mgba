@@ -20,6 +20,7 @@ public:
 
 public slots:
 	void setTile(int index, const uint16_t*);
+	void setTileCount(int tiles);
 
 signals:
 	void indexPressed(int index);
@@ -27,6 +28,7 @@ signals:
 protected:
 	void paintEvent(QPaintEvent*) override;
 	void mousePressEvent(QMouseEvent*) override;
+	void resizeEvent(QResizeEvent*) override;
 
 private:
 	QPixmap m_backing;

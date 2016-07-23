@@ -8,6 +8,7 @@
 #include "GBAApp.h"
 
 #include <QFontDatabase>
+#include <QTimer>
 
 extern "C" {
 #include "gba/gba.h"
@@ -66,7 +67,7 @@ void TileView::selectIndex(int index) {
 	m_ui.preview->update();
 }
 
-void TileView::updateTiles() {
+void TileView::updateTiles(bool force) {
 	if (!m_controller->thread() || !m_controller->thread()->core) {
 		return;
 	}
@@ -75,31 +76,39 @@ void TileView::updateTiles() {
 	GBAVideoTileCacheAssociate(&m_tileCache, &gba->video);
 
 	if (m_ui.palette256->isChecked()) {
-		m_ui.tiles->setMinimumSize(256, 384);
+		m_ui.tiles->setTileCount(1536);
 		for (int i = 0; i < 1024; ++i) {
 			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(&m_tileCache, i, 0);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
+			} else if (force) {
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(&m_tileCache, i, 0));
 			}
 		}
 		for (int i = 1024; i < 1536; ++i) {
 			const uint16_t* data = GBAVideoTileCacheGetTile256IfDirty(&m_tileCache, i, 1);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
+			} else if (force) {
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile256(&m_tileCache, i, 1));
 			}
 		}
 	} else {
-		m_ui.tiles->setMinimumSize(256, 768);
+		m_ui.tiles->setTileCount(3072);
 		for (int i = 0; i < 2048; ++i) {
 			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(&m_tileCache, i, m_paletteId);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
+			} else if (force) {
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(&m_tileCache, i, m_paletteId));
 			}
 		}
 		for (int i = 2048; i < 3072; ++i) {
 			const uint16_t* data = GBAVideoTileCacheGetTile16IfDirty(&m_tileCache, i, m_paletteId + 16);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
+			} else if (force) {
+				m_ui.tiles->setTile(i, GBAVideoTileCacheGetTile16(&m_tileCache, i, m_paletteId + 16));
 			}
 		}
 	}
@@ -108,4 +117,15 @@ void TileView::updateTiles() {
 void TileView::updatePalette(int palette) {
 	m_paletteId = palette;
 	updateTiles();
+}
+
+void TileView::resizeEvent(QResizeEvent*) {
+	updateTiles(true);
+}
+
+void TileView::showEvent(QShowEvent*) {
+	// XXX: Figure out how to prevent the first resizeEvent
+	QTimer::singleShot(10, [this]() {
+		updateTiles(true);
+	});
 }
