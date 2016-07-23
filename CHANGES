@@ -21,6 +21,7 @@ Misc:
  - Qt: Make -g flag work in Qt build
  - Qt: Simplify OpenGL context creation
  - Debugger: Support register and memory writes via GDB stub
+ - GBA Audio: Force audio DMAs to not increment destination
 
 0.4.1: (2016-07-11)
 Bugfixes:

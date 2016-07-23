@@ -126,12 +126,6 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		audio->chB.dmaSource = number;
 		break;
 	default:
-		if (audio->chA.dmaSource == number) {
-			audio->chA.dmaSource = -1;
-		}
-		if (audio->chB.dmaSource == number) {
-			audio->chB.dmaSource = -1;
-		}
 		mLOG(GBA_AUDIO, GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
@@ -262,6 +256,7 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 			dma->nextCount = 4;
 			dma->nextEvent = 0;
 			dma->reg = GBADMARegisterSetWidth(dma->reg, 1);
+			dma->reg = GBADMARegisterSetDestControl(dma->reg, 2);
 			GBAMemoryUpdateDMAs(audio->p, -cycles);
 		} else {
 			channel->dmaSource = 0;
