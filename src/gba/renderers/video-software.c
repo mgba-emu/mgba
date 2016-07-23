@@ -337,8 +337,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 }
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -369,6 +370,9 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
+	}
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
 	}
 }
 

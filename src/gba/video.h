@@ -170,6 +170,7 @@ struct GBAVideoRenderer {
 	uint16_t* palette;
 	uint16_t* vram;
 	union GBAOAM* oam;
+	struct GBAVideoTileCache* cache;
 
 	bool disableBG[4];
 	bool disableOBJ;

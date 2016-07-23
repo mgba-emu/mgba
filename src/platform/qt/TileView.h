@@ -42,6 +42,7 @@ private:
 	GameController* m_controller;
 	GBAVideoTileCache m_tileCache;
 	int m_paletteId;
+	QTimer m_updateTimer;
 };
 
 }

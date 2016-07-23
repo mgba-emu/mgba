@@ -25,14 +25,16 @@ TileView::TileView(GameController* controller, QWidget* parent)
 	GBAVideoTileCacheInit(&m_tileCache);
 
 	m_ui.preview->setDimensions(QSize(8, 8));
-	updateTiles();
+	m_updateTimer.setSingleShot(true);
+	m_updateTimer.setInterval(10);
+	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
 	m_ui.tileId->setFont(font);
 	m_ui.address->setFont(font);
 
-	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateTiles()));
+	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), &m_updateTimer, SLOT(start()));
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
 	connect(m_ui.paletteId, SIGNAL(valueChanged(int)), this, SLOT(updatePalette(int)));
@@ -40,6 +42,11 @@ TileView::TileView(GameController* controller, QWidget* parent)
 }
 
 TileView::~TileView() {
+	if (m_controller->isLoaded() && m_controller->thread() && m_controller->thread()->core) {
+		GBA* gba = static_cast<GBA*>(m_controller->thread()->core->board);
+		gba->video.renderer->cache = nullptr;
+	}
+
 	GBAVideoTileCacheDeinit(&m_tileCache);
 }
 
@@ -124,8 +131,5 @@ void TileView::resizeEvent(QResizeEvent*) {
 }
 
 void TileView::showEvent(QShowEvent*) {
-	// XXX: Figure out how to prevent the first resizeEvent
-	QTimer::singleShot(10, [this]() {
-		updateTiles(true);
-	});
+	m_updateTimer.start();
 }
