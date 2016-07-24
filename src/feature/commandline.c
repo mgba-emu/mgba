@@ -124,10 +124,13 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 	}
 	argc -= optind;
 	argv += optind;
-	if (argc != 1) {
-		return args->showHelp || args->showVersion;
+	if (argc > 1) {
+		return false;
+	} else if (argc == 1) {
+		args->fname = strdup(argv[0]);
+	} else {
+		args->fname = NULL;
 	}
-	args->fname = strdup(argv[0]);
 	return true;
 }
 

@@ -72,6 +72,7 @@ void mCoreThreadJoin(struct mCoreThread* threadContext);
 
 bool mCoreThreadIsActive(struct mCoreThread* threadContext);
 void mCoreThreadInterrupt(struct mCoreThread* threadContext);
+void mCoreThreadInterruptFromThread(struct mCoreThread* threadContext);
 void mCoreThreadContinue(struct mCoreThread* threadContext);
 
 void mCoreThreadRunFunction(struct mCoreThread* threadContext, void (*run)(struct mCoreThread*));

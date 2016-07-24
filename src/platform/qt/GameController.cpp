@@ -130,7 +130,10 @@ GameController::GameController(QObject* parent)
 		if (mCoreLoadState(context->core, 0, controller->m_loadStateFlags)) {
 			mCoreDeleteState(context->core, 0);
 		}
-		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
+
+		mCoreThreadInterruptFromThread(context);
+		QMetaObject::invokeMethod(controller, "gameStarted", Qt::BlockingQueuedConnection, Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
+		mCoreThreadContinue(context);
 	};
 
 	m_threadContext.cleanCallback = [](mCoreThread* context) {

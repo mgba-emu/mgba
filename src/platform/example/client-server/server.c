@@ -17,6 +17,10 @@ int main(int argc, char** argv) {
 	// The NULL here shows that we don't give it any arguments beyond the default ones.
 	struct mArguments args = {};
 	bool parsed = parseArguments(&args, argc, argv, NULL);
+	// Parsing can succeed without finding a filename, but we need one.
+	if (!args.fname) {
+		parsed = false;
+	}
 	if (!parsed || args.showHelp) {
 		// If parsing failed, or the user passed --help, show usage.
 		usage(argv[0], NULL);

@@ -58,6 +58,9 @@ int main(int argc, char** argv) {
 
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	if (!args.fname) {
+		parsed = false;
+	}
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
 		core->deinit(core);
