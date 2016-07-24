@@ -123,7 +123,7 @@ void TileView::updateTiles(bool force) {
 
 void TileView::updatePalette(int palette) {
 	m_paletteId = palette;
-	updateTiles();
+	updateTiles(true);
 }
 
 void TileView::resizeEvent(QResizeEvent*) {
