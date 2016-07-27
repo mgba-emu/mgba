@@ -23,6 +23,7 @@ Misc:
  - Debugger: Support register and memory writes via GDB stub
  - GBA Audio: Force audio DMAs to not increment destination
  - Qt: Thread startup improvements
+ - 3DS: Port to using citro3D
 
 0.4.1: (2016-07-11)
 Bugfixes:

@@ -7,17 +7,18 @@
 #include "util/gui/font-metrics.h"
 #include "util/png-io.h"
 #include "util/vfs.h"
-#include "platform/3ds/ctr-gpu.h"
 #include "icons.h"
 #include "font.h"
+
+#include "ctr-gpu.h"
 
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
 #define GLYPH_HEIGHT 12
 
 struct GUIFont {
-	struct ctrTexture texture;
-	struct ctrTexture icons;
+	C3D_Tex texture;
+	C3D_Tex icons;
 };
 
 struct GUIFont* GUIFontCreate(void) {
@@ -26,23 +27,16 @@ struct GUIFont* GUIFontCreate(void) {
 		return 0;
 	}
 
-	struct ctrTexture* tex = &guiFont->texture;
-	ctrTexture_Init(tex);
-	tex->data = vramAlloc(256 * 128 * 2);
-	tex->format = GPU_RGBA5551;
-	tex->width = 256;
-	tex->height = 128;
+	C3D_Tex* tex = &guiFont->texture;
+	C3D_TexInitVRAM(tex, 256, 128, GPU_RGBA5551);
 
 	GSPGPU_FlushDataCache(font, font_size);
 	GX_RequestDma((u32*) font, tex->data, font_size);
 	gspWaitForDMA();
 
 	tex = &guiFont->icons;
-	ctrTexture_Init(tex);
-	tex->data = vramAlloc(256 * 64 * 2);
-	tex->format = GPU_RGBA5551;
-	tex->width = 256;
-	tex->height = 64;
+	C3D_TexInitVRAM(tex, 256, 64, GPU_RGBA5551);
+
 
 	GSPGPU_FlushDataCache(icons, icons_size);
 	GX_RequestDma((u32*) icons, tex->data, icons_size);
@@ -52,8 +46,8 @@ struct GUIFont* GUIFontCreate(void) {
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
-	vramFree(font->texture.data);
-	vramFree(font->icons.data);
+	C3D_TexDelete(&font->texture);
+	C3D_TexDelete(&font->icons);
 	free(font);
 }
 

@@ -1,4 +1,5 @@
 /* Copyright (c) 2015 Yuri Kunde Schlesner
+ * Copyright (c) 2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,348 +14,132 @@
 
 #include "ctr-gpu.h"
 
-#include "uishader.h"
-#include "uishader.shbin.h"
+#include "uishader_v.h"
+#include "uishader_v.shbin.h"
+#include "uishader_g.h"
+#include "uishader_g.shbin.h"
 
 struct ctrUIVertex {
-	s16 x,y;
-	s16 u,v;
+	short x, y;
+	short w, h;
+	short u, v;
+	short uw, vh;
 	u32 abgr;
 };
 
-#define VRAM_BASE 0x18000000u
-
 #define MAX_NUM_QUADS 1024
-#define COMMAND_LIST_LENGTH (16 * 1024)
-// Each quad requires 4 vertices and 2*3 indices for the two triangles used to draw it
-#define VERTEX_INDEX_BUFFER_SIZE (MAX_NUM_QUADS * (4 * sizeof(struct ctrUIVertex) + 6 * sizeof(u16)))
+#define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * sizeof(struct ctrUIVertex)
 
 static struct ctrUIVertex* ctrVertexBuffer = NULL;
-static u16* ctrIndexBuffer = NULL;
 static u16 ctrNumQuads = 0;
 
-static void* gpuColorBuffer[2] = { NULL, NULL };
-static u32* gpuCommandList = NULL;
-static void* screenTexture = NULL;
+static C3D_Tex* activeTexture = NULL;
 
 static shaderProgram_s gpuShader;
-static DVLB_s* passthroughShader = NULL;
+static DVLB_s* vertexShader = NULL;
+static DVLB_s* geometryShader = NULL;
 
-static int pendingEvents = 0;
-
-static const struct ctrTexture* activeTexture = NULL;
-
-void ctrClearPending(int events) {
-	int toClear = events & pendingEvents;
-	if (toClear & (1 << GSPGPU_EVENT_PSC0)) {
-		gspWaitForPSC0();
-	}
-	if (toClear & (1 << GSPGPU_EVENT_PPF)) {
-		gspWaitForPPF();
-	}
-	pendingEvents ^= toClear;
-}
-
-// Replacements for the limiting GPU_SetViewport function in ctrulib
-static void _GPU_SetFramebuffer(intptr_t colorBuffer, intptr_t depthBuffer, u16 w, u16 h) {
-	u32 buf[4];
-
-	// Unknown
-	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_FLUSH, 0x00000001);
-	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_INVALIDATE, 0x00000001);
-
-	// Set depth/color buffer address and dimensions
-	buf[0] = depthBuffer >> 3;
-	buf[1] = colorBuffer >> 3;
-	buf[2] = (0x01) << 24 | ((h-1) & 0xFFF) << 12 | (w & 0xFFF) << 0;
-	GPUCMD_AddIncrementalWrites(GPUREG_DEPTHBUFFER_LOC, buf, 3);
-	GPUCMD_AddWrite(GPUREG_RENDERBUF_DIM, buf[2]);
-
-	// Set depth/color buffer pixel format
-	GPUCMD_AddWrite(GPUREG_DEPTHBUFFER_FORMAT, 3 /* D248S */ );
-	GPUCMD_AddWrite(GPUREG_COLORBUFFER_FORMAT, 0 /* RGBA8 */ << 16 | 2 /* Unknown */);
-	GPUCMD_AddWrite(GPUREG_FRAMEBUFFER_BLOCK32, 0); // Unknown
-
-	// Enable color/depth buffers
-	buf[0] = colorBuffer != 0 ? 0xF : 0x0;
-	buf[1] = buf[0];
-	buf[2] = depthBuffer != 0 ? 0x2 : 0x0;
-	buf[3] = buf[2];
-	GPUCMD_AddIncrementalWrites(GPUREG_COLORBUFFER_READ, buf, 4);
-}
-
-static void _GPU_SetViewportEx(u16 x, u16 y, u16 w, u16 h) {
-	u32 buf[4];
-
-	buf[0] = f32tof24(w / 2.0f);
-	buf[1] = f32tof31(2.0f / w) << 1;
-	buf[2] = f32tof24(h / 2.0f);
-	buf[3] = f32tof31(2.0f / h) << 1;
-	GPUCMD_AddIncrementalWrites(GPUREG_VIEWPORT_WIDTH, buf, 4);
-
-	GPUCMD_AddWrite(GPUREG_VIEWPORT_XY, (y & 0xFFFF) << 16 | (x & 0xFFFF) << 0);
-
-	buf[0] = 0;
-	buf[1] = 0;
-	buf[2] = ((h-1) & 0xFFFF) << 16 | ((w-1) & 0xFFFF) << 0;
-	GPUCMD_AddIncrementalWrites(GPUREG_SCISSORTEST_MODE, buf, 3);
-}
-
-static void _setDummyTexEnv(int id) {
-	GPU_SetTexEnv(id,
-		GPU_TEVSOURCES(GPU_PREVIOUS, 0, 0),
-		GPU_TEVSOURCES(GPU_PREVIOUS, 0, 0),
-		GPU_TEVOPERANDS(0, 0, 0),
-		GPU_TEVOPERANDS(0, 0, 0),
-		GPU_REPLACE,
-		GPU_REPLACE,
-		0x00000000);
-}
-
-Result ctrInitGpu() {
-	Result res = -1;
-
-	// Allocate buffers
-	gpuColorBuffer[0] = vramAlloc(400 * 240 * 4);
-	gpuColorBuffer[1] = vramAlloc(320 * 240 * 4);
-	gpuCommandList = linearAlloc(COMMAND_LIST_LENGTH * sizeof(u32));
-	ctrVertexBuffer = linearAlloc(VERTEX_INDEX_BUFFER_SIZE);
-	if (gpuColorBuffer[0] == NULL || gpuColorBuffer[1] == NULL || gpuCommandList == NULL || ctrVertexBuffer == NULL) {
-		res = -1;
-		goto error_allocs;
-	}
-	// Both buffers share the same allocation, index buffer follows the vertex buffer
-	ctrIndexBuffer = (u16*)(ctrVertexBuffer + (4 * MAX_NUM_QUADS));
-
+bool ctrInitGpu() {
 	// Load vertex shader binary
-	passthroughShader = DVLB_ParseFile((u32*)uishader, uishader_size);
-	if (passthroughShader == NULL) {
-		res = -1;
-		goto error_dvlb;
+	vertexShader = DVLB_ParseFile((u32*) uishader_v, uishader_v_size);
+	if (vertexShader == NULL) {
+		return false;
+	}
+
+	// Load geometry shader binary
+	geometryShader = DVLB_ParseFile((u32*) uishader_g, uishader_g_size);
+	if (geometryShader == NULL) {
+		return false;
 	}
 
 	// Create shader
 	shaderProgramInit(&gpuShader);
-	res = shaderProgramSetVsh(&gpuShader, &passthroughShader->DVLE[0]);
+	Result res = shaderProgramSetVsh(&gpuShader, &vertexShader->DVLE[0]);
 	if (res < 0) {
-		goto error_shader;
+		return false;
+	}
+	res = shaderProgramSetGsh(&gpuShader, &geometryShader->DVLE[0], 3);
+	if (res < 0) {
+		return false;
+	}
+	C3D_BindProgram(&gpuShader);
+
+	// Allocate buffers
+	ctrVertexBuffer = linearAlloc(VERTEX_BUFFER_SIZE);
+	if (ctrVertexBuffer == NULL) {
+		return false;
 	}
 
-	// Initialize the GPU in ctrulib and assign the command buffer to accept submission of commands
-	GPU_Init(NULL);
-	GPUCMD_SetBuffer(gpuCommandList, COMMAND_LIST_LENGTH, 0);
+	// Set up TexEnv and other parameters
+	C3D_TexEnv* env = C3D_GetTexEnv(0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
-	return 0;
+	C3D_CullFace(GPU_CULL_NONE);
+	C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_ALL);
+	C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
+	C3D_AlphaTest(false, GPU_ALWAYS, 0);
+	C3D_BlendingColor(0);
 
-error_shader:
-	shaderProgramFree(&gpuShader);
+	C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
+	AttrInfo_Init(attrInfo);
+	AttrInfo_AddLoader(attrInfo, 0, GPU_SHORT, 4); // in_pos
+	AttrInfo_AddLoader(attrInfo, 1, GPU_SHORT, 4); // in_tc0
+	AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4); // in_col
 
-error_dvlb:
-	if (passthroughShader != NULL) {
-		DVLB_Free(passthroughShader);
-		passthroughShader = NULL;
-	}
+	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
+	BufInfo_Init(bufInfo);
+	BufInfo_Add(bufInfo, ctrVertexBuffer, sizeof(struct ctrUIVertex), 3, 0x210);
 
-error_allocs:
-	if (ctrVertexBuffer != NULL) {
-		linearFree(ctrVertexBuffer);
-		ctrVertexBuffer = NULL;
-		ctrIndexBuffer = NULL;
-	}
-
-	if (gpuCommandList != NULL) {
-		GPUCMD_SetBuffer(NULL, 0, 0);
-		linearFree(gpuCommandList);
-		gpuCommandList = NULL;
-	}
-
-	if (gpuColorBuffer[0] != NULL) {
-		vramFree(gpuColorBuffer[0]);
-		gpuColorBuffer[0] = NULL;
-	}
-
-	if (gpuColorBuffer[1] != NULL) {
-		vramFree(gpuColorBuffer[1]);
-		gpuColorBuffer[1] = NULL;
-	}
-	return res;
+	return true;
 }
 
 void ctrDeinitGpu() {
+	if (ctrVertexBuffer) {
+		linearFree(ctrVertexBuffer);
+		ctrVertexBuffer = NULL;
+	}
+
 	shaderProgramFree(&gpuShader);
 
-	DVLB_Free(passthroughShader);
-	passthroughShader = NULL;
-
-	linearFree(screenTexture);
-	screenTexture = NULL;
-
-	linearFree(ctrVertexBuffer);
-	ctrVertexBuffer = NULL;
-	ctrIndexBuffer = NULL;
-
-	GPUCMD_SetBuffer(NULL, 0, 0);
-	linearFree(gpuCommandList);
-	gpuCommandList = NULL;
-
-	vramFree(gpuColorBuffer[0]);
-	gpuColorBuffer[0] = NULL;
-
-	vramFree(gpuColorBuffer[1]);
-	gpuColorBuffer[1] = NULL;
-}
-
-void ctrGpuBeginFrame(int screen) {
-	if (screen > 1) {
-		return;
+	if (vertexShader) {
+		DVLB_Free(vertexShader);
+		vertexShader = NULL;
 	}
 
-	int fw;
-	if (screen == 0) {
-		fw = 400;
-	} else {
-		fw = 320;
+	if (geometryShader) {
+		DVLB_Free(geometryShader);
+		geometryShader = NULL;
 	}
-
-	_GPU_SetFramebuffer(osConvertVirtToPhys(gpuColorBuffer[screen]), 0, 240, fw);
-}
-
-void ctrGpuBeginDrawing(void) {
-	shaderProgramUse(&gpuShader);
-
-	// Disable depth and stencil testing
-	GPU_SetDepthTestAndWriteMask(false, GPU_ALWAYS, GPU_WRITE_COLOR);
-	GPU_SetStencilTest(false, GPU_ALWAYS, 0, 0xFF, 0);
-	GPU_SetStencilOp(GPU_STENCIL_KEEP, GPU_STENCIL_KEEP, GPU_STENCIL_KEEP);
-	GPU_DepthMap(-1.0f, 0.0f);
-
-	// Enable alpha blending
-	GPU_SetAlphaBlending(
-			GPU_BLEND_ADD, GPU_BLEND_ADD, // Operation RGB, Alpha
-			GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, // Color src, dst
-			GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA); // Alpha src, dst
-	GPU_SetBlendingColor(0, 0, 0, 0);
-
-	// Disable alpha testing
-	GPU_SetAlphaTest(false, GPU_ALWAYS, 0);
-
-	// Unknown
-	GPUCMD_AddMaskedWrite(GPUREG_EARLYDEPTH_TEST1, 0x1, 0);
-	GPUCMD_AddWrite(GPUREG_EARLYDEPTH_TEST2, 0);
-
-	GPU_SetTexEnv(0,
-			GPU_TEVSOURCES(GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0), // RGB
-			GPU_TEVSOURCES(GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0), // Alpha
-			GPU_TEVOPERANDS(0, 0, 0), // RGB
-			GPU_TEVOPERANDS(0, 0, 0), // Alpha
-			GPU_MODULATE, GPU_MODULATE, // Operation RGB, Alpha
-			0x00000000); // Constant color
-	_setDummyTexEnv(1);
-	_setDummyTexEnv(2);
-	_setDummyTexEnv(3);
-	_setDummyTexEnv(4);
-	_setDummyTexEnv(5);
-
-	// Configure vertex attribute format
-	u32 bufferOffsets[] = { osConvertVirtToPhys(ctrVertexBuffer) - VRAM_BASE };
-	u64 arrayTargetAttributes[] = { 0x210 };
-	u8 numAttributesInArray[] = { 3 };
-	GPU_SetAttributeBuffers(
-			3, // Number of attributes
-			(u32*)VRAM_BASE, // Base address
-			GPU_ATTRIBFMT(0, 2, GPU_SHORT) | // Attribute format
-				GPU_ATTRIBFMT(1, 2, GPU_SHORT) |
-				GPU_ATTRIBFMT(2, 4, GPU_UNSIGNED_BYTE),
-			0xFF8, // Non-fixed vertex inputs
-			0x210, // Vertex shader input map
-			1, // Use 1 vertex array
-			bufferOffsets, arrayTargetAttributes, numAttributesInArray);
-}
-
-void ctrGpuEndFrame(int screen, void* outputFramebuffer, int w, int h) {
-	if (screen > 1) {
-		return;
-	}
-
-	int fw;
-	if (screen == 0) {
-		fw = 400;
-	} else {
-		fw = 320;
-	}
-
-	ctrFlushBatch();
-
-	void* colorBuffer = (u8*)gpuColorBuffer[screen] + ((fw - w) * 240 * 4);
-
-	const u32 GX_CROP_INPUT_LINES = (1 << 2);
-
-	ctrClearPending(1 << GSPGPU_EVENT_PSC0);
-	ctrClearPending(1 << GSPGPU_EVENT_PPF);
-
-	GX_DisplayTransfer(
-			colorBuffer,       GX_BUFFER_DIM(240, fw),
-			outputFramebuffer, GX_BUFFER_DIM(h, w),
-			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) |
-				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) |
-				GX_CROP_INPUT_LINES);
-	pendingEvents |= (1 << GSPGPU_EVENT_PPF);
-}
-
-void ctrGpuEndDrawing(void) {
-	ctrClearPending(1 << GSPGPU_EVENT_PPF);
-	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
-
-	void* gpuColorBuffer0End = (char*)gpuColorBuffer[0] + 240 * 400 * 4;
-	void* gpuColorBuffer1End = (char*)gpuColorBuffer[1] + 240 * 320 * 4;
-	GX_MemoryFill(
-		gpuColorBuffer[0], 0x00000000, gpuColorBuffer0End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER,
-		gpuColorBuffer[1], 0x00000000, gpuColorBuffer1End, GX_FILL_32BIT_DEPTH | GX_FILL_TRIGGER);
-	pendingEvents |= 1 << GSPGPU_EVENT_PSC0;
 }
 
 void ctrSetViewportSize(s16 w, s16 h) {
-	// Set up projection matrix mapping (0,0) to the top-left and (w,h) to the
-	// bottom-right, taking into account the 3DS' screens' portrait
-	// orientation.
-	float projectionMtx[4 * 4] = {
-		// Rows are in the order w z y x, because ctrulib
-		1.0f, 0.0f, -2.0f / h, 0.0f,
-		1.0f, 0.0f, 0.0f, -2.0f / w,
-		-0.5f, 0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 0.0f,
-	};
-
-	GPU_SetFloatUniform(GPU_VERTEX_SHADER, VSH_FVEC_projectionMtx, (u32*)&projectionMtx, 4);
-	_GPU_SetViewportEx(0, 0, h, w);
+	C3D_SetViewport(0, 0, h, w);
+	C3D_Mtx projectionMtx;
+	Mtx_OrthoTilt(&projectionMtx, 0.0, w, h, 0.0, 0.0, 1.0);
+	C3D_FVUnifMtx4x4(GPU_GEOMETRY_SHADER, GSH_FVEC_projectionMtx, &projectionMtx);
 }
 
-void ctrActivateTexture(const struct ctrTexture* texture) {
-	if (activeTexture == texture) {
+void ctrActivateTexture(C3D_Tex* texture) {
+	if (texture == activeTexture) {
 		return;
 	}
+	if (activeTexture) {
+		ctrFlushBatch();
+	}
 
-	ctrFlushBatch();
-
-	GPU_SetTextureEnable(GPU_TEXUNIT0);
-	GPU_SetTexture(
-			GPU_TEXUNIT0, (u32*)osConvertVirtToPhys(texture->data),
-			texture->width, texture->height,
-			GPU_TEXTURE_MAG_FILTER(texture->filter) | GPU_TEXTURE_MIN_FILTER(texture->filter) |
-				GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER),
-			texture->format);
-	GPU_SetTextureBorderColor(GPU_TEXUNIT0, 0x00000000);
-
-	float textureMtx[2 * 4] = {
-		// Rows are in the order w z y x, because ctrulib
-		0.0f, 0.0f, 0.0f, 1.0f / texture->width,
-		0.0f, 0.0f, 1.0f / texture->height, 0.0f,
-	};
-
-	GPU_SetFloatUniform(GPU_VERTEX_SHADER, VSH_FVEC_textureMtx, (u32*)&textureMtx, 2);
-
+	C3D_TexBind(0, texture);
 	activeTexture = texture;
+
+	C3D_Mtx textureMtx = {
+		.m = {
+			// Rows are in the order w z y x, because ctrulib
+			0.0f, 0.0f, 0.0f, 1.0f / activeTexture->width,
+			0.0f, 0.0f, 1.0f / activeTexture->height, 0.0f 
+		}
+	};
+	C3D_FVUnifMtx2x4(GPU_GEOMETRY_SHADER, GSH_FVEC_textureMtx, &textureMtx);
 }
 
 void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh) {
@@ -362,38 +147,22 @@ void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 u
 		ctrFlushBatch();
 	}
 
-	u16 index = ctrNumQuads * 4;
-	struct ctrUIVertex* vtx = &ctrVertexBuffer[index];
-	vtx->x = x; vtx->y = y;
-	vtx->u = u; vtx->v = v;
-	vtx->abgr = color;
-	vtx++;
-
-	vtx->x = x + w; vtx->y = y;
-	vtx->u = u + uw; vtx->v = v;
-	vtx->abgr = color;
-	vtx++;
-
-	vtx->x = x; vtx->y = y + h;
-	vtx->u = u; vtx->v = v + vh;
-	vtx->abgr = color;
-	vtx++;
-
-	vtx->x = x + w; vtx->y = y + h;
-	vtx->u = u + uw; vtx->v = v + vh;
+	struct ctrUIVertex* vtx = &ctrVertexBuffer[ctrNumQuads];
+	vtx->x = x;
+	vtx->y = y;
+	vtx->w = w;
+	vtx->h = h;
+	vtx->u = u;
+	vtx->v = v;
+	vtx->uw = uw;
+	vtx->vh = vh;
 	vtx->abgr = color;
 
-	u16* i = &ctrIndexBuffer[ctrNumQuads * 6];
-	i[0] = index + 0; i[1] = index + 1; i[2] = index + 2;
-	i[3] = index + 2; i[4] = index + 1; i[5] = index + 3;
-
-	ctrNumQuads += 1;
+	++ctrNumQuads;
 }
 
 void ctrAddRect(u32 color, s16 x, s16 y, s16 u, s16 v, s16 w, s16 h) {
-	ctrAddRectScaled(color,
-			x, y, w, h,
-			u, v, w, h);
+	ctrAddRectScaled(color, x, y, w, h, u, v, w, h);
 }
 
 void ctrFlushBatch(void) {
@@ -401,19 +170,9 @@ void ctrFlushBatch(void) {
 		return;
 	}
 
-	ctrClearPending((1 << GSPGPU_EVENT_PSC0));
-
-	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_INDEX_BUFFER_SIZE);
-	GPU_DrawElements(GPU_GEOMETRY_PRIM, (u32*)(osConvertVirtToPhys(ctrIndexBuffer) - VRAM_BASE), ctrNumQuads * 6);
-
-	GPU_FinishDrawing();
-	GPUCMD_Finalize();
-	GSPGPU_FlushDataCache((u8*)gpuCommandList, COMMAND_LIST_LENGTH * sizeof(u32));
-	GPUCMD_FlushAndRun();
-
-	gspWaitForP3D();
-
-	GPUCMD_SetBufferOffset(0);
+	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_BUFFER_SIZE);
+	C3D_DrawArrays(GPU_GEOMETRY_PRIM, 0, ctrNumQuads);
+	C3D_Flush();
 
 	ctrNumQuads = 0;
 }
