@@ -8,35 +8,42 @@
 #include "util/png-io.h"
 #include "util/vfs.h"
 #include "icons.h"
-#include "font.h"
 
 #include "ctr-gpu.h"
 
 #define CELL_HEIGHT 16
 #define CELL_WIDTH 16
-#define GLYPH_HEIGHT 12
+#define FONT_SIZE 0.52f
 
 struct GUIFont {
-	C3D_Tex texture;
+	C3D_Tex* sheets;
 	C3D_Tex icons;
 };
 
 struct GUIFont* GUIFontCreate(void) {
+	fontEnsureMapped();
 	struct GUIFont* guiFont = malloc(sizeof(struct GUIFont));
 	if (!guiFont) {
 		return 0;
 	}
+	C3D_Tex* tex;
 
-	C3D_Tex* tex = &guiFont->texture;
-	C3D_TexInitVRAM(tex, 256, 128, GPU_RGBA5551);
+	TGLP_s* glyphInfo = fontGetGlyphInfo();
+	guiFont->sheets = malloc(sizeof(*guiFont->sheets) * glyphInfo->nSheets);
 
-	GSPGPU_FlushDataCache(font, font_size);
-	GX_RequestDma((u32*) font, tex->data, font_size);
-	gspWaitForDMA();
+	int i;
+	for (i = 0; i < glyphInfo->nSheets; ++i) {
+		tex = &guiFont->sheets[i];
+		tex->data = fontGetGlyphSheetTex(i);
+		tex->fmt = glyphInfo->sheetFmt;
+		tex->size = glyphInfo->sheetSize;
+		tex->width = glyphInfo->sheetWidth;
+		tex->height = glyphInfo->sheetHeight;
+		tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR) | GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_EDGE) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_EDGE);
+	}
 
 	tex = &guiFont->icons;
 	C3D_TexInitVRAM(tex, 256, 64, GPU_RGBA5551);
-
 
 	GSPGPU_FlushDataCache(icons, icons_size);
 	GX_RequestDma((u32*) icons, tex->data, icons_size);
@@ -46,22 +53,24 @@ struct GUIFont* GUIFontCreate(void) {
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
-	C3D_TexDelete(&font->texture);
+	free(font->sheets);
 	C3D_TexDelete(&font->icons);
 	free(font);
 }
 
 unsigned GUIFontHeight(const struct GUIFont* font) {
 	UNUSED(font);
-	return GLYPH_HEIGHT;
+	return fontGetInfo()->lineFeed * FONT_SIZE;
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
 	UNUSED(font);
-	if (glyph > 0x7F) {
-		glyph = 0;
+	int index = fontGlyphIndexFromCodePoint(glyph);
+	charWidthInfo_s* info = fontGetCharWidthInfo(index);
+	if (info) {
+		return info->charWidth * FONT_SIZE;
 	}
-	return defaultFontMetrics[glyph].width;
+	return 0;
 }
 
 void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
@@ -84,19 +93,21 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
-	ctrActivateTexture(&font->texture);
+	int index = fontGlyphIndexFromCodePoint(glyph);
+	fontGlyphPos_s data;
+	fontCalcGlyphPos(&data, index, GLYPH_POS_CALC_VTXCOORD, 1.0, 1.0);
 
-	if (glyph > 0x7F) {
-		glyph = '?';
-	}
+	C3D_Tex* tex = &font->sheets[data.sheetIndex];
+	ctrActivateTexture(tex);
 
-	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	u16 x = glyph_x - metric.padding.left;
-	u16 y = glyph_y - GLYPH_HEIGHT;
-	u16 u = (glyph % 16u) * CELL_WIDTH;
-	u16 v = (glyph / 16u) * CELL_HEIGHT;
+	float width = data.texcoord.right - data.texcoord.left;
+	float height = data.texcoord.top - data.texcoord.bottom;
+	u16 x = glyph_x;
+	u16 y = glyph_y + tex->height * height / 8;
+	u16 u = tex->width * data.texcoord.left;
+	u16 v = tex->height * data.texcoord.bottom;
 
-	ctrAddRect(color, x, y, u, v, CELL_WIDTH, CELL_HEIGHT);
+	ctrAddRectScaled(color, x, y, tex->width * width * FONT_SIZE, tex->height * height * -FONT_SIZE, u, v, tex->width * width, tex->height * height);
 }
 
 void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {

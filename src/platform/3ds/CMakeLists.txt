@@ -30,7 +30,6 @@ set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC
 	${CMAKE_CURRENT_BINARY_DIR}/icons.c
-	${CMAKE_CURRENT_BINARY_DIR}/font.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.h
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
@@ -44,7 +43,6 @@ list(APPEND GUI_SRC
 
 set_source_files_properties(
 	${CMAKE_CURRENT_BINARY_DIR}/icons.c
-	${CMAKE_CURRENT_BINARY_DIR}/font.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.c
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.h
 	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
@@ -64,10 +62,6 @@ add_custom_command(OUTPUT ${BINARY_NAME}.smdh
 add_custom_command(OUTPUT ${BINARY_NAME}.bnr
                    COMMAND ${BANNERTOOL} makebanner -i ${CMAKE_CURRENT_SOURCE_DIR}/logo.png -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/logo.png ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
-
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/font.c
-                   COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw
-                   DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/font.raw)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
                    COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw

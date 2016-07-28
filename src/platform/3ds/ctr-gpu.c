@@ -27,11 +27,12 @@ struct ctrUIVertex {
 	u32 abgr;
 };
 
-#define MAX_NUM_QUADS 1024
+#define MAX_NUM_QUADS 2048
 #define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * sizeof(struct ctrUIVertex)
 
 static struct ctrUIVertex* ctrVertexBuffer = NULL;
-static u16 ctrNumQuads = 0;
+static int ctrNumVerts = 0;
+static int ctrVertStart = 0;
 
 static C3D_Tex* activeTexture = NULL;
 
@@ -70,12 +71,6 @@ bool ctrInitGpu() {
 		return false;
 	}
 
-	// Set up TexEnv and other parameters
-	C3D_TexEnv* env = C3D_GetTexEnv(0);
-	C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
-	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-
 	C3D_CullFace(GPU_CULL_NONE);
 	C3D_DepthTest(false, GPU_ALWAYS, GPU_WRITE_ALL);
 	C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA);
@@ -87,10 +82,6 @@ bool ctrInitGpu() {
 	AttrInfo_AddLoader(attrInfo, 0, GPU_SHORT, 4); // in_pos
 	AttrInfo_AddLoader(attrInfo, 1, GPU_SHORT, 4); // in_tc0
 	AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4); // in_col
-
-	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
-	BufInfo_Init(bufInfo);
-	BufInfo_Add(bufInfo, ctrVertexBuffer, sizeof(struct ctrUIVertex), 3, 0x210);
 
 	return true;
 }
@@ -129,8 +120,19 @@ void ctrActivateTexture(C3D_Tex* texture) {
 		ctrFlushBatch();
 	}
 
-	C3D_TexBind(0, texture);
 	activeTexture = texture;
+
+	C3D_TexEnv* env = C3D_GetTexEnv(0);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	if (texture->fmt < GPU_LA8) {
+		C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
+		C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+	} else {
+		C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, 0, 0);
+		C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
+		C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+		C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+	}
 
 	C3D_Mtx textureMtx = {
 		.m = {
@@ -143,11 +145,14 @@ void ctrActivateTexture(C3D_Tex* texture) {
 }
 
 void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh) {
-	if (ctrNumQuads == MAX_NUM_QUADS) {
+	if (ctrNumVerts + ctrVertStart == MAX_NUM_QUADS) {
 		ctrFlushBatch();
+		C3D_Flush();
+		ctrNumVerts = 0;
+		ctrVertStart = 0;
 	}
 
-	struct ctrUIVertex* vtx = &ctrVertexBuffer[ctrNumQuads];
+	struct ctrUIVertex* vtx = &ctrVertexBuffer[ctrVertStart + ctrNumVerts];
 	vtx->x = x;
 	vtx->y = y;
 	vtx->w = w;
@@ -158,7 +163,7 @@ void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 u
 	vtx->vh = vh;
 	vtx->abgr = color;
 
-	++ctrNumQuads;
+	++ctrNumVerts;
 }
 
 void ctrAddRect(u32 color, s16 x, s16 y, s16 u, s16 v, s16 w, s16 h) {
@@ -166,13 +171,19 @@ void ctrAddRect(u32 color, s16 x, s16 y, s16 u, s16 v, s16 w, s16 h) {
 }
 
 void ctrFlushBatch(void) {
-	if (ctrNumQuads == 0) {
+	if (ctrNumVerts == 0) {
 		return;
 	}
 
-	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_BUFFER_SIZE);
-	C3D_DrawArrays(GPU_GEOMETRY_PRIM, 0, ctrNumQuads);
-	C3D_Flush();
+	C3D_TexBind(0, activeTexture);
 
-	ctrNumQuads = 0;
+	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
+	BufInfo_Init(bufInfo);
+	BufInfo_Add(bufInfo, &ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex), 3, 0x210);
+
+	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_BUFFER_SIZE);
+	C3D_DrawArrays(GPU_GEOMETRY_PRIM, 0, ctrNumVerts);
+
+	ctrVertStart += ctrNumVerts;
+	ctrNumVerts = 0;
 }
