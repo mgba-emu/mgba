@@ -27,7 +27,7 @@ struct ctrUIVertex {
 	u32 abgr;
 };
 
-#define MAX_NUM_QUADS 2048
+#define MAX_NUM_QUADS 1024
 #define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * sizeof(struct ctrUIVertex)
 
 static struct ctrUIVertex* ctrVertexBuffer = NULL;
@@ -121,6 +121,7 @@ void ctrActivateTexture(C3D_Tex* texture) {
 	}
 
 	activeTexture = texture;
+	C3D_TexBind(0, activeTexture);
 
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
 	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
@@ -175,15 +176,20 @@ void ctrFlushBatch(void) {
 		return;
 	}
 
-	C3D_TexBind(0, activeTexture);
-
 	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
 	BufInfo_Init(bufInfo);
 	BufInfo_Add(bufInfo, &ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex), 3, 0x210);
 
-	GSPGPU_FlushDataCache(ctrVertexBuffer, VERTEX_BUFFER_SIZE);
+	GSPGPU_FlushDataCache(&ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex) * ctrNumVerts);
 	C3D_DrawArrays(GPU_GEOMETRY_PRIM, 0, ctrNumVerts);
 
 	ctrVertStart += ctrNumVerts;
 	ctrNumVerts = 0;
+}
+
+void ctrFinalize(void) {
+	ctrFlushBatch();
+	C3D_Flush();
+	ctrNumVerts = 0;
+	ctrVertStart = 0;
 }
