@@ -98,7 +98,7 @@ int main() {
 	struct mGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd,
+			font, "ux0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
