@@ -51,7 +51,7 @@ add_custom_target(${BINARY_NAME}.velf ALL
 add_custom_target(sce_sys ${CMAKE_COMMAND} -E make_directory sce_sys)
 
 add_custom_target(param.sfo
-                  ${MAKE_SFO} ${PROJECT_NAME} -s TITLE_ID=MGBA4VITA sce_sys/param.sfo
+                  ${MAKE_SFO} ${PROJECT_NAME} -s TITLE_ID=MGBA00001 sce_sys/param.sfo
                   DEPENDS sce_sys)
 
 add_custom_target(eboot.bin
@@ -68,6 +68,6 @@ add_custom_target(livearea
 
 add_custom_target(${BINARY_NAME}.vpk ALL
                   zip -r ${BINARY_NAME}.vpk sce_sys eboot.bin
-                  DEPENDS livearea eboot.bin head.bin param.sfo)
+                  DEPENDS livearea eboot.bin param.sfo)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.velf DESTINATION . COMPONENT ${BINARY_NAME}-psp2)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.vpk DESTINATION . COMPONENT ${BINARY_NAME}-psp2)
