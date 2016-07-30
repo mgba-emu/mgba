@@ -18,6 +18,7 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
 #include <psp2/power.h>
+#include <psp2/sysmodule.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
@@ -161,10 +162,16 @@ int main() {
 
 	mGUIInit(&runner, "psvita");
 	mGUIRunloop(&runner);
+
+	vita2d_fini();
 	mGUIDeinit(&runner);
 
+	int pgfLoaded = sceSysmoduleIsLoaded(SCE_SYSMODULE_PGF);
+	if (pgfLoaded != SCE_SYSMODULE_LOADED) {
+		sceSysmoduleLoadModule(SCE_SYSMODULE_PGF);
+	}
 	GUIFontDestroy(font);
-	vita2d_fini();
+	sceSysmoduleUnloadModule(SCE_SYSMODULE_PGF);
 
 	sceKernelExitProcess(0);
 	return 0;
