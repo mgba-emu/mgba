@@ -28,6 +28,10 @@
 #define COND_LE 0xD0000000
 #define COND_AL 0xE0000000
 
+#define EMIT(DEST, OPCODE, COND, ...) \
+	*DEST = emit ## OPCODE (__VA_ARGS__) | COND_ ## COND; \
+	++DEST;
+
 static uint32_t calculateAddrMode1(unsigned imm) {
 	if (imm < 0x100) {
 		return imm;
@@ -116,37 +120,35 @@ static uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2) {
 	return OP_SUBS | (dst << 12) | (src1 << 16) | src2;
 }
 
+#define EMIT_IMM(DEST, COND, REG, VALUE) \
+	EMIT(DEST, MOVW, COND, REG, VALUE); \
+	if (VALUE >= 0x10000) { \
+		EMIT(DEST, MOVT, COND, REG, (VALUE) >> 16); \
+	}
+
 static uint32_t* updatePC(uint32_t* code, uint32_t address) {
-	*code++ = emitMOVW(5, address) | COND_AL;
-	*code++ = emitMOVT(5, address >> 16) | COND_AL;
-	*code++ = emitSTRI(5, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
+	EMIT_IMM(code, AL, 5, address);
+	EMIT(code, STRI, AL, 5, 4, ARM_PC * sizeof(uint32_t));
 	return code;
 }
 
 static uint32_t* updateEvents(uint32_t* code, struct ARMCore* cpu) {
-	*code++ = emitADDI(0, 4, offsetof(struct ARMCore, cycles)) | COND_AL;
-	*code++ = emitLDMIA(0, 6) | COND_AL;
-	*code++ = emitSUBS(0, 2, 1) | COND_AL;
-	*code++ = emitMOV(0, 4) | COND_AL;
-	*code = emitBL(code, cpu->irqh.processEvents) | COND_LE;
-	++code;
-	*code++ = emitLDRI(1, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
-	*code++ = emitCMP(1, 5) | COND_AL;
-	*code++ = emitPOP(0x8030) | COND_NE;
+	EMIT(code, ADDI, AL, 0, 4, offsetof(struct ARMCore, cycles));
+	EMIT(code, LDMIA, AL, 0, 6);
+	EMIT(code, SUBS, AL, 0, 2, 1);
+	EMIT(code, MOV, AL, 0, 4);
+	EMIT(code, BL, LE, code, cpu->irqh.processEvents);
+	EMIT(code, LDRI, AL, 1, 4, ARM_PC * sizeof(uint32_t));
+	EMIT(code, CMP, AL, 1, 5);
+	EMIT(code, POP, NE, 0x8030);
 	return code;
 }
 
 static uint32_t* flushPrefetch(uint32_t* code, uint32_t op0, uint32_t op1) {
-	*code++ = emitMOVW(1, op0) | COND_AL;
-	if (op0 >= 0x10000) {
-		*code++ = emitMOVT(1, op0 >> 16) | COND_AL;
-	}
-	*code++ = emitMOVW(2, op1) | COND_AL;
-	if (op1 >= 0x10000) {
-		*code++ = emitMOVT(2, op1 >> 16) | COND_AL;
-	}
-	*code++ = emitADDI(0, 4, offsetof(struct ARMCore, prefetch)) | COND_AL;
-	*code++ = emitSTMIA(0, 6) | COND_AL;
+	EMIT_IMM(code, AL, 1, op0);
+	EMIT_IMM(code, AL, 2, op1);
+	EMIT(code, ADDI, AL, 0, 4, offsetof(struct ARMCore, prefetch));
+	EMIT(code, STMIA, AL, 0, 6);
 	return code;
 }
 
@@ -233,9 +235,9 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		return;
 	} else {
 		trace->entry = (void (*)(struct ARMCore*)) code;
-		*code++ = emitPUSH(0x4030) | COND_AL;
-		*code++ = emitMOV(4, 0) | COND_AL;
-		*code++ = emitLDRI(5, 0, ARM_PC * sizeof(uint32_t)) | COND_AL;
+		EMIT(code, PUSH, AL, 0x4030);
+		EMIT(code, MOV, AL, 4, 0);
+		EMIT(code, LDRI, AL, 5, 0, ARM_PC * sizeof(uint32_t));
 		struct ARMInstructionInfo info;
 		while (true) {
 			uint16_t instruction = cpu->memory.load16(cpu, address, 0);
@@ -250,10 +252,9 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			if (needsUpdatePrefetch(&info)) {
 				code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
 			}
-			*code++ = emitMOVW(1, instruction) | COND_AL;
-			*code++ = emitMOV(0, 4) | COND_AL;
-			*code = emitBL(code, _thumbTable[instruction >> 6]) | COND_AL;
-			++code;
+			EMIT(code, MOVW, AL, 1, instruction);
+			EMIT(code, MOV, AL, 0, 4);
+			EMIT(code, BL, AL, code, _thumbTable[instruction >> 6]);
 			if (info.branchType == ARM_BRANCH) {
 				struct Label* label = NULL;
 				uint32_t base = address + info.op1.immediate + WORD_SIZE_THUMB;
@@ -267,20 +268,19 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 					code = updateEvents(code, cpu);
 					break;
 				}
-				*code++ = emitMOVW(5, address + WORD_SIZE_THUMB) | COND_AL;
-				*code++ = emitMOVT(5, (address + WORD_SIZE_THUMB) >> 16) | COND_AL;
-				*code++ = emitLDRI(1, 4, ARM_PC * sizeof(uint32_t)) | COND_AL;
-				*code++ = emitCMP(1, 5) | COND_AL;
+				EMIT(code, MOVW, AL, 5, address + WORD_SIZE_THUMB);
+				EMIT(code, MOVT, AL, 5, (address + WORD_SIZE_THUMB) >> 16);
+				EMIT(code, LDRI, AL, 1, 4, ARM_PC * sizeof(uint32_t));
+				EMIT(code, CMP, AL, 1, 5);
 				if (!label || !label->code) {
-					*code++ = emitPOP(0x8030) | COND_NE;
+					EMIT(code, POP, NE, 0x8030);
 				} else {
 					uint32_t* l2 = code;
 					++code;
-					*code++ = emitMOV(5, 1) | COND_AL;
+					EMIT(code, MOV, AL, 5, 1);
 					code = updateEvents(code, cpu);
-					*code = emitB(code, label->code) | COND_AL;
-					++code;
-					*l2 = emitB(l2, code) | COND_EQ;
+					EMIT(code, B, AL, code, label->code);
+					EMIT(l2, B, EQ, l2, code);
 				}
 			} else if (needsUpdateEvents(&info)) {
 				code = updateEvents(code, cpu);
@@ -291,7 +291,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		}
 		memset(labels, 0, sizeof(struct Label) * ((address - trace->start) >> 1));
 		code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
-		*code++ = emitPOP(0x8030) | COND_AL;
+		EMIT(code, POP, AL, 0x8030);
 	}
 	__clear_cache(trace->entry, code);
 	cpu->dynarec.buffer = code;
