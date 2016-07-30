@@ -27,6 +27,7 @@ Misc:
  - 3DS: Port to using citro3D
  - 3DS: Use system font for menus
  - PSP2: Use system font for menus
+ - All: Faster memory read/write
 
 0.4.1: (2016-07-11)
 Bugfixes:

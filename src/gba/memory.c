@@ -384,7 +384,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
 		LOAD_32(value, address & (SIZE_CART0 - 4), memory->rom); \
 	} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) { \
-		LOAD_32(value, address & memory->romMask, memory->rom); \
+		LOAD_32(value, address & memory->romMask & -4, memory->rom); \
 	} else if (memory->vfame.cartType) { \
 		value = GBAVFameGetPatternValue(address, 32); \
 	} else { \
