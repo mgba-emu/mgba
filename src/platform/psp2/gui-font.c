@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
 #include "util/gui/font-metrics.h"
+#include "util/string.h"
 
 #include <vita2d.h>
 
 #define CELL_HEIGHT 32
 #define CELL_WIDTH 32
-#define FONT_SIZE 1.2f
+#define FONT_SIZE 1.25f
 
 extern const uint8_t _binary_icons2x_png_start[];
 
@@ -36,7 +37,7 @@ void GUIFontDestroy(struct GUIFont* font) {
 }
 
 unsigned GUIFontHeight(const struct GUIFont* font) {
-	return vita2d_pgf_text_height(font->pgf, FONT_SIZE, "M") + 8;
+	return vita2d_pgf_text_height(font->pgf, FONT_SIZE, "M") + 9;
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
