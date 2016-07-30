@@ -30,6 +30,7 @@
 #include "MemoryView.h"
 #include "OverrideView.h"
 #include "PaletteView.h"
+#include "TileView.h"
 #include "ROMInfo.h"
 #include "SensorView.h"
 #include "SettingsView.h"
@@ -182,6 +183,15 @@ void Window::argumentsPassed(mArguments* args) {
 	if (args->fname) {
 		m_controller->loadGame(args->fname);
 	}
+
+#ifdef USE_GDB_STUB
+	if (args->debuggerType == DEBUGGER_GDB) {
+		if (!m_gdbController) {
+			m_gdbController = new GDBController(m_controller, this);
+			m_gdbController->listen();
+		}
+	}
+#endif
 }
 
 void Window::resizeFrame(const QSize& size) {
@@ -271,11 +281,13 @@ void Window::saveConfig() {
 	m_config->write();
 }
 
-void Window::selectROM() {
-	QStringList formats{
+QString Window::getFilters() const {
+	QStringList filters;
+	QStringList formats;
+
+#ifdef M_CORE_GBA
+	QStringList gbaFormats{
 		"*.gba",
-		"*.gb",
-		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 		"*.zip",
 #endif
@@ -286,16 +298,12 @@ void Window::selectROM() {
 		"*.mb",
 		"*.rom",
 		"*.bin"};
-	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
-	if (!filename.isEmpty()) {
-		m_controller->loadGame(filename);
-	}
-}
+	formats.append(gbaFormats);
+	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
+#endif
 
-void Window::replaceROM() {
-	QStringList formats{
-		"*.gba",
+#ifdef M_CORE_GB
+	QStringList gbFormats{
 		"*.gb",
 		"*.gbc",
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
@@ -306,10 +314,35 @@ void Window::replaceROM() {
 #endif
 		"*.rom",
 		"*.bin"};
-	QString filter = tr("Game Boy Advance ROMs (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), filter);
+	formats.append(gbFormats);
+	filters.append(tr("Game Boy ROMs (%1)").arg(gbFormats.join(QChar(' '))));
+#endif
+
+	formats.removeDuplicates();
+	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
+	return filters.join(";;");
+}
+
+void Window::selectROM() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	if (!filename.isEmpty()) {
+		m_controller->loadGame(filename);
+	}
+}
+
+void Window::replaceROM() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
 	if (!filename.isEmpty()) {
 		m_controller->replaceGame(filename);
+	}
+}
+
+void Window::selectSave(bool temporary) {
+	QStringList formats{"*.sav"};
+	QString filter = tr("Game Boy Advance save files (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), filter);
+	if (!filename.isEmpty()) {
+		m_controller->loadSave(filename, temporary);
 	}
 }
 
@@ -333,11 +366,12 @@ void Window::multiplayerChanged() {
 void Window::selectBIOS() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
-		m_config->setOption("bios", filename);
+		QFileInfo info(filename);
+		m_config->setOption("bios", info.canonicalFilePath());
 		m_config->updateOption("bios");
 		m_config->setOption("useBios", true);
 		m_config->updateOption("useBios");
-		m_controller->loadBIOS(filename);
+		m_controller->loadBIOS(info.canonicalFilePath());
 	}
 }
 
@@ -395,6 +429,11 @@ void Window::openCheatsWindow() {
 void Window::openPaletteWindow() {
 	PaletteView* paletteWindow = new PaletteView(m_controller);
 	openView(paletteWindow);
+}
+
+void Window::openTileWindow() {
+	TileView* tileWindow = new TileView(m_controller);
+	openView(tileWindow);
 }
 
 void Window::openMemoryWindow() {
@@ -811,6 +850,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
+	QAction* loadTemporarySave = new QAction(tr("Load temporary save"), fileMenu);
+	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
+	m_gameActions.append(loadTemporarySave);
+	m_gbaActions.append(loadTemporarySave);
+	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
+
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
@@ -835,7 +880,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(loadState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::LOAD); });
 	m_gameActions.append(loadState);
 	m_nonMpActions.append(loadState);
-	m_gbaActions.append(loadState);
 	addControlledAction(fileMenu, loadState, "loadState");
 
 	QAction* saveState = new QAction(tr("&Save state"), fileMenu);
@@ -843,7 +887,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(saveState, &QAction::triggered, [this]() { this->openStateWindow(LoadSave::SAVE); });
 	m_gameActions.append(saveState);
 	m_nonMpActions.append(saveState);
-	m_gbaActions.append(saveState);
 	addControlledAction(fileMenu, saveState, "saveState");
 
 	QMenu* quickLoadMenu = fileMenu->addMenu(tr("Quick load"));
@@ -855,14 +898,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(quickLoad, SIGNAL(triggered()), m_controller, SLOT(loadState()));
 	m_gameActions.append(quickLoad);
 	m_nonMpActions.append(quickLoad);
-	m_gbaActions.append(quickLoad);
 	addControlledAction(quickLoadMenu, quickLoad, "quickLoad");
 
 	QAction* quickSave = new QAction(tr("Save recent"), quickSaveMenu);
 	connect(quickSave, SIGNAL(triggered()), m_controller, SLOT(saveState()));
 	m_gameActions.append(quickSave);
 	m_nonMpActions.append(quickSave);
-	m_gbaActions.append(quickSave);
 	addControlledAction(quickSaveMenu, quickSave, "quickSave");
 
 	quickLoadMenu->addSeparator();
@@ -873,7 +914,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(undoLoadState, SIGNAL(triggered()), m_controller, SLOT(loadBackupState()));
 	m_gameActions.append(undoLoadState);
 	m_nonMpActions.append(undoLoadState);
-	m_gbaActions.append(undoLoadState);
 	addControlledAction(quickLoadMenu, undoLoadState, "undoLoadState");
 
 	QAction* undoSaveState = new QAction(tr("Undo save state"), quickSaveMenu);
@@ -881,7 +921,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(undoSaveState, SIGNAL(triggered()), m_controller, SLOT(saveBackupState()));
 	m_gameActions.append(undoSaveState);
 	m_nonMpActions.append(undoSaveState);
-	m_gbaActions.append(undoSaveState);
 	addControlledAction(quickSaveMenu, undoSaveState, "undoSaveState");
 
 	quickLoadMenu->addSeparator();
@@ -894,7 +933,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		connect(quickLoad, &QAction::triggered, [this, i]() { m_controller->loadState(i); });
 		m_gameActions.append(quickLoad);
 		m_nonMpActions.append(quickLoad);
-		m_gbaActions.append(quickLoad);
 		addControlledAction(quickLoadMenu, quickLoad, QString("quickLoad.%1").arg(i));
 
 		quickSave = new QAction(tr("State &%1").arg(i), quickSaveMenu);
@@ -902,7 +940,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		connect(quickSave, &QAction::triggered, [this, i]() { m_controller->saveState(i); });
 		m_gameActions.append(quickSave);
 		m_nonMpActions.append(quickSave);
-		m_gbaActions.append(quickSave);
 		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
 
@@ -1181,6 +1218,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	avMenu->addSeparator();
 	QMenu* videoLayers = avMenu->addMenu(tr("Video layers"));
+	m_shortcutController->addMenu(videoLayers, avMenu);
 
 	for (int i = 0; i < 4; ++i) {
 		QAction* enableBg = new QAction(tr("Background %0").arg(i), videoLayers);
@@ -1197,6 +1235,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addControlledAction(videoLayers, enableObj, "enableOBJ");
 
 	QMenu* audioChannels = avMenu->addMenu(tr("Audio channels"));
+	m_shortcutController->addMenu(audioChannels, avMenu);
 
 	for (int i = 0; i < 4; ++i) {
 		QAction* enableCh = new QAction(tr("Channel %0").arg(i + 1), audioChannels);
@@ -1256,6 +1295,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(paletteView);
 	m_gbaActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
+
+	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
+	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
+	m_gameActions.append(tileView);
+	m_gbaActions.append(tileView);
+	addControlledAction(toolsMenu, tileView, "tileWindow");
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));

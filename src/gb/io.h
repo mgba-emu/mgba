@@ -101,8 +101,11 @@ enum GBIORegisters {
 	REG_UNK74 = 0x74,
 	REG_UNK75 = 0x75,
 	REG_UNK76 = 0x76,
-	REG_UNK77 = 0x77
+	REG_UNK77 = 0x77,
+	REG_MAX = 0x100
 };
+
+extern const char* const GBIORegisterNames[];
 
 struct GB;
 void GBIOInit(struct GB* gb);
@@ -110,5 +113,9 @@ void GBIOReset(struct GB* gb);
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value);
 uint8_t GBIORead(struct GB* gb, unsigned address);
+
+struct GBSerializedState;
+void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state);
+void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state);
 
 #endif

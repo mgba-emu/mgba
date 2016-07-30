@@ -69,12 +69,7 @@ int main(int argc, char** argv) {
 	if (!allocateRomBuffer()) {
 		return 1;
 	}
-	sdmcArchive = (FS_Archive) {
-		ARCHIVE_SDMC,
-		(FS_Path) { PATH_EMPTY, 1, "" },
-		0
-	};
-	FSUSER_OpenArchive(&sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 #else
 	signal(SIGINT, _mPerfShutdown);
 #endif
@@ -93,6 +88,9 @@ int main(int argc, char** argv) {
 
 	struct mArguments args = {};
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	if (!args.fname) {
+		parsed = false;
+	}
 	if (!parsed || args.showHelp) {
 		usage(argv[0], PERF_USAGE);
 		didFail = !parsed;
@@ -162,7 +160,7 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 
 	core->reset(core);
 	if (_savestate) {
-		core->loadState(core, _savestate, 0);
+		mCoreLoadStateNamed(core, _savestate, 0);
 	}
 
 	core->getGameCode(core, gameCode);

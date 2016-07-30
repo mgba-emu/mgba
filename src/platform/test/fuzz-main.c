@@ -58,6 +58,9 @@ int main(int argc, char** argv) {
 
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	if (!args.fname) {
+		parsed = false;
+	}
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
 		core->deinit(core);
@@ -102,7 +105,7 @@ int main(int argc, char** argv) {
 	}
 	if (savestate) {
 		if (!savestateOverlay) {
-			core->loadState(core, savestate, 0);
+			mCoreLoadStateNamed(core, savestate, 0);
 		} else {
 			struct GBASerializedState* state = GBAAllocateState();
 			savestate->read(savestate, state, sizeof(*state));

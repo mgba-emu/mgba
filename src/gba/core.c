@@ -7,11 +7,13 @@
 
 #include "core/core.h"
 #include "core/log.h"
+#include "arm/debugger/debugger.h"
 #include "gba/cheats.h"
 #include "gba/gba.h"
 #include "gba/extra/cli.h"
 #include "gba/overrides.h"
 #include "gba/renderers/video-software.h"
+#include "gba/savedata.h"
 #include "gba/serialize.h"
 #include "util/memory.h"
 #include "util/patch.h"
@@ -190,6 +192,11 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBALoadSave(core->board, vf);
 }
 
+static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
+	GBASavedataMask(core->board, vf);
+	return true; // TODO: Return a real value
+}
+
 static bool _GBACoreLoadPatch(struct mCore* core, struct VFile* vf) {
 	if (!vf) {
 		return false;
@@ -243,12 +250,18 @@ static void _GBACoreStep(struct mCore* core) {
 	ARMRun(core->cpu);
 }
 
-static bool _GBACoreLoadState(struct mCore* core, struct VFile* vf, int flags) {
-	return GBALoadStateNamed(core->board, vf, flags);
+static size_t _GBACoreStateSize(struct mCore* core) {
+	UNUSED(core);
+	return sizeof(struct GBASerializedState);
 }
 
-static bool _GBACoreSaveState(struct mCore* core, struct VFile* vf, int flags) {
-	return GBASaveStateNamed(core->board, vf, flags);
+static bool _GBACoreLoadState(struct mCore* core, const void* state) {
+	return GBADeserialize(core->board, state);
+}
+
+static bool _GBACoreSaveState(struct mCore* core, void* state) {
+	GBASerialize(core->board, state);
+	return true;
 }
 
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
@@ -422,6 +435,41 @@ static struct mCheatDevice* _GBACoreCheatDevice(struct mCore* core) {
 	return gbacore->cheatDevice;
 }
 
+static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
+	struct GBA* gba = core->board;
+	size_t size = GBASavedataSize(&gba->memory.savedata);
+	if (!size) {
+		*sram = NULL;
+		return 0;
+	}
+	*sram = malloc(size);
+	struct VFile* vf = VFileFromMemory(*sram, size);
+	if (!vf) {
+		free(*sram);
+		*sram = NULL;
+		return 0;
+	}
+	bool success = GBASavedataClone(&gba->memory.savedata, vf);
+	vf->close(vf);
+	if (!success) {
+		free(*sram);
+		*sram = NULL;
+		return 0;
+	}
+	return size;
+}
+
+static bool _GBACoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+	struct VFile* vf = VFileFromConstMemory(sram, size);
+	if (!vf) {
+		return false;
+	}
+	struct GBA* gba = core->board;
+	bool success = GBASavedataLoad(&gba->memory.savedata, vf);
+	vf->close(vf);
+	return success;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -445,12 +493,14 @@ struct mCore* GBACoreCreate(void) {
 	core->loadROM = _GBACoreLoadROM;
 	core->loadBIOS = _GBACoreLoadBIOS;
 	core->loadSave = _GBACoreLoadSave;
+	core->loadTemporarySave = _GBACoreLoadTemporarySave;
 	core->loadPatch = _GBACoreLoadPatch;
 	core->unloadROM = _GBACoreUnloadROM;
 	core->reset = _GBACoreReset;
 	core->runFrame = _GBACoreRunFrame;
 	core->runLoop = _GBACoreRunLoop;
 	core->step = _GBACoreStep;
+	core->stateSize = _GBACoreStateSize;
 	core->loadState = _GBACoreLoadState;
 	core->saveState = _GBACoreSaveState;
 	core->setKeys = _GBACoreSetKeys;
@@ -482,5 +532,7 @@ struct mCore* GBACoreCreate(void) {
 	core->attachDebugger = _GBACoreAttachDebugger;
 	core->detachDebugger = _GBACoreDetachDebugger;
 	core->cheatDevice = _GBACoreCheatDevice;
+	core->savedataClone = _GBACoreSavedataClone;
+	core->savedataLoad = _GBACoreSavedataLoad;
 	return core;
 }

@@ -73,7 +73,6 @@ static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer*
 		break;
 	case REG_WY:
 		softwareRenderer->wy = value;
-		softwareRenderer->currentWy = value;
 		break;
 	case REG_WX:
 		softwareRenderer->wx = value;
@@ -297,7 +296,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	if (GBRegisterLCDCIsObjSize(renderer->lcdc) && obj->tile & 1) {
 		--tileOffset;
 	}
-	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0xE3 : 0x60;
+	uint8_t mask = GBObjAttributesIsPriority(obj->attr) ? 0x63 : 0x60;
 	uint8_t mask2 = GBObjAttributesIsPriority(obj->attr) ? 0 : 0x83;
 	int p;
 	if (renderer->model >= GB_MODEL_CGB) {

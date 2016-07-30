@@ -109,11 +109,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
+	_changeState(threadContext, THREAD_RUNNING, true);
+
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
 	}
-
-	_changeState(threadContext, THREAD_RUNNING, true);
 
 	while (threadContext->state < THREAD_EXITING) {
 		struct mDebugger* debugger = core->debugger;
@@ -303,6 +303,22 @@ void mCoreThreadInterrupt(struct mCoreThread* threadContext) {
 	MutexUnlock(&threadContext->stateMutex);
 }
 
+void mCoreThreadInterruptFromThread(struct mCoreThread* threadContext) {
+	if (!threadContext) {
+		return;
+	}
+	MutexLock(&threadContext->stateMutex);
+	++threadContext->interruptDepth;
+	if (threadContext->interruptDepth > 1 || !mCoreThreadIsActive(threadContext)) {
+		MutexUnlock(&threadContext->stateMutex);
+		return;
+	}
+	threadContext->savedState = threadContext->state;
+	threadContext->state = THREAD_INTERRUPTING;
+	ConditionWake(&threadContext->stateCond);
+	MutexUnlock(&threadContext->stateMutex);
+}
+
 void mCoreThreadContinue(struct mCoreThread* threadContext) {
 	if (!threadContext) {
 		return;
@@ -385,7 +401,6 @@ void mCoreThreadTogglePause(struct mCoreThread* threadContext) {
 void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 	bool frameOn = true;
 	MutexLock(&threadContext->stateMutex);
-	_waitOnInterrupt(threadContext);
 	if (threadContext->state == THREAD_RUNNING) {
 		_pauseThread(threadContext, true);
 		frameOn = false;

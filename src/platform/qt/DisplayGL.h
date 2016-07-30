@@ -43,7 +43,7 @@ class DisplayGL : public Display {
 Q_OBJECT
 
 public:
-	DisplayGL(const QGLFormat& format, bool force1 = false, QWidget* parent = nullptr);
+	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
 	bool isDrawing() const override { return m_isDrawing; }
@@ -80,7 +80,7 @@ class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags = QGLFormat::OpenGL_Version_1_1);
+	PainterGL(int majorVersion, QGLWidget* parent);
 	~PainterGL();
 
 	void setContext(mCoreThread*);

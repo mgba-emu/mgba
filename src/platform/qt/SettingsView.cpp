@@ -14,7 +14,8 @@
 #include "ShortcutView.h"
 
 extern "C" {
-#include "gba/serialize.h"
+#include "core/serialize.h"
+#include "gba/gba.h"
 }
 
 using namespace QGBA;

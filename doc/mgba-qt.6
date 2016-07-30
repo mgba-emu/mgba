@@ -11,7 +11,7 @@
 .Nd Game Boy Advance emulator
 .Sh SYNOPSIS
 .Nm mgba-qt
-.Op Fl 123456f
+.Op Fl 123456fg
 .Op Fl b Ar biosfile
 .Op Fl l Ar loglevel
 .Op Fl p Ar patchfile
@@ -42,6 +42,11 @@ will use the BIOS specified in the configuration file,
 or a high\(hylevel emulated BIOS if none is specified.
 .It Fl f
 Start the emulator full\(hyscreen.
+.It Fl g
+Start a
+.Xr gdb 1
+session.
+By default the session starts on port 2345.
 .It Fl l Ar loglevel
 Log messages during emulation.
 .Ar loglevel

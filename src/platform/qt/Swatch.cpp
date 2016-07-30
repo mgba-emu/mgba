@@ -18,7 +18,6 @@ Swatch::Swatch(QWidget* parent)
 	: QWidget(parent)
 {
 	m_size = 10;
-	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 }
 
 void Swatch::setSize(int size) {

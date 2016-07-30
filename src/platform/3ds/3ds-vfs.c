@@ -56,8 +56,10 @@ struct VFile* VFileOpen3DS(FS_Archive* archive, const char* path, int flags) {
 		return 0;
 	}
 
-	// TODO: Use UTF-16
-	FS_Path newPath = fsMakePath(PATH_ASCII, path);
+	uint16_t utf16Path[PATH_MAX + 1];
+	ssize_t units = utf8_to_utf16(utf16Path, (const uint8_t*) path, PATH_MAX);
+	utf16Path[units] = 0;
+	FS_Path newPath = fsMakePath(PATH_UTF16, utf16Path);
 	Result res = FSUSER_OpenFile(&vf3d->handle, *archive, newPath, flags, 0);
 	if (res & 0xFFFC03FF) {
 		free(vf3d);
@@ -177,8 +179,10 @@ struct VDir* VDirOpen(const char* path) {
 		return 0;
 	}
 
-	// TODO: Use UTF-16
-	FS_Path newPath = fsMakePath(PATH_ASCII, path);
+	uint16_t utf16Path[PATH_MAX + 1];
+	ssize_t units = utf8_to_utf16(utf16Path, (const uint8_t*) path, PATH_MAX);
+	utf16Path[units] = 0;
+	FS_Path newPath = fsMakePath(PATH_UTF16, utf16Path);
 	Result res = FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 	if (res & 0xFFFC03FF) {
 		free(vd3d);
@@ -211,8 +215,10 @@ static bool _vd3dClose(struct VDir* vd) {
 static void _vd3dRewind(struct VDir* vd) {
 	struct VDir3DS* vd3d = (struct VDir3DS*) vd;
 	FSDIR_Close(vd3d->handle);
-	// TODO: Use UTF-16
-	FS_Path newPath = fsMakePath(PATH_ASCII, vd3d->path);
+	uint16_t utf16Path[PATH_MAX + 1];
+	ssize_t units = utf8_to_utf16(utf16Path, (const uint8_t*) vd3d->path, PATH_MAX);
+	utf16Path[units] = 0;
+	FS_Path newPath = fsMakePath(PATH_UTF16, utf16Path);
 	FSUSER_OpenDirectory(&vd3d->handle, sdmcArchive, newPath);
 }
 
@@ -268,8 +274,10 @@ static bool _vd3dDeleteFile(struct VDir* vd, const char* path) {
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
 	sprintf(combined, "%s/%s", dir, path);
 
-	// TODO: Use UTF-16
-	FS_Path newPath = fsMakePath(PATH_ASCII, combined);
+	uint16_t utf16Path[PATH_MAX + 1];
+	ssize_t units = utf8_to_utf16(utf16Path, (const uint8_t*) combined, PATH_MAX);
+	utf16Path[units] = 0;
+	FS_Path newPath = fsMakePath(PATH_UTF16, utf16Path);
 	bool ret = !FSUSER_DeleteFile(sdmcArchive, newPath);
 	free(combined);
 	return ret;
@@ -278,7 +286,7 @@ static bool _vd3dDeleteFile(struct VDir* vd, const char* path) {
 static const char* _vd3deName(struct VDirEntry* vde) {
 	struct VDirEntry3DS* vd3de = (struct VDirEntry3DS*) vde;
 	if (!vd3de->utf8Name[0]) {
-		utf16_to_utf8(vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
+		utf16_to_utf8((uint8_t*) vd3de->utf8Name, vd3de->ent.name, sizeof(vd3de->utf8Name));
 	}
 	return vd3de->utf8Name;
 }

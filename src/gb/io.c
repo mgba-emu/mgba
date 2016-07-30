@@ -6,8 +6,67 @@
 #include "io.h"
 
 #include "gb/gb.h"
+#include "gb/serialize.h"
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
+
+const char* const GBIORegisterNames[] = {
+	[REG_JOYP] = "JOYP",
+	[REG_SB] = "SB",
+	[REG_SC] = "SC",
+	[REG_DIV] = "DIV",
+	[REG_TIMA] = "TIMA",
+	[REG_TMA] = "TMA",
+	[REG_TAC] = "TAC",
+	[REG_IF] = "IF",
+	[REG_NR10] = "NR10",
+	[REG_NR11] = "NR11",
+	[REG_NR12] = "NR12",
+	[REG_NR13] = "NR13",
+	[REG_NR14] = "NR14",
+	[REG_NR21] = "NR21",
+	[REG_NR22] = "NR22",
+	[REG_NR23] = "NR23",
+	[REG_NR24] = "NR24",
+	[REG_NR30] = "NR30",
+	[REG_NR31] = "NR31",
+	[REG_NR32] = "NR32",
+	[REG_NR33] = "NR33",
+	[REG_NR34] = "NR34",
+	[REG_NR41] = "NR41",
+	[REG_NR42] = "NR42",
+	[REG_NR43] = "NR43",
+	[REG_NR44] = "NR44",
+	[REG_NR50] = "NR50",
+	[REG_NR51] = "NR51",
+	[REG_NR52] = "NR52",
+	[REG_LCDC] = "LCDC",
+	[REG_STAT] = "STAT",
+	[REG_SCY] = "SCY",
+	[REG_SCX] = "SCX",
+	[REG_LY] = "LY",
+	[REG_LYC] = "LYC",
+	[REG_DMA] = "DMA",
+	[REG_BGP] = "BGP",
+	[REG_OBP0] = "OBP0",
+	[REG_OBP1] = "OBP1",
+	[REG_WY] = "WY",
+	[REG_WX] = "WX",
+	[REG_KEY1] = "KEY1",
+	[REG_VBK] = "VBK",
+	[REG_HDMA1] = "HDMA1",
+	[REG_HDMA2] = "HDMA2",
+	[REG_HDMA3] = "HDMA3",
+	[REG_HDMA4] = "HDMA4",
+	[REG_HDMA5] = "HDMA5",
+	[REG_RP] = "RP",
+	[REG_BCPS] = "BCPS",
+	[REG_BCPD] = "BCPD",
+	[REG_OCPS] = "OCPS",
+	[REG_OCPD] = "OCPD",
+	[REG_SVBK] = "SVBK",
+	[REG_IE] = "IE",
+};
 
 static const uint8_t _registerMask[] = {
 	[REG_SC]   = 0x7E, // TODO: GBC differences
@@ -310,6 +369,13 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		break;
 	case REG_STAT:
 		GBVideoWriteSTAT(&gb->video, value);
+		value = gb->video.stat;
+		break;
+	case 0x50:
+		if (gb->memory.romBase != gb->memory.rom) {
+			free(gb->memory.romBase);
+			gb->memory.romBase = gb->memory.rom;
+		}
 		break;
 	case REG_IE:
 		gb->memory.ie = value;
@@ -343,7 +409,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_BCPD:
 				GBVideoProcessDots(&gb->video);
 				GBVideoWritePalette(&gb->video, address, value);
-				break;
+				return;
 			case REG_OCPS:
 				gb->video.ocpIndex = value & 0x3F;
 				gb->video.ocpIncrement = value & 0x80;
@@ -352,7 +418,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 			case REG_OCPD:
 				GBVideoProcessDots(&gb->video);
 				GBVideoWritePalette(&gb->video, address, value);
-				break;
+				return;
 			case REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
 				value = gb->memory.wramCurrentBank;
@@ -472,7 +538,9 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			case REG_HDMA3:
 			case REG_HDMA4:
 			case REG_HDMA5:
+			case REG_BCPS:
 			case REG_BCPD:
+			case REG_OCPS:
 			case REG_OCPD:
 			case REG_SVBK:
 				// Handled transparently by the registers
@@ -486,4 +554,20 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	}
 	success:
 	return gb->memory.io[address] | _registerMask[address];
+}
+
+struct GBSerializedState;
+void GBIOSerialize(const struct GB* gb, struct GBSerializedState* state) {
+	memcpy(state->io, gb->memory.io, GB_SIZE_IO);
+	state->ie = gb->memory.ie;
+}
+
+void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
+	memcpy(gb->memory.io, state->io, GB_SIZE_IO);
+	gb->memory.ie = state->ie;
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_LCDC, state->io[REG_LCDC]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCY, state->io[REG_SCY]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_SCX, state->io[REG_SCX]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WY, state->io[REG_WY]);
+	gb->video.renderer->writeVideoRegister(gb->video.renderer, REG_WX, state->io[REG_WX]);
 }

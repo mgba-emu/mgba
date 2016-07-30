@@ -12,6 +12,7 @@
 
 #include "gba/hardware.h"
 #include "gba/savedata.h"
+#include "gba/vfame.h"
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -118,6 +119,7 @@ struct GBAMemory {
 
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
+	struct GBAVFameCart vfame;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;

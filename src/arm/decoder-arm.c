@@ -437,18 +437,12 @@ static const ARMDecoder _armDecoderTable[0x1000] = {
 };
 
 void ARMDecodeARM(uint32_t opcode, struct ARMInstructionInfo* info) {
+	memset(info, 0, sizeof(*info));
 	info->execMode = MODE_ARM;
 	info->opcode = opcode;
 	info->branchType = ARM_BRANCH_NONE;
-	info->traps = 0;
-	info->affectsCPSR = 0;
 	info->condition = opcode >> 28;
-	info->sDataCycles = 0;
-	info->nDataCycles = 0;
 	info->sInstructionCycles = 1;
-	info->nInstructionCycles = 0;
-	info->iCycles = 0;
-	info->cCycles = 0;
 	ARMDecoder decoder = _armDecoderTable[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
 	decoder(opcode, info);
 }

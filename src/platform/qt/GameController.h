@@ -103,6 +103,7 @@ signals:
 public slots:
 	void loadGame(const QString& path);
 	void loadBIOS(const QString& path);
+	void loadSave(const QString& path, bool temporary = true);
 	void yankPak();
 	void replaceGame(const QString& path);
 	void setUseBIOS(bool);

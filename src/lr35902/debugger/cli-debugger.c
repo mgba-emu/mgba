@@ -87,7 +87,7 @@ void LR35902CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->disassemble = NULL;
 	debugger->lookupPlatformIdentifier = _lookupPlatformIdentifier;
 	debugger->platformName = "GB-Z80";
-	debugger->platformCommands = NULL;
+	debugger->platformCommands = _lr35902Commands;
 }
 
 #endif

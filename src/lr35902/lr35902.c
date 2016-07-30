@@ -104,8 +104,7 @@ static void _LR35902InstructionIRQ(struct LR35902Core* cpu) {
 static void _LR35902Step(struct LR35902Core* cpu) {
 	++cpu->cycles;
 	enum LR35902ExecutionState state = cpu->executionState;
-	++cpu->executionState;
-	cpu->executionState &= 3;
+	cpu->executionState = LR35902_CORE_IDLE_0;
 	switch (state) {
 	case LR35902_CORE_FETCH:
 		if (cpu->irqPending) {
@@ -118,9 +117,6 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 		cpu->bus = cpu->memory.cpuLoad8(cpu, cpu->pc);
 		cpu->instruction = _lr35902InstructionTable[cpu->bus];
 		++cpu->pc;
-		break;
-	case LR35902_CORE_EXECUTE:
-		cpu->instruction(cpu);
 		break;
 	case LR35902_CORE_MEMORY_LOAD:
 		cpu->bus = cpu->memory.load8(cpu, cpu->index);
@@ -142,6 +138,17 @@ static void _LR35902Step(struct LR35902Core* cpu) {
 
 void LR35902Tick(struct LR35902Core* cpu) {
 	_LR35902Step(cpu);
+	if (cpu->cycles + 2 >= cpu->nextEvent) {
+		int32_t diff = cpu->nextEvent - cpu->cycles;
+		cpu->cycles = cpu->nextEvent;
+		cpu->irqh.processEvents(cpu);
+		cpu->cycles += 2 - diff;
+	} else {
+		cpu->cycles += 2;
+	}
+	cpu->executionState = LR35902_CORE_FETCH;
+	cpu->instruction(cpu);
+	++cpu->cycles;
 	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
@@ -150,12 +157,19 @@ void LR35902Tick(struct LR35902Core* cpu) {
 void LR35902Run(struct LR35902Core* cpu) {
 	while (true) {
 		_LR35902Step(cpu);
+		if (cpu->cycles + 2 >= cpu->nextEvent) {
+			int32_t diff = cpu->nextEvent - cpu->cycles;
+			cpu->cycles = cpu->nextEvent;
+			cpu->irqh.processEvents(cpu);
+			cpu->cycles += 2 - diff;
+		} else {
+			cpu->cycles += 2;
+		}
+		cpu->executionState = LR35902_CORE_FETCH;
+		cpu->instruction(cpu);
+		++cpu->cycles;
 		if (cpu->cycles >= cpu->nextEvent) {
 			break;
-		} else if (cpu->executionState < LR35902_CORE_EXECUTE) {
-			// Silly hack: keep us from calling step if we know the next step is a no-op
-			++cpu->cycles;
-			++cpu->executionState;
 		}
 	}
 	cpu->irqh.processEvents(cpu);

@@ -81,6 +81,8 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeNonseqCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
 	gba->memory.mirroring = false;
+
+	GBAVFameInit(&gba->memory.vfame);
 }
 
 void GBAMemoryDeinit(struct GBA* gba) {
@@ -392,7 +394,9 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
 		LOAD_32(value, address & (SIZE_CART0 - 4), memory->rom); \
 	} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) { \
-		LOAD_32(value, address & memory->romMask, memory->rom); \
+		LOAD_32(value, address & memory->romMask & -4, memory->rom); \
+	} else if (memory->vfame.cartType) { \
+		value = GBAVFameGetPatternValue(address, 32); \
 	} else { \
 		mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
 		value = ((address & ~3) >> 1) & 0xFFFF; \
@@ -525,6 +529,8 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
 			LOAD_16(value, address & memory->romMask, memory->rom);
+		} else if (memory->vfame.cartType) {
+			value = GBAVFameGetPatternValue(address, 16);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
@@ -538,6 +544,8 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
 			LOAD_16(value, address & memory->romMask, memory->rom);
+		} else if (memory->vfame.cartType) {
+			value = GBAVFameGetPatternValue(address, 16);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
 			value = (address >> 1) & 0xFFFF;
@@ -623,6 +631,8 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & memory->romMask];
+		} else if (memory->vfame.cartType) {
+			value = GBAVFameGetPatternValue(address, 8);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
 			value = (address >> 1) & 0xFF;
@@ -883,7 +893,11 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM) {
-			memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+			if (memory->vfame.cartType) {
+				GBAVFameSramWrite(&memory->vfame, address, value, memory->savedata.data);
+			} else {
+				memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
+			}
 			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);

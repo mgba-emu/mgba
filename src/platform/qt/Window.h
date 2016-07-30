@@ -59,6 +59,7 @@ signals:
 
 public slots:
 	void selectROM();
+	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
 	void enterFullScreen();
@@ -81,6 +82,7 @@ public slots:
 	void openCheatsWindow();
 
 	void openPaletteWindow();
+	void openTileWindow();
 	void openMemoryWindow();
 	void openIOViewer();
 
@@ -144,6 +146,8 @@ private:
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
 
 	void updateTitle(float fps = -1);
+
+	QString getFilters() const;
 
 	GameController* m_controller;
 	Display* m_display;

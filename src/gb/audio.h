@@ -235,4 +235,12 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
 int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles);
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 
+struct GBSerializedPSGState;
+void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGState* state, uint32_t* flagsOut);
+void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGState* state, const uint32_t* flagsIn);
+
+struct GBSerializedState;
+void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state);
+void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* state);
+
 #endif

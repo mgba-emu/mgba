@@ -19,9 +19,9 @@ enum {
 	GB_VIDEO_VERTICAL_TOTAL_PIXELS = GB_VIDEO_VERTICAL_PIXELS + GB_VIDEO_VBLANK_PIXELS,
 
 	// TODO: Figure out exact lengths
-	GB_VIDEO_MODE_2_LENGTH = 85,
-	GB_VIDEO_MODE_3_LENGTH_BASE = 167,
-	GB_VIDEO_MODE_0_LENGTH_BASE = 204,
+	GB_VIDEO_MODE_2_LENGTH = 80,
+	GB_VIDEO_MODE_3_LENGTH_BASE = 176,
+	GB_VIDEO_MODE_0_LENGTH_BASE = 200,
 
 	GB_VIDEO_HORIZONTAL_LENGTH = GB_VIDEO_MODE_0_LENGTH_BASE + GB_VIDEO_MODE_2_LENGTH + GB_VIDEO_MODE_3_LENGTH_BASE,
 
@@ -104,6 +104,8 @@ struct GBVideo {
 	int32_t nextMode;
 	int32_t dotCounter;
 
+	int32_t nextFrame;
+
 	uint8_t* vram;
 	uint8_t* vramBank;
 	int vramCurrentBank;
@@ -135,5 +137,9 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
+
+struct GBSerializedState;
+void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state);
+void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state);
 
 #endif

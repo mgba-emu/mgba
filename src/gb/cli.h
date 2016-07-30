@@ -9,6 +9,15 @@
 #ifdef USE_CLI_DEBUGGER
 #include "debugger/cli-debugger.h"
 
+struct GBCLIDebugger {
+	struct CLIDebuggerSystem d;
+
+	struct mCore* core;
+
+	bool frameAdvance;
+	bool inVblank;
+};
+
 struct CLIDebuggerSystem* GBCLIDebuggerCreate(struct mCore*);
 #endif
 

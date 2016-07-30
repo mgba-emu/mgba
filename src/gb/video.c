@@ -9,6 +9,7 @@
 #include "core/thread.h"
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/serialize.h"
 
 #include "util/memory.h"
 
@@ -50,6 +51,7 @@ void GBVideoReset(struct GBVideo* video) {
 
 	video->nextMode = INT_MAX;
 	video->dotCounter = INT_MIN;
+	video->nextFrame = INT_MAX;
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
@@ -88,6 +90,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 	if (video->nextEvent <= 0) {
 		if (video->nextEvent != INT_MAX) {
 			video->nextMode -= video->eventDiff;
+			video->nextFrame -= video->eventDiff;
 		}
 		video->nextEvent = INT_MAX;
 		GBVideoProcessDots(video);
@@ -104,7 +107,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
 					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
 					video->mode = 2;
-					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
+					if (!GBRegisterSTATIsHblankIRQ(video->stat) && GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 				} else {
@@ -112,16 +115,13 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->mode = 1;
 					--video->frameskipCounter;
 					if (video->frameskipCounter < 0) {
-						video->renderer->finishFrame(video->renderer);
 						mCoreSyncPostFrame(video->p->sync);
 						video->frameskipCounter = video->frameskip;
 					}
-					GBFrameEnded(video->p);
 					++video->frameCounter;
 
-					struct mCoreThread* thread = mCoreThreadGet();
-					if (thread && thread->frameCallback) {
-						thread->frameCallback(thread);
+					if (video->nextFrame != 0) {
+						video->nextFrame = 0;
 					}
 
 					if (video->p->stream && video->p->stream->postVideoFrame) {
@@ -153,6 +153,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 						GBUpdateIRQs(video->p);
 					}
+					video->renderer->finishFrame(video->renderer);
 					break;
 				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
@@ -179,11 +180,11 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->dotCounter = 0;
 				video->nextEvent = GB_VIDEO_HORIZONTAL_LENGTH;
 				video->x = 0;
-				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 8;
+				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 12;
 				video->mode = 3;
 				break;
 			case 3:
-				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 8;
+				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 12;
 				video->mode = 0;
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -197,6 +198,21 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			}
 			video->stat = GBRegisterSTATSetMode(video->stat, video->mode);
 			video->p->memory.io[REG_STAT] = video->stat;
+		}
+		if (video->nextFrame <= 0) {
+			if (video->p->cpu->executionState == LR35902_CORE_FETCH) {
+				GBFrameEnded(video->p);
+				struct mCoreThread* thread = mCoreThreadGet();
+				if (thread && thread->frameCallback) {
+					thread->frameCallback(thread);
+				}
+				video->nextFrame = GB_VIDEO_TOTAL_LENGTH;
+			} else {
+				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);
+				if (video->nextFrame < video->nextEvent) {
+					video->nextEvent = video->nextFrame;
+				}
+			}
 		}
 		if (video->nextMode < video->nextEvent) {
 			video->nextEvent = video->nextMode;
@@ -254,11 +270,16 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->nextMode = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		video->nextEvent = video->nextMode;
 		video->eventDiff = -video->p->cpu->cycles >> video->p->doubleSpeed;
-		// TODO: Does this read as 0 for 4 T-cycles?
-		video->stat = GBRegisterSTATSetMode(video->stat, 2);
-		video->p->memory.io[REG_STAT] = video->stat;
 		video->ly = 0;
 		video->p->memory.io[REG_LY] = 0;
+		// TODO: Does this read as 0 for 4 T-cycles?
+		video->stat = GBRegisterSTATSetMode(video->stat, 2);
+		video->stat = GBRegisterSTATSetLYC(video->stat, video->ly == video->p->memory.io[REG_LYC]);
+		if (GBRegisterSTATIsLYCIRQ(video->stat) && video->ly == video->p->memory.io[REG_LYC]) {
+			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+			GBUpdateIRQs(video->p);
+		}
+		video->p->memory.io[REG_STAT] = video->stat;
 
 		if (video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed) < video->p->cpu->nextEvent) {
 			video->p->cpu->nextEvent = video->p->cpu->cycles + (video->nextEvent << video->p->doubleSpeed);
@@ -333,7 +354,9 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->bcpIncrement) {
 				++video->bcpIndex;
 				video->bcpIndex &= 0x3F;
-				video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1];
+				video->p->memory.io[REG_BCPS] &= 0x80;
+				video->p->memory.io[REG_BCPS] |= video->bcpIndex;
+				video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			}
 			break;
 		case REG_OCPD:
@@ -348,7 +371,9 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			if (video->ocpIncrement) {
 				++video->ocpIndex;
 				video->ocpIndex &= 0x3F;
-				video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)];
+				video->p->memory.io[REG_OCPS] &= 0x80;
+				video->p->memory.io[REG_OCPS] |= video->ocpIndex;
+				video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)] >> (8 * (video->ocpIndex & 1));
 			}
 			break;
 		}
@@ -410,4 +435,59 @@ static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsi
 	UNUSED(stride);
 	UNUSED(pixels);
 	// Nothing to do
+}
+
+void GBVideoSerialize(const struct GBVideo* video, struct GBSerializedState* state) {
+	STORE_16LE(video->x, 0, &state->video.x);
+	STORE_16LE(video->ly, 0, &state->video.ly);
+	STORE_32LE(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32LE(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32LE(video->nextMode, 0, &state->video.nextMode);
+	STORE_32LE(video->dotCounter, 0, &state->video.dotCounter);
+	STORE_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	state->video.vramCurrentBank = video->vramCurrentBank;
+
+	GBSerializedVideoFlags flags = 0;
+	flags = GBSerializedVideoFlagsSetBcpIncrement(flags, video->bcpIncrement);
+	flags = GBSerializedVideoFlagsSetOcpIncrement(flags, video->ocpIncrement);
+	state->video.flags = flags;
+	STORE_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	STORE_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+
+	size_t i;
+	for (i = 0; i < 64; ++i) {
+		STORE_16LE(video->palette[i], i * 2, state->video.palette);
+	}
+
+	memcpy(state->vram, video->vram, GB_SIZE_VRAM);
+	memcpy(state->oam, &video->oam.raw, GB_SIZE_OAM);
+}
+
+void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* state) {
+	LOAD_16LE(video->x, 0, &state->video.x);
+	LOAD_16LE(video->ly, 0, &state->video.ly);
+	LOAD_32LE(video->nextEvent, 0, &state->video.nextEvent);
+	LOAD_32LE(video->eventDiff, 0, &state->video.eventDiff);
+	LOAD_32LE(video->nextMode, 0, &state->video.nextMode);
+	LOAD_32LE(video->dotCounter, 0, &state->video.dotCounter);
+	LOAD_32LE(video->frameCounter, 0, &state->video.frameCounter);
+	video->vramCurrentBank = state->video.vramCurrentBank;
+
+	GBSerializedVideoFlags flags = state->video.flags;
+	video->bcpIncrement = GBSerializedVideoFlagsGetBcpIncrement(flags);
+	video->ocpIncrement = GBSerializedVideoFlagsGetOcpIncrement(flags);
+	LOAD_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+
+	size_t i;
+	for (i = 0; i < 64; ++i) {
+		LOAD_16LE(video->palette[i], i * 2, state->video.palette);
+		video->renderer->writePalette(video->renderer, i, video->palette[i]);
+	}
+
+	memcpy(video->vram, state->vram, GB_SIZE_VRAM);
+	memcpy(&video->oam.raw, state->oam, GB_SIZE_OAM);
+
+	_cleanOAM(video, video->ly);
+	GBVideoSwitchBank(video, video->vramCurrentBank);
 }

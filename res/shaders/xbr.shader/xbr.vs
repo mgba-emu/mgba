@@ -34,12 +34,14 @@ varying vec4 TEX6;
 varying vec4 TEX7;
 attribute vec4 position;
 
+uniform vec2 texSize;
+
 /*    VERTEX_SHADER    */
 void main()
 {
 	gl_Position = position;
 
-	vec2 ps = vec2(1.0/240.0, 1.0/160.0);
+	vec2 ps = vec2(1.0) / texSize;
 	float dx = ps.x;
 	float dy = ps.y;
 
