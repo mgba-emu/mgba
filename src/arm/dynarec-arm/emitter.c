@@ -191,8 +191,16 @@ uint32_t emitSTRBI(unsigned reg, unsigned base, int offset) {
 	return op;
 }
 
+uint32_t emitSUBI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_SUB | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
 uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2) {
 	return OP_SUB | OP_S | (dst << 12) | (src1 << 16) | src2;
+}
+
+uint32_t emitSUBSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_SUB | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 void updatePC(struct ARMDynarecContext* ctx, uint32_t address) {

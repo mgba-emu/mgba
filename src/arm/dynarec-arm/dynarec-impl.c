@@ -164,6 +164,9 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			case ARM_MN_ORR:
 				RECOMPILE_ALU(ORR);
 				break;
+			case ARM_MN_SUB:
+				RECOMPILE_ALU(SUB);
+				break;
 			default:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtype-limits"

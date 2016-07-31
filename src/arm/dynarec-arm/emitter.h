@@ -70,7 +70,9 @@ uint32_t emitPUSH(unsigned mask);
 uint32_t emitSTMIA(unsigned base, unsigned mask);
 uint32_t emitSTRI(unsigned reg, unsigned base, int offset);
 uint32_t emitSTRBI(unsigned reg, unsigned base, int offset);
+uint32_t emitSUBI(unsigned dst, unsigned src1, unsigned src2);
 uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2);
+uint32_t emitSUBSI(unsigned dst, unsigned src1, unsigned src2);
 
 void updatePC(struct ARMDynarecContext* ctx, uint32_t address);
 void updateEvents(struct ARMDynarecContext* ctx, struct ARMCore* cpu);
