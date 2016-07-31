@@ -34,7 +34,7 @@ static void _drawEnd(void) {
 	int vcount = oldVCount;
 	vita2d_end_drawing();
 	oldVCount = sceDisplayGetVcount();
-	vita2d_set_vblank_wait(oldVCount == vcount);
+	vita2d_set_vblank_wait(oldVCount + 1 >= vcount);
 	vita2d_swap_buffers();
 }
 

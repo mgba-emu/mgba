@@ -9,6 +9,8 @@ Bugfixes:
  - GBA Memory: Fix mirror on non-overdumped Classic NES games
  - Util: Fix realloc semantics in utf16to8
  - PSP2: Fix GPU crash while exiting
+ - PSP2: Fix VSync
+ - ARM7: Fix decoding of Thumb ADD (variants 5 and 6)
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
