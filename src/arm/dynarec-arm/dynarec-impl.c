@@ -77,6 +77,38 @@ static bool needsUpdatePC(struct ARMInstructionInfo* info) {
 	return false;
 }
 
+#define RECOMPILE_ALU(MN) \
+	if (info.operandFormat & ARM_OPERAND_REGISTER_2) { \
+		loadReg(&ctx, info.op2.reg, rn); \
+	} \
+	if (info.operandFormat & ARM_OPERAND_REGISTER_3) { \
+		loadReg(&ctx, info.op3.reg, rm); \
+	} \
+	switch (info.operandFormat & (ARM_OPERAND_2 | ARM_OPERAND_3)) { \
+	case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_REGISTER_3: \
+		EMIT(&ctx, MN ## S, AL, rd, rn, rm); \
+		break; \
+	case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3: \
+		EMIT(&ctx, MN ## SI, AL, rd, rn, info.op3.immediate); \
+		break; \
+	case ARM_OPERAND_IMMEDIATE_2: \
+		loadReg(&ctx, info.op1.reg, rd); \
+		EMIT(&ctx, MN ## SI, AL, rd, rd, info.op2.immediate); \
+		break; \
+	case ARM_OPERAND_REGISTER_2: \
+		loadReg(&ctx, info.op1.reg, rd); \
+		EMIT(&ctx, MN ## S, AL, rd, rd, rn); \
+		break; \
+	default: \
+		abort(); \
+	} \
+	flushReg(&ctx, info.op1.reg, rd); \
+	if (info.affectsCPSR) { \
+		EMIT(&ctx, MRS, AL, 1); \
+		EMIT(&ctx, MOV_LSRI, AL, 1, 1, 24); \
+		EMIT(&ctx, STRBI, AL, 1, 4, 16 * sizeof(uint32_t) + 3); \
+	}
+
 void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
 #ifndef NDEBUG
 	printf("%08X (%c)\n", trace->start, trace->mode == MODE_THUMB ? 'T' : 'A');
@@ -113,36 +145,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			unsigned rm = 2;
 			switch (info.mnemonic) {
 			case ARM_MN_ADD:
-				if (info.operandFormat & ARM_OPERAND_REGISTER_2) {
-					loadReg(&ctx, info.op2.reg, rn);
-				}
-				if (info.operandFormat & ARM_OPERAND_REGISTER_3) {
-					loadReg(&ctx, info.op3.reg, rm);
-				}
-				switch (info.operandFormat & (ARM_OPERAND_2 | ARM_OPERAND_3)) {
-				case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_REGISTER_3:
-					EMIT(&ctx, ADDS, AL, rd, rn, rm);
-					break;
-				case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3:
-					EMIT(&ctx, ADDSI, AL, rd, rn, info.op3.immediate);
-					break;
-				case ARM_OPERAND_IMMEDIATE_2:
-					loadReg(&ctx, info.op1.reg, rd);
-					EMIT(&ctx, ADDSI, AL, rd, rd, info.op2.immediate);
-					break;
-				case ARM_OPERAND_REGISTER_2:
-					loadReg(&ctx, info.op1.reg, rd);
-					EMIT(&ctx, ADDS, AL, rd, rd, rn);
-					break;
-				default:
-					abort();
-				}
-				flushReg(&ctx, info.op1.reg, rd);
-				if (info.affectsCPSR) {
-					EMIT(&ctx, MRS, AL, 1);
-					EMIT(&ctx, MOV_LSRI, AL, 1, 1, 28);
-					EMIT(&ctx, STRBI, AL, 1, 4, 16 * sizeof(uint32_t) + 3);
-				}
+				RECOMPILE_ALU(ADD);
 				break;
 			default:
 #pragma GCC diagnostic push
