@@ -11,15 +11,19 @@
 #define OP_I     0x02000000
 #define OP_S     0x00100000
 #define OP_ADD   0x00800000
+#define OP_AND   0x00000000
 #define OP_B     0x0A000000
+#define OP_BIC   0x01C00000
 #define OP_BL    0x0B000000
 #define OP_CMP   0x01500000
+#define OP_EOR   0x00200000
 #define OP_LDMIA 0x08900000
 #define OP_LDRI  0x05100000
 #define OP_MOV   0x01A00000
 #define OP_MOVT  0x03400000
 #define OP_MOVW  0x03000000
 #define OP_MRS   0x010F0000
+#define OP_ORR   0x01800000
 #define OP_POP   0x08BD0000
 #define OP_PUSH  0x092D0000
 #define OP_STMIA 0x08800000
@@ -55,6 +59,30 @@ uint32_t emitADDSI(unsigned dst, unsigned src, unsigned imm) {
 	return OP_ADD | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
+uint32_t emitANDI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_AND | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+uint32_t emitANDS(unsigned dst, unsigned src, unsigned op2) {
+	return OP_AND | OP_S | (dst << 12) | (src << 16) | op2;
+}
+
+uint32_t emitANDSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_AND | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+uint32_t emitBICI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_BIC | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+uint32_t emitBICS(unsigned dst, unsigned src, unsigned op2) {
+	return OP_BIC | OP_S | (dst << 12) | (src << 16) | op2;
+}
+
+uint32_t emitBICSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_BIC | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
 uint32_t emitB(void* base, void* target) {
 	uint32_t diff = (intptr_t) target - (intptr_t) base - WORD_SIZE_ARM * 2;
 	diff >>= 2;
@@ -71,6 +99,18 @@ uint32_t emitBL(void* base, void* target) {
 
 uint32_t emitCMP(unsigned src1, unsigned src2) {
 	return OP_CMP | src2 | (src1 << 16);
+}
+
+uint32_t emitEORI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_EOR | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+uint32_t emitEORS(unsigned dst, unsigned src, unsigned op2) {
+	return OP_EOR | OP_S | (dst << 12) | (src << 16) | op2;
+}
+
+uint32_t emitEORSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_EOR | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 uint32_t emitLDMIA(unsigned base, unsigned mask) {
@@ -105,6 +145,18 @@ uint32_t emitMOVW(unsigned dst, uint16_t value) {
 
 uint32_t emitMRS(unsigned dst) {
 	return OP_MRS | (dst << 12);
+}
+
+uint32_t emitORRI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_ORR | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+uint32_t emitORRS(unsigned dst, unsigned src, unsigned op2) {
+	return OP_ORR | OP_S | (dst << 12) | (src << 16) | op2;
+}
+
+uint32_t emitORRSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_ORR | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 uint32_t emitPOP(unsigned mask) {
