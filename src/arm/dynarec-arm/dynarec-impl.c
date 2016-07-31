@@ -8,6 +8,8 @@
 #include "arm/isa-thumb.h"
 
 #define OP_ADDI  0x02800000
+#define OP_ADDS  0x00900000
+#define OP_ADDSI 0x02900000
 #define OP_B     0x0A000000
 #define OP_BL    0x0B000000
 #define OP_CMP   0x01500000
@@ -16,11 +18,15 @@
 #define OP_MOV   0x01A00000
 #define OP_MOVT  0x03400000
 #define OP_MOVW  0x03000000
+#define OP_MRS   0x010F0000
 #define OP_POP   0x08BD0000
 #define OP_PUSH  0x092D0000
 #define OP_STMIA 0x08800000
 #define OP_STRI  0x05000000
+#define OP_STRBI 0x05400000
 #define OP_SUBS  0x00500000
+
+#define ADDR1_LSRI 0x00000020
 
 #define COND_EQ 0x00000000
 #define COND_NE 0x10000000
@@ -48,6 +54,14 @@ static uint32_t calculateAddrMode1(unsigned imm) {
 
 static uint32_t emitADDI(unsigned dst, unsigned src, unsigned imm) {
 	return OP_ADDI | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+}
+
+static uint32_t emitADDS(unsigned dst, unsigned src, unsigned op2) {
+	return OP_ADDS | (dst << 12) | (src << 16) | op2;
+}
+
+static uint32_t emitADDSI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_ADDSI | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 static uint32_t emitB(void* base, void* target) {
@@ -86,12 +100,20 @@ static uint32_t emitMOV(unsigned dst, unsigned src) {
 	return OP_MOV | (dst << 12) | src;
 }
 
+static uint32_t emitMOV_LSRI(unsigned dst, unsigned src, unsigned imm) {
+	return OP_MOV | ADDR1_LSRI | (dst << 12) | ((imm  & 0x1F) << 7) | src;
+}
+
 static uint32_t emitMOVT(unsigned dst, uint16_t value) {
 	return OP_MOVT | (dst << 12) | ((value & 0xF000) << 4) | (value & 0x0FFF);
 }
 
 static uint32_t emitMOVW(unsigned dst, uint16_t value) {
 	return OP_MOVW | (dst << 12) | ((value & 0xF000) << 4) | (value & 0x0FFF);
+}
+
+static uint32_t emitMRS(unsigned dst) {
+	return OP_MRS | (dst << 12);
 }
 
 static uint32_t emitPOP(unsigned mask) {
@@ -108,6 +130,16 @@ static uint32_t emitSTMIA(unsigned base, unsigned mask) {
 
 static uint32_t emitSTRI(unsigned reg, unsigned base, int offset) {
 	uint32_t op = OP_STRI | (base << 16) | (reg << 12);
+	if (offset > 0) {
+		op |= 0x00800000 | offset;
+	} else {
+		op |= -offset & 0xFFF;
+	}
+	return op;
+}
+
+static uint32_t emitSTRBI(unsigned reg, unsigned base, int offset) {
+	uint32_t op = OP_STRBI | (base << 16) | (reg << 12);
 	if (offset > 0) {
 		op |= 0x00800000 | offset;
 	} else {
@@ -149,6 +181,16 @@ static uint32_t* flushPrefetch(uint32_t* code, uint32_t op0, uint32_t op1) {
 	EMIT_IMM(code, AL, 2, op1);
 	EMIT(code, ADDI, AL, 0, 4, offsetof(struct ARMCore, prefetch));
 	EMIT(code, STMIA, AL, 0, 6);
+	return code;
+}
+
+static uint32_t* loadReg(uint32_t* code, unsigned emureg, unsigned sysreg) {
+	EMIT(code, LDRI, AL, sysreg, 4, emureg * sizeof(uint32_t)); 
+	return code;
+}
+
+static uint32_t* flushReg(uint32_t* code, unsigned emureg, unsigned sysreg) {
+	EMIT(code, STRI, AL, sysreg, 4, emureg * sizeof(uint32_t)); 
 	return code;
 }
 
@@ -252,9 +294,49 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			if (needsUpdatePrefetch(&info)) {
 				code = flushPrefetch(code, cpu->memory.load16(cpu, address, 0), cpu->memory.load16(cpu, address + WORD_SIZE_THUMB, 0));
 			}
-			EMIT(code, MOVW, AL, 1, instruction);
-			EMIT(code, MOV, AL, 0, 4);
-			EMIT(code, BL, AL, code, _thumbTable[instruction >> 6]);
+
+			unsigned rd = 0;
+			unsigned rn = 1;
+			unsigned rm = 2;
+			switch (info.mnemonic) {
+			case ARM_MN_ADD:
+				if (info.operandFormat & ARM_OPERAND_REGISTER_2) {
+					code = loadReg(code, info.op2.reg, rn);
+				}
+				if (info.operandFormat & ARM_OPERAND_REGISTER_3) {
+					code = loadReg(code, info.op3.reg, rm);
+				}
+				switch (info.operandFormat & (ARM_OPERAND_2 | ARM_OPERAND_3)) {
+				case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_REGISTER_3:
+					EMIT(code, ADDS, AL, rd, rn, rm);
+					break;
+				case ARM_OPERAND_REGISTER_2 | ARM_OPERAND_IMMEDIATE_3:
+					EMIT(code, ADDSI, AL, rd, rn, info.op3.immediate);
+					break;
+				case ARM_OPERAND_IMMEDIATE_2:
+					code = loadReg(code, info.op1.reg, rd);
+					EMIT(code, ADDSI, AL, rd, rd, info.op2.immediate);
+					break;
+				case ARM_OPERAND_REGISTER_2:
+					code = loadReg(code, info.op1.reg, rd);
+					EMIT(code, ADDS, AL, rd, rd, rn);
+					break;
+				default:
+					abort();
+				}
+				code = flushReg(code, info.op1.reg, rd);
+				if (info.affectsCPSR) {
+					EMIT(code, MRS, AL, 1);
+					EMIT(code, MOV_LSRI, AL, 1, 1, 28);
+					EMIT(code, STRBI, AL, 1, 4, 16 * sizeof(uint32_t) + 3);
+				}
+				break;
+			default:
+				EMIT(code, MOVW, AL, 1, instruction);
+				EMIT(code, MOV, AL, 0, 4);
+				EMIT(code, BL, AL, code, _thumbTable[instruction >> 6]);
+				break;
+			}
 			if (info.branchType == ARM_BRANCH) {
 				struct Label* label = NULL;
 				uint32_t base = address + info.op1.immediate + WORD_SIZE_THUMB;
