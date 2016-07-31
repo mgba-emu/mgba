@@ -8,9 +8,9 @@
 #include "arm/isa-thumb.h"
 #include "arm/dynarec-arm/emitter.h"
 
-#define OP_ADDI  0x02800000
-#define OP_ADDS  0x00900000
-#define OP_ADDSI 0x02900000
+#define OP_I     0x02000000
+#define OP_S     0x00100000
+#define OP_ADD   0x00800000
 #define OP_B     0x0A000000
 #define OP_BL    0x0B000000
 #define OP_CMP   0x01500000
@@ -25,7 +25,7 @@
 #define OP_STMIA 0x08800000
 #define OP_STRI  0x05000000
 #define OP_STRBI 0x05400000
-#define OP_SUBS  0x00500000
+#define OP_SUB   0x00400000
 
 #define ADDR1_LSRI 0x00000020
 
@@ -44,15 +44,15 @@ uint32_t calculateAddrMode1(unsigned imm) {
 }
 
 uint32_t emitADDI(unsigned dst, unsigned src, unsigned imm) {
-	return OP_ADDI | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+	return OP_ADD | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 uint32_t emitADDS(unsigned dst, unsigned src, unsigned op2) {
-	return OP_ADDS | (dst << 12) | (src << 16) | op2;
+	return OP_ADD | OP_S | (dst << 12) | (src << 16) | op2;
 }
 
 uint32_t emitADDSI(unsigned dst, unsigned src, unsigned imm) {
-	return OP_ADDSI | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
+	return OP_ADD | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16);
 }
 
 uint32_t emitB(void* base, void* target) {
@@ -140,7 +140,7 @@ uint32_t emitSTRBI(unsigned reg, unsigned base, int offset) {
 }
 
 uint32_t emitSUBS(unsigned dst, unsigned src1, unsigned src2) {
-	return OP_SUBS | (dst << 12) | (src1 << 16) | src2;
+	return OP_SUB | OP_S | (dst << 12) | (src1 << 16) | src2;
 }
 
 void updatePC(struct ARMDynarecContext* ctx, uint32_t address) {
