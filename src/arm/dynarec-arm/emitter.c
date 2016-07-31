@@ -225,3 +225,13 @@ void loadReg(struct ARMDynarecContext* ctx, unsigned emureg, unsigned sysreg) {
 void flushReg(struct ARMDynarecContext* ctx, unsigned emureg, unsigned sysreg) {
 	EMIT(ctx, STRI, AL, sysreg, 4, emureg * sizeof(uint32_t)); 
 }
+
+void flushCycles(struct ARMDynarecContext* ctx) {
+	if (ctx->cycles == 0) {
+		return;
+	}
+	EMIT(ctx, LDRI, AL, 0, 4, offsetof(struct ARMCore, cycles)); 
+	EMIT(ctx, ADDI, AL, 0, 0, ctx->cycles);
+	EMIT(ctx, STRI, AL, 0, 4, offsetof(struct ARMCore, cycles));
+	ctx->cycles = 0;
+}
