@@ -23,6 +23,7 @@ struct ARMDynarecContext {
 		code_t* code;
 		uint32_t pc;
 	}* labels;
+	int32_t cycles;
 };
 
 #define EMIT_L(DEST, OPCODE, COND, ...) \
@@ -76,5 +77,6 @@ void updateEvents(struct ARMDynarecContext* ctx, struct ARMCore* cpu);
 void flushPrefetch(struct ARMDynarecContext* ctx, uint32_t op0, uint32_t op1);
 void loadReg(struct ARMDynarecContext* ctx, unsigned emureg, unsigned sysreg);
 void flushReg(struct ARMDynarecContext* ctx, unsigned emureg, unsigned sysreg);
+void flushCycles(struct ARMDynarecContext* ctx);
 
 #endif

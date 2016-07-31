@@ -103,6 +103,9 @@ static bool needsUpdatePC(struct ARMInstructionInfo* info) {
 		abort(); \
 	} \
 	flushReg(&ctx, info.op1.reg, rd); \
+	ctx.cycles += 1 + info.iCycles; \
+	ctx.cycles += info.sInstructionCycles * cpu->memory.activeSeqCycles16; \
+	ctx.cycles += info.nInstructionCycles * cpu->memory.activeNonseqCycles16; \
 	if (info.affectsCPSR) { \
 		EMIT(&ctx, MRS, AL, 1); \
 		EMIT(&ctx, MOV_LSRI, AL, 1, 1, 24); \
@@ -117,6 +120,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		.code = cpu->dynarec.buffer,
 		.address = trace->start,
 		.labels = cpu->dynarec.temporaryMemory,
+		.cycles = 0,
 	};
 	if (trace->mode == MODE_ARM) {
 		return;
@@ -138,6 +142,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			}
 			if (needsUpdatePrefetch(&info)) {
 				flushPrefetch(&ctx, cpu->memory.load16(cpu, ctx.address, 0), cpu->memory.load16(cpu, ctx.address + WORD_SIZE_THUMB, 0));
+				flushCycles(&ctx);
 			}
 
 			unsigned rd = 0;
@@ -203,6 +208,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		}
 		memset(ctx.labels, 0, sizeof(struct ARMDynarecLabel) * ((ctx.address - trace->start) >> 1));
 		flushPrefetch(&ctx, cpu->memory.load16(cpu, ctx.address, 0), cpu->memory.load16(cpu, ctx.address + WORD_SIZE_THUMB, 0));
+		flushCycles(&ctx);
 		EMIT(&ctx, POP, AL, 0x8030);
 	}
 	__clear_cache(trace->entry, ctx.code);
