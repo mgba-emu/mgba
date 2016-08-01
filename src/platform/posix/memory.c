@@ -7,14 +7,23 @@
 
 #include <sys/mman.h>
 
+extern uint32_t _execMem;
+static void* _execMemHead = &_execMem;
+
 void* anonymousMemoryMap(size_t size) {
 	return mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
 }
 
 void* executableMemoryMap(size_t size) {
-	return mmap(0, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
+	void* out = _execMemHead;
+	_execMemHead += size / sizeof(_execMemHead);
+	return out;
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
+	if (memory < _execMemHead + 0x20000) {
+		_execMemHead -= size / sizeof(_execMemHead);
+		return;
+	}
 	munmap(memory, size);
 }

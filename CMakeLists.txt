@@ -160,7 +160,7 @@ elseif(UNIX)
 	endif()
 
 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
-	file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/posix/*.c)
+	file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/posix/*.[cs])
 	source_group("POSIX-specific code" FILES ${OS_SRC})
 endif()
 

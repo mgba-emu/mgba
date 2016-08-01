@@ -129,7 +129,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		EMIT(&ctx, PUSH, AL, 0x4030);
 		EMIT(&ctx, MOV, AL, 4, 0);
 		EMIT(&ctx, LDRI, AL, 5, 0, ARM_PC * sizeof(uint32_t));
-		struct ARMInstructionInfo info;
+		__attribute__((aligned(64))) struct ARMInstructionInfo info;
 		while (true) {
 			uint16_t instruction = cpu->memory.load16(cpu, ctx.address, 0);
 			struct ARMDynarecLabel* label = &ctx.labels[(ctx.address - trace->start) >> 1];
