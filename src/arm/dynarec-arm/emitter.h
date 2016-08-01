@@ -19,10 +19,6 @@ typedef uint32_t code_t;
 struct ARMDynarecContext {
 	code_t* code;
 	uint32_t address;
-	struct ARMDynarecLabel {
-		code_t* code;
-		uint32_t pc;
-	}* labels;
 	int32_t cycles;
 };
 
