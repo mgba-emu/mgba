@@ -119,7 +119,6 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 	struct ARMDynarecContext ctx = {
 		.code = cpu->dynarec.buffer,
 		.address = trace->start,
-		.labels = cpu->dynarec.temporaryMemory,
 		.cycles = 0,
 	};
 	if (trace->mode == MODE_ARM) {
@@ -132,11 +131,8 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		__attribute__((aligned(64))) struct ARMInstructionInfo info;
 		while (true) {
 			uint16_t instruction = cpu->memory.load16(cpu, ctx.address, 0);
-			struct ARMDynarecLabel* label = &ctx.labels[(ctx.address - trace->start) >> 1];
 			ARMDecodeThumb(instruction, &info);
 			ctx.address += WORD_SIZE_THUMB;
-			label->code = ctx.code;
-			label->pc = ctx.address + WORD_SIZE_THUMB;
 			if (needsUpdatePC(&info)) {
 				updatePC(&ctx, ctx.address + WORD_SIZE_THUMB);
 			}
@@ -176,40 +172,13 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 				EMIT(&ctx, BL, AL, ctx.code, _thumbTable[instruction >> 6]);
 				break;
 			}
-			if (info.branchType == ARM_BRANCH) {
-				struct ARMDynarecLabel* label = NULL;
-				uint32_t base = ctx.address + info.op1.immediate + WORD_SIZE_THUMB;
-				if (info.op1.immediate <= 0) {
-					if (base > trace->start) {
-						label = &ctx.labels[(base - trace->start) >> 1];
-					}
-				}
-				// Assume branch not taken
-				if (info.condition == ARM_CONDITION_AL) {
-					updateEvents(&ctx, cpu);
-					break;
-				}
-				EMIT_IMM(&ctx, AL, 5, ctx.address + WORD_SIZE_THUMB);
-				EMIT(&ctx, LDRI, AL, 1, 4, ARM_PC * sizeof(uint32_t));
-				EMIT(&ctx, CMP, AL, 1, 5);
-				if (!label || !label->code) {
-					EMIT(&ctx, POP, NE, 0x8030);
-				} else {
-					code_t* l2 = ctx.code;
-					++ctx.code;
-					EMIT(&ctx, MOV, AL, 5, 1);
-					updateEvents(&ctx, cpu);
-					EMIT(&ctx, B, AL, ctx.code, label->code);
-					EMIT_L(l2, B, EQ, l2, ctx.code);
-				}
-			} else if (needsUpdateEvents(&info)) {
+			if (needsUpdateEvents(&info)) {
 				updateEvents(&ctx, cpu);
 			}
-			if (info.branchType > ARM_BRANCH || info.traps) {
+			if (info.branchType >= ARM_BRANCH || info.traps) {
 				break;
 			}
 		}
-		memset(ctx.labels, 0, sizeof(struct ARMDynarecLabel) * ((ctx.address - trace->start) >> 1));
 		flushPrefetch(&ctx, cpu->memory.load16(cpu, ctx.address, 0), cpu->memory.load16(cpu, ctx.address + WORD_SIZE_THUMB, 0));
 		flushCycles(&ctx);
 		EMIT(&ctx, POP, AL, 0x8030);
