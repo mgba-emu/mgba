@@ -195,7 +195,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
  * 0x00304 - 0x0030F: Reserved (leave zero)
  * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
- * 0x00318 - 0x003FF: Reserved (leave zero)
+ * 0x00318 - 0x0031B: Last prefetched program counter
+ * 0x0031C - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -311,7 +312,9 @@ struct GBASerializedState {
 
 	uint64_t creationUsec;
 
-	uint32_t reserved[58];
+	uint32_t lastPrefetchedPc;
+
+	uint32_t reserved[57];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

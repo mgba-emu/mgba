@@ -61,9 +61,10 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 		STORE_32(gba->cpu->bankedSPSRs[i], i * sizeof(gba->cpu->bankedSPSRs[0]), state->cpu.bankedSPSRs);
 	}
 
-	state->biosPrefetch = gba->memory.biosPrefetch;
+	STORE_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);
 	STORE_32(gba->cpu->prefetch[0], 0, state->cpuPrefetch);
 	STORE_32(gba->cpu->prefetch[1], 4, state->cpuPrefetch);
+	STORE_32(gba->memory.lastPrefetchedPc, 0, &state->lastPrefetchedPc);
 
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
@@ -172,6 +173,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (state->biosPrefetch) {
 		LOAD_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);
 	}
+	LOAD_32(gba->memory.lastPrefetchedPc, 0, &state->lastPrefetchedPc);
 	if (gba->cpu->cpsr.t) {
 		gba->cpu->executionMode = MODE_THUMB;
 		if (state->cpuPrefetch[0] && state->cpuPrefetch[1]) {
