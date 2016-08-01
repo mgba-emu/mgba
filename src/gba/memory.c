@@ -244,7 +244,6 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 	gba->lastJump = address;
 	memory->lastPrefetchedPc = 0;
-	memory->lastPrefetchedLoads = 0;
 	if (newRegion == memory->activeRegion) {
 		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
 			return;
@@ -1779,7 +1778,6 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	wait -= n2s;
 
 	// TODO: Invalidate prefetch on branch
-	memory->lastPrefetchedLoads = loads;
 	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * loads;
 
 	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
