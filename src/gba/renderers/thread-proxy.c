@@ -80,7 +80,6 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	proxyRenderer->backend->init(proxyRenderer->backend);
 
 	proxyRenderer->vramDirtyBitmap = 0;
-	memset(proxyRenderer->oamDirtyBitmap, 0, sizeof(proxyRenderer->oamDirtyBitmap));
 	proxyRenderer->threadState = PROXY_THREAD_IDLE;
 	ThreadCreate(&proxyRenderer->thread, _proxyThread, proxyRenderer);
 }
@@ -91,13 +90,9 @@ void GBAVideoThreadProxyRendererReset(struct GBAVideoRenderer* renderer) {
 	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	}
-	int i;
-	for (i = 0; i < 128; ++i) {
-		proxyRenderer->oamProxy.raw[i * 4] = 0x0200;
-		proxyRenderer->oamProxy.raw[i * 4 + 1] = 0x0000;
-		proxyRenderer->oamProxy.raw[i * 4 + 2] = 0x0000;
-		proxyRenderer->oamProxy.raw[i * 4 + 3] = 0x0000;
-	}
+	memcpy(&proxyRenderer->oamProxy.raw, &renderer->oam->raw, SIZE_OAM);
+	memcpy(proxyRenderer->paletteProxy, renderer->palette, SIZE_PALETTE_RAM);
+	memcpy(proxyRenderer->vramProxy, renderer->vram, SIZE_VRAM);
 	proxyRenderer->backend->reset(proxyRenderer->backend);
 	MutexUnlock(&proxyRenderer->mutex);
 }
@@ -183,12 +178,6 @@ void GBAVideoThreadProxyRendererWritePalette(struct GBAVideoRenderer* renderer, 
 
 void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
-	int bit = 1 << (oam & 31);
-	int base = oam >> 5;
-	if (proxyRenderer->oamDirtyBitmap[base] & bit) {
-		return;
-	}
-	proxyRenderer->oamDirtyBitmap[base] |= bit;
 	struct GBAVideoDirtyInfo dirty = {
 		DIRTY_OAM,
 		oam,
@@ -247,7 +236,6 @@ void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	} while (proxyRenderer->threadState == PROXY_THREAD_BUSY);
 	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
 	proxyRenderer->vramDirtyBitmap = 0;
-	memset(proxyRenderer->oamDirtyBitmap, 0, sizeof(proxyRenderer->oamDirtyBitmap));
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
