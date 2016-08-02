@@ -4,6 +4,7 @@ Features:
  - Support for encrypted CodeBreaker GBA cheats
  - Emulation of Vast Fame protected GBA carts (taizou)
  - Tile viewer
+ - Threaded rendering mode
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games
