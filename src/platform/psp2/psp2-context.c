@@ -141,6 +141,9 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 }
 
 void mPSP2Setup(struct mGUIRunner* runner) {
+	mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
+	mCoreLoadConfig(runner->core);
+
 	scePowerSetArmClockFrequency(80);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
