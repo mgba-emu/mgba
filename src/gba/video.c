@@ -334,4 +334,5 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
+	video->renderer->reset(video->renderer);
 }

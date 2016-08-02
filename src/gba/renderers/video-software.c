@@ -91,8 +91,10 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->target2Obj = 0;
 	softwareRenderer->target2Bd = 0;
 	softwareRenderer->blendEffect = BLEND_NONE;
-	memset(softwareRenderer->normalPalette, 0, sizeof(softwareRenderer->normalPalette));
-	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
+	for (i = 0; i < 1024; i += 2) {
+		GBAVideoSoftwareRendererWritePalette(renderer, i, softwareRenderer->d.palette[i >> 1]);
+	}
+	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
 	softwareRenderer->bldb = 0;

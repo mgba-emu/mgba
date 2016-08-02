@@ -198,9 +198,9 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 	}
 
+	GBAVideoDeserialize(&gba->video, state);
 	GBAMemoryDeserialize(&gba->memory, state);
 	GBAIODeserialize(gba, state);
-	GBAVideoDeserialize(&gba->video, state);
 	GBAAudioDeserialize(&gba->audio, state);
 	GBASavedataDeserialize(&gba->memory.savedata, state);
 
