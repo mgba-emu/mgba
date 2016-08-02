@@ -13,6 +13,7 @@ Bugfixes:
  - PSP2: Fix VSync
  - ARM7: Fix decoding of Thumb ADD (variants 5 and 6)
  - GBA Serialize: Savestates now properly store prefetch
+ - PSP2: Fix accelerometer range
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure

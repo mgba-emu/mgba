@@ -103,12 +103,12 @@ static void _sampleRotation(struct mRotationSource* source) {
 
 static int32_t _readTiltX(struct mRotationSource* source) {
 	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
-	return rotation->state.accelerometer.x * 0x60000000;
+	return rotation->state.accelerometer.x * 0x30000000;
 }
 
 static int32_t _readTiltY(struct mRotationSource* source) {
 	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
-	return rotation->state.accelerometer.y * 0x60000000;
+	return rotation->state.accelerometer.y * -0x30000000;
 }
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
