@@ -12,9 +12,14 @@
 #include "ConfigController.h"
 #include "MultiplayerController.h"
 
+struct NoIntroDB;
+
 extern "C" {
+#include "core/log.h"
 #include "gba/sio.h"
 }
+
+mLOG_DECLARE_CATEGORY(QT);
 
 namespace QGBA {
 
@@ -28,17 +33,19 @@ public:
 	GBAApp(int& argc, char* argv[]);
 	static GBAApp* app();
 
+	static QString dataDir();
+
 	Window* newWindow();
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = QString());
 	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = QString());
+	QString getOpenDirectoryName(QWidget* owner, const QString& title);
 
 	QFileDialog* getOpenFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 	QFileDialog* getSaveFileDialog(QWidget* owner, const QString& title, const QString& filter = QString());
 
-public slots:
-	void interruptAll();
-	void continueAll();
+	const NoIntroDB* gameDB() const { return m_db; }
+	bool reloadGameDB();
 
 protected:
 	bool event(QEvent*);
@@ -56,9 +63,13 @@ private:
 
 	Window* newWindowInternal();
 
+	void pauseAll(QList<int>* paused);
+	void continueAll(const QList<int>* paused);
+
 	ConfigController m_configController;
 	Window* m_windows[MAX_GBAS];
 	MultiplayerController m_multiplayer;
+	NoIntroDB* m_db;
 };
 
 }

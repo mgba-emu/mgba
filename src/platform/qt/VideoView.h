@@ -13,7 +13,7 @@
 #include "ui_VideoView.h"
 
 extern "C" {
-#include "platform/ffmpeg/ffmpeg-encoder.h"
+#include "feature/ffmpeg/ffmpeg-encoder.h"
 }
 
 namespace QGBA {
@@ -37,14 +37,14 @@ public:
 	VideoView(QWidget* parent = nullptr);
 	virtual ~VideoView();
 
-	GBAAVStream* getStream() { return &m_encoder.d; }
+	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
 	void startRecording();
 	void stopRecording();
 
 signals:
-	void recordingStarted(GBAAVStream*);
+	void recordingStarted(mAVStream*);
 	void recordingStopped();
 
 private slots:

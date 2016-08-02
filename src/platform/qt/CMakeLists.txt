@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 enable_language(CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
+if(NOT MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
@@ -32,6 +34,7 @@ if(NOT WIN32 OR NOT BUILD_SDL)
 	find_package(Qt5Multimedia)
 endif()
 find_package(Qt5OpenGL)
+find_package(Qt5Network)
 find_package(Qt5Widgets)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
@@ -40,24 +43,27 @@ if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	return()
 endif()
 
-if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND)
+if(NOT Qt5OpenGL_FOUND OR NOT Qt5Widgets_FOUND OR NOT Qt5Network_FOUND)
 	message(WARNING "Cannot find Qt modules")
 	set(BUILD_QT OFF PARENT_SCOPE)
 	return()
 endif()
 
 if(BUILD_GL)
-list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gl.c)
+	if(NOT WIN32 OR USE_EPOXY)
+		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+	endif()
 endif()
 
 if(BUILD_GLES2)
-list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
+	list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/opengl/gles2.c)
 endif()
 
 get_target_property(QT_TYPE Qt5::Core TYPE)
 if(QT_TYPE STREQUAL STATIC_LIBRARY)
 	set(QT_STATIC ON)
-	add_definitions(-DQT_STATIC)
+	list(APPEND QT_DEFINES QT_STATIC)
 endif()
 
 set(SOURCE_FILES
@@ -88,12 +94,16 @@ set(SOURCE_FILES
 	MultiplayerController.cpp
 	OverrideView.cpp
 	PaletteView.cpp
+	ROMInfo.cpp
 	SavestateButton.cpp
 	SensorView.cpp
 	SettingsView.cpp
+	ShaderSelector.cpp
 	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
+	TilePainter.cpp
+	TileView.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
@@ -108,19 +118,23 @@ qt5_wrap_ui(UI_FILES
 	MemoryView.ui
 	OverrideView.ui
 	PaletteView.ui
+	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui
+	ShaderSelector.ui
 	ShortcutView.ui
+	TileView.ui
 	VideoView.ui)
 
 set(QT_LIBRARIES)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5,libqt5network5")
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
 endif()
 
+set(QT_DEFINES)
 if(Qt5Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
@@ -129,7 +143,7 @@ if(Qt5Multimedia_FOUND)
 		list(APPEND QT_LIBRARIES qtaudio_windows strmiids winmm)
 	endif()
 	list(APPEND QT_LIBRARIES Qt5::Multimedia)
-	add_definitions(-DBUILD_QT_MULTIMEDIA)
+	list(APPEND QT_DEFINES BUILD_QT_MULTIMEDIA)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5")
 endif()
 
@@ -156,10 +170,23 @@ if(WIN32)
 		list(APPEND QT_LIBRARIES qwindows imm32)
 	endif()
 endif()
-add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
-set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES}")
+if(NOT DEFINED DATADIR)
+	if(APPLE)
+		set(DATADIR Applications/${PROJECT_NAME}.app/Contents/Resources)
+	else()
+		set(DATADIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
+	endif()
+endif()
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
+install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
+if(NOT WIN32 AND NOT APPLE)
+	list(APPEND QT_DEFINES DATADIR="${DATADIR}")
+endif()
 
-list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL)
+add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
+set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
+
+list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL Qt5::Network)
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}" PARENT_SCOPE)
 

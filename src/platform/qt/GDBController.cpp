@@ -36,18 +36,15 @@ void GDBController::setBindAddress(uint32_t bindAddress) {
 }
 
 void GDBController::attach() {
-	if (isAttached()) {
+	if (isAttached() || (m_gameController->platform() != PLATFORM_GBA && m_gameController->platform() != PLATFORM_NONE)) {
 		return;
 	}
-	m_gameController->setDebugger(&m_gdbStub.d);
 	if (m_gameController->isLoaded()) {
-		ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
+		m_gameController->setDebugger(&m_gdbStub.d);
+		mDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
 	} else {
 		QObject::disconnect(m_autoattach);
-		m_autoattach = connect(m_gameController, &GameController::gameStarted, [this]() {
-			QObject::disconnect(m_autoattach);
-			ARMDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_ATTACHED, 0);
-		});
+		m_autoattach = connect(m_gameController, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(attach()));
 	}
 }
 
@@ -73,5 +70,14 @@ void GDBController::listen() {
 		detach();
 		emit listenFailed();
 	}
+	m_gameController->threadContinue();
+}
+
+void GDBController::breakInto() {
+	if (!isAttached()) {
+		return;
+	}
+	m_gameController->threadInterrupt();
+	mDebuggerEnter(&m_gdbStub.d, DEBUGGER_ENTER_MANUAL, 0);
 	m_gameController->threadContinue();
 }

@@ -8,9 +8,12 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
 #include "gba/serialize.h"
 
 struct VFile;
+
+mLOG_DECLARE_CATEGORY(GBA_RR);
 
 enum GBARRInitFrom {
 	INIT_EX_NIHILO = 0,
@@ -33,6 +36,7 @@ struct GBARRContext {
 	void (*nextFrame)(struct GBARRContext*);
 	void (*logInput)(struct GBARRContext*, uint16_t input);
 	uint16_t (*queryInput)(struct GBARRContext*);
+	bool (*queryReset)(struct GBARRContext*);
 
 	void (*stateSaved)(struct GBARRContext*, struct GBASerializedState*);
 	void (*stateLoaded)(struct GBARRContext*, const struct GBASerializedState*);

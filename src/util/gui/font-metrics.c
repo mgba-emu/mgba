@@ -135,3 +135,21 @@ struct GUIFontGlyphMetric defaultFontMetrics[128] = {
 	{ 10,  5, { 5, 3, 6, 3 }}, // 0x7E "}"
 	{  0,  0, { 0, 0, 0, 0 }}, // 0x7F
 };
+
+struct GUIIconMetric defaultIconMetrics[] = {
+	[GUI_ICON_BATTERY_FULL] = { 0, 0, 32, 16 },
+	[GUI_ICON_BATTERY_HIGH] = { 32, 0, 32, 16 },
+	[GUI_ICON_BATTERY_HALF] = { 64, 0, 32, 16 },
+	[GUI_ICON_BATTERY_LOW] = { 96, 0, 32, 16 },
+	[GUI_ICON_BATTERY_EMPTY] = { 128, 0, 32, 16 },
+	[GUI_ICON_SCROLLBAR_BUTTON] = { 6, 16, 4, 5 },
+	[GUI_ICON_SCROLLBAR_TRACK] = { 23, 16, 2, 16 },
+	[GUI_ICON_SCROLLBAR_THUMB] = { 38, 16, 4, 16 },
+	[GUI_ICON_CURSOR] = { 48, 16, 16, 16 },
+	[GUI_ICON_POINTER] = { 68, 20, 8, 8 },
+	[GUI_ICON_BUTTON_CIRCLE] = { 2, 34, 12, 11 },
+	[GUI_ICON_BUTTON_CROSS] = { 18, 34, 12, 11 },
+	[GUI_ICON_BUTTON_TRIANGLE] = { 34, 34, 12, 11 },
+	[GUI_ICON_BUTTON_SQUARE] = { 50, 34, 12, 11 },
+	[GUI_ICON_BUTTON_HOME] = { 66, 34, 12, 11 },
+};

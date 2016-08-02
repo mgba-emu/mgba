@@ -43,6 +43,7 @@ static void _vdsceRewind(struct VDir* vd);
 static struct VDirEntry* _vdsceListNext(struct VDir* vd);
 static struct VFile* _vdsceOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vdsceOpenDir(struct VDir* vd, const char* path);
+static bool _vdsceDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdesceName(struct VDirEntry* vde);
 static enum VFSType _vdesceType(struct VDirEntry* vde);
@@ -62,7 +63,7 @@ struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	vfsce->d.close = _vfsceClose;
 	vfsce->d.seek = _vfsceSeek;
 	vfsce->d.read = _vfsceRead;
-	vfsce->d.readline = 0;
+	vfsce->d.readline = VFileReadline;
 	vfsce->d.write = _vfsceWrite;
 	vfsce->d.map = _vfsceMap;
 	vfsce->d.unmap = _vfsceUnmap;
@@ -136,7 +137,7 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	}
 	// TODO: Get the right device
-	return sceIoSync("cache0:", 0) >= 0;
+	return sceIoSync("ux0:", 0) >= 0;
 }
 
 struct VDir* VDirOpen(const char* path) {
@@ -152,6 +153,7 @@ struct VDir* VDirOpen(const char* path) {
 	vd->d.listNext = _vdsceListNext;
 	vd->d.openFile = _vdsceOpenFile;
 	vd->d.openDir = _vdsceOpenDir;
+	vd->d.deleteFile = _vdsceDeleteFile;
 	vd->path = strdup(path);
 
 	vd->de.d.name = _vdesceName;
@@ -215,6 +217,20 @@ struct VDir* _vdsceOpenDir(struct VDir* vd, const char* path) {
 	return vd2;
 }
 
+bool _vdsceDeleteFile(struct VDir* vd, const char* path) {
+	struct VDirSce* vdsce = (struct VDirSce*) vd;
+	if (!path) {
+		return 0;
+	}
+	const char* dir = vdsce->path;
+	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + strlen(PATH_SEP) + 1));
+	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
+
+	bool ret = sceIoRemove(combined) >= 0;
+	free(combined);
+	return ret;
+}
+
 static const char* _vdesceName(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
 	return vdesce->ent.d_name;
@@ -222,7 +238,7 @@ static const char* _vdesceName(struct VDirEntry* vde) {
 
 static enum VFSType _vdesceType(struct VDirEntry* vde) {
 	struct VDirEntrySce* vdesce = (struct VDirEntrySce*) vde;
-	if (PSP2_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
+	if (SCE_S_ISDIR(vdesce->ent.d_stat.st_mode)) {
 		return VFS_DIRECTORY;
 	}
 	return VFS_FILE;

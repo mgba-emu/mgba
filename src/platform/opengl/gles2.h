@@ -6,22 +6,92 @@
 #ifndef GLES2_H
 #define GLES2_H
 
+#ifdef USE_EPOXY
+#include <epoxy/gl.h>
+#elif defined(BUILD_GL)
+#ifdef __APPLE__
+#include <OpenGL/gl3.h>
+#else
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+#endif
+#else
 #include <GLES2/gl2.h>
+#endif
 
 #include "platform/video-backend.h"
 
-struct GBAGLES2Context {
-	struct VideoBackend d;
+union mGLES2UniformValue {
+	GLfloat f;
+	GLint i;
+	GLboolean b;
+	GLfloat fvec2[2];
+	GLfloat fvec3[3];
+	GLfloat fvec4[4];
+	GLint ivec2[2];
+	GLint ivec3[3];
+	GLint ivec4[4];
+	GLboolean bvec2[2];
+	GLboolean bvec3[3];
+	GLboolean bvec4[4];
+	GLfloat fmat2x2[4];
+	GLfloat fmat3x3[9];
+	GLfloat fmat4x4[16];
+};
 
+struct mGLES2Uniform {
+	const char* name;
+	GLenum type;
+	union mGLES2UniformValue value;
+	GLuint location;
+	union mGLES2UniformValue min;
+	union mGLES2UniformValue max;
+	const char* readableName;
+};
+
+struct mGLES2Shader {
+	int width;
+	int height;
+	bool integerScaling;
+	bool filter;
+	bool blend;
 	GLuint tex;
+	GLuint fbo;
 	GLuint fragmentShader;
 	GLuint vertexShader;
 	GLuint program;
-	GLuint bufferObject;
 	GLuint texLocation;
+	GLuint texSizeLocation;
 	GLuint positionLocation;
+
+	struct mGLES2Uniform* uniforms;
+	size_t nUniforms;
 };
 
-void GBAGLES2ContextCreate(struct GBAGLES2Context*);
+struct mGLES2Context {
+	struct VideoBackend d;
+
+	GLuint tex;
+	GLuint texLocation;
+	GLuint positionLocation;
+
+	struct mGLES2Shader initialShader;
+	struct mGLES2Shader finalShader;
+
+	struct mGLES2Shader* shaders;
+	size_t nShaders;
+};
+
+void mGLES2ContextCreate(struct mGLES2Context*);
+
+void mGLES2ShaderInit(struct mGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms);
+void mGLES2ShaderDeinit(struct mGLES2Shader*);
+void mGLES2ShaderAttach(struct mGLES2Context*, struct mGLES2Shader*, size_t nShaders);
+void mGLES2ShaderDetach(struct mGLES2Context*);
+
+struct VDir;
+bool mGLES2ShaderLoad(struct VideoShader*, struct VDir*);
+void mGLES2ShaderFree(struct VideoShader*);
 
 #endif

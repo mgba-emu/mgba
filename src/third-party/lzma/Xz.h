@@ -1,5 +1,5 @@
 /* Xz.h - Xz interface
-2014-12-30 : Igor Pavlov : Public domain */
+2015-05-01 : Igor Pavlov : Public domain */
 
 #ifndef __XZ_H
 #define __XZ_H
@@ -59,8 +59,8 @@ SRes XzBlock_ReadHeader(CXzBlock *p, ISeqInStream *inStream, Bool *isIndex, UInt
 #define XZ_SIG_SIZE 6
 #define XZ_FOOTER_SIG_SIZE 2
 
-extern Byte XZ_SIG[XZ_SIG_SIZE];
-extern Byte XZ_FOOTER_SIG[XZ_FOOTER_SIG_SIZE];
+extern const Byte XZ_SIG[XZ_SIG_SIZE];
+extern const Byte XZ_FOOTER_SIG[XZ_FOOTER_SIG_SIZE];
 
 #define XZ_STREAM_FLAGS_SIZE 2
 #define XZ_STREAM_CRC_SIZE 4
@@ -76,13 +76,13 @@ extern Byte XZ_FOOTER_SIG[XZ_FOOTER_SIG_SIZE];
 
 typedef struct
 {
-  int mode;
+  unsigned mode;
   UInt32 crc;
   UInt64 crc64;
   CSha256 sha;
 } CXzCheck;
 
-void XzCheck_Init(CXzCheck *p, int mode);
+void XzCheck_Init(CXzCheck *p, unsigned mode);
 void XzCheck_Update(CXzCheck *p, const void *data, size_t size);
 int XzCheck_Final(CXzCheck *p, Byte *digest);
 
@@ -163,7 +163,7 @@ typedef struct
 {
   ISzAlloc *alloc;
   Byte *buf;
-  int numCoders;
+  unsigned numCoders;
   int finished[MIXCODER_NUM_FILTERS_MAX - 1];
   size_t pos[MIXCODER_NUM_FILTERS_MAX - 1];
   size_t size[MIXCODER_NUM_FILTERS_MAX - 1];
@@ -174,7 +174,7 @@ typedef struct
 void MixCoder_Construct(CMixCoder *p, ISzAlloc *alloc);
 void MixCoder_Free(CMixCoder *p);
 void MixCoder_Init(CMixCoder *p);
-SRes MixCoder_SetFromMethod(CMixCoder *p, int coderIndex, UInt64 methodId);
+SRes MixCoder_SetFromMethod(CMixCoder *p, unsigned coderIndex, UInt64 methodId);
 SRes MixCoder_Code(CMixCoder *p, Byte *dest, SizeT *destLen,
     const Byte *src, SizeT *srcLen, int srcWasFinished,
     ECoderFinishMode finishMode, ECoderStatus *status);

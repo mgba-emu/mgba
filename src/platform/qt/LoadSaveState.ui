@@ -37,12 +37,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
-     </property>
      <property name="text">
       <string>No Save</string>
      </property>
@@ -64,12 +58,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
      </property>
      <property name="text">
       <string>No Save</string>
@@ -115,12 +103,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
-     </property>
      <property name="text">
       <string>No Save</string>
      </property>
@@ -142,12 +124,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
      </property>
      <property name="text">
       <string>No Save</string>
@@ -171,12 +147,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
-     </property>
      <property name="text">
       <string>No Save</string>
      </property>
@@ -198,12 +168,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
      </property>
      <property name="text">
       <string>No Save</string>
@@ -227,12 +191,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
-     </property>
      <property name="text">
       <string>No Save</string>
      </property>
@@ -255,12 +213,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
-     </property>
      <property name="text">
       <string>No Save</string>
      </property>
@@ -282,12 +234,6 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>242</width>
-       <height>162</height>
-      </size>
      </property>
      <property name="text">
       <string>No Save</string>

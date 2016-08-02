@@ -8,25 +8,17 @@
 
 #include "util/common.h"
 
-#include "arm.h"
-#include "util/vector.h"
+#include "arm/arm.h"
+#include "core/cheats.h"
 
 #define MAX_ROM_PATCHES 4
 
 enum GBACheatType {
-	CHEAT_ASSIGN,
-	CHEAT_ASSIGN_INDIRECT,
-	CHEAT_AND,
-	CHEAT_ADD,
-	CHEAT_OR,
-	CHEAT_IF_EQ,
-	CHEAT_IF_NE,
-	CHEAT_IF_LT,
-	CHEAT_IF_GT,
-	CHEAT_IF_ULT,
-	CHEAT_IF_UGT,
-	CHEAT_IF_AND,
-	CHEAT_IF_LAND
+	GBA_CHEAT_AUTODETECT,
+	GBA_CHEAT_CODEBREAKER,
+	GBA_CHEAT_GAMESHARK,
+	GBA_CHEAT_PRO_ACTION_REPLAY,
+	GBA_CHEAT_VBA
 };
 
 enum GBACodeBreakerType {
@@ -131,18 +123,6 @@ enum {
 	PAR3_WIDTH_BASE = 25
 };
 
-struct GBACheat {
-	enum GBACheatType type;
-	int width;
-	uint32_t address;
-	uint32_t operand;
-	uint32_t repeat;
-	uint32_t negativeRepeat;
-
-	int32_t addressOffset;
-	int32_t operandOffset;
-};
-
 struct GBACheatHook {
 	uint32_t address;
 	enum ExecutionMode mode;
@@ -151,12 +131,9 @@ struct GBACheatHook {
 	size_t reentries;
 };
 
-DECLARE_VECTOR(GBACheatList, struct GBACheat);
-DECLARE_VECTOR(StringList, char*);
-
 struct GBACheatSet {
+	struct mCheatSet d;
 	struct GBACheatHook* hook;
-	struct GBACheatList list;
 
 	struct GBACheatPatch {
 		uint32_t address;
@@ -166,41 +143,22 @@ struct GBACheatSet {
 		bool exists;
 	} romPatches[MAX_ROM_PATCHES];
 
-	struct GBACheat* incompleteCheat;
+	struct mCheat* incompleteCheat;
 	struct GBACheatPatch* incompletePatch;
-	struct GBACheat* currentBlock;
+	struct mCheat* currentBlock;
 
 	int gsaVersion;
 	uint32_t gsaSeeds[4];
+	uint32_t cbRngState;
+	uint32_t cbMaster;
+	uint8_t cbTable[0x30];
+	uint32_t cbSeeds[4];
 	int remainingAddresses;
-
-	char* name;
-	bool enabled;
-	struct StringList lines;
-};
-
-DECLARE_VECTOR(GBACheatSets, struct GBACheatSet*);
-
-struct GBACheatDevice {
-	struct ARMComponent d;
-	struct GBA* p;
-
-	struct GBACheatSets cheats;
 };
 
 struct VFile;
 
-void GBACheatDeviceCreate(struct GBACheatDevice*);
-void GBACheatDeviceDestroy(struct GBACheatDevice*);
-
-void GBACheatSetInit(struct GBACheatSet*, const char* name);
-void GBACheatSetDeinit(struct GBACheatSet*);
-
-void GBACheatAttachDevice(struct GBA* gba, struct GBACheatDevice*);
-
-void GBACheatAddSet(struct GBACheatDevice*, struct GBACheatSet*);
-void GBACheatRemoveSet(struct GBACheatDevice*, struct GBACheatSet*);
-void GBACheatSetCopyProperties(struct GBACheatSet* newSet, struct GBACheatSet* set);
+struct mCheatDevice* GBACheatDeviceCreate(void);
 
 bool GBACheatAddCodeBreaker(struct GBACheatSet*, uint32_t op1, uint16_t op2);
 bool GBACheatAddCodeBreakerLine(struct GBACheatSet*, const char* line);
@@ -211,14 +169,6 @@ bool GBACheatAddGameSharkLine(struct GBACheatSet*, const char* line);
 bool GBACheatAddProActionReplay(struct GBACheatSet*, uint32_t op1, uint32_t op2);
 bool GBACheatAddProActionReplayLine(struct GBACheatSet*, const char* line);
 
-bool GBACheatAddAutodetect(struct GBACheatSet*, uint32_t op1, uint32_t op2);
-bool GBACheatAddAutodetectLine(struct GBACheatSet*, const char* line);
-
-bool GBACheatParseFile(struct GBACheatDevice*, struct VFile*);
-bool GBACheatSaveFile(struct GBACheatDevice*, struct VFile*);
-
-bool GBACheatAddLine(struct GBACheatSet*, const char* line);
-
-void GBACheatRefresh(struct GBACheatDevice*, struct GBACheatSet*);
+bool GBACheatAddVBALine(struct GBACheatSet*, const char* line);
 
 #endif

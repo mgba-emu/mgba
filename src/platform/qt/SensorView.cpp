@@ -9,6 +9,11 @@
 #include "GamepadAxisEvent.h"
 #include "InputController.h"
 
+extern "C" {
+#include "core/core.h"
+#include "gba/gba.h"
+}
+
 using namespace QGBA;
 
 SensorView::SensorView(GameController* controller, InputController* input, QWidget* parent)
@@ -81,9 +86,10 @@ void SensorView::jiggerer(QAbstractButton* button, void (InputController::*sette
 }
 
 bool SensorView::event(QEvent* event) {
-	if (event->type() == QEvent::WindowActivate) {
+	QEvent::Type type = event->type();
+	if (type == QEvent::WindowActivate || type == QEvent::Show) {
 		m_input->stealFocus(this);
-	} else if (event->type() == QEvent::WindowDeactivate) {
+	} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
 		m_input->releaseFocus(this);
 	}
 	return QWidget::event(event);
@@ -104,7 +110,7 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 void SensorView::updateSensors() {
 	m_controller->threadInterrupt();
 	if (m_rotation->sample &&
-	    (!m_controller->isLoaded() || !(m_controller->thread()->gba->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
+	    (!m_controller->isLoaded() || !(static_cast<GBA*>(m_controller->thread()->core->board)->memory.hw.devices & (HW_GYRO | HW_TILT)))) {
 		m_rotation->sample(m_rotation);
 		m_rotation->sample(m_rotation);
 		m_rotation->sample(m_rotation);

@@ -11,7 +11,10 @@
 #include <QClipboard>
 
 extern "C" {
+#include "core/cheats.h"
+#ifdef M_CORE_GBA
 #include "gba/cheats.h"
+#endif
 }
 
 using namespace QGBA;
@@ -30,22 +33,23 @@ CheatsView::CheatsView(GameController* controller, QWidget* parent)
 	connect(m_ui.save, SIGNAL(clicked()), this, SLOT(save()));
 	connect(m_ui.addSet, SIGNAL(clicked()), this, SLOT(addSet()));
 	connect(m_ui.remove, SIGNAL(clicked()), this, SLOT(removeSet()));
-	connect(controller, SIGNAL(gameStopped(GBAThread*)), &m_model, SLOT(invalidated()));
+	connect(controller, SIGNAL(gameStopped(mCoreThread*)), &m_model, SLOT(invalidated()));
+	connect(controller, SIGNAL(stateLoaded(mCoreThread*)), &m_model, SLOT(invalidated()));
 
 	connect(m_ui.add, &QPushButton::clicked, [this]() {
-		enterCheat(GBACheatAddLine);
+		enterCheat(GBA_CHEAT_AUTODETECT);
 	});
 
 	connect(m_ui.addGSA, &QPushButton::clicked, [this]() {
-		enterCheat(GBACheatAddGameSharkLine);
+		enterCheat(GBA_CHEAT_GAMESHARK);
 	});
 
 	connect(m_ui.addPAR, &QPushButton::clicked, [this]() {
-		enterCheat(GBACheatAddProActionReplayLine);
+		enterCheat(GBA_CHEAT_PRO_ACTION_REPLAY);
 	});
 
 	connect(m_ui.addCB, &QPushButton::clicked, [this]() {
-		enterCheat(GBACheatAddCodeBreakerLine);
+		enterCheat(GBA_CHEAT_CODEBREAKER);
 	});
 }
 
@@ -78,9 +82,8 @@ void CheatsView::save() {
 }
 
 void CheatsView::addSet() {
-	GBACheatSet* set = new GBACheatSet;
-	GBACheatSetInit(set, nullptr);
 	m_controller->threadInterrupt();
+	mCheatSet* set = m_controller->cheatDevice()->createSet(m_controller->cheatDevice(), nullptr);
 	m_model.addSet(set);
 	m_controller->threadContinue();
 }
@@ -98,13 +101,12 @@ void CheatsView::removeSet() {
 	m_controller->threadContinue();
 }
 
-void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callback) {
-	GBACheatSet* set = nullptr;
+void CheatsView::enterCheat(int codeType) {
+	mCheatSet* set = nullptr;
 	QModelIndexList selection = m_ui.cheatList->selectionModel()->selectedIndexes();
 	QModelIndex index;
 	if (selection.count() == 0) {
-		set = new GBACheatSet;
-		GBACheatSetInit(set, nullptr);
+		set = m_controller->cheatDevice()->createSet(m_controller->cheatDevice(), nullptr);
 	} else if (selection.count() == 1) {
 		index = selection[0];
 		set = m_model.itemAt(index);
@@ -122,9 +124,10 @@ void CheatsView::enterCheat(std::function<bool(GBACheatSet*, const char*)> callb
 	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
 	for (const QString& string : cheats) {
 		m_model.beginAppendRow(index);
-		callback(set, string.toUtf8().constData());
+		mCheatAddLine(set, string.toUtf8().constData(), codeType);
 		m_model.endAppendRow();
 	}
+	set->refresh(set, m_controller->cheatDevice());
 	m_controller->threadContinue();
 	m_ui.codeEntry->clear();
 }

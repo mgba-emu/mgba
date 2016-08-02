@@ -6,20 +6,25 @@
 #ifndef GL_H
 #define GL_H
 
-#ifdef __APPLE__
+#ifdef USE_EPOXY
+#include <epoxy/gl.h>
+#elif defined(__APPLE__)
 #include <OpenGL/gl.h>
 #else
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 #include <GL/gl.h>
 #endif
 
 #include "platform/video-backend.h"
 
-struct GBAGLContext {
+struct mGLContext {
 	struct VideoBackend d;
 
 	GLuint tex;
 };
 
-void GBAGLContextCreate(struct GBAGLContext*);
+void mGLContextCreate(struct mGLContext*);
 
 #endif

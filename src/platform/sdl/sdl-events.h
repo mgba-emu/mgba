@@ -7,56 +7,69 @@
 #define SDL_EVENTS_H
 
 #include "util/common.h"
-#include "util/circle-buffer.h"
 
-#include "gba/supervisor/thread.h"
+#include "core/interface.h"
+#include "core/log.h"
+#include "util/circle-buffer.h"
+#include "util/vector.h"
 
 #include <SDL.h>
+
+mLOG_DECLARE_CATEGORY(SDL_EVENTS);
 
 #define SDL_BINDING_KEY 0x53444C4BU
 #define SDL_BINDING_BUTTON 0x53444C42U
 
 #define MAX_PLAYERS 4
 
-struct GBAVideoSoftwareRenderer;
 struct Configuration;
 
-struct GBASDLEvents {
-	SDL_Joystick** joysticks;
-	size_t nJoysticks;
+struct SDL_JoystickCombo {
+	size_t index;
+	SDL_Joystick* joystick;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Haptic* haptic;
+	SDL_JoystickID id;
+#else
+	int id;
+#endif
+};
+
+DECLARE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
+
+struct mSDLPlayer;
+struct mSDLEvents {
+	struct SDL_JoystickList joysticks;
 	const char* preferredJoysticks[MAX_PLAYERS];
 	int playersAttached;
-	size_t joysticksClaimed[MAX_PLAYERS];
+	struct mSDLPlayer* players[MAX_PLAYERS];
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	SDL_Haptic** haptic;
 	int screensaverSuspendDepth;
 	bool screensaverSuspendable;
 #endif
 };
 
-struct GBASDLPlayer {
+struct mSDLPlayer {
 	size_t playerId;
-	struct GBAInputMap* bindings;
-	SDL_Joystick* joystick;
-	size_t joystickIndex;
+	struct mInputMap* bindings;
+	struct SDL_JoystickCombo* joystick;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Window* window;
 	int fullscreen;
 	int windowUpdated;
-	SDL_Haptic* haptic;
 
-	struct GBASDLRumble {
-		struct GBARumble d;
-		struct GBASDLPlayer* p;
+	struct mSDLRumble {
+		struct mRumble d;
+		struct mSDLPlayer* p;
 
 		int level;
 		struct CircleBuffer history;
 	} rumble;
 #endif
 
-	struct GBASDLRotation {
-		struct GBARotationSource d;
-		struct GBASDLPlayer* p;
+	struct mSDLRotation {
+		struct mRotationSource d;
+		struct mSDLPlayer* p;
 
 		// Tilt
 		int axisX;
@@ -73,24 +86,27 @@ struct GBASDLPlayer {
 	} rotation;
 };
 
-bool GBASDLInitEvents(struct GBASDLEvents*);
-void GBASDLDeinitEvents(struct GBASDLEvents*);
+bool mSDLInitEvents(struct mSDLEvents*);
+void mSDLDeinitEvents(struct mSDLEvents*);
 
-bool GBASDLAttachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
-void GBASDLDetachPlayer(struct GBASDLEvents*, struct GBASDLPlayer*);
-void GBASDLEventsLoadConfig(struct GBASDLEvents*, const struct Configuration*);
-void GBASDLPlayerChangeJoystick(struct GBASDLEvents*, struct GBASDLPlayer*, size_t index);
+bool mSDLAttachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
+void mSDLDetachPlayer(struct mSDLEvents*, struct mSDLPlayer*);
+void mSDLEventsLoadConfig(struct mSDLEvents*, const struct Configuration*);
+void mSDLPlayerChangeJoystick(struct mSDLEvents*, struct mSDLPlayer*, size_t index);
+void mSDLUpdateJoysticks(struct mSDLEvents* events);
 
-void GBASDLInitBindings(struct GBAInputMap* inputMap);
-void GBASDLPlayerLoadConfig(struct GBASDLPlayer*, const struct Configuration*);
-void GBASDLPlayerSaveConfig(const struct GBASDLPlayer*, struct Configuration*);
+void mSDLPlayerLoadConfig(struct mSDLPlayer*, const struct Configuration*);
+void mSDLPlayerSaveConfig(const struct mSDLPlayer*, struct Configuration*);
 
-void GBASDLHandleEvent(struct GBAThread* context, struct GBASDLPlayer* sdlContext, const union SDL_Event* event);
+void mSDLInitBindingsGBA(struct mInputMap* inputMap);
+
+struct mCoreThread;
+void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const union SDL_Event* event);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-void GBASDLSuspendScreensaver(struct GBASDLEvents*);
-void GBASDLResumeScreensaver(struct GBASDLEvents*);
-void GBASDLSetScreensaverSuspendable(struct GBASDLEvents*, bool suspendable);
+void mSDLSuspendScreensaver(struct mSDLEvents*);
+void mSDLResumeScreensaver(struct mSDLEvents*);
+void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
 #endif
 
 #endif

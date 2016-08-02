@@ -1,85 +1,91 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "debugger.h"
 
-#include "arm.h"
-#include "isa-inlines.h"
+#include "core/core.h"
 
-#include "memory-debugger.h"
+#ifdef USE_CLI_DEBUGGER
+#include "debugger/cli-debugger.h"
+#endif
 
-const uint32_t ARM_DEBUGGER_ID = 0xDEADBEEF;
+#ifdef USE_GDB_STUB
+#include "debugger/gdb-stub.h"
+#endif
 
-static struct DebugBreakpoint* _lookupBreakpoint(struct DebugBreakpoint* breakpoints, uint32_t address) {
-	for (; breakpoints; breakpoints = breakpoints->next) {
-		if (breakpoints->address == address) {
-			return breakpoints;
-		}
+const uint32_t DEBUGGER_ID = 0xDEADBEEF;
+
+mLOG_DEFINE_CATEGORY(DEBUGGER, "Debugger");
+
+static void mDebuggerInit(void* cpu, struct mCPUComponent* component);
+static void mDebuggerDeinit(struct mCPUComponent* component);
+
+struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
+	if (!core->supportsDebuggerType(core, type)) {
+		return NULL;
 	}
-	return 0;
-}
 
-static void _checkBreakpoints(struct ARMDebugger* debugger) {
-	int instructionLength;
-	enum ExecutionMode mode = debugger->cpu->cpsr.t;
-	if (mode == MODE_ARM) {
-		instructionLength = WORD_SIZE_ARM;
-	} else {
-		instructionLength = WORD_SIZE_THUMB;
-	}
-	struct DebugBreakpoint* breakpoint = _lookupBreakpoint(debugger->breakpoints, debugger->cpu->gprs[ARM_PC] - instructionLength);
-	if (!breakpoint) {
-		return;
-	}
-	struct DebuggerEntryInfo info = {
-		.address = breakpoint->address
+	union DebugUnion {
+		struct mDebugger d;
+#ifdef USE_CLI_DEBUGGER
+		struct CLIDebugger cli;
+#endif
+#ifdef USE_GDB_STUB
+		struct GDBStub gdb;
+#endif
 	};
-	ARMDebuggerEnter(debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
-}
 
-static void ARMDebuggerInit(struct ARMCore*, struct ARMComponent*);
-static void ARMDebuggerDeinit(struct ARMComponent*);
+	union DebugUnion* debugger = malloc(sizeof(union DebugUnion));
 
-void ARMDebuggerCreate(struct ARMDebugger* debugger) {
-	debugger->d.id = ARM_DEBUGGER_ID;
-	debugger->d.init = ARMDebuggerInit;
-	debugger->d.deinit = ARMDebuggerDeinit;
-}
-
-void ARMDebuggerInit(struct ARMCore* cpu, struct ARMComponent* component) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
-	debugger->cpu = cpu;
-	debugger->state = DEBUGGER_RUNNING;
-	debugger->breakpoints = 0;
-	debugger->swBreakpoints = 0;
-	debugger->originalMemory = cpu->memory;
-	debugger->watchpoints = 0;
-	debugger->currentBreakpoint = 0;
-	if (debugger->init) {
-		debugger->init(debugger);
+	switch (type) {
+#ifdef USE_CLI_DEBUGGER
+	case DEBUGGER_CLI:
+		CLIDebuggerCreate(&debugger->cli);
+		struct CLIDebuggerSystem* sys = core->cliDebuggerSystem(core);
+		CLIDebuggerAttachSystem(&debugger->cli, sys);
+		break;
+#endif
+#ifdef USE_GDB_STUB
+	case DEBUGGER_GDB:
+		GDBStubCreate(&debugger->gdb);
+		GDBStubListen(&debugger->gdb, 2345, 0);
+		break;
+#endif
+	case DEBUGGER_NONE:
+	case DEBUGGER_MAX:
+		free(debugger);
+		return 0;
+		break;
 	}
+
+	return &debugger->d;
 }
 
-void ARMDebuggerDeinit(struct ARMComponent* component) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) component;
-	debugger->deinit(debugger);
+void mDebuggerAttach(struct mDebugger* debugger, struct mCore* core) {
+	debugger->d.id = DEBUGGER_ID;
+	debugger->d.init = mDebuggerInit;
+	debugger->d.deinit = mDebuggerDeinit;
+	debugger->core = core;
+	debugger->platform = core->debuggerPlatform(core);
+	debugger->platform->p = debugger;
+	core->attachDebugger(core, debugger);
 }
 
-void ARMDebuggerRun(struct ARMDebugger* debugger) {
+void mDebuggerRun(struct mDebugger* debugger) {
 	switch (debugger->state) {
 	case DEBUGGER_RUNNING:
-		if (!debugger->breakpoints && !debugger->watchpoints) {
-			ARMRunLoop(debugger->cpu);
+		if (!debugger->platform->hasBreakpoints(debugger->platform)) {
+			debugger->core->runLoop(debugger->core);
 		} else {
-			ARMRun(debugger->cpu);
-			_checkBreakpoints(debugger);
+			debugger->core->step(debugger->core);
+			debugger->platform->checkBreakpoints(debugger->platform);
 		}
 		break;
 	case DEBUGGER_CUSTOM:
-		ARMRun(debugger->cpu);
-		_checkBreakpoints(debugger);
+		debugger->core->step(debugger->core);
+		debugger->platform->checkBreakpoints(debugger->platform);
 		debugger->custom(debugger);
 		break;
 	case DEBUGGER_PAUSED:
@@ -88,103 +94,32 @@ void ARMDebuggerRun(struct ARMDebugger* debugger) {
 		} else {
 			debugger->state = DEBUGGER_RUNNING;
 		}
-		if (debugger->state != DEBUGGER_PAUSED && debugger->currentBreakpoint) {
-			if (debugger->currentBreakpoint->isSw && debugger->setSoftwareBreakpoint) {
-				debugger->setSoftwareBreakpoint(debugger, debugger->currentBreakpoint->address, debugger->currentBreakpoint->sw.mode, &debugger->currentBreakpoint->sw.opcode);
-			}
-			debugger->currentBreakpoint = 0;
-		}
 		break;
 	case DEBUGGER_SHUTDOWN:
 		return;
 	}
 }
 
-void ARMDebuggerEnter(struct ARMDebugger* debugger, enum DebuggerEntryReason reason, struct DebuggerEntryInfo* info) {
+void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
-	struct ARMCore* cpu = debugger->cpu;
-	cpu->nextEvent = cpu->cycles;
-	if (reason == DEBUGGER_ENTER_BREAKPOINT) {
-		struct DebugBreakpoint* breakpoint = _lookupBreakpoint(debugger->swBreakpoints, _ARMPCAddress(cpu));
-		debugger->currentBreakpoint = breakpoint;
-		if (breakpoint && breakpoint->isSw) {
-			info->address = breakpoint->address;
-			if (debugger->clearSoftwareBreakpoint) {
-				debugger->clearSoftwareBreakpoint(debugger, breakpoint->address, breakpoint->sw.mode, breakpoint->sw.opcode);
-			}
-
-			ARMRunFake(cpu, breakpoint->sw.opcode);
-		}
-	}
 	if (debugger->entered) {
 		debugger->entered(debugger, reason, info);
 	}
 }
 
-void ARMDebuggerSetBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
-	struct DebugBreakpoint* breakpoint = malloc(sizeof(struct DebugBreakpoint));
-	breakpoint->address = address;
-	breakpoint->next = debugger->breakpoints;
-	breakpoint->isSw = false;
-	debugger->breakpoints = breakpoint;
-}
-
-bool ARMDebuggerSetSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
-	uint32_t opcode;
-	if (!debugger->setSoftwareBreakpoint || !debugger->setSoftwareBreakpoint(debugger, address, mode, &opcode)) {
-		return false;
-	}
-
-	struct DebugBreakpoint* breakpoint = malloc(sizeof(struct DebugBreakpoint));
-	breakpoint->address = address;
-	breakpoint->next = debugger->swBreakpoints;
-	breakpoint->isSw = true;
-	breakpoint->sw.opcode = opcode;
-	breakpoint->sw.mode = mode;
-	debugger->swBreakpoints = breakpoint;
-
-	return true;
-}
-
-void ARMDebuggerClearBreakpoint(struct ARMDebugger* debugger, uint32_t address) {
-	struct DebugBreakpoint** previous = &debugger->breakpoints;
-	struct DebugBreakpoint* breakpoint;
-	struct DebugBreakpoint** next;
-	while ((breakpoint = *previous)) {
-		next = &breakpoint->next;
-		if (breakpoint->address == address) {
-			*previous = *next;
-			free(breakpoint);
-			continue;
-		}
-		previous = next;
+static void mDebuggerInit(void* cpu, struct mCPUComponent* component) {
+	struct mDebugger* debugger = (struct mDebugger*) component;
+	debugger->state = DEBUGGER_RUNNING;
+	debugger->platform->init(cpu, debugger->platform);
+	if (debugger->init) {
+		debugger->init(debugger);
 	}
 }
 
-void ARMDebuggerSetWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	if (!debugger->watchpoints) {
-		ARMDebuggerInstallMemoryShim(debugger);
+static void mDebuggerDeinit(struct mCPUComponent* component) {
+	struct mDebugger* debugger = (struct mDebugger*) component;
+	if (debugger->deinit) {
+		debugger->deinit(debugger);
 	}
-	struct DebugWatchpoint* watchpoint = malloc(sizeof(struct DebugWatchpoint));
-	watchpoint->address = address;
-	watchpoint->next = debugger->watchpoints;
-	debugger->watchpoints = watchpoint;
-}
-
-void ARMDebuggerClearWatchpoint(struct ARMDebugger* debugger, uint32_t address) {
-	struct DebugWatchpoint** previous = &debugger->watchpoints;
-	struct DebugWatchpoint* watchpoint;
-	struct DebugWatchpoint** next;
-	while ((watchpoint = *previous)) {
-		next = &watchpoint->next;
-		if (watchpoint->address == address) {
-			*previous = *next;
-			free(watchpoint);
-			continue;
-		}
-		previous = next;
-	}
-	if (!debugger->watchpoints) {
-		ARMDebuggerRemoveMemoryShim(debugger);
-	}
+	debugger->platform->deinit(debugger->platform);
 }

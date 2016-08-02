@@ -1,11 +1,11 @@
 mGBA
 ====
 
-mGBA is a new emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
+mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
 
-Up-to-date news and downloads can be found at [mgba.io](http://mgba.io/).
+Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 
-![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)
+[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
 Features
 --------
@@ -30,6 +30,7 @@ Features
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
+- Cores available for RetroArch/Libretro and OpenEmu.
 
 ### Planned features
 
@@ -38,7 +39,6 @@ Features
 - Re-recording support for tool-assist runs. ([Bugzilla keyword "TASBlocker"](https://endrift.com/mgba/bugs/buglist.cgi?quicksearch=TASBlocker))
 - Lua support for scripting ([Bug #62](http://mgba.io/b/62)).
 - A comprehensive debug suite ([Bug #132](http://mgba.io/b/132)).
-- OpenEmu core.
 - e-Reader support. ([Bug #171](http://mgba.io/b/171))
 
 
@@ -49,6 +49,9 @@ Supported Platforms
 - OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
+- Nintendo 3DS
+- Wii
+- PlayStation Vita
 
 Other Unix-like platforms, such as OpenBSD, are known to work as well, but are untested and not fully supported.
 
@@ -125,7 +128,6 @@ Footnotes
 
 - OBJ window for modes 3, 4 and 5 ([Bug #5](http://mgba.io/b/5))
 - Mosaic for transformed OBJs ([Bug #9](http://mgba.io/b/9))
-- BIOS call RegisterRamReset is partially stubbed out ([Bug #141](http://mgba.io/b/141))
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
@@ -141,7 +143,10 @@ mGBA is Copyright © 2013 – 2015 Jeffrey Pfau. It is distributed under the [Mo
 
 mGBA contains the following third-party libraries:
 
-- [inih](https://code.google.com/p/inih/), which is copyright © 2009 Brush Technology and used under a BSD 3-clause license.
-- [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
+- [inih](https://github.com/benhoyt/inih), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
+- [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
-- [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) implementation by Austin Appleby, which is public domain.
+- [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
+- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
+
+If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

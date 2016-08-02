@@ -25,16 +25,26 @@ public:
 			, start(start)
 			, size(size)
 			, readonly(readonly) {}
+		RegisterItem(const QString& description, uint start, uint size, QStringList items, bool readonly = false)
+			: description(description)
+			, start(start)
+			, size(size)
+			, items(items)
+			, readonly(readonly) {}
 		uint start;
 		uint size;
 		bool readonly;
 		QString description;
+		QStringList items;
 	};
 	typedef QList<RegisterItem> RegisterDescription;
 
 	IOViewer(GameController* controller, QWidget* parent = nullptr);
 
 	static const QList<RegisterDescription>& registerDescriptions();
+
+signals:
+	void valueChanged();
 
 public slots:
 	void updateRegister();

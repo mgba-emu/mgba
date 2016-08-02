@@ -9,26 +9,32 @@
 #include "DisplayQt.h"
 
 extern "C" {
-#include "gba/video.h"
+#include "gb/video.h"
 }
 
 using namespace QGBA;
 
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 Display::Driver Display::s_driver = Display::Driver::OPENGL;
 #else
 Display::Driver Display::s_driver = Display::Driver::QT;
 #endif
 
 Display* Display::create(QWidget* parent) {
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	QGLFormat format(QGLFormat(QGL::Rgba | QGL::DoubleBuffer));
 	format.setSwapInterval(1);
 #endif
 
 	switch (s_driver) {
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
+		format.setVersion(3, 0);
+		return new DisplayGL(format, parent);
+#endif
+#ifdef BUILD_GL
+	case Driver::OPENGL1:
+		format.setVersion(1, 4);
 		return new DisplayGL(format, parent);
 #endif
 
@@ -36,7 +42,8 @@ Display* Display::create(QWidget* parent) {
 		return new DisplayQt(parent);
 
 	default:
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
+		format.setVersion(3, 0);
 		return new DisplayGL(format, parent);
 #else
 		return new DisplayQt(parent);
@@ -50,7 +57,7 @@ Display::Display(QWidget* parent)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
 	m_mouseTimer.setSingleShot(true);
 	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);

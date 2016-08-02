@@ -5,7 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "rr.h"
 
+#include "core/serialize.h"
 #include "util/vfs.h"
+
+mLOG_DEFINE_CATEGORY(GBA_RR, "GBA RR");
 
 void GBARRInitRecord(struct GBA* gba) {
 	if (!gba || !gba->rr) {
@@ -27,7 +30,7 @@ void GBARRInitRecord(struct GBA* gba) {
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
 		struct VFile* vf = gba->rr->openSavestate(gba->rr, O_TRUNC | O_CREAT | O_RDWR);
-		GBASaveStateNamed(gba, vf, false);
+		//GBASaveStateNamed(gba, vf, SAVESTATE_SAVEDATA);
 		vf->close(vf);
 	} else {
 		ARMReset(gba->cpu);
@@ -51,7 +54,7 @@ void GBARRInitPlay(struct GBA* gba) {
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
 		struct VFile* vf = gba->rr->openSavestate(gba->rr, O_RDONLY);
-		GBALoadStateNamed(gba, vf);
+		//GBALoadStateNamed(gba, vf, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA);
 		vf->close(vf);
 	} else {
 		ARMReset(gba->cpu);

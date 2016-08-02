@@ -9,7 +9,7 @@
 #include "GameController.h"
 
 extern "C" {
-#include "gba/supervisor/thread.h"
+#include "gba/gba.h"
 }
 
 using namespace QGBA;
@@ -21,8 +21,8 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 {
 	m_ui.setupUi(this);
 
-	connect(controller, SIGNAL(gameStarted(GBAThread*)), this, SLOT(gameStarted(GBAThread*)));
-	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(gameStopped()));
+	connect(controller, SIGNAL(gameStarted(mCoreThread*, const QString&)), this, SLOT(gameStarted(mCoreThread*)));
+	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(gameStopped()));
 
 	connect(m_ui.hwAutodetect, &QAbstractButton::toggled, [this] (bool enabled) {
 		m_ui.hwRTC->setEnabled(!enabled);
@@ -56,12 +56,11 @@ void OverrideView::saveOverride() {
 }
 
 void OverrideView::updateOverrides() {
-	m_override = (GBACartridgeOverride) {
-		"",
-		static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1),
-		HW_NO_OVERRIDE,
-		IDLE_LOOP_NONE
-	};
+	memset(m_override.id, 0, 4);
+	m_override.savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
+	m_override.hardware = HW_NO_OVERRIDE;
+	m_override.idleLoop = IDLE_LOOP_NONE;
+	m_override.mirroring = false;
 
 	if (!m_ui.hwAutodetect->isChecked()) {
 		m_override.hardware = HW_NONE;
@@ -99,12 +98,17 @@ void OverrideView::updateOverrides() {
 	}
 }
 
-void OverrideView::gameStarted(GBAThread* thread) {
-	if (!thread->gba) {
+void OverrideView::gameStarted(mCoreThread* thread) {
+	if (!thread->core) {
 		gameStopped();
 		return;
 	}
-	m_ui.savetype->setCurrentIndex(thread->gba->memory.savedata.type + 1);
+	if (thread->core->platform(thread->core) != PLATFORM_GBA) {
+		close();
+		return;
+	}
+	GBA* gba = static_cast<GBA*>(thread->core->board);
+	m_ui.savetype->setCurrentIndex(gba->memory.savedata.type + 1);
 	m_ui.savetype->setEnabled(false);
 
 	m_ui.hwAutodetect->setEnabled(false);
@@ -114,23 +118,23 @@ void OverrideView::gameStarted(GBAThread* thread) {
 	m_ui.hwTilt->setEnabled(false);
 	m_ui.hwRumble->setEnabled(false);
 
-	m_ui.hwRTC->setChecked(thread->gba->memory.hw.devices & HW_RTC);
-	m_ui.hwGyro->setChecked(thread->gba->memory.hw.devices & HW_GYRO);
-	m_ui.hwLight->setChecked(thread->gba->memory.hw.devices & HW_LIGHT_SENSOR);
-	m_ui.hwTilt->setChecked(thread->gba->memory.hw.devices & HW_TILT);
-	m_ui.hwRumble->setChecked(thread->gba->memory.hw.devices & HW_RUMBLE);
-	m_ui.hwGBPlayer->setChecked(thread->gba->memory.hw.devices & HW_GB_PLAYER_DETECTION);
+	m_ui.hwRTC->setChecked(gba->memory.hw.devices & HW_RTC);
+	m_ui.hwGyro->setChecked(gba->memory.hw.devices & HW_GYRO);
+	m_ui.hwLight->setChecked(gba->memory.hw.devices & HW_LIGHT_SENSOR);
+	m_ui.hwTilt->setChecked(gba->memory.hw.devices & HW_TILT);
+	m_ui.hwRumble->setChecked(gba->memory.hw.devices & HW_RUMBLE);
+	m_ui.hwGBPlayer->setChecked(gba->memory.hw.devices & HW_GB_PLAYER_DETECTION);
 
-	if (thread->gba->idleLoop != IDLE_LOOP_NONE) {
-		m_ui.idleLoop->setText(QString::number(thread->gba->idleLoop, 16));
+	if (gba->idleLoop != IDLE_LOOP_NONE) {
+		m_ui.idleLoop->setText(QString::number(gba->idleLoop, 16));
 	} else {
 		m_ui.idleLoop->clear();
 	}
 
-	GBAGetGameCode(thread->gba, m_override.id);
-	m_override.hardware = thread->gba->memory.hw.devices;
-	m_override.savetype = thread->gba->memory.savedata.type;
-	m_override.idleLoop = thread->gba->idleLoop;
+	GBAGetGameCode(gba, m_override.id);
+	m_override.hardware = gba->memory.hw.devices;
+	m_override.savetype = gba->memory.savedata.type;
+	m_override.idleLoop = gba->idleLoop;
 
 	m_ui.idleLoop->setEnabled(false);
 

@@ -17,7 +17,11 @@ b irqBase
 b fiqBase
 
 resetBase:
-mov pc, #0x8000000
+mov r0, #0x8000000
+ldrb r1, [r0, #3]
+cmp r1, #0xEA
+movne r0, #0x2000000
+bx r0
 .word 0
 .word 0xE129F000
 
@@ -143,8 +147,6 @@ b      3f
 # Halfword
 1:
 add    r3, r1, r3, lsr #11
-bic    r0, #1
-bic    r1, #1
 2:
 cmp    r1, r3
 ldrlth r2, [r0], #2

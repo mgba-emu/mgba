@@ -9,17 +9,17 @@
 
 #include <malloc.h>
 
-static bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer);
+static bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer);
+static void mSDLGLES2RunloopGBA(struct SDLSoftwareRenderer* renderer, void* user);
+static void mSDLGLES2Deinit(struct SDLSoftwareRenderer* renderer);
 
-void GBASDLGLES2Create(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLGLES2Init;
-	renderer->deinit = GBASDLGLES2Deinit;
-	renderer->runloop = GBASDLGLES2Runloop;
+void mSDLGLES2Create(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLGLES2Init;
+	renderer->deinit = mSDLGLES2Deinit;
+	renderer->runloop = mSDLGLES2RunloopGBA;
 }
 
-bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
+bool mSDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 #ifdef BUILD_RASPI
 	bcm_host_init();
 	renderer->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -90,35 +90,37 @@ bool GBASDLGLES2Init(struct SDLSoftwareRenderer* renderer) {
 		return false;
 	}
 #else
-	GBASDLGLCommonInit(renderer);
+	mSDLGLCommonInit(renderer);
 #endif
 
-	renderer->d.outputBuffer = memalign(16, 256 * 256 * 4);
-	renderer->d.outputBufferStride = 256;
+	renderer->d.outputBuffer = memalign(16, VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
+	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
 
-	GBAGLES2ContextCreate(&renderer->gl);
-	renderer->gl.d.user = renderer;
-	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
-	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = GBASDLGLCommonSwap;
-	renderer->gl.d.init(&renderer->gl.d, 0);
+	mGLES2ContextCreate(&renderer->gl2);
+	renderer->gl2.d.user = renderer;
+	renderer->gl2.d.lockAspectRatio = renderer->lockAspectRatio;
+	renderer->gl2.d.filter = renderer->filter;
+	renderer->gl2.d.swap = mSDLGLCommonSwap;
+	renderer->gl2.d.init(&renderer->gl2.d, 0);
+	renderer->gl2.d.setDimensions(&renderer->gl2.d, renderer->width, renderer->height);
 	return true;
 }
 
-void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
+	struct GBAThread* context = user;
 	SDL_Event event;
-	struct VideoBackend* v = &renderer->gl.d;
+	struct VideoBackend* v = &renderer->gl2.d;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEventGBA(context, &renderer->player, &event);
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
 			v->postFrame(v, renderer->d.outputBuffer);
 		}
+		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
-		GBASyncWaitFrameEnd(&context->sync);
 #ifdef BUILD_RASPI
 		eglSwapBuffers(renderer->display, renderer->surface);
 #else
@@ -127,9 +129,9 @@ void GBASDLGLES2Runloop(struct GBAThread* context, struct SDLSoftwareRenderer* r
 	}
 }
 
-void GBASDLGLES2Deinit(struct SDLSoftwareRenderer* renderer) {
-	if (renderer->gl.d.deinit) {
-		renderer->gl.d.deinit(&renderer->gl.d);
+void mSDLGLES2Deinit(struct mSDLRenderer* renderer) {
+	if (renderer->gl2.d.deinit) {
+		renderer->gl2.d.deinit(&renderer->gl2.d);
 	}
 #ifdef BUILD_RASPI
 	eglMakeCurrent(renderer->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);

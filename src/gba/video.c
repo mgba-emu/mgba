@@ -5,13 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video.h"
 
-#include "gba/context/sync.h"
+#include "core/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/renderers/tile-cache.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 
 #include "util/memory.h"
+
+mLOG_DEFINE_CATEGORY(GBA_VIDEO, "GBA Video");
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoDummyRendererReset(struct GBAVideoRenderer* renderer);
@@ -53,7 +56,8 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.writeOAM = GBAVideoDummyRendererWriteOAM,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
 	.finishFrame = GBAVideoDummyRendererFinishFrame,
-	.getPixels = GBAVideoDummyRendererGetPixels
+	.getPixels = GBAVideoDummyRendererGetPixels,
+	.cache = NULL
 };
 
 void GBAVideoInit(struct GBAVideo* video) {
@@ -88,13 +92,8 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->vram = anonymousMemoryMap(SIZE_VRAM);
 	video->renderer->vram = video->vram;
 
-	int i;
-	for (i = 0; i < 128; ++i) {
-		STORE_16(0x0200, i * 8 + 0, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 2, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 4, video->oam.raw);
-		STORE_16(0x0000, i * 8 + 6, video->oam.raw);
-	}
+	memset(video->palette, 0, sizeof(video->palette));
+	memset(video->oam.raw, 0, sizeof(video->oam.raw));
 
 	video->renderer->deinit(video->renderer);
 	video->renderer->init(video->renderer);
@@ -107,6 +106,7 @@ void GBAVideoDeinit(struct GBAVideo* video) {
 
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
 	video->renderer->deinit(video->renderer);
+	renderer->cache = video->renderer->cache;
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	renderer->vram = video->vram;
@@ -165,7 +165,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				GBAFrameEnded(video->p);
 				--video->frameskipCounter;
 				if (video->frameskipCounter < 0) {
-					GBASyncPostFrame(video->p->sync);
+					mCoreSyncPostFrame(video->p->sync);
 					video->frameskipCounter = video->frameskip;
 				}
 				++video->frameCounter;
@@ -229,21 +229,52 @@ static void GBAVideoDummyRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	UNUSED(renderer);
-	UNUSED(address);
+	switch (address) {
+	case REG_BG0CNT:
+	case REG_BG1CNT:
+		value &= 0xDFFF;
+		break;
+	case REG_BG2CNT:
+	case REG_BG3CNT:
+		value &= 0xFFFF;
+		break;
+	case REG_BG0HOFS:
+	case REG_BG0VOFS:
+	case REG_BG1HOFS:
+	case REG_BG1VOFS:
+	case REG_BG2HOFS:
+	case REG_BG2VOFS:
+	case REG_BG3HOFS:
+	case REG_BG3VOFS:
+		value &= 0x01FF;
+		break;
+	case REG_BLDCNT:
+		value &= 0x3FFF;
+		break;
+	case REG_BLDALPHA:
+		value &= 0x1F1F;
+		break;
+	case REG_WININ:
+	case REG_WINOUT:
+		value &= 0x3F3F;
+		break;
+	default:
+		break;
+	}
 	return value;
 }
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
-	// Nothing to do
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(renderer);
-	UNUSED(address);
 	UNUSED(value);
-	// Nothing to do
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
+	}
 }
 
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -274,14 +305,13 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	memcpy(state->vram, video->renderer->vram, SIZE_VRAM);
 	memcpy(state->oam, video->oam.raw, SIZE_OAM);
 	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
-	state->video.nextEvent = video->nextEvent;
-	state->video.eventDiff = video->eventDiff;
-	state->video.lastHblank = video->nextHblank - VIDEO_HBLANK_LENGTH;
-	state->video.nextHblank = video->nextHblank;
-	state->video.nextHblankIRQ = video->nextHblankIRQ;
-	state->video.nextVblankIRQ = video->nextVblankIRQ;
-	state->video.nextVcounterIRQ = video->nextVcounterIRQ;
-	state->video.frameCounter = video->frameCounter;
+	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
+	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
+	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
+	STORE_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	STORE_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	STORE_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
@@ -296,12 +326,12 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		LOAD_16(value, i, state->pram);
 		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
 	}
-	video->nextEvent = state->video.nextEvent;
-	video->eventDiff = state->video.eventDiff;
-	video->nextHblank = state->video.nextHblank;
-	video->nextHblankIRQ = state->video.nextHblankIRQ;
-	video->nextVblankIRQ = state->video.nextVblankIRQ;
-	video->nextVcounterIRQ = state->video.nextVcounterIRQ;
-	video->frameCounter = state->video.frameCounter;
-	video->vcount = state->io[REG_VCOUNT >> 1];
+	LOAD_32(video->nextEvent, 0, &state->video.nextEvent);
+	LOAD_32(video->eventDiff, 0, &state->video.eventDiff);
+	LOAD_32(video->nextHblank, 0, &state->video.nextHblank);
+	LOAD_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
+	LOAD_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
+	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
+	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
+	LOAD_16(video->vcount, REG_VCOUNT, state->io);
 }

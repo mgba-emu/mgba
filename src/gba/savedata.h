@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
+mLOG_DECLARE_CATEGORY(GBA_SAVE);
+
 struct VFile;
 
 enum SavedataType {
@@ -93,7 +97,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata);
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataUnmask(struct GBASavedata* savedata);
+size_t GBASavedataSize(struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
+bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in);
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
@@ -109,7 +115,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount);
 
 struct GBASerializedState;
-void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state, bool includeData);
-void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state, bool includeData);
+void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state);
+void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state);
 
 #endif

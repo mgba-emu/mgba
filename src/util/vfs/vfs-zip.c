@@ -8,11 +8,6 @@
 #ifdef USE_LIBZIP
 #include <zip.h>
 
-
-enum {
-	BLOCK_SIZE = 1024
-};
-
 struct VDirEntryZip {
 	struct VDirEntry d;
 	struct zip* z;
@@ -35,6 +30,39 @@ struct VFileZip {
 	size_t fileSize;
 };
 
+enum {
+	BLOCK_SIZE = 1024
+};
+#else
+#ifdef USE_MINIZIP
+#include <minizip/unzip.h>
+#else
+#include "third-party/zlib/contrib/minizip/unzip.h"
+#endif
+#include "util/memory.h"
+
+struct VDirEntryZip {
+	struct VDirEntry d;
+	char name[PATH_MAX];
+	size_t fileSize;
+	unzFile z;
+};
+
+struct VDirZip {
+	struct VDir d;
+	unzFile z;
+	struct VDirEntryZip dirent;
+	bool hasNextFile;
+};
+
+struct VFileZip {
+	struct VFile d;
+	unzFile z;
+	void* buffer;
+	size_t fileSize;
+};
+#endif
+
 static bool _vfzClose(struct VFile* vf);
 static off_t _vfzSeek(struct VFile* vf, off_t offset, int whence);
 static ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size);
@@ -50,11 +78,85 @@ static void _vdzRewind(struct VDir* vd);
 static struct VDirEntry* _vdzListNext(struct VDir* vd);
 static struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode);
 static struct VDir* _vdzOpenDir(struct VDir* vd, const char* path);
+static bool _vdzDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdezName(struct VDirEntry* vde);
 static enum VFSType _vdezType(struct VDirEntry* vde);
 
+#ifndef USE_LIBZIP
+static voidpf _vfmzOpen(voidpf opaque, const char* filename, int mode) {
+	UNUSED(opaque);
+	int flags = 0;
+	switch (mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER) {
+	case ZLIB_FILEFUNC_MODE_READ:
+		flags = O_RDONLY;
+		break;
+	case ZLIB_FILEFUNC_MODE_WRITE:
+		flags = O_WRONLY;
+		break;
+	case ZLIB_FILEFUNC_MODE_READ | ZLIB_FILEFUNC_MODE_WRITE:
+		flags = O_RDWR;
+		break;
+	}
+	if (mode & ZLIB_FILEFUNC_MODE_CREATE) {
+		flags |= O_CREAT;
+	}
+	return VFileOpen(filename, flags);
+}
+
+static uLong _vfmzRead(voidpf opaque, voidpf stream, void* buf, uLong size) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	ssize_t r = vf->read(vf, buf, size);
+	if (r < 0) {
+		return 0;
+	}
+	return r;
+}
+
+int _vfmzClose(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->close(vf);
+}
+
+int _vfmzError(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, 0, SEEK_CUR) < 0;
+}
+
+long _vfmzTell(voidpf opaque, voidpf stream) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, 0, SEEK_CUR);
+}
+
+long _vfmzSeek(voidpf opaque, voidpf stream, uLong offset, int origin) {
+	UNUSED(opaque);
+	struct VFile* vf = stream;
+	return vf->seek(vf, offset, origin) < 0;
+}
+#endif
+
 struct VDir* VDirOpenZip(const char* path, int flags) {
+#ifndef USE_LIBZIP
+	UNUSED(flags);
+	zlib_filefunc_def ops = {
+		.zopen_file = _vfmzOpen,
+		.zread_file = _vfmzRead,
+		.zwrite_file = 0,
+		.ztell_file = _vfmzTell,
+		.zseek_file = _vfmzSeek,
+		.zclose_file = _vfmzClose,
+		.zerror_file = _vfmzError,
+		.opaque = 0
+	};
+	unzFile z = unzOpen2(path, &ops);
+	if (!z) {
+		return 0;
+	}
+#else
 	int zflags = 0;
 	if (flags & O_CREAT) {
 		zflags |= ZIP_CREATE;
@@ -67,6 +169,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	if (!z) {
 		return 0;
 	}
+#endif
 	struct VDirZip* vd = malloc(sizeof(struct VDirZip));
 
 	vd->d.close = _vdzClose;
@@ -74,16 +177,24 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	vd->d.listNext = _vdzListNext;
 	vd->d.openFile = _vdzOpenFile;
 	vd->d.openDir = _vdzOpenDir;
+	vd->d.deleteFile = _vdzDeleteFile;
 	vd->z = z;
+
+#ifndef USE_LIBZIP
+	vd->hasNextFile = true;
+#endif
 
 	vd->dirent.d.name = _vdezName;
 	vd->dirent.d.type = _vdezType;
+#ifdef USE_LIBZIP
 	vd->dirent.index = -1;
+#endif
 	vd->dirent.z = z;
 
 	return &vd->d;
 }
 
+#ifdef USE_LIBZIP
 bool _vfzClose(struct VFile* vf) {
 	struct VFileZip* vfz = (struct VFileZip*) vf;
 	if (zip_fclose(vfz->zf) < 0) {
@@ -305,6 +416,13 @@ struct VDir* _vdzOpenDir(struct VDir* vd, const char* path) {
 	return 0;
 }
 
+bool _vdzDeleteFile(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	// TODO
+	return false;
+}
+
 bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {
 	UNUSED(vf);
 	UNUSED(memory);
@@ -326,5 +444,221 @@ static enum VFSType _vdezType(struct VDirEntry* vde) {
 	UNUSED(vdez);
 	return VFS_UNKNOWN;
 }
+#else
+bool _vfzClose(struct VFile* vf) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+	unzCloseCurrentFile(vfz->z);
+	free(vfz->buffer);
+	free(vfz);
+	return true;
+}
 
+off_t _vfzSeek(struct VFile* vf, off_t offset, int whence) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+
+	int64_t currentPos = unztell64(vfz->z);
+	int64_t pos;
+	switch (whence) {
+	case SEEK_SET:
+		pos = 0;
+		break;
+	case SEEK_CUR:
+		pos = unztell64(vfz->z);
+		break;
+	case SEEK_END:
+		pos = vfz->fileSize;
+		break;
+	default:
+		return -1;
+	}
+
+	if (pos < 0 || pos + offset < 0) {
+		return -1;
+	}
+	pos += offset;
+	if (currentPos > pos) {
+		unzCloseCurrentFile(vfz->z);
+		unzOpenCurrentFile(vfz->z);
+		currentPos = 0;
+	}
+	while (currentPos < pos) {
+		char tempBuf[1024];
+		ssize_t toRead = sizeof(tempBuf);
+		if (toRead > pos - currentPos) {
+			toRead = pos - currentPos;
+		}
+		ssize_t read = vf->read(vf, tempBuf, toRead);
+		if (read < toRead) {
+			return -1;
+		}
+		currentPos += read;
+	}
+
+	return unztell64(vfz->z);
+}
+
+ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+	return unzReadCurrentFile(vfz->z, buffer, size);
+}
+
+ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size) {
+	// TODO
+	UNUSED(vf);
+	UNUSED(buffer);
+	UNUSED(size);
+	return -1;
+}
+
+void* _vfzMap(struct VFile* vf, size_t size, int flags) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+
+	// TODO
+	UNUSED(flags);
+
+	off_t pos = vf->seek(vf, 0, SEEK_CUR);
+	if (pos < 0) {
+		return 0;
+	}
+
+	vfz->buffer = anonymousMemoryMap(size);
+	if (!vfz->buffer) {
+		return 0;
+	}
+
+	unzCloseCurrentFile(vfz->z);
+	unzOpenCurrentFile(vfz->z);
+	vf->read(vf, vfz->buffer, size);
+	unzCloseCurrentFile(vfz->z);
+	unzOpenCurrentFile(vfz->z);
+	vf->seek(vf, pos, SEEK_SET);
+
+	return vfz->buffer;
+}
+
+void _vfzUnmap(struct VFile* vf, void* memory, size_t size) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+
+	if (memory != vfz->buffer) {
+		return;
+	}
+
+	mappedMemoryFree(vfz->buffer, size);
+	vfz->buffer = 0;
+}
+
+void _vfzTruncate(struct VFile* vf, size_t size) {
+	// TODO
+	UNUSED(vf);
+	UNUSED(size);
+}
+
+ssize_t _vfzSize(struct VFile* vf) {
+	struct VFileZip* vfz = (struct VFileZip*) vf;
+	return vfz->fileSize;
+}
+
+bool _vdzClose(struct VDir* vd) {
+	struct VDirZip* vdz = (struct VDirZip*) vd;
+	if (unzClose(vdz->z) < 0) {
+		return false;
+	}
+	free(vdz);
+	return true;
+}
+
+void _vdzRewind(struct VDir* vd) {
+	struct VDirZip* vdz = (struct VDirZip*) vd;
+	vdz->hasNextFile = unzGoToFirstFile(vdz->z) == UNZ_OK;
+}
+
+struct VDirEntry* _vdzListNext(struct VDir* vd) {
+	struct VDirZip* vdz = (struct VDirZip*) vd;
+	if (!vdz->hasNextFile) {
+		return 0;
+	}
+	unz_file_info64 info;
+	int status = unzGetCurrentFileInfo64(vdz->z, &info, vdz->dirent.name, sizeof(vdz->dirent.name), 0, 0, 0, 0);
+	if (status < 0) {
+		return 0;
+	}
+	vdz->dirent.fileSize = info.uncompressed_size;
+	if (unzGoToNextFile(vdz->z) == UNZ_END_OF_LIST_OF_FILE) {
+		vdz->hasNextFile = false;
+	}
+	return &vdz->dirent.d;
+}
+
+struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
+	UNUSED(mode);
+	struct VDirZip* vdz = (struct VDirZip*) vd;
+
+	if ((mode & O_ACCMODE) != O_RDONLY) {
+		// minizip implementation only supports read
+		return 0;
+	}
+
+	if (unzLocateFile(vdz->z, path, 0) != UNZ_OK) {
+		return 0;
+	}
+
+	if (unzOpenCurrentFile(vdz->z) < 0) {
+		return 0;
+	}
+
+	unz_file_info64 info;
+	int status = unzGetCurrentFileInfo64(vdz->z, &info, 0, 0, 0, 0, 0, 0);
+	if (status < 0) {
+		return 0;
+	}
+
+	struct VFileZip* vfz = malloc(sizeof(struct VFileZip));
+	vfz->z = vdz->z;
+	vfz->buffer = 0;
+	vfz->fileSize = info.uncompressed_size;
+
+	vfz->d.close = _vfzClose;
+	vfz->d.seek = _vfzSeek;
+	vfz->d.read = _vfzRead;
+	vfz->d.readline = VFileReadline;
+	vfz->d.write = _vfzWrite;
+	vfz->d.map = _vfzMap;
+	vfz->d.unmap = _vfzUnmap;
+	vfz->d.truncate = _vfzTruncate;
+	vfz->d.size = _vfzSize;
+	vfz->d.sync = _vfzSync;
+
+	return &vfz->d;
+}
+
+struct VDir* _vdzOpenDir(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	return 0;
+}
+
+bool _vdzDeleteFile(struct VDir* vd, const char* path) {
+	UNUSED(vd);
+	UNUSED(path);
+	// TODO
+	return false;
+}
+
+bool _vfzSync(struct VFile* vf, const void* memory, size_t size) {
+	UNUSED(vf);
+	UNUSED(memory);
+	UNUSED(size);
+	return false;
+}
+
+const char* _vdezName(struct VDirEntry* vde) {
+	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
+	return vdez->name;
+}
+
+static enum VFSType _vdezType(struct VDirEntry* vde) {
+	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
+	UNUSED(vdez);
+	return VFS_UNKNOWN;
+}
 #endif

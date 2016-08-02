@@ -6,7 +6,7 @@
 #include "psp2-context.h"
 
 #include "gba/gba.h"
-#include "gba/gui/gui-runner.h"
+#include "feature/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/font.h"
 #include "util/gui/file-select.h"
@@ -18,11 +18,10 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
 #include <psp2/power.h>
+#include <psp2/sysmodule.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
-
-PSP2_MODULE_INFO(0, 0, "mGBA");
 
 static void _drawStart(void) {
 	vita2d_set_vblank_wait(false);
@@ -35,7 +34,7 @@ static void _drawEnd(void) {
 	int vcount = oldVCount;
 	vita2d_end_drawing();
 	oldVCount = sceDisplayGetVcount();
-	vita2d_set_vblank_wait(oldVCount == vcount);
+	vita2d_set_vblank_wait(oldVCount + 1 >= vcount);
 	vita2d_swap_buffers();
 }
 
@@ -43,36 +42,36 @@ static uint32_t _pollInput(void) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 	int input = 0;
-	if (pad.buttons & PSP2_CTRL_TRIANGLE) {
+	if (pad.buttons & SCE_CTRL_TRIANGLE) {
 		input |= 1 << GUI_INPUT_CANCEL;
 	}
-	if (pad.buttons & PSP2_CTRL_SQUARE) {
-		input |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
+	if (pad.buttons & SCE_CTRL_SQUARE) {
+		input |= 1 << mGUI_INPUT_SCREEN_MODE;
 	}
-	if (pad.buttons & PSP2_CTRL_CIRCLE) {
+	if (pad.buttons & SCE_CTRL_CIRCLE) {
 		input |= 1 << GUI_INPUT_BACK;
 	}
-	if (pad.buttons & PSP2_CTRL_CROSS) {
+	if (pad.buttons & SCE_CTRL_CROSS) {
 		input |= 1 << GUI_INPUT_SELECT;
 	}
 
-	if (pad.buttons & PSP2_CTRL_UP || pad.ly < 64) {
+	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
 	}
-	if (pad.buttons & PSP2_CTRL_DOWN || pad.ly >= 192) {
+	if (pad.buttons & SCE_CTRL_DOWN || pad.ly >= 192) {
 		input |= 1 << GUI_INPUT_DOWN;
 	}
-	if (pad.buttons & PSP2_CTRL_LEFT || pad.lx < 64) {
+	if (pad.buttons & SCE_CTRL_LEFT || pad.lx < 64) {
 		input |= 1 << GUI_INPUT_LEFT;
 	}
-	if (pad.buttons & PSP2_CTRL_RIGHT || pad.lx >= 192) {
+	if (pad.buttons & SCE_CTRL_RIGHT || pad.lx >= 192) {
 		input |= 1 << GUI_INPUT_RIGHT;
 	}
 
 	return input;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
 	sceTouchPeek(0, &touch, 1);
 	if (touch.reportNum < 1) {
@@ -97,10 +96,10 @@ static int _batteryState(void) {
 int main() {
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
-	struct GBAGUIRunner runner = {
+	struct mGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd,
+			font, "ux0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
@@ -108,7 +107,7 @@ int main() {
 			GUI_PARAMS_TRAIL
 		},
 		.configExtra = (struct GUIMenuItem[]) {
-			{ 
+			{
 				.title = "Screen mode",
 				.data = "screenMode",
 				.submenu = 0,
@@ -117,30 +116,62 @@ int main() {
 					"With Background",
 					"Without Background",
 					"Stretched",
-					0
-				}
+				},
+				.nStates = 3
 			}
 		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "Vita Input",
+				.id = PSP2_INPUT,
+				.keyNames = (const char*[]) {
+					"Select",
+					0,
+					0,
+					"Start",
+					"Up",
+					"Right",
+					"Down",
+					"Left",
+					"L",
+					"R",
+					0, // L2?
+					0, // R2?
+					"\1\xC",
+					"\1\xA",
+					"\1\xB",
+					"\1\xD"
+				},
+				.nKeys = 16
+			},
+			{ .id = 0 }
+		},
 		.nConfigExtra = 1,
-		.setup = GBAPSP2Setup,
-		.teardown = GBAPSP2Teardown,
-		.gameLoaded = GBAPSP2LoadROM,
-		.gameUnloaded = GBAPSP2UnloadROM,
-		.prepareForFrame = GBAPSP2PrepareForFrame,
-		.drawFrame = GBAPSP2Draw,
-		.drawScreenshot = GBAPSP2DrawScreenshot,
+		.setup = mPSP2Setup,
+		.teardown = mPSP2Teardown,
+		.gameLoaded = mPSP2LoadROM,
+		.gameUnloaded = mPSP2UnloadROM,
+		.prepareForFrame = mPSP2PrepareForFrame,
+		.drawFrame = mPSP2Draw,
+		.drawScreenshot = mPSP2DrawScreenshot,
 		.paused = 0,
 		.unpaused = 0,
-		.incrementScreenMode = GBAPSP2IncrementScreenMode,
-		.pollGameInput = GBAPSP2PollInput
+		.incrementScreenMode = mPSP2IncrementScreenMode,
+		.pollGameInput = mPSP2PollInput
 	};
 
-	GBAGUIInit(&runner, "psvita");
-	GBAGUIRunloop(&runner);
-	GBAGUIDeinit(&runner);
+	mGUIInit(&runner, "psvita");
+	mGUIRunloop(&runner);
 
-	GUIFontDestroy(font);
 	vita2d_fini();
+	mGUIDeinit(&runner);
+
+	int pgfLoaded = sceSysmoduleIsLoaded(SCE_SYSMODULE_PGF);
+	if (pgfLoaded != SCE_SYSMODULE_LOADED) {
+		sceSysmoduleLoadModule(SCE_SYSMODULE_PGF);
+	}
+	GUIFontDestroy(font);
+	sceSysmoduleUnloadModule(SCE_SYSMODULE_PGF);
 
 	sceKernelExitProcess(0);
 	return 0;

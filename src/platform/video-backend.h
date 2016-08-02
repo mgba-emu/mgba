@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #ifdef _WIN32
+#include <windows.h>
 typedef HWND WHandle;
 #else
 typedef void* WHandle;
@@ -17,18 +18,30 @@ typedef void* WHandle;
 struct VideoBackend {
 	void (*init)(struct VideoBackend*, WHandle handle);
 	void (*deinit)(struct VideoBackend*);
+	void (*setDimensions)(struct VideoBackend*, unsigned width, unsigned height);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
-	void (*resized)(struct VideoBackend*, int w, int h);
+	void (*resized)(struct VideoBackend*, unsigned w, unsigned h);
 	void (*postFrame)(struct VideoBackend*, const void* frame);
 	void (*drawFrame)(struct VideoBackend*);
 	void (*setMessage)(struct VideoBackend*, const char* message);
 	void (*clearMessage)(struct VideoBackend*);
 
 	void* user;
+	unsigned width;
+	unsigned height;
 
 	bool filter;
 	bool lockAspectRatio;
+};
+
+struct VideoShader {
+	const char* name;
+	const char* author;
+	const char* description;
+	void* preprocessShader;
+	void* passes;
+	size_t nPasses;
 };
 
 #endif

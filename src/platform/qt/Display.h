@@ -6,11 +6,17 @@
 #ifndef QGBA_DISPLAY
 #define QGBA_DISPLAY
 
+extern "C" {
+#include "util/common.h"
+}
+
 #include <QWidget>
 
 #include "MessagePainter.h"
 
-struct GBAThread;
+struct mCoreThread;
+struct VDir;
+struct VideoShader;
 
 namespace QGBA {
 
@@ -20,8 +26,11 @@ Q_OBJECT
 public:
 	enum class Driver {
 		QT = 0,
-#ifdef BUILD_GL
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 		OPENGL = 1,
+#endif
+#ifdef BUILD_GL
+		OPENGL1 = 2,
 #endif
 	};
 
@@ -34,13 +43,15 @@ public:
 	bool isFiltered() const { return m_filter; }
 
 	virtual bool isDrawing() const = 0;
+	virtual bool supportsShaders() const = 0;
+	virtual VideoShader* shaders() = 0;
 
 signals:
 	void showCursor();
 	void hideCursor();
 
 public slots:
-	virtual void startDrawing(GBAThread* context) = 0;
+	virtual void startDrawing(mCoreThread* context) = 0;
 	virtual void stopDrawing() = 0;
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;
@@ -48,6 +59,8 @@ public slots:
 	virtual void lockAspectRatio(bool lock);
 	virtual void filter(bool filter);
 	virtual void framePosted(const uint32_t*) = 0;
+	virtual void setShaders(struct VDir*) = 0;
+	virtual void clearShaders() = 0;
 
 	void showMessage(const QString& message);
 
@@ -56,7 +69,6 @@ protected:
 	virtual void mouseMoveEvent(QMouseEvent*) override;
 
 	MessagePainter* messagePainter() { return &m_messagePainter; }
-
 
 private:
 	static Driver s_driver;

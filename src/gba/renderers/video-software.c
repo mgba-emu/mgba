@@ -145,19 +145,19 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
 	case REG_BG0CNT:
-		value &= 0xFFCF;
+		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[0], value);
 		break;
 	case REG_BG1CNT:
-		value &= 0xFFCF;
+		value &= 0xDFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[1], value);
 		break;
 	case REG_BG2CNT:
-		value &= 0xFFCF;
+		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[2], value);
 		break;
 	case REG_BG3CNT:
-		value &= 0xFFCF;
+		value &= 0xFFFF;
 		GBAVideoSoftwareRendererWriteBGCNT(softwareRenderer, &softwareRenderer->bg[3], value);
 		break;
 	case REG_BG0HOFS:
@@ -242,6 +242,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		break;
 	case REG_BLDCNT:
 		GBAVideoSoftwareRendererWriteBLDCNT(softwareRenderer, value);
+		value &= 0x3FFF;
 		break;
 	case REG_BLDALPHA:
 		softwareRenderer->blda = value & 0x1F;
@@ -252,6 +253,7 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		if (softwareRenderer->bldb > 0x10) {
 			softwareRenderer->bldb = 0x10;
 		}
+		value &= 0x1F1F;
 		break;
 	case REG_BLDY:
 		softwareRenderer->bldy = value & 0x1F;
@@ -313,10 +315,12 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		}
 		break;
 	case REG_WININ:
+		value &= 0x3F3F;
 		softwareRenderer->winN[0].control.packed = value;
 		softwareRenderer->winN[1].control.packed = value >> 8;
 		break;
 	case REG_WINOUT:
+		value &= 0x3F3F;
 		softwareRenderer->winout.packed = value;
 		softwareRenderer->objwin.packed = value >> 8;
 		break;
@@ -324,17 +328,18 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->mosaic = value;
 		break;
 	case REG_GREENSWP:
-		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
+		mLOG(GBA_VIDEO, STUB, "Stub video register write: 0x%03X", address);
 		break;
 	default:
-		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid video register: 0x%03X", address);
+		mLOG(GBA_VIDEO, GAME_ERROR, "Invalid video register: 0x%03X", address);
 	}
 	return value;
 }
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -365,6 +370,9 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
+	}
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
 	}
 }
 
@@ -414,7 +422,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 					// Trim off extra windows we've overwritten
 					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
 						if (VIDEO_CHECKS && activeWindow >= MAX_WINDOW) {
-							GBALog(0, GBA_LOG_FATAL, "Out of bounds window write will occur");
+							mLOG(GBA_VIDEO, FATAL, "Out of bounds window write will occur");
 							return;
 						}
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
@@ -436,7 +444,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 	}
 #ifdef DEBUG
 	if (softwareRenderer->nWindows > MAX_WINDOW) {
-		GBALog(0, GBA_LOG_FATAL, "Out of bounds window write occurred!");
+		mLOG(GBA_VIDEO, FATAL, "Out of bounds window write occurred!");
 	}
 #endif
 }
@@ -513,6 +521,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
 		int end = softwareRenderer->windows[w].endX;
+		for (; x < end - 3; x += 4) {
+			softwareRenderer->row[x] = backdrop;
+			softwareRenderer->row[x + 1] = backdrop;
+			softwareRenderer->row[x + 2] = backdrop;
+			softwareRenderer->row[x + 3] = backdrop;
+		}
 		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
@@ -725,8 +739,6 @@ static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer*
 	renderer->target2Obj = GBARegisterBLDCNTGetTarget2Obj(value);
 	renderer->target2Bd = GBARegisterBLDCNTGetTarget2Bd(value);
 
-	renderer->anyTarget2 = value & 0x3F00;
-
 	if (oldEffect != renderer->blendEffect) {
 		_updatePalettes(renderer);
 	}
@@ -746,6 +758,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		if (renderer->oamDirty) {
 			_cleanOAM(renderer);
 		}
+		renderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(renderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
 		for (w = 0; w < renderer->nWindows; ++w) {
@@ -759,6 +772,9 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			int drawn;
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
+				if (renderer->spriteCyclesRemaining <= 0) {
+					break;
+				}
 				struct GBAVideoSoftwareSprite* sprite = &renderer->sprites[i];
 				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
 					localY = mosaicY;
@@ -772,7 +788,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		}
 	}
 
-	int priority;
+	unsigned priority;
 	for (priority = 0; priority < 4; ++priority) {
 		renderer->end = 0;
 		for (w = 0; w < renderer->nWindows; ++w) {

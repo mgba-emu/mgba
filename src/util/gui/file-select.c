@@ -24,7 +24,7 @@ static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
 	size_t size = GUIMenuItemListSize(currentFiles);
 	size_t i;
 	for (i = 1; i < size; ++i) {
-		free(GUIMenuItemListGetPointer(currentFiles, i)->title);
+		free((char*) GUIMenuItemListGetPointer(currentFiles, i)->title);
 	}
 	GUIMenuItemListClear(currentFiles);
 }
@@ -32,17 +32,15 @@ static void _cleanFiles(struct GUIMenuItemList* currentFiles) {
 static void _upDirectory(char* currentPath) {
 	char* end = strrchr(currentPath, '/');
 	if (!end) {
+		currentPath[0] = '\0';
 		return;
 	}
-	if (end == currentPath) {
-		end[1] = '\0';
-		return;
+	if (!end[1]) {
+		// Trailing slash
+		end[0] = '\0';
+		return _upDirectory(currentPath);
 	}
-	end[0] = '\0';
-	if (end[1]) {
-		return;
-	}
-	// TODO: What if there was a trailing slash?
+	end[1] = '\0';
 }
 
 static int _strpcmp(const void* a, const void* b) {
@@ -73,8 +71,8 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (params->guiPrepare) {
 				params->guiPrepare();
 			}
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_ALIGN_LEFT, 0xFFFFFFFF, "(scanning for items: %zu)", i);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_ALIGN_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -84,7 +82,15 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 		if (name[0] == '.') {
 			continue;
 		}
-		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = strdup(name) };
+		if (de->type(de) == VFS_DIRECTORY) {
+			size_t len = strlen(name) + 2;
+			char* n2 = malloc(len);
+			snprintf(n2, len, "%s/", name);
+			name = n2;
+		} else {
+			name = strdup(name);
+		}
+		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name };
 		++items;
 	}
 	qsort(GUIMenuItemListGetPointer(currentFiles, 1), GUIMenuItemListSize(currentFiles) - 1, sizeof(struct GUIMenuItem), _strpcmp);
@@ -103,8 +109,8 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (params->guiPrepare) {
 				params->guiPrepare();
 			}
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_TEXT_LEFT, 0xFFFFFFFF, "(scanning item %zu of %zu)", i, items);
-			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_TEXT_LEFT, 0xFFFFFFFF, "%s", currentPath);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font), GUI_ALIGN_LEFT, 0xFFFFFFFF, "(scanning item %zu of %zu)", i, items);
+			GUIFontPrintf(params->font, 0, GUIFontHeight(params->font) * 2, GUI_ALIGN_LEFT, 0xFFFFFFFF, "%s", currentPath);
 			if (params->guiFinish) {
 				params->guiFinish();
 			}
@@ -125,7 +131,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 			if (filter(vf)) {
 				++item;
 			} else {
-				free(GUIMenuItemListGetPointer(currentFiles, item)->title);
+				free((char*) GUIMenuItemListGetPointer(currentFiles, item)->title);
 				GUIMenuItemListShift(currentFiles, item, 1);
 			}
 			vf->close(vf);
@@ -163,7 +169,7 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 			} else {
 				size_t len = strlen(params->currentPath);
 				const char* sep = PATH_SEP;
-				if (params->currentPath[len - 1] == *sep) {
+				if (!len || params->currentPath[len - 1] == *sep) {
 					sep = "";
 				}
 				snprintf(outPath, outLen, "%s%s%s", params->currentPath, sep, item->title);

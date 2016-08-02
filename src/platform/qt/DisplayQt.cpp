@@ -8,7 +8,8 @@
 #include <QPainter>
 
 extern "C" {
-#include "gba/video.h"
+#include "core/core.h"
+#include "core/thread.h"
 }
 
 using namespace QGBA;
@@ -20,7 +21,8 @@ DisplayQt::DisplayQt(QWidget* parent)
 {
 }
 
-void DisplayQt::startDrawing(GBAThread*) {
+void DisplayQt::startDrawing(mCoreThread* context) {
+	context->core->desiredVideoDimensions(context->core, &m_width, &m_height);
 	m_isDrawing = true;
 }
 
@@ -41,12 +43,12 @@ void DisplayQt::framePosted(const uint32_t* buffer) {
 	}
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB16);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB16);
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB555);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB555);
 #endif
 #else
-	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), 256, 256, QImage::Format_RGB32);
+	m_backing = QImage(reinterpret_cast<const uchar*>(buffer), m_width, m_height, QImage::Format_RGB32);
 #endif
 }
 
@@ -59,19 +61,19 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	QSize s = size();
 	QSize ds = s;
 	if (isAspectRatioLocked()) {
-		if (s.width() * 2 > s.height() * 3) {
-			ds.setWidth(s.height() * 3 / 2);
-		} else if (s.width() * 2 < s.height() * 3) {
-			ds.setHeight(s.width() * 2 / 3);
+		if (s.width() * m_height > s.height() * m_width) {
+			ds.setWidth(s.height() * m_width / 2);
+		} else if (s.width() * m_height < s.height() * m_width) {
+			ds.setHeight(s.width() * m_height / m_width);
 		}
 	}
 	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
 	QRect full(origin, ds);
 
 #ifdef COLOR_5_6_5
-	painter.drawImage(full, m_backing, QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
+	painter.drawImage(full, m_backing, QRect(0, 0, m_width, m_height));
 #else
-	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS));
+	painter.drawImage(full, m_backing.rgbSwapped(), QRect(0, 0, m_width, m_height));
 #endif
 	messagePainter()->paint(&painter);
 }

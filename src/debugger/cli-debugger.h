@@ -45,14 +45,19 @@ struct CLIDebuggerSystem {
 	void (*deinit)(struct CLIDebuggerSystem*);
 	bool (*custom)(struct CLIDebuggerSystem*);
 
+	void (*disassemble)(struct CLIDebuggerSystem*, struct CLIDebugVector* dv);
 	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
+	uint32_t (*lookupPlatformIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
+	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;
 	const char* name;
+	struct CLIDebuggerCommandSummary* platformCommands;
+	const char* platformName;
 };
 
 struct CLIDebugger {
-	struct ARMDebugger d;
+	struct mDebugger d;
 
 	struct CLIDebuggerSystem* system;
 

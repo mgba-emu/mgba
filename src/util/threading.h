@@ -22,7 +22,12 @@
 #endif
 #endif
 #ifdef DISABLE_THREADING
+#ifdef _3DS
+// ctrulib already has a type called Thread
+#include <3ds/thread.h>
+#else
 typedef void* Thread;
+#endif
 typedef void* Mutex;
 typedef void* Condition;
 
@@ -37,6 +42,11 @@ static inline int MutexDeinit(Mutex* mutex) {
 }
 
 static inline int MutexLock(Mutex* mutex) {
+	UNUSED(mutex);
+	return 0;
+}
+
+static inline int MutexTryLock(Mutex* mutex) {
 	UNUSED(mutex);
 	return 0;
 }

@@ -11,8 +11,6 @@
 #include <QImage>
 #include <QTimer>
 
-struct GBAThread;
-
 namespace QGBA {
 
 class DisplayQt : public Display {
@@ -22,9 +20,11 @@ public:
 	DisplayQt(QWidget* parent = nullptr);
 
 	bool isDrawing() const override { return m_isDrawing; }
+	bool supportsShaders() const override { return false; }
+	VideoShader* shaders() override { return nullptr; }
 
 public slots:
-	void startDrawing(GBAThread* context) override;
+	void startDrawing(mCoreThread* context) override;
 	void stopDrawing() override { m_isDrawing = false; }
 	void pauseDrawing() override { m_isDrawing = false; }
 	void unpauseDrawing() override { m_isDrawing = true; }
@@ -32,12 +32,16 @@ public slots:
 	void lockAspectRatio(bool lock) override;
 	void filter(bool filter) override;
 	void framePosted(const uint32_t*) override;
+	void setShaders(struct VDir*) override {}
+	void clearShaders() override {}
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	bool m_isDrawing;
+	unsigned m_width;
+	unsigned m_height;
 	QImage m_backing;
 };
 

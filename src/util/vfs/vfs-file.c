@@ -74,7 +74,8 @@ bool _vffClose(struct VFile* vf) {
 
 off_t _vffSeek(struct VFile* vf, off_t offset, int whence) {
 	struct VFileFILE* vff = (struct VFileFILE*) vf;
-	return fseek(vff->file, offset, whence);
+	fseek(vff->file, offset, whence);
+	return ftell(vff->file);
 }
 
 ssize_t _vffRead(struct VFile* vf, void* buffer, size_t size) {

@@ -32,6 +32,13 @@ static inline int MutexLock(Mutex* mutex) {
 	return GetLastError();
 }
 
+static inline int MutexTryLock(Mutex* mutex) {
+	if (TryEnterCriticalSection(mutex)) {
+		return 0;
+	}
+	return 1;
+}
+
 static inline int MutexUnlock(Mutex* mutex) {
 	LeaveCriticalSection(mutex);
 	return GetLastError();

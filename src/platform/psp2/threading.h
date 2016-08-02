@@ -35,6 +35,10 @@ static inline int MutexLock(Mutex* mutex) {
 	return sceKernelLockMutex(*mutex, 1, 0);
 }
 
+static inline int MutexTryLock(Mutex* mutex) {
+	return sceKernelTryLockMutex(*mutex, 1);
+}
+
 static inline int MutexUnlock(Mutex* mutex) {
 	return sceKernelUnlockMutex(*mutex, 1);
 }
@@ -116,7 +120,7 @@ static inline int _sceThreadEntry(SceSize args, void* argp) {
 }
 
 static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
-	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x40, 0x10000, 0, 0x70000, 0);
+	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x10000100, 0x10000, 0, 0, 0);
 	if (id < 0) {
 		*thread = 0;
 		return id;

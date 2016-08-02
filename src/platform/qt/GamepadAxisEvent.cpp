@@ -21,7 +21,7 @@ GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, in
 {
 	ignore();
 	if (controller) {
-		m_key = GBAInputMapAxis(controller->map(), type, axis, direction * INT_MAX);
+		m_key = static_cast<GBAKey>(mInputMapAxis(controller->map(), type, axis, direction * INT_MAX));
 	}
 }
 

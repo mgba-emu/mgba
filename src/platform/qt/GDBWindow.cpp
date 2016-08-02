@@ -11,6 +11,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 
 #include "GDBController.h"
@@ -45,10 +46,20 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 	connect(m_bindAddressEdit, SIGNAL(textChanged(const QString&)), this, SLOT(bindAddressChanged(const QString&)));
 	settingsGrid->addWidget(m_bindAddressEdit, 1, 1, Qt::AlignLeft);
 
+	QHBoxLayout* buttons = new QHBoxLayout;
+
 	m_startStopButton = new QPushButton;
-	mainSegment->addWidget(m_startStopButton);
+	buttons->addWidget(m_startStopButton);
+
+	m_breakButton = new QPushButton;
+	m_breakButton->setText(tr("Break"));
+	buttons->addWidget(m_breakButton);
+
+	mainSegment->addLayout(buttons);
+
 	connect(m_gdbController, SIGNAL(listening()), this, SLOT(started()));
 	connect(m_gdbController, SIGNAL(listenFailed()), this, SLOT(failed()));
+	connect(m_breakButton, SIGNAL(clicked()), controller, SLOT(breakInto()));
 
 	if (m_gdbController->isAttached()) {
 		started();
@@ -91,6 +102,7 @@ void GDBWindow::started() {
 	m_portEdit->setEnabled(false);
 	m_bindAddressEdit->setEnabled(false);
 	m_startStopButton->setText(tr("Stop"));
+	m_breakButton->setEnabled(true);
 	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));
 	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
 	connect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
@@ -100,6 +112,7 @@ void GDBWindow::stopped() {
 	m_portEdit->setEnabled(true);
 	m_bindAddressEdit->setEnabled(true);
 	m_startStopButton->setText(tr("Start"));
+	m_breakButton->setEnabled(false);
 	disconnect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(detach()));
 	disconnect(m_startStopButton, SIGNAL(clicked()), this, SLOT(stopped()));
 	connect(m_startStopButton, SIGNAL(clicked()), m_gdbController, SLOT(listen()));

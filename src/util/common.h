@@ -21,17 +21,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "version.h"
-
+#ifdef _WIN32
+// WinSock2 gets very angry if it's included too late
+#include <winsock2.h>
+#endif
 #ifdef _MSC_VER
+#include <Windows.h>
 #include <sys/types.h>
 typedef intptr_t ssize_t;
-#define inline __inline
+#define PATH_MAX MAX_PATH
 #define restrict __restrict
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
 #define snprintf _snprintf
+#define strdup _strdup
+#define lseek _lseek
 #elif defined(__wii__)
 typedef intptr_t ssize_t;
 #else
@@ -73,11 +78,27 @@ typedef intptr_t ssize_t;
 	void* _ptr = (ARR); \
 	__asm__("sthbrx %0, %1, %2" : : "r"(SRC), "b"(_ptr), "r"(_addr)); \
 }
+
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(((uint64_t*) ARR)[(ADDR) >> 3])
+#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = __builtin_bswap64(SRC)
+#elif defined __BIG_ENDIAN__
+#if defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = __builtin_bswap64(((uint64_t*) ARR)[(ADDR) >> 3])
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = __builtin_bswap32(((uint32_t*) ARR)[(ADDR) >> 2])
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = __builtin_bswap16(((uint16_t*) ARR)[(ADDR) >> 1])
+#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = __builtin_bswap64(SRC)
+#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = __builtin_bswap32(SRC)
+#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = __builtin_bswap16(SRC)
 #else
-#define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
-#define LOAD_16LE(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
-#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = SRC
-#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
+#error Big endian build not supported on this platform.
+#endif
+#else
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #endif
 
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))
@@ -86,6 +107,7 @@ typedef intptr_t ssize_t;
 #define INS_BITS(SRC, START, END, BITS) (CLEAR_BITS(SRC, START, END) | (((BITS) << (START)) & MAKE_MASK(START, END)))
 #define CLEAR_BITS(SRC, START, END) ((SRC) & ~MAKE_MASK(START, END))
 #define FILL_BITS(SRC, START, END) ((SRC) | MAKE_MASK(START, END))
+#define TEST_FILL_BITS(SRC, START, END, TEST) ((TEST) ? (FILL_BITS(SRC, START, END)) : (CLEAR_BITS(SRC, START, END)))
 
 #ifdef _MSC_VER
 #define ATTRIBUTE_UNUSED
@@ -112,6 +134,9 @@ typedef intptr_t ssize_t;
 	} \
 	ATTRIBUTE_UNUSED static inline TYPE TYPE ## Set ## FIELD (TYPE src, TYPE bits) { \
 		return INS_BITS(src, (START), (START) + (SIZE), bits); \
+	} \
+	ATTRIBUTE_UNUSED static inline TYPE TYPE ## TestFill ## FIELD (TYPE src, bool test) { \
+		return TEST_FILL_BITS(src, (START), (START) + (SIZE), test); \
 	}
 
 #define DECL_BIT(TYPE, FIELD, BIT) DECL_BITS(TYPE, FIELD, BIT, 1)

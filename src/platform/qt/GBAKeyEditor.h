@@ -28,6 +28,7 @@ Q_OBJECT
 
 public:
 	GBAKeyEditor(InputController* controller, int type, const QString& profile = QString(), QWidget* parent = nullptr);
+	virtual ~GBAKeyEditor();
 
 public slots:
 	void setAll();
@@ -37,6 +38,7 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override;
 	virtual bool event(QEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
 	void setNext();
@@ -44,6 +46,8 @@ private slots:
 	void refresh();
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
+	void selectGamepad(int index);
+	void updateJoysticks();
 #endif
 
 private:
@@ -54,13 +58,13 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
-	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
+	void lookupBinding(const mInputMap*, KeyEditor*, GBAKey);
 	void bindKey(const KeyEditor*, GBAKey);
 
-	bool findFocus();
+	bool findFocus(KeyEditor* needle = nullptr);
 
 #ifdef BUILD_SDL
-	void lookupAxes(const GBAInputMap*);
+	void lookupAxes(const mInputMap*);
 #endif
 
 	KeyEditor* keyById(GBAKey);

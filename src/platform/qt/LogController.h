@@ -6,6 +6,8 @@
 #ifndef QGBA_LOG_CONTROLLER
 #define QGBA_LOG_CONTROLLER
 
+#include "GBAApp.h"
+
 #include <QObject>
 #include <QStringList>
 
@@ -21,13 +23,14 @@ Q_OBJECT
 private:
 	class Stream {
 	public:
-		Stream(LogController* controller, int level);
+		Stream(LogController* controller, int level, int category);
 		~Stream();
 
 		Stream& operator<<(const QString&);
 
 	private:
 		int m_level;
+		int m_category;
 		LogController* m_log;
 
 		QStringList m_queue;
@@ -38,19 +41,19 @@ public:
 
 	int levels() const { return m_logLevel; }
 
-	Stream operator()(int level);
+	Stream operator()(int category, int level);
 
 	static LogController* global();
 	static QString toString(int level);
 
 signals:
-	void logPosted(int level, const QString& log);
+	void logPosted(int level, int category, const QString& log);
 	void levelsSet(int levels);
 	void levelsEnabled(int levels);
 	void levelsDisabled(int levels);
 
 public slots:
-	void postLog(int level, const QString& string);
+	void postLog(int level, int category, const QString& string);
 	void setLevels(int levels);
 	void enableLevels(int levels);
 	void disableLevels(int levels);
@@ -61,7 +64,7 @@ private:
 	static LogController s_global;
 };
 
-#define LOG(L) (*LogController::global())(GBA_LOG_ ## L)
+#define LOG(C, L) (*LogController::global())(_mLOG_CAT_ ## C (), mLOG_ ## L)
 
 }
 

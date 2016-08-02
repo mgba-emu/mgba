@@ -37,6 +37,10 @@ ShortcutView::ShortcutView(QWidget* parent)
 	connect(m_ui.clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 }
 
+ShortcutView::~ShortcutView() {
+	m_input->releaseFocus(this);
+}
+
 void ShortcutView::setController(ShortcutController* controller) {
 	m_controller = controller;
 	m_ui.shortcutTable->setModel(controller);
@@ -117,9 +121,10 @@ void ShortcutView::closeEvent(QCloseEvent*) {
 
 bool ShortcutView::event(QEvent* event) {
 	if (m_input) {
-		if (event->type() == QEvent::WindowActivate) {
+		QEvent::Type type = event->type();
+		if (type == QEvent::WindowActivate || type == QEvent::Show) {
 			m_input->stealFocus(this);
-		} else if (event->type() == QEvent::WindowDeactivate) {
+		} else if (type == QEvent::WindowDeactivate || type == QEvent::Hide) {
 			m_input->releaseFocus(this);
 		}
 	}

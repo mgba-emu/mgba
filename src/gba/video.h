@@ -8,14 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/memory.h"
-#include "macros.h"
-
-#ifdef COLOR_16_BIT
-#define BYTES_PER_PIXEL 2
-#else
-#define BYTES_PER_PIXEL 4
-#endif
 
 #define GBA_R5(X) ((X) & 0x1F)
 #define GBA_G5(X) (((X) >> 5) & 0x1F)
@@ -24,6 +18,8 @@
 #define GBA_R8(X) (((X) << 3) & 0xF8)
 #define GBA_G8(X) (((X) >> 2) & 0xF8)
 #define GBA_B8(X) (((X) >> 7) & 0xF8)
+
+mLOG_DECLARE_CATEGORY(GBA_VIDEO);
 
 enum {
 	VIDEO_HORIZONTAL_PIXELS = 240,
@@ -38,7 +34,8 @@ enum {
 
 	VIDEO_TOTAL_LENGTH = VIDEO_HORIZONTAL_LENGTH * VIDEO_VERTICAL_TOTAL_PIXELS,
 
-	REG_DISPSTAT_MASK = 0xFF38,
+	OBJ_HBLANK_FREE_LENGTH = 954,
+	OBJ_LENGTH = 1210,
 
 	BASE_TILE = 0x00010000
 };
@@ -173,6 +170,7 @@ struct GBAVideoRenderer {
 	uint16_t* palette;
 	uint16_t* vram;
 	union GBAOAM* oam;
+	struct GBAVideoTileCache* cache;
 
 	bool disableBG[4];
 	bool disableOBJ;

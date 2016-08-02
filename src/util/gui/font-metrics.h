@@ -9,5 +9,6 @@
 #include "util/gui/font.h"
 
 extern struct GUIFontGlyphMetric defaultFontMetrics[];
+extern struct GUIIconMetric defaultIconMetrics[];
 
 #endif

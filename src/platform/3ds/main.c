@@ -4,10 +4,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gba/renderers/video-software.h"
-#include "gba/context/context.h"
-#include "gba/gui/gui-runner.h"
+#ifdef M_CORE_GBA
+#include "gba/gba.h"
+#include "gba/input.h"
 #include "gba/video.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
+#include "feature/gui/gui-runner.h"
 #include "util/gui.h"
 #include "util/gui/file-select.h"
 #include "util/gui/font.h"
@@ -18,6 +23,7 @@
 #include "ctr-gpu.h"
 
 #include <3ds.h>
+#include <3ds/gpu/gx.h>
 
 static enum ScreenMode {
 	SM_PA_BOTTOM,
@@ -29,100 +35,161 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA_TOP;
 
-#define AUDIO_SAMPLES 0x80
-#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 24)
+#define _3DS_INPUT 0x3344534B
 
-FS_archive sdmcArchive;
+#define AUDIO_SAMPLES 384
+#define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
+#define DSP_BUFFERS 4
+
+FS_Archive sdmcArchive;
 
 static struct GBA3DSRotationSource {
-	struct GBARotationSource d;
+	struct mRotationSource d;
 	accelVector accel;
 	angularRate gyro;
 } rotation;
 
-static bool hasSound;
+static enum {
+	NO_SOUND,
+	DSP_SUPPORTED,
+	CSND_SUPPORTED
+} hasSound;
+
 // TODO: Move into context
-static struct GBAVideoSoftwareRenderer renderer;
-static struct GBAAVStream stream;
+static void* outputBuffer;
+static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
 static size_t audioPos = 0;
-static struct ctrTexture gbaOutputTexture;
-static int guiDrawn;
-static int screenCleanup;
+static C3D_Tex outputTexture;
+static ndspWaveBuf dspBuffer[DSP_BUFFERS];
+static int bufferId = 0;
 
-enum {
-	GUI_ACTIVE = 1,
-	GUI_THIS_FRAME = 2,
-};
+static C3D_RenderBuf bottomScreen;
+static C3D_RenderBuf topScreen;
 
-enum {
-	SCREEN_CLEANUP_TOP_1 = 1,
-	SCREEN_CLEANUP_TOP_2 = 2,
-	SCREEN_CLEANUP_TOP = SCREEN_CLEANUP_TOP_1 | SCREEN_CLEANUP_TOP_2,
-	SCREEN_CLEANUP_BOTTOM_1 = 4,
-	SCREEN_CLEANUP_BOTTOM_2 = 8,
-	SCREEN_CLEANUP_BOTTOM = SCREEN_CLEANUP_BOTTOM_1 | SCREEN_CLEANUP_BOTTOM_2,
-};
+static aptHookCookie cookie;
 
 extern bool allocateRomBuffer(void);
 
-static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio);
+static bool _initGpu(void) {
+	if (!C3D_Init(C3D_DEFAULT_CMDBUF_SIZE)) {
+		return false;
+	}
+
+	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0)) {
+		return false;
+	}
+
+	return ctrInitGpu();
+}
+
+static void _cleanup(void) {
+	ctrDeinitGpu();
+
+	if (outputBuffer) {
+		linearFree(outputBuffer);
+	}
+
+	C3D_RenderBufDelete(&topScreen);
+	C3D_RenderBufDelete(&bottomScreen);
+	C3D_Fini();
+
+	gfxExit();
+
+	if (hasSound != NO_SOUND) {
+		linearFree(audioLeft);
+	}
+
+	if (hasSound == CSND_SUPPORTED) {
+		linearFree(audioRight);
+		csndExit();
+	}
+
+	if (hasSound == DSP_SUPPORTED) {
+		ndspExit();
+	}
+
+	csndExit();
+	ptmuExit();
+}
+
+static void _aptHook(APT_HookType hook, void* user) {
+	UNUSED(user);
+	switch (hook) {
+	case APTHOOK_ONSUSPEND:
+	case APTHOOK_ONSLEEP:
+		if (hasSound == CSND_SUPPORTED) {
+			CSND_SetPlayState(8, 0);
+			CSND_SetPlayState(9, 0);
+			csndExecCmds(false);
+		}
+		break;
+	case APTHOOK_ONEXIT:
+		if (hasSound == CSND_SUPPORTED) {
+			CSND_SetPlayState(8, 0);
+			CSND_SetPlayState(9, 0);
+			csndExecCmds(false);
+		}
+		_cleanup();
+		exit(0);
+		break;
+	default:
+		break;
+	}
+}
+
+static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
+	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
+}
+
+static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, void* right, u32 size) {
+	u32 pleft = 0, pright = 0;
+
+	int loopMode = (flags >> 10) & 3;
+	if (!loopMode) {
+		flags |= SOUND_ONE_SHOT;
+	}
+
+	pleft = osConvertVirtToPhys(left);
+	pright = osConvertVirtToPhys(right);
+
+	u32 timer = CSND_TIMER(sampleRate);
+	if (timer < 0x0042) {
+		timer = 0x0042;
+	}
+	else if (timer > 0xFFFF) {
+		timer = 0xFFFF;
+	}
+	flags &= ~0xFFFF001F;
+	flags |= SOUND_ENABLE | (timer << 16);
+
+	u32 volumes = CSND_VOL(vol, -1.0);
+	CSND_SetChnRegs(flags | SOUND_CHANNEL(8), pleft, pleft, size, volumes, volumes);
+	volumes = CSND_VOL(vol, 1.0);
+	CSND_SetChnRegs(flags | SOUND_CHANNEL(9), pright, pright, size, volumes, volumes);
+}
+
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
-	ctrGpuBeginDrawing();
-	if (screenMode < SM_PA_TOP || (guiDrawn & GUI_ACTIVE)) {
-		ctrGpuBeginFrame(GFX_BOTTOM);
-		ctrSetViewportSize(320, 240);
-	} else {
-		ctrGpuBeginFrame(GFX_TOP);
-		ctrSetViewportSize(400, 240);
-	}
-	guiDrawn &= ~GUI_THIS_FRAME;
+	C3D_RenderBufClear(&bottomScreen);
+	C3D_RenderBufClear(&topScreen);
 }
 
 static void _drawEnd(void) {
-	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
-	u16 width = 0, height = 0;
-
-	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
-
-	if (screen != GFX_BOTTOM) {
-		if (guiDrawn & (GUI_THIS_FRAME | GUI_ACTIVE)) {
-			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
-		} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM) {
-			ctrGpuBeginFrame(GFX_BOTTOM);
-			if (screenCleanup & SCREEN_CLEANUP_BOTTOM_1) {
-				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_1;
-			} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM_2) {
-				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_2;
-			}
-			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
-		}
-	}
-
-	if ((screenCleanup & SCREEN_CLEANUP_TOP) && screen != GFX_TOP) {
-		ctrGpuBeginFrame(GFX_TOP);
-		if (screenCleanup & SCREEN_CLEANUP_TOP_1) {
-			screenCleanup &= ~SCREEN_CLEANUP_TOP_1;
-		} else if (screenCleanup & SCREEN_CLEANUP_TOP_2) {
-			screenCleanup &= ~SCREEN_CLEANUP_TOP_2;
-		}
-		void* outputFramebuffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &height, &width);
-		ctrGpuEndFrame(GFX_TOP, outputFramebuffer, width, height);
-	}
-
-	ctrGpuEndDrawing();
+	ctrFinalize();
+	C3D_RenderBufTransfer(&topScreen, (u32*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderBufTransfer(&bottomScreen, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	gfxSwapBuffersGpu();
+	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
 }
 
 static int _batteryState(void) {
 	u8 charge;
 	u8 adapter;
-	PTMU_GetBatteryLevel(0, &charge);
-	PTMU_GetBatteryChargeState(0, &adapter);
+	PTMU_GetBatteryLevel(&charge);
+	PTMU_GetBatteryChargeState(&adapter);
 	int state = 0;
 	if (adapter) {
 		state |= BATTERY_CHARGING;
@@ -134,106 +201,170 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME;
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
 	if (screen == GFX_BOTTOM) {
 		return;
 	}
 
-	ctrFlushBatch();
-	ctrGpuBeginFrame(GFX_BOTTOM);
+	C3D_RenderBufBind(&bottomScreen);
 	ctrSetViewportSize(320, 240);
 }
 
 static void _guiFinish(void) {
-	guiDrawn &= ~GUI_ACTIVE;
-	screenCleanup |= SCREEN_CLEANUP_BOTTOM;
+	ctrFlushBatch();
 }
 
-static void _setup(struct GBAGUIRunner* runner) {
-	runner->context.gba->rotationSource = &rotation.d;
-	if (hasSound) {
-		runner->context.gba->stream = &stream;
+static void _setup(struct mGUIRunner* runner) {
+	runner->core->setRotation(runner->core, &rotation.d);
+	if (hasSound != NO_SOUND) {
+		runner->core->setAVStream(runner->core, &stream);
 	}
 
-	GBAVideoSoftwareRendererCreate(&renderer);
-	renderer.outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
-	renderer.outputBufferStride = 256;
-	runner->context.renderer = &renderer.d;
+	_map3DSKey(&runner->core->inputMap, KEY_A, GBA_KEY_A);
+	_map3DSKey(&runner->core->inputMap, KEY_B, GBA_KEY_B);
+	_map3DSKey(&runner->core->inputMap, KEY_START, GBA_KEY_START);
+	_map3DSKey(&runner->core->inputMap, KEY_SELECT, GBA_KEY_SELECT);
+	_map3DSKey(&runner->core->inputMap, KEY_UP, GBA_KEY_UP);
+	_map3DSKey(&runner->core->inputMap, KEY_DOWN, GBA_KEY_DOWN);
+	_map3DSKey(&runner->core->inputMap, KEY_LEFT, GBA_KEY_LEFT);
+	_map3DSKey(&runner->core->inputMap, KEY_RIGHT, GBA_KEY_RIGHT);
+	_map3DSKey(&runner->core->inputMap, KEY_L, GBA_KEY_L);
+	_map3DSKey(&runner->core->inputMap, KEY_R, GBA_KEY_R);
+
+	outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * 2, 0x80);
+	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 
-	GBAAudioResizeBuffer(&runner->context.gba->audio, AUDIO_SAMPLES);
+	runner->core->setAudioBufferSize(runner->core, AUDIO_SAMPLES);
 }
 
-static void _gameLoaded(struct GBAGUIRunner* runner) {
-	if (runner->context.gba->memory.hw.devices & HW_TILT) {
-		HIDUSER_EnableAccelerometer();
-	}
-	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
-		HIDUSER_EnableGyroscope();
-	}
-
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
-	blip_set_rates(runner->context.gba->audio.left,  GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
-	blip_set_rates(runner->context.gba->audio.right, GBA_ARM7TDMI_FREQUENCY, 32768 * ratio);
+static void _gameLoaded(struct mGUIRunner* runner) {
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
+			HIDUSER_EnableAccelerometer();
+		}
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+			HIDUSER_EnableGyroscope();
+		}
+		break;
 #endif
-	if (hasSound) {
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			HIDUSER_EnableAccelerometer();
+		}
+		break;
+#endif
+	default:
+		break;
+	}
+	osSetSpeedupEnable(true);
+
+	double ratio = GBAAudioCalculateRatio(1, 59.8260982880808, 1);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
+	if (hasSound != NO_SOUND) {
+		audioPos = 0;
+	}
+	if (hasSound == CSND_SUPPORTED) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
 		memset(audioRight, 0, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		audioPos = 0;
-		csndPlaySound(0x8, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, -1.0, audioLeft, audioLeft, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
-		csndPlaySound(0x9, SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, 1.0, audioRight, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		_csndPlaySound(SOUND_REPEAT | SOUND_FORMAT_16BIT, 32768, 1.0, audioLeft, audioRight, AUDIO_SAMPLE_BUFFER * sizeof(int16_t));
+		csndExecCmds(false);
+	} else if (hasSound == DSP_SUPPORTED) {
+		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (GBAConfigGetUIntValue(&runner->context.config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
-		screenCleanup |= SCREEN_CLEANUP_BOTTOM | SCREEN_CLEANUP_TOP;
 	}
 }
 
-static void _gameUnloaded(struct GBAGUIRunner* runner) {
-	if (hasSound) {
+static void _gameUnloaded(struct mGUIRunner* runner) {
+	if (hasSound == CSND_SUPPORTED) {
 		CSND_SetPlayState(8, 0);
 		CSND_SetPlayState(9, 0);
 		csndExecCmds(false);
 	}
+	osSetSpeedupEnable(false);
 
-	if (runner->context.gba->memory.hw.devices & HW_TILT) {
-		HIDUSER_DisableAccelerometer();
-	}
-	if (runner->context.gba->memory.hw.devices & HW_GYRO) {
-		HIDUSER_DisableGyroscope();
+	switch (runner->core->platform(runner->core)) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
+			HIDUSER_DisableAccelerometer();
+		}
+		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+			HIDUSER_DisableGyroscope();
+		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
+			HIDUSER_DisableAccelerometer();
+		}
+		break;
+#endif
+	default:
+		break;
 	}
 }
 
-static void _drawTex(bool faded) {
+static void _drawTex(struct mCore* core, bool faded) {
+	if (screenMode < SM_PA_TOP) {
+		C3D_RenderBufBind(&bottomScreen);
+		ctrSetViewportSize(320, 240);
+	} else {
+		C3D_RenderBufBind(&topScreen);
+		ctrSetViewportSize(400, 240);
+	}
+	ctrActivateTexture(&outputTexture);
+
 	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
 
 	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
 	int screen_h = 240;
 
-	int w, h;
+	unsigned corew, coreh;
+	core->desiredVideoDimensions(core, &corew, &coreh);
+
+	int w = corew;
+	int h = coreh;
+	// Get greatest common divisor
+	while (w != 0) {
+		int temp = h % w;
+		h = w;
+		w = temp;
+	}
+	int gcd = h;
+	int aspectw = corew / gcd;
+	int aspecth = coreh / gcd;
 
 	switch (screenMode) {
 	case SM_PA_TOP:
 	case SM_PA_BOTTOM:
 	default:
-		w = VIDEO_HORIZONTAL_PIXELS;
-		h = VIDEO_VERTICAL_PIXELS;
+		w = corew;
+		h = coreh;
 		break;
 	case SM_AF_TOP:
-		w = 360;
-		h = 240;
-		break;
 	case SM_AF_BOTTOM:
-		// Largest possible size with 3:2 aspect ratio and integer dimensions
-		w = 318;
-		h = 212;
+		w = screen_w / aspectw;
+		h = screen_h / aspecth;
+		if (w * aspecth > screen_h) {
+			w = aspectw * h;
+			h = aspecth * h;
+		} else {
+			h = aspecth * w;
+			w = aspectw * w;
+		}
 		break;
 	case SM_SF_TOP:
 	case SM_SF_BOTTOM:
@@ -245,39 +376,36 @@ static void _drawTex(bool faded) {
 	int x = (screen_w - w) / 2;
 	int y = (screen_h - h) / 2;
 
-	ctrAddRectScaled(color, x, y, w, h, 0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	ctrAddRectScaled(color, x, y, w, h, 0, 0, corew, coreh);
+	ctrFlushBatch();
 }
 
-static void _drawFrame(struct GBAGUIRunner* runner, bool faded) {
+static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 
-	void* outputBuffer = renderer.outputBuffer;
-	struct ctrTexture* tex = &gbaOutputTexture;
+	C3D_Tex* tex = &outputTexture;
 
-	GSPGPU_FlushDataCache(NULL, outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	GX_SetDisplayTransfer(NULL,
+	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
+	C3D_SafeDisplayTransfer(
 			outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	if (!hasSound) {
-		blip_clear(runner->context.gba->audio.left);
-		blip_clear(runner->context.gba->audio.right);
+	if (hasSound == NO_SOUND) {
+		blip_clear(runner->core->getAudioChannel(runner->core, 0));
+		blip_clear(runner->core->getAudioChannel(runner->core, 1));
 	}
-#endif
 
 	gspWaitForPPF();
-	ctrActivateTexture(tex);
-	_drawTex(faded);
+	_drawTex(runner->core, faded);
 }
 
-static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
 	UNUSED(runner);
 
-	struct ctrTexture* tex = &gbaOutputTexture;
+	C3D_Tex* tex = &outputTexture;
 
 	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * sizeof(u32), 0x100);
 
@@ -294,9 +422,9 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, (256 - VIDEO_HORIZONTAL_PIXELS) * sizeof(u32));
 	}
 
-	GSPGPU_FlushDataCache(NULL, (void*)newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
-	GX_SetDisplayTransfer(NULL,
-			(void*)newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+	GSPGPU_FlushDataCache(newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
+	C3D_SafeDisplayTransfer(
+			(u32*) newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -304,24 +432,26 @@ static void _drawScreenshot(struct GBAGUIRunner* runner, const uint32_t* pixels,
 	gspWaitForPPF();
 	linearFree(newPixels);
 
-	ctrActivateTexture(tex);
-	_drawTex(faded);
+	_drawTex(runner->core, faded);
 }
 
-static uint16_t _pollGameInput(struct GBAGUIRunner* runner) {
+static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	UNUSED(runner);
 
 	hidScanInput();
-	uint32_t activeKeys = hidKeysHeld() & 0xF00003FF;
-	activeKeys |= activeKeys >> 24;
-	return activeKeys;
+	uint32_t activeKeys = hidKeysHeld();
+	uint16_t keys = mInputMapKeyBits(&runner->core->inputMap, _3DS_INPUT, activeKeys, 0);
+	keys |= (activeKeys >> 24) & 0xF0;
+	return keys;
 }
 
-static void _incrementScreenMode(struct GBAGUIRunner* runner) {
+static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
-	screenCleanup |= SCREEN_CLEANUP_TOP | SCREEN_CLEANUP_BOTTOM;
 	screenMode = (screenMode + 1) % SM_MAX;
-	GBAConfigSetUIntValue(&runner->context.config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+
+	C3D_RenderBufClear(&bottomScreen);
+	C3D_RenderBufClear(&topScreen);
 }
 
 static uint32_t _pollInput(void) {
@@ -332,7 +462,7 @@ static uint32_t _pollInput(void) {
 		keys |= 1 << GUI_INPUT_CANCEL;
 	}
 	if (activeKeys & KEY_Y) {
-		keys |= 1 << GBA_GUI_INPUT_SCREEN_MODE;
+		keys |= 1 << mGUI_INPUT_SCREEN_MODE;
 	}
 	if (activeKeys & KEY_B) {
 		keys |= 1 << GUI_INPUT_BACK;
@@ -353,15 +483,15 @@ static uint32_t _pollInput(void) {
 		keys |= 1 << GUI_INPUT_DOWN;
 	}
 	if (activeKeys & KEY_CSTICK_UP) {
-		keys |= 1 << GBA_GUI_INPUT_INCREASE_BRIGHTNESS;
+		keys |= 1 << mGUI_INPUT_INCREASE_BRIGHTNESS;
 	}
 	if (activeKeys & KEY_CSTICK_DOWN) {
-		keys |= 1 << GBA_GUI_INPUT_DECREASE_BRIGHTNESS;
+		keys |= 1 << mGUI_INPUT_DECREASE_BRIGHTNESS;
 	}
 	return keys;
 }
 
-static enum GUICursorState _pollCursor(int* x, int* y) {
+static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	hidScanInput();
 	if (!(hidKeysHeld() & KEY_TOUCH)) {
 		return GUI_CURSOR_NOT_PRESENT;
@@ -373,59 +503,73 @@ static enum GUICursorState _pollCursor(int* x, int* y) {
 	return GUI_CURSOR_DOWN;
 }
 
-static void _sampleRotation(struct GBARotationSource* source) {
+static void _sampleRotation(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	// Work around ctrulib getting the entries wrong
-	rotation->accel = *(accelVector*)& hidSharedMem[0x48];
-	rotation->gyro = *(angularRate*)& hidSharedMem[0x5C];
+	rotation->accel = *(accelVector*) &hidSharedMem[0x48];
+	rotation->gyro = *(angularRate*) &hidSharedMem[0x5C];
 }
 
-static int32_t _readTiltX(struct GBARotationSource* source) {
+static int32_t _readTiltX(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->accel.x << 18L;
 }
 
-static int32_t _readTiltY(struct GBARotationSource* source) {
+static int32_t _readTiltY(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->accel.y << 18L;
 }
 
-static int32_t _readGyroZ(struct GBARotationSource* source) {
+static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct GBA3DSRotationSource* rotation = (struct GBA3DSRotationSource*) source;
 	return rotation->gyro.y << 18L; // Yes, y
 }
 
-static void _postAudioBuffer(struct GBAAVStream* stream, struct GBAAudio* audio) {
+static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-#if RESAMPLE_LIBRARY == RESAMPLE_BLIP_BUF
-	blip_read_samples(audio->left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
-	blip_read_samples(audio->right, &audioRight[audioPos], AUDIO_SAMPLES, false);
-#elif RESAMPLE_LIBRARY == RESAMPLE_NN
-	GBAAudioCopy(audio, &audioLeft[audioPos], &audioRight[audioPos], AUDIO_SAMPLES);
-#endif
-	GSPGPU_FlushDataCache(0, (void*) &audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-	GSPGPU_FlushDataCache(0, (void*) &audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
-	audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
-	if (audioPos == AUDIO_SAMPLES * 3) {
-		u8 playing = 0;
-		csndIsPlaying(0x8, &playing);
-		if (!playing) {
-			CSND_SetPlayState(0x8, 1);
-			CSND_SetPlayState(0x9, 1);
-			csndExecCmds(false);
+	if (hasSound == CSND_SUPPORTED) {
+		blip_read_samples(left, &audioLeft[audioPos], AUDIO_SAMPLES, false);
+		blip_read_samples(right, &audioRight[audioPos], AUDIO_SAMPLES, false);
+		GSPGPU_FlushDataCache(&audioLeft[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+		GSPGPU_FlushDataCache(&audioRight[audioPos], AUDIO_SAMPLES * sizeof(int16_t));
+		audioPos = (audioPos + AUDIO_SAMPLES) % AUDIO_SAMPLE_BUFFER;
+		if (audioPos == AUDIO_SAMPLES * 3) {
+			u8 playing = 0;
+			csndIsPlaying(0x8, &playing);
+			if (!playing) {
+				CSND_SetPlayState(0x8, 1);
+				CSND_SetPlayState(0x9, 1);
+				csndExecCmds(false);
+			}
 		}
+	} else if (hasSound == DSP_SUPPORTED) {
+		int startId = bufferId;
+		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
+			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
+			if (bufferId == startId) {
+				blip_clear(left);
+				blip_clear(right);
+				return;
+			}
+		}
+		void* tmpBuf = dspBuffer[bufferId].data_pcm16;
+		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
+		dspBuffer[bufferId].data_pcm16 = tmpBuf;
+		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
+		blip_read_samples(left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
+		blip_read_samples(right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
+		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}
 }
 
 int main() {
-	ptmInit();
-	hasSound = !csndInit();
-
 	rotation.d.sample = _sampleRotation;
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
 
+	stream.videoDimensionsChanged = 0;
 	stream.postVideoFrame = 0;
 	stream.postAudioFrame = 0;
 	stream.postAudioBuffer = _postAudioBuffer;
@@ -434,45 +578,66 @@ int main() {
 		return 1;
 	}
 
-	if (hasSound) {
+	aptHook(&cookie, _aptHook, 0);
+
+	ptmuInit();
+	hasSound = NO_SOUND;
+	if (!ndspInit()) {
+		hasSound = DSP_SUPPORTED;
+		ndspSetOutputMode(NDSP_OUTPUT_STEREO);
+		ndspSetOutputCount(1);
+		ndspChnReset(0);
+		ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
+		ndspChnSetInterp(0, NDSP_INTERP_NONE);
+		ndspChnSetRate(0, 0x8000);
+		ndspChnWaveBufClear(0);
+		audioLeft = linearMemAlign(AUDIO_SAMPLES * DSP_BUFFERS * 2 * sizeof(int16_t), 0x80);
+		memset(dspBuffer, 0, sizeof(dspBuffer));
+		int i;
+		for (i = 0; i < DSP_BUFFERS; ++i) {
+			dspBuffer[i].data_pcm16 = &audioLeft[AUDIO_SAMPLES * i * 2];
+			dspBuffer[i].nsamples = AUDIO_SAMPLES;
+		}
+	}
+
+	if (hasSound == NO_SOUND && !csndInit()) {
+		hasSound = CSND_SUPPORTED;
 		audioLeft = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}
 
-	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
+	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
 
-	if (ctrInitGpu() < 0) {
-		goto cleanup;
+	if (!_initGpu()) {
+		outputTexture.data = 0;
+		_cleanup();
+		return 1;
 	}
 
-	ctrTexture_Init(&gbaOutputTexture);
-	gbaOutputTexture.format = GPU_RGB565;
-	gbaOutputTexture.filter = GPU_LINEAR;
-	gbaOutputTexture.width = 256;
-	gbaOutputTexture.height = 256;
-	gbaOutputTexture.data = vramAlloc(256 * 256 * 2);
-	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
+	if (!C3D_TexInitVRAM(&outputTexture, 256, 256, GPU_RGB565)) {
+		_cleanup();
+		return 1;
+	}
+	C3D_TexSetWrap(&outputTexture, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
+	C3D_TexSetFilter(&outputTexture, GPU_LINEAR, GPU_LINEAR);
+	void* outputTextureEnd = (u8*)outputTexture.data + 256 * 256 * 2;
 
 	// Zero texture data to make sure no garbage around the border interferes with filtering
-	GX_SetMemoryFill(NULL,
-			gbaOutputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
+	GX_MemoryFill(
+			outputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
 			NULL, 0, NULL, 0);
 	gspWaitForPSC0();
 
-	sdmcArchive = (FS_archive) {
-		ARCH_SDMC,
-		(FS_path) { PATH_EMPTY, 1, (const u8*)"" },
-		0, 0
-	};
-	FSUSER_OpenArchive(0, &sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
 	struct GUIFont* font = GUIFontCreate();
 
 	if (!font) {
-		goto cleanup;
+		_cleanup();
+		return 1;
 	}
 
-	struct GBAGUIRunner runner = {
+	struct mGUIRunner runner = {
 		.params = {
 			320, 240,
 			font, "/",
@@ -482,6 +647,44 @@ int main() {
 			_guiPrepare, _guiFinish,
 
 			GUI_PARAMS_TRAIL
+		},
+		.keySources = (struct GUIInputKeys[]) {
+			{
+				.name = "3DS Input",
+				.id = _3DS_INPUT,
+				.keyNames = (const char*[]) {
+					"A",
+					"B",
+					"Select",
+					"Start",
+					"D-Pad Right",
+					"D-Pad Left",
+					"D-Pad Up",
+					"D-Pad Down",
+					"R",
+					"L",
+					"X",
+					"Y",
+					0,
+					0,
+					"ZL",
+					"ZR",
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					"C-Stick Right",
+					"C-Stick Left",
+					"C-Stick Up",
+					"C-Stick Down",
+				},
+				.nKeys = 28
+			},
+			{ .id = 0 }
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
@@ -496,8 +699,8 @@ int main() {
 					"Pixel-Accurate/Top",
 					"Aspect-Ratio Fit/Top",
 					"Stretched/Top",
-					0
-				}
+				},
+				.nStates = 6
 			}
 		},
 		.nConfigExtra = 1,
@@ -514,23 +717,10 @@ int main() {
 		.pollGameInput = _pollGameInput
 	};
 
-	GBAGUIInit(&runner, "3ds");
-	GBAGUIRunloop(&runner);
-	GBAGUIDeinit(&runner);
+	mGUIInit(&runner, "3ds");
+	mGUIRunloop(&runner);
+	mGUIDeinit(&runner);
 
-cleanup:
-	linearFree(renderer.outputBuffer);
-
-	ctrDeinitGpu();
-	vramFree(gbaOutputTexture.data);
-
-	gfxExit();
-
-	if (hasSound) {
-		linearFree(audioLeft);
-		linearFree(audioRight);
-	}
-	csndExit();
-	ptmExit();
+	_cleanup();
 	return 0;
 }

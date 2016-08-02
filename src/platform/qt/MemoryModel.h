@@ -12,7 +12,7 @@
 #include <QStaticText>
 #include <QVector>
 
-struct ARMCore;
+struct mCore;
 
 namespace QGBA {
 
@@ -60,7 +60,7 @@ private:
 
 	void serialize(QDataStream* stream);
 
-	ARMCore* m_cpu;
+	mCore* m_core;
 	QFont m_font;
 	int m_cellHeight;
 	int m_letterWidth;

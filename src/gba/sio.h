@@ -8,11 +8,14 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
 #include "gba/interface.h"
 
 #define MAX_GBAS 4
 
 extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
+
+mLOG_DECLARE_CATEGORY(GBA_SIO);
 
 enum {
 	RCNT_INITIAL = 0x8000
@@ -32,6 +35,7 @@ struct GBASIO {
 	struct GBASIODriver* activeDriver;
 
 	uint16_t rcnt;
+	// TODO: Convert to bitfields
 	union {
 		struct {
 			unsigned sc : 1;
@@ -72,7 +76,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
-void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value);
+uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
 
 int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles);
 

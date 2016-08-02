@@ -6,13 +6,10 @@
 #ifndef QGBA_LOG_VIEW
 #define QGBA_LOG_VIEW
 
+#include <QQueue>
 #include <QWidget>
 
 #include "ui_LogView.h"
-
-extern "C" {
-#include "gba/supervisor/thread.h"
-}
 
 namespace QGBA {
 
@@ -29,12 +26,15 @@ signals:
 	void levelsDisabled(int levels);
 
 public slots:
-	void postLog(int level, const QString& log);
+	void postLog(int level, int category, const QString& log);
 	void setLevels(int levels);
 	void clear();
 
 private slots:
 	void setMaxLines(int);
+
+protected:
+	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	static const int DEFAULT_LINE_LIMIT = 1000;
@@ -42,6 +42,7 @@ private:
 	Ui::LogView m_ui;
 	int m_lines;
 	int m_lineLimit;
+	QQueue<QString> m_pendingLines;
 
 	void setLevel(int level, bool);
 

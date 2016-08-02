@@ -8,13 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/video.h"
-
-#ifdef COLOR_16_BIT
-typedef uint16_t color_t;
-#else
-typedef uint32_t color_t;
-#endif
 
 struct GBAVideoSoftwareSprite {
 	struct GBAObj obj;
@@ -23,9 +18,9 @@ struct GBAVideoSoftwareSprite {
 };
 
 struct GBAVideoSoftwareBackground {
-	int index;
+	unsigned index;
 	int enabled;
-	int priority;
+	unsigned priority;
 	uint32_t charBase;
 	int mosaic;
 	int multipalette;
@@ -122,6 +117,7 @@ struct GBAVideoSoftwareRenderer {
 
 	uint32_t row[VIDEO_HORIZONTAL_PIXELS];
 	uint32_t spriteLayer[VIDEO_HORIZONTAL_PIXELS];
+	int32_t spriteCyclesRemaining;
 
 	// BLDCNT
 	unsigned target1Obj;
@@ -131,7 +127,6 @@ struct GBAVideoSoftwareRenderer {
 	enum BlendEffect blendEffect;
 	color_t normalPalette[512];
 	color_t variantPalette[512];
-	int anyTarget2;
 
 	uint16_t blda;
 	uint16_t bldb;

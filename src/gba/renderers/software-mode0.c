@@ -406,7 +406,7 @@
 			return; \
 		} \
 		if (UNLIKELY(end < outX)) { \
-			GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw!"); \
+			mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \
@@ -414,7 +414,7 @@
 		if (tileX < tileEnd) { \
 			++tileX; \
 		} else if (VIDEO_CHECKS && UNLIKELY(tileX > tileEnd)) { \
-			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
+			mLOG(GBA_VIDEO, FATAL, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
 			return; \
 		} \
 		length -= end - renderer->start; \
@@ -423,7 +423,7 @@
 	/*!*/ pixel = &renderer->row[outX]; \
 	outX += (tileEnd - tileX) * 8; \
 	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
-	/*!*/	GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw would occur!"); \
+	/*!*/	mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw would occur!"); \
 	/*!*/	return; \
 	/*!*/ } \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
@@ -432,16 +432,16 @@
 		\
 		int mod8 = length & 0x7; \
 		if (VIDEO_CHECKS && UNLIKELY(outX + mod8 != renderer->end)) { \
-			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw!"); \
+			mLOG(GBA_VIDEO, FATAL, "Invariant doesn't hold in background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
-		GBALog(0, GBA_LOG_FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
+		mLOG(GBA_VIDEO, FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
-		GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw occurred!"); \
+		mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw occurred!"); \
 		return; \
 	}
 
@@ -468,7 +468,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 
 	unsigned xBase;
 
-	int flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
 	flags |= FLAG_TARGET_2 * background->target2;
 	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed));
 	objwinFlags |= flags;

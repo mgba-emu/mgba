@@ -1,5 +1,5 @@
 /* XzCrc64.c -- CRC64 calculation
-2011-06-28 : Igor Pavlov : Public domain */
+2015-03-01 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
 
@@ -13,14 +13,15 @@
 #else
   #define CRC_NUM_TABLES 5
   #define CRC_UINT64_SWAP(v) \
-  ((v >> 56) | \
-  ((v >> 40) & ((UInt64)0xFF <<  8)) | \
-  ((v >> 24) & ((UInt64)0xFF << 16)) | \
-  ((v >>  8) & ((UInt64)0xFF << 24)) | \
-  ((v <<  8) & ((UInt64)0xFF << 32)) | \
-  ((v << 24) & ((UInt64)0xFF << 40)) | \
-  ((v << 40) & ((UInt64)0xFF << 48)) | \
-   (v << 56))
+      ((v >> 56) \
+    | ((v >> 40) & ((UInt64)0xFF <<  8)) \
+    | ((v >> 24) & ((UInt64)0xFF << 16)) \
+    | ((v >>  8) & ((UInt64)0xFF << 24)) \
+    | ((v <<  8) & ((UInt64)0xFF << 32)) \
+    | ((v << 24) & ((UInt64)0xFF << 40)) \
+    | ((v << 40) & ((UInt64)0xFF << 48)) \
+    | ((v << 56)))
+
   UInt64 MY_FAST_CALL XzCrc64UpdateT1_BeT4(UInt64 v, const void *data, size_t size, const UInt64 *table);
 #endif
 
@@ -63,11 +64,6 @@ void MY_FAST_CALL Crc64GenerateTable()
   #ifdef MY_CPU_LE
 
   g_Crc64Update = XzCrc64UpdateT4;
-
-  
-
-
-
 
   #else
   {

@@ -19,40 +19,31 @@ LogView::LogView(LogController* log, QWidget* parent)
 {
 	m_ui.setupUi(this);
 	connect(m_ui.levelDebug, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_DEBUG, set);
+		setLevel(mLOG_DEBUG, set);
 	});
 	connect(m_ui.levelStub, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_STUB, set);
+		setLevel(mLOG_STUB, set);
 	});
 	connect(m_ui.levelInfo, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_INFO, set);
+		setLevel(mLOG_INFO, set);
 	});
 	connect(m_ui.levelWarn, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_WARN, set);
+		setLevel(mLOG_WARN, set);
 	});
 	connect(m_ui.levelError, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_ERROR, set);
+		setLevel(mLOG_ERROR, set);
 	});
 	connect(m_ui.levelFatal, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_FATAL, set);
+		setLevel(mLOG_FATAL, set);
 	});
 	connect(m_ui.levelGameError, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_GAME_ERROR, set);
-	});
-	connect(m_ui.levelSWI, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_SWI, set);
-	});
-	connect(m_ui.levelStatus, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_STATUS, set);
-	});
-	connect(m_ui.levelSIO, &QAbstractButton::toggled, [this](bool set) {
-		setLevel(GBA_LOG_SIO, set);
+		setLevel(mLOG_GAME_ERROR, set);
 	});
 	connect(m_ui.clear, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(m_ui.maxLines, SIGNAL(valueChanged(int)), this, SLOT(setMaxLines(int)));
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);
 
-	connect(log, SIGNAL(logPosted(int, const QString&)), this, SLOT(postLog(int, const QString&)));
+	connect(log, SIGNAL(logPosted(int, int, const QString&)), this, SLOT(postLog(int, int, const QString&)));
 	connect(log, SIGNAL(levelsSet(int)), this, SLOT(setLevels(int)));
 	connect(log, &LogController::levelsEnabled, [this](int level) {
 		bool s = blockSignals(true);
@@ -68,12 +59,15 @@ LogView::LogView(LogController* log, QWidget* parent)
 	connect(this, SIGNAL(levelsDisabled(int)), log, SLOT(disableLevels(int)));
 }
 
-void LogView::postLog(int level, const QString& log) {
-	m_ui.view->appendPlainText(QString("%1:\t%2").arg(LogController::toString(level)).arg(log));
+void LogView::postLog(int level, int category, const QString& log) {
+	QString line = QString("[%1] %2:\t%3").arg(LogController::toString(level)).arg(mLogCategoryName(category)).arg(log);
+	// TODO: Log to file
+	m_pendingLines.enqueue(line);
 	++m_lines;
 	if (m_lines > m_lineLimit) {
 		clearLine();
 	}
+	update();
 }
 
 void LogView::clear() {
@@ -82,48 +76,36 @@ void LogView::clear() {
 }
 
 void LogView::setLevels(int levels) {
-	m_ui.levelDebug->setCheckState(levels & GBA_LOG_DEBUG ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelStub->setCheckState(levels & GBA_LOG_STUB ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelInfo->setCheckState(levels & GBA_LOG_INFO ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelWarn->setCheckState(levels & GBA_LOG_WARN ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelError->setCheckState(levels & GBA_LOG_ERROR ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelFatal->setCheckState(levels & GBA_LOG_FATAL ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelGameError->setCheckState(levels & GBA_LOG_GAME_ERROR ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelSWI->setCheckState(levels & GBA_LOG_SWI ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelStatus->setCheckState(levels & GBA_LOG_STATUS ? Qt::Checked : Qt::Unchecked);
-	m_ui.levelSIO->setCheckState(levels & GBA_LOG_SIO ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelDebug->setCheckState(levels & mLOG_DEBUG ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelStub->setCheckState(levels & mLOG_STUB ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelInfo->setCheckState(levels & mLOG_INFO ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelWarn->setCheckState(levels & mLOG_WARN ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelError->setCheckState(levels & mLOG_ERROR ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelFatal->setCheckState(levels & mLOG_FATAL ? Qt::Checked : Qt::Unchecked);
+	m_ui.levelGameError->setCheckState(levels & mLOG_GAME_ERROR ? Qt::Checked : Qt::Unchecked);
 }
 
 void LogView::setLevel(int level, bool set) {
-	if (level & GBA_LOG_DEBUG) {
+	if (level & mLOG_DEBUG) {
 		m_ui.levelDebug->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_STUB) {
+	if (level & mLOG_STUB) {
 		m_ui.levelStub->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_INFO) {
+	if (level & mLOG_INFO) {
 		m_ui.levelInfo->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_WARN) {
+	if (level & mLOG_WARN) {
 		m_ui.levelWarn->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_ERROR) {
+	if (level & mLOG_ERROR) {
 		m_ui.levelError->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_FATAL) {
+	if (level & mLOG_FATAL) {
 		m_ui.levelFatal->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
-	if (level & GBA_LOG_GAME_ERROR) {
+	if (level & mLOG_GAME_ERROR) {
 		m_ui.levelGameError->setCheckState(set ? Qt::Checked : Qt::Unchecked);
-	}
-	if (level & GBA_LOG_SWI) {
-		m_ui.levelSWI->setCheckState(set ? Qt::Checked : Qt::Unchecked);
-	}
-	if (level & GBA_LOG_STATUS) {
-		m_ui.levelStatus->setCheckState(set ? Qt::Checked : Qt::Unchecked);
-	}
-	if (level & GBA_LOG_SIO) {
-		m_ui.levelSIO->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
 
 	if (set) {
@@ -140,11 +122,22 @@ void LogView::setMaxLines(int limit) {
 	}
 }
 
+void LogView::paintEvent(QPaintEvent* event) {
+	while (!m_pendingLines.isEmpty()) {
+		m_ui.view->appendPlainText(m_pendingLines.dequeue());
+	}
+	QWidget::paintEvent(event);
+}
+
 void LogView::clearLine() {
-	QTextCursor cursor(m_ui.view->document());
-	cursor.setPosition(0);
-	cursor.select(QTextCursor::BlockUnderCursor);
-	cursor.removeSelectedText();
-	cursor.deleteChar();
+	if (m_ui.view->document()->isEmpty()) {
+		m_pendingLines.dequeue();
+	} else {
+		QTextCursor cursor(m_ui.view->document());
+		cursor.setPosition(0);
+		cursor.select(QTextCursor::BlockUnderCursor);
+		cursor.removeSelectedText();
+		cursor.deleteChar();
+	}
 	--m_lines;
 }

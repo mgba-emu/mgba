@@ -13,7 +13,8 @@
 #include <QFontDatabase>
 
 extern "C" {
-#include "gba/supervisor/export.h"
+#include "core/core.h"
+#include "gba/extra/export.h"
 #include "util/vfs.h"
 }
 
@@ -46,14 +47,14 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 	connect(m_ui.exportBG, &QAbstractButton::clicked, [this] () { exportPalette(0, 256); });
 	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this] () { exportPalette(256, 256); });
 
-	connect(controller, SIGNAL(gameStopped(GBAThread*)), this, SLOT(close()));
+	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 }
 
 void PaletteView::updatePalette() {
-	if (!m_controller->thread() || !m_controller->thread()->gba) {
+	if (!m_controller->thread() || !m_controller->thread()->core) {
 		return;
 	}
-	const uint16_t* palette = m_controller->thread()->gba->video.palette;
+	const uint16_t* palette = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette;
 	for (int i = 0; i < 256; ++i) {
 		m_ui.bgGrid->setColor(i, palette[i]);
 		m_ui.objGrid->setColor(i, palette[i + 256]);
@@ -63,7 +64,7 @@ void PaletteView::updatePalette() {
 }
 
 void PaletteView::selectIndex(int index) {
-	uint16_t color = m_controller->thread()->gba->video.palette[index];
+	uint16_t color = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[index];
 	m_ui.selected->setColor(0, color);
 	uint32_t r = GBA_R5(color);
 	uint32_t g = GBA_G5(color);
@@ -94,15 +95,15 @@ void PaletteView::exportPalette(int start, int length) {
 	QString filename = dialog->selectedFiles()[0];
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		LOG(ERROR) << tr("Failed to open output palette file: %1").arg(filename);
+		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);
 		m_controller->threadContinue();
 		return;
 	}
 	QString filter = dialog->selectedNameFilter();
 	if (filter.contains("*.pal")) {
-		GBAExportPaletteRIFF(vf, length, &m_controller->thread()->gba->video.palette[start]);
+		GBAExportPaletteRIFF(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	} else if (filter.contains("*.act")) {
-		GBAExportPaletteACT(vf, length, &m_controller->thread()->gba->video.palette[start]);
+		GBAExportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	}
 	vf->close(vf);
 	m_controller->threadContinue();

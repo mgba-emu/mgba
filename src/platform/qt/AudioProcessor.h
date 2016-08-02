@@ -7,7 +7,7 @@
 #define QGBA_AUDIO_PROCESSOR
 #include <QObject>
 
-struct GBAThread;
+struct mCoreThread;
 
 namespace QGBA {
 
@@ -29,12 +29,12 @@ public:
 
 	AudioProcessor(QObject* parent = nullptr);
 
-	virtual void setInput(GBAThread* input);
+	virtual void setInput(mCoreThread* input);
 	int getBufferSamples() const { return m_samples; }
 	virtual unsigned sampleRate() const = 0;
 
 public slots:
-	virtual void start() = 0;
+	virtual bool start() = 0;
 	virtual void pause() = 0;
 
 	virtual void setBufferSamples(int samples) = 0;
@@ -43,10 +43,10 @@ public slots:
 	virtual void requestSampleRate(unsigned) = 0;
 
 protected:
-	GBAThread* input() { return m_context; }
+	mCoreThread* input() { return m_context; }
 
 private:
-	GBAThread* m_context;
+	mCoreThread* m_context;
 	int m_samples;
 	static Driver s_driver;
 };

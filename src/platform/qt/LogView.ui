@@ -99,30 +99,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="levelSWI">
-          <property name="text">
-           <string>SW Interrupt</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="levelStatus">
-          <property name="text">
-           <string>Status</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="levelSIO">
-          <property name="text">
-           <string>Serial I/O</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>

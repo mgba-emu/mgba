@@ -13,7 +13,7 @@
 #include "ui_GIFView.h"
 
 extern "C" {
-#include "platform/imagemagick/imagemagick-gif-encoder.h"
+#include "feature/imagemagick/imagemagick-gif-encoder.h"
 }
 
 namespace QGBA {
@@ -25,19 +25,20 @@ public:
 	GIFView(QWidget* parent = nullptr);
 	virtual ~GIFView();
 
-	GBAAVStream* getStream() { return &m_encoder.d; }
+	mAVStream* getStream() { return &m_encoder.d; }
 
 public slots:
 	void startRecording();
 	void stopRecording();
 
 signals:
-	void recordingStarted(GBAAVStream*);
+	void recordingStarted(mAVStream*);
 	void recordingStopped();
 
 private slots:
 	void selectFile();
 	void setFilename(const QString&);
+	void updateDelay();
 
 private:
 	Ui::GIFView m_ui;

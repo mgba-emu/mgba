@@ -128,7 +128,7 @@ protected:
 private:
 	ShortcutItem* itemAt(const QModelIndex& index);
 	const ShortcutItem* itemAt(const QModelIndex& index) const;
-	void loadShortcuts(ShortcutItem*);
+	bool loadShortcuts(ShortcutItem*);
 	void loadGamepadShortcuts(ShortcutItem*);
 	void onSubitems(ShortcutItem*, std::function<void(ShortcutItem*)> func);
 	void updateKey(ShortcutItem* item, int keySequence);

@@ -1,9 +1,7 @@
 /* MtCoder.c -- Multi-thread Coder
-2010-09-24 : Igor Pavlov : Public domain */
+2015-10-13 : Igor Pavlov : Public domain */
 
 #include "Precomp.h"
-
-#include <stdio.h>
 
 #include "MtCoder.h"
 
@@ -120,7 +118,7 @@ void CMtThread_Construct(CMtThread *p, CMtCoder *mtCoder)
   LoopThread_Construct(&p->thread);
 }
 
-#define RINOK_THREAD(x) { if((x) != 0) return SZ_ERROR_THREAD; }
+#define RINOK_THREAD(x) { if ((x) != 0) return SZ_ERROR_THREAD; }
 
 static void CMtThread_CloseEvents(CMtThread *p)
 {

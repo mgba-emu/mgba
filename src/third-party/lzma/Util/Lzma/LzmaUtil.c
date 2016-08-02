@@ -1,5 +1,5 @@
 /* LzmaUtil.c -- Test application for LZMA compression
-2014-12-31 : Igor Pavlov : Public domain */
+2015-11-08 : Igor Pavlov : Public domain */
 
 #include "../../Precomp.h"
 
@@ -17,10 +17,6 @@ const char *kCantReadMessage = "Can not read input file";
 const char *kCantWriteMessage = "Can not write output file";
 const char *kCantAllocateMessage = "Can not allocate memory";
 const char *kDataErrorMessage = "Data error";
-
-static void *SzAlloc(void *p, size_t size) { p = p; return MyAlloc(size); }
-static void SzFree(void *p, void *address) { p = p; MyFree(address); }
-static ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
 void PrintHelp(char *buffer)
 {
@@ -137,7 +133,7 @@ static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 file
   SRes res;
   CLzmaEncProps props;
 
-  rs = rs;
+  UNUSED_VAR(rs);
 
   enc = LzmaEnc_Create(&g_Alloc);
   if (enc == 0)

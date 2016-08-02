@@ -5,15 +5,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gba.h"
 
+#include "core/thread.h"
+
+#include "arm/decoder.h"
+#include "arm/debugger/debugger.h"
+#include "arm/isa-inlines.h"
+
 #include "gba/bios.h"
 #include "gba/cheats.h"
 #include "gba/io.h"
+#include "gba/overrides.h"
 #include "gba/rr/rr.h"
-#include "gba/supervisor/thread.h"
 #include "gba/serialize.h"
 #include "gba/sio.h"
-
-#include "isa-inlines.h"
+#include "gba/vfame.h"
 
 #include "util/crc32.h"
 #include "util/memory.h"
@@ -21,13 +26,17 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
+mLOG_DEFINE_CATEGORY(GBA, "GBA");
+
 const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
 static const size_t GBA_ROM_MAGIC_OFFSET = 3;
 static const uint8_t GBA_ROM_MAGIC[] = { 0xEA };
 
-static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component);
+static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
+
+static void GBAInit(void* cpu, struct mCPUComponent* component);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles);
@@ -50,13 +59,13 @@ void GBACreate(struct GBA* gba) {
 	gba->d.deinit = 0;
 }
 
-static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
+static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	struct GBA* gba = (struct GBA*) component;
 	gba->cpu = cpu;
 	gba->debugger = 0;
 	gba->sync = 0;
 
-	GBAInterruptHandlerInit(&cpu->irqh);
+	GBAInterruptHandlerInit(&gba->cpu->irqh);
 	GBAMemoryInit(gba);
 	GBASavedataInit(&gba->memory.savedata, 0);
 
@@ -85,8 +94,6 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 	gba->romVf = 0;
 	gba->biosVf = 0;
 
-	gba->logHandler = 0;
-	gba->logLevel = GBA_LOG_WARN | GBA_LOG_ERROR | GBA_LOG_FATAL;
 	gba->stream = 0;
 	gba->keyCallback = 0;
 	gba->stopCallback = 0;
@@ -95,15 +102,16 @@ static void GBAInit(struct ARMCore* cpu, struct ARMComponent* component) {
 
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
 	gba->idleLoop = IDLE_LOOP_NONE;
-	gba->lastJump = 0;
-	gba->haltPending = false;
-	gba->idleDetectionStep = 0;
-	gba->idleDetectionFailures = 0;
 
 	gba->realisticTiming = true;
 	gba->hardCrash = true;
+	gba->allowOpposingDirections = true;
 
 	gba->performingDMA = false;
+
+	gba->pristineRom = 0;
+	gba->pristineRomSize = 0;
+	gba->yankedRomSize = 0;
 }
 
 void GBAUnloadROM(struct GBA* gba) {
@@ -119,11 +127,13 @@ void GBAUnloadROM(struct GBA* gba) {
 #ifndef _3DS
 		gba->romVf->unmap(gba->romVf, gba->pristineRom, gba->pristineRomSize);
 #endif
+		gba->romVf->close(gba->romVf);
 		gba->pristineRom = 0;
 		gba->romVf = 0;
 	}
 
 	GBASavedataDeinit(&gba->memory.savedata);
+	gba->idleLoop = IDLE_LOOP_NONE;
 }
 
 void GBADestroy(struct GBA* gba) {
@@ -179,37 +189,48 @@ void GBAReset(struct ARMCore* cpu) {
 
 	gba->timersEnabled = 0;
 	memset(gba->timers, 0, sizeof(gba->timers));
+
+	gba->lastJump = 0;
+	gba->haltPending = false;
+	gba->idleDetectionStep = 0;
+	gba->idleDetectionFailures = 0;
 }
 
-void GBASkipBIOS(struct ARMCore* cpu) {
+void GBASkipBIOS(struct GBA* gba) {
+	struct ARMCore* cpu = gba->cpu;
 	if (cpu->gprs[ARM_PC] == BASE_RESET + WORD_SIZE_ARM) {
-		cpu->gprs[ARM_PC] = BASE_CART0;
+		if (gba->memory.rom) {
+			cpu->gprs[ARM_PC] = BASE_CART0;
+		} else {
+			cpu->gprs[ARM_PC] = BASE_WORKING_RAM;
+		}
 		int currentCycles = 0;
 		ARM_WRITE_PC;
 	}
 }
 
 static void GBAProcessEvents(struct ARMCore* cpu) {
+	struct GBA* gba = (struct GBA*) cpu->master;
+
+	gba->bus = cpu->prefetch[1];
+	if (cpu->executionMode == MODE_THUMB) {
+		gba->bus |= cpu->prefetch[1] << 16;
+	}
+
+	if (gba->springIRQ) {
+		ARMRaiseIRQ(cpu);
+		gba->springIRQ = 0;
+	}
+
 	do {
-		struct GBA* gba = (struct GBA*) cpu->master;
 		int32_t cycles = cpu->nextEvent;
 		int32_t nextEvent = INT_MAX;
 		int32_t testEvent;
 #ifndef NDEBUG
 		if (cycles < 0) {
-			GBALog(gba, GBA_LOG_FATAL, "Negative cycles passed: %i", cycles);
+			mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
 		}
 #endif
-
-		gba->bus = cpu->prefetch[1];
-		if (cpu->executionMode == MODE_THUMB) {
-			gba->bus |= cpu->prefetch[1] << 16;
-		}
-
-		if (gba->springIRQ) {
-			ARMRaiseIRQ(cpu);
-			gba->springIRQ = 0;
-		}
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
@@ -252,7 +273,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		struct GBATimer* nextTimer;
 
 		timer = &gba->timers[0];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			while (timer->nextEvent <= 0) {
@@ -261,7 +282,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM0CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER0);
 				}
 
@@ -276,7 +297,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				}
 
 				nextTimer = &gba->timers[1];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM1CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM1CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -287,7 +308,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[1];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -296,7 +317,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM1CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER1);
 				}
 
@@ -310,12 +331,12 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 					}
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 
 				nextTimer = &gba->timers[2];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM2CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM2CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -328,7 +349,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[2];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -337,16 +358,16 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM2CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER2);
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 
 				nextTimer = &gba->timers[3];
-				if (nextTimer->countUp) {
+				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM3CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM3CNT_LO >> 1]) {
 						nextTimer->nextEvent = 0;
@@ -359,7 +380,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[3];
-		if (timer->enable) {
+		if (GBATimerFlagsIsEnable(timer->flags)) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -368,11 +389,11 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				gba->memory.io[REG_TM3CNT_LO >> 1] = timer->reload;
 				timer->oldReload = timer->reload;
 
-				if (timer->doIrq) {
+				if (GBATimerFlagsIsDoIrq(timer->flags)) {
 					GBARaiseIRQ(gba, IRQ_TIMER3);
 				}
 
-				if (timer->countUp) {
+				if (GBATimerFlagsIsCountUp(timer->flags)) {
 					timer->nextEvent = INT_MAX;
 				}
 			}
@@ -384,21 +405,49 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 	return nextEvent;
 }
 
-void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger) {
-	debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
-	debugger->clearSoftwareBreakpoint = _clearSoftwareBreakpoint;
-	gba->debugger = debugger;
-	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = &debugger->d;
-	ARMHotplugAttach(gba->cpu, GBA_COMPONENT_DEBUGGER);
+void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
+	gba->debugger = (struct ARMDebugger*) debugger->platform;
+	gba->debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
+	gba->debugger->clearSoftwareBreakpoint = _clearSoftwareBreakpoint;
+	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = &debugger->d;
+	ARMHotplugAttach(gba->cpu, CPU_COMPONENT_DEBUGGER);
 }
 
 void GBADetachDebugger(struct GBA* gba) {
 	gba->debugger = 0;
-	ARMHotplugDetach(gba->cpu, GBA_COMPONENT_DEBUGGER);
-	gba->cpu->components[GBA_COMPONENT_DEBUGGER] = 0;
+	ARMHotplugDetach(gba->cpu, CPU_COMPONENT_DEBUGGER);
+	gba->cpu->components[CPU_COMPONENT_DEBUGGER] = 0;
 }
 
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname) {
+bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
+	GBAUnloadROM(gba);
+	gba->romVf = vf;
+	gba->pristineRomSize = vf->size(vf);
+	vf->seek(vf, 0, SEEK_SET);
+	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
+		gba->pristineRomSize = SIZE_WORKING_RAM;
+	}
+#ifdef _3DS
+	gba->pristineRom = 0;
+	if (gba->pristineRomSize <= romBufferSize) {
+		gba->pristineRom = romBuffer;
+		vf->read(vf, romBuffer, gba->pristineRomSize);
+	}
+#else
+	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+#endif
+	if (!gba->pristineRom) {
+		mLOG(GBA, WARN, "Couldn't map ROM");
+		return false;
+	}
+	gba->yankedRomSize = 0;
+	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
+	gba->romCrc32 = doCrc32(gba->pristineRom, gba->pristineRomSize);
+	return true;
+}
+
+bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
 	gba->pristineRomSize = vf->size(vf);
@@ -416,19 +465,24 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char
 	gba->pristineRom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 #endif
 	if (!gba->pristineRom) {
-		GBALog(gba, GBA_LOG_WARN, "Couldn't map ROM");
+		mLOG(GBA, WARN, "Couldn't map ROM");
 		return false;
 	}
 	gba->yankedRomSize = 0;
 	gba->memory.rom = gba->pristineRom;
-	gba->activeFile = fname;
 	gba->memory.romSize = gba->pristineRomSize;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
+	gba->memory.mirroring = false;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
-	GBASavedataInit(&gba->memory.savedata, sav);
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	return true;
+	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
 	// TODO: error check
+	return true;
+}
+
+bool GBALoadSave(struct GBA* gba, struct VFile* sav) {
+	GBASavedataInit(&gba->memory.savedata, sav);
+	return true;
 }
 
 void GBAYankROM(struct GBA* gba) {
@@ -442,19 +496,19 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
 	uint32_t* bios = vf->map(vf, SIZE_BIOS, MAP_READ);
 	if (!bios) {
-		GBALog(gba, GBA_LOG_WARN, "Couldn't map BIOS");
+		mLOG(GBA, WARN, "Couldn't map BIOS");
 		return;
 	}
 	gba->memory.bios = bios;
 	gba->memory.fullBios = 1;
 	uint32_t checksum = GBAChecksum(gba->memory.bios, SIZE_BIOS);
-	GBALog(gba, GBA_LOG_DEBUG, "BIOS Checksum: 0x%X", checksum);
+	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
 	if (checksum == GBA_BIOS_CHECKSUM) {
-		GBALog(gba, GBA_LOG_INFO, "Official GBA BIOS detected");
+		mLOG(GBA, INFO, "Official GBA BIOS detected");
 	} else if (checksum == GBA_DS_BIOS_CHECKSUM) {
-		GBALog(gba, GBA_LOG_INFO, "Official GBA (DS) BIOS detected");
+		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
 	} else {
-		GBALog(gba, GBA_LOG_WARN, "BIOS checksum incorrect");
+		mLOG(GBA, WARN, "BIOS checksum incorrect");
 	}
 	gba->biosChecksum = checksum;
 	if (gba->memory.activeRegion == REGION_BIOS) {
@@ -481,47 +535,47 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 
 void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
-	if (currentTimer->enable && !currentTimer->countUp) {
+	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		int32_t prefetchSkew = 0;
-		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
+		if (gba->memory.lastPrefetchedPc >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
 			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
 		}
 		// Reading this takes two cycles (1N+1I), so let's remove them preemptively
-		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> currentTimer->prescaleBits);
+		gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent - 2 + prefetchSkew) >> GBATimerFlagsGetPrescaleBits(currentTimer->flags));
 	}
 }
 
 void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t reload) {
 	gba->timers[timer].reload = reload;
-	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << gba->timers[timer].prescaleBits;
+	gba->timers[timer].overflowInterval = (0x10000 - gba->timers[timer].reload) << GBATimerFlagsGetPrescaleBits(gba->timers[timer].flags);
 }
 
 void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	GBATimerUpdateRegister(gba, timer);
 
-	int oldPrescale = currentTimer->prescaleBits;
+	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(currentTimer->flags);
 	switch (control & 0x0003) {
 	case 0x0000:
-		currentTimer->prescaleBits = 0;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 0);
 		break;
 	case 0x0001:
-		currentTimer->prescaleBits = 6;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 6);
 		break;
 	case 0x0002:
-		currentTimer->prescaleBits = 8;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 8);
 		break;
 	case 0x0003:
-		currentTimer->prescaleBits = 10;
+		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 10);
 		break;
 	}
-	currentTimer->countUp = !!(control & 0x0004);
-	currentTimer->doIrq = !!(control & 0x0040);
-	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << currentTimer->prescaleBits;
-	int wasEnabled = currentTimer->enable;
-	currentTimer->enable = !!(control & 0x0080);
-	if (!wasEnabled && currentTimer->enable) {
-		if (!currentTimer->countUp) {
+	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, control & 0x0004);
+	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
+	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << GBATimerFlagsGetPrescaleBits(currentTimer->flags);
+	bool wasEnabled = GBATimerFlagsIsEnable(currentTimer->flags);
+	currentTimer->flags = GBATimerFlagsTestFillEnable(currentTimer->flags, control & 0x0080);
+	if (!wasEnabled && GBATimerFlagsIsEnable(currentTimer->flags)) {
+		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
 			currentTimer->nextEvent = gba->cpu->cycles + currentTimer->overflowInterval;
 		} else {
 			currentTimer->nextEvent = INT_MAX;
@@ -530,12 +584,12 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->oldReload = currentTimer->reload;
 		currentTimer->lastEvent = gba->cpu->cycles;
 		gba->timersEnabled |= 1 << timer;
-	} else if (wasEnabled && !currentTimer->enable) {
-		if (!currentTimer->countUp) {
+	} else if (wasEnabled && !GBATimerFlagsIsEnable(currentTimer->flags)) {
+		if (!GBATimerFlagsIsCountUp(currentTimer->flags)) {
 			gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1] = currentTimer->oldReload + ((gba->cpu->cycles - currentTimer->lastEvent) >> oldPrescale);
 		}
 		gba->timersEnabled &= ~(1 << timer);
-	} else if (currentTimer->prescaleBits != oldPrescale && !currentTimer->countUp) {
+	} else if (GBATimerFlagsGetPrescaleBits(currentTimer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		// FIXME: this might be before present
 		currentTimer->nextEvent = currentTimer->lastEvent + currentTimer->overflowInterval;
 	}
@@ -547,7 +601,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 
 void GBAWriteIE(struct GBA* gba, uint16_t value) {
 	if (value & (1 << IRQ_KEYPAD)) {
-		GBALog(gba, GBA_LOG_STUB, "Keypad interrupts not implemented");
+		mLOG(GBA, STUB, "Keypad interrupts not implemented");
 	}
 
 	if (gba->memory.io[REG_IME >> 1] && value & gba->memory.io[REG_IF >> 1]) {
@@ -591,82 +645,6 @@ void GBAStop(struct GBA* gba) {
 	gba->stopCallback->stop(gba->stopCallback);
 }
 
-static void _GBAVLog(struct GBA* gba, enum GBALogLevel level, const char* format, va_list args) {
-	struct GBAThread* threadContext = GBAThreadGetContext();
-	enum GBALogLevel logLevel = GBA_LOG_ALL;
-
-	if (gba) {
-		logLevel = gba->logLevel;
-	}
-
-	if (threadContext) {
-		logLevel = threadContext->logLevel;
-		gba = threadContext->gba;
-	}
-
-	if (!(level & logLevel) && level != GBA_LOG_FATAL) {
-		return;
-	}
-
-	if (level == GBA_LOG_FATAL && gba) {
-		gba->cpu->nextEvent = 0;
-	}
-
-	if (threadContext) {
-		if (level == GBA_LOG_FATAL) {
-			MutexLock(&threadContext->stateMutex);
-			threadContext->state = THREAD_CRASHED;
-			MutexUnlock(&threadContext->stateMutex);
-		}
-	}
-	if (gba && gba->logHandler) {
-		gba->logHandler(threadContext, level, format, args);
-		return;
-	}
-
-	vprintf(format, args);
-	printf("\n");
-
-	if (level == GBA_LOG_FATAL && !threadContext) {
-		abort();
-	}
-}
-
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	_GBAVLog(gba, level, format, args);
-	va_end(args);
-}
-
-void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...) {
-	struct GBA* gba = 0;
-	if (debugger->cpu) {
-		gba = (struct GBA*) debugger->cpu->master;
-	}
-
-	enum GBALogLevel gbaLevel;
-	switch (level) {
-	default: // Avoids compiler warning
-	case DEBUGGER_LOG_DEBUG:
-		gbaLevel = GBA_LOG_DEBUG;
-		break;
-	case DEBUGGER_LOG_INFO:
-		gbaLevel = GBA_LOG_INFO;
-		break;
-	case DEBUGGER_LOG_WARN:
-		gbaLevel = GBA_LOG_WARN;
-		break;
-	case DEBUGGER_LOG_ERROR:
-		gbaLevel = GBA_LOG_ERROR;
-		break;
-	}
-	va_list args;
-	va_start(args, format);
-	_GBAVLog(gba, gbaLevel, format, args);
-	va_end(args);
-}
-
 bool GBAIsROM(struct VFile* vf) {
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
 		return false;
@@ -675,7 +653,43 @@ bool GBAIsROM(struct VFile* vf) {
 	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 		return false;
 	}
+	if (GBAIsBIOS(vf)) {
+		return false;
+	}
 	return memcmp(signature, GBA_ROM_MAGIC, sizeof(signature)) == 0;
+}
+
+bool GBAIsMB(struct VFile* vf) {
+	if (!GBAIsROM(vf)) {
+		return false;
+	}
+	if (vf->size(vf) > SIZE_WORKING_RAM) {
+		return false;
+	}
+	if (vf->seek(vf, GBA_MB_MAGIC_OFFSET, SEEK_SET) < 0) {
+		return false;
+	}
+	uint32_t signature;
+	if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
+		return false;
+	}
+	uint32_t opcode;
+	LOAD_32(opcode, 0, &signature);
+	struct ARMInstructionInfo info;
+	ARMDecodeARM(opcode, &info);
+	if (info.branchType != ARM_BRANCH) {
+		return false;
+	}
+	if (info.op1.immediate <= 0) {
+		return false;
+	} else if (info.op1.immediate == 28) {
+		// Ancient toolchain that is known to throw MB detection for a loop
+		return false;
+	} else if (info.op1.immediate != 24) {
+		return true;
+	}
+	// Found a libgba-linked cart...these are a bit harder to detect.
+	return false;
 }
 
 bool GBAIsBIOS(struct VFile* vf) {
@@ -696,46 +710,52 @@ bool GBAIsBIOS(struct VFile* vf) {
 }
 
 void GBAGetGameCode(struct GBA* gba, char* out) {
+	memset(out, 0, 8);
 	if (!gba->memory.rom) {
-		out[0] = '\0';
 		return;
 	}
-	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->id, 4);
+
+	memcpy(out, "AGB-", 4);
+	memcpy(&out[4], &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
 void GBAGetGameTitle(struct GBA* gba, char* out) {
-	if (!gba->memory.rom) {
-		strncpy(out, "(BIOS)", 12);
+	if (gba->memory.rom) {
+		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 		return;
 	}
-	memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
+	if (gba->pristineRom) {
+		memcpy(out, &((struct GBACartridge*) gba->pristineRom)->title, 12);
+		return;
+	}
+	strncpy(out, "(BIOS)", 12);
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	enum GBALogLevel level = GBA_LOG_ERROR;
 	if (gba->debugger) {
-		level = GBA_LOG_STUB;
-		struct DebuggerEntryInfo info = {
+		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
-	GBALog(gba, level, "Stub opcode: %08x", opcode);
+	// TODO: More sensible category?
+	mLOG(GBA, ERROR, "Stub opcode: %08x", opcode);
 }
 
 void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	if (!gba->yankedRomSize) {
-		GBALog(gba, GBA_LOG_WARN, "Illegal opcode: %08x", opcode);
+		// TODO: More sensible category?
+		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
 	}
 	if (gba->debugger) {
-		struct DebuggerEntryInfo info = {
+		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
 			.opcode = opcode
 		};
-		ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	} else {
 		ARMRaiseUndefined(cpu);
 	}
@@ -743,27 +763,27 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	if (immediate >= GBA_COMPONENT_MAX) {
+	if (immediate >= CPU_COMPONENT_MAX) {
 		return;
 	}
 	switch (immediate) {
-	case GBA_COMPONENT_DEBUGGER:
+	case CPU_COMPONENT_DEBUGGER:
 		if (gba->debugger) {
-			struct DebuggerEntryInfo info = {
+			struct mDebuggerEntryInfo info = {
 				.address = _ARMPCAddress(cpu)
 			};
-			ARMDebuggerEnter(gba->debugger, DEBUGGER_ENTER_BREAKPOINT, &info);
+			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
 		break;
-	case GBA_COMPONENT_CHEAT_DEVICE:
-		if (gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
-			struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+	case CPU_COMPONENT_CHEAT_DEVICE:
+		if (gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+			struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 			struct GBACheatHook* hook = 0;
 			size_t i;
-			for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
-				struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+			for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+				struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
 				if (cheats->hook && cheats->hook->address == _ARMPCAddress(cpu)) {
-					GBACheatRefresh(device, cheats);
+					mCheatRefresh(device, &cheats->d);
 					hook = cheats->hook;
 				}
 			}
@@ -780,18 +800,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	struct GBAThread* thread = GBAThreadGetContext();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->rewindBuffer) {
-		--thread->rewindBufferNext;
-		if (thread->rewindBufferNext <= 0) {
-			thread->rewindBufferNext = thread->rewindBufferInterval;
-			GBARecordFrame(thread);
-		}
-	}
+	// TODO: Put back rewind
 }
 
 void GBAFrameEnded(struct GBA* gba) {
@@ -801,26 +810,29 @@ void GBAFrameEnded(struct GBA* gba) {
 		gba->rr->nextFrame(gba->rr);
 	}
 
-	if (gba->cpu->components && gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE]) {
-		struct GBACheatDevice* device = (struct GBACheatDevice*) gba->cpu->components[GBA_COMPONENT_CHEAT_DEVICE];
+	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
+		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 		size_t i;
-		for (i = 0; i < GBACheatSetsSize(&device->cheats); ++i) {
-			struct GBACheatSet* cheats = *GBACheatSetsGetPointer(&device->cheats, i);
+		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+			struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
 			if (!cheats->hook) {
-				GBACheatRefresh(device, cheats);
+				mCheatRefresh(device, &cheats->d);
 			}
 		}
 	}
 
 	if (gba->stream && gba->stream->postVideoFrame) {
-		gba->stream->postVideoFrame(gba->stream, gba->video.renderer);
+		const color_t* pixels;
+		unsigned stride;
+		gba->video.renderer->getPixels(gba->video.renderer, &stride, (const void**) &pixels);
+		gba->stream->postVideoFrame(gba->stream, pixels, stride);
 	}
 
 	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {
 		GBAHardwarePlayerUpdate(gba);
 	}
 
-	struct GBAThread* thread = GBAThreadGetContext();
+	struct mCoreThread* thread = mCoreThreadGet();
 	if (!thread) {
 		return;
 	}
@@ -828,9 +840,11 @@ void GBAFrameEnded(struct GBA* gba) {
 	if (thread->frameCallback) {
 		thread->frameCallback(thread);
 	}
+
+	// TODO: Put back RR
 }
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
+void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	size_t immediate;
 	for (immediate = 0; immediate < gba->cpu->numComponents; ++immediate) {
 		if (gba->cpu->components[immediate] == component) {
@@ -866,14 +880,8 @@ void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mo
 	}
 }
 
-#if (!defined(USE_PTHREADS) && !defined(_WIN32)) || defined(DISABLE_THREADING)
-struct GBAThread* GBAThreadGetContext(void) {
-	return 0;
-}
-#endif
-
 static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
-	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d, address, mode, opcode);
+	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d.p->d, address, mode, opcode);
 	return true;
 }
 
