@@ -264,7 +264,7 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 	ThreadSetName("Proxy Renderer Thread");
 
 	MutexLock(&proxyRenderer->mutex);
-	while (1) {
+	while (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 		ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
 			break;
@@ -306,8 +306,6 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 		ConditionWake(&proxyRenderer->fromThreadCond);
 		if (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 			proxyRenderer->threadState = PROXY_THREAD_IDLE;
-		} else {
-			break;
 		}
 	}
 	MutexUnlock(&proxyRenderer->mutex);
