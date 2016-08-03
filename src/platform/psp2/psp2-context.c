@@ -174,6 +174,11 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	runner->core->setRotation(runner->core, &rotation.d);
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
+
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -249,6 +254,13 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
 }
 
+void mPSP2Unpaused(struct mGUIRunner* runner) {
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+	}
+}
+
 void mPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
@@ -293,13 +305,8 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool
 }
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
-	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
-		screenMode = mode;
-	} else {
-		screenMode = (screenMode + 1) % SM_MAX;
-		mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
-	}
+	screenMode = (screenMode + 1) % SM_MAX;
+	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {
