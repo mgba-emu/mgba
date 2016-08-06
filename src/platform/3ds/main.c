@@ -215,6 +215,13 @@ static void _guiFinish(void) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
+	bool isNew3DS;
+	APT_CheckNew3DS(&isNew3DS);
+	if (isNew3DS && !envIsHomebrew()) {
+		mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
+		mCoreLoadConfig(runner->core);
+	}
+
 	runner->core->setRotation(runner->core, &rotation.d);
 	if (hasSound != NO_SOUND) {
 		runner->core->setAVStream(runner->core, &stream);
