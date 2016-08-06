@@ -75,7 +75,7 @@ static inline int ConditionWait(Condition* cond, Mutex* mutex) {
 	MutexUnlock(&cond->mutex);
 	svcWaitSynchronization(cond->semaphore, U64_MAX);
 	MutexLock(mutex);
-	return 1;
+	return 0;
 }
 
 static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t timeoutMs) {
@@ -85,7 +85,7 @@ static inline int ConditionWaitTimed(Condition* cond, Mutex* mutex, int32_t time
 	MutexUnlock(&cond->mutex);
 	svcWaitSynchronization(cond->semaphore, timeoutMs * 10000000LL);
 	MutexLock(mutex);
-	return 1;
+	return 0;
 }
 
 static inline int ConditionWake(Condition* cond) {

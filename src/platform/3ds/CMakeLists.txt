@@ -105,7 +105,7 @@ add_custom_target(${BINARY_NAME}.3dsx ALL
 
 add_custom_target(${BINARY_NAME}.cia ALL
                   ${STRIP} -o ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.elf
-                  COMMAND ${MAKEROM} -f cia -o ${BINARY_NAME}.cia -rsf cia.rsf -target t -exefslogo -elf ${BINARY_NAME}-stripped.elf -icon ${BINARY_NAME}.smdh -banner ${BINARY_NAME}.bnr
+                  COMMAND ${MAKEROM} -f cia -o ${BINARY_NAME}.cia -rsf cia.rsf -target t -exefslogo -elf ${BINARY_NAME}-stripped.elf -icon ${BINARY_NAME}.smdh -banner ${BINARY_NAME}.bnr -major ${LIB_VERSION_MAJOR} -minor ${LIB_VERSION_MINOR} -micro ${LIB_VERSION_PATCH}
                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf ${BINARY_NAME}.elf ${BINARY_NAME}.smdh ${BINARY_NAME}.bnr)
 
 add_custom_target(run ${3DSLINK} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx

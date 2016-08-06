@@ -215,7 +215,7 @@ static void _guiFinish(void) {
 }
 
 static void _setup(struct mGUIRunner* runner) {
-	bool isNew3DS;
+	bool isNew3DS = false;
 	APT_CheckNew3DS(&isNew3DS);
 	if (isNew3DS && !envIsHomebrew()) {
 		mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
