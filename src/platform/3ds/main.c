@@ -409,16 +409,15 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	_drawTex(runner->core, faded);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
-	UNUSED(runner);
+static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
 
 	C3D_Tex* tex = &outputTexture;
 
-	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * sizeof(u32), 0x100);
+	u16* newPixels = linearMemAlign(256 * height * sizeof(u32), 0x100);
 
 	// Convert image from RGBX8 to BGR565
-	for (unsigned y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		for (unsigned x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+	for (unsigned y = 0; y < height; ++y) {
+		for (unsigned x = 0; x < width; ++x) {
 			// 0xXXBBGGRR -> 0bRRRRRGGGGGGBBBBB
 			u32 p = *pixels++;
 			newPixels[y * 256 + x] =
@@ -426,12 +425,12 @@ static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, b
 				(p << 16 >> (24 + 2) <<  5) | // G
 				(p <<  8 >> (24 + 3) <<  0);  // B
 		}
-		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, (256 - VIDEO_HORIZONTAL_PIXELS) * sizeof(u32));
+		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(u32));
 	}
 
-	GSPGPU_FlushDataCache(newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
+	GSPGPU_FlushDataCache(newPixels, 256 * height * sizeof(u32));
 	C3D_SafeDisplayTransfer(
-			(u32*) newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+			(u32*) newPixels, GX_BUFFER_DIM(256, height),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |

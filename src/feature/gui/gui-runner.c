@@ -60,13 +60,13 @@ static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	int stateId = ((int) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
+		unsigned w, h;
+		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
 		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, true);
+			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, w, h, true);
 			return;
 		}
 		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-		unsigned w, h;
-		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
 		uint32_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(w * h * 4);
@@ -88,7 +88,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			vf->close(vf);
 		}
 		if (success) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, true);
+			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, w, h, true);
 			gbaBackground->screenshotId = (int) id;
 		} else if (gbaBackground->p->drawFrame) {
 			gbaBackground->p->drawFrame(gbaBackground->p, true);

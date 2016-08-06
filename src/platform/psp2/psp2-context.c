@@ -283,12 +283,12 @@ void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	}
 }
 
-void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
+void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
 	UNUSED(runner);
 	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
 	int y;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		memcpy(&texpixels[256 * y], &pixels[VIDEO_HORIZONTAL_PIXELS * y], VIDEO_HORIZONTAL_PIXELS * 4);
+	for (y = 0; y < height; ++y) {
+		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}
 	switch (screenMode) {
 	case SM_BACKDROP:
@@ -296,10 +296,10 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(screenshot, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_part_scale(screenshot, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	}
 }
