@@ -214,7 +214,7 @@ void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	if (!(y & 15)) {
+	if ((y & 15) == 15) {
 		ConditionWake(&proxyRenderer->toThreadCond);
 	}
 }
