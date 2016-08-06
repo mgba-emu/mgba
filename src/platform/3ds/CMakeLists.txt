@@ -111,6 +111,9 @@ add_custom_target(${BINARY_NAME}.cia ALL
 add_custom_target(run ${3DSLINK} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
                   DEPENDS ${BINARY_NAME}.3dsx)
 
+add_custom_target(install-cia stat -f '0 00000001 %016Xz' '${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.cia' | xxd -r | cat -- - '${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.cia' | nc $ENV{N3DS_IP} 5000
+                  DEPENDS ${BINARY_NAME}.cia)
+
 if(BUILD_PERF)
 	add_custom_target(${BINARY_NAME}-perf.3dsx ALL
 	                  ${3DSXTOOL} ../${BINARY_NAME}-perf ${BINARY_NAME}-perf.3dsx --smdh=${BINARY_NAME}.smdh
