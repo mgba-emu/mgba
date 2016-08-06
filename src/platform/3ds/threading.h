@@ -107,6 +107,11 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	if (!thread->stack) {
 		return 1;
 	}
+	bool isNew3DS;
+	APT_CheckNew3DS(&isNew3DS);
+	if (isNew3DS && svcCreateThread(&thread->handle, entry, (u32) context, (u32*) &thread->stack[0x8000], 0x18, 2) == 0) {
+		return 0;
+	}
 	return svcCreateThread(&thread->handle, entry, (u32) context, (u32*) &thread->stack[0x8000], 0x18, -1);
 }
 

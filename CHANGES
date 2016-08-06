@@ -37,6 +37,7 @@ Misc:
  - All: Faster memory read/write
  - Qt: Make audio channel/video layer options shortcut mappable
  - GBA Memory: Optimize stalling behavior
+ - 3DS: Attempt to use Core 2 for threads
 
 0.4.1: (2016-07-11)
 Bugfixes:
