@@ -99,14 +99,16 @@ add_custom_command(
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "raw2c uishader.v.shbin")
 
-add_custom_target(${BINARY_NAME}.3dsx ALL
-                  ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
-                  DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
+add_custom_command(OUTPUT ${BINARY_NAME}.3dsx
+                   COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh
+                   DEPENDS ${BINARY_NAME}.elf ${BINARY_NAME}.smdh)
+add_custom_target(${BINARY_NAME}.3dsx ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx)
 
-add_custom_target(${BINARY_NAME}.cia ALL
-                  ${STRIP} -o ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.elf
-                  COMMAND ${MAKEROM} -f cia -o ${BINARY_NAME}.cia -rsf cia.rsf -target t -exefslogo -elf ${BINARY_NAME}-stripped.elf -icon ${BINARY_NAME}.smdh -banner ${BINARY_NAME}.bnr -major ${LIB_VERSION_MAJOR} -minor ${LIB_VERSION_MINOR} -micro ${LIB_VERSION_PATCH}
-                  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf ${BINARY_NAME}.elf ${BINARY_NAME}.smdh ${BINARY_NAME}.bnr)
+add_custom_command(OUTPUT ${BINARY_NAME}.cia
+                   COMMAND ${STRIP} -o ${BINARY_NAME}-stripped.elf ${BINARY_NAME}.elf
+                   COMMAND ${MAKEROM} -f cia -o ${BINARY_NAME}.cia -rsf cia.rsf -target t -exefslogo -elf ${BINARY_NAME}-stripped.elf -icon ${BINARY_NAME}.smdh -banner ${BINARY_NAME}.bnr -major ${LIB_VERSION_MAJOR} -minor ${LIB_VERSION_MINOR} -micro ${LIB_VERSION_PATCH}
+                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cia.rsf ${BINARY_NAME}.elf ${BINARY_NAME}.smdh ${BINARY_NAME}.bnr)
+add_custom_target(${BINARY_NAME}.cia ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.cia)
 
 add_custom_target(run ${3DSLINK} ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.3dsx
                   DEPENDS ${BINARY_NAME}.3dsx)
