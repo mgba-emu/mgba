@@ -23,7 +23,7 @@ typedef struct {
 	Handle handle;
 	u8* stack;
 } Thread;
-typedef Handle Mutex;
+typedef LightLock Mutex;
 typedef struct {
 	Mutex mutex;
 	Handle semaphore;
@@ -31,40 +31,40 @@ typedef struct {
 } Condition;
 
 static inline int MutexInit(Mutex* mutex) {
-	return svcCreateMutex(mutex, false);
+	LightLock_Init(mutex);
+	return 0;
 }
 
 static inline int MutexDeinit(Mutex* mutex) {
-	return svcCloseHandle(*mutex);
+	UNUSED(mutex);
+	return 0;
 }
 
 static inline int MutexLock(Mutex* mutex) {
-	return svcWaitSynchronization(*mutex, U64_MAX);
+	LightLock_Lock(mutex);
+	return 0;
 }
 
 static inline int MutexTryLock(Mutex* mutex) {
-	return svcWaitSynchronization(*mutex, 10);
+	return LightLock_TryLock(mutex);
 }
 
 static inline int MutexUnlock(Mutex* mutex) {
-	return svcReleaseMutex(*mutex);
+	LightLock_Unlock(mutex);
+	return 0;
 }
 
 static inline int ConditionInit(Condition* cond) {
-	Result res = svcCreateMutex(&cond->mutex, false);
+	Result res = MutexInit(&cond->mutex);
 	if (res) {
 		return res;
 	}
 	res = svcCreateSemaphore(&cond->semaphore, 0, 1);
-	if (res) {
-		svcCloseHandle(cond->mutex);
-	}
 	cond->waiting = 0;
 	return res;
 }
 
 static inline int ConditionDeinit(Condition* cond) {
-	svcCloseHandle(cond->mutex);
 	return svcCloseHandle(cond->semaphore);
 }
 
