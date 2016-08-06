@@ -62,7 +62,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	QSize ds = s;
 	if (isAspectRatioLocked()) {
 		if (s.width() * m_height > s.height() * m_width) {
-			ds.setWidth(s.height() * m_width / 2);
+			ds.setWidth(s.height() * m_width / m_height);
 		} else if (s.width() * m_height < s.height() * m_width) {
 			ds.setHeight(s.width() * m_height / m_width);
 		}
