@@ -16,8 +16,9 @@ void mPSP2Teardown(struct mGUIRunner* runner);
 void mPSP2LoadROM(struct mGUIRunner* runner);
 void mPSP2UnloadROM(struct mGUIRunner* runner);
 void mPSP2PrepareForFrame(struct mGUIRunner* runner);
+void mPSP2Unpaused(struct mGUIRunner* runner);
 void mPSP2Draw(struct mGUIRunner* runner, bool faded);
-void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded);
+void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded);
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner);
 uint16_t mPSP2PollInput(struct mGUIRunner* runner);
 

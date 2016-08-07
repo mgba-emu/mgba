@@ -18,6 +18,7 @@
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/moduleinfo.h>
 #include <psp2/power.h>
+#include <psp2/sysmodule.h>
 #include <psp2/touch.h>
 
 #include <vita2d.h>
@@ -33,7 +34,7 @@ static void _drawEnd(void) {
 	int vcount = oldVCount;
 	vita2d_end_drawing();
 	oldVCount = sceDisplayGetVcount();
-	vita2d_set_vblank_wait(oldVCount == vcount);
+	vita2d_set_vblank_wait(oldVCount + 1 >= vcount);
 	vita2d_swap_buffers();
 }
 
@@ -98,7 +99,7 @@ int main() {
 	struct mGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "cache0:", _drawStart, _drawEnd,
+			font, "ux0:", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
@@ -154,17 +155,23 @@ int main() {
 		.drawFrame = mPSP2Draw,
 		.drawScreenshot = mPSP2DrawScreenshot,
 		.paused = 0,
-		.unpaused = 0,
+		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
 		.pollGameInput = mPSP2PollInput
 	};
 
 	mGUIInit(&runner, "psvita");
 	mGUIRunloop(&runner);
+
+	vita2d_fini();
 	mGUIDeinit(&runner);
 
+	int pgfLoaded = sceSysmoduleIsLoaded(SCE_SYSMODULE_PGF);
+	if (pgfLoaded != SCE_SYSMODULE_LOADED) {
+		sceSysmoduleLoadModule(SCE_SYSMODULE_PGF);
+	}
 	GUIFontDestroy(font);
-	vita2d_fini();
+	sceSysmoduleUnloadModule(SCE_SYSMODULE_PGF);
 
 	sceKernelExitProcess(0);
 	return 0;

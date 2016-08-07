@@ -537,7 +537,7 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		int32_t prefetchSkew = 0;
-		if (gba->memory.lastPrefetchedPc - gba->memory.lastPrefetchedLoads * WORD_SIZE_THUMB >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
+		if (gba->memory.lastPrefetchedPc >= (uint32_t) gba->cpu->gprs[ARM_PC]) {
 			prefetchSkew = (gba->memory.lastPrefetchedPc - gba->cpu->gprs[ARM_PC]) * (gba->cpu->memory.activeSeqCycles16 + 1) / WORD_SIZE_THUMB;
 		}
 		// Reading this takes two cycles (1N+1I), so let's remove them preemptively

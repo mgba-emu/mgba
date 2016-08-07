@@ -91,8 +91,10 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->target2Obj = 0;
 	softwareRenderer->target2Bd = 0;
 	softwareRenderer->blendEffect = BLEND_NONE;
-	memset(softwareRenderer->normalPalette, 0, sizeof(softwareRenderer->normalPalette));
-	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
+	for (i = 0; i < 1024; i += 2) {
+		GBAVideoSoftwareRendererWritePalette(renderer, i, softwareRenderer->d.palette[i >> 1]);
+	}
+	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
 	softwareRenderer->bldb = 0;
@@ -337,8 +339,9 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 }
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -369,6 +372,9 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
+	}
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
 	}
 }
 

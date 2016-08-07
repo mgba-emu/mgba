@@ -143,7 +143,7 @@ DEFINE_DECODER_WITH_HIGH_THUMB(MOV3, MOV, ARM_OPERAND_AFFECTED_1, 0)
 
 #define DEFINE_IMMEDIATE_WITH_REGISTER_DATA_THUMB(NAME, MNEMONIC, REG) \
 	DEFINE_THUMB_DECODER(NAME, MNEMONIC, \
-		info->op1.a.reg = (opcode >> 6) & 0x0007; \
+		info->op1.a.reg = (opcode >> 8) & 0x0007; \
 		info->op2.a.reg = REG; \
 		info->op3.immediate = (opcode & 0x00FF) << 2; \
 		info->operandFormat = ARM_OPERAND_REGISTER_1 | \

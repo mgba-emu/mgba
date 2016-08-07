@@ -12,6 +12,9 @@
 #include "gba/gba.h"
 #include "gba/extra/cli.h"
 #include "gba/overrides.h"
+#ifndef DISABLE_THREADING
+#include "gba/renderers/thread-proxy.h"
+#endif
 #include "gba/renderers/video-software.h"
 #include "gba/savedata.h"
 #include "gba/serialize.h"
@@ -22,6 +25,10 @@
 struct GBACore {
 	struct mCore d;
 	struct GBAVideoSoftwareRenderer renderer;
+#ifndef DISABLE_THREADING
+	struct GBAVideoThreadProxyRenderer threadProxy;
+	int threadedVideo;
+#endif
 	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
@@ -54,6 +61,11 @@ static bool _GBACoreInit(struct mCore* core) {
 
 	GBAVideoSoftwareRendererCreate(&gbacore->renderer);
 	gbacore->renderer.outputBuffer = NULL;
+
+#ifndef DISABLE_THREADING
+	gbacore->threadedVideo = false;
+	GBAVideoThreadProxyRendererCreate(&gbacore->threadProxy, &gbacore->renderer.d);
+#endif
 
 	gbacore->keys = 0;
 	gba->keySource = &gbacore->keys;
@@ -125,6 +137,10 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 			gba->idleOptimization = IDLE_LOOP_DETECT;
 		}
 	}
+
+#ifndef DISABLE_THREADING
+	mCoreConfigGetIntValue(config, "threadedVideo", &gbacore->threadedVideo);
+#endif
 }
 
 static void _GBACoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
@@ -217,7 +233,13 @@ static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
 	if (gbacore->renderer.outputBuffer) {
-		GBAVideoAssociateRenderer(&gba->video, &gbacore->renderer.d);
+		struct GBAVideoRenderer* renderer = &gbacore->renderer.d;
+#ifndef DISABLE_THREADING
+		if (gbacore->threadedVideo) {
+			renderer = &gbacore->threadProxy.d;
+		}
+#endif
+		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 	ARMReset(core->cpu);
 	if (core->opts.skipBios) {

@@ -61,39 +61,39 @@ static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static int16_t* audioRight = 0;
 static size_t audioPos = 0;
-static struct ctrTexture gbaOutputTexture;
-static int guiDrawn;
-static int screenCleanup;
+static C3D_Tex outputTexture;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
 
+static C3D_RenderBuf bottomScreen;
+static C3D_RenderBuf topScreen;
+
 static aptHookCookie cookie;
-
-enum {
-	GUI_ACTIVE = 1,
-	GUI_THIS_FRAME = 2,
-};
-
-enum {
-	SCREEN_CLEANUP_TOP_1 = 1,
-	SCREEN_CLEANUP_TOP_2 = 2,
-	SCREEN_CLEANUP_TOP = SCREEN_CLEANUP_TOP_1 | SCREEN_CLEANUP_TOP_2,
-	SCREEN_CLEANUP_BOTTOM_1 = 4,
-	SCREEN_CLEANUP_BOTTOM_2 = 8,
-	SCREEN_CLEANUP_BOTTOM = SCREEN_CLEANUP_BOTTOM_1 | SCREEN_CLEANUP_BOTTOM_2,
-};
 
 extern bool allocateRomBuffer(void);
 
+static bool _initGpu(void) {
+	if (!C3D_Init(C3D_DEFAULT_CMDBUF_SIZE)) {
+		return false;
+	}
+
+	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0)) {
+		return false;
+	}
+
+	return ctrInitGpu();
+}
+
 static void _cleanup(void) {
+	ctrDeinitGpu();
+
 	if (outputBuffer) {
 		linearFree(outputBuffer);
 	}
 
-	if (gbaOutputTexture.data) {
-		ctrDeinitGpu();
-		vramFree(gbaOutputTexture.data);
-	}
+	C3D_RenderBufDelete(&topScreen);
+	C3D_RenderBufDelete(&bottomScreen);
+	C3D_Fini();
 
 	gfxExit();
 
@@ -173,52 +173,16 @@ static void _csndPlaySound(u32 flags, u32 sampleRate, float vol, void* left, voi
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
-	ctrGpuBeginDrawing();
-	if (screenMode < SM_PA_TOP || (guiDrawn & GUI_ACTIVE)) {
-		ctrGpuBeginFrame(GFX_BOTTOM);
-		ctrSetViewportSize(320, 240);
-	} else {
-		ctrGpuBeginFrame(GFX_TOP);
-		ctrSetViewportSize(400, 240);
-	}
-	guiDrawn &= ~GUI_THIS_FRAME;
+	C3D_RenderBufClear(&bottomScreen);
+	C3D_RenderBufClear(&topScreen);
 }
 
 static void _drawEnd(void) {
-	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
-	u16 width = 0, height = 0;
-
-	void* outputFramebuffer = gfxGetFramebuffer(screen, GFX_LEFT, &height, &width);
-	ctrGpuEndFrame(screen, outputFramebuffer, width, height);
-
-	if (screen != GFX_BOTTOM) {
-		if (guiDrawn & (GUI_THIS_FRAME | GUI_ACTIVE)) {
-			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
-		} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM) {
-			ctrGpuBeginFrame(GFX_BOTTOM);
-			if (screenCleanup & SCREEN_CLEANUP_BOTTOM_1) {
-				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_1;
-			} else if (screenCleanup & SCREEN_CLEANUP_BOTTOM_2) {
-				screenCleanup &= ~SCREEN_CLEANUP_BOTTOM_2;
-			}
-			void* outputFramebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, &height, &width);
-			ctrGpuEndFrame(GFX_BOTTOM, outputFramebuffer, width, height);
-		}
-	}
-
-	if ((screenCleanup & SCREEN_CLEANUP_TOP) && screen != GFX_TOP) {
-		ctrGpuBeginFrame(GFX_TOP);
-		if (screenCleanup & SCREEN_CLEANUP_TOP_1) {
-			screenCleanup &= ~SCREEN_CLEANUP_TOP_1;
-		} else if (screenCleanup & SCREEN_CLEANUP_TOP_2) {
-			screenCleanup &= ~SCREEN_CLEANUP_TOP_2;
-		}
-		void* outputFramebuffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &height, &width);
-		ctrGpuEndFrame(GFX_TOP, outputFramebuffer, width, height);
-	}
-
-	ctrGpuEndDrawing();
+	ctrFinalize();
+	C3D_RenderBufTransfer(&topScreen, (u32*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderBufTransfer(&bottomScreen, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	gfxSwapBuffersGpu();
+	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
 }
 
 static int _batteryState(void) {
@@ -237,23 +201,27 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	guiDrawn = GUI_ACTIVE | GUI_THIS_FRAME;
 	int screen = screenMode < SM_PA_TOP ? GFX_BOTTOM : GFX_TOP;
 	if (screen == GFX_BOTTOM) {
 		return;
 	}
 
-	ctrFlushBatch();
-	ctrGpuBeginFrame(GFX_BOTTOM);
+	C3D_RenderBufBind(&bottomScreen);
 	ctrSetViewportSize(320, 240);
 }
 
 static void _guiFinish(void) {
-	guiDrawn &= ~GUI_ACTIVE;
-	screenCleanup |= SCREEN_CLEANUP_BOTTOM;
+	ctrFlushBatch();
 }
 
 static void _setup(struct mGUIRunner* runner) {
+	bool isNew3DS = false;
+	APT_CheckNew3DS(&isNew3DS);
+	if (isNew3DS && !envIsHomebrew()) {
+		mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
+		mCoreLoadConfig(runner->core);
+	}
+
 	runner->core->setRotation(runner->core, &rotation.d);
 	if (hasSound != NO_SOUND) {
 		runner->core->setAVStream(runner->core, &stream);
@@ -322,7 +290,6 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
-		screenCleanup |= SCREEN_CLEANUP_BOTTOM | SCREEN_CLEANUP_TOP;
 	}
 }
 
@@ -358,6 +325,15 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
+	if (screenMode < SM_PA_TOP) {
+		C3D_RenderBufBind(&bottomScreen);
+		ctrSetViewportSize(320, 240);
+	} else {
+		C3D_RenderBufBind(&topScreen);
+		ctrSetViewportSize(400, 240);
+	}
+	ctrActivateTexture(&outputTexture);
+
 	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
 
 	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
@@ -408,15 +384,16 @@ static void _drawTex(struct mCore* core, bool faded) {
 	int y = (screen_h - h) / 2;
 
 	ctrAddRectScaled(color, x, y, w, h, 0, 0, corew, coreh);
+	ctrFlushBatch();
 }
 
 static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	UNUSED(runner);
 
-	struct ctrTexture* tex = &gbaOutputTexture;
+	C3D_Tex* tex = &outputTexture;
 
 	GSPGPU_FlushDataCache(outputBuffer, 256 * VIDEO_VERTICAL_PIXELS * 2);
-	GX_DisplayTransfer(
+	C3D_SafeDisplayTransfer(
 			outputBuffer, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -429,20 +406,18 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	}
 
 	gspWaitForPPF();
-	ctrActivateTexture(tex);
 	_drawTex(runner->core, faded);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
-	UNUSED(runner);
+static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
 
-	struct ctrTexture* tex = &gbaOutputTexture;
+	C3D_Tex* tex = &outputTexture;
 
-	u16* newPixels = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * sizeof(u32), 0x100);
+	u16* newPixels = linearMemAlign(256 * height * sizeof(u32), 0x100);
 
 	// Convert image from RGBX8 to BGR565
-	for (unsigned y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		for (unsigned x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
+	for (unsigned y = 0; y < height; ++y) {
+		for (unsigned x = 0; x < width; ++x) {
 			// 0xXXBBGGRR -> 0bRRRRRGGGGGGBBBBB
 			u32 p = *pixels++;
 			newPixels[y * 256 + x] =
@@ -450,12 +425,12 @@ static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, b
 				(p << 16 >> (24 + 2) <<  5) | // G
 				(p <<  8 >> (24 + 3) <<  0);  // B
 		}
-		memset(&newPixels[y * 256 + VIDEO_HORIZONTAL_PIXELS], 0, (256 - VIDEO_HORIZONTAL_PIXELS) * sizeof(u32));
+		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(u32));
 	}
 
-	GSPGPU_FlushDataCache(newPixels, 256 * VIDEO_VERTICAL_PIXELS * sizeof(u32));
-	GX_DisplayTransfer(
-			(u32*) newPixels, GX_BUFFER_DIM(256, VIDEO_VERTICAL_PIXELS),
+	GSPGPU_FlushDataCache(newPixels, 256 * height * sizeof(u32));
+	C3D_SafeDisplayTransfer(
+			(u32*) newPixels, GX_BUFFER_DIM(256, height),
 			tex->data, GX_BUFFER_DIM(256, 256),
 			GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB565) |
 				GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB565) |
@@ -463,7 +438,6 @@ static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, b
 	gspWaitForPPF();
 	linearFree(newPixels);
 
-	ctrActivateTexture(tex);
 	_drawTex(runner->core, faded);
 }
 
@@ -479,9 +453,11 @@ static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 
 static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
-	screenCleanup |= SCREEN_CLEANUP_TOP | SCREEN_CLEANUP_BOTTOM;
 	screenMode = (screenMode + 1) % SM_MAX;
 	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+
+	C3D_RenderBufClear(&bottomScreen);
+	C3D_RenderBufClear(&topScreen);
 }
 
 static uint32_t _pollInput(void) {
@@ -636,39 +612,29 @@ int main() {
 		audioRight = linearMemAlign(AUDIO_SAMPLE_BUFFER * sizeof(int16_t), 0x80);
 	}
 
-	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
+	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
 
-	if (ctrInitGpu() < 0) {
-		gbaOutputTexture.data = 0;
+	if (!_initGpu()) {
+		outputTexture.data = 0;
 		_cleanup();
 		return 1;
 	}
 
-	ctrTexture_Init(&gbaOutputTexture);
-	gbaOutputTexture.format = GPU_RGB565;
-	gbaOutputTexture.filter = GPU_LINEAR;
-	gbaOutputTexture.width = 256;
-	gbaOutputTexture.height = 256;
-	gbaOutputTexture.data = vramAlloc(256 * 256 * 2);
-	void* outputTextureEnd = (u8*)gbaOutputTexture.data + 256 * 256 * 2;
-
-	if (!gbaOutputTexture.data) {
+	if (!C3D_TexInitVRAM(&outputTexture, 256, 256, GPU_RGB565)) {
 		_cleanup();
 		return 1;
 	}
+	C3D_TexSetWrap(&outputTexture, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
+	C3D_TexSetFilter(&outputTexture, GPU_LINEAR, GPU_LINEAR);
+	void* outputTextureEnd = (u8*)outputTexture.data + 256 * 256 * 2;
 
 	// Zero texture data to make sure no garbage around the border interferes with filtering
 	GX_MemoryFill(
-			gbaOutputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
+			outputTexture.data, 0x0000, outputTextureEnd, GX_FILL_16BIT_DEPTH | GX_FILL_TRIGGER,
 			NULL, 0, NULL, 0);
 	gspWaitForPSC0();
 
-	sdmcArchive = (FS_Archive) {
-		ARCHIVE_SDMC,
-		(FS_Path) { PATH_EMPTY, 1, "" },
-		0
-	};
-	FSUSER_OpenArchive(&sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
 	struct GUIFont* font = GUIFontCreate();
 

@@ -82,6 +82,7 @@ public slots:
 	void openCheatsWindow();
 
 	void openPaletteWindow();
+	void openTileWindow();
 	void openMemoryWindow();
 	void openIOViewer();
 

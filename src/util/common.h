@@ -98,12 +98,12 @@ typedef intptr_t ssize_t;
 #error Big endian build not supported on this platform.
 #endif
 #else
-#define LOAD_64LE(DEST, ADDR, ARR) DEST = ((uint64_t*) ARR)[(ADDR) >> 3]
-#define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
-#define LOAD_16LE(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
-#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = SRC
-#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = SRC
-#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #endif
 
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))

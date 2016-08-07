@@ -103,12 +103,12 @@ static void _sampleRotation(struct mRotationSource* source) {
 
 static int32_t _readTiltX(struct mRotationSource* source) {
 	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
-	return rotation->state.accelerometer.x * 0x60000000;
+	return rotation->state.accelerometer.x * 0x30000000;
 }
 
 static int32_t _readTiltY(struct mRotationSource* source) {
 	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
-	return rotation->state.accelerometer.y * 0x60000000;
+	return rotation->state.accelerometer.y * -0x30000000;
 }
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
@@ -141,6 +141,9 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 }
 
 void mPSP2Setup(struct mGUIRunner* runner) {
+	mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
+	mCoreLoadConfig(runner->core);
+
 	scePowerSetArmClockFrequency(80);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
@@ -171,6 +174,11 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	runner->core->setRotation(runner->core, &rotation.d);
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
+
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+		screenMode = mode;
+	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -246,6 +254,13 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(80);
 }
 
+void mPSP2Unpaused(struct mGUIRunner* runner) {
+	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+		screenMode = mode;
+	}
+}
+
 void mPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
@@ -268,12 +283,12 @@ void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	}
 }
 
-void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool faded) {
+void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
 	UNUSED(runner);
 	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
 	int y;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		memcpy(&texpixels[256 * y], &pixels[VIDEO_HORIZONTAL_PIXELS * y], VIDEO_HORIZONTAL_PIXELS * 4);
+	for (y = 0; y < height; ++y) {
+		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}
 	switch (screenMode) {
 	case SM_BACKDROP:
@@ -281,22 +296,17 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, bool
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(screenshot, 120, 32, 0, 0, 240, 160, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_part_scale(screenshot, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / 240.0f, 544.0f / 160.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		break;
 	}
 }
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
-	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
-		screenMode = mode;
-	} else {
-		screenMode = (screenMode + 1) % SM_MAX;
-		mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
-	}
+	screenMode = (screenMode + 1) % SM_MAX;
+	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

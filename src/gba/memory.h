@@ -136,7 +136,6 @@ struct GBAMemory {
 	int activeRegion;
 	bool prefetch;
 	uint32_t lastPrefetchedPc;
-	uint32_t lastPrefetchedLoads;
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];

@@ -8,6 +8,7 @@
 #include "core/sync.h"
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/renderers/tile-cache.h"
 #include "gba/rr/rr.h"
 #include "gba/serialize.h"
 
@@ -55,7 +56,8 @@ static struct GBAVideoRenderer dummyRenderer = {
 	.writeOAM = GBAVideoDummyRendererWriteOAM,
 	.drawScanline = GBAVideoDummyRendererDrawScanline,
 	.finishFrame = GBAVideoDummyRendererFinishFrame,
-	.getPixels = GBAVideoDummyRendererGetPixels
+	.getPixels = GBAVideoDummyRendererGetPixels,
+	.cache = NULL
 };
 
 void GBAVideoInit(struct GBAVideo* video) {
@@ -104,6 +106,7 @@ void GBAVideoDeinit(struct GBAVideo* video) {
 
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer) {
 	video->renderer->deinit(video->renderer);
+	renderer->cache = video->renderer->cache;
 	video->renderer = renderer;
 	renderer->palette = video->palette;
 	renderer->vram = video->vram;
@@ -262,16 +265,16 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 }
 
 static void GBAVideoDummyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
-	// Nothing to do
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoDummyRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
-	UNUSED(renderer);
-	UNUSED(address);
 	UNUSED(value);
-	// Nothing to do
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
+	}
 }
 
 static void GBAVideoDummyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -331,4 +334,5 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
+	video->renderer->reset(video->renderer);
 }

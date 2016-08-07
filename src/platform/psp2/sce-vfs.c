@@ -137,7 +137,7 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	}
 	// TODO: Get the right device
-	return sceIoSync("cache0:", 0) >= 0;
+	return sceIoSync("ux0:", 0) >= 0;
 }
 
 struct VDir* VDirOpen(const char* path) {

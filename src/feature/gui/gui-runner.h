@@ -57,7 +57,7 @@ struct mGUIRunner {
 	void (*gameUnloaded)(struct mGUIRunner*);
 	void (*prepareForFrame)(struct mGUIRunner*);
 	void (*drawFrame)(struct mGUIRunner*, bool faded);
-	void (*drawScreenshot)(struct mGUIRunner*, const uint32_t* pixels, bool faded);
+	void (*drawScreenshot)(struct mGUIRunner*, const uint32_t* pixels, unsigned width, unsigned height, bool faded);
 	void (*paused)(struct mGUIRunner*);
 	void (*unpaused)(struct mGUIRunner*);
 	void (*incrementScreenMode)(struct mGUIRunner*);
