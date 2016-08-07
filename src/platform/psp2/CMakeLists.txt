@@ -55,6 +55,7 @@ add_custom_target(eboot.bin
 add_custom_target(livearea
                   ${CMAKE_COMMAND} -E make_directory sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys
+                  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/template.xml sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents
