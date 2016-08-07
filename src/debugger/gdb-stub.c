@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gdb-stub.h"
 
+#include "arm/isa-inlines.h"
 #include "core/core.h"
 #include "gba/memory.h"
 
@@ -295,9 +296,15 @@ static void _writeGPRs(struct GDBStub* stub, const char* message) {
 	const char* readAddress = message;
 
 	int r;
-	for (r = 0; r < 16; ++r) {
+	for (r = 0; r <= ARM_PC; ++r) {
 		cpu->gprs[r] = _hex2int(readAddress, 8);
 		readAddress += 8;
+	}
+	int32_t currentCycles = 0;
+	if (cpu->executionMode == MODE_ARM) {
+		ARM_WRITE_PC;
+	} else {
+		THUMB_WRITE_PC;
 	}
 
 	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
@@ -309,10 +316,13 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	UNUSED(message);
 	int r;
 	int i = 0;
-	for (r = 0; r < 16; ++r) {
+	for (r = 0; r < ARM_PC; ++r) {
 		_int2hex32(cpu->gprs[r], &stub->outgoing[i]);
 		i += 8;
 	}
+	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	i += 8;
+
 	stub->outgoing[i] = 0;
 	_sendMessage(stub);
 }
@@ -333,8 +343,16 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 	value = __builtin_bswap32(value);
 #endif
 
-	if (reg < 0x10) {
+	if (reg <= ARM_PC) {
 		cpu->gprs[reg] = value;
+		if (reg == ARM_PC) {
+			int32_t currentCycles = 0;
+			if (cpu->executionMode == MODE_ARM) {
+				ARM_WRITE_PC;
+			} else {
+				THUMB_WRITE_PC;
+			}
+		}
 	} else if (reg == 0x19) {
 		cpu->cpsr.packed = value;
 	} else {
