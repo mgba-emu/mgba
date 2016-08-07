@@ -22,8 +22,8 @@
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
 			COORD \
-			mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-			pixelData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
+			mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
+			pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
 			\
 			mosaicWait = mosaicH; \
 		} else { \
@@ -32,9 +32,8 @@
 
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
-	mapData = ((uint8_t*)renderer->d.vram)[screenBase + (localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-	pixelData = ((uint8_t*)renderer->d.vram)[charBase + (mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
-
+	mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
+	pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
@@ -71,8 +70,8 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 
 	BACKGROUND_BITMAP_INIT;
 
-	uint32_t screenBase = background->screenBase;
-	uint32_t charBase = background->charBase;
+	uint8_t* screenBase = &((uint8_t*) renderer->d.vram)[background->screenBase];
+	uint8_t* charBase = &((uint8_t*) renderer->d.vram)[background->charBase];
 	uint8_t mapData;
 	uint8_t pixelData = 0;
 
