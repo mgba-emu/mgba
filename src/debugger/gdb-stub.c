@@ -295,7 +295,7 @@ static void _writeGPRs(struct GDBStub* stub, const char* message) {
 	const char* readAddress = message;
 
 	int r;
-	for (r = 0; r < 16; ++r) {
+	for (r = 0; r < ARM_PC; ++r) {
 		cpu->gprs[r] = _hex2int(readAddress, 8);
 		readAddress += 8;
 	}
@@ -309,10 +309,13 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	UNUSED(message);
 	int r;
 	int i = 0;
-	for (r = 0; r < 16; ++r) {
+	for (r = 0; r < ARM_PC; ++r) {
 		_int2hex32(cpu->gprs[r], &stub->outgoing[i]);
 		i += 8;
 	}
+	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	i += 8;
+
 	stub->outgoing[i] = 0;
 	_sendMessage(stub);
 }
