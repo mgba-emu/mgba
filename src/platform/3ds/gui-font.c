@@ -95,7 +95,7 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
 	int index = fontGlyphIndexFromCodePoint(glyph);
 	fontGlyphPos_s data;
-	fontCalcGlyphPos(&data, index, GLYPH_POS_CALC_VTXCOORD, 1.0, 1.0);
+	fontCalcGlyphPos(&data, index, 0, 1.0, 1.0);
 
 	C3D_Tex* tex = &font->sheets[data.sheetIndex];
 	ctrActivateTexture(tex);

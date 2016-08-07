@@ -27,7 +27,7 @@ struct ctrUIVertex {
 	u32 abgr;
 };
 
-#define MAX_NUM_QUADS 1024
+#define MAX_NUM_QUADS 256
 #define VERTEX_BUFFER_SIZE MAX_NUM_QUADS * sizeof(struct ctrUIVertex)
 
 static struct ctrUIVertex* ctrVertexBuffer = NULL;
@@ -146,6 +146,13 @@ void ctrActivateTexture(C3D_Tex* texture) {
 }
 
 void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh) {
+	if (x >= 400 && w >= 0) {
+		return;
+	}
+	if (y >= 240 && h >= 0) {
+		return;
+	}
+
 	if (ctrNumVerts + ctrVertStart == MAX_NUM_QUADS) {
 		ctrFlushBatch();
 		C3D_Flush();

@@ -43,7 +43,9 @@ size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) 
 	if (remaining <= length) {
 		return 0;
 	}
-	memcpy(data, value, length);
+	if (value) {
+		memcpy(data, value, length);
+	}
 	buffer->writePtr = (void*) ((intptr_t) data + length);
 	return length;
 }
@@ -63,7 +65,9 @@ size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	if (remaining <= length) {
 		return 0;
 	}
-	memcpy(output, data, length);
+	if (output) {
+		memcpy(output, data, length);
+	}
 	buffer->readPtr = (void*) ((intptr_t) data + length);
 	return length;
 }
