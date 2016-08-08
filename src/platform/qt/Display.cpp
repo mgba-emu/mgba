@@ -29,7 +29,7 @@ Display* Display::create(QWidget* parent) {
 	switch (s_driver) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
-		format.setVersion(3, 0);
+		format.setVersion(2, 0);
 		return new DisplayGL(format, parent);
 #endif
 #ifdef BUILD_GL
@@ -43,7 +43,7 @@ Display* Display::create(QWidget* parent) {
 
 	default:
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
-		format.setVersion(3, 0);
+		format.setVersion(2, 0);
 		return new DisplayGL(format, parent);
 #else
 		return new DisplayQt(parent);
