@@ -31,7 +31,7 @@ DisplayGL::DisplayGL(const QGLFormat& format, QWidget* parent)
 	, m_drawThread(nullptr)
 	, m_context(nullptr)
 {
-	m_painter = new PainterGL(format.majorVersion(), m_gl);
+	m_painter = new PainterGL(format.majorVersion() < 2 ? 1 : m_gl->format().majorVersion(), m_gl);
 	m_gl->setMouseTracking(true);
 	m_gl->setAttribute(Qt::WA_TransparentForMouseEvents); // This doesn't seem to work?
 }
