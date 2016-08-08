@@ -18,6 +18,7 @@ Bugfixes:
  - PSP2: Actually load screen mode setting
  - Qt: Fix bug in software renderer scaling
  - Debugger: Fix GDB breakpoints
+ - Qt: Set OpenGL version to 2.0
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
