@@ -49,6 +49,7 @@ static struct mSceRotationSource {
 	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
+static struct mRumble rumble;
 
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
@@ -114,6 +115,15 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 	return rotation->state.gyro.z * 0x10000000;
 }
 
+static void _setRumble(struct mRumble* rumble, int enable) {
+	UNUSED(rumble);
+	struct SceCtrlActuator state = {
+		enable,
+		0
+	};
+	sceCtrlSetActuator(1, &state);
+}
+
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
@@ -170,6 +180,9 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
 	runner->core->setRotation(runner->core, &rotation.d);
+
+	rumble.setRumble = _setRumble;
+	runner->core->setRumble(runner->core, &rumble);
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
@@ -244,6 +257,15 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 		break;
 	}
 	scePowerSetArmClockFrequency(80);
+}
+
+void mPSP2Paused(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	struct SceCtrlActuator state = {
+		0,
+		0
+	};
+	sceCtrlSetActuator(1, &state);
 }
 
 void mPSP2Unpaused(struct mGUIRunner* runner) {

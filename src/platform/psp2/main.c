@@ -154,7 +154,7 @@ int main() {
 		.prepareForFrame = mPSP2PrepareForFrame,
 		.drawFrame = mPSP2Draw,
 		.drawScreenshot = mPSP2DrawScreenshot,
-		.paused = 0,
+		.paused = mPSP2Paused,
 		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
 		.pollGameInput = mPSP2PollInput
