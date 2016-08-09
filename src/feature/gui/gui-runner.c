@@ -48,6 +48,20 @@ enum {
 	RUNNER_STATE_9 = 0x90000,
 };
 
+static void _log(struct mLogger*, int category, enum mLogLevel level, const char* format, va_list args);
+
+static struct mGUILogger {
+	struct mLogger d;
+	struct VFile* vf;
+	int logLevel;
+} logger = {
+	.d = {
+		.log = _log
+	},
+	.vf = NULL,
+	.logLevel = 0
+};
+
 static void _drawBackground(struct GUIBackground* background, void* context) {
 	UNUSED(context);
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
@@ -122,6 +136,12 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	runner->lastFpsCheck = 0;
 	runner->totalDelta = 0;
 	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
+
+	char path[PATH_MAX];
+	mCoreConfigDirectory(path, PATH_MAX);
+	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
+	logger.vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
+	mLogSetDefaultLogger(&logger.d);
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
@@ -129,6 +149,29 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 		runner->teardown(runner);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);
+	if (logger.vf) {
+		logger.vf->close(logger.vf);
+		logger.vf = NULL;
+	}
+}
+
+static void _log(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	struct mGUILogger* guiLogger = (struct mGUILogger*) logger;
+	if (!guiLogger->vf) {
+		return;
+	}
+	if (!(guiLogger->logLevel & level)) {
+		return;
+	}
+
+	char log[256] = {0};
+	vsnprintf(log, sizeof(log) - 1, format, args);
+	char log2[256] = {0};
+	size_t len = snprintf(log2, sizeof(log2) - 1, "%s: %s\n", mLogCategoryName(category), log);
+	if (len >= sizeof(log2)) {
+		len = sizeof(log2) - 1;
+	}
+	guiLogger->vf->write(guiLogger->vf, log2, len);
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -238,6 +281,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
 	mCoreConfigSetDefaultValue(&runner->core->config, "idleOptimization", "detect");
 	mCoreLoadConfig(runner->core);
+	logger.logLevel = runner->core->opts.logLevel;
+
 	mCoreAutoloadSave(runner->core);
 	if (runner->setup) {
 		runner->setup(runner);
