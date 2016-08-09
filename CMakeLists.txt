@@ -456,6 +456,10 @@ elseif(USE_ZLIB)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c)
+	set_source_files_properties(
+		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
+		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 endif()
 
 if (USE_LZMA)
