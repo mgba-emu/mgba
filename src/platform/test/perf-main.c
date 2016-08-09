@@ -177,6 +177,8 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
 
+	mCoreConfigFreeOpts(&opts);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
 	float scaledFrames = frames * 1000000.f;
@@ -197,8 +199,6 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
-	mCoreConfigFreeOpts(&opts);
-	mCoreConfigDeinit(&core->config);
 	return true;
 }
 
