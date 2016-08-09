@@ -665,6 +665,11 @@ void GameController::setAutofire(int key, bool enable) {
 	if (key >= GBA_KEY_MAX || key < 0) {
 		return;
 	}
+
+	if (!enable && m_autofireStatus[key]) {
+		keyReleased(key);
+	}
+
 	m_autofire[key] = enable;
 	m_autofireStatus[key] = 0;
 }
