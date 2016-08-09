@@ -398,6 +398,7 @@ static void _drawStart(void) {
 	if (referenceRetraceCount >= retraceCount) {
 		VIDEO_WaitVSync();
 	}
+	referenceRetraceCount = retraceCount;
 	_CPU_ISR_Restore(level);
 
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
