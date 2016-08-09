@@ -19,6 +19,7 @@ Bugfixes:
  - Qt: Fix bug in software renderer scaling
  - Debugger: Fix GDB breakpoints
  - Wii: Fix framelimiting after a slowdown
+ - PSP2: Fix gyroscope direction
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
