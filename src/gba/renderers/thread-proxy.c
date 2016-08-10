@@ -75,6 +75,7 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	proxyRenderer->backend->palette = proxyRenderer->paletteProxy;
 	proxyRenderer->backend->vram = proxyRenderer->vramProxy;
 	proxyRenderer->backend->oam = &proxyRenderer->oamProxy;
+	proxyRenderer->backend->cache = NULL;
 
 	proxyRenderer->backend->init(proxyRenderer->backend);
 
@@ -87,6 +88,7 @@ void GBAVideoThreadProxyRendererReset(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
 	MutexLock(&proxyRenderer->mutex);
 	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
+		ConditionWake(&proxyRenderer->toThreadCond);
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
 	}
 	memcpy(&proxyRenderer->oamProxy.raw, &renderer->oam->raw, SIZE_OAM);
@@ -173,6 +175,9 @@ void GBAVideoThreadProxyRendererWritePalette(struct GBAVideoRenderer* renderer, 
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
+	}
 }
 
 void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
