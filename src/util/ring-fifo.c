@@ -7,6 +7,15 @@
 
 #include "util/memory.h"
 
+#ifndef _MSC_VER
+#define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
+#define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
+#else
+// TODO
+#define ATOMIC_STORE(DST, SRC) DST = SRC
+#define ATOMIC_LOAD(DST, SRC) DST = SRC
+#endif
+
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc) {
 	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;
@@ -24,13 +33,14 @@ size_t RingFIFOCapacity(const struct RingFIFO* buffer) {
 }
 
 void RingFIFOClear(struct RingFIFO* buffer) {
-	buffer->readPtr = buffer->data;
-	buffer->writePtr = buffer->data;
+	ATOMIC_STORE(buffer->readPtr, buffer->data);
+	ATOMIC_STORE(buffer->writePtr, buffer->data);
 }
 
 size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) {
 	void* data = buffer->writePtr;
-	void* end = buffer->readPtr;
+	void* end;
+	ATOMIC_LOAD(end, buffer->readPtr);
 	size_t remaining;
 	if ((intptr_t) data - (intptr_t) buffer->data + buffer->maxalloc >= buffer->capacity) {
 		data = buffer->data;
@@ -46,13 +56,14 @@ size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) 
 	if (value) {
 		memcpy(data, value, length);
 	}
-	buffer->writePtr = (void*) ((intptr_t) data + length);
+	ATOMIC_STORE(buffer->writePtr, (void*) ((intptr_t) data + length));
 	return length;
 }
 
 size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	void* data = buffer->readPtr;
-	void* end = buffer->writePtr;
+	void* end;
+	ATOMIC_LOAD(end, buffer->writePtr);
 	size_t remaining;
 	if ((intptr_t) data - (intptr_t) buffer->data + buffer->maxalloc >= buffer->capacity) {
 		data = buffer->data;
@@ -68,6 +79,6 @@ size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	if (output) {
 		memcpy(output, data, length);
 	}
-	buffer->readPtr = (void*) ((intptr_t) data + length);
+	ATOMIC_STORE(buffer->readPtr, (void*) ((intptr_t) data + length));
 	return length;
 }

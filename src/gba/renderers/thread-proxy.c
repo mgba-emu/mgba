@@ -70,7 +70,6 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	ConditionInit(&proxyRenderer->toThreadCond);
 	MutexInit(&proxyRenderer->mutex);
 	RingFIFOInit(&proxyRenderer->dirtyQueue, 0x40000, 0x1000);
-	proxyRenderer->threadState = PROXY_THREAD_STOPPED;
 
 	proxyRenderer->vramProxy = anonymousMemoryMap(SIZE_VRAM);
 	proxyRenderer->backend->palette = proxyRenderer->paletteProxy;
@@ -230,10 +229,11 @@ void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 		0xDEADBEEF,
 	};
 	RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-	while (proxyRenderer->threadState == PROXY_THREAD_BUSY) {
+	do {
+		RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
 		ConditionWake(&proxyRenderer->toThreadCond);
 		ConditionWait(&proxyRenderer->fromThreadCond, &proxyRenderer->mutex);
-	}
+	} while (proxyRenderer->threadState == PROXY_THREAD_BUSY);
 	proxyRenderer->backend->finishFrame(proxyRenderer->backend);
 	proxyRenderer->vramDirtyBitmap = 0;
 	MutexUnlock(&proxyRenderer->mutex);
@@ -280,45 +280,48 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 	ThreadSetName("Proxy Renderer Thread");
 
 	MutexLock(&proxyRenderer->mutex);
+	struct GBAVideoDirtyInfo item = {0};
 	while (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 		ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
 			break;
 		}
-		proxyRenderer->threadState = PROXY_THREAD_BUSY;
-
-		MutexUnlock(&proxyRenderer->mutex);
-		struct GBAVideoDirtyInfo item;
-		while (RingFIFORead(&proxyRenderer->dirtyQueue, &item, sizeof(item))) {
-			switch (item.type) {
-			case DIRTY_REGISTER:
-				proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item.address, item.value);
-				break;
-			case DIRTY_PALETTE:
-				proxyRenderer->paletteProxy[item.address >> 1] = item.value;
-				proxyRenderer->backend->writePalette(proxyRenderer->backend, item.address, item.value);
-				break;
-			case DIRTY_OAM:
-				proxyRenderer->oamProxy.raw[item.address] = item.value;
-				proxyRenderer->backend->writeOAM(proxyRenderer->backend, item.address);
-				break;
-			case DIRTY_VRAM:
-				while (!RingFIFORead(&proxyRenderer->dirtyQueue, &proxyRenderer->vramProxy[item.address >> 1], 0x1000));
-				proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item.address);
-				break;
-			case DIRTY_SCANLINE:
-				proxyRenderer->backend->drawScanline(proxyRenderer->backend, item.address);
-				break;
-			case DIRTY_FLUSH:
-				// This is only here to ensure the queue gets flushed
-				break;
-			default:
-				// FIFO was corrupted
-				proxyRenderer->threadState = PROXY_THREAD_STOPPED;
-				break;
-			}
+		if (RingFIFORead(&proxyRenderer->dirtyQueue, &item, sizeof(item))) {
+			proxyRenderer->threadState = PROXY_THREAD_BUSY;
+			MutexUnlock(&proxyRenderer->mutex);
+			do {
+				switch (item.type) {
+				case DIRTY_REGISTER:
+					proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item.address, item.value);
+					break;
+				case DIRTY_PALETTE:
+					proxyRenderer->paletteProxy[item.address >> 1] = item.value;
+					proxyRenderer->backend->writePalette(proxyRenderer->backend, item.address, item.value);
+					break;
+				case DIRTY_OAM:
+					proxyRenderer->oamProxy.raw[item.address] = item.value;
+					proxyRenderer->backend->writeOAM(proxyRenderer->backend, item.address);
+					break;
+				case DIRTY_VRAM:
+					while (!RingFIFORead(&proxyRenderer->dirtyQueue, &proxyRenderer->vramProxy[item.address >> 1], 0x1000));
+					proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item.address);
+					break;
+				case DIRTY_SCANLINE:
+					proxyRenderer->backend->drawScanline(proxyRenderer->backend, item.address);
+					break;
+				case DIRTY_FLUSH:
+					MutexLock(&proxyRenderer->mutex);
+					goto out;
+				default:
+					// FIFO was corrupted
+					MutexLock(&proxyRenderer->mutex);
+					proxyRenderer->threadState = PROXY_THREAD_STOPPED;
+					goto out;
+				}
+			} while (proxyRenderer->threadState == PROXY_THREAD_BUSY && RingFIFORead(&proxyRenderer->dirtyQueue, &item, sizeof(item)));
+			MutexLock(&proxyRenderer->mutex);
 		}
-		MutexLock(&proxyRenderer->mutex);
+		out:
 		ConditionWake(&proxyRenderer->fromThreadCond);
 		if (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 			proxyRenderer->threadState = PROXY_THREAD_IDLE;
