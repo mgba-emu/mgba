@@ -341,6 +341,10 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!biosOnly) {
 		mCoreLoadFile(m_threadContext.core, m_fname.toUtf8().constData());
+	} else {
+		char dirname[PATH_MAX];
+		separatePath(m_bios.toUtf8().constData(), dirname, m_threadContext.core->dirs.baseName, 0);
+		mDirectorySetAttachBase(&m_threadContext.core->dirs, VDirOpen(dirname));
 	}
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
@@ -351,16 +355,6 @@ void GameController::openGame(bool biosOnly) {
 			// TODO: Lifetime issues?
 			m_threadContext.core->loadBIOS(m_threadContext.core, bios, 0);
 		}
-	}
-
-	if (!m_patch.isNull()) {
-		VFile* patch = VFileDevice::open(m_patch, O_RDONLY);
-		if (patch) {
-			m_threadContext.core->loadPatch(m_threadContext.core, patch);
-		}
-		patch->close(patch);
-	} else {
-		mCoreAutoloadPatch(m_threadContext.core);
 	}
 
 	m_inputController->recalibrateAxes();
@@ -374,6 +368,15 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!biosOnly) {
 		mCoreAutoloadSave(m_threadContext.core);
+		if (!m_patch.isNull()) {
+			VFile* patch = VFileDevice::open(m_patch, O_RDONLY);
+			if (patch) {
+				m_threadContext.core->loadPatch(m_threadContext.core, patch);
+			}
+			patch->close(patch);
+		} else {
+			mCoreAutoloadPatch(m_threadContext.core);
+		}
 	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
