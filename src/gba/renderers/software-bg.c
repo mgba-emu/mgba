@@ -14,10 +14,9 @@
 #define MODE_2_COORD_NO_OVERFLOW \
 	if ((x | y) & ~(sizeAdjusted - 1)) { \
 		continue; \
-	} else { \
-		localX = x; \
-		localY = y; \
-	}
+	} \
+	localX = x; \
+	localY = y;
 
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \

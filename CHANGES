@@ -49,6 +49,7 @@ Misc:
  - GUI: Add back logging
  - PSP2: Add rumble for PS TV
  - PSP2: Add fit-to-height screen mode
+ - GBA Video: Optimize sprite drawing
 
 0.4.1: (2016-07-11)
 Bugfixes:
