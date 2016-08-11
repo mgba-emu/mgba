@@ -160,6 +160,8 @@ int main() {
 		.pollGameInput = mPSP2PollInput
 	};
 
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+
 	mGUIInit(&runner, "psvita");
 	mGUIRunloop(&runner);
 
