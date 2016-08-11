@@ -116,6 +116,7 @@ int main() {
 					"With Background",
 					"Without Background",
 					"Stretched",
+					"Fit Aspect Ratio",
 				},
 				.nStates = 3
 			}

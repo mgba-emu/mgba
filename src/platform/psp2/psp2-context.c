@@ -38,6 +38,7 @@ static enum ScreenMode {
 	SM_BACKDROP,
 	SM_PLAIN,
 	SM_FULL,
+	SM_ASPECT,
 	SM_MAX
 } screenMode;
 
@@ -280,21 +281,72 @@ void mPSP2Teardown(struct mGUIRunner* runner) {
 	vita2d_free_texture(screenshot);
 }
 
-void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
-	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+
+void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
+	unsigned w = width;
+	unsigned h = height;
+	// Get greatest common divisor
+	while (w != 0) {
+		int temp = h % w;
+		h = w;
+		w = temp;
+	}
+	int gcd = h;
+	int aspectw = width / gcd;
+	int aspecth = height / gcd;
+	float scalex;
+	float scaley;
+
 	switch (screenMode) {
 	case SM_BACKDROP:
 	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(tex, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		w = 960 / width;
+		h = 544 / height;
+		if (w * height > 544) {
+			scalex = h;
+			w = width * h;
+			h = height * h;
+		} else {
+			scalex = w;
+			w = width * w;
+			h = height * w;
+		}
+		scaley = scalex;
+		break;
+	case SM_ASPECT:
+		w = 960 / aspectw;
+		h = 544 / aspecth;
+		if (w * aspecth > 544) {
+			w = aspectw * h;
+			h = aspecth * h;
+		} else {
+			w = aspectw * w;
+			h = aspecth * w;
+		}
+		scalex = w / (float) width;
+		scaley = scalex;
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		w = 960;
+		h = 544;
+		scalex = 960.0f / width;
+		scaley = 544.0f / height;
 		break;
 	}
+	vita2d_draw_texture_tint_part_scale(t,
+	                                    (960.0f - w) / 2.0f, (544.0f - h) / 2.0f,
+	                                    0, 0, width, height,
+	                                    scalex, scaley,
+	                                    (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+}
+
+void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
+	unsigned width, height;
+	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	_drawTex(tex, width, height, faded);
 }
 
 void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -304,18 +356,7 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsi
 	for (y = 0; y < height; ++y) {
 		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}
-	switch (screenMode) {
-	case SM_BACKDROP:
-	default:
-		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		// Fall through
-	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(screenshot, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		break;
-	case SM_FULL:
-		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		break;
-	}
+	_drawTex(screenshot, width, height, faded);
 }
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
