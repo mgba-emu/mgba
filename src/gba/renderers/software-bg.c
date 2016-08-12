@@ -79,13 +79,13 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 	uint32_t* pixel;
 
 	if (!objwinSlowPath) {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			DRAW_BACKGROUND_MODE_2(NoBlend, NO_OBJWIN);
 		} else {
 			DRAW_BACKGROUND_MODE_2(Blend, NO_OBJWIN);
 		}
 	} else {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			DRAW_BACKGROUND_MODE_2(NoBlend, OBJWIN);
 		} else {
 			DRAW_BACKGROUND_MODE_2(Blend, OBJWIN);

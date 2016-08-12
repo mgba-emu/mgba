@@ -499,7 +499,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	uint16_t* vram = renderer->d.vram;
 
 	if (!objwinSlowPath) {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, NO_OBJWIN);
 			} else {
@@ -513,7 +513,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			}
 		}
 	} else {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, OBJWIN);
 			} else {
