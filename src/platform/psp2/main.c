@@ -73,7 +73,7 @@ static uint32_t _pollInput(void) {
 
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
-	sceTouchPeek(0, &touch, 1);
+	sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch, 1);
 	if (touch.reportNum < 1) {
 		return GUI_CURSOR_NOT_PRESENT;
 	}
@@ -161,6 +161,7 @@ int main() {
 		.pollGameInput = mPSP2PollInput
 	};
 
+	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 
 	mGUIInit(&runner, "psvita");
