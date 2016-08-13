@@ -349,10 +349,11 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x8:
 		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
-		case 0x9:
-		cpu->gprs[0] = _ArcTan(cpu->gprs[0]);
+	case 0x9:
+		cpu->gprs[0] = (uint16_t) _ArcTan(cpu->gprs[0]);
+		break;
 	case 0xA:
-		cpu->gprs[0] = _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0xB:
 	case 0xC:
