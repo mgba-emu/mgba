@@ -69,7 +69,7 @@ void GBAVideoThreadProxyRendererInit(struct GBAVideoRenderer* renderer) {
 	ConditionInit(&proxyRenderer->fromThreadCond);
 	ConditionInit(&proxyRenderer->toThreadCond);
 	MutexInit(&proxyRenderer->mutex);
-	RingFIFOInit(&proxyRenderer->dirtyQueue, 0x40000, 0x1000);
+	RingFIFOInit(&proxyRenderer->dirtyQueue, 0x48000, 0x1000);
 
 	proxyRenderer->vramProxy = anonymousMemoryMap(SIZE_VRAM);
 	proxyRenderer->backend->palette = proxyRenderer->paletteProxy;
@@ -208,7 +208,13 @@ void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 				0xDEADBEEF,
 			};
 			RingFIFOWrite(&proxyRenderer->dirtyQueue, &dirty, sizeof(dirty));
-			RingFIFOWrite(&proxyRenderer->dirtyQueue, &proxyRenderer->d.vram[j * 0x800], 0x1000);
+			while (!RingFIFOWrite(&proxyRenderer->dirtyQueue, &proxyRenderer->d.vram[j * 0x800], 0x1000)) {
+				ConditionWake(&proxyRenderer->toThreadCond);
+				if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
+					mLOG(GBA_VIDEO, FATAL, "Proxy thread stopped prematurely!");
+					return;
+				}
+			}
 		}
 	}
 	struct GBAVideoDirtyInfo dirty = {
@@ -225,6 +231,10 @@ void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, 
 
 void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
+	if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
+		mLOG(GBA_VIDEO, FATAL, "Proxy thread stopped prematurely!");
+		return;
+	}
 	MutexLock(&proxyRenderer->mutex);
 	// Insert an extra item into the queue to make sure it gets flushed
 	struct GBAVideoDirtyInfo dirty = {
@@ -308,7 +318,9 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 					proxyRenderer->backend->writeOAM(proxyRenderer->backend, item.address);
 					break;
 				case DIRTY_VRAM:
-					while (!RingFIFORead(&proxyRenderer->dirtyQueue, &proxyRenderer->vramProxy[item.address >> 1], 0x1000));
+					while (!RingFIFORead(&proxyRenderer->dirtyQueue, &proxyRenderer->vramProxy[item.address >> 1], 0x1000)) {
+						ConditionWake(&proxyRenderer->fromThreadCond);
+					}
 					proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item.address);
 					break;
 				case DIRTY_SCANLINE:
@@ -321,6 +333,7 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 					// FIFO was corrupted
 					MutexLock(&proxyRenderer->mutex);
 					proxyRenderer->threadState = PROXY_THREAD_STOPPED;
+					mLOG(GBA_VIDEO, FATAL, "Proxy thread queue got corrupted!");
 					goto out;
 				}
 			} while (proxyRenderer->threadState == PROXY_THREAD_BUSY && RingFIFORead(&proxyRenderer->dirtyQueue, &item, sizeof(item)));
