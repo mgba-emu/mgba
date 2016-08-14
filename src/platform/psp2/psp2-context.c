@@ -18,6 +18,7 @@
 #include "gba/input.h"
 
 #include "util/memory.h"
+#include "util/circle-buffer.h"
 #include "util/ring-fifo.h"
 #include "util/threading.h"
 #include "util/vfs.h"
@@ -33,6 +34,8 @@
 #include <psp2/power.h>
 
 #include <vita2d.h>
+
+#define RUMBLE_PWM 8
 
 static enum ScreenMode {
 	SM_BACKDROP,
@@ -50,7 +53,11 @@ static struct mSceRotationSource {
 	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
-static struct mRumble rumble;
+static struct mSceRumble {
+	struct mRumble d;
+	struct CircleBuffer history;
+	int current;
+} rumble;
 
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
@@ -116,10 +123,17 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 	return rotation->state.gyro.z * -0x10000000;
 }
 
-static void _setRumble(struct mRumble* rumble, int enable) {
-	UNUSED(rumble);
+static void _setRumble(struct mRumble* source, int enable) {
+	struct mSceRumble* rumble = (struct mSceRumble*) source;
+	rumble->current += enable;
+	if (CircleBufferSize(&rumble->history) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&rumble->history, &oldLevel);
+		rumble->current -= oldLevel;
+	}
+	CircleBufferWrite8(&rumble->history, enable);
 	struct SceCtrlActuator state = {
-		enable,
+		rumble->current * 31,
 		0
 	};
 	sceCtrlSetActuator(1, &state);
@@ -182,8 +196,9 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readGyroZ = _readGyroZ;
 	runner->core->setRotation(runner->core, &rotation.d);
 
-	rumble.setRumble = _setRumble;
-	runner->core->setRumble(runner->core, &rumble);
+	rumble.d.setRumble = _setRumble;
+	CircleBufferInit(&rumble.history, RUMBLE_PWM);
+	runner->core->setRumble(runner->core, &rumble.d);
 
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
@@ -277,6 +292,7 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
+	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
 }
