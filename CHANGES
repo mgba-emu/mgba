@@ -22,6 +22,7 @@ Bugfixes:
  - PSP2: Fix gyroscope direction
  - Qt: Fix hanging key press after disabling autofire
  - PSP2: Delete threads after they return
+ - GBA Video: WIN0/1 take priority over OBJWIN
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
