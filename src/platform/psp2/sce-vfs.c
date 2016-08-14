@@ -76,7 +76,7 @@ struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 
 bool _vfsceClose(struct VFile* vf) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
-
+	sceIoSyncByFd(vfsce->fd);
 	return sceIoClose(vfsce->fd) >= 0;
 }
 
@@ -112,6 +112,7 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
 	SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
 	sceIoWrite(vfsce->fd, memory, size);
 	sceIoLseek(vfsce->fd, cur, SEEK_SET);
+	sceIoSyncByFd(vfsce->fd);
 	mappedMemoryFree(memory, size);
 }
 
@@ -136,8 +137,7 @@ bool _vfsceSync(struct VFile* vf, const void* buffer, size_t size) {
 		sceIoWrite(vfsce->fd, buffer, size);
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	}
-	// TODO: Get the right device
-	return sceIoSync("ux0:", 0) >= 0;
+	return sceIoSyncByFd(vfsce->fd) >= 0;
 }
 
 struct VDir* VDirOpen(const char* path) {
