@@ -103,7 +103,7 @@ bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in);
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
-void GBASavedataInitEEPROM(struct GBASavedata* savedata);
+void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
 uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address);

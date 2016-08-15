@@ -811,7 +811,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case REGION_CART2_EX:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-			GBASavedataInitEEPROM(&memory->savedata);
+			GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 		}
 		GBASavedataWriteEEPROM(&memory->savedata, value, 1);
 		break;
@@ -1690,7 +1690,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-				GBASavedataInitEEPROM(&memory->savedata);
+				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 			}
 			word = cpu->memory.load16(cpu, source, 0);
 			gba->bus = word | (word << 16);

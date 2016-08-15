@@ -20,6 +20,8 @@
 // Other games vary from very little, with a fairly solid 20500 cycle count. (Observed on a SST (D4BF) chip).
 // An average estimation is as follows.
 #define FLASH_SETTLE_CYCLES 18000
+// This needs real testing, and is only an estimation currently
+#define EEPROM_SETTLE_CYCLES 14500
 #define CLEANUP_THRESHOLD 15
 
 mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata");
@@ -201,7 +203,7 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, 
 		GBASavedataInitFlash(savedata, realisticTiming);
 		break;
 	case SAVEDATA_EEPROM:
-		GBASavedataInitEEPROM(savedata);
+		GBASavedataInitEEPROM(savedata, realisticTiming);
 		break;
 	case SAVEDATA_SRAM:
 		GBASavedataInitSRAM(savedata);
@@ -247,7 +249,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	}
 }
 
-void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
+void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming) {
 	if (savedata->type == SAVEDATA_AUTODETECT) {
 		savedata->type = SAVEDATA_EEPROM;
 	} else {
@@ -265,6 +267,8 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		}
 		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_EEPROM, savedata->mapMode);
 	}
+	savedata->dust = 0;
+	savedata->realisticTiming = realisticTiming;
 	if (end < SIZE_CART_EEPROM) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_EEPROM - end);
 	}
@@ -430,6 +434,9 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
 			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
+			if (savedata->realisticTiming) {
+				savedata->dust = EEPROM_SETTLE_CYCLES;
+			}
 			++savedata->writeAddress;
 		} else {
 			mLOG(GBA_SAVE, GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
@@ -452,7 +459,14 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	if (savedata->command != EEPROM_COMMAND_READ) {
-		return 1;
+		if (!savedata->realisticTiming || savedata->dust <= 0) {
+			return 1;
+		} else {
+			// Give some overhead for waitstates and the comparison
+			// This estimation can probably be improved
+			savedata->dust -= 10;
+			return 0;
+		}
 	}
 	--savedata->readBitsRemaining;
 	if (savedata->readBitsRemaining < 64) {
