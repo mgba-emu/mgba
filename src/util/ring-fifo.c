@@ -16,10 +16,9 @@
 #define ATOMIC_LOAD(DST, SRC) DST = SRC
 #endif
 
-void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc) {
+void RingFIFOInit(struct RingFIFO* buffer, size_t capacity) {
 	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;
-	buffer->maxalloc = maxalloc;
 	RingFIFOClear(buffer);
 }
 
@@ -41,15 +40,24 @@ size_t RingFIFOWrite(struct RingFIFO* buffer, const void* value, size_t length) 
 	void* data = buffer->writePtr;
 	void* end;
 	ATOMIC_LOAD(end, buffer->readPtr);
-	size_t remaining;
-	if ((intptr_t) data - (intptr_t) buffer->data + buffer->maxalloc >= buffer->capacity) {
+
+	// Wrap around if we can't fit enough in here
+	if ((intptr_t) data - (intptr_t) buffer->data + length >= buffer->capacity) {
+		if (end == buffer->data) {
+			// Oops! If we wrap now, it'll appear empty
+			return 0;
+		}
 		data = buffer->data;
 	}
+
+	size_t remaining;
 	if (data >= end) {
-		remaining = (intptr_t) buffer->data + buffer->capacity - (intptr_t) data;
+		uintptr_t bufferEnd = (uintptr_t) buffer->data + buffer->capacity;
+		remaining = bufferEnd - (uintptr_t) data;
 	} else {
-		remaining = (intptr_t) end - (intptr_t) data;
+		remaining = (uintptr_t) end - (uintptr_t) data;
 	}
+	// Note that we can't hit the end pointer
 	if (remaining <= length) {
 		return 0;
 	}
@@ -64,16 +72,21 @@ size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 	void* data = buffer->readPtr;
 	void* end;
 	ATOMIC_LOAD(end, buffer->writePtr);
-	size_t remaining;
-	if ((intptr_t) data - (intptr_t) buffer->data + buffer->maxalloc >= buffer->capacity) {
+
+	// Wrap around if we can't fit enough in here
+	if ((intptr_t) data - (intptr_t) buffer->data + length >= buffer->capacity) {
 		data = buffer->data;
 	}
+
+	size_t remaining;
 	if (data > end) {
-		remaining = (intptr_t) buffer->data + buffer->capacity - (intptr_t) data;
+		uintptr_t bufferEnd = (uintptr_t) buffer->data + buffer->capacity;
+		remaining = bufferEnd - (uintptr_t) data;
 	} else {
 		remaining = (intptr_t) end - (intptr_t) data;
 	}
-	if (remaining <= length) {
+	// If the pointers touch, it's empty
+	if (remaining < length) {
 		return 0;
 	}
 	if (output) {

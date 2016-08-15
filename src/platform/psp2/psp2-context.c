@@ -233,7 +233,7 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 		break;
 	}
 
-	RingFIFOInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample), PSP2_SAMPLES * 4);
+	RingFIFOInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
 	MutexInit(&audioContext.mutex);
 	ConditionInit(&audioContext.cond);
 	audioContext.running = true;
