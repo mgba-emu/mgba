@@ -307,7 +307,7 @@ static int16_t _ArcTan2(int16_t x, int16_t y) {
 		} else if (x >= -y) {
 			return _ArcTan((y << 14) / x) + 0x10000;
 		}
-		return 0xC000 - _ArcTan((x << 14 / y));
+		return 0xC000 - _ArcTan((x << 14) / y);
 	}
 }
 
