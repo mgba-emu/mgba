@@ -73,7 +73,7 @@ static struct mPSP2AudioContext {
 	bool running;
 } audioContext;
 
-static void _mapVitaKey(struct mInputMap* map, int pspKey, enum GBAKey key) {
+void mPSP2MapKey(struct mInputMap* map, int pspKey, int key) {
 	mInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
 }
 
@@ -144,7 +144,7 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
-	enum GBAKey angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
+	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
@@ -164,20 +164,20 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 }
 
 void mPSP2Setup(struct mGUIRunner* runner) {
-	mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
-	mCoreLoadConfig(runner->core);
+	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
+	mCoreLoadForeignConfig(runner->core, &runner->config);
 
 	scePowerSetArmClockFrequency(80);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_UP, GBA_KEY_UP);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_UP, GBA_KEY_UP);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
@@ -203,7 +203,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 }
@@ -286,7 +286,7 @@ void mPSP2Paused(struct mGUIRunner* runner) {
 
 void mPSP2Unpaused(struct mGUIRunner* runner) {
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 	}
 }
@@ -377,7 +377,7 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsi
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	screenMode = (screenMode + 1) % SM_MAX;
-	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

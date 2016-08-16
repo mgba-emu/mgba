@@ -51,6 +51,23 @@ enum {
 	RUNNER_STATE_9 = 0x90000,
 };
 
+static const struct mInputPlatformInfo _mGUIKeyInfo = {
+	.platformName = "gui",
+	.keyId = (const char*[GUI_INPUT_MAX]) {
+		"Select",
+		"Back",
+		"Cancel",
+		"Up",
+		"Down",
+		"Left",
+		"Right",
+		[mGUI_INPUT_INCREASE_BRIGHTNESS] = "Increase solar brightness",
+		[mGUI_INPUT_DECREASE_BRIGHTNESS] = "Decrease solar brightness",
+		[mGUI_INPUT_SCREEN_MODE] = "Screen mode"
+	},
+	.nKeys = GUI_INPUT_MAX
+};
+
 static void _log(struct mLogger*, int category, enum mLogLevel level, const char* format, va_list args);
 
 static struct mGUILogger {
@@ -140,6 +157,13 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	runner->totalDelta = 0;
 	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
 
+	mInputMapInit(&runner->params.keyMap, &_mGUIKeyInfo);
+	mCoreConfigInit(&runner->config, runner->port);
+	// TODO: Do we need to load more defaults?
+	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
+	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
+	mCoreConfigLoad(&runner->config);
+
 	char path[PATH_MAX];
 	mCoreConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
@@ -152,6 +176,8 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 		runner->teardown(runner);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);
+	mInputMapDeinit(&runner->params.keyMap);
+	mCoreConfigDeinit(&runner->config);
 	if (logger.vf) {
 		logger.vf->close(logger.vf);
 		logger.vf = NULL;
@@ -251,7 +277,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mLOG(GUI_RUNNER, INFO, "Found core");
 		runner->core->init(runner->core);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
-		mCoreInitConfig(runner->core, runner->port);
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
 			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
@@ -278,18 +303,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
 		((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
 	}
-	if (runner->core->config.port && runner->keySources) {
-		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->core->config.port);
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
-		}
-	}
-	// TODO: Do we need to load more defaults?
-	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
-	mCoreConfigSetDefaultValue(&runner->core->config, "idleOptimization", "detect");
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
-	mCoreLoadConfig(runner->core);
+	mCoreLoadForeignConfig(runner->core, &runner->config);
 	logger.logLevel = runner->core->opts.logLevel;
 
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
@@ -297,6 +312,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	if (runner->setup) {
 		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);
+	}
+	if (runner->config.port && runner->keySources) {
+		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		}
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
@@ -347,7 +369,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->core->runFrame(runner->core);
 			if (runner->drawFrame) {
 				int drawFps = false;
-				mCoreConfigGetIntValue(&runner->core->config, "fpsCounter", &drawFps);
+				mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
@@ -413,7 +435,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				mCoreLoadConfig(runner->core);
+				mCoreLoadForeignConfig(runner->core, &runner->config);
 				break;
 			case RUNNER_CONTINUE:
 				break;
@@ -445,16 +467,18 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mappedMemoryFree(drawState.screenshot, w * h * 4);
 	}
 
-	if (runner->core->config.port) {
+	if (runner->config.port) {
 		mLOG(GUI_RUNNER, DEBUG, "Saving key sources...");
 		if (runner->keySources) {
 			size_t i;
 			for (i = 0; runner->keySources[i].id; ++i) {
-				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
+				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+				mInputMapSave(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
 			}
 		}
-		mCoreConfigSave(&runner->core->config);
+		mCoreConfigSave(&runner->config);
 	}
+	mInputMapDeinit(&runner->core->inputMap);
 	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
 	runner->core->deinit(runner->core);
 
@@ -465,6 +489,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 }
 
 void mGUIRunloop(struct mGUIRunner* runner) {
+	if (runner->keySources) {
+		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		}
+	}
 	while (true) {
 		char path[PATH_MAX];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {

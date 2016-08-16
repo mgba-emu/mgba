@@ -12,6 +12,7 @@
 struct mGUIRunner;
 void mPSP2Setup(struct mGUIRunner* runner);
 void mPSP2Teardown(struct mGUIRunner* runner);
+void mPSP2MapKey(struct mInputMap* map, int pspKey, int key);
 
 void mPSP2LoadROM(struct mGUIRunner* runner);
 void mPSP2UnloadROM(struct mGUIRunner* runner);

@@ -44,7 +44,7 @@ enum FilterMode {
 	FM_NEAREST,
 	FM_LINEAR,
 	FM_MAX
-};
+} filterMode = FM_NEAREST;
 
 #define SAMPLES 1024
 #define GUI_SCALE 1.35
@@ -60,7 +60,7 @@ static int32_t _readGyroZ(struct mRotationSource* source);
 
 static void _drawStart(void);
 static void _drawEnd(void);
-static uint32_t _pollInput(void);
+static uint32_t _pollInput(const struct mInputMap*);
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y);
 static void _guiPrepare(void);
 static void _guiFinish(void);
@@ -71,6 +71,7 @@ static void _gameUnloaded(struct mGUIRunner* runner);
 static void _unpaused(struct mGUIRunner* runner);
 static void _drawFrame(struct mGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct mGUIRunner* runner);
+static void _incrementScreenMode(struct mGUIRunner* runner);
 
 static s8 WPAD_StickX(u8 chan, u8 right);
 static s8 WPAD_StickY(u8 chan, u8 right);
@@ -361,10 +362,42 @@ int main(int argc, char* argv[]) {
 		.drawFrame = _drawFrame,
 		.paused = _gameUnloaded,
 		.unpaused = _unpaused,
+		.incrementScreenMode = _incrementScreenMode,
 		.pollGameInput = _pollGameInput
 	};
 	mGUIInit(&runner, "wii");
+
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_A, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_B, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_TRIGGER_Z, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_UP, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_DOWN, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_LEFT, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_RIGHT, GUI_INPUT_RIGHT);
+
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_2, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_1, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_HOME, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_RIGHT, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_LEFT, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_UP, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, WIIMOTE_INPUT, WPAD_BUTTON_DOWN, GUI_INPUT_RIGHT);
+
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_A, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_Y, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_B, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_X, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_HOME, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_UP, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_DOWN, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_LEFT, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, CLASSIC_INPUT, WPAD_CLASSIC_BUTTON_RIGHT, GUI_INPUT_RIGHT);
+
 	if (argc > 1) {
+		size_t i;
+		for (i = 0; runner.keySources[i].id; ++i) {
+			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
+		}
 		mGUIRun(&runner, argv[1]);
 	} else {
 		mGUIRunloop(&runner);
@@ -421,7 +454,7 @@ static void _drawEnd(void) {
 	_CPU_ISR_Restore(level);
 }
 
-static uint32_t _pollInput(void) {
+static uint32_t _pollInput(const struct mInputMap* map) {
 	PAD_ScanPads();
 	u16 padkeys = PAD_ButtonsHeld(0);
 
@@ -431,6 +464,12 @@ static uint32_t _pollInput(void) {
 	WPAD_Probe(0, &ext);
 
 	int keys = 0;
+	keys |= mInputMapKeyBits(map, GCN1_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(map, GCN2_INPUT, padkeys, 0);
+	keys |= mInputMapKeyBits(map, WIIMOTE_INPUT, wiiPad, 0);
+	if (ext == WPAD_EXP_CLASSIC) {
+		keys |= mInputMapKeyBits(map, CLASSIC_INPUT, wiiPad, 0);
+	}
 	int x = PAD_StickX(0);
 	int y = PAD_StickY(0);
 	int w_x = WPAD_StickX(0, 0);
@@ -446,34 +485,6 @@ static uint32_t _pollInput(void) {
 	}
 	if (y > 0x20 || w_y > 0x20) {
 		keys |= 1 << GUI_INPUT_UP;
-	}
-	if ((padkeys & PAD_BUTTON_A) || (wiiPad & WPAD_BUTTON_2) || 
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_A | WPAD_CLASSIC_BUTTON_Y)))) {
-		keys |= 1 << GUI_INPUT_SELECT;
-	}
-	if ((padkeys & PAD_BUTTON_B) || (wiiPad & WPAD_BUTTON_1) || (wiiPad & WPAD_BUTTON_B) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_B | WPAD_CLASSIC_BUTTON_X)))) {
-		keys |= 1 << GUI_INPUT_BACK;
-	}
-	if ((padkeys & PAD_TRIGGER_Z) || (wiiPad & WPAD_BUTTON_HOME) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & (WPAD_CLASSIC_BUTTON_HOME)))) {
-		keys |= 1 << GUI_INPUT_CANCEL;
-	}
-	if ((padkeys & PAD_BUTTON_LEFT)|| (wiiPad & WPAD_BUTTON_UP) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_LEFT))) {
-		keys |= 1 << GUI_INPUT_LEFT;
-	}
-	if ((padkeys & PAD_BUTTON_RIGHT) || (wiiPad & WPAD_BUTTON_DOWN) ||
-	   ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_RIGHT))) {
-		keys |= 1 << GUI_INPUT_RIGHT;
-	}
-	if ((padkeys & PAD_BUTTON_UP) || (wiiPad & WPAD_BUTTON_RIGHT) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_UP))) {
-		keys |= 1 << GUI_INPUT_UP;
-	}
-	if ((padkeys & PAD_BUTTON_DOWN) || (wiiPad & WPAD_BUTTON_LEFT) ||
-	    ((ext == WPAD_EXP_CLASSIC) && (wiiPad & WPAD_CLASSIC_BUTTON_DOWN))) {
-		keys |= 1 << GUI_INPUT_DOWN;
 	}
 	return keys;
 }
@@ -603,10 +614,11 @@ void _unpaused(struct mGUIRunner* runner) {
 	_CPU_ISR_Restore(level);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
-	if (mCoreConfigGetUIntValue(&runner->core->config, "filter", &mode) && mode < FM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "filter", &mode) && mode < FM_MAX) {
+		filterMode = mode;
 		switch (mode) {
 		case FM_NEAREST:
 		default:
@@ -721,6 +733,30 @@ uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	}
 
 	return keys;
+}
+
+void _incrementScreenMode(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	int mode = screenMode | (filterMode << 1);
+	++mode;
+	screenMode = mode % SM_MAX;
+	filterMode = (mode >> 1) % FM_MAX;
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->config, "filter", filterMode);
+	if (screenMode == SM_PA) {
+		_reproj(corew * scaleFactor, coreh * scaleFactor);
+	} else {
+		_reproj2(corew, coreh);
+	}
+	switch (filterMode) {
+	case FM_NEAREST:
+	default:
+		GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
+		break;
+	case FM_LINEAR:
+		GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
+		break;
+	}
 }
 
 void _setRumble(struct mRumble* rumble, int enable) {

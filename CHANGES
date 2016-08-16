@@ -6,6 +6,7 @@ Features:
  - Tile viewer
  - Threaded rendering mode
  - Libretro: Memory map and achievement support (leiradel)
+ - GUI: Add UI control remapping
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games

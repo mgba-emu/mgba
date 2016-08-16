@@ -38,22 +38,10 @@ static void _drawEnd(void) {
 	vita2d_swap_buffers();
 }
 
-static uint32_t _pollInput(void) {
+static uint32_t _pollInput(const struct mInputMap* map) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
-	int input = 0;
-	if (pad.buttons & SCE_CTRL_TRIANGLE) {
-		input |= 1 << GUI_INPUT_CANCEL;
-	}
-	if (pad.buttons & SCE_CTRL_SQUARE) {
-		input |= 1 << mGUI_INPUT_SCREEN_MODE;
-	}
-	if (pad.buttons & SCE_CTRL_CIRCLE) {
-		input |= 1 << GUI_INPUT_BACK;
-	}
-	if (pad.buttons & SCE_CTRL_CROSS) {
-		input |= 1 << GUI_INPUT_SELECT;
-	}
+	int input = mInputMapKeyBits(map, PSP2_INPUT, pad.buttons, 0);
 
 	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
@@ -165,6 +153,16 @@ int main() {
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 
 	mGUIInit(&runner, "psvita");
+
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CROSS, GUI_INPUT_SELECT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CIRCLE, GUI_INPUT_BACK);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_TRIANGLE, GUI_INPUT_CANCEL);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_UP, GUI_INPUT_UP);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_DOWN, GUI_INPUT_DOWN);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_LEFT, GUI_INPUT_LEFT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_RIGHT, GUI_INPUT_RIGHT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_SQUARE, mGUI_INPUT_SCREEN_MODE);
+
 	mGUIRunloop(&runner);
 
 	vita2d_fini();

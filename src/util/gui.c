@@ -11,7 +11,7 @@ void GUIInit(struct GUIParams* params) {
 }
 
 void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* heldInput) {
-	uint32_t input = params->pollInput();
+	uint32_t input = params->pollInput(&params->keyMap);
 	uint32_t newInput = 0;
 	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
 		if (input & (1 << i)) {

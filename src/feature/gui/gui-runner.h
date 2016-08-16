@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#include "core/config.h"
 #include "feature/gui/remap.h"
 #include "gba/hardware.h"
 #include "util/circle-buffer.h"
@@ -40,6 +41,8 @@ struct mGUIRunner {
 	struct mGUIBackground background;
 	struct mGUIRunnerLux luminanceSource;
 
+	struct mInputMap guiKeys;
+	struct mCoreConfig config;
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
 

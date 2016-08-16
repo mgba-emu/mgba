@@ -218,8 +218,8 @@ static void _setup(struct mGUIRunner* runner) {
 	bool isNew3DS = false;
 	APT_CheckNew3DS(&isNew3DS);
 	if (isNew3DS && !envIsHomebrew()) {
-		mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
-		mCoreLoadConfig(runner->core);
+		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
+		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
 
 	runner->core->setRotation(runner->core, &rotation.d);
@@ -242,7 +242,7 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 
@@ -288,7 +288,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 	}
 }
@@ -454,47 +454,16 @@ static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	screenMode = (screenMode + 1) % SM_MAX;
-	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 
 	C3D_RenderBufClear(&bottomScreen);
 	C3D_RenderBufClear(&topScreen);
 }
 
-static uint32_t _pollInput(void) {
+static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
-	uint32_t keys = 0;
 	int activeKeys = hidKeysHeld();
-	if (activeKeys & KEY_X) {
-		keys |= 1 << GUI_INPUT_CANCEL;
-	}
-	if (activeKeys & KEY_Y) {
-		keys |= 1 << mGUI_INPUT_SCREEN_MODE;
-	}
-	if (activeKeys & KEY_B) {
-		keys |= 1 << GUI_INPUT_BACK;
-	}
-	if (activeKeys & KEY_A) {
-		keys |= 1 << GUI_INPUT_SELECT;
-	}
-	if (activeKeys & KEY_LEFT) {
-		keys |= 1 << GUI_INPUT_LEFT;
-	}
-	if (activeKeys & KEY_RIGHT) {
-		keys |= 1 << GUI_INPUT_RIGHT;
-	}
-	if (activeKeys & KEY_UP) {
-		keys |= 1 << GUI_INPUT_UP;
-	}
-	if (activeKeys & KEY_DOWN) {
-		keys |= 1 << GUI_INPUT_DOWN;
-	}
-	if (activeKeys & KEY_CSTICK_UP) {
-		keys |= 1 << mGUI_INPUT_INCREASE_BRIGHTNESS;
-	}
-	if (activeKeys & KEY_CSTICK_DOWN) {
-		keys |= 1 << mGUI_INPUT_DECREASE_BRIGHTNESS;
-	}
-	return keys;
+	return mInputMapKeyBits(map, _3DS_INPUT, activeKeys, 0);
 }
 
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
@@ -724,6 +693,18 @@ int main() {
 	};
 
 	mGUIInit(&runner, "3ds");
+
+	_map3DSKey(&runner.params.keyMap, KEY_X, GUI_INPUT_CANCEL);
+	_map3DSKey(&runner.params.keyMap, KEY_Y, mGUI_INPUT_SCREEN_MODE);
+	_map3DSKey(&runner.params.keyMap, KEY_B, GUI_INPUT_BACK);
+	_map3DSKey(&runner.params.keyMap, KEY_A, GUI_INPUT_SELECT);
+	_map3DSKey(&runner.params.keyMap, KEY_UP, GUI_INPUT_UP);
+	_map3DSKey(&runner.params.keyMap, KEY_DOWN, GUI_INPUT_DOWN);
+	_map3DSKey(&runner.params.keyMap, KEY_LEFT, GUI_INPUT_LEFT);
+	_map3DSKey(&runner.params.keyMap, KEY_RIGHT, GUI_INPUT_RIGHT);
+	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_UP, mGUI_INPUT_INCREASE_BRIGHTNESS);
+	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_DOWN, mGUI_INPUT_DECREASE_BRIGHTNESS);
+
 	mGUIRunloop(&runner);
 	mGUIDeinit(&runner);
 
