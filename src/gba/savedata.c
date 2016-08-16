@@ -19,9 +19,10 @@
 // Some games may vary anywhere between about 2000 cycles to up to 30000 cycles. (Observed on a Macronix (09C2) chip).
 // Other games vary from very little, with a fairly solid 20500 cycle count. (Observed on a SST (D4BF) chip).
 // An average estimation is as follows.
-#define FLASH_SETTLE_CYCLES 18000
+#define FLASH_ERASE_CYCLES 30000
+#define FLASH_PROGRAM_CYCLES 18000
 // This needs real testing, and is only an estimation currently
-#define EEPROM_SETTLE_CYCLES 14500
+#define EEPROM_SETTLE_CYCLES 1450
 #define CLEANUP_THRESHOLD 15
 
 mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata");
@@ -298,7 +299,7 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 	if (savedata->dust > 0 && (address >> 12) == savedata->settling) {
 		// Give some overhead for waitstates and the comparison
 		// This estimation can probably be improved
-		savedata->dust -= 10;
+		savedata->dust -= 5000;
 		return 0x5F;
 	}
 	return savedata->currentBank[address];
@@ -312,6 +313,9 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 			savedata->dirty |= SAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
+			if (savedata->realisticTiming) {
+				savedata->dust = FLASH_PROGRAM_CYCLES;
+			}
 			break;
 		case FLASH_COMMAND_SWITCH_BANK:
 			if (address == 0 && value < 2) {
@@ -449,7 +453,7 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		} else {
 			// Give some overhead for waitstates and the comparison
 			// This estimation can probably be improved
-			savedata->dust -= 10;
+			--savedata->dust;
 			return 0;
 		}
 	}
@@ -555,7 +559,7 @@ void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 	}
 	savedata->settling = sectorStart >> 12;
 	if (savedata->realisticTiming) {
-		savedata->dust = FLASH_SETTLE_CYCLES;
+		savedata->dust = FLASH_ERASE_CYCLES;
 	}
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }
