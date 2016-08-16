@@ -44,23 +44,8 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
 	if (savedata->vf) {
-		switch (savedata->type) {
-		case SAVEDATA_SRAM:
-			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_SRAM);
-			break;
-		case SAVEDATA_FLASH512:
-			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH512);
-			break;
-		case SAVEDATA_FLASH1M:
-			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_FLASH1M);
-			break;
-		case SAVEDATA_EEPROM:
-			savedata->vf->unmap(savedata->vf, savedata->data, SIZE_CART_EEPROM);
-			break;
-		case SAVEDATA_FORCE_NONE:
-		case SAVEDATA_AUTODETECT:
-			break;
-		}
+		size_t size = GBASavedataSize(savedata);
+		savedata->vf->unmap(savedata->vf, savedata->data, size);
 		savedata->vf = 0;
 	} else {
 		switch (savedata->type) {
@@ -496,27 +481,13 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 			savedata->dirty |= SAVEDATA_DIRT_SEEN;
 		}
 	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
-		size_t size;
-		switch (savedata->type) {
-		case SAVEDATA_EEPROM:
-			size = SIZE_CART_EEPROM;
-			break;
-		case SAVEDATA_SRAM:
-			size = SIZE_CART_SRAM;
-			break;
-		case SAVEDATA_FLASH512:
-			size = SIZE_CART_FLASH512;
-			break;
-		case SAVEDATA_FLASH1M:
-			size = SIZE_CART_FLASH1M;
-			break;
-		default:
-			size = 0;
-			break;
-		}
-		savedata->vf->sync(savedata->vf, savedata->data, size);
+		size_t size = GBASavedataSize(savedata);
 		savedata->dirty = 0;
-		mLOG(GBA_SAVE, INFO, "Savedata synced");
+		if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
+			mLOG(GBA_SAVE, INFO, "Savedata synced");
+		} else {
+			mLOG(GBA_SAVE, INFO, "Savedata failed to sync!");
+		}
 	}
 }
 
@@ -535,10 +506,8 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 }
 
 void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerializedState* state) {
-	if (state->savedata.type == SAVEDATA_FORCE_NONE) {
-		return;
-	}
 	if (savedata->type != state->savedata.type) {
+		mLOG(GBA_SAVE, DEBUG, "Switching save types");
 		GBASavedataForceType(savedata, state->savedata.type, savedata->realisticTiming);
 	}
 	savedata->command = state->savedata.command;
