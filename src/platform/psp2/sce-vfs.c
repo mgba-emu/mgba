@@ -101,6 +101,7 @@ static void* _vfsceMap(struct VFile* vf, size_t size, int flags) {
 	void* buffer = anonymousMemoryMap(size);
 	if (buffer) {
 		SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
+		sceIoLseek(vfsce->fd, 0, SEEK_SET);
 		sceIoRead(vfsce->fd, buffer, size);
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	}
@@ -110,6 +111,7 @@ static void* _vfsceMap(struct VFile* vf, size_t size, int flags) {
 static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
 	SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
+	sceIoLseek(vfsce->fd, 0, SEEK_SET);
 	sceIoWrite(vfsce->fd, memory, size);
 	sceIoLseek(vfsce->fd, cur, SEEK_SET);
 	sceIoSyncByFd(vfsce->fd);
