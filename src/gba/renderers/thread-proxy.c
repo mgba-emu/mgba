@@ -6,6 +6,7 @@
 #include "thread-proxy.h"
 
 #include "gba/io.h"
+#include "gba/renderers/tile-cache.h"
 
 #include "util/memory.h"
 
@@ -125,7 +126,7 @@ void GBAVideoThreadProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 static bool _writeData(struct GBAVideoThreadProxyRenderer* proxyRenderer, void* data, size_t length) {
 	while (!RingFIFOWrite(&proxyRenderer->dirtyQueue, data, length)) {
-		mLOG(GBA_VIDEO, WARN, "Can't write 0x%z bytes. Proxy thread asleep?", length);
+		mLOG(GBA_VIDEO, WARN, "Can't write 0x%zu bytes. Proxy thread asleep?", length);
 		mLOG(GBA_VIDEO, DEBUG, "Queue status: read: %p, write: %p", proxyRenderer->dirtyQueue.readPtr, proxyRenderer->dirtyQueue.writePtr);
 		MutexLock(&proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {

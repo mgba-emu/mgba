@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
 #include "core/core.h"
+#include "core/serialize.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/serialize.h"

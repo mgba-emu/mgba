@@ -4,10 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
+#include "core/serialize.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
-#include "gba/serialize.h"
 
 #include "feature/commandline.h"
 #include "util/socket.h"

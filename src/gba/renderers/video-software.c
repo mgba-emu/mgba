@@ -7,6 +7,7 @@
 
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/renderers/tile-cache.h"
 
 #include "util/arm-algo.h"
 #include "util/memory.h"
