@@ -64,6 +64,7 @@ static size_t audioPos = 0;
 static C3D_Tex outputTexture;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
+static bool frameLimiter = true;
 
 static C3D_RenderBuf bottomScreen;
 static C3D_RenderBuf topScreen;
@@ -182,7 +183,9 @@ static void _drawEnd(void) {
 	C3D_RenderBufTransfer(&topScreen, (u32*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_RenderBufTransfer(&bottomScreen, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
+	if (frameLimiter) {
+		gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
+	}
 }
 
 static int _batteryState(void) {
@@ -245,6 +248,7 @@ static void _setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
+	frameLimiter = true;
 
 	runner->core->setAudioBufferSize(runner->core, AUDIO_SAMPLES);
 }
@@ -300,6 +304,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 		csndExecCmds(false);
 	}
 	osSetSpeedupEnable(false);
+	frameLimiter = true;
 
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
@@ -458,6 +463,11 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 
 	C3D_RenderBufClear(&bottomScreen);
 	C3D_RenderBufClear(&topScreen);
+}
+
+static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
+	UNUSED(runner);
+	frameLimiter = limit;
 }
 
 static uint32_t _pollInput(const struct mInputMap* map) {
@@ -689,6 +699,7 @@ int main() {
 		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
 		.incrementScreenMode = _incrementScreenMode,
+		.setFrameLimiter = _setFrameLimiter,
 		.pollGameInput = _pollGameInput
 	};
 

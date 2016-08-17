@@ -18,6 +18,8 @@ enum mGUIInput {
 	mGUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
 	mGUI_INPUT_DECREASE_BRIGHTNESS,
 	mGUI_INPUT_SCREEN_MODE,
+	mGUI_INPUT_SCREENSHOT,
+	mGUI_INPUT_FAST_FORWARD,
 };
 
 struct mGUIBackground {
@@ -64,6 +66,7 @@ struct mGUIRunner {
 	void (*paused)(struct mGUIRunner*);
 	void (*unpaused)(struct mGUIRunner*);
 	void (*incrementScreenMode)(struct mGUIRunner*);
+	void (*setFrameLimiter)(struct mGUIRunner*, bool limit);
 	uint16_t (*pollGameInput)(struct mGUIRunner*);
 };
 

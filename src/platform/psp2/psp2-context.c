@@ -58,11 +58,12 @@ static struct mSceRumble {
 	struct CircleBuffer history;
 	int current;
 } rumble;
+bool frameLimiter = true;
 
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
 
-#define PSP2_SAMPLES 64
+#define PSP2_SAMPLES 128
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 40)
 
 static struct mPSP2AudioContext {
@@ -89,6 +90,7 @@ static THREAD_ENTRY _audioThread(void* context) {
 		struct GBAStereoSample* buffer = audio->buffer.readPtr;
 		RingFIFORead(&audio->buffer, NULL, len * 4);
 		audio->samples -= len;
+		ConditionWake(&audio->cond);
 
 		MutexUnlock(&audio->mutex);
 		sceAudioOutOutput(audioPort, buffer);
@@ -163,6 +165,11 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	return activeKeys;
 }
 
+void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit) {
+	UNUSED(runner);
+	frameLimiter = limit;
+}
+
 void mPSP2Setup(struct mGUIRunner* runner) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 	mCoreLoadForeignConfig(runner->core, &runner->config);
@@ -200,6 +207,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	CircleBufferInit(&rumble.history, RUMBLE_PWM);
 	runner->core->setRumble(runner->core, &rumble.d);
 
+	frameLimiter = true;
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
 	unsigned mode;
@@ -210,7 +218,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
-	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	double ratio = GBAAudioCalculateRatio(1, 60.0 / 1.001, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
@@ -246,7 +254,9 @@ void mPSP2PrepareForFrame(struct mGUIRunner* runner) {
 		struct GBAStereoSample* samples = audioContext.buffer.writePtr;
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &samples[0].left, PSP2_SAMPLES, true);
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &samples[0].right, PSP2_SAMPLES, true);
-		RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4);
+		if (!RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4)) {
+			break;
+		}
 		audioContext.samples += PSP2_SAMPLES;
 	}
 	ConditionWake(&audioContext.cond);
@@ -295,8 +305,8 @@ void mPSP2Teardown(struct mGUIRunner* runner) {
 	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
+	frameLimiter = true;
 }
-
 
 void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
 	unsigned w = width;

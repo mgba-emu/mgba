@@ -31,10 +31,11 @@ static void _drawStart(void) {
 
 static void _drawEnd(void) {
 	static int oldVCount = 0;
+	extern bool frameLimiter;
 	int vcount = oldVCount;
 	vita2d_end_drawing();
 	oldVCount = sceDisplayGetVcount();
-	vita2d_set_vblank_wait(oldVCount + 1 >= vcount);
+	vita2d_set_vblank_wait(frameLimiter && oldVCount + 1 >= vcount);
 	vita2d_swap_buffers();
 }
 
@@ -146,6 +147,7 @@ int main() {
 		.paused = mPSP2Paused,
 		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
+		.setFrameLimiter = mPSP2SetFrameLimiter,
 		.pollGameInput = mPSP2PollInput
 	};
 

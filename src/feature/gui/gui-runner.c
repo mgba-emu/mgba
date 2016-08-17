@@ -63,7 +63,9 @@ static const struct mInputPlatformInfo _mGUIKeyInfo = {
 		"Right",
 		[mGUI_INPUT_INCREASE_BRIGHTNESS] = "Increase solar brightness",
 		[mGUI_INPUT_DECREASE_BRIGHTNESS] = "Decrease solar brightness",
-		[mGUI_INPUT_SCREEN_MODE] = "Screen mode"
+		[mGUI_INPUT_SCREEN_MODE] = "Screen mode",
+		[mGUI_INPUT_SCREENSHOT] = "Take screenshot",
+		[mGUI_INPUT_FAST_FORWARD] = "Fast forward",
 	},
 	.nKeys = GUI_INPUT_MAX
 };
@@ -344,7 +346,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			}
 #endif
 			uint32_t guiKeys;
-			GUIPollInput(&runner->params, &guiKeys, 0);
+			uint32_t heldKeys;
+			GUIPollInput(&runner->params, &guiKeys, &heldKeys);
 			if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
 				break;
 			}
@@ -360,6 +363,14 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			}
 			if (guiKeys & (1 << mGUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
 				runner->incrementScreenMode(runner);
+			}
+			if (guiKeys & (1 << mGUI_INPUT_SCREENSHOT)) {
+				mCoreTakeScreenshot(runner->core);
+			}
+			if (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD)) {
+				runner->setFrameLimiter(runner, false);
+			} else {
+				runner->setFrameLimiter(runner, true);
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {

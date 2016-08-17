@@ -7,6 +7,7 @@ Features:
  - Threaded rendering mode
  - Libretro: Memory map and achievement support (leiradel)
  - GUI: Add UI control remapping
+ - GUI: Add fast-forward
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games

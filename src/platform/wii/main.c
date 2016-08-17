@@ -71,6 +71,7 @@ static void _gameUnloaded(struct mGUIRunner* runner);
 static void _unpaused(struct mGUIRunner* runner);
 static void _drawFrame(struct mGUIRunner* runner, bool faded);
 static uint16_t _pollGameInput(struct mGUIRunner* runner);
+static void _setFrameLimiter(struct mGUIRunner* runner, bool limit);
 static void _incrementScreenMode(struct mGUIRunner* runner);
 
 static s8 WPAD_StickX(u8 chan, u8 right);
@@ -88,6 +89,7 @@ static int32_t tiltY;
 static int32_t gyroZ;
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
+static bool frameLimiter = true;
 static int scaleFactor;
 static unsigned corew, coreh;
 
@@ -363,6 +365,7 @@ int main(int argc, char* argv[]) {
 		.paused = _gameUnloaded,
 		.unpaused = _unpaused,
 		.incrementScreenMode = _incrementScreenMode,
+		.setFrameLimiter = _setFrameLimiter,
 		.pollGameInput = _pollGameInput
 	};
 	mGUIInit(&runner, "wii");
@@ -429,9 +432,11 @@ static void _drawStart(void) {
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
 	if (referenceRetraceCount >= retraceCount) {
-		VIDEO_WaitVSync();
+		if (frameLimiter) {
+			VIDEO_WaitVSync();
+		}
+		referenceRetraceCount = retraceCount;
 	}
-	referenceRetraceCount = retraceCount;
 	_CPU_ISR_Restore(level);
 
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
@@ -452,6 +457,11 @@ static void _drawEnd(void) {
 	_CPU_ISR_Disable(level);
 	++referenceRetraceCount;
 	_CPU_ISR_Restore(level);
+}
+
+static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
+	UNUSED(runner);
+	frameLimiter = limit;
 }
 
 static uint32_t _pollInput(const struct mInputMap* map) {
@@ -585,11 +595,14 @@ void _setup(struct mGUIRunner* runner) {
 	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
+
+	frameLimiter = true;
 }
 
 void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	AUDIO_StopDMA();
+	frameLimiter = true;
 }
 
 void _gameLoaded(struct mGUIRunner* runner) {
