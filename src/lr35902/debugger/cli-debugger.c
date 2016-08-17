@@ -73,7 +73,7 @@ static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, co
 		return cpu->pc;
 	}
 	if (strcmp(name, "sp") == 0) {
-		return cpu->pc;
+		return cpu->sp;
 	}
 	if (strcmp(name, "f") == 0) {
 		return cpu->f.packed;

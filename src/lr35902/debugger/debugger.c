@@ -23,7 +23,7 @@ static struct LR35902DebugBreakpoint* _lookupBreakpoint(struct LR35902DebugBreak
 
 static void LR35902DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct LR35902Debugger* debugger = (struct LR35902Debugger*) d;
-	struct LR35902DebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->pc - 1);
+	struct LR35902DebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, debugger->cpu->pc);
 	if (!breakpoint) {
 		return;
 	}
