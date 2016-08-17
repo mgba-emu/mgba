@@ -34,7 +34,7 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 
 
 // We stash the priority on the top bits so we can do a one-operator comparison
-// The lower the number, the higher the priority, and sprites take precendence over backgrounds
+// The lower the number, the higher the priority, and sprites take precedence over backgrounds
 // We want to do special processing if the color pixel is target 1, however
 
 static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, uint32_t* pixel, uint32_t color, uint32_t current) {
@@ -83,45 +83,44 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	*pixel = color;
 }
 
-#define COMPOSITE_16_OBJWIN(BLEND)                                                                              \
+#define COMPOSITE_16_OBJWIN(BLEND, IDX)  \
 	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {                                          \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[paletteData | pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
 		} \
-		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
+		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
 	}
 
-#define COMPOSITE_16_NO_OBJWIN(BLEND) \
-	_composite ## BLEND ## NoObjwin(renderer, pixel, palette[pixelData] | flags, current);
+#define COMPOSITE_16_NO_OBJWIN(BLEND, IDX) \
+	_composite ## BLEND ## NoObjwin(renderer, &pixel[IDX], palette[pixelData] | flags, current);
 
-#define COMPOSITE_256_OBJWIN(BLEND) \
+#define COMPOSITE_256_OBJWIN(BLEND, IDX) \
 	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) { \
 		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[pixelData] : palette[pixelData]; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
 		} \
-		_composite ## BLEND ## Objwin(renderer, pixel, color | mergedFlags, current); \
+		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
 	}
 
-#define COMPOSITE_256_NO_OBJWIN(BLEND) \
-	COMPOSITE_16_NO_OBJWIN(BLEND)
+#define COMPOSITE_256_NO_OBJWIN COMPOSITE_16_NO_OBJWIN
 
-#define BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN) \
+#define BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, IDX) \
 	pixelData = tileData & 0xF; \
-	current = *pixel; \
+	current = pixel[IDX]; \
 	if (pixelData && IS_WRITABLE(current)) { \
-		COMPOSITE_16_ ## OBJWIN (BLEND); \
+		COMPOSITE_16_ ## OBJWIN (BLEND, IDX); \
 	} \
 	tileData >>= 4;
 
-#define BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN) \
+#define BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, IDX) \
 	pixelData = tileData & 0xFF; \
-	current = *pixel; \
+	current = pixel[IDX]; \
 	if (pixelData && IS_WRITABLE(current)) { \
-		COMPOSITE_256_ ## OBJWIN (BLEND); \
+		COMPOSITE_256_ ## OBJWIN (BLEND, IDX); \
 	} \
 	tileData >>= 8;
 

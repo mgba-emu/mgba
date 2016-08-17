@@ -45,7 +45,7 @@
 		} \
 		MOSAIC(COORD) \
 		if (pixelData) { \
-			COMPOSITE_256_ ## OBJWIN (BLEND); \
+			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
 		} \
 	}
 
