@@ -208,35 +208,39 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		}
 
 		// Clip off early pixels
-		if ((xAccum >> 8) < -(width >> 1)) {
-			int32_t diffX = -(width << 7) - xAccum;
-			int32_t x = mat.a ? diffX / mat.a : 0;
-			xAccum += mat.a * x;
-			yAccum += mat.c * x;
-			outX += x;
-			inX += x;
-		} else if ((xAccum >> 8) >= (width >> 1)) {
-			int32_t diffX = (width << 7) - xAccum;
-			int32_t x = mat.a ? diffX / mat.a : 0;
-			xAccum += mat.a * x;
-			yAccum += mat.c * x;
-			outX += x;
-			inX += x;
+		if (mat.a) {
+			if ((xAccum >> 8) < -(width >> 1)) {
+				int32_t diffX = -(width << 7) - xAccum - 1;
+				int32_t x = mat.a ? diffX / mat.a : 0;
+				xAccum += mat.a * x;
+				yAccum += mat.c * x;
+				outX += x;
+				inX += x;
+			} else if ((xAccum >> 8) >= (width >> 1)) {
+				int32_t diffX = (width << 7) - xAccum;
+				int32_t x = mat.a ? diffX / mat.a : 0;
+				xAccum += mat.a * x;
+				yAccum += mat.c * x;
+				outX += x;
+				inX += x;
+			}
 		}
-		if ((yAccum >> 8) < -(height >> 1)) {
-			int32_t diffY = -(height << 7) - yAccum;
-			int32_t y = mat.c ? diffY / mat.c : 0;
-			xAccum += mat.a * y;
-			yAccum += mat.c * y;
-			outX += y;
-			inX += y;
-		} else if ((yAccum >> 8) >= (height >> 1)) {
-			int32_t diffY = (height << 7) - yAccum;
-			int32_t y = mat.c ? diffY / mat.c : 0;
-			xAccum += mat.a * y;
-			yAccum += mat.c * y;
-			outX += y;
-			inX += y;
+		if (mat.c) {
+			if ((yAccum >> 8) < -(height >> 1)) {
+				int32_t diffY = -(height << 7) - yAccum - 1;
+				int32_t y = mat.c ? diffY / mat.c : 0;
+				xAccum += mat.a * y;
+				yAccum += mat.c * y;
+				outX += y;
+				inX += y;
+			} else if ((yAccum >> 8) >= (height >> 1)) {
+				int32_t diffY = (height << 7) - yAccum;
+				int32_t y = mat.c ? diffY / mat.c : 0;
+				xAccum += mat.a * y;
+				yAccum += mat.c * y;
+				outX += y;
+				inX += y;
+			}
 		}
 
 		if (!GBAObjAttributesAIs256Color(sprite->a)) {
