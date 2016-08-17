@@ -106,7 +106,7 @@ int main() {
 					"Stretched",
 					"Fit Aspect Ratio",
 				},
-				.nStates = 3
+				.nStates = 4
 			}
 		},
 		.keySources = (struct GUIInputKeys[]) {
