@@ -19,6 +19,7 @@ char* strdup(const char* str);
 
 char* strnrstr(const char* restrict s1, const char* restrict s2, size_t len);
 
+size_t toUtf8(uint32_t unichar, char* buffer);
 int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t utf8Length);
 char* utf16to8(const uint16_t* utf16, size_t length);
 uint32_t utf8Char(const char** unicode, size_t* length);

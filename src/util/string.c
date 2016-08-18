@@ -80,7 +80,7 @@ uint32_t utf8Char(const char** unicode, size_t* length) {
 		return byte;
 	}
 	uint32_t unichar;
-	static int tops[4] = { 0xC0, 0xE0, 0xF0, 0xF8 };
+	static const int tops[4] = { 0xC0, 0xE0, 0xF0, 0xF8 };
 	size_t numBytes;
 	for (numBytes = 0; numBytes < 3; ++numBytes) {
 		if ((byte & tops[numBytes + 1]) == tops[numBytes]) {
@@ -110,7 +110,7 @@ uint32_t utf8Char(const char** unicode, size_t* length) {
 	return unichar;
 }
 
-static size_t _toUtf8(uint32_t unichar, char* buffer) {
+size_t toUtf8(uint32_t unichar, char* buffer) {
 	if (unichar > 0x10FFFF) {
 		unichar = 0xFFFD;
 	}
@@ -173,7 +173,7 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			break;
 		}
 		uint32_t unichar = utf16Char(&utf16, &length);
-		size_t bytes = _toUtf8(unichar, buffer);
+		size_t bytes = toUtf8(unichar, buffer);
 		utf8Length += bytes;
 		if (utf8Length < utf8TotalBytes) {
 			memcpy(offset, buffer, bytes);
