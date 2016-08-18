@@ -126,7 +126,7 @@ void GBAVideoThreadProxyRendererDeinit(struct GBAVideoRenderer* renderer) {
 
 void _proxyThreadRecover(struct GBAVideoThreadProxyRenderer* proxyRenderer) {
 	MutexLock(&proxyRenderer->mutex);
-	while (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
+	if (proxyRenderer->threadState != PROXY_THREAD_STOPPED) {
 		MutexUnlock(&proxyRenderer->mutex);
 		return;
 	}
@@ -139,7 +139,7 @@ void _proxyThreadRecover(struct GBAVideoThreadProxyRenderer* proxyRenderer) {
 
 static bool _writeData(struct GBAVideoThreadProxyRenderer* proxyRenderer, void* data, size_t length) {
 	while (!RingFIFOWrite(&proxyRenderer->dirtyQueue, data, length)) {
-		mLOG(GBA_VIDEO, WARN, "Can't write 0x%zu bytes. Proxy thread asleep?", length);
+		mLOG(GBA_VIDEO, WARN, "Can't write %zu bytes. Proxy thread asleep?", length);
 		mLOG(GBA_VIDEO, DEBUG, "Queue status: read: %p, write: %p", proxyRenderer->dirtyQueue.readPtr, proxyRenderer->dirtyQueue.writePtr);
 		MutexLock(&proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
