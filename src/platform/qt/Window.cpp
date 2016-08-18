@@ -1380,13 +1380,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setAutofire(GBA_KEY_A, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, false);
-	}, QKeySequence("W"), tr("Autofire A"), "autofireA");
+	}, QKeySequence(), tr("Autofire A"), "autofireA");
 
 	m_shortcutController->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, false);
-	}, QKeySequence("Q"), tr("Autofire B"), "autofireB");
+	}, QKeySequence(), tr("Autofire B"), "autofireB");
 
 	m_shortcutController->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, true);
