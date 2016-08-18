@@ -75,6 +75,10 @@ size_t RingFIFORead(struct RingFIFO* buffer, void* output, size_t length) {
 
 	// Wrap around if we can't fit enough in here
 	if ((intptr_t) data - (intptr_t) buffer->data + length >= buffer->capacity) {
+		if (end == data) {
+			// Oops! If we wrap now, it'll appear full
+			return 0;
+		}
 		data = buffer->data;
 	}
 
