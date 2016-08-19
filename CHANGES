@@ -26,6 +26,7 @@ Bugfixes:
  - PSP2: Delete threads after they return
  - GBA Video: WIN0/1 take priority over OBJWIN
  - PSP2: Fix mapping/unmapping from not at 0
+ - Wii: Fix garbage flash at startup
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
