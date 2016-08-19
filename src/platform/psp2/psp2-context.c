@@ -218,7 +218,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
-	double ratio = GBAAudioCalculateRatio(1, 60.0 / 1.001, 1);
+	double ratio = GBAAudioCalculateRatio(1, 60.0f / 1.001f, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
@@ -249,18 +249,29 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 }
 
 void mPSP2PrepareForFrame(struct mGUIRunner* runner) {
-	MutexLock(&audioContext.mutex);
+	int nSamples = 0;
 	while (blip_samples_avail(runner->core->getAudioChannel(runner->core, 0)) >= PSP2_SAMPLES) {
 		struct GBAStereoSample* samples = audioContext.buffer.writePtr;
+		if (nSamples > (PSP2_AUDIO_BUFFER_SIZE >> 2) + (PSP2_AUDIO_BUFFER_SIZE >> 1)) { // * 0.75
+			if (!frameLimiter) {
+				blip_clear(runner->core->getAudioChannel(runner->core, 0));
+				blip_clear(runner->core->getAudioChannel(runner->core, 1));
+				break;
+			}
+			sceKernelDelayThread(400);
+		}
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &samples[0].left, PSP2_SAMPLES, true);
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &samples[0].right, PSP2_SAMPLES, true);
-		if (!RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4)) {
-			break;
+		while (!RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4)) {
+			ConditionWake(&audioContext.cond);
+			// Spinloooooooop!
 		}
+		MutexLock(&audioContext.mutex);
 		audioContext.samples += PSP2_SAMPLES;
+		nSamples = audioContext.samples;
+		ConditionWake(&audioContext.cond);
+		MutexUnlock(&audioContext.mutex);
 	}
-	ConditionWake(&audioContext.cond);
-	MutexUnlock(&audioContext.mutex);
 }
 
 void mPSP2UnloadROM(struct mGUIRunner* runner) {
