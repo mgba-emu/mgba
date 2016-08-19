@@ -112,12 +112,12 @@ static void reconfigureScreen(struct mCore* core, GXRModeObj* vmode) {
 	VIDEO_SetBlack(true);
 	VIDEO_Configure(vmode);
 	VIDEO_SetNextFramebuffer(framebuffer[whichFb]);
-	VIDEO_SetBlack(false);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if (vmode->viTVMode & VI_NON_INTERLACE) {
 		VIDEO_WaitVSync();
 	}
+	VIDEO_SetBlack(false);
 	GX_SetViewport(0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
 
 	f32 yscale = GX_GetYScaleFactor(vmode->efbHeight, vmode->xfbHeight);
