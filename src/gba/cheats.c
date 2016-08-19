@@ -20,7 +20,7 @@ static void _addBreakpoint(struct mCheatDevice* device, struct GBACheatSet* chea
 	if (cheats->hook->reentries > 1) {
 		return;
 	}
-	GBASetBreakpoint(device->p->board, &device->d, cheats->hook->address, cheats->hook->mode, &cheats->hook->patchedOpcode);
+	// TODO: Put back hooks
 }
 
 static void _removeBreakpoint(struct mCheatDevice* device, struct GBACheatSet* cheats) {
@@ -31,7 +31,7 @@ static void _removeBreakpoint(struct mCheatDevice* device, struct GBACheatSet* c
 	if (cheats->hook->reentries > 0) {
 		return;
 	}
-	GBAClearBreakpoint(device->p->board, cheats->hook->address, cheats->hook->mode, cheats->hook->patchedOpcode);
+	// TODO: Put back hooks
 }
 
 static void _patchROM(struct mCheatDevice* device, struct GBACheatSet* cheats) {
