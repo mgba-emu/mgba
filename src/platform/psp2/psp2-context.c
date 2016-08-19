@@ -218,7 +218,9 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
-	double ratio = GBAAudioCalculateRatio(1, 60.0f / 1.001f, 1);
+	float rate = 60.0f / 1.001f;
+	sceDisplayGetRefreshRate(&rate);
+	double ratio = GBAAudioCalculateRatio(1, rate, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
