@@ -17,6 +17,7 @@
 	void NAME ## Init(struct NAME* vector, size_t capacity); \
 	void NAME ## Deinit(struct NAME* vector); \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location); \
+	TYPE const* NAME ## GetConstPointer(const struct NAME* vector, size_t location); \
 	TYPE* NAME ## Append(struct NAME* vector); \
 	void NAME ## Clear(struct NAME* vector); \
 	void NAME ## Resize(struct NAME* vector, ssize_t change); \
@@ -41,6 +42,9 @@
 		vector->capacity = 0; \
 	} \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location) { \
+		return &vector->vector[location]; \
+	} \
+	TYPE const* NAME ## GetConstPointer(const struct NAME* vector, size_t location) { \
 		return &vector->vector[location]; \
 	} \
 	TYPE* NAME ## Append(struct NAME* vector) { \

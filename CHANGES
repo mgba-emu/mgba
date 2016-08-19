@@ -61,6 +61,7 @@ Misc:
  - GBA Video: Optimize mode 0 rendering
  - Qt: Remove default autofire mappings
  - PSP2: Allow UTF-8 filenames
+ - Util: Add Vector GetConstPointer
 
 0.4.1: (2016-07-11)
 Bugfixes:
