@@ -67,6 +67,8 @@ static void GBACheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device
 static void GBACheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* device);
 static void GBACheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device);
 static void GBACheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* oldSet);
+static void GBACheatParseDirectives(struct mCheatSet*, const struct StringList* directives);
+static void GBACheatDumpDirectives(struct mCheatSet*, struct StringList* directives);
 static bool GBACheatAddLine(struct mCheatSet*, const char* line, int type);
 
 static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const char* name) {
@@ -88,6 +90,9 @@ static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const ch
 
 	set->d.addLine = GBACheatAddLine;
 	set->d.copyProperties = GBACheatSetCopyProperties;
+
+	set->d.parseDirectives = GBACheatParseDirectives;
+	set->d.dumpDirectives = GBACheatDumpDirectives;
 
 	set->d.refresh = GBACheatRefresh;
 
@@ -266,5 +271,44 @@ static void GBACheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* o
 		}
 		newSet->hook = gbaset->hook;
 		++newSet->hook->refs;
+	}
+}
+
+static void GBACheatParseDirectives(struct mCheatSet* set, const struct StringList* directives) {
+	struct GBACheatSet* cheats = (struct GBACheatSet*) set;
+	size_t d;
+	for (d = 0; d < StringListSize(directives); ++d) {
+		const char* directive = *StringListGetConstPointer(directives, d);
+		if (strcmp(directive, "GSAv1") == 0) {
+			GBACheatSetGameSharkVersion(cheats, 1);
+			continue;
+		}
+		if (strcmp(directive, "PARv3") == 0) {
+			GBACheatSetGameSharkVersion(cheats, 3);
+			continue;
+		}
+	}
+}
+
+static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* directives) {
+	struct GBACheatSet* cheats = (struct GBACheatSet*) set;
+
+	// TODO: Check previous directives
+	size_t d;
+	for (d = 0; d < StringListSize(directives); ++d) {
+		free(*StringListGetPointer(directives, d));
+	}
+	StringListClear(directives);
+
+	char** directive = StringListAppend(directives);
+	switch (cheats->gsaVersion) {
+	case 1:
+	case 2:
+		*directive = strdup("GSAv1");
+		break;
+	case 3:
+	case 4:
+		*directive = strdup("PARv3");
+		break;
 	}
 }

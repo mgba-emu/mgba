@@ -58,6 +58,9 @@ struct mCheatSet {
 	bool (*addLine)(struct mCheatSet* set, const char* cheat, int type);
 	void (*copyProperties)(struct mCheatSet* set, struct mCheatSet* oldSet);
 
+	void (*parseDirectives)(struct mCheatSet* set, const struct StringList* directives);
+	void (*dumpDirectives)(struct mCheatSet* set, struct StringList* directives);
+
 	void (*refresh)(struct mCheatSet* set, struct mCheatDevice* device);
 
 	char* name;

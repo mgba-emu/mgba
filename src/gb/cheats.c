@@ -47,6 +47,8 @@ static void GBCheatAddSet(struct mCheatSet* cheats, struct mCheatDevice* device)
 static void GBCheatRemoveSet(struct mCheatSet* cheats, struct mCheatDevice* device);
 static void GBCheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device);
 static void GBCheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* oldSet);
+static void GBCheatParseDirectives(struct mCheatSet* set, const struct StringList* directives);
+static void GBCheatDumpDirectives(struct mCheatSet* set, struct StringList* directives);
 static bool GBCheatAddLine(struct mCheatSet*, const char* line, int type);
 
 static struct mCheatSet* GBCheatSetCreate(struct mCheatDevice* device, const char* name) {
@@ -62,6 +64,9 @@ static struct mCheatSet* GBCheatSetCreate(struct mCheatDevice* device, const cha
 
 	set->d.addLine = GBCheatAddLine;
 	set->d.copyProperties = GBCheatSetCopyProperties;
+
+	set->d.parseDirectives = GBCheatParseDirectives;
+	set->d.dumpDirectives = GBCheatDumpDirectives;
 
 	set->d.refresh = GBCheatRefresh;
 	return &set->d;
@@ -211,4 +216,14 @@ static void GBCheatRefresh(struct mCheatSet* cheats, struct mCheatDevice* device
 static void GBCheatSetCopyProperties(struct mCheatSet* set, struct mCheatSet* oldSet) {
 	UNUSED(set);
 	UNUSED(oldSet);
+}
+
+static void GBCheatParseDirectives(struct mCheatSet* set, const struct StringList* directives) {
+	UNUSED(set);
+	UNUSED(directives);
+}
+
+static void GBCheatDumpDirectives(struct mCheatSet* set, struct StringList* directives) {
+	UNUSED(set);
+	UNUSED(directives);
 }
