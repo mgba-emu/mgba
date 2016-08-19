@@ -62,6 +62,7 @@ Misc:
  - Qt: Remove default autofire mappings
  - PSP2: Allow UTF-8 filenames
  - Util: Add Vector GetConstPointer
+ - Util: Add rtrim
 
 0.4.1: (2016-07-11)
 Bugfixes:

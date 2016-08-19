@@ -33,4 +33,6 @@ const char* hex12(const char* line, uint16_t* out);
 const char* hex8(const char* line, uint8_t* out);
 const char* hex4(const char* line, uint8_t* out);
 
+void rtrim(char* string);
+
 #endif

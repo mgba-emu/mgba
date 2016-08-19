@@ -340,3 +340,14 @@ const char* hex4(const char* line, uint8_t* out) {
 	*out = value;
 	return line;
 }
+
+void rtrim(char* string) {
+	if (!*string) {
+		return;
+	}
+	char* end = string + strlen(string) - 1;
+	while (isspace((int) *end) && end >= string) {
+		*end = '\0';
+		--end;
+	}
+}
