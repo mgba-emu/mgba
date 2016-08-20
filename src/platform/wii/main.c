@@ -40,14 +40,23 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA;
 
-enum FilterMode {
+static enum FilterMode {
 	FM_NEAREST,
 	FM_LINEAR,
 	FM_MAX
 } filterMode = FM_NEAREST;
 
+static enum VideoMode {
+	VM_AUTODETECT,
+	VM_480i,
+	VM_480p,
+	VM_240p,
+	// TODO: PAL support
+	VM_MAX
+} videoMode = VM_AUTODETECT;
+
 #define SAMPLES 1024
-#define GUI_SCALE 1.35
+#define GUI_SCALE 1.35f
 
 static void _retraceCallback(u32 count);
 
@@ -81,6 +90,8 @@ static void* outputBuffer;
 static struct mRumble rumble;
 static struct mRotationSource rotation;
 static GXRModeObj* vmode;
+static float wAdjust;
+static float hAdjust;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
 static GXTexObj tex;
@@ -102,7 +113,33 @@ static volatile int currentAudioBuffer = 0;
 
 static struct GUIFont* font;
 
-static void reconfigureScreen(struct mCore* core, GXRModeObj* vmode) {
+static void reconfigureScreen(struct mGUIRunner* runner) {
+	if (runner) {
+		unsigned mode;
+		if (mCoreConfigGetUIntValue(&runner->config, "videoMode", &mode) && mode < VM_MAX) {
+			videoMode = mode;
+		}
+	}
+	wAdjust = 1.f;
+	hAdjust = 1.f;
+
+	switch (videoMode) {
+	case VM_AUTODETECT:
+	default:
+		vmode = VIDEO_GetPreferredMode(0);
+		break;
+	case VM_480i:
+		vmode = &TVNtsc480Int;
+		break;
+	case VM_480p:
+		vmode = &TVNtsc480Prog;
+		break;
+	case VM_240p:
+		vmode = &TVNtsc240Ds;
+		wAdjust = 0.5f;
+		break;
+	}
+
 	free(framebuffer[0]);
 	free(framebuffer[1]);
 
@@ -128,17 +165,21 @@ static void reconfigureScreen(struct mCore* core, GXRModeObj* vmode) {
 	GX_SetCopyFilter(vmode->aa, vmode->sample_pattern, GX_TRUE, vmode->vfilter);
 	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
-	if (core) {
-		core->desiredVideoDimensions(core, &corew, &coreh);
-		int hfactor = vmode->fbWidth / corew;
-		int vfactor = vmode->efbHeight / coreh;
-		if (hfactor > vfactor) {
-			scaleFactor = vfactor;
-		} else {
-			scaleFactor = hfactor;
+	if (runner) {
+		runner->params.width = vmode->fbWidth * GUI_SCALE;
+		runner->params.height = vmode->efbHeight * GUI_SCALE;
+		if (runner->core) {
+			runner->core->desiredVideoDimensions(runner->core, &corew, &coreh);
+			int hfactor = vmode->fbWidth / (corew * wAdjust);
+			int vfactor = vmode->efbHeight / (coreh * hAdjust);
+			if (hfactor > vfactor) {
+				scaleFactor = vfactor;
+			} else {
+				scaleFactor = hfactor;
+			}
 		}
 	}
-};
+}
 
 int main(int argc, char* argv[]) {
 	VIDEO_Init();
@@ -155,15 +196,11 @@ int main(int argc, char* argv[]) {
 #error This pixel format is unsupported. Please use -DCOLOR_16-BIT -DCOLOR_5_6_5
 #endif
 
-	vmode = VIDEO_GetPreferredMode(0);
-
 	GXColor bg = { 0, 0, 0, 0xFF };
 	void* fifo = memalign(32, 0x40000);
 	memset(fifo, 0, 0x40000);
 	GX_Init(fifo, 0x40000);
 	GX_SetCopyClear(bg, 0x00FFFFFF);
-
-	reconfigureScreen(NULL, vmode);
 
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetDispCopyGamma(GX_GM_1_0);
@@ -215,7 +252,7 @@ int main(int argc, char* argv[]) {
 
 	struct mGUIRunner runner = {
 		.params = {
-			vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE,
+			720, 480,
 			font, "",
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
@@ -333,6 +370,19 @@ int main(int argc, char* argv[]) {
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{
+				.title = "Video mode",
+				.data = "videoMode",
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Autodetect (recommended)",
+					"480i",
+					"480p",
+					"240p",
+				},
+				.nStates = 4
+			},
+			{
 				.title = "Screen mode",
 				.data = "screenMode",
 				.submenu = 0,
@@ -369,6 +419,7 @@ int main(int argc, char* argv[]) {
 		.pollGameInput = _pollGameInput
 	};
 	mGUIInit(&runner, "wii");
+	reconfigureScreen(&runner);
 
 	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_A, GUI_INPUT_SELECT);
 	_mapKey(&runner.params.keyMap, GCN1_INPUT, PAD_BUTTON_B, GUI_INPUT_BACK);
@@ -517,8 +568,8 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 
 void _reproj(int w, int h) {
 	Mtx44 proj;
-	int top = (vmode->efbHeight - h) / 2;
-	int left = (vmode->fbWidth - w) / 2;
+	int top = (vmode->efbHeight * hAdjust - h) / 2;
+	int left = (vmode->fbWidth * wAdjust - w) / 2;
 	guOrtho(proj, -top, top + h, -left, left + w, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
@@ -606,7 +657,7 @@ void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 void _gameLoaded(struct mGUIRunner* runner) {
-	reconfigureScreen(runner->core, vmode);
+	reconfigureScreen(runner);
 	if (runner->core->platform(runner->core) == PLATFORM_GBA && ((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {
@@ -627,6 +678,11 @@ void _unpaused(struct mGUIRunner* runner) {
 	_CPU_ISR_Restore(level);
 
 	unsigned mode;
+	if (mCoreConfigGetUIntValue(&runner->config, "videoMode", &mode) && mode < VM_MAX) {
+		if (mode != videoMode) {
+			reconfigureScreen(runner);
+		}
+	}
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}

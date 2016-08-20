@@ -8,6 +8,7 @@ Features:
  - Libretro: Memory map and achievement support (leiradel)
  - GUI: Add UI control remapping
  - GUI: Add fast-forward
+ - Wii: 240p support
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games
