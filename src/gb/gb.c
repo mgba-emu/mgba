@@ -65,9 +65,6 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->yankedRomSize = 0;
 
 	gb->stream = NULL;
-
-	gb->eiPending = INT_MAX;
-	gb->doubleSpeed = 0;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -244,6 +241,9 @@ void GBReset(struct LR35902Core* cpu) {
 
 	cpu->b = 0;
 	cpu->d = 0;
+
+	gb->eiPending = INT_MAX;
+	gb->doubleSpeed = 0;
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 

@@ -43,6 +43,7 @@ void GBVideoInit(struct GBVideo* video) {
 
 void GBVideoReset(struct GBVideo* video) {
 	video->ly = 0;
+	video->x = 0;
 	video->mode = 1;
 	video->stat = 1;
 
