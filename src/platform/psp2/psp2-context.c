@@ -305,6 +305,7 @@ void mPSP2Paused(struct mGUIRunner* runner) {
 		0
 	};
 	sceCtrlSetActuator(1, &state);
+	frameLimiter = true;
 }
 
 void mPSP2Unpaused(struct mGUIRunner* runner) {
