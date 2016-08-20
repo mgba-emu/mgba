@@ -64,6 +64,7 @@ Misc:
  - PSP2: Allow UTF-8 filenames
  - Util: Add Vector GetConstPointer
  - Util: Add rtrim
+ - GBA Memory: Optimize Load-/StoreMultiple
 
 0.4.1: (2016-07-11)
 Bugfixes:
