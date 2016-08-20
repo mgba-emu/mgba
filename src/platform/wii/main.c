@@ -123,19 +123,52 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	wAdjust = 1.f;
 	hAdjust = 1.f;
 
+	s32 signalMode = CONF_GetVideo();
+
 	switch (videoMode) {
 	case VM_AUTODETECT:
 	default:
 		vmode = VIDEO_GetPreferredMode(0);
 		break;
 	case VM_480i:
-		vmode = &TVNtsc480Int;
+		switch (signalMode) {
+		case CONF_VIDEO_NTSC:
+			vmode = &TVNtsc480IntDf;
+			break;
+		case CONF_VIDEO_MPAL:
+			vmode = &TVMpal480IntDf;
+			break;
+		case CONF_VIDEO_PAL:
+			vmode = &TVEurgb60Hz480IntDf;
+			break;
+		}
 		break;
 	case VM_480p:
-		vmode = &TVNtsc480Prog;
+		switch (signalMode) {
+		case CONF_VIDEO_NTSC:
+			vmode = &TVNtsc480Prog;
+			break;
+		case CONF_VIDEO_MPAL:
+			vmode = &TVMpal480Prog;
+			break;
+		case CONF_VIDEO_PAL:
+			vmode = &TVEurgb60Hz480Prog;
+			break;
+		}
 		break;
 	case VM_240p:
-		vmode = &TVNtsc240Ds;
+		switch (signalMode) {
+		case CONF_VIDEO_NTSC:
+			vmode = &TVNtsc240Ds;
+			break;
+		case CONF_VIDEO_MPAL:
+			vmode = &TVMpal240Ds;
+			break;
+		case CONF_VIDEO_PAL:
+			vmode = &TVEurgb60Hz240Ds;
+			break;
+		}
+		break;
 		wAdjust = 0.5f;
 		break;
 	}
