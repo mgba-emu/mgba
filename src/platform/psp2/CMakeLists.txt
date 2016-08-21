@@ -52,11 +52,13 @@ add_custom_target(eboot.bin
                   ${MAKE_FSELF} ${BINARY_NAME}.velf eboot.bin
                   DEPENDS ${BINARY_NAME}.velf)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/template.xml.in ${CMAKE_CURRENT_BINARY_DIR}/template.xml)
+
 add_custom_target(livearea
                   ${CMAKE_COMMAND} -E make_directory sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys
-                  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/template.xml sce_sys/livearea/contents
+                  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents
                   DEPENDS sce_sys)
