@@ -130,6 +130,14 @@ void ctrActivateTexture(C3D_Tex* texture) {
 		C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
 		C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
 	}
+	env = C3D_GetTexEnv(1);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
+	env = C3D_GetTexEnv(2);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 
 	C3D_Mtx textureMtx = {
 		.m = {
@@ -139,6 +147,21 @@ void ctrActivateTexture(C3D_Tex* texture) {
 		}
 	};
 	C3D_FVUnifMtx2x4(GPU_GEOMETRY_SHADER, GSH_FVEC_textureMtx, &textureMtx);
+}
+
+void ctrTextureMultiply(void) {
+	C3D_TexEnv* env = C3D_GetTexEnv(1);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_TEXTURE0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+}
+
+void ctrTextureBias(u32 color) {
+	C3D_TexEnv* env = C3D_GetTexEnv(2);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_ADD);
+	C3D_TexEnvColor(env, color);
 }
 
 void ctrAddRectEx(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh, float rotate) {

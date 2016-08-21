@@ -42,6 +42,14 @@ static enum FilterMode {
 	FM_MAX
 } filterMode = FM_LINEAR_2x;
 
+static enum DarkenMode {
+	DM_NATIVE,
+	DM_MULT,
+	DM_MULT_SCALE,
+	DM_MULT_SCALE_BIAS,
+	DM_MAX
+} darkenMode = DM_NATIVE;
+
 #define _3DS_INPUT 0x3344534B
 
 #define AUDIO_SAMPLES 384
@@ -86,7 +94,7 @@ static bool _initGpu(void) {
 		return false;
 	}
 
-	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&upscaleBuffer, 512, 512, GPU_RB_RGB565, 0)) {
+	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&upscaleBuffer, 512, 512, GPU_RB_RGB8, 0)) {
 		return false;
 	}
 
@@ -265,6 +273,9 @@ static void _setup(struct mGUIRunner* runner) {
 			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
 		}
 	}
+	if (mCoreConfigGetUIntValue(&runner->config, "darkenMode", &mode) && mode < DM_MAX) {
+		darkenMode = mode;
+	}
 	frameLimiter = true;
 
 	runner->core->setAudioBufferSize(runner->core, AUDIO_SAMPLES);
@@ -320,6 +331,9 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
 		}
 	}
+	if (mCoreConfigGetUIntValue(&runner->config, "darkenMode", &mode) && mode < DM_MAX) {
+		darkenMode = mode;
+	}
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
@@ -374,8 +388,6 @@ static void _drawTex(struct mCore* core, bool faded) {
 		break;
 	}
 
-	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
-
 	unsigned corew, coreh;
 	core->desiredVideoDimensions(core, &corew, &coreh);
 
@@ -401,7 +413,6 @@ static void _drawTex(struct mCore* core, bool faded) {
 		x = (screen_w - w) / 2;
 		y = (screen_h - h) / 2;
 		ctrSetViewportSize(screen_w, screen_h, true);
-		ctrActivateTexture(&outputTexture);
 		break;
 	case SM_AF_TOP:
 	case SM_AF_BOTTOM:
@@ -416,10 +427,45 @@ static void _drawTex(struct mCore* core, bool faded) {
 			h = coreh * 2;
 		}
 		ctrSetViewportSize(screen_w, screen_h, false);
-		ctrActivateTexture(&outputTexture);
 		break;
 	}
 
+	ctrActivateTexture(&outputTexture);
+	u32 color;
+	if (!faded) {
+		color = 0xFFFFFFFF;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x070707);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF707070;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+	} else {
+		color = 0xFF484848;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x030303);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF303030;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+
+	}
 	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
 	ctrFlushBatch();
 
@@ -460,7 +506,7 @@ static void _drawTex(struct mCore* core, bool faded) {
 	x = (screen_w - w) / 2;
 	y = (screen_h - h) / 2;
 	ctrActivateTexture(&upscaleBuffer.colorBuf);
-	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
+	ctrAddRectEx(0xFFFFFFFF, x, y, w, h, 0, 0, corew, coreh, 0);
 	ctrFlushBatch();
 }
 
@@ -771,9 +817,22 @@ int main() {
 					"Bilinear (pixelated)",
 				},
 				.nStates = 3
+			},
+			{
+				.title = "Screen darkening",
+				.data = "darkenMode",
+				.submenu = 0,
+				.state = DM_NATIVE,
+				.validStates = (const char*[]) {
+					"None",
+					"Dark",
+					"Very dark",
+					"Grayed",
+				},
+				.nStates = 4
 			}
 		},
-		.nConfigExtra = 2,
+		.nConfigExtra = 3,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
