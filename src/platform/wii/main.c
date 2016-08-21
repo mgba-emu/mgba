@@ -438,7 +438,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 2
 			}
 		},
-		.nConfigExtra = 2,
+		.nConfigExtra = 3,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
