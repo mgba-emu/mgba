@@ -30,12 +30,9 @@ set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC
 	${CMAKE_CURRENT_BINARY_DIR}/icons.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin.h
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.c
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.h
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c
 	${CMAKE_CURRENT_SOURCE_DIR}/ctr-gpu.c
@@ -43,12 +40,9 @@ list(APPEND GUI_SRC
 
 set_source_files_properties(
 	${CMAKE_CURRENT_BINARY_DIR}/icons.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.c
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.h
-	${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin.h
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.c
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.h
+	${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h
 	PROPERTIES GENERATED ON)
 
 add_executable(${BINARY_NAME}.elf ${GUI_SRC} main.c)
@@ -68,36 +62,21 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
                    DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw)
 
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
-	MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/uishader.g.pica
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/uishader.v.pica ${CMAKE_CURRENT_SOURCE_DIR}/uishader.g.pica
 	COMMAND ${PICASSO}
-		-o ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin
-		-h ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin.h
-		${CMAKE_CURRENT_SOURCE_DIR}/uishader.g.pica
-	COMMENT "picasso uishader.g.pica")
-
-add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.c ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.h
-	MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin
-	COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/uishader_g.shbin
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	COMMENT "raw2c uishader.g.shbin")
-
-add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin.h
-	MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/uishader.v.pica
-	COMMAND ${PICASSO}
-		-o ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin
-		-h ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin.h
+		-o ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin
+		-h ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin.h
 		${CMAKE_CURRENT_SOURCE_DIR}/uishader.v.pica
-	COMMENT "picasso uishader.v.pica")
+		${CMAKE_CURRENT_SOURCE_DIR}/uishader.g.pica
+	COMMENT "picasso uishader.shbin")
 
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.c ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.h
-	MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin
-	COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/uishader_v.shbin
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uishader.c ${CMAKE_CURRENT_BINARY_DIR}/uishader.h
+	MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin
+	COMMAND ${RAW2C} ${CMAKE_CURRENT_BINARY_DIR}/uishader.shbin
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	COMMENT "raw2c uishader.v.shbin")
+	COMMENT "raw2c uishader.shbin")
 
 add_custom_command(OUTPUT ${BINARY_NAME}.3dsx
                    COMMAND ${3DSXTOOL} ${BINARY_NAME}.elf ${BINARY_NAME}.3dsx --smdh=${BINARY_NAME}.smdh

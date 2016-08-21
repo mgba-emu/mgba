@@ -35,6 +35,13 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA_TOP;
 
+static enum FilterMode {
+	FM_NEAREST,
+	FM_LINEAR_1x,
+	FM_LINEAR_2x,
+	FM_MAX
+} filterMode = FM_LINEAR_2x;
+
 #define _3DS_INPUT 0x3344534B
 
 #define AUDIO_SAMPLES 384
@@ -68,6 +75,7 @@ static bool frameLimiter = true;
 
 static C3D_RenderBuf bottomScreen;
 static C3D_RenderBuf topScreen;
+static C3D_RenderBuf upscaleBuffer;
 
 static aptHookCookie cookie;
 
@@ -78,7 +86,7 @@ static bool _initGpu(void) {
 		return false;
 	}
 
-	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0)) {
+	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&upscaleBuffer, 512, 512, GPU_RB_RGB565, 0)) {
 		return false;
 	}
 
@@ -94,6 +102,7 @@ static void _cleanup(void) {
 
 	C3D_RenderBufDelete(&topScreen);
 	C3D_RenderBufDelete(&bottomScreen);
+	C3D_RenderBufDelete(&upscaleBuffer);
 	C3D_Fini();
 
 	gfxExit();
@@ -210,7 +219,7 @@ static void _guiPrepare(void) {
 	}
 
 	C3D_RenderBufBind(&bottomScreen);
-	ctrSetViewportSize(320, 240);
+	ctrSetViewportSize(320, 240, true);
 }
 
 static void _guiFinish(void) {
@@ -247,6 +256,14 @@ static void _setup(struct mGUIRunner* runner) {
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
+		if (filterMode == FM_NEAREST) {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_NEAREST, GPU_NEAREST);
+		} else {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
+		}
 	}
 	frameLimiter = true;
 
@@ -292,8 +309,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
+		if (filterMode == FM_NEAREST) {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_NEAREST, GPU_NEAREST);
+		} else {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
+		}
 	}
 }
 
@@ -330,19 +355,26 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
-	if (screenMode < SM_PA_TOP) {
+	unsigned screen_w, screen_h;
+	switch (screenMode) {
+	case SM_PA_TOP:
 		C3D_RenderBufBind(&bottomScreen);
-		ctrSetViewportSize(320, 240);
-	} else {
+		screen_w = 320;
+		screen_h = 240;
+		break;
+	case SM_PA_BOTTOM:
 		C3D_RenderBufBind(&topScreen);
-		ctrSetViewportSize(400, 240);
+		screen_w = 400;
+		screen_h = 240;
+		break;
+	default:
+		C3D_RenderBufBind(&upscaleBuffer);
+		screen_w = upscaleBuffer.colorBuf.width;
+		screen_h = upscaleBuffer.colorBuf.height;
+		break;
 	}
-	ctrActivateTexture(&outputTexture);
 
 	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
-
-	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
-	int screen_h = 240;
 
 	unsigned corew, coreh;
 	core->desiredVideoDimensions(core, &corew, &coreh);
@@ -356,16 +388,56 @@ static void _drawTex(struct mCore* core, bool faded) {
 		w = temp;
 	}
 	int gcd = h;
-	int aspectw = corew / gcd;
-	int aspecth = coreh / gcd;
+	unsigned aspectw = corew / gcd;
+	unsigned aspecth = coreh / gcd;
+	int x = 0;
+	int y = 0;
 
 	switch (screenMode) {
 	case SM_PA_TOP:
 	case SM_PA_BOTTOM:
-	default:
 		w = corew;
 		h = coreh;
+		x = (screen_w - w) / 2;
+		y = (screen_h - h) / 2;
+		ctrSetViewportSize(screen_w, screen_h, true);
+		ctrActivateTexture(&outputTexture);
 		break;
+	case SM_AF_TOP:
+	case SM_AF_BOTTOM:
+	case SM_SF_TOP:
+	case SM_SF_BOTTOM:
+	default:
+		if (filterMode == FM_LINEAR_1x) {
+			w = corew;
+			h = coreh;
+		} else {
+			w = corew * 2;
+			h = coreh * 2;
+		}
+		ctrSetViewportSize(screen_w, screen_h, false);
+		ctrActivateTexture(&outputTexture);
+		break;
+	}
+
+	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
+	ctrFlushBatch();
+
+	corew = w;
+	coreh = h;
+	screen_h = 240;
+	if (screenMode < SM_PA_TOP) {
+		C3D_RenderBufBind(&bottomScreen);
+		screen_w = 320;
+	} else {
+		C3D_RenderBufBind(&topScreen);
+		screen_w = 400;
+	}
+	ctrSetViewportSize(screen_w, screen_h, true);
+
+	switch (screenMode) {
+	default:
+		return;
 	case SM_AF_TOP:
 	case SM_AF_BOTTOM:
 		w = screen_w / aspectw;
@@ -385,10 +457,10 @@ static void _drawTex(struct mCore* core, bool faded) {
 		break;
 	}
 
-	int x = (screen_w - w) / 2;
-	int y = (screen_h - h) / 2;
-
-	ctrAddRectScaled(color, x, y, w, h, 0, 0, corew, coreh);
+	x = (screen_w - w) / 2;
+	y = (screen_h - h) / 2;
+	ctrActivateTexture(&upscaleBuffer.colorBuf);
+	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
 	ctrFlushBatch();
 }
 
@@ -604,7 +676,8 @@ int main() {
 		return 1;
 	}
 	C3D_TexSetWrap(&outputTexture, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
-	C3D_TexSetFilter(&outputTexture, GPU_LINEAR, GPU_LINEAR);
+	C3D_TexSetFilter(&outputTexture, GPU_NEAREST, GPU_NEAREST);
+	C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
 	void* outputTextureEnd = (u8*)outputTexture.data + 256 * 256 * 2;
 
 	// Zero texture data to make sure no garbage around the border interferes with filtering
@@ -686,9 +759,21 @@ int main() {
 					"Stretched/Top",
 				},
 				.nStates = 6
+			},
+			{
+				.title = "Filtering",
+				.data = "filterMode",
+				.submenu = 0,
+				.state = FM_LINEAR_2x,
+				.validStates = (const char*[]) {
+					NULL, // Disable choosing nearest neighbor; it always looks bad
+					"Bilinear (smooter)",
+					"Bilinear (pixelated)",
+				},
+				.nStates = 3
 			}
 		},
-		.nConfigExtra = 1,
+		.nConfigExtra = 2,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,

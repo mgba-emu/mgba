@@ -107,7 +107,9 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	u16 u = tex->width * data.texcoord.left;
 	u16 v = tex->height * data.texcoord.bottom;
 
-	ctrAddRectScaled(color, x, y, tex->width * width * FONT_SIZE, tex->height * height * -FONT_SIZE, u, v, tex->width * width, tex->height * height);
+	ctrAddRectEx(color, x, y,
+	             tex->width * width * FONT_SIZE, tex->height * height * -FONT_SIZE,
+	             u, v, tex->width * width, tex->height * height, 0);
 }
 
 void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
@@ -136,10 +138,16 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	}
 	switch (orient) {
 	case GUI_ORIENT_HMIRROR:
-		ctrAddRectScaled(color, x + metric.width, y, -metric.width, metric.height, metric.x, metric.y, metric.width, metric.height);
+		ctrAddRectEx(color, x + metric.width, y,
+		             -metric.width, metric.height,
+		             metric.x, metric.y,
+		             metric.width, metric.height, 0);
 		break;
 	case GUI_ORIENT_VMIRROR:
-		ctrAddRectScaled(color, x, y + metric.height, metric.width, -metric.height, metric.x, metric.y, metric.width, metric.height);
+		ctrAddRectEx(color, x, y + metric.height,
+		             metric.width, -metric.height,
+		             metric.x, metric.y,
+		             metric.width, metric.height, 0);
 		break;
 	case GUI_ORIENT_0:
 	default:
@@ -157,5 +165,9 @@ void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h,
 	}
 
 	struct GUIIconMetric metric = defaultIconMetrics[icon];
-	ctrAddRectScaled(color, x, y, w ? w : metric.width, h ? h : metric.height, metric.x, metric.y, metric.width, metric.height);
+	ctrAddRectEx(color, x, y,
+	             w ? w : metric.width,
+	             h ? h : metric.height,
+	             metric.x, metric.y,
+	             metric.width, metric.height, 0);
 }
