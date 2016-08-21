@@ -168,7 +168,6 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 			vmode = &TVEurgb60Hz240Ds;
 			break;
 		}
-		break;
 		wAdjust = 0.5f;
 		break;
 	}
