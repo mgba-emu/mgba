@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
 
-struct GUIFontGlyphMetric defaultFontMetrics[128] = {
+const struct GUIFontGlyphMetric defaultFontMetrics[128] = {
 	{  0,  0, { 0, 0, 0, 0 }}, // 0x00
 	{  0,  0, { 0, 0, 0, 0 }}, // 0x01
 	{  0,  0, { 0, 0, 0, 0 }}, // 0x02
@@ -136,7 +136,7 @@ struct GUIFontGlyphMetric defaultFontMetrics[128] = {
 	{  0,  0, { 0, 0, 0, 0 }}, // 0x7F
 };
 
-struct GUIIconMetric defaultIconMetrics[] = {
+const struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_BATTERY_FULL] = { 0, 0, 32, 16 },
 	[GUI_ICON_BATTERY_HIGH] = { 32, 0, 32, 16 },
 	[GUI_ICON_BATTERY_HALF] = { 64, 0, 32, 16 },
