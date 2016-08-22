@@ -21,6 +21,10 @@
 #include "gba/gba.h"
 #endif
 
+#ifdef PSP2
+#include <psp2/photoexport.h>
+#endif
+
 static struct mCoreFilter {
 	bool (*filter)(struct VFile*);
 	struct mCore* (*open)(void);
@@ -154,7 +158,12 @@ void mCoreTakeScreenshot(struct mCore* core) {
 	color_t* pixels = 0;
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
-	struct VFile* vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	struct VFile* vf;
+#ifndef PSP2
+	vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+#else
+	vf = VFileMemChunk(0, 0);
+#endif
 	bool success = false;
 	if (vf) {
 		core->getVideoBuffer(core, &pixels, &stride);
@@ -162,6 +171,17 @@ void mCoreTakeScreenshot(struct mCore* core) {
 		png_infop info = PNGWriteHeader(png, width, height);
 		success = PNGWritePixels(png, width, height, stride, pixels);
 		PNGWriteClose(png, info);
+#ifdef PSP2
+		void* data = vf->map(vf, 0, 0);
+		PhotoExportParam param = {
+			0,
+			NULL,
+			NULL,
+			NULL,
+			{ 0 }
+		};
+		scePhotoExportFromData(data, vf->size(vf), &param, NULL, NULL, NULL, NULL, 0);
+#endif
 		vf->close(vf);
 	}
 	if (success) {

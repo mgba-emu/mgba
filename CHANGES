@@ -68,6 +68,7 @@ Misc:
  - Util: Add rtrim
  - GBA Memory: Optimize Load-/StoreMultiple
  - 3DS: Adjustable filering
+ - PSP2: Screenshots are now saved into the Photo Gallery
 
 0.4.1: (2016-07-11)
 Bugfixes:
