@@ -136,6 +136,18 @@ GameController::GameController(QObject* parent)
 		mCoreThreadContinue(context);
 	};
 
+	m_threadContext.resetCallback = [](mCoreThread* context) {
+		GameController* controller = static_cast<GameController*>(context->userData);
+		unsigned width, height;
+		controller->m_threadContext.core->desiredVideoDimensions(controller->m_threadContext.core, &width, &height);
+		memset(controller->m_frontBuffer, 0xF8, width * height * BYTES_PER_PIXEL);
+		QMetaObject::invokeMethod(controller, "frameAvailable", Q_ARG(const uint32_t*, controller->m_frontBuffer));
+		if (controller->m_pauseAfterFrame.testAndSetAcquire(true, false)) {
+			mCoreThreadPauseFromThread(context);
+			QMetaObject::invokeMethod(controller, "gamePaused", Q_ARG(mCoreThread*, context));
+		}
+	};
+
 	m_threadContext.cleanCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
@@ -153,6 +165,7 @@ GameController::GameController(QObject* parent)
 		}
 	};
 
+	// TODO: Put back
 	/*m_threadContext.stopCallback = [](mCoreThread* context) {
 		if (!context) {
 			return false;
@@ -553,10 +566,12 @@ void GameController::reset() {
 	}
 	bool wasPaused = isPaused();
 	setPaused(false);
+	threadInterrupt();
 	mCoreThreadReset(&m_threadContext);
 	if (wasPaused) {
 		setPaused(true);
 	}
+	threadContinue();
 }
 
 void GameController::threadInterrupt() {

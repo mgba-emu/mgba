@@ -114,6 +114,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
 	}
+	if (threadContext->resetCallback) {
+		threadContext->resetCallback(threadContext);
+	}
 
 	while (threadContext->state < THREAD_EXITING) {
 		struct mDebugger* debugger = core->debugger;
@@ -157,6 +160,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		MutexUnlock(&threadContext->stateMutex);
 		if (resetScheduled) {
 			core->reset(core);
+			if (threadContext->resetCallback) {
+				threadContext->resetCallback(threadContext);
+			}
 		}
 	}
 
@@ -258,8 +264,11 @@ void mCoreThreadEnd(struct mCoreThread* threadContext) {
 
 void mCoreThreadReset(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
-	_waitOnInterrupt(threadContext);
-	threadContext->state = THREAD_RESETING;
+	if (threadContext->state == THREAD_INTERRUPTED) {
+		threadContext->savedState = THREAD_RESETING;
+	} else {
+		threadContext->state = THREAD_RESETING;
+	}
 	ConditionWake(&threadContext->stateCond);
 	MutexUnlock(&threadContext->stateMutex);
 }
@@ -374,8 +383,11 @@ void mCoreThreadUnpause(struct mCoreThread* threadContext) {
 bool mCoreThreadIsPaused(struct mCoreThread* threadContext) {
 	bool isPaused;
 	MutexLock(&threadContext->stateMutex);
-	_waitOnInterrupt(threadContext);
-	isPaused = threadContext->state == THREAD_PAUSED;
+	if (threadContext->state == THREAD_INTERRUPTED) {
+		isPaused = threadContext->savedState == THREAD_PAUSED;
+	} else {
+		isPaused = threadContext->state == THREAD_PAUSED;
+	}
 	MutexUnlock(&threadContext->stateMutex);
 	return isPaused;
 }

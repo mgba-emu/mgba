@@ -54,6 +54,7 @@ struct mCoreThread {
 	struct mThreadLogger logger;
 	enum mLogLevel logLevel;
 	ThreadCallback startCallback;
+	ThreadCallback resetCallback;
 	ThreadCallback cleanCallback;
 	ThreadCallback frameCallback;
 	void* userData;
