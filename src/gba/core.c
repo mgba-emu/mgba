@@ -209,7 +209,8 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
-	GBASavedataMask(core->board, vf);
+	struct GBA* gba = core->board;
+	GBASavedataMask(&gba->memory.savedata, vf);
 	return true; // TODO: Return a real value
 }
 

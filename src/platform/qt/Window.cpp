@@ -850,7 +850,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
-	QAction* loadTemporarySave = new QAction(tr("Load temporary save"), fileMenu);
+	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
 	m_gameActions.append(loadTemporarySave);
 	m_gbaActions.append(loadTemporarySave);

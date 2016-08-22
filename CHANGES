@@ -10,6 +10,7 @@ Features:
  - GUI: Add fast-forward
  - Wii: 240p support
  - 3DS: Adjustable screen darkening
+ - Ability to temporarily load a savegame
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games

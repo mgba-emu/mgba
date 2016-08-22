@@ -138,6 +138,11 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.resetCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
+		for (auto action : controller->m_resetActions) {
+			action();
+		}
+		controller->m_resetActions.clear();
+
 		unsigned width, height;
 		controller->m_threadContext.core->desiredVideoDimensions(controller->m_threadContext.core, &width, &height);
 		memset(controller->m_frontBuffer, 0xF8, width * height * BYTES_PER_PIXEL);
@@ -415,17 +420,20 @@ void GameController::loadSave(const QString& path, bool temporary) {
 	if (!isLoaded()) {
 		return;
 	}
-	VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
-	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
-		return;
-	}
+	m_resetActions.append([this, path, temporary]() {
+		VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
+		if (!vf) {
+			LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
+			return;
+		}
 
-	if (temporary) {
-		m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
-	} else {
-		m_threadContext.core->loadSave(m_threadContext.core, vf);
-	}
+		if (temporary) {
+			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+		} else {
+			m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+	});
+	reset();
 }
 
 void GameController::yankPak() {

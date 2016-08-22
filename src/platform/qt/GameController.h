@@ -192,6 +192,7 @@ private:
 	AudioProcessor* m_audioProcessor;
 
 	QAtomicInt m_pauseAfterFrame;
+	QList<std::function<void ()>> m_resetActions;
 
 	bool m_videoSync;
 	bool m_audioSync;
