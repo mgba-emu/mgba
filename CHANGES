@@ -30,6 +30,7 @@ Bugfixes:
  - GBA Video: WIN0/1 take priority over OBJWIN
  - PSP2: Fix mapping/unmapping from not at 0
  - Wii: Fix garbage flash at startup
+ - VFS: Fix uninitialized varaible reading from 7z
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure

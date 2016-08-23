@@ -301,6 +301,7 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	vf->d.truncate = _vf7zTruncate;
 	vf->d.size = _vf7zSize;
 	vf->d.sync = _vf7zSync;
+	vf->offset = 0;
 
 	return &vf->d;
 }
