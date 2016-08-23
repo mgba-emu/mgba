@@ -84,8 +84,8 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* data) {
 	char realName[5];
 	strncpy(realName, name, 4);
-	realName[0] = tolower(realName[0]);
-	realName[1] = tolower(realName[1]);
+	realName[0] = tolower((int) realName[0]);
+	realName[1] = tolower((int) realName[1]);
 	realName[4] = '\0';
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
