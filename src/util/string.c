@@ -39,6 +39,15 @@ char* strnrstr(const char* restrict haystack, const char* restrict needle, size_
 	return last;
 }
 
+bool endswith(const char* restrict s1, const char* restrict end) {
+	size_t len = strlen(s1);
+	size_t endLen = strlen(end);
+	if (len < endLen) {
+		return false;
+	}
+	return strcmp(&s1[len - endLen], end) == 0;
+}
+
 uint32_t utf16Char(const uint16_t** unicode, size_t* length) {
 	if (*length < 2) {
 		*length = 0;
