@@ -26,7 +26,7 @@ TileView::TileView(GameController* controller, QWidget* parent)
 
 	m_ui.preview->setDimensions(QSize(8, 8));
 	m_updateTimer.setSingleShot(true);
-	m_updateTimer.setInterval(10);
+	m_updateTimer.setInterval(1);
 	connect(&m_updateTimer, SIGNAL(timeout()), this, SLOT(updateTiles()));
 
 	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -38,7 +38,12 @@ TileView::TileView(GameController* controller, QWidget* parent)
 	connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 	connect(m_ui.tiles, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
 	connect(m_ui.paletteId, SIGNAL(valueChanged(int)), this, SLOT(updatePalette(int)));
-	connect(m_ui.palette256, SIGNAL(toggled(bool)), this, SLOT(updateTiles()));
+	connect(m_ui.palette256, &QAbstractButton::toggled, [this]() {
+		updateTiles(true);
+	});
+	connect(m_ui.magnification, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this]() {
+		updateTiles(true);
+	});
 }
 
 TileView::~TileView() {
@@ -131,5 +136,5 @@ void TileView::resizeEvent(QResizeEvent*) {
 }
 
 void TileView::showEvent(QShowEvent*) {
-	m_updateTimer.start();
+	updateTiles(true);
 }
