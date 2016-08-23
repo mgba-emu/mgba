@@ -40,7 +40,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QSpinBox" name="segments">
+       <property name="minimum">
+        <number>-1</number>
+       </property>
+       <property name="maximum">
+        <number>0</number>
+       </property>
+       <property name="displayIntegerBase">
+        <number>16</number>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QSpinBox" name="setAddress">
+       <property name="accelerated">
+        <bool>true</bool>
+       </property>
        <property name="prefix">
         <string>0x</string>
        </property>

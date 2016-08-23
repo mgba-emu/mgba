@@ -25,6 +25,7 @@ public slots:
 
 private slots:
 	void setIndex(int);
+	void setSegment(int);
 	void updateSelection(uint32_t start, uint32_t end);
 	void updateStatus();
 

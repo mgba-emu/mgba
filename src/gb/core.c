@@ -317,34 +317,34 @@ static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 	cpu->memory.store8(cpu, address + 3, value >> 24);
 }
 
-static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address);
+	return GBView8(cpu, address, segment);
 }
 
-static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8);
+	return GBView8(cpu, address, segment) | (GBView8(cpu, address + 1, segment) << 8);
 }
 
-static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8) |
-	       (GBLoad8(cpu, address + 2) << 16) | (GBLoad8(cpu, address + 3) << 24);
+	return GBView8(cpu, address, segment) | (GBView8(cpu, address + 1, segment) << 8) |
+	       (GBView8(cpu, address + 2, segment) << 16) | (GBView8(cpu, address + 3, segment) << 24);
 }
 
-static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 }
 
-static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 	GBPatch8(cpu, address + 1, value >> 8, NULL);
 }
 
-static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 	GBPatch8(cpu, address + 1, value >> 8, NULL);

@@ -229,9 +229,9 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
-			return gb->memory.rtcRegs[memory->activeRtcReg];
+			return memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
-			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_MBC7) {
 			return _GBMBC7Read(memory, address);
 		} else if (memory->mbcType == GB_HuC3) {
@@ -290,11 +290,11 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
-			gb->memory.rtcRegs[memory->activeRtcReg] = value;
+			memory->rtcRegs[memory->activeRtcReg] = value;
 		} else if (memory->sramAccess) {
-			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
-		} else if (gb->memory.mbcType == GB_MBC7) {
-			_GBMBC7Write(&gb->memory, address, value);
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else if (memory->mbcType == GB_MBC7) {
+			_GBMBC7Write(memory, address, value);
 		}
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -320,6 +320,82 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else {
 			GBIOWrite(gb, REG_IE, value);
 		}
+	}
+}
+uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		if (segment < 0) {
+			return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+		} else {
+			if ((size_t) segment * GB_SIZE_CART_BANK0 > memory->romSize) {
+				return 0xFF;
+			}
+			return memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
+		}
+	case GB_REGION_VRAM:
+	case GB_REGION_VRAM + 1:
+		if (segment < 0) {
+			return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		} else {
+			return gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment *GB_SIZE_VRAM_BANK0];
+		}
+	case GB_REGION_EXTERNAL_RAM:
+	case GB_REGION_EXTERNAL_RAM + 1:
+		if (memory->rtcAccess) {
+			return memory->rtcRegs[memory->activeRtcReg];
+		} else if (memory->sramAccess) {
+			if (segment < 0) {
+				return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+			} else {
+				return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
+			}
+		} else if (memory->mbcType == GB_MBC7) {
+			return _GBMBC7Read(memory, address);
+		} else if (memory->mbcType == GB_HuC3) {
+			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
+		}
+		return 0xFF;
+	case GB_REGION_WORKING_RAM_BANK0:
+	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		return memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+	case GB_REGION_WORKING_RAM_BANK1:
+		if (segment < 0) {
+			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		} else {
+			return memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment *GB_SIZE_WORKING_RAM_BANK0];
+		}
+	default:
+		if (address < GB_BASE_OAM) {
+			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		}
+		if (address < GB_BASE_UNUSABLE) {
+			if (gb->video.mode < 2) {
+				return gb->video.oam.raw[address & 0xFF];
+			}
+			return 0xFF;
+		}
+		if (address < GB_BASE_IO) {
+			mLOG(GB_MEM, GAME_ERROR, "Attempt to read from unusable memory: %04X", address);
+			return 0xFF;
+		}
+		if (address < GB_BASE_HRAM) {
+			return GBIORead(gb, address & (GB_SIZE_IO - 1));
+		}
+		if (address < GB_BASE_IE) {
+			return memory->hram[address & GB_SIZE_HRAM];
+		}
+		return GBIORead(gb, REG_IE);
 	}
 }
 

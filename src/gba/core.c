@@ -371,32 +371,38 @@ static void _GBACoreBusWrite32(struct mCore* core, uint32_t address, uint32_t va
 	cpu->memory.store32(cpu, address, value, 0);
 }
 
-static uint32_t _GBACoreRawRead8(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead8(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView8(cpu, address);
 }
 
-static uint32_t _GBACoreRawRead16(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead16(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView16(cpu, address);
 }
 
-static uint32_t _GBACoreRawRead32(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead32(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView32(cpu, address);
 }
 
-static void _GBACoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+static void _GBACoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch8(cpu, address, value, NULL);
 }
 
-static void _GBACoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+static void _GBACoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch16(cpu, address, value, NULL);
 }
 
-static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch32(cpu, address, value, NULL);
 }

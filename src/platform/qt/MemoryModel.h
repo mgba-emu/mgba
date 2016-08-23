@@ -26,7 +26,8 @@ public:
 
 	void setController(GameController* controller);
 
-	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
+	void setRegion(uint32_t base, uint32_t size, const QString& name = QString(), int segment = -1);
+	void setSegment(int segment);
 
 	void setAlignment(int);
 	int alignment() const { return m_align; }
@@ -77,6 +78,7 @@ private:
 	uint32_t m_selectionAnchor;
 	uint32_t m_buffer;
 	int m_bufferedNybbles;
+	int m_currentBank;
 };
 
 }
