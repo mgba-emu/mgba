@@ -73,6 +73,7 @@ Misc:
  - PSP2: Screenshots are now saved into the Photo Gallery
  - Qt: Make reseting when pasued frame-accurate
  - GBA Video: Optimize compositing cases slightly
+ - VFS: Improve zip file detection
 
 0.4.1: (2016-07-11)
 Bugfixes:
