@@ -261,7 +261,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = (void*) RUNNER_RESET };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
-	// TODO: Message box API
 	runner->params.drawStart();
 	if (runner->params.guiPrepare) {
 		runner->params.guiPrepare();
@@ -288,18 +287,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 
 	if (!found) {
 		mLOG(GUI_RUNNER, WARN, "Failed to find core for %s!", path);
-		int i;
-		for (i = 0; i < 240; ++i) {
-			runner->params.drawStart();
-			if (runner->params.guiPrepare) {
-				runner->params.guiPrepare();
-			}
-			GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Load failed!");
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
-			}
-			runner->params.drawEnd();
-		}
+		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Load failed!");
 		return;
 	}
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
