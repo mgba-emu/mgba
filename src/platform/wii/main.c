@@ -57,6 +57,7 @@ static enum VideoMode {
 
 #define SAMPLES 1024
 #define GUI_SCALE 1.35f
+#define GUI_SCALE_240p 2.0f
 
 static void _retraceCallback(u32 count);
 
@@ -92,6 +93,7 @@ static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static float wAdjust;
 static float hAdjust;
+static float guiScale = GUI_SCALE;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
 static GXTexObj tex;
@@ -110,6 +112,7 @@ static int whichFb = 0;
 static struct GBAStereoSample audioBuffer[3][SAMPLES] __attribute__((__aligned__(32)));
 static volatile size_t audioBufferSize = 0;
 static volatile int currentAudioBuffer = 0;
+static double audioSampleRate = 60.0 / 1.001;
 
 static struct GUIFont* font;
 
@@ -122,6 +125,8 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	}
 	wAdjust = 1.f;
 	hAdjust = 1.f;
+	guiScale = GUI_SCALE;
+	audioSampleRate = 60.0 / 1.001;
 
 	s32 signalMode = CONF_GetVideo();
 
@@ -169,6 +174,8 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 			break;
 		}
 		wAdjust = 0.5f;
+		audioSampleRate = 90.0 / 1.50436;
+		guiScale = GUI_SCALE_240p;
 		break;
 	}
 
@@ -198,9 +205,13 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	GX_SetFieldMode(vmode->field_rendering, ((vmode->viHeight == 2 * vmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 
 	if (runner) {
-		runner->params.width = vmode->fbWidth * GUI_SCALE;
-		runner->params.height = vmode->efbHeight * GUI_SCALE;
+		runner->params.width = vmode->fbWidth * guiScale * wAdjust;
+		runner->params.height = vmode->efbHeight * guiScale * hAdjust;
 		if (runner->core) {
+			double ratio = GBAAudioCalculateRatio(1,audioSampleRate, 1);
+			blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
+			blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
+
 			runner->core->desiredVideoDimensions(runner->core, &corew, &coreh);
 			int hfactor = vmode->fbWidth / (corew * wAdjust);
 			int vfactor = vmode->efbHeight / (coreh * hAdjust);
@@ -614,7 +625,7 @@ void _reproj2(int w, int h) {
 }
 
 void _guiPrepare(void) {
-	_reproj2(vmode->fbWidth * GUI_SCALE, vmode->efbHeight * GUI_SCALE);
+	_reproj2(vmode->fbWidth * guiScale * wAdjust, vmode->efbHeight * guiScale * hAdjust);
 }
 
 void _guiFinish(void) {
@@ -675,7 +686,7 @@ void _setup(struct mGUIRunner* runner) {
 
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
-	double ratio = GBAAudioCalculateRatio(1, 60 / 1.001, 1);
+	double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
