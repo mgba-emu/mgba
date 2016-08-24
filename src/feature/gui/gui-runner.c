@@ -434,7 +434,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				mCoreLoadForeignConfig(runner->core, &runner->config);
 				break;
 			case RUNNER_CONTINUE:
 				break;
