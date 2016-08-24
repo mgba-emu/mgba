@@ -134,7 +134,11 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 		} else if (strcasecmp(idleOptimization, "remove") == 0) {
 			gba->idleOptimization = IDLE_LOOP_REMOVE;
 		} else if (strcasecmp(idleOptimization, "detect") == 0) {
-			gba->idleOptimization = IDLE_LOOP_DETECT;
+			if (gba->idleLoop == IDLE_LOOP_NONE) {
+				gba->idleOptimization = IDLE_LOOP_DETECT;
+			} else {
+				gba->idleOptimization = IDLE_LOOP_REMOVE;
+			}
 		}
 	}
 
