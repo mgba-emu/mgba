@@ -525,7 +525,7 @@ static void _audioDMA(void) {
 static void _drawStart(void) {
 	u32 level = 0;
 	_CPU_ISR_Disable(level);
-	if (referenceRetraceCount >= retraceCount) {
+	if (referenceRetraceCount > retraceCount) {
 		if (frameLimiter) {
 			VIDEO_WaitVSync();
 		}
