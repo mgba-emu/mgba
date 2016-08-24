@@ -349,9 +349,7 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 						mLOG(GBA_VIDEO, WARN, "Proxy thread can't read VRAM. CPU thread asleep?");
 						MutexLock(&proxyRenderer->mutex);
 						ConditionWake(&proxyRenderer->fromThreadCond);
-						proxyRenderer->threadState = PROXY_THREAD_IDLE;
 						ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
-						proxyRenderer->threadState = PROXY_THREAD_BUSY;
 						MutexUnlock(&proxyRenderer->mutex);
 					}
 					proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item.address);
