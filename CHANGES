@@ -31,6 +31,7 @@ Bugfixes:
  - PSP2: Fix mapping/unmapping from not at 0
  - Wii: Fix garbage flash at startup
  - VFS: Fix uninitialized varaible reading from 7z
+ - GBA: Fix losing IRQs when CPSR I bit isn't cleared
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
