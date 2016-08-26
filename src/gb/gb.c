@@ -54,6 +54,9 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->audio.p = gb;
 	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
 
+	gb->sio.p = gb;
+	GBSIOInit(&gb->sio);
+
 	gb->timer.p = gb;
 
 	gb->biosVf = 0;
@@ -163,6 +166,8 @@ void GBDestroy(struct GB* gb) {
 	GBUnloadROM(gb);
 
 	GBMemoryDeinit(gb);
+	GBVideoDeinit(&gb->video);
+	GBSIODeinit(&gb->sio);
 }
 
 void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
@@ -256,6 +261,7 @@ void GBReset(struct LR35902Core* cpu) {
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
+	GBSIOReset(&gb->sio);
 }
 
 void GBUpdateIRQs(struct GB* gb) {
@@ -328,6 +334,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		}
 
 		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
+
+		testEvent = GBSIOProcessEvents(&gb->sio, cycles);
 		if (testEvent < nextEvent) {
 			nextEvent = testEvent;
 		}
