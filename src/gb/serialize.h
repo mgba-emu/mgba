@@ -121,8 +121,11 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00154 - 0x00157: Next event
  * | 0x00158 - 0x0015B: Event diff
  * | 0x0015C - 0x0015F: Next DIV
- * | 0x00160 - 0x00163: Next TIMA
- * | 0x00164 - 0x00167: TIMA period
+ * | 0x00160 - 0x00163: Inernal DIV
+ * | 0x00164: TIMA period
+ * | 0x00165: Flags
+ *   | bit 0: Is IRQ pending?
+ * | 0x00166 - 0x00167: Reserved
  * 0x000168 - 0x000197: Memory state
  * | 0x00168 - 0x00169: Current ROM bank
  * | 0x0016A: Current WRAM bank
@@ -205,6 +208,8 @@ DECL_BIT(GBSerializedCpuFlags, Condition, 0);
 DECL_BIT(GBSerializedCpuFlags, IrqPending, 1);
 DECL_BIT(GBSerializedCpuFlags, DoubleSpeed, 2);
 
+DECL_BITFIELD(GBSerializedTimerFlags, uint8_t);
+DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);
 
 DECL_BITFIELD(GBSerializedVideoFlags, uint8_t);
 DECL_BIT(GBSerializedVideoFlags, BcpIncrement, 0);
@@ -290,8 +295,10 @@ struct GBSerializedState {
 		int32_t eventDiff;
 
 		int32_t nextDiv;
-		int32_t nextTima;
-		int32_t timaPeriod;
+		uint32_t internalDiv;
+		uint8_t timaPeriod;
+		GBSerializedTimerFlags flags;
+		uint16_t reserved;
 	} timer;
 
 	struct {

@@ -13,7 +13,7 @@ DECL_BITS(GBRegisterTAC, Clock, 0, 2);
 DECL_BIT(GBRegisterTAC, Run, 2);
 
 enum {
-	GB_DMG_DIV_PERIOD = 256
+	GB_DMG_DIV_PERIOD = 16
 };
 
 struct GB;
@@ -23,16 +23,16 @@ struct GBTimer {
 	int32_t nextEvent;
 	int32_t eventDiff;
 
+	uint32_t internalDiv;
 	int32_t nextDiv;
-	int32_t nextTima;
-	int32_t timaPeriod;
+	uint32_t timaPeriod;
+	bool irqPending;
 };
 
 void GBTimerReset(struct GBTimer*);
 int32_t GBTimerProcessEvents(struct GBTimer*, int32_t cycles);
 void GBTimerDivReset(struct GBTimer*);
 uint8_t GBTimerUpdateTAC(struct GBTimer*, GBRegisterTAC tac);
-void GBTimerUpdateTIMA(struct GBTimer* timer);
 
 struct GBSerializedState;
 void GBTimerSerialize(const struct GBTimer* timer, struct GBSerializedState* state);
