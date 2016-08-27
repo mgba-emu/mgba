@@ -8,7 +8,6 @@
 #include "LogController.h"
 #include "VFileDevice.h"
 
-#include <QFont>
 #include <QSet>
 
 extern "C" {
@@ -21,6 +20,8 @@ CheatsModel::CheatsModel(mCheatDevice* device, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_device(device)
 {
+	m_font.setFamily("Source Code Pro");
+	m_font.setStyleHint(QFont::Monospace);
 }
 
 QVariant CheatsModel::data(const QModelIndex& index, int role) const {
@@ -36,7 +37,7 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 		case Qt::DisplayRole:
 			return line;
 		case Qt::FontRole:
-			return QFont("Courier New", 13);
+			return m_font;
 		default:
 			return QVariant();
 		}
