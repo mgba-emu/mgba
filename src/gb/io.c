@@ -353,6 +353,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		return;
 	case REG_LCDC:
 		// TODO: handle GBC differences
+		GBVideoProcessDots(&gb->video);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
