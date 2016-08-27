@@ -45,6 +45,7 @@ GameController::GameController(QObject* parent)
 	, m_inactiveKeys(0)
 	, m_logLevels(0)
 	, m_gameOpen(false)
+	, m_vf(nullptr)
 	, m_useBios(false)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
@@ -315,6 +316,14 @@ void GameController::loadGame(const QString& path) {
 		return;
 	}
 	m_fname = info.canonicalFilePath();
+	m_vf = nullptr;
+	openGame();
+}
+
+void GameController::loadGame(VFile* vf, const QString& base) {
+	closeGame();
+	m_fname = base;
+	m_vf = vf;
 	openGame();
 }
 
@@ -330,7 +339,11 @@ void GameController::openGame(bool biosOnly) {
 	}
 
 	if (!biosOnly) {
-		m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
+		if (m_vf) {
+			m_threadContext.core = mCoreFindVF(m_vf);
+		} else {
+			m_threadContext.core = mCoreFind(m_fname.toUtf8().constData());
+		}
 	} else {
 		m_threadContext.core = GBACoreCreate();
 	}
@@ -357,13 +370,21 @@ void GameController::openGame(bool biosOnly) {
 	m_drawContext = new uint32_t[width * height];
 	m_frontBuffer = new uint32_t[width * height];
 
+	const char* base;
 	if (!biosOnly) {
-		mCoreLoadFile(m_threadContext.core, m_fname.toUtf8().constData());
+		base = m_fname.toUtf8().constData();
+		if (m_vf) {
+			m_threadContext.core->loadROM(m_threadContext.core, m_vf);
+		} else {
+			mCoreLoadFile(m_threadContext.core, base);
+			mDirectorySetDetachBase(&m_threadContext.core->dirs);
+		}
 	} else {
-		char dirname[PATH_MAX];
-		separatePath(m_bios.toUtf8().constData(), dirname, m_threadContext.core->dirs.baseName, 0);
-		mDirectorySetAttachBase(&m_threadContext.core->dirs, VDirOpen(dirname));
+		base = m_bios.toUtf8().constData();
 	}
+	char dirname[PATH_MAX];
+	separatePath(base, dirname, m_threadContext.core->dirs.baseName, 0);
+	mDirectorySetAttachBase(&m_threadContext.core->dirs, VDirOpen(dirname));
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
 
@@ -396,6 +417,7 @@ void GameController::openGame(bool biosOnly) {
 			mCoreAutoloadPatch(m_threadContext.core);
 		}
 	}
+	m_vf = nullptr;
 
 	if (!mCoreThreadStart(&m_threadContext)) {
 		m_gameOpen = false;

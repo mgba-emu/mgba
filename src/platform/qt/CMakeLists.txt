@@ -68,6 +68,7 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	ArchiveInspector.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -85,6 +86,7 @@ set(SOURCE_FILES
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
+	LibraryModel.cpp
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
@@ -110,6 +112,7 @@ set(SOURCE_FILES
 
 qt5_wrap_ui(UI_FILES
 	AboutScreen.ui
+	ArchiveInspector.ui
 	CheatsView.ui
 	GIFView.ui
 	IOViewer.ui

@@ -102,6 +102,7 @@ signals:
 
 public slots:
 	void loadGame(const QString& path);
+	void loadGame(VFile* vf, const QString& base = QString());
 	void loadBIOS(const QString& path);
 	void loadSave(const QString& path, bool temporary = true);
 	void yankPak();
@@ -184,6 +185,7 @@ private:
 	bool m_gameOpen;
 
 	QString m_fname;
+	VFile* m_vf;
 	QString m_bios;
 	bool m_useBios;
 	QString m_patch;

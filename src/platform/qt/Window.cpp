@@ -15,6 +15,7 @@
 #include <QStackedLayout>
 
 #include "AboutScreen.h"
+#include "ArchiveInspector.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "Display.h"
@@ -323,11 +324,43 @@ QString Window::getFilters() const {
 	return filters.join(";;");
 }
 
+QString Window::getFiltersArchive() const {
+	QStringList filters;
+
+	QStringList formats{
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+	};
+	filters.append(tr("Archives (%1)").arg(formats.join(QChar(' '))));
+	return filters.join(";;");
+}
+
 void Window::selectROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
 	if (!filename.isEmpty()) {
 		m_controller->loadGame(filename);
 	}
+}
+
+void Window::selectROMInArchive() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFiltersArchive());
+	if (filename.isEmpty()) {
+		return;
+	}
+	ArchiveInspector* archiveInspector = new ArchiveInspector(filename);
+	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector]() {
+		VFile* output = archiveInspector->selectedVFile();
+		if (output) {
+			m_controller->loadGame(output);
+		}
+		archiveInspector->close();
+	});
+	archiveInspector->setAttribute(Qt::WA_DeleteOnClose);
+	archiveInspector->show();
 }
 
 void Window::replaceROM() {
@@ -850,13 +883,17 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load ROM in archive..."), this, SLOT(selectROMInArchive())),
+	                    "loadROMInArchive");
+
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
+
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
 	m_gameActions.append(loadTemporarySave);
 	m_gbaActions.append(loadTemporarySave);
 	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
 
-	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
 

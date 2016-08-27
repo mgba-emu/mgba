@@ -59,6 +59,7 @@ signals:
 
 public slots:
 	void selectROM();
+	void selectROMInArchive();
 	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
@@ -148,6 +149,7 @@ private:
 	void updateTitle(float fps = -1);
 
 	QString getFilters() const;
+	QString getFiltersArchive() const;
 
 	GameController* m_controller;
 	Display* m_display;
