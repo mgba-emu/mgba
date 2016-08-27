@@ -372,8 +372,10 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 }
 
 void GBHalt(struct LR35902Core* cpu) {
-	cpu->cycles = cpu->nextEvent;
-	cpu->halted = true;
+	if (!cpu->irqPending) {
+		cpu->cycles = cpu->nextEvent;
+		cpu->halted = true;
+	}
 }
 
 void GBStop(struct LR35902Core* cpu) {
