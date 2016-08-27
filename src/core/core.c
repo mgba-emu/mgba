@@ -9,9 +9,6 @@
 #include "core/serialize.h"
 #include "util/vfs.h"
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include "util/png-io.h"
-
 #ifdef M_CORE_GB
 #include "gb/core.h"
 #include "gb/gb.h"
@@ -21,26 +18,59 @@
 #include "gba/gba.h"
 #endif
 
+static struct mCoreFilter {
+	bool (*filter)(struct VFile*);
+	struct mCore* (*open)(void);
+	enum mPlatform platform;
+} _filters[] = {
+#ifdef M_CORE_GBA
+	{ GBAIsROM, GBACoreCreate, PLATFORM_GBA },
+#endif
+#ifdef M_CORE_GB
+	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
+#endif
+	{ 0, 0, PLATFORM_NONE }
+};
+
+struct mCore* mCoreFindVF(struct VFile* vf) {
+	if (!vf) {
+		return NULL;
+	}
+	struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->filter(vf)) {
+			break;
+		}
+	}
+	if (filter->open) {
+		return filter->open();
+	}
+	return NULL;
+}
+
+enum mPlatform mCoreIsCompatible(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
+	struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->filter(vf)) {
+			return filter->platform;
+		}
+	}
+	return PLATFORM_NONE;
+}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#include "util/png-io.h"
+
 #ifdef PSP2
 #include <psp2/photoexport.h>
 #endif
 
-static struct mCoreFilter {
-	bool (*filter)(struct VFile*);
-	struct mCore* (*open)(void);
-} _filters[] = {
-#ifdef M_CORE_GBA
-	{ GBAIsROM, GBACoreCreate },
-#endif
-#ifdef M_CORE_GB
-	{ GBIsROM, GBCoreCreate },
-#endif
-	{ 0, 0 }
-};
-
 struct mCore* mCoreFind(const char* path) {
 	struct VDir* archive = VDirOpenArchive(path);
-	struct mCore* (*open)(void) = NULL;
+	struct mCore* core = NULL;
 	if (archive) {
 		struct VDirEntry* dirent = archive->listNext(archive);
 		while (dirent) {
@@ -49,15 +79,9 @@ struct mCore* mCoreFind(const char* path) {
 				dirent = archive->listNext(archive);
 				continue;
 			}
-			struct mCoreFilter* filter;
-			for (filter = &_filters[0]; filter->filter; ++filter) {
-				if (filter->filter(vf)) {
-					break;
-				}
-			}
+			core = mCoreFindVF(vf);
 			vf->close(vf);
-			if (filter->open) {
-				open = filter->open;
+			if (core) {
 				break;
 			}
 			dirent = archive->listNext(archive);
@@ -68,19 +92,11 @@ struct mCore* mCoreFind(const char* path) {
 		if (!vf) {
 			return NULL;
 		}
-		struct mCoreFilter* filter;
-		for (filter = &_filters[0]; filter->filter; ++filter) {
-			if (filter->filter(vf)) {
-				break;
-			}
-		}
+		core = mCoreFindVF(vf);
 		vf->close(vf);
-		if (filter->open) {
-			open = filter->open;
-		}
 	}
-	if (open) {
-		return open();
+	if (core) {
+		return core;
 	}
 	return NULL;
 }

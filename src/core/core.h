@@ -142,6 +142,9 @@ void mCoreDeleteState(struct mCore* core, int slot);
 void mCoreTakeScreenshot(struct mCore* core);
 #endif
 
+struct mCore* mCoreFindVF(struct VFile* vf);
+enum mPlatform mCoreIsCompatible(struct VFile* vf);
+
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);
