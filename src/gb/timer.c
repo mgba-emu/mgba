@@ -27,20 +27,20 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 			timer->p->memory.io[REG_IF] |= (1 << GB_IRQ_TIMER);
 			GBUpdateIRQs(timer->p);
 			timer->irqPending = false;
-			timer->nextEvent = timer->nextDiv;
+			timer->nextEvent += timer->nextDiv;
 		}
 		if (timer->nextDiv <= 0) {
 			++timer->internalDiv;
 			timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
-			timer->nextDiv = GB_DMG_DIV_PERIOD;
-			timer->nextEvent = timer->nextDiv;
+			timer->nextDiv += GB_DMG_DIV_PERIOD;
+			timer->nextEvent += GB_DMG_DIV_PERIOD;
 
 			// Make sure to trigger when the correct bit is a falling edge
-			if (timer->timaPeriod == 1 || (timer->internalDiv & (timer->timaPeriod - 1)) == (timer->timaPeriod >> 1) - 1) {
+			if (timer->timaPeriod > 0 && (timer->internalDiv & (timer->timaPeriod - 1)) == timer->timaPeriod - 1) {
 				++timer->p->memory.io[REG_TIMA];
 				if (!timer->p->memory.io[REG_TIMA]) {
 					timer->irqPending = true;
-					timer->nextEvent = 4;
+					timer->nextEvent += 4;
 				}
 			}
 		}
