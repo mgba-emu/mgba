@@ -14,7 +14,12 @@
 
 extern "C" {
 #include "core/core.h"
+#ifdef M_CORE_GBA
 #include "gba/extra/export.h"
+#endif
+#ifdef M_CORE_GB
+#include "gb/gb.h"
+#endif
 #include "util/vfs.h"
 }
 
@@ -29,6 +34,16 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 	connect(m_controller, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updatePalette()));
 	m_ui.bgGrid->setDimensions(QSize(16, 16));
 	m_ui.objGrid->setDimensions(QSize(16, 16));
+	int count = 256;
+#ifdef M_CORE_GB
+	if (controller->platform() == PLATFORM_GB) {
+		m_ui.bgGrid->setDimensions(QSize(4, 8));
+		m_ui.objGrid->setDimensions(QSize(4, 8));
+		m_ui.bgGrid->setSize(24);
+		m_ui.objGrid->setSize(24);
+		count = 32;
+	}
+#endif
 	m_ui.selected->setSize(64);
 	m_ui.selected->setDimensions(QSize(1, 1));
 	updatePalette();
@@ -43,9 +58,9 @@ PaletteView::PaletteView(GameController* controller, QWidget* parent)
 	m_ui.b->setFont(font);
 
 	connect(m_ui.bgGrid, SIGNAL(indexPressed(int)), this, SLOT(selectIndex(int)));
-	connect(m_ui.objGrid, &Swatch::indexPressed, [this] (int index) { selectIndex(index + 256); });
-	connect(m_ui.exportBG, &QAbstractButton::clicked, [this] () { exportPalette(0, 256); });
-	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this] () { exportPalette(256, 256); });
+	connect(m_ui.objGrid, &Swatch::indexPressed, [this, count] (int index) { selectIndex(index + count); });
+	connect(m_ui.exportBG, &QAbstractButton::clicked, [this, count] () { exportPalette(0, count); });
+	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this, count] () { exportPalette(count, count); });
 
 	connect(controller, SIGNAL(gameStopped(mCoreThread*)), this, SLOT(close()));
 }
@@ -54,17 +69,49 @@ void PaletteView::updatePalette() {
 	if (!m_controller->thread() || !m_controller->thread()->core) {
 		return;
 	}
-	const uint16_t* palette = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette;
-	for (int i = 0; i < 256; ++i) {
+	const uint16_t* palette;
+	size_t count;
+	switch (m_controller->platform()) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		palette = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette;
+		count = 256;
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		palette = static_cast<GB*>(m_controller->thread()->core->board)->video.palette;
+		count = 32;
+		break;
+#endif
+	default:
+		return;
+	}
+	for (int i = 0; i < count; ++i) {
 		m_ui.bgGrid->setColor(i, palette[i]);
-		m_ui.objGrid->setColor(i, palette[i + 256]);
+		m_ui.objGrid->setColor(i, palette[i + count]);
 	}
 	m_ui.bgGrid->update();
 	m_ui.objGrid->update();
 }
 
 void PaletteView::selectIndex(int index) {
-	uint16_t color = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[index];
+	const uint16_t* palette;
+	switch (m_controller->platform()) {
+#ifdef M_CORE_GBA
+	case PLATFORM_GBA:
+		palette = static_cast<GBA*>(m_controller->thread()->core->board)->video.palette;
+		break;
+#endif
+#ifdef M_CORE_GB
+	case PLATFORM_GB:
+		palette = static_cast<GB*>(m_controller->thread()->core->board)->video.palette;
+		break;
+#endif
+	default:
+		return;
+	}
+	uint16_t color = palette[index];
 	m_ui.selected->setColor(0, color);
 	uint32_t r = GBA_R5(color);
 	uint32_t g = GBA_G5(color);

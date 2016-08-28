@@ -1329,7 +1329,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* paletteView = new QAction(tr("View &palette..."), toolsMenu);
 	connect(paletteView, SIGNAL(triggered()), this, SLOT(openPaletteWindow()));
 	m_gameActions.append(paletteView);
-	m_gbaActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
