@@ -17,7 +17,7 @@ static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBMo
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
@@ -239,7 +239,7 @@ static void _cleanOAM(struct GBVideo* video, int y) {
 			continue;
 		}
 		// TODO: Sort
-		video->objThisLine[o] = &video->oam.obj[i];
+		video->objThisLine[o] = video->oam.obj[i];
 		++o;
 		if (o == 10) {
 			break;
@@ -410,7 +410,7 @@ static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, i
 	UNUSED(value);
 }
 
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	UNUSED(renderer);
 	UNUSED(endX);
 	UNUSED(startX);
