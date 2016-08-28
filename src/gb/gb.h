@@ -66,6 +66,7 @@ struct GB {
 	struct VFile* romVf;
 	struct VFile* biosVf;
 	struct VFile* sramVf;
+	struct VFile* sramRealVf;
 
 	struct mAVStream* stream;
 
@@ -112,6 +113,9 @@ void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
+
+void GBSavedataMask(struct GB* gb, struct VFile* vf);
+void GBSavedataUnmask(struct GB* gb);
 
 struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);

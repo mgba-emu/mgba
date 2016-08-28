@@ -99,6 +99,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	gb->sramVf = vf;
+	gb->sramRealVf = vf;
 	if (vf) {
 		// TODO: Do this in bank-switching code
 		if (vf->size(vf) < 0x20000) {
@@ -107,6 +108,31 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
 	}
 	return gb->memory.sram;
+}
+
+static void GBSramDeinit(struct GB* gb) {
+	if (gb->sramVf) {
+		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x20000);
+		gb->sramVf = 0;
+	} else if (gb->memory.sram) {
+		mappedMemoryFree(gb->memory.sram, 0x20000);
+	}
+	gb->memory.sram = 0;
+}
+
+void GBSavedataMask(struct GB* gb, struct VFile* vf) {
+	GBSramDeinit(gb);
+	gb->sramVf = vf;
+	gb->memory.sram = vf->map(vf, 0x20000, MAP_READ);
+}
+
+void GBSavedataUnmask(struct GB* gb) {
+	GBSramDeinit(gb);
+	if (gb->sramVf == gb->sramRealVf) {
+		return;
+	}
+	gb->sramVf = gb->sramRealVf;
+	gb->memory.sram = gb->sramVf->map(gb->sramVf, 0x20000, MAP_WRITE);
 }
 
 void GBUnloadROM(struct GB* gb) {
@@ -131,13 +157,7 @@ void GBUnloadROM(struct GB* gb) {
 		gb->romVf = 0;
 	}
 
-	if (gb->sramVf) {
-		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x8000);
-		gb->sramVf = 0;
-	} else if (gb->memory.sram) {
-		mappedMemoryFree(gb->memory.sram, 0x8000);
-	}
-	gb->memory.sram = 0;
+	GBSramDeinit(gb);
 }
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf) {
@@ -262,6 +282,8 @@ void GBReset(struct LR35902Core* cpu) {
 	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
+
+	GBSavedataUnmask(gb);
 }
 
 void GBUpdateIRQs(struct GB* gb) {

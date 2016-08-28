@@ -891,7 +891,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
 	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
 	m_gameActions.append(loadTemporarySave);
-	m_gbaActions.append(loadTemporarySave);
 	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
