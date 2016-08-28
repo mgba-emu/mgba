@@ -813,7 +813,7 @@ int main() {
 				.state = FM_LINEAR_2x,
 				.validStates = (const char*[]) {
 					NULL, // Disable choosing nearest neighbor; it always looks bad
-					"Bilinear (smooter)",
+					"Bilinear (smoother)",
 					"Bilinear (pixelated)",
 				},
 				.nStates = 3
