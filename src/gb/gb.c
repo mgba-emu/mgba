@@ -127,10 +127,10 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf) {
 }
 
 void GBSavedataUnmask(struct GB* gb) {
-	GBSramDeinit(gb);
 	if (gb->sramVf == gb->sramRealVf) {
 		return;
 	}
+	GBSramDeinit(gb);
 	gb->sramVf = gb->sramRealVf;
 	gb->memory.sram = gb->sramVf->map(gb->sramVf, 0x20000, MAP_WRITE);
 }
