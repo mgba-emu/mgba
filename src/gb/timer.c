@@ -30,8 +30,9 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 			timer->nextEvent += timer->nextDiv;
 		}
 		if (timer->nextDiv <= 0) {
-			++timer->internalDiv;
-			timer->p->memory.io[REG_DIV] = timer->internalDiv >> 4;
+			if ((timer->internalDiv & 15) == 15) {
+				++timer->p->memory.io[REG_DIV];
+			}
 			timer->nextDiv += GB_DMG_DIV_PERIOD;
 			timer->nextEvent += GB_DMG_DIV_PERIOD;
 
@@ -43,6 +44,7 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 					timer->nextEvent += 4;
 				}
 			}
+			++timer->internalDiv;
 		}
 		timer->eventDiff = 0;
 	}
@@ -51,7 +53,6 @@ int32_t GBTimerProcessEvents(struct GBTimer* timer, int32_t cycles) {
 
 void GBTimerDivReset(struct GBTimer* timer) {
 	timer->p->memory.io[REG_DIV] = 0;
-	timer->internalDiv = 0;
 }
 
 uint8_t GBTimerUpdateTAC(struct GBTimer* timer, GBRegisterTAC tac) {
