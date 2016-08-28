@@ -47,6 +47,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 	if (savedata->vf) {
 		size_t size = GBASavedataSize(savedata);
 		savedata->vf->unmap(savedata->vf, savedata->data, size);
+		if (savedata->vf != savedata->realVf) {
+			savedata->vf->close(savedata->vf);
+		}
 		savedata->vf = 0;
 	} else {
 		switch (savedata->type) {

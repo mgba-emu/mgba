@@ -12,6 +12,7 @@
 #include "gba/hle-bios.h"
 #include "util/math.h"
 #include "util/memory.h"
+#include "util/vfs.h"
 
 #define IDLE_LOOP_THRESHOLD 10000
 
@@ -92,6 +93,9 @@ void GBAMemoryDeinit(struct GBA* gba) {
 		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 	}
 	GBASavedataDeinit(&gba->memory.savedata);
+	if (gba->memory.savedata.realVf) {
+		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
+	}
 }
 
 void GBAMemoryReset(struct GBA* gba) {
