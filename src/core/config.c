@@ -207,7 +207,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	UNUSED(portable);
-	snprintf(out, outLength, "ux0:/%s", projectName);
+	snprintf(out, outLength, "ux0:data/%s", projectName);
 	sceIoMkdir(out, 0777);
 #elif defined(GEKKO)
 	UNUSED(portable);

@@ -49,7 +49,7 @@ add_custom_target(param.sfo
                   DEPENDS sce_sys)
 
 add_custom_target(eboot.bin
-                  ${MAKE_FSELF} ${BINARY_NAME}.velf eboot.bin
+                  ${MAKE_FSELF} -s ${BINARY_NAME}.velf eboot.bin
                   DEPENDS ${BINARY_NAME}.velf)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/template.xml.in ${CMAKE_CURRENT_BINARY_DIR}/template.xml)
@@ -64,7 +64,7 @@ add_custom_target(livearea
                   DEPENDS sce_sys)
 
 add_custom_target(${BINARY_NAME}.vpk ALL
-                  zip -r ${BINARY_NAME}.vpk sce_sys eboot.bin
+                  zip -qr ${BINARY_NAME}.vpk sce_sys eboot.bin
                   DEPENDS livearea eboot.bin param.sfo)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.vpk DESTINATION . COMPONENT ${BINARY_NAME}-psp2)
