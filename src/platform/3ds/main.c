@@ -371,12 +371,12 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 static void _drawTex(struct mCore* core, bool faded) {
 	unsigned screen_w, screen_h;
 	switch (screenMode) {
-	case SM_PA_TOP:
+	case SM_PA_BOTTOM:
 		C3D_RenderBufBind(&bottomScreen);
 		screen_w = 320;
 		screen_h = 240;
 		break;
-	case SM_PA_BOTTOM:
+	case SM_PA_TOP:
 		C3D_RenderBufBind(&topScreen);
 		screen_w = 400;
 		screen_h = 240;
