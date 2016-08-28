@@ -336,6 +336,8 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 				gb->memory.ime = true;
 				GBUpdateIRQs(gb);
 				gb->eiPending = INT_MAX;
+			} else {
+				nextEvent = gb->eiPending;
 			}
 		}
 
