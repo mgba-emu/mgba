@@ -9,7 +9,7 @@
 #include "util/vfs.h"
 
 static size_t _IPSOutputSize(struct Patch* patch, size_t inSize);
-static bool _IPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
+static bool _IPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
 
 bool loadPatchIPS(struct Patch* patch) {
 	patch->vf->seek(patch->vf, 0, SEEK_SET);
@@ -43,7 +43,7 @@ size_t _IPSOutputSize(struct Patch* patch, size_t inSize) {
 	return 16 * 1024 * 1024; // IPS patches can grow up to 16MiB, but not beyond
 }
 
-bool _IPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
+bool _IPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize) {
 	if (patch->vf->seek(patch->vf, 5, SEEK_SET) != 5) {
 		return false;
 	}
