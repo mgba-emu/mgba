@@ -924,7 +924,7 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	LOAD_32LE(audio->nextFrame, 0, &state->ch1.nextFrame);
 	LOAD_32LE(audio->nextCh1, 0, &state->ch1.nextEvent);
 
-	LOAD_32LE(ch2Flags, 0, &state->ch1.envelope);
+	LOAD_32LE(ch2Flags, 0, &state->ch2.envelope);
 	audio->ch2.envelope.currentVolume = GBSerializedAudioFlagsGetCh2Volume(flags);
 	audio->ch2.envelope.dead = GBSerializedAudioFlagsGetCh2Dead(flags);
 	audio->ch2.control.hi = GBSerializedAudioFlagsGetCh2Hi(flags);
@@ -937,7 +937,7 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	LOAD_16LE(audio->ch3.length, 0, &state->ch3.length);
 	LOAD_32LE(audio->nextCh3, 0, &state->ch3.nextEvent);
 
-	LOAD_32LE(ch4Flags, 0, &state->ch1.envelope);
+	LOAD_32LE(ch4Flags, 0, &state->ch4.envelope);
 	audio->ch4.envelope.currentVolume = GBSerializedAudioFlagsGetCh4Volume(flags);
 	audio->ch4.envelope.dead = GBSerializedAudioFlagsGetCh4Dead(flags);
 	audio->ch4.length = GBSerializedAudioEnvelopeGetLength(ch4Flags);
