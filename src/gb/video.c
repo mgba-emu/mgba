@@ -155,6 +155,11 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						GBUpdateIRQs(video->p);
 					}
 					video->renderer->finishFrame(video->renderer);
+					if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
+						video->p->memory.rotation->sample(video->p->memory.rotation);
+					}
+					struct mCoreThread* thread = mCoreThreadGet();
+					mCoreThreadFrameStarted(thread);
 					break;
 				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
@@ -172,11 +177,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					GBUpdateIRQs(video->p);
 				}
-				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
-					video->p->memory.rotation->sample(video->p->memory.rotation);
-				}
-				struct mCoreThread* thread = mCoreThreadGet();
-				mCoreThreadFrameStarted(thread);
 				break;
 			case 2:
 				_cleanOAM(video, video->ly);
