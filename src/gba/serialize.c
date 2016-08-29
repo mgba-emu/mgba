@@ -225,5 +225,3 @@ struct GBASerializedState* GBAAllocateState(void) {
 void GBADeallocateState(struct GBASerializedState* state) {
 	mappedMemoryFree(state, sizeof(struct GBASerializedState));
 }
-
-// TODO: Put back rewind

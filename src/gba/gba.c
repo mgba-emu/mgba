@@ -800,7 +800,8 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	// TODO: Put back rewind
+	struct mCoreThread* thread = mCoreThreadGet();
+	mCoreThreadFrameStarted(thread);
 }
 
 void GBAFrameEnded(struct GBA* gba) {
@@ -831,13 +832,7 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 
 	struct mCoreThread* thread = mCoreThreadGet();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->frameCallback) {
-		thread->frameCallback(thread);
-	}
+	mCoreThreadFrameEnded(thread);
 
 	// TODO: Put back RR
 }

@@ -175,6 +175,8 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
 					video->p->memory.rotation->sample(video->p->memory.rotation);
 				}
+				struct mCoreThread* thread = mCoreThreadGet();
+				mCoreThreadFrameStarted(thread);
 				break;
 			case 2:
 				_cleanOAM(video, video->ly);
@@ -204,9 +206,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 			if (video->p->cpu->executionState == LR35902_CORE_FETCH) {
 				GBFrameEnded(video->p);
 				struct mCoreThread* thread = mCoreThreadGet();
-				if (thread && thread->frameCallback) {
-					thread->frameCallback(thread);
-				}
+				mCoreThreadFrameEnded(thread);
 				video->nextFrame = GB_VIDEO_TOTAL_LENGTH;
 			} else {
 				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);

@@ -145,6 +145,9 @@ void mCoreTakeScreenshot(struct mCore* core);
 struct mCore* mCoreFindVF(struct VFile* vf);
 enum mPlatform mCoreIsCompatible(struct VFile* vf);
 
+bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
+bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
+
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config);

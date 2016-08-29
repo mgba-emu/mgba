@@ -406,6 +406,9 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 		context->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	}
+	if (event->keysym.sym == SDLK_BACKQUOTE) {
+		mCoreThreadSetRewinding(context, event->type == SDL_KEYDOWN);
+	}
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
 		case SDLK_F11:
@@ -422,9 +425,6 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			mCoreThreadPause(context);
 			context->frameCallback = _pauseAfterFrame;
 			mCoreThreadUnpause(context);
-			return;
-		case SDLK_BACKQUOTE:
-			// TODO: Put back rewind
 			return;
 #ifdef BUILD_PANDORA
 		case SDLK_ESCAPE:

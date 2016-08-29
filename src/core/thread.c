@@ -109,6 +109,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
+	if (core->opts.rewindEnable) {
+		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
+	}
+
 	_changeState(threadContext, THREAD_RUNNING, true);
 
 	if (threadContext->startCallback) {
@@ -126,14 +130,14 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				_changeState(threadContext, THREAD_EXITING, false);
 			}
 		} else {
-			while (threadContext->state == THREAD_RUNNING) {
+			while (threadContext->state <= THREAD_MAX_RUNNING) {
 				core->runLoop(core);
 			}
 		}
 
 		int resetScheduled = 0;
 		MutexLock(&threadContext->stateMutex);
-		while (threadContext->state > THREAD_RUNNING && threadContext->state < THREAD_EXITING) {
+		while (threadContext->state > THREAD_MAX_RUNNING && threadContext->state < THREAD_EXITING) {
 			if (threadContext->state == THREAD_PAUSING) {
 				threadContext->state = THREAD_PAUSED;
 				ConditionWake(&threadContext->stateCond);
@@ -168,6 +172,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 	while (threadContext->state < THREAD_SHUTDOWN) {
 		_changeState(threadContext, THREAD_SHUTDOWN, false);
+	}
+
+	if (core->opts.rewindEnable) {
+		 mCoreRewindContextDeinit(&threadContext->rewind);
 	}
 
 	if (threadContext->cleanCallback) {
@@ -422,6 +430,18 @@ void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 	mCoreSyncSetVideoSync(&threadContext->sync, frameOn);
 }
 
+void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) {
+	MutexLock(&threadContext->stateMutex);
+	_waitOnInterrupt(threadContext);
+	if (rewinding && threadContext->state == THREAD_RUNNING) {
+		threadContext->state = THREAD_REWINDING;
+	}
+	if (!rewinding && threadContext->state == THREAD_REWINDING) {
+		threadContext->state = THREAD_RUNNING;
+	}
+	MutexUnlock(&threadContext->stateMutex);
+}
+
 #ifdef USE_PTHREADS
 struct mCoreThread* mCoreThreadGet(void) {
 	pthread_once(&_contextOnce, _createTLS);
@@ -438,10 +458,41 @@ struct mCoreThread* mCoreThreadGet(void) {
 }
 #endif
 
+void mCoreThreadFrameStarted(struct mCoreThread* thread) {
+	if (!thread) {
+		return;
+	}
+	if (thread->core->opts.rewindEnable && thread->state != THREAD_REWINDING) {
+		mCoreRewindAppend(&thread->rewind, thread->core);
+	} else if (thread->state == THREAD_REWINDING) {
+		if (!mCoreRewindRestore(&thread->rewind, thread->core)) {
+			mCoreRewindAppend(&thread->rewind, thread->core);
+		}
+	}
+}
+
+void mCoreThreadFrameEnded(struct mCoreThread* thread) {
+	if (!thread) {
+		return;
+	}
+	if (thread->frameCallback) {
+		thread->frameCallback(thread);
+	}
+}
+
 #else
 struct mCoreThread* mCoreThreadGet(void) {
 	return NULL;
 }
+
+void mCoreThreadFrameStarted(struct mCoreThread* thread) {
+	UNUSED(thread);
+}
+
+void mCoreThreadFrameEnded(struct mCoreThread* thread) {
+	UNUSED(thread);
+}
+
 #endif
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {

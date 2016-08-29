@@ -116,7 +116,7 @@ public slots:
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
-	void setRewind(bool enable, int capacity, int interval);
+	void setRewind(bool enable, int capacity);
 	void rewind(int states = 0);
 	void startRewinding();
 	void stopRewinding();
@@ -202,7 +202,6 @@ private:
 	bool m_turbo;
 	bool m_turboForced;
 	float m_turboSpeed;
-	QTimer m_rewindTimer;
 	bool m_wasPaused;
 
 	bool m_audioChannels[6];

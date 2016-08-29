@@ -234,13 +234,6 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.userData = this;
 
-	connect(&m_rewindTimer, &QTimer::timeout, [this]() {
-		// TODO: Put rewind back
-		emit frameAvailable(m_drawContext);
-		emit rewound(&m_threadContext);
-	});
-	m_rewindTimer.setInterval(100);
-
 	m_audioThread->setObjectName("Audio Thread");
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
@@ -529,7 +522,6 @@ void GameController::closeGame() {
 	}
 	m_gameOpen = false;
 
-	m_rewindTimer.stop();
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
@@ -578,7 +570,7 @@ QSize GameController::screenDimensions() const {
 }
 
 void GameController::setPaused(bool paused) {
-	if (!isLoaded() || m_rewindTimer.isActive() || paused == mCoreThreadIsPaused(&m_threadContext)) {
+	if (!isLoaded() || paused == mCoreThreadIsPaused(&m_threadContext)) {
 		return;
 	}
 	if (paused) {
@@ -617,15 +609,12 @@ void GameController::threadContinue() {
 }
 
 void GameController::frameAdvance() {
-	if (m_rewindTimer.isActive()) {
-		return;
-	}
 	if (m_pauseAfterFrame.testAndSetRelaxed(false, true)) {
 		setPaused(false);
 	}
 }
 
-void GameController::setRewind(bool enable, int capacity, int interval) {
+void GameController::setRewind(bool enable, int capacity) {
 	if (m_gameOpen) {
 		threadInterrupt();
 		// TODO: Put back rewind
@@ -638,9 +627,12 @@ void GameController::setRewind(bool enable, int capacity, int interval) {
 void GameController::rewind(int states) {
 	threadInterrupt();
 	if (!states) {
-		// TODO: Put back rewind
-	} else {
-		// TODO: Put back rewind
+		states = INT_MAX;
+	}
+	for (int i = 0; i < states; ++i) {
+		if (!mCoreRewindRestore(&m_threadContext.rewind, m_threadContext.core)) {
+			break;
+		}
 	}
 	threadContinue();
 	emit frameAvailable(m_drawContext);
@@ -648,24 +640,21 @@ void GameController::rewind(int states) {
 }
 
 void GameController::startRewinding() {
-	if (!m_gameOpen || m_rewindTimer.isActive()) {
+	if (!m_gameOpen) {
 		return;
 	}
 	if (m_multiplayer && m_multiplayer->attached() > 1) {
 		return;
 	}
-	m_wasPaused = isPaused();
-	if (!mCoreThreadIsPaused(&m_threadContext)) {
-		mCoreThreadPause(&m_threadContext);
+	m_wasPaused = mCoreThreadIsPaused(&m_threadContext);
+	if (m_wasPaused) {
+		mCoreThreadUnpause(&m_threadContext);
 	}
-	m_rewindTimer.start();
+	mCoreThreadSetRewinding(&m_threadContext, true);
 }
 
 void GameController::stopRewinding() {
-	if (!m_rewindTimer.isActive()) {
-		return;
-	}
-	m_rewindTimer.stop();
+	mCoreThreadSetRewinding(&m_threadContext, false);
 	bool signalsBlocked = blockSignals(true);
 	setPaused(m_wasPaused);
 	blockSignals(signalsBlocked);
