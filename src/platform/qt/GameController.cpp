@@ -640,7 +640,7 @@ void GameController::rewind(int states) {
 }
 
 void GameController::startRewinding() {
-	if (!m_gameOpen) {
+	if (!isLoaded()) {
 		return;
 	}
 	if (m_multiplayer && m_multiplayer->attached() > 1) {
@@ -654,6 +654,9 @@ void GameController::startRewinding() {
 }
 
 void GameController::stopRewinding() {
+	if (!isLoaded()) {
+		return;
+	}
 	mCoreThreadSetRewinding(&m_threadContext, false);
 	bool signalsBlocked = blockSignals(true);
 	setPaused(m_wasPaused);
