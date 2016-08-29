@@ -569,7 +569,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 10);
 		break;
 	}
-	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, control & 0x0004);
+	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, timer > 0 && (control & 0x0004));
 	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
 	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << GBATimerFlagsGetPrescaleBits(currentTimer->flags);
 	bool wasEnabled = GBATimerFlagsIsEnable(currentTimer->flags);
