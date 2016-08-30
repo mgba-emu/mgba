@@ -230,6 +230,10 @@ static bool _GBCoreLoadState(struct mCore* core, const void* state) {
 }
 
 static bool _GBCoreSaveState(struct mCore* core, void* state) {
+	struct LR35902Core* cpu = core->cpu;
+	while (cpu->executionState != LR35902_CORE_FETCH) {
+		LR35902Tick(cpu);
+	}
 	GBSerialize(core->board, state);
 	return true;
 }

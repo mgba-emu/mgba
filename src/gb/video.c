@@ -136,6 +136,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
+
+					struct mCoreThread* thread = mCoreThreadGet();
+					mCoreThreadFrameEnded(thread);
 				}
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -158,8 +161,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 					if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
 						video->p->memory.rotation->sample(video->p->memory.rotation);
 					}
-					struct mCoreThread* thread = mCoreThreadGet();
-					mCoreThreadFrameStarted(thread);
 					break;
 				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
@@ -205,9 +206,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 		if (video->nextFrame <= 0) {
 			if (video->p->cpu->executionState == LR35902_CORE_FETCH) {
 				GBFrameEnded(video->p);
-				struct mCoreThread* thread = mCoreThreadGet();
-				mCoreThreadFrameEnded(thread);
 				video->nextFrame = GB_VIDEO_TOTAL_LENGTH;
+				struct mCoreThread* thread = mCoreThreadGet();
+				mCoreThreadFrameStarted(thread);
 			} else {
 				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);
 				if (video->nextFrame < video->nextEvent) {
