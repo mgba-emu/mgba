@@ -83,6 +83,7 @@ Misc:
  - Util: Add endswith
  - GUI: Only reload config if manually saved
  - GBA Serialize: Savestates now store if CPU was halted
+ - PSP2: Stop underclocking when menuing
 
 0.4.1: (2016-07-11)
 Bugfixes:

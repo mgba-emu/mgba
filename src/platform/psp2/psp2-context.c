@@ -174,7 +174,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 	mCoreLoadForeignConfig(runner->core, &runner->config);
 
-	scePowerSetArmClockFrequency(80);
+	scePowerSetArmClockFrequency(333);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
@@ -295,7 +295,7 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
-	scePowerSetArmClockFrequency(80);
+	scePowerSetArmClockFrequency(333);
 }
 
 void mPSP2Paused(struct mGUIRunner* runner) {
