@@ -19,7 +19,7 @@ void GUIPollInput(struct GUIParams* params, uint32_t* newInputOut, uint32_t* hel
 		} else {
 			params->inputHistory[i] = -1;
 		}
-		if (!params->inputHistory[i] || (params->inputHistory[i] >= 30 && !(params->inputHistory[i] % 6))) {
+		if (!params->inputHistory[i] || (params->inputHistory[i] >= 30 && !(params->inputHistory[i] % 5))) {
 			newInput |= (1 << i);
 		}
 	}
