@@ -1530,6 +1530,7 @@ void Window::focusCheck() {
 	}
 	if (QGuiApplication::focusWindow() && m_autoresume) {
 		m_controller->setPaused(false);
+		m_autoresume = false;
 	} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
 		m_autoresume = true;
 		m_controller->setPaused(true);
