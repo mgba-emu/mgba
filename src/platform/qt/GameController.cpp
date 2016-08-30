@@ -573,6 +573,7 @@ void GameController::setPaused(bool paused) {
 	if (!isLoaded() || paused == mCoreThreadIsPaused(&m_threadContext)) {
 		return;
 	}
+	m_wasPaused = paused;
 	if (paused) {
 		m_pauseAfterFrame.testAndSetRelaxed(false, true);
 	} else {
@@ -646,9 +647,9 @@ void GameController::startRewinding() {
 	if (m_multiplayer && m_multiplayer->attached() > 1) {
 		return;
 	}
-	m_wasPaused = mCoreThreadIsPaused(&m_threadContext);
 	if (m_wasPaused) {
-		mCoreThreadUnpause(&m_threadContext);
+		setPaused(false);
+		m_wasPaused = true;
 	}
 	mCoreThreadSetRewinding(&m_threadContext, true);
 }
