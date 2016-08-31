@@ -114,6 +114,13 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 				}
 				mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
 			}
+			if (runner->keySources) {
+				size_t i;
+				for (i = 0; runner->keySources[i].id; ++i) {
+					mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+					mInputMapSave(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+				}
+			}
 			mCoreConfigSave(&runner->config);
 			mCoreLoadForeignConfig(runner->core, &runner->config);
 			break;
