@@ -163,6 +163,7 @@ public slots:
 private slots:
 	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
+	void cleanGame();
 
 	void pollEvents();
 	void updateAutofire();

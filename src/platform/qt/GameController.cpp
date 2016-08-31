@@ -84,9 +84,6 @@ GameController::GameController(QObject* parent)
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
-		if (controller->m_audioProcessor) {
-			controller->m_audioProcessor->setInput(context);
-		}
 		mRTCGenericSourceInit(&controller->m_rtc, context->core);
 		context->core->setRTC(context->core, &controller->m_rtc.d);
 		context->core->setRotation(context->core, controller->m_inputController->rotationSource());
@@ -132,9 +129,9 @@ GameController::GameController(QObject* parent)
 			mCoreDeleteState(context->core, 0);
 		}
 
-		mCoreThreadInterruptFromThread(context);
-		QMetaObject::invokeMethod(controller, "gameStarted", Qt::BlockingQueuedConnection, Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
-		mCoreThreadContinue(context);
+		controller->m_gameOpen = true;
+		QMetaObject::invokeMethod(controller, "gameStarted", Q_ARG(mCoreThread*, context), Q_ARG(const QString&, controller->m_fname));
+		QMetaObject::invokeMethod(controller, "startAudio");
 	};
 
 	m_threadContext.resetCallback = [](mCoreThread* context) {
@@ -157,6 +154,7 @@ GameController::GameController(QObject* parent)
 	m_threadContext.cleanCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
 		QMetaObject::invokeMethod(controller, "gameStopped", Q_ARG(mCoreThread*, context));
+		QMetaObject::invokeMethod(controller, "cleanGame");
 	};
 
 	m_threadContext.frameCallback = [](mCoreThread* context) {
@@ -238,6 +236,7 @@ GameController::GameController(QObject* parent)
 	m_audioThread->start(QThread::TimeCriticalPriority);
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(pollEvents()));
 	connect(this, SIGNAL(frameAvailable(const uint32_t*)), this, SLOT(updateAutofire()));
 }
@@ -330,6 +329,13 @@ void GameController::openGame(bool biosOnly) {
 	if (biosOnly && (!m_useBios || m_bios.isNull())) {
 		return;
 	}
+	if (m_gameOpen) {
+		// We need to delay if the game is still cleaning up
+		QTimer::singleShot(10, [this, biosOnly]() {
+			openGame(biosOnly);
+		});
+		return;
+	}
 
 	if (!biosOnly) {
 		if (m_vf) {
@@ -344,8 +350,6 @@ void GameController::openGame(bool biosOnly) {
 	if (!m_threadContext.core) {
 		return;
 	}
-
-	m_gameOpen = true;
 
 	m_pauseAfterFrame = false;
 
@@ -413,10 +417,7 @@ void GameController::openGame(bool biosOnly) {
 	m_vf = nullptr;
 
 	if (!mCoreThreadStart(&m_threadContext)) {
-		m_gameOpen = false;
 		emit gameFailed();
-	} else if (m_audioProcessor) {
-		startAudio();
 	}
 }
 
@@ -520,16 +521,16 @@ void GameController::closeGame() {
 	if (!m_gameOpen) {
 		return;
 	}
-	m_gameOpen = false;
 
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
-	m_audioProcessor->pause();
 	mCoreThreadEnd(&m_threadContext);
+	m_audioProcessor->pause();
+}
+
+void GameController::cleanGame() {
 	mCoreThreadJoin(&m_threadContext);
-	// Make sure the event queue clears out before the thread is reused
-	QCoreApplication::processEvents();
 
 	delete[] m_drawContext;
 	delete[] m_frontBuffer;
@@ -537,10 +538,11 @@ void GameController::closeGame() {
 	m_patch = QString();
 
 	m_threadContext.core->deinit(m_threadContext.core);
+	m_gameOpen = false;
 }
 
 void GameController::crashGame(const QString& crashMessage) {
-	closeGame();
+	cleanGame();
 	emit gameCrashed(crashMessage);
 	emit gameStopped(&m_threadContext);
 }
@@ -1002,6 +1004,7 @@ void GameController::reloadAudioDriver() {
 	}
 	m_audioProcessor->moveToThread(m_audioThread);
 	connect(this, SIGNAL(gamePaused(mCoreThread*)), m_audioProcessor, SLOT(pause()));
+	connect(this, SIGNAL(gameStarted(mCoreThread*, const QString&)), m_audioProcessor, SLOT(setInput(mCoreThread*)));
 	if (isLoaded()) {
 		m_audioProcessor->setInput(&m_threadContext);
 		startAudio();
