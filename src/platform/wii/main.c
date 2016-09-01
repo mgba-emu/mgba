@@ -284,10 +284,8 @@ int main(int argc, char* argv[]) {
 	GX_LoadPosMtxImm(modelview, GX_PNMTX0);
 
 	texmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
-	memset(texmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	rescaleTexmem = memalign(32, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
-	memset(rescaleTexmem, 0, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&rescaleTex, rescaleTexmem, TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
 
@@ -718,6 +716,7 @@ void _gameLoaded(struct mGUIRunner* runner) {
 			sleep(1);
 		}
 	}
+	memset(texmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
 	_unpaused(runner);
 }
 
