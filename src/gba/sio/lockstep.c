@@ -253,15 +253,6 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 		break;
 	case TRANSFER_STARTED:
 		// All the other GBAs have caught up and are sleeping, we can all continue now
-#ifndef NDEBUG
-		/*for (i = 1; i < node->p->attached; ++i) {
-			enum GBASIOLockstepPhase phase;
-			ATOMIC_LOAD(phase, node->p->players[i]->phase);
-			if (node->p->players[i]->mode == node->mode && phase != TRANSFER_STARTED) {
-				abort();
-			}
-		}*/
-#endif
 		node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
 		node->nextEvent += 512;
 		ATOMIC_STORE(node->p->transferActive, TRANSFER_FINISHING);
@@ -308,14 +299,6 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 static void _slaveUpdate(struct GBASIOLockstepNode* node) {
 	ATOMIC_STORE(node->needsToWait, true);
 	node->d.p->multiplayerControl.ready = node->p->attachedMulti == node->p->attached;
-#ifndef NDEBUG
-	if (node->phase >= TRANSFER_STARTED && node->phase != TRANSFER_FINISHED && node->phase != node->p->transferActive && node->p->transferActive < TRANSFER_FINISHING) {
-		//abort();
-	}
-	if (node->phase < TRANSFER_FINISHED && node->phase != TRANSFER_IDLE && node->p->transferActive == TRANSFER_IDLE) {
-		//abort();
-	}
-#endif
 	bool signal = false;
 	switch (node->p->transferActive) {
 	case TRANSFER_IDLE:
@@ -329,11 +312,6 @@ static void _slaveUpdate(struct GBASIOLockstepNode* node) {
 	case TRANSFER_FINISHING:
 		break;
 	case TRANSFER_STARTED:
-#ifndef NDEBUG
-		if (node->transferId != node->p->transferId) {
-			//abort();
-		}
-#endif
 		node->transferFinished = false;
 		switch (node->mode) {
 		case SIO_MULTI:
@@ -379,16 +357,24 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 			_slaveUpdate(node);
 		}
 		node->eventDiff = 0;
-		if (node->needsToWait) {
+		bool needsToWait;
+		ATOMIC_LOAD(needsToWait, node->needsToWait);
+		if (needsToWait) {
 			return 0;
 		}
 		ATOMIC_LOAD(cycles, node->nextEvent);
-#ifndef NDEBUG
-		if (cycles <= 0 && !node->needsToWait) {
-			abort();
+		if (cycles <= 0 && !needsToWait) {
+			int i;
+			// XXX: If we're multithreaded, the atomics may not be sufficient, so wait a few usecs
+			for (i = 0; i < 0x40; ++i) {
+				usleep(10);
+				ATOMIC_LOAD(cycles, node->nextEvent);
+				if (cycles > 0) {
+					return cycles;
+				}
+			}
 			mLOG(GBA_SIO, WARN, "Sleeping needlessly");
 		}
-#endif
 		return cycles;
 	}
 	return cycles;
