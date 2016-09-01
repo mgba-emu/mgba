@@ -30,6 +30,9 @@
 #define WIIMOTE_INPUT 0x5749494D
 #define CLASSIC_INPUT 0x57494943
 
+#define TEX_W 256
+#define TEX_H 160
+
 static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
@@ -280,12 +283,12 @@ int main(int argc, char* argv[]) {
 	guMtxConcat(view, model, modelview);
 	GX_LoadPosMtxImm(modelview, GX_PNMTX0);
 
-	texmem = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
-	memset(texmem, 0, 256 * 256 * BYTES_PER_PIXEL);
-	GX_InitTexObj(&tex, texmem, 256, 256, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
-	rescaleTexmem = memalign(32, 512 * 512 * BYTES_PER_PIXEL);
-	memset(rescaleTexmem, 0, 512 * 512 * BYTES_PER_PIXEL);
-	GX_InitTexObj(&rescaleTex, rescaleTexmem, 512, 512, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	texmem = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	memset(texmem, 0, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	GX_InitTexObj(&tex, texmem, TEX_W, TEX_H, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	rescaleTexmem = memalign(32, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
+	memset(rescaleTexmem, 0, TEX_W * TEX_H * 4 * BYTES_PER_PIXEL);
+	GX_InitTexObj(&rescaleTex, rescaleTexmem, TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
 	GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
 
 	VIDEO_SetPostRetraceCallback(_retraceCallback);
@@ -685,8 +688,8 @@ void _setup(struct mGUIRunner* runner) {
 	mInputBindAxis(&runner->core->inputMap, GCN1_INPUT, 1, &desc);
 	mInputBindAxis(&runner->core->inputMap, CLASSIC_INPUT, 1, &desc);
 
-	outputBuffer = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
-	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
+	outputBuffer = memalign(32, TEX_W * TEX_H * BYTES_PER_PIXEL);
+	runner->core->setVideoBuffer(runner->core, outputBuffer, TEX_W);
 
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
@@ -787,7 +790,7 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 			texdest[3 + x * 4 + y * 64] = texsrc[192 + x + y * 64];
 		}
 	}
-	DCFlushRange(texdest, 256 * 256 * BYTES_PER_PIXEL);
+	DCFlushRange(texdest, TEX_W * TEX_H * BYTES_PER_PIXEL);
 
 	if (faded) {
 		GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_NOOP);
@@ -798,7 +801,8 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
-	s16 vertSize = 256;
+	s16 vertWidth = TEX_W;
+	s16 vertHeight = TEX_H;
 
 	if (filterMode == FM_LINEAR_2x) {
 		Mtx44 proj;
@@ -806,15 +810,15 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 
 		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-		GX_Position2s16(0, 512);
+		GX_Position2s16(0, TEX_H * 2);
 		GX_Color1u32(0xFFFFFFFF);
 		GX_TexCoord2s16(0, 1);
 
-		GX_Position2s16(512, 512);
+		GX_Position2s16(TEX_W * 2, TEX_H * 2);
 		GX_Color1u32(0xFFFFFFFF);
 		GX_TexCoord2s16(1, 1);
 
-		GX_Position2s16(512, 0);
+		GX_Position2s16(TEX_W * 2, 0);
 		GX_Color1u32(0xFFFFFFFF);
 		GX_TexCoord2s16(1, 0);
 
@@ -823,14 +827,15 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		GX_TexCoord2s16(0, 0);
 		GX_End();
 
-		GX_SetTexCopySrc(0, 0, 512, 512);
-		GX_SetTexCopyDst(512, 512, GX_TF_RGB565, GX_FALSE);
+		GX_SetTexCopySrc(0, 0, TEX_W * 2, TEX_H * 2);
+		GX_SetTexCopyDst(TEX_W * 2, TEX_H * 2, GX_TF_RGB565, GX_FALSE);
 		GX_CopyTex(rescaleTexmem, GX_TRUE);
 		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
 	}
 
 	if (screenMode == SM_PA) {
-		vertSize *= scaleFactor;
+		vertWidth *= scaleFactor;
+		vertHeight *= scaleFactor;
 	}
 
 	if (screenMode == SM_PA) {
@@ -840,15 +845,15 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	}
 
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-	GX_Position2s16(0, vertSize);
+	GX_Position2s16(0, vertHeight);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(0, 1);
 
-	GX_Position2s16(vertSize, vertSize);
+	GX_Position2s16(vertWidth, vertHeight);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(1, 1);
 
-	GX_Position2s16(vertSize, 0);
+	GX_Position2s16(vertWidth, 0);
 	GX_Color1u32(color);
 	GX_TexCoord2s16(1, 0);
 
