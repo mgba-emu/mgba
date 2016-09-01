@@ -42,7 +42,8 @@ static enum ScreenMode {
 
 static enum FilterMode {
 	FM_NEAREST,
-	FM_LINEAR,
+	FM_LINEAR_1x,
+	FM_LINEAR_2x,
 	FM_MAX
 } filterMode = FM_NEAREST;
 
@@ -73,7 +74,6 @@ static void _drawEnd(void);
 static uint32_t _pollInput(const struct mInputMap*);
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y);
 static void _guiPrepare(void);
-static void _guiFinish(void);
 
 static void _setup(struct mGUIRunner* runner);
 static void _gameLoaded(struct mGUIRunner* runner);
@@ -97,6 +97,8 @@ static float guiScale = GUI_SCALE;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
 static GXTexObj tex;
+static uint16_t* rescaleTexmem;
+static GXTexObj rescaleTex;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
@@ -279,6 +281,10 @@ int main(int argc, char* argv[]) {
 	texmem = memalign(32, 256 * 256 * BYTES_PER_PIXEL);
 	memset(texmem, 0, 256 * 256 * BYTES_PER_PIXEL);
 	GX_InitTexObj(&tex, texmem, 256, 256, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	rescaleTexmem = memalign(32, 512 * 512 * BYTES_PER_PIXEL);
+	memset(rescaleTexmem, 0, 512 * 512 * BYTES_PER_PIXEL);
+	GX_InitTexObj(&rescaleTex, rescaleTexmem, 512, 512, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObjFilterMode(&rescaleTex, GX_LINEAR, GX_LINEAR);
 
 	VIDEO_SetPostRetraceCallback(_retraceCallback);
 
@@ -300,7 +306,7 @@ int main(int argc, char* argv[]) {
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			0,
-			_guiPrepare, _guiFinish,
+			_guiPrepare, 0,
 
 			GUI_PARAMS_TRAIL
 		},
@@ -443,9 +449,10 @@ int main(int argc, char* argv[]) {
 				.state = 0,
 				.validStates = (const char*[]) {
 					"Pixelated",
-					"Resampled",
+					"Bilinear (smoother)",
+					"Bilinear (pixelated)",
 				},
-				.nStates = 2
+				.nStates = 3
 			}
 		},
 		.nConfigExtra = 3,
@@ -502,6 +509,8 @@ int main(int argc, char* argv[]) {
 	mGUIDeinit(&runner);
 
 	free(fifo);
+	free(texmem);
+	free(rescaleTexmem);
 
 	free(outputBuffer);
 	GUIFontDestroy(font);
@@ -628,14 +637,6 @@ void _guiPrepare(void) {
 	_reproj2(vmode->fbWidth * guiScale * wAdjust, vmode->efbHeight * guiScale * hAdjust);
 }
 
-void _guiFinish(void) {
-	if (screenMode == SM_PA) {
-		_reproj(corew * scaleFactor, coreh * scaleFactor);
-	} else {
-		_reproj2(corew, coreh);
-	}
-}
-
 void _setup(struct mGUIRunner* runner) {
 	runner->core->setRotation(runner->core, &rotation);
 	runner->core->setRumble(runner->core, &rumble);
@@ -733,15 +734,15 @@ void _unpaused(struct mGUIRunner* runner) {
 		filterMode = mode;
 		switch (mode) {
 		case FM_NEAREST:
+		case FM_LINEAR_2x:
 		default:
 			GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
 			break;
-		case FM_LINEAR:
+		case FM_LINEAR_1x:
 			GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
 			break;
 		}
 	}
-	_guiFinish();
 }
 
 void _drawFrame(struct mGUIRunner* runner, bool faded) {
@@ -788,8 +789,44 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	s16 vertSize = 256;
+
+	if (filterMode == FM_LINEAR_2x) {
+		Mtx44 proj;
+		guOrtho(proj, 0, vmode->efbHeight, 0, vmode->fbWidth, 0, 300);
+		GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
+
+		GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+		GX_Position2s16(0, 512);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2s16(0, 1);
+
+		GX_Position2s16(512, 512);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2s16(1, 1);
+
+		GX_Position2s16(512, 0);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2s16(1, 0);
+
+		GX_Position2s16(0, 0);
+		GX_Color1u32(0xFFFFFFFF);
+		GX_TexCoord2s16(0, 0);
+		GX_End();
+
+		GX_SetTexCopySrc(0, 0, 512, 512);
+		GX_SetTexCopyDst(512, 512, GX_TF_RGB565, GX_FALSE);
+		GX_CopyTex(rescaleTexmem, GX_TRUE);
+		GX_LoadTexObj(&rescaleTex, GX_TEXMAP0);
+	}
+
 	if (screenMode == SM_PA) {
 		vertSize *= scaleFactor;
+	}
+
+	if (screenMode == SM_PA) {
+		_reproj(corew * scaleFactor, coreh * scaleFactor);
+	} else {
+		_reproj2(corew, coreh);
 	}
 
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
@@ -854,17 +891,13 @@ void _incrementScreenMode(struct mGUIRunner* runner) {
 	filterMode = (mode >> 1) % FM_MAX;
 	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 	mCoreConfigSetUIntValue(&runner->config, "filter", filterMode);
-	if (screenMode == SM_PA) {
-		_reproj(corew * scaleFactor, coreh * scaleFactor);
-	} else {
-		_reproj2(corew, coreh);
-	}
 	switch (filterMode) {
 	case FM_NEAREST:
+	case FM_LINEAR_2x:
 	default:
 		GX_InitTexObjFilterMode(&tex, GX_NEAR, GX_NEAR);
 		break;
-	case FM_LINEAR:
+	case FM_LINEAR_1x:
 		GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
 		break;
 	}

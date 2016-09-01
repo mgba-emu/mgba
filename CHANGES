@@ -86,6 +86,7 @@ Misc:
  - PSP2: Stop underclocking when menuing
  - GUI: Increase scrolling speed
  - Qt: Rearchitect game closing codepath
+ - Wii: Add pixelated resample filter
 
 0.4.1: (2016-07-11)
 Bugfixes:
