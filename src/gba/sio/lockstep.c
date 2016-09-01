@@ -13,37 +13,30 @@
 
 static bool _nodeWait(struct GBASIOLockstepNode* node, uint32_t mask) {
 	uint32_t oldMask = 0;
-	if (ATOMIC_CMPXCHG(node->p->waiting[node->id], oldMask, mask)) {
+	if (ATOMIC_CMPXCHG(node->p->waiting[node->id], oldMask, mask | 0x10)) {
 		node->p->wait(node->p, node->id);
-	}
-#ifndef NDEBUG
-	else if (oldMask != mask) {
-		abort();
-	}
-#endif
-	else if ((node->p->waiting[node->id] & oldMask) == node->p->waiting[node->id]) {
-		ATOMIC_AND(node->p->waitMask, ~mask);
-		return false;
 	}
 
 	return true;
 }
 
 static bool _nodeSignal(struct GBASIOLockstepNode* node, uint32_t mask) {
-	mask = ATOMIC_OR(node->p->waitMask, mask);
 	bool eventTriggered = false;
 	int i;
 	for (i = 0; i < node->p->attached; ++i) {
-		uint32_t waiting = node->p->waiting[i];
-		if (waiting && (waiting & mask) == waiting && ATOMIC_CMPXCHG(node->p->waiting[i], waiting, 0)) {
+		uint32_t waiting = ATOMIC_AND(node->p->waiting[i], ~mask);
+		if (waiting == 0x10) {
+			if (!ATOMIC_CMPXCHG(node->p->waiting[i], waiting, 0)) {
+				return false;
+			}
 			node->p->signal(node->p, i);
 			eventTriggered = true;
 		}
 	}
-	if (eventTriggered) {
-		ATOMIC_STORE(node->p->waitMask, 0);
+	if (!eventTriggered) {
+		ATOMIC_STORE(node->p->waitMask, mask);
 	} else {
-		mLOG(GBA_SIO, WARN, "Nothing woke with mask %X", mask);
+		ATOMIC_STORE(node->p->waitMask, 0);
 	}
 	return eventTriggered;
 }
@@ -71,7 +64,6 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->attachedMulti = 0;
 	lockstep->transferActive = 0;
 	memset(lockstep->waiting, 0, sizeof(lockstep->waiting));
-	lockstep->waitMask = 0;
 #ifndef NDEBUG
 	lockstep->transferId = 0;
 #endif
@@ -282,7 +274,11 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 			}
 		}
 		if (mask) {
-			_nodeWait(node, mask);
+			if (!_nodeWait(node, mask)) {
+#ifndef NDEBUG
+				abort();
+#endif
+			}
 		}
 	}
 	// Tell the other GBAs they can continue up to where we were
@@ -373,6 +369,7 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 					return cycles;
 				}
 			}
+			abort();
 			mLOG(GBA_SIO, WARN, "Sleeping needlessly");
 		}
 		return cycles;
