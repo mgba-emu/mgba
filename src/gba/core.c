@@ -247,7 +247,7 @@ static void _GBACoreReset(struct mCore* core) {
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
 	ARMReset(core->cpu);
-	if (core->opts.skipBios) {
+	if (core->opts.skipBios && gba->pristineRom) {
 		GBASkipBIOS(core->board);
 	}
 
