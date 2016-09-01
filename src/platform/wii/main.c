@@ -93,6 +93,8 @@ static struct mRotationSource rotation;
 static GXRModeObj* vmode;
 static float wAdjust;
 static float hAdjust;
+static float wStretch = 1.0f;
+static float hStretch = 0.9f;
 static float guiScale = GUI_SCALE;
 static Mtx model, view, modelview;
 static uint16_t* texmem;
@@ -628,8 +630,9 @@ void _reproj(int w, int h) {
 
 void _reproj2(int w, int h) {
 	Mtx44 proj;
-	s16 top = 20;
-	guOrtho(proj, -top, top + h, 0, w, 0, 300);
+	int top = h * (1.0 - hStretch) / 2;
+	int left = w * (1.0 - wStretch) / 2;
+	guOrtho(proj, -top, h + top, -left, w + left, 0, 300);
 	GX_LoadProjectionMtx(proj, GX_ORTHOGRAPHIC);
 }
 
@@ -742,6 +745,13 @@ void _unpaused(struct mGUIRunner* runner) {
 			GX_InitTexObjFilterMode(&tex, GX_LINEAR, GX_LINEAR);
 			break;
 		}
+	}
+	float stretch;
+	if (mCoreConfigGetFloatValue(&runner->config, "stretchWidth", &stretch)) {
+		wStretch = fminf(1.0f, fmaxf(0.5f, stretch));
+	}
+	if (mCoreConfigGetFloatValue(&runner->config, "stretchHeight", &stretch)) {
+		hStretch = fminf(1.0f, fmaxf(0.5f, stretch));
 	}
 }
 
