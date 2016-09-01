@@ -783,11 +783,10 @@ void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	} else {
 		GX_SetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_NOOP);
 	}
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
-	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	GX_InvalidateTexAll();
 	GX_LoadTexObj(&tex, GX_TEXMAP0);
 
+	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 0);
 	s16 vertSize = 256;
 	if (screenMode == SM_PA) {
 		vertSize *= scaleFactor;
