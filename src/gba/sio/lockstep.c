@@ -11,36 +11,26 @@
 
 #define LOCKSTEP_INCREMENT 3000
 
-static bool _nodeWait(struct GBASIOLockstepNode* node, uint32_t mask) {
+static bool _waitMaster(struct GBASIOLockstepNode* node, uint32_t mask) {
 	uint32_t oldMask = 0;
-	if (ATOMIC_CMPXCHG(node->p->waiting[node->id], oldMask, mask | 0x10)) {
-		node->p->wait(node->p, node->id);
+	if (ATOMIC_CMPXCHG(node->p->masterWaiting, oldMask, mask | 0x10)) {
+		node->p->wait(node->p, 0);
 	}
 
 	return true;
 }
 
-static bool _nodeSignal(struct GBASIOLockstepNode* node, uint32_t mask) {
-	bool eventTriggered = false;
-	int i;
-	for (i = 0; i < node->p->attached; ++i) {
-		uint32_t waiting = ATOMIC_AND(node->p->waiting[i], ~mask);
-		if (waiting == 0x10) {
-			if (!ATOMIC_CMPXCHG(node->p->waiting[i], waiting, 0)) {
-				return false;
-			}
-			node->p->signal(node->p, i);
-			eventTriggered = true;
+static bool _signalMaster(struct GBASIOLockstepNode* node, uint32_t mask) {
+	uint32_t waiting = ATOMIC_AND(node->p->masterWaiting, ~mask);
+	if (waiting == 0x10) {
+		if (!ATOMIC_CMPXCHG(node->p->masterWaiting, waiting, 0)) {
+			return false;
 		}
+		node->p->signal(node->p, 0);
+		return true;
 	}
-	if (!eventTriggered) {
-		ATOMIC_STORE(node->p->waitMask, mask);
-	} else {
-		ATOMIC_STORE(node->p->waitMask, 0);
-	}
-	return eventTriggered;
+	return false;
 }
-
 
 static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
 static void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver);
@@ -63,7 +53,7 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->attached = 0;
 	lockstep->attachedMulti = 0;
 	lockstep->transferActive = 0;
-	memset(lockstep->waiting, 0, sizeof(lockstep->waiting));
+	lockstep->masterWaiting = 0;
 #ifndef NDEBUG
 	lockstep->transferId = 0;
 #endif
@@ -113,7 +103,6 @@ void GBASIOLockstepDetachNode(struct GBASIOLockstep* lockstep, struct GBASIOLock
 
 bool GBASIOLockstepNodeInit(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
-	node->needsToWait = false;
 	node->d.p->multiplayerControl.slave = node->id > 0;
 	mLOG(GBA_SIO, DEBUG, "Lockstep %i: Node init", node->id);
 	return true;
@@ -162,7 +151,16 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	default:
 		break;
 	}
-	_nodeSignal(node, (1 << node->id) ^ 0xF);
+	if (node->id) {
+		_signalMaster(node, 1 << node->id);
+	}
+	int i;
+	for (i = 0; i < node->p->attached; ++i) {
+		if (i == node->id) {
+			continue;
+		}
+		node->p->signal(node->p, i);
+	}
 	return true;
 }
 
@@ -223,8 +221,8 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 #endif
 }
 
-static void _masterUpdate(struct GBASIOLockstepNode* node) {
-	ATOMIC_STORE(node->needsToWait, false);
+static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
+	bool needsToWait = false;
 	int i;
 	switch (node->p->transferActive) {
 	case TRANSFER_IDLE:
@@ -239,7 +237,7 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 		node->p->multiRecv[1] = 0xFFFF;
 		node->p->multiRecv[2] = 0xFFFF;
 		node->p->multiRecv[3] = 0xFFFF;
-		ATOMIC_STORE(node->needsToWait, true);
+		needsToWait = true;
 		ATOMIC_STORE(node->p->transferActive, TRANSFER_STARTED);
 		node->nextEvent += 512;
 		break;
@@ -256,7 +254,7 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 #ifndef NDEBUG
 		ATOMIC_ADD(node->p->transferId, 1);
 #endif
-		ATOMIC_STORE(node->needsToWait, true);
+		needsToWait = true;
 		ATOMIC_STORE(node->p->transferActive, TRANSFER_FINISHED);
 		break;
 	case TRANSFER_FINISHED:
@@ -266,7 +264,7 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 		ATOMIC_STORE(node->p->transferActive, TRANSFER_IDLE);
 		break;
 	}
-	if (node->needsToWait) {
+	if (needsToWait) {
 		int mask = 0;
 		for (i = 1; i < node->p->attached; ++i) {
 			if (node->p->players[i]->mode == node->mode) {
@@ -274,7 +272,7 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 			}
 		}
 		if (mask) {
-			if (!_nodeWait(node, mask)) {
+			if (!_waitMaster(node, mask)) {
 #ifndef NDEBUG
 				abort();
 #endif
@@ -284,24 +282,24 @@ static void _masterUpdate(struct GBASIOLockstepNode* node) {
 	// Tell the other GBAs they can continue up to where we were
 	for (i = 1; i < node->p->attached; ++i) {
 		ATOMIC_ADD(node->p->players[i]->nextEvent, node->eventDiff);
-		ATOMIC_STORE(node->p->players[i]->needsToWait, false);
+		node->p->signal(node->p, i);
 	}
 #ifndef NDEBUG
 	node->phase = node->p->transferActive;
 #endif
-	_nodeSignal(node, 1);
+	if (needsToWait) {
+		return 0;
+	}
+	return node->nextEvent;
 }
 
-static void _slaveUpdate(struct GBASIOLockstepNode* node) {
-	ATOMIC_STORE(node->needsToWait, true);
+static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	node->d.p->multiplayerControl.ready = node->p->attachedMulti == node->p->attached;
 	bool signal = false;
 	switch (node->p->transferActive) {
 	case TRANSFER_IDLE:
 		if (!node->d.p->multiplayerControl.ready) {
-			node->nextEvent += LOCKSTEP_INCREMENT;
-			ATOMIC_STORE(node->needsToWait, false);
-			return;
+			return ATOMIC_ADD(node->nextEvent, LOCKSTEP_INCREMENT);
 		}
 		break;
 	case TRANSFER_STARTING:
@@ -330,13 +328,21 @@ static void _slaveUpdate(struct GBASIOLockstepNode* node) {
 		signal = true;
 		break;
 	}
-	_nodeWait(node, 1);
+	int32_t cycles;
+	ATOMIC_LOAD(cycles, node->nextEvent);
+	if (cycles <= 0) {
+		node->p->wait(node->p, node->id);
+	}
 #ifndef NDEBUG
 	node->phase = node->p->transferActive;
 #endif
 	if (signal) {
-		_nodeSignal(node, 1 << node->id);
+		_signalMaster(node, 1 << node->id);
+		if (cycles > 0) {
+			return cycles;
+		}
 	}
+	return 0;
 }
 
 static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
@@ -348,31 +354,14 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 	cycles = ATOMIC_ADD(node->nextEvent, -cycles);
 	if (cycles <= 0) {
 		if (!node->id) {
-			_masterUpdate(node);
+			cycles = _masterUpdate(node);
 		} else {
-			_slaveUpdate(node);
+			cycles = _slaveUpdate(node);
 		}
 		node->eventDiff = 0;
-		bool needsToWait;
-		ATOMIC_LOAD(needsToWait, node->needsToWait);
-		if (needsToWait) {
+		if (cycles <= 0) {
 			return 0;
 		}
-		ATOMIC_LOAD(cycles, node->nextEvent);
-		if (cycles <= 0 && !needsToWait) {
-			int i;
-			// XXX: If we're multithreaded, the atomics may not be sufficient, so wait a few usecs
-			for (i = 0; i < 0x40; ++i) {
-				usleep(10);
-				ATOMIC_LOAD(cycles, node->nextEvent);
-				if (cycles > 0) {
-					return cycles;
-				}
-			}
-			abort();
-			mLOG(GBA_SIO, WARN, "Sleeping needlessly");
-		}
-		return cycles;
 	}
 	return cycles;
 }

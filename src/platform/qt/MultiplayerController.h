@@ -38,7 +38,7 @@ signals:
 private:
 	GBASIOLockstep m_lockstep;
 	QList<GameController*> m_players;
-	QList<int> m_asleep;
+	QList<int> m_awake;
 	QMutex m_lock;
 };
 

@@ -23,23 +23,16 @@ MultiplayerController::MultiplayerController() {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		GameController* game = controller->m_players[id];
 		controller->m_lock.lock();
-		if (--controller->m_asleep[id] == 0) {
-			mCoreThreadStopWaiting(game->thread());
-		}
+		++controller->m_awake[id];
+		mCoreThreadStopWaiting(game->thread());
 		controller->m_lock.unlock();
 	};
 	m_lockstep.wait = [](GBASIOLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		controller->m_lock.lock();
+		controller->m_awake[id] = 0;
 		GameController* game = controller->m_players[id];
-		if (++controller->m_asleep[id] == 1) {
-			mCoreThreadWaitFromThread(game->thread());
-		} else if (controller->m_asleep[id] == 0) {
-			mCoreThreadStopWaiting(game->thread());
-		}
-		if (controller->m_asleep[id] > 1) {
-			//abort();
-		}
+		mCoreThreadWaitFromThread(game->thread());
 		controller->m_lock.unlock();
 	};
 }
@@ -66,7 +59,7 @@ bool MultiplayerController::attachGame(GameController* controller) {
 		GBASIOLockstepNodeCreate(node);
 		GBASIOLockstepAttachNode(&m_lockstep, node);
 		m_players.append(controller);
-		m_asleep.append(0);
+		m_awake.append(1);
 
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_NORMAL_32);

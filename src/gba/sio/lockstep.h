@@ -25,8 +25,7 @@ struct GBASIOLockstep {
 	enum GBASIOLockstepPhase transferActive;
 	int32_t transferCycles;
 
-	uint32_t waitMask;
-	uint32_t waiting[MAX_GBAS];
+	uint32_t masterWaiting;
 
 	void (*signal)(struct GBASIOLockstep*, int id);
 	void (*wait)(struct GBASIOLockstep*, int id);
@@ -40,10 +39,9 @@ struct GBASIOLockstepNode {
 	struct GBASIODriver d;
 	struct GBASIOLockstep* p;
 
-	int32_t nextEvent;
+	volatile int32_t nextEvent;
 	int32_t eventDiff;
 	bool normalSO;
-	bool needsToWait;
 	int id;
 	enum GBASIOMode mode;
 	bool transferFinished;
