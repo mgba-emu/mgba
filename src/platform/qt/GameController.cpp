@@ -326,14 +326,15 @@ void GameController::bootBIOS() {
 }
 
 void GameController::openGame(bool biosOnly) {
+	if (m_fname.isEmpty()) {
+		biosOnly = true;
+	}
 	if (biosOnly && (!m_useBios || m_bios.isNull())) {
 		return;
 	}
 	if (m_gameOpen) {
 		// We need to delay if the game is still cleaning up
-		QTimer::singleShot(10, [this, biosOnly]() {
-			openGame(biosOnly);
-		});
+		QTimer::singleShot(10, this, SLOT(openGame()));
 		return;
 	}
 
