@@ -23,6 +23,7 @@ struct GBCheatPatch {
 	int8_t newValue;
 	int8_t oldValue;
 	bool applied;
+	bool checkByte;
 };
 
 DECLARE_VECTOR(GBCheatPatchList, struct GBCheatPatch);

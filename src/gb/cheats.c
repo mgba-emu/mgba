@@ -21,7 +21,13 @@ static void _patchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) {
 		if (patch->applied) {
 			continue;
 		}
-		// TODO: Byte check
+		if (patch->checkByte) {
+			// TODO: All segments
+			int8_t value = GBView8(device->p->cpu, patch->address, 0);
+			if (value != patch->oldValue) {
+				continue;
+			}
+		}
 		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue);
 		patch->applied = true;
 	}
@@ -37,7 +43,7 @@ static void _unpatchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) 
 		if (!patch->applied) {
 			continue;
 		}
-		GBPatch8(device->p->cpu, patch->address, patch->oldValue, NULL);
+		GBPatch8(device->p->cpu, patch->address, patch->oldValue, &patch->newValue);
 		patch->applied = false;
 	}
 }
@@ -120,6 +126,7 @@ static bool GBCheatAddGameSharkLine(struct GBCheatSet* cheats, const char* line)
 static bool GBCheatAddGameGenieLine(struct GBCheatSet* cheats, const char* line) {
 	uint16_t op1;
 	uint16_t op2;
+	uint16_t op3 = 0x1000;
 	const char* lineNext = hex12(line, &op1);
 	if (!lineNext || lineNext[0] != '-') {
 		return false;
@@ -129,6 +136,13 @@ static bool GBCheatAddGameGenieLine(struct GBCheatSet* cheats, const char* line)
 	if (!lineNext) {
 		return false;
 	}
+	if (lineNext[0] == '-') {
+		++lineNext;
+		lineNext = hex12(lineNext, &op3);
+	}
+	if (!lineNext || lineNext[0]) {
+		return false;
+	}
 	uint16_t address = (op1 & 0xF) << 8;
 	address |= (op2 >> 4) & 0xFF;
 	address |= ((op2 & 0xF) ^ 0xF) << 12;
@@ -136,6 +150,16 @@ static bool GBCheatAddGameGenieLine(struct GBCheatSet* cheats, const char* line)
 	patch->address = address;
 	patch->newValue = op1 >> 4;
 	patch->applied = false;
+	if (op3 < 0x1000) {
+		uint32_t value = ((op3 & 0xF00) << 20) | (op3 & 0xF);
+		value = ROR(value, 2);
+		value |= value >> 24;
+		value ^= 0xBA;
+		patch->oldValue = value;
+		patch->checkByte = true;
+	} else {
+		patch->checkByte = false;
+	}
 	return true;
 }
 
