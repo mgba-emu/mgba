@@ -20,8 +20,10 @@ struct GBASIOLockstep {
 	struct GBASIOLockstepNode* players[MAX_GBAS];
 	int attached;
 	int attachedMulti;
+	int attachedNormal;
 
 	uint16_t multiRecv[MAX_GBAS];
+	uint32_t normalRecv[MAX_GBAS];
 	enum GBASIOLockstepPhase transferActive;
 	int32_t transferCycles;
 

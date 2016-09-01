@@ -205,9 +205,29 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		}
 		break;
 	case SIO_NORMAL_8:
+		// TODO
+		sio->normalControl.start = 0;
+		if (node->id) {
+			sio->normalControl.si = node->p->players[node->id - 1]->d.p->normalControl.idleSo;
+			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = node->p->normalRecv[node->id - 1] & 0xFF;
+		} else {
+			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = 0xFFFF;
+		}
+		if (sio->multiplayerControl.irq) {
+			GBARaiseIRQ(sio->p, IRQ_SIO);
+		}
+		break;
 	case SIO_NORMAL_32:
 		// TODO
 		sio->normalControl.start = 0;
+		if (node->id) {
+			sio->normalControl.si = node->p->players[node->id - 1]->d.p->normalControl.idleSo;
+			node->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = node->p->normalRecv[node->id - 1];
+			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] |= node->p->normalRecv[node->id - 1] >> 16;
+		} else {
+			node->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0xFFFF;
+		}
 		if (sio->multiplayerControl.irq) {
 			GBARaiseIRQ(sio->p, IRQ_SIO);
 		}
@@ -317,8 +337,17 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
 			node->d.p->multiplayerControl.busy = 1;
 			break;
+		case SIO_NORMAL_8:
+			node->p->multiRecv[node->id] = 0xFFFF;
+			node->p->normalRecv[node->id] = node->d.p->p->memory.io[REG_SIODATA8 >> 1] & 0xFF;
+			break;
+		case SIO_NORMAL_32:
+			node->p->multiRecv[node->id] = 0xFFFF;
+			node->p->normalRecv[node->id] = node->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
+			node->p->normalRecv[node->id] |= node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16;
+			break;
 		default:
-			node->p->multiRecv[node->id]= 0xFFFF;
+			node->p->multiRecv[node->id] = 0xFFFF;
 			break;
 		}
 		signal = true;
@@ -371,7 +400,10 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 	if (address == REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04x", node->id, value);
 		value &= 0xFF8B;
-		if (value & 0x0080) {
+		if (!node->id) {
+			driver->p->normalControl.si = 1;
+		}
+		if (value & 0x0080 && !node->id) {
 			// Internal shift clock
 			if (value & 1) {
 				node->p->transferActive = TRANSFER_STARTING;
@@ -381,11 +413,6 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 				node->p->transferCycles = GBA_ARM7TDMI_FREQUENCY / 1024;
 			} else {
 				node->p->transferCycles = GBA_ARM7TDMI_FREQUENCY / 8192;
-			}
-			node->normalSO = !!(value & 8);
-			// Opponent's SO
-			if (node->id) {
-				value |= node->p->players[node->id - 1]->normalSO << 2;
 			}
 		}
 	} else if (address == REG_SIODATA32_LO) {
