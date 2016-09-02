@@ -19,21 +19,70 @@ using namespace QGBA;
 MultiplayerController::MultiplayerController() {
 	GBASIOLockstepInit(&m_lockstep);
 	m_lockstep.context = this;
-	m_lockstep.signal = [](GBASIOLockstep* lockstep, int id) {
+	m_lockstep.signal = [](GBASIOLockstep* lockstep, unsigned mask) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		GameController* game = controller->m_players[id];
+		Player* player = &controller->m_players[0];
+		bool woke = false;
 		controller->m_lock.lock();
-		++controller->m_awake[id];
-		mCoreThreadStopWaiting(game->thread());
+		player->waitMask &= ~mask;
+		if (!player->waitMask && player->awake < 1) {
+			mCoreThreadStopWaiting(player->controller->thread());
+			player->awake = 1;
+			woke = true;
+		}
+		controller->m_lock.unlock();
+		return woke;
+	};
+	m_lockstep.wait = [](GBASIOLockstep* lockstep, unsigned mask) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.lock();
+		Player* player = &controller->m_players[0];
+		bool slept = false;
+		player->waitMask |= mask;
+		if (player->awake > 0) {
+			mCoreThreadWaitFromThread(player->controller->thread());
+			player->awake = 0;
+			slept = true;
+		}
+		controller->m_lock.unlock();
+		return slept;
+	};
+	m_lockstep.addCycles = [](GBASIOLockstep* lockstep, int id, int32_t cycles) {
+		if (cycles < 0) {
+			abort();
+		}
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.lock();
+		if (!id) {
+			for (int i = 1; i < controller->m_players.count(); ++i) {
+				Player* player = &controller->m_players[i];
+				if (player->node->mode != controller->m_players[0].node->mode) {
+					continue;
+				}
+				player->cyclesPosted += cycles;
+				if (player->awake < 1) {
+					player->node->nextEvent += player->cyclesPosted;
+					mCoreThreadStopWaiting(player->controller->thread());
+					player->awake = 1;
+				}
+			}
+		} else {
+			controller->m_players[id].cyclesPosted += cycles;
+		}
 		controller->m_lock.unlock();
 	};
-	m_lockstep.wait = [](GBASIOLockstep* lockstep, int id) {
+	m_lockstep.useCycles = [](GBASIOLockstep* lockstep, int id, int32_t cycles) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		controller->m_lock.lock();
-		controller->m_awake[id] = 0;
-		GameController* game = controller->m_players[id];
-		mCoreThreadWaitFromThread(game->thread());
+		Player* player = &controller->m_players[id];
+		player->cyclesPosted -= cycles;
+		if (player->cyclesPosted <= 0) {
+			mCoreThreadWaitFromThread(player->controller->thread());
+			player->awake = 0;
+		}
+		cycles = player->cyclesPosted;
 		controller->m_lock.unlock();
+		return cycles;
 	};
 }
 
@@ -58,8 +107,13 @@ bool MultiplayerController::attachGame(GameController* controller) {
 		GBASIOLockstepNode* node = new GBASIOLockstepNode;
 		GBASIOLockstepNodeCreate(node);
 		GBASIOLockstepAttachNode(&m_lockstep, node);
-		m_players.append(controller);
-		m_awake.append(1);
+		m_players.append({
+			controller,
+			node,
+			1,
+			0,
+			0
+		});
 
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_NORMAL_32);
@@ -73,9 +127,6 @@ bool MultiplayerController::attachGame(GameController* controller) {
 }
 
 void MultiplayerController::detachGame(GameController* controller) {
-	if (!m_players.contains(controller)) {
-		return;
-	}
 	mCoreThread* thread = controller->thread();
 	if (!thread) {
 		return;
@@ -92,14 +143,22 @@ void MultiplayerController::detachGame(GameController* controller) {
 		}
 	}
 #endif
-	int i = m_players.indexOf(controller);
-	m_players.removeAt(i);
-	m_players.removeAt(i);
+	for (int i = 0; i < m_players.count(); ++i) {
+		if (m_players[i].controller == controller) {
+			m_players.removeAt(i);
+			break;
+		}
+	}
 	emit gameDetached();
 }
 
 int MultiplayerController::playerId(GameController* controller) {
-	return m_players.indexOf(controller);
+	for (int i = 0; i < m_players.count(); ++i) {
+		if (m_players[i].controller == controller) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 int MultiplayerController::attached() {

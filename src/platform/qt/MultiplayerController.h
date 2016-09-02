@@ -36,9 +36,15 @@ signals:
 	void gameDetached();
 
 private:
+	struct Player {
+		GameController* controller;
+		GBASIOLockstepNode* node;
+		int awake;
+		int32_t cyclesPosted;
+		unsigned waitMask;
+	};
 	GBASIOLockstep m_lockstep;
-	QList<GameController*> m_players;
-	QList<int> m_awake;
+	QList<Player> m_players;
 	QMutex m_lock;
 };
 

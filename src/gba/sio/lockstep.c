@@ -11,27 +11,6 @@
 
 #define LOCKSTEP_INCREMENT 3000
 
-static bool _waitMaster(struct GBASIOLockstepNode* node, uint32_t mask) {
-	uint32_t oldMask = 0;
-	if (ATOMIC_CMPXCHG(node->p->masterWaiting, oldMask, mask | 0x10)) {
-		node->p->wait(node->p, 0);
-	}
-
-	return true;
-}
-
-static bool _signalMaster(struct GBASIOLockstepNode* node, uint32_t mask) {
-	uint32_t waiting = ATOMIC_AND(node->p->masterWaiting, ~mask);
-	if (waiting == 0x10) {
-		if (!ATOMIC_CMPXCHG(node->p->masterWaiting, waiting, 0)) {
-			return false;
-		}
-		node->p->signal(node->p, 0);
-		return true;
-	}
-	return false;
-}
-
 static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
 static void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver);
@@ -53,7 +32,6 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 	lockstep->attached = 0;
 	lockstep->attachedMulti = 0;
 	lockstep->transferActive = 0;
-	lockstep->masterWaiting = 0;
 #ifndef NDEBUG
 	lockstep->transferId = 0;
 #endif
@@ -152,14 +130,9 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 		break;
 	}
 	if (node->id) {
-		_signalMaster(node, 1 << node->id);
-	}
-	int i;
-	for (i = 0; i < node->p->attached; ++i) {
-		if (i == node->id) {
-			continue;
-		}
-		node->p->signal(node->p, i);
+		node->p->signal(node->p, 1 << node->id);
+	} else {
+		node->p->addCycles(node->p, 0, node->eventDiff);
 	}
 	return true;
 }
@@ -284,26 +257,23 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 		ATOMIC_STORE(node->p->transferActive, TRANSFER_IDLE);
 		break;
 	}
-	if (needsToWait) {
-		int mask = 0;
-		for (i = 1; i < node->p->attached; ++i) {
-			if (node->p->players[i]->mode == node->mode) {
-				mask |= 1 << i;
-			}
+	int mask = 0;
+	for (i = 1; i < node->p->attached; ++i) {
+		if (node->p->players[i]->mode == node->mode) {
+			mask |= 1 << i;
 		}
-		if (mask) {
-			if (!_waitMaster(node, mask)) {
-#ifndef NDEBUG
+	}
+	if (mask) {
+		if (needsToWait) {
+			if (!node->p->wait(node->p, mask)) {
 				abort();
-#endif
 			}
+		} else {
+			node->p->signal(node->p, mask);
 		}
 	}
 	// Tell the other GBAs they can continue up to where we were
-	for (i = 1; i < node->p->attached; ++i) {
-		ATOMIC_ADD(node->p->players[i]->nextEvent, node->eventDiff);
-		node->p->signal(node->p, i);
-	}
+	node->p->addCycles(node->p, 0, node->eventDiff);
 #ifndef NDEBUG
 	node->phase = node->p->transferActive;
 #endif
@@ -319,7 +289,7 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 	switch (node->p->transferActive) {
 	case TRANSFER_IDLE:
 		if (!node->d.p->multiplayerControl.ready) {
-			return ATOMIC_ADD(node->nextEvent, LOCKSTEP_INCREMENT);
+			node->p->addCycles(node->p, node->id, LOCKSTEP_INCREMENT);
 		}
 		break;
 	case TRANSFER_STARTING:
@@ -357,19 +327,11 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 		signal = true;
 		break;
 	}
-	int32_t cycles;
-	ATOMIC_LOAD(cycles, node->nextEvent);
-	if (cycles <= 0) {
-		node->p->wait(node->p, node->id);
-	}
 #ifndef NDEBUG
 	node->phase = node->p->transferActive;
 #endif
 	if (signal) {
-		_signalMaster(node, 1 << node->id);
-		if (cycles > 0) {
-			return cycles;
-		}
+		node->p->signal(node->p, 1 << node->id);
 	}
 	return 0;
 }
@@ -380,17 +342,20 @@ static int32_t GBASIOLockstepNodeProcessEvents(struct GBASIODriver* driver, int3
 		return INT_MAX;
 	}
 	node->eventDiff += cycles;
-	cycles = ATOMIC_ADD(node->nextEvent, -cycles);
-	if (cycles <= 0) {
+	node->nextEvent -= cycles;
+	if (node->nextEvent <= 0) {
 		if (!node->id) {
 			cycles = _masterUpdate(node);
 		} else {
 			cycles = _slaveUpdate(node);
+			node->nextEvent += node->p->useCycles(node->p, node->id, node->eventDiff);
 		}
 		node->eventDiff = 0;
-		if (cycles <= 0) {
-			return 0;
-		}
+	} else {
+		cycles = node->nextEvent;
+	}
+	if (cycles < 0) {
+		return 0;
 	}
 	return cycles;
 }

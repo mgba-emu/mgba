@@ -27,10 +27,10 @@ struct GBASIOLockstep {
 	enum GBASIOLockstepPhase transferActive;
 	int32_t transferCycles;
 
-	uint32_t masterWaiting;
-
-	void (*signal)(struct GBASIOLockstep*, int id);
-	void (*wait)(struct GBASIOLockstep*, int id);
+	bool (*signal)(struct GBASIOLockstep*, unsigned mask);
+	bool (*wait)(struct GBASIOLockstep*, unsigned mask);
+	void (*addCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
+	int32_t (*useCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
 	void* context;
 #ifndef NDEBUG
 	int transferId;
