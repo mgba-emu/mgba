@@ -135,7 +135,8 @@ public slots:
 	void loadBackupState();
 	void saveBackupState();
 	void setTurbo(bool, bool forced = true);
-	void setTurboSpeed(float ratio = -1);
+	void setTurboSpeed(float ratio);
+	void setSync(bool);
 	void setAVStream(mAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
@@ -197,6 +198,7 @@ private:
 	QAtomicInt m_pauseAfterFrame;
 	QList<std::function<void ()>> m_resetActions;
 
+	bool m_sync;
 	bool m_videoSync;
 	bool m_audioSync;
 	float m_fpsTarget;

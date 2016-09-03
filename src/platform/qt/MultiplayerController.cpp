@@ -56,9 +56,11 @@ MultiplayerController::MultiplayerController() {
 		if (!id) {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
 				Player* player = &controller->m_players[i];
-				if (player->node->mode != controller->m_players[0].node->mode) {
+				if (player->node->d.p->mode != controller->m_players[0].node->d.p->mode) {
+					player->controller->setSync(true);
 					continue;
 				}
+				player->controller->setSync(false);
 				player->cyclesPosted += cycles;
 				if (player->awake < 1) {
 					player->node->nextEvent += player->cyclesPosted;
@@ -67,6 +69,7 @@ MultiplayerController::MultiplayerController() {
 				}
 			}
 		} else {
+			controller->m_players[id].controller->setSync(true);
 			controller->m_players[id].cyclesPosted += cycles;
 		}
 		controller->m_lock.unlock();
@@ -83,6 +86,31 @@ MultiplayerController::MultiplayerController() {
 		cycles = player->cyclesPosted;
 		controller->m_lock.unlock();
 		return cycles;
+	};
+	m_lockstep.unload = [](GBASIOLockstep* lockstep, int id) {
+		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
+		controller->m_lock.lock();
+		Player* player = &controller->m_players[id];
+		if (id) {
+			player->controller->setSync(true);
+			player->waitMask &= ~(1 << id);
+			if (!player->waitMask && player->awake < 1) {
+				mCoreThreadStopWaiting(player->controller->thread());
+				player->awake = 1;
+			}
+		} else {
+			for (int i = 1; i < controller->m_players.count(); ++i) {
+				Player* player = &controller->m_players[i];
+				player->controller->setSync(true);
+				player->cyclesPosted += lockstep->players[0]->eventDiff;
+				if (player->awake < 1) {
+					player->node->nextEvent += player->cyclesPosted;
+					mCoreThreadStopWaiting(player->controller->thread());
+					player->awake = 1;
+				}
+			}
+		}
+		controller->m_lock.unlock();
 	};
 }
 

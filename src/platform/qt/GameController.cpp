@@ -50,6 +50,7 @@ GameController::GameController(QObject* parent)
 	, m_audioThread(new QThread(this))
 	, m_audioProcessor(AudioProcessor::create())
 	, m_pauseAfterFrame(false)
+	, m_sync(true)
 	, m_videoSync(VIDEO_SYNC)
 	, m_audioSync(AUDIO_SYNC)
 	, m_fpsTarget(-1)
@@ -938,8 +939,11 @@ void GameController::setTurbo(bool set, bool forced) {
 	if (m_turboForced && !forced) {
 		return;
 	}
-	if (m_turbo == set && m_turboForced == forced) {
+	if (m_turbo == set && m_turboForced == (set && forced)) {
 		// Don't interrupt the thread if we don't need to
+		return;
+	}
+	if (!m_sync) {
 		return;
 	}
 	m_turbo = set;
@@ -954,25 +958,41 @@ void GameController::setTurboSpeed(float ratio) {
 
 void GameController::enableTurbo() {
 	threadInterrupt();
+	bool shouldRedoSamples = false;
 	if (!m_turbo) {
+		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget;
 		m_threadContext.sync.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = m_audioSync;
 		m_threadContext.sync.videoFrameWait = m_videoSync;
 	} else if (m_turboSpeed <= 0) {
+		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget;
 		m_threadContext.sync.fpsTarget = m_fpsTarget;
 		m_threadContext.sync.audioWait = false;
 		m_threadContext.sync.videoFrameWait = false;
 	} else {
+		shouldRedoSamples = m_threadContext.sync.fpsTarget != m_fpsTarget * m_turboSpeed;
 		m_threadContext.sync.fpsTarget = m_fpsTarget * m_turboSpeed;
 		m_threadContext.sync.audioWait = true;
 		m_threadContext.sync.videoFrameWait = false;
 	}
-	if (m_audioProcessor) {
+	if (m_audioProcessor && shouldRedoSamples) {
 		redoSamples(m_audioProcessor->getBufferSamples());
 	}
 	threadContinue();
 }
 
+void GameController::setSync(bool enable) {
+	m_turbo = false;
+	m_turboForced = false;
+	if (!enable) {
+		m_threadContext.sync.audioWait = false;
+		m_threadContext.sync.videoFrameWait = false;
+	} else {
+		m_threadContext.sync.audioWait = m_audioSync;
+		m_threadContext.sync.videoFrameWait = m_videoSync;
+	}
+	m_sync = enable;
+}
 void GameController::setAVStream(mAVStream* stream) {
 	threadInterrupt();
 	m_stream = stream;

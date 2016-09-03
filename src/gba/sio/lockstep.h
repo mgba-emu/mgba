@@ -31,6 +31,7 @@ struct GBASIOLockstep {
 	bool (*wait)(struct GBASIOLockstep*, unsigned mask);
 	void (*addCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
 	int32_t (*useCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
+	void (*unload)(struct GBASIOLockstep*, int id);
 	void* context;
 #ifndef NDEBUG
 	int transferId;

@@ -129,11 +129,7 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	default:
 		break;
 	}
-	if (node->id) {
-		node->p->signal(node->p, 1 << node->id);
-	} else {
-		node->p->addCycles(node->p, 0, node->eventDiff);
-	}
+	node->p->unload(node->p, node->id);
 	return true;
 }
 
