@@ -368,20 +368,20 @@ void GameController::openGame(bool biosOnly) {
 	m_drawContext = new uint32_t[width * height];
 	m_frontBuffer = new uint32_t[width * height];
 
-	const char* base;
+	QByteArray bytes;
 	if (!biosOnly) {
-		base = m_fname.toUtf8().constData();
+		bytes = m_fname.toUtf8();
 		if (m_vf) {
 			m_threadContext.core->loadROM(m_threadContext.core, m_vf);
 		} else {
-			mCoreLoadFile(m_threadContext.core, base);
+			mCoreLoadFile(m_threadContext.core, bytes.constData());
 			mDirectorySetDetachBase(&m_threadContext.core->dirs);
 		}
 	} else {
-		base = m_bios.toUtf8().constData();
+		bytes = m_bios.toUtf8();
 	}
 	char dirname[PATH_MAX];
-	separatePath(base, dirname, m_threadContext.core->dirs.baseName, 0);
+	separatePath(bytes.constData(), dirname, m_threadContext.core->dirs.baseName, 0);
 	mDirectorySetAttachBase(&m_threadContext.core->dirs, VDirOpen(dirname));
 
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, m_drawContext, width);
