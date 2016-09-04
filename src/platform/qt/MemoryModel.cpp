@@ -434,13 +434,13 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 	if (m_bufferedNybbles == m_align * 2) {
 		switch (m_align) {
 		case 1:
-			m_core->rawWrite8(m_core, m_selection.first, m_buffer, m_currentBank);
+			m_core->rawWrite8(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		case 2:
-			m_core->rawWrite16(m_core, m_selection.first, m_buffer, m_currentBank);
+			m_core->rawWrite16(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		case 4:
-			m_core->rawWrite32(m_core, m_selection.first, m_buffer, m_currentBank);
+			m_core->rawWrite32(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		}
 		m_bufferedNybbles = 0;
