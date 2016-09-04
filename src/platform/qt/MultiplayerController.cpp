@@ -159,6 +159,9 @@ void MultiplayerController::detachGame(GameController* controller) {
 	if (!thread) {
 		return;
 	}
+	for (int i = 0; i < m_players.count(); ++i) {
+		m_players[i].controller->threadInterrupt();
+	}
 #ifdef M_CORE_GBA
 	if (controller->platform() == PLATFORM_GBA) {
 		GBA* gba = static_cast<GBA*>(thread->core->board);
@@ -171,11 +174,16 @@ void MultiplayerController::detachGame(GameController* controller) {
 		}
 	}
 #endif
+
+	controller->threadContinue();
 	for (int i = 0; i < m_players.count(); ++i) {
 		if (m_players[i].controller == controller) {
 			m_players.removeAt(i);
 			break;
 		}
+	}
+	for (int i = 0; i < m_players.count(); ++i) {
+		m_players[i].controller->threadContinue();
 	}
 	emit gameDetached();
 }
