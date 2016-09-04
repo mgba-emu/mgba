@@ -234,33 +234,41 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
 			if (testEvent == 0) {
-				abort();
+				mLOG(GBA, ERROR, "Video requiring 0 cycles");
 			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAAudioProcessEvents(&gba->audio, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
 			if (testEvent == 0) {
-				abort();
+				mLOG(GBA, ERROR, "Audio requiring 0 cycles");
 			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBATimersProcessEvents(gba, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
 			if (testEvent == 0) {
-				abort();
+				mLOG(GBA, ERROR, "Timers requiring 0 cycles");
 			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAMemoryRunDMAs(gba, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
 			if (testEvent == 0) {
-				abort();
+				mLOG(GBA, ERROR, "DMAs requiring 0 cycles");
 			}
+#endif
 			nextEvent = testEvent;
 		}
 
@@ -275,9 +283,14 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
 		}
-		if (cpu->nextEvent == 0) {
+		if (nextEvent == 0) {
 			break;
 		}
+#ifndef NDEBUG
+		else if (nextEvent < 0) {
+			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
+		}
+#endif
 	} while (cpu->cycles >= cpu->nextEvent);
 }
 
