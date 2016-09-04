@@ -224,6 +224,7 @@ GameController::GameController(QObject* parent)
 			}
 		}
 		if (level == mLOG_FATAL) {
+			mCoreThreadMarkCrashed(controller->thread());
 			QMetaObject::invokeMethod(controller, "crashGame", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		} else if (!(controller->m_logLevels & level)) {
 			return;
@@ -556,9 +557,8 @@ void GameController::cleanGame() {
 }
 
 void GameController::crashGame(const QString& crashMessage) {
-	cleanGame();
+	closeGame();
 	emit gameCrashed(crashMessage);
-	emit gameStopped(&m_threadContext);
 }
 
 bool GameController::isPaused() {

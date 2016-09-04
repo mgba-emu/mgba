@@ -72,6 +72,7 @@ bool mCoreThreadStart(struct mCoreThread* threadContext);
 bool mCoreThreadHasStarted(struct mCoreThread* threadContext);
 bool mCoreThreadHasExited(struct mCoreThread* threadContext);
 bool mCoreThreadHasCrashed(struct mCoreThread* threadContext);
+void mCoreThreadMarkCrashed(struct mCoreThread* threadContext);
 void mCoreThreadEnd(struct mCoreThread* threadContext);
 void mCoreThreadReset(struct mCoreThread* threadContext);
 void mCoreThreadJoin(struct mCoreThread* threadContext);

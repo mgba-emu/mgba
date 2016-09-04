@@ -249,6 +249,12 @@ bool mCoreThreadHasCrashed(struct mCoreThread* threadContext) {
 	return hasExited;
 }
 
+void mCoreThreadMarkCrashed(struct mCoreThread* threadContext) {
+	MutexLock(&threadContext->stateMutex);
+	threadContext->state = THREAD_CRASHED;
+	MutexUnlock(&threadContext->stateMutex);
+}
+
 void mCoreThreadEnd(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->stateMutex);
 	_waitOnInterrupt(threadContext);
