@@ -37,6 +37,7 @@ Bugfixes:
  - GBA: Fix filehandle leak with savegames
  - GBA: Timer 0 cannot be count up
  - Qt: Fix being unable to pause manually when using auto-pausing
+ - GBA Memory: Fix ldm {pc}
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure

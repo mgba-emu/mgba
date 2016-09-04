@@ -1354,6 +1354,9 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		} \
 		if (UNLIKELY(mask & (8 << i))) { \
 			value = cpu->gprs[i + 3]; \
+			if (i + 3 == ARM_PC) { \
+				value += WORD_SIZE_ARM; \
+			} \
 			STM; \
 			++wait; \
 			address += 4; \
