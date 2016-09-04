@@ -7,15 +7,6 @@
 
 #include "util/memory.h"
 
-#ifndef _MSC_VER
-#define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
-#define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
-#else
-// TODO
-#define ATOMIC_STORE(DST, SRC) DST = SRC
-#define ATOMIC_LOAD(DST, SRC) DST = SRC
-#endif
-
 void RingFIFOInit(struct RingFIFO* buffer, size_t capacity) {
 	buffer->data = anonymousMemoryMap(capacity);
 	buffer->capacity = capacity;

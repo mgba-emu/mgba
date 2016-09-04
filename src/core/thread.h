@@ -28,6 +28,7 @@ enum mCoreThreadState {
 	THREAD_PAUSED,
 	THREAD_PAUSING,
 	THREAD_RUN_ON,
+	THREAD_WAITING,
 	THREAD_RESETING,
 	THREAD_EXITING,
 	THREAD_SHUTDOWN,
@@ -87,6 +88,8 @@ void mCoreThreadUnpause(struct mCoreThread* threadContext);
 bool mCoreThreadIsPaused(struct mCoreThread* threadContext);
 void mCoreThreadTogglePause(struct mCoreThread* threadContext);
 void mCoreThreadPauseFromThread(struct mCoreThread* threadContext);
+void mCoreThreadWaitFromThread(struct mCoreThread* threadContext);
+void mCoreThreadStopWaiting(struct mCoreThread* threadContext);
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
 

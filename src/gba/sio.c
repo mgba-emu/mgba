@@ -32,16 +32,17 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 
 static void _switchMode(struct GBASIO* sio) {
 	unsigned mode = ((sio->rcnt & 0xC000) | (sio->siocnt & 0x3000)) >> 12;
-	enum GBASIOMode oldMode = sio->mode;
+	enum GBASIOMode newMode;
 	if (mode < 8) {
-		sio->mode = (enum GBASIOMode) (mode & 0x3);
+		newMode = (enum GBASIOMode) (mode & 0x3);
 	} else {
-		sio->mode = (enum GBASIOMode) (mode & 0xC);
+		newMode = (enum GBASIOMode) (mode & 0xC);
 	}
-	if (oldMode != sio->mode) {
+	if (newMode != sio->mode) {
 		if (sio->activeDriver && sio->activeDriver->unload) {
 			sio->activeDriver->unload(sio->activeDriver);
 		}
+		sio->mode = newMode;
 		sio->activeDriver = _lookupDriver(sio, sio->mode);
 		if (sio->activeDriver && sio->activeDriver->load) {
 			sio->activeDriver->load(sio->activeDriver);
@@ -121,11 +122,11 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 				return;
 			}
 		}
-		if (sio->mode == mode) {
-			sio->activeDriver = driver;
-			if (driver->load) {
-				driver->load(driver);
-			}
+	}
+	if (sio->mode == mode) {
+		sio->activeDriver = driver;
+		if (driver && driver->load) {
+			driver->load(driver);
 		}
 	}
 	*driverLoc = driver;

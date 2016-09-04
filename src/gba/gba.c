@@ -234,21 +234,33 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
+			if (testEvent == 0) {
+				abort();
+			}
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAAudioProcessEvents(&gba->audio, cycles);
 		if (testEvent < nextEvent) {
+			if (testEvent == 0) {
+				abort();
+			}
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBATimersProcessEvents(gba, cycles);
 		if (testEvent < nextEvent) {
+			if (testEvent == 0) {
+				abort();
+			}
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAMemoryRunDMAs(gba, cycles);
 		if (testEvent < nextEvent) {
+			if (testEvent == 0) {
+				abort();
+			}
 			nextEvent = testEvent;
 		}
 
@@ -262,6 +274,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
+		}
+		if (cpu->nextEvent == 0) {
+			break;
 		}
 	} while (cpu->cycles >= cpu->nextEvent);
 }

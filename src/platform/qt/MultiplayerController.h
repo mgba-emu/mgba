@@ -6,6 +6,8 @@
 #ifndef QGBA_MULTIPLAYER_CONTROLLER
 #define QGBA_MULTIPLAYER_CONTROLLER
 
+#include <QMutex>
+#include <QList>
 #include <QObject>
 
 extern "C" {
@@ -34,7 +36,16 @@ signals:
 	void gameDetached();
 
 private:
+	struct Player {
+		GameController* controller;
+		GBASIOLockstepNode* node;
+		int awake;
+		int32_t cyclesPosted;
+		unsigned waitMask;
+	};
 	GBASIOLockstep m_lockstep;
+	QList<Player> m_players;
+	QMutex m_lock;
 };
 
 }
