@@ -42,7 +42,7 @@
       </font>
      </property>
      <property name="text">
-      <string>© 2013 – 2015 Jeffrey Pfau — Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
+      <string>© 2013 – 2016 Jeffrey Pfau — Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
