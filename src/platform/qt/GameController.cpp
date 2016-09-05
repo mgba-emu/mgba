@@ -71,6 +71,7 @@ GameController::GameController(QObject* parent)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
 {
+#ifdef M_CORE_GBA
 	m_lux.p = this;
 	m_lux.sample = [](GBALuminanceSource* context) {
 		GameControllerLux* lux = static_cast<GameControllerLux*>(context);
@@ -82,6 +83,7 @@ GameController::GameController(QObject* parent)
 		return lux->value;
 	};
 	setLuminanceLevel(0);
+#endif
 
 	m_threadContext.startCallback = [](mCoreThread* context) {
 		GameController* controller = static_cast<GameController*>(context->userData);
@@ -197,13 +199,16 @@ GameController::GameController(QObject* parent)
 			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
+#ifdef M_CORE_GBA
 		if (level == mLOG_STUB && category == _mLOG_CAT_GBA_BIOS()) {
 			va_list argc;
 			va_copy(argc, args);
 			int immediate = va_arg(argc, int);
 			va_end(argc);
 			QMetaObject::invokeMethod(controller, "unimplementedBiosCall", Q_ARG(int, immediate));
-		} else if (category == _mLOG_CAT_STATUS()) {
+		} else
+#endif
+		if (category == _mLOG_CAT_STATUS()) {
 			// Slot 0 is reserved for suspend points
 			if (strncmp(savestateMessage, format, strlen(savestateMessage)) == 0) {
 				va_list argc;
@@ -503,6 +508,10 @@ void GameController::importSharkport(const QString& path) {
 	if (!isLoaded()) {
 		return;
 	}
+#ifdef M_CORE_GBA
+	if (platform() != PLATFORM_GBA) {
+		return;
+	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
 		LOG(QT, ERROR) << tr("Failed to open snapshot file for reading: %1").arg(path);
@@ -512,10 +521,15 @@ void GameController::importSharkport(const QString& path) {
 	GBASavedataImportSharkPort(static_cast<GBA*>(m_threadContext.core->board), vf, false);
 	threadContinue();
 	vf->close(vf);
+#endif
 }
 
 void GameController::exportSharkport(const QString& path) {
 	if (!isLoaded()) {
+		return;
+	}
+#ifdef M_CORE_GBA
+	if (platform() != PLATFORM_GBA) {
 		return;
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
@@ -527,6 +541,7 @@ void GameController::exportSharkport(const QString& path) {
 	GBASavedataExportSharkPort(static_cast<GBA*>(m_threadContext.core->board), vf);
 	threadContinue();
 	vf->close(vf);
+#endif
 }
 
 void GameController::closeGame() {
@@ -818,6 +833,7 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 		return;
 	}
 	m_videoLayers[layer] = enable;
+#ifdef M_CORE_GBA
 	if (isLoaded() && m_threadContext.core->platform(m_threadContext.core) == PLATFORM_GBA) {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		switch (layer) {
@@ -832,6 +848,7 @@ void GameController::setVideoLayerEnabled(int layer, bool enable) {
 			break;
 		}
 	}
+#endif
 }
 
 void GameController::setFPSTarget(float fps) {

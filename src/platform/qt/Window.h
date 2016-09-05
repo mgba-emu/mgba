@@ -156,7 +156,9 @@ private:
 	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
+#ifdef M_CORE_GBA
 	QList<QAction*> m_gbaActions;
+#endif
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;

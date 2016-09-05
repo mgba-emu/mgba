@@ -690,9 +690,11 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
+#ifdef M_CORE_GBA
 	foreach (QAction* action, m_gbaActions) {
 		action->setDisabled(context->core->platform(context->core) != PLATFORM_GBA);
 	}
+#endif
 	multiplayerChanged();
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
@@ -716,9 +718,11 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 }
 
 void Window::gameStopped() {
+#ifdef M_CORE_GBA
 	foreach (QAction* action, m_gbaActions) {
 		action->setDisabled(false);
 	}
+#endif
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
@@ -979,6 +983,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
 
+#ifdef M_CORE_GBA
 	fileMenu->addSeparator();
 	QAction* importShark = new QAction(tr("Import GameShark Save"), fileMenu);
 	connect(importShark, SIGNAL(triggered()), this, SLOT(importSharkport()));
@@ -991,6 +996,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(exportShark);
 	m_gbaActions.append(exportShark);
 	addControlledAction(fileMenu, exportShark, "exportShark");
+#endif
 
 	fileMenu->addSeparator();
 	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
@@ -1024,11 +1030,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(shutdown);
 	addControlledAction(emulationMenu, shutdown, "shutdown");
 
+#ifdef M_CORE_GBA
 	QAction* yank = new QAction(tr("Yank game pak"), emulationMenu);
 	connect(yank, SIGNAL(triggered()), m_controller, SLOT(yankPak()));
 	m_gameActions.append(yank);
 	m_gbaActions.append(yank);
 	addControlledAction(emulationMenu, yank, "yank");
+#endif
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
@@ -1299,10 +1307,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
+#ifdef M_CORE_GBA
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
 	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
 	m_gbaActions.append(overrides);
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
+#endif
 
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
 	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
@@ -1331,22 +1341,26 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
+#ifdef M_CORE_GBA
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
 	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
 	m_gameActions.append(tileView);
 	m_gbaActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
+#endif
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
+#ifdef M_CORE_GBA
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
 	connect(ioViewer, SIGNAL(triggered()), this, SLOT(openIOViewer()));
 	m_gameActions.append(ioViewer);
 	m_gbaActions.append(ioViewer);
 	addControlledAction(toolsMenu, ioViewer, "ioViewer");
+#endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {

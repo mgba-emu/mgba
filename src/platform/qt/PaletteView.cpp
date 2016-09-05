@@ -14,8 +14,9 @@
 
 extern "C" {
 #include "core/core.h"
-#ifdef M_CORE_GBA
-#include "gba/extra/export.h"
+#include "util/export.h"
+#ifdef M_CORE_GA
+#include "gba/gba.h"
 #endif
 #ifdef M_CORE_GB
 #include "gb/gb.h"
@@ -148,9 +149,9 @@ void PaletteView::exportPalette(int start, int length) {
 	}
 	QString filter = dialog->selectedNameFilter();
 	if (filter.contains("*.pal")) {
-		GBAExportPaletteRIFF(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
+		exportPaletteRIFF(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	} else if (filter.contains("*.act")) {
-		GBAExportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
+		exportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	}
 	vf->close(vf);
 	m_controller->threadContinue();
