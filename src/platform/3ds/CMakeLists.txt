@@ -55,7 +55,7 @@ add_custom_command(OUTPUT ${BINARY_NAME}.smdh
 
 add_custom_command(OUTPUT ${BINARY_NAME}.bnr
                    COMMAND ${BANNERTOOL} makebanner -ci ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx -a ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav -o ${BINARY_NAME}.bnr
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/logo.png ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/banner.cgfx ${CMAKE_CURRENT_SOURCE_DIR}/bios.wav)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c
                    COMMAND ${RAW2C} ${CMAKE_SOURCE_DIR}/src/platform/3ds/icons.raw
