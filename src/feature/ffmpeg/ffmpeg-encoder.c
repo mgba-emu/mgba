@@ -263,7 +263,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		        strcasecmp(encoder->containerFormat, "m4v") ||
 		        strcasecmp(encoder->containerFormat, "mov"))) {
 			// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 			av_bsf_alloc(av_bsf_get_by_name("aac_adtstoasc"), &encoder->absf);
 			avcodec_parameters_from_context(encoder->absf->par_in, encoder->audio);
 			av_bsf_init(encoder->absf);
@@ -271,7 +271,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
 #endif
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 		avcodec_parameters_from_context(encoder->audioStream->codecpar, encoder->audio);
 #endif
 	}
@@ -316,7 +316,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->pts = 0;
 	_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 	avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
 
@@ -348,7 +348,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		}
 
 		if (encoder->absf) {
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 			av_bsf_free(&encoder->absf);
 #else
 			av_bitstream_filter_close(encoder->absf);
@@ -413,7 +413,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	packet.data = 0;
 	packet.size = 0;
 	int gotData;
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 	avcodec_send_frame(encoder->audio, encoder->audioFrame);
 	gotData = avcodec_receive_packet(encoder->audio, &packet) == 0;
 #else
@@ -423,7 +423,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		if (encoder->absf) {
 			AVPacket tempPacket = packet;
 
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 			int success = av_bsf_send_packet(encoder->absf, &packet) && av_bsf_receive_packet(encoder->absf, &packet);
 #else
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
@@ -473,14 +473,14 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	int gotData;
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 	avcodec_send_frame(encoder->video, encoder->videoFrame);
 	gotData = avcodec_receive_packet(encoder->video, &packet) == 0;
 #else
 	avcodec_encode_video2(encoder->video, &packet, encoder->videoFrame, &gotData);
 #endif
 	if (gotData) {
-#if LIBAVCODEC_VERSION_MAJOR < 56
+#if LIBAVCODEC_VERSION_MAJOR < 57
 		if (encoder->video->coded_frame->key_frame) {
 			packet.flags |= AV_PKT_FLAG_KEY;
 		}
