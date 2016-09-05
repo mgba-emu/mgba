@@ -11,7 +11,7 @@
 #include "core/cheats.h"
 #include "util/vector.h"
 
-enum GBACheatType {
+enum GBCheatType {
 	GB_CHEAT_AUTODETECT,
 	GB_CHEAT_GAMESHARK,
 	GB_CHEAT_GAME_GENIE,
