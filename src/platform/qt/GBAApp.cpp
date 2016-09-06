@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QFileOpenEvent>
 #include <QIcon>
+#include <QTranslator>
 
 extern "C" {
 #include "core/version.h"
@@ -42,6 +43,12 @@ GBAApp::GBAApp(int& argc, char* argv[])
 #ifndef Q_OS_MAC
 	setWindowIcon(QIcon(":/res/mgba-1024.png"));
 #endif
+
+	QTranslator* translator = new QTranslator(this);
+	if (translator->load(QLocale("es"), QLatin1String(binaryName), QLatin1String("-"), QLatin1String(":/translations"))) {
+		installTranslator(translator);
+	}
+
 
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
