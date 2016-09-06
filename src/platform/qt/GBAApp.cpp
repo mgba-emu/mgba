@@ -45,7 +45,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 #endif
 
 	QTranslator* translator = new QTranslator(this);
-	if (translator->load(QLocale("es"), QLatin1String(binaryName), QLatin1String("-"), QLatin1String(":/translations"))) {
+	if (translator->load(QLocale(), QLatin1String(binaryName), QLatin1String("-"), QLatin1String(":/translations"))) {
 		installTranslator(translator);
 	}
 
