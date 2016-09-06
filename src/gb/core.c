@@ -9,6 +9,7 @@
 #include "gb/cheats.h"
 #include "gb/cli.h"
 #include "gb/gb.h"
+#include "gb/mbc.h"
 #include "gb/renderers/software.h"
 #include "gb/serialize.h"
 #include "lr35902/debugger/debugger.h"
@@ -427,9 +428,9 @@ static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 		vf->seek(vf, 0, SEEK_SET);
 		return vf->read(vf, *sram, vf->size(vf));
 	}
-	*sram = malloc(0x20000);
-	memcpy(*sram, gb->memory.sram, 0x20000);
-	return 0x20000;
+	*sram = malloc(gb->sramSize);
+	memcpy(*sram, gb->memory.sram, gb->sramSize);
+	return gb->sramSize;
 }
 
 static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
@@ -442,7 +443,8 @@ static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t siz
 	if (size > 0x20000) {
 		size = 0x20000;
 	}
-	memcpy(gb->memory.sram, sram, 0x20000);
+	GBResizeSram(gb, size);
+	memcpy(gb->memory.sram, sram, size);
 	return true;
 }
 

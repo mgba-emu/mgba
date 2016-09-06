@@ -58,7 +58,7 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
 	STORE_32LE(flags, 0, &state->cpu.flags);
 
-	GBMemorySerialize(&gb->memory, state);
+	GBMemorySerialize(gb, state);
 	GBIOSerialize(gb, state);
 	GBVideoSerialize(&gb->video, state);
 	GBTimerSerialize(&gb->timer, state);
@@ -160,7 +160,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		gb->audio.style = GB_AUDIO_CGB;
 	}
 
-	GBMemoryDeserialize(&gb->memory, state);
+	GBMemoryDeserialize(gb, state);
 	GBIODeserialize(gb, state);
 	GBVideoDeserialize(&gb->video, state);
 	GBTimerDeserialize(&gb->timer, state);

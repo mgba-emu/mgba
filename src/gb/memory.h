@@ -70,7 +70,7 @@ enum GBMemoryBankControllerType {
 };
 
 struct GBMemory;
-typedef void (*GBMemoryBankController)(struct GBMemory*, uint16_t address, uint8_t value);
+typedef void (*GBMemoryBankController)(struct GB*, uint16_t address, uint8_t value);
 
 DECL_BITFIELD(GBMBC7Field, uint8_t);
 DECL_BIT(GBMBC7Field, SK, 6);
@@ -177,7 +177,7 @@ void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
 struct GBSerializedState;
-void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state);
-void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state);
+void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state);
+void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state);
 
 #endif

@@ -100,30 +100,66 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	gb->sramVf = vf;
 	gb->sramRealVf = vf;
-	if (vf) {
-		// TODO: Do this in bank-switching code
-		if (vf->size(vf) < 0x20000) {
-			vf->truncate(vf, 0x20000);
-		}
-		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
-	}
-	return gb->memory.sram;
+	return vf;
 }
 
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
-		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x20000);
+		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
 		gb->sramVf = 0;
 	} else if (gb->memory.sram) {
-		mappedMemoryFree(gb->memory.sram, 0x20000);
+		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
 	gb->memory.sram = 0;
+}
+
+void GBResizeSram(struct GB* gb, size_t size) {
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		if (vf == gb->sramRealVf) {
+			if (vf->size(vf) >= 0 && (size_t) vf->size(vf) < size) {
+				uint8_t extdataBuffer[0x100];
+				if (vf->size(vf) & 0xFF) {
+					// Copy over appended data, e.g. RTC data
+					memcpy(extdataBuffer, &gb->memory.sram[gb->sramSize - (vf->size(vf) & 0xFF)], vf->size(vf) & 0xFF);
+				}
+				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				vf->truncate(vf, size);
+				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+				memset(&gb->memory.sram[gb->sramSize], 0xFF, size - gb->sramSize);
+				if (size & 0xFF) {
+					memcpy(&gb->memory.sram[gb->sramSize - (size & 0xFF)], extdataBuffer, size & 0xFF);
+				}
+			} else {
+				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+			}
+		} else {
+			vf->unmap(vf, gb->memory.sram, gb->sramSize);
+			gb->memory.sram = vf->map(vf, size, MAP_READ);
+		}
+	} else {
+		uint8_t* newSram = anonymousMemoryMap(size);
+		if (gb->memory.sram) {
+			if (size > gb->sramSize) {
+				memcpy(newSram, gb->memory.sram, gb->sramSize);
+				memset(&newSram[gb->sramSize], 0xFF, size - gb->sramSize);
+			} else {
+				memcpy(newSram, gb->memory.sram, size);
+			}
+			mappedMemoryFree(gb->memory.sram, gb->sramSize);
+		} else {
+			memset(newSram, 0xFF, size);
+		}
+		gb->memory.sram = newSram;
+	}
+	gb->sramSize = size;
 }
 
 void GBSavedataMask(struct GB* gb, struct VFile* vf) {
 	GBSramDeinit(gb);
 	gb->sramVf = vf;
-	gb->memory.sram = vf->map(vf, 0x20000, MAP_READ);
+	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
 }
 
 void GBSavedataUnmask(struct GB* gb) {
@@ -132,7 +168,7 @@ void GBSavedataUnmask(struct GB* gb) {
 	}
 	GBSramDeinit(gb);
 	gb->sramVf = gb->sramRealVf;
-	gb->memory.sram = gb->sramVf->map(gb->sramVf, 0x20000, MAP_WRITE);
+	gb->memory.sram = gb->sramVf->map(gb->sramVf, gb->sramSize, MAP_WRITE);
 }
 
 void GBUnloadROM(struct GB* gb) {

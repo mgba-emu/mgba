@@ -67,6 +67,7 @@ struct GB {
 	struct VFile* biosVf;
 	struct VFile* sramVf;
 	struct VFile* sramRealVf;
+	uint32_t sramSize;
 
 	struct mAVStream* stream;
 
@@ -109,6 +110,7 @@ void GBHalt(struct LR35902Core* cpu);
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
+void GBResizeSram(struct GB* gb, size_t size);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
