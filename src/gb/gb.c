@@ -404,7 +404,19 @@ void GBHalt(struct LR35902Core* cpu) {
 
 void GBStop(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (gb->memory.io[REG_KEY1] & 1) {
+	if (cpu->bus) {
+		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X\n", cpu->pc, cpu->bus);
+		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
+			struct mDebuggerEntryInfo info = {
+				.address = cpu->pc - 1,
+				.opcode = 0x1000 | cpu->bus
+			};
+			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		}
+		// Hang forever
+		gb->memory.ime = 0;
+		cpu->pc -= 2;
+	} else if (gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
 		gb->memory.io[REG_KEY1] &= 1;
 		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
@@ -413,8 +425,18 @@ void GBStop(struct LR35902Core* cpu) {
 }
 
 void GBIllegal(struct LR35902Core* cpu) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
+	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
+		struct mDebuggerEntryInfo info = {
+			.address = cpu->pc,
+			.opcode = cpu->bus
+		};
+		mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	}
+	// Hang forever
+	gb->memory.ime = 0;
+	--cpu->pc;
 }
 
 bool GBIsROM(struct VFile* vf) {
