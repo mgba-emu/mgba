@@ -186,6 +186,18 @@ if(NOT WIN32 AND NOT APPLE)
 	list(APPEND QT_DEFINES DATADIR="${DATADIR}")
 endif()
 
+find_package(Qt5LinguistTools)
+if(Qt5LinguistTools_FOUND)
+	set(TRANSLATION_FILES)
+	file(GLOB TS_FILES ts/*.ts)
+	if(UPDATE_TRANSLATIONS)
+		qt5_create_translation(TRANSLATION_FILES ${SOURCE_FILES} ${UI_FILES} ${TS_FILES})
+	else()
+		qt5_add_translation(TRANSLATION_FILES ${TS_FILES})
+	endif()
+	list(APPEND RESOURCES ${TRANSLATION_FILES})
+endif()
+
 add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
 
