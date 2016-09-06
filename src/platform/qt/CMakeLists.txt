@@ -110,7 +110,7 @@ set(SOURCE_FILES
 	VFileDevice.cpp
 	VideoView.cpp)
 
-qt5_wrap_ui(UI_FILES
+set(UI_FILES
 	AboutScreen.ui
 	ArchiveInspector.ui
 	CheatsView.ui
@@ -128,6 +128,8 @@ qt5_wrap_ui(UI_FILES
 	ShortcutView.ui
 	TileView.ui
 	VideoView.ui)
+
+qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5,libqt5network5")
@@ -192,7 +194,7 @@ if(Qt5LinguistTools_FOUND)
 	set(TRANSLATION_QRC "${CMAKE_CURRENT_BINARY_DIR}/ts.qrc")
 	file(GLOB TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ts/${BINARY_NAME}-*.ts")
 	if(UPDATE_TRANSLATIONS)
-		qt5_create_translation(TRANSLATION_FILES ${SOURCE_FILES} ${UI_FILES} ${TS_FILES})
+		qt5_create_translation(TRANSLATION_FILES ${SOURCE_FILES} ${UI_FILES} ${TS_FILES} OPTIONS -locations absolute)
 	else()
 		qt5_add_translation(TRANSLATION_FILES ${TS_FILES})
 	endif()
@@ -203,7 +205,7 @@ if(Qt5LinguistTools_FOUND)
 	list(APPEND RESOURCES ${TRANSLATION_RESOURCES})
 endif()
 
-add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
+add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL Qt5::Network)
