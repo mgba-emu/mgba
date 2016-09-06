@@ -173,7 +173,6 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
-	int m_playerId;
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;
 	bool m_autoresume;

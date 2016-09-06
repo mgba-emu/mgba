@@ -71,7 +71,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
-	, m_playerId(playerId)
 	, m_fullscreenOnStart(false)
 	, m_autoresume(false)
 {
@@ -380,14 +379,10 @@ void Window::selectSave(bool temporary) {
 }
 
 void Window::multiplayerChanged() {
-	disconnect(nullptr, this, SLOT(multiplayerChanged()));
 	int attached = 1;
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer) {
 		attached = multiplayer->attached();
-		connect(multiplayer, SIGNAL(gameAttached()), this, SLOT(multiplayerChanged()));
-		connect(multiplayer, SIGNAL(gameDetached()), this, SLOT(multiplayerChanged()));
-		m_playerId = multiplayer->playerId(m_controller);
 	}
 	if (m_controller->isLoaded()) {
 		for (QAction* action : m_nonMpActions) {
@@ -842,7 +837,14 @@ void Window::updateTitle(float fps) {
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {
-		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
+		title += tr(" -  Player %1 of %2").arg(multiplayer->playerId(m_controller) + 1).arg(multiplayer->attached());
+		for (QAction* action : m_nonMpActions) {
+			action->setDisabled(true);
+		}
+	} else if (m_controller->isLoaded()) {
+		for (QAction* action : m_nonMpActions) {
+			action->setDisabled(false);
+		}
 	}
 	m_controller->threadContinue();
 	if (title.isNull()) {
@@ -1055,7 +1057,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	frameAdvance->setShortcut(tr("Ctrl+N"));
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
-	m_nonMpActions.append(frameAdvance);
 	addControlledAction(emulationMenu, frameAdvance, "frameAdvance");
 
 	emulationMenu->addSeparator();
@@ -1510,6 +1511,9 @@ void Window::appendMRU(const QString& fname) {
 void Window::updateMRU() {
 	if (!m_mruMenu) {
 		return;
+	}
+	for (QAction* action : m_mruMenu->actions()) {
+		delete action;
 	}
 	m_mruMenu->clear();
 	int i = 0;
