@@ -1097,10 +1097,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->startRewinding();
 	}, [this]() {
 		m_controller->stopRewinding();
-	}, QKeySequence("~"), tr("Rewind (held)"), "holdRewind");
+	}, QKeySequence("`"), tr("Rewind (held)"), "holdRewind");
 
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
-	rewind->setShortcut(tr("`"));
+	rewind->setShortcut(tr("~"));
 	connect(rewind, SIGNAL(triggered()), m_controller, SLOT(rewind()));
 	m_gameActions.append(rewind);
 	m_nonMpActions.append(rewind);

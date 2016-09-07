@@ -112,7 +112,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.volume = 0x100;
 	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
-	m_opts.rewindBufferCapacity = 60;
+	m_opts.rewindBufferCapacity = 300;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
 	mCoreConfigLoad(&m_config);
