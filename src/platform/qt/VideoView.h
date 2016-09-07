@@ -22,18 +22,6 @@ class VideoView : public QWidget {
 Q_OBJECT
 
 public:
-	struct Preset {
-		QString container;
-		QString vcodec;
-		QString acodec;
-		int vbr;
-		int abr;
-		int width;
-		int height;
-
-		bool compatible(const Preset&) const;
-	};
-
 	VideoView(QWidget* parent = nullptr);
 	virtual ~VideoView();
 
@@ -42,6 +30,7 @@ public:
 public slots:
 	void startRecording();
 	void stopRecording();
+	void setNativeResolution(const QSize&);
 
 signals:
 	void recordingStarted(mAVStream*);
@@ -65,8 +54,20 @@ private slots:
 	void showAdvanced(bool);
 
 	void uncheckIncompatible();
+	void updatePresets();
 
 private:
+	struct Preset {
+		QString container;
+		QString vcodec;
+		QString acodec;
+		int vbr;
+		int abr;
+		QSize dims;
+
+		bool compatible(const Preset&) const;
+	};
+
 	bool validateSettings();
 	void updateAspectRatio(int width, int height, bool force = false);
 	static QString sanitizeCodec(const QString&, const QMap<QString, QString>& mapping);
@@ -76,6 +77,8 @@ private:
 
 	void addPreset(QAbstractButton*, const Preset&);
 	void setPreset(const Preset&);
+
+	QSize maintainAspect(const QSize&);
 
 	Ui::VideoView m_ui;
 
@@ -94,6 +97,9 @@ private:
 
 	int m_width;
 	int m_height;
+
+	int m_nativeWidth;
+	int m_nativeHeight;
 
 	QMap<QAbstractButton*, Preset> m_presets;
 

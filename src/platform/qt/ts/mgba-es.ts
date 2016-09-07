@@ -2304,12 +2304,17 @@
 <context>
     <name>QGBA::VideoView</name>
     <message>
-        <location filename="../VideoView.cpp" line="202"/>
+        <location filename="../VideoView.cpp" line="214"/>
         <source>Failed to open output video file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="218"/>
+        <location filename="../VideoView.cpp" line="232"/>
+        <source>Native (%0x%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../VideoView.cpp" line="247"/>
         <source>Select output file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2317,690 +2322,690 @@
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="303"/>
+        <location filename="../Window.cpp" line="302"/>
         <source>Game Boy Advance ROMs (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="319"/>
+        <location filename="../Window.cpp" line="318"/>
         <source>Game Boy ROMs (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="323"/>
+        <location filename="../Window.cpp" line="322"/>
         <source>All ROMs (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="338"/>
+        <location filename="../Window.cpp" line="337"/>
         <source>Archives (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="343"/>
-        <location filename="../Window.cpp" line="350"/>
-        <location filename="../Window.cpp" line="367"/>
+        <location filename="../Window.cpp" line="342"/>
+        <location filename="../Window.cpp" line="349"/>
+        <location filename="../Window.cpp" line="366"/>
         <source>Select ROM</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="375"/>
+        <location filename="../Window.cpp" line="374"/>
         <source>Game Boy Advance save files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="376"/>
-        <location filename="../Window.cpp" line="425"/>
-        <location filename="../Window.cpp" line="432"/>
+        <location filename="../Window.cpp" line="375"/>
+        <location filename="../Window.cpp" line="420"/>
+        <location filename="../Window.cpp" line="427"/>
         <source>Select save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="400"/>
+        <location filename="../Window.cpp" line="395"/>
         <source>Select BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="412"/>
+        <location filename="../Window.cpp" line="407"/>
         <source>Select patch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="412"/>
+        <location filename="../Window.cpp" line="407"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="425"/>
-        <location filename="../Window.cpp" line="432"/>
+        <location filename="../Window.cpp" line="420"/>
+        <location filename="../Window.cpp" line="427"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="741"/>
+        <location filename="../Window.cpp" line="742"/>
         <source>Crash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="742"/>
+        <location filename="../Window.cpp" line="743"/>
         <source>The game has crashed with the following error:
 
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="749"/>
+        <location filename="../Window.cpp" line="750"/>
         <source>Couldn&apos;t Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="750"/>
+        <location filename="../Window.cpp" line="751"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="763"/>
+        <location filename="../Window.cpp" line="764"/>
         <source>Unimplemented BIOS call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="764"/>
+        <location filename="../Window.cpp" line="765"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="771"/>
+        <location filename="../Window.cpp" line="772"/>
         <source>Really make portable?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="772"/>
+        <location filename="../Window.cpp" line="773"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="780"/>
+        <location filename="../Window.cpp" line="781"/>
         <source>Restart needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="781"/>
+        <location filename="../Window.cpp" line="782"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="845"/>
+        <location filename="../Window.cpp" line="846"/>
         <source> -  Player %1 of %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="849"/>
+        <location filename="../Window.cpp" line="857"/>
         <source>%1 - %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="851"/>
+        <location filename="../Window.cpp" line="859"/>
         <source>%1 - %2 - %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="853"/>
+        <location filename="../Window.cpp" line="861"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="885"/>
+        <location filename="../Window.cpp" line="893"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="888"/>
+        <location filename="../Window.cpp" line="896"/>
         <source>Load &amp;ROM...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="890"/>
+        <location filename="../Window.cpp" line="898"/>
         <source>Load ROM in archive...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="893"/>
+        <location filename="../Window.cpp" line="901"/>
         <source>Load &amp;BIOS...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="895"/>
+        <location filename="../Window.cpp" line="903"/>
         <source>Load temporary save...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="900"/>
+        <location filename="../Window.cpp" line="908"/>
         <source>Load &amp;patch...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="901"/>
+        <location filename="../Window.cpp" line="909"/>
         <source>Boot BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="903"/>
+        <location filename="../Window.cpp" line="911"/>
         <source>Replace ROM...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="905"/>
+        <location filename="../Window.cpp" line="913"/>
         <source>ROM &amp;info...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="910"/>
+        <location filename="../Window.cpp" line="918"/>
         <source>Recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="914"/>
+        <location filename="../Window.cpp" line="922"/>
         <source>Make portable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="918"/>
+        <location filename="../Window.cpp" line="926"/>
         <source>&amp;Load state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="919"/>
+        <location filename="../Window.cpp" line="927"/>
         <source>F10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="925"/>
+        <location filename="../Window.cpp" line="933"/>
         <source>&amp;Save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="926"/>
+        <location filename="../Window.cpp" line="934"/>
         <source>Shift+F10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="932"/>
+        <location filename="../Window.cpp" line="940"/>
         <source>Quick load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="933"/>
+        <location filename="../Window.cpp" line="941"/>
         <source>Quick save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="937"/>
+        <location filename="../Window.cpp" line="945"/>
         <source>Load recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="943"/>
+        <location filename="../Window.cpp" line="951"/>
         <source>Save recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="952"/>
+        <location filename="../Window.cpp" line="960"/>
         <source>Undo load state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="953"/>
+        <location filename="../Window.cpp" line="961"/>
         <source>F11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="959"/>
+        <location filename="../Window.cpp" line="967"/>
         <source>Undo save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="960"/>
+        <location filename="../Window.cpp" line="968"/>
         <source>Shift+F11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="971"/>
-        <location filename="../Window.cpp" line="978"/>
+        <location filename="../Window.cpp" line="979"/>
+        <location filename="../Window.cpp" line="986"/>
         <source>State &amp;%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="972"/>
+        <location filename="../Window.cpp" line="980"/>
         <source>F%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="979"/>
+        <location filename="../Window.cpp" line="987"/>
         <source>Shift+F%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="988"/>
+        <location filename="../Window.cpp" line="996"/>
         <source>Import GameShark Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="994"/>
+        <location filename="../Window.cpp" line="1002"/>
         <source>Export GameShark Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1002"/>
+        <location filename="../Window.cpp" line="1010"/>
         <source>New multiplayer window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1012"/>
+        <location filename="../Window.cpp" line="1020"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1017"/>
+        <location filename="../Window.cpp" line="1025"/>
         <source>E&amp;xit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1020"/>
+        <location filename="../Window.cpp" line="1028"/>
         <source>&amp;Emulation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1022"/>
+        <location filename="../Window.cpp" line="1030"/>
         <source>&amp;Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1023"/>
+        <location filename="../Window.cpp" line="1031"/>
         <source>Ctrl+R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1028"/>
+        <location filename="../Window.cpp" line="1036"/>
         <source>Sh&amp;utdown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1034"/>
+        <location filename="../Window.cpp" line="1042"/>
         <source>Yank game pak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1042"/>
+        <location filename="../Window.cpp" line="1050"/>
         <source>&amp;Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1045"/>
+        <location filename="../Window.cpp" line="1053"/>
         <source>Ctrl+P</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1054"/>
+        <location filename="../Window.cpp" line="1062"/>
         <source>&amp;Next frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1055"/>
+        <location filename="../Window.cpp" line="1063"/>
         <source>Ctrl+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1067"/>
+        <location filename="../Window.cpp" line="1074"/>
         <source>Fast forward (held)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1069"/>
+        <location filename="../Window.cpp" line="1076"/>
         <source>&amp;Fast forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1072"/>
+        <location filename="../Window.cpp" line="1079"/>
         <source>Shift+Tab</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1076"/>
+        <location filename="../Window.cpp" line="1083"/>
         <source>Fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1081"/>
+        <location filename="../Window.cpp" line="1088"/>
         <source>Unbounded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1085"/>
+        <location filename="../Window.cpp" line="1092"/>
         <source>%0x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1093"/>
+        <location filename="../Window.cpp" line="1100"/>
         <source>Rewind (held)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1095"/>
+        <location filename="../Window.cpp" line="1102"/>
         <source>Re&amp;wind</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1096"/>
+        <location filename="../Window.cpp" line="1103"/>
         <source>`</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1102"/>
+        <location filename="../Window.cpp" line="1109"/>
         <source>Step backwards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1103"/>
+        <location filename="../Window.cpp" line="1110"/>
         <source>Ctrl+B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1112"/>
+        <location filename="../Window.cpp" line="1119"/>
         <source>Sync to &amp;video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1119"/>
+        <location filename="../Window.cpp" line="1126"/>
         <source>Sync to &amp;audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1127"/>
+        <location filename="../Window.cpp" line="1134"/>
         <source>Solar sensor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1129"/>
+        <location filename="../Window.cpp" line="1136"/>
         <source>Increase solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1133"/>
+        <location filename="../Window.cpp" line="1140"/>
         <source>Decrease solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1137"/>
+        <location filename="../Window.cpp" line="1144"/>
         <source>Brightest solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1141"/>
+        <location filename="../Window.cpp" line="1148"/>
         <source>Darkest solar level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1147"/>
+        <location filename="../Window.cpp" line="1154"/>
         <source>Brightness %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1154"/>
+        <location filename="../Window.cpp" line="1161"/>
         <source>Audio/&amp;Video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1156"/>
+        <location filename="../Window.cpp" line="1163"/>
         <source>Frame size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1159"/>
+        <location filename="../Window.cpp" line="1166"/>
         <source>%1x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1182"/>
+        <location filename="../Window.cpp" line="1189"/>
         <source>Toggle fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1185"/>
+        <location filename="../Window.cpp" line="1192"/>
         <source>Lock aspect ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1192"/>
+        <location filename="../Window.cpp" line="1199"/>
         <source>Resample video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1198"/>
+        <location filename="../Window.cpp" line="1205"/>
         <source>Frame&amp;skip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1208"/>
+        <location filename="../Window.cpp" line="1215"/>
         <source>Shader options...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1218"/>
+        <location filename="../Window.cpp" line="1225"/>
         <source>Mute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1224"/>
+        <location filename="../Window.cpp" line="1231"/>
         <source>FPS target</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1229"/>
+        <location filename="../Window.cpp" line="1236"/>
         <source>15</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1230"/>
+        <location filename="../Window.cpp" line="1237"/>
         <source>30</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1231"/>
+        <location filename="../Window.cpp" line="1238"/>
         <source>45</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1232"/>
+        <location filename="../Window.cpp" line="1239"/>
         <source>Native (59.7)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1233"/>
+        <location filename="../Window.cpp" line="1240"/>
         <source>60</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1234"/>
+        <location filename="../Window.cpp" line="1241"/>
         <source>90</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1235"/>
+        <location filename="../Window.cpp" line="1242"/>
         <source>120</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1236"/>
+        <location filename="../Window.cpp" line="1243"/>
         <source>240</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1244"/>
+        <location filename="../Window.cpp" line="1251"/>
         <source>Take &amp;screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1245"/>
+        <location filename="../Window.cpp" line="1252"/>
         <source>F12</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1252"/>
+        <location filename="../Window.cpp" line="1259"/>
         <source>Record output...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1258"/>
+        <location filename="../Window.cpp" line="1266"/>
         <source>Record GIF...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1264"/>
+        <location filename="../Window.cpp" line="1272"/>
         <source>Video layers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1268"/>
+        <location filename="../Window.cpp" line="1276"/>
         <source>Background %0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1275"/>
+        <location filename="../Window.cpp" line="1283"/>
         <source>OBJ (sprites)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1281"/>
+        <location filename="../Window.cpp" line="1289"/>
         <source>Audio channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1285"/>
+        <location filename="../Window.cpp" line="1293"/>
         <source>Channel %0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1292"/>
+        <location filename="../Window.cpp" line="1300"/>
         <source>Channel A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1298"/>
+        <location filename="../Window.cpp" line="1306"/>
         <source>Channel B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1304"/>
+        <location filename="../Window.cpp" line="1312"/>
         <source>&amp;Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1306"/>
+        <location filename="../Window.cpp" line="1314"/>
         <source>View &amp;logs...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1311"/>
+        <location filename="../Window.cpp" line="1319"/>
         <source>Game &amp;overrides...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1317"/>
+        <location filename="../Window.cpp" line="1325"/>
         <source>Game &amp;Pak sensors...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1321"/>
+        <location filename="../Window.cpp" line="1329"/>
         <source>&amp;Cheats...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1327"/>
+        <location filename="../Window.cpp" line="1335"/>
         <source>Start &amp;GDB server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1334"/>
+        <location filename="../Window.cpp" line="1342"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1339"/>
+        <location filename="../Window.cpp" line="1347"/>
         <source>View &amp;palette...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1345"/>
+        <location filename="../Window.cpp" line="1353"/>
         <source>View &amp;tiles...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1352"/>
+        <location filename="../Window.cpp" line="1360"/>
         <source>View memory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1358"/>
+        <location filename="../Window.cpp" line="1366"/>
         <source>View &amp;I/O registers...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1415"/>
+        <location filename="../Window.cpp" line="1423"/>
         <source>Exit fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1420"/>
+        <location filename="../Window.cpp" line="1428"/>
         <source>Autofire</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1427"/>
+        <location filename="../Window.cpp" line="1435"/>
         <source>Autofire A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1433"/>
+        <location filename="../Window.cpp" line="1441"/>
         <source>Autofire B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1439"/>
+        <location filename="../Window.cpp" line="1447"/>
         <source>Autofire L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1445"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>Autofire R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1451"/>
+        <location filename="../Window.cpp" line="1459"/>
         <source>Autofire Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1457"/>
+        <location filename="../Window.cpp" line="1465"/>
         <source>Autofire Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1463"/>
+        <location filename="../Window.cpp" line="1471"/>
         <source>Autofire Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1469"/>
+        <location filename="../Window.cpp" line="1477"/>
         <source>Autofire Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1475"/>
+        <location filename="../Window.cpp" line="1483"/>
         <source>Autofire Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1481"/>
+        <location filename="../Window.cpp" line="1489"/>
         <source>Autofire Left</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3597,7 +3602,7 @@
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
-        <location filename="../VideoView.ui" line="234"/>
+        <location filename="../VideoView.ui" line="237"/>
         <source>WebM</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3622,122 +3627,122 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="186"/>
-        <source>GBA (240x160)</source>
+        <location filename="../VideoView.ui" line="189"/>
+        <source>Native</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="219"/>
+        <location filename="../VideoView.ui" line="222"/>
         <source>Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="229"/>
+        <location filename="../VideoView.ui" line="232"/>
         <source>MKV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="239"/>
+        <location filename="../VideoView.ui" line="242"/>
         <source>AVI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="244"/>
+        <location filename="../VideoView.ui" line="247"/>
         <source>MP4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="256"/>
+        <location filename="../VideoView.ui" line="259"/>
         <source>PNG</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="261"/>
+        <location filename="../VideoView.ui" line="264"/>
         <source>h.264</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="266"/>
+        <location filename="../VideoView.ui" line="269"/>
         <source>VP8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="271"/>
+        <location filename="../VideoView.ui" line="274"/>
         <source>Xvid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="276"/>
+        <location filename="../VideoView.ui" line="279"/>
         <source>FFV1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="288"/>
+        <location filename="../VideoView.ui" line="291"/>
         <source>FLAC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="293"/>
+        <location filename="../VideoView.ui" line="296"/>
         <source>Opus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="298"/>
+        <location filename="../VideoView.ui" line="301"/>
         <source>Vorbis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="303"/>
+        <location filename="../VideoView.ui" line="306"/>
         <source>MP3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="308"/>
+        <location filename="../VideoView.ui" line="311"/>
         <source>AAC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="313"/>
+        <location filename="../VideoView.ui" line="316"/>
         <source>Uncompressed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="324"/>
+        <location filename="../VideoView.ui" line="327"/>
         <source> Bitrate (kbps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="330"/>
+        <location filename="../VideoView.ui" line="333"/>
         <source>VBR </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="378"/>
+        <location filename="../VideoView.ui" line="381"/>
         <source>ABR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="394"/>
+        <location filename="../VideoView.ui" line="397"/>
         <source>Dimensions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="400"/>
+        <location filename="../VideoView.ui" line="403"/>
         <source>:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="410"/>
+        <location filename="../VideoView.ui" line="413"/>
         <source>×</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="466"/>
+        <location filename="../VideoView.ui" line="463"/>
         <source>Lock aspect ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="481"/>
+        <location filename="../VideoView.ui" line="478"/>
         <source>Show advanced</source>
         <translation type="unfinished"></translation>
     </message>
