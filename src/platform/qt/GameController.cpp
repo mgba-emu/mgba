@@ -253,11 +253,11 @@ GameController::GameController(QObject* parent)
 }
 
 GameController::~GameController() {
+	disconnect();
+	closeGame();
 	m_audioThread->quit();
 	m_audioThread->wait();
-	disconnect();
 	clearMultiplayerController();
-	closeGame();
 	delete m_backupLoadState;
 }
 
@@ -348,10 +348,12 @@ void GameController::openGame(bool biosOnly) {
 	if (biosOnly && (!m_useBios || m_bios.isNull())) {
 		return;
 	}
-	if (m_gameOpen) {
+	if (isLoaded()) {
 		// We need to delay if the game is still cleaning up
 		QTimer::singleShot(10, this, SLOT(openGame()));
 		return;
+	} else if(m_gameOpen) {
+		cleanGame();
 	}
 
 	if (!biosOnly) {
@@ -555,11 +557,14 @@ void GameController::closeGame() {
 	if (mCoreThreadIsPaused(&m_threadContext)) {
 		mCoreThreadUnpause(&m_threadContext);
 	}
+	QMetaObject::invokeMethod(m_audioProcessor, "pause", Qt::BlockingQueuedConnection);
 	mCoreThreadEnd(&m_threadContext);
-	m_audioProcessor->pause();
 }
 
 void GameController::cleanGame() {
+	if (!m_gameOpen || mCoreThreadIsActive(&m_threadContext)) {
+		return;
+	}
 	mCoreThreadJoin(&m_threadContext);
 
 	delete[] m_drawContext;
