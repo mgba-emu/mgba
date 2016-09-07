@@ -92,6 +92,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
 	free(gbacore->cheatDevice);
+	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
 

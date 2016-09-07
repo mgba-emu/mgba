@@ -140,6 +140,8 @@ void GBADestroy(struct GBA* gba) {
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
+		gba->biosVf->close(gba->biosVf);
+		gba->biosVf = 0;
 	}
 
 	GBAMemoryDeinit(gba);

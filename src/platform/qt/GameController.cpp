@@ -406,9 +406,8 @@ void GameController::openGame(bool biosOnly) {
 
 	if (!m_bios.isNull() && m_useBios) {
 		VFile* bios = VFileDevice::open(m_bios, O_RDONLY);
-		if (bios) {
-			// TODO: Lifetime issues?
-			m_threadContext.core->loadBIOS(m_threadContext.core, bios, 0);
+		if (bios && !m_threadContext.core->loadBIOS(m_threadContext.core, bios, 0)) {
+			bios->close(bios);
 		}
 	}
 

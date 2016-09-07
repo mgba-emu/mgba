@@ -74,6 +74,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 	}
 	free(gbcore->cheatDevice);
+	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
 

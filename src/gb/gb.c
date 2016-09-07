@@ -221,6 +221,11 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 void GBDestroy(struct GB* gb) {
 	GBUnloadROM(gb);
 
+	if (gb->biosVf) {
+		gb->biosVf->close(gb->biosVf);
+		gb->biosVf = 0;
+	}
+
 	GBMemoryDeinit(gb);
 	GBVideoDeinit(&gb->video);
 	GBSIODeinit(&gb->sio);
