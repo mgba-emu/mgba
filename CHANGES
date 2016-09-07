@@ -91,6 +91,7 @@ Misc:
  - GBA: Better debug logging if event processing breaks
  - 3DS: 3D banner
  - FFmpeg: Full support for libavcodec 56+
+ - Util: PNG utils should support 16-bit when applicable
 
 0.4.1: (2016-07-11)
 Bugfixes:

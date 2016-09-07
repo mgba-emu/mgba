@@ -532,23 +532,16 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	_drawTex(runner->core, faded);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
 
 	C3D_Tex* tex = &outputTexture;
 
-	u16* newPixels = linearMemAlign(256 * height * sizeof(u32), 0x100);
+	color_t* newPixels = linearMemAlign(256 * height * sizeof(color_t), 0x100);
 
-	// Convert image from RGBX8 to BGR565
-	for (unsigned y = 0; y < height; ++y) {
-		for (unsigned x = 0; x < width; ++x) {
-			// 0xXXBBGGRR -> 0bRRRRRGGGGGGBBBBB
-			u32 p = *pixels++;
-			newPixels[y * 256 + x] =
-				(p << 24 >> (24 + 3) << 11) | // R
-				(p << 16 >> (24 + 2) <<  5) | // G
-				(p <<  8 >> (24 + 3) <<  0);  // B
-		}
-		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(u32));
+	unsigned y;
+	for (y = 0; y < height; ++y) {
+		memcpy(&newPixels[y * 256], &pixels[y * width], width * sizeof(color_t));
+		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(color_t));
 	}
 
 	GSPGPU_FlushDataCache(newPixels, 256 * height * sizeof(u32));

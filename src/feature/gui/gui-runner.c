@@ -103,7 +103,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			return;
 		}
 		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-		uint32_t* pixels = gbaBackground->screenshot;
+		color_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(w * h * 4);
 			gbaBackground->screenshot = pixels;

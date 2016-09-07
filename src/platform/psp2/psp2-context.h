@@ -7,6 +7,7 @@
 #define PSP2_CONTEXT_H
 
 #include "psp2-common.h"
+#include "core/interface.h"
 #include "util/gui.h"
 
 struct mGUIRunner;
@@ -20,7 +21,7 @@ void mPSP2PrepareForFrame(struct mGUIRunner* runner);
 void mPSP2Paused(struct mGUIRunner* runner);
 void mPSP2Unpaused(struct mGUIRunner* runner);
 void mPSP2Draw(struct mGUIRunner* runner, bool faded);
-void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded);
+void mPSP2DrawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded);
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner);
 void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit);
 uint16_t mPSP2PollInput(struct mGUIRunner* runner);

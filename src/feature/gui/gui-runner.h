@@ -26,7 +26,7 @@ struct mGUIBackground {
 	struct GUIBackground d;
 	struct mGUIRunner* p;
 
-	uint32_t* screenshot;
+	color_t* screenshot;
 	int screenshotId;
 };
 
@@ -62,7 +62,7 @@ struct mGUIRunner {
 	void (*gameUnloaded)(struct mGUIRunner*);
 	void (*prepareForFrame)(struct mGUIRunner*);
 	void (*drawFrame)(struct mGUIRunner*, bool faded);
-	void (*drawScreenshot)(struct mGUIRunner*, const uint32_t* pixels, unsigned width, unsigned height, bool faded);
+	void (*drawScreenshot)(struct mGUIRunner*, const color_t* pixels, unsigned width, unsigned height, bool faded);
 	void (*paused)(struct mGUIRunner*);
 	void (*unpaused)(struct mGUIRunner*);
 	void (*incrementScreenMode)(struct mGUIRunner*);

@@ -65,6 +65,18 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 	for (i = 0; i < height; ++i) {
 		unsigned x;
 		for (x = 0; x < width; ++x) {
+#ifdef COLOR_16_BIT
+			uint16_t c = ((uint16_t*) pixelData)[stride * i + x];
+#ifdef COLOR_5_6_5
+			row[x * 3] = (c >> 8) & 0xF8;
+			row[x * 3 + 1] = (c >> 3) & 0xFC;
+			row[x * 3 + 2] = (c << 3) & 0xF8;
+#else
+			row[x * ] = (c >> 7) & 0xF8;
+			row[x *  + 1] = (c >> 2) & 0xF8;
+			row[x *  + 2] = (c << 3) & 0xF8;
+#endif
+#else
 #ifdef __BIG_ENDIAN__
 			row[x * 3] = pixelData[stride * i * 4 + x * 4 + 3];
 			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
@@ -73,6 +85,7 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 			row[x * 3] = pixelData[stride * i * 4 + x * 4];
 			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
 			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
+#endif
 #endif
 		}
 		png_write_row(png, row);
@@ -182,6 +195,17 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 		png_read_row(png, row, 0);
 		unsigned x;
 		for (x = 0; x < pngWidth; ++x) {
+#ifdef COLOR_16_BIT
+			uint16_t c = row[x * 3 + 2] >> 3;
+#ifdef COLOR_5_6_5
+			c |= (row[x * 3 + 1] << 3) & 0x7E0;
+			c |= (row[x * 3] << 8) & 0xF800;
+#else
+			c |= (row[x * 3 + 1] << 2) & 0x3E0;
+			c |= (row[x * 3] << 7) & 0x7C00;
+#endif
+			((uint16_t*) pixelData)[stride * i + x] = c;
+#endif
 #if __BIG_ENDIAN__
 			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 1];
