@@ -16,7 +16,8 @@ enum ExecutionMode;
 struct ARMDynarecTrace {
 	enum ExecutionMode mode;
 	uint32_t start;
-	void (*entry)(struct ARMCore* cpu);
+	void* entry;
+	void* entryPlus4;
 };
 
 void ARMDynarecInit(struct ARMCore* cpu);
@@ -24,5 +25,6 @@ void ARMDynarecDeinit(struct ARMCore* cpu);
 
 void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode);
 void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace);
+void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* execution_token);
 
 #endif

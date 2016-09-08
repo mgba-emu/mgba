@@ -3,10 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <assert.h>
+
 #include "dynarec.h"
 
 #include "arm/arm.h"
 #include "util/memory.h"
+
+void ARMDynarecEmitPrelude(struct ARMCore* cpu);
 
 void ARMDynarecInit(struct ARMCore* cpu) {
 	BumpAllocatorInit(&cpu->dynarec.traceAlloc, sizeof(struct ARMDynarecTrace));
@@ -14,6 +18,7 @@ void ARMDynarecInit(struct ARMCore* cpu) {
 	TableInit(&cpu->dynarec.thumbTraces, 0x2000, 0);
 	cpu->dynarec.buffer = executableMemoryMap(0x200000);
 	cpu->dynarec.temporaryMemory = anonymousMemoryMap(0x2000);
+	ARMDynarecEmitPrelude(cpu);
 }
 
 void ARMDynarecDeinit(struct ARMCore* cpu) {
@@ -57,6 +62,6 @@ void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionM
 		if (!cpu->dynarec.inDynarec) {
 			cpu->nextEvent = cpu->cycles;
 		}
-		cpu->dynarec.currentEntry = trace->entry;
+		cpu->dynarec.currentTrace = trace;
 	}
 }

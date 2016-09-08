@@ -144,8 +144,12 @@ struct ARMDynarec {
 	struct Table armTraces;
 	struct Table thumbTraces;
 	void* buffer;
-	void (*currentEntry)(struct ARMCore*);
+	void* currentTrace;
 	void* temporaryMemory;
+	void (*execute)(struct ARMCore* cpu, void* execution_token);
+	void* epilogue;
+	void* saveNzcvAndCycleCheckHandler;
+	void* cycleCheckHandler;
 };
 
 struct ARMCore {

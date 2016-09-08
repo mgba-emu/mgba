@@ -12,17 +12,19 @@
 #define REG_SCRATCH0 1
 #define REG_SCRATCH1 2
 #define REG_SCRATCH2 3
-// #define REG_GUEST_R0 4
-// #define REG_GUEST_R1 5
-// #define REG_GUEST_R2 6
-// #define REG_GUEST_R3 7
-// #define REG_GUEST_R4 8
-// #define REG_GUEST_R5 10
-// #define REG_GUEST_R6 11
-// #define REG_GUEST_R7 12
+#define REG_NZCV_TMP 3
+#define REG_GUEST_R0 4
+#define REG_GUEST_R1 5
+#define REG_GUEST_R2 6
+#define REG_GUEST_R3 7
+#define REG_GUEST_R4 8
+#define REG_GUEST_R5 10
+#define REG_GUEST_R6 11
+#define REG_GUEST_R7 12
+#define REG_CYCLES   14
 #define REGLIST_SAVE 0x1001
 #define REGLIST_RETURN 0x8001
-// #define REGLIST_GUESTREGS 0x1DF0
+#define REGLIST_GUESTREGS 0x1DF0
 
 #define COND_EQ 0x00000000
 #define COND_NE 0x10000000
@@ -42,13 +44,28 @@
 
 typedef uint32_t code_t;
 
+enum ARMDynarecNZCVLocation {
+	CONTEXT_NZCV_IN_HOST,
+	CONTEXT_NZCV_IN_TMPREG,
+	CONTEXT_NZCV_IN_MEMORY,
+};
+
 struct ARMDynarecContext {
 	code_t* code;
-	uint32_t gpr_15; //!< The value that would be in cpu->gpr[15] if this were the interpreter.
+
+	bool cycles_register_valid;
 	int32_t cycles;
-	bool scratch0_in_use;
-	bool scratch1_in_use;
-	bool scratch2_in_use;
+
+	bool scratch_in_use[3];
+	unsigned scratch_guest[3];
+
+	bool gpr_15_flushed;
+	uint32_t gpr_15; //!< The value that would be in cpu->gpr[15] if this were the interpreter.
+
+	bool prefetch_flushed;
+	uint32_t prefetch[2];
+
+	enum ARMDynarecNZCVLocation nzcv_location;
 };
 
 #define EMIT_L(DEST, OPCODE, COND, ...) \
