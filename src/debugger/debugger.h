@@ -40,6 +40,11 @@ enum mWatchpointType {
 	WATCHPOINT_RW = WATCHPOINT_WRITE | WATCHPOINT_READ
 };
 
+enum mBreakpointType {
+	BREAKPOINT_HARDWARE,
+	BREAKPOINT_SOFTWARE
+};
+
 enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_MANUAL,
 	DEBUGGER_ENTER_ATTACHED,
@@ -47,6 +52,14 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_WATCHPOINT,
 	DEBUGGER_ENTER_ILLEGAL_OP
 };
+
+struct mDebugWatchpoint {
+	uint32_t address;
+	enum mWatchpointType type;
+};
+
+DECLARE_VECTOR(mDebugBreakpointList, struct mDebugBreakpoint);
+DECLARE_VECTOR(mDebugWatchpointList, struct mDebugWatchpoint);
 
 extern const char* ERROR_MISSING_ARGS;
 extern const char* ERROR_OVERFLOW;
@@ -63,6 +76,7 @@ struct mDebuggerEntryInfo {
 
 		struct {
 			uint32_t opcode;
+			enum mBreakpointType breakType;
 		};
 	};
 };

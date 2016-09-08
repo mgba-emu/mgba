@@ -1,10 +1,11 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gdb-stub.h"
 
+#include "arm/debugger/debugger.h"
 #include "arm/isa-inlines.h"
 #include "core/core.h"
 #include "gba/memory.h"
@@ -44,7 +45,11 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGINT);
 		break;
 	case DEBUGGER_ENTER_BREAKPOINT:
-		snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP); // TODO: Use hwbreak/swbreak if gdb supports it
+		if (stub->supportsHwbreak && stub->supportsSwbreak && info) {
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%cwbreak:;", SIGTRAP, info->breakType == BREAKPOINT_SOFTWARE ? 's' : 'h');
+		} else {
+			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02xk", SIGTRAP);
+		}
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
@@ -385,6 +390,35 @@ static void _readRegister(struct GDBStub* stub, const char* message) {
 	_sendMessage(stub);
 }
 
+static void _processQSupportedCommand(struct GDBStub* stub, const char* message) {
+	const char* terminator = strrchr(message, '#');
+	stub->supportsSwbreak = false;
+	stub->supportsHwbreak = false;
+	while (message < terminator) {
+		const char* end = strchr(message, ';');
+		size_t len;
+		if (end && end < terminator) {
+			len = end - message;
+		} else {
+			len = end - terminator;
+		}
+		if (!strncmp(message, "swbreak+", 8)) {
+			stub->supportsSwbreak = true;
+		} else if (!strncmp(message, "hwbreak+", 8)) {
+			stub->supportsHwbreak = true;
+		} else if (!strncmp(message, "swbreak-", 8)) {
+			stub->supportsSwbreak = false;
+		} else if (!strncmp(message, "hwbreak-", 8)) {
+			stub->supportsHwbreak = false;
+		}
+		if (!end) {
+			break;
+		}
+		message = end + 1;
+	}
+	strncpy(stub->outgoing, "swbreak+;hwbreak+", GDB_STUB_MAX_LINE - 4);
+}
+
 static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	if (!strncmp("HostInfo#", message, 9)) {
@@ -401,6 +435,8 @@ static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 		strncpy(stub->outgoing, "m1", GDB_STUB_MAX_LINE - 4);
 	} else if (!strncmp("sThreadInfo#", message, 12)) {
 		strncpy(stub->outgoing, "l", GDB_STUB_MAX_LINE - 4);
+	} else if (!strncmp("Supported:", message, 10)) {
+		_processQSupportedCommand(stub, message + 10);
 	}
 	_sendMessage(stub);
 }
@@ -434,36 +470,31 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	unsigned i = 0;
 	uint32_t address = _readHex(readAddress, &i);
 	readAddress += i + 1;
-	uint32_t kind = _readHex(readAddress, &i); // We don't use this in hardware watchpoints
-	UNUSED(kind);
+	uint32_t kind = _readHex(readAddress, &i);
 
 	switch (message[0]) {
-	case '0': // Memory breakpoints are not currently supported
+	case '0':
+		ARMDebuggerSetSoftwareBreakpoint(stub->d.platform, address, kind == 2 ? MODE_THUMB : MODE_ARM);
+		break;
 	case '1':
 		stub->d.platform->setBreakpoint(stub->d.platform, address);
-		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
-		_sendMessage(stub);
 		break;
 	case '2':
 		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_WRITE);
-		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
-		_sendMessage(stub);
 		break;
 	case '3':
 		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_READ);
-		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
-		_sendMessage(stub);
 		break;
 	case '4':
 		stub->d.platform->setWatchpoint(stub->d.platform, address, WATCHPOINT_RW);
-		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
-		_sendMessage(stub);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
 		_sendMessage(stub);
-		break;
+		return;
 	}
+	strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
 }
 
 static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
@@ -471,7 +502,9 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	unsigned i = 0;
 	uint32_t address = _readHex(readAddress, &i);
 	switch (message[0]) {
-	case '0': // Memory breakpoints are not currently supported
+	case '0':
+		ARMDebuggerClearSoftwareBreakpoint(stub->d.platform, address);
+		break;
 	case '1':
 		stub->d.platform->clearBreakpoint(stub->d.platform, address);
 		break;

@@ -799,7 +799,8 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	case CPU_COMPONENT_DEBUGGER:
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
-				.address = _ARMPCAddress(cpu)
+				.address = _ARMPCAddress(cpu),
+				.breakType = BREAKPOINT_SOFTWARE
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
