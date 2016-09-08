@@ -34,7 +34,7 @@ struct FFmpegEncoder {
 	int64_t currentAudioFrame;
 	int64_t nextAudioPts;
 	struct AVAudioResampleContext* resampleContext;
-#if LIBAVCODEC_VERSION_MAJOR >= 56
+#if LIBAVCODEC_VERSION_MAJOR >= 57
 	struct AVBSFContext* absf; // Needed for AAC in MP4
 #else
 	struct AVBitStreamFilterContext* absf; // Needed for AAC in MP4
