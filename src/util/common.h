@@ -48,6 +48,9 @@ typedef intptr_t ssize_t;
 
 #define UNUSED(V) (void)(V)
 
+#define CONCAT2(x, y) DO_CONCAT2(x, y)
+#define DO_CONCAT2(x, y) x ## y
+
 #ifndef M_PI
 #define M_PI 3.141592654f
 #endif
