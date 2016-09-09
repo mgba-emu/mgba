@@ -103,6 +103,7 @@ void GBCreate(struct GB* gb);
 void GBDestroy(struct GB* gb);
 
 void GBReset(struct LR35902Core* cpu);
+void GBDetectModel(struct GB* gb);
 
 void GBUpdateIRQs(struct GB* gb);
 void GBHalt(struct LR35902Core* cpu);

@@ -10,9 +10,11 @@
 #include "gb/cli.h"
 #include "gb/gb.h"
 #include "gb/mbc.h"
+#include "gb/overrides.h"
 #include "gb/renderers/software.h"
 #include "gb/serialize.h"
 #include "lr35902/debugger/debugger.h"
+#include "util/crc32.h"
 #include "util/memory.h"
 #include "util/patch.h"
 #include "util/vfs.h"
@@ -22,6 +24,7 @@ struct GBCore {
 	struct GBVideoSoftwareRenderer renderer;
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
+	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 };
@@ -38,6 +41,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gb;
+	gbcore->overrides = NULL;
 	gbcore->debuggerPlatform = NULL;
 	gbcore->cheatDevice = NULL;
 
@@ -107,6 +111,8 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	if (bios) {
 		GBLoadBIOS(gb, bios);
 	}
+	struct GBCore* gbcore = (struct GBCore*) core;
+	gbcore->overrides = mCoreConfigGetOverridesConst(config);
 #endif
 }
 
@@ -200,6 +206,16 @@ static void _GBCoreReset(struct mCore* core) {
 	if (gbcore->renderer.outputBuffer) {
 		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 	}
+
+	struct GBCartridgeOverride override;
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart) {
+		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
+		if (GBOverrideFind(gbcore->overrides, &override)) {
+			GBOverrideApply(gb, &override);
+		}
+	}
+
 	LR35902Reset(core->cpu);
 }
 

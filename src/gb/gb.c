@@ -115,6 +115,10 @@ static void GBSramDeinit(struct GB* gb) {
 }
 
 void GBResizeSram(struct GB* gb, size_t size) {
+	if (gb->memory.sram && size <= gb->sramSize) {
+		return;
+	}
+	mLOG(GB, INFO, "Resizing SRAM to %"PRIz"u bytes", size);
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		if (vf == gb->sramRealVf) {
@@ -254,27 +258,11 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 
 void GBReset(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-
+	GBDetectModel(gb);
 	if (gb->biosVf) {
 		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
 		gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
 		ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
-		switch (biosCrc) {
-		case 0x59C8598E:
-			gb->model = GB_MODEL_DMG;
-			gb->audio.style = GB_AUDIO_DMG;
-			break;
-		case 0x41884E46:
-			gb->model = GB_MODEL_CGB;
-			gb->audio.style = GB_AUDIO_CGB;
-			break;
-		default:
-			free(gb->memory.romBase);
-			gb->memory.romBase = gb->memory.rom;
-			gb->biosVf = NULL;
-			break;
-		}
 
 		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
 		if (size > 0x100) {
@@ -290,35 +278,40 @@ void GBReset(struct LR35902Core* cpu) {
 		cpu->sp = 0;
 		cpu->pc = 0;
 	}
+
+	cpu->b = 0;
+	cpu->d = 0;
+
 	if (!gb->biosVf) {
-		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		if (cart->cgb & 0x80) {
-			gb->model = GB_MODEL_CGB;
-			gb->audio.style = GB_AUDIO_CGB;
-			cpu->a = 0x11;
-			cpu->f.packed = 0x80;
-			cpu->c = 0;
-			cpu->e = 0x08;
-			cpu->h = 0;
-			cpu->l = 0x7C;
-		} else {
+		switch (gb->model) {
+		case GB_MODEL_DMG:
 			// TODO: SGB
+		case GB_MODEL_SGB:
+		case GB_MODEL_AUTODETECT: // Silence warnings
 			gb->model = GB_MODEL_DMG;
-			gb->audio.style = GB_AUDIO_DMG;
 			cpu->a = 1;
 			cpu->f.packed = 0xB0;
 			cpu->c = 0x13;
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
+			break;
+		case GB_MODEL_CGB:
+			cpu->b = 1;
+			// Fall through
+		case GB_MODEL_AGB: // Silence warnings
+			cpu->a = 0x11;
+			cpu->f.packed = 0x80;
+			cpu->c = 0;
+			cpu->e = 0x08;
+			cpu->h = 0;
+			cpu->l = 0x7C;
+			break;
 		}
 
 		cpu->sp = 0xFFFE;
 		cpu->pc = 0x100;
 	}
-
-	cpu->b = 0;
-	cpu->d = 0;
 
 	gb->eiPending = INT_MAX;
 	gb->doubleSpeed = 0;
@@ -337,6 +330,50 @@ void GBReset(struct LR35902Core* cpu) {
 	GBSIOReset(&gb->sio);
 
 	GBSavedataUnmask(gb);
+}
+
+void GBDetectModel(struct GB* gb) {
+	if (gb->model != GB_MODEL_AUTODETECT) {
+		return;
+	}
+	if (gb->biosVf) {
+		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
+		void* bios = malloc(GB_SIZE_CART_BANK0);
+		ssize_t size = gb->biosVf->read(gb->biosVf, bios, GB_SIZE_CART_BANK0);
+		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
+		switch (biosCrc) {
+		case 0x59C8598E:
+			gb->model = GB_MODEL_DMG;
+			break;
+		case 0x41884E46:
+			gb->model = GB_MODEL_CGB;
+			break;
+		default:
+			gb->biosVf->close(gb->biosVf);
+			gb->biosVf = NULL;
+		}
+		free(bios);
+	}
+	if (gb->model == GB_MODEL_AUTODETECT && gb->memory.rom) {
+		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+		if (cart->cgb & 0x80) {
+			gb->model = GB_MODEL_CGB;
+		} else {
+			gb->model = GB_MODEL_DMG;
+		}
+	}
+
+	switch (gb->model) {
+	case GB_MODEL_DMG:
+	case GB_MODEL_SGB:
+	case GB_MODEL_AUTODETECT: //Silence warnings
+		gb->audio.style = GB_AUDIO_DMG;
+		break;
+	case GB_MODEL_AGB:
+	case GB_MODEL_CGB:
+		gb->audio.style = GB_AUDIO_CGB;
+		break;
+	}
 }
 
 void GBUpdateIRQs(struct GB* gb) {

@@ -64,62 +64,100 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	}
 
-	switch (cart->type) {
-	case 0:
-	case 8:
-	case 9:
+	if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
+		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+		switch (cart->type) {
+		case 0:
+		case 8:
+		case 9:
+			gb->memory.mbcType = GB_MBC_NONE;
+			break;
+		case 1:
+		case 2:
+		case 3:
+			gb->memory.mbcType = GB_MBC1;
+			break;
+		case 5:
+		case 6:
+			gb->memory.mbcType = GB_MBC2;
+			break;
+		case 0x0F:
+		case 0x10:
+			gb->memory.mbcType = GB_MBC3_RTC;
+			break;
+		case 0x11:
+		case 0x12:
+		case 0x13:
+			gb->memory.mbcType = GB_MBC3;
+			break;
+		default:
+			mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
+			// Fall through
+		case 0x19:
+		case 0x1A:
+		case 0x1B:
+			gb->memory.mbcType = GB_MBC5;
+			break;
+		case 0x1C:
+		case 0x1D:
+		case 0x1E:
+			gb->memory.mbcType = GB_MBC5_RUMBLE;
+			break;
+		case 0x20:
+			gb->memory.mbcType = GB_MBC6;
+			break;
+		case 0x22:
+			gb->memory.mbcType = GB_MBC7;
+			break;
+		case 0xFE:
+			gb->memory.mbcType = GB_HuC3;
+			break;
+		}
+	}
+	switch (gb->memory.mbcType) {
+	case GB_MBC_NONE:
 		gb->memory.mbc = _GBMBCNone;
-		gb->memory.mbcType = GB_MBC_NONE;
-		return;
-	case 1:
-	case 2:
-	case 3:
-		gb->memory.mbc = _GBMBC1;
-		gb->memory.mbcType = GB_MBC1;
 		break;
-	case 5:
-	case 6:
+	case GB_MBC1:
+		gb->memory.mbc = _GBMBC1;
+		break;
+	case GB_MBC2:
 		gb->memory.mbc = _GBMBC2;
-		gb->memory.mbcType = GB_MBC2;
 		gb->sramSize = 0x200;
 		break;
-	case 0x0F:
-	case 0x10:
-	case 0x11:
-	case 0x12:
-	case 0x13:
+	case GB_MBC3:
 		gb->memory.mbc = _GBMBC3;
-		gb->memory.mbcType = GB_MBC3;
 		gb->sramSize += 0x48;
 		break;
 	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 		// Fall through
-	case 0x19:
-	case 0x1A:
-	case 0x1B:
+	case GB_MBC5:
 		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5;
 		break;
-	case 0x1C:
-	case 0x1D:
-	case 0x1E:
-		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5_RUMBLE;
-		break;
-	case 0x20:
+	case GB_MBC6:
+		mLOG(GB_MBC, WARN, "unimplemented MBC: MBC6");
 		gb->memory.mbc = _GBMBC6;
-		gb->memory.mbcType = GB_MBC6;
-		gb->sramSize = 0; // TODO
 		break;
-	case 0x22:
+	case GB_MBC7:
 		gb->memory.mbc = _GBMBC7;
-		gb->memory.mbcType = GB_MBC7;
-		gb->sramSize = 0x2000;
 		break;
-	case 0xFE:
+	case GB_MMM01:
+		mLOG(GB_MBC, WARN, "unimplemented MBC: MMM01");
+		gb->memory.mbc = _GBMBC1;
+		break;
+	case GB_HuC1:
+		mLOG(GB_MBC, WARN, "unimplemented MBC: HuC-1");
+		gb->memory.mbc = _GBMBC1;
+		break;
+	case GB_HuC3:
 		gb->memory.mbc = _GBHuC3;
-		gb->memory.mbcType = GB_HuC3;
+		break;
+	case GB_MBC3_RTC:
+		gb->memory.mbc = _GBMBC3;
+		break;
+	case GB_MBC5_RUMBLE:
+		gb->memory.mbc = _GBMBC5;
 		break;
 	}
 
