@@ -80,55 +80,6 @@ void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) 
 	}
 }
 
-void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
-#ifndef NDEBUG
-//	printf("%08X (%c)\n", trace->start, trace->mode == MODE_THUMB ? 'T' : 'A');
-//	printf("%u\n", cpu->nextEvent - cpu->cycles);
-#endif
-
-	if (trace->mode == MODE_ARM) {
-		return;
-	} else {
-		struct ARMDynarecContext ctx = {
-			.code = cpu->dynarec.buffer,
-			.gpr_15 = trace->start + 3 * WORD_SIZE_THUMB,
-			.cycles_register_valid = false,
-			.cycles = 0,
-			.gpr_15_flushed = false,
-			.prefetch_flushed = false,
-			.nzcv_location = CONTEXT_NZCV_IN_MEMORY,
-		};
-		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-
-		trace->entry = 1;
-		trace->entryPlus4 = (void*) ctx.code;
-
-		bool continue_compilation = true;
-		while (continue_compilation) {
-			// emit: if (cpu->cycles >= cpu->nextEvent) return;
-			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
-			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
-			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.epilogue);
-
-			// ThumbStep
-			uint32_t opcode = ctx.prefetch[0];
-			ctx.prefetch[0] = ctx.prefetch[1];
-			ctx.gpr_15 += WORD_SIZE_THUMB;
-			LOAD_16(ctx.prefetch[1], ctx.gpr_15 & cpu->memory.activeMask, cpu->memory.activeRegion);
-			ctx.prefetch_flushed = false;
-			ctx.gpr_15_flushed = false;
-			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
-			continue_compilation = instruction(cpu, &ctx, opcode);
-		}
-
-		//__clear_cache(trace->entry, ctx.code);
-		__clear_cache(trace->entryPlus4, ctx.code);
-		cpu->dynarec.buffer = ctx.code;
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Register allocation
 
@@ -201,22 +152,6 @@ static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// NZCV management
-
-static void loadNZCV(struct ARMDynarecContext* ctx) {
-	unsigned tmp = allocTemp(ctx);
-	EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
-	EMIT(ctx, MSR, AL, true, false, tmp);
-}
-
-static void saveNZCV(struct ARMDynarecContext* ctx) {
-	unsigned tmp = allocTemp(ctx);
-	EMIT(ctx, MRS, AL, tmp);
-	EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
-	EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // PC + Prefetch
 
 static void flushPC(struct ARMDynarecContext* ctx) {
@@ -236,6 +171,75 @@ static void flushPrefetch(struct ARMDynarecContext* ctx) {
 		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[1]);
 		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t));
 		ctx->prefetch_flushed = true;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NZCV management
+
+static void loadNZCV(struct ARMDynarecContext* ctx) {
+	unsigned tmp = allocTemp(ctx);
+	EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
+	EMIT(ctx, MSR, AL, true, false, tmp);
+}
+
+static void saveNZCV(struct ARMDynarecContext* ctx) {
+	unsigned tmp = allocTemp(ctx);
+	EMIT(ctx, MRS, AL, tmp);
+	EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
+	EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
+#ifndef NDEBUG
+//	printf("%08X (%c)\n", trace->start, trace->mode == MODE_THUMB ? 'T' : 'A');
+//	printf("%u\n", cpu->nextEvent - cpu->cycles);
+#endif
+
+	if (trace->mode == MODE_ARM) {
+		return;
+	} else {
+		struct ARMDynarecContext ctx = {
+			.code = cpu->dynarec.buffer,
+			.gpr_15 = trace->start + 3 * WORD_SIZE_THUMB,
+			.cycles_register_valid = false,
+			.cycles = 0,
+			.gpr_15_flushed = false,
+			.prefetch_flushed = false,
+			.nzcv_location = CONTEXT_NZCV_IN_MEMORY,
+		};
+		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+
+		trace->entry = 1;
+		trace->entryPlus4 = (void*) ctx.code;
+
+		bool continue_compilation = true;
+		while (continue_compilation) {
+			// emit: if (cpu->cycles >= cpu->nextEvent) return;
+			flushPC(&ctx);
+			flushPrefetch(&ctx);
+			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
+			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
+			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
+			EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.epilogue);
+
+			// ThumbStep
+			uint32_t opcode = ctx.prefetch[0];
+			ctx.prefetch[0] = ctx.prefetch[1];
+			ctx.gpr_15 += WORD_SIZE_THUMB;
+			LOAD_16(ctx.prefetch[1], ctx.gpr_15 & cpu->memory.activeMask, cpu->memory.activeRegion);
+			ctx.prefetch_flushed = false;
+			ctx.gpr_15_flushed = false;
+			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
+			continue_compilation = instruction(cpu, &ctx, opcode);
+		}
+
+		//__clear_cache(trace->entry, ctx.code);
+		__clear_cache(trace->entryPlus4, ctx.code);
+		cpu->dynarec.buffer = ctx.code;
 	}
 }
 
