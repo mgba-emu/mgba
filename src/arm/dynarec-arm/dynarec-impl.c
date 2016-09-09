@@ -92,6 +92,20 @@ static unsigned allocTemp(struct ARMDynarecContext* ctx) {
 	assert(!"Ran out of scratch registers");
 }
 
+static void loadRegValueNoVerify(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
+	if (guest_reg == 15) {
+		EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
+	} else {
+		EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+	}
+}
+
+static void loadRegValue(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
+	assert(host_reg >= REG_SCRATCH0 && host_reg <= REG_SCRATCH2);
+	assert(ctx->scratch[host_reg - REG_SCRATCH0].state == SCRATCH_STATE_EMPTY);
+	loadRegValueNoVerify(ctx, guest_reg, host_reg);
+}
+
 static unsigned defReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].guest_reg == guest_reg) {
@@ -119,11 +133,7 @@ static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 			}
 			if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
 				unsigned host_reg = REG_SCRATCH0 + index;
-				if (guest_reg == 15) {
-					EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
-				} else {
-					EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
-				}
+				loadRegValueNoVerify(ctx, guest_reg, host_reg);
 				ctx->scratch[index].state |= SCRATCH_STATE_USE;
 				return host_reg;
 			}
@@ -132,11 +142,7 @@ static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
 			unsigned host_reg = REG_SCRATCH0 + index;
-			if (guest_reg == 15) {
-				EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
-			} else {
-				EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
-			}
+			loadRegValueNoVerify(ctx, guest_reg, host_reg);
 			ctx->scratch[index].state = SCRATCH_STATE_USE;
 			ctx->scratch[index].guest_reg = guest_reg;
 			return host_reg;
