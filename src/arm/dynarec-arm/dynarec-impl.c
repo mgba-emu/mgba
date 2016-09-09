@@ -734,6 +734,49 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STR2, cpu->memory.store32)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STRB2, cpu->memory.store8)
 DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STRH2, cpu->memory.store16)
 
+#define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		flushPC(ctx); \
+		flushPrefetch(ctx); \
+		int rn = RN; \
+		int rs = opcode & 0xFF; \
+		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
+		EMIT(ctx, SUBI, AL, ARM_SP, ARM_SP, 8); \
+		/* here we load the &cycles argument: */ \
+		EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		EMIT(ctx, STRI, AL, 3, ARM_SP, 0); \
+		/* here we load the address argument: */ \
+		loadRegValue(ctx, rn, 1); \
+		PRE_BODY; \
+		EMIT_IMM(ctx, AL, 2, rs); \
+		EMIT_IMM(ctx, AL, 3, LSM_ ## DIRECTION); \
+		/* arguments: (cpu, address, rs, LSM_ ## DIRECTION, &cycles) */ \
+		EMIT(ctx, BL, AL, ctx->code, cpu->memory.CONCAT2(LS, Multiple)); \
+		EMIT(ctx, ADDI, AL, ARM_SP, ARM_SP, 8); \
+		WRITEBACK; \
+		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		saveRegs(ctx);)
+
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
+	(opcode >> 8) & 0x0007,
+	load,
+	IA,
+	,
+	THUMB_LOAD_POST_BODY;
+	if (!((1 << rn) & rs)) {
+		unsigned reg_rd = defReg(ctx, rn);
+		EMIT(ctx, MOV, AL, reg_rd, 0);
+	})
+
+DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
+	(opcode >> 8) & 0x0007,
+	store,
+	IA,
+	,
+	THUMB_STORE_POST_BODY;
+	unsigned reg_rd = defReg(ctx, rn);
+	EMIT(ctx, MOV, AL, reg_rd, 0);)
+
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
@@ -846,34 +889,6 @@ bool _ThumbCompilerBKPT(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;
-}
-
-bool _ThumbCompilerSTMIA(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerLDMIA(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
 }
 
 bool _ThumbCompilerBEQ(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {

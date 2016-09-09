@@ -80,7 +80,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
 	}
 	THUMB_NEUTRAL_S( , , cpu->gprs[rd]);)
 
-DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1, 
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 	if (!immediate) {
 		cpu->cpsr.c = ARM_SIGN(cpu->gprs[rm]);
 		if (cpu->cpsr.c) {
