@@ -478,33 +478,20 @@ bool _ThumbCompilerMUL(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint1
 	return true;
 }
 
-bool _ThumbCompilerBIC(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerMVN(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(BIC,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, BICS, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(MVN,
+	loadNZCV(ctx);
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, MVNS, AL, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
 
 bool _ThumbCompilerADD400(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
