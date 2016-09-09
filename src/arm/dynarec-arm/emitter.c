@@ -12,10 +12,14 @@
 
 #define OP_I       0x02000000
 #define OP_S       0x00100000
-#define ADDR1_ASR  0x00000040
-#define ADDR1_LSL  0x00000000
-#define ADDR1_LSR  0x00000020
-#define ADDR1_ROR  0x00000060
+#define ADDR1_ASRI 0x00000040
+#define ADDR1_LSLI 0x00000000
+#define ADDR1_LSRI 0x00000020
+#define ADDR1_RORI 0x00000060
+#define ADDR1_ASR  0x00000050
+#define ADDR1_LSL  0x00000010
+#define ADDR1_LSR  0x00000030
+#define ADDR1_ROR  0x00000070
 
 #define OP_ADC     0x00A00000
 #define OP_ADD     0x00800000
@@ -65,10 +69,10 @@ static uint32_t calculateAddrMode1(unsigned imm) {
 }
 
 #define SHIFT(MN, S, I, ARGS, PREBODY, BODY) \
-	uint32_t emit##MN##S##_ASR##I ARGS { PREBODY; return OP_##MN | ADDR1_ASR | BODY; } \
-	uint32_t emit##MN##S##_LSL##I ARGS { PREBODY; return OP_##MN | ADDR1_LSL | BODY; } \
-	uint32_t emit##MN##S##_LSR##I ARGS { PREBODY; return OP_##MN | ADDR1_LSR | BODY; } \
-	uint32_t emit##MN##S##_ROR##I ARGS { PREBODY; return OP_##MN | ADDR1_ROR | BODY; }
+	uint32_t emit##MN##S##_ASR##I ARGS { PREBODY; return OP_##MN | ADDR1_ASR##I | BODY; } \
+	uint32_t emit##MN##S##_LSL##I ARGS { PREBODY; return OP_##MN | ADDR1_LSL##I | BODY; } \
+	uint32_t emit##MN##S##_LSR##I ARGS { PREBODY; return OP_##MN | ADDR1_LSR##I | BODY; } \
+	uint32_t emit##MN##S##_ROR##I ARGS { PREBODY; return OP_##MN | ADDR1_ROR##I | BODY; }
 
 #define DEFINE_ALU3_EMITTER(MN) \
 	uint32_t emit##MN(unsigned dst, unsigned src, unsigned op2) { \
