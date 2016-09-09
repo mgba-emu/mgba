@@ -171,6 +171,8 @@ DECLARE_ALU1_EMITTER(TST)
 
 uint32_t emitMOVT(unsigned dst, uint16_t value);
 uint32_t emitMOVW(unsigned dst, uint16_t value);
+uint32_t emitSXTB(unsigned dst, unsigned src, unsigned rotation);
+uint32_t emitSXTH(unsigned dst, unsigned src, unsigned rotation);
 
 uint32_t emitLDMIA(unsigned base, unsigned mask);
 uint32_t emitLDRI(unsigned reg, unsigned base, int offset);

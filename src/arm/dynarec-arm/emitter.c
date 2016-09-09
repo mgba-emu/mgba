@@ -40,6 +40,9 @@
 #define OP_TEQ     0x01300000
 #define OP_TST     0x01100000
 
+#define OP_SXTB    0x06AF0070
+#define OP_SXTH    0x06BF0070
+
 #define OP_LDMIA   0x08900000
 #define OP_LDRI    0x05100000
 #define OP_POP     0x08BD0000
@@ -180,6 +183,20 @@ uint32_t emitMOVT(unsigned dst, uint16_t value) {
 uint32_t emitMOVW(unsigned dst, uint16_t value) {
 	assert(dst < 16);
 	return OP_MOVW | (dst << 12) | ((value & 0xF000) << 4) | (value & 0x0FFF);
+}
+
+uint32_t emitSXTB(unsigned dst, unsigned src, unsigned rotation) {
+	assert(dst < 16 && src < 16);
+	assert(rotation % 8 == 0 && rotation <= 24);
+	unsigned encoded_rotation = rotation / 8;
+	return OP_SXTB | (dst << 12) | (encoded_rotation << 10) | src;
+}
+
+uint32_t emitSXTH(unsigned dst, unsigned src, unsigned rotation) {
+	assert(dst < 16 && src < 16);
+	assert(rotation % 8 == 0 && rotation <= 24);
+	unsigned encoded_rotation = rotation / 8;
+	return OP_SXTH | (dst << 12) | (encoded_rotation << 10) | src;
 }
 
 uint32_t emitLDMIA(unsigned base, unsigned mask) {
