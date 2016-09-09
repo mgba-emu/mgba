@@ -50,14 +50,22 @@ enum ARMDynarecNZCVLocation {
 	CONTEXT_NZCV_IN_MEMORY,
 };
 
+enum ARMDynarecScratchState {
+	SCRATCH_STATE_EMPTY = 0,
+	SCRATCH_STATE_DEF = 1,
+	SCRATCH_STATE_USE = 2,
+};
+
 struct ARMDynarecContext {
 	code_t* code;
 
 	bool cycles_register_valid;
 	int32_t cycles;
 
-	bool scratch_in_use[3];
-	unsigned scratch_guest[3];
+	struct {
+		enum ARMDynarecScratchState state;
+		unsigned guest_reg;
+	} scratch[3];
 
 	bool gpr_15_flushed;
 	uint32_t gpr_15; //!< The value that would be in cpu->gpr[15] if this were the interpreter.

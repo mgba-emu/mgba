@@ -80,28 +80,6 @@ void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) 
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-static void flushPC(struct ARMDynarecContext* ctx) {
-	assert(!ctx->scratch_in_use[0]);
-	if (!ctx->gpr_15_flushed) {
-		EMIT_IMM(ctx, AL, REG_SCRATCH0, ctx->gpr_15);
-		EMIT(ctx, STRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-		ctx->gpr_15_flushed = true;
-	}
-}
-
-static void flushPrefetch(struct ARMDynarecContext* ctx) {
-	assert(!ctx->scratch_in_use[0]);
-	if (!ctx->prefetch_flushed) {
-		EMIT_IMM(ctx, AL, REG_SCRATCH0, ctx->prefetch[0]);
-		EMIT(ctx, STRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t));
-		EMIT_IMM(ctx, AL, REG_SCRATCH0, ctx->prefetch[1]);
-		EMIT(ctx, STRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t));
-		ctx->prefetch_flushed = true;
-	}
-}
-
 void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
 #ifndef NDEBUG
 //	printf("%08X (%c)\n", trace->start, trace->mode == MODE_THUMB ? 'T' : 'A');
@@ -153,17 +131,109 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void loadNZCV(struct ARMDynarecContext* ctx) {
-	assert(!ctx->scratch_in_use[0]);
-	EMIT(ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cpsr));
-	EMIT(ctx, MSR, AL, true, false, REG_SCRATCH0);
+static unsigned allocTemp(struct ARMDynarecContext* ctx) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
+			return REG_SCRATCH0 + index;
+		}
+	}
+	assert(!"Ran out of scratch registers");
 }
 
-void flushNZCV(struct ARMDynarecContext* ctx) {
-	assert(!ctx->scratch_in_use[0]);
-	EMIT(ctx, MRS, AL, REG_SCRATCH0);
-	EMIT(ctx, MOV_LSRI, AL, REG_SCRATCH0, REG_SCRATCH0, 24);
-	EMIT(ctx, STRBI, AL, REG_SCRATCH0, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+static unsigned defReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].guest_reg == guest_reg) {
+			if (ctx->scratch[index].state & (SCRATCH_STATE_DEF | SCRATCH_STATE_USE)) {
+				ctx->scratch[index].state |= SCRATCH_STATE_DEF;
+				return REG_SCRATCH0 + index;
+			}
+		}
+	}
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
+			ctx->scratch[index].state = SCRATCH_STATE_DEF;
+			ctx->scratch[index].guest_reg = guest_reg;
+			return REG_SCRATCH0 + index;
+		}
+	}
+	assert(!"Ran out of scratch registers");
+}
+
+static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].guest_reg == guest_reg) {
+			if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
+				return REG_SCRATCH0 + index;
+			}
+			if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
+				unsigned host_reg = REG_SCRATCH0 + index;
+				EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+				ctx->scratch[index].state |= SCRATCH_STATE_USE;
+				return host_reg;
+			}
+		}
+	}
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
+			unsigned host_reg = REG_SCRATCH0 + index;
+			EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+			ctx->scratch[index].state = SCRATCH_STATE_USE;
+			ctx->scratch[index].guest_reg = guest_reg;
+			return host_reg;
+		}
+	}
+	assert(!"Ran out of scratch registers");
+}
+
+static unsigned saveRegs(struct ARMDynarecContext* ctx) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
+			unsigned host_reg = REG_SCRATCH0 + index;
+			unsigned guest_reg = ctx->scratch[index].guest_reg;
+			EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
+		}
+		if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
+			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void loadNZCV(struct ARMDynarecContext* ctx) {
+	unsigned tmp = allocTemp(ctx);
+	EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
+	EMIT(ctx, MSR, AL, true, false, tmp);
+}
+
+static void saveNZCV(struct ARMDynarecContext* ctx) {
+	unsigned tmp = allocTemp(ctx);
+	EMIT(ctx, MRS, AL, tmp);
+	EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
+	EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static void flushPC(struct ARMDynarecContext* ctx) {
+	if (!ctx->gpr_15_flushed) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT_IMM(ctx, AL, tmp, ctx->gpr_15);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
+		ctx->gpr_15_flushed = true;
+	}
+}
+
+static void flushPrefetch(struct ARMDynarecContext* ctx) {
+	if (!ctx->prefetch_flushed) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[0]);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t));
+		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[1]);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t));
+		ctx->prefetch_flushed = true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
