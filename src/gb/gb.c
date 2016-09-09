@@ -106,6 +106,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
+		gb->sramVf->close(gb->sramVf);
 		gb->sramVf = 0;
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);

@@ -132,6 +132,10 @@ void GBAUnloadROM(struct GBA* gba) {
 	}
 
 	GBASavedataDeinit(&gba->memory.savedata);
+	if (gba->memory.savedata.realVf) {
+		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
+		gba->memory.savedata.realVf = 0;
+	}
 	gba->idleLoop = IDLE_LOOP_NONE;
 }
 
