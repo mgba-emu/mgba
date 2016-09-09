@@ -123,7 +123,9 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					// Copy over appended data, e.g. RTC data
 					memcpy(extdataBuffer, &gb->memory.sram[gb->sramSize - (vf->size(vf) & 0xFF)], vf->size(vf) & 0xFF);
 				}
-				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				if (gb->memory.sram) {
+					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				}
 				vf->truncate(vf, size);
 				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 				memset(&gb->memory.sram[gb->sramSize], 0xFF, size - gb->sramSize);
@@ -131,11 +133,15 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					memcpy(&gb->memory.sram[gb->sramSize - (size & 0xFF)], extdataBuffer, size & 0xFF);
 				}
 			} else {
-				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				if (gb->memory.sram) {
+					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				}
 				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 			}
 		} else {
-			vf->unmap(vf, gb->memory.sram, gb->sramSize);
+			if (gb->memory.sram) {
+				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+			}
 			gb->memory.sram = vf->map(vf, size, MAP_READ);
 		}
 	} else {
