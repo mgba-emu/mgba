@@ -104,13 +104,6 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	gb->video.frameskip = core->opts.frameskip;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = 0;
-	if (core->opts.useBios && core->opts.bios) {
-		bios = VFileOpen(core->opts.bios, O_RDONLY);
-	}
-	if (bios) {
-		GBLoadBIOS(gb, bios);
-	}
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->overrides = mCoreConfigGetOverridesConst(config);
 #endif
@@ -215,6 +208,35 @@ static void _GBCoreReset(struct mCore* core) {
 			GBOverrideApply(gb, &override);
 		}
 	}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios) {
+		if (!core->opts.bios) {
+			char path[PATH_MAX];
+			GBDetectModel(gb);
+			mCoreConfigDirectory(path, PATH_MAX);
+			switch (gb->model) {
+			case GB_MODEL_DMG:
+			case GB_MODEL_SGB: // TODO
+				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				break;
+			case GB_MODEL_CGB:
+			case GB_MODEL_AGB:
+				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
+				break;
+			default:
+				break;
+			};
+			bios = VFileOpen(path, O_RDONLY);
+		} else {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+		}
+	}
+	if (bios) {
+		GBLoadBIOS(gb, bios);
+	}
+#endif
 
 	LR35902Reset(core->cpu);
 }

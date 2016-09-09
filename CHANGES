@@ -12,6 +12,7 @@ Features:
  - 3DS: Adjustable screen darkening
  - Ability to temporarily load a savegame
  - Load specific files out of archives
+ - Automatic BIOS detection
 Bugfixes:
  - SDL: Fix axes being mapped wrong
  - GBA Memory: Fix mirror on non-overdumped Classic NES games

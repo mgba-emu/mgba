@@ -118,14 +118,6 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
-
-	struct VFile* bios = 0;
-	if (core->opts.useBios && core->opts.bios) {
-		bios = VFileOpen(core->opts.bios, O_RDONLY);
-	}
-	if (bios) {
-		GBALoadBIOS(gba, bios);
-	}
 #endif
 
 	const char* idleOptimization = mCoreConfigGetValue(config, "idleOptimization");
@@ -247,10 +239,6 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
-	ARMReset(core->cpu);
-	if (core->opts.skipBios && gba->pristineRom) {
-		GBASkipBIOS(core->board);
-	}
 
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
@@ -259,6 +247,28 @@ static void _GBACoreReset(struct mCore* core) {
 		if (GBAOverrideFind(gbacore->overrides, &override)) {
 			GBAOverrideApply(gba, &override);
 		}
+	}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios) {
+		if (!core->opts.bios) {
+			char path[PATH_MAX];
+			mCoreConfigDirectory(path, PATH_MAX);
+			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path));
+			bios = VFileOpen(path, O_RDONLY);
+		} else {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+		}
+	}
+	if (bios) {
+		GBALoadBIOS(gba, bios);
+	}
+#endif
+
+	ARMReset(core->cpu);
+	if (core->opts.skipBios && gba->pristineRom) {
+		GBASkipBIOS(core->board);
 	}
 }
 
