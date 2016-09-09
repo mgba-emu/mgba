@@ -130,6 +130,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Register allocation
 
 static unsigned allocTemp(struct ARMDynarecContext* ctx) {
 	for (unsigned index = 0; index < 3; index++) {
@@ -200,6 +201,7 @@ static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NZCV management
 
 static void loadNZCV(struct ARMDynarecContext* ctx) {
 	unsigned tmp = allocTemp(ctx);
@@ -215,6 +217,7 @@ static void saveNZCV(struct ARMDynarecContext* ctx) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PC + Prefetch
 
 static void flushPC(struct ARMDynarecContext* ctx) {
 	if (!ctx->gpr_15_flushed) {
@@ -238,47 +241,52 @@ static void flushPrefetch(struct ARMDynarecContext* ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool _ThumbCompilerLSL1(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+#define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
-bool _ThumbCompilerLSR1(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+#define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
+	static bool _ThumbCompiler ## NAME (struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {  \
+		bool continue_compilation = true; \
+		int currentCycles = THUMB_PREFETCH_CYCLES; \
+		BODY; \
+		{ \
+			unsigned tmp = allocTemp(ctx); \
+			EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+			EMIT(ctx, ADDI, AL, tmp, tmp, currentCycles); \
+			EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		} \
+		return continue_compilation; \
+	}
 
-bool _ThumbCompilerASR1(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+#define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(NAME, BODY) \
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int immediate = (opcode >> 6) & 0x001F; \
+		int rd = opcode & 0x0007; \
+		int rm = (opcode >> 3) & 0x0007; \
+		BODY;)
+
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSL1,
+	loadNZCV(ctx);
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rm = useReg(ctx, rm);
+	EMIT(ctx, MOVS_LSLI, AL, reg_rd, reg_rm, immediate);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(LSR1,
+	loadNZCV(ctx);
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rm = useReg(ctx, rm);
+	EMIT(ctx, MOVS_LSRI, AL, reg_rd, reg_rm, immediate);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+
+DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
+	loadNZCV(ctx);
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rm = useReg(ctx, rm);
+	EMIT(ctx, MOVS_ASRI, AL, reg_rd, reg_rm, immediate);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
 
 bool _ThumbCompilerADD3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
