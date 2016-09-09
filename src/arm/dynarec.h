@@ -22,6 +22,7 @@ struct ARMDynarecTrace {
 
 void ARMDynarecInit(struct ARMCore* cpu);
 void ARMDynarecDeinit(struct ARMCore* cpu);
+void ARMDynarecInvalidateCache(struct ARMCore* cpu);
 
 void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode);
 void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace);

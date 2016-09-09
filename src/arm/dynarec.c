@@ -16,7 +16,7 @@ void ARMDynarecInit(struct ARMCore* cpu) {
 	BumpAllocatorInit(&cpu->dynarec.traceAlloc, sizeof(struct ARMDynarecTrace));
 	TableInit(&cpu->dynarec.armTraces, 0x2000, 0);
 	TableInit(&cpu->dynarec.thumbTraces, 0x2000, 0);
-	cpu->dynarec.buffer = executableMemoryMap(0x200000);
+	cpu->dynarec.bufferStart = cpu->dynarec.buffer = executableMemoryMap(0x200000);
 	cpu->dynarec.temporaryMemory = anonymousMemoryMap(0x2000);
 	ARMDynarecEmitPrelude(cpu);
 }
@@ -25,8 +25,21 @@ void ARMDynarecDeinit(struct ARMCore* cpu) {
 	BumpAllocatorDeinit(&cpu->dynarec.traceAlloc);
 	TableDeinit(&cpu->dynarec.armTraces);
 	TableDeinit(&cpu->dynarec.thumbTraces);
-	mappedMemoryFree(cpu->dynarec.buffer, 0x200000);
+	mappedMemoryFree(cpu->dynarec.bufferStart, 0x200000);
 	mappedMemoryFree(cpu->dynarec.temporaryMemory, 0x2000);
+}
+
+void ARMDynarecInvalidateCache(struct ARMCore* cpu) {
+	if (cpu->dynarec.inDynarec) {
+		cpu->nextEvent = cpu->cycles;
+	}
+	BumpAllocatorDeinit(&cpu->dynarec.traceAlloc);
+	BumpAllocatorInit(&cpu->dynarec.traceAlloc, sizeof(struct ARMDynarecTrace));
+	TableClear(&cpu->dynarec.armTraces);
+	TableClear(&cpu->dynarec.thumbTraces);
+	cpu->dynarec.buffer = cpu->dynarec.bufferStart;
+	cpu->dynarec.currentTrace = NULL;
+	ARMDynarecEmitPrelude(cpu);
 }
 
 static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {

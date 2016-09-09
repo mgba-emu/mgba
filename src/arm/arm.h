@@ -143,6 +143,7 @@ struct ARMDynarec {
 	struct BumpAllocator traceAlloc;
 	struct Table armTraces;
 	struct Table thumbTraces;
+	void* bufferStart;
 	void* buffer;
 	void* currentTrace;
 	void* temporaryMemory;
