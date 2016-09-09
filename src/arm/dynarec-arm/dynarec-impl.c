@@ -369,75 +369,47 @@ DEFINE_DATA_FORM_3_INSTRUCTION_THUMB(SUB2,
 	saveRegs(ctx);
 	saveNZCV(ctx);)
 
-bool _ThumbCompilerAND(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+#define DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(NAME, BODY) \
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int rd = opcode & 0x0007; \
+		int rn = (opcode >> 3) & 0x0007; \
+		BODY;)
 
-bool _ThumbCompilerEOR(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerLSL2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerLSR2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerASR2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(AND,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, ANDS, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(EOR,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, EORS, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSL2,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, MOVS_LSL, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(LSR2,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, MOVS_LSR, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ASR2,
+	loadNZCV(ctx);
+	unsigned reg_rd = usedefReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	EMIT(ctx, MOVS_ASR, AL, reg_rd, reg_rd, reg_rn);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
 
 bool _ThumbCompilerADC(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
