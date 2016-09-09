@@ -255,6 +255,15 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
+static void thumbWritePcCallback(struct ARMCore* cpu) {
+	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
+	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
+	LOAD_16(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	cpu->cycles += 2 + cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
+}
+
 #define DEFINE_INSTRUCTION_THUMB(NAME, BODY) \
 	static bool _ThumbCompiler ## NAME (struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {  \
 		bool continue_compilation = true; \
