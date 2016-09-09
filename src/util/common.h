@@ -69,6 +69,13 @@ typedef intptr_t ssize_t;
 #define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
 #endif
 
+#if defined(_3DS) || defined(GEKKO) || defined(PSP2)
+// newlib doesn't support %z properly
+#define PRIz ""
+#else
+#define PRIz "z"
+#endif
+
 #if defined(__PPC__) || defined(__POWERPC__)
 #define LOAD_32LE(DEST, ADDR, ARR) { \
 	uint32_t _addr = (ADDR); \
