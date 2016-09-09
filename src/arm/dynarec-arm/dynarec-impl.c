@@ -609,6 +609,45 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		int immediate = (opcode & 0x00FF) << 2; \
 		BODY;)
 
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3,
+	// TODO(merry): Look into the possibility of inlining this without having to call load32.
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT_IMM(ctx, AL, 1, (ctx->gpr_15 & 0xFFFFFFFC) + immediate);
+	EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	EMIT(ctx, BL, AL, ctx->code, cpu->memory.load32);
+	unsigned reg_rd = defReg(ctx, rd);
+	EMIT(ctx, MOV, AL, reg_rd, 0);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	saveRegs(ctx);
+	THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4,
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	loadRegValue(ctx, ARM_SP, 1);
+	EMIT(ctx, ADDI, AL, 1, 1, immediate);
+	EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	EMIT(ctx, BL, AL, ctx->code, cpu->memory.load32);
+	unsigned reg_rd = defReg(ctx, rd);
+	EMIT(ctx, MOV, AL, reg_rd, 0);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	saveRegs(ctx);
+	THUMB_LOAD_POST_BODY;)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3,
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	loadRegValue(ctx, ARM_SP, 1);
+	EMIT(ctx, ADDI, AL, 1, 1, immediate);
+	loadRegValue(ctx, rd, 2);
+	EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	EMIT(ctx, BL, AL, ctx->code, cpu->memory.store32);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	saveRegs(ctx);
+	THUMB_STORE_POST_BODY;)
+
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5,
 	uint32_t to_write = (ctx->gpr_15 & 0xFFFFFFFC) + immediate;
 	unsigned reg_rd = defReg(ctx, rd);
@@ -640,20 +679,6 @@ bool _ThumbCompilerILL(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint1
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;
-}
-
-bool _ThumbCompilerLDR3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
 }
 
 bool _ThumbCompilerSTR2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
@@ -755,34 +780,6 @@ bool _ThumbCompilerLDRB2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uin
 }
 
 bool _ThumbCompilerLDRSH(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerSTR3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerLDR4(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
