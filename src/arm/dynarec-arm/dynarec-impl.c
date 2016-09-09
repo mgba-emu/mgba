@@ -137,6 +137,13 @@ static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 	assert(!"Ran out of scratch registers");
 }
 
+static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned host_reg = useReg(ctx, guest_reg);
+	unsigned host_reg_2 = defReg(ctx, guest_reg);
+	assert(host_reg == host_reg_2);
+	return host_reg;
+}
+
 static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
