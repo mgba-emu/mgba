@@ -243,6 +243,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
 			continue_compilation = instruction(cpu, &ctx, opcode);
 		}
+		EMIT(&ctx, B, AL, ctx.code, cpu->dynarec.epilogue);
 
 		//__clear_cache(trace->entry, ctx.code);
 		__clear_cache(trace->entryPlus4, ctx.code);
