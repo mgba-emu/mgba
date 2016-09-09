@@ -108,8 +108,8 @@ struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path
 }
 
 struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* dir, const char* suffix, int mode) {
-	char name[PATH_MAX];
-	snprintf(name, sizeof(name), "%s%s", dirs->baseName, suffix);
+	char name[PATH_MAX + 1] = "";
+	snprintf(name, sizeof(name) - 1, "%s%s", dirs->baseName, suffix);
 	return dir->openFile(dir, name, mode);
 }
 
