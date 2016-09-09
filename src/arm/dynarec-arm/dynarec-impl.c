@@ -292,33 +292,27 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 	saveRegs(ctx);
 	saveNZCV(ctx);)
 
-bool _ThumbCompilerADD3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+#define DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(NAME, BODY) \
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int rm = (opcode >> 6) & 0x0007; \
+		int rd = opcode & 0x0007; \
+		int rn = (opcode >> 3) & 0x0007; \
+		BODY;)
 
-bool _ThumbCompilerSUB3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
+DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(ADD3,
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	unsigned reg_rm = useReg(ctx, rm);
+	EMIT(ctx, ADDS, AL, reg_rd, reg_rn, reg_rm);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
+DEFINE_DATA_FORM_1_INSTRUCTION_THUMB(SUB3,
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_rn = useReg(ctx, rn);
+	unsigned reg_rm = useReg(ctx, rm);
+	EMIT(ctx, SUBS, AL, reg_rd, reg_rn, reg_rm);
+	saveRegs(ctx);
+	saveNZCV(ctx);)
 
 bool _ThumbCompilerADD1(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
