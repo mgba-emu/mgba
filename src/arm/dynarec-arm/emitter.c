@@ -64,57 +64,87 @@ static uint32_t calculateAddrMode1(unsigned imm) {
 	abort();
 }
 
-#define SHIFT(MN, S, I, ARGS, BODY) \
-	uint32_t emit##MN##S##_ASR##I ARGS { return OP_##MN | ADDR1_ASR | BODY; } \
-	uint32_t emit##MN##S##_LSL##I ARGS { return OP_##MN | ADDR1_LSL | BODY; } \
-	uint32_t emit##MN##S##_LSR##I ARGS { return OP_##MN | ADDR1_LSR | BODY; } \
-	uint32_t emit##MN##S##_ROR##I ARGS { return OP_##MN | ADDR1_ROR | BODY; }
+#define SHIFT(MN, S, I, ARGS, PREBODY, BODY) \
+	uint32_t emit##MN##S##_ASR##I ARGS { PREBODY; return OP_##MN | ADDR1_ASR | BODY; } \
+	uint32_t emit##MN##S##_LSL##I ARGS { PREBODY; return OP_##MN | ADDR1_LSL | BODY; } \
+	uint32_t emit##MN##S##_LSR##I ARGS { PREBODY; return OP_##MN | ADDR1_LSR | BODY; } \
+	uint32_t emit##MN##S##_ROR##I ARGS { PREBODY; return OP_##MN | ADDR1_ROR | BODY; }
 
 #define DEFINE_ALU3_EMITTER(MN) \
 	uint32_t emit##MN(unsigned dst, unsigned src, unsigned op2) { \
+		assert(dst < 16 && src < 16 && op2 < 16); \
 		return OP_##MN | (dst << 12) | (src << 16) | op2; \
 	} \
 	uint32_t emit##MN##I(unsigned dst, unsigned src, unsigned imm) { \
+		assert(dst < 16 && src < 16); \
 		return OP_##MN | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16); \
 	} \
 	uint32_t emit##MN##S(unsigned dst, unsigned src, unsigned op2) { \
+		assert(dst < 16 && src < 16 && op2 < 16); \
 		return OP_##MN | OP_S | (dst << 12) | (src << 16) | op2; \
 	} \
 	uint32_t emit##MN##SI(unsigned dst, unsigned src, unsigned imm) { \
+		assert(dst < 16 && src < 16); \
 		return OP_##MN | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12) | (src << 16); \
 	} \
-	SHIFT(MN,  ,  , (unsigned dst, unsigned src1, unsigned src2, unsigned src3), (       (dst << 12) | (src1 << 16) | (src3 << 8) | src2)) \
-	SHIFT(MN, S,  , (unsigned dst, unsigned src1, unsigned src2, unsigned src3), (OP_S | (dst << 12) | (src1 << 16) | (src3 << 8) | src2)) \
-	SHIFT(MN,  , I, (unsigned dst, unsigned src1, unsigned src2, unsigned imm), (       (dst << 12) | (src1 << 16) | ((imm & 0x1F) << 7) | src2)) \
-	SHIFT(MN, S, I, (unsigned dst, unsigned src1, unsigned src2, unsigned imm), (OP_S | (dst << 12) | (src1 << 16) | ((imm & 0x1F) << 7) | src2))
+	SHIFT(MN,  ,  , (unsigned dst, unsigned src1, unsigned src2, unsigned src3), \
+		assert(dst < 16 && src1 < 16 && src2 < 16 && src3 < 16), \
+		(       (dst << 12) | (src1 << 16) | (src3 << 8) | src2)) \
+	SHIFT(MN, S,  , (unsigned dst, unsigned src1, unsigned src2, unsigned src3), \
+		assert(dst < 16 && src1 < 16 && src2 < 16 && src3 < 16), \
+		(OP_S | (dst << 12) | (src1 << 16) | (src3 << 8) | src2)) \
+	SHIFT(MN,  , I, (unsigned dst, unsigned src1, unsigned src2, unsigned imm), \
+		assert(dst < 16 && src1 < 16 && src2 < 16), \
+		(       (dst << 12) | (src1 << 16) | ((imm & 0x1F) << 7) | src2)) \
+	SHIFT(MN, S, I, (unsigned dst, unsigned src1, unsigned src2, unsigned imm), \
+		assert(dst < 16 && src1 < 16 && src2 < 16), \
+		(OP_S | (dst << 12) | (src1 << 16) | ((imm & 0x1F) << 7) | src2))
 
 #define DEFINE_ALU2_EMITTER(MN) \
 	uint32_t emit##MN(unsigned dst, unsigned op2) { \
+		assert(dst < 16 && op2 < 16); \
 		return OP_##MN | (dst << 12) | op2; \
 	} \
 	uint32_t emit##MN##I(unsigned dst, unsigned imm) { \
+		assert(dst < 16); \
 		return OP_##MN | OP_I | calculateAddrMode1(imm) | (dst << 12); \
 	} \
 	uint32_t emit##MN##S(unsigned dst, unsigned op2) { \
+		assert(dst < 16 && op2 < 16); \
 		return OP_##MN | OP_S | (dst << 12) | op2; \
 	} \
 	uint32_t emit##MN##SI(unsigned dst, unsigned imm) { \
+		assert(dst < 16); \
 		return OP_##MN | OP_S | OP_I | calculateAddrMode1(imm) | (dst << 12); \
 	} \
-	SHIFT(MN,  ,  , (unsigned dst, unsigned src1, unsigned src2), (       (dst << 12) | (src2 << 8) | src1)) \
-	SHIFT(MN, S,  , (unsigned dst, unsigned src1, unsigned src2), (OP_S | (dst << 12) | (src2 << 8) | src1)) \
-	SHIFT(MN,  , I, (unsigned dst, unsigned src1, unsigned imm), (       (dst << 12) | ((imm & 0x1F) << 7) | src1)) \
-	SHIFT(MN, S, I, (unsigned dst, unsigned src1, unsigned imm), (OP_S | (dst << 12) | ((imm & 0x1F) << 7) | src1))
+	SHIFT(MN,  ,  , (unsigned dst, unsigned src1, unsigned src2), \
+		assert(dst < 16 && src1 < 16 && src2 < 16), \
+		(       (dst << 12) | (src2 << 8) | src1)) \
+	SHIFT(MN, S,  , (unsigned dst, unsigned src1, unsigned src2), \
+		assert(dst < 16 && src1 < 16 && src2 < 16), \
+		(OP_S | (dst << 12) | (src2 << 8) | src1)) \
+	SHIFT(MN,  , I, (unsigned dst, unsigned src1, unsigned imm), \
+		assert(dst < 16 && src1 < 16), \
+		(       (dst << 12) | ((imm & 0x1F) << 7) | src1)) \
+	SHIFT(MN, S, I, (unsigned dst, unsigned src1, unsigned imm), \
+		assert(dst < 16 && src1 < 16), \
+		(OP_S | (dst << 12) | ((imm & 0x1F) << 7) | src1))
 
 #define DEFINE_ALU1_EMITTER(MN) \
 	uint32_t emit##MN(unsigned src, unsigned op2) { \
+		assert(src < 16 && op2 < 16); \
 		return OP_##MN | (src << 16) | op2; \
 	} \
 	uint32_t emit##MN##I(unsigned src, unsigned imm) { \
+		assert(src < 16); \
 		return OP_##MN | OP_I | calculateAddrMode1(imm) | (src << 16); \
 	} \
-	SHIFT(MN,  ,  , (unsigned src1, unsigned src2, unsigned src3), ((src1 << 16) | (src3 << 8) | src2)) \
-	SHIFT(MN,  , I, (unsigned src1, unsigned src2, unsigned imm), ((src1 << 16) | ((imm & 0x1F) << 7) | src2))
+	SHIFT(MN,  ,  , (unsigned src1, unsigned src2, unsigned src3), \
+		assert(src1 < 16 && src2 < 16 && src3 < 16), \
+		((src1 << 16) | (src3 << 8) | src2)) \
+	SHIFT(MN,  , I, (unsigned src1, unsigned src2, unsigned imm), \
+		assert(src1 < 16 && src2 < 16), \
+		((src1 << 16) | ((imm & 0x1F) << 7) | src2))
 
 DEFINE_ALU3_EMITTER(ADC)
 DEFINE_ALU3_EMITTER(ADD)
@@ -139,18 +169,22 @@ DEFINE_ALU1_EMITTER(TST)
 #undef SHIFT
 
 uint32_t emitMOVT(unsigned dst, uint16_t value) {
+	assert(dst < 16);
 	return OP_MOVT | (dst << 12) | ((value & 0xF000) << 4) | (value & 0x0FFF);
 }
 
 uint32_t emitMOVW(unsigned dst, uint16_t value) {
+	assert(dst < 16);
 	return OP_MOVW | (dst << 12) | ((value & 0xF000) << 4) | (value & 0x0FFF);
 }
 
 uint32_t emitLDMIA(unsigned base, unsigned mask) {
+	assert(base < 16);
 	return OP_LDMIA | (base << 16) | mask;
 }
 
 uint32_t emitLDRI(unsigned reg, unsigned base, int offset) {
+	assert(reg < 16 && base < 16);
 	uint32_t op = OP_LDRI | (base << 16) | (reg << 12);
 	if (offset > 0) {
 		op |= 0x00800000 | offset;
@@ -169,10 +203,12 @@ uint32_t emitPUSH(unsigned mask) {
 }
 
 uint32_t emitSTMIA(unsigned base, unsigned mask) {
+	assert(base < 16);
 	return OP_STMIA | (base << 16) | mask;
 }
 
 uint32_t emitSTRI(unsigned reg, unsigned base, int offset) {
+	assert(reg < 16 && base < 16);
 	uint32_t op = OP_STRI | (base << 16) | (reg << 12);
 	if (offset > 0) {
 		op |= 0x00800000 | offset;
@@ -183,6 +219,7 @@ uint32_t emitSTRI(unsigned reg, unsigned base, int offset) {
 }
 
 uint32_t emitSTRBI(unsigned reg, unsigned base, int offset) {
+	assert(reg < 16 && base < 16);
 	uint32_t op = OP_STRBI | (base << 16) | (reg << 12);
 	if (offset > 0) {
 		op |= 0x00800000 | offset;
@@ -207,9 +244,11 @@ uint32_t emitBL(void* base, void* target) {
 }
 
 uint32_t emitMRS(unsigned dst) {
+	assert(dst < 16);
 	return OP_MRS | (dst << 12);
 }
 
 uint32_t emitMSR(bool nzcvq, bool g, unsigned src) {
+	assert(src < 16);
     return OP_MSR | (nzcvq << 19) | (g << 18) | src;
 }
