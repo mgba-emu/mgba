@@ -554,6 +554,23 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		continue_compilation = false;
 	})
 
+#define DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(NAME, BODY) \
+	DEFINE_INSTRUCTION_THUMB(NAME, \
+		int rd = (opcode >> 8) & 0x0007; \
+		int immediate = (opcode & 0x00FF) << 2; \
+		BODY;)
+
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD5,
+	uint32_t to_write = (ctx->gpr_15 & 0xFFFFFFFC) + immediate;
+	unsigned reg_rd = defReg(ctx, rd);
+	EMIT_IMM(ctx, AL, reg_rd, to_write);
+	saveRegs(ctx);)
+DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6,
+	unsigned reg_rd = defReg(ctx, rd);
+	unsigned reg_sp = useReg(ctx, ARM_SP);
+	EMIT(ctx, ADDI, AL, reg_rd, reg_sp, immediate);
+	saveRegs(ctx);)
+
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
@@ -801,34 +818,6 @@ bool _ThumbCompilerSTR3(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint
 }
 
 bool _ThumbCompilerLDR4(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerADD5(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerADD6(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
