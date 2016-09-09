@@ -269,6 +269,12 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 
 #define THUMB_PREFETCH_CYCLES (1 + cpu->memory.activeSeqCycles16)
 
+#define THUMB_LOAD_POST_BODY \
+	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
+
+#define THUMB_STORE_POST_BODY \
+	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
+
 static void thumbWritePcCallback(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
