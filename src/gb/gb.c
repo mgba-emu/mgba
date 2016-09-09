@@ -133,7 +133,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				if (size & 0xFF) {
 					memcpy(&gb->memory.sram[gb->sramSize - (size & 0xFF)], extdataBuffer, size & 0xFF);
 				}
-			} else {
+			} else if (size > gb->sramSize || !gb->memory.sram) {
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
 				}
@@ -144,6 +144,9 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
 			gb->memory.sram = vf->map(vf, size, MAP_READ);
+		}
+		if (gb->memory.sram == (void*) -1) {
+			gb->memory.sram = NULL;
 		}
 	} else {
 		uint8_t* newSram = anonymousMemoryMap(size);
@@ -160,7 +163,9 @@ void GBResizeSram(struct GB* gb, size_t size) {
 		}
 		gb->memory.sram = newSram;
 	}
-	gb->sramSize = size;
+	if (gb->sramSize < size) {
+		gb->sramSize = size;
+	}
 }
 
 void GBSavedataMask(struct GB* gb, struct VFile* vf) {

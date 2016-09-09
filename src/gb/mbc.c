@@ -48,20 +48,34 @@ void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 
 void GBMBCInit(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	switch (cart->ramSize) {
+	case 0:
+		gb->sramSize = 0;
+		break;
+	case 1:
+		gb->sramSize = 0x800;
+		break;
+	default:
+	case 2:
+		gb->sramSize = 0x2000;
+		break;
+	case 3:
+		gb->sramSize = 0x8000;
+		break;
+	}
+
 	switch (cart->type) {
 	case 0:
 	case 8:
 	case 9:
 		gb->memory.mbc = _GBMBCNone;
 		gb->memory.mbcType = GB_MBC_NONE;
-		gb->sramSize = 0;
 		return;
 	case 1:
 	case 2:
 	case 3:
 		gb->memory.mbc = _GBMBC1;
 		gb->memory.mbcType = GB_MBC1;
-		gb->sramSize = 0x2000;
 		break;
 	case 5:
 	case 6:
@@ -76,7 +90,7 @@ void GBMBCInit(struct GB* gb) {
 	case 0x13:
 		gb->memory.mbc = _GBMBC3;
 		gb->memory.mbcType = GB_MBC3;
-		gb->sramSize = 0x2048;
+		gb->sramSize += 0x48;
 		break;
 	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
@@ -86,14 +100,12 @@ void GBMBCInit(struct GB* gb) {
 	case 0x1B:
 		gb->memory.mbc = _GBMBC5;
 		gb->memory.mbcType = GB_MBC5;
-		gb->sramSize = 0x2000;
 		break;
 	case 0x1C:
 	case 0x1D:
 	case 0x1E:
 		gb->memory.mbc = _GBMBC5;
 		gb->memory.mbcType = GB_MBC5_RUMBLE;
-		gb->sramSize = 0x2000;
 		break;
 	case 0x20:
 		gb->memory.mbc = _GBMBC6;
@@ -108,7 +120,6 @@ void GBMBCInit(struct GB* gb) {
 	case 0xFE:
 		gb->memory.mbc = _GBHuC3;
 		gb->memory.mbcType = GB_HuC3;
-		gb->sramSize = 0x2000;
 		break;
 	}
 
