@@ -397,79 +397,152 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="47"/>
-        <source>Save</source>
+        <location filename="../OverrideView.ui" line="30"/>
+        <source>Game Boy Advance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="77"/>
-        <source>Save type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="85"/>
-        <location filename="../OverrideView.ui" line="190"/>
+        <location filename="../OverrideView.ui" line="42"/>
+        <location filename="../OverrideView.ui" line="121"/>
+        <location filename="../OverrideView.ui" line="248"/>
+        <location filename="../OverrideView.ui" line="279"/>
         <source>Autodetect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="90"/>
-        <source>None</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="95"/>
-        <source>SRAM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="100"/>
-        <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="105"/>
-        <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="110"/>
-        <source>EEPROM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="118"/>
-        <source>Idle loop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="159"/>
-        <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../OverrideView.ui" line="203"/>
+        <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="213"/>
+        <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="223"/>
+        <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="233"/>
+        <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../OverrideView.ui" line="243"/>
+        <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="113"/>
+        <source>Save type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="126"/>
+        <location filename="../OverrideView.ui" line="284"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="131"/>
+        <source>SRAM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="136"/>
+        <source>Flash 512kb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="141"/>
+        <source>Flash 1Mb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="146"/>
+        <source>EEPROM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="154"/>
+        <source>Idle loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="195"/>
+        <source>Game Boy Player features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="234"/>
+        <source>Game Boy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="240"/>
+        <source>Game Boy model</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="253"/>
+        <source>Game Boy (DMG)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="258"/>
+        <source>Game Boy Color (CGB)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="263"/>
+        <source>Game Boy Advance (AGB)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="271"/>
+        <source>Memory bank controller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="289"/>
+        <source>MBC1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="294"/>
+        <source>MBC2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="299"/>
+        <source>MBC3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="304"/>
+        <source>MBC3 + RTC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="309"/>
+        <source>MBC5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="314"/>
+        <source>MBC5 + Rumble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="319"/>
+        <source>MBC7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../OverrideView.ui" line="324"/>
+        <source>HuC-3</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -624,28 +697,28 @@
 <context>
     <name>QGBA::GameController</name>
     <message>
-        <location filename="../GameController.cpp" line="323"/>
-        <location filename="../GameController.cpp" line="488"/>
+        <location filename="../GameController.cpp" line="325"/>
+        <location filename="../GameController.cpp" line="495"/>
         <source>Failed to open game file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="459"/>
+        <location filename="../GameController.cpp" line="466"/>
         <source>Failed to open save file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="517"/>
+        <location filename="../GameController.cpp" line="524"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="537"/>
+        <location filename="../GameController.cpp" line="544"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameController.cpp" line="822"/>
+        <location filename="../GameController.cpp" line="832"/>
         <source>Failed to start audio processor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2696,7 +2769,7 @@
     </message>
     <message>
         <location filename="../Window.cpp" line="1103"/>
-        <source>`</source>
+        <source>~</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2910,102 +2983,102 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1325"/>
+        <location filename="../Window.cpp" line="1324"/>
         <source>Game &amp;Pak sensors...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1329"/>
+        <location filename="../Window.cpp" line="1328"/>
         <source>&amp;Cheats...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1335"/>
+        <location filename="../Window.cpp" line="1334"/>
         <source>Start &amp;GDB server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1342"/>
+        <location filename="../Window.cpp" line="1341"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1347"/>
+        <location filename="../Window.cpp" line="1346"/>
         <source>View &amp;palette...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1353"/>
+        <location filename="../Window.cpp" line="1352"/>
         <source>View &amp;tiles...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1360"/>
+        <location filename="../Window.cpp" line="1359"/>
         <source>View memory...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1366"/>
+        <location filename="../Window.cpp" line="1365"/>
         <source>View &amp;I/O registers...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1423"/>
+        <location filename="../Window.cpp" line="1422"/>
         <source>Exit fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1428"/>
+        <location filename="../Window.cpp" line="1427"/>
         <source>Autofire</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1435"/>
+        <location filename="../Window.cpp" line="1434"/>
         <source>Autofire A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1441"/>
+        <location filename="../Window.cpp" line="1440"/>
         <source>Autofire B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1447"/>
+        <location filename="../Window.cpp" line="1446"/>
         <source>Autofire L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1453"/>
+        <location filename="../Window.cpp" line="1452"/>
         <source>Autofire R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1459"/>
+        <location filename="../Window.cpp" line="1458"/>
         <source>Autofire Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1465"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Autofire Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1471"/>
+        <location filename="../Window.cpp" line="1470"/>
         <source>Autofire Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1477"/>
+        <location filename="../Window.cpp" line="1476"/>
         <source>Autofire Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1483"/>
+        <location filename="../Window.cpp" line="1482"/>
         <source>Autofire Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1489"/>
+        <location filename="../Window.cpp" line="1488"/>
         <source>Autofire Left</source>
         <translation type="unfinished"></translation>
     </message>
