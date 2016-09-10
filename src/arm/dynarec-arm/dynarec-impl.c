@@ -807,6 +807,15 @@ DEFINE_CONDITIONAL_BRANCH_THUMB(LT)
 DEFINE_CONDITIONAL_BRANCH_THUMB(GT)
 DEFINE_CONDITIONAL_BRANCH_THUMB(LE)
 
+DEFINE_INSTRUCTION_THUMB(ADD7,
+	unsigned reg_sp = usedefReg(ctx, ARM_SP);
+	EMIT(ctx, ADDI, AL, reg_sp, reg_sp, (opcode & 0x7F) << 2);
+	saveRegs(ctx);)
+DEFINE_INSTRUCTION_THUMB(SUB4,
+	unsigned reg_sp = usedefReg(ctx, ARM_SP);
+	EMIT(ctx, SUBI, AL, reg_sp, reg_sp, (opcode & 0x7F) << 2);
+	saveRegs(ctx);)
+
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
@@ -827,34 +836,6 @@ bool _ThumbCompilerILL(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint1
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;
-}
-
-bool _ThumbCompilerADD7(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerSUB4(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
 }
 
 bool _ThumbCompilerPUSH(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
