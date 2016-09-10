@@ -866,6 +866,23 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	saveRegs(ctx);)
 
+DEFINE_INSTRUCTION_THUMB(ILL,
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT_IMM(ctx, AL, 1, opcode);
+	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.hitIllegal);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	continue_compilation = false;)
+DEFINE_INSTRUCTION_THUMB(BKPT,
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
+	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.bkpt16);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	continue_compilation = false;)
+
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
@@ -873,40 +890,6 @@ bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
-	return false;
-}
-
-bool _ThumbCompilerILL(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
-	return false;
-}
-
-bool _ThumbCompilerBKPT(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
-	return false;
-}
-
-bool _ThumbCompilerSWI(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;
 }
@@ -949,6 +932,14 @@ bool _ThumbCompilerBL2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint1
 	return false;
 }
 
+DEFINE_INSTRUCTION_THUMB(SWI,
+	flushPC(ctx);
+	flushPrefetch(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
+	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.swi16);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	continue_compilation = false;)
 
 const ThumbCompiler _thumbCompilerTable[0x400] = {
 		DECLARE_THUMB_EMITTER_BLOCK(_ThumbCompiler)
