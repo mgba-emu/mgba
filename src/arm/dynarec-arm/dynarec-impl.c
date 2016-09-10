@@ -882,6 +882,18 @@ DEFINE_INSTRUCTION_THUMB(BKPT,
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.bkpt16);
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	continue_compilation = false;)
+DEFINE_INSTRUCTION_THUMB(B,
+	// TODO(merry): Block linking
+	flushPrefetch(ctx);
+	int16_t immediate = (opcode & 0x07FF) << 5;
+	uint32_t new_pc = ctx->gpr_15 + (((int32_t) immediate) >> 4);
+	unsigned reg_pc = defReg(ctx, ARM_PC);
+	EMIT_IMM(ctx, AL, reg_pc, new_pc);
+	saveRegs(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	continue_compilation = false;)
 
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
@@ -891,18 +903,6 @@ bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
-	return false;
-}
-
-bool _ThumbCompilerB(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, B, LE, ctx->code, cpu->dynarec.epilogue);
 	return false;
 }
 
