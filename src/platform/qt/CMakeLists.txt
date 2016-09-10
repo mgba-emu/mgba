@@ -129,6 +129,12 @@ set(UI_FILES
 	TileView.ui
 	VideoView.ui)
 
+set(GBA_SRC
+	GBAOverride.cpp)
+
+set(GB_SRC
+	GBOverride.cpp)
+
 qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 set(QT_LIBRARIES)
@@ -137,6 +143,14 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5
 set(AUDIO_SRC)
 if(BUILD_SDL)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
+endif()
+
+if(M_CORE_GBA)
+	list(APPEND PLATFORM_SRC ${GBA_SRC})
+endif()
+
+if(M_CORE_GB)
+	list(APPEND PLATFORM_SRC ${GB_SRC})
 endif()
 
 set(QT_DEFINES)

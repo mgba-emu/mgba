@@ -265,20 +265,35 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
 		gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
 		ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-
-		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
-		if (size > 0x100) {
-			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
+		switch (biosCrc) {
+		case 0x59C8598E:
+			break;
+		case 0x41884E46:
+			break;
+		default:
+			gb->biosVf->close(gb->biosVf);
+			gb->biosVf = NULL;
+			free(gb->memory.romBase);
+			gb->memory.romBase = gb->memory.rom;
+			break;
 		}
 
-		cpu->a = 0;
-		cpu->f.packed = 0;
-		cpu->c = 0;
-		cpu->e = 0;
-		cpu->h = 0;
-		cpu->l = 0;
-		cpu->sp = 0;
-		cpu->pc = 0;
+		if (gb->biosVf) {
+			memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+			if (size > 0x100) {
+				memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+			}
+
+			cpu->a = 0;
+			cpu->f.packed = 0;
+			cpu->c = 0;
+			cpu->e = 0;
+			cpu->h = 0;
+			cpu->l = 0;
+			cpu->sp = 0;
+			cpu->pc = 0;
+		}
 	}
 
 	cpu->b = 0;
@@ -298,10 +313,10 @@ void GBReset(struct LR35902Core* cpu) {
 			cpu->h = 1;
 			cpu->l = 0x4D;
 			break;
-		case GB_MODEL_CGB:
+		case GB_MODEL_AGB:
 			cpu->b = 1;
 			// Fall through
-		case GB_MODEL_AGB: // Silence warnings
+		case GB_MODEL_CGB:
 			cpu->a = 0x11;
 			cpu->f.packed = 0x80;
 			cpu->c = 0;

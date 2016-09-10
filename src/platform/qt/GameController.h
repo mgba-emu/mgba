@@ -39,6 +39,7 @@ namespace QGBA {
 class AudioProcessor;
 class InputController;
 class MultiplayerController;
+class Override;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -71,8 +72,9 @@ public:
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
-	void setOverride(const GBACartridgeOverride& override);
-	void clearOverride() { /* TODO: Put back overrides */ }
+	void setOverride(Override* override) { m_override = override; }
+	Override* override() { return m_override; }
+	void clearOverride();
 
 	void setConfig(const mCoreConfig*);
 
@@ -191,6 +193,7 @@ private:
 	QString m_bios;
 	bool m_useBios;
 	QString m_patch;
+	Override* m_override;
 
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;

@@ -70,6 +70,7 @@ GameController::GameController(QObject* parent)
 	, m_backupSaveState(nullptr)
 	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT)
+	, m_override(nullptr)
 {
 #ifdef M_CORE_GBA
 	m_lux.p = this;
@@ -283,8 +284,9 @@ void GameController::clearMultiplayerController() {
 	m_multiplayer = nullptr;
 }
 
-void GameController::setOverride(const GBACartridgeOverride& override) {
-	// TODO: Put back overrides
+void GameController::clearOverride() {
+	delete m_override;
+	m_override = nullptr;
 }
 
 void GameController::setConfig(const mCoreConfig* config) {
@@ -433,6 +435,10 @@ void GameController::openGame(bool biosOnly) {
 		}
 	}
 	m_vf = nullptr;
+
+	if (m_override) {
+		m_override->apply(m_threadContext.core);
+	}
 
 	if (!mCoreThreadStart(&m_threadContext)) {
 		emit gameFailed();

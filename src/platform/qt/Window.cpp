@@ -1318,7 +1318,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GBA
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
 	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
-	m_gbaActions.append(overrides);
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
 #endif
 
