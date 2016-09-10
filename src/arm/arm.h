@@ -152,6 +152,10 @@ struct ARMDynarec {
 	void* flushNZCVAndRegsAndEpilogue;
 	void* flushNZCVAndEpilogue;
 	void* flushRegsAndEpilogue;
+	void* cycleExitAndEpilogue;
+	void* cycleExitAndFlushNZCVAndRegsAndEpilogue;
+	void* cycleExitAndFlushNZCVAndEpilogue;
+	void* cycleExitAndFlushRegsAndEpilogue;
 	void* cycleCheckHandler;
 };
 

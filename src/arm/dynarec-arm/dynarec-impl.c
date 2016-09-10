@@ -15,42 +15,6 @@
 typedef bool (*ThumbCompiler)(struct ARMCore*, struct ARMDynarecContext*, uint16_t opcode);
 extern const ThumbCompiler _thumbCompilerTable[0x400];
 
-void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
-	code_t* code = (code_t*) cpu->dynarec.buffer;
-
-	cpu->dynarec.execute = (void (*)(struct ARMCore*, void*)) code;
-	EMIT_L(code, PUSH, AL, 0x4DF0);
-	EMIT_L(code, LDMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
-	EMIT_L(code, MOV, AL, 15, 1);
-
-	cpu->dynarec.flushNZCVAndRegsAndEpilogue = (void*) code;
-	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
-	cpu->dynarec.flushNZCVAndEpilogue = (void*) code;
-	EMIT_L(code, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
-	EMIT_L(code, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
-	cpu->dynarec.epilogue = (void*) code;
-	EMIT_L(code, POP, AL, 0x8DF0);
-
-	cpu->dynarec.flushRegsAndEpilogue = (void*) code;
-	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
-	EMIT_L(code, POP, AL, 0x8DF0);
-
-	cpu->dynarec.buffer = code;
-	__clear_cache(cpu->dynarec.execute, code);
-}
-
-static void* selectEpilogue(struct ARMCore* cpu, struct ARMDynarecContext* ctx) {
-	if (ctx->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(ctx)) {
-		return cpu->dynarec.flushNZCVAndRegsAndEpilogue;
-	} else if (ctx->reg_cache_state == REG_CACHE_LOADED) {
-		return cpu->dynarec.flushRegsAndEpilogue;
-	} else if (isNZCVInScratch(ctx)) {
-		return cpu->dynarec.flushNZCVAndEpilogue;
-	} else {
-		return cpu->dynarec.epilogue;
-	}
-}
-
 static void InterpretThumbInstructionNormally(struct ARMCore* cpu) {
     uint32_t opcode = cpu->prefetch[0];
     cpu->prefetch[0] = cpu->prefetch[1];
@@ -312,6 +276,9 @@ static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 			} else {
 				EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
 			}
+			if (guest_reg == 15) {
+				ctx->gpr_15_invalid = true;
+			}
 			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
 		}
 		if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
@@ -330,6 +297,7 @@ static void assertNoAssignedRegs(struct ARMDynarecContext* ctx) {
 // PC + Prefetch
 
 static void flushPC(struct ARMDynarecContext* ctx) {
+	assert(!ctx->gpr_15_invalid);
 	if (!ctx->gpr_15_flushed) {
 		assert(!ctx->is_reglist_save_pushed);
 		unsigned tmp = allocTemp(ctx);
@@ -353,6 +321,87 @@ static void flushPrefetch(struct ARMDynarecContext* ctx) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
+	code_t* code = (code_t*) cpu->dynarec.buffer;
+
+	cpu->dynarec.execute = (void (*)(struct ARMCore*, void*)) code;
+	EMIT_L(code, PUSH, AL, 0x4DF0);
+	EMIT_L(code, LDMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
+	EMIT_L(code, MOV, AL, 15, 1);
+
+	cpu->dynarec.flushNZCVAndRegsAndEpilogue = (void*) code;
+	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
+	cpu->dynarec.flushNZCVAndEpilogue = (void*) code;
+	EMIT_L(code, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
+	EMIT_L(code, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+	cpu->dynarec.epilogue = (void*) code;
+	EMIT_L(code, POP, AL, 0x8DF0);
+
+	cpu->dynarec.flushRegsAndEpilogue = (void*) code;
+	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
+	EMIT_L(code, POP, AL, 0x8DF0);
+
+	// CYCLE_EXIT needs to do three things:
+	// 1. Store the correct PC back into cpu->gprs[15].
+	// 2. Update cpu->prefetch.
+	// 3. Branch to the correct epilogue.
+	#define DEFINE_CYCLE_EXIT(NAME, EPILOGUE) \
+		cpu->dynarec.NAME = (void*) code;                                                                             \
+		/* At this point REG_SCRATCH1 contains our new PC. */                                                         \
+		EMIT_L(code, STRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));    \
+		/* REG_SCRATCH0, REG_SCRATCH1, and REG_CYCLES are free to use. */                                             \
+		EMIT_L(code, LDRI, AL, REG_CYCLES, REG_ARMCore, offsetof(struct ARMCore, memory) + offsetof(struct ARMMemory, activeMask)); \
+		EMIT_L(code, AND, AL, REG_SCRATCH0, REG_SCRATCH1, REG_CYCLES);                                                \
+		EMIT_L(code, LDRI, AL, REG_CYCLES, REG_ARMCore, offsetof(struct ARMCore, memory) + offsetof(struct ARMMemory, activeRegion)); \
+		EMIT_L(code, ADD, AL, REG_SCRATCH0, REG_SCRATCH0, REG_CYCLES);                                                \
+		EMIT_L(code, LDRHI, AL, REG_SCRATCH1, REG_SCRATCH0, 0);                                                       \
+		EMIT_L(code, STRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t)); \
+		EMIT_L(code, SUBI, AL, REG_SCRATCH0, REG_SCRATCH0, WORD_SIZE_THUMB);                                          \
+		EMIT_L(code, LDRHI, AL, REG_SCRATCH1, REG_SCRATCH0, 0);                                                       \
+		EMIT_L(code, STRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t)); \
+		EMIT_L(code, B, AL, code, cpu->dynarec.EPILOGUE);
+
+	DEFINE_CYCLE_EXIT(cycleExitAndEpilogue, epilogue);
+	DEFINE_CYCLE_EXIT(cycleExitAndFlushNZCVAndRegsAndEpilogue, flushNZCVAndRegsAndEpilogue);
+	DEFINE_CYCLE_EXIT(cycleExitAndFlushNZCVAndEpilogue, flushNZCVAndEpilogue);
+	DEFINE_CYCLE_EXIT(cycleExitAndFlushRegsAndEpilogue, flushRegsAndEpilogue);
+
+	#undef DEFINE_CYCLE_EXIT
+
+	cpu->dynarec.buffer = code;
+	__clear_cache(cpu->dynarec.execute, code);
+}
+
+static void* selectEpilogue(struct ARMCore* cpu, struct ARMDynarecContext* ctx) {
+	if (ctx->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(ctx)) {
+		return cpu->dynarec.flushNZCVAndRegsAndEpilogue;
+	} else if (ctx->reg_cache_state == REG_CACHE_LOADED) {
+		return cpu->dynarec.flushRegsAndEpilogue;
+	} else if (isNZCVInScratch(ctx)) {
+		return cpu->dynarec.flushNZCVAndEpilogue;
+	} else {
+		return cpu->dynarec.epilogue;
+	}
+}
+
+static void* selectCycleExit(struct ARMCore* cpu, struct ARMDynarecContext* ctx) {
+	if (ctx->prefetch_flushed || ctx->gpr_15_flushed) {
+		// Correctness: A function that we call can modify the PC. We don't want to overwrite this!
+		assert(ctx->prefetch_flushed && ctx->gpr_15_flushed);
+		return selectEpilogue(cpu, ctx);
+	}
+	assert(!ctx->gpr_15_invalid);
+	if (ctx->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(ctx)) {
+		return cpu->dynarec.cycleExitAndFlushNZCVAndRegsAndEpilogue;
+	} else if (ctx->reg_cache_state == REG_CACHE_LOADED) {
+		return cpu->dynarec.cycleExitAndFlushRegsAndEpilogue;
+	} else if (isNZCVInScratch(ctx)) {
+		return cpu->dynarec.cycleExitAndFlushNZCVAndEpilogue;
+	} else {
+		return cpu->dynarec.cycleExitAndEpilogue;
+	}
+}
+
 void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
 #ifndef NDEBUG
 //	printf("%08X (%c)\n", trace->start, trace->mode == MODE_THUMB ? 'T' : 'A');
@@ -365,9 +414,10 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		struct ARMDynarecContext ctx = {
 			.code = cpu->dynarec.buffer,
 			.gpr_15 = trace->start + 3 * WORD_SIZE_THUMB,
+			.gpr_15_flushed = false,
+			.gpr_15_invalid = false,
 			.cycles_register_valid = false,
 			.cycles = 0,
-			.gpr_15_flushed = false,
 			.prefetch_flushed = false,
 			.is_nzcv_in_host_nzcv = false,
 			.is_reglist_save_pushed = false,
@@ -382,15 +432,14 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		bool continue_compilation = true;
 		while (continue_compilation) {
 			// emit: if (cpu->cycles >= cpu->nextEvent) return;
-			flushPC(&ctx);
-			flushPrefetch(&ctx);
-			assert(!ctx.is_reglist_save_pushed);
+			assert(!ctx.is_reglist_save_pushed && !ctx.gpr_15_invalid);
 			flushNZCVToScratch(&ctx);
 			assertNoAssignedRegs(&ctx);
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
 			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			EMIT(&ctx, B, GE, ctx.code, selectEpilogue(cpu, &ctx));
+			EMIT_IMM(&ctx, GE, REG_SCRATCH1, ctx.gpr_15);
+			EMIT(&ctx, B, GE, ctx.code, selectCycleExit(cpu, &ctx));
 
 			// ThumbStep
 			uint32_t opcode = ctx.prefetch[0];

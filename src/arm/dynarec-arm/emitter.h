@@ -70,6 +70,7 @@ struct ARMDynarecContext {
 
 	bool gpr_15_flushed;
 	uint32_t gpr_15; //!< The value that would be in cpu->gpr[15] if this were the interpreter.
+	bool gpr_15_invalid;
 
 	bool prefetch_flushed;
 	uint32_t prefetch[2];
