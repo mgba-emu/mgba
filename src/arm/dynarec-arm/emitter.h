@@ -51,6 +51,12 @@ enum ARMDynarecScratchState {
 	SCRATCH_STATE_CONTAINS_NZCV = 4,
 };
 
+enum ARMDynarecRegCacheState {
+	REG_CACHE_NOT_LOADED,
+	REG_CACHE_LOADED,
+	REG_CACHE_R7_ON_STACK,
+};
+
 struct ARMDynarecContext {
 	code_t* code;
 
@@ -70,6 +76,7 @@ struct ARMDynarecContext {
 
 	bool is_nzcv_in_host_nzcv;
 	bool is_reglist_save_pushed;
+	enum ARMDynarecRegCacheState reg_cache_state;
 };
 
 #define EMIT_L(DEST, OPCODE, COND, ...) \

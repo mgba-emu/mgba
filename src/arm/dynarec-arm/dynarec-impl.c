@@ -18,23 +18,37 @@ extern const ThumbCompiler _thumbCompilerTable[0x400];
 void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
 	code_t* code = (code_t*) cpu->dynarec.buffer;
 
-	// Common prologue
 	cpu->dynarec.execute = (void (*)(struct ARMCore*, void*)) code;
 	EMIT_L(code, PUSH, AL, 0x4DF0);
+	EMIT_L(code, LDMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
 	EMIT_L(code, MOV, AL, 15, 1);
 
-	// Flush NZCV
+	cpu->dynarec.flushNZCVAndRegsAndEpilogue = (void*) code;
+	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
 	cpu->dynarec.flushNZCVAndEpilogue = (void*) code;
 	EMIT_L(code, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
 	EMIT_L(code, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
-
-	// Common epilogue
 	cpu->dynarec.epilogue = (void*) code;
+	EMIT_L(code, POP, AL, 0x8DF0);
+
+	cpu->dynarec.flushRegsAndEpilogue = (void*) code;
+	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
 	EMIT_L(code, POP, AL, 0x8DF0);
 
 	cpu->dynarec.buffer = code;
 	__clear_cache(cpu->dynarec.execute, code);
 }
+
+#define EMIT_BRANCH_TO_EPILOGUE(CTX, COND) \
+	if ((CTX)->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(CTX)) { \
+		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushNZCVAndRegsAndEpilogue); \
+	} else if ((CTX)->reg_cache_state == REG_CACHE_LOADED) { \
+		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushRegsAndEpilogue); \
+	} else if (isNZCVInScratch(CTX)) { \
+		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushNZCVAndEpilogue); \
+	} else { \
+		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.epilogue); \
+	}
 
 static void InterpretThumbInstructionNormally(struct ARMCore* cpu) {
     uint32_t opcode = cpu->prefetch[0];
@@ -155,11 +169,31 @@ static void flushNZCVFully(struct ARMDynarecContext* ctx) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Register allocation
 
+static void flushRegisterCache(struct ARMDynarecContext* ctx) {
+	assert(!ctx->is_reglist_save_pushed && ctx->reg_cache_state != REG_CACHE_R7_ON_STACK);
+	if (ctx->reg_cache_state == REG_CACHE_LOADED) {
+		EMIT(ctx, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
+		ctx->reg_cache_state = REG_CACHE_NOT_LOADED;
+	}
+}
+
 static void loadRegValueNoVerify(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
+	assert(!ctx->is_reglist_save_pushed && ctx->reg_cache_state != REG_CACHE_R7_ON_STACK);
+	if (ctx->reg_cache_state == REG_CACHE_LOADED) {
+		switch (guest_reg) {
+		case 0: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R0); return;
+		case 1: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R1); return;
+		case 2: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R2); return;
+		case 3: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R3); return;
+		case 4: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R4); return;
+		case 5: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R5); return;
+		case 6: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R6); return;
+		case 7: EMIT(ctx, MOV, AL, host_reg, REG_GUEST_R7); return;
+		}
+	}
 	if (guest_reg == 15) {
 		EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
 	} else {
-		assert(!ctx->is_reglist_save_pushed);
 		EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
 	}
 }
@@ -190,17 +224,60 @@ static unsigned findIndexOfGuestOrFreeReg(struct ARMDynarecContext* ctx, unsigne
 	assert(!"Ran out of scratch registers");
 }
 
+static unsigned cachedRegHelper(struct ARMDynarecContext* ctx, bool is_use, unsigned guest_reg, unsigned* host_reg) {
+	if (guest_reg > 7)
+		return false;
+
+	switch (guest_reg) {
+	case 0: *host_reg = REG_GUEST_R0; break;
+	case 1: *host_reg = REG_GUEST_R1; break;
+	case 2: *host_reg = REG_GUEST_R2; break;
+	case 3: *host_reg = REG_GUEST_R3; break;
+	case 4: *host_reg = REG_GUEST_R4; break;
+	case 5: *host_reg = REG_GUEST_R5; break;
+	case 6: *host_reg = REG_GUEST_R6; break;
+	case 7: *host_reg = REG_GUEST_R7; break;
+	default: abort();
+	}
+
+	if (!ctx->is_reglist_save_pushed) {
+		switch (ctx->reg_cache_state) {
+		case REG_CACHE_NOT_LOADED:
+			EMIT(ctx, LDMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
+			ctx->reg_cache_state = REG_CACHE_LOADED;
+		case REG_CACHE_LOADED:
+			return true;
+		}
+		abort();
+	} else {
+		switch (ctx->reg_cache_state) {
+		case REG_CACHE_NOT_LOADED:
+			return false;
+		case REG_CACHE_R7_ON_STACK:
+			assert(!is_use); // There's no reason to do a useReg in this state.
+			return guest_reg != 7;
+		}
+		abort();
+	}
+}
+
 static unsigned defReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned host_reg;
+	if (cachedRegHelper(ctx, false, guest_reg, &host_reg))
+		return host_reg;
 	unsigned index = findIndexOfGuestOrFreeReg(ctx, guest_reg);
-	unsigned host_reg = REG_SCRATCH0 + index;
+	host_reg = REG_SCRATCH0 + index;
 	ctx->scratch[index].state |= SCRATCH_STATE_DEF;
 	ctx->scratch[index].guest_reg = guest_reg;
 	return host_reg;
 }
 
 static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned host_reg;
+	if (cachedRegHelper(ctx, true, guest_reg, &host_reg))
+		return host_reg;
 	unsigned index = findIndexOfGuestOrFreeReg(ctx, guest_reg);
-	unsigned host_reg = REG_SCRATCH0 + index;
+	host_reg = REG_SCRATCH0 + index;
 	if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
 		// Value's already been loaded.
 		assert(ctx->scratch[index].guest_reg == guest_reg);
@@ -221,16 +298,30 @@ static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 
 static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 	assert(!ctx->is_reglist_save_pushed);
+	assert(ctx->reg_cache_state != REG_CACHE_R7_ON_STACK);
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
 			unsigned host_reg = REG_SCRATCH0 + index;
 			unsigned guest_reg = ctx->scratch[index].guest_reg;
-			EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+			if (ctx->reg_cache_state == REG_CACHE_LOADED && guest_reg <= 7) {
+				switch (guest_reg) {
+				case 7: EMIT(ctx, MOV, AL, REG_GUEST_R7, host_reg); break;
+				default: abort();
+				}
+			} else {
+				EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+			}
 			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
 		}
 		if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
 			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
 		}
+	}
+}
+
+static void assertNoAssignedRegs(struct ARMDynarecContext* ctx) {
+	for (unsigned index = 0; index < 3; index++) {
+		assert((ctx->scratch[index].state & (SCRATCH_STATE_DEF | SCRATCH_STATE_USE)) == 0);
 	}
 }
 
@@ -279,6 +370,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			.prefetch_flushed = false,
 			.is_nzcv_in_host_nzcv = false,
 			.is_reglist_save_pushed = false,
+			.reg_cache_state = REG_CACHE_LOADED,
 		};
 		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
 		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
@@ -293,14 +385,11 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			flushPrefetch(&ctx);
 			flushNZCVToScratch(&ctx);
 			assert(!ctx.is_reglist_save_pushed);
+			assertNoAssignedRegs(&ctx);
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
 			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			if (isNZCVInScratch(&ctx)) {
-				EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.flushNZCVAndEpilogue);
-			} else {
-				EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.epilogue);
-			}
+			EMIT_BRANCH_TO_EPILOGUE(&ctx, GE);
 
 			// ThumbStep
 			uint32_t opcode = ctx.prefetch[0];
@@ -312,7 +401,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
 			continue_compilation = instruction(cpu, &ctx, opcode);
 		}
-		EMIT(&ctx, B, AL, ctx.code, cpu->dynarec.epilogue);
+		EMIT_BRANCH_TO_EPILOGUE(&ctx, AL);
 
 		//__clear_cache(trace->entry, ctx.code);
 		__clear_cache(trace->entryPlus4, ctx.code);
@@ -341,6 +430,10 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		assert(!ctx->is_reglist_save_pushed); \
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
 		ctx->is_reglist_save_pushed = true; \
+		assert(ctx->reg_cache_state != REG_CACHE_R7_ON_STACK); \
+		if (ctx->reg_cache_state == REG_CACHE_LOADED) \
+			ctx->reg_cache_state = REG_CACHE_R7_ON_STACK; \
+		assertNoAssignedRegs(ctx); \
 	} while (0)
 
 #define POP_REGLIST_SAVE \
@@ -348,6 +441,9 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		assert(ctx->is_reglist_save_pushed); \
 		EMIT(ctx, POP, AL, REGLIST_SAVE); \
 		ctx->is_reglist_save_pushed = false; \
+		assert(ctx->reg_cache_state != REG_CACHE_LOADED); \
+		if (ctx->reg_cache_state == REG_CACHE_R7_ON_STACK) \
+			ctx->reg_cache_state = REG_CACHE_LOADED; \
 	} while (0)
 
 static void thumbWritePcCallback(struct ARMCore* cpu) {
@@ -616,6 +712,7 @@ DEFINE_INSTRUCTION_THUMB(MUL,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
+	flushRegisterCache(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
@@ -832,6 +929,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STRH2, cpu->memory.store16)
 		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
+		flushRegisterCache(ctx); \
 		int rn = RN; \
 		int rs = opcode & 0xFF; \
 		PRE_BODY; \
@@ -966,6 +1064,7 @@ DEFINE_INSTRUCTION_THUMB(ILL,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
+	flushRegisterCache(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.hitIllegal);
@@ -976,6 +1075,7 @@ DEFINE_INSTRUCTION_THUMB(BKPT,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
+	flushRegisterCache(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.bkpt16);
@@ -1025,11 +1125,12 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
+	flushRegisterCache(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	POP_REGLIST_SAVE;
-	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
+	EMIT_BRANCH_TO_EPILOGUE(ctx, AL);
 	return false;)
 
 DEFINE_INSTRUCTION_THUMB(SWI,
@@ -1037,6 +1138,7 @@ DEFINE_INSTRUCTION_THUMB(SWI,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
+	flushRegisterCache(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.swi16);

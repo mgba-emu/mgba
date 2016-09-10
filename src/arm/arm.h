@@ -149,7 +149,9 @@ struct ARMDynarec {
 	void* temporaryMemory;
 	void (*execute)(struct ARMCore* cpu, void* execution_token);
 	void* epilogue;
+	void* flushNZCVAndRegsAndEpilogue;
 	void* flushNZCVAndEpilogue;
+	void* flushRegsAndEpilogue;
 	void* cycleCheckHandler;
 };
 
