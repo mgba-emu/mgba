@@ -86,118 +86,16 @@ void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Register allocation
+// Get Temporary
 
 static unsigned allocTemp(struct ARMDynarecContext* ctx) {
+	// For very short term use. Do not hold onto it.
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
 			return REG_SCRATCH0 + index;
 		}
 	}
 	assert(!"Ran out of scratch registers");
-}
-
-static void loadRegValueNoVerify(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
-	if (guest_reg == 15) {
-		EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
-	} else {
-		EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
-	}
-}
-
-static void loadRegValue(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
-	assert(host_reg >= REG_SCRATCH0 && host_reg <= REG_SCRATCH2);
-	assert(ctx->scratch[host_reg - REG_SCRATCH0].state == SCRATCH_STATE_EMPTY);
-	loadRegValueNoVerify(ctx, guest_reg, host_reg);
-}
-
-static unsigned defReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
-	for (unsigned index = 0; index < 3; index++) {
-		if (ctx->scratch[index].guest_reg == guest_reg) {
-			if (ctx->scratch[index].state & (SCRATCH_STATE_DEF | SCRATCH_STATE_USE)) {
-				ctx->scratch[index].state |= SCRATCH_STATE_DEF;
-				return REG_SCRATCH0 + index;
-			}
-		}
-	}
-	for (unsigned index = 0; index < 3; index++) {
-		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
-			ctx->scratch[index].state = SCRATCH_STATE_DEF;
-			ctx->scratch[index].guest_reg = guest_reg;
-			return REG_SCRATCH0 + index;
-		}
-	}
-	assert(!"Ran out of scratch registers");
-}
-
-static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
-	for (unsigned index = 0; index < 3; index++) {
-		if (ctx->scratch[index].guest_reg == guest_reg) {
-			if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
-				return REG_SCRATCH0 + index;
-			}
-			if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
-				unsigned host_reg = REG_SCRATCH0 + index;
-				loadRegValueNoVerify(ctx, guest_reg, host_reg);
-				ctx->scratch[index].state |= SCRATCH_STATE_USE;
-				return host_reg;
-			}
-		}
-	}
-	for (unsigned index = 0; index < 3; index++) {
-		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
-			unsigned host_reg = REG_SCRATCH0 + index;
-			loadRegValueNoVerify(ctx, guest_reg, host_reg);
-			ctx->scratch[index].state = SCRATCH_STATE_USE;
-			ctx->scratch[index].guest_reg = guest_reg;
-			return host_reg;
-		}
-	}
-	assert(!"Ran out of scratch registers");
-}
-
-static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
-	unsigned host_reg = useReg(ctx, guest_reg);
-	unsigned host_reg_2 = defReg(ctx, guest_reg);
-	assert(host_reg == host_reg_2);
-	return host_reg;
-}
-
-static unsigned saveRegs(struct ARMDynarecContext* ctx) {
-	for (unsigned index = 0; index < 3; index++) {
-		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
-			unsigned host_reg = REG_SCRATCH0 + index;
-			unsigned guest_reg = ctx->scratch[index].guest_reg;
-			EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
-			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
-		}
-		if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
-			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// PC + Prefetch
-
-static void flushPC(struct ARMDynarecContext* ctx) {
-	if (!ctx->gpr_15_flushed) {
-		unsigned tmp = allocTemp(ctx);
-		EMIT_IMM(ctx, AL, tmp, ctx->gpr_15);
-		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-		ctx->gpr_15_flushed = true;
-	}
-}
-
-static void flushPrefetch(struct ARMDynarecContext* ctx) {
-	if (!ctx->prefetch_flushed) {
-		unsigned tmp = allocTemp(ctx);
-		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[0]);
-		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t));
-		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[1]);
-		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t));
-		ctx->prefetch_flushed = true;
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -249,6 +147,109 @@ static void flushNZCVFully(struct ARMDynarecContext* ctx) {
 		EMIT(ctx, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
 		EMIT(ctx, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
 		ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Register allocation
+
+static void loadRegValueNoVerify(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
+	if (guest_reg == 15) {
+		EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
+	} else {
+		EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+	}
+}
+
+static void loadRegValue(struct ARMDynarecContext* ctx, unsigned guest_reg, unsigned host_reg) {
+	assert(host_reg >= REG_SCRATCH0 && host_reg <= REG_SCRATCH2);
+	assert(ctx->scratch[host_reg - REG_SCRATCH0].state == SCRATCH_STATE_EMPTY);
+	loadRegValueNoVerify(ctx, guest_reg, host_reg);
+}
+
+static unsigned findIndexOfGuestOrFreeReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].guest_reg == guest_reg) {
+			if (ctx->scratch[index].state & (SCRATCH_STATE_USE | SCRATCH_STATE_DEF)) {
+				return index;
+			}
+		}
+	}
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state == SCRATCH_STATE_EMPTY) {
+			return index;
+		}
+	}
+	if (isNZCVInScratch(ctx)) {
+		flushNZCVFully(ctx);
+		return REG_NZCV_TMP - REG_SCRATCH0;
+	}
+	assert(!"Ran out of scratch registers");
+}
+
+static unsigned defReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned index = findIndexOfGuestOrFreeReg(ctx, guest_reg);
+	unsigned host_reg = REG_SCRATCH0 + index;
+	ctx->scratch[index].state |= SCRATCH_STATE_DEF;
+	ctx->scratch[index].guest_reg = guest_reg;
+	return host_reg;
+}
+
+static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned index = findIndexOfGuestOrFreeReg(ctx, guest_reg);
+	unsigned host_reg = REG_SCRATCH0 + index;
+	if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
+		// Value's already been loaded.
+		assert(ctx->scratch[index].guest_reg == guest_reg);
+		return host_reg;
+	}
+	loadRegValueNoVerify(ctx, guest_reg, host_reg);
+	ctx->scratch[index].state |= SCRATCH_STATE_USE;
+	ctx->scratch[index].guest_reg = guest_reg;
+	return host_reg;
+}
+
+static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
+	unsigned host_reg = useReg(ctx, guest_reg);
+	unsigned host_reg_2 = defReg(ctx, guest_reg);
+	assert(host_reg == host_reg_2);
+	return host_reg;
+}
+
+static unsigned saveRegs(struct ARMDynarecContext* ctx) {
+	for (unsigned index = 0; index < 3; index++) {
+		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
+			unsigned host_reg = REG_SCRATCH0 + index;
+			unsigned guest_reg = ctx->scratch[index].guest_reg;
+			EMIT(ctx, STRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
+			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
+		}
+		if (ctx->scratch[index].state & SCRATCH_STATE_USE) {
+			ctx->scratch[index].state = SCRATCH_STATE_EMPTY;
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PC + Prefetch
+
+static void flushPC(struct ARMDynarecContext* ctx) {
+	if (!ctx->gpr_15_flushed) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT_IMM(ctx, AL, tmp, ctx->gpr_15);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
+		ctx->gpr_15_flushed = true;
+	}
+}
+
+static void flushPrefetch(struct ARMDynarecContext* ctx) {
+	if (!ctx->prefetch_flushed) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[0]);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t));
+		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[1]);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 1 * sizeof(uint32_t));
+		ctx->prefetch_flushed = true;
 	}
 }
 
