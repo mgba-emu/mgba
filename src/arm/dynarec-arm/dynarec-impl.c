@@ -319,6 +319,29 @@ static void flushPrefetch(struct ARMDynarecContext* ctx) {
 	}
 }
 
+static void flushCycles(struct ARMDynarecContext* ctx) {
+	assert(!ctx->is_reglist_save_pushed);
+	if (ctx->cycles_register_valid) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
+		if (ctx->cycles == 0) {
+			EMIT(ctx, SUBI, AL, REG_CYCLES, REG_CYCLES, 1);
+		} else if (ctx->cycles != 1) {
+			EMIT(ctx, ADDI, AL, REG_CYCLES, REG_CYCLES, ctx->cycles - 1);
+		}
+		ctx->cycles = 0;
+		EMIT(ctx, ADD, AL, REG_CYCLES, REG_CYCLES, tmp);
+		EMIT(ctx, STRI, AL, REG_CYCLES, REG_ARMCore, offsetof(struct ARMCore, cycles));
+		ctx->cycles_register_valid = false;
+	} else if (ctx->cycles) {
+		unsigned tmp = allocTemp(ctx);
+		EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles));
+		EMIT(ctx, ADDI, AL, tmp, tmp, ctx->cycles);
+		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles));
+		ctx->cycles = 0;
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
@@ -341,14 +364,20 @@ void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
 	EMIT_L(code, STMIA, AL, REG_ARMCore, REGLIST_GUESTREGS);
 	EMIT_L(code, POP, AL, 0x8DF0);
 
-	// CYCLE_EXIT needs to do three things:
+	// CYCLE_EXIT needs to do four things:
 	// 1. Store the correct PC back into cpu->gprs[15].
-	// 2. Update cpu->prefetch.
-	// 3. Branch to the correct epilogue.
+	// 1. Store the correct value of cpu->cycles.
+	// 3. Update cpu->prefetch.
+	// 4. Branch to the correct epilogue.
 	#define DEFINE_CYCLE_EXIT(NAME, EPILOGUE) \
 		cpu->dynarec.NAME = (void*) code;                                                                             \
 		/* At this point REG_SCRATCH1 contains our new PC. */                                                         \
 		EMIT_L(code, STRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));    \
+		/* REG_CYCLES contains the expression cycles - nextEvent + 1 */                                               \
+		EMIT_L(code, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, nextEvent));                       \
+		EMIT_L(code, SUBI, AL, REG_CYCLES, REG_CYCLES, 1);                                                            \
+		EMIT_L(code, ADD, AL, REG_CYCLES, REG_CYCLES, REG_SCRATCH0);                                                  \
+		EMIT_L(code, STRI, AL, REG_CYCLES, REG_ARMCore, offsetof(struct ARMCore, cycles));                            \
 		/* REG_SCRATCH0, REG_SCRATCH1, and REG_CYCLES are free to use. */                                             \
 		EMIT_L(code, LDRI, AL, REG_CYCLES, REG_ARMCore, offsetof(struct ARMCore, memory) + offsetof(struct ARMMemory, activeMask)); \
 		EMIT_L(code, AND, AL, REG_SCRATCH0, REG_SCRATCH1, REG_CYCLES);                                                \
@@ -435,11 +464,19 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			assert(!ctx.is_reglist_save_pushed && !ctx.gpr_15_invalid);
 			flushNZCVToScratch(&ctx);
 			assertNoAssignedRegs(&ctx);
-			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
-			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
-			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			EMIT_IMM(&ctx, GE, REG_SCRATCH1, ctx.gpr_15);
-			EMIT(&ctx, B, GE, ctx.code, selectCycleExit(cpu, &ctx));
+			if (!ctx.cycles_register_valid) {
+				EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
+				EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
+				ctx.cycles++; //< there is the +1.
+				// REG_CYCLES contains the expression cycles - nextEvent + 1
+				// This allows us to avoid an unnecessary CMP instruction.
+				EMIT(&ctx, SUB, AL, REG_CYCLES, REG_SCRATCH0, REG_SCRATCH1);
+				ctx.cycles_register_valid = true;
+			}
+			EMIT(&ctx, ADDSI, AL, REG_CYCLES, REG_CYCLES, ctx.cycles);
+			ctx.cycles = 0;
+			EMIT_IMM(&ctx, PL, REG_SCRATCH1, ctx.gpr_15);
+			EMIT(&ctx, B, PL, ctx.code, selectCycleExit(cpu, &ctx));
 
 			// ThumbStep
 			uint32_t opcode = ctx.prefetch[0];
@@ -451,6 +488,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
 			continue_compilation = instruction(cpu, &ctx, opcode);
 		}
+		flushCycles(&ctx);
 		EMIT(&ctx, B, AL, ctx.code, selectEpilogue(cpu, &ctx));
 
 		//__clear_cache(trace->entry, ctx.code);
@@ -473,6 +511,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 	flushNZCVToScratch(ctx);
 
 #define PREPARE_FOR_BL \
+	flushCycles(ctx); \
 	flushNZCVFully(ctx);
 
 #define PUSH_REGLIST_SAVE \
@@ -510,13 +549,8 @@ static void thumbWritePcCallback(struct ARMCore* cpu) {
 		bool continue_compilation = true; \
 		int currentCycles = THUMB_PREFETCH_CYCLES; \
 		BODY; \
-		{ \
-			unsigned tmp = allocTemp(ctx); \
-			assert(!ctx->is_reglist_save_pushed); \
-			EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
-			EMIT(ctx, ADDI, AL, tmp, tmp, currentCycles); \
-			EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
-		} \
+		assert(!ctx->is_reglist_save_pushed); \
+		ctx->cycles += currentCycles; \
 		return continue_compilation; \
 	}
 
