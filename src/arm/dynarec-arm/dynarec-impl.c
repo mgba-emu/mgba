@@ -277,6 +277,8 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 
 #define FLUSH_HOST_NZCV
 
+#define PREPARE_FOR_BL
+
 static void thumbWritePcCallback(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
@@ -334,6 +336,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB_MEMORY_LOAD(MN, FUNC, SCALE) \
 	DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(MN, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
@@ -354,6 +357,7 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB_MEMORY_LOAD(LDRH1, cpu->memory.load16, 2)
 #define DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB_MEMORY_STORE(MN, FUNC, SCALE) \
 	DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(MN, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
@@ -537,6 +541,7 @@ DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(ORR,
 DEFINE_INSTRUCTION_THUMB(MUL,
 	// Just interpret this.
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
@@ -578,6 +583,7 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4,
 	saveRegs(ctx);
 	if (rd == ARM_PC) {
 		FLUSH_HOST_NZCV
+		PREPARE_FOR_BL
 		flushPrefetch(ctx);
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 		EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
@@ -597,6 +603,7 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 	saveRegs(ctx);
 	if (rd == ARM_PC) {
 		FLUSH_HOST_NZCV
+		PREPARE_FOR_BL
 		flushPrefetch(ctx);
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 		EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
@@ -613,6 +620,7 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3,
 	// TODO(merry): Look into the possibility of inlining this without having to call load32.
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -626,6 +634,7 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3,
 	THUMB_LOAD_POST_BODY;)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -640,6 +649,7 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4,
 	THUMB_LOAD_POST_BODY;)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -673,6 +683,7 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6,
 #define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_LOAD(NAME, FUNC, FINAL_INST) \
 	DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
@@ -700,6 +711,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH,
 	//                     ? ARM_SXT_8(cpu->memory.load16(cpu, rm, &currentCycles))
 	//                     : ARM_SXT_16(cpu->memory.load16(cpu, rm, &currentCycles));
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -724,6 +736,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH,
 #define DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(NAME, FUNC) \
 	DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(NAME, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
 		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
@@ -744,6 +757,7 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STRH2, cpu->memory.store16)
 #define DEFINE_LOAD_STORE_MULTIPLE_THUMB(NAME, RN, LS, DIRECTION, PRE_BODY, WRITEBACK) \
 	DEFINE_INSTRUCTION_THUMB(NAME, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
 		int rn = RN; \
@@ -790,6 +804,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_INSTRUCTION_THUMB(B ## COND, \
 		FLUSH_HOST_NZCV \
+		PREPARE_FOR_BL \
 		/* TODO: Block linking */ \
 		flushPrefetch(ctx); \
 		loadNZCV(ctx); \
@@ -877,6 +892,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 
 DEFINE_INSTRUCTION_THUMB(ILL,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -886,6 +902,7 @@ DEFINE_INSTRUCTION_THUMB(ILL,
 	continue_compilation = false;)
 DEFINE_INSTRUCTION_THUMB(BKPT,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
@@ -896,6 +913,7 @@ DEFINE_INSTRUCTION_THUMB(BKPT,
 DEFINE_INSTRUCTION_THUMB(B,
 	// TODO(merry): Block linking
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPrefetch(ctx);
 	int16_t immediate = (opcode & 0x07FF) << 5;
 	uint32_t new_pc = ctx->gpr_15 + (((int32_t) immediate) >> 4);
@@ -916,6 +934,7 @@ DEFINE_INSTRUCTION_THUMB(BL1,
 	saveRegs(ctx);)
 DEFINE_INSTRUCTION_THUMB(BL2,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPrefetch(ctx);
 	uint16_t immediate = (opcode & 0x07FF) << 1;
 	unsigned reg_pc = defReg(ctx, ARM_PC);
@@ -932,6 +951,7 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 DEFINE_INSTRUCTION_THUMB(BX,
 	// Just interpret this.
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
@@ -943,6 +963,7 @@ DEFINE_INSTRUCTION_THUMB(BX,
 
 DEFINE_INSTRUCTION_THUMB(SWI,
 	FLUSH_HOST_NZCV
+	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
