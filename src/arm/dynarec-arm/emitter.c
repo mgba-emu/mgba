@@ -55,8 +55,10 @@
 #define OP_B       0x0A000000
 #define OP_BL      0x0B000000
 
-#define OP_MRS   0x010F0000
-#define OP_MSR   0x0120F000
+#define OP_MRS     0x010F0000
+#define OP_MSR     0x0120F000
+
+#define OP_NOP     0x0320F000
 
 static uint32_t calculateAddrMode1(unsigned imm) {
 	if (imm < 0x100) {
@@ -285,4 +287,8 @@ uint32_t emitMRS(unsigned dst) {
 uint32_t emitMSR(bool nzcvq, bool g, unsigned src) {
 	assert(src < 16);
     return OP_MSR | (nzcvq << 19) | (g << 18) | src;
+}
+
+uint32_t emitNOP() {
+	return OP_NOP;
 }

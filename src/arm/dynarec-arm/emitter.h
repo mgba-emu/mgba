@@ -193,4 +193,6 @@ uint32_t emitBL(void* base, void* target);
 uint32_t emitMRS(unsigned dst);
 uint32_t emitMSR(bool nzcvq, bool g, unsigned src);
 
+uint32_t emitNOP();
+
 #endif
