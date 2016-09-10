@@ -44,16 +44,11 @@
 
 typedef uint32_t code_t;
 
-enum ARMDynarecNZCVLocation {
-	CONTEXT_NZCV_IN_HOST,
-	CONTEXT_NZCV_IN_TMPREG,
-	CONTEXT_NZCV_IN_MEMORY,
-};
-
 enum ARMDynarecScratchState {
 	SCRATCH_STATE_EMPTY = 0,
 	SCRATCH_STATE_DEF = 1,
 	SCRATCH_STATE_USE = 2,
+	SCRATCH_STATE_CONTAINS_NZCV = 4,
 };
 
 struct ARMDynarecContext {
@@ -73,7 +68,7 @@ struct ARMDynarecContext {
 	bool prefetch_flushed;
 	uint32_t prefetch[2];
 
-	enum ARMDynarecNZCVLocation nzcv_location;
+	bool is_nzcv_in_host_nzcv;
 };
 
 #define EMIT_L(DEST, OPCODE, COND, ...) \

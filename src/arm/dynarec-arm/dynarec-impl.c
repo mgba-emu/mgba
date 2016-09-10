@@ -23,6 +23,11 @@ void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
 	EMIT_L(code, PUSH, AL, 0x4DF0);
 	EMIT_L(code, MOV, AL, 15, 1);
 
+	// Flush NZCV
+	cpu->dynarec.flushNZCVAndEpilogue = (void*) code;
+	EMIT_L(code, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
+	EMIT_L(code, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+
 	// Common epilogue
 	cpu->dynarec.epilogue = (void*) code;
 	EMIT_L(code, POP, AL, 0x8DF0);
@@ -198,17 +203,53 @@ static void flushPrefetch(struct ARMDynarecContext* ctx) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // NZCV management
 
+static bool isNZCVInScratch(struct ARMDynarecContext* ctx) {
+	return ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state == SCRATCH_STATE_CONTAINS_NZCV;
+}
+
 static void loadNZCV(struct ARMDynarecContext* ctx) {
-	unsigned tmp = allocTemp(ctx);
-	EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
-	EMIT(ctx, MSR, AL, true, false, tmp);
+	if (!ctx->is_nzcv_in_host_nzcv) {
+		if (isNZCVInScratch(ctx)) {
+			EMIT(ctx, MSR, AL, true, false, REG_NZCV_TMP);
+			ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
+		} else {
+			unsigned tmp = allocTemp(ctx);
+			EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
+			EMIT(ctx, MSR, AL, true, false, tmp);
+		}
+		ctx->is_nzcv_in_host_nzcv = true;
+	}
 }
 
 static void saveNZCV(struct ARMDynarecContext* ctx) {
-	unsigned tmp = allocTemp(ctx);
-	EMIT(ctx, MRS, AL, tmp);
-	EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
-	EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+	ctx->is_nzcv_in_host_nzcv = true;
+	if (isNZCVInScratch(ctx)) {
+		ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
+	}
+}
+
+static void flushNZCVToScratch(struct ARMDynarecContext* ctx) {
+	if (ctx->is_nzcv_in_host_nzcv) {
+		assert(ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state == SCRATCH_STATE_EMPTY);
+		EMIT(ctx, MRS, AL, REG_NZCV_TMP);
+		ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_CONTAINS_NZCV;
+		ctx->is_nzcv_in_host_nzcv = false;
+	}
+}
+
+static void flushNZCVFully(struct ARMDynarecContext* ctx) {
+	if (ctx->is_nzcv_in_host_nzcv) {
+		assert(!isNZCVInScratch(ctx));
+		unsigned tmp = allocTemp(ctx);
+		EMIT(ctx, MRS, AL, tmp);
+		EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
+		EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+		ctx->is_nzcv_in_host_nzcv = false;
+	} else if (ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state == SCRATCH_STATE_CONTAINS_NZCV) {
+		EMIT(ctx, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
+		EMIT(ctx, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
+		ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,7 +270,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			.cycles = 0,
 			.gpr_15_flushed = false,
 			.prefetch_flushed = false,
-			.nzcv_location = CONTEXT_NZCV_IN_MEMORY,
+			.is_nzcv_in_host_nzcv = false,
 		};
 		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
 		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
@@ -242,10 +283,15 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			// emit: if (cpu->cycles >= cpu->nextEvent) return;
 			flushPC(&ctx);
 			flushPrefetch(&ctx);
+			flushNZCVToScratch(&ctx);
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
 			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.epilogue);
+			if (isNZCVInScratch(&ctx)) {
+				EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.flushNZCVAndEpilogue);
+			} else {
+				EMIT(&ctx, B, GE, ctx.code, cpu->dynarec.epilogue);
+			}
 
 			// ThumbStep
 			uint32_t opcode = ctx.prefetch[0];
@@ -275,9 +321,11 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 #define THUMB_STORE_POST_BODY \
 	currentCycles += cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16;
 
-#define FLUSH_HOST_NZCV
+#define FLUSH_HOST_NZCV \
+	flushNZCVToScratch(ctx);
 
-#define PREPARE_FOR_BL
+#define PREPARE_FOR_BL \
+	flushNZCVFully(ctx);
 
 static void thumbWritePcCallback(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
