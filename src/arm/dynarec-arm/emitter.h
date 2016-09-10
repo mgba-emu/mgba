@@ -179,6 +179,7 @@ uint32_t emitSXTH(unsigned dst, unsigned src, unsigned rotation);
 
 uint32_t emitLDMIA(unsigned base, unsigned mask);
 uint32_t emitLDRI(unsigned reg, unsigned base, int offset);
+uint32_t emitLDRHI(unsigned reg, unsigned base, int offset);
 uint32_t emitPOP(unsigned mask);
 uint32_t emitPUSH(unsigned mask);
 uint32_t emitSTMIA(unsigned base, unsigned mask);

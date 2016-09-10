@@ -45,6 +45,7 @@
 
 #define OP_LDMIA   0x08900000
 #define OP_LDRI    0x05100000
+#define OP_LDRHI   0x015000B0
 #define OP_POP     0x08BD0000
 #define OP_PUSH    0x092D0000
 #define OP_STMIA   0x08800000
@@ -211,6 +212,18 @@ uint32_t emitLDRI(unsigned reg, unsigned base, int offset) {
 		op |= 0x00800000 | offset;
 	} else {
 		op |= -offset & 0xFFF;
+	}
+	return op;
+}
+
+uint32_t emitLDRHI(unsigned reg, unsigned base, int offset) {
+	assert(reg < 16 && base < 16);
+	uint32_t op = OP_LDRHI | (base << 16) | (reg << 12);
+	if (offset > 0) {
+		op |= 0x00800000 | ((offset & 0xF0) << 4) | (offset & 0xF);
+	} else {
+		offset = -offset;
+		op |= ((offset & 0xF0) << 4) | (offset & 0xF);
 	}
 	return op;
 }
