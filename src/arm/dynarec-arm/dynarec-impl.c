@@ -39,16 +39,17 @@ void ARMDynarecEmitPrelude(struct ARMCore* cpu) {
 	__clear_cache(cpu->dynarec.execute, code);
 }
 
-#define EMIT_BRANCH_TO_EPILOGUE(CTX, COND) \
-	if ((CTX)->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(CTX)) { \
-		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushNZCVAndRegsAndEpilogue); \
-	} else if ((CTX)->reg_cache_state == REG_CACHE_LOADED) { \
-		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushRegsAndEpilogue); \
-	} else if (isNZCVInScratch(CTX)) { \
-		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.flushNZCVAndEpilogue); \
-	} else { \
-		EMIT(CTX, B, COND, (CTX)->code, cpu->dynarec.epilogue); \
+static void* selectEpilogue(struct ARMCore* cpu, struct ARMDynarecContext* ctx) {
+	if (ctx->reg_cache_state == REG_CACHE_LOADED && isNZCVInScratch(ctx)) {
+		return cpu->dynarec.flushNZCVAndRegsAndEpilogue;
+	} else if (ctx->reg_cache_state == REG_CACHE_LOADED) {
+		return cpu->dynarec.flushRegsAndEpilogue;
+	} else if (isNZCVInScratch(ctx)) {
+		return cpu->dynarec.flushNZCVAndEpilogue;
+	} else {
+		return cpu->dynarec.epilogue;
 	}
+}
 
 static void InterpretThumbInstructionNormally(struct ARMCore* cpu) {
     uint32_t opcode = cpu->prefetch[0];
@@ -383,13 +384,13 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			// emit: if (cpu->cycles >= cpu->nextEvent) return;
 			flushPC(&ctx);
 			flushPrefetch(&ctx);
-			flushNZCVToScratch(&ctx);
 			assert(!ctx.is_reglist_save_pushed);
+			flushNZCVToScratch(&ctx);
 			assertNoAssignedRegs(&ctx);
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
 			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
-			EMIT_BRANCH_TO_EPILOGUE(&ctx, GE);
+			EMIT(&ctx, B, GE, ctx.code, selectEpilogue(cpu, &ctx));
 
 			// ThumbStep
 			uint32_t opcode = ctx.prefetch[0];
@@ -401,7 +402,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			ThumbCompiler instruction = _thumbCompilerTable[opcode >> 6];
 			continue_compilation = instruction(cpu, &ctx, opcode);
 		}
-		EMIT_BRANCH_TO_EPILOGUE(&ctx, AL);
+		EMIT(&ctx, B, AL, ctx.code, selectEpilogue(cpu, &ctx));
 
 		//__clear_cache(trace->entry, ctx.code);
 		__clear_cache(trace->entryPlus4, ctx.code);
@@ -1130,7 +1131,7 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	POP_REGLIST_SAVE;
-	EMIT_BRANCH_TO_EPILOGUE(ctx, AL);
+	EMIT(ctx, B, AL, ctx->code, selectEpilogue(cpu, ctx));
 	return false;)
 
 DEFINE_INSTRUCTION_THUMB(SWI,
