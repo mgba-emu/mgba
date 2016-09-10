@@ -90,7 +90,7 @@ struct ARMDynarecContext {
 #define EMIT_IMM(DEST, COND, REG, VALUE) \
 	do { \
 		EMIT(DEST, MOVW, COND, REG, VALUE); \
-		if (VALUE >= 0x10000) { \
+		if ((VALUE) >= 0x10000) { \
 			EMIT(DEST, MOVT, COND, REG, (VALUE) >> 16); \
 		} \
 	} while (0)
