@@ -895,6 +895,27 @@ DEFINE_INSTRUCTION_THUMB(B,
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
 	continue_compilation = false;)
 
+DEFINE_INSTRUCTION_THUMB(BL1,
+	// TODO(merry): Block linking
+	int16_t immediate = (opcode & 0x07FF) << 5;
+	uint32_t new_lr = ctx->gpr_15 + (((int32_t) immediate) << 7);
+	unsigned reg_lr = defReg(ctx, ARM_LR);
+	EMIT_IMM(ctx, AL, reg_lr, new_lr);
+	saveRegs(ctx);)
+DEFINE_INSTRUCTION_THUMB(BL2,
+	flushPrefetch(ctx);
+	uint16_t immediate = (opcode & 0x07FF) << 1;
+	unsigned reg_pc = defReg(ctx, ARM_PC);
+	unsigned reg_lr = usedefReg(ctx, ARM_LR);
+	EMIT_IMM(ctx, AL, reg_pc, immediate);
+	EMIT(ctx, ADD, AL, reg_pc, reg_pc, reg_lr);
+	EMIT_IMM(ctx, AL, reg_lr, ctx->gpr_15 - 1);
+	saveRegs(ctx);
+	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
+	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	continue_compilation = false;)
+
 bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
 	flushPC(ctx);
 	flushPrefetch(ctx);
@@ -902,32 +923,6 @@ bool _ThumbCompilerBX(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16
 	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
-	return false;
-}
-
-bool _ThumbCompilerBL1(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
-	EMIT(ctx, LDRI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
-	EMIT(ctx, CMP, AL, 1, 2);
-	EMIT(ctx, B, NE, ctx->code, cpu->dynarec.epilogue);
-	return true;
-}
-
-bool _ThumbCompilerBL2(struct ARMCore* cpu, struct ARMDynarecContext* ctx, uint16_t opcode) {
-	flushPC(ctx);
-	flushPrefetch(ctx);
-	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
-	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
-	EMIT_IMM(ctx, AL, 1, ctx->gpr_15);
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;
 }
