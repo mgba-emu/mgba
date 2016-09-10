@@ -111,6 +111,7 @@ static void loadNZCV(struct ARMDynarecContext* ctx) {
 			EMIT(ctx, MSR, AL, true, false, REG_NZCV_TMP);
 			ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
 		} else {
+			assert(!ctx->is_reglist_save_pushed);
 			unsigned tmp = allocTemp(ctx);
 			EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cpsr));
 			EMIT(ctx, MSR, AL, true, false, tmp);
@@ -137,13 +138,14 @@ static void flushNZCVToScratch(struct ARMDynarecContext* ctx) {
 
 static void flushNZCVFully(struct ARMDynarecContext* ctx) {
 	if (ctx->is_nzcv_in_host_nzcv) {
-		assert(!isNZCVInScratch(ctx));
+		assert(!isNZCVInScratch(ctx) && !ctx->is_reglist_save_pushed);
 		unsigned tmp = allocTemp(ctx);
 		EMIT(ctx, MRS, AL, tmp);
 		EMIT(ctx, MOV_LSRI, AL, tmp, tmp, 24);
 		EMIT(ctx, STRBI, AL, tmp, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
 		ctx->is_nzcv_in_host_nzcv = false;
 	} else if (ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state == SCRATCH_STATE_CONTAINS_NZCV) {
+		assert(!ctx->is_reglist_save_pushed);
 		EMIT(ctx, MOV_LSRI, AL, REG_NZCV_TMP, REG_NZCV_TMP, 24);
 		EMIT(ctx, STRBI, AL, REG_NZCV_TMP, REG_ARMCore, (int)offsetof(struct ARMCore, cpsr) + 3);
 		ctx->scratch[REG_NZCV_TMP - REG_SCRATCH0].state = SCRATCH_STATE_EMPTY;
@@ -157,6 +159,7 @@ static void loadRegValueNoVerify(struct ARMDynarecContext* ctx, unsigned guest_r
 	if (guest_reg == 15) {
 		EMIT_IMM(ctx, AL, host_reg, ctx->gpr_15);
 	} else {
+		assert(!ctx->is_reglist_save_pushed);
 		EMIT(ctx, LDRI, AL, host_reg, REG_ARMCore, offsetof(struct ARMCore, gprs) + guest_reg * sizeof(uint32_t));
 	}
 }
@@ -217,6 +220,7 @@ static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 }
 
 static unsigned saveRegs(struct ARMDynarecContext* ctx) {
+	assert(!ctx->is_reglist_save_pushed);
 	for (unsigned index = 0; index < 3; index++) {
 		if (ctx->scratch[index].state & SCRATCH_STATE_DEF) {
 			unsigned host_reg = REG_SCRATCH0 + index;
@@ -235,6 +239,7 @@ static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 
 static void flushPC(struct ARMDynarecContext* ctx) {
 	if (!ctx->gpr_15_flushed) {
+		assert(!ctx->is_reglist_save_pushed);
 		unsigned tmp = allocTemp(ctx);
 		EMIT_IMM(ctx, AL, tmp, ctx->gpr_15);
 		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, gprs) + 15 * sizeof(uint32_t));
@@ -244,6 +249,7 @@ static void flushPC(struct ARMDynarecContext* ctx) {
 
 static void flushPrefetch(struct ARMDynarecContext* ctx) {
 	if (!ctx->prefetch_flushed) {
+		assert(!ctx->is_reglist_save_pushed);
 		unsigned tmp = allocTemp(ctx);
 		EMIT_IMM(ctx, AL, tmp, ctx->prefetch[0]);
 		EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, prefetch) + 0 * sizeof(uint32_t));
@@ -272,6 +278,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			.gpr_15_flushed = false,
 			.prefetch_flushed = false,
 			.is_nzcv_in_host_nzcv = false,
+			.is_reglist_save_pushed = false,
 		};
 		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
 		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
@@ -285,6 +292,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			flushPC(&ctx);
 			flushPrefetch(&ctx);
 			flushNZCVToScratch(&ctx);
+			assert(!ctx.is_reglist_save_pushed);
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, cycles));
 			EMIT(&ctx, LDRI, AL, REG_SCRATCH1, REG_ARMCore, offsetof(struct ARMCore, nextEvent));
 			EMIT(&ctx, CMP, AL, REG_SCRATCH0, REG_SCRATCH1);
@@ -328,6 +336,20 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 #define PREPARE_FOR_BL \
 	flushNZCVFully(ctx);
 
+#define PUSH_REGLIST_SAVE \
+	do { \
+		assert(!ctx->is_reglist_save_pushed); \
+		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
+		ctx->is_reglist_save_pushed = true; \
+	} while (0)
+
+#define POP_REGLIST_SAVE \
+	do { \
+		assert(ctx->is_reglist_save_pushed); \
+		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		ctx->is_reglist_save_pushed = false; \
+	} while (0)
+
 static void thumbWritePcCallback(struct ARMCore* cpu) {
 	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
 	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
@@ -344,6 +366,7 @@ static void thumbWritePcCallback(struct ARMCore* cpu) {
 		BODY; \
 		{ \
 			unsigned tmp = allocTemp(ctx); \
+			assert(!ctx->is_reglist_save_pushed); \
 			EMIT(ctx, LDRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
 			EMIT(ctx, ADDI, AL, tmp, tmp, currentCycles); \
 			EMIT(ctx, STRI, AL, tmp, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
@@ -388,14 +411,14 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB(ASR1,
 		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
 		loadRegValue(ctx, rm, 1); \
 		EMIT(ctx, ADDI, AL, 1, 1, immediate * SCALE); \
 		EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, AL, ctx->code, FUNC); \
 		unsigned reg_rd = defReg(ctx, rd); \
 		EMIT(ctx, MOV, AL, reg_rd, 0); \
-		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		POP_REGLIST_SAVE; \
 		saveRegs(ctx); \
 		THUMB_LOAD_POST_BODY;)
 
@@ -409,13 +432,13 @@ DEFINE_IMMEDIATE_5_INSTRUCTION_THUMB_MEMORY_LOAD(LDRH1, cpu->memory.load16, 2)
 		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
 		loadRegValue(ctx, rm, 1); \
 		EMIT(ctx, ADDI, AL, 1, 1, immediate * SCALE); \
 		loadRegValue(ctx, rd, 2); \
 		EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, AL, ctx->code, FUNC); \
-		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		POP_REGLIST_SAVE; \
 		saveRegs(ctx); \
 		THUMB_STORE_POST_BODY;)
 
@@ -594,9 +617,9 @@ DEFINE_INSTRUCTION_THUMB(MUL,
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	return true;)
 DEFINE_DATA_FORM_5_INSTRUCTION_THUMB(BIC,
 	loadNZCV(ctx);
@@ -634,9 +657,9 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(ADD4,
 		FLUSH_HOST_NZCV
 		PREPARE_FOR_BL
 		flushPrefetch(ctx);
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+		PUSH_REGLIST_SAVE;
 		EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
-		EMIT(ctx, POP, AL, REGLIST_SAVE);
+		POP_REGLIST_SAVE;
 		continue_compilation = false;
 	})
 DEFINE_INSTRUCTION_WITH_HIGH_THUMB(CMP3,
@@ -654,9 +677,9 @@ DEFINE_INSTRUCTION_WITH_HIGH_THUMB(MOV3,
 		FLUSH_HOST_NZCV
 		PREPARE_FOR_BL
 		flushPrefetch(ctx);
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+		PUSH_REGLIST_SAVE;
 		EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
-		EMIT(ctx, POP, AL, REGLIST_SAVE);
+		POP_REGLIST_SAVE;
 		continue_compilation = false;
 	})
 
@@ -672,13 +695,13 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR3,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT_IMM(ctx, AL, 1, (ctx->gpr_15 & 0xFFFFFFFC) + immediate);
 	EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->memory.load32);
 	unsigned reg_rd = defReg(ctx, rd);
 	EMIT(ctx, MOV, AL, reg_rd, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);
 	THUMB_LOAD_POST_BODY;)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4,
@@ -686,14 +709,14 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(LDR4,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	loadRegValue(ctx, ARM_SP, 1);
 	EMIT(ctx, ADDI, AL, 1, 1, immediate);
 	EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->memory.load32);
 	unsigned reg_rd = defReg(ctx, rd);
 	EMIT(ctx, MOV, AL, reg_rd, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);
 	THUMB_LOAD_POST_BODY;)
 DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3,
@@ -701,13 +724,13 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(STR3,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	loadRegValue(ctx, ARM_SP, 1);
 	EMIT(ctx, ADDI, AL, 1, 1, immediate);
 	loadRegValue(ctx, rd, 2);
 	EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->memory.store32);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);
 	THUMB_STORE_POST_BODY;)
 
@@ -735,15 +758,15 @@ DEFINE_IMMEDIATE_WITH_REGISTER_THUMB(ADD6,
 		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
 		loadRegValue(ctx, rn, 1); \
 		loadRegValue(ctx, rm, 2); \
 		EMIT(ctx, ADD, AL, 1, 1, 2); \
 		EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, AL, ctx->code, FUNC); \
 		unsigned reg_rd = defReg(ctx, rd); \
 		FINAL_INST; \
-		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		POP_REGLIST_SAVE; \
 		saveRegs(ctx); \
 		THUMB_LOAD_POST_BODY;)
 
@@ -763,15 +786,15 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	loadRegValue(ctx, rn, 1);
 	loadRegValue(ctx, rm, 2);
 	EMIT(ctx, ADD, AL, 1, 1, 2);
 	EMIT(ctx, ADDI, AL, 2, REG_ARMCore, offsetof(struct ARMCore, cycles));
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->memory.load16);
 	// TODO(merry): Is there an alternative to remateralizing here?
 	EMIT(ctx, MOV, AL, 3, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	loadRegValue(ctx, rn, 1);
 	loadRegValue(ctx, rm, 2);
 	EMIT(ctx, ADD, AL, 1, 1, 2);
@@ -788,14 +811,14 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB(LDRSH,
 		PREPARE_FOR_BL \
 		flushPC(ctx); \
 		flushPrefetch(ctx); \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
 		loadRegValue(ctx, rn, 1); \
 		loadRegValue(ctx, rm, 3); \
 		EMIT(ctx, ADD, AL, 1, 1, 3); \
 		loadRegValue(ctx, rd, 2); \
 		EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
+		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, AL, ctx->code, FUNC); \
-		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		POP_REGLIST_SAVE; \
 		saveRegs(ctx); \
 		THUMB_STORE_POST_BODY;)
 
@@ -811,17 +834,16 @@ DEFINE_LOAD_STORE_WITH_REGISTER_THUMB_STORE(STRH2, cpu->memory.store16)
 		flushPrefetch(ctx); \
 		int rn = RN; \
 		int rs = opcode & 0xFF; \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
+		PRE_BODY; \
+		loadRegValue(ctx, rn, 1); \
+		EMIT_IMM(ctx, AL, 2, rs); \
+		PUSH_REGLIST_SAVE; /* needs to be here due to stack manipulation */  \
 		EMIT(ctx, SUBI, AL, ARM_SP, ARM_SP, 8); \
 		/* here we load the &cycles argument: */ \
 		EMIT(ctx, ADDI, AL, 3, REG_ARMCore, offsetof(struct ARMCore, cycles)); \
 		EMIT(ctx, STRI, AL, 3, ARM_SP, 0); \
-		/* here we load the address argument: */ \
-		loadRegValue(ctx, rn, 1); \
-		PRE_BODY; \
-		EMIT_IMM(ctx, AL, 2, rs); \
-		EMIT_IMM(ctx, AL, 3, LSM_ ## DIRECTION); \
 		/* arguments: (cpu, address, rs, LSM_ ## DIRECTION, &cycles) */ \
+		EMIT_IMM(ctx, AL, 3, LSM_ ## DIRECTION); \
 		EMIT(ctx, BL, AL, ctx->code, cpu->memory.CONCAT2(LS, Multiple)); \
 		EMIT(ctx, ADDI, AL, ARM_SP, ARM_SP, 8); \
 		WRITEBACK;)
@@ -836,7 +858,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(LDMIA,
 		unsigned reg_rd = defReg(ctx, rn);
 		EMIT(ctx, MOV, AL, reg_rd, 0);
 	}
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
@@ -847,7 +869,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 	THUMB_STORE_POST_BODY;
 	unsigned reg_rd = defReg(ctx, rn);
 	EMIT(ctx, MOV, AL, reg_rd, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);)
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
@@ -862,9 +884,9 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 		EMIT_IMM(ctx, AL, reg_pc, ctx->gpr_15); \
 		EMIT_IMM(ctx, COND, reg_pc, ctx->gpr_15 + offset); \
 		saveRegs(ctx); \
-		EMIT(ctx, PUSH, AL, REGLIST_SAVE); \
+		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, COND, ctx->code, &thumbWritePcCallback); \
-		EMIT(ctx, POP, AL, REGLIST_SAVE); \
+		POP_REGLIST_SAVE; \
 		continue_compilation = false;)
 
 DEFINE_CONDITIONAL_BRANCH_THUMB(EQ)
@@ -899,7 +921,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(POP,
 	THUMB_LOAD_POST_BODY;
 	unsigned reg_sp = defReg(ctx, ARM_SP);
 	EMIT(ctx, MOV, AL, reg_sp, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(POPR,
@@ -910,11 +932,11 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(POPR,
 	THUMB_LOAD_POST_BODY;
 	unsigned reg_sp = defReg(ctx, ARM_SP);
 	EMIT(ctx, MOV, AL, reg_sp, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSH,
@@ -925,7 +947,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSH,
 	THUMB_STORE_POST_BODY;
 	unsigned reg_sp = defReg(ctx, ARM_SP);
 	EMIT(ctx, MOV, AL, reg_sp, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);)
 
 DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
@@ -936,7 +958,7 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 	THUMB_STORE_POST_BODY;
 	unsigned reg_sp = defReg(ctx, ARM_SP);
 	EMIT(ctx, MOV, AL, reg_sp, 0);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	saveRegs(ctx);)
 
 DEFINE_INSTRUCTION_THUMB(ILL,
@@ -944,20 +966,20 @@ DEFINE_INSTRUCTION_THUMB(ILL,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT_IMM(ctx, AL, 1, opcode);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.hitIllegal);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 DEFINE_INSTRUCTION_THUMB(BKPT,
 	FLUSH_HOST_NZCV
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.bkpt16);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 DEFINE_INSTRUCTION_THUMB(B,
 	// TODO(merry): Block linking
@@ -969,9 +991,9 @@ DEFINE_INSTRUCTION_THUMB(B,
 	unsigned reg_pc = defReg(ctx, ARM_PC);
 	EMIT_IMM(ctx, AL, reg_pc, new_pc);
 	saveRegs(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 
 DEFINE_INSTRUCTION_THUMB(BL1,
@@ -992,9 +1014,9 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 	EMIT(ctx, ADD, AL, reg_pc, reg_pc, reg_lr);
 	EMIT_IMM(ctx, AL, reg_lr, ctx->gpr_15 - 1);
 	saveRegs(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 
 DEFINE_INSTRUCTION_THUMB(BX,
@@ -1004,9 +1026,9 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	EMIT_IMM(ctx, AL, 1, opcode);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	EMIT(ctx, B, AL, ctx->code, cpu->dynarec.epilogue);
 	return false;)
 
@@ -1015,10 +1037,10 @@ DEFINE_INSTRUCTION_THUMB(SWI,
 	PREPARE_FOR_BL
 	flushPC(ctx);
 	flushPrefetch(ctx);
-	EMIT(ctx, PUSH, AL, REGLIST_SAVE);
 	EMIT_IMM(ctx, AL, 1, opcode & 0xFF);
+	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.swi16);
-	EMIT(ctx, POP, AL, REGLIST_SAVE);
+	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 
 const ThumbCompiler _thumbCompilerTable[0x400] = {

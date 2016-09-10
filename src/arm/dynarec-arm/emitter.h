@@ -69,6 +69,7 @@ struct ARMDynarecContext {
 	uint32_t prefetch[2];
 
 	bool is_nzcv_in_host_nzcv;
+	bool is_reglist_save_pushed;
 };
 
 #define EMIT_L(DEST, OPCODE, COND, ...) \
