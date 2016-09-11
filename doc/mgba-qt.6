@@ -1,4 +1,4 @@
-.\" Copyright (c) 2015 Anthony J. Bentley <anthony@anjbe.name>
+.\" Copyright (c) 2015-2016 Anthony J. Bentley <anthony@anjbe.name>
 .\"
 .\" This Source Code Form is subject to the terms of the Mozilla Public
 .\" License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -103,13 +103,23 @@ The default controls are as follows:
 .It Frame advance
 .Ao Cm Ctrl Ac Ns \(hy Ns Cm n
 .El
+.Sh ENVIRONMENT
+.Bl -tag -width Ds -compact
+.It Ev XDG_CONFIG_HOME
+The location where
+.Nm
+will look for the configuration directory.
+If not set,
+.Pa ~/.config
+is used.
+.El
 .Sh FILES
-.Bl -tag -width ~/.config/mgba/config.ini -compact
-.It Pa ~/.config/mgba/config.ini
+.Bl -tag -width Ds -compact
+.It Pa $XDG_CONFIG_HOME/mgba/config.ini
 Default
 .Xr mgba 6
 configuration file.
-.It Pa ~/.config/mgba/qt.ini
+.It Pa $XDG_CONFIG_HOME/mgba/qt.ini
 Default
 .Nm mgba-qt
 configuration file.
@@ -121,7 +131,7 @@ will read
 and
 .Pa qt.ini
 from the current directory instead of
-.Pa ~/.config/mgba .
+.Pa $XDG_CONFIG_HOME/mgba .
 .El
 .Sh AUTHORS
 .An Jeffrey Pfau Aq Mt jeffrey@endrift.com
