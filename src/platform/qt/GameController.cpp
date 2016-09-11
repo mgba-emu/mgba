@@ -659,10 +659,14 @@ void GameController::frameAdvance() {
 void GameController::setRewind(bool enable, int capacity) {
 	if (m_gameOpen) {
 		threadInterrupt();
-		// TODO: Put back rewind
+		if (m_threadContext.core->opts.rewindEnable) {
+			mCoreRewindContextDeinit(&m_threadContext.rewind);
+		}
+		m_threadContext.core->opts.rewindEnable = enable;
+		if (enable) {
+			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
+		}
 		threadContinue();
-	} else {
-		// TODO: Put back rewind
 	}
 }
 
@@ -683,6 +687,9 @@ void GameController::rewind(int states) {
 
 void GameController::startRewinding() {
 	if (!isLoaded()) {
+		return;
+	}
+	if (!m_threadContext.core->opts.rewindEnable) {
 		return;
 	}
 	if (m_multiplayer && m_multiplayer->attached() > 1) {
