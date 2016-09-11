@@ -227,6 +227,12 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 		return;
 	}
 
+	char* xdgConfigHome = getenv("XDG_CONFIG_HOME");
+	if (xdgConfigHome && xdgConfigHome[0] == '/') {
+		snprintf(out, outLength, "%s/%s", xdgConfigHome, binaryName);
+		mkdir(out, 0755);
+		return;
+	}
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
