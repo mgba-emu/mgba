@@ -96,6 +96,16 @@ struct ARMDynarecContext {
 		} \
 	} while (0)
 
+#define EMIT_BRANCH(CTX, COND) \
+	(CTX)->code; \
+	do { \
+		*(CTX)->code = COND_ ## COND; \
+		++(CTX)->code; \
+	} while (0)
+
+#define FIXUP_BRANCH(CTX, FIXUP) \
+	*(code_t*)(FIXUP) |= emitB(FIXUP, (CTX)->code);
+
 #define DECLARE_ALU3_EMITTER(MN) \
 	uint32_t emit##MN(unsigned dst, unsigned src, unsigned op2); \
 	uint32_t emit##MN##I(unsigned dst, unsigned src, unsigned imm); \

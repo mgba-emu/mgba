@@ -265,17 +265,20 @@ uint32_t emitSTRBI(unsigned reg, unsigned base, int offset) {
 	return op;
 }
 
-uint32_t emitB(void* base, void* target) {
+static uint32_t branchDifference(void* base, void* target) {
 	uint32_t diff = (intptr_t) target - (intptr_t) base - WORD_SIZE_ARM * 2;
 	diff >>= 2;
 	diff &= 0x00FFFFFF;
+	return diff;
+}
+
+uint32_t emitB(void* base, void* target) {
+	uint32_t diff = branchDifference(base, target);
 	return OP_B | diff;
 }
 
 uint32_t emitBL(void* base, void* target) {
-	uint32_t diff = (intptr_t) target - (intptr_t) base - WORD_SIZE_ARM * 2;
-	diff >>= 2;
-	diff &= 0x00FFFFFF;
+	uint32_t diff = branchDifference(base, target);
 	return OP_BL | diff;
 }
 
