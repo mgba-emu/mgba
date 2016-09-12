@@ -88,6 +88,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	bool error = false;
 	int32_t check;
 	uint32_t ucheck;
+	int16_t check16;
 	LOAD_32LE(ucheck, 0, &state->versionMagic);
 	if (ucheck > GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
 		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
@@ -123,6 +124,11 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	LOAD_32LE(check, 0, &state->video.eventDiff);
 	if (check < 0) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
+		error = true;
+	}
+	LOAD_32LE(check16, 0, &state->video.ly);
+	if (check16 < 0 || check16 > GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: video y is out of range");
 		error = true;
 	}
 	if (error) {
