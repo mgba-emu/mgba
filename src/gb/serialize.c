@@ -112,6 +112,10 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
+	if (state->cpu.executionState != LR35902_CORE_FETCH) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: Execution state is not FETCH");
+		error = true;
+	}
 	if (check >= (int32_t) DMG_LR35902_FREQUENCY) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
