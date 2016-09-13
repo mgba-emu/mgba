@@ -133,7 +133,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		error = true;
 	}
 	LOAD_16LE(ucheck16, 0, &state->memory.dmaDest);
-	if (ucheck16 >= GB_SIZE_OAM) {
+	if (ucheck16 + state->memory.dmaRemaining > GB_SIZE_OAM) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: DMA destination is out of range");
 		error = true;
 	}
