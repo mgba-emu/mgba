@@ -127,6 +127,11 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
 	}
+	LOAD_16LE(check16, 0, &state->video.x);
+	if (check16 < 0 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: video x is out of range");
+		error = true;
+	}
 	LOAD_16LE(check16, 0, &state->video.ly);
 	if (check16 < 0 || check16 > GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video y is out of range");
