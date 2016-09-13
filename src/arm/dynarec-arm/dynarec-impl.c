@@ -28,55 +28,6 @@ void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// PatchPoints
-
-enum ARMDynarecPatchPointType {
-	PATCH_POINT_B
-};
-
-struct ARMDynarecPatchPoint {
-	code_t* location;
-	enum ARMDynarecPatchPointType type;
-};
-
-DEFINE_VECTOR(ARMDynarecPatchPointList, struct ARMDynarecPatchPoint);
-
-void ARMDynarecTraceInit(struct ARMDynarecTrace* trace) {
-	ARMDynarecPatchPointListInit(&trace->patchPoints, 0);
-}
-
-void ARMDynarecTraceDeinit(struct ARMDynarecTrace* trace) {
-	ARMDynarecPatchPointListDeinit(&trace->patchPoints);
-}
-
-bool patchPatchPoint(struct ARMCore* cpu, struct ARMDynarecTrace* targetTrace, struct ARMDynarecPatchPoint* patchPoint, code_t** write_back) {
-	code_t* code = patchPoint->location;
-
-	uint32_t prefetch[2];
-	LOAD_16(prefetch[0], (targetTrace->start + 0 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-	LOAD_16(prefetch[1], (targetTrace->start + 1 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-
-	switch (patchPoint->type) {
-	default:
-		abort();
-	}
-
-	__clear_cache(patchPoint->location, code);
-	if (write_back) {
-		*write_back = code;
-	}
-	return targetTrace->entry;
-}
-
-bool addPatchPoint(struct ARMCore* cpu, struct ARMDynarecContext* ctx, enum ARMDynarecPatchPointType type, uint32_t targetAddress) {
-	struct ARMDynarecTrace* targetTrace = ARMDynarecFindTrace(cpu, targetAddress, MODE_THUMB);
-	struct ARMDynarecPatchPoint* patchPoint = ARMDynarecPatchPointListAppend(&targetTrace->patchPoints);
-	patchPoint->location = ctx->code;
-	patchPoint->type = type;
-	return patchPatchPoint(cpu, targetTrace, patchPoint, &ctx->code);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Get Temporary
 
 static unsigned allocTemp(struct ARMDynarecContext* ctx) {
@@ -502,9 +453,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 		flushCycles(&ctx);
 		EMIT(&ctx, B, AL, ctx.code, selectEpilogue(cpu, &ctx));
 
-		for (unsigned index = 0; index < ARMDynarecPatchPointListSize(&trace->patchPoints); ++index) {
-			patchPatchPoint(cpu, trace, ARMDynarecPatchPointListGetPointer(&trace->patchPoints, index), 0);
-		}
+		ARMDynarecPerformPatching(cpu, trace);
 
 		__clear_cache(trace->entry, ctx.code);
 		cpu->dynarec.buffer = ctx.code;
