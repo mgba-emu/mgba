@@ -69,8 +69,14 @@ struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t addres
 }
 
 void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {
+	if (mode != MODE_THUMB)
+		return;
+
 	struct ARMDynarecTrace* tracePrediction = cpu->dynarec.tracePrediction;
 	if (tracePrediction && tracePrediction->start == address) {
+		if (!tracePrediction->entry) {
+			ARMDynarecRecompileTrace(cpu, tracePrediction);
+		}
 		cpu->dynarec.currentTrace = tracePrediction;
 		return;
 	}

@@ -68,7 +68,7 @@ void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) 
 // PatchPoints
 
 enum ARMDynarecPatchPointType {
-	PATCH_POINT_NONE
+	PATCH_POINT_B
 };
 
 struct ARMDynarecPatchPoint {
@@ -1109,16 +1109,22 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(STMIA,
 
 #define DEFINE_CONDITIONAL_BRANCH_THUMB(COND) \
 	DEFINE_INSTRUCTION_THUMB(B ## COND, \
+		int32_t offset = (int32_t)((int8_t)opcode) << 1; \
+		uint32_t pass_pc = ctx->gpr_15 + offset; \
+		uint32_t fail_pc = ctx->gpr_15; \
+		struct ARMDynarecTrace* pass_trace = ARMDynarecFindTrace(cpu, pass_pc, MODE_THUMB); \
+		struct ARMDynarecTrace* fail_trace = ARMDynarecFindTrace(cpu, fail_pc, MODE_THUMB); \
 		FLUSH_HOST_NZCV \
 		PREPARE_FOR_BL \
-		/* TODO: Block linking */ \
 		flushPrefetch(ctx); \
 		loadNZCV(ctx); \
-		int32_t offset = (int32_t)((int8_t)opcode) << 1; \
 		unsigned reg_pc = defReg(ctx, ARM_PC); \
-		EMIT_IMM(ctx, AL, reg_pc, ctx->gpr_15); \
-		EMIT_IMM(ctx, COND, reg_pc, ctx->gpr_15 + offset); \
+		EMIT_IMM(ctx, AL, reg_pc, fail_pc); \
+		EMIT_IMM(ctx, COND, reg_pc, pass_pc); \
 		saveRegs(ctx); \
+		EMIT_IMM(ctx, AL, REG_SCRATCH0, (uint32_t)fail_trace); \
+		EMIT_IMM(ctx, COND, REG_SCRATCH0, (uint32_t)pass_trace); \
+		EMIT(ctx, STRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, dynarec) + offsetof(struct ARMDynarec, tracePrediction)); \
 		PUSH_REGLIST_SAVE; \
 		EMIT(ctx, BL, COND, ctx->code, &thumbWritePcCallback); \
 		POP_REGLIST_SAVE; \
@@ -1219,15 +1225,17 @@ DEFINE_INSTRUCTION_THUMB(BKPT,
 	POP_REGLIST_SAVE;
 	continue_compilation = false;)
 DEFINE_INSTRUCTION_THUMB(B,
-	// TODO(merry): Block linking
+	int16_t immediate = (opcode & 0x07FF) << 5;
+	uint32_t new_pc = ctx->gpr_15 + (((int32_t) immediate) >> 4);
+	struct ARMDynarecTrace* new_trace = ARMDynarecFindTrace(cpu, new_pc, MODE_THUMB);
 	FLUSH_HOST_NZCV
 	PREPARE_FOR_BL
 	flushPrefetch(ctx);
-	int16_t immediate = (opcode & 0x07FF) << 5;
-	uint32_t new_pc = ctx->gpr_15 + (((int32_t) immediate) >> 4);
 	unsigned reg_pc = defReg(ctx, ARM_PC);
 	EMIT_IMM(ctx, AL, reg_pc, new_pc);
 	saveRegs(ctx);
+	EMIT_IMM(ctx, AL, REG_SCRATCH0, (uint32_t)new_trace);
+	EMIT(ctx, STRI, AL, REG_SCRATCH0, REG_ARMCore, offsetof(struct ARMCore, dynarec) + offsetof(struct ARMDynarec, tracePrediction));
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, &thumbWritePcCallback);
 	POP_REGLIST_SAVE;
