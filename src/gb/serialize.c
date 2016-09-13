@@ -142,6 +142,14 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: DMA destination is out of range");
 		error = true;
 	}
+	LOAD_16LE(ucheck16, 0, &state->video.bcpIndex);
+	if (ucheck16 >= 0x40) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: BCPS is out of range");
+	}
+	LOAD_16LE(ucheck16, 0, &state->video.ocpIndex);
+	if (ucheck16 >= 0x40) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
+	}
 	if (error) {
 		return false;
 	}

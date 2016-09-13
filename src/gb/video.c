@@ -482,7 +482,9 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	video->bcpIncrement = GBSerializedVideoFlagsGetBcpIncrement(flags);
 	video->ocpIncrement = GBSerializedVideoFlagsGetOcpIncrement(flags);
 	LOAD_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	video->bcpIndex &= 0x3F;
 	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+	video->ocpIndex &= 0x3F;
 
 	size_t i;
 	for (i = 0; i < 64; ++i) {
