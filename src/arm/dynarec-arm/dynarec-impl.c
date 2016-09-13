@@ -9,6 +9,7 @@
 #include "arm/dynarec.h"
 #include "arm/isa-thumb.h"
 #include "arm/dynarec-arm/emitter.h"
+#include "arm/dynarec-arm/patch.h"
 #include "arm/macros.h"
 #include "arm/emitter-thumb.h"
 
@@ -38,6 +39,7 @@ static unsigned allocTemp(struct ARMDynarecContext* ctx) {
 		}
 	}
 	assert(!"Ran out of scratch registers");
+	abort();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,9 +152,12 @@ static unsigned findIndexOfGuestOrFreeReg(struct ARMDynarecContext* ctx, unsigne
 		return REG_NZCV_TMP - REG_SCRATCH0;
 	}
 	assert(!"Ran out of scratch registers");
+	abort();
 }
 
 static unsigned cachedRegHelper(struct ARMDynarecContext* ctx, bool is_use, unsigned guest_reg, unsigned* host_reg) {
+	UNUSED(is_use);
+
 	if (guest_reg > 7)
 		return false;
 
@@ -175,8 +180,10 @@ static unsigned cachedRegHelper(struct ARMDynarecContext* ctx, bool is_use, unsi
 			ctx->reg_cache_state = REG_CACHE_LOADED;
 		case REG_CACHE_LOADED:
 			return true;
+		case REG_CACHE_R7_ON_STACK:
+		default:
+			abort();
 		}
-		abort();
 	} else {
 		switch (ctx->reg_cache_state) {
 		case REG_CACHE_NOT_LOADED:
@@ -184,8 +191,10 @@ static unsigned cachedRegHelper(struct ARMDynarecContext* ctx, bool is_use, unsi
 		case REG_CACHE_R7_ON_STACK:
 			assert(!is_use); // There's no reason to do a useReg in this state.
 			return guest_reg != 7;
+		case REG_CACHE_LOADED:
+		default:
+			abort();
 		}
-		abort();
 	}
 }
 
@@ -220,11 +229,12 @@ static unsigned useReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 static unsigned usedefReg(struct ARMDynarecContext* ctx, unsigned guest_reg) {
 	unsigned host_reg = useReg(ctx, guest_reg);
 	unsigned host_reg_2 = defReg(ctx, guest_reg);
+	UNUSED(host_reg_2);
 	assert(host_reg == host_reg_2);
 	return host_reg;
 }
 
-static unsigned saveRegs(struct ARMDynarecContext* ctx) {
+static void saveRegs(struct ARMDynarecContext* ctx) {
 	assert(!ctx->is_reglist_save_pushed);
 	assert(ctx->reg_cache_state != REG_CACHE_R7_ON_STACK);
 	for (unsigned index = 0; index < 3; index++) {
@@ -251,6 +261,7 @@ static unsigned saveRegs(struct ARMDynarecContext* ctx) {
 }
 
 static void assertNoAssignedRegs(struct ARMDynarecContext* ctx) {
+	UNUSED(ctx);
 	for (unsigned index = 0; index < 3; index++) {
 		assert((ctx->scratch[index].state & (SCRATCH_STATE_DEF | SCRATCH_STATE_USE)) == 0);
 	}
@@ -760,7 +771,10 @@ DEFINE_INSTRUCTION_THUMB(MUL,
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	flushRegisterCache(ctx);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 	EMIT_IMM(ctx, AL, 1, opcode);
+#pragma GCC diagnostic pop
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	POP_REGLIST_SAVE;
@@ -1118,7 +1132,10 @@ DEFINE_INSTRUCTION_THUMB(ILL,
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	flushRegisterCache(ctx);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 	EMIT_IMM(ctx, AL, 1, opcode);
+#pragma GCC diagnostic pop
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, cpu->irqh.hitIllegal);
 	POP_REGLIST_SAVE;
@@ -1181,7 +1198,10 @@ DEFINE_INSTRUCTION_THUMB(BX,
 	flushPC(ctx);
 	flushPrefetch(ctx);
 	flushRegisterCache(ctx);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 	EMIT_IMM(ctx, AL, 1, opcode);
+#pragma GCC diagnostic pop
 	PUSH_REGLIST_SAVE;
 	EMIT(ctx, BL, AL, ctx->code, _thumbTable[opcode >> 6]);
 	POP_REGLIST_SAVE;
