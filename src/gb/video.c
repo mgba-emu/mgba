@@ -257,6 +257,9 @@ void GBVideoProcessDots(struct GBVideo* video) {
 	video->x = video->dotCounter + video->eventDiff + (video->p->cpu->cycles >> video->p->doubleSpeed);
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
+	} else if (video->x < 0) {
+		mLOG(GB, FATAL, "Video dot clock went negative!");
+		video->x = oldX;
 	}
 	if (video->x == GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->dotCounter = INT_MIN;
