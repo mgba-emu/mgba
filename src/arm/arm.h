@@ -145,6 +145,7 @@ struct ARMDynarec {
 	struct Table thumbTraces;
 	void* bufferStart;
 	void* buffer;
+	void* tracePrediction;
 	void* currentTrace;
 	void* temporaryMemory;
 	void (*execute)(struct ARMCore* cpu, void* execution_token);

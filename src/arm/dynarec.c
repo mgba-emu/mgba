@@ -42,7 +42,7 @@ void ARMDynarecInvalidateCache(struct ARMCore* cpu) {
 	ARMDynarecEmitPrelude(cpu);
 }
 
-static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {
+struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {
 	struct ARMDynarecTrace* trace;
 	if (mode == MODE_ARM) {
 		trace = TableLookup(&cpu->dynarec.armTraces, address >> 2);
@@ -67,6 +67,12 @@ static struct ARMDynarecTrace* ARMDynarecFindTrace(struct ARMCore* cpu, uint32_t
 }
 
 void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionMode mode) {
+	struct ARMDynarecTrace* tracePrediction = cpu->dynarec.tracePrediction;
+	if (tracePrediction && tracePrediction->start == address) {
+		cpu->dynarec.currentTrace = tracePrediction;
+		return;
+	}
+
 	struct ARMDynarecTrace* trace = ARMDynarecFindTrace(cpu, address, mode);
 	if (!trace->entry) {
 		ARMDynarecRecompileTrace(cpu, trace);
@@ -76,5 +82,7 @@ void ARMDynarecCountTrace(struct ARMCore* cpu, uint32_t address, enum ExecutionM
 			cpu->nextEvent = cpu->cycles;
 		}
 		cpu->dynarec.currentTrace = trace;
+	} else {
+		cpu->dynarec.currentTrace = NULL;
 	}
 }
