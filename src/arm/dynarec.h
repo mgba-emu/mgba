@@ -21,6 +21,7 @@ struct ARMDynarecTrace {
 	enum ExecutionMode mode;
 	uint32_t start;
 	void* entry;
+	void* entryPlus4;
 	struct ARMDynarecPatchPointList patchPoints;
 };
 

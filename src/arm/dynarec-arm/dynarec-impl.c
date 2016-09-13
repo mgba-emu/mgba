@@ -16,12 +16,49 @@
 typedef bool (*ThumbCompiler)(struct ARMCore*, struct ARMDynarecContext*, uint16_t opcode);
 extern const ThumbCompiler _thumbCompilerTable[0x400];
 
+static void InterpretThumbInstructionNormally(struct ARMCore* cpu) {
+    uint32_t opcode = cpu->prefetch[0];
+    cpu->prefetch[0] = cpu->prefetch[1];
+    cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
+    LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+    ThumbInstruction instruction = _thumbTable[opcode >> 6];
+    instruction(cpu, opcode);
+}
+
 void ARMDynarecExecuteTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace) {
-	if (!trace->entry) return;
+	if (!trace->entryPlus4) return;
 	assert(cpu->executionMode == MODE_THUMB);
 	assert((uint32_t)cpu->gprs[15] == trace->start + WORD_SIZE_THUMB);
 
-	cpu->dynarec.execute(cpu, trace->entry);
+	// First, we're going to empty cpu->prefetch of unknown values.
+	if (cpu->cycles >= cpu->nextEvent) {
+		cpu->irqh.processEvents(cpu);
+		return;
+	}
+	// cpu->prefetch[0] == unknown
+	// cpu->prefetch[1] == unknown
+	InterpretThumbInstructionNormally(cpu);
+	if (cpu->cycles >= cpu->nextEvent || (uint32_t)cpu->gprs[15] != trace->start + 2 * WORD_SIZE_THUMB) {
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+		}
+		return;
+	}
+	// cpu->prefetch[0] == unknown
+	// cpu->prefetch[1] == instruction at trace->start + 2 * WORD_SIZE_THUMB
+	InterpretThumbInstructionNormally(cpu);
+	if (cpu->cycles >= cpu->nextEvent || (uint32_t)cpu->gprs[15] != trace->start + 3 * WORD_SIZE_THUMB) {
+		if (cpu->cycles >= cpu->nextEvent) {
+			cpu->irqh.processEvents(cpu);
+		}
+		return;
+	}
+	// cpu->prefetch[0] == instruction at trace->start + 2 * WORD_SIZE_THUMB
+	// cpu->prefetch[1] == instruction at trace->start + 3 * WORD_SIZE_THUMB
+
+	// We've emptied the prefetcher. The first instruction to execute is trace->start + 2 * WORD_SIZE_THUMB
+	assert((uint32_t)cpu->gprs[15] == trace->start + 3 * WORD_SIZE_THUMB);
+	cpu->dynarec.execute(cpu, trace->entryPlus4);
 
 	if (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
@@ -416,7 +453,7 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 	} else {
 		struct ARMDynarecContext ctx = {
 			.code = cpu->dynarec.buffer,
-			.gpr_15 = trace->start + 1 * WORD_SIZE_THUMB,
+			.gpr_15 = trace->start + 3 * WORD_SIZE_THUMB,
 			.gpr_15_flushed = false,
 			.gpr_15_invalid = false,
 			.cycles_register_valid = false,
@@ -426,10 +463,11 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 			.is_reglist_save_pushed = false,
 			.reg_cache_state = REG_CACHE_LOADED,
 		};
-		LOAD_16(ctx.prefetch[0], (trace->start + 0 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
-		LOAD_16(ctx.prefetch[1], (trace->start + 1 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(ctx.prefetch[0], (trace->start + 2 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(ctx.prefetch[1], (trace->start + 3 * WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
 
-		trace->entry = (void*) ctx.code;
+		trace->entry = 1;
+		trace->entryPlus4 = (void*) ctx.code;
 
 		bool continue_compilation = true;
 		while (continue_compilation) {
@@ -466,7 +504,8 @@ void ARMDynarecRecompileTrace(struct ARMCore* cpu, struct ARMDynarecTrace* trace
 
 		ARMDynarecPerformPatching(cpu, trace);
 
-		__clear_cache(trace->entry, ctx.code);
+		//__clear_cache(trace->entry, ctx.code);
+		__clear_cache(trace->entryPlus4, ctx.code);
 		cpu->dynarec.buffer = ctx.code;
 	}
 }
