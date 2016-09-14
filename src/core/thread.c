@@ -107,7 +107,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	core->setSync(core, &threadContext->sync);
 	core->reset(core);
 
-	if (core->opts.rewindEnable) {
+	if (core->opts.rewindEnable && core->opts.rewindBufferCapacity > 0) {
 		 mCoreRewindContextInit(&threadContext->rewind, core->opts.rewindBufferCapacity);
 	}
 
@@ -487,11 +487,13 @@ void mCoreThreadFrameStarted(struct mCoreThread* thread) {
 	if (!thread) {
 		return;
 	}
-	if (thread->core->opts.rewindEnable && thread->state != THREAD_REWINDING) {
-		mCoreRewindAppend(&thread->rewind, thread->core);
-	} else if (thread->state == THREAD_REWINDING) {
-		if (!mCoreRewindRestore(&thread->rewind, thread->core)) {
+	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
+		if (thread->state != THREAD_REWINDING) {
 			mCoreRewindAppend(&thread->rewind, thread->core);
+		} else if (thread->state == THREAD_REWINDING) {
+			if (!mCoreRewindRestore(&thread->rewind, thread->core)) {
+				mCoreRewindAppend(&thread->rewind, thread->core);
+			}
 		}
 	}
 }

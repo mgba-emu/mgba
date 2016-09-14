@@ -306,7 +306,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		struct GBATimer* nextTimer;
 
 		timer = &gba->timers[0];
-		if (GBATimerFlagsIsEnable(timer->flags)) {
+		if (GBATimerFlagsIsEnable(timer->flags) && timer->nextEvent != INT_MAX) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			while (timer->nextEvent <= 0) {
@@ -333,7 +333,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM1CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM1CNT_LO >> 1]) {
-						nextTimer->nextEvent = 0;
+						nextTimer->nextEvent = cycles;
 					}
 				}
 			}
@@ -341,7 +341,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[1];
-		if (GBATimerFlagsIsEnable(timer->flags)) {
+		if (GBATimerFlagsIsEnable(timer->flags) && timer->nextEvent != INT_MAX) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -372,7 +372,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM2CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM2CNT_LO >> 1]) {
-						nextTimer->nextEvent = 0;
+						nextTimer->nextEvent = cycles;
 					}
 				}
 			}
@@ -382,7 +382,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[2];
-		if (GBATimerFlagsIsEnable(timer->flags)) {
+		if (GBATimerFlagsIsEnable(timer->flags) && timer->nextEvent != INT_MAX) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
@@ -403,7 +403,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 				if (GBATimerFlagsIsCountUp(nextTimer->flags)) {
 					++gba->memory.io[REG_TM3CNT_LO >> 1];
 					if (!gba->memory.io[REG_TM3CNT_LO >> 1]) {
-						nextTimer->nextEvent = 0;
+						nextTimer->nextEvent = cycles;
 					}
 				}
 			}
@@ -413,7 +413,7 @@ static int32_t GBATimersProcessEvents(struct GBA* gba, int32_t cycles) {
 		}
 
 		timer = &gba->timers[3];
-		if (GBATimerFlagsIsEnable(timer->flags)) {
+		if (GBATimerFlagsIsEnable(timer->flags) && timer->nextEvent != INT_MAX) {
 			timer->nextEvent -= cycles;
 			timer->lastEvent -= cycles;
 			if (timer->nextEvent <= 0) {
