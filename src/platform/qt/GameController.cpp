@@ -659,11 +659,12 @@ void GameController::frameAdvance() {
 void GameController::setRewind(bool enable, int capacity) {
 	if (m_gameOpen) {
 		threadInterrupt();
-		if (m_threadContext.core->opts.rewindEnable) {
+		if (m_threadContext.core->opts.rewindEnable && m_threadContext.core->opts.rewindBufferCapacity > 0) {
 			mCoreRewindContextDeinit(&m_threadContext.rewind);
 		}
 		m_threadContext.core->opts.rewindEnable = enable;
-		if (enable) {
+		m_threadContext.core->opts.rewindBufferCapacity = capacity;
+		if (enable && capacity > 0) {
 			mCoreRewindContextInit(&m_threadContext.rewind, capacity);
 		}
 		threadContinue();
