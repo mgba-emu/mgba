@@ -15,7 +15,7 @@ source_group("PS Vita-specific code" FILES ${OS_SRC})
 list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 
-set(OS_LIB -lvita2d -lSceCtrl_stub -lScePgf_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceCommonDialog_stub -lSceMotion_stub -lScePower_stub -lSceSysmodule_stub -lSceTouch_stub -l${M_LIBRARY})
+set(OS_LIB -lvita2d -lSceAppMgr_stub -lSceCtrl_stub -lScePgf_stub -lSceGxm_stub -lSceDisplay_stub -lSceAudio_stub -lSceCommonDialog_stub -lSceMotion_stub -lScePhotoExport_stub -lScePower_stub -lSceSysmodule_stub -lSceTouch_stub -l${M_LIBRARY})
 set(OBJCOPY_CMD ${OBJCOPY} -I binary -O elf32-littlearm -B arm)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
@@ -49,20 +49,22 @@ add_custom_target(param.sfo
                   DEPENDS sce_sys)
 
 add_custom_target(eboot.bin
-                  ${MAKE_FSELF} ${BINARY_NAME}.velf eboot.bin
+                  ${MAKE_FSELF} -s ${BINARY_NAME}.velf eboot.bin
                   DEPENDS ${BINARY_NAME}.velf)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/template.xml.in ${CMAKE_CURRENT_BINARY_DIR}/template.xml)
 
 add_custom_target(livearea
                   ${CMAKE_COMMAND} -E make_directory sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/icon0.png sce_sys
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pic0.png sce_sys
-                  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/template.xml sce_sys/livearea/contents
+                  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/template.xml sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bg.png sce_sys/livearea/contents
                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startup.png sce_sys/livearea/contents
                   DEPENDS sce_sys)
 
 add_custom_target(${BINARY_NAME}.vpk ALL
-                  zip -r ${BINARY_NAME}.vpk sce_sys eboot.bin
+                  zip -qr ${BINARY_NAME}.vpk sce_sys eboot.bin
                   DEPENDS livearea eboot.bin param.sfo)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.vpk DESTINATION . COMPONENT ${BINARY_NAME}-psp2)

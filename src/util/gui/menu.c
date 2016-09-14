@@ -193,41 +193,60 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 	return GUI_MENU_EXIT_CANCEL;
 }
 
-enum GUICursorState GUIPollCursor(struct GUIParams* params, unsigned* x, unsigned* y) {
-	if (!params->pollCursor) {
-		return GUI_CURSOR_NOT_PRESENT;
-	}
-	enum GUICursorState state = params->pollCursor(x, y);
-	if (params->cursorState == GUI_CURSOR_DOWN) {
-		int dragX = *x - params->cx;
-		int dragY = *y - params->cy;
-		if (dragX * dragX + dragY * dragY > 25) {
-			params->cursorState = GUI_CURSOR_DRAGGING;
-			return GUI_CURSOR_DRAGGING;
-		}
-		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
-			params->cursorState = GUI_CURSOR_UP;
-			return GUI_CURSOR_CLICKED;
-		}
-	} else {
-		params->cx = *x;
-		params->cy = *y;
-	}
-	if (params->cursorState == GUI_CURSOR_DRAGGING) {
-		if (state == GUI_CURSOR_UP || state == GUI_CURSOR_NOT_PRESENT) {
-			params->cursorState = GUI_CURSOR_UP;
-			return GUI_CURSOR_UP;
-		}
-		return GUI_CURSOR_DRAGGING;
-	}
-	params->cursorState = state;
-	return params->cursorState;
-}
+enum GUIMenuExitReason GUIShowMessageBox(struct GUIParams* params, int buttons, int frames, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	char message[256] = {0};
+	vsnprintf(message, sizeof(message) - 1, format, args);
+	va_end(args);
 
-void GUIInvalidateKeys(struct GUIParams* params) {
-	for (int i = 0; i < GUI_INPUT_MAX; ++i) {
-		params->inputHistory[i] = 0;
+	while (true) {
+		if (frames) {
+			--frames;
+			if (!frames) {
+				break;
+			}
+		}
+		params->drawStart();
+		if (params->guiPrepare) {
+			params->guiPrepare();
+		}
+		GUIFontPrint(params->font, params->width / 2, (GUIFontHeight(params->font) + params->height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, message);
+		if (params->guiFinish) {
+			params->guiFinish();
+		}
+		params->drawEnd();
+
+		uint32_t input = 0;
+		GUIPollInput(params, &input, 0);
+		if (input) {
+			if (input & (1 << GUI_INPUT_SELECT)) {
+				if (buttons & GUI_MESSAGE_BOX_OK) {
+					return GUI_MENU_EXIT_ACCEPT;
+				}
+				if (buttons & GUI_MESSAGE_BOX_CANCEL) {
+					return GUI_MENU_EXIT_CANCEL;
+				}
+			}
+			if (input & (1 << GUI_INPUT_BACK)) {
+				if (buttons & GUI_MESSAGE_BOX_CANCEL) {
+					return GUI_MENU_EXIT_BACK;
+				}
+				if (buttons & GUI_MESSAGE_BOX_OK) {
+					return GUI_MENU_EXIT_ACCEPT;
+				}
+			}
+			if (input & (1 << GUI_INPUT_CANCEL)) {
+				if (buttons & GUI_MESSAGE_BOX_CANCEL) {
+					return GUI_MENU_EXIT_CANCEL;
+				}
+				if (buttons & GUI_MESSAGE_BOX_OK) {
+					return GUI_MENU_EXIT_ACCEPT;
+				}
+			}
+		}
 	}
+	return GUI_MENU_EXIT_CANCEL;
 }
 
 void GUIDrawBattery(struct GUIParams* params) {

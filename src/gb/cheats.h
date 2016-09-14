@@ -11,7 +11,7 @@
 #include "core/cheats.h"
 #include "util/vector.h"
 
-enum GBACheatType {
+enum GBCheatType {
 	GB_CHEAT_AUTODETECT,
 	GB_CHEAT_GAMESHARK,
 	GB_CHEAT_GAME_GENIE,
@@ -23,6 +23,7 @@ struct GBCheatPatch {
 	int8_t newValue;
 	int8_t oldValue;
 	bool applied;
+	bool checkByte;
 };
 
 DECLARE_VECTOR(GBCheatPatchList, struct GBCheatPatch);

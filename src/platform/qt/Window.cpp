@@ -15,6 +15,7 @@
 #include <QStackedLayout>
 
 #include "AboutScreen.h"
+#include "ArchiveInspector.h"
 #include "CheatsView.h"
 #include "ConfigController.h"
 #include "Display.h"
@@ -70,7 +71,6 @@ Window::Window(ConfigController* config, int playerId, QWidget* parent)
 #endif
 	, m_mruMenu(nullptr)
 	, m_shortcutController(new ShortcutController(this))
-	, m_playerId(playerId)
 	, m_fullscreenOnStart(false)
 	, m_autoresume(false)
 {
@@ -323,11 +323,43 @@ QString Window::getFilters() const {
 	return filters.join(";;");
 }
 
+QString Window::getFiltersArchive() const {
+	QStringList filters;
+
+	QStringList formats{
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+	};
+	filters.append(tr("Archives (%1)").arg(formats.join(QChar(' '))));
+	return filters.join(";;");
+}
+
 void Window::selectROM() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
 	if (!filename.isEmpty()) {
 		m_controller->loadGame(filename);
 	}
+}
+
+void Window::selectROMInArchive() {
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFiltersArchive());
+	if (filename.isEmpty()) {
+		return;
+	}
+	ArchiveInspector* archiveInspector = new ArchiveInspector(filename);
+	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector]() {
+		VFile* output = archiveInspector->selectedVFile();
+		if (output) {
+			m_controller->loadGame(output);
+		}
+		archiveInspector->close();
+	});
+	archiveInspector->setAttribute(Qt::WA_DeleteOnClose);
+	archiveInspector->show();
 }
 
 void Window::replaceROM() {
@@ -347,14 +379,10 @@ void Window::selectSave(bool temporary) {
 }
 
 void Window::multiplayerChanged() {
-	disconnect(nullptr, this, SLOT(multiplayerChanged()));
 	int attached = 1;
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer) {
 		attached = multiplayer->attached();
-		connect(multiplayer, SIGNAL(gameAttached()), this, SLOT(multiplayerChanged()));
-		connect(multiplayer, SIGNAL(gameDetached()), this, SLOT(multiplayerChanged()));
-		m_playerId = multiplayer->playerId(m_controller);
 	}
 	if (m_controller->isLoaded()) {
 		for (QAction* action : m_nonMpActions) {
@@ -464,6 +492,12 @@ void Window::openVideoWindow() {
 		connect(m_videoView, SIGNAL(recordingStopped()), m_controller, SLOT(clearAVStream()), Qt::DirectConnection);
 		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(stopRecording()));
 		connect(m_controller, SIGNAL(gameStopped(mCoreThread*)), m_videoView, SLOT(close()));
+		connect(m_controller, &GameController::gameStarted, [this]() {
+			m_videoView->setNativeResolution(m_controller->screenDimensions());
+		});
+		if (m_controller->isLoaded()) {
+			m_videoView->setNativeResolution(m_controller->screenDimensions());
+		}
 		connect(this, SIGNAL(shutdown()), m_videoView, SLOT(close()));
 	}
 	m_videoView->show();
@@ -657,9 +691,11 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(false);
 	}
+#ifdef M_CORE_GBA
 	foreach (QAction* action, m_gbaActions) {
 		action->setDisabled(context->core->platform(context->core) != PLATFORM_GBA);
 	}
+#endif
 	multiplayerChanged();
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
@@ -683,9 +719,11 @@ void Window::gameStarted(mCoreThread* context, const QString& fname) {
 }
 
 void Window::gameStopped() {
+#ifdef M_CORE_GBA
 	foreach (QAction* action, m_gbaActions) {
 		action->setDisabled(false);
 	}
+#endif
 	foreach (QAction* action, m_gameActions) {
 		action->setDisabled(true);
 	}
@@ -805,7 +843,14 @@ void Window::updateTitle(float fps) {
 	}
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer && multiplayer->attached() > 1) {
-		title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
+		title += tr(" -  Player %1 of %2").arg(multiplayer->playerId(m_controller) + 1).arg(multiplayer->attached());
+		for (QAction* action : m_nonMpActions) {
+			action->setDisabled(true);
+		}
+	} else if (m_controller->isLoaded()) {
+		for (QAction* action : m_nonMpActions) {
+			action->setDisabled(false);
+		}
 	}
 	m_controller->threadContinue();
 	if (title.isNull()) {
@@ -850,13 +895,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &ROM..."), this, SLOT(selectROM()), QKeySequence::Open),
 	                    "loadROM");
-	QAction* loadTemporarySave = new QAction(tr("Load temporary save"), fileMenu);
-	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
-	m_gameActions.append(loadTemporarySave);
-	m_gbaActions.append(loadTemporarySave);
-	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
+	addControlledAction(fileMenu, fileMenu->addAction(tr("Load ROM in archive..."), this, SLOT(selectROMInArchive())),
+	                    "loadROMInArchive");
 
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &BIOS..."), this, SLOT(selectBIOS())), "loadBIOS");
+
+	QAction* loadTemporarySave = new QAction(tr("Load temporary save..."), fileMenu);
+	connect(loadTemporarySave, &QAction::triggered, [this]() { this->selectSave(true); });
+	m_gameActions.append(loadTemporarySave);
+	addControlledAction(fileMenu, loadTemporarySave, "loadTemporarySave");
+
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Load &patch..."), this, SLOT(selectPatch())), "loadPatch");
 	addControlledAction(fileMenu, fileMenu->addAction(tr("Boot BIOS"), m_controller, SLOT(bootBIOS())), "bootBIOS");
 
@@ -943,6 +991,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		addControlledAction(quickSaveMenu, quickSave, QString("quickSave.%1").arg(i));
 	}
 
+#ifdef M_CORE_GBA
 	fileMenu->addSeparator();
 	QAction* importShark = new QAction(tr("Import GameShark Save"), fileMenu);
 	connect(importShark, SIGNAL(triggered()), this, SLOT(importSharkport()));
@@ -955,6 +1004,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(exportShark);
 	m_gbaActions.append(exportShark);
 	addControlledAction(fileMenu, exportShark, "exportShark");
+#endif
 
 	fileMenu->addSeparator();
 	QAction* multiWindow = new QAction(tr("New multiplayer window"), fileMenu);
@@ -988,11 +1038,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_gameActions.append(shutdown);
 	addControlledAction(emulationMenu, shutdown, "shutdown");
 
+#ifdef M_CORE_GBA
 	QAction* yank = new QAction(tr("Yank game pak"), emulationMenu);
 	connect(yank, SIGNAL(triggered()), m_controller, SLOT(yankPak()));
 	m_gameActions.append(yank);
 	m_gbaActions.append(yank);
 	addControlledAction(emulationMenu, yank, "yank");
+#endif
 	emulationMenu->addSeparator();
 
 	QAction* pause = new QAction(tr("&Pause"), emulationMenu);
@@ -1011,7 +1063,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	frameAdvance->setShortcut(tr("Ctrl+N"));
 	connect(frameAdvance, SIGNAL(triggered()), m_controller, SLOT(frameAdvance()));
 	m_gameActions.append(frameAdvance);
-	m_nonMpActions.append(frameAdvance);
 	addControlledAction(emulationMenu, frameAdvance, "frameAdvance");
 
 	emulationMenu->addSeparator();
@@ -1046,10 +1097,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->startRewinding();
 	}, [this]() {
 		m_controller->stopRewinding();
-	}, QKeySequence("~"), tr("Rewind (held)"), "holdRewind");
+	}, QKeySequence("`"), tr("Rewind (held)"), "holdRewind");
 
 	QAction* rewind = new QAction(tr("Re&wind"), emulationMenu);
-	rewind->setShortcut(tr("`"));
+	rewind->setShortcut(tr("~"));
 	connect(rewind, SIGNAL(triggered()), m_controller, SLOT(rewind()));
 	m_gameActions.append(rewind);
 	m_nonMpActions.append(rewind);
@@ -1208,6 +1259,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* recordOutput = new QAction(tr("Record output..."), avMenu);
 	connect(recordOutput, SIGNAL(triggered()), this, SLOT(openVideoWindow()));
 	addControlledAction(avMenu, recordOutput, "recordOutput");
+	m_gameActions.append(recordOutput);
 #endif
 
 #ifdef USE_MAGICK
@@ -1263,10 +1315,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	connect(viewLogs, SIGNAL(triggered()), m_logView, SLOT(show()));
 	addControlledAction(toolsMenu, viewLogs, "viewLogs");
 
+#ifdef M_CORE_GBA
 	QAction* overrides = new QAction(tr("Game &overrides..."), toolsMenu);
 	connect(overrides, SIGNAL(triggered()), this, SLOT(openOverrideWindow()));
-	m_gbaActions.append(overrides);
 	addControlledAction(toolsMenu, overrides, "overrideWindow");
+#endif
 
 	QAction* sensors = new QAction(tr("Game &Pak sensors..."), toolsMenu);
 	connect(sensors, SIGNAL(triggered()), this, SLOT(openSensorWindow()));
@@ -1293,25 +1346,28 @@ void Window::setupMenu(QMenuBar* menubar) {
 	QAction* paletteView = new QAction(tr("View &palette..."), toolsMenu);
 	connect(paletteView, SIGNAL(triggered()), this, SLOT(openPaletteWindow()));
 	m_gameActions.append(paletteView);
-	m_gbaActions.append(paletteView);
 	addControlledAction(toolsMenu, paletteView, "paletteWindow");
 
+#ifdef M_CORE_GBA
 	QAction* tileView = new QAction(tr("View &tiles..."), toolsMenu);
 	connect(tileView, SIGNAL(triggered()), this, SLOT(openTileWindow()));
 	m_gameActions.append(tileView);
 	m_gbaActions.append(tileView);
 	addControlledAction(toolsMenu, tileView, "tileWindow");
+#endif
 
 	QAction* memoryView = new QAction(tr("View memory..."), toolsMenu);
 	connect(memoryView, SIGNAL(triggered()), this, SLOT(openMemoryWindow()));
 	m_gameActions.append(memoryView);
 	addControlledAction(toolsMenu, memoryView, "memoryView");
 
+#ifdef M_CORE_GBA
 	QAction* ioViewer = new QAction(tr("View &I/O registers..."), toolsMenu);
 	connect(ioViewer, SIGNAL(triggered()), this, SLOT(openIOViewer()));
 	m_gameActions.append(ioViewer);
 	m_gbaActions.append(ioViewer);
 	addControlledAction(toolsMenu, ioViewer, "ioViewer");
+#endif
 
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant& value) {
@@ -1340,17 +1396,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	ConfigOption* rewindEnable = m_config->addOption("rewindEnable");
 	rewindEnable->connect([this](const QVariant& value) {
-		m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt(), m_config->getOption("rewindBufferInterval").toInt());
+		m_controller->setRewind(value.toBool(), m_config->getOption("rewindBufferCapacity").toInt());
 	}, this);
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
 	rewindBufferCapacity->connect([this](const QVariant& value) {
-		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt(), m_config->getOption("rewindBufferInterval").toInt());
-	}, this);
-
-	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
-	rewindBufferInterval->connect([this](const QVariant& value) {
-		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), m_config->getOption("rewindBufferCapacity").toInt(), value.toInt());
+		m_controller->setRewind(m_config->getOption("rewindEnable").toInt(), value.toInt());
 	}, this);
 
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
@@ -1380,13 +1431,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->setAutofire(GBA_KEY_A, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_A, false);
-	}, QKeySequence("W"), tr("Autofire A"), "autofireA");
+	}, QKeySequence(), tr("Autofire A"), "autofireA");
 
 	m_shortcutController->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, true);
 	}, [this]() {
 		m_controller->setAutofire(GBA_KEY_B, false);
-	}, QKeySequence("Q"), tr("Autofire B"), "autofireB");
+	}, QKeySequence(), tr("Autofire B"), "autofireB");
 
 	m_shortcutController->addFunctions(autofireMenu, [this]() {
 		m_controller->setAutofire(GBA_KEY_L, true);
@@ -1467,6 +1518,9 @@ void Window::updateMRU() {
 	if (!m_mruMenu) {
 		return;
 	}
+	for (QAction* action : m_mruMenu->actions()) {
+		delete action;
+	}
 	m_mruMenu->clear();
 	int i = 0;
 	for (const QString& file : m_mruFiles) {
@@ -1500,6 +1554,7 @@ void Window::focusCheck() {
 	}
 	if (QGuiApplication::focusWindow() && m_autoresume) {
 		m_controller->setPaused(false);
+		m_autoresume = false;
 	} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
 		m_autoresume = true;
 		m_controller->setPaused(true);

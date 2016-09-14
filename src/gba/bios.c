@@ -265,6 +265,52 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	}
 }
 
+static int16_t _ArcTan(int16_t i) {
+	int32_t a = -((i * i) >> 14);
+	int32_t b = ((0xA9 * a) >> 14) + 0x390;
+	b = ((b * a) >> 14) + 0x91C;
+	b = ((b * a) >> 14) + 0xFB6;
+	b = ((b * a) >> 14) + 0x16AA;
+	b = ((b * a) >> 14) + 0x2081;
+	b = ((b * a) >> 14) + 0x3651;
+	b = ((b * a) >> 14) + 0xA2F9;
+	return (i * b) >> 16;
+}
+
+static int16_t _ArcTan2(int16_t x, int16_t y) {
+	if (!y) {
+		if (x >= 0) {
+			return 0;
+		}
+		return 0x8000;
+	}
+	if (!x) {
+		if (y >= 0) {
+			return 0x4000;
+		}
+		return 0xC000;
+	}
+	if (y >= 0) {
+		if (x >= 0) {
+			if (x >= y) {
+				return _ArcTan((y << 14)/ x);
+			}
+		} else if (-x >= y) {
+			return _ArcTan((y << 14) / x) + 0x8000;
+		}
+		return 0x4000 - _ArcTan((x << 14) / y);
+	} else {
+		if (x <= 0) {
+			if (-x > -y) {
+				return _ArcTan((y << 14) / x) + 0x8000;
+			}
+		} else if (x >= -y) {
+			return _ArcTan((y << 14) / x) + 0x10000;
+		}
+		return 0xC000 - _ArcTan((x << 14) / y);
+	}
+}
+
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	mLOG(GBA_BIOS, DEBUG, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
@@ -303,8 +349,11 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x8:
 		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
+	case 0x9:
+		cpu->gprs[0] = (uint16_t) _ArcTan(cpu->gprs[0]);
+		break;
 	case 0xA:
-		cpu->gprs[0] = (uint16_t) (atan2f(cpu->gprs[1] / 16384.f, cpu->gprs[0] / 16384.f) / (2 * M_PI) * 0x10001);
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0xB:
 	case 0xC:

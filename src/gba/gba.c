@@ -28,7 +28,6 @@
 
 mLOG_DEFINE_CATEGORY(GBA, "GBA");
 
-const uint32_t GBA_ARM7TDMI_FREQUENCY = 0x1000000;
 const uint32_t GBA_COMPONENT_MAGIC = 0x1000000;
 
 static const size_t GBA_ROM_MAGIC_OFFSET = 3;
@@ -133,6 +132,10 @@ void GBAUnloadROM(struct GBA* gba) {
 	}
 
 	GBASavedataDeinit(&gba->memory.savedata);
+	if (gba->memory.savedata.realVf) {
+		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
+		gba->memory.savedata.realVf = 0;
+	}
 	gba->idleLoop = IDLE_LOOP_NONE;
 }
 
@@ -141,6 +144,8 @@ void GBADestroy(struct GBA* gba) {
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
+		gba->biosVf->close(gba->biosVf);
+		gba->biosVf = 0;
 	}
 
 	GBAMemoryDeinit(gba);
@@ -217,7 +222,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->bus |= cpu->prefetch[1] << 16;
 	}
 
-	if (gba->springIRQ) {
+	if (gba->springIRQ && !cpu->cpsr.i) {
 		ARMRaiseIRQ(cpu);
 		gba->springIRQ = 0;
 	}
@@ -234,21 +239,41 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
+			if (testEvent == 0) {
+				mLOG(GBA, ERROR, "Video requiring 0 cycles");
+			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAAudioProcessEvents(&gba->audio, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
+			if (testEvent == 0) {
+				mLOG(GBA, ERROR, "Audio requiring 0 cycles");
+			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBATimersProcessEvents(gba, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
+			if (testEvent == 0) {
+				mLOG(GBA, ERROR, "Timers requiring 0 cycles");
+			}
+#endif
 			nextEvent = testEvent;
 		}
 
 		testEvent = GBAMemoryRunDMAs(gba, cycles);
 		if (testEvent < nextEvent) {
+#ifndef NDEBUG
+			if (testEvent == 0) {
+				mLOG(GBA, ERROR, "DMAs requiring 0 cycles");
+			}
+#endif
 			nextEvent = testEvent;
 		}
 
@@ -263,6 +288,14 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
 		}
+		if (nextEvent == 0) {
+			break;
+		}
+#ifndef NDEBUG
+		else if (nextEvent < 0) {
+			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
+		}
+#endif
 	} while (cpu->cycles >= cpu->nextEvent);
 }
 
@@ -569,7 +602,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 		currentTimer->flags = GBATimerFlagsSetPrescaleBits(currentTimer->flags, 10);
 		break;
 	}
-	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, control & 0x0004);
+	currentTimer->flags = GBATimerFlagsTestFillCountUp(currentTimer->flags, timer > 0 && (control & 0x0004));
 	currentTimer->flags = GBATimerFlagsTestFillDoIrq(currentTimer->flags, control & 0x0040);
 	currentTimer->overflowInterval = (0x10000 - currentTimer->reload) << GBATimerFlagsGetPrescaleBits(currentTimer->flags);
 	bool wasEnabled = GBATimerFlagsIsEnable(currentTimer->flags);
@@ -770,7 +803,8 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	case CPU_COMPONENT_DEBUGGER:
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
-				.address = _ARMPCAddress(cpu)
+				.address = _ARMPCAddress(cpu),
+				.breakType = BREAKPOINT_SOFTWARE
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}
@@ -800,7 +834,8 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	UNUSED(gba);
 
-	// TODO: Put back rewind
+	struct mCoreThread* thread = mCoreThreadGet();
+	mCoreThreadFrameStarted(thread);
 }
 
 void GBAFrameEnded(struct GBA* gba) {
@@ -815,9 +850,7 @@ void GBAFrameEnded(struct GBA* gba) {
 		size_t i;
 		for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
 			struct GBACheatSet* cheats = (struct GBACheatSet*) *mCheatSetsGetPointer(&device->cheats, i);
-			if (!cheats->hook) {
-				mCheatRefresh(device, &cheats->d);
-			}
+			mCheatRefresh(device, &cheats->d);
 		}
 	}
 
@@ -833,13 +866,7 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 
 	struct mCoreThread* thread = mCoreThreadGet();
-	if (!thread) {
-		return;
-	}
-
-	if (thread->frameCallback) {
-		thread->frameCallback(thread);
-	}
+	mCoreThreadFrameEnded(thread);
 
 	// TODO: Put back RR
 }

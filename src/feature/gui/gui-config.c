@@ -6,7 +6,6 @@
 #include "gui-config.h"
 
 #include "core/config.h"
-#include "core/core.h"
 #include "feature/gui/gui-runner.h"
 #include "feature/gui/remap.h"
 #include "gba/gba.h"
@@ -96,7 +95,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		if (!item->validStates || !item->data) {
 			continue;
 		}
-		mCoreConfigGetUIntValue(&runner->core->config, item->data, &item->state);
+		mCoreConfigGetUIntValue(&runner->config, item->data, &item->state);
 	}
 
 	while (true) {
@@ -106,16 +105,24 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 		if (!strcmp(item->data, "*SAVE")) {
 			if (biosPath[0]) {
-				mCoreConfigSetValue(&runner->core->config, "bios", biosPath);
+				mCoreConfigSetValue(&runner->config, "bios", biosPath);
 			}
 			for (i = 0; i < GUIMenuItemListSize(&menu.items); ++i) {
 				item = GUIMenuItemListGetPointer(&menu.items, i);
 				if (!item->validStates || !item->data) {
 					continue;
 				}
-				mCoreConfigSetUIntValue(&runner->core->config, item->data, item->state);
+				mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
 			}
-			mCoreConfigSave(&runner->core->config);
+			if (runner->keySources) {
+				size_t i;
+				for (i = 0; runner->keySources[i].id; ++i) {
+					mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+					mInputMapSave(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+				}
+			}
+			mCoreConfigSave(&runner->config);
+			mCoreLoadForeignConfig(runner->core, &runner->config);
 			break;
 		}
 		if (!strcmp(item->data, "*REMAP")) {

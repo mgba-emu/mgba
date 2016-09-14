@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
 #include "core/core.h"
-#include "gba/core.h"
+#include "core/serialize.h"
+#include "gb/core.h"
 #include "gba/gba.h"
-#include "gba/serialize.h"
 
 #include "feature/commandline.h"
 #include "util/memory.h"
@@ -34,14 +34,14 @@ struct FuzzOpts {
 	char* ssOverlay;
 };
 
-static void _GBAFuzzRunloop(struct mCore* core, int frames);
-static void _GBAFuzzShutdown(int signal);
+static void _fuzzRunloop(struct mCore* core, int frames);
+static void _fuzzShutdown(int signal);
 static bool _parseFuzzOpts(struct mSubParser* parser, int option, const char* arg);
 
 static bool _dispatchExiting = false;
 
 int main(int argc, char** argv) {
-	signal(SIGINT, _GBAFuzzShutdown);
+	signal(SIGINT, _fuzzShutdown);
 
 	struct FuzzOpts fuzzOpts = { false, 0, 0, 0, 0 };
 	struct mSubParser subparser = {
@@ -51,11 +51,6 @@ int main(int argc, char** argv) {
 		.opts = &fuzzOpts
 	};
 
-	struct mCore* core = GBACoreCreate();
-	core->init(core);
-	mCoreInitConfig(core, "fuzz");
-	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
-
 	struct mArguments args;
 	bool parsed = parseArguments(&args, argc, argv, &subparser);
 	if (!args.fname) {
@@ -63,15 +58,18 @@ int main(int argc, char** argv) {
 	}
 	if (!parsed || args.showHelp) {
 		usage(argv[0], FUZZ_USAGE);
-		core->deinit(core);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		core->deinit(core);
 		return 0;
 	}
+	struct mCore* core = mCoreFind(args.fname);
+	core->init(core);
+	mCoreInitConfig(core, "fuzz");
 	applyArguments(&args, NULL, &core->config);
+
+	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
 	void* outputBuffer;
 	outputBuffer = 0;
@@ -85,7 +83,11 @@ int main(int argc, char** argv) {
 	__AFL_INIT();
 #endif
 
-	((struct GBA*) core->board)->hardCrash = false;
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		((struct GBA*) core->board)->hardCrash = false;
+	}
+#endif
 	mCoreLoadFile(core, args.fname);
 
 	struct VFile* savestate = 0;
@@ -98,20 +100,24 @@ int main(int argc, char** argv) {
 	}
 	if (fuzzOpts.ssOverlay) {
 		overlayOffset = fuzzOpts.overlayOffset;
-		if (overlayOffset < sizeof(struct GBASerializedState)) {
+		if (overlayOffset < core->stateSize(core)) {
 			savestateOverlay = VFileOpen(fuzzOpts.ssOverlay, O_RDONLY);
 		}
 		free(fuzzOpts.ssOverlay);
 	}
+
+	core->reset(core);
+
 	if (savestate) {
 		if (!savestateOverlay) {
 			mCoreLoadStateNamed(core, savestate, 0);
 		} else {
-			struct GBASerializedState* state = GBAAllocateState();
-			savestate->read(savestate, state, sizeof(*state));
-			savestateOverlay->read(savestateOverlay, (uint8_t*) state + overlayOffset, sizeof(*state) - overlayOffset);
-			GBADeserialize(core->board, state);
-			GBADeallocateState(state);
+			size_t size = core->stateSize(core);
+			uint8_t* state = malloc(size);
+			savestate->read(savestate, state, size);
+			savestateOverlay->read(savestateOverlay, state + overlayOffset, size - overlayOffset);
+			core->loadState(core, state);
+			free(state);
 			savestateOverlay->close(savestateOverlay);
 			savestateOverlay = 0;
 		}
@@ -122,9 +128,7 @@ int main(int argc, char** argv) {
 	blip_set_rates(core->getAudioChannel(core, 0), GBA_ARM7TDMI_FREQUENCY, 0x8000);
 	blip_set_rates(core->getAudioChannel(core, 1), GBA_ARM7TDMI_FREQUENCY, 0x8000);
 
-	core->reset(core);
-
-	_GBAFuzzRunloop(core, fuzzOpts.frames);
+	_fuzzRunloop(core, fuzzOpts.frames);
 
 	core->unloadROM(core);
 
@@ -144,7 +148,7 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-static void _GBAFuzzRunloop(struct mCore* core, int frames) {
+static void _fuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
 		blip_clear(core->getAudioChannel(core, 0));
@@ -152,7 +156,7 @@ static void _GBAFuzzRunloop(struct mCore* core, int frames) {
 	} while (core->frameCounter(core) < frames && !_dispatchExiting);
 }
 
-static void _GBAFuzzShutdown(int signal) {
+static void _fuzzShutdown(int signal) {
 	UNUSED(signal);
 	_dispatchExiting = true;
 }

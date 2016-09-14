@@ -14,10 +14,9 @@
 #define MODE_2_COORD_NO_OVERFLOW \
 	if ((x | y) & ~(sizeAdjusted - 1)) { \
 		continue; \
-	} else { \
-		localX = x; \
-		localY = y; \
-	}
+	} \
+	localX = x; \
+	localY = y;
 
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
@@ -41,12 +40,9 @@
 		y += background->dy; \
 		\
 		uint32_t current = *pixel; \
-		if (!IS_WRITABLE(current)) { \
-			continue; \
-		} \
 		MOSAIC(COORD) \
 		if (pixelData) { \
-			COMPOSITE_256_ ## OBJWIN (BLEND); \
+			COMPOSITE_256_ ## OBJWIN (BLEND, 0); \
 		} \
 	}
 
@@ -79,13 +75,13 @@ void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer
 	uint32_t* pixel;
 
 	if (!objwinSlowPath) {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			DRAW_BACKGROUND_MODE_2(NoBlend, NO_OBJWIN);
 		} else {
 			DRAW_BACKGROUND_MODE_2(Blend, NO_OBJWIN);
 		}
 	} else {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			DRAW_BACKGROUND_MODE_2(NoBlend, OBJWIN);
 		} else {
 			DRAW_BACKGROUND_MODE_2(Blend, OBJWIN);

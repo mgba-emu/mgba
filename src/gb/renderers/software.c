@@ -12,13 +12,13 @@ static void GBVideoSoftwareRendererInit(struct GBVideoRenderer* renderer, enum G
 static void GBVideoSoftwareRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoSoftwareRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
-static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
 static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int y, int sx, int sy);
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int sx, int sy);
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
 
 void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
@@ -101,7 +101,7 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	softwareRenderer->palette[index] = color;
 }
 
-static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {
+static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
@@ -110,16 +110,16 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) || softwareRenderer->model >= GB_MODEL_CGB) {
 		if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && endX >= softwareRenderer->wx - 7) {
 			if (softwareRenderer->wx - 7 > 0) {
-				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, y, softwareRenderer->scx, softwareRenderer->scy);
+				GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, softwareRenderer->wx - 7, softwareRenderer->scx, softwareRenderer->scy + y);
 			}
 
 			maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 			if (GBRegisterLCDCIsWindowTileMap(softwareRenderer->lcdc)) {
 				maps += GB_SIZE_MAP;
 			}
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, y, 7 - softwareRenderer->wx, (softwareRenderer->currentWy - y) - softwareRenderer->wy);
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, softwareRenderer->wx - 7, endX, 7 - softwareRenderer->wx, softwareRenderer->currentWy);
 		} else {
-			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, y, softwareRenderer->scx, softwareRenderer->scy);
+			GBVideoSoftwareRendererDrawBackground(softwareRenderer, maps, startX, endX, softwareRenderer->scx, softwareRenderer->scy + y);
 		}
 	} else {
 		memset(&softwareRenderer->row[startX], 0, endX - startX);
@@ -128,12 +128,12 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc)) {
 		size_t i;
 		for (i = 0; i < oamMax; ++i) {
-			GBVideoSoftwareRendererDrawObj(softwareRenderer, obj[i], startX, endX, y);
+			GBVideoSoftwareRendererDrawObj(softwareRenderer, &obj[i], startX, endX, y);
 		}
 	}
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	int x;
-	for (x = startX; x < (endX & ~7); x += 8) {
+	for (x = startX; x + 7 < (endX & ~7); x += 8) {
 		row[x] = softwareRenderer->palette[softwareRenderer->row[x] & 0x7F];
 		row[x + 1] = softwareRenderer->palette[softwareRenderer->row[x + 1] & 0x7F];
 		row[x + 2] = softwareRenderer->palette[softwareRenderer->row[x + 2] & 0x7F];
@@ -150,7 +150,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
-	if (GBRegisterLCDCIsBgEnable(softwareRenderer->lcdc) && GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && softwareRenderer->wx - 7 < GB_VIDEO_HORIZONTAL_PIXELS) {
+	if (GBRegisterLCDCIsWindow(softwareRenderer->lcdc) && softwareRenderer->wy <= y && softwareRenderer->wx - 7 < GB_VIDEO_HORIZONTAL_PIXELS) {
 		++softwareRenderer->currentWy;
 	}
 }
@@ -162,17 +162,17 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GB_VIDEO_HORIZONTAL_PIXELS * GB_VIDEO_VERTICAL_PIXELS * 4);
 		softwareRenderer->temporaryBuffer = 0;
 	}
-	softwareRenderer->currentWy = softwareRenderer->wy;
+	softwareRenderer->currentWy = 0;
 }
 
-static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int y, int sx, int sy) {
+static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int sx, int sy) {
 	uint8_t* data = renderer->d.vram;
 	uint8_t* attr = &maps[GB_SIZE_VRAM_BANK0];
 	if (!GBRegisterLCDCIsTileData(renderer->lcdc)) {
 		data += 0x1000;
 	}
-	int topY = (((y + sy) >> 3) & 0x1F) * 0x20;
-	int bottomY = (y + sy) & 7;
+	int topY = ((sy >> 3) & 0x1F) * 0x20;
+	int bottomY = sy & 7;
 	if (startX < 0) {
 		startX = 0;
 	}

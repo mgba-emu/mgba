@@ -319,17 +319,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		return false;
 	}
 
-	core = NULL;
-#ifdef M_CORE_GBA
-	if (!core && GBAIsROM(rom)) {
-		core = GBACoreCreate();
-	}
-#endif
-#ifdef M_CORE_GB
-	if (!core && GBIsROM(rom)) {
-		core = GBCoreCreate();
-	}
-#endif
+	core = mCoreFindVF(rom);
 	if (!core) {
 		rom->close(rom);
 		mappedMemoryFree(data, game->size);

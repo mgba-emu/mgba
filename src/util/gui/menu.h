@@ -35,8 +35,16 @@ enum GUIMenuExitReason {
 	GUI_MENU_EXIT_CANCEL,
 };
 
+enum GUIMessageBoxButtons {
+	GUI_MESSAGE_BOX_OK = 1,
+	GUI_MESSAGE_BOX_CANCEL = 2
+};
+
 struct GUIParams;
 enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* menu, struct GUIMenuItem** item);
+
+ATTRIBUTE_FORMAT(printf, 4, 5)
+enum GUIMenuExitReason GUIShowMessageBox(struct GUIParams* params, int buttons, int frames, const char* format, ...);
 
 void GUIDrawBattery(struct GUIParams* params);
 void GUIDrawClock(struct GUIParams* params);

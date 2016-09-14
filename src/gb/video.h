@@ -19,9 +19,9 @@ enum {
 	GB_VIDEO_VERTICAL_TOTAL_PIXELS = GB_VIDEO_VERTICAL_PIXELS + GB_VIDEO_VBLANK_PIXELS,
 
 	// TODO: Figure out exact lengths
-	GB_VIDEO_MODE_2_LENGTH = 80,
-	GB_VIDEO_MODE_3_LENGTH_BASE = 176,
-	GB_VIDEO_MODE_0_LENGTH_BASE = 200,
+	GB_VIDEO_MODE_2_LENGTH = 78,
+	GB_VIDEO_MODE_3_LENGTH_BASE = 160,
+	GB_VIDEO_MODE_0_LENGTH_BASE = 218,
 
 	GB_VIDEO_HORIZONTAL_LENGTH = GB_VIDEO_MODE_0_LENGTH_BASE + GB_VIDEO_MODE_2_LENGTH + GB_VIDEO_MODE_3_LENGTH_BASE,
 
@@ -59,7 +59,7 @@ struct GBVideoRenderer {
 
 	uint8_t (*writeVideoRegister)(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 	void (*writePalette)(struct GBVideoRenderer* renderer, int index, uint16_t value);
-	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** objOnLine, size_t nObj);
+	void (*drawRange)(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* objOnLine, size_t nObj);
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
 
@@ -111,7 +111,7 @@ struct GBVideo {
 	int vramCurrentBank;
 
 	union GBOAM oam;
-	struct GBObj* objThisLine[10];
+	struct GBObj objThisLine[10];
 	int objMax;
 
 	int bcpIndex;

@@ -9,7 +9,7 @@
 #include "util/common.h"
 
 #include "core/log.h"
-
+#include "gb/interface.h"
 #include "lr35902/lr35902.h"
 
 mLOG_DECLARE_CATEGORY(GB_MBC);
@@ -55,22 +55,8 @@ enum {
 	GB_SIZE_HRAM = 0x7F,
 };
 
-enum GBMemoryBankControllerType {
-	GB_MBC_NONE = 0,
-	GB_MBC1 = 1,
-	GB_MBC2 = 2,
-	GB_MBC3 = 3,
-	GB_MBC5 = 5,
-	GB_MBC6 = 6,
-	GB_MBC7 = 7,
-	GB_MMM01 = 0x10,
-	GB_HuC1 = 0x11,
-	GB_HuC3 = 0x12,
-	GB_MBC5_RUMBLE = 0x105
-};
-
 struct GBMemory;
-typedef void (*GBMemoryBankController)(struct GBMemory*, uint16_t address, uint8_t value);
+typedef void (*GBMemoryBankController)(struct GB*, uint16_t address, uint8_t value);
 
 DECL_BITFIELD(GBMBC7Field, uint8_t);
 DECL_BIT(GBMBC7Field, SK, 6);
@@ -165,6 +151,8 @@ void GBMemorySwitchWramBank(struct GBMemory* memory, int bank);
 uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address);
 void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 
+uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment);
+
 int32_t GBMemoryProcessEvents(struct GB* gb, int32_t cycles);
 void GBMemoryDMA(struct GB* gb, uint16_t base);
 void GBMemoryWriteHDMA5(struct GB* gb, uint8_t value);
@@ -175,7 +163,7 @@ void GBDMAStore8(struct LR35902Core* cpu, uint16_t address, int8_t value);
 void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* old);
 
 struct GBSerializedState;
-void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state);
-void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state);
+void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state);
+void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state);
 
 #endif

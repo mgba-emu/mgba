@@ -92,6 +92,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
 	free(gbacore->cheatDevice);
+	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
 
@@ -117,14 +118,6 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
-
-	struct VFile* bios = 0;
-	if (core->opts.useBios && core->opts.bios) {
-		bios = VFileOpen(core->opts.bios, O_RDONLY);
-	}
-	if (bios) {
-		GBALoadBIOS(gba, bios);
-	}
 #endif
 
 	const char* idleOptimization = mCoreConfigGetValue(config, "idleOptimization");
@@ -134,7 +127,11 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 		} else if (strcasecmp(idleOptimization, "remove") == 0) {
 			gba->idleOptimization = IDLE_LOOP_REMOVE;
 		} else if (strcasecmp(idleOptimization, "detect") == 0) {
-			gba->idleOptimization = IDLE_LOOP_DETECT;
+			if (gba->idleLoop == IDLE_LOOP_NONE) {
+				gba->idleOptimization = IDLE_LOOP_DETECT;
+			} else {
+				gba->idleOptimization = IDLE_LOOP_REMOVE;
+			}
 		}
 	}
 
@@ -209,7 +206,8 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 }
 
 static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
-	GBASavedataMask(core->board, vf);
+	struct GBA* gba = core->board;
+	GBASavedataMask(&gba->memory.savedata, vf);
 	return true; // TODO: Return a real value
 }
 
@@ -241,10 +239,6 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 		GBAVideoAssociateRenderer(&gba->video, renderer);
 	}
-	ARMReset(core->cpu);
-	if (core->opts.skipBios) {
-		GBASkipBIOS(core->board);
-	}
 
 	struct GBACartridgeOverride override;
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
@@ -253,6 +247,28 @@ static void _GBACoreReset(struct mCore* core) {
 		if (GBAOverrideFind(gbacore->overrides, &override)) {
 			GBAOverrideApply(gba, &override);
 		}
+	}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios) {
+		if (!core->opts.bios) {
+			char path[PATH_MAX];
+			mCoreConfigDirectory(path, PATH_MAX);
+			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path));
+			bios = VFileOpen(path, O_RDONLY);
+		} else {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+		}
+	}
+	if (bios) {
+		GBALoadBIOS(gba, bios);
+	}
+#endif
+
+	ARMReset(core->cpu);
+	if (core->opts.skipBios && gba->pristineRom) {
+		GBASkipBIOS(core->board);
 	}
 }
 
@@ -370,32 +386,38 @@ static void _GBACoreBusWrite32(struct mCore* core, uint32_t address, uint32_t va
 	cpu->memory.store32(cpu, address, value, 0);
 }
 
-static uint32_t _GBACoreRawRead8(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead8(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView8(cpu, address);
 }
 
-static uint32_t _GBACoreRawRead16(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead16(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView16(cpu, address);
 }
 
-static uint32_t _GBACoreRawRead32(struct mCore* core, uint32_t address) {
+static uint32_t _GBACoreRawRead32(struct mCore* core, uint32_t address, int segment) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	return GBAView32(cpu, address);
 }
 
-static void _GBACoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+static void _GBACoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch8(cpu, address, value, NULL);
 }
 
-static void _GBACoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+static void _GBACoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch16(cpu, address, value, NULL);
 }
 
-static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
+	UNUSED(segment);
 	struct ARMCore* cpu = core->cpu;
 	GBAPatch32(cpu, address, value, NULL);
 }

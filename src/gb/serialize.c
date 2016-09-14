@@ -58,7 +58,7 @@ void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedCpuFlagsSetDoubleSpeed(flags, gb->doubleSpeed);
 	STORE_32LE(flags, 0, &state->cpu.flags);
 
-	GBMemorySerialize(&gb->memory, state);
+	GBMemorySerialize(gb, state);
 	GBIOSerialize(gb, state);
 	GBVideoSerialize(&gb->video, state);
 	GBTimerSerialize(&gb->timer, state);
@@ -88,6 +88,8 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	bool error = false;
 	int32_t check;
 	uint32_t ucheck;
+	int16_t check16;
+	uint16_t ucheck16;
 	LOAD_32LE(ucheck, 0, &state->versionMagic);
 	if (ucheck > GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
 		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
@@ -112,6 +114,10 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are negative");
 		error = true;
 	}
+	if (state->cpu.executionState != LR35902_CORE_FETCH) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: Execution state is not FETCH");
+		error = true;
+	}
 	if (check >= (int32_t) DMG_LR35902_FREQUENCY) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: CPU cycles are too high");
 		error = true;
@@ -120,6 +126,29 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	if (check < 0) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video eventDiff is negative");
 		error = true;
+	}
+	LOAD_16LE(check16, 0, &state->video.x);
+	if (check16 < 0 || check16 > GB_VIDEO_HORIZONTAL_PIXELS) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: video x is out of range");
+		error = true;
+	}
+	LOAD_16LE(check16, 0, &state->video.ly);
+	if (check16 < 0 || check16 > GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: video y is out of range");
+		error = true;
+	}
+	LOAD_16LE(ucheck16, 0, &state->memory.dmaDest);
+	if (ucheck16 + state->memory.dmaRemaining > GB_SIZE_OAM) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: DMA destination is out of range");
+		error = true;
+	}
+	LOAD_16LE(ucheck16, 0, &state->video.bcpIndex);
+	if (ucheck16 >= 0x40) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: BCPS is out of range");
+	}
+	LOAD_16LE(ucheck16, 0, &state->video.ocpIndex);
+	if (ucheck16 >= 0x40) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: OCPS is out of range");
 	}
 	if (error) {
 		return false;
@@ -160,7 +189,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		gb->audio.style = GB_AUDIO_CGB;
 	}
 
-	GBMemoryDeserialize(&gb->memory, state);
+	GBMemoryDeserialize(gb, state);
 	GBIODeserialize(gb, state);
 	GBVideoDeserialize(&gb->video, state);
 	GBTimerDeserialize(&gb->timer, state);

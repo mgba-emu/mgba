@@ -11,12 +11,11 @@
 struct RingFIFO {
 	void* data;
 	size_t capacity;
-	size_t maxalloc;
 	void* readPtr;
 	void* writePtr;
 };
 
-void RingFIFOInit(struct RingFIFO* buffer, size_t capacity, size_t maxalloc);
+void RingFIFOInit(struct RingFIFO* buffer, size_t capacity);
 void RingFIFODeinit(struct RingFIFO* buffer);
 size_t RingFIFOCapacity(const struct RingFIFO* buffer);
 void RingFIFOClear(struct RingFIFO* buffer);

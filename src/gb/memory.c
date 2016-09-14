@@ -8,34 +8,14 @@
 #include "core/interface.h"
 #include "gb/gb.h"
 #include "gb/io.h"
+#include "gb/mbc.h"
 #include "gb/serialize.h"
 
 #include "util/memory.h"
 
-#include <time.h>
-
-mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory");
 
 static void _pristineCow(struct GB* gba);
-
-static void _GBMBCNone(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	UNUSED(memory);
-	UNUSED(address);
-	UNUSED(value);
-
-	mLOG(GB_MBC, GAME_ERROR, "Wrote to invalid MBC");
-}
-
-static void _GBMBC1(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC2(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC3(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC5(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC6(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBMBC7(struct GBMemory*, uint16_t address, uint8_t value);
-static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
-static void _GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
-static void _GBHuC3(struct GBMemory*, uint16_t address, uint8_t value);
 
 static uint8_t GBFastLoad8(struct LR35902Core* cpu, uint16_t address) {
 	if (UNLIKELY(address > cpu->memory.activeRegionEnd)) {
@@ -89,7 +69,7 @@ void GBMemoryInit(struct GB* gb) {
 	gb->memory.romBank = 0;
 	gb->memory.romSize = 0;
 	gb->memory.sram = 0;
-	gb->memory.mbcType = GB_MBC_NONE;
+	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->memory.mbc = 0;
 
 	gb->memory.rtc = NULL;
@@ -112,11 +92,7 @@ void GBMemoryReset(struct GB* gb) {
 	GBMemorySwitchWramBank(&gb->memory, 1);
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
-	if (!gb->memory.sram) {
-		gb->memory.sram = anonymousMemoryMap(0x20000);
-	}
 	gb->memory.sramCurrentBank = 0;
-	gb->memory.sramBank = gb->memory.sram;
 
 	gb->memory.ime = false;
 	gb->memory.ie = 0;
@@ -140,60 +116,8 @@ void GBMemoryReset(struct GB* gb) {
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 
-	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	switch (cart->type) {
-	case 0:
-	case 8:
-	case 9:
-		gb->memory.mbc = _GBMBCNone;
-		gb->memory.mbcType = GB_MBC_NONE;
-		break;
-	case 1:
-	case 2:
-	case 3:
-		gb->memory.mbc = _GBMBC1;
-		gb->memory.mbcType = GB_MBC1;
-		break;
-	case 5:
-	case 6:
-		gb->memory.mbc = _GBMBC2;
-		gb->memory.mbcType = GB_MBC2;
-		break;
-	case 0x0F:
-	case 0x10:
-	case 0x11:
-	case 0x12:
-	case 0x13:
-		gb->memory.mbc = _GBMBC3;
-		gb->memory.mbcType = GB_MBC3;
-		break;
-	default:
-		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
-	case 0x19:
-	case 0x1A:
-	case 0x1B:
-		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5;
-		break;
-	case 0x1C:
-	case 0x1D:
-	case 0x1E:
-		gb->memory.mbc = _GBMBC5;
-		gb->memory.mbcType = GB_MBC5_RUMBLE;
-		break;
-	case 0x20:
-		gb->memory.mbc = _GBMBC6;
-		gb->memory.mbcType = GB_MBC6;
-		break;
-	case 0x22:
-		gb->memory.mbc = _GBMBC7;
-		gb->memory.mbcType = GB_MBC7;
-		break;
-	case 0xFE:
-		gb->memory.mbc = _GBHuC3;
-		gb->memory.mbcType = GB_HuC3;
-		break;
-	}
+	GBMBCInit(gb);
+	gb->memory.sramBank = gb->memory.sram;
 
 	if (!gb->memory.wram) {
 		GBMemoryDeinit(gb);
@@ -229,11 +153,11 @@ uint8_t GBLoad8(struct LR35902Core* cpu, uint16_t address) {
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
-			return gb->memory.rtcRegs[memory->activeRtcReg];
+			return memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
-			return gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_MBC7) {
-			return _GBMBC7Read(memory, address);
+			return GBMBC7Read(memory, address);
 		} else if (memory->mbcType == GB_HuC3) {
 			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
 		}
@@ -279,7 +203,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		memory->mbc(memory, address, value);
+		memory->mbc(gb, address, value);
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 		return;
 	case GB_REGION_VRAM:
@@ -290,11 +214,11 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
-			gb->memory.rtcRegs[memory->activeRtcReg] = value;
+			memory->rtcRegs[memory->activeRtcReg] = value;
 		} else if (memory->sramAccess) {
-			gb->memory.sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
-		} else if (gb->memory.mbcType == GB_MBC7) {
-			_GBMBC7Write(&gb->memory, address, value);
+			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+		} else if (memory->mbcType == GB_MBC7) {
+			GBMBC7Write(memory, address, value);
 		}
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
@@ -320,6 +244,82 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else {
 			GBIOWrite(gb, REG_IE, value);
 		}
+	}
+}
+uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	switch (address >> 12) {
+	case GB_REGION_CART_BANK0:
+	case GB_REGION_CART_BANK0 + 1:
+	case GB_REGION_CART_BANK0 + 2:
+	case GB_REGION_CART_BANK0 + 3:
+		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
+	case GB_REGION_CART_BANK1:
+	case GB_REGION_CART_BANK1 + 1:
+	case GB_REGION_CART_BANK1 + 2:
+	case GB_REGION_CART_BANK1 + 3:
+		if (segment < 0) {
+			return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+		} else {
+			if ((size_t) segment * GB_SIZE_CART_BANK0 > memory->romSize) {
+				return 0xFF;
+			}
+			return memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
+		}
+	case GB_REGION_VRAM:
+	case GB_REGION_VRAM + 1:
+		if (segment < 0) {
+			return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		} else {
+			return gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment *GB_SIZE_VRAM_BANK0];
+		}
+	case GB_REGION_EXTERNAL_RAM:
+	case GB_REGION_EXTERNAL_RAM + 1:
+		if (memory->rtcAccess) {
+			return memory->rtcRegs[memory->activeRtcReg];
+		} else if (memory->sramAccess) {
+			if (segment < 0) {
+				return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+			} else {
+				return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
+			}
+		} else if (memory->mbcType == GB_MBC7) {
+			return GBMBC7Read(memory, address);
+		} else if (memory->mbcType == GB_HuC3) {
+			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
+		}
+		return 0xFF;
+	case GB_REGION_WORKING_RAM_BANK0:
+	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		return memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+	case GB_REGION_WORKING_RAM_BANK1:
+		if (segment < 0) {
+			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		} else {
+			return memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment *GB_SIZE_WORKING_RAM_BANK0];
+		}
+	default:
+		if (address < GB_BASE_OAM) {
+			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
+		}
+		if (address < GB_BASE_UNUSABLE) {
+			if (gb->video.mode < 2) {
+				return gb->video.oam.raw[address & 0xFF];
+			}
+			return 0xFF;
+		}
+		if (address < GB_BASE_IO) {
+			mLOG(GB_MEM, GAME_ERROR, "Attempt to read from unusable memory: %04X", address);
+			return 0xFF;
+		}
+		if (address < GB_BASE_HRAM) {
+			return GBIORead(gb, address & (GB_SIZE_IO - 1));
+		}
+		if (address < GB_BASE_IE) {
+			return memory->hram[address & GB_SIZE_HRAM];
+		}
+		return GBIORead(gb, REG_IE);
 	}
 }
 
@@ -540,438 +540,8 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 	}
 }
 
-static void _switchBank(struct GBMemory* memory, int bank) {
-	size_t bankStart = bank * GB_SIZE_CART_BANK0;
-	if (bankStart + GB_SIZE_CART_BANK0 > memory->romSize) {
-		mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid ROM bank: %0X", bank);
-		bankStart &= (memory->romSize - 1);
-		bank = bankStart / GB_SIZE_CART_BANK0;
-	}
-	memory->romBank = &memory->rom[bankStart];
-	memory->currentBank = bank;
-}
-
-static void _switchSramBank(struct GBMemory* memory, int bank) {
-	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
-	memory->sramBank = &memory->sram[bankStart];
-	memory->sramCurrentBank = bank;
-}
-
-static void _latchRtc(struct GBMemory* memory) {
-	time_t t;
-	struct mRTCSource* rtc = memory->rtc;
-	if (rtc) {
-		if (rtc->sample) {
-			rtc->sample(rtc);
-		}
-		t = rtc->unixTime(rtc);
-	} else {
-		t = time(0);
-	}
-	struct tm date;
-	localtime_r(&t, &date);
-	memory->rtcRegs[0] = date.tm_sec;
-	memory->rtcRegs[1] = date.tm_min;
-	memory->rtcRegs[2] = date.tm_hour;
-	memory->rtcRegs[3] = date.tm_yday; // TODO: Persist day counter
-	memory->rtcRegs[4] &= 0xF0;
-	memory->rtcRegs[4] |= date.tm_yday >> 8;
-}
-
-void _GBMBC1(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x1F;
-	switch (address >> 13) {
-	case 0x0:
-		switch (value) {
-		case 0:
-			memory->sramAccess = false;
-			break;
-		case 0xA:
-			memory->sramAccess = true;
-			_switchSramBank(memory, memory->sramCurrentBank);
-			break;
-		default:
-			// TODO
-			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
-			break;
-		}
-		break;
-	case 0x1:
-		if (!bank) {
-			++bank;
-		}
-		_switchBank(memory, bank | (memory->currentBank & 0x60));
-		break;
-	case 0x2:
-		bank &= 3;
-		if (!memory->mbcState.mbc1.mode) {
-			_switchBank(memory, (bank << 5) | (memory->currentBank & 0x1F));
-		} else {
-			_switchSramBank(memory, bank);
-		}
-		break;
-	case 0x3:
-		memory->mbcState.mbc1.mode = value & 1;
-		if (memory->mbcState.mbc1.mode) {
-			_switchBank(memory, memory->currentBank & 0x1F);
-		} else {
-			_switchSramBank(memory, 0);
-		}
-		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "MBC1 unknown address: %04X:%02X", address, value);
-		break;
-	}
-}
-
-void _GBMBC2(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0xF;
-	switch (address >> 13) {
-	case 0x0:
-		switch (value) {
-		case 0:
-			memory->sramAccess = false;
-			break;
-		case 0xA:
-			memory->sramAccess = true;
-			_switchSramBank(memory, memory->sramCurrentBank);
-			break;
-		default:
-			// TODO
-			mLOG(GB_MBC, STUB, "MBC1 unknown value %02X", value);
-			break;
-		}
-		break;
-	case 0x1:
-		if (!bank) {
-			++bank;
-		}
-		_switchBank(memory, bank);
-		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "MBC2 unknown address: %04X:%02X", address, value);
-		break;
-	}}
-
-void _GBMBC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x7F;
-	switch (address >> 13) {
-	case 0x0:
-		switch (value) {
-		case 0:
-			memory->sramAccess = false;
-			break;
-		case 0xA:
-			memory->sramAccess = true;
-			_switchSramBank(memory, memory->sramCurrentBank);
-			break;
-		default:
-			// TODO
-			mLOG(GB_MBC, STUB, "MBC3 unknown value %02X", value);
-			break;
-		}
-		break;
-	case 0x1:
-		if (!bank) {
-			++bank;
-		}
-		_switchBank(memory, bank);
-		break;
-	case 0x2:
-		if (value < 4) {
-			_switchSramBank(memory, value);
-			memory->rtcAccess = false;
-		} else if (value >= 8 && value <= 0xC) {
-			memory->activeRtcReg = value - 8;
-			memory->rtcAccess = true;
-		}
-		break;
-	case 0x3:
-		if (memory->rtcLatched && value == 0) {
-			memory->rtcLatched = false;
-		} else if (!memory->rtcLatched && value == 1) {
-			_latchRtc(memory);
-			memory->rtcLatched = true;
-		}
-		break;
-	}
-}
-
-void _GBMBC5(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank;
-	switch (address >> 12) {
-	case 0x0:
-	case 0x1:
-		switch (value) {
-		case 0:
-			memory->sramAccess = false;
-			break;
-		case 0xA:
-			memory->sramAccess = true;
-			_switchSramBank(memory, memory->sramCurrentBank);
-			break;
-		default:
-			// TODO
-			mLOG(GB_MBC, STUB, "MBC5 unknown value %02X", value);
-			break;
-		}
-		break;
-	case 0x2:
-		bank = (memory->currentBank & 0x100) | value;
-		_switchBank(memory, bank);
-		break;
-	case 0x3:
-		bank = (memory->currentBank & 0xFF) | ((value & 1) << 8);
-		_switchBank(memory, bank);
-		break;
-	case 0x4:
-	case 0x5:
-		if (memory->mbcType == GB_MBC5_RUMBLE && memory->rumble) {
-			memory->rumble->setRumble(memory->rumble, (value >> 3) & 1);
-			value &= ~8;
-		}
-		_switchSramBank(memory, value & 0xF);
-		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "MBC5 unknown address: %04X:%02X", address, value);
-		break;
-	}
-}
-
-void _GBMBC6(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	// TODO
-	mLOG(GB_MBC, STUB, "MBC6 unimplemented");
-}
-
-void _GBMBC7(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x7F;
-	switch (address >> 13) {
-	case 0x1:
-		_switchBank(memory, bank);
-		break;
-	case 0x2:
-		if (value < 0x10) {
-			_switchSramBank(memory, value);
-		}
-		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "MBC7 unknown address: %04X:%02X", address, value);
-		break;
-	}
-}
-
-uint8_t _GBMBC7Read(struct GBMemory* memory, uint16_t address) {
-	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
-	switch (address & 0xF0) {
-	case 0x00:
-	case 0x10:
-	case 0x60:
-	case 0x70:
-		return 0;
-	case 0x20:
-		if (memory->rotation && memory->rotation->readTiltX) {
-			int32_t x = -memory->rotation->readTiltX(memory->rotation);
-			x >>= 21;
-			x += 2047;
-			return x;
-		}
-		return 0xFF;
-	case 0x30:
-		if (memory->rotation && memory->rotation->readTiltX) {
-			int32_t x = -memory->rotation->readTiltX(memory->rotation);
-			x >>= 21;
-			x += 2047;
-			return x >> 8;
-		}
-		return 7;
-	case 0x40:
-		if (memory->rotation && memory->rotation->readTiltY) {
-			int32_t y = -memory->rotation->readTiltY(memory->rotation);
-			y >>= 21;
-			y += 2047;
-			return y;
-		}
-		return 0xFF;
-	case 0x50:
-		if (memory->rotation && memory->rotation->readTiltY) {
-			int32_t y = -memory->rotation->readTiltY(memory->rotation);
-			y >>= 21;
-			y += 2047;
-			return y >> 8;
-		}
-		return 7;
-	case 0x80:
-		return (mbc7->sr >> 16) & 1;
-	default:
-		return 0xFF;
-	}
-}
-
-void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	if ((address & 0xF0) != 0x80) {
-		return;
-	}
-	struct GBMBC7State* mbc7 = &memory->mbcState.mbc7;
-	GBMBC7Field old = memory->mbcState.mbc7.field;
-	mbc7->field = GBMBC7FieldClearIO(value);
-	if (!GBMBC7FieldIsCS(old) && GBMBC7FieldIsCS(value)) {
-		if (mbc7->state == GBMBC7_STATE_WRITE) {
-			if (mbc7->writable) {
-				memory->sramBank[mbc7->address * 2] = mbc7->sr >> 8;
-				memory->sramBank[mbc7->address * 2 + 1] = mbc7->sr;
-			}
-			mbc7->sr = 0x1FFFF;
-			mbc7->state = GBMBC7_STATE_NULL;
-		} else {
-			mbc7->state = GBMBC7_STATE_IDLE;
-		}
-	}
-	if (!GBMBC7FieldIsSK(old) && GBMBC7FieldIsSK(value)) {
-		if (mbc7->state > GBMBC7_STATE_IDLE && mbc7->state != GBMBC7_STATE_READ) {
-			mbc7->sr <<= 1;
-			mbc7->sr |= GBMBC7FieldGetIO(value);
-			++mbc7->srBits;
-		}
-		switch (mbc7->state) {
-		case GBMBC7_STATE_IDLE:
-			if (GBMBC7FieldIsIO(value)) {
-				mbc7->state = GBMBC7_STATE_READ_COMMAND;
-				mbc7->srBits = 0;
-				mbc7->sr = 0;
-			}
-			break;
-		case GBMBC7_STATE_READ_COMMAND:
-			if (mbc7->srBits == 2) {
-				mbc7->state = GBMBC7_STATE_READ_ADDRESS;
-				mbc7->srBits = 0;
-				mbc7->command = mbc7->sr;
-			}
-			break;
-		case GBMBC7_STATE_READ_ADDRESS:
-			if (mbc7->srBits == 8) {
-				mbc7->state = GBMBC7_STATE_COMMAND_0 + mbc7->command;
-				mbc7->srBits = 0;
-				mbc7->address = mbc7->sr;
-				if (mbc7->state == GBMBC7_STATE_COMMAND_0) {
-					switch (mbc7->address >> 6) {
-					case 0:
-						mbc7->writable = false;
-						mbc7->state = GBMBC7_STATE_NULL;
-						break;
-					case 3:
-						mbc7->writable = true;
-						mbc7->state = GBMBC7_STATE_NULL;
-						break;
-					}
-				}
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_0:
-			if (mbc7->srBits == 16) {
-				switch (mbc7->address >> 6) {
-				case 0:
-					mbc7->writable = false;
-					mbc7->state = GBMBC7_STATE_NULL;
-					break;
-				case 1:
-					mbc7->state = GBMBC7_STATE_WRITE;
-					if (mbc7->writable) {
-						int i;
-						for (i = 0; i < 256; ++i) {
-							memory->sramBank[i * 2] = mbc7->sr >> 8;
-							memory->sramBank[i * 2 + 1] = mbc7->sr;
-						}
-					}
-					break;
-				case 2:
-					mbc7->state = GBMBC7_STATE_WRITE;
-					if (mbc7->writable) {
-						int i;
-						for (i = 0; i < 256; ++i) {
-							memory->sramBank[i * 2] = 0xFF;
-							memory->sramBank[i * 2 + 1] = 0xFF;
-						}
-					}
-					break;
-				case 3:
-					mbc7->writable = true;
-					mbc7->state = GBMBC7_STATE_NULL;
-					break;
-				}
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_SR_WRITE:
-			if (mbc7->srBits == 16) {
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_WRITE;
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_SR_READ:
-			if (mbc7->srBits == 1) {
-				mbc7->sr = memory->sramBank[mbc7->address * 2] << 8;
-				mbc7->sr |= memory->sramBank[mbc7->address * 2 + 1];
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_READ;
-			}
-			break;
-		case GBMBC7_STATE_COMMAND_SR_FILL:
-			if (mbc7->srBits == 16) {
-				mbc7->sr = 0xFFFF;
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_WRITE;
-			}
-			break;
-		default:
-			break;
-		}
-	} else if (GBMBC7FieldIsSK(old) && !GBMBC7FieldIsSK(value)) {
-		if (mbc7->state == GBMBC7_STATE_READ) {
-			mbc7->sr <<= 1;
-			++mbc7->srBits;
-			if (mbc7->srBits == 16) {
-				mbc7->srBits = 0;
-				mbc7->state = GBMBC7_STATE_NULL;
-			}
-		}
-	}
-}
-
-void _GBHuC3(struct GBMemory* memory, uint16_t address, uint8_t value) {
-	int bank = value & 0x3F;
-	if (address & 0x1FFF) {
-		mLOG(GB_MBC, STUB, "HuC-3 unknown value %04X:%02X", address, value);
-	}
-
-	switch (address >> 13) {
-	case 0x0:
-		switch (value) {
-		case 0xA:
-			memory->sramAccess = true;
-			_switchSramBank(memory, memory->sramCurrentBank);
-			break;
-		default:
-			memory->sramAccess = false;
-			break;
-		}
-		break;
-	case 0x1:
-		_switchBank(memory, bank);
-		break;
-	case 0x2:
-		_switchSramBank(memory, bank);
-		break;
-	default:
-		// TODO
-		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
-		break;
-	}
-}
-
-void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* state) {
+void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
+	const struct GBMemory* memory = &gb->memory;
 	memcpy(state->wram, memory->wram, GB_SIZE_WORKING_RAM);
 	memcpy(state->hram, memory->hram, GB_SIZE_HRAM);
 	STORE_16LE(memory->currentBank, 0, &state->memory.currentBank);
@@ -1000,16 +570,17 @@ void GBMemorySerialize(const struct GBMemory* memory, struct GBSerializedState* 
 	STORE_16LE(flags, 0, &state->memory.flags);
 }
 
-void GBMemoryDeserialize(struct GBMemory* memory, const struct GBSerializedState* state) {
+void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
+	struct GBMemory* memory = &gb->memory;
 	memcpy(memory->wram, state->wram, GB_SIZE_WORKING_RAM);
 	memcpy(memory->hram, state->hram, GB_SIZE_HRAM);
 	LOAD_16LE(memory->currentBank, 0, &state->memory.currentBank);
 	memory->wramCurrentBank = state->memory.wramCurrentBank;
 	memory->sramCurrentBank = state->memory.sramCurrentBank;
 
-	_switchBank(memory, memory->currentBank);
+	GBMBCSwitchBank(memory, memory->currentBank);
 	GBMemorySwitchWramBank(memory, memory->wramCurrentBank);
-	_switchSramBank(memory, memory->sramCurrentBank);
+	GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
 
 	LOAD_32LE(memory->dmaNext, 0, &state->memory.dmaNext);
 	LOAD_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
@@ -1040,5 +611,5 @@ void _pristineCow(struct GB* gb) {
 	gb->memory.rom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	memcpy(gb->memory.rom, gb->pristineRom, gb->memory.romSize);
 	memset(((uint8_t*) gb->memory.rom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
-	_switchBank(&gb->memory, gb->memory.currentBank);
+	GBMBCSwitchBank(&gb->memory, gb->memory.currentBank);
 }

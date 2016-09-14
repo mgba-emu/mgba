@@ -66,11 +66,16 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(gba->cpu->prefetch[1], 4, state->cpuPrefetch);
 	STORE_32(gba->memory.lastPrefetchedPc, 0, &state->lastPrefetchedPc);
 
+	GBASerializedMiscFlags miscFlags = 0;
+	miscFlags = GBASerializedMiscFlagsSetHalted(miscFlags, gba->cpu->halted);
+	STORE_32(miscFlags, 0, &state->miscFlags);
+
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
+
 
 #ifndef _MSC_VER
 	struct timeval tv;
@@ -197,6 +202,9 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			LOAD_32(gba->cpu->prefetch[1], (gba->cpu->gprs[ARM_PC]) & gba->cpu->memory.activeMask, gba->cpu->memory.activeRegion);
 		}
 	}
+	GBASerializedMiscFlags miscFlags = 0;
+	LOAD_32(miscFlags, 0, &state->miscFlags);
+	gba->cpu->halted = GBASerializedMiscFlagsGetHalted(miscFlags);
 
 	GBAVideoDeserialize(&gba->video, state);
 	GBAMemoryDeserialize(&gba->memory, state);
@@ -217,5 +225,3 @@ struct GBASerializedState* GBAAllocateState(void) {
 void GBADeallocateState(struct GBASerializedState* state) {
 	mappedMemoryFree(state, sizeof(struct GBASerializedState));
 }
-
-// TODO: Put back rewind

@@ -15,6 +15,7 @@
 #include "gb/audio.h"
 #include "gb/interface.h"
 #include "gb/memory.h"
+#include "gb/sio.h"
 #include "gb/timer.h"
 #include "gb/video.h"
 
@@ -51,6 +52,7 @@ struct GB {
 	struct GBVideo video;
 	struct GBTimer timer;
 	struct GBAudio audio;
+	struct GBSIO sio;
 	enum GBModel model;
 
 	struct mCoreSync* sync;
@@ -64,6 +66,8 @@ struct GB {
 	struct VFile* romVf;
 	struct VFile* biosVf;
 	struct VFile* sramVf;
+	struct VFile* sramRealVf;
+	uint32_t sramSize;
 
 	struct mAVStream* stream;
 
@@ -99,6 +103,7 @@ void GBCreate(struct GB* gb);
 void GBDestroy(struct GB* gb);
 
 void GBReset(struct LR35902Core* cpu);
+void GBDetectModel(struct GB* gb);
 
 void GBUpdateIRQs(struct GB* gb);
 void GBHalt(struct LR35902Core* cpu);
@@ -106,10 +111,14 @@ void GBHalt(struct LR35902Core* cpu);
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
+void GBResizeSram(struct GB* gb, size_t size);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
+
+void GBSavedataMask(struct GB* gb, struct VFile* vf);
+void GBSavedataUnmask(struct GB* gb);
 
 struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);

@@ -17,7 +17,7 @@ static void GBVideoDummyRendererInit(struct GBVideoRenderer* renderer, enum GBMo
 static void GBVideoDummyRendererDeinit(struct GBVideoRenderer* renderer);
 static uint8_t GBVideoDummyRendererWriteVideoRegister(struct GBVideoRenderer* renderer, uint16_t address, uint8_t value);
 static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value);
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax);
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
 static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
@@ -43,6 +43,7 @@ void GBVideoInit(struct GBVideo* video) {
 
 void GBVideoReset(struct GBVideo* video) {
 	video->ly = 0;
+	video->x = 0;
 	video->mode = 1;
 	video->stat = 1;
 
@@ -135,6 +136,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					}
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_VBLANK);
+
+					struct mCoreThread* thread = mCoreThreadGet();
+					mCoreThreadFrameEnded(thread);
 				}
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->ly) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -154,6 +158,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 						GBUpdateIRQs(video->p);
 					}
 					video->renderer->finishFrame(video->renderer);
+					if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
+						video->p->memory.rotation->sample(video->p->memory.rotation);
+					}
 					break;
 				} else if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS) {
 					video->p->memory.io[REG_LY] = 0;
@@ -170,9 +177,6 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (GBRegisterSTATIsLYCIRQ(video->stat) && lyc == video->p->memory.io[REG_LY]) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
 					GBUpdateIRQs(video->p);
-				}
-				if (video->p->memory.mbcType == GB_MBC7 && video->p->memory.rotation && video->p->memory.rotation->sample) {
-					video->p->memory.rotation->sample(video->p->memory.rotation);
 				}
 				break;
 			case 2:
@@ -202,11 +206,9 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 		if (video->nextFrame <= 0) {
 			if (video->p->cpu->executionState == LR35902_CORE_FETCH) {
 				GBFrameEnded(video->p);
-				struct mCoreThread* thread = mCoreThreadGet();
-				if (thread && thread->frameCallback) {
-					thread->frameCallback(thread);
-				}
 				video->nextFrame = GB_VIDEO_TOTAL_LENGTH;
+				struct mCoreThread* thread = mCoreThreadGet();
+				mCoreThreadFrameStarted(thread);
 			} else {
 				video->nextFrame = 4 - ((video->p->cpu->executionState + 1) & 3);
 				if (video->nextFrame < video->nextEvent) {
@@ -238,7 +240,7 @@ static void _cleanOAM(struct GBVideo* video, int y) {
 			continue;
 		}
 		// TODO: Sort
-		video->objThisLine[o] = &video->oam.obj[i];
+		video->objThisLine[o] = video->oam.obj[i];
 		++o;
 		if (o == 10) {
 			break;
@@ -255,6 +257,9 @@ void GBVideoProcessDots(struct GBVideo* video) {
 	video->x = video->dotCounter + video->eventDiff + (video->p->cpu->cycles >> video->p->doubleSpeed);
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
+	} else if (video->x < 0) {
+		mLOG(GB, FATAL, "Video dot clock went negative!");
+		video->x = oldX;
 	}
 	if (video->x == GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->dotCounter = INT_MIN;
@@ -356,8 +361,8 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 				video->bcpIndex &= 0x3F;
 				video->p->memory.io[REG_BCPS] &= 0x80;
 				video->p->memory.io[REG_BCPS] |= video->bcpIndex;
-				video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			}
+			video->p->memory.io[REG_BCPD] = video->palette[video->bcpIndex >> 1] >> (8 * (video->bcpIndex & 1));
 			break;
 		case REG_OCPD:
 			if (video->ocpIndex & 1) {
@@ -373,8 +378,8 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 				video->ocpIndex &= 0x3F;
 				video->p->memory.io[REG_OCPS] &= 0x80;
 				video->p->memory.io[REG_OCPS] |= video->ocpIndex;
-				video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)] >> (8 * (video->ocpIndex & 1));
 			}
+			video->p->memory.io[REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)] >> (8 * (video->ocpIndex & 1));
 			break;
 		}
 	}
@@ -409,7 +414,7 @@ static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, i
 	UNUSED(value);
 }
 
-static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj** obj, size_t oamMax) {
+static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax) {
 	UNUSED(renderer);
 	UNUSED(endX);
 	UNUSED(startX);
@@ -477,7 +482,9 @@ void GBVideoDeserialize(struct GBVideo* video, const struct GBSerializedState* s
 	video->bcpIncrement = GBSerializedVideoFlagsGetBcpIncrement(flags);
 	video->ocpIncrement = GBSerializedVideoFlagsGetOcpIncrement(flags);
 	LOAD_16LE(video->bcpIndex, 0, &state->video.bcpIndex);
+	video->bcpIndex &= 0x3F;
 	LOAD_16LE(video->ocpIndex, 0, &state->video.ocpIndex);
+	video->ocpIndex &= 0x3F;
 
 	size_t i;
 	for (i = 0; i < 64; ++i) {

@@ -196,7 +196,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00304 - 0x0030F: Reserved (leave zero)
  * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
  * 0x00318 - 0x0031B: Last prefetched program counter
- * 0x0031C - 0x003FF: Reserved (leave zero)
+ * 0x0031C - 0x0031F: Miscellaneous flags
+ *  | bit 0: Is CPU halted?
+ * 0x00320 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -222,6 +224,9 @@ DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
 DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
 DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
 DECL_BIT(GBASerializedSavedataFlags, FlashBank, 4);
+
+DECL_BITFIELD(GBASerializedMiscFlags, uint32_t);
+DECL_BIT(GBASerializedMiscFlags, Halted, 0);
 
 struct GBASerializedState {
 	uint32_t versionMagic;
@@ -313,8 +318,9 @@ struct GBASerializedState {
 	uint64_t creationUsec;
 
 	uint32_t lastPrefetchedPc;
+	GBASerializedMiscFlags miscFlags;
 
-	uint32_t reserved[57];
+	uint32_t reserved[56];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

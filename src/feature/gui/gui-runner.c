@@ -24,6 +24,9 @@
 
 #include <sys/time.h>
 
+mLOG_DECLARE_CATEGORY(GUI_RUNNER);
+mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner");
+
 #define FPS_GRANULARITY 120
 #define FPS_BUFFER_SIZE 3
 
@@ -48,6 +51,39 @@ enum {
 	RUNNER_STATE_9 = 0x90000,
 };
 
+static const struct mInputPlatformInfo _mGUIKeyInfo = {
+	.platformName = "gui",
+	.keyId = (const char*[GUI_INPUT_MAX]) {
+		"Select",
+		"Back",
+		"Cancel",
+		"Up",
+		"Down",
+		"Left",
+		"Right",
+		[mGUI_INPUT_INCREASE_BRIGHTNESS] = "Increase solar brightness",
+		[mGUI_INPUT_DECREASE_BRIGHTNESS] = "Decrease solar brightness",
+		[mGUI_INPUT_SCREEN_MODE] = "Screen mode",
+		[mGUI_INPUT_SCREENSHOT] = "Take screenshot",
+		[mGUI_INPUT_FAST_FORWARD] = "Fast forward",
+	},
+	.nKeys = GUI_INPUT_MAX
+};
+
+static void _log(struct mLogger*, int category, enum mLogLevel level, const char* format, va_list args);
+
+static struct mGUILogger {
+	struct mLogger d;
+	struct VFile* vf;
+	int logLevel;
+} logger = {
+	.d = {
+		.log = _log
+	},
+	.vf = NULL,
+	.logLevel = 0
+};
+
 static void _drawBackground(struct GUIBackground* background, void* context) {
 	UNUSED(context);
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
@@ -67,7 +103,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 			return;
 		}
 		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-		uint32_t* pixels = gbaBackground->screenshot;
+		color_t* pixels = gbaBackground->screenshot;
 		if (!pixels) {
 			pixels = anonymousMemoryMap(w * h * 4);
 			gbaBackground->screenshot = pixels;
@@ -122,6 +158,19 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	runner->lastFpsCheck = 0;
 	runner->totalDelta = 0;
 	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
+
+	mInputMapInit(&runner->params.keyMap, &_mGUIKeyInfo);
+	mCoreConfigInit(&runner->config, runner->port);
+	// TODO: Do we need to load more defaults?
+	mCoreConfigSetDefaultIntValue(&runner->config, "volume", 0x100);
+	mCoreConfigSetDefaultValue(&runner->config, "idleOptimization", "detect");
+	mCoreConfigLoad(&runner->config);
+
+	char path[PATH_MAX];
+	mCoreConfigDirectory(path, PATH_MAX);
+	strncat(path, PATH_SEP "log", PATH_MAX - strlen(path));
+	logger.vf = VFileOpen(path, O_CREAT | O_WRONLY | O_APPEND);
+	mLogSetDefaultLogger(&logger.d);
 }
 
 void mGUIDeinit(struct mGUIRunner* runner) {
@@ -129,6 +178,31 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 		runner->teardown(runner);
 	}
 	CircleBufferDeinit(&runner->fpsBuffer);
+	mInputMapDeinit(&runner->params.keyMap);
+	mCoreConfigDeinit(&runner->config);
+	if (logger.vf) {
+		logger.vf->close(logger.vf);
+		logger.vf = NULL;
+	}
+}
+
+static void _log(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	struct mGUILogger* guiLogger = (struct mGUILogger*) logger;
+	if (!guiLogger->vf) {
+		return;
+	}
+	if (!(guiLogger->logLevel & level)) {
+		return;
+	}
+
+	char log[256] = {0};
+	vsnprintf(log, sizeof(log) - 1, format, args);
+	char log2[256] = {0};
+	size_t len = snprintf(log2, sizeof(log2) - 1, "%s: %s\n", mLogCategoryName(category), log);
+	if (len >= sizeof(log2)) {
+		len = sizeof(log2) - 1;
+	}
+	guiLogger->vf->write(guiLogger->vf, log2, len);
 }
 
 void mGUIRun(struct mGUIRunner* runner, const char* path) {
@@ -187,7 +261,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = (void*) RUNNER_RESET };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
 
-	// TODO: Message box API
 	runner->params.drawStart();
 	if (runner->params.guiPrepare) {
 		runner->params.guiPrepare();
@@ -199,54 +272,52 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	runner->params.drawEnd();
 
 	bool found = false;
+	mLOG(GUI_RUNNER, INFO, "Attempting to load %s", path);
 	runner->core = mCoreFind(path);
 	if (runner->core) {
+		mLOG(GUI_RUNNER, INFO, "Found core");
 		runner->core->init(runner->core);
 		mInputMapInit(&runner->core->inputMap, &GBAInputInfo);
-		mCoreInitConfig(runner->core, runner->port);
 		found = mCoreLoadFile(runner->core, path);
 		if (!found) {
+			mLOG(GUI_RUNNER, WARN, "Failed to load %s!", path);
 			runner->core->deinit(runner->core);
 		}
 	}
 
 	if (!found) {
-		int i;
-		for (i = 0; i < 240; ++i) {
-			runner->params.drawStart();
-			if (runner->params.guiPrepare) {
-				runner->params.guiPrepare();
-			}
-			GUIFontPrint(runner->params.font, runner->params.width / 2, (GUIFontHeight(runner->params.font) + runner->params.height) / 2, GUI_ALIGN_HCENTER, 0xFFFFFFFF, "Load failed!");
-			if (runner->params.guiFinish) {
-				runner->params.guiFinish();
-			}
-			runner->params.drawEnd();
-		}
+		mLOG(GUI_RUNNER, WARN, "Failed to find core for %s!", path);
+		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Load failed!");
 		return;
 	}
 	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
 		((struct GBA*) runner->core->board)->luminanceSource = &runner->luminanceSource.d;
 	}
-	if (runner->core->config.port && runner->keySources) {
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
-		}
-	}
-	// TODO: Do we need to load more defaults?
-	mCoreConfigSetDefaultIntValue(&runner->core->config, "volume", 0x100);
-	mCoreConfigSetDefaultValue(&runner->core->config, "idleOptimization", "detect");
-	mCoreLoadConfig(runner->core);
+	mLOG(GUI_RUNNER, DEBUG, "Loading config...");
+	mCoreLoadForeignConfig(runner->core, &runner->config);
+	logger.logLevel = runner->core->opts.logLevel;
+
+	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
 	if (runner->setup) {
+		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);
 	}
+	if (runner->config.port && runner->keySources) {
+		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		}
+	}
+	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
+	mLOG(GUI_RUNNER, DEBUG, "Reset!");
 	bool running = true;
 	if (runner->gameLoaded) {
 		runner->gameLoaded(runner);
 	}
+	mLOG(GUI_RUNNER, INFO, "Game starting");
 	while (running) {
 		CircleBufferClear(&runner->fpsBuffer);
 		runner->totalDelta = 0;
@@ -263,7 +334,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			}
 #endif
 			uint32_t guiKeys;
-			GUIPollInput(&runner->params, &guiKeys, 0);
+			uint32_t heldKeys;
+			GUIPollInput(&runner->params, &guiKeys, &heldKeys);
 			if (guiKeys & (1 << GUI_INPUT_CANCEL)) {
 				break;
 			}
@@ -280,6 +352,14 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			if (guiKeys & (1 << mGUI_INPUT_SCREEN_MODE) && runner->incrementScreenMode) {
 				runner->incrementScreenMode(runner);
 			}
+			if (guiKeys & (1 << mGUI_INPUT_SCREENSHOT)) {
+				mCoreTakeScreenshot(runner->core);
+			}
+			if (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD)) {
+				runner->setFrameLimiter(runner, false);
+			} else {
+				runner->setFrameLimiter(runner, true);
+			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
 				runner->prepareForFrame(runner);
@@ -288,7 +368,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->core->runFrame(runner->core);
 			if (runner->drawFrame) {
 				int drawFps = false;
-				mCoreConfigGetIntValue(&runner->core->config, "fpsCounter", &drawFps);
+				mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 
 				runner->params.drawStart();
 				runner->drawFrame(runner, false);
@@ -354,7 +434,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
-				mCoreLoadConfig(runner->core);
 				break;
 			case RUNNER_CONTINUE:
 				break;
@@ -373,9 +452,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			runner->unpaused(runner);
 		}
 	}
+	mLOG(GUI_RUNNER, DEBUG, "Shutting down...");
 	if (runner->gameUnloaded) {
 		runner->gameUnloaded(runner);
 	}
+	mLOG(GUI_RUNNER, DEBUG, "Unloading game...");
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
 	if (drawState.screenshot) {
@@ -384,23 +465,35 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		mappedMemoryFree(drawState.screenshot, w * h * 4);
 	}
 
-	if (runner->core->config.port) {
+	if (runner->config.port) {
+		mLOG(GUI_RUNNER, DEBUG, "Saving key sources...");
 		if (runner->keySources) {
 			size_t i;
 			for (i = 0; runner->keySources[i].id; ++i) {
-				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->core->config));
+				mInputMapSave(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+				mInputMapSave(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
 			}
 		}
-		mCoreConfigSave(&runner->core->config);
+		mCoreConfigSave(&runner->config);
 	}
+	mInputMapDeinit(&runner->core->inputMap);
+	mLOG(GUI_RUNNER, DEBUG, "Deinitializing core...");
 	runner->core->deinit(runner->core);
 
 	GUIMenuItemListDeinit(&pauseMenu.items);
 	GUIMenuItemListDeinit(&stateSaveMenu.items);
 	GUIMenuItemListDeinit(&stateLoadMenu.items);
+	mLOG(GUI_RUNNER, INFO, "Game stopped!");
 }
 
 void mGUIRunloop(struct mGUIRunner* runner) {
+	if (runner->keySources) {
+		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+		size_t i;
+		for (i = 0; runner->keySources[i].id; ++i) {
+			mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		}
+	}
 	while (true) {
 		char path[PATH_MAX];
 		if (!GUISelectFile(&runner->params, path, sizeof(path), 0)) {

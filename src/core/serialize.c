@@ -407,7 +407,9 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 
 	struct mStateExtdataItem item;
 	if (flags & SAVESTATE_SCREENSHOT && mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading screenshot");
 		if (item.size >= (int) (width * height) * 4) {
+			// TODO: Put back
 			/*gba->video.renderer->putPixels(gba->video.renderer, width, item.data);
 			mCoreSyncForceFrame(core->sync);*/
 		} else {
@@ -415,12 +417,14 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		}
 	}
 	if (flags & SAVESTATE_SAVEDATA && mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading savedata");
 		if (item.data) {
 			core->savedataLoad(core, item.data, item.size);
 		}
 	}
 	struct mCheatDevice* device;
 	if (flags & SAVESTATE_CHEATS && (device = core->cheatDevice(core)) && mStateExtdataGet(&extdata, EXTDATA_CHEATS, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading cheats");
 		if (item.size) {
 			struct VFile* svf = VFileFromMemory(item.data, item.size);
 			if (svf) {

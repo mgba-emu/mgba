@@ -13,10 +13,12 @@ using namespace QGBA;
 
 TilePainter::TilePainter(QWidget* parent)
 	: QWidget(parent)
+	, m_size(8)
 {
 	m_backing = QPixmap(256, 768);
 	m_backing.fill(Qt::transparent);
 	resize(256, 768);
+	setTileCount(3072);
 }
 
 void TilePainter::paintEvent(QPaintEvent* event) {
@@ -25,30 +27,37 @@ void TilePainter::paintEvent(QPaintEvent* event) {
 }
 
 void TilePainter::resizeEvent(QResizeEvent* event) {
-	if (width() / 8 != m_backing.width() / 8) {
-		m_backing = QPixmap(width(), (3072 * 8) / (width() / 8));
+	int calculatedHeight = (m_tileCount * m_size) / (width() / m_size) + m_size / 2;
+	if (width() / m_size != m_backing.width() / m_size || m_backing.height() != calculatedHeight) {
+		m_backing = QPixmap(width(), calculatedHeight);
 		m_backing.fill(Qt::transparent);
 	}
 }
 
 void TilePainter::mousePressEvent(QMouseEvent* event) {
-	int x = event->x() / 8;
-	int y = event->y() / 8;
-	emit indexPressed(y * (width() / 8) + x);
+	int x = event->x() / m_size;
+	int y = event->y() / m_size;
+	emit indexPressed(y * (width() / m_size) + x);
 }
 
 void TilePainter::setTile(int index, const uint16_t* data) {
 	QPainter painter(&m_backing);
-	int w = width() / 8;
+	int w = width() / m_size;
 	int x = index % w;
 	int y = index / w;
-	QRect r(x * 8, y * 8, 8, 8);
+	QRect r(x * m_size, y * m_size, m_size, m_size);
 	QImage tile(reinterpret_cast<const uchar*>(data), 8, 8, QImage::Format_RGB555);
-	painter.fillRect(r, tile.rgbSwapped());
+	painter.drawImage(r, tile.rgbSwapped());
 	update(r);
 }
 
 void TilePainter::setTileCount(int tiles) {
-	setMinimumSize(16, (tiles * 8) / (width() / 8));
+	m_tileCount = tiles;
+	setMinimumSize(16, (tiles * m_size) / (width() / m_size));
 	resizeEvent(nullptr);
+}
+
+void TilePainter::setTileMagnification(int mag) {
+	m_size = mag * 8;
+	setTileCount(m_tileCount);
 }

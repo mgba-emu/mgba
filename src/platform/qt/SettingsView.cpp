@@ -165,14 +165,6 @@ void SettingsView::selectBios() {
 	}
 }
 
-void SettingsView::recalculateRewind() {
-	int interval = m_ui.rewindInterval->value();
-	int capacity = m_ui.rewindCapacity->value();
-	double duration = m_ui.fpsTarget->value();
-	m_ui.rewindDuration->setValue(interval * capacity / duration);
-
-}
-
 void SettingsView::updateConfig() {
 	saveSetting("bios", m_ui.bios);
 	saveSetting("useBios", m_ui.useBios);
@@ -187,7 +179,6 @@ void SettingsView::updateConfig() {
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("rewindEnable", m_ui.rewind);
-	saveSetting("rewindBufferInterval", m_ui.rewindInterval);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
@@ -262,7 +253,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("volume", m_ui.volume);
 	loadSetting("mute", m_ui.mute);
 	loadSetting("rewindEnable", m_ui.rewind);
-	loadSetting("rewindBufferInterval", m_ui.rewindInterval);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
@@ -282,10 +272,6 @@ void SettingsView::reloadConfig() {
 		m_ui.fastForwardRatio->setEnabled(true);
 		m_ui.fastForwardRatio->setValue(fastForwardRatio);
 	}
-
-	connect(m_ui.rewindInterval, SIGNAL(valueChanged(int)), this, SLOT(recalculateRewind()));
-	connect(m_ui.rewindCapacity, SIGNAL(valueChanged(int)), this, SLOT(recalculateRewind()));
-	connect(m_ui.fpsTarget, SIGNAL(valueChanged(double)), this, SLOT(recalculateRewind()));
 
 	QString idleOptimization = loadSetting("idleOptimization");
 	if (idleOptimization == "ignore") {

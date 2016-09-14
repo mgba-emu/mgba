@@ -102,8 +102,8 @@ void mDebuggerRun(struct mDebugger* debugger) {
 
 void mDebuggerEnter(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	debugger->state = DEBUGGER_PAUSED;
-	if (debugger->entered) {
-		debugger->entered(debugger, reason, info);
+	if (debugger->platform->entered) {
+		debugger->platform->entered(debugger->platform, reason, info);
 	}
 }
 

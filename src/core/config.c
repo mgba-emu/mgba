@@ -207,7 +207,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 #elif defined(PSP2)
 	UNUSED(portable);
-	snprintf(out, outLength, "ux0:/%s", projectName);
+	snprintf(out, outLength, "ux0:data/%s", projectName);
 	sceIoMkdir(out, 0777);
 #elif defined(GEKKO)
 	UNUSED(portable);
@@ -227,6 +227,12 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 		return;
 	}
 
+	char* xdgConfigHome = getenv("XDG_CONFIG_HOME");
+	if (xdgConfigHome && xdgConfigHome[0] == '/') {
+		snprintf(out, outLength, "%s/%s", xdgConfigHome, binaryName);
+		mkdir(out, 0755);
+		return;
+	}
 	char* home = getenv("HOME");
 	snprintf(out, outLength, "%s/.config", home);
 	mkdir(out, 0755);
@@ -307,7 +313,6 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
 	_lookupIntValue(config, "volume", &opts->volume);
 	_lookupIntValue(config, "rewindBufferCapacity", &opts->rewindBufferCapacity);
-	_lookupIntValue(config, "rewindBufferInterval", &opts->rewindBufferInterval);
 	_lookupFloatValue(config, "fpsTarget", &opts->fpsTarget);
 	unsigned audioBuffers;
 	if (_lookupUIntValue(config, "audioBuffers", &audioBuffers)) {
@@ -363,7 +368,6 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "frameskip", opts->frameskip);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindEnable", opts->rewindEnable);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferCapacity", opts->rewindBufferCapacity);
-	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferInterval", opts->rewindBufferInterval);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "audioBuffers", opts->audioBuffers);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "sampleRate", opts->sampleRate);

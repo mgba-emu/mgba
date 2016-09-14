@@ -12,6 +12,7 @@
 #include "gba/hle-bios.h"
 #include "util/math.h"
 #include "util/memory.h"
+#include "util/vfs.h"
 
 #define IDLE_LOOP_THRESHOLD 10000
 
@@ -92,6 +93,9 @@ void GBAMemoryDeinit(struct GBA* gba) {
 		mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 	}
 	GBASavedataDeinit(&gba->memory.savedata);
+	if (gba->memory.savedata.realVf) {
+		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
+	}
 }
 
 void GBAMemoryReset(struct GBA* gba) {
@@ -811,7 +815,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case REGION_CART2_EX:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-			GBASavedataInitEEPROM(&memory->savedata);
+			GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 		}
 		GBASavedataWriteEEPROM(&memory->savedata, value, 1);
 		break;
@@ -1220,28 +1224,24 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 	for (i = 0; i < 16; i += 4) { \
 		if (UNLIKELY(mask & (1 << i))) { \
 			LDM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			cpu->gprs[i] = value; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (2 << i))) { \
 			LDM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			cpu->gprs[i + 1] = value; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (4 << i))) { \
 			LDM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			cpu->gprs[i + 2] = value; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (8 << i))) { \
 			LDM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			cpu->gprs[i + 3] = value; \
 			++wait; \
 			address += 4; \
@@ -1252,8 +1252,7 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value;
-	int wait = 0;
-	char* waitstatesRegion = memory->waitstatesNonseq32;
+	char* waitstatesRegion = memory->waitstatesSeq32;
 
 	int i;
 	int offset = 4;
@@ -1269,11 +1268,13 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 	}
 
 	uint32_t addressMisalign = address & 0x3;
-	if (address >> BASE_OFFSET < REGION_CART_SRAM) {
+	int region = address >> BASE_OFFSET;
+	if (region < REGION_CART_SRAM) {
 		address &= 0xFFFFFFFC;
 	}
+	int wait = memory->waitstatesSeq32[region] - memory->waitstatesNonseq32[region];
 
-	switch (address >> BASE_OFFSET) {
+	switch (region) {
 	case REGION_BIOS:
 		LDM_LOOP(LOAD_BIOS);
 		break;
@@ -1336,28 +1337,27 @@ uint32_t GBALoadMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum L
 		if (UNLIKELY(mask & (1 << i))) { \
 			value = cpu->gprs[i]; \
 			STM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (2 << i))) { \
 			value = cpu->gprs[i + 1]; \
 			STM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (4 << i))) { \
 			value = cpu->gprs[i + 2]; \
 			STM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			++wait; \
 			address += 4; \
 		} \
 		if (UNLIKELY(mask & (8 << i))) { \
 			value = cpu->gprs[i + 3]; \
+			if (i + 3 == ARM_PC) { \
+				value += WORD_SIZE_ARM; \
+			} \
 			STM; \
-			waitstatesRegion = memory->waitstatesSeq32; \
 			++wait; \
 			address += 4; \
 		} \
@@ -1367,8 +1367,7 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	uint32_t value;
-	int wait = 0;
-	char* waitstatesRegion = memory->waitstatesNonseq32;
+	char* waitstatesRegion = memory->waitstatesSeq32;
 
 	int i;
 	int offset = 4;
@@ -1384,11 +1383,13 @@ uint32_t GBAStoreMultiple(struct ARMCore* cpu, uint32_t address, int mask, enum 
 	}
 
 	uint32_t addressMisalign = address & 0x3;
-	if (address >> BASE_OFFSET < REGION_CART_SRAM) {
+	int region = address >> BASE_OFFSET;
+	if (region < REGION_CART_SRAM) {
 		address &= 0xFFFFFFFC;
 	}
+	int wait = memory->waitstatesSeq32[region] - memory->waitstatesNonseq32[region];
 
-	switch (address >> BASE_OFFSET) {
+	switch (region) {
 	case REGION_WORKING_RAM:
 		STM_LOOP(STORE_WORKING_RAM);
 		break;
@@ -1690,7 +1691,7 @@ void GBAMemoryServiceDMA(struct GBA* gba, int number, struct GBADMA* info) {
 		} else if (destRegion == REGION_CART2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
-				GBASavedataInitEEPROM(&memory->savedata);
+				GBASavedataInitEEPROM(&memory->savedata, gba->realisticTiming);
 			}
 			word = cpu->memory.load16(cpu, source, 0);
 			gba->bus = word | (word << 16);

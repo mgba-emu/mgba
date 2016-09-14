@@ -59,6 +59,7 @@ signals:
 
 public slots:
 	void selectROM();
+	void selectROMInArchive();
 	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
@@ -148,13 +149,16 @@ private:
 	void updateTitle(float fps = -1);
 
 	QString getFilters() const;
+	QString getFiltersArchive() const;
 
 	GameController* m_controller;
 	Display* m_display;
 	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
+#ifdef M_CORE_GBA
 	QList<QAction*> m_gbaActions;
+#endif
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
@@ -169,7 +173,6 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
-	int m_playerId;
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;
 	bool m_autoresume;

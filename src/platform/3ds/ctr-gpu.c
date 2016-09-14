@@ -14,10 +14,8 @@
 
 #include "ctr-gpu.h"
 
-#include "uishader_v.h"
-#include "uishader_v.shbin.h"
-#include "uishader_g.h"
-#include "uishader_g.shbin.h"
+#include "uishader.h"
+#include "uishader.shbin.h"
 
 struct ctrUIVertex {
 	short x, y;
@@ -25,6 +23,7 @@ struct ctrUIVertex {
 	short u, v;
 	short uw, vh;
 	u32 abgr;
+	float rotate[2];
 };
 
 #define MAX_NUM_QUADS 256
@@ -36,34 +35,31 @@ static int ctrVertStart = 0;
 
 static C3D_Tex* activeTexture = NULL;
 
-static shaderProgram_s gpuShader;
-static DVLB_s* vertexShader = NULL;
-static DVLB_s* geometryShader = NULL;
+static shaderProgram_s uiProgram;
+static DVLB_s* uiShader = NULL;
+static int GSH_FVEC_projectionMtx;
+static int GSH_FVEC_textureMtx;
 
 bool ctrInitGpu() {
 	// Load vertex shader binary
-	vertexShader = DVLB_ParseFile((u32*) uishader_v, uishader_v_size);
-	if (vertexShader == NULL) {
-		return false;
-	}
-
-	// Load geometry shader binary
-	geometryShader = DVLB_ParseFile((u32*) uishader_g, uishader_g_size);
-	if (geometryShader == NULL) {
+	uiShader = DVLB_ParseFile((u32*) uishader, uishader_size);
+	if (uiShader == NULL) {
 		return false;
 	}
 
 	// Create shader
-	shaderProgramInit(&gpuShader);
-	Result res = shaderProgramSetVsh(&gpuShader, &vertexShader->DVLE[0]);
+	shaderProgramInit(&uiProgram);
+	Result res = shaderProgramSetVsh(&uiProgram, &uiShader->DVLE[0]);
 	if (res < 0) {
 		return false;
 	}
-	res = shaderProgramSetGsh(&gpuShader, &geometryShader->DVLE[0], 3);
+	res = shaderProgramSetGsh(&uiProgram, &uiShader->DVLE[1], 4);
 	if (res < 0) {
 		return false;
 	}
-	C3D_BindProgram(&gpuShader);
+	C3D_BindProgram(&uiProgram);
+	GSH_FVEC_projectionMtx = shaderInstanceGetUniformLocation(uiProgram.geometryShader, "projectionMtx");
+	GSH_FVEC_textureMtx = shaderInstanceGetUniformLocation(uiProgram.geometryShader, "textureMtx");
 
 	// Allocate buffers
 	ctrVertexBuffer = linearAlloc(VERTEX_BUFFER_SIZE);
@@ -82,6 +78,7 @@ bool ctrInitGpu() {
 	AttrInfo_AddLoader(attrInfo, 0, GPU_SHORT, 4); // in_pos
 	AttrInfo_AddLoader(attrInfo, 1, GPU_SHORT, 4); // in_tc0
 	AttrInfo_AddLoader(attrInfo, 2, GPU_UNSIGNED_BYTE, 4); // in_col
+	AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, 2); // in_rot
 
 	return true;
 }
@@ -92,23 +89,22 @@ void ctrDeinitGpu() {
 		ctrVertexBuffer = NULL;
 	}
 
-	shaderProgramFree(&gpuShader);
+	shaderProgramFree(&uiProgram);
 
-	if (vertexShader) {
-		DVLB_Free(vertexShader);
-		vertexShader = NULL;
-	}
-
-	if (geometryShader) {
-		DVLB_Free(geometryShader);
-		geometryShader = NULL;
+	if (uiShader) {
+		DVLB_Free(uiShader);
+		uiShader = NULL;
 	}
 }
 
-void ctrSetViewportSize(s16 w, s16 h) {
+void ctrSetViewportSize(s16 w, s16 h, bool tilt) {
 	C3D_SetViewport(0, 0, h, w);
 	C3D_Mtx projectionMtx;
-	Mtx_OrthoTilt(&projectionMtx, 0.0, w, h, 0.0, 0.0, 1.0);
+	if (tilt) {
+		Mtx_OrthoTilt(&projectionMtx, 0.0, w, h, 0.0, 0.0, 1.0, true);
+	} else {
+		Mtx_Ortho(&projectionMtx, 0.0, w, 0.0, h, 0.0, 1.0, true);
+	}
 	C3D_FVUnifMtx4x4(GPU_GEOMETRY_SHADER, GSH_FVEC_projectionMtx, &projectionMtx);
 }
 
@@ -134,6 +130,14 @@ void ctrActivateTexture(C3D_Tex* texture) {
 		C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
 		C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
 	}
+	env = C3D_GetTexEnv(1);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
+	env = C3D_GetTexEnv(2);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, 0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 
 	C3D_Mtx textureMtx = {
 		.m = {
@@ -145,7 +149,22 @@ void ctrActivateTexture(C3D_Tex* texture) {
 	C3D_FVUnifMtx2x4(GPU_GEOMETRY_SHADER, GSH_FVEC_textureMtx, &textureMtx);
 }
 
-void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh) {
+void ctrTextureMultiply(void) {
+	C3D_TexEnv* env = C3D_GetTexEnv(1);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_TEXTURE0, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+}
+
+void ctrTextureBias(u32 color) {
+	C3D_TexEnv* env = C3D_GetTexEnv(2);
+	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvSrc(env, C3D_Both, GPU_PREVIOUS, GPU_CONSTANT, 0);
+	C3D_TexEnvFunc(env, C3D_Both, GPU_ADD);
+	C3D_TexEnvColor(env, color);
+}
+
+void ctrAddRectEx(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 uw, s16 vh, float rotate) {
 	if (x >= 400 && w >= 0) {
 		return;
 	}
@@ -170,12 +189,14 @@ void ctrAddRectScaled(u32 color, s16 x, s16 y, s16 w, s16 h, s16 u, s16 v, s16 u
 	vtx->uw = uw;
 	vtx->vh = vh;
 	vtx->abgr = color;
+	vtx->rotate[0] = cosf(rotate);
+	vtx->rotate[1] = sinf(rotate);
 
 	++ctrNumVerts;
 }
 
 void ctrAddRect(u32 color, s16 x, s16 y, s16 u, s16 v, s16 w, s16 h) {
-	ctrAddRectScaled(color, x, y, w, h, u, v, w, h);
+	ctrAddRectEx(color, x, y, w, h, u, v, w, h, 0);
 }
 
 void ctrFlushBatch(void) {
@@ -185,7 +206,7 @@ void ctrFlushBatch(void) {
 
 	C3D_BufInfo* bufInfo = C3D_GetBufInfo();
 	BufInfo_Init(bufInfo);
-	BufInfo_Add(bufInfo, &ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex), 3, 0x210);
+	BufInfo_Add(bufInfo, &ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex), 4, 0x3210);
 
 	GSPGPU_FlushDataCache(&ctrVertexBuffer[ctrVertStart], sizeof(struct ctrUIVertex) * ctrNumVerts);
 	C3D_DrawArrays(GPU_GEOMETRY_PRIM, 0, ctrNumVerts);

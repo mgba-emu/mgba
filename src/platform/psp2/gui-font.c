@@ -41,10 +41,8 @@ unsigned GUIFontHeight(const struct GUIFont* font) {
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
-	if (glyph > 0x7F) {
-		glyph = '?';
-	}
-	char base[5] = { glyph };
+	char base[5] = { 0 };
+	toUtf8(glyph, base);
 	return vita2d_pgf_text_width(font->pgf, FONT_SIZE, base);
 }
 
@@ -68,10 +66,8 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
-	if (glyph > 0x7F) {
-		glyph = '?';
-	}
-	char base[5] = { glyph };
+	char base[5] = { 0 };
+	toUtf8(glyph, base);
 	vita2d_pgf_draw_text(font->pgf, x, y, color, FONT_SIZE, base);
 }
 

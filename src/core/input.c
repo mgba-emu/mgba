@@ -272,6 +272,9 @@ static bool _loadAll(struct mInputMap* map, uint32_t type, const char* sectionNa
 static void _saveAll(const struct mInputMap* map, uint32_t type, const char* sectionName, struct Configuration* config) {
 	size_t i;
 	for (i = 0; i < map->info->nKeys; ++i) {
+		if (!map->info->keyId[i]) {
+			continue;
+		}
 		_saveKey(map, type, sectionName, config, i, map->info->keyId[i]);
 		_clearAxis(sectionName, config, map->info->keyId[i]);
 	}
@@ -338,6 +341,9 @@ int mInputMapKeyBits(const struct mInputMap* map, uint32_t type, uint32_t bits, 
 
 void mInputBindKey(struct mInputMap* map, uint32_t type, int key, int input) {
 	struct mInputMapImpl* impl = _guaranteeMap(map, type);
+	if (input < 0 || (size_t) input >= map->info->nKeys) {
+		return;
+	}
 	mInputUnbindKey(map, type, input);
 	impl->map[input] = key;
 }

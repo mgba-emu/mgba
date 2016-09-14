@@ -12,7 +12,6 @@
 #include <QMenu>
 
 extern "C" {
-#include "gba/overrides.h"
 #include "feature/commandline.h"
 }
 
@@ -112,8 +111,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.volume = 0x100;
 	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
-	m_opts.rewindBufferInterval = 0;
-	m_opts.rewindBufferCapacity = 0;
+	m_opts.rewindBufferCapacity = 300;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
 	mCoreConfigLoad(&m_config);
@@ -178,8 +176,8 @@ QVariant ConfigController::getQtOption(const QString& key, const QString& group)
 	return value;
 }
 
-void ConfigController::saveOverride(const GBACartridgeOverride& override) {
-	GBAOverrideSave(overrides(), &override);
+void ConfigController::saveOverride(const Override& override) {
+	override.save(overrides());
 	write();
 }
 

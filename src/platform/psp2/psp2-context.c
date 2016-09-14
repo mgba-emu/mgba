@@ -18,6 +18,7 @@
 #include "gba/input.h"
 
 #include "util/memory.h"
+#include "util/circle-buffer.h"
 #include "util/ring-fifo.h"
 #include "util/threading.h"
 #include "util/vfs.h"
@@ -34,10 +35,13 @@
 
 #include <vita2d.h>
 
+#define RUMBLE_PWM 8
+
 static enum ScreenMode {
 	SM_BACKDROP,
 	SM_PLAIN,
 	SM_FULL,
+	SM_ASPECT,
 	SM_MAX
 } screenMode;
 
@@ -49,11 +53,17 @@ static struct mSceRotationSource {
 	struct mRotationSource d;
 	struct SceMotionSensorState state;
 } rotation;
+static struct mSceRumble {
+	struct mRumble d;
+	struct CircleBuffer history;
+	int current;
+} rumble;
+bool frameLimiter = true;
 
 extern const uint8_t _binary_backdrop_png_start[];
 static vita2d_texture* backdrop = 0;
 
-#define PSP2_SAMPLES 64
+#define PSP2_SAMPLES 128
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 40)
 
 static struct mPSP2AudioContext {
@@ -64,7 +74,7 @@ static struct mPSP2AudioContext {
 	bool running;
 } audioContext;
 
-static void _mapVitaKey(struct mInputMap* map, int pspKey, enum GBAKey key) {
+void mPSP2MapKey(struct mInputMap* map, int pspKey, int key) {
 	mInputBindKey(map, PSP2_INPUT, __builtin_ctz(pspKey), key);
 }
 
@@ -80,6 +90,7 @@ static THREAD_ENTRY _audioThread(void* context) {
 		struct GBAStereoSample* buffer = audio->buffer.readPtr;
 		RingFIFORead(&audio->buffer, NULL, len * 4);
 		audio->samples -= len;
+		ConditionWake(&audio->cond);
 
 		MutexUnlock(&audio->mutex);
 		sceAudioOutOutput(audioPort, buffer);
@@ -111,7 +122,23 @@ static int32_t _readTiltY(struct mRotationSource* source) {
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct mSceRotationSource* rotation = (struct mSceRotationSource*) source;
-	return rotation->state.gyro.z * 0x10000000;
+	return rotation->state.gyro.z * -0x10000000;
+}
+
+static void _setRumble(struct mRumble* source, int enable) {
+	struct mSceRumble* rumble = (struct mSceRumble*) source;
+	rumble->current += enable;
+	if (CircleBufferSize(&rumble->history) == RUMBLE_PWM) {
+		int8_t oldLevel;
+		CircleBufferRead8(&rumble->history, &oldLevel);
+		rumble->current -= oldLevel;
+	}
+	CircleBufferWrite8(&rumble->history, enable);
+	struct SceCtrlActuator state = {
+		rumble->current * 31,
+		0
+	};
+	sceCtrlSetActuator(1, &state);
 }
 
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
@@ -119,7 +146,7 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	sceCtrlPeekBufferPositive(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
-	enum GBAKey angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
+	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
@@ -138,21 +165,26 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	return activeKeys;
 }
 
-void mPSP2Setup(struct mGUIRunner* runner) {
-	mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
-	mCoreLoadConfig(runner->core);
+void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit) {
+	UNUSED(runner);
+	frameLimiter = limit;
+}
 
-	scePowerSetArmClockFrequency(80);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_UP, GBA_KEY_UP);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
-	_mapVitaKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
+void mPSP2Setup(struct mGUIRunner* runner) {
+	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
+	mCoreLoadForeignConfig(runner->core, &runner->config);
+
+	scePowerSetArmClockFrequency(333);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_START, GBA_KEY_START);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_SELECT, GBA_KEY_SELECT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_UP, GBA_KEY_UP);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_DOWN, GBA_KEY_DOWN);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LEFT, GBA_KEY_LEFT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RIGHT, GBA_KEY_RIGHT);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_LTRIGGER, GBA_KEY_L);
+	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_RTRIGGER, GBA_KEY_R);
 
 	struct mInputAxis desc = { GBA_KEY_DOWN, GBA_KEY_UP, 192, 64 };
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 0, &desc);
@@ -171,17 +203,24 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readGyroZ = _readGyroZ;
 	runner->core->setRotation(runner->core, &rotation.d);
 
+	rumble.d.setRumble = _setRumble;
+	CircleBufferInit(&rumble.history, RUMBLE_PWM);
+	runner->core->setRumble(runner->core, &rumble.d);
+
+	frameLimiter = true;
 	backdrop = vita2d_load_PNG_buffer(_binary_backdrop_png_start);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
 	scePowerSetArmClockFrequency(444);
-	double ratio = GBAAudioCalculateRatio(1, 60, 1);
+	float rate = 60.0f / 1.001f;
+	sceDisplayGetRefreshRate(&rate);
+	double ratio = GBAAudioCalculateRatio(1, rate, 1);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
@@ -204,7 +243,7 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 		break;
 	}
 
-	RingFIFOInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample), PSP2_SAMPLES * 4);
+	RingFIFOInit(&audioContext.buffer, PSP2_AUDIO_BUFFER_SIZE * sizeof(struct GBAStereoSample));
 	MutexInit(&audioContext.mutex);
 	ConditionInit(&audioContext.cond);
 	audioContext.running = true;
@@ -212,16 +251,29 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 }
 
 void mPSP2PrepareForFrame(struct mGUIRunner* runner) {
-	MutexLock(&audioContext.mutex);
+	int nSamples = 0;
 	while (blip_samples_avail(runner->core->getAudioChannel(runner->core, 0)) >= PSP2_SAMPLES) {
 		struct GBAStereoSample* samples = audioContext.buffer.writePtr;
+		if (nSamples > (PSP2_AUDIO_BUFFER_SIZE >> 2) + (PSP2_AUDIO_BUFFER_SIZE >> 1)) { // * 0.75
+			if (!frameLimiter) {
+				blip_clear(runner->core->getAudioChannel(runner->core, 0));
+				blip_clear(runner->core->getAudioChannel(runner->core, 1));
+				break;
+			}
+			sceKernelDelayThread(400);
+		}
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 0), &samples[0].left, PSP2_SAMPLES, true);
 		blip_read_samples(runner->core->getAudioChannel(runner->core, 1), &samples[0].right, PSP2_SAMPLES, true);
-		RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4);
+		while (!RingFIFOWrite(&audioContext.buffer, NULL, PSP2_SAMPLES * 4)) {
+			ConditionWake(&audioContext.cond);
+			// Spinloooooooop!
+		}
+		MutexLock(&audioContext.mutex);
 		audioContext.samples += PSP2_SAMPLES;
+		nSamples = audioContext.samples;
+		ConditionWake(&audioContext.cond);
+		MutexUnlock(&audioContext.mutex);
 	}
-	ConditionWake(&audioContext.cond);
-	MutexUnlock(&audioContext.mutex);
 }
 
 void mPSP2UnloadROM(struct mGUIRunner* runner) {
@@ -243,36 +295,98 @@ void mPSP2UnloadROM(struct mGUIRunner* runner) {
 	default:
 		break;
 	}
-	scePowerSetArmClockFrequency(80);
+	scePowerSetArmClockFrequency(333);
+}
+
+void mPSP2Paused(struct mGUIRunner* runner) {
+	UNUSED(runner);
+	struct SceCtrlActuator state = {
+		0,
+		0
+	};
+	sceCtrlSetActuator(1, &state);
+	frameLimiter = true;
 }
 
 void mPSP2Unpaused(struct mGUIRunner* runner) {
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode != screenMode) {
 		screenMode = mode;
 	}
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
+	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
+	frameLimiter = true;
 }
 
-void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
-	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded) {
+	unsigned w = width;
+	unsigned h = height;
+	// Get greatest common divisor
+	while (w != 0) {
+		int temp = h % w;
+		h = w;
+		w = temp;
+	}
+	int gcd = h;
+	int aspectw = width / gcd;
+	int aspecth = height / gcd;
+	float scalex;
+	float scaley;
+
 	switch (screenMode) {
 	case SM_BACKDROP:
 	default:
 		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
 		// Fall through
 	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(tex, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		w = 960 / width;
+		h = 544 / height;
+		if (w * height > 544) {
+			scalex = h;
+			w = width * h;
+			h = height * h;
+		} else {
+			scalex = w;
+			w = width * w;
+			h = height * w;
+		}
+		scaley = scalex;
+		break;
+	case SM_ASPECT:
+		w = 960 / aspectw;
+		h = 544 / aspecth;
+		if (w * aspecth > 544) {
+			w = aspectw * h;
+			h = aspecth * h;
+		} else {
+			w = aspectw * w;
+			h = aspecth * w;
+		}
+		scalex = w / (float) width;
+		scaley = scalex;
 		break;
 	case SM_FULL:
-		vita2d_draw_texture_tint_scale(tex, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+		w = 960;
+		h = 544;
+		scalex = 960.0f / width;
+		scaley = 544.0f / height;
 		break;
 	}
+	vita2d_draw_texture_tint_part_scale(t,
+	                                    (960.0f - w) / 2.0f, (544.0f - h) / 2.0f,
+	                                    0, 0, width, height,
+	                                    scalex, scaley,
+	                                    (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
+}
+
+void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
+	unsigned width, height;
+	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	_drawTex(tex, width, height, faded);
 }
 
 void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -282,23 +396,12 @@ void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsi
 	for (y = 0; y < height; ++y) {
 		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}
-	switch (screenMode) {
-	case SM_BACKDROP:
-	default:
-		vita2d_draw_texture_tint(backdrop, 0, 0, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		// Fall through
-	case SM_PLAIN:
-		vita2d_draw_texture_tint_part_scale(screenshot, (960.0f - width * 3.0f) / 2.0f, (544.0f - height * 3.0f) / 2.0f, 0, 0, width, height, 3.0f, 3.0f, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		break;
-	case SM_FULL:
-		vita2d_draw_texture_tint_scale(screenshot, 0, 0, 960.0f / width, 544.0f / height, (faded ? 0 : 0xC0000000) | 0x3FFFFFFF);
-		break;
-	}
+	_drawTex(screenshot, width, height, faded);
 }
 
 void mPSP2IncrementScreenMode(struct mGUIRunner* runner) {
 	screenMode = (screenMode + 1) % SM_MAX;
-	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

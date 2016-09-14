@@ -30,7 +30,6 @@ signals:
 
 private slots:
 	void selectBios();
-	void recalculateRewind();
 	void updateConfig();
 	void reloadConfig();
 

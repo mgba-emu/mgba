@@ -17,8 +17,8 @@ enum {
 
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
 
-static bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
-static bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize);
+static bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
+static bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
 
 static size_t _decodeLength(struct VFile* vf);
 
@@ -64,7 +64,7 @@ size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
 	return _decodeLength(patch->vf);
 }
 
-bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
+bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize) {
 	// TODO: Input checksum
 
 	size_t filesize = patch->vf->size(patch->vf);
@@ -109,7 +109,7 @@ bool _UPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 	return true;
 }
 
-bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, size_t outSize) {
+bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize) {
 	patch->vf->seek(patch->vf, IN_CHECKSUM, SEEK_END);
 	uint32_t expectedInChecksum;
 	uint32_t expectedOutChecksum;
@@ -139,7 +139,7 @@ bool _BPSApplyPatch(struct Patch* patch, void* in, size_t inSize, void* out, siz
 	ssize_t readTargetLocation = 0;
 	size_t readOffset;
 	uint8_t* writeBuffer = out;
-	uint8_t* readBuffer = in;
+	const uint8_t* readBuffer = in;
 	while (patch->vf->seek(patch->vf, 0, SEEK_CUR) < filesize + IN_CHECKSUM) {
 		size_t command = _decodeLength(patch->vf);
 		size_t length = (command >> 2) + 1;

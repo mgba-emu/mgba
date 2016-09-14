@@ -4,10 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "core/config.h"
+#include "core/serialize.h"
 #include "gba/core.h"
 #include "gba/gba.h"
 #include "gba/renderers/video-software.h"
-#include "gba/serialize.h"
 
 #include "feature/commandline.h"
 #include "util/socket.h"
@@ -177,6 +177,8 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	uint64_t end = 1000000LL * tv.tv_sec + tv.tv_usec;
 	uint64_t duration = end - start;
 
+	mCoreConfigFreeOpts(&opts);
+	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
 	float scaledFrames = frames * 1000000.f;
@@ -197,8 +199,6 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 		printf("%u frames in %" PRIu64 " microseconds: %g fps (%gx)\n", frames, duration, scaledFrames / duration, scaledFrames / (duration * 60.f));
 	}
 
-	mCoreConfigFreeOpts(&opts);
-	mCoreConfigDeinit(&core->config);
 	return true;
 }
 

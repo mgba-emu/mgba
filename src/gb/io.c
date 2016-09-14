@@ -6,6 +6,7 @@
 #include "io.h"
 
 #include "gb/gb.h"
+#include "gb/sio.h"
 #include "gb/serialize.h"
 
 mLOG_DEFINE_CATEGORY(GB_IO, "GB I/O");
@@ -157,6 +158,9 @@ void GBIOReset(struct GB* gb) {
 
 void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	switch (address) {
+	case REG_SC:
+		GBSIOWriteSC(&gb->sio, value);
+		break;
 	case REG_DIV:
 		GBTimerDivReset(&gb->timer);
 		return;
@@ -334,6 +338,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		}
 		break;
 	case REG_JOYP:
+	case REG_SB:
 	case REG_TIMA:
 	case REG_TMA:
 	case REG_LYC:
@@ -348,6 +353,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		return;
 	case REG_LCDC:
 		// TODO: handle GBC differences
+		GBVideoProcessDots(&gb->video);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
 		break;
@@ -461,10 +467,6 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	switch (address) {
 	case REG_JOYP:
 		return _readKeys(gb);
-	case REG_SB:
-	case REG_SC:
-		// TODO
-		break;
 	case REG_IE:
 		return gb->memory.ie;
 	case REG_WAVE_0:
@@ -493,6 +495,8 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 			return gb->audio.ch3.wavedata8[address - REG_WAVE_0];
 		}
 		break;
+	case REG_SB:
+	case REG_SC:
 	case REG_IF:
 	case REG_NR10:
 	case REG_NR11:

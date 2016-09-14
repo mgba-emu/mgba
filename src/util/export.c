@@ -8,7 +8,7 @@
 #include "gba/video.h"
 #include "util/vfs.h"
 
-bool GBAExportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors) {
+bool exportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors) {
 	if (entries > 0xFFFF) {
 		return false;
 	}
@@ -56,7 +56,7 @@ bool GBAExportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colo
 	return true;
 }
 
-bool GBAExportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors) {
+bool exportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors) {
 	if (entries > 256) {
 		return false;
 	}

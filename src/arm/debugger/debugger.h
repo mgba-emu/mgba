@@ -39,3 +39,4 @@ struct ARMDebugger {
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void);
 bool ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
+void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address);

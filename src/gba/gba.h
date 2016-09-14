@@ -17,7 +17,7 @@
 #include "gba/audio.h"
 #include "gba/sio.h"
 
-extern const uint32_t GBA_ARM7TDMI_FREQUENCY;
+#define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
 enum GBAIRQ {
 	IRQ_VBLANK = 0x0,

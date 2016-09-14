@@ -20,11 +20,14 @@ struct CLIDebugVector {
 	enum CLIDVType {
 		CLIDV_ERROR_TYPE,
 		CLIDV_INT_TYPE,
-		CLIDV_CHAR_TYPE
+		CLIDV_CHAR_TYPE,
 	} type;
 	union {
-		int32_t intValue;
 		char* charValue;
+		struct {
+			int32_t intValue;
+			int segmentValue;
+		};
 	};
 };
 

@@ -7,6 +7,7 @@
 #define QGBA_CHEATS_MODEL
 
 #include <QAbstractItemModel>
+#include <QFont>
 
 struct mCheatDevice;
 struct mCheatSet;
@@ -46,6 +47,7 @@ public slots:
 
 private:
 	mCheatDevice* m_device;
+	QFont m_font;
 };
 
 }

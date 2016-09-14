@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#include "core/input.h"
 #include "util/vector.h"
 
 struct GUIFont;
@@ -23,7 +24,7 @@ enum GUIInput {
 	GUI_INPUT_LEFT,
 	GUI_INPUT_RIGHT,
 
-	GUI_INPUT_USER_START = 0x10,
+	GUI_INPUT_USER_START = 0x8,
 
 	GUI_INPUT_MAX = 0x20
 };
@@ -58,13 +59,14 @@ struct GUIParams {
 
 	void (*drawStart)(void);
 	void (*drawEnd)(void);
-	uint32_t (*pollInput)(void);
+	uint32_t (*pollInput)(const struct mInputMap*);
 	enum GUICursorState (*pollCursor)(unsigned* x, unsigned* y);
 	int (*batteryState)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
 
 	// State
+	struct mInputMap keyMap;
 	int inputHistory[GUI_INPUT_MAX];
 	enum GUICursorState cursorState;
 	int cx, cy;
@@ -74,7 +76,7 @@ struct GUIParams {
 	size_t fileIndex;
 };
 
-#define GUI_PARAMS_TRAIL {}, GUI_CURSOR_NOT_PRESENT, 0, 0, "", 0
+#define GUI_PARAMS_TRAIL {0}, {}, GUI_CURSOR_NOT_PRESENT, 0, 0, "", 0
 
 void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);

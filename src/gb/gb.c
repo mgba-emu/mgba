@@ -54,7 +54,12 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->audio.p = gb;
 	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
 
+	gb->sio.p = gb;
+	GBSIOInit(&gb->sio);
+
 	gb->timer.p = gb;
+
+	gb->model = GB_MODEL_AUTODETECT;
 
 	gb->biosVf = 0;
 	gb->romVf = 0;
@@ -65,9 +70,6 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->yankedRomSize = 0;
 
 	gb->stream = NULL;
-
-	gb->eiPending = INT_MAX;
-	gb->doubleSpeed = 0;
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -99,14 +101,92 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	gb->sramVf = vf;
-	if (vf) {
-		// TODO: Do this in bank-switching code
-		if (vf->size(vf) < 0x20000) {
-			vf->truncate(vf, 0x20000);
-		}
-		gb->memory.sram = vf->map(vf, 0x20000, MAP_WRITE);
+	gb->sramRealVf = vf;
+	return vf;
+}
+
+static void GBSramDeinit(struct GB* gb) {
+	if (gb->sramVf) {
+		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
+		gb->sramVf->close(gb->sramVf);
+		gb->sramVf = 0;
+	} else if (gb->memory.sram) {
+		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
-	return gb->memory.sram;
+	gb->memory.sram = 0;
+}
+
+void GBResizeSram(struct GB* gb, size_t size) {
+	if (gb->memory.sram && size <= gb->sramSize) {
+		return;
+	}
+	mLOG(GB, INFO, "Resizing SRAM to %"PRIz"u bytes", size);
+	struct VFile* vf = gb->sramVf;
+	if (vf) {
+		if (vf == gb->sramRealVf) {
+			if (vf->size(vf) >= 0 && (size_t) vf->size(vf) < size) {
+				uint8_t extdataBuffer[0x100];
+				if (vf->size(vf) & 0xFF) {
+					// Copy over appended data, e.g. RTC data
+					memcpy(extdataBuffer, &gb->memory.sram[gb->sramSize - (vf->size(vf) & 0xFF)], vf->size(vf) & 0xFF);
+				}
+				if (gb->memory.sram) {
+					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				}
+				vf->truncate(vf, size);
+				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+				memset(&gb->memory.sram[gb->sramSize], 0xFF, size - gb->sramSize);
+				if (size & 0xFF) {
+					memcpy(&gb->memory.sram[gb->sramSize - (size & 0xFF)], extdataBuffer, size & 0xFF);
+				}
+			} else if (size > gb->sramSize || !gb->memory.sram) {
+				if (gb->memory.sram) {
+					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+				}
+				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+			}
+		} else {
+			if (gb->memory.sram) {
+				vf->unmap(vf, gb->memory.sram, gb->sramSize);
+			}
+			gb->memory.sram = vf->map(vf, size, MAP_READ);
+		}
+		if (gb->memory.sram == (void*) -1) {
+			gb->memory.sram = NULL;
+		}
+	} else {
+		uint8_t* newSram = anonymousMemoryMap(size);
+		if (gb->memory.sram) {
+			if (size > gb->sramSize) {
+				memcpy(newSram, gb->memory.sram, gb->sramSize);
+				memset(&newSram[gb->sramSize], 0xFF, size - gb->sramSize);
+			} else {
+				memcpy(newSram, gb->memory.sram, size);
+			}
+			mappedMemoryFree(gb->memory.sram, gb->sramSize);
+		} else {
+			memset(newSram, 0xFF, size);
+		}
+		gb->memory.sram = newSram;
+	}
+	if (gb->sramSize < size) {
+		gb->sramSize = size;
+	}
+}
+
+void GBSavedataMask(struct GB* gb, struct VFile* vf) {
+	GBSramDeinit(gb);
+	gb->sramVf = vf;
+	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
+}
+
+void GBSavedataUnmask(struct GB* gb) {
+	if (gb->sramVf == gb->sramRealVf) {
+		return;
+	}
+	GBSramDeinit(gb);
+	gb->sramVf = gb->sramRealVf;
+	gb->memory.sram = gb->sramVf->map(gb->sramVf, gb->sramSize, MAP_WRITE);
 }
 
 void GBUnloadROM(struct GB* gb) {
@@ -131,13 +211,7 @@ void GBUnloadROM(struct GB* gb) {
 		gb->romVf = 0;
 	}
 
-	if (gb->sramVf) {
-		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, 0x8000);
-		gb->sramVf = 0;
-	} else if (gb->memory.sram) {
-		mappedMemoryFree(gb->memory.sram, 0x8000);
-	}
-	gb->memory.sram = 0;
+	GBSramDeinit(gb);
 }
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf) {
@@ -165,7 +239,14 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 void GBDestroy(struct GB* gb) {
 	GBUnloadROM(gb);
 
+	if (gb->biosVf) {
+		gb->biosVf->close(gb->biosVf);
+		gb->biosVf = 0;
+	}
+
 	GBMemoryDeinit(gb);
+	GBVideoDeinit(&gb->video);
+	GBSIODeinit(&gb->sio);
 }
 
 void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
@@ -179,7 +260,7 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 
 void GBReset(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-
+	GBDetectModel(gb);
 	if (gb->biosVf) {
 		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
 		gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
@@ -187,63 +268,70 @@ void GBReset(struct LR35902Core* cpu) {
 		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
 		switch (biosCrc) {
 		case 0x59C8598E:
-			gb->model = GB_MODEL_DMG;
-			gb->audio.style = GB_AUDIO_DMG;
 			break;
 		case 0x41884E46:
-			gb->model = GB_MODEL_CGB;
-			gb->audio.style = GB_AUDIO_CGB;
 			break;
 		default:
+			gb->biosVf->close(gb->biosVf);
+			gb->biosVf = NULL;
 			free(gb->memory.romBase);
 			gb->memory.romBase = gb->memory.rom;
-			gb->biosVf = NULL;
 			break;
 		}
 
-		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
-		if (size > 0x100) {
-			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
-		}
+		if (gb->biosVf) {
+			memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+			if (size > 0x100) {
+				memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+			}
 
-		cpu->a = 0;
-		cpu->f.packed = 0;
-		cpu->c = 0;
-		cpu->e = 0;
-		cpu->h = 0;
-		cpu->l = 0;
-		cpu->sp = 0;
-		cpu->pc = 0;
-	}
-	if (!gb->biosVf) {
-		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		if (cart->cgb & 0x80) {
-			gb->model = GB_MODEL_CGB;
-			gb->audio.style = GB_AUDIO_CGB;
-			cpu->a = 0x11;
-			cpu->f.packed = 0x80;
+			cpu->a = 0;
+			cpu->f.packed = 0;
 			cpu->c = 0;
-			cpu->e = 0x08;
+			cpu->e = 0;
 			cpu->h = 0;
-			cpu->l = 0x7C;
-		} else {
+			cpu->l = 0;
+			cpu->sp = 0;
+			cpu->pc = 0;
+		}
+	}
+
+	cpu->b = 0;
+	cpu->d = 0;
+
+	if (!gb->biosVf) {
+		switch (gb->model) {
+		case GB_MODEL_DMG:
 			// TODO: SGB
+		case GB_MODEL_SGB:
+		case GB_MODEL_AUTODETECT: // Silence warnings
 			gb->model = GB_MODEL_DMG;
-			gb->audio.style = GB_AUDIO_DMG;
 			cpu->a = 1;
 			cpu->f.packed = 0xB0;
 			cpu->c = 0x13;
 			cpu->e = 0xD8;
 			cpu->h = 1;
 			cpu->l = 0x4D;
+			break;
+		case GB_MODEL_AGB:
+			cpu->b = 1;
+			// Fall through
+		case GB_MODEL_CGB:
+			cpu->a = 0x11;
+			cpu->f.packed = 0x80;
+			cpu->c = 0;
+			cpu->e = 0x08;
+			cpu->h = 0;
+			cpu->l = 0x7C;
+			break;
 		}
 
 		cpu->sp = 0xFFFE;
 		cpu->pc = 0x100;
 	}
 
-	cpu->b = 0;
-	cpu->d = 0;
+	gb->eiPending = INT_MAX;
+	gb->doubleSpeed = 0;
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
 
@@ -256,6 +344,53 @@ void GBReset(struct LR35902Core* cpu) {
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
+	GBSIOReset(&gb->sio);
+
+	GBSavedataUnmask(gb);
+}
+
+void GBDetectModel(struct GB* gb) {
+	if (gb->model != GB_MODEL_AUTODETECT) {
+		return;
+	}
+	if (gb->biosVf) {
+		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
+		void* bios = malloc(GB_SIZE_CART_BANK0);
+		ssize_t size = gb->biosVf->read(gb->biosVf, bios, GB_SIZE_CART_BANK0);
+		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
+		switch (biosCrc) {
+		case 0x59C8598E:
+			gb->model = GB_MODEL_DMG;
+			break;
+		case 0x41884E46:
+			gb->model = GB_MODEL_CGB;
+			break;
+		default:
+			gb->biosVf->close(gb->biosVf);
+			gb->biosVf = NULL;
+		}
+		free(bios);
+	}
+	if (gb->model == GB_MODEL_AUTODETECT && gb->memory.rom) {
+		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+		if (cart->cgb & 0x80) {
+			gb->model = GB_MODEL_CGB;
+		} else {
+			gb->model = GB_MODEL_DMG;
+		}
+	}
+
+	switch (gb->model) {
+	case GB_MODEL_DMG:
+	case GB_MODEL_SGB:
+	case GB_MODEL_AUTODETECT: //Silence warnings
+		gb->audio.style = GB_AUDIO_DMG;
+		break;
+	case GB_MODEL_AGB:
+	case GB_MODEL_CGB:
+		gb->audio.style = GB_AUDIO_CGB;
+		break;
+	}
 }
 
 void GBUpdateIRQs(struct GB* gb) {
@@ -308,6 +443,8 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 				gb->memory.ime = true;
 				GBUpdateIRQs(gb);
 				gb->eiPending = INT_MAX;
+			} else {
+				nextEvent = gb->eiPending;
 			}
 		}
 
@@ -328,6 +465,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		}
 
 		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
+
+		testEvent = GBSIOProcessEvents(&gb->sio, cycles);
 		if (testEvent < nextEvent) {
 			nextEvent = testEvent;
 		}
@@ -361,13 +503,27 @@ void GBSetInterrupts(struct LR35902Core* cpu, bool enable) {
 }
 
 void GBHalt(struct LR35902Core* cpu) {
-	cpu->cycles = cpu->nextEvent;
-	cpu->halted = true;
+	if (!cpu->irqPending) {
+		cpu->cycles = cpu->nextEvent;
+		cpu->halted = true;
+	}
 }
 
 void GBStop(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (gb->memory.io[REG_KEY1] & 1) {
+	if (cpu->bus) {
+		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X\n", cpu->pc, cpu->bus);
+		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
+			struct mDebuggerEntryInfo info = {
+				.address = cpu->pc - 1,
+				.opcode = 0x1000 | cpu->bus
+			};
+			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+		}
+		// Hang forever
+		gb->memory.ime = 0;
+		cpu->pc -= 2;
+	} else if (gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
 		gb->memory.io[REG_KEY1] &= 1;
 		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
@@ -376,8 +532,18 @@ void GBStop(struct LR35902Core* cpu) {
 }
 
 void GBIllegal(struct LR35902Core* cpu) {
-	// TODO
+	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X\n", cpu->pc, cpu->bus);
+	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
+		struct mDebuggerEntryInfo info = {
+			.address = cpu->pc,
+			.opcode = cpu->bus
+		};
+		mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
+	}
+	// Hang forever
+	gb->memory.ime = 0;
+	--cpu->pc;
 }
 
 bool GBIsROM(struct VFile* vf) {

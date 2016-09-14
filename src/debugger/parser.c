@@ -222,6 +222,17 @@ size_t lexExpression(struct LexVector* lv, const char* string, size_t length) {
 				lv = _lexOperator(lv, token);
 				state = LEX_ROOT;
 				break;
+			case ':':
+				lv->token.type = TOKEN_SEGMENT_TYPE;
+				lv->token.uintValue = next;
+				lvNext = malloc(sizeof(struct LexVector));
+				lvNext->next = lv->next;
+				lvNext->token.type = TOKEN_UINT_TYPE;
+				lv->next = lvNext;
+				lv = lvNext;
+				next = 0;
+				state = LEX_EXPECT_HEX;
+				break;
 			case ')':
 				lv->token.type = TOKEN_UINT_TYPE;
 				lv->token.uintValue = next;
@@ -353,6 +364,17 @@ static struct LexVector* _parseExpression(struct ParseTree* tree, struct LexVect
 			} else {
 				tree->token.type = TOKEN_ERROR_TYPE;
 				return 0;
+			}
+			break;
+		case TOKEN_SEGMENT_TYPE:
+			tree->lhs = _parseTreeCreate();
+			tree->lhs->token.type = TOKEN_UINT_TYPE;
+			tree->lhs->token.uintValue = lv->token.uintValue;
+			tree->rhs = _parseTreeCreate();
+			tree->token.type = TOKEN_SEGMENT_TYPE;
+			lv = _parseExpression(tree->rhs, lv->next, precedence, openParens);
+			if (tree->token.type == TOKEN_ERROR_TYPE) {
+				tree->token.type = TOKEN_ERROR_TYPE;
 			}
 			break;
 		case TOKEN_OPEN_PAREN_TYPE:

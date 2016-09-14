@@ -9,9 +9,6 @@
 #include "core/serialize.h"
 #include "util/vfs.h"
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include "util/png-io.h"
-
 #ifdef M_CORE_GB
 #include "gb/core.h"
 #include "gb/gb.h"
@@ -24,19 +21,56 @@
 static struct mCoreFilter {
 	bool (*filter)(struct VFile*);
 	struct mCore* (*open)(void);
+	enum mPlatform platform;
 } _filters[] = {
 #ifdef M_CORE_GBA
-	{ GBAIsROM, GBACoreCreate },
+	{ GBAIsROM, GBACoreCreate, PLATFORM_GBA },
 #endif
 #ifdef M_CORE_GB
-	{ GBIsROM, GBCoreCreate },
+	{ GBIsROM, GBCoreCreate, PLATFORM_GB },
 #endif
-	{ 0, 0 }
+	{ 0, 0, PLATFORM_NONE }
 };
+
+struct mCore* mCoreFindVF(struct VFile* vf) {
+	if (!vf) {
+		return NULL;
+	}
+	struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->filter(vf)) {
+			break;
+		}
+	}
+	if (filter->open) {
+		return filter->open();
+	}
+	return NULL;
+}
+
+enum mPlatform mCoreIsCompatible(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
+	struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->filter(vf)) {
+			return filter->platform;
+		}
+	}
+	return PLATFORM_NONE;
+}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#include "util/png-io.h"
+
+#ifdef PSP2
+#include <psp2/photoexport.h>
+#endif
 
 struct mCore* mCoreFind(const char* path) {
 	struct VDir* archive = VDirOpenArchive(path);
-	struct mCore* (*open)(void) = NULL;
+	struct mCore* core = NULL;
 	if (archive) {
 		struct VDirEntry* dirent = archive->listNext(archive);
 		while (dirent) {
@@ -45,15 +79,9 @@ struct mCore* mCoreFind(const char* path) {
 				dirent = archive->listNext(archive);
 				continue;
 			}
-			struct mCoreFilter* filter;
-			for (filter = &_filters[0]; filter->filter; ++filter) {
-				if (filter->filter(vf)) {
-					break;
-				}
-			}
+			core = mCoreFindVF(vf);
 			vf->close(vf);
-			if (filter->open) {
-				open = filter->open;
+			if (core) {
 				break;
 			}
 			dirent = archive->listNext(archive);
@@ -64,19 +92,11 @@ struct mCore* mCoreFind(const char* path) {
 		if (!vf) {
 			return NULL;
 		}
-		struct mCoreFilter* filter;
-		for (filter = &_filters[0]; filter->filter; ++filter) {
-			if (filter->filter(vf)) {
-				break;
-			}
-		}
+		core = mCoreFindVF(vf);
 		vf->close(vf);
-		if (filter->open) {
-			open = filter->open;
-		}
 	}
-	if (open) {
-		return open();
+	if (core) {
+		return core;
 	}
 	return NULL;
 }
@@ -154,7 +174,12 @@ void mCoreTakeScreenshot(struct mCore* core) {
 	color_t* pixels = 0;
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
-	struct VFile* vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+	struct VFile* vf;
+#ifndef PSP2
+	vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
+#else
+	vf = VFileMemChunk(0, 0);
+#endif
 	bool success = false;
 	if (vf) {
 		core->getVideoBuffer(core, &pixels, &stride);
@@ -162,6 +187,17 @@ void mCoreTakeScreenshot(struct mCore* core) {
 		png_infop info = PNGWriteHeader(png, width, height);
 		success = PNGWritePixels(png, width, height, stride, pixels);
 		PNGWriteClose(png, info);
+#ifdef PSP2
+		void* data = vf->map(vf, 0, 0);
+		PhotoExportParam param = {
+			0,
+			NULL,
+			NULL,
+			NULL,
+			{ 0 }
+		};
+		scePhotoExportFromData(data, vf->size(vf), &param, NULL, NULL, NULL, NULL, 0);
+#endif
 		vf->close(vf);
 	}
 	if (success) {

@@ -39,6 +39,7 @@ namespace QGBA {
 class AudioProcessor;
 class InputController;
 class MultiplayerController;
+class Override;
 
 class GameController : public QObject {
 Q_OBJECT
@@ -71,8 +72,9 @@ public:
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
-	void setOverride(const GBACartridgeOverride& override);
-	void clearOverride() { /* TODO: Put back overrides */ }
+	void setOverride(Override* override) { m_override = override; }
+	Override* override() { return m_override; }
+	void clearOverride();
 
 	void setConfig(const mCoreConfig*);
 
@@ -102,6 +104,7 @@ signals:
 
 public slots:
 	void loadGame(const QString& path);
+	void loadGame(VFile* vf, const QString& base = QString());
 	void loadBIOS(const QString& path);
 	void loadSave(const QString& path, bool temporary = true);
 	void yankPak();
@@ -115,7 +118,7 @@ public slots:
 	void setPaused(bool paused);
 	void reset();
 	void frameAdvance();
-	void setRewind(bool enable, int capacity, int interval);
+	void setRewind(bool enable, int capacity);
 	void rewind(int states = 0);
 	void startRewinding();
 	void stopRewinding();
@@ -134,7 +137,8 @@ public slots:
 	void loadBackupState();
 	void saveBackupState();
 	void setTurbo(bool, bool forced = true);
-	void setTurboSpeed(float ratio = -1);
+	void setTurboSpeed(float ratio);
+	void setSync(bool);
 	void setAVStream(mAVStream*);
 	void clearAVStream();
 	void reloadAudioDriver();
@@ -162,6 +166,7 @@ public slots:
 private slots:
 	void openGame(bool bios = false);
 	void crashGame(const QString& crashMessage);
+	void cleanGame();
 
 	void pollEvents();
 	void updateAutofire();
@@ -184,22 +189,25 @@ private:
 	bool m_gameOpen;
 
 	QString m_fname;
+	VFile* m_vf;
 	QString m_bios;
 	bool m_useBios;
 	QString m_patch;
+	Override* m_override;
 
 	QThread* m_audioThread;
 	AudioProcessor* m_audioProcessor;
 
 	QAtomicInt m_pauseAfterFrame;
+	QList<std::function<void ()>> m_resetActions;
 
+	bool m_sync;
 	bool m_videoSync;
 	bool m_audioSync;
 	float m_fpsTarget;
 	bool m_turbo;
 	bool m_turboForced;
 	float m_turboSpeed;
-	QTimer m_rewindTimer;
 	bool m_wasPaused;
 
 	bool m_audioChannels[6];

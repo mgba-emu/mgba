@@ -122,7 +122,6 @@ struct VDir* VDirOpen7z(const char* path, int flags) {
 bool _vf7zClose(struct VFile* vf) {
 	struct VFile7z* vf7z = (struct VFile7z*) vf;
 	IAlloc_Free(&vf7z->vd->allocImp, vf7z->outBuffer);
-	File_Close(&vf7z->vd->archiveStream.file);
 	return true;
 }
 
@@ -301,6 +300,7 @@ struct VFile* _vd7zOpenFile(struct VDir* vd, const char* path, int mode) {
 	vf->d.truncate = _vf7zTruncate;
 	vf->d.size = _vf7zSize;
 	vf->d.sync = _vf7zSync;
+	vf->offset = 0;
 
 	return &vf->d;
 }

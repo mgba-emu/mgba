@@ -30,30 +30,19 @@ static void _drawStart(void) {
 }
 
 static void _drawEnd(void) {
-	static int oldVCount = 0;
-	int vcount = oldVCount;
+	static int vcount = 0;
+	extern bool frameLimiter;
+	int oldVCount = vcount;
 	vita2d_end_drawing();
-	oldVCount = sceDisplayGetVcount();
-	vita2d_set_vblank_wait(oldVCount + 1 >= vcount);
+	vcount = sceDisplayGetVcount();
+	vita2d_set_vblank_wait(frameLimiter && vcount + 1 >= oldVCount);
 	vita2d_swap_buffers();
 }
 
-static uint32_t _pollInput(void) {
+static uint32_t _pollInput(const struct mInputMap* map) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositive(0, &pad, 1);
-	int input = 0;
-	if (pad.buttons & SCE_CTRL_TRIANGLE) {
-		input |= 1 << GUI_INPUT_CANCEL;
-	}
-	if (pad.buttons & SCE_CTRL_SQUARE) {
-		input |= 1 << mGUI_INPUT_SCREEN_MODE;
-	}
-	if (pad.buttons & SCE_CTRL_CIRCLE) {
-		input |= 1 << GUI_INPUT_BACK;
-	}
-	if (pad.buttons & SCE_CTRL_CROSS) {
-		input |= 1 << GUI_INPUT_SELECT;
-	}
+	int input = mInputMapKeyBits(map, PSP2_INPUT, pad.buttons, 0);
 
 	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
@@ -73,7 +62,7 @@ static uint32_t _pollInput(void) {
 
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	SceTouchData touch;
-	sceTouchPeek(0, &touch, 1);
+	sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch, 1);
 	if (touch.reportNum < 1) {
 		return GUI_CURSOR_NOT_PRESENT;
 	}
@@ -99,7 +88,7 @@ int main() {
 	struct mGUIRunner runner = {
 		.params = {
 			PSP2_HORIZONTAL_PIXELS, PSP2_VERTICAL_PIXELS,
-			font, "ux0:", _drawStart, _drawEnd,
+			font, "ux0:data", _drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
@@ -116,8 +105,9 @@ int main() {
 					"With Background",
 					"Without Background",
 					"Stretched",
+					"Fit Aspect Ratio",
 				},
-				.nStates = 3
+				.nStates = 4
 			}
 		},
 		.keySources = (struct GUIInputKeys[]) {
@@ -154,13 +144,28 @@ int main() {
 		.prepareForFrame = mPSP2PrepareForFrame,
 		.drawFrame = mPSP2Draw,
 		.drawScreenshot = mPSP2DrawScreenshot,
-		.paused = 0,
+		.paused = mPSP2Paused,
 		.unpaused = mPSP2Unpaused,
 		.incrementScreenMode = mPSP2IncrementScreenMode,
+		.setFrameLimiter = mPSP2SetFrameLimiter,
 		.pollGameInput = mPSP2PollInput
 	};
 
+	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
+	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+	sceSysmoduleLoadModule(SCE_SYSMODULE_PHOTO_EXPORT);
+
 	mGUIInit(&runner, "psvita");
+
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CROSS, GUI_INPUT_SELECT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_CIRCLE, GUI_INPUT_BACK);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_TRIANGLE, GUI_INPUT_CANCEL);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_UP, GUI_INPUT_UP);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_DOWN, GUI_INPUT_DOWN);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_LEFT, GUI_INPUT_LEFT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_RIGHT, GUI_INPUT_RIGHT);
+	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_SQUARE, mGUI_INPUT_SCREEN_MODE);
+
 	mGUIRunloop(&runner);
 
 	vita2d_fini();

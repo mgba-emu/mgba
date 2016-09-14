@@ -131,21 +131,22 @@ void mCheatRemoveSet(struct mCheatDevice* device, struct mCheatSet* cheats) {
 }
 
 bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
-#warning Cheat loading is currently broken
-	return false;
-#if 0
 	char cheat[MAX_LINE_LENGTH];
 	struct mCheatSet* set = NULL;
 	struct mCheatSet* newSet;
 	bool nextDisabled = false;
-	void* directives = NULL;
+	struct StringList directives;
+	StringListInit(&directives, 4);
+
 	while (true) {
 		size_t i = 0;
 		ssize_t bytesRead = vf->readline(vf, cheat, sizeof(cheat));
+		rtrim(cheat);
 		if (bytesRead == 0) {
 			break;
 		}
 		if (bytesRead < 0) {
+			StringListDeinit(&directives);
 			return false;
 		}
 		while (isspace((int) cheat[i])) {
@@ -156,7 +157,6 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 			do {
 				++i;
 			} while (isspace((int) cheat[i]));
-			cheat[strlen(cheat) - 1] = '\0'; // Remove trailing newline
 			newSet = device->createSet(device, &cheat[i]);
 			newSet->enabled = !nextDisabled;
 			nextDisabled = false;
@@ -166,6 +166,7 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 			if (set) {
 				newSet->copyProperties(newSet, set);
 			}
+			newSet->parseDirectives(newSet, &directives);
 			set = newSet;
 			break;
 		case '!':
@@ -177,10 +178,14 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 				break;
 			}
 			if (strcasecmp(&cheat[i], "reset") == 0) {
-				directives = NULL;
+				size_t d;
+				for (d = 0; d < StringListSize(&directives); ++d) {
+					free(*StringListGetPointer(&directives, d));
+				}
+				StringListClear(&directives);
 				break;
 			}
-			directives = set->parseDirective(set, &cheat[i], directives);
+			*StringListAppend(&directives) = strdup(&cheat[i]);
 			break;
 		default:
 			if (!set) {
@@ -188,32 +193,43 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 				set->enabled = !nextDisabled;
 				nextDisabled = false;
 			}
-			mCheatAddLine(set, cheat);
+			mCheatAddLine(set, cheat, 0);
 			break;
 		}
 	}
 	if (set) {
 		mCheatAddSet(device, set);
 	}
+	size_t d;
+	for (d = 0; d < StringListSize(&directives); ++d) {
+		free(*StringListGetPointer(&directives, d));
+	}
+	StringListClear(&directives);
+	StringListDeinit(&directives);
 	return true;
-#endif
 }
 
 bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
-#warning Cheat saving is currently broken
-	return false;
-#if 0
 	static const char lineStart[3] = "# ";
 	static const char lineEnd = '\n';
-	void* directives = NULL;
+	struct StringList directives;
+	StringListInit(&directives, 4);
 
 	size_t i;
 	for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
 		struct mCheatSet* set = *mCheatSetsGetPointer(&device->cheats, i);
-		void* directives = set->dumpDirectives(set, vf, directives);
+		set->dumpDirectives(set, &directives);
 		if (!set->enabled) {
 			static const char* disabledDirective = "!disabled\n";
 			vf->write(vf, disabledDirective, strlen(disabledDirective));
+		}
+		size_t d;
+		for (d = 0; d < StringListSize(&directives); ++d) {
+			char directive[64];
+			ssize_t len = snprintf(directive, sizeof(directive) - 1, "!%s\n", *StringListGetPointer(&directives, d));
+			if (len > 1) {
+				vf->write(vf, directive, (size_t) len > sizeof(directive) ? sizeof(directive) : len);
+			}
 		}
 
 		vf->write(vf, lineStart, 2);
@@ -228,8 +244,13 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 			vf->write(vf, &lineEnd, 1);
 		}
 	}
+	size_t d;
+	for (d = 0; d < StringListSize(&directives); ++d) {
+		free(*StringListGetPointer(&directives, d));
+	}
+	StringListClear(&directives);
+	StringListDeinit(&directives);
 	return true;
-#endif
 }
 
 void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {

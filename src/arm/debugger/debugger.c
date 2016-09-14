@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,7 +37,8 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 		return;
 	}
 	struct mDebuggerEntryInfo info = {
-		.address = breakpoint->address
+		.address = breakpoint->address,
+		.breakType = BREAKPOINT_HARDWARE
 	};
 	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
@@ -79,6 +80,16 @@ void ARMDebuggerInit(void* cpu, struct mDebuggerPlatform* platform) {
 
 void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) platform;
+	if (debugger->clearSoftwareBreakpoint) {
+		// Clear the stack backwards in case any overlap
+		size_t b;
+		for (b = ARMDebugBreakpointListSize(&debugger->swBreakpoints); b; --b) {
+			struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(&debugger->swBreakpoints, b - 1);
+			debugger->clearSoftwareBreakpoint(debugger, breakpoint->address, breakpoint->sw.mode, breakpoint->sw.opcode);
+		}
+	}
+	ARMDebuggerRemoveMemoryShim(debugger);
+
 	ARMDebugBreakpointListDeinit(&debugger->breakpoints);
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	ARMDebugWatchpointListDeinit(&debugger->watchpoints);
@@ -103,8 +114,8 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 			}
 		}
 	}
-	if (debugger->entered) {
-		debugger->entered(debugger->d.p, reason, info);
+	if (debugger->d.p->entered) {
+		debugger->d.p->entered(debugger->d.p, reason, info);
 	}
 }
 
@@ -122,6 +133,26 @@ bool ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t addr
 	breakpoint->sw.mode = mode;
 
 	return true;
+}
+
+void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	if (!debugger->clearSoftwareBreakpoint) {
+		return;
+	}
+
+	struct ARMDebugBreakpoint* breakpoint = NULL;
+	// Clear the stack backwards in case any overlap
+	size_t b;
+	for (b = ARMDebugBreakpointListSize(&debugger->swBreakpoints); b; --b) {
+		breakpoint = ARMDebugBreakpointListGetPointer(&debugger->swBreakpoints, b - 1);
+		if (breakpoint->address == address) {
+			break;
+		}
+		breakpoint = NULL;
+	}
+
+	debugger->clearSoftwareBreakpoint(debugger, address, breakpoint->sw.mode, breakpoint->sw.opcode);
 }
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {

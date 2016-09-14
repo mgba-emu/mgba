@@ -21,6 +21,7 @@ public:
 public slots:
 	void setTile(int index, const uint16_t*);
 	void setTileCount(int tiles);
+	void setTileMagnification(int mag);
 
 signals:
 	void indexPressed(int index);
@@ -32,6 +33,8 @@ protected:
 
 private:
 	QPixmap m_backing;
+	int m_size;
+	int m_tileCount;
 };
 
 }

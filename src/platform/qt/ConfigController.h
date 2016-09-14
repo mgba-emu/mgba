@@ -6,6 +6,8 @@
 #ifndef QGBA_CONFIG_CONTROLLER
 #define QGBA_CONFIG_CONTROLLER
 
+#include "Override.h"
+
 #include <QMap>
 #include <QObject>
 #include <QSettings>
@@ -78,7 +80,7 @@ public:
 	void setMRU(const QList<QString>& mru);
 
 	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
-	void saveOverride(const GBACartridgeOverride&);
+	void saveOverride(const Override&);
 
 	Configuration* input() { return mCoreConfigGetInput(&m_config); }
 

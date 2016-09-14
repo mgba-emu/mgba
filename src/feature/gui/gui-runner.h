@@ -8,6 +8,7 @@
 
 #include "util/common.h"
 
+#include "core/config.h"
 #include "feature/gui/remap.h"
 #include "gba/hardware.h"
 #include "util/circle-buffer.h"
@@ -17,13 +18,15 @@ enum mGUIInput {
 	mGUI_INPUT_INCREASE_BRIGHTNESS = GUI_INPUT_USER_START,
 	mGUI_INPUT_DECREASE_BRIGHTNESS,
 	mGUI_INPUT_SCREEN_MODE,
+	mGUI_INPUT_SCREENSHOT,
+	mGUI_INPUT_FAST_FORWARD,
 };
 
 struct mGUIBackground {
 	struct GUIBackground d;
 	struct mGUIRunner* p;
 
-	uint32_t* screenshot;
+	color_t* screenshot;
 	int screenshotId;
 };
 
@@ -40,6 +43,8 @@ struct mGUIRunner {
 	struct mGUIBackground background;
 	struct mGUIRunnerLux luminanceSource;
 
+	struct mInputMap guiKeys;
+	struct mCoreConfig config;
 	struct GUIMenuItem* configExtra;
 	size_t nConfigExtra;
 
@@ -57,10 +62,11 @@ struct mGUIRunner {
 	void (*gameUnloaded)(struct mGUIRunner*);
 	void (*prepareForFrame)(struct mGUIRunner*);
 	void (*drawFrame)(struct mGUIRunner*, bool faded);
-	void (*drawScreenshot)(struct mGUIRunner*, const uint32_t* pixels, unsigned width, unsigned height, bool faded);
+	void (*drawScreenshot)(struct mGUIRunner*, const color_t* pixels, unsigned width, unsigned height, bool faded);
 	void (*paused)(struct mGUIRunner*);
 	void (*unpaused)(struct mGUIRunner*);
 	void (*incrementScreenMode)(struct mGUIRunner*);
+	void (*setFrameLimiter)(struct mGUIRunner*, bool limit);
 	uint16_t (*pollGameInput)(struct mGUIRunner*);
 };
 

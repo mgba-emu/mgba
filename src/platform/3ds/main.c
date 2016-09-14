@@ -35,6 +35,21 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA_TOP;
 
+static enum FilterMode {
+	FM_NEAREST,
+	FM_LINEAR_1x,
+	FM_LINEAR_2x,
+	FM_MAX
+} filterMode = FM_LINEAR_2x;
+
+static enum DarkenMode {
+	DM_NATIVE,
+	DM_MULT,
+	DM_MULT_SCALE,
+	DM_MULT_SCALE_BIAS,
+	DM_MAX
+} darkenMode = DM_NATIVE;
+
 #define _3DS_INPUT 0x3344534B
 
 #define AUDIO_SAMPLES 384
@@ -64,9 +79,11 @@ static size_t audioPos = 0;
 static C3D_Tex outputTexture;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
 static int bufferId = 0;
+static bool frameLimiter = true;
 
 static C3D_RenderBuf bottomScreen;
 static C3D_RenderBuf topScreen;
+static C3D_RenderBuf upscaleBuffer;
 
 static aptHookCookie cookie;
 
@@ -77,7 +94,7 @@ static bool _initGpu(void) {
 		return false;
 	}
 
-	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0)) {
+	if (!C3D_RenderBufInit(&topScreen, 240, 400, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&bottomScreen, 240, 320, GPU_RB_RGB8, 0) || !C3D_RenderBufInit(&upscaleBuffer, 512, 512, GPU_RB_RGB8, 0)) {
 		return false;
 	}
 
@@ -93,6 +110,7 @@ static void _cleanup(void) {
 
 	C3D_RenderBufDelete(&topScreen);
 	C3D_RenderBufDelete(&bottomScreen);
+	C3D_RenderBufDelete(&upscaleBuffer);
 	C3D_Fini();
 
 	gfxExit();
@@ -182,7 +200,9 @@ static void _drawEnd(void) {
 	C3D_RenderBufTransfer(&topScreen, (u32*) gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_RenderBufTransfer(&bottomScreen, (u32*) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	gfxSwapBuffersGpu();
-	gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
+	if (frameLimiter) {
+		gspWaitForEvent(GSPGPU_EVENT_VBlank0, false);
+	}
 }
 
 static int _batteryState(void) {
@@ -207,7 +227,7 @@ static void _guiPrepare(void) {
 	}
 
 	C3D_RenderBufBind(&bottomScreen);
-	ctrSetViewportSize(320, 240);
+	ctrSetViewportSize(320, 240, true);
 }
 
 static void _guiFinish(void) {
@@ -218,8 +238,8 @@ static void _setup(struct mGUIRunner* runner) {
 	bool isNew3DS = false;
 	APT_CheckNew3DS(&isNew3DS);
 	if (isNew3DS && !envIsHomebrew()) {
-		mCoreConfigSetDefaultIntValue(&runner->core->config, "threadedVideo", 1);
-		mCoreLoadConfig(runner->core);
+		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
+		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
 
 	runner->core->setRotation(runner->core, &rotation.d);
@@ -242,9 +262,21 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode < SM_MAX) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
+		if (filterMode == FM_NEAREST) {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_NEAREST, GPU_NEAREST);
+		} else {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
+		}
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "darkenMode", &mode) && mode < DM_MAX) {
+		darkenMode = mode;
+	}
+	frameLimiter = true;
 
 	runner->core->setAudioBufferSize(runner->core, AUDIO_SAMPLES);
 }
@@ -288,8 +320,19 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
-	if (mCoreConfigGetUIntValue(&runner->core->config, "screenMode", &mode) && mode != screenMode) {
+	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
+		if (filterMode == FM_NEAREST) {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_NEAREST, GPU_NEAREST);
+		} else {
+			C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
+		}
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "darkenMode", &mode) && mode < DM_MAX) {
+		darkenMode = mode;
 	}
 }
 
@@ -300,6 +343,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 		csndExecCmds(false);
 	}
 	osSetSpeedupEnable(false);
+	frameLimiter = true;
 
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
@@ -325,19 +369,24 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 }
 
 static void _drawTex(struct mCore* core, bool faded) {
-	if (screenMode < SM_PA_TOP) {
+	unsigned screen_w, screen_h;
+	switch (screenMode) {
+	case SM_PA_BOTTOM:
 		C3D_RenderBufBind(&bottomScreen);
-		ctrSetViewportSize(320, 240);
-	} else {
+		screen_w = 320;
+		screen_h = 240;
+		break;
+	case SM_PA_TOP:
 		C3D_RenderBufBind(&topScreen);
-		ctrSetViewportSize(400, 240);
+		screen_w = 400;
+		screen_h = 240;
+		break;
+	default:
+		C3D_RenderBufBind(&upscaleBuffer);
+		screen_w = upscaleBuffer.colorBuf.width;
+		screen_h = upscaleBuffer.colorBuf.height;
+		break;
 	}
-	ctrActivateTexture(&outputTexture);
-
-	u32 color = faded ? 0x3FFFFFFF : 0xFFFFFFFF;
-
-	int screen_w = screenMode < SM_PA_TOP ? 320 : 400;
-	int screen_h = 240;
 
 	unsigned corew, coreh;
 	core->desiredVideoDimensions(core, &corew, &coreh);
@@ -351,16 +400,90 @@ static void _drawTex(struct mCore* core, bool faded) {
 		w = temp;
 	}
 	int gcd = h;
-	int aspectw = corew / gcd;
-	int aspecth = coreh / gcd;
+	unsigned aspectw = corew / gcd;
+	unsigned aspecth = coreh / gcd;
+	int x = 0;
+	int y = 0;
 
 	switch (screenMode) {
 	case SM_PA_TOP:
 	case SM_PA_BOTTOM:
-	default:
 		w = corew;
 		h = coreh;
+		x = (screen_w - w) / 2;
+		y = (screen_h - h) / 2;
+		ctrSetViewportSize(screen_w, screen_h, true);
 		break;
+	case SM_AF_TOP:
+	case SM_AF_BOTTOM:
+	case SM_SF_TOP:
+	case SM_SF_BOTTOM:
+	default:
+		if (filterMode == FM_LINEAR_1x) {
+			w = corew;
+			h = coreh;
+		} else {
+			w = corew * 2;
+			h = coreh * 2;
+		}
+		ctrSetViewportSize(screen_w, screen_h, false);
+		break;
+	}
+
+	ctrActivateTexture(&outputTexture);
+	u32 color;
+	if (!faded) {
+		color = 0xFFFFFFFF;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x070707);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF707070;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+	} else {
+		color = 0xFF484848;
+		switch (darkenMode) {
+		case DM_NATIVE:
+		case DM_MAX:
+			break;
+		case DM_MULT_SCALE_BIAS:
+			ctrTextureBias(0x030303);
+			// Fall through
+		case DM_MULT_SCALE:
+			color = 0xFF303030;
+			// Fall through
+		case DM_MULT:
+			ctrTextureMultiply();
+			break;
+		}
+
+	}
+	ctrAddRectEx(color, x, y, w, h, 0, 0, corew, coreh, 0);
+	ctrFlushBatch();
+
+	corew = w;
+	coreh = h;
+	screen_h = 240;
+	if (screenMode < SM_PA_TOP) {
+		C3D_RenderBufBind(&bottomScreen);
+		screen_w = 320;
+	} else {
+		C3D_RenderBufBind(&topScreen);
+		screen_w = 400;
+	}
+	ctrSetViewportSize(screen_w, screen_h, true);
+
+	switch (screenMode) {
+	default:
+		return;
 	case SM_AF_TOP:
 	case SM_AF_BOTTOM:
 		w = screen_w / aspectw;
@@ -380,10 +503,10 @@ static void _drawTex(struct mCore* core, bool faded) {
 		break;
 	}
 
-	int x = (screen_w - w) / 2;
-	int y = (screen_h - h) / 2;
-
-	ctrAddRectScaled(color, x, y, w, h, 0, 0, corew, coreh);
+	x = (screen_w - w) / 2;
+	y = (screen_h - h) / 2;
+	ctrActivateTexture(&upscaleBuffer.colorBuf);
+	ctrAddRectEx(0xFFFFFFFF, x, y, w, h, 0, 0, corew, coreh, 0);
 	ctrFlushBatch();
 }
 
@@ -409,23 +532,16 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	_drawTex(runner->core, faded);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
 
 	C3D_Tex* tex = &outputTexture;
 
-	u16* newPixels = linearMemAlign(256 * height * sizeof(u32), 0x100);
+	color_t* newPixels = linearMemAlign(256 * height * sizeof(color_t), 0x100);
 
-	// Convert image from RGBX8 to BGR565
-	for (unsigned y = 0; y < height; ++y) {
-		for (unsigned x = 0; x < width; ++x) {
-			// 0xXXBBGGRR -> 0bRRRRRGGGGGGBBBBB
-			u32 p = *pixels++;
-			newPixels[y * 256 + x] =
-				(p << 24 >> (24 + 3) << 11) | // R
-				(p << 16 >> (24 + 2) <<  5) | // G
-				(p <<  8 >> (24 + 3) <<  0);  // B
-		}
-		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(u32));
+	unsigned y;
+	for (y = 0; y < height; ++y) {
+		memcpy(&newPixels[y * 256], &pixels[y * width], width * sizeof(color_t));
+		memset(&newPixels[y * 256 + width], 0, (256 - width) * sizeof(color_t));
 	}
 
 	GSPGPU_FlushDataCache(newPixels, 256 * height * sizeof(u32));
@@ -454,47 +570,21 @@ static uint16_t _pollGameInput(struct mGUIRunner* runner) {
 static void _incrementScreenMode(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	screenMode = (screenMode + 1) % SM_MAX;
-	mCoreConfigSetUIntValue(&runner->core->config, "screenMode", screenMode);
+	mCoreConfigSetUIntValue(&runner->config, "screenMode", screenMode);
 
 	C3D_RenderBufClear(&bottomScreen);
 	C3D_RenderBufClear(&topScreen);
 }
 
-static uint32_t _pollInput(void) {
+static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
+	UNUSED(runner);
+	frameLimiter = limit;
+}
+
+static uint32_t _pollInput(const struct mInputMap* map) {
 	hidScanInput();
-	uint32_t keys = 0;
 	int activeKeys = hidKeysHeld();
-	if (activeKeys & KEY_X) {
-		keys |= 1 << GUI_INPUT_CANCEL;
-	}
-	if (activeKeys & KEY_Y) {
-		keys |= 1 << mGUI_INPUT_SCREEN_MODE;
-	}
-	if (activeKeys & KEY_B) {
-		keys |= 1 << GUI_INPUT_BACK;
-	}
-	if (activeKeys & KEY_A) {
-		keys |= 1 << GUI_INPUT_SELECT;
-	}
-	if (activeKeys & KEY_LEFT) {
-		keys |= 1 << GUI_INPUT_LEFT;
-	}
-	if (activeKeys & KEY_RIGHT) {
-		keys |= 1 << GUI_INPUT_RIGHT;
-	}
-	if (activeKeys & KEY_UP) {
-		keys |= 1 << GUI_INPUT_UP;
-	}
-	if (activeKeys & KEY_DOWN) {
-		keys |= 1 << GUI_INPUT_DOWN;
-	}
-	if (activeKeys & KEY_CSTICK_UP) {
-		keys |= 1 << mGUI_INPUT_INCREASE_BRIGHTNESS;
-	}
-	if (activeKeys & KEY_CSTICK_DOWN) {
-		keys |= 1 << mGUI_INPUT_DECREASE_BRIGHTNESS;
-	}
-	return keys;
+	return mInputMapKeyBits(map, _3DS_INPUT, activeKeys, 0);
 }
 
 static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
@@ -625,7 +715,8 @@ int main() {
 		return 1;
 	}
 	C3D_TexSetWrap(&outputTexture, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
-	C3D_TexSetFilter(&outputTexture, GPU_LINEAR, GPU_LINEAR);
+	C3D_TexSetFilter(&outputTexture, GPU_NEAREST, GPU_NEAREST);
+	C3D_TexSetFilter(&upscaleBuffer.colorBuf, GPU_LINEAR, GPU_LINEAR);
 	void* outputTextureEnd = (u8*)outputTexture.data + 256 * 256 * 2;
 
 	// Zero texture data to make sure no garbage around the border interferes with filtering
@@ -707,9 +798,34 @@ int main() {
 					"Stretched/Top",
 				},
 				.nStates = 6
+			},
+			{
+				.title = "Filtering",
+				.data = "filterMode",
+				.submenu = 0,
+				.state = FM_LINEAR_2x,
+				.validStates = (const char*[]) {
+					NULL, // Disable choosing nearest neighbor; it always looks bad
+					"Bilinear (smoother)",
+					"Bilinear (pixelated)",
+				},
+				.nStates = 3
+			},
+			{
+				.title = "Screen darkening",
+				.data = "darkenMode",
+				.submenu = 0,
+				.state = DM_NATIVE,
+				.validStates = (const char*[]) {
+					"None",
+					"Dark",
+					"Very dark",
+					"Grayed",
+				},
+				.nStates = 4
 			}
 		},
-		.nConfigExtra = 1,
+		.nConfigExtra = 3,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
@@ -720,10 +836,23 @@ int main() {
 		.paused = _gameUnloaded,
 		.unpaused = _gameLoaded,
 		.incrementScreenMode = _incrementScreenMode,
+		.setFrameLimiter = _setFrameLimiter,
 		.pollGameInput = _pollGameInput
 	};
 
 	mGUIInit(&runner, "3ds");
+
+	_map3DSKey(&runner.params.keyMap, KEY_X, GUI_INPUT_CANCEL);
+	_map3DSKey(&runner.params.keyMap, KEY_Y, mGUI_INPUT_SCREEN_MODE);
+	_map3DSKey(&runner.params.keyMap, KEY_B, GUI_INPUT_BACK);
+	_map3DSKey(&runner.params.keyMap, KEY_A, GUI_INPUT_SELECT);
+	_map3DSKey(&runner.params.keyMap, KEY_UP, GUI_INPUT_UP);
+	_map3DSKey(&runner.params.keyMap, KEY_DOWN, GUI_INPUT_DOWN);
+	_map3DSKey(&runner.params.keyMap, KEY_LEFT, GUI_INPUT_LEFT);
+	_map3DSKey(&runner.params.keyMap, KEY_RIGHT, GUI_INPUT_RIGHT);
+	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_UP, mGUI_INPUT_INCREASE_BRIGHTNESS);
+	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_DOWN, mGUI_INPUT_DECREASE_BRIGHTNESS);
+
 	mGUIRunloop(&runner);
 	mGUIDeinit(&runner);
 

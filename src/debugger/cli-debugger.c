@@ -428,36 +428,49 @@ static uint32_t _performOperation(enum Operation operation, uint32_t current, ui
 	return current;
 }
 
-static uint32_t _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
+static void _lookupIdentifier(struct mDebugger* debugger, const char* name, struct CLIDebugVector* dv) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	if (cliDebugger->system) {
 		uint32_t value = cliDebugger->system->lookupPlatformIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
-			return value;
+			dv->intValue = value;
+			return;
 		}
 		dv->type = CLIDV_INT_TYPE;
 		value = cliDebugger->system->lookupIdentifier(cliDebugger->system, name, dv);
 		if (dv->type != CLIDV_ERROR_TYPE) {
-			return value;
+			dv->intValue = value;
+			return;
 		}
 	}
 	dv->type = CLIDV_ERROR_TYPE;
-	return 0;
 }
 
-static uint32_t _evaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
+static void _evaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, struct CLIDebugVector* dv) {
+	int32_t lhs, rhs;
 	switch (tree->token.type) {
 	case TOKEN_UINT_TYPE:
-		return tree->token.uintValue;
+		dv->intValue = tree->token.uintValue;
+		break;
+	case TOKEN_SEGMENT_TYPE:
+		_evaluateParseTree(debugger, tree->lhs, dv);
+		dv->segmentValue = dv->intValue;
+		_evaluateParseTree(debugger, tree->rhs, dv);
+		break;
 	case TOKEN_OPERATOR_TYPE:
-		return _performOperation(tree->token.operatorValue, _evaluateParseTree(debugger, tree->lhs, dv), _evaluateParseTree(debugger, tree->rhs, dv), dv);
+		_evaluateParseTree(debugger, tree->lhs, dv);
+		lhs = dv->intValue;
+		_evaluateParseTree(debugger, tree->rhs, dv);
+		rhs = dv->intValue;
+		dv->intValue = _performOperation(tree->token.operatorValue, lhs, rhs, dv);
+		break;
 	case TOKEN_IDENTIFIER_TYPE:
-		return _lookupIdentifier(debugger, tree->token.identifierValue, dv);
+		_lookupIdentifier(debugger, tree->token.identifierValue, dv);
+		break;
 	case TOKEN_ERROR_TYPE:
 	default:
 		dv->type = CLIDV_ERROR_TYPE;
 	}
-	return 0;
 }
 
 struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length) {
@@ -465,7 +478,7 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 		return 0;
 	}
 
-	struct CLIDebugVector dvTemp = { .type = CLIDV_INT_TYPE };
+	struct CLIDebugVector dvTemp = { .type = CLIDV_INT_TYPE, .segmentValue = -1 };
 
 	struct LexVector lv = { .next = 0 };
 	size_t adjusted = lexExpression(&lv, string, length);
@@ -479,7 +492,7 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 	if (tree.token.type == TOKEN_ERROR_TYPE) {
 		dvTemp.type = CLIDV_ERROR_TYPE;
 	} else {
-		dvTemp.intValue = _evaluateParseTree(&debugger->d, &tree, &dvTemp);
+		_evaluateParseTree(&debugger->d, &tree, &dvTemp);
 	}
 
 	parseFree(tree.lhs);

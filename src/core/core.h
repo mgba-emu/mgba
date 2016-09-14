@@ -104,16 +104,16 @@ struct mCore {
 	uint32_t (*busRead32)(struct mCore*, uint32_t address);
 
 	void (*busWrite8)(struct mCore*, uint32_t address, uint8_t);
-	void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
+void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
 	void (*busWrite32)(struct mCore*, uint32_t address, uint32_t);
 
-	uint32_t (*rawRead8)(struct mCore*, uint32_t address);
-	uint32_t (*rawRead16)(struct mCore*, uint32_t address);
-	uint32_t (*rawRead32)(struct mCore*, uint32_t address);
+	uint32_t (*rawRead8)(struct mCore*, uint32_t address, int segment);
+	uint32_t (*rawRead16)(struct mCore*, uint32_t address, int segment);
+	uint32_t (*rawRead32)(struct mCore*, uint32_t address, int segment);
 
-	void (*rawWrite8)(struct mCore*, uint32_t address, uint8_t);
-	void (*rawWrite16)(struct mCore*, uint32_t address, uint16_t);
-	void (*rawWrite32)(struct mCore*, uint32_t address, uint32_t);
+	void (*rawWrite8)(struct mCore*, uint32_t address, int segment, uint8_t);
+	void (*rawWrite16)(struct mCore*, uint32_t address, int segment, uint16_t);
+	void (*rawWrite32)(struct mCore*, uint32_t address, int segment, uint32_t);
 
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
 	struct mDebuggerPlatform* (*debuggerPlatform)(struct mCore*);
@@ -141,6 +141,12 @@ void mCoreDeleteState(struct mCore* core, int slot);
 
 void mCoreTakeScreenshot(struct mCore* core);
 #endif
+
+struct mCore* mCoreFindVF(struct VFile* vf);
+enum mPlatform mCoreIsCompatible(struct VFile* vf);
+
+bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
+bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
 
 void mCoreInitConfig(struct mCore* core, const char* port);
 void mCoreLoadConfig(struct mCore* core);

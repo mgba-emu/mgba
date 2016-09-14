@@ -181,9 +181,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="preset160">
+         <widget class="QRadioButton" name="presetNative">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
-           <string>GBA (240x160)</string>
+           <string>Native</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -417,7 +420,7 @@
          <item row="0" column="3">
           <widget class="QSpinBox" name="height">
            <property name="minimum">
-            <number>160</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>3160</number>
@@ -427,7 +430,7 @@
          <item row="0" column="1">
           <widget class="QSpinBox" name="width">
            <property name="minimum">
-            <number>240</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>3840</number>
@@ -442,9 +445,6 @@
            <property name="maximum">
             <number>9999</number>
            </property>
-           <property name="value">
-            <number>2</number>
-           </property>
           </widget>
          </item>
          <item row="1" column="1">
@@ -454,9 +454,6 @@
            </property>
            <property name="maximum">
             <number>9999</number>
-           </property>
-           <property name="value">
-            <number>3</number>
            </property>
           </widget>
          </item>
@@ -505,7 +502,7 @@
   <tabstop>preset1080</tabstop>
   <tabstop>preset720</tabstop>
   <tabstop>preset480</tabstop>
-  <tabstop>preset160</tabstop>
+  <tabstop>presetNative</tabstop>
   <tabstop>container</tabstop>
   <tabstop>video</tabstop>
   <tabstop>audio</tabstop>

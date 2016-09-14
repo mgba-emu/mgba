@@ -9,9 +9,12 @@
 #include "gb/cheats.h"
 #include "gb/cli.h"
 #include "gb/gb.h"
+#include "gb/mbc.h"
+#include "gb/overrides.h"
 #include "gb/renderers/software.h"
 #include "gb/serialize.h"
 #include "lr35902/debugger/debugger.h"
+#include "util/crc32.h"
 #include "util/memory.h"
 #include "util/patch.h"
 #include "util/vfs.h"
@@ -21,6 +24,7 @@ struct GBCore {
 	struct GBVideoSoftwareRenderer renderer;
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
+	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 };
@@ -37,6 +41,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	}
 	core->cpu = cpu;
 	core->board = gb;
+	gbcore->overrides = NULL;
 	gbcore->debuggerPlatform = NULL;
 	gbcore->cheatDevice = NULL;
 
@@ -73,6 +78,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 	}
 	free(gbcore->cheatDevice);
+	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
 
@@ -98,13 +104,8 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	gb->video.frameskip = core->opts.frameskip;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = 0;
-	if (core->opts.useBios && core->opts.bios) {
-		bios = VFileOpen(core->opts.bios, O_RDONLY);
-	}
-	if (bios) {
-		GBLoadBIOS(gb, bios);
-	}
+	struct GBCore* gbcore = (struct GBCore*) core;
+	gbcore->overrides = mCoreConfigGetOverridesConst(config);
 #endif
 }
 
@@ -170,6 +171,12 @@ static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
 	return GBLoadSave(core->board, vf);
 }
 
+static bool _GBCoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
+	struct GB* gb = core->board;
+	GBSavedataMask(gb, vf);
+	return true; // TODO: Return a real value
+}
+
 static bool _GBCoreLoadPatch(struct mCore* core, struct VFile* vf) {
 	if (!vf) {
 		return false;
@@ -192,6 +199,45 @@ static void _GBCoreReset(struct mCore* core) {
 	if (gbcore->renderer.outputBuffer) {
 		GBVideoAssociateRenderer(&gb->video, &gbcore->renderer.d);
 	}
+
+	struct GBCartridgeOverride override;
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart) {
+		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
+		if (GBOverrideFind(gbcore->overrides, &override)) {
+			GBOverrideApply(gb, &override);
+		}
+	}
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+	struct VFile* bios = 0;
+	if (core->opts.useBios) {
+		if (!core->opts.bios) {
+			char path[PATH_MAX];
+			GBDetectModel(gb);
+			mCoreConfigDirectory(path, PATH_MAX);
+			switch (gb->model) {
+			case GB_MODEL_DMG:
+			case GB_MODEL_SGB: // TODO
+				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				break;
+			case GB_MODEL_CGB:
+			case GB_MODEL_AGB:
+				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
+				break;
+			default:
+				break;
+			};
+			bios = VFileOpen(path, O_RDONLY);
+		} else {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+		}
+	}
+	if (bios) {
+		GBLoadBIOS(gb, bios);
+	}
+#endif
+
 	LR35902Reset(core->cpu);
 }
 
@@ -224,6 +270,10 @@ static bool _GBCoreLoadState(struct mCore* core, const void* state) {
 }
 
 static bool _GBCoreSaveState(struct mCore* core, void* state) {
+	struct LR35902Core* cpu = core->cpu;
+	while (cpu->executionState != LR35902_CORE_FETCH) {
+		LR35902Tick(cpu);
+	}
 	GBSerialize(core->board, state);
 	return true;
 }
@@ -317,34 +367,34 @@ static void _GBCoreBusWrite32(struct mCore* core, uint32_t address, uint32_t val
 	cpu->memory.store8(cpu, address + 3, value >> 24);
 }
 
-static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead8(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address);
+	return GBView8(cpu, address, segment);
 }
 
-static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead16(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8);
+	return GBView8(cpu, address, segment) | (GBView8(cpu, address + 1, segment) << 8);
 }
 
-static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address) {
+static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address, int segment) {
 	struct LR35902Core* cpu = core->cpu;
-	return GBLoad8(cpu, address) | (GBLoad8(cpu, address + 1) << 8) |
-	       (GBLoad8(cpu, address + 2) << 16) | (GBLoad8(cpu, address + 3) << 24);
+	return GBView8(cpu, address, segment) | (GBView8(cpu, address + 1, segment) << 8) |
+	       (GBView8(cpu, address + 2, segment) << 16) | (GBView8(cpu, address + 3, segment) << 24);
 }
 
-static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, uint8_t value) {
+static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 }
 
-static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, uint16_t value) {
+static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 	GBPatch8(cpu, address + 1, value >> 8, NULL);
 }
 
-static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, uint32_t value) {
+static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 	struct LR35902Core* cpu = core->cpu;
 	GBPatch8(cpu, address, value, NULL);
 	GBPatch8(cpu, address + 1, value >> 8, NULL);
@@ -417,9 +467,9 @@ static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 		vf->seek(vf, 0, SEEK_SET);
 		return vf->read(vf, *sram, vf->size(vf));
 	}
-	*sram = malloc(0x20000);
-	memcpy(*sram, gb->memory.sram, 0x20000);
-	return 0x20000;
+	*sram = malloc(gb->sramSize);
+	memcpy(*sram, gb->memory.sram, gb->sramSize);
+	return gb->sramSize;
 }
 
 static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
@@ -432,7 +482,8 @@ static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t siz
 	if (size > 0x20000) {
 		size = 0x20000;
 	}
-	memcpy(gb->memory.sram, sram, 0x20000);
+	GBResizeSram(gb, size);
+	memcpy(gb->memory.sram, sram, size);
 	return true;
 }
 
@@ -459,6 +510,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadROM = _GBCoreLoadROM;
 	core->loadBIOS = _GBCoreLoadBIOS;
 	core->loadSave = _GBCoreLoadSave;
+	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
 	core->reset = _GBCoreReset;

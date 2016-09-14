@@ -34,6 +34,9 @@ struct GDBStub {
 
 	bool shouldBlock;
 	int untilPoll;
+
+	bool supportsSwbreak;
+	bool supportsHwbreak;
 };
 
 void GDBStubCreate(struct GDBStub*);

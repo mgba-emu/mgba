@@ -769,10 +769,7 @@ DEFINE_RST_INSTRUCTION_LR35902(38);
 
 DEFINE_INSTRUCTION_LR35902(ILL, cpu->irqh.hitIllegal(cpu));
 
-DEFINE_INSTRUCTION_LR35902(STOP2,
-	if (!cpu->bus) {
-		cpu->irqh.stop(cpu);
-	});
+DEFINE_INSTRUCTION_LR35902(STOP2, cpu->irqh.stop(cpu));
 
 DEFINE_INSTRUCTION_LR35902(STOP, \
 	cpu->executionState = LR35902_CORE_READ_PC; \

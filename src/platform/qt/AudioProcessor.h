@@ -29,11 +29,12 @@ public:
 
 	AudioProcessor(QObject* parent = nullptr);
 
-	virtual void setInput(mCoreThread* input);
 	int getBufferSamples() const { return m_samples; }
 	virtual unsigned sampleRate() const = 0;
 
 public slots:
+	virtual void setInput(mCoreThread* input);
+
 	virtual bool start() = 0;
 	virtual void pause() = 0;
 

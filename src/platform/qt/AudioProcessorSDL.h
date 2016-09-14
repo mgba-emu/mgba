@@ -22,10 +22,10 @@ public:
 	AudioProcessorSDL(QObject* parent = nullptr);
 	~AudioProcessorSDL();
 
-	virtual void setInput(mCoreThread* input) override;
 	virtual unsigned sampleRate() const override;
 
 public slots:
+	virtual void setInput(mCoreThread* input) override;
 	virtual bool start() override;
 	virtual void pause() override;
 
