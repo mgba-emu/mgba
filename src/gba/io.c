@@ -883,10 +883,16 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
-		LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
-		LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
 		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
+		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
+			// Overwrite invalid values in savestate
+			gba->timers[i].lastEvent = 0;
+			gba->timers[i].nextEvent = INT_MAX;
+		} else {
+			LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
+			LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
+		}
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
 		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
