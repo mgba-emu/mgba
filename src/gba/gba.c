@@ -222,7 +222,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		gba->bus |= cpu->prefetch[1] << 16;
 	}
 
-	if (gba->springIRQ && !cpu->cpsr.i) {
+	if (gba->springIRQ && !cpu->cpsr.a.i) {
 		ARMRaiseIRQ(cpu);
 		gba->springIRQ = 0;
 	}
@@ -804,7 +804,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
 				.address = _ARMPCAddress(cpu),
-				.breakType = BREAKPOINT_SOFTWARE
+				.a.c.breakType = BREAKPOINT_SOFTWARE
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
 		}

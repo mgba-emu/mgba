@@ -659,10 +659,10 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 		break;
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
-			if (info->accessType & WATCHPOINT_WRITE) {
-				printf("Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->newValue, info->oldValue);
+			if (info->a.b.accessType & WATCHPOINT_WRITE) {
+				printf("Hit watchpoint at 0x%08X: (new value = 0x%08x, old value = 0x%08X)\n", info->address, info->a.b.newValue, info->a.b.oldValue);
 			} else {
-				printf("Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->oldValue);
+				printf("Hit watchpoint at 0x%08X: (value = 0x%08x)\n", info->address, info->a.b.oldValue);
 			}
 		} else {
 			printf("Hit watchpoint\n");
@@ -670,7 +670,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 		break;
 	case DEBUGGER_ENTER_ILLEGAL_OP:
 		if (info) {
-			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->opcode);
+			printf("Hit illegal opcode at 0x%08X: 0x%08X\n", info->address, info->a.c.opcode);
 		} else {
 			printf("Hit illegal opcode\n");
 		}

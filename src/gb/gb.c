@@ -516,7 +516,7 @@ void GBStop(struct LR35902Core* cpu) {
 		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 			struct mDebuggerEntryInfo info = {
 				.address = cpu->pc - 1,
-				.opcode = 0x1000 | cpu->bus
+				.a.c.opcode = 0x1000 | cpu->bus
 			};
 			mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
 		}
@@ -537,7 +537,7 @@ void GBIllegal(struct LR35902Core* cpu) {
 	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 		struct mDebuggerEntryInfo info = {
 			.address = cpu->pc,
-			.opcode = cpu->bus
+			.a.c.opcode = cpu->bus
 		};
 		mDebuggerEnter((struct mDebugger*) cpu->components[CPU_COMPONENT_DEBUGGER], DEBUGGER_ENTER_ILLEGAL_OP, &info);
 	}
