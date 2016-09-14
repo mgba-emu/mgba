@@ -408,7 +408,7 @@ void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direct
 		description = *old;
 	}
 	int deadzone = 0;
-	if (m_deadzones.size() > axis) {
+	if (axis > 0 && m_deadzones.size() > axis) {
 		deadzone = m_deadzones[axis];
 	}
 	switch (direction) {
