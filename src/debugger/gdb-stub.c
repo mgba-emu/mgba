@@ -400,15 +400,15 @@ static void _processQSupportedCommand(struct GDBStub* stub, const char* message)
 		if (end && end < terminator) {
 			len = end - message;
 		} else {
-			len = end - terminator;
+			len = terminator - message;
 		}
-		if (!strncmp(message, "swbreak+", 8)) {
+		if (!strncmp(message, "swbreak+", len)) {
 			stub->supportsSwbreak = true;
-		} else if (!strncmp(message, "hwbreak+", 8)) {
+		} else if (!strncmp(message, "hwbreak+", len)) {
 			stub->supportsHwbreak = true;
-		} else if (!strncmp(message, "swbreak-", 8)) {
+		} else if (!strncmp(message, "swbreak-", len)) {
 			stub->supportsSwbreak = false;
-		} else if (!strncmp(message, "hwbreak-", 8)) {
+		} else if (!strncmp(message, "hwbreak-", len)) {
 			stub->supportsHwbreak = false;
 		}
 		if (!end) {
