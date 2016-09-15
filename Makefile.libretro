@@ -236,6 +236,18 @@ else ifeq ($(platform), wii)
 	DEFINES += -std=c99
 	HAVE_VFS_FD = 0
 
+# Raspberry Pi 3
+else ifeq ($(platform), rpi3)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,-version-script=link.T
+	DEFINES += -std=c99
+	PLATFORM_DEFINES += -DARM
+	# Using NEON optimizations results in an instant crashing core
+	PLATFORM_DEFINES += -marm -mcpu=cortex-a53 -mfloat-abi=hard
+	CFLAGS += -fomit-frame-pointer -ffast-math
+	HAVE_VFS_FD = 0
+
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro.so
