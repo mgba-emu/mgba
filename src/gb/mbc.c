@@ -7,6 +7,8 @@
 
 #include "gb/gb.h"
 #include "gb/memory.h"
+#include "gb/memory.h"
+#include "util/formatting.h"
 
 #include <time.h>
 

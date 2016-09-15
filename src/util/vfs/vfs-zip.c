@@ -442,7 +442,6 @@ const char* _vdezName(struct VDirEntry* vde) {
 }
 
 static enum VFSType _vdezType(struct VDirEntry* vde) {
-	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
 	if (endswith(vde->name(vde), "/")) {
 		return VFS_DIRECTORY;
 	}

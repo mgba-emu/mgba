@@ -6,6 +6,7 @@
 #include "cli-debugger.h"
 
 #ifdef USE_CLI_DEBUGGER
+#include "arm/debugger/debugger.h"
 #include "arm/debugger/memory-debugger.h"
 #include "arm/decoder.h"
 #include "core/core.h"
@@ -167,7 +168,7 @@ static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVecto
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_ARM);
+	ARMDebuggerSetSoftwareBreakpoint(debugger->d.platform, address, MODE_ARM);
 }
 
 static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -176,7 +177,7 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ARMDebuggerSetSoftwareBreakpoint(&debugger->d, address, MODE_THUMB);
+	ARMDebuggerSetSoftwareBreakpoint(debugger->d.platform, address, MODE_THUMB);
 }
 
 static uint32_t _lookupPlatformIdentifier(struct CLIDebuggerSystem* debugger, const char* name, struct CLIDebugVector* dv) {
