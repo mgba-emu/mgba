@@ -144,7 +144,6 @@ bool MultiplayerController::attachGame(GameController* controller) {
 		});
 
 		GBASIOSetDriver(&gba->sio, &node->d, SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, &node->d, SIO_NORMAL_32);
 
 		emit gameAttached();
 		return true;
@@ -167,7 +166,6 @@ void MultiplayerController::detachGame(GameController* controller) {
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 		GBASIOLockstepNode* node = reinterpret_cast<GBASIOLockstepNode*>(gba->sio.drivers.multiplayer);
 		GBASIOSetDriver(&gba->sio, nullptr, SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, nullptr, SIO_NORMAL_32);
 		if (node) {
 			GBASIOLockstepDetachNode(&m_lockstep, node);
 			delete node;
