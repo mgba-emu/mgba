@@ -351,10 +351,10 @@ void Window::selectROMInArchive() {
 		return;
 	}
 	ArchiveInspector* archiveInspector = new ArchiveInspector(filename);
-	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector]() {
+	connect(archiveInspector, &QDialog::accepted, [this,  archiveInspector, filename]() {
 		VFile* output = archiveInspector->selectedVFile();
 		if (output) {
-			m_controller->loadGame(output);
+			m_controller->loadGame(output, filename);
 		}
 		archiveInspector->close();
 	});
