@@ -482,9 +482,9 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 		return;
 	}
 	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
+		savedata->dirtAge = frameCount;
 		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
 		if (!(savedata->dirty & SAVEDATA_DIRT_SEEN)) {
-			savedata->dirtAge = frameCount;
 			savedata->dirty |= SAVEDATA_DIRT_SEEN;
 		}
 	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
