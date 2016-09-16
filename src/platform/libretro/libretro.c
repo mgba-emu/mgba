@@ -296,71 +296,13 @@ void retro_run(void) {
 */
 }
 
-void retro_reset(void) {
-	core->reset(core);
-
-	if (rumbleCallback) {
-		CircleBufferClear(&rumbleHistory);
-	}
-}
-
-bool retro_load_game(const struct retro_game_info* game) {
-	struct VFile* rom;
-	if (game->data) {
-		data = anonymousMemoryMap(game->size);
-		dataSize = game->size;
-		memcpy(data, game->data, game->size);
-		rom = VFileFromMemory(data, game->size);
-	} else {
-		data = 0;
-		rom = VFileOpen(game->path, O_RDONLY);
-	}
-	if (!rom) {
-		return false;
-	}
-
-	core = mCoreFindVF(rom);
-	if (!core) {
-		rom->close(rom);
-		mappedMemoryFree(data, game->size);
-		return false;
-	}
-	mCoreInitConfig(core, NULL);
-	core->init(core);
-	core->setAVStream(core, &stream);
-
-#ifdef _3DS
-	outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL, 0x80);
-#else
-	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-#endif
-	core->setVideoBuffer(core, outputBuffer, 256);
-
-	core->setAudioBufferSize(core, SAMPLES);
-
-	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 32768);
-	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
-
-	core->setRumble(core, &rumble);
-
+void static _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		struct GBA* gba = core->board;
-		gba->luminanceSource = &lux;
-
-		const char* sysDir = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
-			char biosPath[PATH_MAX];
-			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
-			if (bios) {
-				core->loadBIOS(core, bios, 0);
-			}
-		}
-
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
-		size_t romSize = game->size + (game->size & 1);
+		size_t romSize = gba->memory.romSize + (gba->memory.romSize & 1);
 
 		memset(descs, 0, sizeof(descs));
 		size_t savedataSize = retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
@@ -436,6 +378,55 @@ bool retro_load_game(const struct retro_game_info* game) {
 		environCallback(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &yes);
 	}
 #endif
+}
+
+void retro_reset(void) {
+	core->reset(core);
+	_setupMaps(core);
+
+	if (rumbleCallback) {
+		CircleBufferClear(&rumbleHistory);
+	}
+}
+
+bool retro_load_game(const struct retro_game_info* game) {
+	struct VFile* rom;
+	if (game->data) {
+		data = anonymousMemoryMap(game->size);
+		dataSize = game->size;
+		memcpy(data, game->data, game->size);
+		rom = VFileFromMemory(data, game->size);
+	} else {
+		data = 0;
+		rom = VFileOpen(game->path, O_RDONLY);
+	}
+	if (!rom) {
+		return false;
+	}
+
+	core = mCoreFindVF(rom);
+	if (!core) {
+		rom->close(rom);
+		mappedMemoryFree(data, game->size);
+		return false;
+	}
+	mCoreInitConfig(core, NULL);
+	core->init(core);
+	core->setAVStream(core, &stream);
+
+#ifdef _3DS
+	outputBuffer = linearMemAlign(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL, 0x80);
+#else
+	outputBuffer = malloc(256 * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
+#endif
+	core->setVideoBuffer(core, outputBuffer, 256);
+
+	core->setAudioBufferSize(core, SAMPLES);
+
+	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 32768);
+	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
+
+	core->setRumble(core, &rumble);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
@@ -443,7 +434,27 @@ bool retro_load_game(const struct retro_game_info* game) {
 	_reloadSettings();
 	core->loadROM(core, rom);
 	core->loadSave(core, save);
+
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		struct GBA* gba = core->board;
+		gba->luminanceSource = &lux;
+
+		const char* sysDir = 0;
+		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+			char biosPath[PATH_MAX];
+			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
+			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+			if (bios) {
+				core->loadBIOS(core, bios, 0);
+			}
+		}
+	}
+#endif
+
 	core->reset(core);
+	_setupMaps(core);
+
 	return true;
 }
 

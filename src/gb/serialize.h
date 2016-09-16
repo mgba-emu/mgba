@@ -112,7 +112,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x000CD: Palette flags
  *   | bit 0: BCP increment
  *   | bit 1: OCP increment
- *   | bits 2 - 7: Reserved
+ *   | bits 2 - 3: Mode
+ *   | bits 4 - 7: Reserved
  * | 0x000CE - 0x000CF: Reserved
  * | 0x000D0 - 0x000D1: BCP index
  * | 0x000D1 - 0x000D3: OCP index
@@ -214,6 +215,7 @@ DECL_BIT(GBSerializedTimerFlags, IrqPending, 0);
 DECL_BITFIELD(GBSerializedVideoFlags, uint8_t);
 DECL_BIT(GBSerializedVideoFlags, BcpIncrement, 0);
 DECL_BIT(GBSerializedVideoFlags, OcpIncrement, 1);
+DECL_BITS(GBSerializedVideoFlags, Mode, 2, 2);
 
 DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);

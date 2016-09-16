@@ -55,6 +55,11 @@ enum {
 	GB_SIZE_HRAM = 0x7F,
 };
 
+enum {
+	GB_SRAM_DIRT_NEW = 1,
+	GB_SRAM_DIRT_SEEN = 2
+};
+
 struct GBMemory;
 typedef void (*GBMemoryBankController)(struct GB*, uint16_t address, uint8_t value);
 

@@ -15,6 +15,8 @@
 #include "util/patch.h"
 #include "util/vfs.h"
 
+#define CLEANUP_THRESHOLD 15
+
 const uint32_t CGB_LR35902_FREQUENCY = 0x800000;
 const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
@@ -171,6 +173,27 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	}
 	if (gb->sramSize < size) {
 		gb->sramSize = size;
+	}
+}
+
+void GBSramClean(struct GB* gb, uint32_t frameCount) {
+	// TODO: Share with GBASavedataClean
+	if (!gb->sramVf) {
+		return;
+	}
+	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
+		gb->sramDirtAge = frameCount;
+		gb->sramDirty &= ~GB_SRAM_DIRT_NEW;
+		if (!(gb->sramDirty & GB_SRAM_DIRT_SEEN)) {
+			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
+		}
+	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+		gb->sramDirty = 0;
+		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
+			mLOG(GB_MEM, INFO, "Savedata synced");
+		} else {
+			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+		}
 	}
 }
 
@@ -601,6 +624,8 @@ void GBGetGameCode(struct GB* gb, char* out) {
 }
 
 void GBFrameEnded(struct GB* gb) {
+	GBSramClean(gb, gb->video.frameCounter);
+
 	if (gb->cpu->components && gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
 		struct mCheatDevice* device = (struct mCheatDevice*) gb->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
 		size_t i;

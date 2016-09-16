@@ -220,6 +220,7 @@ void GBStore8(struct LR35902Core* cpu, uint16_t address, int8_t value) {
 		} else if (memory->mbcType == GB_MBC7) {
 			GBMBC7Write(memory, address, value);
 		}
+		gb->sramDirty |= GB_SRAM_DIRT_NEW;
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
