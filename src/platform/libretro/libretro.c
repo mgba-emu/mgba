@@ -275,18 +275,6 @@ void static _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
 	if (core->platform(core) == PLATFORM_GBA) {
 		struct GBA* gba = core->board;
-		gba->luminanceSource = &lux;
-
-		const char* sysDir = 0;
-		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
-			char biosPath[PATH_MAX];
-			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
-			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
-			if (bios) {
-				core->loadBIOS(core, bios, 0);
-			}
-		}
-
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
 		size_t romSize = gba->memory.romSize + (gba->memory.romSize & 1);
@@ -417,8 +405,25 @@ bool retro_load_game(const struct retro_game_info* game) {
 	_reloadSettings();
 	core->loadROM(core, rom);
 	core->loadSave(core, save);
-	core->reset(core);
 
+#ifdef M_CORE_GBA
+	if (core->platform(core) == PLATFORM_GBA) {
+		struct GBA* gba = core->board;
+		gba->luminanceSource = &lux;
+
+		const char* sysDir = 0;
+		if (environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir)) {
+			char biosPath[PATH_MAX];
+			snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, "gba_bios.bin");
+			struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
+			if (bios) {
+				core->loadBIOS(core, bios, 0);
+			}
+		}
+	}
+#endif
+
+	core->reset(core);
 	_setupMaps(core);
 
 	return true;
