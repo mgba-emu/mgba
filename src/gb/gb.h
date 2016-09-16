@@ -68,6 +68,8 @@ struct GB {
 	struct VFile* sramVf;
 	struct VFile* sramRealVf;
 	uint32_t sramSize;
+	int sramDirty;
+	int32_t sramDirtAge;
 
 	struct mAVStream* stream;
 
@@ -111,12 +113,13 @@ void GBHalt(struct LR35902Core* cpu);
 struct VFile;
 bool GBLoadROM(struct GB* gb, struct VFile* vf);
 bool GBLoadSave(struct GB* gb, struct VFile* vf);
-void GBResizeSram(struct GB* gb, size_t size);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 
+void GBSramClean(struct GB* gb, uint32_t frameCount);
+void GBResizeSram(struct GB* gb, size_t size);
 void GBSavedataMask(struct GB* gb, struct VFile* vf);
 void GBSavedataUnmask(struct GB* gb);
 
@@ -127,7 +130,6 @@ bool GBIsROM(struct VFile* vf);
 void GBGetGameTitle(struct GB* gba, char* out);
 void GBGetGameCode(struct GB* gba, char* out);
 
-void GBFrameStarted(struct GB* gb);
 void GBFrameEnded(struct GB* gb);
 
 #endif
