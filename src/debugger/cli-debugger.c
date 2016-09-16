@@ -378,6 +378,10 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		printf("%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
+	if (!debugger->d.platform->setWatchpoint) {
+		printf("Watchpoints are not supported by this platform.\n");
+		return;
+	}
 	uint32_t address = dv->intValue;
 	debugger->d.platform->setWatchpoint(debugger->d.platform, address, WATCHPOINT_RW); // TODO: ro/wo
 }
@@ -389,7 +393,9 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 	}
 	uint32_t address = dv->intValue;
 	debugger->d.platform->clearBreakpoint(debugger->d.platform, address);
-	debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
+	if (debugger->d.platform->clearWatchpoint) {
+		debugger->d.platform->clearWatchpoint(debugger->d.platform, address);
+	}
 }
 
 static void _breakIntoDefault(int signal) {
