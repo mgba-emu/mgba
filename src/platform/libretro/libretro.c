@@ -289,7 +289,7 @@ void static _setupMaps(struct mCore* core) {
 
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
-		size_t romSize = game->size + (game->size & 1);
+		size_t romSize = gba->memory.romSize + (gba->memory.romSize & 1);
 
 		memset(descs, 0, sizeof(descs));
 		size_t savedataSize = retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
