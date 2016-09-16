@@ -63,6 +63,7 @@ struct mSDLPlayer {
 		struct mSDLPlayer* p;
 
 		int level;
+		float activeLevel;
 		struct CircleBuffer history;
 	} rumble;
 #endif
