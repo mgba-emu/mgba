@@ -31,8 +31,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00025: E register
  * | 0x00026: H register
  * | 0x00027: L register
- * | 0x00028 - 0z00029: SP register
- * | 0x0002A - 0z0002B: PC register
+ * | 0x00028 - 0x00029: SP register
+ * | 0x0002A - 0x0002B: PC register
  * | 0x0002C - 0x0002F: Cycles since last event
  * | 0x00030 - 0x00033: Cycles until next event
  * | 0x00034 - 0x00035: Reserved (current instruction)
@@ -324,6 +324,9 @@ struct GBSerializedState {
 			struct {
 				uint32_t mode;
 			} mbc1;
+			struct {
+				uint64_t lastLatch;
+			} rtc;
 			struct {
 				int8_t machineState;
 				GBMBC7Field field;

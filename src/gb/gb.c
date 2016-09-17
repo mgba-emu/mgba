@@ -6,6 +6,7 @@
 #include "gb.h"
 
 #include "gb/io.h"
+#include "gb/mbc.h"
 
 #include "core/core.h"
 #include "core/cheats.h"
@@ -110,6 +111,9 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
+		if (gb->memory.mbcType == GB_MBC3_RTC) {
+			GBMBCRTCWrite(gb);
+		}
 		gb->sramVf->close(gb->sramVf);
 		gb->sramVf = 0;
 	} else if (gb->memory.sram) {
@@ -126,21 +130,23 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		if (vf == gb->sramRealVf) {
-			if (vf->size(vf) >= 0 && (size_t) vf->size(vf) < size) {
+			ssize_t vfSize = vf->size(vf);
+			if (vfSize >= 0 && (size_t) vfSize < size) {
 				uint8_t extdataBuffer[0x100];
-				if (vf->size(vf) & 0xFF) {
-					// Copy over appended data, e.g. RTC data
-					memcpy(extdataBuffer, &gb->memory.sram[gb->sramSize - (vf->size(vf) & 0xFF)], vf->size(vf) & 0xFF);
+				if (vfSize & 0xFF) {
+					vf->seek(vf, -(vfSize & 0xFF), SEEK_END);
+					vf->read(vf, extdataBuffer, vfSize & 0xFF);
 				}
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
 				}
-				vf->truncate(vf, size);
+				vf->truncate(vf, size + (vfSize & 0xFF));
+				if (vfSize & 0xFF) {
+					vf->seek(vf, size, SEEK_SET);
+					vf->write(vf, extdataBuffer, vfSize & 0xFF);
+				}
 				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 				memset(&gb->memory.sram[gb->sramSize], 0xFF, size - gb->sramSize);
-				if (size & 0xFF) {
-					memcpy(&gb->memory.sram[gb->sramSize - (size & 0xFF)], extdataBuffer, size & 0xFF);
-				}
 			} else if (size > gb->sramSize || !gb->memory.sram) {
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
@@ -188,6 +194,9 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
 		}
 	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+		if (gb->memory.mbcType == GB_MBC3_RTC) {
+			GBMBCRTCWrite(gb);
+		}
 		gb->sramDirty = 0;
 		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
 			mLOG(GB_MEM, INFO, "Savedata synced");

@@ -142,6 +142,7 @@ struct GBMemory {
 	int activeRtcReg;
 	bool rtcLatched;
 	uint8_t rtcRegs[5];
+	time_t rtcLastLatch;
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
 	struct mRumble* rumble;

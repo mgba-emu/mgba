@@ -8,7 +8,7 @@
 #include "gb/gb.h"
 #include "gb/memory.h"
 #include "gb/memory.h"
-#include "util/formatting.h"
+#include "util/vfs.h"
 
 #include <time.h>
 
@@ -43,7 +43,7 @@ void GBMBCSwitchBank(struct GBMemory* memory, int bank) {
 
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
-	GBResizeSram(gb, (bank + 1) * GB_SIZE_EXTERNAL_RAM + (gb->sramSize & 0xFF));
+	GBResizeSram(gb, (bank + 1) * GB_SIZE_EXTERNAL_RAM);
 	gb->memory.sramBank = &gb->memory.sram[bankStart];
 	gb->memory.sramCurrentBank = bank;
 }
@@ -129,9 +129,7 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC3:
 		gb->memory.mbc = _GBMBC3;
-		gb->sramSize += 0x48;
-		break;
-	default:
+		default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 		// Fall through
 	case GB_MBC5:
@@ -156,6 +154,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbc = _GBHuC3;
 		break;
 	case GB_MBC3_RTC:
+		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 		gb->memory.mbc = _GBMBC3;
 		break;
 	case GB_MBC5_RUMBLE:
@@ -164,11 +163,14 @@ void GBMBCInit(struct GB* gb) {
 	}
 
 	GBResizeSram(gb, gb->sramSize);
+
+	if (gb->memory.mbcType == GB_MBC3_RTC) {
+		GBMBCRTCRead(gb);
+	}
 }
 
-static void _latchRtc(struct GBMemory* memory) {
+static void _latchRtc(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastLatch) {
 	time_t t;
-	struct mRTCSource* rtc = memory->rtc;
 	if (rtc) {
 		if (rtc->sample) {
 			rtc->sample(rtc);
@@ -177,14 +179,30 @@ static void _latchRtc(struct GBMemory* memory) {
 	} else {
 		t = time(0);
 	}
-	struct tm date;
-	localtime_r(&t, &date);
-	memory->rtcRegs[0] = date.tm_sec;
-	memory->rtcRegs[1] = date.tm_min;
-	memory->rtcRegs[2] = date.tm_hour;
-	memory->rtcRegs[3] = date.tm_yday; // TODO: Persist day counter
-	memory->rtcRegs[4] &= 0xF0;
-	memory->rtcRegs[4] |= date.tm_yday >> 8;
+	time_t currentLatch = t;
+	t -= *rtcLastLatch;
+	*rtcLastLatch = currentLatch;
+
+	unsigned diff;
+	diff = rtcRegs[0] + t % 60;
+	rtcRegs[0] = diff % 60;
+	t = t / 60 + diff / 60;
+
+	diff = rtcRegs[1] + t % 60;
+	rtcRegs[1] = diff % 60;
+	t = t / 60 + diff / 60;
+
+	diff = rtcRegs[2] + t % 24;
+	rtcRegs[2] = diff % 24;
+	t = t / 24 + diff / 24;
+
+	diff = rtcRegs[3] + ((rtcRegs[4] & 1) << 8) + (t & 0x1FF);
+	rtcRegs[3] = diff;
+	rtcRegs[4] &= 0xFE;
+	rtcRegs[4] |= (diff >> 8) & 1;
+	if (diff & 0x200) {
+		rtcRegs[4] |= 0x80;
+	}
 }
 
 void _GBMBC1(struct GB* gb, uint16_t address, uint8_t value) {
@@ -304,7 +322,7 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 		if (memory->rtcLatched && value == 0) {
 			memory->rtcLatched = false;
 		} else if (!memory->rtcLatched && value == 1) {
-			_latchRtc(memory);
+			_latchRtc(gb->memory.rtc, gb->memory.rtcRegs, &gb->memory.rtcLastLatch);
 			memory->rtcLatched = true;
 		}
 		break;
@@ -587,4 +605,51 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
 		break;
 	}
+}
+
+void GBMBCRTCRead(struct GB* gb) {
+	struct GBMBCRTCSaveBuffer rtcBuffer;
+	struct VFile* vf = gb->sramVf;
+	ssize_t end = vf->seek(vf, -sizeof(rtcBuffer), SEEK_END);
+	switch (end & 0x1FFF) {
+	case 0:
+		break;
+	case 0x1FFC:
+		vf->seek(vf, -sizeof(rtcBuffer) - 4, SEEK_END);
+		break;
+	default:
+		return;
+	}
+	vf->read(vf, &rtcBuffer, sizeof(rtcBuffer));
+
+	LOAD_32LE(gb->memory.rtcRegs[0], 0, &rtcBuffer.latchedSec);
+	LOAD_32LE(gb->memory.rtcRegs[1], 0, &rtcBuffer.latchedMin);
+	LOAD_32LE(gb->memory.rtcRegs[2], 0, &rtcBuffer.latchedHour);
+	LOAD_32LE(gb->memory.rtcRegs[3], 0, &rtcBuffer.latchedDays);
+	LOAD_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
+	LOAD_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
+}
+
+void GBMBCRTCWrite(struct GB* gb) {
+	uint8_t rtcRegs[5];
+	memcpy(rtcRegs, gb->memory.rtcRegs, sizeof(rtcRegs));
+	time_t rtcLastLatch = gb->memory.rtcLastLatch;
+	_latchRtc(gb->memory.rtc, rtcRegs, &rtcLastLatch);
+
+	struct GBMBCRTCSaveBuffer rtcBuffer;
+	STORE_32LE(rtcRegs[0], 0, &rtcBuffer.sec);
+	STORE_32LE(rtcRegs[1], 0, &rtcBuffer.min);
+	STORE_32LE(rtcRegs[2], 0, &rtcBuffer.hour);
+	STORE_32LE(rtcRegs[3], 0, &rtcBuffer.days);
+	STORE_32LE(rtcRegs[4], 0, &rtcBuffer.daysHi);
+	STORE_32LE(gb->memory.rtcRegs[0], 0, &rtcBuffer.latchedSec);
+	STORE_32LE(gb->memory.rtcRegs[1], 0, &rtcBuffer.latchedMin);
+	STORE_32LE(gb->memory.rtcRegs[2], 0, &rtcBuffer.latchedHour);
+	STORE_32LE(gb->memory.rtcRegs[3], 0, &rtcBuffer.latchedDays);
+	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
+	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
+
+	struct VFile* vf = gb->sramVf;
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
 }
