@@ -6,6 +6,7 @@
 #include "cheats.h"
 
 #include "core/core.h"
+#include "gb/gb.h"
 #include "gb/memory.h"
 #include "util/string.h"
 
@@ -21,15 +22,24 @@ static void _patchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) {
 		if (patch->applied) {
 			continue;
 		}
+		int segment = 0;
 		if (patch->checkByte) {
-			// TODO: All segments
-			int8_t value = GBView8(device->p->cpu, patch->address, 0);
-			if (value != patch->oldValue) {
+			struct GB* gb = device->p->board;
+			int maxSegment = (gb->memory.romSize + GB_SIZE_CART_BANK0 - 1) / GB_SIZE_CART_BANK0;
+			for (; segment < maxSegment; ++segment) {
+				int8_t value = GBView8(device->p->cpu, patch->address, segment);
+				if (value == patch->oldValue) {
+					break;
+				}
+			}
+			if (segment == maxSegment) {
 				continue;
 			}
 		}
-		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue, 0);
+		// TODO: More than one segment
+		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue, segment);
 		patch->applied = true;
+		patch->segment = segment;
 	}
 }
 
@@ -43,7 +53,7 @@ static void _unpatchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) 
 		if (!patch->applied) {
 			continue;
 		}
-		GBPatch8(device->p->cpu, patch->address, patch->oldValue, &patch->newValue, 0);
+		GBPatch8(device->p->cpu, patch->address, patch->oldValue, &patch->newValue, patch->segment);
 		patch->applied = false;
 	}
 }
