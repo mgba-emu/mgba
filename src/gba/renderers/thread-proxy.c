@@ -139,8 +139,7 @@ void _proxyThreadRecover(struct GBAVideoThreadProxyRenderer* proxyRenderer) {
 
 static bool _writeData(struct GBAVideoThreadProxyRenderer* proxyRenderer, void* data, size_t length) {
 	while (!RingFIFOWrite(&proxyRenderer->dirtyQueue, data, length)) {
-		mLOG(GBA_VIDEO, WARN, "Can't write %"PRIz"u bytes. Proxy thread asleep?", length);
-		mLOG(GBA_VIDEO, DEBUG, "Queue status: read: %p, write: %p", proxyRenderer->dirtyQueue.readPtr, proxyRenderer->dirtyQueue.writePtr);
+		mLOG(GBA_VIDEO, DEBUG, "Can't write %"PRIz"u bytes. Proxy thread asleep?", length);
 		MutexLock(&proxyRenderer->mutex);
 		if (proxyRenderer->threadState == PROXY_THREAD_STOPPED) {
 			mLOG(GBA_VIDEO, ERROR, "Proxy thread stopped prematurely!");
@@ -346,7 +345,7 @@ static THREAD_ENTRY _proxyThread(void* renderer) {
 					break;
 				case DIRTY_VRAM:
 					while (!RingFIFORead(&proxyRenderer->dirtyQueue, &proxyRenderer->vramProxy[item.address >> 1], 0x1000)) {
-						mLOG(GBA_VIDEO, WARN, "Proxy thread can't read VRAM. CPU thread asleep?");
+						mLOG(GBA_VIDEO, DEBUG, "Proxy thread can't read VRAM. CPU thread asleep?");
 						MutexLock(&proxyRenderer->mutex);
 						ConditionWake(&proxyRenderer->fromThreadCond);
 						ConditionWait(&proxyRenderer->toThreadCond, &proxyRenderer->mutex);
