@@ -23,6 +23,9 @@ const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
+const uint32_t DMG_2_BIOS_CHECKSUM = 0x59C8598E;
+const uint32_t CGB_BIOS_CHECKSUM = 0x41884E46;
+
 mLOG_DEFINE_CATEGORY(GB, "GB");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
@@ -290,28 +293,38 @@ void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh) {
 	irqh->halt = GBHalt;
 }
 
+static uint32_t _GBBiosCRC32(struct VFile* vf) {
+	ssize_t size = vf->size(vf);
+	if (size <= 0 || size > GB_SIZE_CART_BANK0) {
+		return 0;
+	}
+	void* bios = vf->map(vf, size, MAP_READ);
+	uint32_t biosCrc = doCrc32(bios, size);
+	vf->unmap(vf, bios, size);
+	return biosCrc;
+}
+
+bool GBIsBIOS(struct VFile* vf) {
+	switch (_GBBiosCRC32(vf)) {
+	case DMG_2_BIOS_CHECKSUM:
+	case CGB_BIOS_CHECKSUM:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void GBReset(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	GBDetectModel(gb);
 	if (gb->biosVf) {
-		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
-		gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
-		ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
-		switch (biosCrc) {
-		case 0x59C8598E:
-			break;
-		case 0x41884E46:
-			break;
-		default:
+		if (!GBIsBIOS(gb->biosVf)) {
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
-			free(gb->memory.romBase);
-			gb->memory.romBase = gb->memory.rom;
-			break;
-		}
-
-		if (gb->biosVf) {
+		} else {
+			gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
+			gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
+			ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
 			memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
 			if (size > 0x100) {
 				memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
@@ -386,22 +399,17 @@ void GBDetectModel(struct GB* gb) {
 		return;
 	}
 	if (gb->biosVf) {
-		gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
-		void* bios = malloc(GB_SIZE_CART_BANK0);
-		ssize_t size = gb->biosVf->read(gb->biosVf, bios, GB_SIZE_CART_BANK0);
-		uint32_t biosCrc = doCrc32(gb->memory.romBase, size);
-		switch (biosCrc) {
-		case 0x59C8598E:
+		switch (_GBBiosCRC32(gb->biosVf)) {
+		case DMG_2_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
-		case 0x41884E46:
+		case CGB_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		default:
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
 		}
-		free(bios);
 	}
 	if (gb->model == GB_MODEL_AUTODETECT && gb->memory.rom) {
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];

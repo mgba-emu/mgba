@@ -214,9 +214,19 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = 0;
+	struct VFile* bios = NULL;
 	if (core->opts.useBios) {
-		if (!core->opts.bios) {
+		bool found = false;
+		if (core->opts.bios) {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
 			char path[PATH_MAX];
 			GBDetectModel(gb);
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -233,8 +243,6 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			};
 			bios = VFileOpen(path, O_RDONLY);
-		} else {
-			bios = VFileOpen(core->opts.bios, O_RDONLY);
 		}
 	}
 	if (bios) {

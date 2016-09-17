@@ -116,6 +116,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
+bool GBIsBIOS(struct VFile* vf);
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 
 void GBSramClean(struct GB* gb, uint32_t frameCount);
