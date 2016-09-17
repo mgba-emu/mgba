@@ -171,7 +171,7 @@ void mCoreDeleteState(struct mCore* core, int slot) {
 void mCoreTakeScreenshot(struct mCore* core) {
 #ifdef USE_PNG
 	size_t stride;
-	color_t* pixels = 0;
+	const void* pixels = 0;
 	unsigned width, height;
 	core->desiredVideoDimensions(core, &width, &height);
 	struct VFile* vf;
@@ -182,7 +182,7 @@ void mCoreTakeScreenshot(struct mCore* core) {
 #endif
 	bool success = false;
 	if (vf) {
-		core->getVideoBuffer(core, &pixels, &stride);
+		core->getPixels(core, &pixels, &stride);
 		png_structp png = PNGWriteOpen(vf);
 		png_infop info = PNGWriteHeader(png, width, height);
 		success = PNGWritePixels(png, width, height, stride, pixels);

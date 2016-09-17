@@ -152,10 +152,14 @@ static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t s
 	gbacore->renderer.outputBufferStride = stride;
 }
 
-static void _GBACoreGetVideoBuffer(struct mCore* core, color_t** buffer, size_t* stride) {
+static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
 	struct GBACore* gbacore = (struct GBACore*) core;
-	*buffer = gbacore->renderer.outputBuffer;
-	*stride = gbacore->renderer.outputBufferStride;
+	gbacore->renderer.d.getPixels(&gbacore->renderer.d, stride, buffer);
+}
+
+static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	gbacore->renderer.d.putPixels(&gbacore->renderer.d, stride, buffer);
 }
 
 static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
@@ -528,7 +532,8 @@ struct mCore* GBACoreCreate(void) {
 	core->loadConfig = _GBACoreLoadConfig;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
-	core->getVideoBuffer = _GBACoreGetVideoBuffer;
+	core->getPixels = _GBACoreGetPixels;
+	core->putPixels = _GBACorePutPixels;
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;

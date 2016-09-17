@@ -7,7 +7,6 @@
 
 #include "core/core.h"
 #include "core/cheats.h"
-#include "core/sync.h"
 #include "util/memory.h"
 #include "util/vfs.h"
 
@@ -148,18 +147,12 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 	return true;
 }
 
-
-
-
-
-
-
 #ifdef USE_PNG
 static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata) {
 	size_t stride;
-	color_t* pixels = 0;
+	const void* pixels = 0;
 
-	core->getVideoBuffer(core, &pixels, &stride);
+	core->getPixels(core, &pixels, &stride);
 	if (!pixels) {
 		return false;
 	}
@@ -409,9 +402,7 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	if (flags & SAVESTATE_SCREENSHOT && mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
 		mLOG(SAVESTATE, INFO, "Loading screenshot");
 		if (item.size >= (int) (width * height) * 4) {
-			// TODO: Put back
-			/*gba->video.renderer->putPixels(gba->video.renderer, width, item.data);
-			mCoreSyncForceFrame(core->sync);*/
+			core->putPixels(core, item.data, width);
 		} else {
 			mLOG(SAVESTATE, WARN, "Savestate includes invalid screenshot");
 		}

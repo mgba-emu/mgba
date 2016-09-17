@@ -63,8 +63,8 @@ struct GBVideoRenderer {
 	void (*finishScanline)(struct GBVideoRenderer* renderer, int y);
 	void (*finishFrame)(struct GBVideoRenderer* renderer);
 
-	void (*getPixels)(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
-	void (*putPixels)(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
+	void (*getPixels)(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
+	void (*putPixels)(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
 	uint8_t* vram;
 	union GBOAM* oam;

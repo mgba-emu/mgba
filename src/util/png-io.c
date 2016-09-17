@@ -205,7 +205,7 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 			c |= (row[x * 3] << 7) & 0x7C00;
 #endif
 			((uint16_t*) pixelData)[stride * i + x] = c;
-#endif
+#else
 #if __BIG_ENDIAN__
 			pixelData[stride * i * 4 + x * 4 + 3] = row[x * 3];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 1];
@@ -216,6 +216,7 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 			pixelData[stride * i * 4 + x * 4 + 1] = row[x * 3 + 1];
 			pixelData[stride * i * 4 + x * 4 + 2] = row[x * 3 + 2];
 			pixelData[stride * i * 4 + x * 4 + 3] = 0xFF;
+#endif
 #endif
 		}
 	}

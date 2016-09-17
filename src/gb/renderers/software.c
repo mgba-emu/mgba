@@ -15,8 +15,8 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoSoftwareRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer);
-static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
-static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, unsigned stride, void* pixels);
+static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
+static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer* renderer, uint8_t* maps, int startX, int endX, int sx, int sy);
 static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* renderer, struct GBObj* obj, int startX, int endX, int y);
@@ -30,7 +30,7 @@ void GBVideoSoftwareRendererCreate(struct GBVideoSoftwareRenderer* renderer) {
 	renderer->d.finishScanline = GBVideoSoftwareRendererFinishScanline;
 	renderer->d.finishFrame = GBVideoSoftwareRendererFinishFrame;
 	renderer->d.getPixels = GBVideoSoftwareRendererGetPixels;
-	renderer->d.putPixels = 0;
+	renderer->d.putPixels = GBVideoSoftwareRendererPutPixels;
 
 	renderer->temporaryBuffer = 0;
 }
@@ -407,7 +407,7 @@ static void GBVideoSoftwareRendererDrawObj(struct GBVideoSoftwareRenderer* rende
 	}
 }
 
-static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels) {
+static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	// TODO: Share with GBAVideoSoftwareRendererGetPixels
 #ifdef COLOR_16_BIT
@@ -437,4 +437,16 @@ static void GBVideoSoftwareRendererGetPixels(struct GBVideoRenderer* renderer, u
 	*stride = softwareRenderer->outputBufferStride;
 	*pixels = softwareRenderer->outputBuffer;
 #endif
+}
+
+
+static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels) {
+	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
+	// TODO: Share with GBAVideoSoftwareRendererGetPixels
+
+	const color_t* colorPixels = pixels;
+	unsigned i;
+	for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS; ++i) {
+		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], GB_VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
+	}
 }

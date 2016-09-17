@@ -38,8 +38,8 @@ static void GBAVideoThreadProxyRendererWritePalette(struct GBAVideoRenderer* ren
 static void GBAVideoThreadProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoThreadProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer);
-static void GBAVideoThreadProxyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
-static void GBAVideoThreadProxyRendererPutPixels(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
+static void GBAVideoThreadProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels);
+static void GBAVideoThreadProxyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static THREAD_ENTRY _proxyThread(void* renderer);
 
@@ -279,7 +279,7 @@ void GBAVideoThreadProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
-static void GBAVideoThreadProxyRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels) {
+static void GBAVideoThreadProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
 	MutexLock(&proxyRenderer->mutex);
 	// Insert an extra item into the queue to make sure it gets flushed
@@ -298,7 +298,7 @@ static void GBAVideoThreadProxyRendererGetPixels(struct GBAVideoRenderer* render
 	MutexUnlock(&proxyRenderer->mutex);
 }
 
-static void GBAVideoThreadProxyRendererPutPixels(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels) {
+static void GBAVideoThreadProxyRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
 	struct GBAVideoThreadProxyRenderer* proxyRenderer = (struct GBAVideoThreadProxyRenderer*) renderer;
 	MutexLock(&proxyRenderer->mutex);
 	// Insert an extra item into the queue to make sure it gets flushed

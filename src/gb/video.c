@@ -20,7 +20,8 @@ static void GBVideoDummyRendererWritePalette(struct GBVideoRenderer* renderer, i
 static void GBVideoDummyRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y, struct GBObj* obj, size_t oamMax);
 static void GBVideoDummyRendererFinishScanline(struct GBVideoRenderer* renderer, int y);
 static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer);
-static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels);
+static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels);
+static void GBVideoDummyRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static void _cleanOAM(struct GBVideo* video, int y);
 
@@ -32,7 +33,8 @@ static struct GBVideoRenderer dummyRenderer = {
 	.drawRange = GBVideoDummyRendererDrawRange,
 	.finishScanline = GBVideoDummyRendererFinishScanline,
 	.finishFrame = GBVideoDummyRendererFinishFrame,
-	.getPixels = GBVideoDummyRendererGetPixels
+	.getPixels = GBVideoDummyRendererGetPixels,
+	.putPixels = GBVideoDummyRendererPutPixels,
 };
 
 void GBVideoInit(struct GBVideo* video) {
@@ -127,7 +129,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 
 					if (video->p->stream && video->p->stream->postVideoFrame) {
 						const color_t* pixels;
-						unsigned stride;
+						size_t stride;
 						video->renderer->getPixels(video->renderer, &stride, (const void**) &pixels);
 						video->p->stream->postVideoFrame(video->p->stream, pixels, stride);
 					}
@@ -435,7 +437,14 @@ static void GBVideoDummyRendererFinishFrame(struct GBVideoRenderer* renderer) {
 	// Nothing to do
 }
 
-static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, unsigned* stride, const void** pixels) {
+static void GBVideoDummyRendererGetPixels(struct GBVideoRenderer* renderer, size_t* stride, const void** pixels) {
+	UNUSED(renderer);
+	UNUSED(stride);
+	UNUSED(pixels);
+	// Nothing to do
+}
+
+static void GBVideoDummyRendererPutPixels(struct GBVideoRenderer* renderer, size_t stride, const void* pixels) {
 	UNUSED(renderer);
 	UNUSED(stride);
 	UNUSED(pixels);
