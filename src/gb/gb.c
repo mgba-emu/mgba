@@ -23,6 +23,7 @@ const uint32_t SGB_LR35902_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
+#define DMG_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_2_BIOS_CHECKSUM 0x59C8598E
 #define CGB_BIOS_CHECKSUM 0x41884E46
 
@@ -306,6 +307,7 @@ static uint32_t _GBBiosCRC32(struct VFile* vf) {
 
 bool GBIsBIOS(struct VFile* vf) {
 	switch (_GBBiosCRC32(vf)) {
+	case DMG_BIOS_CHECKSUM:
 	case DMG_2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 		return true;
@@ -400,6 +402,7 @@ void GBDetectModel(struct GB* gb) {
 	}
 	if (gb->biosVf) {
 		switch (_GBBiosCRC32(gb->biosVf)) {
+		case DMG_BIOS_CHECKSUM:
 		case DMG_2_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
