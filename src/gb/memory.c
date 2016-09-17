@@ -263,7 +263,7 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 		if (segment < 0) {
 			return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 		} else {
-			if ((size_t) segment * GB_SIZE_CART_BANK0 > memory->romSize) {
+			if ((size_t) segment * GB_SIZE_CART_BANK0 >= memory->romSize) {
 				return 0xFF;
 			}
 			return memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
@@ -501,7 +501,7 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 			oldValue = memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 			memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)] = value;
 		} else {
-			if ((size_t) segment * GB_SIZE_CART_BANK0 > memory->romSize) {
+			if ((size_t) segment * GB_SIZE_CART_BANK0 >= memory->romSize) {
 				return;
 			}
 			oldValue = memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
