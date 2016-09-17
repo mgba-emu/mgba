@@ -11,12 +11,19 @@
 #include <libavformat/avformat.h>
 #include <libavcodec/version.h>
 
+// Version 57.16 in FFmpeg
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
 #define FFMPEG_USE_PACKETS
 #endif
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 15, 0)
+// Version 57.15 in libav
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 35, 0)
 #define FFMPEG_USE_NEW_BSF
+#endif
+
+// Version 57.14 in libav
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 48, 0)
+#define FFMPEG_USE_CODECPAR
 #endif
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 8, 0)

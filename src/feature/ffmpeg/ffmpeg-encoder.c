@@ -214,8 +214,13 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 
 	if (acodec) {
+#ifdef FFMPEG_USE_CODECPAR
 		encoder->audioStream = avformat_new_stream(encoder->context, NULL);
 		encoder->audio = avcodec_alloc_context3(acodec);
+#else
+		encoder->audioStream = avformat_new_stream(encoder->context, acodec);
+		encoder->audio = encoder->audioStream->codec;
+#endif
 		encoder->audio->bit_rate = encoder->audioBitrate;
 		encoder->audio->channels = 2;
 		encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
@@ -266,13 +271,18 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			encoder->absf = av_bitstream_filter_init("aac_adtstoasc");
 #endif
 		}
-#ifdef FFMPEG_USE_NEW_BSF
+#ifdef FFMPEG_USE_CODECPAR
 		avcodec_parameters_from_context(encoder->audioStream->codecpar, encoder->audio);
 #endif
 	}
 
+#ifdef FFMPEG_USE_CODECPAR
 	encoder->videoStream = avformat_new_stream(encoder->context, NULL);
 	encoder->video = avcodec_alloc_context3(vcodec);
+#else
+	encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
+	encoder->video = encoder->videoStream->codec;
+#endif
 	encoder->video->bit_rate = encoder->videoBitrate;
 	encoder->video->width = encoder->width;
 	encoder->video->height = encoder->height;
@@ -306,7 +316,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->videoFrame->pts = 0;
 	_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
 	av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->video->width, encoder->video->height, encoder->video->pix_fmt, 32);
-#ifdef FFMPEG_USE_NEW_BSF
+#ifdef FFMPEG_USE_CODECPAR
 	avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
 
