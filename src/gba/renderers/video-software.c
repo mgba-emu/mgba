@@ -750,7 +750,7 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
 					continue;
 				}
-				drawn = GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
+				GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
 			}
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
