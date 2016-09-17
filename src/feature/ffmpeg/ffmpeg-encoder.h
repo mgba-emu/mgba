@@ -9,6 +9,19 @@
 #include "gba/gba.h"
 
 #include <libavformat/avformat.h>
+#include <libavcodec/version.h>
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+#define FFMPEG_USE_PACKETS
+#endif
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 15, 0)
+#define FFMPEG_USE_NEW_BSF
+#endif
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 8, 0)
+#define FFMPEG_USE_PACKET_UNREF
+#endif
 
 struct FFmpegEncoder {
 	struct mAVStream d;
@@ -34,7 +47,7 @@ struct FFmpegEncoder {
 	int64_t currentAudioFrame;
 	int64_t nextAudioPts;
 	struct AVAudioResampleContext* resampleContext;
-#if LIBAVCODEC_VERSION_MAJOR >= 57
+#ifdef FFMPEG_USE_NEW_BSF
 	struct AVBSFContext* absf; // Needed for AAC in MP4
 #else
 	struct AVBitStreamFilterContext* absf; // Needed for AAC in MP4
