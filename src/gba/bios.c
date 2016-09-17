@@ -555,7 +555,7 @@ static void _unHuffman(struct GBA* gba) {
 	uint32_t dest = cpu->gprs[1];
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
-	int bits = header & 0xF;
+	unsigned bits = header & 0xF;
 	if (bits == 0) {
 		mLOG(GBA_BIOS, GAME_ERROR, "Invalid Huffman bits");
 		bits = 8;
