@@ -183,18 +183,33 @@ static void _latchRtc(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastL
 	t -= *rtcLastLatch;
 	*rtcLastLatch = currentLatch;
 
-	unsigned diff;
+	int64_t diff;
 	diff = rtcRegs[0] + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
 	rtcRegs[0] = diff % 60;
-	t = t / 60 + diff / 60;
+	t /= 60;
+	t += diff / 60;
 
 	diff = rtcRegs[1] + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
 	rtcRegs[1] = diff % 60;
-	t = t / 60 + diff / 60;
+	t /= 60;
+	t += diff / 60;
 
 	diff = rtcRegs[2] + t % 24;
+	if (diff < 0) {
+		diff += 24;
+		t -= 24;
+	}
 	rtcRegs[2] = diff % 24;
-	t = t / 24 + diff / 24;
+	t /= 24;
+	t += diff / 24;
 
 	diff = rtcRegs[3] + ((rtcRegs[4] & 1) << 8) + (t & 0x1FF);
 	rtcRegs[3] = diff;
