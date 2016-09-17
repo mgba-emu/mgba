@@ -385,21 +385,21 @@ static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address, int segme
 
 static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
 }
 
 static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
-	GBPatch8(cpu, address + 1, value >> 8, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
+	GBPatch8(cpu, address + 1, value >> 8, NULL, segment);
 }
 
 static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
-	GBPatch8(cpu, address + 1, value >> 8, NULL);
-	GBPatch8(cpu, address + 2, value >> 16, NULL);
-	GBPatch8(cpu, address + 3, value >> 24, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
+	GBPatch8(cpu, address + 1, value >> 8, NULL, segment);
+	GBPatch8(cpu, address + 2, value >> 16, NULL, segment);
+	GBPatch8(cpu, address + 3, value >> 24, NULL, segment);
 }
 
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {

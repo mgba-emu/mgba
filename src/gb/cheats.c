@@ -28,7 +28,7 @@ static void _patchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) {
 				continue;
 			}
 		}
-		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue);
+		GBPatch8(device->p->cpu, patch->address, patch->newValue, &patch->oldValue, 0);
 		patch->applied = true;
 	}
 }
@@ -43,7 +43,7 @@ static void _unpatchROM(struct mCheatDevice* device, struct GBCheatSet* cheats) 
 		if (!patch->applied) {
 			continue;
 		}
-		GBPatch8(device->p->cpu, patch->address, patch->oldValue, &patch->newValue);
+		GBPatch8(device->p->cpu, patch->address, patch->oldValue, &patch->newValue, 0);
 		patch->applied = false;
 	}
 }
