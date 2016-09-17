@@ -129,7 +129,8 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC3:
 		gb->memory.mbc = _GBMBC3;
-		default:
+		break;
+	default:
 		mLOG(GB_MBC, WARN, "Unknown MBC type: %02X", cart->type);
 		// Fall through
 	case GB_MBC5:
