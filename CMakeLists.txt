@@ -475,7 +475,7 @@ elseif(USE_ZLIB)
 	set_source_files_properties(
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
-		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-implicit-function-declaration")
 endif()
 
 if (USE_LZMA)
