@@ -177,7 +177,7 @@ static bool GBCheatAddVBALine(struct GBCheatSet* cheats, const char* line) {
 	uint16_t address;
 	uint8_t value;
 	const char* lineNext = hex16(line, &address);
-	if (!lineNext && lineNext[0] != ':') {
+	if (!lineNext || lineNext[0] != ':') {
 		return false;
 	}
 	if (!hex8(line, &value)) {
