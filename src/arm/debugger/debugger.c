@@ -152,7 +152,9 @@ void ARMDebuggerClearSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t ad
 		breakpoint = NULL;
 	}
 
-	debugger->clearSoftwareBreakpoint(debugger, address, breakpoint->sw.mode, breakpoint->sw.opcode);
+	if (breakpoint) {
+		debugger->clearSoftwareBreakpoint(debugger, address, breakpoint->sw.mode, breakpoint->sw.opcode);
+	}
 }
 
 static void ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, uint32_t address) {
