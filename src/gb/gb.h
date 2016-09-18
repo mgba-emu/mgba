@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "core/log.h"
+#include "core/timing.h"
 
 #include "lr35902/lr35902.h"
 
@@ -57,6 +58,7 @@ struct GB {
 	enum GBModel model;
 
 	struct mCoreSync* sync;
+	struct mTiming timing;
 
 	uint8_t* keySource;
 

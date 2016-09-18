@@ -8,6 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/timing.h"
+
 DECL_BITFIELD(GBRegisterTAC, uint8_t);
 DECL_BITS(GBRegisterTAC, Clock, 0, 2);
 DECL_BIT(GBRegisterTAC, Run, 2);
@@ -20,17 +22,15 @@ struct GB;
 struct GBTimer {
 	struct GB* p;
 
-	int32_t nextEvent;
-	int32_t eventDiff;
+	struct mTimingEvent event;
+	struct mTimingEvent irq;
 
 	uint32_t internalDiv;
 	int32_t nextDiv;
 	uint32_t timaPeriod;
-	bool irqPending;
 };
 
 void GBTimerReset(struct GBTimer*);
-int32_t GBTimerProcessEvents(struct GBTimer*, int32_t cycles);
 void GBTimerDivReset(struct GBTimer*);
 uint8_t GBTimerUpdateTAC(struct GBTimer*, GBRegisterTAC tac);
 

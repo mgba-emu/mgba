@@ -32,6 +32,7 @@ static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
 mLOG_DEFINE_CATEGORY(GB, "GB");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
+static void GBDeinit(struct mCPUComponent* component);
 static void GBInterruptHandlerInit(struct LR35902InterruptHandler* irqh);
 static void GBProcessEvents(struct LR35902Core* cpu);
 static void GBSetInterrupts(struct LR35902Core* cpu, bool enable);
@@ -46,7 +47,7 @@ extern size_t romBufferSize;
 void GBCreate(struct GB* gb) {
 	gb->d.id = GB_COMPONENT_MAGIC;
 	gb->d.init = GBInit;
-	gb->d.deinit = 0;
+	gb->d.deinit = GBDeinit;
 }
 
 static void GBInit(void* cpu, struct mCPUComponent* component) {
@@ -81,6 +82,13 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 
 	gb->coreCallbacks = NULL;
 	gb->stream = NULL;
+
+	mTimingInit(&gb->timing);
+}
+
+static void GBDeinit(struct mCPUComponent* component) {
+	struct GB* gb = (struct GB*) component;
+	mTimingDeinit(&gb->timing);
 }
 
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
@@ -425,9 +433,14 @@ void GBReset(struct LR35902Core* cpu) {
 		gb->memory.romSize = gb->yankedRomSize;
 		gb->yankedRomSize = 0;
 	}
+
+	mTimingClear(&gb->timing);
+
 	GBMemoryReset(gb);
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
+	mTimingSchedule(&gb->timing, &gb->timer.event, GB_DMG_DIV_PERIOD);
+
 	GBAudioReset(&gb->audio);
 	GBIOReset(gb);
 	GBSIOReset(&gb->sio);
@@ -530,6 +543,12 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
+		mTimingTick(&gb->timing, cycles);
+		testEvent = mTimingNextEvent(&gb->timing);
+		if (testEvent < nextEvent) {
+			nextEvent = testEvent;
+		}
+
 		testEvent = GBVideoProcessEvents(&gb->video, cycles >> gb->doubleSpeed);
 		if (testEvent != INT_MAX) {
 			testEvent <<= gb->doubleSpeed;
@@ -544,11 +563,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			if (testEvent < nextEvent) {
 				nextEvent = testEvent;
 			}
-		}
-
-		testEvent = GBTimerProcessEvents(&gb->timer, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
 		}
 
 		testEvent = GBSIOProcessEvents(&gb->sio, cycles);
