@@ -12,6 +12,8 @@
 #include "gb/interface.h"
 #include "lr35902/lr35902.h"
 
+#include <time.h>
+
 mLOG_DECLARE_CATEGORY(GB_MBC);
 mLOG_DECLARE_CATEGORY(GB_MEM);
 
