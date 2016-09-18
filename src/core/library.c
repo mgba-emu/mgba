@@ -41,6 +41,9 @@ void mLibraryAddEntry(struct mLibrary* library, const char* filename, struct VFi
 	if (!vf) {
 		vf = VFileOpen(filename, O_RDONLY);
 	}
+	if (!vf) {
+		return;
+	}
 	core = mCoreFindVF(vf);
 	if (core) {
 		core->init(core);

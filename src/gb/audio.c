@@ -553,7 +553,7 @@ int32_t GBAudioProcessEvents(struct GBAudio* audio, int32_t cycles) {
 				if (!audio->ch4.envelope.dead && frame == 7) {
 					--audio->ch4.envelope.nextStep;
 					if (audio->ch4.envelope.nextStep == 0) {
-						int8_t sample = (audio->ch4.sample >> 31) * 0x8;
+						int8_t sample = (audio->ch4.sample >> 7) * 0x8;
 						_updateEnvelope(&audio->ch4.envelope);
 						audio->ch4.sample = sample * audio->ch4.envelope.currentVolume;
 					}

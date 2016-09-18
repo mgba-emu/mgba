@@ -121,10 +121,14 @@ static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t st
 	gbcore->renderer.outputBufferStride = stride;
 }
 
-static void _GBCoreGetVideoBuffer(struct mCore* core, color_t** buffer, size_t* stride) {
+static void _GBCoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
 	struct GBCore* gbcore = (struct GBCore*) core;
-	*buffer = gbcore->renderer.outputBuffer;
-	*stride = gbcore->renderer.outputBufferStride;
+	gbcore->renderer.d.getPixels(&gbcore->renderer.d, stride, buffer);
+}
+
+static void _GBCorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	gbcore->renderer.d.putPixels(&gbcore->renderer.d, stride, buffer);
 }
 
 static struct blip_t* _GBCoreGetAudioChannel(struct mCore* core, int ch) {
@@ -173,7 +177,7 @@ static bool _GBCoreLoadSave(struct mCore* core, struct VFile* vf) {
 
 static bool _GBCoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
 	struct GB* gb = core->board;
-	GBSavedataMask(gb, vf);
+	GBSavedataMask(gb, vf, false);
 	return true; // TODO: Return a real value
 }
 
@@ -210,9 +214,19 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	struct VFile* bios = 0;
+	struct VFile* bios = NULL;
 	if (core->opts.useBios) {
-		if (!core->opts.bios) {
+		bool found = false;
+		if (core->opts.bios) {
+			bios = VFileOpen(core->opts.bios, O_RDONLY);
+			if (bios && GBIsBIOS(bios)) {
+				found = true;
+			} else if (bios) {
+				bios->close(bios);
+				bios = NULL;
+			}
+		}
+		if (!found) {
 			char path[PATH_MAX];
 			GBDetectModel(gb);
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -229,8 +243,6 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			};
 			bios = VFileOpen(path, O_RDONLY);
-		} else {
-			bios = VFileOpen(core->opts.bios, O_RDONLY);
 		}
 	}
 	if (bios) {
@@ -385,21 +397,21 @@ static uint32_t _GBCoreRawRead32(struct mCore* core, uint32_t address, int segme
 
 static void _GBCoreRawWrite8(struct mCore* core, uint32_t address, int segment, uint8_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
 }
 
 static void _GBCoreRawWrite16(struct mCore* core, uint32_t address, int segment, uint16_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
-	GBPatch8(cpu, address + 1, value >> 8, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
+	GBPatch8(cpu, address + 1, value >> 8, NULL, segment);
 }
 
 static void _GBCoreRawWrite32(struct mCore* core, uint32_t address, int segment, uint32_t value) {
 	struct LR35902Core* cpu = core->cpu;
-	GBPatch8(cpu, address, value, NULL);
-	GBPatch8(cpu, address + 1, value >> 8, NULL);
-	GBPatch8(cpu, address + 2, value >> 16, NULL);
-	GBPatch8(cpu, address + 3, value >> 24, NULL);
+	GBPatch8(cpu, address, value, NULL, segment);
+	GBPatch8(cpu, address + 1, value >> 8, NULL, segment);
+	GBPatch8(cpu, address + 2, value >> 16, NULL, segment);
+	GBPatch8(cpu, address + 3, value >> 24, NULL, segment);
 }
 
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
@@ -472,8 +484,13 @@ static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 	return gb->sramSize;
 }
 
-static bool _GBCoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
 	struct GB* gb = core->board;
+	if (!writeback) {
+		struct VFile* vf = VFileFromConstMemory(sram, size);
+		GBSavedataMask(gb, vf, true);
+		return true;
+	}
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
 		vf->seek(vf, 0, SEEK_SET);
@@ -501,7 +518,8 @@ struct mCore* GBCoreCreate(void) {
 	core->loadConfig = _GBCoreLoadConfig;
 	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
-	core->getVideoBuffer = _GBCoreGetVideoBuffer;
+	core->getPixels = _GBCoreGetPixels;
+	core->putPixels = _GBCorePutPixels;
 	core->getAudioChannel = _GBCoreGetAudioChannel;
 	core->setAudioBufferSize = _GBCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBCoreGetAudioBufferSize;
@@ -550,6 +568,6 @@ struct mCore* GBCoreCreate(void) {
 	core->detachDebugger = _GBCoreDetachDebugger;
 	core->cheatDevice = _GBCoreCheatDevice;
 	core->savedataClone = _GBCoreSavedataClone;
-	core->savedataLoad = _GBCoreSavedataLoad;
+	core->savedataRestore = _GBCoreSavedataRestore;
 	return core;
 }

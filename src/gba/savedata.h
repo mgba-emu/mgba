@@ -74,6 +74,7 @@ struct GBASavedata {
 	struct VFile* vf;
 
 	int mapMode;
+	bool maskWriteback;
 	struct VFile* realVf;
 
 	int32_t readBitsRemaining;
@@ -95,7 +96,7 @@ struct GBASavedata {
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
-void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeback);
 void GBASavedataUnmask(struct GBASavedata* savedata);
 size_t GBASavedataSize(struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);

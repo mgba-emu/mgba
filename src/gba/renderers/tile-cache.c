@@ -45,7 +45,7 @@ void GBAVideoTileCacheAssociate(struct GBAVideoTileCache* cache, struct GBAVideo
 
 void GBAVideoTileCacheWriteVRAM(struct GBAVideoTileCache* cache, uint32_t address) {
 	size_t i;
-	for (i = 0; i > 16; ++i) {
+	for (i = 0; i < 16; ++i) {
 		cache->status[address >> 5][i].vramClean = 0;
 	}
 }

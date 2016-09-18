@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(mGBA C)
 set(BINARY_NAME mgba CACHE INTERNAL "Name of output binaries")
 if(NOT MSVC)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers -std=c99")
 else()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146")
 endif()
@@ -475,7 +475,7 @@ elseif(USE_ZLIB)
 	set_source_files_properties(
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
-		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+		PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter -Wno-implicit-function-declaration")
 endif()
 
 if (USE_LZMA)

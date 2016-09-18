@@ -23,9 +23,9 @@ void GBARRInitRecord(struct GBA* gba) {
 		GBASavedataClone(&gba->memory.savedata, gba->rr->savedata);
 		gba->rr->savedata->close(gba->rr->savedata);
 		gba->rr->savedata = gba->rr->openSavedata(gba->rr, O_RDONLY);
-		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata);
+		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata, false);
 	} else {
-		GBASavedataMask(&gba->memory.savedata, 0);
+		GBASavedataMask(&gba->memory.savedata, 0, false);
 	}
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {
@@ -47,9 +47,9 @@ void GBARRInitPlay(struct GBA* gba) {
 			gba->rr->savedata->close(gba->rr->savedata);
 		}
 		gba->rr->savedata = gba->rr->openSavedata(gba->rr, O_RDONLY);
-		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata);
+		GBASavedataMask(&gba->memory.savedata, gba->rr->savedata, false);
 	} else {
-		GBASavedataMask(&gba->memory.savedata, 0);
+		GBASavedataMask(&gba->memory.savedata, 0, false);
 	}
 
 	if (gba->rr->initFrom & INIT_FROM_SAVESTATE) {

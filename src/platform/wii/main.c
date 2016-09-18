@@ -310,8 +310,6 @@ int main(int argc, char* argv[]) {
 			_pollInput, _pollCursor,
 			0,
 			_guiPrepare, 0,
-
-			GUI_PARAMS_TRAIL
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{

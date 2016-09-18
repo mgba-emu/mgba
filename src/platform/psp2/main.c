@@ -92,8 +92,6 @@ int main() {
 			_pollInput, _pollCursor,
 			_batteryState,
 			0, 0,
-
-			GUI_PARAMS_TRAIL
 		},
 		.configExtra = (struct GUIMenuItem[]) {
 			{

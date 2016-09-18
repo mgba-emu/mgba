@@ -56,7 +56,9 @@ struct mCore {
 
 	void (*desiredVideoDimensions)(struct mCore*, unsigned* width, unsigned* height);
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
-	void (*getVideoBuffer)(struct mCore*, color_t** buffer, size_t* stride);
+
+	void (*getPixels)(struct mCore*, const void** buffer, size_t* stride);
+	void (*putPixels)(struct mCore*, const void* buffer, size_t stride);
 
 	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
@@ -124,7 +126,7 @@ void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
 	struct mCheatDevice* (*cheatDevice)(struct mCore*);
 
 	size_t (*savedataClone)(struct mCore*, void** sram);
-	bool (*savedataLoad)(struct mCore*, const void* sram, size_t size);
+	bool (*savedataRestore)(struct mCore*, const void* sram, size_t size, bool writeback);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

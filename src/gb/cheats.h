@@ -22,6 +22,7 @@ struct GBCheatPatch {
 	uint16_t address;
 	int8_t newValue;
 	int8_t oldValue;
+	int segment;
 	bool applied;
 	bool checkByte;
 };

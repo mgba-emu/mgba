@@ -152,10 +152,14 @@ static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t s
 	gbacore->renderer.outputBufferStride = stride;
 }
 
-static void _GBACoreGetVideoBuffer(struct mCore* core, color_t** buffer, size_t* stride) {
+static void _GBACoreGetPixels(struct mCore* core, const void** buffer, size_t* stride) {
 	struct GBACore* gbacore = (struct GBACore*) core;
-	*buffer = gbacore->renderer.outputBuffer;
-	*stride = gbacore->renderer.outputBufferStride;
+	gbacore->renderer.d.getPixels(&gbacore->renderer.d, stride, buffer);
+}
+
+static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t stride) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	gbacore->renderer.d.putPixels(&gbacore->renderer.d, stride, buffer);
 }
 
 static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
@@ -207,7 +211,7 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 
 static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
 	struct GBA* gba = core->board;
-	GBASavedataMask(&gba->memory.savedata, vf);
+	GBASavedataMask(&gba->memory.savedata, vf, false);
 	return true; // TODO: Return a real value
 }
 
@@ -503,14 +507,19 @@ static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
 	return size;
 }
 
-static bool _GBACoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
 	struct VFile* vf = VFileFromConstMemory(sram, size);
 	if (!vf) {
 		return false;
 	}
 	struct GBA* gba = core->board;
-	bool success = GBASavedataLoad(&gba->memory.savedata, vf);
-	vf->close(vf);
+	bool success = true;
+	if (writeback) {
+		success = GBASavedataLoad(&gba->memory.savedata, vf);
+		vf->close(vf);
+	} else {
+		GBASavedataMask(&gba->memory.savedata, vf, true);
+	}
 	return success;
 }
 
@@ -528,7 +537,8 @@ struct mCore* GBACoreCreate(void) {
 	core->loadConfig = _GBACoreLoadConfig;
 	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
-	core->getVideoBuffer = _GBACoreGetVideoBuffer;
+	core->getPixels = _GBACoreGetPixels;
+	core->putPixels = _GBACorePutPixels;
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
@@ -577,6 +587,6 @@ struct mCore* GBACoreCreate(void) {
 	core->detachDebugger = _GBACoreDetachDebugger;
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;
-	core->savedataLoad = _GBACoreSavedataLoad;
+	core->savedataRestore = _GBACoreSavedataRestore;
 	return core;
 }

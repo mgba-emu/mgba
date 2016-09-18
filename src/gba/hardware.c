@@ -494,16 +494,6 @@ static const uint32_t _gbpTxData[] = {
 	0x30000003
 };
 
-static const uint32_t _gbpRxData[] = {
-	0x00000000, 0x494EB6B1,
-	0x494EB6B1, 0x544EB6B1,
-	0x544EABB1, 0x4E45ABB1,
-	0x4E45B1BA, 0x4F44B1BA,
-	0x4F44B0BB, 0x8000B0BB,
-	0x10000010, 0x20000013,
-	0x40000004
-};
-
 bool GBAHardwarePlayerCheckScreen(const struct GBAVideo* video) {
 	if (memcmp(video->palette, _logoPalette, sizeof(_logoPalette)) != 0) {
 		return false;
@@ -551,7 +541,6 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 		if (value & 0x0080) {
 			uint32_t rx = gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] | (gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
 			if (gbp->p->gbpTxPosition < 12 && gbp->p->gbpTxPosition > 0) {
-				uint32_t expected = _gbpRxData[gbp->p->gbpTxPosition];
 				// TODO: Check expected
 			} else if (gbp->p->gbpTxPosition >= 12) {
 				uint32_t mask = 0x33;

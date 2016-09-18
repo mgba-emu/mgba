@@ -144,6 +144,7 @@ void OverrideView::updateOverrides() {
 			m_controller->setOverride(gba);
 		} else {
 			m_controller->clearOverride();
+			delete gba;
 		}
 	}
 #endif
@@ -156,6 +157,7 @@ void OverrideView::updateOverrides() {
 			m_controller->setOverride(gb);
 		} else {
 			m_controller->clearOverride();
+			delete gb;
 		}
 	}
 #endif

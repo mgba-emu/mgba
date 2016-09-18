@@ -30,7 +30,7 @@ enum GUIInput {
 };
 
 enum GUICursorState {
-	GUI_CURSOR_NOT_PRESENT,
+	GUI_CURSOR_NOT_PRESENT = 0,
 	GUI_CURSOR_UP,
 	GUI_CURSOR_DOWN,
 	GUI_CURSOR_CLICKED,
@@ -75,8 +75,6 @@ struct GUIParams {
 	char currentPath[PATH_MAX];
 	size_t fileIndex;
 };
-
-#define GUI_PARAMS_TRAIL {0}, {}, GUI_CURSOR_NOT_PRESENT, 0, 0, "", 0
 
 void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);

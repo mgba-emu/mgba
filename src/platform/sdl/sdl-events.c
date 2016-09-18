@@ -25,7 +25,8 @@
 #endif
 
 #define GYRO_STEPS 100
-#define RUMBLE_PWM 20
+#define RUMBLE_PWM 16
+#define RUMBLE_STEPS 2
 
 mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events");
 
@@ -167,6 +168,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	player->rumble.d.setRumble = _mSDLSetRumble;
 	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
 	player->rumble.level = 0;
+	player->rumble.activeLevel = 0;
 	player->rumble.p = player;
 #endif
 
@@ -468,7 +470,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 				case SDLK_F8:
 				case SDLK_F9:
 					mCoreThreadInterrupt(context);
-					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT);
 					mCoreThreadContinue(context);
 					break;
 				default:
@@ -568,6 +570,7 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	if (!sdlRumble->p->joystick || !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
 		return;
 	}
+	int8_t originalLevel = sdlRumble->level;
 	sdlRumble->level += enable;
 	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
 		int8_t oldLevel;
@@ -575,8 +578,17 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 		sdlRumble->level -= oldLevel;
 	}
 	CircleBufferWrite8(&sdlRumble->history, enable);
-	if (sdlRumble->level) {
-		SDL_HapticRumblePlay(sdlRumble->p->joystick->haptic, sdlRumble->level / (float) RUMBLE_PWM, 20);
+	if (sdlRumble->level == originalLevel) {
+		return;
+	}
+	float activeLevel = ceil(RUMBLE_STEPS * sdlRumble->level / (float) RUMBLE_PWM) / RUMBLE_STEPS;
+	if (fabsf(sdlRumble->activeLevel - activeLevel) < 0.75 / RUMBLE_STEPS) {
+		return;
+	}
+	sdlRumble->activeLevel = activeLevel;
+	if (sdlRumble->activeLevel > 0.5 / RUMBLE_STEPS) {
+		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
+		SDL_HapticRumblePlay(sdlRumble->p->joystick->haptic, activeLevel, 500);
 	} else {
 		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
 	}

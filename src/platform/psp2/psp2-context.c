@@ -316,6 +316,7 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
+	UNUSED(runner);
 	CircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex);
 	vita2d_free_texture(screenshot);
@@ -392,7 +393,7 @@ void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 void mPSP2DrawScreenshot(struct mGUIRunner* runner, const uint32_t* pixels, unsigned width, unsigned height, bool faded) {
 	UNUSED(runner);
 	uint32_t* texpixels = vita2d_texture_get_datap(screenshot);
-	int y;
+	unsigned y;
 	for (y = 0; y < height; ++y) {
 		memcpy(&texpixels[256 * y], &pixels[width * y], width * 4);
 	}

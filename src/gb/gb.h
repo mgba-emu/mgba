@@ -70,6 +70,7 @@ struct GB {
 	uint32_t sramSize;
 	int sramDirty;
 	int32_t sramDirtAge;
+	bool sramMaskWriteback;
 
 	struct mAVStream* stream;
 
@@ -116,11 +117,12 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBYankROM(struct GB* gb);
 void GBUnloadROM(struct GB* gb);
 
+bool GBIsBIOS(struct VFile* vf);
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 
 void GBSramClean(struct GB* gb, uint32_t frameCount);
 void GBResizeSram(struct GB* gb, size_t size);
-void GBSavedataMask(struct GB* gb, struct VFile* vf);
+void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback);
 void GBSavedataUnmask(struct GB* gb);
 
 struct Patch;

@@ -200,6 +200,7 @@ GameController::GameController(QObject* parent)
 			return;
 		}
 		GameController* controller = static_cast<GameController*>(context->userData);
+		QString message;
 #ifdef M_CORE_GBA
 		if (level == mLOG_STUB && category == _mLOG_CAT_GBA_BIOS()) {
 			va_list argc;
@@ -228,6 +229,8 @@ GameController::GameController(QObject* parent)
 					return;
 				}
 			}
+			message = QString().vsprintf(format, args);
+			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
 		if (level == mLOG_FATAL) {
 			mCoreThreadMarkCrashed(controller->thread());
@@ -235,10 +238,7 @@ GameController::GameController(QObject* parent)
 		} else if (!(controller->m_logLevels & level)) {
 			return;
 		}
-		QString message(QString().vsprintf(format, args));
-		if (category == _mLOG_CAT_STATUS()) {
-			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
-		}
+		message = QString().vsprintf(format, args);
 		QMetaObject::invokeMethod(controller, "postLog", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 	};
 

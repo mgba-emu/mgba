@@ -99,6 +99,9 @@ Misc:
  - Debugger: Add software breakpoint support to gdb
  - Util: Add PRIz macro for libc versions that don't support %z
  - SDL: Increase default audio buffer size to 1024 samples
+ - GBA: Add override for Pokemon Pinball: Ruby and Sapphire rumble
+ - SDL: More responsive rumble
+ - GBA Hardware: Clean up dead code in GBP
 
 0.4.1: (2016-07-11)
 Bugfixes:

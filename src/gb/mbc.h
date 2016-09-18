@@ -18,6 +18,22 @@ void GBMBCInit(struct GB* gb);
 void GBMBCSwitchBank(struct GBMemory* memory, int bank);
 void GBMBCSwitchSramBank(struct GB* gb, int bank);
 
+struct GBMBCRTCSaveBuffer {
+	uint32_t sec;
+	uint32_t min;
+	uint32_t hour;
+	uint32_t days;
+	uint32_t daysHi;
+	uint32_t latchedSec;
+	uint32_t latchedMin;
+	uint32_t latchedHour;
+	uint32_t latchedDays;
+	uint32_t latchedDaysHi;
+	uint64_t unixTime;
+};
+void GBMBCRTCRead(struct GB* gb);
+void GBMBCRTCWrite(struct GB* gb);
+
 uint8_t GBMBC7Read(struct GBMemory*, uint16_t address);
 void GBMBC7Write(struct GBMemory*, uint16_t address, uint8_t value);
 

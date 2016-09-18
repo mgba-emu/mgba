@@ -742,8 +742,6 @@ int main() {
 			_pollInput, _pollCursor,
 			_batteryState,
 			_guiPrepare, _guiFinish,
-
-			GUI_PARAMS_TRAIL
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
