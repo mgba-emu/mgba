@@ -8,11 +8,11 @@
 
 #include "util/common.h"
 
-#include "arm.h"
-#include "macros.h"
+#include "arm/arm.h"
 
 #include "gba/hardware.h"
 #include "gba/savedata.h"
+#include "gba/vfame.h"
 
 enum GBAMemoryRegion {
 	REGION_BIOS = 0x0,
@@ -86,6 +86,8 @@ enum DMATiming {
 	DMA_TIMING_CUSTOM = 3
 };
 
+mLOG_DECLARE_CATEGORY(GBA_MEM);
+
 DECL_BITFIELD(GBADMARegister, uint16_t);
 DECL_BITS(GBADMARegister, DestControl, 5, 2);
 DECL_BITS(GBADMARegister, SrcControl, 7, 2);
@@ -117,6 +119,7 @@ struct GBAMemory {
 
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
+	struct GBAVFameCart vfame;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;
@@ -133,13 +136,14 @@ struct GBAMemory {
 	int activeRegion;
 	bool prefetch;
 	uint32_t lastPrefetchedPc;
-	uint32_t lastPrefetchedLoads;
 	uint32_t biosPrefetch;
 
 	struct GBADMA dma[4];
 	int activeDMA;
 	int32_t nextDMA;
 	int32_t eventDiff;
+
+	bool mirroring;
 };
 
 void GBAMemoryInit(struct GBA* gba);

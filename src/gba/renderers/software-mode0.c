@@ -28,12 +28,12 @@
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		tileData >>= 4 * mod8; \
 		for (; outX < end; ++outX, ++pixel) { \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
 		for (outX = end - 1; outX >= renderer->start; --outX) { \
 			uint32_t* pixel = &renderer->row[outX]; \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 	}
 
@@ -50,7 +50,7 @@
 			pixel = &renderer->row[outX]; \
 		} \
 		for (; outX < renderer->end; ++outX, ++pixel) { \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
 		tileData >>= 4 * (0x8 - mod8); \
@@ -61,7 +61,7 @@
 		outX = renderer->end - 1; \
 		pixel = &renderer->row[outX]; \
 		for (; outX > end; --outX, --pixel) { \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 		} \
 		/* Needed for consistency checks */ \
 		if (VIDEO_CHECKS) { \
@@ -128,7 +128,7 @@
 				mosaicWait = mosaicH; \
 			} \
 			--mosaicWait; \
-			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			++pixel; \
 		} \
 		x = 0; \
@@ -147,44 +147,26 @@
 		LOAD_32(tileData, charBase, vram); \
 		if (tileData) { \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				++pixel; \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 4); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 5); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 6); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 7); \
 			} else { \
-				pixel += 7; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN); \
-				pixel += 8; \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 7); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 6); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 5); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 4); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, 0); \
 			} \
-		} else { \
-			pixel += 8; \
 		} \
+		pixel += 8; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256(BLEND, OBJWIN) \
@@ -198,7 +180,7 @@
 				tileData >>= 8 * shift; \
 				shift = 0; \
 				for (; outX < end2; ++outX, ++pixel) { \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 			} \
 		} \
@@ -207,7 +189,7 @@
 			LOAD_32(tileData, charBase + 4, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX < end; ++outX, ++pixel) { \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 	} else { \
@@ -218,7 +200,7 @@
 			if (end2 > start) { \
 				LOAD_32(tileData, charBase, vram); \
 				for (; outX >= end2; --outX, --pixel) { \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 				} \
 				charBase += 4; \
 			} \
@@ -227,7 +209,7 @@
 		if (LIKELY(charBase < 0x10000)) { \
 			LOAD_32(tileData, charBase, vram); \
 			for (; outX >= renderer->start; --outX, --pixel) { \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 		} \
 		outX = end; \
@@ -245,14 +227,14 @@
 		if (end > 0) { \
 			LOAD_32(tileData, charBase, vram); \
 			for (; outX < renderer->end - end; ++outX, ++pixel) { \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			charBase += 4; \
 		} \
 		\
 		LOAD_32(tileData, charBase, vram); \
 		for (; outX < renderer->end; ++outX, ++pixel) { \
-			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 	} else { \
 		int shift = (8 - mod8) & 0x3; \
@@ -263,7 +245,7 @@
 			LOAD_32(tileData, charBase, vram); \
 			tileData >>= 8 * shift; \
 			for (; outX >= start + 4; --outX, --pixel) { \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			shift = 0; \
 		} \
@@ -271,7 +253,7 @@
 		LOAD_32(tileData, charBase + 4, vram); \
 		tileData >>= 8 * shift; \
 		for (; outX >= start; --outX, --pixel) { \
-			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 		} \
 		/* Needed for consistency checks */ \
 		if (VIDEO_CHECKS) { \
@@ -291,53 +273,35 @@
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 			LOAD_32(tileData, charBase, vram); \
 			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-			} else { \
-				pixel += 4; \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
+			pixel += 4; \
 			LOAD_32(tileData, charBase + 4, vram); \
 			if (tileData) { \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-					++pixel; \
-			} else { \
-				pixel += 4; \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+					BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
 			} \
+			pixel += 4; \
 		} else { \
 			LOAD_32(tileData, charBase + 4, vram); \
 			if (tileData) { \
-				pixel += 3; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			pixel += 4; \
 			LOAD_32(tileData, charBase, vram); \
 			if (tileData) { \
-				pixel += 3; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
-				--pixel; \
-				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 3); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 2); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 1); \
+				BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			} \
 			pixel += 4; \
 		} \
@@ -377,7 +341,7 @@
 			} \
 			tileData |= tileData << 8; \
 			--mosaicWait; \
-			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN); \
+			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			++pixel; \
 		} \
 	}
@@ -406,7 +370,7 @@
 			return; \
 		} \
 		if (UNLIKELY(end < outX)) { \
-			GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw!"); \
+			mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_ ## BPP (BLEND, OBJWIN) \
@@ -414,7 +378,7 @@
 		if (tileX < tileEnd) { \
 			++tileX; \
 		} else if (VIDEO_CHECKS && UNLIKELY(tileX > tileEnd)) { \
-			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
+			mLOG(GBA_VIDEO, FATAL, "Invariant doesn't hold in background draw! tileX (%u) > tileEnd (%u)", tileX, tileEnd); \
 			return; \
 		} \
 		length -= end - renderer->start; \
@@ -423,7 +387,7 @@
 	/*!*/ pixel = &renderer->row[outX]; \
 	outX += (tileEnd - tileX) * 8; \
 	/*!*/ if (VIDEO_CHECKS &&  UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
-	/*!*/	GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw would occur!"); \
+	/*!*/	mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw would occur!"); \
 	/*!*/	return; \
 	/*!*/ } \
 	DRAW_BACKGROUND_MODE_0_TILES_ ## BPP (BLEND, OBJWIN) \
@@ -432,16 +396,16 @@
 		\
 		int mod8 = length & 0x7; \
 		if (VIDEO_CHECKS && UNLIKELY(outX + mod8 != renderer->end)) { \
-			GBALog(0, GBA_LOG_FATAL, "Invariant doesn't hold in background draw!"); \
+			mLOG(GBA_VIDEO, FATAL, "Invariant doesn't hold in background draw!"); \
 			return; \
 		} \
 		DRAW_BACKGROUND_MODE_0_TILE_PREFIX_ ## BPP (BLEND, OBJWIN) \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(&renderer->row[outX] != pixel)) { \
-		GBALog(0, GBA_LOG_FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
+		mLOG(GBA_VIDEO, FATAL, "Background draw ended in the wrong place! Diff: %" PRIXPTR, &renderer->row[outX] - pixel); \
 	} \
 	if (VIDEO_CHECKS && UNLIKELY(outX > VIDEO_HORIZONTAL_PIXELS)) { \
-		GBALog(0, GBA_LOG_FATAL, "Out of bounds background draw occurred!"); \
+		mLOG(GBA_VIDEO, FATAL, "Out of bounds background draw occurred!"); \
 		return; \
 	}
 
@@ -499,7 +463,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 	uint16_t* vram = renderer->d.vram;
 
 	if (!objwinSlowPath) {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, NO_OBJWIN);
 			} else {
@@ -513,7 +477,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 			}
 		}
 	} else {
-		if (!(flags & FLAG_TARGET_2) && renderer->blendEffect != BLEND_ALPHA) {
+		if (!(flags & FLAG_TARGET_2)) {
 			if (!background->multipalette) {
 				DRAW_BACKGROUND_MODE_0(16, NoBlend, OBJWIN);
 			} else {

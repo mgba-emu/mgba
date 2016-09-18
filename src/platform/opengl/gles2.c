@@ -5,11 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gles2.h"
 
-#include "gba/video.h"
+#include "core/log.h"
 #include "util/configuration.h"
 #include "util/formatting.h"
 #include "util/vector.h"
 #include "util/vfs.h"
+
+mLOG_DECLARE_CATEGORY(OPENGL);
+mLOG_DEFINE_CATEGORY(OPENGL, "OpenGL");
 
 #define MAX_PASSES 8
 
@@ -72,27 +75,17 @@ static const GLfloat _vertices[] = {
 	1.f, -1.f,
 };
 
-static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
+static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
-	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glGenTextures(1, &context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
-#endif
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-#endif
-
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 
-	struct GBAGLES2Uniform* uniforms = malloc(sizeof(struct GBAGLES2Uniform) * 4);
+	struct mGLES2Uniform* uniforms = malloc(sizeof(struct mGLES2Uniform) * 4);
 	uniforms[0].name = "gamma";
 	uniforms[0].readableName = "Gamma";
 	uniforms[0].type = GL_FLOAT;
@@ -135,43 +128,62 @@ static void GBAGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[3].max.fvec3[0] = 1.0f;
 	uniforms[3].max.fvec3[1] = 1.0f;
 	uniforms[3].max.fvec3[2] = 1.0f;
-	GBAGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
-	GBAGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
+	mGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
+	mGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
+	glDeleteTextures(1, &context->finalShader.tex);
 	context->finalShader.fbo = 0;
+	context->finalShader.tex = 0;
 }
 
-static void GBAGLES2ContextDeinit(struct VideoBackend* v) {
-	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
+static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
+	v->width = width;
+	v->height = height;
+
+	glBindTexture(GL_TEXTURE_2D, context->tex);
+#ifdef COLOR_16_BIT
+#ifdef COLOR_5_6_5
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+#endif
+#else
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+#endif
+}
+
+static void mGLES2ContextDeinit(struct VideoBackend* v) {
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glDeleteTextures(1, &context->tex);
-	GBAGLES2ShaderDeinit(&context->initialShader);
-	GBAGLES2ShaderDeinit(&context->finalShader);
+	mGLES2ShaderDeinit(&context->initialShader);
+	mGLES2ShaderDeinit(&context->finalShader);
 	free(context->initialShader.uniforms);
 }
 
-static void GBAGLES2ContextResized(struct VideoBackend* v, int w, int h) {
-	int drawW = w;
-	int drawH = h;
+static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+	unsigned drawW = w;
+	unsigned drawH = h;
 	if (v->lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
+		if (w * v->height > h * v->width) {
+			drawW = h * v->width / v->height;
+		} else if (w * v->height < h * v->width) {
+			drawH = w * v->height / v->width;
 		}
 	}
-	glViewport(0, 0, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	glViewport(0, 0, v->width, v->height);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 }
 
-static void GBAGLES2ContextClear(struct VideoBackend* v) {
+static void mGLES2ContextClear(struct VideoBackend* v) {
 	UNUSED(v);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void _drawShader(struct GBAGLES2Shader* shader) {
+void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	GLint viewport[4];
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
 	if (shader->blend) {
@@ -190,19 +202,23 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 	if (!shader->width) {
 		drawW = viewport[2];
 		padW = viewport[0];
+	} else if (shader->width < 0) {
+		drawW = context->d.width * -shader->width;
 	}
 	if (!shader->height) {
 		drawH = viewport[3];
 		padH = viewport[1];
+	} else if (shader->height < 0) {
+		drawH = context->d.height * -shader->height;
 	}
 	if (shader->integerScaling) {
 		padW = 0;
 		padH = 0;
-		drawW -= drawW % VIDEO_HORIZONTAL_PIXELS;
-		drawH -= drawH % VIDEO_VERTICAL_PIXELS;
+		drawW -= drawW % context->d.width;
+		drawH -= drawH % context->d.height;
 	}
 	glViewport(padW, padH, drawW, drawH);
-	if (!shader->width || !shader->height) {
+	if (shader->tex && (shader->width <= 0 || shader->height <= 0)) {
 		GLint oldTex;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTex);
 		glBindTexture(GL_TEXTURE_2D, shader->tex);
@@ -214,11 +230,12 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
+	glUniform2f(shader->texSizeLocation, context->d.width, context->d.height);
 	glVertexAttribPointer(shader->positionLocation, 2, GL_FLOAT, GL_FALSE, 0, _vertices);
 	glEnableVertexAttribArray(shader->positionLocation);
 	size_t u;
 	for (u = 0; u < shader->nUniforms; ++u) {
-		struct GBAGLES2Uniform* uniform = &shader->uniforms[u];
+		struct mGLES2Uniform* uniform = &shader->uniforms[u];
 		switch (uniform->type) {
 		case GL_FLOAT:
 			glUniform1f(uniform->location, uniform->value.f);
@@ -272,53 +289,54 @@ void _drawShader(struct GBAGLES2Shader* shader) {
 	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
-void GBAGLES2ContextDrawFrame(struct VideoBackend* v) {
-	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
+void mGLES2ContextDrawFrame(struct VideoBackend* v) {
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 
 	context->finalShader.filter = v->filter;
-	_drawShader(&context->initialShader);
+	_drawShader(context, &context->initialShader);
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
-		_drawShader(&context->shaders[n]);
+		_drawShader(context, &context->shaders[n]);
 	}
-	_drawShader(&context->finalShader);
+	_drawShader(context, &context->finalShader);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(0);
 }
 
-void GBAGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
-	struct GBAGLES2Context* context = (struct GBAGLES2Context*) v;
+void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
 }
 
-void GBAGLES2ContextCreate(struct GBAGLES2Context* context) {
-	context->d.init = GBAGLES2ContextInit;
-	context->d.deinit = GBAGLES2ContextDeinit;
-	context->d.resized = GBAGLES2ContextResized;
+void mGLES2ContextCreate(struct mGLES2Context* context) {
+	context->d.init = mGLES2ContextInit;
+	context->d.deinit = mGLES2ContextDeinit;
+	context->d.setDimensions = mGLES2ContextSetDimensions;
+	context->d.resized = mGLES2ContextResized;
 	context->d.swap = 0;
-	context->d.clear = GBAGLES2ContextClear;
-	context->d.postFrame = GBAGLES2ContextPostFrame;
-	context->d.drawFrame = GBAGLES2ContextDrawFrame;
+	context->d.clear = mGLES2ContextClear;
+	context->d.postFrame = mGLES2ContextPostFrame;
+	context->d.drawFrame = mGLES2ContextDrawFrame;
 	context->d.setMessage = 0;
 	context->d.clearMessage = 0;
 	context->shaders = 0;
 	context->nShaders = 0;
 }
 
-void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, struct GBAGLES2Uniform* uniforms, size_t nUniforms) {
-	shader->width = width >= 0 ? width : VIDEO_HORIZONTAL_PIXELS;
-	shader->height = height >= 0 ? height : VIDEO_VERTICAL_PIXELS;
+void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms) {
+	shader->width = width;
+	shader->height = height;
 	shader->integerScaling = integerScaling;
 	shader->filter = false;
 	shader->blend = false;
@@ -333,7 +351,7 @@ void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const cha
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	if (shader->width && shader->height) {
+	if (shader->width > 0 && shader->height > 0) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width, shader->height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	}
 
@@ -368,20 +386,21 @@ void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const cha
 	glCompileShader(shader->fragmentShader);
 	glGetShaderInfoLog(shader->fragmentShader, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 	glCompileShader(shader->vertexShader);
 	glGetShaderInfoLog(shader->vertexShader, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 	glLinkProgram(shader->program);
 	glGetProgramInfoLog(shader->program, 1024, 0, log);
 	if (log[0]) {
-		printf("%s\n", log);
+		mLOG(OPENGL, ERROR, "%s\n", log);
 	}
 
 	shader->texLocation = glGetUniformLocation(shader->program, "tex");
+	shader->texSizeLocation = glGetUniformLocation(shader->program, "texSize");
 	shader->positionLocation = glGetAttribLocation(shader->program, "position");
 	size_t i;
 	for (i = 0; i < shader->nUniforms; ++i) {
@@ -390,19 +409,19 @@ void GBAGLES2ShaderInit(struct GBAGLES2Shader* shader, const char* vs, const cha
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GBAGLES2ShaderDeinit(struct GBAGLES2Shader* shader) {
+void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
 	glDeleteTextures(1, &shader->tex);
 	glDeleteShader(shader->fragmentShader);
 	glDeleteProgram(shader->program);
 	glDeleteFramebuffers(1, &shader->fbo);
 }
 
-void GBAGLES2ShaderAttach(struct GBAGLES2Context* context, struct GBAGLES2Shader* shaders, size_t nShaders) {
+void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shaders, size_t nShaders) {
 	if (context->shaders) {
 		if (context->shaders == shaders && context->nShaders == nShaders) {
 			return;
 		}
-		GBAGLES2ShaderDetach(context);
+		mGLES2ShaderDetach(context);
 	}
 	context->shaders = shaders;
 	context->nShaders = nShaders;
@@ -414,7 +433,7 @@ void GBAGLES2ShaderAttach(struct GBAGLES2Context* context, struct GBAGLES2Shader
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GBAGLES2ShaderDetach(struct GBAGLES2Context* context) {
+void mGLES2ShaderDetach(struct mGLES2Context* context) {
 	if (!context->shaders) {
 		return;
 	}
@@ -472,22 +491,22 @@ static bool _lookupBoolValue(const struct Configuration* config, const char* sec
 	return true;
 }
 
-DECLARE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
-DEFINE_VECTOR(GBAGLES2UniformList, struct GBAGLES2Uniform);
+DECLARE_VECTOR(mGLES2UniformList, struct mGLES2Uniform);
+DEFINE_VECTOR(mGLES2UniformList, struct mGLES2Uniform);
 
 static void _uniformHandler(const char* sectionName, void* user) {
-	struct GBAGLES2UniformList* uniforms = user;
+	struct mGLES2UniformList* uniforms = user;
 	unsigned passId;
 	int sentinel;
 	if (sscanf(sectionName, "pass.%u.uniform.%n", &passId, &sentinel) < 1) {
 		return;
 	}
-	struct GBAGLES2Uniform* u = GBAGLES2UniformListAppend(uniforms);
+	struct mGLES2Uniform* u = mGLES2UniformListAppend(uniforms);
 	u->name = sectionName;
 }
 
 
-static void _loadValue(struct Configuration* description, const char* name, GLenum type, const char* field, union GBAGLES2UniformValue* value) {
+static void _loadValue(struct Configuration* description, const char* name, GLenum type, const char* field, union mGLES2UniformValue* value) {
 	char fieldName[16];
 	switch (type) {
 	case GL_FLOAT:
@@ -697,7 +716,7 @@ static void _loadValue(struct Configuration* description, const char* name, GLen
 	}
 }
 
-static bool _loadUniform(struct Configuration* description, size_t pass, struct GBAGLES2Uniform* uniform) {
+static bool _loadUniform(struct Configuration* description, size_t pass, struct mGLES2Uniform* uniform) {
 	unsigned passId;
 	if (sscanf(uniform->name, "pass.%u.uniform.", &passId) < 1 || passId != pass) {
 		return false;
@@ -730,11 +749,11 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 		uniform->type = GL_INT_VEC4;
 	} else if (!strcmp(type, "bool")) {
 		uniform->type = GL_BOOL;
-	} else if (!strcmp(type, "int2")) {
+	} else if (!strcmp(type, "bool2")) {
 		uniform->type = GL_BOOL_VEC2;
-	} else if (!strcmp(type, "int3")) {
+	} else if (!strcmp(type, "bool3")) {
 		uniform->type = GL_BOOL_VEC3;
-	} else if (!strcmp(type, "int4")) {
+	} else if (!strcmp(type, "bool4")) {
 		uniform->type = GL_BOOL_VEC4;
 	} else {
 		return false;
@@ -752,7 +771,7 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 	return true;
 }
 
-bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
+bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	struct VFile* manifest = dir->openFile(dir, "manifest.ini", O_RDONLY);
 	if (!manifest) {
 		return false;
@@ -767,7 +786,7 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 			success = false;
 		}
 		if (success) {
-			struct GBAGLES2Shader* shaderBlock = malloc(sizeof(struct GBAGLES2Shader) * inShaders);
+			struct mGLES2Shader* shaderBlock = malloc(sizeof(struct mGLES2Shader) * inShaders);
 			int n;
 			for (n = 0; n < inShaders; ++n) {
 				char passName[12];
@@ -814,23 +833,23 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				_lookupIntValue(&description, passName, "height", &height);
 				_lookupIntValue(&description, passName, "integerScaling", &scaling);
 
-				struct GBAGLES2UniformList uniformVector;
-				GBAGLES2UniformListInit(&uniformVector, 0);
+				struct mGLES2UniformList uniformVector;
+				mGLES2UniformListInit(&uniformVector, 0);
 				ConfigurationEnumerateSections(&description, _uniformHandler, &uniformVector);
 				size_t u;
-				for (u = 0; u < GBAGLES2UniformListSize(&uniformVector); ++u) {
-					struct GBAGLES2Uniform* uniform = GBAGLES2UniformListGetPointer(&uniformVector, u);
+				for (u = 0; u < mGLES2UniformListSize(&uniformVector); ++u) {
+					struct mGLES2Uniform* uniform = mGLES2UniformListGetPointer(&uniformVector, u);
 					if (!_loadUniform(&description, n, uniform)) {
-						GBAGLES2UniformListShift(&uniformVector, u, 1);
+						mGLES2UniformListShift(&uniformVector, u, 1);
 						--u;
 					}
 				}
-				u = GBAGLES2UniformListSize(&uniformVector);
-				struct GBAGLES2Uniform* uniformBlock = malloc(sizeof(*uniformBlock) * u);
-				memcpy(uniformBlock, GBAGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
-				GBAGLES2UniformListDeinit(&uniformVector);
+				u = mGLES2UniformListSize(&uniformVector);
+				struct mGLES2Uniform* uniformBlock = malloc(sizeof(*uniformBlock) * u);
+				memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				mGLES2UniformListDeinit(&uniformVector);
 
-				GBAGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);
+				mGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);
 				int b = 0;
 				_lookupIntValue(&description, passName, "blend", &b);
 				if (b) {
@@ -862,26 +881,27 @@ bool GBAGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 			} else {
 				inShaders = n;
 				for (n = 0; n < inShaders; ++n) {
-					GBAGLES2ShaderDeinit(&shaderBlock[n]);
+					mGLES2ShaderDeinit(&shaderBlock[n]);
 				}
 			}
 		}
 	}
+	manifest->close(manifest);
 	ConfigurationDeinit(&description);
 	return success;
 }
 
-void GBAGLES2ShaderFree(struct VideoShader* shader) {
+void mGLES2ShaderFree(struct VideoShader* shader) {
 	free((void*) shader->name);
 	free((void*) shader->author);
 	free((void*) shader->description);
 	shader->name = 0;
 	shader->author = 0;
 	shader->description = 0;
-	struct GBAGLES2Shader* shaders = shader->passes;
+	struct mGLES2Shader* shaders = shader->passes;
 	size_t n;
 	for (n = 0; n < shader->nPasses; ++n) {
-		GBAGLES2ShaderDeinit(&shaders[n]);
+		mGLES2ShaderDeinit(&shaders[n]);
 		size_t u;
 		for (u = 0; u < shaders[n].nUniforms; ++u) {
 			free((void*) shaders[n].uniforms[u].name);

@@ -8,8 +8,8 @@
 
 #include "util/common.h"
 
-#include "arm.h"
-#include "debugger/debugger.h"
+#include "arm/arm.h"
+#include "core/log.h"
 
 #include "gba/interface.h"
 #include "gba/memory.h"
@@ -17,7 +17,7 @@
 #include "gba/audio.h"
 #include "gba/sio.h"
 
-extern const uint32_t GBA_ARM7TDMI_FREQUENCY;
+#define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
 enum GBAIRQ {
 	IRQ_VBLANK = 0x0,
@@ -36,12 +36,6 @@ enum GBAIRQ {
 	IRQ_GAMEPAK = 0xD
 };
 
-enum GBAComponent {
-	GBA_COMPONENT_DEBUGGER,
-	GBA_COMPONENT_CHEAT_DEVICE,
-	GBA_COMPONENT_MAX
-};
-
 enum GBAIdleLoopOptimization {
 	IDLE_LOOP_IGNORE = -1,
 	IDLE_LOOP_REMOVE = 0,
@@ -55,9 +49,10 @@ enum {
 };
 
 struct GBA;
-struct GBAThread;
 struct Patch;
 struct VFile;
+
+mLOG_DECLARE_CATEGORY(GBA);
 
 DECL_BITFIELD(GBATimerFlags, uint32_t);
 DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
@@ -75,7 +70,7 @@ struct GBATimer {
 };
 
 struct GBA {
-	struct ARMComponent d;
+	struct mCPUComponent d;
 
 	struct ARMCore* cpu;
 	struct GBAMemory memory;
@@ -83,7 +78,7 @@ struct GBA {
 	struct GBAAudio audio;
 	struct GBASIO sio;
 
-	struct GBASync* sync;
+	struct mCoreSync* sync;
 
 	struct ARMDebugger* debugger;
 
@@ -96,10 +91,10 @@ struct GBA {
 	int springIRQ;
 	uint32_t biosChecksum;
 	int* keySource;
-	struct GBARotationSource* rotationSource;
+	struct mRotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
-	struct GBARTCSource* rtcSource;
-	struct GBARumble* rumble;
+	struct mRTCSource* rtcSource;
+	struct mRumble* rumble;
 
 	struct GBARRContext* rr;
 	void* pristineRom;
@@ -109,13 +104,9 @@ struct GBA {
 	struct VFile* romVf;
 	struct VFile* biosVf;
 
-	const char* activeFile;
-
-	GBALogHandler logHandler;
-	enum GBALogLevel logLevel;
-	struct GBAAVStream* stream;
-	struct GBAKeyCallback* keyCallback;
-	struct GBAStopCallback* stopCallback;
+	struct mAVStream* stream;
+	struct mKeyCallback* keyCallback;
+	struct mStopCallback* stopCallback;
 
 	enum GBAIdleLoopOptimization idleOptimization;
 	uint32_t idleLoop;
@@ -163,20 +154,21 @@ void GBATestIRQ(struct ARMCore* cpu);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 
-void GBAAttachDebugger(struct GBA* gba, struct ARMDebugger* debugger);
+void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
 
-void GBASetBreakpoint(struct GBA* gba, struct ARMComponent* component, uint32_t address, enum ExecutionMode mode,
+void GBASetBreakpoint(struct GBA* gba, struct mCPUComponent* component, uint32_t address, enum ExecutionMode mode,
                       uint32_t* opcode);
 void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mode, uint32_t opcode);
 
-bool GBALoadROM(struct GBA* gba, struct VFile* vf, struct VFile* sav, const char* fname);
+bool GBALoadROM(struct GBA* gba, struct VFile* vf);
+bool GBALoadSave(struct GBA* gba, struct VFile* sav);
 void GBAYankROM(struct GBA* gba);
 void GBAUnloadROM(struct GBA* gba);
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
-bool GBALoadMB(struct GBA* gba, struct VFile* vf, const char* fname);
+bool GBALoadMB(struct GBA* gba, struct VFile* vf);
 
 bool GBAIsROM(struct VFile* vf);
 bool GBAIsMB(struct VFile* vf);
@@ -186,11 +178,5 @@ void GBAGetGameTitle(struct GBA* gba, char* out);
 
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBALog(struct GBA* gba, enum GBALogLevel level, const char* format, ...);
-
-ATTRIBUTE_FORMAT(printf, 3, 4)
-void GBADebuggerLogShim(struct ARMDebugger* debugger, enum DebuggerLogLevel level, const char* format, ...);
 
 #endif

@@ -13,7 +13,7 @@ void main() {
 	float dc = pow(decay, -lightBrightness);
 	float s = (sp - dc) / (sp + dc);
 	vec2 radius = (texCoord.st - vec2(0.5, 0.5)) * vec2(coeff * s);
-	radius = pow(radius, vec2(4.0));
+	radius = pow(abs(radius), vec2(4.0));
 	vec3 bleed = vec3(0.12, 0.14, 0.19);
 	bleed += (dot(radius, radius) + vec3(0.02, 0.03, 0.05)) * vec3(0.14, 0.18, 0.2);
 

@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "parv3.h"
 
-#include "gba/cheats/cheats-private.h"
 #include "gba/cheats/gameshark.h"
 #include "gba/gba.h"
 #include "util/string.h"
@@ -54,7 +53,7 @@ static uint32_t _parAddr(uint32_t x) {
 }
 
 static void _parEndBlock(struct GBACheatSet* cheats) {
-	size_t size = GBACheatListSize(&cheats->list) - GBACheatListIndex(&cheats->list, cheats->currentBlock);
+	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
 	if (cheats->currentBlock->repeat) {
 		cheats->currentBlock->negativeRepeat = size - cheats->currentBlock->repeat;
 	} else {
@@ -64,7 +63,7 @@ static void _parEndBlock(struct GBACheatSet* cheats) {
 }
 
 static void _parElseBlock(struct GBACheatSet* cheats) {
-	size_t size = GBACheatListSize(&cheats->list) - GBACheatListIndex(&cheats->list, cheats->currentBlock);
+	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
 	cheats->currentBlock->repeat = size;
 }
 
@@ -80,7 +79,7 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 		return false;
 	}
 
-	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
+	struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
 	cheat->address = _parAddr(op1);
 	cheat->width = width;
 	cheat->operand = op2 & (0xFFFFFFFFU >> ((4 - width) * 8));
@@ -109,7 +108,7 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	switch (condition) {
 	case PAR3_COND_OTHER:
 		// We shouldn't be able to get here
-		GBALog(0, GBA_LOG_ERROR, "Unexpectedly created 'other' PARv3 code");
+		mLOG(CHEATS, ERROR, "Unexpectedly created 'other' PARv3 code");
 		cheat->type = CHEAT_IF_LAND;
 		cheat->operand = 0;
 		break;
@@ -139,7 +138,7 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 }
 
 static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
-	struct GBACheat* cheat;
+	struct mCheat* cheat;
 	switch (op2 & 0xFF000000) {
 	case PAR3_OTHER_SLOWDOWN:
 		// TODO: Slowdown
@@ -148,7 +147,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 	case PAR3_OTHER_BUTTON_2:
 	case PAR3_OTHER_BUTTON_4:
 		// TODO: Button
-		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
+		mLOG(CHEATS, STUB, "GameShark button unimplemented");
 		return false;
 	// TODO: Fix overriding existing patches
 	case PAR3_OTHER_PATCH_1:
@@ -188,19 +187,19 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		}
 		return false;
 	case PAR3_OTHER_FILL_1:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
 		cheats->incompleteCheat = cheat;
 		break;
 	case PAR3_OTHER_FILL_2:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
 		cheats->incompleteCheat = cheat;
 		break;
 	case PAR3_OTHER_FILL_4:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 3;
 		cheats->incompleteCheat = cheat;
@@ -253,7 +252,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	}
 
 	int width = 1 << ((op1 & PAR3_WIDTH) >> PAR3_WIDTH_BASE);
-	struct GBACheat* cheat = GBACheatListAppend(&cheats->list);
+	struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
 	cheat->address = _parAddr(op1);
 	cheat->operandOffset = 0;
 	cheat->addressOffset = 0;
@@ -293,7 +292,6 @@ bool GBACheatAddProActionReplay(struct GBACheatSet* set, uint32_t op1, uint32_t 
 	uint32_t o2 = op2;
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
-	GBACheatRegisterLine(set, line);
 
 	switch (set->gsaVersion) {
 	case 0:

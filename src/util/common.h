@@ -6,9 +6,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#ifndef PSP2
 #include <ctype.h>
-#endif
 #include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -21,15 +19,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+// WinSock2 gets very angry if it's included too late
+#include <winsock2.h>
+#endif
 #ifdef _MSC_VER
+#include <Windows.h>
 #include <sys/types.h>
 typedef intptr_t ssize_t;
-#define inline __inline
+#define PATH_MAX MAX_PATH
 #define restrict __restrict
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define ftruncate _chsize
 #define snprintf _snprintf
+#define strdup _strdup
+#define lseek _lseek
 #elif defined(__wii__)
 typedef intptr_t ssize_t;
 #else
@@ -46,10 +51,32 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
-#ifdef ANDROID
-#ifndef restrict
-#define restrict __restrict
+#ifndef _MSC_VER
+#define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
+#define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
+#define ATOMIC_ADD(DST, OP) __atomic_add_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_OR(DST, OP) __atomic_or_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_AND(DST, OP) __atomic_and_fetch(&DST, OP, __ATOMIC_RELEASE)
+#define ATOMIC_CMPXCHG(DST, EXPECTED, SRC) __atomic_compare_exchange_n(&DST, &EXPECTED, SRC, true,__ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+#else
+// TODO
+#define ATOMIC_STORE(DST, SRC) DST = SRC
+#define ATOMIC_LOAD(DST, SRC) DST = SRC
+#define ATOMIC_ADD(DST, OP) DST += OP
+#define ATOMIC_OR(DST, OP) DST |= OP
+#define ATOMIC_AND(DST, OP) DST &= OP
+#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
 #endif
+
+#if defined(_3DS) || defined(GEKKO) || defined(PSP2)
+// newlib doesn't support %z properly by default
+#define PRIz ""
+#elif defined(_WIN64)
+#define PRIz "ll"
+#elif defined(_WIN32)
+#define PRIz ""
+#else
+#define PRIz "z"
 #endif
 
 #if defined(__PPC__) || defined(__POWERPC__)
@@ -91,12 +118,12 @@ typedef intptr_t ssize_t;
 #error Big endian build not supported on this platform.
 #endif
 #else
-#define LOAD_64LE(DEST, ADDR, ARR) DEST = ((uint64_t*) ARR)[(ADDR) >> 3]
-#define LOAD_32LE(DEST, ADDR, ARR) DEST = ((uint32_t*) ARR)[(ADDR) >> 2]
-#define LOAD_16LE(DEST, ADDR, ARR) DEST = ((uint16_t*) ARR)[(ADDR) >> 1]
-#define STORE_64LE(SRC, ADDR, ARR) ((uint64_t*) ARR)[(ADDR) >> 3] = SRC
-#define STORE_32LE(SRC, ADDR, ARR) ((uint32_t*) ARR)[(ADDR) >> 2] = SRC
-#define STORE_16LE(SRC, ADDR, ARR) ((uint16_t*) ARR)[(ADDR) >> 1] = SRC
+#define LOAD_64LE(DEST, ADDR, ARR) DEST = *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_32LE(DEST, ADDR, ARR) DEST = *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define LOAD_16LE(DEST, ADDR, ARR) DEST = *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR))
+#define STORE_64LE(SRC, ADDR, ARR) *(uint64_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_32LE(SRC, ADDR, ARR) *(uint32_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
+#define STORE_16LE(SRC, ADDR, ARR) *(uint16_t*) ((uintptr_t) (ARR) + (size_t) (ADDR)) = SRC
 #endif
 
 #define MAKE_MASK(START, END) (((1 << ((END) - (START))) - 1) << (START))

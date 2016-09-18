@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/mman.h>
+#include <sys/time.h>
 #else
 #include <windows.h>
 #endif
@@ -48,6 +49,12 @@ struct VFile* VFileOpenFD(const char* path, int flags) {
 
 struct VFile* VFileFromFD(int fd) {
 	if (fd < 0) {
+		return 0;
+	}
+
+	struct stat stat;
+	if (fstat(fd, &stat) < 0 || S_ISDIR(stat.st_mode)) {
+		close(fd);
 		return 0;
 	}
 
@@ -159,8 +166,15 @@ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 #ifndef _WIN32
+	futimes(vfd->fd, NULL);
 	return fsync(vfd->fd) == 0;
 #else
-	return FlushFileBuffers((HANDLE) _get_osfhandle(vfd->fd));
+	HANDLE h = (HANDLE) _get_osfhandle(vfd->fd);
+	FILETIME ft;
+	SYSTEMTIME st;
+	GetSystemTime(&st);
+	SystemTimeToFileTime(&st, &ft);
+	SetFileTime(h, NULL, &ft, &ft);
+	return FlushFileBuffers(h);
 #endif
 }

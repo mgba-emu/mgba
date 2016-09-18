@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<livearea style="a1" format-ver="01.00">
+	<livearea-background>
+		<image>bg.png</image>
+	</livearea-background>
+
+	<gate>
+		<startup-image>startup.png</startup-image>
+	</gate>
+
+	<frame id="frame3">
+		<liveitem>
+			<text origin="background" align="right" y="-250" margin-right="5">
+				<str size="18" shadow="on" color="#ffffff">${VERSION_STRING}</str>
+			</text>
+		</liveitem>
+	</frame>
+</livearea>

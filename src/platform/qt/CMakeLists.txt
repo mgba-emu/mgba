@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 enable_language(CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
+if(NOT MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 if(APPLE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmacosx-version-min=10.7")
@@ -66,6 +68,7 @@ endif()
 
 set(SOURCE_FILES
 	AboutScreen.cpp
+	ArchiveInspector.cpp
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
@@ -83,6 +86,7 @@ set(SOURCE_FILES
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
+	LibraryModel.cpp
 	LoadSaveState.cpp
 	LogController.cpp
 	LogView.cpp
@@ -100,12 +104,15 @@ set(SOURCE_FILES
 	ShortcutController.cpp
 	ShortcutView.cpp
 	Swatch.cpp
+	TilePainter.cpp
+	TileView.cpp
 	Window.cpp
 	VFileDevice.cpp
 	VideoView.cpp)
 
-qt5_wrap_ui(UI_FILES
+set(UI_FILES
 	AboutScreen.ui
+	ArchiveInspector.ui
 	CheatsView.ui
 	GIFView.ui
 	IOViewer.ui
@@ -119,7 +126,16 @@ qt5_wrap_ui(UI_FILES
 	SettingsView.ui
 	ShaderSelector.ui
 	ShortcutView.ui
+	TileView.ui
 	VideoView.ui)
+
+set(GBA_SRC
+	GBAOverride.cpp)
+
+set(GB_SRC
+	GBOverride.cpp)
+
+qt5_wrap_ui(UI_SRC ${UI_FILES})
 
 set(QT_LIBRARIES)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5,libqt5network5")
@@ -127,6 +143,14 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5
 set(AUDIO_SRC)
 if(BUILD_SDL)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
+endif()
+
+if(M_CORE_GBA)
+	list(APPEND PLATFORM_SRC ${GBA_SRC})
+endif()
+
+if(M_CORE_GB)
+	list(APPEND PLATFORM_SRC ${GB_SRC})
 endif()
 
 set(QT_DEFINES)
@@ -165,18 +189,37 @@ if(WIN32)
 		list(APPEND QT_LIBRARIES qwindows imm32)
 	endif()
 endif()
-if(APPLE)
-	set(DATA_DIR Applications/${PROJECT_NAME}.app/Contents/Resources)
-else()
-	set(DATA_DIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
+if(NOT DEFINED DATADIR)
+	if(APPLE)
+		set(DATADIR Applications/${PROJECT_NAME}.app/Contents/Resources)
+	else()
+		set(DATADIR ${CMAKE_INSTALL_DATADIR}/${BINARY_NAME})
+	endif()
 endif()
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATA_DIR} COMPONENT ${BINARY_NAME}-qt)
-install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATA_DIR} COMPONENT ${BINARY_NAME}-qt)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
+install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 if(NOT WIN32 AND NOT APPLE)
-	list(APPEND QT_DEFINES DATA_DIR="${DATA_DIR}")
+	list(APPEND QT_DEFINES DATADIR="${DATADIR}")
 endif()
 
-add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_FILES} ${AUDIO_SRC} ${RESOURCES})
+find_package(Qt5LinguistTools)
+if(Qt5LinguistTools_FOUND)
+	set(TRANSLATION_FILES)
+	set(TRANSLATION_QRC "${CMAKE_CURRENT_BINARY_DIR}/ts.qrc")
+	file(GLOB TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ts/${BINARY_NAME}-*.ts")
+	if(UPDATE_TRANSLATIONS)
+		qt5_create_translation(TRANSLATION_FILES ${SOURCE_FILES} ${UI_FILES} ${TS_FILES} OPTIONS -locations absolute -no-obsolete)
+	else()
+		qt5_add_translation(TRANSLATION_FILES ${TS_FILES})
+	endif()
+	add_custom_command(OUTPUT ${TRANSLATION_QRC}
+		               COMMAND ${CMAKE_COMMAND} -DTRANSLATION_QRC:FILEPATH="${TRANSLATION_QRC}" -DTRANSLATION_FILES="${TRANSLATION_FILES}" -P "${CMAKE_CURRENT_SOURCE_DIR}/ts.cmake"
+		               DEPENDS ${TRANSLATION_FILES})
+	qt5_add_resources(TRANSLATION_RESOURCES ${TRANSLATION_QRC})
+	list(APPEND RESOURCES ${TRANSLATION_RESOURCES})
+endif()
+
+add_executable(${BINARY_NAME}-qt WIN32 MACOSX_BUNDLE main.cpp ${CMAKE_SOURCE_DIR}/res/mgba.icns ${SOURCE_FILES} ${PLATFORM_SRC} ${UI_SRC} ${AUDIO_SRC} ${RESOURCES})
 set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/info.plist.in COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}")
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::OpenGL Qt5::Network)

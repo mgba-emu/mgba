@@ -26,8 +26,6 @@ extern "C" {
 #include "platform/video-backend.h"
 }
 
-struct GBAThread;
-
 namespace QGBA {
 
 class EmptyGLWidget : public QGLWidget {
@@ -45,7 +43,7 @@ class DisplayGL : public Display {
 Q_OBJECT
 
 public:
-	DisplayGL(const QGLFormat& format, bool force1 = false, QWidget* parent = nullptr);
+	DisplayGL(const QGLFormat& format, QWidget* parent = nullptr);
 	~DisplayGL();
 
 	bool isDrawing() const override { return m_isDrawing; }
@@ -53,7 +51,7 @@ public:
 	VideoShader* shaders() override;
 
 public slots:
-	void startDrawing(GBAThread* context) override;
+	void startDrawing(mCoreThread* context) override;
 	void stopDrawing() override;
 	void pauseDrawing() override;
 	void unpauseDrawing() override;
@@ -75,17 +73,17 @@ private:
 	QGLWidget* m_gl;
 	PainterGL* m_painter;
 	QThread* m_drawThread;
-	GBAThread* m_context;
+	mCoreThread* m_context;
 };
 
 class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QGLWidget* parent, QGLFormat::OpenGLVersionFlags = QGLFormat::OpenGL_Version_1_1);
+	PainterGL(int majorVersion, QGLWidget* parent);
 	~PainterGL();
 
-	void setContext(GBAThread*);
+	void setContext(mCoreThread*);
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
 
@@ -118,7 +116,7 @@ private:
 	QGLWidget* m_gl;
 	bool m_active;
 	bool m_started;
-	GBAThread* m_context;
+	mCoreThread* m_context;
 	bool m_supportsShaders;
 	VideoShader m_shader;
 	VideoBackend* m_backend;

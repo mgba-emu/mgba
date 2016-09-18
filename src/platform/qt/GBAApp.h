@@ -15,8 +15,10 @@
 struct NoIntroDB;
 
 extern "C" {
-#include "gba/sio.h"
+#include "core/log.h"
 }
+
+mLOG_DECLARE_CATEGORY(QT);
 
 namespace QGBA {
 

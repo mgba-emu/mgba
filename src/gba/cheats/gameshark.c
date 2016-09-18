@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "gameshark.h"
 
-#include "gba/cheats/cheats-private.h"
 #include "gba/cheats/parv3.h"
 #include "gba/gba.h"
 #include "util/string.h"
@@ -90,11 +89,11 @@ void GBACheatSetGameSharkVersion(struct GBACheatSet* cheats, int version) {
 
 bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	enum GBAGameSharkType type = op1 >> 28;
-	struct GBACheat* cheat = 0;
+	struct mCheat* cheat = 0;
 
 	if (cheats->incompleteCheat) {
 		if (cheats->remainingAddresses > 0) {
-			cheat = GBACheatListAppend(&cheats->list);
+			cheat = mCheatListAppend(&cheats->d.list);
 			cheat->type = CHEAT_ASSIGN;
 			cheat->width = 4;
 			cheat->address = op1;
@@ -103,7 +102,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 			--cheats->remainingAddresses;
 		}
 		if (cheats->remainingAddresses > 0) {
-			cheat = GBACheatListAppend(&cheats->list);
+			cheat = mCheatListAppend(&cheats->d.list);
 			cheat->type = CHEAT_ASSIGN;
 			cheat->width = 4;
 			cheat->address = op2;
@@ -119,26 +118,26 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 
 	switch (type) {
 	case GSA_ASSIGN_1:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 1;
 		cheat->address = op1 & 0x0FFFFFFF;
 		break;
 	case GSA_ASSIGN_2:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 2;
 		cheat->address = op1 & 0x0FFFFFFF;
 		break;
 	case GSA_ASSIGN_4:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 4;
 		cheat->address = op1 & 0x0FFFFFFF;
 		break;
 	case GSA_ASSIGN_LIST:
 		cheats->remainingAddresses = (op1 & 0xFFFF) - 1;
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 4;
 		cheat->address = op2;
@@ -152,20 +151,20 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		return true;
 	case GSA_BUTTON:
 		// TODO: Implement button
-		GBALog(0, GBA_LOG_STUB, "GameShark button unimplemented");
+		mLOG(CHEATS, STUB, "GameShark button unimplemented");
 		return false;
 	case GSA_IF_EQ:
 		if (op1 == 0xDEADFACE) {
 			GBACheatReseedGameShark(cheats->gsaSeeds, op2, _gsa1T1, _gsa1T2);
 			return true;
 		}
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_IF_EQ;
 		cheat->width = 2;
 		cheat->address = op1 & 0x0FFFFFFF;
 		break;
 	case GSA_IF_EQ_RANGE:
-		cheat = GBACheatListAppend(&cheats->list);
+		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_IF_EQ;
 		cheat->width = 2;
 		cheat->address = op2 & 0x0FFFFFFF;
@@ -195,7 +194,6 @@ bool GBACheatAddGameShark(struct GBACheatSet* set, uint32_t op1, uint32_t op2) {
 	uint32_t o2 = op2;
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
-	GBACheatRegisterLine(set, line);
 
 	switch (set->gsaVersion) {
 	case 0:

@@ -12,7 +12,7 @@
 #include <QStaticText>
 #include <QVector>
 
-struct ARMCore;
+struct mCore;
 
 namespace QGBA {
 
@@ -26,7 +26,8 @@ public:
 
 	void setController(GameController* controller);
 
-	void setRegion(uint32_t base, uint32_t size, const QString& name = QString());
+	void setRegion(uint32_t base, uint32_t size, const QString& name = QString(), int segment = -1);
+	void setSegment(int segment);
 
 	void setAlignment(int);
 	int alignment() const { return m_align; }
@@ -60,7 +61,7 @@ private:
 
 	void serialize(QDataStream* stream);
 
-	ARMCore* m_cpu;
+	mCore* m_core;
 	QFont m_font;
 	int m_cellHeight;
 	int m_letterWidth;
@@ -77,6 +78,7 @@ private:
 	uint32_t m_selectionAnchor;
 	uint32_t m_buffer;
 	int m_bufferedNybbles;
+	int m_currentBank;
 };
 
 }

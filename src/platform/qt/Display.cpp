@@ -9,7 +9,7 @@
 #include "DisplayQt.h"
 
 extern "C" {
-#include "gba/video.h"
+#include "gb/video.h"
 }
 
 using namespace QGBA;
@@ -29,11 +29,12 @@ Display* Display::create(QWidget* parent) {
 	switch (s_driver) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
-		return new DisplayGL(format, false, parent);
+		return new DisplayGL(format, parent);
 #endif
 #ifdef BUILD_GL
 	case Driver::OPENGL1:
-		return new DisplayGL(format, true, parent);
+		format.setVersion(1, 4);
+		return new DisplayGL(format, parent);
 #endif
 
 	case Driver::QT:
@@ -41,7 +42,7 @@ Display* Display::create(QWidget* parent) {
 
 	default:
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
-		return new DisplayGL(format, false, parent);
+		return new DisplayGL(format, parent);
 #else
 		return new DisplayQt(parent);
 #endif
@@ -54,7 +55,7 @@ Display::Display(QWidget* parent)
 	, m_filter(false)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-	setMinimumSize(VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS);
+	setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 	connect(&m_mouseTimer, SIGNAL(timeout()), this, SIGNAL(hideCursor()));
 	m_mouseTimer.setSingleShot(true);
 	m_mouseTimer.setInterval(MOUSE_DISAPPEAR_TIMER);

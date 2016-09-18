@@ -12,6 +12,12 @@
 
 #include <QMap>
 
+#ifdef M_CORE_GB
+extern "C" {
+#include "gb/video.h"
+}
+#endif
+
 using namespace QGBA;
 
 QMap<QString, QString> VideoView::s_acodecMap;
@@ -34,10 +40,10 @@ bool VideoView::Preset::compatible(const Preset& other) const {
 	if (other.vbr && vbr && other.vbr != vbr) {
 		return false;
 	}
-	if (other.width && width && other.width != width) {
+	if (other.dims.width() && dims.width() && other.dims.width() != dims.width()) {
 		return false;
 	}
-	if (other.height && height && other.height != height) {
+	if (other.dims.height() && dims.height() && other.dims.height() != dims.height()) {
 		return false;
 	}
 	return true;
@@ -48,6 +54,10 @@ VideoView::VideoView(QWidget* parent)
 	, m_audioCodecCstr(nullptr)
 	, m_videoCodecCstr(nullptr)
 	, m_containerCstr(nullptr)
+	, m_nativeWidth(0)
+	, m_nativeHeight(0)
+	, m_width(1)
+	, m_height(1)
 {
 	m_ui.setupUi(this);
 
@@ -96,67 +106,80 @@ VideoView::VideoView(QWidget* parent)
 
 	FFmpegEncoderInit(&m_encoder);
 
-	addPreset(m_ui.preset1080, (Preset) {
+	updatePresets();
+
+	setPreset({
+		.container = "MKV",
+		.vcodec = "PNG",
+		.acodec = "FLAC",
+		.vbr = 0,
+		.abr = 0,
+		.dims = QSize(),
+	});
+	showAdvanced(false);
+}
+
+void VideoView::updatePresets() {
+	m_presets.clear();
+
+	addPreset(m_ui.preset1080, {
 		.container = QString(),
 		.vcodec = QString(),
 		.acodec = QString(),
 		.vbr = 0,
 		.abr = 0,
-		.width = 1620,
-		.height = 1080
+		.dims = maintainAspect(QSize(1920, 1080))
 	});
 
-	addPreset(m_ui.preset720, (Preset) {
+	addPreset(m_ui.preset720, {
 		.container = QString(),
 		.vcodec = QString(),
 		.acodec = QString(),
 		.vbr = 0,
 		.abr = 0,
-		.width = 1080,
-		.height = 720
+		.dims = maintainAspect(QSize(1280, 720))
 	});
 
-	addPreset(m_ui.preset480, (Preset) {
+	addPreset(m_ui.preset480, {
 		.container = QString(),
 		.vcodec = QString(),
 		.acodec = QString(),
 		.vbr = 0,
 		.abr = 0,
-		.width = 720,
-		.height = 480
+		.dims = maintainAspect(QSize(720, 480))
 	});
 
-	addPreset(m_ui.preset160, (Preset) {
-		.container = QString(),
-		.vcodec = QString(),
-		.acodec = QString(),
-		.vbr = 0,
-		.abr = 0,
-		.width = VIDEO_HORIZONTAL_PIXELS,
-		.height = VIDEO_VERTICAL_PIXELS
-	});
+	if (m_nativeWidth && m_nativeHeight) {
+		addPreset(m_ui.presetNative, {
+			.container = QString(),
+			.vcodec = QString(),
+			.acodec = QString(),
+			.vbr = 0,
+			.abr = 0,
+			.dims = QSize(m_nativeWidth, m_nativeHeight)
+		});
+		m_ui.presetNative->setEnabled(true);
+	}
 
-	addPreset(m_ui.presetHQ, (Preset) {
+	addPreset(m_ui.presetHQ, {
 		.container = "MP4",
 		.vcodec = "h.264",
 		.acodec = "AAC",
 		.vbr = 8000,
 		.abr = 384,
-		.width = 1620,
-		.height = 1080
+		.dims = maintainAspect(QSize(1920, 1080))
 	});
 
-	addPreset(m_ui.presetYoutube, (Preset) {
+	addPreset(m_ui.presetYoutube, {
 		.container = "MP4",
 		.vcodec = "h.264",
 		.acodec = "AAC",
 		.vbr = 5000,
 		.abr = 256,
-		.width = 1080,
-		.height = 720
+		.dims = maintainAspect(QSize(1280, 720))
 	});
 
-	addPreset(m_ui.presetWebM, (Preset) {
+	addPreset(m_ui.presetWebM, {
 		.container = "WebM",
 		.vcodec = "VP8",
 		.acodec = "Vorbis",
@@ -164,27 +187,16 @@ VideoView::VideoView(QWidget* parent)
 		.abr = 128
 	});
 
-	addPreset(m_ui.presetLossless, (Preset) {
-		.container = "MKV",
-		.vcodec = "PNG",
-		.acodec = "FLAC",
-		.vbr = 0,
-		.abr = 0,
-		.width = VIDEO_HORIZONTAL_PIXELS,
-		.height = VIDEO_VERTICAL_PIXELS,
-	});
-
-	setPreset((Preset) {
-		.container = "MKV",
-		.vcodec = "PNG",
-		.acodec = "FLAC",
-		.vbr = 0,
-		.abr = 0,
-		.width = VIDEO_HORIZONTAL_PIXELS,
-		.height = VIDEO_VERTICAL_PIXELS,
-	});
-
-	showAdvanced(false);
+	if (m_nativeWidth && m_nativeHeight) {
+		addPreset(m_ui.presetLossless, {
+			.container = "MKV",
+			.vcodec = "PNG",
+			.acodec = "FLAC",
+			.vbr = 0,
+			.abr = 0,
+			.dims = QSize(m_nativeWidth, m_nativeHeight)
+		});
+	}
 }
 
 VideoView::~VideoView() {
@@ -199,7 +211,7 @@ void VideoView::startRecording() {
 		return;
 	}
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		LOG(ERROR) << tr("Failed to open output video file: %1").arg(m_filename);
+		LOG(QT, ERROR) << tr("Failed to open output video file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);
@@ -212,6 +224,23 @@ void VideoView::stopRecording() {
 	FFmpegEncoderClose(&m_encoder);
 	m_ui.stop->setEnabled(false);
 	validateSettings();
+}
+
+void VideoView::setNativeResolution(const QSize& dims) {
+	m_nativeWidth = dims.width();
+	m_nativeHeight = dims.height();
+	m_ui.presetNative->setText(tr("Native (%0x%1)").arg(m_nativeWidth).arg(m_nativeHeight));
+	QSize newSize = maintainAspect(QSize(m_width, m_height));
+	m_width = newSize.width();
+	m_height = newSize.height();
+	updateAspectRatio(m_nativeWidth, m_nativeHeight, false);
+	updatePresets();
+	for (auto iterator = m_presets.constBegin(); iterator != m_presets.constEnd(); ++iterator) {
+		if (iterator.key()->isChecked()) {
+			setPreset(*iterator);
+			break;
+		}
+	}
 }
 
 void VideoView::selectFile() {
@@ -295,7 +324,7 @@ void VideoView::setVideoBitrate(int br, bool manual) {
 
 void VideoView::setWidth(int width, bool manual) {
 	m_width = width;
-	updateAspectRatio(width, 0);
+	updateAspectRatio(width, 0, false);
 	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
 	if (manual) {
 		uncheckIncompatible();
@@ -304,7 +333,7 @@ void VideoView::setWidth(int width, bool manual) {
 
 void VideoView::setHeight(int height, bool manual) {
 	m_height = height;
-	updateAspectRatio(0, height);
+	updateAspectRatio(0, height, false);
 	FFmpegEncoderSetDimensions(&m_encoder, m_width, m_height);
 	if (manual) {
 		uncheckIncompatible();
@@ -401,8 +430,7 @@ void VideoView::uncheckIncompatible() {
 		.acodec = m_audioCodec,
 		.vbr = m_vbr / 1000,
 		.abr = m_abr / 1000,
-		.width = m_width,
-		.height = m_height
+		.dims = QSize(m_width, m_height)
 	};
 
 	m_ui.presets->setExclusive(false);
@@ -419,8 +447,8 @@ void VideoView::uncheckIncompatible() {
 	m_ui.presets->setExclusive(true);
 	m_ui.resolutions->setExclusive(true);
 
-	if (current.compatible(m_presets[m_ui.preset160])) {
-		safelyCheck(m_ui.preset160);
+	if (current.compatible(m_presets[m_ui.presetNative])) {
+		safelyCheck(m_ui.presetNative);
 	}
 	if (current.compatible(m_presets[m_ui.preset480])) {
 		safelyCheck(m_ui.preset480);
@@ -465,6 +493,7 @@ void VideoView::safelySet(QComboBox* box, const QString& value) {
 
 void VideoView::addPreset(QAbstractButton* button, const Preset& preset) {
 	m_presets[button] = preset;
+	button->disconnect();
 	connect(button, &QAbstractButton::pressed, [this, preset]() {
 		setPreset(preset);
 	});
@@ -491,17 +520,27 @@ void VideoView::setPreset(const Preset& preset) {
 		setVideoBitrate(preset.vbr, false);
 		safelySet(m_ui.vbr, preset.vbr);
 	}
-	if (preset.width) {
-		setWidth(preset.width, false);
-		safelySet(m_ui.width, preset.width);
+	if (preset.dims.width() > 0) {
+		setWidth(preset.dims.width(), false);
+		safelySet(m_ui.width, preset.dims.width());
 	}
-	if (preset.height) {
-		setHeight(preset.height, false);
-		safelySet(m_ui.height, preset.height);
+	if (preset.dims.height() > 0) {
+		setHeight(preset.dims.height(), false);
+		safelySet(m_ui.height, preset.dims.height());
 	}
 
 	uncheckIncompatible();
 	validateSettings();
+}
+
+QSize VideoView::maintainAspect(const QSize& size) {
+	QSize ds = size;
+	if (ds.width() * m_nativeHeight > ds.height() * m_nativeWidth) {
+		ds.setWidth(ds.height() * m_nativeWidth / m_nativeHeight);
+	} else if (ds.width() * m_nativeHeight < ds.height() * m_nativeWidth) {
+		ds.setHeight(ds.width() * m_nativeHeight / m_nativeWidth);
+	}
+	return ds;
 }
 
 #endif

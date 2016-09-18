@@ -12,9 +12,7 @@
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #include "xlocale.h"
-#endif
-
-#ifndef HAVE_LOCALE
+#elif !defined(HAVE_LOCALE)
 typedef const char* locale_t;
 #endif
 

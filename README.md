@@ -1,9 +1,9 @@
 mGBA
 ====
 
-mGBA is a new emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack.
+mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.
 
-Up-to-date news and downloads can be found at [mgba.io](http://mgba.io/).
+Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 
 [![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
 
@@ -11,6 +11,7 @@ Features
 --------
 
 - Near full Game Boy Advance hardware support[<sup>[1]</sup>](#missing).
+- Game Boy/Game Boy Color hardware support.
 - Fast emulation. Known to run at full speed even on low end hardware, such as netbooks.
 - Qt and SDL ports for a heavy-weight and a light-weight frontend.
 - Local (same computer) link cable support.
@@ -19,6 +20,7 @@ Features
 - Real-time clock support, even without configuration.
 - A built-in BIOS implementation, and ability to load external BIOS files.
 - Turbo/fast-forward support by holding Tab.
+- Rewind by holding Backquote.
 - Frameskip, configurable up to 10.
 - Screenshot support.
 - Cheat code support.
@@ -30,17 +32,20 @@ Features
 - Game debugging via a command-line interface (not available with Qt port) and GDB remote support, compatible with IDA Pro.
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
+- Cores available for RetroArch/Libretro and OpenEmu.
+- Many, many smaller things.
 
 ### Planned features
 
-- Networked multiplayer link cable support ([Bug #1](http://mgba.io/b/1)).
-- Dolphin/JOY bus link cable support ([Bug #73](http://mgba.io/b/73)).
-- Re-recording support for tool-assist runs. ([Bugzilla keyword "TASBlocker"](https://endrift.com/mgba/bugs/buglist.cgi?quicksearch=TASBlocker))
-- Lua support for scripting ([Bug #62](http://mgba.io/b/62)).
-- A comprehensive debug suite ([Bug #132](http://mgba.io/b/132)).
-- OpenEmu core.
-- e-Reader support. ([Bug #171](http://mgba.io/b/171))
-
+- Networked multiplayer link cable support.
+- Dolphin/JOY bus link cable support.
+- M4A audio mixing, for higher quality sound than hardware.
+- Re-recording support for tool-assist runs.
+- Lua support for scripting.
+- A comprehensive debug suite.
+- e-Reader support.
+- Wireless adapter support.
+- Game Boy Printer support.
 
 Supported Platforms
 -------------------
@@ -49,6 +54,9 @@ Supported Platforms
 - OS X 10.7 (Lion)[<sup>[3]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
+- Nintendo 3DS
+- Wii
+- PlayStation Vita
 
 Other Unix-like platforms, such as OpenBSD, are known to work as well, but are untested and not fully supported.
 
@@ -64,7 +72,7 @@ Downloads can be found on the official website, in the [Downloads][downloads] se
 Controls
 --------
 
-Controls are configurable in the menu. The default gamepad controls are mapped so as to work with a DualShock 3. The default keyboard controls are as follows:
+Controls are configurable in the settings menu. Many game controllers should be automatically mapped by default. The default keyboard controls are as follows:
 
 - **A**: X
 - **B**: Z
@@ -115,8 +123,10 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - zlib and libpng: for screenshot support and savestate-in-PNG support.
 - libedit: for command-line debugger support.
 - ffmpeg or libav: for video recording.
-- libzip: for loading ROMs stored in zip files.
+- libzip or zlib: for loading ROMs stored in zip files.
 - ImageMagick: for GIF recording.
+
+Both libpng and zlib are included with the emulator, so they do not need to be externally compiled first.
 
 Footnotes
 ---------
@@ -136,11 +146,14 @@ Footnotes
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2015 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+mGBA is Copyright © 2013 – 2016 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 mGBA contains the following third-party libraries:
 
-- [inih](https://code.google.com/p/inih/), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
-- [blip-buf](https://code.google.com/p/blip-buf/), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
+- [inih](https://github.com/benhoyt/inih), which is copyright © 2009 Ben Hoyt and used under a BSD 3-clause license.
+- [blip-buf](https://code.google.com/archive/p/blip-buf), which is copyright © 2003 – 2009 Shay Green and used under a Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), which is public domain.
-- [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) implementation by Austin Appleby, which is public domain.
+- [MurmurHash3](https://github.com/aappleby/smhasher) implementation by Austin Appleby, which is public domain.
+- [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), which is public domain.
+
+If you are a game publisher and wish to license mGBA for commercial usage, please email [licensing@mgba.io](mailto:licensing@mgba.io) for more information.

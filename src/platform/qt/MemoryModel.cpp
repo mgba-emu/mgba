@@ -19,14 +19,14 @@
 #include <QWheelEvent>
 
 extern "C" {
-#include "gba/memory.h"
+#include "core/core.h"
 }
 
 using namespace QGBA;
 
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
-	, m_cpu(nullptr)
+	, m_core(nullptr)
 	, m_top(0)
 	, m_align(1)
 	, m_selection(0, 0)
@@ -87,17 +87,23 @@ MemoryModel::MemoryModel(QWidget* parent)
 }
 
 void MemoryModel::setController(GameController* controller) {
-	m_cpu = controller->thread()->cpu;
+	m_core = controller->thread()->core;
 }
 
-void MemoryModel::setRegion(uint32_t base, uint32_t size, const QString& name) {
+void MemoryModel::setRegion(uint32_t base, uint32_t size, const QString& name, int segment) {
 	m_top = 0;
 	m_base = base;
 	m_size = size;
 	m_regionName = name;
 	m_regionName.prepare(QTransform(), m_font);
+	m_currentBank = segment;
 	verticalScrollBar()->setRange(0, (size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
 	verticalScrollBar()->setValue(0);
+	viewport()->update();
+}
+
+void MemoryModel::setSegment(int segment) {
+	m_currentBank = segment;
 	viewport()->update();
 }
 
@@ -158,7 +164,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		LOG(WARN) << tr("Failed to open output file: %1").arg(filename);
+		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QDataStream stream(&outfile);
@@ -169,17 +175,17 @@ void MemoryModel::serialize(QDataStream* stream) {
 	switch (m_align) {
 	case 1:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << GBAView8(m_cpu, i);
+			*stream << m_core->rawRead8(m_core, i, m_currentBank);
 		}
 		break;
 	case 2:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << GBAView16(m_cpu, i);
+			*stream << m_core->rawRead16(m_core, i, m_currentBank);
 		}
 		break;
 	case 4:
 		for (uint32_t i = m_selection.first; i < m_selection.second; i += m_align) {
-			*stream << GBAView32(m_cpu, i);
+			*stream << m_core->rawRead32(m_core, i, m_currentBank);
 		}
 		break;
 	}
@@ -198,6 +204,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	painter.setPen(palette.color(QPalette::WindowText));
 	static QChar c0('0');
 	static QString arg("%0");
+	static QString arg2("%0:%1");
 	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
@@ -210,12 +217,23 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
-		QString data = arg.arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
+		if ((y + m_top) * 16 >= m_size) {
+			break;
+		}
+		QString data;
+		if (m_currentBank >= 0) {
+			data = arg2.arg(m_currentBank, 2, 16, c0).arg((y + m_top) * 16 + m_base, 4, 16, c0).toUpper();
+		} else {
+			data = arg.arg((y + m_top) * 16 + m_base, 8, 16, c0).toUpper();
+		}
 		painter.drawText(QRectF(QPointF(0, yp), QSizeF(m_margins.left(), m_cellHeight)), Qt::AlignHCenter, data);
 		switch (m_align) {
 		case 2:
 			for (int x = 0; x < 16; x += 2) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
 					                        QSizeF(m_cellSize.width() * 2, m_cellSize.height())),
@@ -230,7 +248,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
-				uint16_t b = GBAView16(m_cpu, address);
+				uint16_t b = m_core->rawRead16(m_core, address, m_currentBank);
 				painter.drawStaticText(
 				    QPointF(m_cellSize.width() * (x + 1.0) - 2 * m_letterWidth + m_margins.left(), yp),
 				    m_staticNumbers[(b >> 8) & 0xFF]);
@@ -241,6 +259,9 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		case 4:
 			for (int x = 0; x < 16; x += 4) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp),
 					                        QSizeF(m_cellSize.width() * 4, m_cellSize.height())),
@@ -255,7 +276,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
-				uint32_t b = GBAView32(m_cpu, address);
+				uint32_t b = m_core->rawRead32(m_core, address, m_currentBank);
 				painter.drawStaticText(
 				    QPointF(m_cellSize.width() * (x + 2.0) - 4 * m_letterWidth + m_margins.left(), yp),
 				    m_staticNumbers[(b >> 24) & 0xFF]);
@@ -273,6 +294,9 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		default:
 			for (int x = 0; x < 16; ++x) {
 				uint32_t address = (y + m_top) * 16 + x + m_base;
+				if (address >= m_base + m_size) {
+					break;
+				}
 				if (isInSelection(address)) {
 					painter.fillRect(QRectF(QPointF(m_cellSize.width() * x + m_margins.left(), yp), m_cellSize),
 					                 palette.highlight());
@@ -285,7 +309,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 				} else {
 					painter.setPen(palette.color(QPalette::WindowText));
 				}
-				uint8_t b = GBAView8(m_cpu, address);
+				uint8_t b = m_core->rawRead8(m_core, address, m_currentBank);
 				painter.drawStaticText(QPointF(m_cellSize.width() * (x + 0.5) - m_letterWidth + m_margins.left(), yp),
 				                       m_staticNumbers[b]);
 			}
@@ -293,7 +317,7 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 		}
 		painter.setPen(palette.color(QPalette::WindowText));
 		for (int x = 0; x < 16; ++x) {
-			uint8_t b = GBAView8(m_cpu, (y + m_top) * 16 + x + m_base);
+			uint8_t b =m_core->rawRead8(m_core, (y + m_top) * 16 + x + m_base, m_currentBank);
 			painter.drawStaticText(
 			    QPointF(viewport()->size().width() - (16 - x) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp),
 			    b < 0x80 ? m_staticAscii[b] : m_staticAscii[0]);
@@ -410,13 +434,13 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 	if (m_bufferedNybbles == m_align * 2) {
 		switch (m_align) {
 		case 1:
-			GBAPatch8(m_cpu, m_selection.first, m_buffer, nullptr);
+			m_core->rawWrite8(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		case 2:
-			GBAPatch16(m_cpu, m_selection.first, m_buffer, nullptr);
+			m_core->rawWrite16(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		case 4:
-			GBAPatch32(m_cpu, m_selection.first, m_buffer, nullptr);
+			m_core->rawWrite32(m_core, m_selection.first, m_currentBank, m_buffer);
 			break;
 		}
 		m_bufferedNybbles = 0;

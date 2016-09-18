@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/vfs.h"
 
+#include "util/string.h"
+
 #ifdef USE_LIBZIP
 #include <zip.h>
 
@@ -34,7 +36,11 @@ enum {
 	BLOCK_SIZE = 1024
 };
 #else
+#ifdef USE_MINIZIP
+#include <minizip/unzip.h>
+#else
 #include "third-party/zlib/contrib/minizip/unzip.h"
+#endif
 #include "util/memory.h"
 
 struct VDirEntryZip {
@@ -48,7 +54,7 @@ struct VDirZip {
 	struct VDir d;
 	unzFile z;
 	struct VDirEntryZip dirent;
-	bool hasNextFile;
+	bool atStart;
 };
 
 struct VFileZip {
@@ -177,7 +183,7 @@ struct VDir* VDirOpenZip(const char* path, int flags) {
 	vd->z = z;
 
 #ifndef USE_LIBZIP
-	vd->hasNextFile = true;
+	vd->atStart = true;
 #endif
 
 	vd->dirent.d.name = _vdezName;
@@ -436,9 +442,10 @@ const char* _vdezName(struct VDirEntry* vde) {
 }
 
 static enum VFSType _vdezType(struct VDirEntry* vde) {
-	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
-	UNUSED(vdez);
-	return VFS_UNKNOWN;
+	if (endswith(vde->name(vde), "/")) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }
 #else
 bool _vfzClose(struct VFile* vf) {
@@ -565,13 +572,17 @@ bool _vdzClose(struct VDir* vd) {
 
 void _vdzRewind(struct VDir* vd) {
 	struct VDirZip* vdz = (struct VDirZip*) vd;
-	vdz->hasNextFile = unzGoToFirstFile(vdz->z) == UNZ_OK;
+	vdz->atStart = unzGoToFirstFile(vdz->z) == UNZ_OK;
 }
 
 struct VDirEntry* _vdzListNext(struct VDir* vd) {
 	struct VDirZip* vdz = (struct VDirZip*) vd;
-	if (!vdz->hasNextFile) {
-		return 0;
+	if (!vdz->atStart) {
+		if (unzGoToNextFile(vdz->z) == UNZ_END_OF_LIST_OF_FILE) {
+			return 0;
+		}
+	} else {
+		vdz->atStart = false;
 	}
 	unz_file_info64 info;
 	int status = unzGetCurrentFileInfo64(vdz->z, &info, vdz->dirent.name, sizeof(vdz->dirent.name), 0, 0, 0, 0);
@@ -579,9 +590,6 @@ struct VDirEntry* _vdzListNext(struct VDir* vd) {
 		return 0;
 	}
 	vdz->dirent.fileSize = info.uncompressed_size;
-	if (unzGoToNextFile(vdz->z) == UNZ_END_OF_LIST_OF_FILE) {
-		vdz->hasNextFile = false;
-	}
 	return &vdz->dirent.d;
 }
 
@@ -654,7 +662,9 @@ const char* _vdezName(struct VDirEntry* vde) {
 
 static enum VFSType _vdezType(struct VDirEntry* vde) {
 	struct VDirEntryZip* vdez = (struct VDirEntryZip*) vde;
-	UNUSED(vdez);
-	return VFS_UNKNOWN;
+	if (endswith(vdez->name, "/")) {
+		return VFS_DIRECTORY;
+	}
+	return VFS_FILE;
 }
 #endif

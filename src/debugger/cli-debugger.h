@@ -20,11 +20,14 @@ struct CLIDebugVector {
 	enum CLIDVType {
 		CLIDV_ERROR_TYPE,
 		CLIDV_INT_TYPE,
-		CLIDV_CHAR_TYPE
+		CLIDV_CHAR_TYPE,
 	} type;
 	union {
-		int32_t intValue;
 		char* charValue;
+		struct {
+			int32_t intValue;
+			int segmentValue;
+		};
 	};
 };
 
@@ -45,14 +48,19 @@ struct CLIDebuggerSystem {
 	void (*deinit)(struct CLIDebuggerSystem*);
 	bool (*custom)(struct CLIDebuggerSystem*);
 
+	void (*disassemble)(struct CLIDebuggerSystem*, struct CLIDebugVector* dv);
 	uint32_t (*lookupIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
+	uint32_t (*lookupPlatformIdentifier)(struct CLIDebuggerSystem*, const char* name, struct CLIDebugVector* dv);
+	void (*printStatus)(struct CLIDebuggerSystem*);
 
 	struct CLIDebuggerCommandSummary* commands;
 	const char* name;
+	struct CLIDebuggerCommandSummary* platformCommands;
+	const char* platformName;
 };
 
 struct CLIDebugger {
-	struct ARMDebugger d;
+	struct mDebugger d;
 
 	struct CLIDebuggerSystem* system;
 

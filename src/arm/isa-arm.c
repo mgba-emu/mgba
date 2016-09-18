@@ -184,8 +184,6 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 // Instruction definitions
 // Beware pre-processor antics
 
-#define NO_EXTEND64(V) (uint64_t)(uint32_t) (V)
-
 #define ARM_ADDITION_S(M, N, D) \
 	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
 		cpu->cpsr = cpu->spsr; \
@@ -205,6 +203,17 @@ static inline void _immediate(struct ARMCore* cpu, uint32_t opcode) {
 		cpu->cpsr.a.n = ARM_SIGN(D); \
 		cpu->cpsr.a.z = !(D); \
 		cpu->cpsr.a.c = ARM_BORROW_FROM(M, N, D); \
+		cpu->cpsr.a.v = ARM_V_SUBTRACTION(M, N, D); \
+	}
+
+#define ARM_SUBTRACTION_CARRY_S(M, N, D, C) \
+	if (rd == ARM_PC && _ARMModeHasSPSR(cpu->cpsr.a.priv)) { \
+		cpu->cpsr = cpu->spsr; \
+		_ARMReadCPSR(cpu); \
+	} else { \
+		cpu->cpsr.a.n = ARM_SIGN(D); \
+		cpu->cpsr.a.z = !(D); \
+		cpu->cpsr.a.c = ARM_BORROW_FROM_CARRY(M, N, D, C); \
 		cpu->cpsr.a.v = ARM_V_SUBTRACTION(M, N, D); \
 	}
 
@@ -454,14 +463,13 @@ DEFINE_ALU_INSTRUCTION_ARM(RSB, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->g
 	int32_t n = cpu->gprs[rn];
 	cpu->gprs[rd] = cpu->shifterOperand - n;)
 
-DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_S(cpu->shifterOperand, n, cpu->gprs[rd]),
-	int32_t n = cpu->gprs[rn] + !cpu->cpsr.a.c;
-	cpu->gprs[rd] = cpu->shifterOperand - n;)
-
-DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_S(n, shifterOperand, cpu->gprs[rd]),
+DEFINE_ALU_INSTRUCTION_ARM(RSC, ARM_SUBTRACTION_CARRY_S(cpu->shifterOperand, n, cpu->gprs[rd], !cpu->cpsr.a.c),
 	int32_t n = cpu->gprs[rn];
-	int32_t shifterOperand = cpu->shifterOperand + !cpu->cpsr.a.c;
-	cpu->gprs[rd] = n - shifterOperand;)
+	cpu->gprs[rd] = cpu->shifterOperand - n - !cpu->cpsr.a.c;)
+
+DEFINE_ALU_INSTRUCTION_ARM(SBC, ARM_SUBTRACTION_CARRY_S(n, cpu->shifterOperand, cpu->gprs[rd], !cpu->cpsr.a.c),
+	int32_t n = cpu->gprs[rn];
+	cpu->gprs[rd] = n - cpu->shifterOperand - !cpu->cpsr.a.c;)
 
 DEFINE_ALU_INSTRUCTION_ARM(SUB, ARM_SUBTRACTION_S(n, cpu->shifterOperand, cpu->gprs[rd]),
 	int32_t n = cpu->gprs[rn];
@@ -495,7 +503,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(SMULL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
-	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
+	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	int32_t dm = cpu->gprs[rd];
 	int32_t dn = d;
 	cpu->gprs[rd] = dm + dn;
@@ -503,7 +511,7 @@ DEFINE_MULTIPLY_INSTRUCTION_ARM(UMLAL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
 
 DEFINE_MULTIPLY_INSTRUCTION_ARM(UMULL,
-	uint64_t d = NO_EXTEND64(cpu->gprs[rm]) * NO_EXTEND64(cpu->gprs[rs]);
+	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]))
@@ -629,11 +637,21 @@ DEFINE_INSTRUCTION_ARM(MSR,
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
+	if (mask & PSR_STATE_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_STATE_MASK) | (operand & PSR_STATE_MASK);
+	}
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
 	}
-	_ARMReadCPSR(cpu);)
+	_ARMReadCPSR(cpu);
+	if (cpu->executionMode == MODE_THUMB) {
+		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	} else {
+		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	})
 
 DEFINE_INSTRUCTION_ARM(MSRR,
 	int c = opcode & 0x00010000;
@@ -641,7 +659,7 @@ DEFINE_INSTRUCTION_ARM(MSRR,
 	int32_t operand = cpu->gprs[opcode & 0x0000000F];
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
-	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
+	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask) | 0x00000010;)
 
 DEFINE_INSTRUCTION_ARM(MRS, \
 	int rd = (opcode >> 12) & 0xF; \
@@ -660,11 +678,21 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
+	if (mask & PSR_STATE_MASK) {
+		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_STATE_MASK) | (operand & PSR_STATE_MASK);
+	}
 	if (cpu->privilegeMode != MODE_USER && (mask & PSR_PRIV_MASK)) {
 		ARMSetPrivilegeMode(cpu, (enum PrivilegeMode) ((operand & 0x0000000F) | 0x00000010));
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_PRIV_MASK) | (operand & PSR_PRIV_MASK);
 	}
-	_ARMReadCPSR(cpu);)
+	_ARMReadCPSR(cpu);
+	if (cpu->executionMode == MODE_THUMB) {
+		LOAD_16(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	} else {
+		LOAD_32(cpu->prefetch[0], (cpu->gprs[ARM_PC] - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
+		LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	})
 
 DEFINE_INSTRUCTION_ARM(MSRRI,
 	int c = opcode & 0x00010000;
@@ -673,7 +701,7 @@ DEFINE_INSTRUCTION_ARM(MSRRI,
 	int32_t operand = ROR(opcode & 0x000000FF, rotate);
 	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
-	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask);)
+	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask) | 0x00000010;)
 
 DEFINE_INSTRUCTION_ARM(SWI, cpu->irqh.swi32(cpu, opcode & 0xFFFFFF))
 

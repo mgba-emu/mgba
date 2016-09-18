@@ -1,0 +1,39 @@
+; Copyright (c) 2015 Yuri Kunde Schlesner
+; Copyright (c) 2016 Jeffrey Pfau
+
+;
+; This Source Code Form is subject to the terms of the Mozilla Public
+; License, v. 2.0. If a copy of the MPL was not distributed with this
+; file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+; uishader.vsh - Simply multiplies input position and texcoords with
+;                corresponding matrices before outputting
+
+; Uniforms
+
+; Constants
+.constf consts1(0.0, 1.0, 0.0039215686, -1.0)
+
+; Outputs
+.out out_pos position
+.out out_tc0 texcoord0
+.out out_col color
+.out out_rot dummy
+
+; Inputs
+.alias in_pos v0
+.alias in_tc0 v1
+.alias in_col v2
+.alias in_rot v3
+
+.entry vshMain
+.proc vshMain
+	mov out_pos, in_pos
+	mov out_tc0, in_tc0
+	mul out_rot, consts1.ywyx, in_rot.xyy
+
+	; Normalize color by multiplying by 1 / 255
+	mul out_col, consts1.z, in_col
+
+	end
+.end

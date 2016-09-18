@@ -6,11 +6,15 @@
 #ifndef QGBA_DISPLAY
 #define QGBA_DISPLAY
 
+extern "C" {
+#include "util/common.h"
+}
+
 #include <QWidget>
 
 #include "MessagePainter.h"
 
-struct GBAThread;
+struct mCoreThread;
 struct VDir;
 struct VideoShader;
 
@@ -47,7 +51,7 @@ signals:
 	void hideCursor();
 
 public slots:
-	virtual void startDrawing(GBAThread* context) = 0;
+	virtual void startDrawing(mCoreThread* context) = 0;
 	virtual void stopDrawing() = 0;
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;

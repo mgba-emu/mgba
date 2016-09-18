@@ -7,6 +7,7 @@
 
 #include "gba/gba.h"
 #include "gba/io.h"
+#include "gba/renderers/tile-cache.h"
 
 #include "util/arm-algo.h"
 #include "util/memory.h"
@@ -20,8 +21,8 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y);
 static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* renderer);
-static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels);
-static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels);
+static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels);
+static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels);
 
 static void GBAVideoSoftwareRendererUpdateDISPCNT(struct GBAVideoSoftwareRenderer* renderer);
 static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg, uint16_t value);
@@ -91,8 +92,10 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->target2Obj = 0;
 	softwareRenderer->target2Bd = 0;
 	softwareRenderer->blendEffect = BLEND_NONE;
-	memset(softwareRenderer->normalPalette, 0, sizeof(softwareRenderer->normalPalette));
-	memset(softwareRenderer->variantPalette, 0, sizeof(softwareRenderer->variantPalette));
+	for (i = 0; i < 1024; i += 2) {
+		GBAVideoSoftwareRendererWritePalette(renderer, i, softwareRenderer->d.palette[i >> 1]);
+	}
+	_updatePalettes(softwareRenderer);
 
 	softwareRenderer->blda = 0;
 	softwareRenderer->bldb = 0;
@@ -328,17 +331,18 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->mosaic = value;
 		break;
 	case REG_GREENSWP:
-		GBALog(0, GBA_LOG_STUB, "Stub video register write: 0x%03X", address);
+		mLOG(GBA_VIDEO, STUB, "Stub video register write: 0x%03X", address);
 		break;
 	default:
-		GBALog(0, GBA_LOG_GAME_ERROR, "Invalid video register: 0x%03X", address);
+		mLOG(GBA_VIDEO, GAME_ERROR, "Invalid video register: 0x%03X", address);
 	}
 	return value;
 }
 
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
-	UNUSED(renderer);
-	UNUSED(address);
+	if (renderer->cache) {
+		GBAVideoTileCacheWriteVRAM(renderer->cache, address);
+	}
 }
 
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam) {
@@ -369,6 +373,9 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
+	}
+	if (renderer->cache) {
+		GBAVideoTileCacheWritePalette(renderer->cache, address);
 	}
 }
 
@@ -418,7 +425,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 					// Trim off extra windows we've overwritten
 					for (++activeWindow; softwareRenderer->nWindows > activeWindow + 1 && win->h.end >= softwareRenderer->windows[activeWindow].endX; ++activeWindow) {
 						if (VIDEO_CHECKS && activeWindow >= MAX_WINDOW) {
-							GBALog(0, GBA_LOG_FATAL, "Out of bounds window write will occur");
+							mLOG(GBA_VIDEO, FATAL, "Out of bounds window write will occur");
 							return;
 						}
 						softwareRenderer->windows[activeWindow] = softwareRenderer->windows[activeWindow + 1];
@@ -440,7 +447,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 	}
 #ifdef DEBUG
 	if (softwareRenderer->nWindows > MAX_WINDOW) {
-		GBALog(0, GBA_LOG_FATAL, "Out of bounds window write occurred!");
+		mLOG(GBA_VIDEO, FATAL, "Out of bounds window write occurred!");
 	}
 #endif
 }
@@ -448,6 +455,7 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 	int i;
 	int oamMax = 0;
+	int objwinMax = 0;
 	for (i = 0; i < 128; ++i) {
 		struct GBAObj obj;
 		LOAD_16(obj.a, 0, &renderer->d.oam->obj[i].a);
@@ -459,14 +467,22 @@ static void _cleanOAM(struct GBAVideoSoftwareRenderer* renderer) {
 				height <<= GBAObjAttributesAGetDoubleSize(obj.a);
 			}
 			if (GBAObjAttributesAGetY(obj.a) < VIDEO_VERTICAL_PIXELS || GBAObjAttributesAGetY(obj.a) + height >= VIDEO_VERTICAL_TOTAL_PIXELS) {
-				renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
-				renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
-				renderer->sprites[oamMax].obj = obj;
-				++oamMax;
+				if (GBAObjAttributesAGetMode(obj.a) == OBJ_MODE_OBJWIN) {
+					renderer->objwinSprites[objwinMax].y = GBAObjAttributesAGetY(obj.a);
+					renderer->objwinSprites[objwinMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+					renderer->objwinSprites[objwinMax].obj = obj;
+					++objwinMax;
+				} else {
+					renderer->sprites[oamMax].y = GBAObjAttributesAGetY(obj.a);
+					renderer->sprites[oamMax].endY = GBAObjAttributesAGetY(obj.a) + height;
+					renderer->sprites[oamMax].obj = obj;
+					++oamMax;
+				}
 			}
 		}
 	}
 	renderer->oamMax = oamMax;
+	renderer->objwinMax = objwinMax;
 	renderer->oamDirty = 0;
 }
 
@@ -517,6 +533,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			backdrop |= softwareRenderer->variantPalette[0];
 		}
 		int end = softwareRenderer->windows[w].endX;
+		for (; x < end - 3; x += 4) {
+			softwareRenderer->row[x] = backdrop;
+			softwareRenderer->row[x + 1] = backdrop;
+			softwareRenderer->row[x + 2] = backdrop;
+			softwareRenderer->row[x + 3] = backdrop;
+		}
 		for (; x < end; ++x) {
 			softwareRenderer->row[x] = backdrop;
 		}
@@ -593,63 +615,19 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 }
 
-static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, unsigned* stride, const void** pixels) {
+static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-
-#ifdef COLOR_16_BIT
-	*stride = VIDEO_HORIZONTAL_PIXELS;
-	if (!softwareRenderer->temporaryBuffer) {
-		softwareRenderer->temporaryBuffer = anonymousMemoryMap(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4);
-	}
-	*pixels = softwareRenderer->temporaryBuffer;
-	unsigned y, x;
-	for (y = 0; y < VIDEO_VERTICAL_PIXELS; ++y) {
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			color_t inColor = softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + x];
-			uint32_t outColor;
-#ifdef COLOR_5_6_5
-			outColor = (inColor & 0x1F) << 19;
-			outColor |= (inColor & 0x7C0) << 5;
-			outColor |= (inColor & 0xF800) >> 8;
-#else
-			outColor = (inColor & 0x1F) << 3;
-			outColor |= (inColor & 0x3E0) << 6;
-			outColor |= (inColor & 0x7C00) << 9;
-#endif
-			softwareRenderer->temporaryBuffer[VIDEO_HORIZONTAL_PIXELS * y + x] = outColor;
-		}
-	}
-#else
 	*stride = softwareRenderer->outputBufferStride;
 	*pixels = softwareRenderer->outputBuffer;
-#endif
 }
 
-static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, unsigned stride, void* pixels) {
+static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
-	uint32_t* colorPixels = pixels;
+	const color_t* colorPixels = pixels;
 	unsigned i;
 	for (i = 0; i < VIDEO_VERTICAL_PIXELS; ++i) {
-#ifdef COLOR_16_BIT
-		unsigned x;
-		for (x = 0; x < VIDEO_HORIZONTAL_PIXELS; ++x) {
-			uint32_t inColor = colorPixels[stride * i + x];
-			color_t outColor;
-#ifdef COLOR_5_6_5
-			outColor = (inColor >> 19) & 0x1F;
-			outColor |= (inColor >> 5) & 0x7C0;
-			outColor |= (inColor << 8) & 0xF800;
-#else
-			outColor = (inColor >> 3) & 0x1F;
-			outColor |= (inColor >> 6) & 0x3E0;
-			outColor |= (inColor >> 9) & 0x7C00;
-#endif
-			softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i + x] = outColor;
-		}
-#else
 		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);
-#endif
 	}
 }
 
@@ -760,6 +738,20 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 			}
 			int i;
 			int drawn;
+			for (i = 0; i < renderer->objwinMax; ++i) {
+				int localY = y;
+				if (renderer->spriteCyclesRemaining <= 0) {
+					break;
+				}
+				struct GBAVideoSoftwareSprite* sprite = &renderer->objwinSprites[i];
+				if (GBAObjAttributesAIsMosaic(sprite->obj.a)) {
+					localY = mosaicY;
+				}
+				if ((localY < sprite->y && (sprite->endY - 256 < 0 || localY >= sprite->endY - 256)) || localY >= sprite->endY) {
+					continue;
+				}
+				GBAVideoSoftwareRendererPreprocessSprite(renderer, &sprite->obj, localY);
+			}
 			for (i = 0; i < renderer->oamMax; ++i) {
 				int localY = y;
 				if (renderer->spriteCyclesRemaining <= 0) {

@@ -14,6 +14,7 @@
 #include <functional>
 
 extern "C" {
+#include "core/thread.h"
 #include "gba/gba.h"
 }
 
@@ -21,9 +22,7 @@ extern "C" {
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
-
-struct GBAOptions;
-struct GBAArguments;
+struct mArguments;
 
 namespace QGBA {
 
@@ -47,12 +46,12 @@ public:
 	GameController* controller() { return m_controller; }
 
 	void setConfig(ConfigController*);
-	void argumentsPassed(GBAArguments*);
+	void argumentsPassed(mArguments*);
 
-	void resizeFrame(int width, int height);
+	void resizeFrame(const QSize& size);
 
 signals:
-	void startDrawing(GBAThread*);
+	void startDrawing(mCoreThread*);
 	void shutdown();
 	void audioBufferSamplesChanged(int samples);
 	void sampleRateChanged(unsigned samples);
@@ -60,6 +59,8 @@ signals:
 
 public slots:
 	void selectROM();
+	void selectROMInArchive();
+	void selectSave(bool temporary);
 	void selectBIOS();
 	void selectPatch();
 	void enterFullScreen();
@@ -82,6 +83,7 @@ public slots:
 	void openCheatsWindow();
 
 	void openPaletteWindow();
+	void openTileWindow();
 	void openMemoryWindow();
 	void openIOViewer();
 
@@ -113,7 +115,7 @@ protected:
 	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
-	void gameStarted(GBAThread*);
+	void gameStarted(mCoreThread*, const QString&);
 	void gameStopped();
 	void gameCrashed(const QString&);
 	void gameFailed();
@@ -144,12 +146,19 @@ private:
 	QAction* addControlledAction(QMenu* menu, QAction* action, const QString& name);
 	QAction* addHiddenAction(QMenu* menu, QAction* action, const QString& name);
 
-	void updateTitle(float fps = NAN);
+	void updateTitle(float fps = -1);
+
+	QString getFilters() const;
+	QString getFiltersArchive() const;
 
 	GameController* m_controller;
 	Display* m_display;
+	// TODO: Move these to a new class
 	QList<QAction*> m_gameActions;
 	QList<QAction*> m_nonMpActions;
+#ifdef M_CORE_GBA
+	QList<QAction*> m_gbaActions;
+#endif
 	QMap<int, QAction*> m_frameSizes;
 	LogController m_log;
 	LogView* m_logView;
@@ -164,7 +173,6 @@ private:
 	QMenu* m_mruMenu;
 	ShortcutController* m_shortcutController;
 	ShaderSelector* m_shaderView;
-	int m_playerId;
 	bool m_fullscreenOnStart;
 	QTimer m_focusCheck;
 	bool m_autoresume;

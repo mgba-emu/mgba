@@ -5,13 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "bios.h"
 
+#include "arm/isa-inlines.h"
+#include "arm/macros.h"
 #include "gba/gba.h"
 #include "gba/io.h"
 #include "gba/memory.h"
-#include "isa-inlines.h"
 
 const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
 const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
+
+mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS");
 
 static void _unLz77(struct GBA* gba, int width);
 static void _unHuffman(struct GBA* gba);
@@ -67,8 +70,8 @@ static void _RegisterRamReset(struct GBA* gba) {
 		cpu->memory.store16(cpu, BASE_IO | REG_RCNT, RCNT_INITIAL, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_SIOMLT_SEND, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_JOYCNT, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV, 0, 0);
-		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_RECV_LO, 0, 0);
+		cpu->memory.store32(cpu, BASE_IO | REG_JOY_TRANS_LO, 0, 0);
 	}
 	if (registers & 0x40) {
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUND1CNT_LO, 0, 0);
@@ -85,10 +88,9 @@ static void _RegisterRamReset(struct GBA* gba) {
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUNDCNT_HI, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUNDCNT_X, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | REG_SOUNDBIAS, 0x200, 0);
-		memset(gba->audio.ch3.wavedata, 0, sizeof(gba->audio.ch3.wavedata));
+		memset(gba->audio.psg.ch3.wavedata32, 0, sizeof(gba->audio.psg.ch3.wavedata32));
 	}
 	if (registers & 0x80) {
-		cpu->memory.store16(cpu, BASE_IO | 0x00, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x04, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x06, 0, 0);
 		cpu->memory.store16(cpu, BASE_IO | 0x08, 0, 0);
@@ -254,7 +256,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 		cpu->gprs[1] = result.rem;
 		cpu->gprs[3] = abs(result.quot);
 	} else {
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Attempting to divide %i by zero!", num);
+		mLOG(GBA_BIOS, GAME_ERROR, "Attempting to divide %i by zero!", num);
 		// If abs(num) > 1, this should hang, but that would be painful to
 		// emulate in HLE, and no game will get into a state where it hangs...
 		cpu->gprs[0] = (num < 0) ? -1 : 1;
@@ -263,9 +265,55 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 	}
 }
 
+static int16_t _ArcTan(int16_t i) {
+	int32_t a = -((i * i) >> 14);
+	int32_t b = ((0xA9 * a) >> 14) + 0x390;
+	b = ((b * a) >> 14) + 0x91C;
+	b = ((b * a) >> 14) + 0xFB6;
+	b = ((b * a) >> 14) + 0x16AA;
+	b = ((b * a) >> 14) + 0x2081;
+	b = ((b * a) >> 14) + 0x3651;
+	b = ((b * a) >> 14) + 0xA2F9;
+	return (i * b) >> 16;
+}
+
+static int16_t _ArcTan2(int16_t x, int16_t y) {
+	if (!y) {
+		if (x >= 0) {
+			return 0;
+		}
+		return 0x8000;
+	}
+	if (!x) {
+		if (y >= 0) {
+			return 0x4000;
+		}
+		return 0xC000;
+	}
+	if (y >= 0) {
+		if (x >= 0) {
+			if (x >= y) {
+				return _ArcTan((y << 14)/ x);
+			}
+		} else if (-x >= y) {
+			return _ArcTan((y << 14) / x) + 0x8000;
+		}
+		return 0x4000 - _ArcTan((x << 14) / y);
+	} else {
+		if (x <= 0) {
+			if (-x > -y) {
+				return _ArcTan((y << 14) / x) + 0x8000;
+			}
+		} else if (x >= -y) {
+			return _ArcTan((y << 14) / x) + 0x10000;
+		}
+		return 0xC000 - _ArcTan((x << 14) / y);
+	}
+}
+
 void GBASwi16(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	GBALog(gba, GBA_LOG_SWI, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
+	mLOG(GBA_BIOS, DEBUG, "SWI: %02X r0: %08X r1: %08X r2: %08X r3: %08X",
 	    immediate, cpu->gprs[0], cpu->gprs[1], cpu->gprs[2], cpu->gprs[3]);
 
 	if (gba->memory.fullBios) {
@@ -301,20 +349,23 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x8:
 		cpu->gprs[0] = sqrt((uint32_t) cpu->gprs[0]);
 		break;
+	case 0x9:
+		cpu->gprs[0] = (uint16_t) _ArcTan(cpu->gprs[0]);
+		break;
 	case 0xA:
-		cpu->gprs[0] = atan2f(cpu->gprs[1] / 16384.f, cpu->gprs[0] / 16384.f) / (2 * M_PI) * 0x10000;
+		cpu->gprs[0] = (uint16_t) _ArcTan2(cpu->gprs[0], cpu->gprs[1]);
 		break;
 	case 0xB:
 	case 0xC:
 		if (cpu->gprs[0] >> BASE_OFFSET < REGION_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Cannot CpuSet from BIOS");
+			mLOG(GBA_BIOS, GAME_ERROR, "Cannot CpuSet from BIOS");
 			return;
 		}
 		if (cpu->gprs[0] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet source");
 		}
 		if (cpu->gprs[1] & (cpu->gprs[2] & (1 << 26) ? 3 : 1)) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Misaligned CpuSet destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Misaligned CpuSet destination");
 		}
 		ARMRaiseSWI(cpu);
 		break;
@@ -332,12 +383,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x11:
 	case 0x12:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad LZ77 destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad LZ77 destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -348,12 +399,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0x13:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad Huffman destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad Huffman destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -365,12 +416,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x14:
 	case 0x15:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad RL destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad RL destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -383,12 +434,12 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	case 0x17:
 	case 0x18:
 		if (cpu->gprs[0] < BASE_WORKING_RAM) {
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter source");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter source");
 			break;
 		}
 		switch (cpu->gprs[1] >> BASE_OFFSET) {
 		default:
-			GBALog(gba, GBA_LOG_GAME_ERROR, "Bad UnFilter destination");
+			mLOG(GBA_BIOS, GAME_ERROR, "Bad UnFilter destination");
 		// Fall through
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
@@ -399,13 +450,13 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		break;
 	case 0x19:
 		// SoundBias is mostly meaningless here
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: SoundBias (19)");
+		mLOG(GBA_BIOS, STUB, "Stub software interrupt: SoundBias (19)");
 		break;
 	case 0x1F:
 		_MidiKey2Freq(gba);
 		break;
 	default:
-		GBALog(gba, GBA_LOG_STUB, "Stub software interrupt: %02X", immediate);
+		mLOG(GBA_BIOS, STUB, "Stub software interrupt: %02X", immediate);
 	}
 	gba->memory.biosPrefetch = 0xE3A02004;
 }
@@ -504,13 +555,13 @@ static void _unHuffman(struct GBA* gba) {
 	uint32_t dest = cpu->gprs[1];
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
-	int bits = header & 0xF;
+	unsigned bits = header & 0xF;
 	if (bits == 0) {
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Invalid Huffman bits");
+		mLOG(GBA_BIOS, GAME_ERROR, "Invalid Huffman bits");
 		bits = 8;
 	}
 	if (32 % bits || bits == 1) {
-		GBALog(gba, GBA_LOG_STUB, "Unimplemented unaligned Huffman");
+		mLOG(GBA_BIOS, STUB, "Unimplemented unaligned Huffman");
 		return;
 	}
 	// We assume the signature byte (0x20) is correct

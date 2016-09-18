@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,12 +8,17 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/gba.h"
+#include "gb/serialize.h"
 
 extern const uint32_t GBA_SAVESTATE_MAGIC;
+extern const uint32_t GBA_SAVESTATE_VERSION;
+
+mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000000)
+ * 0x00000 - 0x00003: Version Magic (0x01000001)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Reserved (leave zero)
@@ -27,25 +32,34 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x0006C - 0x0006F: Cycles until next event
  * | 0x00070 - 0x00117: Banked registers
  * | 0x00118 - 0x0012F: Banked SPSRs
- * 0x00130 - 0x00143: Audio channel 1 state
- * | 0x00130 - 0x00133: Next envelope step
- * | 0x00134 - 0x00137: Next square wave step
- * | 0x00138 - 0x0013B: Next sweep step
- * | 0x0013C - 0x0013F: Channel end cycle
+ * 0x00130 - 0x00143: Audio channel 1/framer state
+ * | 0x00130 - 0x00133: Envelepe timing
+ *   | bits 0 - 6: Remaining length
+ *   | bits 7 - 9: Next step
+ *   | bits 10 - 20: Shadow frequency register
+ *   | bits 21 - 31: Reserved
+ * | 0x00134 - 0x00137: Next frame
+ * | 0x00138 - 0x0013F: Reserved
  * | 0x00140 - 0x00143: Next event
  * 0x00144 - 0x00153: Audio channel 2 state
- * | 0x00144 - 0x00147: Next envelope step
- * | 0x00148 - 0x0014B: Next square wave step
- * | 0x0014C - 0x0014F: Channel end cycle
+ * | 0x00144 - 0x00147: Envelepe timing
+ *   | bits 0 - 2: Remaining length
+ *   | bits 3 - 5: Next step
+ *   | bits 6 - 31: Reserved
+ * | 0x00148 - 0x0014F: Reserved
  * | 0x00150 - 0x00153: Next event
  * 0x00154 - 0x0017B: Audio channel 3 state
  * | 0x00154 - 0x00173: Wave banks
- * | 0x00174 - 0x00177: Channel end cycle
+ * | 0x00174 - 0x00175: Remaining length
+ * | 0x00176 - 0x00177: Reserved
  * | 0x00178 - 0x0017B: Next event
  * 0x0017C - 0x0018B: Audio channel 4 state
  * | 0x0017C - 0x0017F: Linear feedback shift register state
- * | 0x00180 - 0x00183: Next enveleope step
- * | 0x00184 - 0x00187: Channel end cycle
+ * | 0x00180 - 0x00183: Envelepe timing
+ *   | bits 0 - 2: Remaining length
+ *   | bits 3 - 5: Next step
+ *   | bits 6 - 31: Reserved
+ * | 0x00184 - 0x00187: Reserved
  * | 0x00188 - 0x0018B: Next event
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
@@ -54,21 +68,26 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * | 0x001D0 - 0x001D3: Event diff
  * | 0x001D4 - 0x001D7: Next sample
  * | 0x001D8 - 0x001DB: FIFO size
+ * | TODO: Fix this, they're in big-endian order, but field is little-endian
  * | 0x001DC - 0x001DC: Channel 1 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bit 5: Is high?
- *   | bits 6 - 7: Reserved
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
  * | 0x001DD - 0x001DD: Channel 2 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bit 5: Is high?
- *   | bits 6 - 7: Reserved
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
+*    | bits 7: Reserved
  * | 0x001DE - 0x001DE: Channel 4 envelope state
  *   | bits 0 - 3: Current volume
- *   | bit 4: Is dead?
- *   | bits 5 - 7: Reserved
- * | 0x001DF - 0x001DF: Reserved
+ *   | bits 4 - 5: Is dead?
+ *   | bit 6: Is high?
+*    | bits 7: Reserved
+ * | 0x001DF - 0x001DF: Miscellaneous audio flags
+ *   | bits 0 - 3: Current frame
+ *   | bit 4: Is channel 1 sweep enabled?
+ *   | bit 5: Has channel 1 sweep occurred?
+ *   | bits 6 - 7: Reserved
  * 0x001E0 - 0x001FF: Video miscellaneous state
  * | 0x001E0 - 0x001E3: Next event
  * | 0x001E4 - 0x001E7: Event diff
@@ -176,7 +195,10 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * 0x00300 - 0x00303: Associated movie stream ID for record/replay (or 0 if no stream)
  * 0x00304 - 0x0030F: Reserved (leave zero)
  * 0x00310 - 0x00317: Savestate creation time (usec since 1970)
- * 0x00318 - 0x003FF: Reserved (leave zero)
+ * 0x00318 - 0x0031B: Last prefetched program counter
+ * 0x0031C - 0x0031F: Miscellaneous flags
+ *  | bit 0: Is CPU halted?
+ * 0x00320 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -185,16 +207,6 @@ extern const uint32_t GBA_SAVESTATE_MAGIC;
  * 0x21000 - 0x60FFF: WRAM
  * Total size: 0x61000 (397,312) bytes
  */
-
-DECL_BITFIELD(GBASerializedAudioFlags, uint32_t);
-DECL_BITS(GBASerializedAudioFlags, Ch1Volume, 0, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch1Dead, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch1Hi, 5);
-DECL_BITS(GBASerializedAudioFlags, Ch2Volume, 8, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch2Dead, 12);
-DECL_BIT(GBASerializedAudioFlags, Ch2Hi, 13);
-DECL_BITS(GBASerializedAudioFlags, Ch4Volume, 16, 4);
-DECL_BIT(GBASerializedAudioFlags, Ch4Dead, 20);
 
 DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
@@ -212,6 +224,9 @@ DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
 DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
 DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
 DECL_BIT(GBASerializedSavedataFlags, FlashBank, 4);
+
+DECL_BITFIELD(GBASerializedMiscFlags, uint32_t);
+DECL_BIT(GBASerializedMiscFlags, Halted, 0);
 
 struct GBASerializedState {
 	uint32_t versionMagic;
@@ -235,37 +250,14 @@ struct GBASerializedState {
 	} cpu;
 
 	struct {
-		struct {
-			int32_t envelopeNextStep;
-			int32_t waveNextStep;
-			int32_t sweepNextStep;
-			int32_t endTime;
-			int32_t nextEvent;
-		} ch1;
-		struct {
-			int32_t envelopeNextStep;
-			int32_t waveNextStep;
-			int32_t endTime;
-			int32_t nextEvent;
-		} ch2;
-		struct {
-			uint32_t wavebanks[8];
-			int32_t endTime;
-			int32_t nextEvent;
-		} ch3;
-		struct {
-			int32_t lfsr;
-			int32_t envelopeNextStep;
-			int32_t endTime;
-			int32_t nextEvent;
-		} ch4;
+		struct GBSerializedPSGState psg;
 		uint8_t fifoA[32];
 		uint8_t fifoB[32];
 		int32_t nextEvent;
 		int32_t eventDiff;
 		int32_t nextSample;
 		uint32_t fifoSize;
-		GBASerializedAudioFlags flags;
+		GBSerializedAudioFlags flags;
 	} audio;
 
 	struct {
@@ -325,7 +317,10 @@ struct GBASerializedState {
 
 	uint64_t creationUsec;
 
-	uint32_t reserved[58];
+	uint32_t lastPrefetchedPc;
+	GBASerializedMiscFlags miscFlags;
+
+	uint32_t reserved[56];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
@@ -335,58 +330,12 @@ struct GBASerializedState {
 	uint8_t wram[SIZE_WORKING_RAM];
 };
 
-enum GBAExtdataTag {
-	EXTDATA_NONE = 0,
-	EXTDATA_SCREENSHOT = 1,
-	EXTDATA_SAVEDATA = 2,
-	EXTDATA_CHEATS = 3,
-	EXTDATA_MAX
-};
-
-#define SAVESTATE_SCREENSHOT 1
-#define SAVESTATE_SAVEDATA   2
-#define SAVESTATE_CHEATS     4
-
-struct GBAExtdataItem {
-	int32_t size;
-	void* data;
-	void (*clean)(void*);
-};
-
-struct GBAExtdata {
-	struct GBAExtdataItem data[EXTDATA_MAX];
-};
-
 struct VDir;
-struct GBAThread;
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state);
 bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
-bool GBASaveState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
-bool GBALoadState(struct GBAThread* thread, struct VDir* dir, int slot, int flags);
-struct VFile* GBAGetState(struct GBA* gba, struct VDir* dir, int slot, bool write);
-void GBADeleteState(struct GBA* thread, struct VDir* dir, int slot);
-
-bool GBASaveStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-bool GBALoadStateNamed(struct GBA* gba, struct VFile* vf, int flags);
-
-bool GBAExtdataInit(struct GBAExtdata*);
-void GBAExtdataDeinit(struct GBAExtdata*);
-void GBAExtdataPut(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
-bool GBAExtdataGet(struct GBAExtdata*, enum GBAExtdataTag, struct GBAExtdataItem*);
-bool GBAExtdataSerialize(struct GBAExtdata* extpdata, struct VFile* vf);
-bool GBAExtdataDeserialize(struct GBAExtdata* extdata, struct VFile* vf);
-
-struct GBASerializedState* GBAExtractState(struct VFile* vf, struct GBAExtdata* extdata);
 struct GBASerializedState* GBAAllocateState(void);
 void GBADeallocateState(struct GBASerializedState* state);
-
-void GBARecordFrame(struct GBAThread* thread);
-void GBARewindSettingsChanged(struct GBAThread* thread, int newCapacity, int newInterval);
-int GBARewind(struct GBAThread* thread, int nStates);
-void GBARewindAll(struct GBAThread* thread);
-
-void GBATakeScreenshot(struct GBA* gba, struct VDir* dir);
 
 #endif

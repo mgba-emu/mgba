@@ -36,6 +36,7 @@ struct Token {
 		TOKEN_OPERATOR_TYPE,
 		TOKEN_OPEN_PAREN_TYPE,
 		TOKEN_CLOSE_PAREN_TYPE,
+		TOKEN_SEGMENT_TYPE,
 	} type;
 	union {
 		uint32_t uintValue;

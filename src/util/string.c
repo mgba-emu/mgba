@@ -39,6 +39,15 @@ char* strnrstr(const char* restrict haystack, const char* restrict needle, size_
 	return last;
 }
 
+bool endswith(const char* restrict s1, const char* restrict end) {
+	size_t len = strlen(s1);
+	size_t endLen = strlen(end);
+	if (len < endLen) {
+		return false;
+	}
+	return strcmp(&s1[len - endLen], end) == 0;
+}
+
 uint32_t utf16Char(const uint16_t** unicode, size_t* length) {
 	if (*length < 2) {
 		*length = 0;
@@ -80,7 +89,7 @@ uint32_t utf8Char(const char** unicode, size_t* length) {
 		return byte;
 	}
 	uint32_t unichar;
-	static int tops[4] = { 0xC0, 0xE0, 0xF0, 0xF8 };
+	static const int tops[4] = { 0xC0, 0xE0, 0xF0, 0xF8 };
 	size_t numBytes;
 	for (numBytes = 0; numBytes < 3; ++numBytes) {
 		if ((byte & tops[numBytes + 1]) == tops[numBytes]) {
@@ -110,7 +119,7 @@ uint32_t utf8Char(const char** unicode, size_t* length) {
 	return unichar;
 }
 
-static size_t _toUtf8(uint32_t unichar, char* buffer) {
+size_t toUtf8(uint32_t unichar, char* buffer) {
 	if (unichar > 0x10FFFF) {
 		unichar = 0xFFFD;
 	}
@@ -173,7 +182,7 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			break;
 		}
 		uint32_t unichar = utf16Char(&utf16, &length);
-		size_t bytes = _toUtf8(unichar, buffer);
+		size_t bytes = toUtf8(unichar, buffer);
 		utf8Length += bytes;
 		if (utf8Length < utf8TotalBytes) {
 			memcpy(offset, buffer, bytes);
@@ -187,12 +196,11 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 			memcpy(utf8, buffer, bytes);
 			offset = utf8 + bytes;
 		} else if (utf8Length >= utf8TotalBytes) {
+			ptrdiff_t o = offset - utf8;
 			char* newUTF8 = realloc(utf8, utf8TotalBytes * 2);
-			offset = offset - utf8 + newUTF8;
-			if (newUTF8 != utf8) {
-				free(utf8);
-			}
+			offset = o + newUTF8;
 			if (!newUTF8) {
+				free(utf8);
 				return 0;
 			}
 			utf8 = newUTF8;
@@ -202,8 +210,9 @@ char* utf16to8(const uint16_t* utf16, size_t length) {
 	}
 
 	char* newUTF8 = realloc(utf8, utf8Length + 1);
-	if (newUTF8 != utf8) {
+	if (!newUTF8) {
 		free(utf8);
+		return 0;
 	}
 	newUTF8[utf8Length] = '\0';
 	return newUTF8;
@@ -260,11 +269,44 @@ const char* hex32(const char* line, uint32_t* out) {
 	return line;
 }
 
+const char* hex24(const char* line, uint32_t* out) {
+	uint32_t value = 0;
+	int i;
+	for (i = 0; i < 6; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}
+
 const char* hex16(const char* line, uint16_t* out) {
 	uint16_t value = 0;
 	*out = 0;
 	int i;
 	for (i = 0; i < 4; ++i, ++line) {
+		char digit = *line;
+		value <<= 4;
+		int nybble = hexDigit(digit);
+		if (nybble < 0) {
+			return 0;
+		}
+		value |= nybble;
+	}
+	*out = value;
+	return line;
+}
+
+const char* hex12(const char* line, uint16_t* out) {
+	uint16_t value = 0;
+	*out = 0;
+	int i;
+	for (i = 0; i < 3; ++i, ++line) {
 		char digit = *line;
 		value <<= 4;
 		int nybble = hexDigit(digit);
@@ -292,4 +334,29 @@ const char* hex8(const char* line, uint8_t* out) {
 	}
 	*out = value;
 	return line;
+}
+
+const char* hex4(const char* line, uint8_t* out) {
+	uint8_t value = 0;
+	*out = 0;
+	char digit = *line;
+	value <<= 4;
+	int nybble = hexDigit(digit);
+	if (nybble < 0) {
+		return 0;
+	}
+	value |= nybble;
+	*out = value;
+	return line;
+}
+
+void rtrim(char* string) {
+	if (!*string) {
+		return;
+	}
+	char* end = string + strlen(string) - 1;
+	while (isspace((int) *end) && end >= string) {
+		*end = '\0';
+		--end;
+	}
 }

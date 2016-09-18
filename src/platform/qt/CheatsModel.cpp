@@ -8,19 +8,20 @@
 #include "LogController.h"
 #include "VFileDevice.h"
 
-#include <QFont>
 #include <QSet>
 
 extern "C" {
-#include "gba/cheats.h"
+#include "core/cheats.h"
 }
 
 using namespace QGBA;
 
-CheatsModel::CheatsModel(GBACheatDevice* device, QObject* parent)
+CheatsModel::CheatsModel(mCheatDevice* device, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_device(device)
 {
+	m_font.setFamily("Source Code Pro");
+	m_font.setStyleHint(QFont::Monospace);
 }
 
 QVariant CheatsModel::data(const QModelIndex& index, int role) const {
@@ -30,24 +31,24 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 
 	if (index.parent().isValid()) {
 		int row = index.row();
-		GBACheatSet* cheats = static_cast<GBACheatSet*>(index.internalPointer());
+		mCheatSet* cheats = static_cast<mCheatSet*>(index.internalPointer());
 		const char* line = *StringListGetPointer(&cheats->lines, row);
 		switch (role) {
 		case Qt::DisplayRole:
 			return line;
 		case Qt::FontRole:
-			return QFont("Courier New", 13);
+			return m_font;
 		default:
 			return QVariant();
 		}
 	}
 
-	if (index.row() >= GBACheatSetsSize(&m_device->cheats)) {
+	if (index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return QVariant();
 	}
 
 	int row = index.row();
-	const GBACheatSet* cheats = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+	const mCheatSet* cheats = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 	switch (role) {
 	case Qt::DisplayRole:
 	case Qt::EditRole:
@@ -60,20 +61,16 @@ QVariant CheatsModel::data(const QModelIndex& index, int role) const {
 }
 
 bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int role) {
-	if (!index.isValid() || index.parent().isValid() || index.row() > GBACheatSetsSize(&m_device->cheats)) {
+	if (!index.isValid() || index.parent().isValid() || index.row() > mCheatSetsSize(&m_device->cheats)) {
 		return false;
 	}
 
 	int row = index.row();
-	GBACheatSet* cheats = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+	mCheatSet* cheats = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 	switch (role) {
 	case Qt::DisplayRole:
 	case Qt::EditRole:
-		if (cheats->name) {
-			free(cheats->name);
-			cheats->name = nullptr;
-		}
-		cheats->name = strdup(value.toString().toUtf8().constData());
+		mCheatSetRename(cheats, value.toString().toUtf8().constData());
 		emit dataChanged(index, index);
 		return true;
 	case Qt::CheckStateRole:
@@ -87,7 +84,7 @@ bool CheatsModel::setData(const QModelIndex& index, const QVariant& value, int r
 
 QModelIndex CheatsModel::index(int row, int column, const QModelIndex& parent) const {
 	if (parent.isValid()) {
-		return createIndex(row, column, *GBACheatSetsGetPointer(&m_device->cheats, parent.row()));
+		return createIndex(row, column, *mCheatSetsGetPointer(&m_device->cheats, parent.row()));
 	} else {
 		return createIndex(row, column, nullptr);
 	}
@@ -97,12 +94,12 @@ QModelIndex CheatsModel::parent(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return QModelIndex();
 	}
-	const GBACheatSet* cheats = static_cast<const GBACheatSet*>(index.internalPointer());
+	const mCheatSet* cheats = static_cast<const mCheatSet*>(index.internalPointer());
 	if (!cheats) {
 		return QModelIndex();
 	}
-	for (size_t i = 0; i < GBACheatSetsSize(&m_device->cheats); ++i) {
-		if (cheats == *GBACheatSetsGetPointer(&m_device->cheats, i)) {
+	for (size_t i = 0; i < mCheatSetsSize(&m_device->cheats); ++i) {
+		if (cheats == *mCheatSetsGetPointer(&m_device->cheats, i)) {
 			return createIndex(i, 0, nullptr);
 		}
 	}
@@ -130,45 +127,44 @@ int CheatsModel::rowCount(const QModelIndex& parent) const {
 		if (parent.internalPointer()) {
 			return 0;
 		}
-		const GBACheatSet* set = *GBACheatSetsGetPointer(&m_device->cheats, parent.row());
+		const mCheatSet* set = *mCheatSetsGetPointer(&m_device->cheats, parent.row());
 		return StringListSize(&set->lines);
 	}
-	return GBACheatSetsSize(&m_device->cheats);
+	return mCheatSetsSize(&m_device->cheats);
 }
 
-GBACheatSet* CheatsModel::itemAt(const QModelIndex& index) {
+mCheatSet* CheatsModel::itemAt(const QModelIndex& index) {
 	if (!index.isValid()) {
 		return nullptr;
 	}
 	if (index.parent().isValid()) {
-		return static_cast<GBACheatSet*>(index.internalPointer());
+		return static_cast<mCheatSet*>(index.internalPointer());
 	}
-	if (index.row() >= GBACheatSetsSize(&m_device->cheats)) {
+	if (index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return nullptr;
 	}
-	return *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+	return *mCheatSetsGetPointer(&m_device->cheats, index.row());
 }
 
 void CheatsModel::removeAt(const QModelIndex& index) {
-	if (!index.isValid() || index.parent().isValid() || index.row() >= GBACheatSetsSize(&m_device->cheats)) {
+	if (!index.isValid() || index.parent().isValid() || index.row() >= mCheatSetsSize(&m_device->cheats)) {
 		return;
 	}
 	int row = index.row();
-	GBACheatSet* set = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+	mCheatSet* set = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 	beginRemoveRows(QModelIndex(), row, row);
-	GBACheatRemoveSet(m_device, set);
-	GBACheatSetDeinit(set);
-	delete set;
+	mCheatRemoveSet(m_device, set);
+	mCheatSetDeinit(set);
 	endInsertRows();
 }
 
 QString CheatsModel::toString(const QModelIndexList& indices) const {
-	QMap<int, GBACheatSet*> setOrder;
-	QMap<GBACheatSet*, QSet<size_t>> setIndices;
+	QMap<int, mCheatSet*> setOrder;
+	QMap<mCheatSet*, QSet<size_t>> setIndices;
 	for (const QModelIndex& index : indices) {
-		GBACheatSet* set = static_cast<GBACheatSet*>(index.internalPointer());
+		mCheatSet* set = static_cast<mCheatSet*>(index.internalPointer());
 		if (!set) {
-			set = *GBACheatSetsGetPointer(&m_device->cheats, index.row());
+			set = *mCheatSetsGetPointer(&m_device->cheats, index.row());
 			setOrder[index.row()] = set;
 			QSet<size_t> range;
 			for (size_t i = 0; i < StringListSize(&set->lines); ++i) {
@@ -185,7 +181,7 @@ QString CheatsModel::toString(const QModelIndexList& indices) const {
 	QList<int> order = setOrder.keys();
 	std::sort(order.begin(), order.end());
 	for (int i : order) {
-		GBACheatSet* set = setOrder[i];
+		mCheatSet* set = setOrder[i];
 		QList<size_t> indexOrdex = setIndices[set].toList();
 		std::sort(indexOrdex.begin(), indexOrdex.end());
 		for (size_t j : indexOrdex) {
@@ -211,11 +207,11 @@ void CheatsModel::endAppendRow() {
 void CheatsModel::loadFile(const QString& path) {
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
-		LOG(WARN) << tr("Failed to open cheats file: %1").arg(path);
+		LOG(QT, WARN) << tr("Failed to open cheats file: %1").arg(path);
 		return;
 	}
 	beginResetModel();
-	GBACheatParseFile(m_device, vf);
+	mCheatParseFile(m_device, vf);
 	endResetModel();
 	vf->close(vf);
 }
@@ -225,17 +221,17 @@ void CheatsModel::saveFile(const QString& path) {
 	if (!vf) {
 		return;
 	}
-	GBACheatSaveFile(m_device, vf);
+	mCheatSaveFile(m_device, vf);
 	vf->close(vf);
 }
 
-void CheatsModel::addSet(GBACheatSet* set) {
-	beginInsertRows(QModelIndex(), GBACheatSetsSize(&m_device->cheats), GBACheatSetsSize(&m_device->cheats));
-	size_t size = GBACheatSetsSize(&m_device->cheats);
+void CheatsModel::addSet(mCheatSet* set) {
+	beginInsertRows(QModelIndex(), mCheatSetsSize(&m_device->cheats), mCheatSetsSize(&m_device->cheats));
+	size_t size = mCheatSetsSize(&m_device->cheats);
 	if (size) {
-		GBACheatSetCopyProperties(set, *GBACheatSetsGetPointer(&m_device->cheats, size - 1));
+		set->copyProperties(set, *mCheatSetsGetPointer(&m_device->cheats, size - 1));
 	}
-	GBACheatAddSet(m_device, set);
+	mCheatAddSet(m_device, set);
 	endInsertRows();
 }
 

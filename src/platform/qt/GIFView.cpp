@@ -39,7 +39,7 @@ void GIFView::startRecording() {
 	int delayMs = m_ui.delayAuto->isChecked() ? -1 : m_ui.delayMs->value();
 	ImageMagickGIFEncoderSetParams(&m_encoder, m_ui.frameskip->value(), delayMs);
 	if (!ImageMagickGIFEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		LOG(ERROR) << tr("Failed to open output GIF file: %1").arg(m_filename);
+		LOG(QT, ERROR) << tr("Failed to open output GIF file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);

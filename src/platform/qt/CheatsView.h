@@ -14,7 +14,7 @@
 
 #include "ui_CheatsView.h"
 
-struct GBACheatDevice;
+struct mCheatDevice;
 
 namespace QGBA {
 
@@ -35,7 +35,7 @@ private slots:
 	void removeSet();
 
 private:
-	void enterCheat(std::function<bool(GBACheatSet*, const char*)> callback);
+	void enterCheat(int codeType);
 
 	Ui::CheatsView m_ui;
 	GameController* m_controller;

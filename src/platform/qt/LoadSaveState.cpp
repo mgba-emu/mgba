@@ -15,8 +15,11 @@
 #include <QPainter>
 
 extern "C" {
+#include "core/serialize.h"
+#ifdef M_CORE_GBA
 #include "gba/serialize.h"
-#include "gba/video.h"
+#endif
+#include "util/memory.h"
 }
 
 using namespace QGBA;
@@ -40,10 +43,13 @@ LoadSaveState::LoadSaveState(GameController* controller, QWidget* parent)
 	m_slots[7] = m_ui.state8;
 	m_slots[8] = m_ui.state9;
 
+	unsigned width, height;
+	controller->thread()->core->desiredVideoDimensions(controller->thread()->core, &width, &height);
 	int i;
 	for (i = 0; i < NUM_SLOTS; ++i) {
 		loadState(i + 1);
 		m_slots[i]->installEventFilter(this);
+		m_slots[i]->setMaximumSize(width + 2, height + 2);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
 
@@ -169,29 +175,31 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 }
 
 void LoadSaveState::loadState(int slot) {
-	GBAThread* thread = m_controller->thread();
-	VFile* vf = GBAGetState(thread->gba, thread->dirs.state, slot, false);
+	mCoreThread* thread = m_controller->thread();
+	VFile* vf = mCoreGetState(thread->core, slot, 0);
 	if (!vf) {
 		m_slots[slot - 1]->setText(tr("Empty"));
 		return;
 	}
 
-	GBAExtdata extdata;
-	GBAExtdataInit(&extdata);
-	GBASerializedState* state = GBAExtractState(vf, &extdata);
+	mStateExtdata extdata;
+	mStateExtdataInit(&extdata);
+	void* state = mCoreExtractState(thread->core, vf, &extdata);
 	vf->seek(vf, 0, SEEK_SET);
 	if (!state) {
 		m_slots[slot - 1]->setText(tr("Corrupted"));
-		GBAExtdataDeinit(&extdata);
+		mStateExtdataDeinit(&extdata);
 		return;
 	}
 
-	QDateTime creation(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL));
+	QDateTime creation/*(QDateTime::fromMSecsSinceEpoch(state->creationUsec / 1000LL))*/; // TODO
 	QImage stateImage;
 
-	GBAExtdataItem item;
-	if (GBAExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * 4) {
-		stateImage = QImage((uchar*) item.data, VIDEO_HORIZONTAL_PIXELS, VIDEO_VERTICAL_PIXELS, QImage::Format_ARGB32).rgbSwapped();
+	unsigned width, height;
+	thread->core->desiredVideoDimensions(thread->core, &width, &height);
+	mStateExtdataItem item;
+	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= width * height * 4) {
+		stateImage = QImage((uchar*) item.data, width, height, QImage::Format_ARGB32).rgbSwapped();
 	}
 
 	if (!stateImage.isNull()) {
@@ -207,7 +215,7 @@ void LoadSaveState::loadState(int slot) {
 		m_slots[slot - 1]->setText(QString());
 	}
 	vf->close(vf);
-	GBADeallocateState(state);
+	mappedMemoryFree(state, thread->core->stateSize(thread->core));
 }
 
 void LoadSaveState::triggerState(int slot) {

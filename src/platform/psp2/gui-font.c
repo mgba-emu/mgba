@@ -5,18 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/gui/font.h"
 #include "util/gui/font-metrics.h"
+#include "util/string.h"
 
 #include <vita2d.h>
 
 #define CELL_HEIGHT 32
 #define CELL_WIDTH 32
-#define GLYPH_HEIGHT 24
+#define FONT_SIZE 1.25f
 
-extern const uint8_t _binary_font2x_png_start[];
 extern const uint8_t _binary_icons2x_png_start[];
 
 struct GUIFont {
-	vita2d_texture* tex;
+	vita2d_pgf* pgf;
 	vita2d_texture* icons;
 };
 
@@ -25,28 +25,25 @@ struct GUIFont* GUIFontCreate(void) {
 	if (!font) {
 		return 0;
 	}
-	font->tex = vita2d_load_PNG_buffer(_binary_font2x_png_start);
+	font->pgf = vita2d_load_default_pgf();
 	font->icons = vita2d_load_PNG_buffer(_binary_icons2x_png_start);
 	return font;
 }
 
 void GUIFontDestroy(struct GUIFont* font) {
-	vita2d_free_texture(font->tex);
+	vita2d_free_pgf(font->pgf);
 	vita2d_free_texture(font->icons);
 	free(font);
 }
 
 unsigned GUIFontHeight(const struct GUIFont* font) {
-	UNUSED(font);
-	return GLYPH_HEIGHT;
+	return vita2d_pgf_text_height(font->pgf, FONT_SIZE, "M") + 9;
 }
 
 unsigned GUIFontGlyphWidth(const struct GUIFont* font, uint32_t glyph) {
-	UNUSED(font);
-	if (glyph > 0x7F) {
-		glyph = '?';
-	}
-	return defaultFontMetrics[glyph].width * 2;
+	char base[5] = { 0 };
+	toUtf8(glyph, base);
+	return vita2d_pgf_text_width(font->pgf, FONT_SIZE, base);
 }
 
 void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned* w, unsigned* h) {
@@ -69,16 +66,9 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 }
 
 void GUIFontDrawGlyph(const struct GUIFont* font, int x, int y, uint32_t color, uint32_t glyph) {
-	if (glyph > 0x7F) {
-		glyph = '?';
-	}
-	struct GUIFontGlyphMetric metric = defaultFontMetrics[glyph];
-	vita2d_draw_texture_tint_part(font->tex, x, y - GLYPH_HEIGHT + metric.padding.top * 2,
-	                                    (glyph & 15) * CELL_WIDTH + metric.padding.left * 2,
-	                                    (glyph >> 4) * CELL_HEIGHT + metric.padding.top * 2,
-	                                    CELL_WIDTH - (metric.padding.left + metric.padding.right) * 2,
-	                                    CELL_HEIGHT - (metric.padding.top + metric.padding.bottom) * 2,
-	                                    color);
+	char base[5] = { 0 };
+	toUtf8(glyph, base);
+	vita2d_pgf_draw_text(font->pgf, x, y, color, FONT_SIZE, base);
 }
 
 void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {

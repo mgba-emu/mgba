@@ -8,40 +8,50 @@
 
 #include "gba/sio.h"
 
-#include "util/threading.h"
-
-enum LockstepState {
-	LOCKSTEP_IDLE = 0,
-	LOCKSTEP_STARTED = 1,
-	LOCKSTEP_FINISHED = 2
+enum GBASIOLockstepPhase {
+	TRANSFER_IDLE = 0,
+	TRANSFER_STARTING,
+	TRANSFER_STARTED,
+	TRANSFER_FINISHING,
+	TRANSFER_FINISHED
 };
 
 struct GBASIOLockstep {
 	struct GBASIOLockstepNode* players[MAX_GBAS];
 	int attached;
-	int loadedMulti;
-	int loadedNormal;
+	int attachedMulti;
+	int attachedNormal;
 
 	uint16_t multiRecv[MAX_GBAS];
-	bool transferActive;
+	uint32_t normalRecv[MAX_GBAS];
+	enum GBASIOLockstepPhase transferActive;
 	int32_t transferCycles;
-	int32_t nextEvent;
 
-	int waiting;
-	Mutex mutex;
-	Condition barrier;
+	bool (*signal)(struct GBASIOLockstep*, unsigned mask);
+	bool (*wait)(struct GBASIOLockstep*, unsigned mask);
+	void (*addCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
+	int32_t (*useCycles)(struct GBASIOLockstep*, int id, int32_t cycles);
+	void (*unload)(struct GBASIOLockstep*, int id);
+	void* context;
+#ifndef NDEBUG
+	int transferId;
+#endif
 };
 
 struct GBASIOLockstepNode {
 	struct GBASIODriver d;
 	struct GBASIOLockstep* p;
 
-	int32_t nextEvent;
-	uint16_t multiSend;
+	volatile int32_t nextEvent;
+	int32_t eventDiff;
 	bool normalSO;
-	enum LockstepState state;
 	int id;
 	enum GBASIOMode mode;
+	bool transferFinished;
+#ifndef NDEBUG
+	int transferId;
+	enum GBASIOLockstepPhase phase;
+#endif
 };
 
 void GBASIOLockstepInit(struct GBASIOLockstep*);

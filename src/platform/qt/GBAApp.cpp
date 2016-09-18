@@ -14,10 +14,11 @@
 #include <QFileInfo>
 #include <QFileOpenEvent>
 #include <QIcon>
+#include <QTranslator>
 
 extern "C" {
-#include "gba/supervisor/thread.h"
-#include "platform/commandline.h"
+#include "core/version.h"
+#include "feature/commandline.h"
 #include "util/nointro.h"
 #include "util/socket.h"
 }
@@ -25,6 +26,8 @@ extern "C" {
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
+
+mLOG_DEFINE_CATEGORY(QT, "Qt");
 
 GBAApp::GBAApp(int& argc, char* argv[])
 	: QApplication(argc, argv)
@@ -41,9 +44,15 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	setWindowIcon(QIcon(":/res/mgba-1024.png"));
 #endif
 
+	QTranslator* translator = new QTranslator(this);
+	if (translator->load(QLocale(), QLatin1String(binaryName), QLatin1String("-"), QLatin1String(":/translations"))) {
+		installTranslator(translator);
+	}
+
+
 	SocketSubsystemInit();
 	qRegisterMetaType<const uint32_t*>("const uint32_t*");
-	qRegisterMetaType<GBAThread*>("GBAThread*");
+	qRegisterMetaType<mCoreThread*>("mCoreThread*");
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
@@ -52,9 +61,9 @@ GBAApp::GBAApp(int& argc, char* argv[])
 		Display::setDriver(static_cast<Display::Driver>(m_configController.getQtOption("displayDriver").toInt()));
 	}
 
-	GBAArguments args;
-	GraphicsOpts graphicsOpts;
-	SubParser subparser;
+	mArguments args;
+	mGraphicsOpts graphicsOpts;
+	mSubParser subparser;
 	initParserForGraphics(&subparser, &graphicsOpts);
 	bool loaded = m_configController.parseArguments(&args, argc, argv, &subparser);
 	if (loaded && args.showHelp) {
@@ -82,7 +91,7 @@ GBAApp::GBAApp(int& argc, char* argv[])
 	freeArguments(&args);
 
 	if (graphicsOpts.multiplier) {
-		w->resizeFrame(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier);
+		w->resizeFrame(QSize(VIDEO_HORIZONTAL_PIXELS * graphicsOpts.multiplier, VIDEO_VERTICAL_PIXELS * graphicsOpts.multiplier));
 	}
 	if (graphicsOpts.fullscreen) {
 		w->enterFullScreen();
@@ -186,8 +195,8 @@ QFileDialog* GBAApp::getSaveFileDialog(QWidget* owner, const QString& title, con
 }
 
 QString GBAApp::dataDir() {
-#ifdef DATA_DIR
-	QString path = QString::fromUtf8(DATA_DIR);
+#ifdef DATADIR
+	QString path = QString::fromUtf8(DATADIR);
 #else
 	QString path = QCoreApplication::applicationDirPath();
 #ifdef Q_OS_MAC

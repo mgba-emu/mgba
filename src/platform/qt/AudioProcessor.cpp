@@ -13,10 +13,6 @@
 #include "AudioProcessorQt.h"
 #endif
 
-extern "C" {
-#include "gba/supervisor/thread.h"
-}
-
 using namespace QGBA;
 
 #ifndef BUILD_SDL
@@ -49,11 +45,11 @@ AudioProcessor* AudioProcessor::create() {
 AudioProcessor::AudioProcessor(QObject* parent)
 	: QObject(parent)
 	, m_context(nullptr)
-	, m_samples(GBA_AUDIO_SAMPLES)
+	, m_samples(2048)
 {
 }
 
-void AudioProcessor::setInput(GBAThread* input) {
+void AudioProcessor::setInput(mCoreThread* input) {
 	m_context = input;
 }
 

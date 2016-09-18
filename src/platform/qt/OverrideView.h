@@ -8,18 +8,21 @@
 
 #include <QDialog>
 
+#ifdef M_CORE_GB
+extern "C" {
+#include "gb/overrides.h"
+}
+#endif
+
 #include "ui_OverrideView.h"
 
-extern "C" {
-#include "gba/context/overrides.h"
-}
-
-struct GBAThread;
+struct mCoreThread;
 
 namespace QGBA {
 
 class ConfigController;
 class GameController;
+class Override;
 
 class OverrideView : public QDialog {
 Q_OBJECT
@@ -32,7 +35,7 @@ public slots:
 
 private slots:
 	void updateOverrides();
-	void gameStarted(GBAThread*);
+	void gameStarted(mCoreThread*);
 	void gameStopped();
 
 private:
@@ -40,7 +43,11 @@ private:
 
 	GameController* m_controller;
 	ConfigController* m_config;
-	GBACartridgeOverride m_override;
+
+#ifdef M_CORE_GB
+	static QList<enum GBModel> s_gbModelList;
+	static QList<enum GBMemoryBankControllerType> s_mbcList;
+#endif
 };
 
 }

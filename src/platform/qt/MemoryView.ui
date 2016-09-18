@@ -17,73 +17,18 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QComboBox" name="regions">
-       <item>
-        <property name="text">
-         <string>All</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>BIOS (16kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Working RAM (256kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Internal Working RAM (32kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Memory-Mapped I/O</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Palette RAM (1kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Video RAM (96kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>OBJ Attribute Memory (1kiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Game Pak (32MiB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Game Pak (Waitstate 1)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Game Pak (Waitstate 2)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Static RAM (64kiB)</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="QComboBox" name="regions"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -95,7 +40,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QSpinBox" name="segments">
+       <property name="minimum">
+        <number>-1</number>
+       </property>
+       <property name="maximum">
+        <number>0</number>
+       </property>
+       <property name="displayIntegerBase">
+        <number>16</number>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QSpinBox" name="setAddress">
+       <property name="accelerated">
+        <bool>true</bool>
+       </property>
        <property name="prefix">
         <string>0x</string>
        </property>
@@ -126,6 +87,12 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
      <item>
@@ -143,6 +110,12 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
      <item>
@@ -157,6 +130,12 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
      <item>
@@ -170,6 +149,12 @@
       <spacer name="horizontalSpacer_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>

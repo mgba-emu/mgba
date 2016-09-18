@@ -1,0 +1,119 @@
+; Copyright (c) 2015 Yuri Kunde Schlesner
+; Copyright (c) 2016 Jeffrey Pfau
+;
+; This Source Code Form is subject to the terms of the Mozilla Public
+; License, v. 2.0. If a copy of the MPL was not distributed with this
+; file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+; Inputs
+.alias in_pos v0 ; [x, y, w, h]
+.alias in_tc0 v1 ; [u, v, uw, vh]
+.alias in_col v2
+.alias in_rot v3
+
+.gsh point c0
+
+; Uniforms
+.fvec projectionMtx[4]
+.fvec textureMtx[2]
+
+; Constants
+.constf consts1(0.0, 1.0, -0.5, -1.0)
+
+; Outputs
+.out out_pos position
+.out out_tc0 texcoord0
+.out out_col color
+
+.entry gshMain
+.proc gshMain
+	; Set up the vertex endpoints
+	mov r0.xy, in_pos.zw
+	mov r0.zw, consts1.xx
+	mov r4.xy, in_pos.xy
+	add r5, r4.xyzw, r0.xwww
+	add r6, r4.xyzw, r0.xyww
+	add r7, r4.xyzw, r0.wyww
+
+	; Create rotation matrix
+	mov r8, in_rot.xzww
+	mov r9, in_rot.yxww
+	mov r10.zw, consts1.zy
+
+	; Transform coordinates
+	dp4 r10.x, r8, r4
+	dp4 r10.y, r9, r4
+	dp4 r0.x, projectionMtx[0], r10
+	dp4 r0.y, projectionMtx[1], r10
+	dp4 r0.z, projectionMtx[2], r10
+	dp4 r0.w, projectionMtx[3], r10
+
+	dp4 r10.x, r8, r5
+	dp4 r10.y, r9, r5
+	dp4 r1.x, projectionMtx[0], r10
+	dp4 r1.y, projectionMtx[1], r10
+	dp4 r1.z, projectionMtx[2], r10
+	dp4 r1.w, projectionMtx[3], r10
+
+	dp4 r10.x, r8, r6
+	dp4 r10.y, r9, r6
+	dp4 r2.x, projectionMtx[0], r10
+	dp4 r2.y, projectionMtx[1], r10
+	dp4 r2.z, projectionMtx[2], r10
+	dp4 r2.w, projectionMtx[3], r10
+
+	dp4 r10.x, r8, r7
+	dp4 r10.y, r9, r7
+	dp4 r3.x, projectionMtx[0], r10
+	dp4 r3.y, projectionMtx[1], r10
+	dp4 r3.z, projectionMtx[2], r10
+	dp4 r3.w, projectionMtx[3], r10
+
+	; Set up the texture endpoints
+	mov r6.xy, in_tc0.xy
+	add r7.xy, r6.xy, in_tc0.zw
+
+	dp4 r4.x, textureMtx[0], r6
+	dp4 r4.y, textureMtx[1], r6
+	mov r4.zw, consts1.xy
+
+	dp4 r5.x, textureMtx[0], r7
+	dp4 r5.y, textureMtx[1], r7
+	mov r5.zw, consts1.xy
+
+	; Emit top-left
+	setemit 0
+	mov out_pos, r0
+	mov out_tc0.xyzw, r4.xyzw
+	mov out_col, in_col
+	emit
+
+	; Emit bottom-left
+	setemit 1
+	mov out_pos, r1
+	mov out_tc0.x, r5.x
+	mov out_tc0.y, r4.y
+	mov out_tc0.z, consts1.x
+	mov out_tc0.w, consts1.y
+	mov out_col, in_col
+	emit
+
+	; Emit bottom-right
+	setemit 2, prim
+	mov out_pos, r2
+	mov out_tc0.xyzw, r5.xyzw
+	mov out_col, in_col
+	emit
+
+	; Emit top-right
+	setemit 1, prim inv
+	mov out_pos, r3
+	mov out_tc0.x, r4.x
+	mov out_tc0.y, r5.y
+	mov out_tc0.z, consts1.x
+	mov out_tc0.w, consts1.y
+	mov out_col, in_col
+	emit
+
+	end
+.end

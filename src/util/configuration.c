@@ -151,7 +151,9 @@ bool ConfigurationRead(struct Configuration* configuration, const char* path) {
 	if (!vf) {
 		return false;
 	}
-	return ConfigurationReadVFile(configuration, vf);
+	bool res = ConfigurationReadVFile(configuration, vf);
+	vf->close(vf);
+	return res;
 }
 
 bool ConfigurationReadVFile(struct Configuration* configuration, struct VFile* vf) {

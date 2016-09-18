@@ -22,6 +22,9 @@ extern "C" {
 #endif
 }
 
+struct mRotationSource;
+struct mRumble;
+
 namespace QGBA {
 
 class ConfigController;
@@ -50,7 +53,7 @@ public:
 
 	void bindKey(uint32_t type, int key, GBAKey);
 
-	const GBAInputMap* map() const { return &m_inputMap; }
+	const mInputMap* map() const { return &m_inputMap; }
 
 	void updateJoysticks();
 	int pollEvents();
@@ -79,8 +82,8 @@ public:
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
 
-	GBARumble* rumble();
-	GBARotationSource* rotationSource();
+	mRumble* rumble();
+	mRotationSource* rotationSource();
 
 signals:
 	void profileLoaded(const QString& profile);
@@ -99,7 +102,7 @@ private:
 	bool hasPendingEvent(GBAKey) const;
 	void sendGamepadEvent(QEvent*);
 
-	GBAInputMap m_inputMap;
+	mInputMap m_inputMap;
 	ConfigController* m_config;
 	int m_playerId;
 	bool m_allowOpposing;
@@ -108,8 +111,8 @@ private:
 
 #ifdef BUILD_SDL
 	static int s_sdlInited;
-	static GBASDLEvents s_sdlEvents;
-	GBASDLPlayer m_sdlPlayer;
+	static mSDLEvents s_sdlEvents;
+	mSDLPlayer m_sdlPlayer;
 	bool m_playerAttached;
 #endif
 

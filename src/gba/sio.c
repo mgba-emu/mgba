@@ -7,6 +7,8 @@
 
 #include "gba/io.h"
 
+mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O");
+
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 38326, 73003, 107680, 142356 },
 	{ 9582, 18251, 26920, 35589 },
@@ -30,16 +32,17 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 
 static void _switchMode(struct GBASIO* sio) {
 	unsigned mode = ((sio->rcnt & 0xC000) | (sio->a.siocnt & 0x3000)) >> 12;
-	enum GBASIOMode oldMode = sio->mode;
+	enum GBASIOMode newMode;
 	if (mode < 8) {
-		sio->mode = (enum GBASIOMode) (mode & 0x3);
+		newMode = (enum GBASIOMode) (mode & 0x3);
 	} else {
-		sio->mode = (enum GBASIOMode) (mode & 0xC);
+		newMode = (enum GBASIOMode) (mode & 0xC);
 	}
-	if (oldMode != sio->mode) {
+	if (newMode != sio->mode) {
 		if (sio->activeDriver && sio->activeDriver->unload) {
 			sio->activeDriver->unload(sio->activeDriver);
 		}
+		sio->mode = newMode;
 		sio->activeDriver = _lookupDriver(sio, sio->mode);
 		if (sio->activeDriver && sio->activeDriver->load) {
 			sio->activeDriver->load(sio->activeDriver);
@@ -102,7 +105,7 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 		driverLoc = &sio->drivers.joybus;
 		break;
 	default:
-		GBALog(sio->p, GBA_LOG_ERROR, "Setting an unsupported SIO driver: %x", mode);
+		mLOG(GBA_SIO, ERROR, "Setting an unsupported SIO driver: %x", mode);
 		return;
 	}
 	if (*driverLoc) {
@@ -119,15 +122,15 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 		if (driver->init) {
 			if (!driver->init(driver)) {
 				driver->deinit(driver);
-				GBALog(sio->p, GBA_LOG_ERROR, "Could not initialize SIO driver");
+				mLOG(GBA_SIO, ERROR, "Could not initialize SIO driver");
 				return;
 			}
 		}
-		if (sio->mode == mode) {
-			sio->activeDriver = driver;
-			if (driver->load) {
-				driver->load(driver);
-			}
+	}
+	if (sio->activeDriver == *driverLoc) {
+		sio->activeDriver = driver;
+		if (driver && driver->load) {
+			driver->load(driver);
 		}
 	}
 	*driverLoc = driver;
@@ -169,10 +172,11 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	sio->a.siocnt = value;
 }
 
-void GBASIOWriteSIOMLT_SEND(struct GBASIO* sio, uint16_t value) {
+uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOMLT_SEND, value);
+		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
+	return value;
 }
 
 int32_t GBASIOProcessEvents(struct GBASIO* sio, int32_t cycles) {

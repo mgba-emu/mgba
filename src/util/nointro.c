@@ -158,7 +158,8 @@ struct NoIntroDB* NoIntroDBLoad(struct VFile* vf) {
 	struct {
 		char* key;
 		struct NoIntroItem* item;
-	} keyStack[KEY_STACK_SIZE] = {};
+	} keyStack[KEY_STACK_SIZE];
+	memset(keyStack, 0, sizeof(keyStack));
 	struct Table* parent = 0;
 
 	size_t stackDepth = 0;

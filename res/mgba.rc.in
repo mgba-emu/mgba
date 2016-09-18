@@ -14,7 +14,7 @@ BEGIN
             VALUE "FileDescription",    "mGBA Game Boy Advance emulator"
             VALUE "FileVersion",        "${LIB_VERSION_STRING}.0"
             VALUE "InternalName",       "${BINARY_NAME}"
-            VALUE "LegalCopyright",     "(c) 2013 - 2015 Jeffrey Pfau"
+            VALUE "LegalCopyright",     "(c) 2013 - 2016 Jeffrey Pfau"
             VALUE "OriginalFilename",   "${BINARY_NAME}"
             VALUE "ProductName",        "${PROJECT_NAME}"
             VALUE "ProductVersion",     "${BINARY_NAME}"

@@ -120,7 +120,7 @@ static inline int _sceThreadEntry(SceSize args, void* argp) {
 }
 
 static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context) {
-	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x40, 0x10000, 0, 0x70000, 0);
+	Thread id = sceKernelCreateThread("SceThread", _sceThreadEntry, 0x10000100, 0x10000, 0, 0, 0);
 	if (id < 0) {
 		*thread = 0;
 		return id;
@@ -132,7 +132,11 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 }
 
 static inline int ThreadJoin(Thread thread) {
-	return sceKernelWaitThreadEnd(thread, 0, 0);
+	int res = sceKernelWaitThreadEnd(thread, 0, 0);
+	if (res < 0) {
+		return res;
+	}
+	return sceKernelDeleteThread(thread);
 }
 
 static inline int ThreadSetName(const char* name) {

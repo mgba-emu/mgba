@@ -9,7 +9,7 @@
 #include <QAudioFormat>
 #include <QIODevice>
 
-struct GBAThread;
+struct mCoreThread;
 
 namespace QGBA {
 
@@ -19,7 +19,7 @@ Q_OBJECT
 public:
 	AudioDevice(QObject* parent = nullptr);
 
-	void setInput(GBAThread* input);
+	void setInput(mCoreThread* input);
 	void setFormat(const QAudioFormat& format);
 
 protected:
@@ -27,9 +27,7 @@ protected:
 	virtual qint64 writeData(const char* data, qint64 maxSize) override;
 
 private:
-	GBAThread* m_context;
-	float m_drift;
-	float m_ratio;
+	mCoreThread* m_context;
 };
 
 }

@@ -47,6 +47,7 @@ private slots:
 #ifdef BUILD_SDL
 	void setAxisValue(int axis, int32_t value);
 	void selectGamepad(int index);
+	void updateJoysticks();
 #endif
 
 private:
@@ -57,13 +58,13 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
-	void lookupBinding(const GBAInputMap*, KeyEditor*, GBAKey);
+	void lookupBinding(const mInputMap*, KeyEditor*, GBAKey);
 	void bindKey(const KeyEditor*, GBAKey);
 
 	bool findFocus(KeyEditor* needle = nullptr);
 
 #ifdef BUILD_SDL
-	void lookupAxes(const GBAInputMap*);
+	void lookupAxes(const mInputMap*);
 #endif
 
 	KeyEditor* keyById(GBAKey);

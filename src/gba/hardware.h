@@ -7,22 +7,21 @@
 #define GBA_HARDWARE_H
 
 #include "util/common.h"
+
+#include "arm/macros.h"
+#include "core/log.h"
 #include "gba/interface.h"
 
-#include "macros.h"
-
 #include <time.h>
+
+mLOG_DECLARE_CATEGORY(GBA_HW);
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
 struct GBARTCGenericSource {
-	struct GBARTCSource d;
+	struct mRTCSource d;
 	struct GBA* p;
-	enum {
-		RTC_NO_OVERRIDE,
-		RTC_FIXED,
-		RTC_FAKE_EPOCH
-	} override;
+	enum mRTCGenericType override;
 	int64_t value;
 };
 
@@ -80,12 +79,8 @@ struct GBARTC {
 };
 #pragma pack(pop)
 
-struct GBARumble {
-	void (*setRumble)(struct GBARumble*, int enable);
-};
-
 struct GBAGBPKeyCallback {
-	struct GBAKeyCallback d;
+	struct mKeyCallback d;
 	struct GBACartridgeHardware* p;
 };
 

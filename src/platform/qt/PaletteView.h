@@ -13,8 +13,6 @@
 
 #include "ui_PaletteView.h"
 
-class GameController;
-
 namespace QGBA {
 
 class Swatch;

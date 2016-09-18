@@ -10,7 +10,9 @@
 #include "gba/sio.h"
 #include "gba/video.h"
 
-const char* GBAIORegisterNames[] = {
+mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O");
+
+const char* const GBAIORegisterNames[] = {
 	// Video
 	"DISPCNT",
 	0,
@@ -513,7 +515,13 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			GBASIOWriteRCNT(&gba->sio, value);
 			break;
 		case REG_SIOMLT_SEND:
-			GBASIOWriteSIOMLT_SEND(&gba->sio, value);
+		case REG_JOYCNT:
+		case REG_JOYSTAT:
+		case REG_JOY_RECV_LO:
+		case REG_JOY_RECV_HI:
+		case REG_JOY_TRANS_LO:
+		case REG_JOY_TRANS_HI:
+			value = GBASIOWriteRegister(&gba->sio, address, value);
 			break;
 
 		// Interrupts and misc
@@ -533,9 +541,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			// Some bad interrupt libraries will write to this
 			break;
 		default:
-			GBALog(gba, GBA_LOG_STUB, "Stub I/O register write: %03X", address);
+			mLOG(GBA_IO, STUB, "Stub I/O register write: %03X", address);
 			if (address >= REG_MAX) {
-				GBALog(gba, GBA_LOG_GAME_ERROR, "Write to unused I/O register: %03X", address);
+				mLOG(GBA_IO, GAME_ERROR, "Write to unused I/O register: %03X", address);
 				return;
 			}
 			break;
@@ -751,16 +759,13 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_DMA3DAD_HI:
 	case REG_DMA3CNT_LO:
 		// Write-only register
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Read from write-only I/O register: %03X", address);
+		mLOG(GBA_IO, GAME_ERROR, "Read from write-only I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 
 	case REG_SOUNDBIAS:
-	case REG_JOYCNT:
-	case REG_JOY_RECV:
-	case REG_JOY_TRANS:
 	case REG_KEYCNT:
 	case REG_POSTFLG:
-		GBALog(gba, GBA_LOG_STUB, "Stub I/O register read: %03x", address);
+		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
 	case REG_SOUND1CNT_LO:
 	case REG_SOUND1CNT_HI:
@@ -774,7 +779,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
 	case REG_SOUNDCNT_HI:
-		if (!GBARegisterSOUNDCNT_XIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
+		if (!GBAudioEnableIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
 			// TODO: Is writing allowed when the circuit is disabled?
 			return 0;
 		}
@@ -812,6 +817,12 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SIOMULTI2:
 	case REG_SIOMULTI3:
 	case REG_SIOMLT_SEND:
+	case REG_JOYCNT:
+	case REG_JOY_RECV_LO:
+	case REG_JOY_RECV_HI:
+	case REG_JOY_TRANS_LO:
+	case REG_JOY_TRANS_HI:
+	case REG_JOYSTAT:
 	case REG_IE:
 	case REG_IF:
 	case REG_WAITCNT:
@@ -822,7 +833,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Some bad interrupt libraries will read from this
 		break;
 	default:
-		GBALog(gba, GBA_LOG_GAME_ERROR, "Read from unused I/O register: %03X", address);
+		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 	}
 	return gba->memory.io[address >> 1];
@@ -872,10 +883,16 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
-		LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
-		LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
 		LOAD_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		LOAD_32(gba->timers[i].flags, 0, &state->timers[i].flags);
+		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
+			// Overwrite invalid values in savestate
+			gba->timers[i].lastEvent = 0;
+			gba->timers[i].nextEvent = INT_MAX;
+		} else {
+			LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
+			LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
+		}
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
 		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
 		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);

@@ -7,7 +7,8 @@
 
 #include "gl-common.h"
 
-#include "gba/supervisor/thread.h"
+#include "core/core.h"
+#include "core/thread.h"
 #include "platform/opengl/gl.h"
 
 static void _doViewport(int w, int h, struct VideoBackend* v) {
@@ -17,40 +18,43 @@ static void _doViewport(int w, int h, struct VideoBackend* v) {
 	v->clear(v);
 }
 
-static bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer);
-static void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer);
+static bool mSDLGLInit(struct mSDLRenderer* renderer);
+static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
+static void mSDLGLDeinit(struct mSDLRenderer* renderer);
 
-void GBASDLGLCreate(struct SDLSoftwareRenderer* renderer) {
-	renderer->init = GBASDLGLInit;
-	renderer->deinit = GBASDLGLDeinit;
-	renderer->runloop = GBASDLGLRunloop;
+void mSDLGLCreate(struct mSDLRenderer* renderer) {
+	renderer->init = mSDLGLInit;
+	renderer->deinit = mSDLGLDeinit;
+	renderer->runloop = mSDLGLRunloop;
 }
 
-bool GBASDLGLInit(struct SDLSoftwareRenderer* renderer) {
-	GBASDLGLCommonInit(renderer);
+bool mSDLGLInit(struct mSDLRenderer* renderer) {
+	mSDLGLCommonInit(renderer);
 
-	renderer->d.outputBuffer = malloc(VIDEO_HORIZONTAL_PIXELS * VIDEO_VERTICAL_PIXELS * BYTES_PER_PIXEL);
-	renderer->d.outputBufferStride = VIDEO_HORIZONTAL_PIXELS;
+	renderer->outputBuffer = malloc(renderer->width * renderer->height * BYTES_PER_PIXEL);
+	memset(renderer->outputBuffer, 0, renderer->width * renderer->height * BYTES_PER_PIXEL);
+	renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 
-	GBAGLContextCreate(&renderer->gl);
+	mGLContextCreate(&renderer->gl);
 	renderer->gl.d.user = renderer;
 	renderer->gl.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl.d.filter = renderer->filter;
-	renderer->gl.d.swap = GBASDLGLCommonSwap;
+	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
+	renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
 
 	_doViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
 }
 
-void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* renderer) {
+void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
+	struct mCoreThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = &renderer->gl.d;
 
 	while (context->state < THREAD_EXITING) {
 		while (SDL_PollEvent(&event)) {
-			GBASDLHandleEvent(context, &renderer->player, &event);
+			mSDLHandleEvent(context, &renderer->player, &event);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 			// Event handling can change the size of the screen
 			if (renderer->player.windowUpdated) {
@@ -61,20 +65,20 @@ void GBASDLGLRunloop(struct GBAThread* context, struct SDLSoftwareRenderer* rend
 #endif
 		}
 
-		if (GBASyncWaitFrameStart(&context->sync)) {
-			v->postFrame(v, renderer->d.outputBuffer);
+		if (mCoreSyncWaitFrameStart(&context->sync)) {
+			v->postFrame(v, renderer->outputBuffer);
 		}
-		GBASyncWaitFrameEnd(&context->sync);
+		mCoreSyncWaitFrameEnd(&context->sync);
 		v->drawFrame(v);
 		v->swap(v);
 	}
 }
 
-void GBASDLGLDeinit(struct SDLSoftwareRenderer* renderer) {
+void mSDLGLDeinit(struct mSDLRenderer* renderer) {
 	if (renderer->gl.d.deinit) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
-	free(renderer->d.outputBuffer);
+	free(renderer->outputBuffer);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif

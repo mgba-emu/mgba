@@ -8,6 +8,10 @@
 
 #include "util/common.h"
 
+#include "core/log.h"
+
+mLOG_DECLARE_CATEGORY(GBA_SAVE);
+
 struct VFile;
 
 enum SavedataType {
@@ -70,6 +74,7 @@ struct GBASavedata {
 	struct VFile* vf;
 
 	int mapMode;
+	bool maskWriteback;
 	struct VFile* realVf;
 
 	int32_t readBitsRemaining;
@@ -91,14 +96,15 @@ struct GBASavedata {
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
-void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf);
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeback);
 void GBASavedataUnmask(struct GBASavedata* savedata);
+size_t GBASavedataSize(struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in);
 void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type, bool realisticTiming);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming);
-void GBASavedataInitEEPROM(struct GBASavedata* savedata);
+void GBASavedataInitEEPROM(struct GBASavedata* savedata, bool realisticTiming);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 
 uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address);

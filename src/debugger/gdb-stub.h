@@ -23,7 +23,7 @@ enum GDBStubAckState {
 };
 
 struct GDBStub {
-	struct ARMDebugger d;
+	struct mDebugger d;
 
 	char line[GDB_STUB_MAX_LINE];
 	char outgoing[GDB_STUB_MAX_LINE];
@@ -34,6 +34,9 @@ struct GDBStub {
 
 	bool shouldBlock;
 	int untilPoll;
+
+	bool supportsSwbreak;
+	bool supportsHwbreak;
 };
 
 void GDBStubCreate(struct GDBStub*);

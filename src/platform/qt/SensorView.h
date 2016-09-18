@@ -13,7 +13,7 @@
 
 #include "ui_SensorView.h"
 
-struct GBARotationSource;
+struct mRotationSource;
 
 namespace QGBA {
 
@@ -43,7 +43,7 @@ private:
 	std::function<void(int)> m_jiggered;
 	GameController* m_controller;
 	InputController* m_input;
-	GBARotationSource* m_rotation;
+	mRotationSource* m_rotation;
 	QTimer m_timer;
 
 	void jiggerer(QAbstractButton*, void (InputController::*)(int));

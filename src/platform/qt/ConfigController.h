@@ -6,6 +6,8 @@
 #ifndef QGBA_CONFIG_CONTROLLER
 #define QGBA_CONFIG_CONTROLLER
 
+#include "Override.h"
+
 #include <QMap>
 #include <QObject>
 #include <QSettings>
@@ -14,15 +16,15 @@
 #include <functional>
 
 extern "C" {
-#include "gba/context/config.h"
+#include "core/config.h"
 #include "util/configuration.h"
-#include "platform/commandline.h"
+#include "feature/commandline.h"
 }
 
 class QAction;
 class QMenu;
 
-struct GBAArguments;
+struct mArguments;
 struct GBACartridgeOverride;
 
 namespace QGBA {
@@ -64,8 +66,8 @@ public:
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
 
-	const GBAOptions* options() const { return &m_opts; }
-	bool parseArguments(GBAArguments* args, int argc, char* argv[], SubParser* subparser = nullptr);
+	const mCoreOptions* options() const { return &m_opts; }
+	bool parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser = nullptr);
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
@@ -77,10 +79,12 @@ public:
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
-	Configuration* overrides() { return GBAConfigGetOverrides(&m_config); }
-	void saveOverride(const GBACartridgeOverride&);
+	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
+	void saveOverride(const Override&);
 
-	Configuration* input() { return GBAConfigGetInput(&m_config); }
+	Configuration* input() { return mCoreConfigGetInput(&m_config); }
+
+	const mCoreConfig* config() { return &m_config; }
 
 public slots:
 	void setOption(const char* key, bool value);
@@ -96,8 +100,8 @@ public slots:
 private:
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
-	GBAConfig m_config;
-	GBAOptions m_opts;
+	mCoreConfig m_config;
+	mCoreOptions m_opts;
 
 	QMap<QString, ConfigOption*> m_optionSet;
 	QSettings* m_settings;

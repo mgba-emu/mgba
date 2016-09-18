@@ -8,13 +8,8 @@
 
 #include "util/common.h"
 
+#include "core/core.h"
 #include "gba/video.h"
-
-#ifdef COLOR_16_BIT
-typedef uint16_t color_t;
-#else
-typedef uint32_t color_t;
-#endif
 
 struct GBAVideoSoftwareSprite {
 	struct GBAObj obj;
@@ -157,7 +152,9 @@ struct GBAVideoSoftwareRenderer {
 
 	int oamDirty;
 	int oamMax;
+	int objwinMax;
 	struct GBAVideoSoftwareSprite sprites[128];
+	struct GBAVideoSoftwareSprite objwinSprites[128];
 
 	int start;
 	int end;
