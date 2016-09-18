@@ -118,8 +118,7 @@ static void GBSramDeinit(struct GB* gb) {
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
 		}
-		gb->sramVf->close(gb->sramVf);
-		gb->sramVf = 0;
+		gb->sramVf = NULL;
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
@@ -210,9 +209,10 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	}
 }
 
-void GBSavedataMask(struct GB* gb, struct VFile* vf) {
+void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	GBSramDeinit(gb);
 	gb->sramVf = vf;
+	gb->sramMaskWriteback = writeback;
 	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
 }
 
@@ -220,9 +220,14 @@ void GBSavedataUnmask(struct GB* gb) {
 	if (gb->sramVf == gb->sramRealVf) {
 		return;
 	}
+	struct VFile* vf = gb->sramVf;
 	GBSramDeinit(gb);
 	gb->sramVf = gb->sramRealVf;
 	gb->memory.sram = gb->sramVf->map(gb->sramVf, gb->sramSize, MAP_WRITE);
+	if (gb->sramMaskWriteback) {
+		vf->read(vf, gb->memory.sram, gb->sramSize);
+	}
+	vf->close(vf);
 }
 
 void GBUnloadROM(struct GB* gb) {
@@ -247,7 +252,11 @@ void GBUnloadROM(struct GB* gb) {
 		gb->romVf = 0;
 	}
 
+	struct VFile* vf = gb->sramVf;
 	GBSramDeinit(gb);
+	if (vf) {
+		vf->close(vf);
+	}
 }
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf) {

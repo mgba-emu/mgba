@@ -470,7 +470,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 				case SDLK_F8:
 				case SDLK_F9:
 					mCoreThreadInterrupt(context);
-					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT);
+					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT);
 					mCoreThreadContinue(context);
 					break;
 				default:

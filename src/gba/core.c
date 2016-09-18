@@ -211,7 +211,7 @@ static bool _GBACoreLoadSave(struct mCore* core, struct VFile* vf) {
 
 static bool _GBACoreLoadTemporarySave(struct mCore* core, struct VFile* vf) {
 	struct GBA* gba = core->board;
-	GBASavedataMask(&gba->memory.savedata, vf);
+	GBASavedataMask(&gba->memory.savedata, vf, false);
 	return true; // TODO: Return a real value
 }
 
@@ -507,14 +507,19 @@ static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
 	return size;
 }
 
-static bool _GBACoreSavedataLoad(struct mCore* core, const void* sram, size_t size) {
+static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
 	struct VFile* vf = VFileFromConstMemory(sram, size);
 	if (!vf) {
 		return false;
 	}
 	struct GBA* gba = core->board;
-	bool success = GBASavedataLoad(&gba->memory.savedata, vf);
-	vf->close(vf);
+	bool success = true;
+	if (writeback) {
+		success = GBASavedataLoad(&gba->memory.savedata, vf);
+		vf->close(vf);
+	} else {
+		GBASavedataMask(&gba->memory.savedata, vf, true);
+	}
 	return success;
 }
 
@@ -582,6 +587,6 @@ struct mCore* GBACoreCreate(void) {
 	core->detachDebugger = _GBACoreDetachDebugger;
 	core->cheatDevice = _GBACoreCheatDevice;
 	core->savedataClone = _GBACoreSavedataClone;
-	core->savedataLoad = _GBACoreSavedataLoad;
+	core->savedataRestore = _GBACoreSavedataRestore;
 	return core;
 }

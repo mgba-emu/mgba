@@ -424,7 +424,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
-				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);
+				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEGAME);
 				break;
 			case RUNNER_LOAD_STATE:
 				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT);

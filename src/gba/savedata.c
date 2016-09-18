@@ -47,10 +47,7 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 	if (savedata->vf) {
 		size_t size = GBASavedataSize(savedata);
 		savedata->vf->unmap(savedata->vf, savedata->data, size);
-		if (savedata->vf != savedata->realVf) {
-			savedata->vf->close(savedata->vf);
-		}
-		savedata->vf = 0;
+		savedata->vf = NULL;
 	} else {
 		switch (savedata->type) {
 		case SAVEDATA_SRAM:
@@ -74,23 +71,30 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 	savedata->type = SAVEDATA_AUTODETECT;
 }
 
-void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf) {
+void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeback) {
 	enum SavedataType type = savedata->type;
 	GBASavedataDeinit(savedata);
 	savedata->vf = vf;
 	savedata->mapMode = MAP_READ;
+	savedata->maskWriteback = writeback;
 	GBASavedataForceType(savedata, type, savedata->realisticTiming);
 }
 
 void GBASavedataUnmask(struct GBASavedata* savedata) {
-	if (savedata->mapMode != MAP_READ) {
+	if (savedata->vf == savedata->realVf) {
 		return;
 	}
 	enum SavedataType type = savedata->type;
+	struct VFile* vf = savedata->vf;
 	GBASavedataDeinit(savedata);
 	savedata->vf = savedata->realVf;
 	savedata->mapMode = MAP_WRITE;
 	GBASavedataForceType(savedata, type, savedata->realisticTiming);
+	if (savedata->maskWriteback) {
+		GBASavedataLoad(savedata, vf);
+		savedata->maskWriteback = false;
+	}
+	vf->close(vf);
 }
 
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
@@ -488,6 +492,9 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 			savedata->dirty |= SAVEDATA_DIRT_SEEN;
 		}
 	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
+		if (savedata->maskWriteback) {
+			GBASavedataUnmask(savedata);
+		}
 		size_t size = GBASavedataSize(savedata);
 		savedata->dirty = 0;
 		if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {

@@ -407,10 +407,10 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mLOG(SAVESTATE, WARN, "Savestate includes invalid screenshot");
 		}
 	}
-	if (flags & SAVESTATE_SAVEDATA && mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
+	if (mStateExtdataGet(&extdata, EXTDATA_SAVEDATA, &item)) {
 		mLOG(SAVESTATE, INFO, "Loading savedata");
 		if (item.data) {
-			core->savedataLoad(core, item.data, item.size);
+			core->savedataRestore(core, item.data, item.size, flags & SAVESTATE_SAVEDATA);
 		}
 	}
 	struct mCheatDevice* device;
