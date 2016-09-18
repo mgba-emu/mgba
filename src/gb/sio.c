@@ -9,8 +9,13 @@
 #include "gb/io.h"
 #include "gb/serialize.h"
 
+void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate);
+
 void GBSIOInit(struct GBSIO* sio) {
 	sio->pendingSB = 0xFF;
+	sio->event.context = sio;
+	sio->event.name = "GB SIO";
+	sio->event.callback = _GBSIOProcessEvents;
 }
 
 void GBSIOReset(struct GBSIO* sio) {
@@ -23,31 +28,26 @@ void GBSIODeinit(struct GBSIO* sio) {
 	// Nothing to do yet
 }
 
-int32_t GBSIOProcessEvents(struct GBSIO* sio, int32_t cycles) {
-	if (sio->nextEvent != INT_MAX) {
-		sio->nextEvent -= cycles;
+void _GBSIOProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate) {
+	UNUSED(cyclesLate);
+	struct GBSIO* sio = context;
+	--sio->remainingBits;
+	sio->p->memory.io[REG_SB] &= ~(8 >> sio->remainingBits);
+	sio->p->memory.io[REG_SB] |= sio->pendingSB & ~(8 >> sio->remainingBits);
+	if (!sio->remainingBits) {
+		sio->p->memory.io[REG_IF] |= (1 << GB_IRQ_SIO);
+		sio->p->memory.io[REG_SC] = GBRegisterSCClearEnable(sio->p->memory.io[REG_SC]);
+		GBUpdateIRQs(sio->p);
+	} else {
+		mTimingSchedule(timing, &sio->event, sio->period);
 	}
-	if (sio->nextEvent <= 0) {
-		--sio->remainingBits;
-		sio->p->memory.io[REG_SB] &= ~(8 >> sio->remainingBits);
-		sio->p->memory.io[REG_SB] |= sio->pendingSB & ~(8 >> sio->remainingBits);
-		if (!sio->remainingBits) {
-			sio->p->memory.io[REG_IF] |= (1 << GB_IRQ_SIO);
-			sio->p->memory.io[REG_SC] = GBRegisterSCClearEnable(sio->p->memory.io[REG_SC]);
-			GBUpdateIRQs(sio->p);
-			sio->nextEvent = INT_MAX;
-		} else {
-			sio->nextEvent += sio->period;
-		}
-	}
-	return sio->nextEvent;
 }
 
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
 	sio->period = 0x1000; // TODO Shift Clock
 	if (GBRegisterSCIsEnable(sc)) {
 		if (GBRegisterSCIsShiftClock(sc)) {
-			sio->nextEvent = sio->p->cpu->cycles + sio->period;
+			mTimingSchedule(&sio->p->timing, &sio->event, sio->period);
 		}
 		sio->remainingBits = 8;
 	}

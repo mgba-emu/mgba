@@ -8,9 +8,13 @@
 
 #include "util/common.h"
 
+#include "core/timing.h"
+
 struct GB;
 struct GBSIO {
 	struct GB* p;
+
+	struct mTimingEvent event;
 
 	int32_t nextEvent;
 	int32_t period;
@@ -27,7 +31,6 @@ DECL_BIT(GBRegisterSC, Enable, 7);
 void GBSIOInit(struct GBSIO* sio);
 void GBSIOReset(struct GBSIO* sio);
 void GBSIODeinit(struct GBSIO* sio);
-int32_t GBSIOProcessEvents(struct GBSIO* sio, int32_t cycles);
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc);
 
 #endif

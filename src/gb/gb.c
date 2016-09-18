@@ -565,11 +565,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		testEvent = GBSIOProcessEvents(&gb->sio, cycles);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
-
 		cpu->cycles -= cycles;
 		cpu->nextEvent = nextEvent;
 
