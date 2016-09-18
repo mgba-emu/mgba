@@ -7,10 +7,7 @@
 
 #include "gb/gb.h"
 #include "gb/memory.h"
-#include "gb/memory.h"
 #include "util/vfs.h"
-
-#include <time.h>
 
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC");
 
