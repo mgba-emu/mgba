@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "core/log.h"
+#include "core/timing.h"
 #include "gb/interface.h"
 #include "lr35902/lr35902.h"
 
@@ -127,16 +128,17 @@ struct GBMemory {
 
 	uint8_t hram[GB_SIZE_HRAM];
 
-	int32_t dmaNext;
 	uint16_t dmaSource;
 	uint16_t dmaDest;
 	int dmaRemaining;
 
-	int32_t hdmaNext;
 	uint16_t hdmaSource;
 	uint16_t hdmaDest;
 	int hdmaRemaining;
 	bool isHdma;
+
+	struct mTimingEvent dmaEvent;
+	struct mTimingEvent hdmaEvent;
 
 	size_t romSize;
 
