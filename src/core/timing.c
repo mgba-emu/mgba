@@ -36,6 +36,17 @@ void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t
 	*mTimingEventListAppend(&timing->events) = event;
 }
 
+void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent* event) {
+	size_t e;
+	for (e = 0; e < mTimingEventListSize(&timing->events); ++e) {
+		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, e);
+		if (next == event) {
+			mTimingEventListShift(&timing->events, e, 1);
+			return;
+		}
+	}
+}
+
 void mTimingTick(struct mTiming* timing, int32_t cycles) {
 	timing->masterCycles += cycles;
 	while (mTimingEventListSize(&timing->events)) {

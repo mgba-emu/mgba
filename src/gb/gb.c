@@ -549,14 +549,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			nextEvent = testEvent;
 		}
 
-		testEvent = GBVideoProcessEvents(&gb->video, cycles >> gb->doubleSpeed);
-		if (testEvent != INT_MAX) {
-			testEvent <<= gb->doubleSpeed;
-			if (testEvent < nextEvent) {
-				nextEvent = testEvent;
-			}
-		}
-
 		testEvent = GBAudioProcessEvents(&gb->audio, cycles >> gb->doubleSpeed);
 		if (testEvent != INT_MAX) {
 			testEvent <<= gb->doubleSpeed;

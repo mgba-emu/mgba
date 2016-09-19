@@ -29,6 +29,7 @@ void mTimingInit(struct mTiming* timing);
 void mTimingDeinit(struct mTiming* timing);
 void mTimingClear(struct mTiming* timing);
 void mTimingSchedule(struct mTiming* timing, struct mTimingEvent*, int32_t when);
+void mTimingDeschedule(struct mTiming* timing, struct mTimingEvent*);
 void mTimingTick(struct mTiming* timing, int32_t cycles);
 int32_t mTimingNextEvent(struct mTiming* timing);
 

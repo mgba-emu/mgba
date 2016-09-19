@@ -9,6 +9,7 @@
 #include "util/common.h"
 
 #include "core/interface.h"
+#include "core/timing.h"
 #include "gb/interface.h"
 #include "gb/memory.h"
 
@@ -101,13 +102,10 @@ struct GBVideo {
 
 	int mode;
 
-	int32_t nextEvent;
-	int32_t eventDiff;
+	struct mTimingEvent modeEvent;
+	struct mTimingEvent frameEvent;
 
-	int32_t nextMode;
-	int32_t dotCounter;
-
-	int32_t nextFrame;
+	uint32_t dotClock;
 
 	uint8_t* vram;
 	uint8_t* vramBank;
