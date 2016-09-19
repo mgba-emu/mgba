@@ -91,16 +91,6 @@ int main(int argc, char** argv) {
 #endif
 	mCoreLoadFile(core, args.fname);
 
-	struct mCheatDevice* device;
-	if (args.cheatsFile && (device = core->cheatDevice(core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
-
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
 	size_t overlayOffset;
@@ -118,6 +108,16 @@ int main(int argc, char** argv) {
 	}
 
 	core->reset(core);
+
+	struct mCheatDevice* device;
+	if (args.cheatsFile && (device = core->cheatDevice(core))) {
+		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
+		if (vf) {
+			mCheatDeviceClear(device);
+			mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	}
 
 	if (savestate) {
 		if (!savestateOverlay) {
