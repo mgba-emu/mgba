@@ -44,6 +44,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gb/timer.c \
 					$(CORE_DIR)/src/gb/video.c \
 					$(CORE_DIR)/src/gb/renderers/software.c \
+					$(CORE_DIR)/src/gba/renderers/tile-cache.c \
 					$(CORE_DIR)/src/gba/savedata.c \
 					$(CORE_DIR)/src/gba/io.c \
 					$(CORE_DIR)/src/gba/bios.c \
@@ -51,6 +52,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/gba/input.c \
 					$(CORE_DIR)/src/gba/audio.c \
 					$(CORE_DIR)/src/gba/memory.c \
+					$(CORE_DIR)/src/core/cheats.c \
 					$(CORE_DIR)/src/gba/cheats.c \
 					$(CORE_DIR)/src/gba/cheats/gameshark.c \
 					$(CORE_DIR)/src/gba/cheats/parv3.c \
@@ -80,6 +82,9 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/util/hash.c \
 					$(CORE_DIR)/src/util/configuration.c \
 					$(CORE_DIR)/src/util/circle-buffer.c \
+					$(CORE_DIR)/src/util/patch.c \
+					$(CORE_DIR)/src/util/patch-ips.c \
+					$(CORE_DIR)/src/util/patch-ups.c \
 					$(CORE_DIR)/src/third-party/blip_buf/blip_buf.c \
 					$(CORE_DIR)/src/util/crc32.c
 

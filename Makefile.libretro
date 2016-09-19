@@ -38,10 +38,6 @@ else ifeq ($(platform),android_mips)
    include $(BUILD_DIR)/Makefile.android_mips
 else
 
-ifneq ($(EMSCRIPTEN),)
-   platform = emscripten
-endif
-
 ifeq ($(platform),)
    platform = unix
    ifeq ($(shell uname -a),)
@@ -273,6 +269,8 @@ else ifeq ($(platform), emscripten)
 else
    CFLAGS += -O3
 endif
+
+DEFINES += -DHAVE_STRNDUP -DHAVE_STRDUP
 
 
 include $(BUILD_DIR)/Makefile.common
