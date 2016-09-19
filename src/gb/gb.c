@@ -232,14 +232,15 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
-	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom) {
-		free(gb->memory.romBase);
-	}
 	if (gb->memory.rom && gb->pristineRom != gb->memory.rom) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
 		}
 		mappedMemoryFree(gb->memory.rom, GB_SIZE_CART_MAX);
+		gb->memory.rom = gb->pristineRom;
+	}
+	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom) {
+		free(gb->memory.romBase);
 	}
 	gb->memory.rom = 0;
 
@@ -248,9 +249,9 @@ void GBUnloadROM(struct GB* gb) {
 		gb->romVf->unmap(gb->romVf, gb->pristineRom, gb->pristineRomSize);
 #endif
 		gb->romVf->close(gb->romVf);
-		gb->pristineRom = 0;
 		gb->romVf = 0;
 	}
+	gb->pristineRom = 0;
 
 	struct VFile* vf = gb->sramVf;
 	GBSramDeinit(gb);
