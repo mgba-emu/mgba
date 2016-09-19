@@ -43,6 +43,7 @@ Bugfixes:
  - GBA: Count up timers should not count themselves
  - GBA Savedata: Fix savedata sync timer
  - GBA Savedata: Only unmap savedata if present
+ - Util: Fix inserting too many items into a hash table
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
  - OpenGL: Log shader compilation failure
