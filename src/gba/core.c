@@ -228,6 +228,14 @@ static bool _GBACoreLoadPatch(struct mCore* core, struct VFile* vf) {
 }
 
 static void _GBACoreUnloadROM(struct mCore* core) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	struct ARMCore* cpu = core->cpu;
+	if (gbacore->cheatDevice) {
+		ARMHotplugDetach(cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		cpu->components[CPU_COMPONENT_CHEAT_DEVICE] = NULL;
+		mCheatDeviceDestroy(gbacore->cheatDevice);
+		gbacore->cheatDevice = NULL;
+	}
 	return GBAUnloadROM(core->board);
 }
 

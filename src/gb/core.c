@@ -194,6 +194,14 @@ static bool _GBCoreLoadPatch(struct mCore* core, struct VFile* vf) {
 }
 
 static void _GBCoreUnloadROM(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	struct LR35902Core* cpu = core->cpu;
+	if (gbcore->cheatDevice) {
+		LR35902HotplugDetach(cpu, CPU_COMPONENT_CHEAT_DEVICE);
+		cpu->components[CPU_COMPONENT_CHEAT_DEVICE] = NULL;
+		mCheatDeviceDestroy(gbcore->cheatDevice);
+		gbcore->cheatDevice = NULL;
+	}
 	return GBUnloadROM(core->board);
 }
 
@@ -455,7 +463,9 @@ static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger
 
 static void _GBCoreDetachDebugger(struct mCore* core) {
 	struct LR35902Core* cpu = core->cpu;
-	LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	if (core->debugger) {
+		LR35902HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
+	}
 	cpu->components[CPU_COMPONENT_DEBUGGER] = NULL;
 	core->debugger = NULL;
 }
