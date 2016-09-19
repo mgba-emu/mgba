@@ -175,6 +175,7 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 		}
 		return;
 	} TABLE_LOOKUP_END;
+	list = _resizeAsNeeded(table, list, hash);
 	list->list[list->nEntries].key = hash;
 	list->list[list->nEntries].stringKey = strdup(key);
 	list->list[list->nEntries].keylen = strlen(key);

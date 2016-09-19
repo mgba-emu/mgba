@@ -46,7 +46,9 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 void GBASavedataDeinit(struct GBASavedata* savedata) {
 	if (savedata->vf) {
 		size_t size = GBASavedataSize(savedata);
-		savedata->vf->unmap(savedata->vf, savedata->data, size);
+		if (savedata->data) {
+			savedata->vf->unmap(savedata->vf, savedata->data, size);
+		}
 		savedata->vf = NULL;
 	} else {
 		switch (savedata->type) {

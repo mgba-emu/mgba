@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "core/cheats.h"
 #include "core/config.h"
 #include "core/core.h"
 #include "core/serialize.h"
@@ -107,6 +108,16 @@ int main(int argc, char** argv) {
 	}
 
 	core->reset(core);
+
+	struct mCheatDevice* device;
+	if (args.cheatsFile && (device = core->cheatDevice(core))) {
+		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
+		if (vf) {
+			mCheatDeviceClear(device);
+			mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	}
 
 	if (savestate) {
 		if (!savestateOverlay) {

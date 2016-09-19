@@ -262,18 +262,19 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 	case GB_REGION_CART_BANK1 + 3:
 		if (segment < 0) {
 			return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
-		} else {
-			if ((size_t) segment * GB_SIZE_CART_BANK0 >= memory->romSize) {
-				return 0xFF;
-			}
+		} else if ((size_t) segment * GB_SIZE_CART_BANK0 < memory->romSize) {
 			return memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
+		} else {
+			return 0xFF;
 		}
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
 		if (segment < 0) {
 			return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
-		} else {
+		} else if (segment < 2) {
 			return gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment *GB_SIZE_VRAM_BANK0];
+		} else {
+			return 0xFF;
 		}
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
@@ -282,8 +283,10 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 		} else if (memory->sramAccess) {
 			if (segment < 0) {
 				return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
-			} else {
+			} else if ((size_t) segment * GB_SIZE_EXTERNAL_RAM < gb->sramSize) {
 				return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
+			} else {
+				return 0xFF;
 			}
 		} else if (memory->mbcType == GB_MBC7) {
 			return GBMBC7Read(memory, address);
@@ -297,8 +300,10 @@ uint8_t GBView8(struct LR35902Core* cpu, uint16_t address, int segment) {
 	case GB_REGION_WORKING_RAM_BANK1:
 		if (segment < 0) {
 			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
-		} else {
+		} else if (segment < 8) {
 			return memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment *GB_SIZE_WORKING_RAM_BANK0];
+		} else {
+			return 0xFF;
 		}
 	default:
 		if (address < GB_BASE_OAM) {
@@ -500,12 +505,11 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		if (segment < 0) {
 			oldValue = memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 			memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)] = value;
-		} else {
-			if ((size_t) segment * GB_SIZE_CART_BANK0 >= memory->romSize) {
-				return;
-			}
+		} else if ((size_t) segment * GB_SIZE_CART_BANK0 < memory->romSize) {
 			oldValue = memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0];
 			memory->rom[(address & (GB_SIZE_CART_BANK0 - 1)) + segment * GB_SIZE_CART_BANK0] = value;
+		} else {
+			return;
 		}
 		break;
 	case GB_REGION_VRAM:
@@ -513,9 +517,11 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		if (segment < 0) {
 			oldValue = gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
 			gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
-		} else {
+		} else if (segment < 2) {
 			oldValue = gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment * GB_SIZE_VRAM_BANK0];
 			gb->video.vramBank[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment * GB_SIZE_VRAM_BANK0] = value;
+		} else {
+			return;
 		}
 		break;
 	case GB_REGION_EXTERNAL_RAM:
@@ -531,9 +537,11 @@ void GBPatch8(struct LR35902Core* cpu, uint16_t address, int8_t value, int8_t* o
 		if (segment < 0) {
 			oldValue = memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 			memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
-		} else {
+		} else if (segment < 8) {
 			oldValue = memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment * GB_SIZE_WORKING_RAM_BANK0];
 			memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment * GB_SIZE_WORKING_RAM_BANK0] = value;
+		} else {
+			return;
 		}
 		break;
 	default:

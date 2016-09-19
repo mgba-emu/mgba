@@ -23,7 +23,7 @@ extern "C" {
 #include "gba/input.h"
 #include "gba/overrides.h"
 #ifdef BUILD_SDL
-#include "sdl-events.h"
+#include "platform/sdl/sdl-events.h"
 #endif
 }
 

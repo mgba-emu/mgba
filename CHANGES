@@ -1,4 +1,4 @@
-0.5.0: (Future)
+0.5.0: (2016-09-19)
 Features:
  - Game Boy support
  - Support for encrypted CodeBreaker GBA cheats
@@ -14,94 +14,94 @@ Features:
  - Load specific files out of archives
  - Automatic BIOS detection
 Bugfixes:
- - SDL: Fix axes being mapped wrong
- - GBA Memory: Fix mirror on non-overdumped Classic NES games
- - Util: Fix realloc semantics in utf16to8
- - PSP2: Fix GPU crash while exiting
- - PSP2: Fix VSync
  - ARM7: Fix decoding of Thumb ADD (variants 5 and 6)
- - GBA Serialize: Savestates now properly store prefetch
- - PSP2: Fix accelerometer range
- - PSP2: Actually load screen mode setting
- - Qt: Fix bug in software renderer scaling
  - Debugger: Fix GDB breakpoints
- - Wii: Fix framelimiting after a slowdown
- - PSP2: Fix gyroscope direction
- - Qt: Fix hanging key press after disabling autofire
- - PSP2: Delete threads after they return
- - GBA Video: WIN0/1 take priority over OBJWIN
- - PSP2: Fix mapping/unmapping from not at 0
- - Wii: Fix garbage flash at startup
- - VFS: Fix uninitialized varaible reading from 7z
  - GBA: Fix losing IRQs when CPSR I bit isn't cleared
- - VFS: Fix reading multiple files from a 7z archive
  - GBA: Fix filehandle leak with savegames
  - GBA: Timer 0 cannot be count up
- - Qt: Fix being unable to pause manually when using auto-pausing
- - GBA Memory: Fix ldm {pc}
- - GBA Video: Fix out-of-order OBJWIN
  - GBA: Count up timers should not count themselves
+ - GBA Memory: Fix mirror on non-overdumped Classic NES games
+ - GBA Memory: Fix ldm {pc}
  - GBA Savedata: Fix savedata sync timer
+ - GBA Savedata: Only unmap savedata if present
+ - GBA Serialize: Savestates now properly store prefetch
+ - GBA Video: WIN0/1 take priority over OBJWIN
+ - GBA Video: Fix out-of-order OBJWIN
+ - PSP2: Fix GPU crash while exiting
+ - PSP2: Fix VSync
+ - PSP2: Fix accelerometer range
+ - PSP2: Actually load screen mode setting
+ - PSP2: Fix gyroscope direction
+ - PSP2: Delete threads after they return
+ - PSP2: Fix mapping/unmapping from not at 0
+ - Qt: Fix bug in software renderer scaling
+ - Qt: Fix hanging key press after disabling autofire
+ - Qt: Fix being unable to pause manually when using auto-pausing
+ - SDL: Fix axes being mapped wrong
+ - Util: Fix realloc semantics in utf16to8
+ - Util: Fix inserting too many items into a hash table
+ - VFS: Fix uninitialized varaible reading from 7z
+ - VFS: Fix reading multiple files from a 7z archive
+ - Wii: Fix framelimiting after a slowdown
+ - Wii: Fix garbage flash at startup
 Misc:
  - 3DS: Use blip_add_delta_fast for a small speed improvement
- - OpenGL: Log shader compilation failure
- - Qt: Remove some C99isms from C++ code
- - Windows: Add native VDir support
- - All: Add QUIET parameter to silence CMake
- - ARM7: Support forcing Thumb mode via MSR
- - ARM7: Flush prefetch cache when loading CPSR via MSR
- - OpenGL: Add texSize uniform
- - ARM7: Clean up instruction decoding for future expandability
- - Qt: Make -g flag work in Qt build
- - Qt: Simplify OpenGL context creation
- - Debugger: Support register and memory writes via GDB stub
- - GBA Audio: Force audio DMAs to not increment destination
- - Qt: Thread startup improvements
  - 3DS: Allow UTF-16 filenames
  - 3DS: Port to using citro3D
  - 3DS: Use system font for menus
- - PSP2: Use system font for menus
- - All: Faster memory read/write
- - Qt: Make audio channel/video layer options shortcut mappable
- - GBA Memory: Optimize stalling behavior
  - 3DS: Attempt to use Core 2 for threads
- - GUI: Screenshot dimensions are now passed through
- - GUI: Add back logging
- - PSP2: Add rumble for PS TV
- - PSP2: Add fit-to-height screen mode
+ - 3DS: Adjustable filering
+ - 3DS: 3D banner
+ - All: Add QUIET parameter to silence CMake
+ - All: Faster memory read/write
+ - ARM7: Support forcing Thumb mode via MSR
+ - ARM7: Flush prefetch cache when loading CPSR via MSR
+ - ARM7: Clean up instruction decoding for future expandability
+ - Debugger: Support register and memory writes via GDB stub
+ - Debugger: Add software breakpoint support to gdb
+ - FFmpeg: Full support for libavcodec 56+
+ - GBA: Better debug logging if event processing breaks
+ - GBA Audio: Force audio DMAs to not increment destination
+ - GBA BIOS: Use custom ArcTan, not relying on OS
+ - GBA Hardware: Clean up dead code in GBP
+ - GBA Memory: Optimize stalling behavior
+ - GBA Memory: Optimize Load-/StoreMultiple
+ - GBA Savedata: Add realistic timing for EEPROM
+ - GBA Serialize: Savestates now store if CPU was halted
  - GBA Video: Remove old slow path fallback
  - GBA Video: Optimize sprite drawing
- - GBA BIOS: Use custom ArcTan, not relying on OS
- - PSP2: Sync files per descriptor
- - GBA Savedata: Add realistic timing for EEPROM
  - GBA Video: Optimize mode 0 rendering
+ - GBA Video: Optimize compositing cases slightly
+ - GUI: Screenshot dimensions are now passed through
+ - GUI: Add back logging
+ - GUI: Only reload config if manually saved
+ - GUI: Increase scrolling speed
+ - OpenGL: Log shader compilation failure
+ - OpenGL: Add texSize uniform
+ - Qt: Make -g flag work in Qt build
+ - Qt: Simplify OpenGL context creation
+ - Qt: Thread startup improvements
+ - Qt: Make audio channel/video layer options shortcut mappable
+ - Qt: Remove some C99isms from C++ code
  - Qt: Remove default autofire mappings
+ - Qt: Make reseting when pasued frame-accurate
+ - Qt: Rearchitect game closing codepath
+ - PSP2: Use system font for menus
+ - PSP2: Add rumble for PS TV
+ - PSP2: Add fit-to-height screen mode
+ - PSP2: Sync files per descriptor
  - PSP2: Allow UTF-8 filenames
+ - PSP2: Screenshots are now saved into the Photo Gallery
+ - PSP2: Stop underclocking when menuing
+ - SDL: Increase default audio buffer size to 1024 samples
+ - SDL: More responsive rumble
  - Util: Add Vector GetConstPointer
  - Util: Add rtrim
- - GBA Memory: Optimize Load-/StoreMultiple
- - 3DS: Adjustable filering
- - PSP2: Screenshots are now saved into the Photo Gallery
- - Qt: Make reseting when pasued frame-accurate
- - GBA Video: Optimize compositing cases slightly
- - VFS: Improve zip file detection
  - Util: Add endswith
- - GUI: Only reload config if manually saved
- - GBA Serialize: Savestates now store if CPU was halted
- - PSP2: Stop underclocking when menuing
- - GUI: Increase scrolling speed
- - Qt: Rearchitect game closing codepath
+ - VFS: Improve zip file detection
  - Wii: Add pixelated resample filter
- - GBA: Better debug logging if event processing breaks
- - 3DS: 3D banner
- - FFmpeg: Full support for libavcodec 56+
- - Util: PNG utils should support 16-bit when applicable
- - Debugger: Add software breakpoint support to gdb
+ - Windows: Add native VDir support
  - Util: Add PRIz macro for libc versions that don't support %z
- - SDL: Increase default audio buffer size to 1024 samples
- - GBA: Add override for Pokemon Pinball: Ruby and Sapphire rumble
- - SDL: More responsive rumble
- - GBA Hardware: Clean up dead code in GBP
 
 0.4.1: (2016-07-11)
 Bugfixes:
