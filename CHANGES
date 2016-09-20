@@ -1,4 +1,6 @@
 0.5.1: (Future)
+Bugfixes:
+ - GB MBC: Fix MBC7 when size is incorrectly specified
 Misc:
  - All: Only update version info if needed
 
