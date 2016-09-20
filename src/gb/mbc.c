@@ -139,6 +139,7 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC7:
 		gb->memory.mbc = _GBMBC7;
+		gb->sramSize = GB_SIZE_EXTERNAL_RAM;
 		break;
 	case GB_MMM01:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: MMM01");
