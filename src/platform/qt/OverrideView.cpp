@@ -88,6 +88,7 @@ OverrideView::OverrideView(GameController* controller, ConfigController* config,
 #endif
 
 	connect(m_ui.buttonBox, SIGNAL(accepted()), this, SLOT(saveOverride()));
+	connect(m_ui.buttonBox, SIGNAL(rejected()), this, SLOT(close()));
 
 	if (controller->isLoaded()) {
 		gameStarted(controller->thread());
