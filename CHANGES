@@ -4,6 +4,7 @@ Bugfixes:
  - GB Video: Setting LYC=LY during mode 2 should trigger an IRQ
  - GBA Cheats: Fix holding onto pointers that may get invalidated
  - Qt: Fix "close" button on Overrides view
+ - Qt: Fix saving overrides
 Misc:
  - All: Only update version info if needed
 

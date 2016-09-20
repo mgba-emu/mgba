@@ -18,6 +18,15 @@ void GBAOverride::apply(struct mCore* core) {
 	GBAOverrideApply(static_cast<GBA*>(core->board), &override);
 }
 
+void GBAOverride::identify(struct mCore* core) {
+	if (core->platform(core) != PLATFORM_GBA) {
+		return;
+	}
+	char gameId[8];
+	core->getGameCode(core, gameId);
+	memcpy(override.id, &gameId[4], 4);
+}
+
 void GBAOverride::save(struct Configuration* config) const {
 	GBAOverrideSave(config, &override);
 }

@@ -72,7 +72,7 @@ public:
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 	void clearMultiplayerController();
 
-	void setOverride(Override* override) { m_override = override; }
+	void setOverride(Override* override);
 	Override* override() { return m_override; }
 	void clearOverride();
 
