@@ -341,7 +341,6 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case REG_SB:
 	case REG_TIMA:
 	case REG_TMA:
-	case REG_LYC:
 		// Handled transparently by the registers
 		break;
 	case REG_TAC:
@@ -356,6 +355,15 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 		GBVideoProcessDots(&gb->video);
 		value = gb->video.renderer->writeVideoRegister(gb->video.renderer, address, value);
 		GBVideoWriteLCDC(&gb->video, value);
+		break;
+	case REG_LYC:
+		if (gb->video.mode == 2) {
+			gb->video.stat = GBRegisterSTATSetLYC(gb->video.stat, value == gb->video.ly);
+			if (GBRegisterSTATIsLYCIRQ(gb->video.stat) && value == gb->video.ly) {
+				gb->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+				GBUpdateIRQs(gb->video.p);
+			}
+		}
 		break;
 	case REG_DMA:
 		GBMemoryDMA(gb, value << 8);
