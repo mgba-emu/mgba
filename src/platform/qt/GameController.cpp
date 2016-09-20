@@ -284,6 +284,15 @@ void GameController::clearMultiplayerController() {
 	m_multiplayer = nullptr;
 }
 
+void GameController::setOverride(Override* override) {
+	m_override = override;
+	if (isLoaded()) {
+		threadInterrupt();
+		m_override->identify(m_threadContext.core);
+		threadContinue();
+	}
+}
+
 void GameController::clearOverride() {
 	delete m_override;
 	m_override = nullptr;
@@ -437,6 +446,7 @@ void GameController::openGame(bool biosOnly) {
 	m_vf = nullptr;
 
 	if (m_override) {
+		m_override->identify(m_threadContext.core);
 		m_override->apply(m_threadContext.core);
 	}
 
