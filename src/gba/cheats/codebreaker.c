@@ -197,11 +197,12 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 	enum GBACodeBreakerType type = op1 >> 28;
 	struct mCheat* cheat = NULL;
 
-	if (cheats->incompleteCheat) {
-		cheats->incompleteCheat->repeat = op1 & 0xFFFF;
-		cheats->incompleteCheat->addressOffset = op2;
-		cheats->incompleteCheat->operandOffset = 0;
-		cheats->incompleteCheat = 0;
+	if (cheats->incompleteCheat != COMPLETE) {
+		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
+		incompleteCheat->repeat = op1 & 0xFFFF;
+		incompleteCheat->addressOffset = op2;
+		incompleteCheat->operandOffset = 0;
+		cheats->incompleteCheat = COMPLETE;
 		return true;
 	}
 
@@ -233,7 +234,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 2;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case CB_FILL_8:
 		mLOG(CHEATS, STUB, "CodeBreaker code %08X %04X not supported", op1, op2);

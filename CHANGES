@@ -2,6 +2,7 @@
 Bugfixes:
  - GB MBC: Fix MBC7 when size is incorrectly specified
  - GB Video: Setting LYC=LY during mode 2 should trigger an IRQ
+ - GBA Cheats: Fix holding onto pointers that may get invalidated
 Misc:
  - All: Only update version info if needed
 

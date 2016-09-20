@@ -91,13 +91,14 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 	enum GBAGameSharkType type = op1 >> 28;
 	struct mCheat* cheat = 0;
 
-	if (cheats->incompleteCheat) {
+	if (cheats->incompleteCheat != COMPLETE) {
+		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
 		if (cheats->remainingAddresses > 0) {
 			cheat = mCheatListAppend(&cheats->d.list);
 			cheat->type = CHEAT_ASSIGN;
 			cheat->width = 4;
 			cheat->address = op1;
-			cheat->operand = cheats->incompleteCheat->operand;
+			cheat->operand = incompleteCheat->operand;
 			cheat->repeat = 1;
 			--cheats->remainingAddresses;
 		}
@@ -106,12 +107,12 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 			cheat->type = CHEAT_ASSIGN;
 			cheat->width = 4;
 			cheat->address = op2;
-			cheat->operand = cheats->incompleteCheat->operand;
+			cheat->operand = incompleteCheat->operand;
 			cheat->repeat = 1;
 			--cheats->remainingAddresses;
 		}
 		if (cheats->remainingAddresses == 0) {
-			cheats->incompleteCheat = 0;
+			cheats->incompleteCheat = COMPLETE;
 		}
 		return true;
 	}
@@ -141,7 +142,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		cheat->type = CHEAT_ASSIGN;
 		cheat->width = 4;
 		cheat->address = op2;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case GSA_PATCH:
 		cheats->romPatches[0].address = (op1 & 0xFFFFFF) << 1;
