@@ -75,9 +75,9 @@ static struct mCheatSet* GBACheatSetCreate(struct mCheatDevice* device, const ch
 	UNUSED(device);
 	struct GBACheatSet* set = malloc(sizeof(*set));
 	mCheatSetInit(&set->d, name);
-	set->incompleteCheat = 0;
+	set->incompleteCheat = -1;
 	set->incompletePatch = 0;
-	set->currentBlock = 0;
+	set->currentBlock = -1;
 	set->gsaVersion = 0;
 	set->cbRngState = 0;
 	set->cbMaster = 0;

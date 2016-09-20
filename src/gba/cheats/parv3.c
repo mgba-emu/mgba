@@ -53,18 +53,20 @@ static uint32_t _parAddr(uint32_t x) {
 }
 
 static void _parEndBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
-	if (cheats->currentBlock->repeat) {
-		cheats->currentBlock->negativeRepeat = size - cheats->currentBlock->repeat;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
+	if (currentBlock->repeat) {
+		currentBlock->negativeRepeat = size - currentBlock->repeat;
 	} else {
-		cheats->currentBlock->repeat = size;
+		currentBlock->repeat = size;
 	}
-	cheats->currentBlock = 0;
+	cheats->currentBlock = COMPLETE;
 }
 
 static void _parElseBlock(struct GBACheatSet* cheats) {
-	size_t size = mCheatListSize(&cheats->d.list) - mCheatListIndex(&cheats->d.list, cheats->currentBlock);
-	cheats->currentBlock->repeat = size;
+	size_t size = mCheatListSize(&cheats->d.list) - cheats->currentBlock;
+	struct mCheat* currentBlock = mCheatListGetPointer(&cheats->d.list, cheats->currentBlock);
+	currentBlock->repeat = size;
 }
 
 static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
@@ -98,10 +100,10 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_ACTION_BLOCK:
 		cheat->repeat = 0;
 		cheat->negativeRepeat = 0;
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parEndBlock(cheats);
 		}
-		cheats->currentBlock = cheat;
+		cheats->currentBlock = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
 
@@ -175,13 +177,13 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheats->incompletePatch = &cheats->romPatches[3];
 		break;
 	case PAR3_OTHER_ENDIF:
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parEndBlock(cheats);
 			return true;
 		}
 		return false;
 	case PAR3_OTHER_ELSE:
-		if (cheats->currentBlock) {
+		if (cheats->currentBlock != COMPLETE) {
 			_parElseBlock(cheats);
 			return true;
 		}
@@ -190,19 +192,19 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 1;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_2:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 2;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	case PAR3_OTHER_FILL_4:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->address = _parAddr(op2);
 		cheat->width = 3;
-		cheats->incompleteCheat = cheat;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
 	}
 	return true;
@@ -214,12 +216,13 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 		cheats->incompletePatch = 0;
 		return true;
 	}
-	if (cheats->incompleteCheat) {
-		cheats->incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - cheats->incompleteCheat->width) * 8));
-		cheats->incompleteCheat->addressOffset = op2 >> 24;
-		cheats->incompleteCheat->repeat = (op2 >> 16) & 0xFF;
-		cheats->incompleteCheat->addressOffset = (op2 & 0xFFFF) * cheats->incompleteCheat->width;
-		cheats->incompleteCheat = 0;
+	if (cheats->incompleteCheat != COMPLETE) {
+		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
+		incompleteCheat->operand = op1 & (0xFFFFFFFFU >> ((4 - incompleteCheat->width) * 8));
+		incompleteCheat->addressOffset = op2 >> 24;
+		incompleteCheat->repeat = (op2 >> 16) & 0xFF;
+		incompleteCheat->addressOffset = (op2 & 0xFFFF) * incompleteCheat->width;
+		cheats->incompleteCheat = COMPLETE;
 		return true;
 	}
 

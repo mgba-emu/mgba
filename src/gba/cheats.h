@@ -12,6 +12,7 @@
 #include "core/cheats.h"
 
 #define MAX_ROM_PATCHES 4
+#define COMPLETE ((size_t) -1)
 
 enum GBACheatType {
 	GBA_CHEAT_AUTODETECT,
@@ -143,9 +144,9 @@ struct GBACheatSet {
 		bool exists;
 	} romPatches[MAX_ROM_PATCHES];
 
-	struct mCheat* incompleteCheat;
+	size_t incompleteCheat;
 	struct GBACheatPatch* incompletePatch;
-	struct mCheat* currentBlock;
+	size_t currentBlock;
 
 	int gsaVersion;
 	uint32_t gsaSeeds[4];
