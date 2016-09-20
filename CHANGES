@@ -1,3 +1,7 @@
+0.6.0: (Future)
+Misc:
+ - All: Only update version info if needed
+
 0.5.0: (2016-09-19)
 Features:
  - Game Boy support

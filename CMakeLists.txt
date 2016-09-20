@@ -122,7 +122,7 @@ function(find_feature FEATURE_NAME FEATURE_REQUIRES)
 endfunction()
 
 # Version information
-add_custom_target(version-info ALL ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
+add_custom_target(version-info ALL
 	COMMAND ${CMAKE_COMMAND}
 	-DBINARY_NAME=${BINARY_NAME}
 	-DCONFIG_FILE=${CMAKE_CURRENT_SOURCE_DIR}/src/core/version.c.in
