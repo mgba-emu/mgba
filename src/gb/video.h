@@ -135,6 +135,7 @@ void GBVideoProcessDots(struct GBVideo* video);
 
 void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value);
 void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value);
+void GBVideoWriteLYC(struct GBVideo* video, uint8_t value);
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value);
 void GBVideoSwitchBank(struct GBVideo* video, uint8_t value);
 

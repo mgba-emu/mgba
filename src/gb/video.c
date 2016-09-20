@@ -312,6 +312,16 @@ void GBVideoWriteSTAT(struct GBVideo* video, GBRegisterSTAT value) {
 	}
 }
 
+void GBVideoWriteLYC(struct GBVideo* video, uint8_t value) {
+	if (video->mode == 2) {
+		video->stat = GBRegisterSTATSetLYC(video->stat, value == video->ly);
+		if (GBRegisterSTATIsLYCIRQ(video->stat) && value == video->ly) {
+			video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
+			GBUpdateIRQs(video->p);
+		}
+	}
+}
+
 void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value) {
 	static const uint16_t dmgPalette[4] = { 0x7FFF, 0x56B5, 0x294A, 0x0000};
 	if (video->p->model < GB_MODEL_CGB) {
