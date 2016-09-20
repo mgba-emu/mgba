@@ -742,7 +742,7 @@ bool GBAIsBIOS(struct VFile* vf) {
 	return true;
 }
 
-void GBAGetGameCode(struct GBA* gba, char* out) {
+void GBAGetGameCode(const struct GBA* gba, char* out) {
 	memset(out, 0, 8);
 	if (!gba->memory.rom) {
 		return;
@@ -752,7 +752,7 @@ void GBAGetGameCode(struct GBA* gba, char* out) {
 	memcpy(&out[4], &((struct GBACartridge*) gba->memory.rom)->id, 4);
 }
 
-void GBAGetGameTitle(struct GBA* gba, char* out) {
+void GBAGetGameTitle(const struct GBA* gba, char* out) {
 	if (gba->memory.rom) {
 		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
 		return;

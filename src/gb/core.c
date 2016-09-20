@@ -82,7 +82,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 	free(core);
 }
 
-static enum mPlatform _GBCorePlatform(struct mCore* core) {
+static enum mPlatform _GBCorePlatform(const struct mCore* core) {
 	UNUSED(core);
 	return PLATFORM_GB;
 }
@@ -313,27 +313,27 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
-static int32_t _GBCoreFrameCounter(struct mCore* core) {
-	struct GB* gb = core->board;
+static int32_t _GBCoreFrameCounter(const struct mCore* core) {
+	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
 }
 
-static int32_t _GBCoreFrameCycles(struct mCore* core) {
+static int32_t _GBCoreFrameCycles(const  struct mCore* core) {
 	UNUSED(core);
 	return GB_VIDEO_TOTAL_LENGTH;
 }
 
-static int32_t _GBCoreFrequency(struct mCore* core) {
+static int32_t _GBCoreFrequency(const struct mCore* core) {
 	UNUSED(core);
 	// TODO: GB differences
 	return DMG_LR35902_FREQUENCY;
 }
 
-static void _GBCoreGetGameTitle(struct mCore* core, char* title) {
+static void _GBCoreGetGameTitle(const struct mCore* core, char* title) {
 	GBGetGameTitle(core->board, title);
 }
 
-static void _GBCoreGetGameCode(struct mCore* core, char* title) {
+static void _GBCoreGetGameCode(const struct mCore* core, char* title) {
 	GBGetGameCode(core->board, title);
 }
 

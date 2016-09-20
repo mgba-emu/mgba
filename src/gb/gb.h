@@ -129,8 +129,8 @@ struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);
 
 bool GBIsROM(struct VFile* vf);
-void GBGetGameTitle(struct GB* gba, char* out);
-void GBGetGameCode(struct GB* gba, char* out);
+void GBGetGameTitle(const struct GB* gba, char* out);
+void GBGetGameCode(const struct GB* gba, char* out);
 
 void GBFrameEnded(struct GB* gb);
 

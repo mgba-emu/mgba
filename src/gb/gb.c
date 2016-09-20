@@ -613,7 +613,7 @@ bool GBIsROM(struct VFile* vf) {
 	return true;
 }
 
-void GBGetGameTitle(struct GB* gb, char* out) {
+void GBGetGameTitle(const struct GB* gb, char* out) {
 	const struct GBCartridge* cart = NULL;
 	if (gb->memory.rom) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
@@ -631,7 +631,7 @@ void GBGetGameTitle(struct GB* gb, char* out) {
 	}
 }
 
-void GBGetGameCode(struct GB* gb, char* out) {
+void GBGetGameCode(const struct GB* gb, char* out) {
 	memset(out, 0, 8);
 	const struct GBCartridge* cart = NULL;
 	if (gb->memory.rom) {

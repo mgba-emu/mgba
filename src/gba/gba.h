@@ -173,8 +173,8 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf);
 bool GBAIsROM(struct VFile* vf);
 bool GBAIsMB(struct VFile* vf);
 bool GBAIsBIOS(struct VFile* vf);
-void GBAGetGameCode(struct GBA* gba, char* out);
-void GBAGetGameTitle(struct GBA* gba, char* out);
+void GBAGetGameCode(const struct GBA* gba, char* out);
+void GBAGetGameTitle(const struct GBA* gba, char* out);
 
 void GBAFrameStarted(struct GBA* gba);
 void GBAFrameEnded(struct GBA* gba);

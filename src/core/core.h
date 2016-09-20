@@ -49,7 +49,7 @@ struct mCore {
 	bool (*init)(struct mCore*);
 	void (*deinit)(struct mCore*);
 
-	enum mPlatform (*platform)(struct mCore*);
+	enum mPlatform (*platform)(const struct mCore*);
 
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
@@ -90,12 +90,12 @@ struct mCore {
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
 
-	int32_t (*frameCounter)(struct mCore*);
-	int32_t (*frameCycles)(struct mCore*);
-	int32_t (*frequency)(struct mCore*);
+	int32_t (*frameCounter)(const struct mCore*);
+	int32_t (*frameCycles)(const struct mCore*);
+	int32_t (*frequency)(const struct mCore*);
 
-	void (*getGameTitle)(struct mCore*, char* title);
-	void (*getGameCode)(struct mCore*, char* title);
+	void (*getGameTitle)(const struct mCore*, char* title);
+	void (*getGameCode)(const struct mCore*, char* title);
 
 	void (*setRTC)(struct mCore*, struct mRTCSource*);
 	void (*setRotation)(struct mCore*, struct mRotationSource*);
@@ -106,7 +106,7 @@ struct mCore {
 	uint32_t (*busRead32)(struct mCore*, uint32_t address);
 
 	void (*busWrite8)(struct mCore*, uint32_t address, uint8_t);
-void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
+	void (*busWrite16)(struct mCore*, uint32_t address, uint16_t);
 	void (*busWrite32)(struct mCore*, uint32_t address, uint32_t);
 
 	uint32_t (*rawRead8)(struct mCore*, uint32_t address, int segment);

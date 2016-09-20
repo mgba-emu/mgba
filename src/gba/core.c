@@ -96,7 +96,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	free(core);
 }
 
-static enum mPlatform _GBACorePlatform(struct mCore* core) {
+static enum mPlatform _GBACorePlatform(const struct mCore* core) {
 	UNUSED(core);
 	return PLATFORM_GBA;
 }
@@ -329,26 +329,26 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbacore->keys &= ~keys;
 }
 
-static int32_t _GBACoreFrameCounter(struct mCore* core) {
-	struct GBA* gba = core->board;
+static int32_t _GBACoreFrameCounter(const struct mCore* core) {
+	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
 }
 
-static int32_t _GBACoreFrameCycles(struct mCore* core) {
+static int32_t _GBACoreFrameCycles(const struct mCore* core) {
 	UNUSED(core);
 	return VIDEO_TOTAL_LENGTH;
 }
 
-static int32_t _GBACoreFrequency(struct mCore* core) {
+static int32_t _GBACoreFrequency(const struct mCore* core) {
 	UNUSED(core);
 	return GBA_ARM7TDMI_FREQUENCY;
 }
 
-static void _GBACoreGetGameTitle(struct mCore* core, char* title) {
+static void _GBACoreGetGameTitle(const struct mCore* core, char* title) {
 	GBAGetGameTitle(core->board, title);
 }
 
-static void _GBACoreGetGameCode(struct mCore* core, char* title) {
+static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
 	GBAGetGameCode(core->board, title);
 }
 
