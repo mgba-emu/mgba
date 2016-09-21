@@ -52,7 +52,7 @@ struct FFmpegEncoder {
 	AVFrame* audioFrame;
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;
-	int64_t nextAudioPts;
+	int64_t nextAudioPts; // TODO (0.6): Remove
 	struct AVAudioResampleContext* resampleContext;
 #ifdef FFMPEG_USE_NEW_BSF
 	struct AVBSFContext* absf; // Needed for AAC in MP4

@@ -8,6 +8,7 @@ Bugfixes:
  - FFmpeg: Fix encoding AAC
 Misc:
  - All: Only update version info if needed
+ - FFmpeg: Encoding cleanup
 
 0.5.0: (2016-09-19)
 Features:
