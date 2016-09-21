@@ -5,6 +5,7 @@ Bugfixes:
  - GBA Cheats: Fix holding onto pointers that may get invalidated
  - Qt: Fix "close" button on Overrides view
  - Qt: Fix saving overrides
+ - FFmpeg: Fix encoding AAC
 Misc:
  - All: Only update version info if needed
 
