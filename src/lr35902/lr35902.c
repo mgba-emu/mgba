@@ -141,6 +141,7 @@ void LR35902Tick(struct LR35902Core* cpu) {
 	if (cpu->cycles + 2 >= cpu->nextEvent) {
 		int32_t diff = cpu->nextEvent - cpu->cycles;
 		cpu->cycles = cpu->nextEvent;
+		cpu->executionState += diff;
 		cpu->irqh.processEvents(cpu);
 		cpu->cycles += 2 - diff;
 	} else {

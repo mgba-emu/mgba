@@ -7,6 +7,7 @@ Bugfixes:
  - Qt: Fix saving overrides
  - FFmpeg: Fix encoding AAC
  - GB Video: Fix video frames getting missed when LCDC is off
+ - LR35902: Fix events running with the wrong cycle active
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
