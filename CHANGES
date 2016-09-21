@@ -8,6 +8,7 @@ Bugfixes:
  - FFmpeg: Fix encoding AAC
  - GB Video: Fix video frames getting missed when LCDC is off
  - LR35902: Fix events running with the wrong cycle active
+ - GB Video: Clear screen when LCDC is off
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
