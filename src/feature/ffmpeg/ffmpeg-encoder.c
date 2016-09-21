@@ -381,6 +381,11 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		return;
 	}
 
+	if (encoder->absf && !left) {
+		// XXX: AVBSF doesn't like silence. Figure out why.
+		left = 1;
+	}
+
 	encoder->audioBuffer[encoder->currentAudioSample * 2] = left;
 	encoder->audioBuffer[encoder->currentAudioSample * 2 + 1] = right;
 
@@ -415,40 +420,50 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->audio, encoder->audioFrame);
-	gotData = avcodec_receive_packet(encoder->audio, &packet) == 0;
+	gotData = avcodec_receive_packet(encoder->audio, &packet);
+	gotData = (gotData == 0) && packet.size;
 #else
 	avcodec_encode_audio2(encoder->audio, &packet, encoder->audioFrame, &gotData);
 #endif
 	if (gotData) {
 		if (encoder->absf) {
-			AVPacket tempPacket = packet;
+			AVPacket tempPacket;
 
 #ifdef FFMPEG_USE_NEW_BSF
-			int success = av_bsf_send_packet(encoder->absf, &packet) && av_bsf_receive_packet(encoder->absf, &packet);
+			int success = av_bsf_send_packet(encoder->absf, &packet);
+			if (success >= 0) {
+				success = av_bsf_receive_packet(encoder->absf, &tempPacket);
+			}
 #else
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
 			    &tempPacket.data, &tempPacket.size,
 			    packet.data, packet.size, 0);
 #endif
-			if (success > 0) {
+
+			if (success >= 0) {
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
 #endif
+
 #ifdef FFMPEG_USE_PACKET_UNREF
-				av_packet_unref(&packet);
+				av_packet_move_ref(&packet, &tempPacket);
 #else
 				av_free_packet(&packet);
+				packet = tempPacket;
 #endif
+
+				packet.stream_index = encoder->audioStream->index;
+				av_interleaved_write_frame(encoder->context, &packet);
 			}
-			packet = tempPacket;
+		} else {
+			packet.stream_index = encoder->audioStream->index;
+			av_interleaved_write_frame(encoder->context, &packet);
 		}
-		packet.stream_index = encoder->audioStream->index;
-		av_interleaved_write_frame(encoder->context, &packet);
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-		av_packet_unref(&packet);
+	av_packet_unref(&packet);
 #else
-		av_free_packet(&packet);
+	av_free_packet(&packet);
 #endif
 }
 
