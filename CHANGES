@@ -6,6 +6,7 @@ Bugfixes:
  - Qt: Fix "close" button on Overrides view
  - Qt: Fix saving overrides
  - FFmpeg: Fix encoding AAC
+ - GB Video: Fix video frames getting missed when LCDC is off
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
