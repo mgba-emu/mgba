@@ -395,7 +395,6 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	if ((encoder->currentAudioSample * 4) < encoder->audioBufferSize) {
 		return;
 	}
-	encoder->currentAudioSample = 0;
 
 	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	avresample_convert(encoder->resampleContext,
@@ -409,14 +408,15 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #endif
 	avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 
-	AVRational timeBase = { 1, PREFERRED_SAMPLE_RATE };
-	encoder->audioFrame->pts = encoder->nextAudioPts;
-	encoder->nextAudioPts = av_rescale_q(encoder->currentAudioFrame, timeBase, encoder->audioStream->time_base);
+	encoder->audioFrame->pts = av_rescale_q(encoder->currentAudioFrame - encoder->currentAudioSample, encoder->audio->time_base, encoder->audioStream->time_base);
+	encoder->currentAudioSample = 0;
 
 	AVPacket packet;
 	av_init_packet(&packet);
 	packet.data = 0;
 	packet.size = 0;
+	packet.pts = encoder->audioFrame->pts;
+
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->audio, encoder->audioFrame);
@@ -483,6 +483,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	av_frame_make_writable(encoder->videoFrame);
 #endif
 	encoder->videoFrame->pts = av_rescale_q(encoder->currentVideoFrame, encoder->video->time_base, encoder->videoStream->time_base);
+	packet.pts = encoder->videoFrame->pts;
 	++encoder->currentVideoFrame;
 
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
