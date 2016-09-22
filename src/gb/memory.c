@@ -89,6 +89,20 @@ void GBMemoryReset(struct GB* gb) {
 		mappedMemoryFree(gb->memory.wram, GB_SIZE_WORKING_RAM);
 	}
 	gb->memory.wram = anonymousMemoryMap(GB_SIZE_WORKING_RAM);
+	if (gb->model >= GB_MODEL_CGB) {
+		uint32_t* base = (uint32_t*) gb->memory.wram;
+		size_t i;
+		uint32_t pattern = 0;
+		for (i = 0; i < GB_SIZE_WORKING_RAM / 4; i += 4) {
+			if ((i & 0x1FF) == 0) {
+				pattern = ~pattern;
+			}
+			base[i + 0] = pattern;
+			base[i + 1] = pattern;
+			base[i + 2] = ~pattern;
+			base[i + 3] = ~pattern;
+		}
+	}
 	GBMemorySwitchWramBank(&gb->memory, 1);
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
 	gb->memory.currentBank = 1;
