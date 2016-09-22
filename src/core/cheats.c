@@ -349,6 +349,11 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				conditionRemaining = cheat->repeat;
 				negativeConditionRemaining = cheat->negativeRepeat;
 				break;
+			case CHEAT_IF_NAND:
+				condition = !(_readMem(device->p, address, cheat->width) & operand);
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				break;
 			}
 
 			if (performAssignment) {

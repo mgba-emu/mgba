@@ -27,7 +27,8 @@ enum mCheatType {
 	CHEAT_IF_ULT,
 	CHEAT_IF_UGT,
 	CHEAT_IF_AND,
-	CHEAT_IF_LAND
+	CHEAT_IF_LAND,
+	CHEAT_IF_NAND
 };
 
 struct mCheat {
