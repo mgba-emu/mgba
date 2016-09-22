@@ -46,7 +46,9 @@ int32_t GBSIOProcessEvents(struct GBSIO* sio, int32_t cycles) {
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
 	sio->period = 0x1000; // TODO Shift Clock
 	if (GBRegisterSCIsEnable(sc)) {
-		sio->nextEvent = sio->p->cpu->cycles + sio->period;
+		if (GBRegisterSCIsShiftClock(sc)) {
+			sio->nextEvent = sio->p->cpu->cycles + sio->period;
+		}
 		sio->remainingBits = 8;
 	}
 }

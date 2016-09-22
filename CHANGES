@@ -10,6 +10,7 @@ Bugfixes:
  - LR35902: Fix events running with the wrong cycle active
  - GB Video: Clear screen when LCDC is off
  - GBA Cheats: Fix key-activated CodeBreaker cheats
+ - GB SIO: Don't auto-clock external shift clock
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
