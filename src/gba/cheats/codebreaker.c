@@ -276,9 +276,9 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		switch (op1 & 0x0FFFFFFF) {
 		case 0x20:
 			cheat = mCheatListAppend(&cheats->d.list);
-			cheat->type = CHEAT_IF_AND;
+			cheat->type = CHEAT_IF_NAND;
 			cheat->width = 2;
-			cheat->address = BASE_IO | REG_JOYSTAT;
+			cheat->address = BASE_IO | REG_KEYINPUT;
 			cheat->operand = op2;
 			cheat->repeat = 1;
 			return true;
