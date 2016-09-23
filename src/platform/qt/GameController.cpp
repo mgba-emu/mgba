@@ -507,6 +507,7 @@ void GameController::replaceGame(const QString& path) {
 	}
 	m_fname = info.canonicalFilePath();
 	threadInterrupt();
+	mDirectorySetDetachBase(&m_threadContext.core->dirs);
 	mCoreLoadFile(m_threadContext.core, m_fname.toLocal8Bit().constData());
 	threadContinue();
 }

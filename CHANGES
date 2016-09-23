@@ -11,6 +11,7 @@ Bugfixes:
  - GB Video: Clear screen when LCDC is off
  - GBA Cheats: Fix key-activated CodeBreaker cheats
  - GB SIO: Don't auto-clock external shift clock
+ - Qt: Fix directory set unloading when replacing the ROM
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
