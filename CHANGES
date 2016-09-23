@@ -16,6 +16,7 @@ Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
  - GB Memory: Initialize RAM pattern for GBC
+ - SDL: Remove scancode key input
 
 0.5.0: (2016-09-19)
 Features:
