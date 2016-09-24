@@ -83,7 +83,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->coreCallbacks = NULL;
 	gb->stream = NULL;
 
-	mTimingInit(&gb->timing, &gb->cpu->cycles);
+	mTimingInit(&gb->timing, &gb->cpu->cycles, &gb->cpu->nextEvent);
 }
 
 static void GBDeinit(struct mCPUComponent* component) {

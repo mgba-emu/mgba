@@ -112,7 +112,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->pristineRomSize = 0;
 	gba->yankedRomSize = 0;
 
-	mTimingInit(&gba->timing, &gba->cpu->cycles);
+	mTimingInit(&gba->timing, &gba->cpu->cycles, &gba->cpu->nextEvent);
 }
 
 void GBAUnloadROM(struct GBA* gba) {
@@ -188,6 +188,7 @@ void GBAReset(struct ARMCore* cpu) {
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		gba->yankedRomSize = 0;
 	}
+	mTimingClear(&gba->timing);
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
 	GBAAudioReset(&gba->audio);
@@ -235,10 +236,11 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 	do {
 		int32_t cycles = cpu->nextEvent;
-		int32_t nextEvent = INT_MAX;
+		int32_t nextEvent;
 		int32_t testEvent;
 
 		cpu->cycles -= cycles;
+		cpu->nextEvent = INT_MAX;
 
 #ifndef NDEBUG
 		if (cycles < 0) {
@@ -247,10 +249,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #endif
 
 		mTimingTick(&gba->timing, cycles);
-		testEvent = mTimingNextEvent(&gba->timing);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+		nextEvent = cpu->nextEvent;
 
 		testEvent = GBAVideoProcessEvents(&gba->video, cycles);
 		if (testEvent < nextEvent) {
