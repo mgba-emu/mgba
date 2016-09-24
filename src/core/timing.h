@@ -23,9 +23,10 @@ struct mTiming {
 	struct mTimingEventList events;
 
 	uint32_t masterCycles;
+	int32_t* relativeCycles;
 };
 
-void mTimingInit(struct mTiming* timing);
+void mTimingInit(struct mTiming* timing, int32_t* relativeCycles);
 void mTimingDeinit(struct mTiming* timing);
 void mTimingClear(struct mTiming* timing);
 void mTimingSchedule(struct mTiming* timing, struct mTimingEvent*, int32_t when);

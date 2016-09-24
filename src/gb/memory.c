@@ -409,7 +409,6 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 	++gb->memory.hdmaSource;
 	++gb->memory.hdmaDest;
 	--gb->memory.hdmaRemaining;
-	gb->cpu->cycles += 2;
 	if (gb->memory.hdmaRemaining) {
 		mTimingSchedule(timing, &gb->memory.hdmaEvent, 2 - cyclesLate);
 	} else {
@@ -426,6 +425,7 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 			gb->memory.io[REG_HDMA5] = 0xFF;
 		}
 	}
+	gb->cpu->cycles += 2;
 }
 
 struct OAMBlock {

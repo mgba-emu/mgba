@@ -83,7 +83,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->coreCallbacks = NULL;
 	gb->stream = NULL;
 
-	mTimingInit(&gb->timing);
+	mTimingInit(&gb->timing, &gb->cpu->cycles);
 }
 
 static void GBDeinit(struct mCPUComponent* component) {
@@ -529,8 +529,11 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	do {
 		int32_t cycles = cpu->nextEvent;
-		int32_t nextEvent = INT_MAX;
+		int32_t nextEvent;
 		int32_t testEvent;
+
+		cpu->cycles -= cycles;
+		cpu->nextEvent = INT_MAX;
 
 		if (gb->eiPending != INT_MAX) {
 			gb->eiPending -= cycles;
@@ -544,10 +547,7 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 		}
 
 		mTimingTick(&gb->timing, cycles);
-		testEvent = mTimingNextEvent(&gb->timing);
-		if (testEvent < nextEvent) {
-			nextEvent = testEvent;
-		}
+		nextEvent = cpu->nextEvent;
 
 		testEvent = GBAudioProcessEvents(&gb->audio, cycles >> gb->doubleSpeed);
 		if (testEvent != INT_MAX) {
@@ -557,7 +557,6 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 			}
 		}
 
-		cpu->cycles -= cycles;
 		cpu->nextEvent = nextEvent;
 
 		if (cpu->halted) {

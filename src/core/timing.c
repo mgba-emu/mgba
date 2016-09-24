@@ -7,9 +7,10 @@
 
 DEFINE_VECTOR(mTimingEventList, struct mTimingEvent*);
 
-void mTimingInit(struct mTiming* timing) {
+void mTimingInit(struct mTiming* timing, int32_t* relativeCycles) {
 	mTimingEventListInit(&timing->events, 0);
 	timing->masterCycles = 0;
+	timing->relativeCycles = relativeCycles;
 }
 
 void mTimingDeinit(struct mTiming* timing) {
@@ -22,7 +23,7 @@ void mTimingClear(struct mTiming* timing) {
 }
 
 void mTimingSchedule(struct mTiming* timing, struct mTimingEvent* event, int32_t when) {
-	event->when = when + timing->masterCycles;
+	event->when = when + timing->masterCycles + *timing->relativeCycles;
 	size_t e;
 	for (e = 0; e < mTimingEventListSize(&timing->events); ++e) {
 		struct mTimingEvent* next = *mTimingEventListGetPointer(&timing->events, e);
