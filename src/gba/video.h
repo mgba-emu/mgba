@@ -187,10 +187,6 @@ struct GBAVideo {
 	int32_t nextEvent;
 	int32_t eventDiff;
 
-	int32_t nextHblankIRQ;
-	int32_t nextVblankIRQ;
-	int32_t nextVcounterIRQ;
-
 	uint16_t palette[SIZE_PALETTE_RAM >> 1];
 	uint16_t* vram;
 	union GBAOAM oam;

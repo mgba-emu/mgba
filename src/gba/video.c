@@ -81,10 +81,6 @@ void GBAVideoReset(struct GBAVideo* video) {
 	video->nextEvent = video->nextHblank;
 	video->eventDiff = 0;
 
-	video->nextHblankIRQ = 0;
-	video->nextVblankIRQ = 0;
-	video->nextVcounterIRQ = 0;
-
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
 
@@ -122,8 +118,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 	if (video->nextEvent <= 0) {
 		int32_t lastEvent = video->nextEvent;
 		video->nextHblank -= video->eventDiff;
-		video->nextHblankIRQ -= video->eventDiff;
-		video->nextVcounterIRQ -= video->eventDiff;
 		video->eventDiff = 0;
 		uint16_t dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
 
@@ -142,7 +136,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
 				if (GBARegisterDISPSTATIsVcounterIRQ(dispstat)) {
 					GBARaiseIRQ(video->p, IRQ_VCOUNTER);
-					video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
 				}
 			} else {
 				dispstat = GBARegisterDISPSTATClearVcounter(dispstat);
@@ -159,7 +152,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 				if (video->frameskipCounter <= 0) {
 					video->renderer->finishFrame(video->renderer);
 				}
-				video->nextVblankIRQ = video->nextEvent + VIDEO_TOTAL_LENGTH;
 				GBAMemoryRunVblankDMAs(video->p, lastEvent);
 				if (GBARegisterDISPSTATIsVblankIRQ(dispstat)) {
 					GBARaiseIRQ(video->p, IRQ_VBLANK);
@@ -181,7 +173,6 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 			dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
 			video->nextEvent = video->nextHblank + VIDEO_HBLANK_LENGTH;
 			video->nextHblank = video->nextEvent + VIDEO_HDRAW_LENGTH;
-			video->nextHblankIRQ = video->nextHblank;
 
 			if (video->vcount < VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
 				video->renderer->drawScanline(video->renderer, video->vcount);
@@ -202,16 +193,7 @@ int32_t GBAVideoProcessEvents(struct GBAVideo* video, int32_t cycles) {
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 	video->p->memory.io[REG_DISPSTAT >> 1] &= 0x7;
 	video->p->memory.io[REG_DISPSTAT >> 1] |= value;
-
-	uint16_t dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
-
-	if (GBARegisterDISPSTATIsVcounterIRQ(dispstat)) {
-		// FIXME: this can be too late if we're in the middle of an Hblank
-		video->nextVcounterIRQ = video->nextHblank + VIDEO_HBLANK_LENGTH + (GBARegisterDISPSTATGetVcountSetting(dispstat) - video->vcount) * VIDEO_HORIZONTAL_LENGTH;
-		if (video->nextVcounterIRQ < video->nextEvent) {
-			video->nextVcounterIRQ += VIDEO_TOTAL_LENGTH;
-		}
-	}
+	// TODO: Does a VCounter IRQ trigger on write?
 }
 
 static void GBAVideoDummyRendererInit(struct GBAVideoRenderer* renderer) {
@@ -317,9 +299,6 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 	STORE_32(video->nextEvent, 0, &state->video.nextEvent);
 	STORE_32(video->eventDiff, 0, &state->video.eventDiff);
 	STORE_32(video->nextHblank, 0, &state->video.nextHblank);
-	STORE_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
-	STORE_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
-	STORE_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
 	STORE_32(video->frameCounter, 0, &state->video.frameCounter);
 }
 
@@ -338,9 +317,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	LOAD_32(video->nextEvent, 0, &state->video.nextEvent);
 	LOAD_32(video->eventDiff, 0, &state->video.eventDiff);
 	LOAD_32(video->nextHblank, 0, &state->video.nextHblank);
-	LOAD_32(video->nextHblankIRQ, 0, &state->video.nextHblankIRQ);
-	LOAD_32(video->nextVblankIRQ, 0, &state->video.nextVblankIRQ);
-	LOAD_32(video->nextVcounterIRQ, 0, &state->video.nextVcounterIRQ);
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);
 	video->renderer->reset(video->renderer);
