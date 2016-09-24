@@ -912,7 +912,6 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 		STORE_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		STORE_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
 		STORE_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
-		STORE_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
 		STORE_32(gba->timers[i].overflowInterval, 0, &state->timers[i].overflowInterval);
 		STORE_32(gba->timers[i].flags, 0, &state->timers[i].flags);
 		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
@@ -936,7 +935,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		}
 	}
 
-	gba->timersEnabled = 0;
 	for (i = 0; i < 4; ++i) {
 		LOAD_16(gba->timers[i].reload, 0, &state->timers[i].reload);
 		LOAD_16(gba->timers[i].oldReload, 0, &state->timers[i].oldReload);
@@ -945,10 +943,8 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		if (i > 0 && GBATimerFlagsIsCountUp(gba->timers[i].flags)) {
 			// Overwrite invalid values in savestate
 			gba->timers[i].lastEvent = 0;
-			gba->timers[i].nextEvent = INT_MAX;
 		} else {
 			LOAD_32(gba->timers[i].lastEvent, 0, &state->timers[i].lastEvent);
-			LOAD_32(gba->timers[i].nextEvent, 0, &state->timers[i].nextEvent);
 		}
 		LOAD_16(gba->memory.dma[i].reg, (REG_DMA0CNT_HI + i * 12), state->io);
 		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
@@ -957,10 +953,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(gba->memory.dma[i].nextEvent, 0, &state->dma[i].nextEvent);
 		if (GBADMARegisterGetTiming(gba->memory.dma[i].reg) != DMA_TIMING_NOW) {
 			GBAMemoryScheduleDMA(gba, i, &gba->memory.dma[i]);
-		}
-
-		if (GBATimerFlagsIsEnable(gba->timers[i].flags)) {
-			gba->timersEnabled |= 1 << i;
 		}
 	}
 	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);

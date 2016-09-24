@@ -64,6 +64,7 @@ void GBTimerDivReset(struct GBTimer* timer) {
 	timer->p->memory.io[REG_DIV] = 0;
 	timer->internalDiv = 0;
 	timer->nextDiv = GB_DMG_DIV_PERIOD;
+	mTimingDeschedule(&timer->p->timing, &timer->event);
 	mTimingSchedule(&timer->p->timing, &timer->event, timer->nextDiv);
 }
 

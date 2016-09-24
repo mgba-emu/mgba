@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2016 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,12 +10,14 @@
 
 #include "arm/arm.h"
 #include "core/log.h"
+#include "core/timing.h"
 
 #include "gba/interface.h"
 #include "gba/memory.h"
 #include "gba/video.h"
 #include "gba/audio.h"
 #include "gba/sio.h"
+#include "gba/timer.h"
 
 #define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
@@ -55,24 +57,9 @@ struct VFile;
 mLOG_DECLARE_CATEGORY(GBA);
 mLOG_DECLARE_CATEGORY(GBA_DEBUG);
 
-DECL_BITFIELD(GBATimerFlags, uint32_t);
-DECL_BITS(GBATimerFlags, PrescaleBits, 0, 4);
-DECL_BIT(GBATimerFlags, CountUp, 4);
-DECL_BIT(GBATimerFlags, DoIrq, 5);
-DECL_BIT(GBATimerFlags, Enable, 6);
-
 DECL_BITFIELD(GBADebugFlags, uint16_t);
 DECL_BITS(GBADebugFlags, Level, 0, 3);
 DECL_BIT(GBADebugFlags, Send, 8);
-
-struct GBATimer {
-	uint16_t reload;
-	uint16_t oldReload;
-	int32_t lastEvent;
-	int32_t nextEvent;
-	int32_t overflowInterval;
-	GBATimerFlags flags;
-};
 
 struct GBA {
 	struct mCPUComponent d;
@@ -84,13 +71,13 @@ struct GBA {
 	struct GBASIO sio;
 
 	struct mCoreSync* sync;
+	struct mTiming timing;
 
 	struct ARMDebugger* debugger;
 
 	uint32_t bus;
 	int performingDMA;
 
-	int timersEnabled;
 	struct GBATimer timers[4];
 
 	int springIRQ;
@@ -152,10 +139,6 @@ void GBADestroy(struct GBA* gba);
 
 void GBAReset(struct ARMCore* cpu);
 void GBASkipBIOS(struct GBA* gba);
-
-void GBATimerUpdateRegister(struct GBA* gba, int timer);
-void GBATimerWriteTMCNT_LO(struct GBA* gba, int timer, uint16_t value);
-void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t value);
 
 void GBAWriteIE(struct GBA* gba, uint16_t value);
 void GBAWriteIME(struct GBA* gba, uint16_t value);
