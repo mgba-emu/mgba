@@ -12,6 +12,7 @@ Bugfixes:
  - GBA Cheats: Fix key-activated CodeBreaker cheats
  - GB SIO: Don't auto-clock external shift clock
  - Qt: Fix directory set unloading when replacing the ROM
+ - GBA Savedata: Fix loading savestates with 512Mb Flash saves
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
