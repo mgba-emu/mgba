@@ -537,6 +537,9 @@ void GBProcessEvents(struct LR35902Core* cpu) {
 
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
+			if (!gb->memory.ie || !gb->memory.ime) {
+				break;
+			}
 		}
 	} while (cpu->cycles >= cpu->nextEvent);
 }

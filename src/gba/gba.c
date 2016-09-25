@@ -287,6 +287,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 
 		if (cpu->halted) {
 			cpu->cycles = cpu->nextEvent;
+			if (!gba->memory.io[REG_IME >> 1] || !gba->memory.io[REG_IE >> 1]) {
+				break;
+			}
 		}
 		if (nextEvent == 0) {
 			break;
