@@ -566,6 +566,12 @@ void GBStop(struct LR35902Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (cpu->bus) {
 		mLOG(GB, GAME_ERROR, "Hit illegal stop at address %04X:%02X\n", cpu->pc, cpu->bus);
+	}
+	if (gb->memory.io[REG_KEY1] & 1) {
+		gb->doubleSpeed ^= 1;
+		gb->memory.io[REG_KEY1] &= 1;
+		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
+	} else if (cpu->bus) {
 		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 			struct mDebuggerEntryInfo info = {
 				.address = cpu->pc - 1,
@@ -576,10 +582,6 @@ void GBStop(struct LR35902Core* cpu) {
 		// Hang forever
 		gb->memory.ime = 0;
 		cpu->pc -= 2;
-	} else if (gb->memory.io[REG_KEY1] & 1) {
-		gb->doubleSpeed ^= 1;
-		gb->memory.io[REG_KEY1] &= 1;
-		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
 	}
 	// TODO: Actually stop
 }
