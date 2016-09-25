@@ -13,6 +13,7 @@ Bugfixes:
  - GB SIO: Don't auto-clock external shift clock
  - Qt: Fix directory set unloading when replacing the ROM
  - GBA Savedata: Fix loading savestates with 512Mb Flash saves
+ - Core: Fix importing save games as read-only
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
