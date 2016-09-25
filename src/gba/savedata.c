@@ -230,10 +230,9 @@ void GBASavedataInitFlash(struct GBASavedata* savedata, bool realisticTiming) {
 	} else {
 		end = savedata->vf->size(savedata->vf);
 		if (end < flashSize) {
-			savedata->vf->truncate(savedata->vf, SIZE_CART_FLASH1M);
-			flashSize = SIZE_CART_FLASH1M;
+			savedata->vf->truncate(savedata->vf, flashSize);
 		}
-		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_FLASH1M, savedata->mapMode);
+		savedata->data = savedata->vf->map(savedata->vf, flashSize, savedata->mapMode);
 	}
 
 	savedata->currentBank = savedata->data;
