@@ -116,7 +116,9 @@ void PNGWriteClose(png_structp png, png_infop info) {
 
 bool isPNG(struct VFile* source) {
 	png_byte header[PNG_HEADER_BYTES];
-	source->read(source, header, PNG_HEADER_BYTES);
+	if (source->read(source, header, PNG_HEADER_BYTES) < PNG_HEADER_BYTES) {
+		return false;
+	}
 	return !png_sig_cmp(header, 0, PNG_HEADER_BYTES);
 }
 
