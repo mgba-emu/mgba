@@ -14,6 +14,7 @@ Bugfixes:
  - Qt: Fix directory set unloading when replacing the ROM
  - GBA Savedata: Fix loading savestates with 512Mb Flash saves
  - Core: Fix importing save games as read-only
+ - Util: Fix PNG identification on files too small to be a PNG
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
