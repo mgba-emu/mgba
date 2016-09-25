@@ -516,7 +516,7 @@ static size_t _GBACoreSavedataClone(struct mCore* core, void** sram) {
 }
 
 static bool _GBACoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
-	struct VFile* vf = VFileFromConstMemory(sram, size);
+	struct VFile* vf = VFileMemChunk(sram, size);
 	if (!vf) {
 		return false;
 	}
