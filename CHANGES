@@ -15,6 +15,7 @@ Bugfixes:
  - GBA Savedata: Fix loading savestates with 512Mb Flash saves
  - Core: Fix importing save games as read-only
  - Util: Fix PNG identification on files too small to be a PNG
+ - GB: Fix invalid STOP behavior on Game Boy Color
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
