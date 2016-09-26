@@ -22,6 +22,7 @@ Misc:
  - FFmpeg: Encoding cleanup
  - GB Memory: Initialize RAM pattern for GBC
  - SDL: Remove scancode key input
+ - GB Video: Improved video timings
 
 0.5.0: (2016-09-19)
 Features:

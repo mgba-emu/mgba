@@ -110,7 +110,7 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->p->memory.io[REG_LY] = video->ly;
 				video->stat = GBRegisterSTATSetLYC(video->stat, lyc == video->ly);
 				if (video->ly < GB_VIDEO_VERTICAL_PIXELS) {
-					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
+					video->nextMode = GB_VIDEO_MODE_2_LENGTH + (video->p->memory.io[REG_SCX] & 7);
 					video->mode = 2;
 					if (!GBRegisterSTATIsHblankIRQ(video->stat) && GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -142,7 +142,8 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				if (video->ly == GB_VIDEO_VERTICAL_TOTAL_PIXELS + 1) {
 					video->ly = 0;
 					video->p->memory.io[REG_LY] = video->ly;
-					video->nextMode = GB_VIDEO_MODE_2_LENGTH;
+					// TODO: Cache SCX & 7 in case it changes during mode 2
+					video->nextMode = GB_VIDEO_MODE_2_LENGTH + (video->p->memory.io[REG_SCX] & 7);
 					video->mode = 2;
 					if (GBRegisterSTATIsOAMIRQ(video->stat)) {
 						video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
@@ -175,11 +176,12 @@ int32_t GBVideoProcessEvents(struct GBVideo* video, int32_t cycles) {
 				video->dotCounter = 0;
 				video->nextEvent = GB_VIDEO_HORIZONTAL_LENGTH;
 				video->x = 0;
-				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 12;
+				// TODO: Estimate sprite timings better
+				video->nextMode = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 11 - (video->p->memory.io[REG_SCX] & 7);
 				video->mode = 3;
 				break;
 			case 3:
-				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 12;
+				video->nextMode = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 11;
 				video->mode = 0;
 				if (GBRegisterSTATIsHblankIRQ(video->stat)) {
 					video->p->memory.io[REG_IF] |= (1 << GB_IRQ_LCDSTAT);
