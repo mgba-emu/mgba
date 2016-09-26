@@ -19,6 +19,7 @@ Bugfixes:
  - GB, GBA: Fix emulator hardlocking when halting with IRQs off
  - SDL: Attach rumble in SDL frontend
  - GBA Hardware: Improve Game Boy Player rumble behavior
+ - GB: Initialize audio properly
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
