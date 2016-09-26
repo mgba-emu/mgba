@@ -20,6 +20,7 @@ Bugfixes:
  - SDL: Attach rumble in SDL frontend
  - GBA Hardware: Improve Game Boy Player rumble behavior
  - GB: Initialize audio properly
+ - GB MBC: Fix RTC access when no save file is loaded
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup

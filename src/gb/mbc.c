@@ -624,6 +624,9 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 void GBMBCRTCRead(struct GB* gb) {
 	struct GBMBCRTCSaveBuffer rtcBuffer;
 	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
 	ssize_t end = vf->seek(vf, -sizeof(rtcBuffer), SEEK_END);
 	switch (end & 0x1FFF) {
 	case 0:
@@ -645,6 +648,11 @@ void GBMBCRTCRead(struct GB* gb) {
 }
 
 void GBMBCRTCWrite(struct GB* gb) {
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+
 	uint8_t rtcRegs[5];
 	memcpy(rtcRegs, gb->memory.rtcRegs, sizeof(rtcRegs));
 	time_t rtcLastLatch = gb->memory.rtcLastLatch;
@@ -663,7 +671,6 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	struct VFile* vf = gb->sramVf;
 	vf->seek(vf, gb->sramSize, SEEK_SET);
 	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
 }
