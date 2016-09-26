@@ -563,12 +563,15 @@ int32_t _gbpSioProcessEvents(struct GBASIODriver* driver, int32_t cycles) {
 	gbp->p->gbpNextEvent -= cycles;
 	if (gbp->p->gbpNextEvent <= 0) {
 		uint32_t tx = 0;
-		if (gbp->p->gbpTxPosition <= 12) {
-			tx = _gbpTxData[gbp->p->gbpTxPosition];
-			if (gbp->p->gbpTxPosition < 12) {
-				++gbp->p->gbpTxPosition;
-			}
+		int txPosition = gbp->p->gbpTxPosition;
+		if (txPosition > 16) {
+			gbp->p->gbpTxPosition = 0;
+			txPosition = 0;
+		} else if (txPosition > 12) {
+			txPosition = 12;
 		}
+		tx = _gbpTxData[txPosition];
+		++gbp->p->gbpTxPosition;
 		gbp->p->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
 		gbp->p->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
 		if (gbp->d.p->normalControl.irq) {

@@ -18,6 +18,7 @@ Bugfixes:
  - GB: Fix invalid STOP behavior on Game Boy Color
  - GB, GBA: Fix emulator hardlocking when halting with IRQs off
  - SDL: Attach rumble in SDL frontend
+ - GBA Hardware: Improve Game Boy Player rumble behavior
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
