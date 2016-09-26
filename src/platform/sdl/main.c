@@ -138,6 +138,10 @@ int main(int argc, char** argv) {
 	mSDLAttachPlayer(&renderer.events, &renderer.player);
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	renderer.core->setRumble(renderer.core, &renderer.player.rumble.d);
+#endif
+
 	int ret;
 
 	// TODO: Use opts and config
