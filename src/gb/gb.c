@@ -399,8 +399,8 @@ void GBReset(struct LR35902Core* cpu) {
 	GBMemoryReset(gb);
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
-	GBIOReset(gb);
 	GBAudioReset(&gb->audio);
+	GBIOReset(gb);
 	GBSIOReset(&gb->sio);
 
 	GBSavedataUnmask(gb);
