@@ -572,7 +572,7 @@ void GBStop(struct LR35902Core* cpu) {
 	}
 	if (gb->memory.io[REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
-		gb->memory.io[REG_KEY1] &= 1;
+		gb->memory.io[REG_KEY1] = 0;
 		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
 	} else if (cpu->bus) {
 		if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
