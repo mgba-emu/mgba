@@ -300,14 +300,16 @@ static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* dir
 	}
 	StringListClear(directives);
 
-	char** directive = StringListAppend(directives);
+	char** directive;
 	switch (cheats->gsaVersion) {
 	case 1:
 	case 2:
+		directive = StringListAppend(directives);
 		*directive = strdup("GSAv1");
 		break;
 	case 3:
 	case 4:
+		directive = StringListAppend(directives);
 		*directive = strdup("PARv3");
 		break;
 	}
