@@ -28,6 +28,7 @@ Misc:
  - GB Memory: Initialize RAM pattern for GBC
  - SDL: Remove scancode key input
  - GB Video: Improved video timings
+ - All: Split out install locations for Libretro and OpenEmu
 
 0.5.0: (2016-09-19)
 Features:
