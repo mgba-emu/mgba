@@ -23,6 +23,7 @@ Bugfixes:
  - GB MBC: Fix RTC access when no save file is loaded
  - GB: Properly clear KEY1 bit 0 when switching speeds
  - LR35902: Fix core never exiting with certain event patterns
+ - GBA Cheats: Fix uninitialized memory getting freed when saving
 Misc:
  - All: Only update version info if needed
  - FFmpeg: Encoding cleanup
